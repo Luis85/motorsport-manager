@@ -43,12 +43,18 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 	if action == "pit" and payload.has("forecast_key"):
 		if payload.get("forecast_key") != RaceForecaster.material_key(self, id, int(p.revision)) or not RaceCheckpoint.number(payload.get("forecast_time"), 0, total_time) or total_time - float(payload.forecast_time) > RaceForecaster.MAX_AGE: return fail("The pit forecast is stale. Compare the updated options before committing.")
 		if not RaceCheckpoint.number(payload.get("expected_gate"), 0, 100000000) or absf(payload.expected_gate - RaceForecaster.reachable_gate(self, c).distance) > 0.001: return fail("The safe entry has changed. Review the deferred gate before committing.")
+	var chosen: Dictionary = {}
+	if action == "pit" and payload.has("set_id"):
+		if phase != "race" or c.route != "track" or not payload.set_id is String: return fail("A forecast stop requires a racing car and a specific replacement set.")
+		chosen = TyreInventory.find(c, payload.set_id)
+		if not WheelTyres.usable(chosen) or chosen.id == c.set_id: return fail("The forecast replacement is no longer available.")
 	var prior: Dictionary = {}
 	if action in ["pit", "schedule_pit"]: prior = RaceForecaster.capture(self, id, active_plan(id), int(p.revision))
 	if action in POLICY_COMMANDS:
 		if not policy_command(action, accepted_payload): return false
 		commands.append({"tick": snappedf(total_time, STEP), "action": action, "payload": accepted_payload.duplicate(true)})
 	else:
+		if not chosen.is_empty(): c.next_set_id = chosen.id; c.next_compound = chosen.compound
 		if action == "qualify":
 			for car in cars: car.auto = StrategyPlan.owns(policy(car.id), "qualifying")
 		if not super.command(action, accepted_payload):
@@ -120,7 +126,7 @@ func policy_command(action: String, payload: Dictionary) -> bool:
 		"hold_decision":
 			if payload.get("issue") not in ["pit", "fuel", "tyre", "plan", "qualifying"] or not payload.get("key") is String or payload.key.length() != 64: return fail("Select a current decision to acknowledge.")
 			if payload.key != RaceForecaster.material_key(self, c.id, int(p.revision)): return fail("That decision changed. Read the current conditions before keeping the plan.")
-			p.held[payload.issue] = payload.key
+			p.held[payload.issue] = DecisionFeed.acknowledgement_key(self, c.id, payload.issue, p)
 		"retire_car":
 			if phase != "race" or payload.get("confirm") != true: return fail("Confirm a voluntary retirement during the race.")
 			retire(c, "Retired by the pit wall")
@@ -143,6 +149,7 @@ func manage_resources(c: Dictionary, only_channel: String = "") -> void:
 		c.engine = 0 if emergency or margin < float(plan.get("fuel_reserve", 0.35)) or c.engine_temperature > 115 else 1
 	if StrategyPlan.owns(p, "racecraft") and only_channel.is_empty():
 		c.battle_mode = "patient" if plan.get("objective") == "protect_finish" or c.damage > 24 else "balanced"
+		if plan.get("objective") == "chase_position" and c.tyre > 35 and c.damage < 12 and flag == "GREEN" and RaceForecaster.fuel_margin(self, c) > 0: c.battle_mode = "assertive"
 
 func engineer(c: Dictionary) -> void:
 	if phase != "race" or c.route != "track" or c.dnf or c.finished: return
@@ -243,6 +250,8 @@ func step() -> void:
 				if p.next_stop >= p.plan.stops.size(): p.plan_status = "completed"
 			p.visit = {}; p.order_forecast = {}; p.next_review = total_time + 12
 		sync_ownership(car)
+	if phase == "race" and roundi(total_time / STEP) % 20 == 0:
+		for id in [3, 6]: observe_warnings(cars[id])
 	if previous_phase != "results" and phase == "results":
 		var classification: Array = []
 		for car in standings(): classification.append({"id": car.id, "position": classification.size() + 1, "laps": car.completed, "time": car.finish_time, "retired": car.dnf})
@@ -267,11 +276,27 @@ static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
 	sim.strategy_state = state.duplicate(true)
 	sim.strategy_state.sequence = int(sim.strategy_state.sequence)
+	for record in sim.strategy_state.records:
+		record.driver_id = int(record.driver_id); record.tick = int(record.tick)
 	for car in sim.cars:
 		var p = sim.policy(car.id)
+		if not p.has("notices"): p.notices = {}
 		p.revision = int(p.revision); p.next_stop = int(p.next_stop); p.driver_id = int(p.driver_id)
 		for channel in p.overrides:
 			p.overrides[channel].value = int(p.overrides[channel].value)
 			p.overrides[channel].previous_value = int(p.overrides[channel].previous_value)
 		sim.sync_ownership(car)
 	return sim
+
+func observe_warnings(c: Dictionary) -> void:
+	var p = policy(c.id)
+	var active: Array = []
+	for card in DecisionFeed.for_driver(self, c.id, p, {}):
+		if card.priority < 90: continue
+		active.append(card.issue)
+		if p.notices.get(card.issue, "") == card.dedup_key: continue
+		p.notices[card.issue] = card.dedup_key
+		RaceJournal.append(strategy_state, self, "warning", c.id, {"reason": card.title + ": " + card.evidence, "fallback": card.fallback, "issue": card.issue})
+		post("radio", c.short + " · " + card.title + ". " + card.evidence)
+	for issue in p.notices.keys():
+		if issue not in active: p.notices.erase(issue)
