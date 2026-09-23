@@ -23,7 +23,7 @@ func _ready() -> void:
 	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
-	header.add_child(UI.label("NATIVE GODOT  ·  0.1.0", 12, UI.MUTED))
+	header.add_child(UI.label("NATIVE GODOT  ·  0.2.0", 12, UI.MUTED))
 	return_editor_button = UI.button("Return to editor", func(): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))
@@ -126,7 +126,11 @@ func show_library(test_track: Dictionary = {}) -> void:
 	launch.add_child(UI.paragraph("Qualifying is automatically extended when necessary to allow complete out/hot/in laps. Presets are game estimates, not licensed vehicle models."))
 	launch.add_child(UI.button("Open weekend briefing", func():
 		var start = func():
-			App.weekend = RaceSim.new(TrackGeometry.new(selected_track, vehicle), config)
+			var geometry = TrackGeometry.new(selected_track, vehicle)
+			var findings = TrackDiagnostics.inspect(geometry)
+			if TrackDiagnostics.blocking(findings):
+				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
+			App.weekend = RaceSim.new(geometry, config)
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:

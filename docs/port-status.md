@@ -1,5 +1,7 @@
 # Iteration 1 — port status and boundaries
 
+> **0.2.0 update:** see [the iteration-two review](iteration-2.md) for the current changes. Lightweight drag previews, ruler-based image calibration, editable scenery transforms, geometric Checks, candidate-time line evaluation, qualifying split histories, persistent timing UI, frozen pit service plans and native v1 checkpoint migration are now implemented. The original port inventory below remains useful as baseline provenance; any conflicting baseline status is superseded by that review.
+
 ## Source baselines
 
 The implementation was informed by the user's **Circuit Atelier v0.4** editor (2026-09-21) and the race-weekend engine embedded in **Obsidian First Light / Energy Dynasty** (2026-09-20), with the earlier `index(1).html` race source used to inspect the qualifying/pit-wall contract. The source was retrieved from the user's file library. The company/era shell is not carried into this iteration.

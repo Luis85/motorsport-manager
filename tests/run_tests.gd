@@ -69,6 +69,7 @@ func run() -> void:
 	test_determinism_and_checkpoint()
 	test_flags_and_finish()
 	test_wet_and_vehicle()
+	load("res://tests/foundation_tests.gd").new().run(self)
 	finish()
 
 func test_authoring() -> void:

@@ -17,10 +17,16 @@ Writes create a temporary file, flush it, move the old destination to `.bak`, an
 
 Native checkpoints use a versioned schema and contain a copied track document, vehicle/configuration, session clock/phase, fixed-step accumulator, PRNG, drivers, tyres/fuel/condition, pit queues, surface state, flags, events and commands. Restoration validates the version, shape, enum values, roster and bounded finite values before replacing the current weekend. Numeric integer fields are explicitly converted after JSON decoding.
 
-The checkpoint is written by **Save weekend**, on phase transitions, and when leaving a weekend for the menu. Closing the app with a live weekend also saves. An active session loaded from disk is paused until resumed. The in-memory **Continue Weekend** action retains the already-loaded model. Editing the library cannot alter a checkpoint's embedded geometry.
+The checkpoint is written by **Save**, on phase transitions, and when leaving a weekend for the menu. Closing the app with a live weekend also saves. An active session loaded from disk is paused until resumed. The in-memory **Continue Weekend** action retains the already-loaded model. Editing the library cannot alter a checkpoint's embedded geometry.
 
-The old HTML/browser localStorage and campaign checkpoints are incompatible and are not imported. Native race-log export is for analysis, not continuation. There is one active weekend checkpoint in iteration one; multiple save slots and a persistent draft-recovery system are not implemented.
+New checkpoints use native **version 2**. Native version 1 is accepted by adding defaults for split history, courtesy state and service-plan fields. This is a data migration, not a promise to reproduce the previous solver’s future lap times. Authoring documents remain version 1.
+
+Nested validation covers telemetry shape, sector records, roster identity/ownership, selected driver indices, unique grid positions, command structure, statistics and pit-box owners. Invalid input is rejected before replacing the active session. A snapshot also deep-copies the circuit so modifying exported data cannot mutate a live weekend.
+
+JSON encodes floating-point numbers as decimal text. Continuation regressions require exact discrete/RNG state and bounded numerical drift (the occupied-pit scenario uses an absolute `1e-7` tolerance); they do not claim byte-identical floating-point restoration or cross-architecture replay.
+
+The old HTML/browser localStorage and campaign checkpoints are incompatible and are not imported. Native race-log export is for analysis, not continuation. There is one active weekend checkpoint in this iteration; multiple save slots and a persistent draft-recovery system are not implemented.
 
 ## Tests and user data
 
-The Python verification harness copies the project without import caches into a temporary directory and gives that copy a unique application name. It also assigns temporary XDG/APPDATA directories. This prevents normal player saves from being reused even when a platform ignores those environment variables. Generated reports are copied back into the real project's `reports/` directory. Tests verify JSON round trips, corrupt/missing files, atomic backup behavior, and exact native continuation. The UI test writes a custom circuit and checkpoint only in its isolated application profile.
+The Python verification harness copies the project without import caches into a temporary directory and gives that copy a unique application name. It also assigns temporary XDG/APPDATA directories. This prevents normal player saves from being reused even when a platform ignores those environment variables. Generated reports are copied back into the real project's `reports/` directory. Tests verify JSON round trips, corrupt/missing files, atomic backup behavior, and bounded-numerical-drift native continuation. The UI test writes a custom circuit and checkpoint only in its isolated application profile.

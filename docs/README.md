@@ -12,4 +12,8 @@
 | [Verification](verification.md) | Reproducible tests, CI, acceptance checks, coverage limits |
 | [Port status](port-status.md) | Source baselines, implemented parity, simplifications and exclusions |
 
-Implementation target: **Godot 4.7.2 standard / GDScript / Compatibility renderer**. Native project version **0.1.0**. Documentation describes implemented behavior, not a proposed future architecture.
+Implementation target: **Godot 4.7.2 standard / GDScript / Compatibility renderer**. Native project version **0.2.0**. Documentation describes implemented behavior, not a proposed future architecture.
+
+## Current iteration
+
+[Iteration 2: race and designer foundation](iteration-2.md) records the reviewed defects, implementation changes, interaction contract, test matrix and remaining boundaries.

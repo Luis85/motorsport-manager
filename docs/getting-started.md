@@ -15,9 +15,9 @@ Choose **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry → 3 l
 
 Review the grid, choose **Prepare race**, pick starting tyres, then **Start formation lap**. Formation completes a real lap and returns the cars to their assigned grid slots without counting a race lap. Approve the starting lights. You now manage both Obsidian cars. Their buttons and colors identify them throughout the timing tower and circuit view.
 
-Manual pace, engine, or pit commands disable the selected car's delegated engineer. Enable **Delegate to engineer** to hand strategy back. Selecting another team's car is for inspection only. Select tyres before calling **Box this lap**; when already moving, the selection is a next-stop plan, not an instantaneous tyre change.
+Manual pace, engine, or pit commands disable the selected car's delegated engineer. Enable **Delegate to engineer** to hand strategy back. Selecting another team's car is for inspection only. Select tyres before calling **Box at next entry**; when already moving, the selection is a next-stop plan, not an instantaneous tyre change.
 
-Space pauses/resumes active sessions. Keys 1, 2, 3, 4, 5 select 1×, 2×, 4×, 8×, 16×. Right- or middle-drag pans, the wheel zooms, and **F** fits the track. **Save weekend** creates a checkpoint; returning to the main menu pauses and saves. **Continue Weekend** resumes the loaded or saved session. A checkpoint restored from disk opens paused when the session is active.
+Space pauses/resumes active sessions. Keys 1, 2, 3, 4, 5 select 1×, 2×, 4×, 8×, 16×. Right- or middle-drag pans, the wheel zooms, and **F** fits the track. **Save** creates a checkpoint; returning to the main menu pauses and saves. **Continue Weekend** resumes the loaded or saved session. A checkpoint restored from disk opens paused when the session is active.
 
 ## First custom circuit
 
@@ -35,3 +35,9 @@ Open **Track Editor**, select a library circuit or **New circuit**, and drag a r
 - Smaller screens: the designed viewport is 1440×900, minimum window 1100×720. At the minimum size the UI scales down and the pit-wall inspector scrolls. Touch-only/mobile input is not a verified target.
 
 The engine was exercised on Linux with software OpenGL. Windows and macOS project opening are intended through Godot's platform-independent APIs but were not independently tested in this implementation environment. No platform export binary is claimed to have been verified.
+
+## Testing the 0.2.0 foundation
+
+In the designer, drag a control point and press Escape; the geometry and redo history should return. Commit another drag, inspect Checks, and test the circuit. To verify custom sectors, select a point and use Track → Set S1/S2. To verify calibration, place the measurement ruler over a known reference-image distance and apply that distance in Reference.
+
+In a weekend, open Telemetry during qualifying to inspect the three measured splits. During the race, switch between Commands/Telemetry/Radio: Box/Cancel remain visible. Zoom or pan while following a driver to release the camera. Try the small supported window and confirm timing selection, text input and pit controls on your own device. These checks supplement the native scripted suite.

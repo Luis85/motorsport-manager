@@ -1,11 +1,20 @@
 class_name TrackCanvas
 extends Control
 ## Native 2D projection. Static track and moving cars are drawn on separate canvases.
+signal navigated
+signal edit_cancelled
 signal edit_started
 signal edited
 signal selection_changed
 signal car_selected(id: int)
 signal measured(metres: float)
+var show_surface = false
+var selected_object = -1
+var scenery_type = "tree"
+var diagnostics: Array = []
+var _gesture_changed = false
+var _drag_offset = Vector2.ZERO
+var surface_layer: SurfaceOverlay
 var geometry: TrackGeometry
 var document: Dictionary = {}
 var sim: RaceSim
@@ -37,18 +46,34 @@ class CarOverlay extends Control:
 	func _process(_delta):
 		if host != null and host.sim != null: queue_redraw()
 
+class SurfaceOverlay extends Control:
+	var host: TrackCanvas
+	var clock = 0.0
+	var shown = false
+	func _process(delta):
+		clock -= delta
+		if clock <= 0:
+			clock = 0.3
+			if host != null and (host.show_surface or shown):
+				shown = host.show_surface; queue_redraw()
+	func _draw():
+		if host != null: host.draw_surface(self)
+
 func _ready() -> void:
 	clip_contents = true
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if editing else Control.CURSOR_ARROW
 	focus_mode = Control.FOCUS_ALL
 	custom_minimum_size = Vector2(300, 300)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
+	surface_layer = SurfaceOverlay.new(); surface_layer.host = self; surface_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(surface_layer); surface_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay = CarOverlay.new(); overlay.host = self; overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(overlay); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	resized.connect(queue_redraw)
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
 	geometry = g
+	_rebuild_due = false
 	document = live_document if not live_document.is_empty() else g.document
 	_load_backdrop()
 	queue_redraw()
@@ -81,11 +106,13 @@ func _load_backdrop() -> void:
 func _process(delta: float) -> void:
 	_rebuild_clock -= delta
 	if _rebuild_due and _rebuild_clock <= 0 and document.get("nodes", []).size() >= 4:
-		_rebuild_due = false; _rebuild_clock = 0.12
-		geometry = TrackGeometry.new(document, geometry.preset if geometry else "Formula")
+		_rebuild_due = false; _rebuild_clock = 0.06
+		geometry = TrackGeometry.new(document, geometry.preset if geometry else "Formula", true)
 		queue_redraw()
 
 func _draw() -> void:
+	if surface_layer: surface_layer.queue_redraw()
+	if overlay: overlay.queue_redraw()
 	draw_rect(Rect2(Vector2.ZERO, size), Color("101d24"))
 	var font = ThemeDB.fallback_font
 	if show_grid:
@@ -109,18 +136,7 @@ func _draw() -> void:
 	else:
 		_draw_scenery()
 		var n = geometry.points.size()
-		# Native batched geometry, retained until track/camera changes.
-		for i in range(n):
-			var a = screen(geometry.points[i]); var b = screen(geometry.points[(i + 1) % n])
-			var w = geometry.widths[i] * zoom
-			draw_line(a, b, Color("273b37"), maxf(4, w + 8 * zoom), true)
-		for i in range(n):
-			var a = screen(geometry.points[i]); var b = screen(geometry.points[(i + 1) % n])
-			var w = maxf(3, geometry.widths[i] * zoom)
-			draw_line(a, b, Color("73878a"), w + 1.5, true)
-		for i in range(n):
-			var a = screen(geometry.points[i]); var b = screen(geometry.points[(i + 1) % n])
-			draw_line(a, b, Color("38484f"), maxf(3, geometry.widths[i] * zoom), true)
+		_draw_road()
 		for feature in document.get("features", []): _draw_feature(feature)
 		if geometry.pit_points.size() > 1:
 			var route = PackedVector2Array()
@@ -129,7 +145,7 @@ func _draw() -> void:
 			draw_polyline(route, Color("4a5050"), maxf(1.5, 4.7 * zoom), true)
 			var box = geometry.pit_sample(geometry.pit_length * 0.5)
 			draw_string(font, screen(box.p + box.n * 24), "PIT LANE", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.ACCENT)
-		if show_line:
+		if show_line and not geometry.preview_only:
 			for i in range(n):
 				var color = Color("83b79e") if geometry.speeds[i] > 45 else Color("dfaa74")
 				draw_line(screen(geometry.line_point(i)), screen(geometry.line_point((i + 1) % n)), color, 1.7, true)
@@ -147,6 +163,11 @@ func _draw() -> void:
 			var p = screen(Vector2(marker.x, marker.y))
 			draw_circle(p, 2, UI.MUTED)
 			if zoom > 0.3: draw_string(font, p + Vector2(6, -4), str(marker.get("number", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
+		if editing and not geometry.preview_only:
+			for finding in diagnostics:
+				if finding.severity != "error": continue
+				var p = screen(geometry.sample(finding.fraction * geometry.length, true).p)
+				draw_circle(p, 10, UI.DANGER); draw_string(font, p + Vector2(-2, 5), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, UI.BG)
 		if show_profile: _draw_profile()
 	if editing: _draw_editor()
 	if measure_start != Vector2.INF:
@@ -163,20 +184,68 @@ func _draw() -> void:
 	draw_string(font, Vector2(size.x - 36, 36), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.MUTED)
 	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), UI.MUTED, 1.5)
 
+func _draw_road() -> void:
+	var n = geometry.points.size()
+	var left = PackedVector2Array(); var right = PackedVector2Array()
+	for i in range(n):
+		left.append(screen(geometry.points[i] + geometry.normals[i] * geometry.widths[i] * 0.5))
+		right.append(screen(geometry.points[i] - geometry.normals[i] * geometry.widths[i] * 0.5))
+	# Two simple triangles per sample avoid polygon self-intersection in tight hairpins.
+	# No antialiasing on internal edges: there are no segment seams across the asphalt.
+	for i in range(n):
+		var j = (i + 1) % n
+		draw_colored_polygon(PackedVector2Array([left[i], left[j], right[j]]), Color("3b4b51"))
+		draw_colored_polygon(PackedVector2Array([left[i], right[j], right[i]]), Color("3b4b51"))
+	left.append(left[0]); right.append(right[0])
+	draw_polyline(left, Color("9aaba7"), 1.2, true)
+	draw_polyline(right, Color("9aaba7"), 1.2, true)
+	# Visible grid slots and the shared team-box positions are sourced from the same geometry.
+	for i in range(12):
+		var g = geometry.sample(-i * geometry.grid_spacing)
+		var at: Vector2 = g.p + g.n * (-2 if i % 2 == 0 else 2)
+		var tangent = Vector2(g.n.y, -g.n.x)
+		draw_line(screen(at - g.n), screen(at + g.n), Color("bec4b780"), 1, true)
+		draw_line(screen(at - g.n), screen(at - g.n - tangent * 4), Color("bec4b770"), 1, true)
+		draw_line(screen(at + g.n), screen(at + g.n - tangent * 4), Color("bec4b770"), 1, true)
+
 func _draw_scenery() -> void:
 	for object in document.get("objects", []):
 		var p = screen(Vector2(object.get("x", 0), object.get("y", 0)))
-		var scale = clampf(float(object.get("scale", 1)), 0.2, 8)
+		if not Rect2(Vector2(-100, -100), size + Vector2(200, 200)).has_point(p): continue
+		var scale_m = clampf(float(object.get("scale", 1)), 0.2, 8)
 		var type = str(object.get("type", "tree"))
+		draw_set_transform(p, -deg_to_rad(float(object.get("rotation", 0))), Vector2.ONE * maxf(0.1, zoom) * scale_m)
 		if type in ["tree", "woodland"]:
-			draw_circle(p + Vector2(2, 3), maxf(2, 8 * zoom * scale), Color("0b141a"))
-			draw_circle(p, maxf(2, 7 * zoom * scale), Color("29483e"))
-		elif type in ["yacht", "pool", "water"]:
-			draw_rect(Rect2(p - Vector2(10, 6) * zoom * scale, Vector2(20, 12) * zoom * scale), Color("24454f"))
+			draw_circle(Vector2(3, 4), 8, Color("0b151a"))
+			draw_circle(Vector2.ZERO, 7.5, Color("2d5144"))
+			draw_circle(Vector2(-2, -2), 4.5, Color("3b6250"))
+		elif type in ["water", "pool", "yacht"]:
+			draw_rect(Rect2(-14, -8, 28, 16), Color("264d5c"))
+			if type == "yacht": draw_colored_polygon(PackedVector2Array([Vector2(-10, -4), Vector2(9, -4), Vector2(14, 0), Vector2(9, 4), Vector2(-10, 4)]), Color("c7c9b7"))
 		else:
-			var size_m = Vector2(30, 15) if type == "grandstand" else Vector2(14, 10)
-			draw_rect(Rect2(p - size_m * zoom * scale * 0.5, size_m * zoom * scale), Color("34434a"))
-			draw_line(p - Vector2(size_m.x * zoom * scale * 0.5, 0), p + Vector2(size_m.x * zoom * scale * 0.5, 0), Color("536065"), 2)
+			var metres = Vector2(38, 19) if type == "grandstand" else (Vector2(26, 16) if type == "garage" else Vector2(14, 12))
+			draw_rect(Rect2(-metres * 0.5 + Vector2(4, 5), metres), Color("0b171ddd"))
+			draw_rect(Rect2(-metres * 0.5, metres), Color("52666a") if type == "grandstand" else Color("536060"))
+			draw_rect(Rect2(-metres * 0.5, metres), Color("84938b"), false, 0.6)
+			if type == "grandstand":
+				for j in range(4): draw_line(Vector2(-17, -6 + j * 4), Vector2(17, -6 + j * 4), Color("9b8e70"), 1.3)
+			else:
+				for j in range(3): draw_rect(Rect2(-metres.x * 0.4 + j * metres.x * 0.3, metres.y * 0.3, metres.x * 0.18, 2), Color("c6b887"))
+		draw_set_transform(Vector2.ZERO)
+
+func draw_surface(target: Control) -> void:
+	if not show_surface or sim == null or geometry == null: return
+	for i in range(96):
+		var color = Color(0.27, 0.65, 0.85, sim.water[i] * 0.55)
+		var a = geometry.sample(i * geometry.length / 96)
+		var b = geometry.sample((i + 1) * geometry.length / 96)
+		# Short pieces follow the road rather than drawing chords through tight corners.
+		for j in range(6):
+			var p = geometry.sample((i + j / 6.0) * geometry.length / 96)
+			var q = geometry.sample((i + (j + 1) / 6.0) * geometry.length / 96)
+			target.draw_line(screen(p.p), screen(q.p), color, maxf(2, p.w * zoom * 0.85), true)
+	target.draw_style_box(UI.box(Color("10202ce8")), Rect2(Vector2(16, 16), Vector2(238, 46)))
+	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "SURFACE WATER  %d%%  ·  blue = wet" % int(sim.average(sim.water) * 100), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
 
 func _draw_feature(f: Dictionary) -> void:
 	var kind = str(f.get("type", "curb"))
@@ -212,6 +281,11 @@ func _draw_editor() -> void:
 				var h = screen(TrackDocument.point(node) + TrackDocument.handle(node, key))
 				draw_line(p, h, UI.ACCENT, 1, true)
 				draw_rect(Rect2(h - Vector2(4, 4), Vector2(8, 8)), UI.ACCENT, false, 1.5)
+	if selected_object >= 0 and selected_object < document.objects.size():
+		var obj = document.objects[selected_object]
+		var p = screen(Vector2(obj.x, obj.y))
+		draw_rect(Rect2(p - Vector2(15, 15), Vector2(30, 30)), UI.ACCENT, false, 1.5)
+		draw_string(font, p + Vector2(18, -12), str(obj.type).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
 	if mode == "pit" and not document.get("pits", []).is_empty():
 		for i in range(document.pits[0].nodes.size()):
 			var p = screen(TrackDocument.point(document.pits[0].nodes[i]))
@@ -276,14 +350,18 @@ func _gui_input(event: InputEvent) -> void:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.pressed:
 			var before = world(event.position)
 			zoom = clampf(zoom * (1.15 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1 / 1.15), 0.025, 20)
-			center += before - world(event.position); queue_redraw(); accept_event(); return
-		if event.button_index in [MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]: panning = event.pressed; accept_event(); return
+			center += before - world(event.position); navigated.emit(); queue_redraw(); accept_event(); return
+		if event.button_index in [MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]: panning = event.pressed; navigated.emit(); accept_event(); return
 		if event.button_index != MOUSE_BUTTON_LEFT: return
 		grab_focus()
 		if not event.pressed:
-			if not dragging.is_empty(): dragging = ""; _rebuild_due = true; edited.emit()
+			_commit_drag()
 			accept_event(); return
 		var p = world(event.position)
+		if editing and show_profile and geometry and Rect2(Vector2(20, size.y - 126), Vector2(size.x - 40, 75)).has_point(event.position):
+			var fraction = clampf((event.position.x - 28) / maxf(1, size.x - 56), 0, 0.9999)
+			selected = geometry.source_segments[int(fraction * geometry.points.size())]
+			selected_object = -1; selection_changed.emit(); queue_redraw(); return
 		if not editing:
 			if sim:
 				var best = 22.0; var id = -1
@@ -297,16 +375,16 @@ func _gui_input(event: InputEvent) -> void:
 			else: measure_end = p; measured.emit(measure_start.distance_to(p))
 			queue_redraw(); return
 		if mode == "reference":
-			if document.has("reference"): edit_started.emit(); dragging = "reference"
+			if document.has("reference"): _begin_drag("reference", p)
 			return
 		if mode == "scenery":
-			edit_started.emit(); document.objects.append({"type": "tree", "x": p.x, "y": p.y, "scale": 1, "rotation": 0}); edited.emit(); queue_redraw(); return
+			edit_started.emit(); document.objects.append({"type": scenery_type, "x": p.x, "y": p.y, "h": 0, "scale": 1, "rotation": 0}); selected_object = document.objects.size() - 1; selected = -1; edited.emit(); selection_changed.emit(); queue_redraw(); return
 		if mode == "pit":
 			if document.pits.is_empty(): return
 			selected_pit = -1
 			for i in range(document.pits[0].nodes.size()):
 				if screen(TrackDocument.point(document.pits[0].nodes[i])).distance_to(event.position) < 12: selected_pit = i; break
-			if selected_pit >= 0: edit_started.emit(); dragging = "pit"
+			if selected_pit >= 0: _begin_drag("pit", p - TrackDocument.point(document.pits[0].nodes[selected_pit]))
 			elif event.shift_pressed:
 				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5)); _rebuild_due = true; edited.emit()
 			selection_changed.emit(); queue_redraw(); return
@@ -314,7 +392,7 @@ func _gui_input(event: InputEvent) -> void:
 			for key in ["in", "out"]:
 				var n = document.nodes[selected]
 				if screen(TrackDocument.point(n) + TrackDocument.handle(n, key)).distance_to(event.position) < 11:
-					edit_started.emit(); dragging = key; return
+					_begin_drag(key, p - TrackDocument.point(n) - TrackDocument.handle(n, key)); return
 		if mode == "start" and geometry:
 			edit_started.emit(); document.start = geometry.nearest(p).fraction; _rebuild_due = true; edited.emit(); return
 		if mode == "draw":
@@ -324,25 +402,54 @@ func _gui_input(event: InputEvent) -> void:
 			var nearest = geometry.nearest(p)
 			if nearest.distance * zoom < 50:
 				edit_started.emit(); selected = TrackDocument.split_segment(document, nearest.segment, clampf(nearest.t, 0.03, 0.97)); _rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		selected = -1
+		selected = -1; selected_object = -1
 		for i in range(document.nodes.size()):
 			if screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: selected = i; break
-		if selected >= 0: edit_started.emit(); dragging = "node"
+		if selected >= 0: _begin_drag("node", p - TrackDocument.point(document.nodes[selected]))
+		else:
+			for i in range(document.objects.size() - 1, -1, -1):
+				var object = document.objects[i]
+				if screen(Vector2(object.x, object.y)).distance_to(event.position) < 14:
+					selected_object = i; _begin_drag("object", p - Vector2(object.x, object.y)); break
 		selection_changed.emit(); queue_redraw()
 	elif event is InputEventMouseMotion:
 		last_mouse = event.position
 		if panning:
 			center -= Vector2(event.relative.x, -event.relative.y) / zoom; queue_redraw(); return
 		if not dragging.is_empty():
-			var p = world(event.position)
+			var p = world(event.position) - _drag_offset
+			if not _gesture_changed:
+				if event.relative.length_squared() < 0.25: return
+				edit_started.emit(); _gesture_changed = true
 			if event.ctrl_pressed: p = p.snapped(Vector2(5, 5))
 			if dragging == "reference":
 				document.reference.x += event.relative.x / zoom; document.reference.y -= event.relative.y / zoom
+			elif dragging == "object":
+				document.objects[selected_object].x = p.x; document.objects[selected_object].y = p.y
 			elif dragging == "pit":
 				document.pits[0].nodes[selected_pit].x = p.x; document.pits[0].nodes[selected_pit].y = p.y
 			elif selected >= 0:
 				var n = document.nodes[selected]
 				if dragging == "node": n.x = p.x; n.y = p.y
 				else: TrackDocument.set_handle(n, dragging, p - TrackDocument.point(n))
-			_rebuild_due = true; queue_redraw()
+			_rebuild_due = dragging not in ["reference", "object"]; queue_redraw()
 		elif mode == "measure" and measure_start != Vector2.INF: queue_redraw()
+
+func _begin_drag(kind: String, offset: Vector2) -> void:
+	dragging = kind; _drag_offset = offset; _gesture_changed = false
+
+func _commit_drag() -> void:
+	if dragging.is_empty(): return
+	dragging = ""; _rebuild_due = false
+	if _gesture_changed:
+		_gesture_changed = false; edited.emit(); selection_changed.emit()
+	queue_redraw()
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and not dragging.is_empty():
+		dragging = ""; _rebuild_due = false
+		if _gesture_changed: _gesture_changed = false; edit_cancelled.emit()
+		queue_redraw(); get_viewport().set_input_as_handled()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT: panning = false; _commit_drag()

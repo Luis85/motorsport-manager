@@ -10,11 +10,14 @@ func _ready() -> void:
 	load_library()
 	if FileAccess.file_exists("user://settings.json"):
 		var result = Storage.read_json("user://settings.json")
-		if result.ok and result.data is Dictionary:
-			for key in settings:
-				if result.data.has(key) and typeof(result.data[key]) == typeof(settings[key]): settings[key] = result.data[key]
-			if result.data.get("speed", 1) in [1, 2, 4, 8, 16]: settings.speed = int(result.data.get("speed", 1))
+		if result.ok and result.data is Dictionary: restore_settings(result.data)
 	apply_settings()
+
+func restore_settings(data: Dictionary) -> void:
+	for key in ["fullscreen", "vsync", "labels", "racing_line"]:
+		if data.get(key) is bool: settings[key] = data[key]
+	var value = data.get("speed", 1)
+	if TrackDocument.valid_number(value, 1, 16) and value == floor(value) and int(value) in [1, 2, 4, 8, 16]: settings.speed = int(value)
 
 func apply_settings() -> void:
 	if DisplayServer.get_name() != "headless":

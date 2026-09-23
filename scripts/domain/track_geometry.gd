@@ -6,6 +6,10 @@ const PRESETS = {
 	"GT": {"top": 76.0, "lat": 15.0, "accel": 6.0, "brake": 12.0, "width": 2.1},
 	"Touring": {"top": 66.0, "lat": 12.0, "accel": 5.2, "brake": 10.0, "width": 1.9},
 	"Kart": {"top": 38.0, "lat": 11.0, "accel": 5.0, "brake": 8.0, "width": 1.4}}
+var preview_only = false
+var compile_usec = 0
+var centre_estimate = 0.0
+var line_distances = PackedFloat64Array()
 var document: Dictionary
 var points = PackedVector2Array()
 var normals = PackedVector2Array()
@@ -33,10 +37,12 @@ var sector_ends: Array = []
 var grid_spacing = 8.0
 var warnings: Array[String] = []
 
-func _init(d: Dictionary = {}, vehicle: String = "Formula") -> void:
-	if not d.is_empty(): compile(d, vehicle)
+func _init(d: Dictionary = {}, vehicle: String = "Formula", preview: bool = false) -> void:
+	if not d.is_empty(): compile(d, vehicle, preview)
 
-func compile(d: Dictionary, vehicle: String = "Formula") -> void:
+func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false) -> void:
+	var started = Time.get_ticks_usec()
+	preview_only = preview
 	document = TrackDocument.normalize(d)
 	preset = vehicle if PRESETS.has(vehicle) else "Formula"
 	start = document.start
@@ -52,7 +58,7 @@ func compile(d: Dictionary, vehicle: String = "Formula") -> void:
 		var p1 = p0 + TrackDocument.handle(a, "out")
 		var p3 = TrackDocument.point(b)
 		var p2 = p3 + TrackDocument.handle(b, "in")
-		var count = clampi(int(ceil((p0.distance_to(p1) + p1.distance_to(p2) + p2.distance_to(p3)) / 3.0)), 6, 400)
+		var count = clampi(int(ceil((p0.distance_to(p1) + p1.distance_to(p2) + p2.distance_to(p3)) / (12.0 if preview else 3.0))), 6, 400)
 		for j in range(count):
 			var t = float(j) / count
 			var p = p0.bezier_interpolate(p1, p2, p3, t)
@@ -64,7 +70,7 @@ func compile(d: Dictionary, vehicle: String = "Formula") -> void:
 	cumulative += previous.distance_to(raw[0][0])
 	length = maxf(1.0, cumulative)
 	raw.append(raw[0]); stations.append(length)
-	var n = clampi(int(ceil(length / 4.0)), 64, 4096)
+	var n = clampi(int(ceil(length / (12.0 if preview else 4.0))), 64, 4096)
 	spacing = length / n
 	points.clear(); heights.clear(); widths.clear(); banks.clear(); source_segments.clear(); source_t.clear()
 	var cursor = 0
@@ -82,28 +88,14 @@ func compile(d: Dictionary, vehicle: String = "Formula") -> void:
 		bounds = bounds.expand(points[i])
 		var tangent = (points[(i + 1) % n] - points[posmod(i - 1, n)]).normalized()
 		normals[i] = Vector2(-tangent.y, tangent.x)
-	# Bounded local smoothing seeks lower curvature. It is not a global minimum-time proof.
-	for iteration in range(28):
-		var next = offsets.duplicate()
-		for i in range(n):
-			var prev = posmod(i - 3, n); var after = (i + 3) % n
-			var midpoint = (points[prev] + normals[prev] * offsets[prev] + points[after] + normals[after] * offsets[after]) * 0.5
-			next[i] = clampf(lerpf(offsets[i], (midpoint - points[i]).dot(normals[i]), 0.3), -widths[i] * 0.5 + 1.5, widths[i] * 0.5 - 1.5)
-		offsets = next
-	var car = PRESETS[preset]
-	speeds.resize(n)
-	for i in range(n):
-		var a = line_point(posmod(i - 2, n)); var b = line_point(i); var c = line_point((i + 2) % n)
-		curvature[i] = 2.0 * (b - a).cross(c - a) / maxf(0.001, a.distance_to(b) * b.distance_to(c) * c.distance_to(a))
-		var lat = car.lat + 9.81 * sin(deg_to_rad(banks[i])) * signf(curvature[i])
-		speeds[i] = minf(car.top, sqrt(maxf(3.0, lat) / maxf(0.00001, absf(curvature[i]))))
-	for pass_index in range(4):
-		for j in range(n):
-			var i = n - 1 - j
-			speeds[i] = minf(speeds[i], sqrt(speeds[(i + 1) % n] ** 2 + 2.0 * car.brake * spacing))
-		for i in range(n): speeds[i] = minf(speeds[i], sqrt(speeds[posmod(i - 1, n)] ** 2 + 2.0 * car.accel * spacing))
-	estimate = 0.0
-	for v in speeds: estimate += spacing / maxf(v, 1)
+	if preview:
+		speeds.resize(n); speeds.fill(PRESETS[preset].top)
+		curvature.fill(0.0); line_distances.resize(n); line_distances.fill(spacing)
+		estimate = 0.0
+	else:
+		var result = RacingLine.solve(self, PRESETS[preset])
+		offsets = result.offsets; speeds = result.speeds; curvature = result.curvature
+		line_distances = result.distances; estimate = result.time; centre_estimate = result.centre_time
 	warnings.clear()
 	if length < 400: warnings.append("Very short track: pit lane and a 12-car grid may not fit.")
 	if length > 15000: warnings.append("Long layout: increase qualifying time to complete a full run.")
@@ -117,9 +109,10 @@ func compile(d: Dictionary, vehicle: String = "Formula") -> void:
 			var station = fposmod(float(gate.f) - start, 1.0) * length
 			if station > 1 and station < length - 1: sector_ends.append(station)
 	sector_ends.sort()
-	if sector_ends.size() != 2: sector_ends = [length / 3.0, length * 2.0 / 3.0]
+	if sector_ends.size() != 2 or sector_ends[1] - sector_ends[0] < 1.0: sector_ends = [length / 3.0, length * 2.0 / 3.0]
 	sector_ends.append(length)
 	_compile_pit()
+	compile_usec = Time.get_ticks_usec() - started
 
 func line_point(i: int) -> Vector2:
 	return points[i] + normals[i] * offsets[i]
@@ -127,14 +120,25 @@ func line_point(i: int) -> Vector2:
 func sample(distance: float, absolute: bool = false) -> Dictionary:
 	var index = fposmod(distance + (0.0 if absolute else start * length), length) / spacing
 	var i = int(index) % points.size(); var j = (i + 1) % points.size(); var t = index - floor(index)
-	return {"p": points[i].lerp(points[j], t), "n": normals[i].lerp(normals[j], t).normalized(), "h": lerpf(heights[i], heights[j], t), "w": lerpf(widths[i], widths[j], t), "bank": lerpf(banks[i], banks[j], t), "line": lerpf(offsets[i], offsets[j], t), "speed": lerpf(speeds[i], speeds[j], t), "curvature": lerpf(curvature[i], curvature[j], t), "i": i}
+	return {"p": points[i].lerp(points[j], t), "n": normals[i].lerp(normals[j], t).normalized(), "h": lerpf(heights[i], heights[j], t), "w": lerpf(widths[i], widths[j], t), "bank": lerpf(banks[i], banks[j], t), "line": lerpf(offsets[i], offsets[j], t), "speed": lerpf(speeds[i], speeds[j], t), "curvature": lerpf(curvature[i], curvature[j], t), "path_scale": maxf(0.1, lerpf(line_distances[i], line_distances[j], t) / spacing), "i": i}
 
 func nearest(p: Vector2) -> Dictionary:
-	var best = INF; var index = 0
+	# Project onto each sampled segment. Picking no longer quantizes to a 4 m sample.
+	var best = INF; var index = 0; var local_t = 0.0
 	for i in range(points.size()):
-		var distance = points[i].distance_squared_to(p)
-		if distance < best: best = distance; index = i
-	return {"index": index, "fraction": float(index) / points.size(), "segment": source_segments[index], "t": source_t[index], "distance": sqrt(best)}
+		var delta = points[(i + 1) % points.size()] - points[i]
+		var t = clampf((p - points[i]).dot(delta) / maxf(0.000001, delta.length_squared()), 0, 1)
+		var distance = (points[i] + delta * t).distance_squared_to(p)
+		if distance < best: best = distance; index = i; local_t = t
+	var j = (index + 1) % points.size()
+	var source_time = lerpf(source_t[index], source_t[j] if source_segments[j] == source_segments[index] else 1.0, local_t)
+	return {"index": index, "fraction": fposmod((index + local_t) / points.size(), 1.0), "segment": source_segments[index], "t": source_time, "distance": sqrt(best)}
+
+func sector_at(distance: float) -> int:
+	var station = fposmod(distance, length)
+	for i in range(2):
+		if station < sector_ends[i]: return i
+	return 2
 
 func _compile_pit() -> void:
 	pit_points.clear(); pit_stations.clear(); pit_length = 0.0
@@ -170,5 +174,5 @@ func pit_sample(distance: float) -> Dictionary:
 func runtime_export() -> Dictionary:
 	var samples: Array = []
 	for i in range(points.size()):
-		samples.append({"s": i * spacing, "x": points[i].x, "y": points[i].y, "height": heights[i], "width": widths[i], "bank_deg": banks[i], "line_offset": offsets[i], "curvature": curvature[i], "speed_mps": speeds[i]})
-	return {"kind": "motorsport-manager-runtime", "version": 1, "units": "metres-seconds-radians-except-bank_deg", "axis": "+X east, +Y north, +height up", "name": document.name, "length": length, "start_fraction": start, "vehicle": preset, "solver": "bounded-curvature-v1", "estimate_seconds": estimate, "samples": samples, "pits": document.pits, "features": document.features, "objects": document.objects, "timing_gates": document.timingGates, "grid": document.grid, "sector_ends_m": sector_ends, "provenance": document.provenance}
+		samples.append({"s": i * spacing, "x": points[i].x, "y": points[i].y, "height": heights[i], "width": widths[i], "bank_deg": banks[i], "line_offset": offsets[i], "curvature": curvature[i], "speed_mps": speeds[i], "line_arc_to_next_m": line_distances[i]})
+	return {"kind": "motorsport-manager-runtime", "version": 2, "units": "metres-seconds-radians-except-bank_deg", "axis": "+X east, +Y north, +height up", "name": document.name, "length": length, "start_fraction": start, "vehicle": preset, "solver": RacingLine.REVISION, "estimate_seconds": estimate, "centreline_estimate_seconds": centre_estimate, "samples": samples, "pits": document.pits, "features": document.features, "objects": document.objects, "timing_gates": document.timingGates, "grid": document.grid, "sector_ends_m": sector_ends, "provenance": document.provenance}

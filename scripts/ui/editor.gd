@@ -1,6 +1,14 @@
 class_name TrackEditor
 extends VBoxContainer
 signal test_requested(document: Dictionary)
+var undo_button: Button
+var redo_button: Button
+var tool_picker: OptionButton
+var test_button: Button
+var findings: Array = []
+var _refreshing_inspector = false
+var gesture_redo: Array = []
+var known_distance = 100.0
 var document: Dictionary = {}
 var geometry: TrackGeometry
 var canvas: TrackCanvas
@@ -39,36 +47,38 @@ func _ready() -> void:
 	actions.add_child(UI.button("Import JSON", import_document))
 	actions.add_child(UI.button("Export JSON", export_document))
 	actions.add_child(UI.button("Bake runtime", export_runtime))
-	actions.add_child(UI.button("Test weekend", func():
-		var errors = TrackDocument.validate(document)
+	test_button = UI.button("Test weekend", func():
+		var errors = race_errors()
 		if errors.is_empty(): test_requested.emit(document.duplicate(true))
-		else: UI.notify(self, "Track needs attention", "\n".join(errors))))
+		else: UI.notify(self, "Track needs attention", "\n".join(errors)), true)
+	actions.add_child(test_button)
 	var tools = HFlowContainer.new(); add_child(tools)
-	tools.add_child(UI.option(["Select / move", "Insert point", "Draw points", "Edit pit lane", "Set start / finish", "Place scenery", "Measure", "Move reference"], func(index):
-		canvas.mode = ["select", "insert", "draw", "pit", "start", "scenery", "measure", "reference"][index]
-		canvas.dragging = ""; refresh_inspector(); canvas.queue_redraw()))
-	tools.add_child(UI.button("Undo", undo))
-	tools.add_child(UI.button("Redo", redo))
+	tool_picker = UI.option(["Select / move [V]", "Insert point [I]", "Draw points", "Edit pit lane [P]", "Set start / finish", "Place scenery", "Measure [M]", "Move reference"], set_tool)
+	tools.add_child(tool_picker)
+	undo_button = UI.button("Undo", undo); tools.add_child(undo_button)
+	redo_button = UI.button("Redo", redo); tools.add_child(redo_button)
 	tools.add_child(UI.button("Fit circuit", func(): canvas.fit()))
 	tools.add_child(UI.check("Racing line", true, func(value): canvas.show_line = value; canvas.queue_redraw()))
 	tools.add_child(UI.check("Elevation profile", false, func(value): canvas.show_profile = value; canvas.queue_redraw()))
-	tools.add_child(UI.label("Drag handles · Ctrl: snap 5 m · Wheel: zoom · Right-drag: pan", 12, UI.MUTED))
+	tools.add_child(UI.label("Wheel: zoom · Right-drag: pan · Ctrl: snap · Esc: cancel drag", 12, UI.MUTED))
 	var content = UI.hbox(self, true)
 	canvas = TrackCanvas.new(); canvas.editing = true; canvas.show_line = true
 	canvas.set_track(geometry, document); content.add_child(canvas)
 	canvas.edit_started.connect(checkpoint)
-	canvas.edited.connect(func(): dirty = true; geometry = TrackGeometry.new(document, vehicle) if document.nodes.size() >= 4 else geometry; canvas.set_track(geometry, document); update_status())
+	canvas.edit_cancelled.connect(cancel_gesture)
+	canvas.edited.connect(recompile)
 	canvas.selection_changed.connect(refresh_inspector)
-	canvas.measured.connect(func(distance): status.text = "Measured %.2f metres. The ruler uses the same metre coordinates as the simulation." % distance)
+	canvas.measured.connect(func(distance): status.text = "Measured %.2f metres. Image calibration is available in Reference." % distance; refresh_inspector())
 	inspector = TabContainer.new(); inspector.custom_minimum_size.x = 330; content.add_child(inspector)
 	status = UI.label("", 12, UI.MUTED); add_child(status)
-	refresh_inspector(); update_status()
+	recompile(); refresh_inspector(); update_status()
 	call_deferred("fit_canvas")
 
 func fit_canvas() -> void:
 	canvas.fit()
 
 func checkpoint() -> void:
+	gesture_redo = redo_stack.duplicate(true)
 	var snapshot = document.duplicate(true)
 	if undo_stack.is_empty() or JSON.stringify(undo_stack.back()) != JSON.stringify(snapshot):
 		undo_stack.append(snapshot)
@@ -81,7 +91,7 @@ func perform(action: Callable, rebuild_inspector: bool = false) -> void:
 
 func recompile() -> void:
 	if document.nodes.size() >= 4:
-		geometry = TrackGeometry.new(document, vehicle); canvas.set_track(geometry, document)
+		geometry = TrackGeometry.new(document, vehicle); findings = TrackDiagnostics.inspect(geometry); canvas.diagnostics = findings; canvas.set_track(geometry, document)
 	else: canvas.document = document; canvas.queue_redraw()
 	update_status()
 
@@ -89,6 +99,7 @@ func undo() -> void:
 	if undo_stack.is_empty(): return
 	redo_stack.append(document.duplicate(true)); document = undo_stack.pop_back()
 	canvas.selected = mini(canvas.selected, document.nodes.size() - 1)
+	canvas.selected_object = mini(canvas.selected_object, document.objects.size() - 1)
 	recompile(); refresh_inspector()
 
 func redo() -> void:
@@ -97,6 +108,8 @@ func redo() -> void:
 	recompile(); refresh_inspector()
 
 func update_status() -> void:
+	if undo_button: undo_button.disabled = undo_stack.is_empty()
+	if redo_button: redo_button.disabled = redo_stack.is_empty()
 	dirty = JSON.stringify(document) != saved_signature
 	dirty_label.text = "UNSAVED CHANGES" if dirty else ("LIBRARY SOURCE" if document.get("builtin", false) else "SAVED")
 	dirty_label.add_theme_color_override("font_color", UI.ACCENT if dirty else UI.GOOD)
@@ -104,8 +117,11 @@ func update_status() -> void:
 	if not errors.is_empty():
 		status.text = "DRAFT  ·  " + " · ".join(errors); status.add_theme_color_override("font_color", UI.ACCENT)
 	else:
-		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Native authoring format v1" % [document.nodes.size(), geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate)]
+		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate), geometry.compile_usec / 1000.0, findings.size()]
 		status.add_theme_color_override("font_color", UI.MUTED)
+	if test_button:
+		test_button.disabled = TrackDiagnostics.blocking(findings) or not errors.is_empty()
+		test_button.tooltip_text = "Resolve blocking findings in Checks before driving." if test_button.disabled else "Test an isolated copy; your unsaved editor draft is preserved."
 
 func inspector_page(title: String) -> VBoxContainer:
 	var scroll = ScrollContainer.new(); scroll.name = title; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; inspector.add_child(scroll)
@@ -115,10 +131,19 @@ func inspector_page(title: String) -> VBoxContainer:
 
 func refresh_inspector() -> void:
 	if inspector == null: return
+	_refreshing_inspector = true
 	var tab = inspector.current_tab
 	UI.clear(inspector)
 	var point = inspector_page("Point")
-	if canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty() and canvas.selected_pit < document.pits[0].nodes.size():
+	if canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
+		var object = document.objects[canvas.selected_object]
+		point.add_child(UI.label("SCENERY / " + str(object.type).to_upper(), 16, UI.ACCENT))
+		coordinate_fields(point, object, false)
+		UI.field(point, "Rotation °", UI.spin(object.get("rotation", 0), -360, 360, 1, func(value): perform(func(): object.rotation = value)))
+		UI.field(point, "Scale", UI.spin(object.get("scale", 1), 0.2, 8, 0.1, func(value): perform(func(): object.scale = value)))
+		point.add_child(UI.button("Delete scenery", delete_point))
+		point.add_child(UI.paragraph("Drag this object in Select / move. Rotation and scale affect its drawn footprint; this is scenery, not a collision body."))
+	elif canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty() and canvas.selected_pit < document.pits[0].nodes.size():
 		var node = document.pits[0].nodes[canvas.selected_pit]
 		point.add_child(UI.label("PIT POINT %d" % (canvas.selected_pit + 1), 16, UI.ACCENT))
 		coordinate_fields(point, node, false)
@@ -146,10 +171,14 @@ func refresh_inspector() -> void:
 	name_field = LineEdit.new(); name_field.text = document.name; name_field.placeholder_text = "Circuit name"; track.add_child(name_field)
 	name_field.text_submitted.connect(func(value): perform(func(): document.name = value.strip_edges()))
 	name_field.focus_exited.connect(func():
-		if is_instance_valid(name_field) and document.name != name_field.text: perform(func(): document.name = name_field.text.strip_edges()))
+		if not _refreshing_inspector and is_instance_valid(name_field) and document.name != name_field.text: perform(func(): document.name = name_field.text.strip_edges()))
 	track.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; recompile(), TrackGeometry.PRESETS.keys().find(vehicle)))
 	UI.field(track, "Start / finish %", UI.spin(document.start * 100, 0, 99.99, 0.01, func(value): perform(func(): document.start = value / 100)))
 	track.add_child(UI.paragraph("Set start / finish lets you click the road. Race distance zero and the grid follow this gate, not control point one."))
+	track.add_child(UI.label("TIMING SECTORS", 14, UI.ACCENT))
+	for index in range(2):
+		var button = UI.button("Set S%d at selected point" % (index + 1), func(): set_sector(index))
+		button.disabled = canvas.selected < 0; track.add_child(button)
 	track.add_child(UI.label("PIT LANE", 16, UI.ACCENT))
 	if not document.pits.is_empty():
 		var pit = document.pits[0]
@@ -188,7 +217,8 @@ func refresh_inspector() -> void:
 			feature_index = document.features.size() - 1, true)))
 	features.add_child(UI.paragraph("Feature ranges wrap around the lap. Bridges and tunnels are top-down annotations; the road height controls the elevation profile and runtime data."))
 	features.add_child(UI.label("SCENERY", 16, UI.ACCENT))
-	features.add_child(UI.paragraph("Place scenery adds trees with a click. Existing imported garages, grandstands and other props are preserved and drawn."))
+	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water"], func(index): canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water"][index]; set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water"].find(canvas.scenery_type)))
+	features.add_child(UI.paragraph("Choose a prop, then click the canvas to place it. Return to Select / move to select and drag existing objects; Point exposes rotation, size and position."))
 	features.add_child(UI.button("Remove last scenery object", func():
 		if not document.objects.is_empty(): perform(func(): document.objects.pop_back())))
 	var reference = inspector_page("Reference")
@@ -201,9 +231,23 @@ func refresh_inspector() -> void:
 		UI.field(reference, "Center X", UI.spin(ref.x, -100000, 100000, 1, func(value): perform(func(): ref.x = value)))
 		UI.field(reference, "Center Y", UI.spin(ref.y, -100000, 100000, 1, func(value): perform(func(): ref.y = value)))
 		UI.field(reference, "Opacity", UI.spin(ref.opacity, 0.05, 0.9, 0.05, func(value): perform(func(): ref.opacity = value)))
-		reference.add_child(UI.paragraph("Calibration: measure a known distance on the image, then multiply Image width by known distance / measured distance."))
+		reference.add_child(UI.paragraph("Measure two points on the image, enter their real-world separation, then calibrate. The first measured point stays anchored."))
+		UI.field(reference, "Known distance m", UI.spin(known_distance, 0.1, 20000, 0.1, func(value): known_distance = value))
+		var calibrate = UI.button("Calibrate from ruler", calibrate_reference)
+		calibrate.disabled = canvas.measure_start == Vector2.INF or canvas.measure_end == Vector2.INF
+		reference.add_child(calibrate)
 		reference.add_child(UI.button("Remove reference", func(): perform(func(): document.erase("reference"), true)))
+	var checks = inspector_page("Checks")
+	checks.add_child(UI.label("TRACK READINESS", 16, UI.ACCENT))
+	checks.add_child(UI.paragraph("%d blocking · %d advisory" % [findings.filter(func(f): return f.severity == "error").size(), findings.filter(func(f): return f.severity != "error").size()], UI.DANGER if TrackDiagnostics.blocking(findings) else UI.GOOD))
+	if findings.is_empty(): checks.add_child(UI.paragraph("No sampled centreline problems detected. Always test a lap and inspect the pit route."))
+	for index in range(findings.size()):
+		var finding = findings[index]
+		var button = UI.button("%s · %s" % [str(finding.severity).to_upper(), str(finding.code).capitalize()], func(): focus_finding(index))
+		button.tooltip_text = finding.message; checks.add_child(button); checks.add_child(UI.paragraph(finding.message))
+	checks.add_child(UI.paragraph("Checks cover sampled road crossings, vertical separation, pit angles and very tight radii. They do not certify full road-edge, vehicle-envelope or structural clearance."))
 	inspector.current_tab = clampi(tab, 0, inspector.get_tab_count() - 1)
+	_refreshing_inspector = false
 
 func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
 	for field in [["X metres", "x", -100000, 100000, 0.1], ["Y metres", "y", -100000, 100000, 0.1], ["Height metres", "h", -1000, 10000, 0.1]]:
@@ -213,6 +257,10 @@ func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
 		UI.field(parent, "Banking °", UI.spin(node.bank, -45, 45, 0.5, func(value): perform(func(): node.bank = value)))
 
 func delete_point() -> void:
+	if canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
+		perform(func(): document.objects.remove_at(canvas.selected_object); canvas.selected_object = -1, true); return
+	if canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty():
+		perform(func(): document.pits[0].nodes.remove_at(canvas.selected_pit); canvas.selected_pit = -1, true); return
 	if canvas.selected < 0: return
 	if document.nodes.size() <= 4: UI.notify(self, "Keep a closed circuit", "A circuit must retain at least four points."); return
 	perform(func(): document.nodes.remove_at(canvas.selected); canvas.selected = -1, true)
@@ -232,7 +280,7 @@ func export_document() -> void:
 	dialog.current_file = document.name.validate_filename() + ".json"
 
 func export_runtime() -> void:
-	var errors = TrackDocument.validate(document)
+	var errors = race_errors()
 	if not errors.is_empty(): UI.notify(self, "Track needs attention", "\n".join(errors)); return
 	var dialog = UI.file_dialog(self, true, ["*.json ; Baked runtime JSON"], func(path):
 		var error = Storage.write_json(path, TrackGeometry.new(document, vehicle).runtime_export())
@@ -267,7 +315,7 @@ func new_document() -> void:
 		replace_document(d); saved_signature = ""; update_status())
 
 func replace_document(d: Dictionary) -> void:
-	document = TrackDocument.normalize(d); undo_stack.clear(); redo_stack.clear(); canvas.selected = -1; feature_index = -1
+	document = TrackDocument.normalize(d); undo_stack.clear(); redo_stack.clear(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
 	saved_signature = JSON.stringify(document); recompile(); refresh_inspector(); canvas.fit()
 
 func confirm_discard(callback: Callable) -> void:
@@ -279,8 +327,76 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	var focus = get_viewport().gui_get_focus_owner()
 	if focus is LineEdit or focus is TextEdit: return
-	if event.ctrl_pressed and event.keycode == KEY_S: save_document(); get_viewport().set_input_as_handled()
-	elif event.ctrl_pressed and event.keycode == KEY_Z: undo(); get_viewport().set_input_as_handled()
-	elif event.ctrl_pressed and event.keycode == KEY_Y: redo(); get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_DELETE: delete_point(); get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_F: canvas.fit(); get_viewport().set_input_as_handled()
+	var handled = true
+	if event.ctrl_pressed and event.keycode == KEY_S: save_document()
+	elif event.ctrl_pressed and event.keycode == KEY_Z:
+		if event.shift_pressed: redo()
+		else: undo()
+	elif event.ctrl_pressed and event.keycode == KEY_Y: redo()
+	elif event.keycode == KEY_DELETE: delete_point()
+	elif event.keycode == KEY_F: canvas.fit()
+	elif event.keycode == KEY_V: set_tool(0)
+	elif event.keycode == KEY_I: set_tool(1)
+	elif event.keycode == KEY_P: set_tool(3)
+	elif event.keycode == KEY_M: set_tool(6)
+	elif event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
+		var direction = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP * -1, KEY_DOWN: Vector2.DOWN * -1}[event.keycode]
+		var amount = 5.0 if event.shift_pressed else 0.5
+		if canvas.selected >= 0:
+			perform(func(): var n = document.nodes[canvas.selected]; n.x += direction.x * amount; n.y += direction.y * amount, true)
+		else: handled = false
+	else: handled = false
+	if handled: get_viewport().set_input_as_handled()
+
+func set_tool(index: int) -> void:
+	canvas._commit_drag()
+	canvas.mode = ["select", "insert", "draw", "pit", "start", "scenery", "measure", "reference"][index]
+	if tool_picker: tool_picker.select(index)
+	canvas.selected_object = -1; refresh_inspector(); canvas.queue_redraw()
+
+func cancel_gesture() -> void:
+	if undo_stack.is_empty(): return
+	document = undo_stack.pop_back(); redo_stack = gesture_redo.duplicate(true)
+	recompile(); refresh_inspector()
+
+func race_errors() -> Array[String]:
+	var errors = TrackDocument.validate(document)
+	if errors.is_empty():
+		for finding in findings:
+			if finding.severity == "error": errors.append(finding.message)
+	return errors
+
+func focus_finding(index: int) -> void:
+	if index < 0 or index >= findings.size(): return
+	var finding = findings[index]
+	var p = geometry.sample(finding.fraction * geometry.length, true).p
+	canvas.center = p; canvas.zoom = maxf(canvas.zoom, 0.75)
+	canvas.selected = geometry.nearest(p).segment; canvas.queue_redraw()
+	status.text = finding.message
+
+func set_sector(index: int) -> void:
+	if canvas.selected < 0: return
+	var fraction: float = geometry.nearest(TrackDocument.point(document.nodes[canvas.selected])).fraction
+	perform(func():
+		var gates: Array = []
+		for i in range(2):
+			var f = fposmod(geometry.sector_ends[i] / geometry.length + document.start, 1)
+			gates.append({"type": "sector", "f": fraction if i == index else f})
+		document.timingGates = gates, true)
+
+func calibrate_reference() -> void:
+	if not document.has("reference") or canvas.measure_start == Vector2.INF or canvas.measure_end == Vector2.INF: return
+	var measured = canvas.measure_start.distance_to(canvas.measure_end)
+	if measured < 0.001: return
+	var ratio = known_distance / measured
+	var width = document.reference.width * ratio
+	if width < 1 or width > 20000: UI.notify(self, "Calibration outside limits", "Image width must remain between 1 and 20,000 metres."); return
+	var anchor = canvas.measure_start
+	var target_center = anchor + (Vector2(document.reference.x, document.reference.y) - anchor) * ratio
+	if absf(target_center.x) > 100000 or absf(target_center.y) > 100000: return
+	perform(func():
+		var center = Vector2(document.reference.x, document.reference.y)
+		center = anchor + (center - anchor) * ratio
+		document.reference.width = width; document.reference.x = center.x; document.reference.y = center.y, true)
+	canvas.measure_end = anchor + (canvas.measure_end - anchor) * ratio
+	canvas.queue_redraw(); status.text = "Reference calibrated to %.2f m. Road geometry was not moved." % known_distance

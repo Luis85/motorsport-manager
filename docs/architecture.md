@@ -8,6 +8,9 @@ scenes/main.tscn                Main native Control scene
 scripts/domain/
   track_document.gd            Schema, normalization, validation, cubic editing
   track_geometry.gd            Immutable compiled geometry and speed profile
+  racing_line.gd               Bounded time-evaluated racing-line candidates
+  track_diagnostics.gd         Sampled crossings, pit angles and readiness checks
+  race_checkpoint.gd           Nested checkpoint validation
   race_sim.gd                  Deterministic weekend model and commands
 scripts/services/
   app.gd                       Library, settings and current-weekend ownership
@@ -46,3 +49,11 @@ UI actions call `RaceSim.command(action, payload)`. Commands validate the sessio
 New rules belong in the domain and require deterministic tests before UI exposure. Add a new authoring field through normalization, validation, compile/export semantics, persistence tests, then the inspector. A different renderer should consume `TrackGeometry` and `RaceSim` rather than duplicate their rules. Company management can later orchestrate weekends without being embedded inside movement or timing calculations.
 
 Current implementation deliberately uses dictionaries at serialization boundaries for migration friendliness. It is not claiming a full typed entity/component framework, multithreaded solver, or Godot editor plugin.
+
+## Iteration-two boundaries
+
+`RacingLine` owns bounded candidate generation and time evaluation. `TrackGeometry` compiles either a lightweight editor preview or an immutable full simulation snapshot. `TrackDiagnostics` consumes that geometry and returns inspectable findings without mutating it; the editor and weekend launcher apply the same blocking rule.
+
+`RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native v1-to-v2 defaulting precedes validation; no browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
+
+`WeekendView` owns persistent rank-position TreeItems and stable pit controls; its 5 Hz refresh updates values, not control instances. The track surface and moving-car overlays are separate from retained static geometry. All player commands still enter through `RaceSim.command`.

@@ -31,7 +31,7 @@ The packaged catalog uses a compact node representation `[x, y, height, width, b
 
 - `pits`: first entry is the active lane, with `entry`, `exit` fractions, `speed` in km/h, `width`, and `nodes`. The compiler adds joins to the main road. Native movement follows the authored pit nodes as a polyline.
 - `features`: range-based records with type, start/end, side and dimensions. Existing additional authoring metadata is retained.
-- `objects`: positioned scenery; native rendering understands the source's common objects, but only limited authoring operations are exposed.
+- `objects`: positioned scenery; native rendering understands the source's common objects; selection, movement, rotation, scale and deletion are exposed.
 - `timingGates`: two `type: "sector"` gates with `f` produce authored sector boundaries. Otherwise the runtime falls back to thirds. Finish is the timing origin.
 - `grid`: spacing affects the grid. Other original grid metadata is preserved for external consumers; not every source grid placement option is interpreted by this iteration.
 - `reference`: optional base64 PNG, world width, X/Y center and opacity. Do not include an image that cannot legally be redistributed.
@@ -45,13 +45,15 @@ The packaged catalog uses a compact node representation `[x, y, height, width, b
 
 The importer recognizes `kind: "circuit-atelier-project"` and versions 1–4, with the v0.4 prototype as the primary migrated baseline. Explicit Bézier handles are retained; missing automatic handles are reconstructed using centripetal tangents. Metre coordinates, width, height, banking, pits, features, objects, timing and provenance are carried over. Old browser checkpoints, embedded HTML, runtime mesh packages, and arbitrary GeoJSON are **not** native authoring imports.
 
-## Baked runtime v1
+## Baked runtime v2
 
-`kind: "motorsport-manager-runtime"`, `version: 1` is a derived, immutable consumer artifact. It includes coordinate units/axis, name, length, timing-origin fraction, selected vehicle preset, solver identifier, estimated lap time and ordered samples. Each sample carries `s`, `x`, `y`, `height`, `width`, `bank_deg`, `line_offset`, `curvature`, and `speed_mps`.
+`kind: "motorsport-manager-runtime"`, `version: 2` is a derived, immutable consumer artifact. It includes coordinate units/axis, name, length, timing-origin fraction, selected vehicle preset, solver identifier, estimated lap time, the centreline reference estimate, and ordered samples. Each sample carries `s`, `x`, `y`, `height`, `width`, `bank_deg`, `line_offset`, `curvature`, `speed_mps`, and `line_arc_to_next_m`.
 
 Samples begin at authoring node zero; `start_fraction` defines the timing origin. The last sample does not duplicate the first: consumers must close the loop. Offsets are left-normal to the sampled centerline. Curvature is inverse metres; speed is metres/second. `sector_ends_m` are measured from the timing origin, unlike sample stations. Pits/features/objects/timing gates/grid/provenance accompany the samples. The package does **not** include a triangulated road mesh, collision mesh, globally optimal trajectory certificate, or an adapter for a commercial racing game.
 
-Changing the interpretation of persisted values requires a schema-version increment and migration tests. Do not silently reuse v1 for an incompatible representation.
+The solver identifier is `time-candidate-v2`. `line_arc_to_next_m` is the distance along the evaluated 3D racing-line segment to the next station, including loop closure. This derived v2 package replaces the earlier v1 runtime exporter; authoring JSON stays v1 and remains import-compatible. Runtime packages are not editor imports.
+
+Before runtime export or weekend entry, `TrackDiagnostics` also checks sampled centreline crossings, road-to-road height separation, pit entry/exit alignment, very tight radii and invalid timing gates. Same-level crossings are blocking. These tests do not establish full road-edge, vehicle-envelope, tunnel or structural clearance.
 
 ## Bundled catalog
 

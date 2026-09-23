@@ -18,6 +18,7 @@ const ROSTER = [
 	["KIE", "Jonas Kiefer", "Aster", "d5d6c8", 81, 92, 79, 92, 7],
 	["COS", "Rafael Costa", "Veridian", "69a283", 82, 85, 89, 86, 15],
 	["HAR", "Theo Hart", "Kestrel", "ac98c0", 79, 74, 76, 81, 16]]
+const CAR_V2 = {"yield_to": -1, "yield_side": 0.0, "yield_clock": 0.0, "qual_history": [], "qual_sectors": [0.0, 0.0, 0.0], "qual_sector_start": 0.0, "invalid_reason": "", "throttle": 0.0, "braking": 0.0, "pit_deferred": false, "pit_lap": false, "service_compound": "M", "service_repair": true}
 var track: TrackGeometry
 var cars: Array = []
 var phase = "briefing"
@@ -53,7 +54,7 @@ var stats = {"passes": 0, "incidents": 0, "pits": 0, "blue_flags": 0}
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	if geometry == null: return
-	track = geometry
+	track = TrackGeometry.new(geometry.document, geometry.preset) if geometry.preview_only else geometry
 	laps = clampi(int(options.get("laps", 12)), 1, 100)
 	qual_duration = maxf(float(options.get("qual_duration", 480)), track.estimate * 3.5)
 	scenario = options.get("scenario", "changeable")
@@ -64,6 +65,7 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	for i in range(ROSTER.size()):
 		var r = ROSTER[i]
 		cars.append({"id": i, "short": r[0], "name": r[1], "team": r[2], "color": r[3], "skill": r[4], "consistency": r[5], "wet_skill": r[6], "reliability": r[7], "number": r[8], "player": r[2] == "Obsidian", "grid": i + 1, "distance": -i * track.grid_spacing, "previous_distance": -i * track.grid_spacing, "speed": 0.0, "lane": (-1 if i % 2 == 0 else 1) * 2.0, "route": "track", "pace": 1, "engine": 1, "auto": true, "compound": "I" if scenario == "wet" else "M", "tyre": 100.0, "temperature": 65.0, "fuel": float(laps) * 1.13 + 1.5, "health": 100.0, "damage": 0.0, "qual_state": "garage", "qual_runs": 0, "next_qual": 2.0 + i * 3.8, "qual_best": 0.0, "qual_laps": 0, "hot_start": 0.0, "hot_valid": true, "lap_start": 0.0, "last_lap": 0.0, "best_lap": 0.0, "completed": 0, "sectors": [0.0, 0.0, 0.0], "sector_start": 0.0, "pit_order": false, "next_compound": "M", "repair": true, "pit_d": 0.0, "pit_cycle": 0, "pit_stage": "", "pit_timer": 0.0, "pit_stops": 0, "box_d": track.pit_length * (0.30 + ["Volpe", "Aster", "Veridian", "Obsidian", "Nordstar", "Kestrel"].find(r[2]) * 0.055), "loss": 0.0, "dnf": false, "retire_reason": "", "finished": false, "finish_position": 0, "finish_time": 0.0, "formation_done": false, "blue": false, "ai_clock": 0.0, "intent": "Ready for the weekend", "history": [], "setup": 5, "telemetry": [], "last_trace": 0.0, "pit_gate": -1.0, "crossed_at": -1.0, "previous_pit_d": 0.0, "previous_lane": 0.0, "previous_route": "track"})
+	for car in cars: car.merge(CAR_V2.duplicate(true))
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
 
 func random_value() -> float:
@@ -94,7 +96,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 				if car.auto: car.compound = "I" if average(water) > 0.25 else "S"
 				car.next_compound = car.compound
 		"close_qualifying":
-			if phase != "qualifying": return fail("Qualifying is not running.")
+			if phase != "qualifying" or qual_closed: return fail("Qualifying is not open.")
 			qual_closed = true; post("flag", "Qualifying chequered: active flying laps may finish; no new runs.")
 		"prepare_race":
 			if phase not in ["briefing", "qualifying_results"]: return fail("Finish the current session first.")
@@ -104,6 +106,8 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 				car.lane = (-1 if car.grid % 2 else 1) * 2.0
 				car.compound = recommended_compound(); car.next_compound = car.compound
 				car.tyre = 100.0; car.temperature = 65.0; car.fuel = laps * 1.13 + 1.5
+				car.last_lap = 0.0; car.best_lap = 0.0; car.lap_start = 0.0; car.pit_lap = false
+				car.sectors = [0.0, 0.0, 0.0]; car.sector_start = 0.0; car.yield_to = -1; car.yield_side = 0.0; car.blue = false
 		"formation":
 			if phase != "race_preparation": return fail("Prepare the race before formation.")
 			transition("formation")
@@ -118,7 +122,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 			var value = int(payload.get("value", 1))
 			if value not in [1, 2, 4, 8, 16]: return fail("Invalid simulation speed.")
 			speed = value
-		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup":
+		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup", "repair":
 			if not c.player: return fail("You manage the two Obsidian drivers only.")
 			if c.dnf or c.finished: return fail("This car is no longer running.")
 			match action:
@@ -126,6 +130,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 					var value = int(payload.get("value", 1))
 					if value < 0 or value > 2: return fail("Invalid driving mode.")
 					c[action] = value; c.auto = false
+				"repair": c.repair = bool(payload.get("value", true))
 				"auto": c.auto = bool(payload.get("value", not c.auto))
 				"compound":
 					var value = str(payload.get("value", "M"))
@@ -137,13 +142,13 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 					queue_pit(c); c.auto = false
 				"cancel_pit":
 					if c.route != "track": return fail("Already committed to the pit lane.")
-					c.pit_order = false; c.pit_gate = -1.0
+					c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false
 				"send":
 					if phase != "qualifying" or qual_closed or c.route != "garage": return fail("Garage release unavailable.")
 					leave_garage(c)
 				"recall":
 					if phase != "qualifying" or c.route != "track": return fail("Only an on-track qualifying car can be recalled.")
-					c.qual_state = "inlap"; c.hot_valid = false
+					c.qual_state = "inlap"; c.hot_valid = false; c.invalid_reason = "Recalled by the pit wall"
 				"setup":
 					if phase not in ["briefing", "race_preparation"] and c.route != "garage": return fail("Setup changes require the garage or race preparation.")
 					c.setup = clampi(int(payload.get("value", 5)), 1, 9)
@@ -183,7 +188,7 @@ func step() -> void:
 		else: flag = "GREEN"; yellow_sector = -1
 		post("flag", flag)
 	var old: Array = []
-	for c in cars: old.append({"distance": c.distance, "lane": c.lane, "speed": c.speed, "route": c.route}); c.crossed_at = -1.0
+	for c in cars: old.append({"distance": c.distance, "lane": c.lane, "speed": c.speed, "route": c.route, "pit_d": c.pit_d, "pit_stage": c.pit_stage, "qual_state": c.qual_state}); c.crossed_at = -1.0
 	for c in cars:
 		c.previous_distance = c.distance; c.previous_pit_d = c.pit_d; c.previous_lane = c.lane; c.previous_route = c.route
 		if c.dnf or c.finished: continue
@@ -193,7 +198,7 @@ func step() -> void:
 		if c.route == "garage":
 			if phase == "qualifying" and not qual_closed and c.auto and c.qual_runs < 2 and clock >= c.next_qual: leave_garage(c)
 			continue
-		if c.route == "pit": update_pit(c); continue
+		if c.route == "pit": update_pit(c, old); continue
 		if phase == "formation" and c.formation_done: continue
 		if c.loss > 0:
 			c.loss = maxf(0.0, c.loss - STEP); c.speed = 0.0; continue
@@ -263,7 +268,7 @@ func grip(c: Dictionary, cell: int) -> float:
 	return clampf((0.94 + rubber[cell] * 0.14 - wet * 0.25) * TYRES[c.compound].grip * match_factor * wear * temperature, 0.25, 1.1)
 
 func neutral(c: Dictionary) -> bool:
-	return phase == "formation" or flag in ["SAFETY CAR", "RESTART"] or flag == "YELLOW" and int(fposmod(c.distance / track.length, 1.0) * 3) == yellow_sector
+	return phase == "formation" or flag in ["SAFETY CAR", "RESTART"] or flag == "YELLOW" and track.sector_at(c.distance) == yellow_sector
 
 func move_car(c: Dictionary, old: Array) -> void:
 	var s = track.sample(c.distance)
@@ -289,24 +294,21 @@ func move_car(c: Dictionary, old: Array) -> void:
 	if phase == "race" and clock < 3.0: target_lane = (-1 if c.grid % 2 else 1) * 2.0
 	var nearest_id = -1; var ahead_distance = INF
 	var was_blue = c.blue
-	c.blue = false
+	var courtesy_target = update_yield(c, old)
+	c.blue = c.yield_to >= 0 and phase == "race"
+	if c.yield_to >= 0:
+		target_lane = courtesy_target
+		if absf(c.lane - old[c.yield_to].lane) > 2.6: desired = minf(desired, 43)
 	for other in cars:
 		if other.id == c.id or other.dnf or other.finished or old[other.id].route != "track": continue
 		var delta = fposmod(old[other.id].distance - old[c.id].distance, track.length)
 		if delta > 0.005 and delta < ahead_distance: ahead_distance = delta; nearest_id = other.id
-		var behind = fposmod(old[c.id].distance - old[other.id].distance, track.length)
-		var courtesy = phase == "qualifying" and c.qual_state in ["outlap", "inlap"] and other.qual_state == "hotlap"
-		var lapped = phase == "race" and other.distance - c.distance > track.length * 0.65
-		if not neutral(c) and behind < 90 and (courtesy or lapped) and old[other.id].speed > c.speed - 0.5:
-			target_lane = (s.w * 0.5 - 1.4) * (-1 if c.id % 2 else 1)
-			c.blue = lapped
-			if absf(c.lane - old[other.id].lane) > 2.6: desired = minf(desired, 43)
 	if c.blue and not was_blue:
 		stats.blue_flags += 1; post("flag", c.short + " yields under blue flags.")
 	var passing = false
 	if nearest_id >= 0 and ahead_distance < 75:
 		if phase == "race" and not neutral(c): desired *= 1.022 if absf(s.curvature) < 0.004 else 0.991
-		if not neutral(c) and phase != "formation" and absf(s.curvature) < 0.035 and s.w > 7.5 and desired > old[nearest_id].speed + 0.4:
+		if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(s.curvature) < 0.035 and s.w > 7.5 and desired > old[nearest_id].speed + 0.4:
 			var side = -1 if old[nearest_id].lane >= 0 else 1
 			target_lane = clampf(old[nearest_id].lane + side * 3.0, -s.w * 0.5 + 1.4, s.w * 0.5 - 1.4)
 			passing = absf(c.lane - old[nearest_id].lane) >= 2.6
@@ -315,7 +317,12 @@ func move_car(c: Dictionary, old: Array) -> void:
 	for other in cars:
 		if other.id == c.id or other.dnf or old[other.id].route != "track": continue
 		var longitudinal = fposmod(old[other.id].distance - old[c.id].distance + track.length * 0.5, track.length) - track.length * 0.5
-		if absf(longitudinal) < 7 and (c.lane - old[other.id].lane) * (target_lane - old[other.id].lane) < 0: target_lane = c.lane
+		if absf(longitudinal) < 7:
+			var separation: float = c.lane - old[other.id].lane
+			var clearance = TrackGeometry.PRESETS[track.preset].width + 0.25
+			# Keep occupied lanes separated without ever displacing an already overlapping car.
+			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
+			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * 1.8)
 	var limits = TrackGeometry.PRESETS[track.preset]
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
@@ -325,13 +332,23 @@ func move_car(c: Dictionary, old: Array) -> void:
 	if must_pit:
 		if c.pit_gate <= c.distance: plan_pit_gate(c)
 		desired = minf(desired, sqrt(track.pit_limit ** 2 + 2.0 * brake * maxf(0, c.pit_gate - c.distance - 5)))
+	# A wet/worn car must brake *before* the corner, not chase a dry envelope through it.
+	var lookahead = minf(300, c.speed * c.speed / (2 * brake) + 25)
+	var scan = 15.0
+	while scan <= lookahead:
+		var future = track.sample(c.distance + scan / s.path_scale)
+		var corner_speed = minf(limits.top, sqrt(maxf(3, limits.lat * g) / maxf(0.00001, absf(future.curvature))))
+		desired = minf(desired, sqrt(corner_speed * corner_speed + 2 * brake * scan))
+		scan += 20
+	if phase == "qualifying" and c.qual_state == "hotlap" and neutral(c):
+		c.hot_valid = false; c.invalid_reason = "Neutralized sector during the flying lap"
 	var old_speed = c.speed
 	c.speed = move_toward(c.speed, maxf(0, desired), STEP * (accel if desired > c.speed else brake))
-	var next = c.distance + c.speed * STEP
+	var next = c.distance + c.speed * STEP / s.path_scale
 	if nearest_id >= 0 and (neutral(c) or absf(c.lane - old[nearest_id].lane) < 2.6):
 		# Snapshot-based longitudinal constraint: never teleport ahead through a car.
-		var limit = c.distance + ahead_distance - 6.2 + old[nearest_id].speed * STEP
-		if next > limit: next = maxf(c.distance, limit); c.speed = maxf(0, (next - c.distance) / STEP)
+		var limit = c.distance + ahead_distance - 6.2 + old[nearest_id].speed * STEP / maxf(0.1, track.sample(old[nearest_id].distance).path_scale)
+		if next > limit: next = maxf(c.distance, limit); c.speed = maxf(0, (next - c.distance) * s.path_scale / STEP)
 	if phase == "formation":
 		var goal = track.length - (c.grid - 1) * track.grid_spacing
 		if next >= goal - 0.2:
@@ -340,17 +357,19 @@ func move_car(c: Dictionary, old: Array) -> void:
 	if must_pit and next >= gate:
 		next = gate
 		c.pit_cycle = int(round((gate - track.pit_entry) / track.length)); c.pit_d = 0.0; c.pit_stage = "entry"; c.route = "pit"
-		c.speed = minf(c.speed, track.pit_limit)
+		c.speed = minf(c.speed, track.pit_limit); c.pit_lap = true; c.yield_to = -1; c.blue = false
 		post("pit", c.short + " enters the pit lane.")
+	c.throttle = clampf((c.speed - old_speed) / maxf(0.001, STEP * accel), 0, 1)
+	c.braking = clampf((old_speed - c.speed) / maxf(0.001, STEP * brake), 0, 1)
 	var moved = maxf(0, next - c.distance)
 	var old_distance = c.distance
 	c.distance = next
-	wear_car(c, moved, cell)
+	wear_car(c, moved * s.path_scale, cell)
 	if phase == "race": race_crossings(c, old_distance, next)
 	elif phase == "qualifying": qualifying_crossings(c, old_distance, next)
-	if passing and nearest_id >= 0 and ahead_distance < moved - old[nearest_id].speed * STEP and phase == "race":
+	if passing and nearest_id >= 0 and ahead_distance < moved - old[nearest_id].speed * STEP / track.sample(old[nearest_id].distance).path_scale and phase == "race":
 		stats.passes += 1; post("pass", "%s passes %s on track." % [c.short, cars[nearest_id].short])
-	c.intent = "Blue flag · yielding" if c.blue else ("Pit this lap" if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if phase == "qualifying" else "Racing")))
+	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if phase == "qualifying" else "Racing")))
 	if phase == "race" and intensity != "calm" and not neutral(c) and c.route == "track":
 		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + water[cell] * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
 		if random_value() < risk * STEP * (2.2 if intensity == "volatile" else 1): incident(c)
@@ -374,18 +393,31 @@ func wear_car(c: Dictionary, distance: float, cell: int) -> void:
 	if c.fuel <= 0.00001 and phase == "race": retire(c, "Out of fuel")
 
 func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
+	if c.qual_state == "hotlap":
+		var base_lap = int(floor(before / track.length))
+		for i in range(3):
+			var gate: float = base_lap * track.length + track.sector_ends[i]
+			if before < gate and after >= gate:
+				var at = clock - STEP * (after - gate) / maxf(0.000001, after - before)
+				c.qual_sectors[i] = maxf(0, at - c.qual_sector_start); c.qual_sector_start = at
+				c.sectors = c.qual_sectors.duplicate()
 	if floor(before / track.length) == floor(after / track.length): return
 	var boundary = floor(after / track.length) * track.length
 	var crossed_at = clock - STEP * (after - boundary) / maxf(0.000001, after - before)
 	if c.qual_state == "outlap":
 		if qual_closed: c.qual_state = "inlap"
-		else: c.qual_state = "hotlap"; c.hot_start = crossed_at; c.hot_valid = true
+		else:
+			c.qual_state = "hotlap"; c.hot_start = crossed_at; c.hot_valid = true
+			c.invalid_reason = ""; c.qual_sectors = [0.0, 0.0, 0.0]; c.qual_sector_start = crossed_at
 	elif c.qual_state == "hotlap":
 		var time = crossed_at - c.hot_start
+		c.qual_history.append({"run": c.qual_runs, "time": time, "sectors": c.qual_sectors.duplicate(), "valid": c.hot_valid, "reason": c.invalid_reason, "compound": c.compound})
+		if c.qual_history.size() > 100: c.qual_history.pop_front()
 		if c.hot_valid and time > 1:
-			c.qual_laps += 1
+			c.qual_laps += 1; c.last_lap = time
 			if c.qual_best == 0 or time < c.qual_best: c.qual_best = time
 			post("lap", "%s sets %s in qualifying." % [c.short, format_time(time)])
+		else: post("lap", "%s flying lap invalid: %s." % [c.short, c.invalid_reason])
 		c.qual_state = "inlap"; c.pit_gate = -1.0
 
 func finish_qualifying() -> void:
@@ -399,32 +431,42 @@ func leave_garage(c: Dictionary) -> void:
 	c.distance = track.pit_entry + (track.pit_exit - track.pit_entry) * c.pit_d / track.pit_length
 	post("qualifying", "%s leaves the garage for run %d." % [c.short, c.qual_runs])
 
-func update_pit(c: Dictionary) -> void:
+func update_pit(c: Dictionary, old: Array = []) -> void:
 	var before = c.distance
 	var previous_pit_d = c.pit_d
-	c.intent = "Crew servicing tyres and damage" if c.pit_stage == "service" else "Pit lane · speed limiter active"
+	c.intent = ("Crew fitting tyres and repairing damage" if c.service_repair else "Crew fitting tyres") if c.pit_stage == "service" else "Pit lane · speed limiter active"
 	if c.pit_stage == "entry" and c.pit_d >= c.box_d:
 		c.pit_d = c.box_d; c.speed = 0.0
 		if phase == "qualifying":
 			c.route = "garage"; c.qual_state = "garage"; c.next_qual = clock + 18; c.pit_stage = ""
 			post("qualifying", c.short + " back in the garage."); return
 		if not pit_boxes.has(c.team):
-			pit_boxes[c.team] = c.id; c.pit_stage = "service"; c.pit_timer = 3.0 + random_value() * 1.5 + c.damage * 0.14
+			pit_boxes[c.team] = c.id; c.pit_stage = "service"; c.service_compound = c.next_compound; c.service_repair = c.repair; c.pit_timer = 3.0 + random_value() * 1.5 + (c.damage * 0.14 if c.service_repair else 0.0)
 		else: c.intent = "Waiting for teammate's pit box"; return
 	if c.pit_stage == "service":
 		c.speed = 0.0; c.pit_timer -= STEP
 		if c.pit_timer <= 0:
-			c.compound = c.next_compound; c.tyre = 100.0; c.temperature = 60.0; c.damage = 0.0
+			c.compound = c.service_compound; c.tyre = 100.0; c.temperature = 60.0
+			if c.service_repair: c.damage = 0.0
 			c.pit_stops += 1; stats.pits += 1; c.pit_stage = "exit"; pit_boxes.erase(c.team)
 			post("pit", "%s serviced · %s tyres." % [c.short, c.compound])
 		return
-	c.speed = move_toward(c.speed, track.pit_limit, STEP * 5)
+	var target = track.pit_limit
+	if c.pit_stage == "entry": target = minf(target, sqrt(2 * 8 * maxf(0, c.box_d - c.pit_d)))
+	c.speed = move_toward(c.speed, target, STEP * (5 if target > c.speed else 8))
 	var next = minf(track.pit_length, c.pit_d + c.speed * STEP)
 	if c.pit_stage == "entry": next = minf(next, c.box_d)
-	# Lane queue and merge holds do not move the car to another route.
+	# Use the same pre-tick snapshot as on-track movement. Do not step through a queue.
 	for other in cars:
-		if other.id != c.id and other.route == "pit" and other.pit_stage != "service" and other.pit_d > c.pit_d and other.pit_d - c.pit_d < 7:
-			next = c.pit_d; c.speed = 0.0
+		if other.id == c.id or other.dnf: continue
+		var state: Dictionary = old[other.id] if old.size() == cars.size() else other
+		if state.route != "pit" or state.pit_stage == "service": continue
+		var gap: float = state.pit_d - previous_pit_d
+		if gap > 0.001 and gap < 30:
+			var limit: float = state.pit_d - 6.5
+			if next > limit:
+				next = maxf(previous_pit_d, limit); c.speed = maxf(0, (next - previous_pit_d) / STEP)
+				c.intent = "Pit lane · queue ahead"
 	if next >= track.pit_length:
 		var safe = true
 		for other in cars:
@@ -437,7 +479,7 @@ func update_pit(c: Dictionary) -> void:
 	c.distance = c.pit_cycle * track.length + track.pit_entry + (track.pit_exit - track.pit_entry) * c.pit_d / track.pit_length
 	if phase == "race": race_crossings(c, before, c.distance)
 	if next >= track.pit_length:
-		c.route = "track"; c.pit_stage = ""; c.pit_order = false; c.pit_gate = -1.0; c.lane = track.sample(c.distance).line
+		c.route = "track"; c.pit_stage = ""; c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false; c.lane = track.sample(c.distance).line
 		post("pit", c.short + " rejoins on cold tyres.")
 
 func race_crossings(c: Dictionary, before: float, after: float) -> void:
@@ -454,9 +496,11 @@ func race_crossings(c: Dictionary, before: float, after: float) -> void:
 	var boundary = c.completed * track.length
 	var crossed_at = clock - STEP * (after - boundary) / maxf(0.000001, after - before)
 	c.last_lap = crossed_at - c.lap_start; c.lap_start = crossed_at
-	if c.best_lap == 0 or c.last_lap < c.best_lap: c.best_lap = c.last_lap
-	if fastest == 0 or c.last_lap < fastest: fastest = c.last_lap
-	c.history.append({"lap": c.completed, "time": c.last_lap, "compound": c.compound, "pit_lap": c.route == "pit"})
+	if not c.pit_lap and (c.best_lap == 0 or c.last_lap < c.best_lap): c.best_lap = c.last_lap
+	if not c.pit_lap and (fastest == 0 or c.last_lap < fastest): fastest = c.last_lap
+	c.history.append({"lap": c.completed, "time": c.last_lap, "compound": c.compound, "pit_lap": c.pit_lap, "sectors": c.sectors.duplicate()})
+	c.pit_lap = c.route == "pit"
+	if c.history.size() > 110: c.history.pop_front()
 	c.crossed_at = crossed_at
 
 func resolve_finishes() -> void:
@@ -473,17 +517,21 @@ func resolve_finishes() -> void:
 	pending.sort_custom(func(a, b): return a.crossed_at < b.crossed_at if a.crossed_at != b.crossed_at else a.grid < b.grid)
 	for c in pending:
 		finish_count += 1; c.finished = true; c.finish_position = finish_count; c.finish_time = c.crossed_at; c.speed = 0.0
-		post("finish", "%s finishes P%d." % [c.short, finish_count])
+		post("finish", "%s takes the chequered flag after %d laps." % [c.short, c.completed])
+	var classified = standings()
+	for i in range(classified.size()):
+		if classified[i].finished: classified[i].finish_position = i + 1
 
 func queue_pit(c: Dictionary) -> void:
 	c.pit_order = true
 	plan_pit_gate(c)
 
 func plan_pit_gate(c: Dictionary) -> void:
+	c.pit_deferred = false
 	c.pit_gate = (floor((c.distance - track.pit_entry) / track.length) + 1) * track.length + track.pit_entry
 	var stopping = maxf(0, c.speed ** 2 - track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[track.preset].brake * 0.5) + 8
 	if c.pit_gate - c.distance < stopping:
-		c.pit_gate += track.length
+		c.pit_gate += track.length; c.pit_deferred = true
 		post("pit", c.short + ": too late to brake safely; pit entry deferred one lap.")
 
 func incident(c: Dictionary) -> void:
@@ -492,10 +540,10 @@ func incident(c: Dictionary) -> void:
 	if outcome < 0.08:
 		retire(c, "Barrier impact"); flag = "SAFETY CAR"; flag_until = clock + 38; post("flag", "Safety car deployed for a stranded car.")
 	elif outcome < 0.18 and c.health < 95:
-		retire(c, "Mechanical failure"); flag = "YELLOW"; yellow_sector = int(fposmod(c.distance / track.length, 1) * 3); flag_until = clock + 22
+		retire(c, "Mechanical failure"); flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 22
 	else:
 		c.loss = 3 + random_value() * 7; c.tyre = maxf(0, c.tyre - 5); c.damage += 4 + random_value() * 10
-		flag = "YELLOW"; yellow_sector = int(fposmod(c.distance / track.length, 1) * 3); flag_until = clock + 18
+		flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 18
 		post("incident", c.short + " spins. Local yellow; car recovering.")
 
 func retire(c: Dictionary, reason: String) -> void:
@@ -511,9 +559,11 @@ func standings(qualifying: bool = false) -> Array:
 				if a.qual_best == b.qual_best: return a.grid < b.grid
 				return a.qual_best > 0
 			return a.qual_best < b.qual_best
-		if a.finished != b.finished: return a.finished
-		if a.finished: return a.finish_position < b.finish_position
 		if a.dnf != b.dnf: return not a.dnf
+		if a.finished and b.finished:
+			if a.completed != b.completed: return a.completed > b.completed
+			if a.finish_time != b.finish_time: return a.finish_time < b.finish_time
+			return a.grid < b.grid
 		if absf(a.distance - b.distance) < 0.0001: return a.grid < b.grid
 		return a.distance > b.distance)
 	return order
@@ -529,18 +579,29 @@ func car_position(c: Dictionary, alpha: float = 1.0) -> Dictionary:
 	return s
 
 func snapshot() -> Dictionary:
-	return {"kind": "motorsport-manager-weekend", "version": 1, "track": track.document, "vehicle": track.preset, "cars": cars.duplicate(true), "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
+	return {"kind": "motorsport-manager-weekend", "version": 2, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": cars.duplicate(true), "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
 
 static func restore(data: Dictionary) -> RaceSim:
-	if data.get("kind") != "motorsport-manager-weekend" or data.get("version") != 1: return null
+	if data.get("kind") != "motorsport-manager-weekend" or (data.get("version") != 1 and data.get("version") != 2): return null
 	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return null
 	if data.get("phase") not in ["briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return null
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return null
+	data = data.duplicate(true)
+	if data.version == 1:
+		for c in data.cars:
+			if not c is Dictionary: return null
+			c.merge(CAR_V2.duplicate(true))
+			# Legacy service had no frozen plan: retain its accepted next compound/repair choice.
+			c.service_compound = c.get("next_compound", "M"); c.service_repair = c.get("repair", true)
+			c.pit_lap = c.get("route") == "pit"
+	if not RaceCheckpoint.valid(data): return null
 	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula")))
 	var baseline = sim.cars
 	for i in range(12):
 		var c = data.cars[i]
 		if not c is Dictionary or c.get("id") != i: return null
+		for identity in ["short", "name", "team", "color", "number", "player"]:
+			if c.get(identity) != baseline[i][identity]: return null
 		for key in baseline[i]:
 			if not c.has(key): return null
 			var expected = baseline[i][key]
@@ -563,9 +624,38 @@ static func restore(data: Dictionary) -> RaceSim:
 	if sim.speed not in [1, 2, 4, 8, 16] or sim.laps < 1 or sim.laps > 100: return null
 	sim.cars = data.cars.duplicate(true)
 	for c in sim.cars:
-		for key in ["id", "grid", "pace", "engine", "qual_runs", "qual_laps", "completed", "pit_cycle", "pit_stops", "finish_position", "setup"]: c[key] = int(c[key])
+		for key in ["id", "grid", "pace", "engine", "qual_runs", "qual_laps", "completed", "pit_cycle", "pit_stops", "finish_position", "setup", "yield_to"]: c[key] = int(c[key])
 	return sim
 
 static func format_time(value: float) -> String:
 	if value <= 0: return "—"
 	return "%d:%06.3f" % [int(value / 60), fmod(value, 60)]
+
+func update_yield(c: Dictionary, old: Array) -> float:
+	# Hysteresis keeps a courtesy manoeuvre stable until the priority car has cleared.
+	if neutral(c) or c.route != "track": c.yield_to = -1
+	if c.yield_to >= 0:
+		var other = cars[c.yield_to]
+		var signed_gap = fposmod(old[other.id].distance - old[c.id].distance + track.length * 0.5, track.length) - track.length * 0.5
+		if other.dnf or other.finished or old[other.id].route != "track" or signed_gap > 18 or signed_gap < -220 or total_time - c.yield_clock > 20 or phase == "qualifying" and old[other.id].qual_state != "hotlap":
+			c.yield_to = -1
+	if c.yield_to < 0 and not neutral(c):
+		var closest = 150.0
+		for other in cars:
+			if other.id == c.id or other.dnf or other.finished or old[other.id].route != "track": continue
+			var gap = fposmod(old[c.id].distance - old[other.id].distance, track.length)
+			var courtesy = phase == "qualifying" and c.qual_state in ["outlap", "inlap"] and old[other.id].qual_state == "hotlap"
+			var lapped = phase == "race" and old[other.id].distance - old[c.id].distance > track.length * 0.65
+			var closing: float = old[other.id].speed - old[c.id].speed
+			if gap > 0.01 and gap < closest and (courtesy or lapped) and closing > -0.5 and (gap < 45 or gap / maxf(0.1, closing) < 7):
+				closest = gap; c.yield_to = other.id; c.yield_clock = total_time
+				c.yield_side = -1.0 if old[other.id].lane >= 0 else 1.0
+	var s = track.sample(c.distance)
+	return c.yield_side * maxf(0, s.w * 0.5 - 1.5) if c.yield_to >= 0 else s.line
+
+func pit_status(c: Dictionary) -> String:
+	if c.route == "pit":
+		if c.pit_stage == "service": return "Fitting %s · %.1f s remaining\n%s" % [c.service_compound, maxf(0, c.pit_timer), "Repairs included" if c.service_repair else "Tyres only"]
+		return c.intent
+	if not c.pit_order: return "No pit stop ordered"
+	return "%s · entry in %.2f lap" % ["Deferred to next entry" if c.pit_deferred else "Pit crew ready", maxf(0, c.pit_gate - c.distance) / track.length]

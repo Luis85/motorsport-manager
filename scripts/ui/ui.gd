@@ -38,6 +38,14 @@ static func theme() -> Theme:
 	t.set_constant("v_separation", "Tree", 10)
 	t.set_constant("separation", "VBoxContainer", 10)
 	t.set_constant("separation", "HBoxContainer", 10)
+	for type in ["TabContainer", "TabBar"]:
+		t.set_stylebox("tab_selected", type, box(CARD, ACCENT, 4, 9))
+		t.set_stylebox("tab_unselected", type, box(PANEL, LINE, 4, 9))
+		t.set_stylebox("tab_hovered", type, box(Color("253a45"), MUTED, 4, 9))
+		t.set_color("font_selected_color", type, ACCENT)
+		t.set_color("font_unselected_color", type, MUTED)
+		t.set_font_size("font_size", type, 12)
+	t.set_stylebox("panel", "TabContainer", box(PANEL, LINE, 4, 4))
 	return t
 
 static func label(text: String, size: int = 15, color: Color = INK) -> Label:
@@ -51,7 +59,7 @@ static func paragraph(text: String, color: Color = MUTED) -> Label:
 static func button(text: String, callback: Callable, primary: bool = false) -> Button:
 	var b = Button.new(); b.text = text; b.custom_minimum_size.y = 40; b.pressed.connect(callback)
 	if primary:
-		b.add_theme_stylebox_override("normal", box(ACCENT, ACCENT)); b.add_theme_color_override("font_color", BG)
+		b.add_theme_stylebox_override("normal", box(ACCENT, ACCENT, 6, 10)); b.add_theme_color_override("font_color", BG)
 		b.add_theme_color_override("font_hover_color", ACCENT)
 	return b
 
