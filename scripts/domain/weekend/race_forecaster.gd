@@ -7,7 +7,9 @@ const MAX_AGE = 5.0
 static func fuel_margin(sim: RaceSim, car: Dictionary) -> float:
 	var remaining = maxf(0, sim.laps - maxf(0, car.distance) / sim.track.length) if sim.phase in ["race", "results"] else float(sim.laps)
 	var formation = 0.6 if sim.phase in ["briefing", "qualifying", "qualifying_results", "race_preparation"] else (0.6 * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
-	return car.fuel - remaining * [0.84, 1.0, 1.14][car.engine] - formation
+	# Qualifying has a separate four-lap fuel load. Do not call it a race shortfall.
+	var available = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["qualifying", "qualifying_results"] else float(car.fuel)
+	return available - remaining * [0.84, 1.0, 1.14][car.engine] - formation
 
 static func reachable_gate(sim: RaceSim, car: Dictionary) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
@@ -20,7 +22,7 @@ static func reachable_gate(sim: RaceSim, car: Dictionary) -> Dictionary:
 static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> String:
 	var c = sim.cars[driver_id]
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
-		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), reachable_gate(sim, c).distance, revision]
+		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision]
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
 		facts.append([other.id, other.route, other.pit_stops, other.dnf, other.finished])
@@ -32,6 +34,8 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	var own: Dictionary = {}
 	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
+	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
+	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["qualifying", "qualifying_results"] else float(c.fuel)
 	own.wear = RaceSim.TYRES[c.compound].wear * [0.78, 1.0, 1.25][c.pace] * 1.05
 	if not c.stints.is_empty():
 		var stint = c.stints.back()
@@ -78,7 +82,7 @@ static func replacement(s: Dictionary) -> Dictionary:
 	elif wanted in ["I", "W"]: wanted = "M"
 	var best: Dictionary = {}
 	for item in s.own.inventory:
-		if item.id == s.own.set_id or not WheelTyres.usable(item): continue
+		if item.id == s.own.starting_set or not WheelTyres.usable(item): continue
 		if item.id == s.own.next_set_id: return item
 		if item.compound != wanted: continue
 		if best.is_empty() or item.life > best.life: best = item
@@ -127,16 +131,37 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var match_factor = maxf(0.4, 1 - maxf(0, wet - 0.07) * 0.85)
 	if compound == "I": match_factor = 0.88 + wet * 0.2 - maxf(0, wet - 0.72) * 0.7
 	elif compound == "W": match_factor = 0.77 + wet * 0.33
-	var wheel = {"surface": WheelTyres.OPTIMUM[compound], "core": WheelTyres.OPTIMUM[compound], "life": maxf(0, life), "grain": 0, "blister": 0, "flat": 0, "punctured": false}
-	var grip = WheelTyres.grip_wheel(wheel, compound) * RaceSim.TYRES[compound].grip * match_factor
+	var wheel_grip = 0.0
+	for key in WheelTyres.KEYS:
+		var wheel = item.wheels[key].duplicate()
+		wheel.life = maxf(0, wheel.life - maxf(0, item.life - life))
+		# The coarse stint model assumes working temperature after a separately priced
+		# warm-up. Retained wear, flat spots, grain, blistering and punctures are real.
+		wheel.surface = WheelTyres.OPTIMUM[compound]; wheel.core = wheel.surface
+		wheel_grip += WheelTyres.grip_wheel(wheel, compound)
+	var grip = wheel_grip * 0.25 * RaceSim.TYRES[compound].grip * match_factor
 	var handling = (1 + (s.own.skill - 85) * 0.002) * [0.988, 1.0, 1.01][s.own.pace] * [0.974, 1.0, 1.014][s.own.engine]
-	return s.reference_lap / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003))
+	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * 0.00035
+	return s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003))
+
+static func limiting_life(item: Dictionary, average_life: float) -> float:
+	var minimum = 100.0
+	for key in WheelTyres.KEYS:
+		var wheel = item.wheels[key]
+		minimum = minf(minimum, 0.0 if wheel.punctured else maxf(0, wheel.life - maxf(0, item.life - average_life)))
+	return minimum
 
 static func evaluate_candidate(s: Dictionary, id: String, title: String, stops: Array) -> Dictionary:
-	var current = set_by_id(s, s.own.set_id)
-	var life = float(s.own.tyre)
+	var current = set_by_id(s, s.own.starting_set)
+	if current.is_empty(): return {"id": id, "title": title, "available": false, "reason": "The starting set is unavailable."}
+	var life = float(current.life)
+	var used_sets = [current.id]
+	var last_stop = -1.0
+	for stop in stops:
+		if stop.at <= last_stop or stop.at >= s.laps or stop.set_id in used_sets: return {"id": id, "title": title, "available": false, "reason": "The proposed stops are not ordered or reuse the same tyre set."}
+		last_stop = stop.at; used_sets.append(stop.set_id)
 	var progress = maxf(0, s.own.distance / s.length) if s.phase == "race" else 0.0
-	var seconds = 0.0; var index = 0; var minimum_life = life
+	var seconds = 0.0; var index = 0; var minimum_life = limiting_life(current, life)
 	var traffic_cost = 0.0; var pit_cost = 0.0; var warmup = 0.0
 	while progress < s.laps - 0.00001:
 		if index < stops.size() and progress >= stops[index].at - 0.00001:
@@ -153,7 +178,7 @@ static func evaluate_candidate(s: Dictionary, id: String, title: String, stops: 
 		if current.id == s.own.set_id: wear = s.own.wear
 		if current.compound in ["I", "W"] and s.water < 0.15: wear *= 2.2
 		seconds += lap_time(s, current, life - wear * step * 0.5) * step
-		life = maxf(0, life - wear * step); minimum_life = minf(minimum_life, life); progress += step
+		life = maxf(0, life - wear * step); minimum_life = minf(minimum_life, limiting_life(current, life)); progress += step
 	seconds += pit_cost + warmup + traffic_cost
 	var uncertainty = maxf(3, seconds * 0.06) + stops.size() * 2.25 + traffic_cost
 	var risk = "high" if minimum_life < 10 or s.fuel_margin < 0 else ("moderate" if minimum_life < 25 else "lower")
@@ -169,22 +194,30 @@ static func evaluate(s: Dictionary) -> Dictionary:
 		if not item.is_empty(): planned.append({"at": s.own.pit_gate / s.length, "set_id": item.id})
 	else:
 		for stop in s.plan.get("stops", []):
-			var at = float(stop.from_lap - 1) + s.pit_entry / s.length
-			if at >= progress: planned.append({"at": at, "set_id": stop.set_id})
+			var at = maxf(float(stop.from_lap - 1) + s.pit_entry / s.length, s.gate.distance / s.length)
+			var latest = float(stop.to_lap - 1) + s.pit_entry / s.length
+			if at <= latest and at >= progress: planned.append({"at": at, "set_id": stop.set_id})
 	var options: Array = [evaluate_candidate(s, "current", "Keep current plan", planned)]
+	if s.own.route == "pit": options = [{"id": "current", "title": "Physical pit visit in progress", "available": false, "reason": "Service is committed. Compare future stints after rejoining."}]
 	var replacement_set = replacement(s)
 	var pit = pit_prediction(s)
-	if not replacement_set.is_empty() and s.gate.lap < s.laps and s.own.route == "track":
+	if not replacement_set.is_empty() and s.gate.distance < s.laps * s.length and s.own.route == "track":
 		var now = s.gate.distance / s.length
 		var later = minf(s.laps - 2 + s.pit_entry / s.length, now + 2)
-		options.append(evaluate_candidate(s, "box", "Stop at next safe entry", [{"at": now, "set_id": replacement_set.id}]))
-		if later > now: options.append(evaluate_candidate(s, "extend", "Extend two laps", [{"at": later, "set_id": replacement_set.id}]))
+		var box_stops: Array = [{"at": now, "set_id": replacement_set.id}]
+		var extend_stops: Array = [{"at": later, "set_id": replacement_set.id}]
+		# Compare a revised first stop, preserving subsequent authorized stints.
+		for i in range(1, planned.size()):
+			if planned[i].set_id != replacement_set.id and planned[i].at > now: box_stops.append(planned[i])
+			if planned[i].set_id != replacement_set.id and planned[i].at > later: extend_stops.append(planned[i])
+		options.append(evaluate_candidate(s, "box", "Stop at next safe entry", box_stops))
+		if later > now: options.append(evaluate_candidate(s, "extend", "Extend two laps", extend_stops))
 	for option in options:
 		if option.available: option.gain = options[0].get("seconds", option.seconds) - option.seconds
 	return {"tick": s.tick, "time": s.time, "key": s.key, "driver_id": int(s.own.id), "model_version": MODEL_VERSION,
 		"scope": s.scope, "options": options, "pit": pit, "gate": s.gate, "replacement_id": replacement_set.get("id", ""),
 		"fuel_margin": s.fuel_margin, "assumptions": ["Estimate, not a calibrated probability band.", "Observed rival pace continues; unknown rival stops may change rejoin order.",
-			"Current water persists; future weather is not available to this model.", "Coarse thermal/wear model, no prediction of incidents or exact finishing position.", "Remaining-time estimates include each additional stop's full net pit loss."]}
+			"Current water persists; future weather is not available to this model.", "Current pace and engine modes are held for comparison; future owner responses and override handback are not predicted.", "Working-temperature approximation retains all four wheels’ damage; warm-up is priced separately. No incident or exact finishing-position prediction.", "Remaining-time estimates include each additional stop's full net pit loss."]}
 
 static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool:
 	if forecast.is_empty(): return true
