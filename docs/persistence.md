@@ -19,7 +19,7 @@ Native checkpoints use a versioned schema and contain a copied track document, v
 
 The checkpoint is written by **Save**, on phase transitions, and when leaving a weekend for the menu. Closing the app with a live weekend also saves. An active session loaded from disk is paused until resumed. The in-memory **Continue Weekend** action retains the already-loaded model. Editing the library cannot alter a checkpoint's embedded geometry.
 
-New checkpoints use native **version 3**, including finite set inventories, fitted/planned/frozen-service set identities, one scheduled stop and stint history. Native versions 1 and 2 are accepted. Version 1 first receives the earlier split/courtesy/service defaults; both legacy versions initialize missing stock while retaining fitted aggregate tread and temperature. Historical discarded-set usage was not stored and cannot be reconstructed. This is a data migration, not a promise to reproduce the previous engine’s future lap times. Authoring documents remain version 1 with optional visual metadata.
+New checkpoints use native **version 4**, including finite set inventories, fitted/planned/frozen-service set identities, one scheduled stop and stint history. Native versions 1, 2 and 3 are accepted. Version 1 first receives the earlier split/courtesy/service defaults; versions 1/2 initialize missing stock while retaining fitted aggregate tread and temperature. All pre-v4 saves initialize individual wheels, five-field setup and lateral surface cells from the data actually recorded; missing wheel asymmetry and widthwise history receive explicit defaults. Historical discarded-set usage was not stored and cannot be reconstructed. This is a data migration, not a promise to reproduce the previous engine’s future lap times. Authoring documents remain version 1 with optional visual metadata.
 
 Nested validation covers telemetry shape, sector records, roster identity/ownership, selected driver indices, unique grid positions, command structure, statistics and pit-box owners. Invalid input is rejected before replacing the active session. A snapshot also deep-copies the circuit so modifying exported data cannot mutate a live weekend.
 
@@ -30,3 +30,9 @@ The old HTML/browser localStorage and campaign checkpoints are incompatible and 
 ## Tests and user data
 
 The Python verification harness copies the project without import caches into a temporary directory and gives that copy a unique application name. It also assigns temporary XDG/APPDATA directories. This prevents normal player saves from being reused even when a platform ignores those environment variables. Generated reports are copied back into the real project's `reports/` directory. Tests verify JSON round trips, corrupt/missing files, atomic backup behavior, and bounded-numerical-drift native continuation. The UI test writes a custom circuit and checkpoint only in its isolated application profile.
+
+## Version 4 additions
+
+Snapshots include individual wheel dictionaries, heat-cycle state, fitted setup, racecraft mode, engine/brake temperatures, tyre incident scheduling and all 96×7 surface channels plus their evolution accumulator. Validation rejects malformed shape, bounds, identities and inconsistent derived water/rubber or tyre averages before restoring a live model. Same-build continuation includes RNG and occupied pit-box state; numeric comparison uses the existing declared tolerance.
+
+Guide progress is validated local settings data. Setup drafts, UI selection/locks and unapplied trace strokes are not race checkpoints. A saved authoring document persists committed scenery group strings but not the full transient editor workspace.

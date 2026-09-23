@@ -24,7 +24,7 @@ Disabling delegation allows manual **Send out** and **Recall**. A tyre set can b
 
 ## Pit-wall decisions
 
-**Pace** trades performance against tyre wear: conserve, balanced, push. **Engine** trades speed against fuel use: save, standard, attack. Fuel is expressed in **lap-equivalent units**, not litres. The interface makes remaining fuel and tyre/health state visible. A single cornering-setup slider changes the simplified balance between cornering and straight-line performance; it is not a full setup simulator.
+**Pace** trades performance against tyre wear: conserve, balanced, push. **Engine** trades speed against fuel use: save, standard, attack. Fuel is expressed in **lap-equivalent units**, not litres. The interface makes remaining fuel and tyre/health state visible. Setup & handling now exposes five staged fields: wing, aero balance, suspension, cooling and front brake bias. Apply commits a validated garage batch; front bias has a separate live racing action. Effects are bounded management models, not a full setup simulator.
 
 **Tyre selection** plans a specific driver-owned set or the freshest usable set of a compound. Send out, formation approval or actual pit service performs the fit; selection alone never refreshes wear. S/M/H are dry tyres, I/W intermediates and wets. **Box at next entry** commits a pit request. Calls that cannot be safely reached at the limiter speed are deferred to the next entry opportunity and logged. **Cancel** cancels an uncommitted on-track request. The team shares a pit box, so a teammate may queue. Servicing fits the chosen remaining set at its retained condition, optionally repairs modeled damage according to the frozen service plan, and returns the car through the exit merge. There is no race refueling.
 
@@ -48,7 +48,7 @@ Pause and speed controls are available in active phases. Main-menu navigation sa
 
 The left timing tower keeps the same native rows during refresh. It shows OUT/HOT/IN/BOX qualifying states, explicit BLUE/DNF/FIN states, compounds and timing. Race gaps marked `~` are distance-based estimates, not transponder measurements. Selecting a car does not issue a command; rival cars can be inspected but not managed.
 
-Both player-car selectors stay at the top of the right pit wall. Commands, Telemetry, Radio and Tyres are separate tabs. Send/Recall during qualifying and Box/Cancel during racing stay below those tabs, so scrolling telemetry cannot hide the primary actions. Ordinary commands acknowledge in the footer rather than opening a modal. Closing qualifying requires confirmation because it prevents new flying laps.
+Both player-car selectors stay at the top of the right pit wall. A stable topic selector exposes Commands, Telemetry, Radio, Tyres, Setup & handling and Track surface lab. Tyres has Allocation/Wheels/Stop-plan subpages. Send/Recall during qualifying and Box/Cancel during racing stay below those topics, so scrolling telemetry cannot hide the primary actions. Ordinary commands acknowledge in the footer rather than opening a modal. Closing qualifying requires confirmation because it prevents new flying laps.
 
 Telemetry contains actual sector splits and qualifying-run validity. Track water is an optional map overlay; it visualizes the same longitudinal simulation cells, not a separate cosmetic rain state. Following is damped and released immediately by manual pan/zoom; Fit resets the view.
 
@@ -57,3 +57,9 @@ A pit order reports when a late call must defer to another entry. The chosen set
 ## Finite stock and planned stops
 
 See [Tyres and strategy](tyres-and-strategy.md). Twelve sets per driver retain condition throughout the weekend. The Tyres tab adds an explicit racing-lap stop, actual stint chart and approximate current-rate advice. Cancel a future plan before rescheduling; final-lap and insufficient-lead-distance entries are rejected. Primary pit calls remain visible below the scrolling detail area.
+
+## Inspecting more without hiding the race (0.4)
+
+Expand details trades timing-tower width for inspector space, retaining the map and a collapse action. Individual wheel cards show retained set condition; advisories open tyre details without commanding the car. Radio filters reduce unrelated log entries. Surface laboratory selections/overlays are observational and use authoritative simulation data.
+
+Pit-wall guide reveals real controls and persists its step. Dismiss and resume at any time. It does not automatically pause a running session. Unapplied setup drafts are per-driver UI state, not fitted changes or checkpoint data. See [interaction design](interaction-design.md) and [feature parity](feature-parity.md).

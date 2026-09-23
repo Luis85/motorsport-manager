@@ -56,12 +56,20 @@ Current implementation deliberately uses dictionaries at serialization boundarie
 
 `RacingLine` owns bounded candidate generation and time evaluation. `TrackGeometry` compiles either a lightweight editor preview or an immutable full simulation snapshot. `TrackDiagnostics` consumes that geometry and returns inspectable findings without mutating it; the editor and weekend launcher apply the same blocking rule.
 
-`RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native version 1 receives legacy defaults; versions 1 and 2 migrate missing tyre inventory into version 3 before validation. No browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
+`RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native v1–v3 saves migrate to version 4 before validation: legacy inventory defaults, four-wheel/setup defaults and explicit lateral surface cells preserve recorded data without inventing missing history. No browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
 
 `WeekendView` owns persistent rank-position TreeItems and stable pit controls; its 5 Hz refresh updates values, not control instances. The track surface and moving-car overlays are separate from retained static geometry. All player commands still enter through `RaceSim.command`.
 
 ## Iteration-three modules
 
-`TyreInventory` owns stable twelve-set allocations, retained aggregate condition and plan/mount helpers; `RaceSim` owns physical timing and service transactions. Checkpoint validation includes the new identities and histories. Views can select a plan but cannot mutate stock or fit tyres directly.
+`TyreInventory` owns stable twelve-set allocations, stable inventory identities and plan/mount helpers; `WheelTyres` owns four-contact-patch state and derives aggregate displays; `RaceSim` owns physical timing and service transactions. Checkpoint validation includes the new identities and histories. Views can select a plan but cannot mutate stock or fit tyres directly.
 
 `CircuitWorld` owns retained world-space illustration. Its private seed and cache are independent from `RaceSim`; camera transforms reuse draw commands. `TrackCanvas` owns editing guides and preview, with separate live vehicle/surface overlays. See [Graphics](graphics.md) for caching and visual-only controls.
+
+## Iteration-four modules
+
+`CarSetup` validates the five source-inspired fields and computes bounded handling/thermal effects. `WheelTyres` owns per-set FL/FR/RL/RR state. `RaceSurface` owns the 96×7 multi-channel gameplay field; legacy water/rubber arrays are derived line profiles, not a second authoritative surface. `RaceSim` integrates these during fixed steps and validates checkpoint v4.
+
+`TrackEdit` implements transactional planar selection operations; `TrackSketch` owns connected transient strokes and compiles a candidate authoring document. Neither accesses UI or app state. The editor owns preview/apply/discard and commits history once.
+
+`RacecraftPanel` owns per-driver setup drafts, stable input controls and the wheel dashboard. `SurfaceLab` observes authoritative cells. `ContextGuide` owns UI navigation/highlighting and local progress only. Topic selectors and expandable details change presentation without issuing simulation commands.

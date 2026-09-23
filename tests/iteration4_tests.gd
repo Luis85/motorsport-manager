@@ -9,6 +9,8 @@ func run(harness) -> void:
 	test_sketch()
 	test_surface()
 	test_incident_wheel_integrity()
+	test_emergency_strategy()
+	test_group_identifier_validation()
 
 func check(value: bool, text: String) -> void:
 	h.check(value, "Iteration 4: " + text)
@@ -167,6 +169,7 @@ func test_sketch() -> void:
 
 func test_surface() -> void:
 	var sim = RaceSim.new(h.geometries[7], {"scenario": "wet"}); var grid = sim.surface
+	check(sim.weather_name == "Steady rain", "wet briefing describes its initial weather without needing simulation ticks")
 	check(grid.size() == 96 and grid[0].lanes.size() == 7, "spatial field has 96 stations and seven lateral strips")
 	var col = grid[0]; col.lanes[0].water = 0.8; col.lanes[1].water = 0.2
 	var before = 0.0
@@ -208,3 +211,34 @@ func test_incident_wheel_integrity() -> void:
 	check(not c.dnf and c.loss > 0, "recoverable incident fixture actually spins")
 	check(item.wheels.FL.life == 65 and item.wheels.FR.life == 85 and item.wheels.FL.flat == 11, "incident tread loss preserves existing four-wheel asymmetry and damage")
 	check(TyreInventory.valid(c, race.laps), "incident leaves wheel/aggregate aliases consistent")
+
+func test_emergency_strategy() -> void:
+	var sim = h.blank_race(h.geometries[7], {"laps": 6, "intensity": "calm"})
+	var c = sim.cars[3]
+	c.distance = sim.track.length * 0.05; c.speed = 10; c.auto = true
+	mounted(sim).wheels.FL.punctured = true
+	sim.engineer(c)
+	check(c.pit_order and c.pace == 0 and c.engine == 0, "delegated first-lap puncture queues recovery rather than waiting for ordinary strategy eligibility")
+	check(c.pit_gate > c.distance and c.scheduled_lap == -1, "emergency uses a future safe physical entry")
+	check(WheelTyres.usable(TyreInventory.planned(c, true)), "emergency chooses real usable replacement stock")
+	var events_before = sim.events.size(); var gate_before = c.pit_gate
+	sim.engineer(c)
+	check(sim.events.size() == events_before and c.pit_gate == gate_before, "repeated engineer checks do not spam or move a committed emergency stop")
+	c.pit_order = true; c.scheduled_lap = 4; c.pit_gate = 3 * sim.track.length + sim.track.pit_entry
+	sim.engineer(c)
+	check(c.scheduled_lap == -1 and c.pit_gate < 3 * sim.track.length, "delegated puncture advances a future schedule to the next safe entry")
+	c.auto = false; c.pit_order = false; c.pit_gate = -1; c.scheduled_lap = -1
+	sim.engineer(c)
+	check(not c.pit_order, "manual puncture decisions remain under player control")
+	c.auto = true
+	for item in c.tyre_sets: item.wheels.FL.punctured = true
+	sim.engineer(c)
+	check(not c.pit_order and c.intent.begins_with("No sound"), "exhausted inventory cannot manufacture emergency stock")
+
+func test_group_identifier_validation() -> void:
+	var d = scenery_document()
+	for value in [7, [], {}, "g".repeat(81)]:
+		var invalid = d.duplicate(true); invalid.objects[0].group = value
+		check(not TrackDocument.validate(invalid).is_empty(), "malformed or oversized group IDs are rejected at import")
+	d.objects[0].group = "paddock-a"
+	check(TrackDocument.validate(d).is_empty(), "a valid simple group identifier survives validation")

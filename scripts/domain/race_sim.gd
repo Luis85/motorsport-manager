@@ -60,6 +60,7 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	laps = clampi(int(options.get("laps", 12)), 1, 100)
 	qual_duration = maxf(float(options.get("qual_duration", 480)), track.estimate * 3.5)
 	scenario = options.get("scenario", "changeable")
+	weather_name = "Steady rain" if scenario == "wet" else "Clear skies"
 	intensity = options.get("intensity", "standard")
 	seed_value = int(options.get("seed", 7314)) & 0xffffffff
 	rng_state = seed_value
@@ -294,19 +295,29 @@ func recommended_compound() -> String:
 	return "W" if wet > 0.68 else ("I" if wet > 0.24 else "M")
 
 func engineer(c: Dictionary) -> void:
-	if not c.auto or phase != "race" or c.route != "track": return
+	if not c.auto or phase != "race" or c.route != "track" or c.dnf or c.finished: return
 	var remaining = maxf(0, laps - c.distance / track.length)
-	c.pace = 0 if c.tyre < 30 or flag != "GREEN" else 1
-	c.engine = 0 if c.fuel < remaining * 1.03 else 1
+	var emergency = not WheelTyres.usable(TyreInventory.find(c, c.set_id))
+	c.pace = 0 if emergency or c.tyre < 30 or flag != "GREEN" else 1
+	c.engine = 0 if emergency or c.fuel < remaining * 1.03 else 1
 	var recommended = recommended_compound()
-	if remaining > 0.8 and c.distance > track.length * 0.25 and (not WheelTyres.usable(TyreInventory.find(c, c.set_id)) or c.tyre < 25 or c.compound != recommended and (recommended in ["I", "W"] or c.compound in ["I", "W"]) or c.damage > 24):
-		if not c.pit_order:
-			if TyreInventory.choose(c, recommended, true).is_empty():
-				if c.compound == recommended: return
-				recommended = c.compound
-				if TyreInventory.choose(c, recommended, true).is_empty(): return
-			c.next_compound = recommended; c.next_set_id = ""; queue_pit(c)
-			post("pit", "%s: engineer calls %s tyres." % [c.short, recommended])
+	var ordinary_stop = remaining > 0.8 and c.distance > track.length * 0.25 and (c.tyre < 25 or c.compound != recommended and (recommended in ["I", "W"] or c.compound in ["I", "W"]) or c.damage > 24)
+	if not emergency and not ordinary_stop: return
+	# A failed tyre is not a routine strategy stop: first-lap and late-lap gates
+	# must not suppress recovery. Only delegated control may revise a future stop.
+	if c.pit_order and (not emergency or c.scheduled_lap < 0): return
+	var replacement = TyreInventory.choose(c, recommended, true)
+	if replacement.is_empty(): replacement = TyreInventory.choose(c, c.compound, true)
+	if replacement.is_empty() and emergency:
+		for compound in TYRES:
+			replacement = TyreInventory.choose(c, compound, true)
+			if not replacement.is_empty(): break
+	if replacement.is_empty():
+		c.intent = "No sound replacement available; protecting the car"
+		return
+	c.next_compound = replacement.compound; c.next_set_id = replacement.id
+	c.scheduled_lap = -1; queue_pit(c)
+	post("pit", "%s: engineer calls %s tyres%s." % [c.short, c.next_compound, " for a damaged tyre; next safe entry" if emergency else ""])
 
 func grip(c: Dictionary, _cell: int, local: Dictionary = {}) -> float:
 	if local.is_empty(): local = surface_at(c)

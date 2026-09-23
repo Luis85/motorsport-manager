@@ -9,6 +9,8 @@ var guide: ContextGuide
 var selection_summary: Label
 var sketch_preview_button: Button
 var sketch_apply_button: Button
+var sketch_close_button: Button
+var sketch_actions: VBoxContainer
 var undo_button: Button
 var redo_button: Button
 var tool_picker: OptionButton
@@ -89,7 +91,18 @@ func _ready() -> void:
 	section_picker = UI.option(["Point & selection", "Circuit & pit lane", "Features & scenery", "Reference image", "Checks", "World & layers", "Draw new layout"], func(index): inspector.current_tab = index)
 	side.add_child(section_picker)
 	inspector = TabContainer.new(); inspector.tabs_visible = false; inspector.size_flags_vertical = Control.SIZE_EXPAND_FILL; side.add_child(inspector)
-	inspector.tab_changed.connect(func(index): if index >= 0: section_picker.select(index))
+	inspector.tab_changed.connect(func(index):
+		if index >= 0: section_picker.select(index)
+		if sketch_actions: sketch_actions.visible = index == 6)
+	# Keep the two commit-path actions outside the scrollable authoring fields.
+	sketch_actions = UI.vbox(side); sketch_actions.visible = false
+	var sketch_action_row = UI.hbox(sketch_actions)
+	sketch_preview_button = UI.button("Preview road", preview_sketch)
+	sketch_apply_button = UI.button("Replace road", apply_sketch, true)
+	for button in [sketch_preview_button, sketch_apply_button]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sketch_action_row.add_child(button)
+	var sketch_hint = UI.paragraph("Preview changes nothing. Replace asks for confirmation.")
+	sketch_hint.add_theme_font_size_override("font_size", 12); sketch_actions.add_child(sketch_hint)
 	status = UI.label("", 12, UI.MUTED); add_child(status)
 	recompile(); refresh_inspector(); update_status()
 	setup_guide()
@@ -326,21 +339,18 @@ func refresh_inspector() -> void:
 	trace_tools.add_child(UI.button("Freehand [D]", func(): set_tool(8)))
 	trace_tools.add_child(UI.button("Pen", func(): set_tool(9)))
 	sketch_summary = UI.paragraph(""); sketch_page.add_child(sketch_summary)
-	var history = UI.hbox(sketch_page)
-	history.add_child(UI.button("Undo stroke", func(): canvas.sketch.undo(); invalidate_sketch()))
-	history.add_child(UI.button("Redo stroke", func(): canvas.sketch.redo(); invalidate_sketch()))
-	sketch_page.add_child(UI.button("Close loop", func():
+	sketch_close_button = UI.button("Close loop", func():
 		if canvas.sketch.close_loop(): canvas.pen_anchor = Vector2.INF; invalidate_sketch()
-		else: status.text = "Add at least four trace points before closing."))
+		else: status.text = "Add at least four trace points before closing.")
+	sketch_page.add_child(sketch_close_button)
 	UI.field(sketch_page, "Simplify metres", UI.spin(canvas.sketch.tolerance, 0.2, 50, 0.2, func(value): canvas.sketch.tolerance = value; invalidate_sketch()))
 	UI.field(sketch_page, "Smoothing", UI.spin(canvas.sketch.smoothing, 0, 1, 0.05, func(value): canvas.sketch.smoothing = value; invalidate_sketch()))
 	UI.field(sketch_page, "Road width m", UI.spin(canvas.sketch.width, 5, 40, 0.5, func(value): canvas.sketch.width = value; invalidate_sketch()))
-	sketch_preview_button = UI.button("Preview generated road", preview_sketch); sketch_page.add_child(sketch_preview_button)
-	sketch_apply_button = UI.button("Replace road with preview", apply_sketch, true); sketch_page.add_child(sketch_apply_button)
 	sketch_page.add_child(UI.button("Clear trace", confirm_clear_trace))
 	sketch_page.add_child(UI.paragraph("Replacement clears old pits, features and timing markers because they reference the old layout. Scenery and the reference image remain. Undo restores the complete old document."))
 	inspector.current_tab = clampi(tab, 0, inspector.get_tab_count() - 1)
 	section_picker.select(inspector.current_tab)
+	sketch_actions.visible = inspector.current_tab == 6
 	context_bar.visible = canvas.selection_ids.size() > 1
 	selection_summary.text = "%d selected · %s" % [canvas.selection_ids.size(), canvas.selection_kind]
 	update_sketch_panel()
@@ -560,6 +570,8 @@ func invalidate_sketch() -> void:
 func update_sketch_panel() -> void:
 	if not sketch_summary or not is_instance_valid(sketch_summary): return
 	var points = canvas.sketch.points()
+	sketch_close_button.text = "Loop closed" if canvas.sketch.closed else "Close loop"
+	sketch_close_button.disabled = canvas.sketch.closed or points.size() < 4
 	sketch_summary.text = "%s · %d strokes · %d samples\n%s" % ["CLOSED" if canvas.sketch.closed else "OPEN", canvas.sketch.strokes.size(), points.size(), canvas.sketch_note]
 	if sketch_result.get("ok", false): sketch_summary.text += "\nPreview: %d road points · %.2f km" % [sketch_result.nodes, canvas.sketch_preview.length / 1000]
 	sketch_preview_button.disabled = not canvas.sketch.closed or not canvas.layer_editable("road")

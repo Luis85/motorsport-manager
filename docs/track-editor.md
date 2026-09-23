@@ -26,7 +26,7 @@ At least four points must remain. Keyboard editing shortcuts do not intercept te
 
 **Track** exposes name, vehicle preview preset, start fraction, pit entry/exit, limiter, generated pit lane, and validation feedback. The live status reports length and the selected preset's reference lap estimate. These estimates are not real-world benchmark times.
 
-**Features** places range-based curbs, runoff, barriers, tunnels, and bridges. Their side, span, dimensions, and clearance are retained in the document. Top-down annotations are shown. Tunnel/bridge geometry is not a navigable 3D structure or a certified clearance calculation. Existing source scenery is preserved and rendered. Scenery types can be placed, selected and dragged; the Point inspector exposes position, rotation, scale and deletion. Group editing and collision bodies are not implemented.
+**Features** places range-based curbs, runoff, barriers, tunnels, and bridges. Their side, span, dimensions, and clearance are retained in the document. Top-down annotations are shown. Tunnel/bridge geometry is not a navigable 3D structure or a certified clearance calculation. Existing source scenery is preserved and rendered. Scenery types can be placed, selected and dragged; the Point inspector exposes position, rotation, scale and deletion. Flat scenery groups and multi-selection are implemented; vehicle collision bodies are not.
 
 **Reference** imports PNG/JPG and embeds a bounded PNG in the authoring document. The importer resizes large images to a maximum 2048-pixel edge. Adjust world width, position, and opacity, or drag with Move reference. For calibration, measure a known span, enter its actual distance and choose **Calibrate from ruler**. The image is scaled around the first measurement point without moving the road. There is no network imagery or built-in georeferencing service.
 
@@ -59,3 +59,13 @@ Select/move is still the default. `V`, `I`, `P`, and `M` select move, insertion,
 The **World** inspector selects an illustrative environment and summer/autumn palette, with undoable document changes that do not alter geometry. Road, pits, scenery, features and reference have workspace-local visibility and lock switches. Locked/hidden layers reject direct edits and relevant inspector actions; camera navigation remains available. These switches are not saved in the track document.
 
 **Preview lap** runs a dot along the full baked line/speed envelope without entering a weekend. Geometric edits stop it; the coalesced drag preview is never used as a valid driving profile. This is a heuristic reference, not a traffic/tyre simulation. Grid visibility is independent. New Tent and Cafe scenery types use the same placement/move/rotate/scale workflow as existing props. See [Graphics](graphics.md).
+
+## Multi-selection and trace authoring (0.4)
+
+The inspector uses a topic selector rather than an overflowing tab strip. Use V for road selection, S for scenery selection, Shift-click to extend and empty-space drag for marquee. Context actions expose duplicate/group/ungroup/alignment/delete; Point & selection provides precise rotation, scale and distribution. Group/duplicate apply to scenery. Planar road transforms include handles but retain width/elevation. Invalid edits reject atomically, and each drag has one undo step with Escape rollback.
+
+Use D for Freehand trace or choose Pen trace. Consecutive strokes must connect. Close explicitly, adjust simplification/smoothing and preview the candidate. Only a valid current preview can replace the road, after confirmation. Replacement retains scenery/reference/style and clears obsolete pits/features/timing attachments; one undo restores everything. The original circuit is unchanged before confirmation.
+
+Drawing Undo/Redo targets strokes and closure while drawing. Changes to committed geometry invalidate preview. Unapplied traces block Test weekend/runtime export and are protected by discard/clear confirmation. They remain temporary: Save/Export write committed track data, not the prototype's serialized sketch workspace. Apply or clear a trace before driving. Editor guide can be dismissed, restarted and resumed from its saved step. See [interaction design](interaction-design.md).
+
+**Trace action placement:** Preview road and Replace road remain outside the scrollable inspector at both tested desktop sizes. Closed-loop state is explicit; a closed loop cannot be accidentally closed again to invalidate its preview. The action controls retain identity through inspector rebuilds.

@@ -24,7 +24,7 @@ Neutralization disables normal passing and caps speed. Virtual safety-car runnin
 
 Five compounds have different pace, wear and wet suitability. Wear accumulates with traveled distance and pace; temperature approaches a phase/compound target. Cold, overheated, worn or weather-mismatched tyres lose grip. Engine mode affects consumption, and fuel itself slightly affects speed. Fuel depletion retires a car; pit stops do not refuel it.
 
-Health and modeled damage affect pace and incident exposure. Optional pit servicing repairs the scalar damage model, not an itemized parts inventory. The chosen compound and repair flag lock when service begins; later orders cannot retroactively change that service. The previous HTML engine's separate aero/suspension/brakes/gearbox components, wear histories, stress system are not present here. Finite driver-owned allocations are now implemented with retained aggregate tread and temperature; see [Tyres and strategy](tyres-and-strategy.md).
+Health and modeled damage affect pace and incident exposure. Optional pit servicing repairs the scalar damage model, not an itemized parts inventory. The chosen compound and repair flag lock when service begins; later orders cannot retroactively change that service. The previous HTML engine's separate aero/suspension/brakes/gearbox components, wear histories, stress system are not present here. Finite driver-owned allocations now carry retained individual wheel state with aggregate display aliases; see [Tyres and strategy](tyres-and-strategy.md).
 
 ## Surface and weather
 
@@ -41,3 +41,11 @@ Qualifying uses measured flying-lap and sector crossings. Every completed hot la
 ## Performance boundaries
 
 Track compilation is synchronous and bounded. During a pointer drag, a coalesced approximately 12 m preview omits racing-line solving; a committed edit performs the approximately 4 m full bake. Preview estimates are not race-ready and are never passed directly into a simulation. The maximum-size authoring document is a validation ceiling, not a guarantee of smooth interactive editing on every computer. Normal bundled layouts use 14–250 control points. Track drawing is retained separately from moving cars, and text refreshes at 5 Hz. A native profiler pass on target hardware remains appropriate before claiming a frame-rate guarantee.
+
+## Four-wheel racecraft and lateral surface (0.4)
+
+`WheelTyres` simulates FL/FR/RL/RR tread, surface/core temperature, normalized pressure, load and retained grain/blister/flat/puncture state for each finite set. Outside wheels receive higher corner load and brake bias shifts axle load; these are source-inspired game effects rather than a rigid-body contact solver. Tyre warnings never auto-pause. Delegated puncture recovery uses available stock and the next safe pit gate; manual strategy remains manual.
+
+`CarSetup` supplies wing/balance/suspension/cooling/bias trade-offs. Five-field garage changes are atomic; live front bias is race-only. Patient/balanced/assertive modes modulate passing intent/risk. Temperatures affect the existing scalar condition model, not an itemized component inventory.
+
+`RaceSurface` stores 96 stations ×7 lateral strips for water, rubber, dust, marbles, oil, debris and temperature, with derived grip. Bilinear sampling reads the actual car corridor; deposits follow driven intervals. A 0.25 s accumulator controls rain/drainage/evaporation/washing and conservative lateral transfer. Water/rubber line profiles remain compatibility summaries of this field. Native grid resolution and coefficients differ from the inspected prototype's 128×7 implementation. Graphics preferences never alter the field or PRNG.

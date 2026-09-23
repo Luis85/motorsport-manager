@@ -20,7 +20,7 @@ The suite includes the original 404 assertions plus the targeted scenarios in `t
 - Frame-partition invariance, JSON checkpoint continuation including PRNG/surface state, pause and invalid-checkpoint rejection.
 - No-pass neutralization, blue flags, late pit calls, same-step finish ordering, all-retirement termination and wet/rotated-track/vehicle scenarios.
 
-The native UI smoke test opens the real main scene, visits menus/settings/library/editor, exercises editor history and custom-save/test-return behavior, runs a weekend through all phases, checks classification positions and checkpoint reload, and captures **nineteen screenshots**, including a 1100×720 window. It is an integration/smoke test, not a comprehensive pixel-diff or accessibility audit.
+The native UI smoke test opens the real main scene, visits menus/settings/library/editor, exercises editor history and custom-save/test-return behavior, runs a weekend through all phases, checks classification positions and checkpoint reload, and captures native screenshots of the baseline and iteration-four flows, including a 1100×720 window. It is an integration/smoke test, not a comprehensive pixel-diff or accessibility audit.
 
 ## Iteration-two regressions
 
@@ -42,6 +42,14 @@ In the editor, copy Monaco, manipulate the hairpin/chicane with explicit handles
 
 ## Iteration-three regressions
 
-Tests verify twelve-set allocation and identity, aggregate wear retention, worn-set remounting, actual garage release, scheduled-gate timing, physical servicing, no fresh-set creation on stock exhaustion, v1/v2 migration, v3 numeric continuation and malformed stock. UI checks cover locked-layer no-op edits, style undo, reference-lap preview, stable set buttons, visible pit actions and cached world drawing under camera motion.
+Tests verify twelve-set allocation and identity, aggregate wear retention, worn-set remounting, actual garage release, scheduled-gate timing, physical servicing, no fresh-set creation on stock exhaustion, v1/v2 migration, current native numeric continuation and malformed stock. UI checks cover locked-layer no-op edits, style undo, reference-lap preview, stable set buttons, visible pit actions and cached world drawing under camera motion.
 
 `render-performance.json` records 45 paused-race camera frames, backend name, median/p95 intervals, static regeneration count and static draw reissues. Zero rebuilds/reissues is asserted; observed timing is informational, not a universal FPS threshold. The fixture does not benchmark active 16x racing.
+
+## Iteration-four regression coverage
+
+The domain suite adds four-wheel independence, load/temperature/pressure/blemish effects, heat cycles, worn-set remounts, punctures/manual ownership, batch setup validation, live bias, racecraft values, v4/legacy continuation and malformed inputs. Surface tests cover 96×7 shape, conservative runoff, local contamination and actual-pass drying/rubber. Authoring tests cover atomic group transforms, distribution, fresh duplicated IDs, connected strokes, closure history and generated-track validation.
+
+Native UI tests use real Godot controls and pointer events for Shift/marquee selection, group drag/cancel, duplication, trace preview/apply/cancel/staleness, per-driver staged setup, stable wheel cards, surface-cell selection, guides and 1100×720 reachability. Additional recovery cases cover delegated early punctures, advancing a scheduled stop, avoiding repeated order spam, manual ownership, unavailable stock and malformed group IDs. Do not infer exhaustive visual or accessibility verification from the assertion total.
+
+The generated `verification.json`, `domain-tests.json`, `ui-smoke.json`, logs and PNGs are the authority for this exact run. The **Source project** workflow separately archives tracked files; a successful packaging run does not prove gameplay tests passed. Windows/macOS hands-on and target-GPU live-race performance are not established by Linux software rendering.

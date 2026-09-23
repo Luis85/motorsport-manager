@@ -131,6 +131,7 @@ func run():
 	check(app.save_weekend().is_empty(), "Weekend UI checkpoint saves")
 	app.weekend = null
 	check(app.load_weekend().is_empty() and app.weekend.phase == "results", "Completed weekend resumes from disk")
+	await load("res://tests/iteration4_ui.gd").new().run(self)
 	var report = {"passed": errors.is_empty(), "checks": checks, "errors": errors, "screenshots": screenshots}
 	Storage.write_json("res://reports/ui-smoke.json", report)
 	print("UI_SMOKE ", JSON.stringify(report))
