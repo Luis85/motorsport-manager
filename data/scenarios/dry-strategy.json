@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "notice": "Calibration scenarios, not a claim of balanced or guaranteed outcomes. Ordinary tyre, fuel, pit and driving rules; dry weather; calm (low-incident) mode.",
+  "scenarios": [
+    {
+      "id": "split-dry",
+      "title": "Two routes to the finish",
+      "track": "hillside",
+      "laps": 24,
+      "seed": 7314,
+      "objective": "Bring both cars home; compare an earlier stop with a longer first stint.",
+      "hint": "The starting plans are approved, not forced. Read the rejoin estimate before either window opens; change or clear the plan explicitly.",
+      "plans": [
+        {"driver_id": 3, "starting": "M2", "replacement": "H1", "first": 10, "last": 11, "objective": "balanced"},
+        {"driver_id": 6, "starting": "M2", "replacement": "H1", "first": 14, "last": 15, "objective": "protect_finish"}
+      ]
+    },
+    {
+      "id": "one-box",
+      "title": "Two cars, one box",
+      "track": "hillside",
+      "laps": 24,
+      "seed": 1930,
+      "objective": "Complete both races while managing shared-box exposure.",
+      "hint": "Both approved windows overlap on purpose. Stagger a window, split plans, or accept a physical queue. Priority cannot teleport cars.",
+      "plans": [
+        {"driver_id": 3, "starting": "M2", "replacement": "H1", "first": 12, "last": 13, "objective": "balanced"},
+        {"driver_id": 6, "starting": "M2", "replacement": "H1", "first": 12, "last": 13, "objective": "balanced"}
+      ]
+    },
+    {
+      "id": "track-position",
+      "title": "Protect track position",
+      "track": "monaco",
+      "laps": 12,
+      "seed": 2831,
+      "objective": "Bring both cars home and compare a legal no-stop with a tyre offset.",
+      "hint": "The no-stop car begins on hard tyres. The other car has an approved stop. The geometry and actual race, not the scenario text, determine which works.",
+      "plans": [
+        {"driver_id": 3, "starting": "H1", "objective": "protect_finish"},
+        {"driver_id": 6, "starting": "M2", "replacement": "S1", "first": 7, "last": 8, "objective": "chase_position"}
+      ]
+    },
+    {
+      "id": "late-tyres",
+      "title": "Fresh tyres, little time",
+      "track": "hillside",
+      "laps": 12,
+      "seed": 9941,
+      "objective": "Bring both cars home; decide whether the late stop can repay its full loss.",
+      "hint": "A late stop is deliberately proposed for MOR. It is not guaranteed to be worthwhile. Compare with a no-stop draft and approve the approach you prefer.",
+      "plans": [
+        {"driver_id": 3, "starting": "H1", "objective": "protect_finish"},
+        {"driver_id": 6, "starting": "M2", "replacement": "S1", "first": 10, "last": 10, "objective": "chase_position"}
+      ]
+    }
+  ]
+}
