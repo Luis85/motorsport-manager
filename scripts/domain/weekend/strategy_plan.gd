@@ -9,7 +9,7 @@ static func policy(car: Dictionary) -> Dictionary:
 	for channel in CHANNELS: owners[channel] = "engineer" if car.auto else "player"
 	return {"driver_id": int(car.id), "owners": owners, "overrides": {}, "revision": 0,
 		"plan": {}, "next_stop": 0, "plan_status": "unplanned", "next_review": 0.0,
-		"last_order_id": "", "visit": {}, "held": {}, "blocked_reason": ""}
+		"last_order_id": "", "plan_intent_id": "", "order_forecast": {}, "visit": {}, "held": {}, "blocked_reason": ""}
 
 static func draft(car: Dictionary, laps: int, template: String = "balanced") -> Dictionary:
 	var starting = TyreInventory.planned(car)
@@ -21,7 +21,7 @@ static func draft(car: Dictionary, laps: int, template: String = "balanced") -> 
 			var middle = clampi(roundi(laps * (0.46 if template == "balanced" else 0.62)), 2, laps - 1)
 			stops.append({"from_lap": middle, "to_lap": mini(laps - 1, middle + 1), "set_id": replacement.id})
 	return {"version": 1, "driver_id": int(car.id), "objective": "balanced", "starting_set": starting.id,
-		"stops": stops, "branches": ["avoid_traffic"], "tyre_reserve": 22.0, "fuel_reserve": 0.35}
+		"stops": stops, "branches": ["avoid_traffic"], "tyre_reserve": 22.0, "fuel_reserve": 0.35, "allow_emergency": true}
 
 static func validate(plan: Variant, car: Dictionary, laps: int, current_lap: int = 0, live: bool = true) -> String:
 	if not plan is Dictionary: return "A strategy must be a record."
@@ -35,6 +35,7 @@ static func validate(plan: Variant, car: Dictionary, laps: int, current_lap: int
 	for branch in plan.branches:
 		if branch != "avoid_traffic": return "Unsupported strategy contingency."
 	if not RaceCheckpoint.number(plan.get("tyre_reserve"), 5, 50) or not RaceCheckpoint.number(plan.get("fuel_reserve"), 0, 3): return "Resource targets are outside their supported ranges."
+	if not plan.get("allow_emergency") is bool: return "Declare whether the engineer may recover from a damaged tyre."
 	var last = current_lap - 1
 	var used = [plan.starting_set]
 	for stop in plan.stops:
