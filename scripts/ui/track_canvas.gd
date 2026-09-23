@@ -9,6 +9,14 @@ signal selection_changed
 signal car_selected(id: int)
 signal measured(metres: float)
 var show_surface = false
+var world_layer: CircuitWorld
+var layer_state = {"road": {"visible": true, "locked": false}, "pits": {"visible": true, "locked": false}, "scenery": {"visible": true, "locked": false}, "features": {"visible": true, "locked": false}, "reference": {"visible": true, "locked": false}}
+var preview_running = false
+var preview_distance = 0.0
+var preview_laps = 0
+var preview_elapsed = 0.0
+var dot_scale = 1.0
+var rich_scenery = true
 var selected_object = -1
 var scenery_type = "tree"
 var diagnostics: Array = []
@@ -44,7 +52,7 @@ class CarOverlay extends Control:
 	func _draw():
 		if host != null: host.draw_cars(self)
 	func _process(_delta):
-		if host != null and host.sim != null: queue_redraw()
+		if host != null and (host.sim != null or host.preview_running): queue_redraw()
 
 class SurfaceOverlay extends Control:
 	var host: TrackCanvas
@@ -61,6 +69,11 @@ class SurfaceOverlay extends Control:
 
 func _ready() -> void:
 	clip_contents = true
+	rich_scenery = App.settings.get("scenery_detail", "rich") == "rich"
+	dot_scale = float(App.settings.get("dot_scale", 1.0))
+	world_layer = CircuitWorld.new(); world_layer.show_behind_parent = true; add_child(world_layer)
+	if geometry: world_layer.configure(geometry, document, rich_scenery)
+	world_layer.reference_texture = backdrop; world_layer.reference_visible = editing and layer_visible("reference")
 	mouse_default_cursor_shape = Control.CURSOR_CROSS if editing else Control.CURSOR_ARROW
 	focus_mode = Control.FOCUS_ALL
 	custom_minimum_size = Vector2(300, 300)
@@ -73,16 +86,27 @@ func _ready() -> void:
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
 	geometry = g
+	preview_running = false
 	_rebuild_due = false
 	document = live_document if not live_document.is_empty() else g.document
 	_load_backdrop()
+	if world_layer:
+		world_layer.configure(g, document, rich_scenery)
+		world_layer.reference_texture = backdrop; world_layer.reference_visible = editing and layer_visible("reference")
 	queue_redraw()
 	if overlay: overlay.queue_redraw()
 
 func fit() -> void:
 	if geometry == null or geometry.points.is_empty(): return
-	center = geometry.bounds.get_center()
-	zoom = minf(maxf(100, size.x - 100) / maxf(20, geometry.bounds.size.x), maxf(100, size.y - 150) / maxf(20, geometry.bounds.size.y))
+	var visible_bounds = geometry.bounds
+	for p in geometry.pit_points: visible_bounds = visible_bounds.expand(p)
+	for i in range(6):
+		var station = geometry.pit_sample(geometry.pit_length * (0.30 + i * 0.055))
+		var roof = station.p + station.n * 18
+		visible_bounds = visible_bounds.expand(roof + Vector2(30, 30)).expand(roof - Vector2(30, 30))
+	visible_bounds = visible_bounds.grow(20)
+	center = visible_bounds.get_center()
+	zoom = minf(maxf(100, size.x - 90) / maxf(20, visible_bounds.size.x), maxf(100, size.y - 110) / maxf(20, visible_bounds.size.y))
 	zoom = clampf(zoom, 0.04, 12)
 	queue_redraw()
 
@@ -104,16 +128,24 @@ func _load_backdrop() -> void:
 	if image.load_png_from_buffer(bytes) == OK: backdrop = ImageTexture.create_from_image(image)
 
 func _process(delta: float) -> void:
+	if preview_running and geometry and not geometry.preview_only:
+		var sample = geometry.sample(preview_distance)
+		preview_distance += sample.speed * minf(delta, 0.1) / sample.path_scale
+		preview_elapsed += minf(delta, 0.1)
+		if preview_distance >= geometry.length: preview_distance -= geometry.length; preview_laps += 1
 	_rebuild_clock -= delta
 	if _rebuild_due and _rebuild_clock <= 0 and document.get("nodes", []).size() >= 4:
 		_rebuild_due = false; _rebuild_clock = 0.06
 		geometry = TrackGeometry.new(document, geometry.preset if geometry else "Formula", true)
+		if world_layer: world_layer.configure(geometry, document, rich_scenery)
 		queue_redraw()
 
 func _draw() -> void:
 	if surface_layer: surface_layer.queue_redraw()
 	if overlay: overlay.queue_redraw()
-	draw_rect(Rect2(Vector2.ZERO, size), Color("101d24"))
+	if world_layer:
+		world_layer.position = size * 0.5 - Vector2(center.x, -center.y) * zoom
+		world_layer.scale = Vector2(zoom, -zoom)
 	var font = ThemeDB.fallback_font
 	if show_grid:
 		var grid = 50.0
@@ -122,42 +154,26 @@ func _draw() -> void:
 		var lo = world(Vector2(0, size.y)); var hi = world(Vector2(size.x, 0))
 		var x = floor(lo.x / grid) * grid
 		while x < hi.x:
-			draw_line(screen(Vector2(x, lo.y)), screen(Vector2(x, hi.y)), Color("1a2a32"), 1); x += grid
+			draw_line(screen(Vector2(x, lo.y)), screen(Vector2(x, hi.y)), Color("6d875421"), 1); x += grid
 		var y = floor(lo.y / grid) * grid
 		while y < hi.y:
-			draw_line(screen(Vector2(lo.x, y)), screen(Vector2(hi.x, y)), Color("1a2a32"), 1); y += grid
-	if backdrop != null:
-		var ref = document.reference
-		var w = float(ref.get("width", 1000)); var h = w * backdrop.get_height() / float(backdrop.get_width())
-		var p = Vector2(ref.get("x", 0), ref.get("y", 0))
-		draw_texture_rect(backdrop, Rect2(screen(p + Vector2(-w * 0.5, h * 0.5)), Vector2(w, h) * zoom), false, Color(1, 1, 1, ref.get("opacity", 0.35)))
+			draw_line(screen(Vector2(lo.x, y)), screen(Vector2(hi.x, y)), Color("6d875421"), 1); y += grid
 	if geometry == null or geometry.points.is_empty():
 		draw_string(font, Vector2(36, 70), "Click to lay out your circuit. Add at least four points.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UI.MUTED)
 	else:
-		_draw_scenery()
 		var n = geometry.points.size()
-		_draw_road()
-		for feature in document.get("features", []): _draw_feature(feature)
-		if geometry.pit_points.size() > 1:
-			var route = PackedVector2Array()
-			for p in geometry.pit_points: route.append(screen(p))
-			draw_polyline(route, Color("baaf87"), maxf(3, 6 * zoom), true)
-			draw_polyline(route, Color("4a5050"), maxf(1.5, 4.7 * zoom), true)
-			var box = geometry.pit_sample(geometry.pit_length * 0.5)
-			draw_string(font, screen(box.p + box.n * 24), "PIT LANE", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.ACCENT)
-		if show_line and not geometry.preview_only:
+		if show_line and layer_visible("road") and not geometry.preview_only:
 			for i in range(n):
-				var color = Color("83b79e") if geometry.speeds[i] > 45 else Color("dfaa74")
+				var color = Color("dde6a0") if geometry.speeds[i] > 45 else Color("e2b48d")
 				draw_line(screen(geometry.line_point(i)), screen(geometry.line_point((i + 1) % n)), color, 1.7, true)
 		var start = geometry.sample(0)
 		var left = start.p + start.n * start.w * 0.55
 		var right = start.p - start.n * start.w * 0.55
-		draw_line(screen(left), screen(right), UI.INK, 3, true)
-		draw_string(font, screen(left) + Vector2(7, -7), "START / FINISH", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.INK)
+		draw_string(font, screen(left) + Vector2(7, -7), "START / FINISH", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("2d4b3b"))
 		for sector in range(1, 3):
 			var p = geometry.sample(geometry.sector_ends[sector - 1])
-			draw_circle(screen(p.p), 4, Color("82a7bc"))
-			draw_string(font, screen(p.p) + Vector2(8, -6), "S%d" % sector, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("82a7bc"))
+			draw_circle(screen(p.p), 4, Color("48756c"))
+			draw_string(font, screen(p.p) + Vector2(8, -6), "S%d" % sector, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("48756c"))
 		for marker in document.get("cornerMarkers", []):
 			if not marker.has("x") or not marker.has("y"): continue
 			var p = screen(Vector2(marker.x, marker.y))
@@ -184,55 +200,6 @@ func _draw() -> void:
 	draw_string(font, Vector2(size.x - 36, 36), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.MUTED)
 	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), UI.MUTED, 1.5)
 
-func _draw_road() -> void:
-	var n = geometry.points.size()
-	var left = PackedVector2Array(); var right = PackedVector2Array()
-	for i in range(n):
-		left.append(screen(geometry.points[i] + geometry.normals[i] * geometry.widths[i] * 0.5))
-		right.append(screen(geometry.points[i] - geometry.normals[i] * geometry.widths[i] * 0.5))
-	# Two simple triangles per sample avoid polygon self-intersection in tight hairpins.
-	# No antialiasing on internal edges: there are no segment seams across the asphalt.
-	for i in range(n):
-		var j = (i + 1) % n
-		draw_colored_polygon(PackedVector2Array([left[i], left[j], right[j]]), Color("3b4b51"))
-		draw_colored_polygon(PackedVector2Array([left[i], right[j], right[i]]), Color("3b4b51"))
-	left.append(left[0]); right.append(right[0])
-	draw_polyline(left, Color("9aaba7"), 1.2, true)
-	draw_polyline(right, Color("9aaba7"), 1.2, true)
-	# Visible grid slots and the shared team-box positions are sourced from the same geometry.
-	for i in range(12):
-		var g = geometry.sample(-i * geometry.grid_spacing)
-		var at: Vector2 = g.p + g.n * (-2 if i % 2 == 0 else 2)
-		var tangent = Vector2(g.n.y, -g.n.x)
-		draw_line(screen(at - g.n), screen(at + g.n), Color("bec4b780"), 1, true)
-		draw_line(screen(at - g.n), screen(at - g.n - tangent * 4), Color("bec4b770"), 1, true)
-		draw_line(screen(at + g.n), screen(at + g.n - tangent * 4), Color("bec4b770"), 1, true)
-
-func _draw_scenery() -> void:
-	for object in document.get("objects", []):
-		var p = screen(Vector2(object.get("x", 0), object.get("y", 0)))
-		if not Rect2(Vector2(-100, -100), size + Vector2(200, 200)).has_point(p): continue
-		var scale_m = clampf(float(object.get("scale", 1)), 0.2, 8)
-		var type = str(object.get("type", "tree"))
-		draw_set_transform(p, -deg_to_rad(float(object.get("rotation", 0))), Vector2.ONE * maxf(0.1, zoom) * scale_m)
-		if type in ["tree", "woodland"]:
-			draw_circle(Vector2(3, 4), 8, Color("0b151a"))
-			draw_circle(Vector2.ZERO, 7.5, Color("2d5144"))
-			draw_circle(Vector2(-2, -2), 4.5, Color("3b6250"))
-		elif type in ["water", "pool", "yacht"]:
-			draw_rect(Rect2(-14, -8, 28, 16), Color("264d5c"))
-			if type == "yacht": draw_colored_polygon(PackedVector2Array([Vector2(-10, -4), Vector2(9, -4), Vector2(14, 0), Vector2(9, 4), Vector2(-10, 4)]), Color("c7c9b7"))
-		else:
-			var metres = Vector2(38, 19) if type == "grandstand" else (Vector2(26, 16) if type == "garage" else Vector2(14, 12))
-			draw_rect(Rect2(-metres * 0.5 + Vector2(4, 5), metres), Color("0b171ddd"))
-			draw_rect(Rect2(-metres * 0.5, metres), Color("52666a") if type == "grandstand" else Color("536060"))
-			draw_rect(Rect2(-metres * 0.5, metres), Color("84938b"), false, 0.6)
-			if type == "grandstand":
-				for j in range(4): draw_line(Vector2(-17, -6 + j * 4), Vector2(17, -6 + j * 4), Color("9b8e70"), 1.3)
-			else:
-				for j in range(3): draw_rect(Rect2(-metres.x * 0.4 + j * metres.x * 0.3, metres.y * 0.3, metres.x * 0.18, 2), Color("c6b887"))
-		draw_set_transform(Vector2.ZERO)
-
 func draw_surface(target: Control) -> void:
 	if not show_surface or sim == null or geometry == null: return
 	for i in range(96):
@@ -244,31 +211,13 @@ func draw_surface(target: Control) -> void:
 			var p = geometry.sample((i + j / 6.0) * geometry.length / 96)
 			var q = geometry.sample((i + (j + 1) / 6.0) * geometry.length / 96)
 			target.draw_line(screen(p.p), screen(q.p), color, maxf(2, p.w * zoom * 0.85), true)
-	target.draw_style_box(UI.box(Color("10202ce8")), Rect2(Vector2(16, 16), Vector2(238, 46)))
+	target.draw_style_box(UI.box(Color("f7f2e4ee")), Rect2(Vector2(16, 16), Vector2(238, 46)))
 	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "SURFACE WATER  %d%%  ·  blue = wet" % int(sim.average(sim.water) * 100), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
-
-func _draw_feature(f: Dictionary) -> void:
-	var kind = str(f.get("type", "curb"))
-	var a = float(f.get("a", 0)); var b = float(f.get("b", 0))
-	var span = fposmod(b - a, 1.0)
-	var count = clampi(int(ceil(span * geometry.length / 5.0)), 2, 1500)
-	for i in range(count):
-		var s = geometry.sample((a + span * i / count) * geometry.length, true)
-		var t = geometry.sample((a + span * (i + 1) / count) * geometry.length, true)
-		if kind in ["tunnel", "bridge"]:
-			var color = Color("18242b") if kind == "tunnel" else Color("748081")
-			draw_line(screen(s.p), screen(t.p), color, maxf(3, s.w * zoom * (0.7 if kind == "tunnel" else 1.25)), true)
-			if i % 6 == 0: draw_line(screen(s.p - s.n * s.w * 0.6), screen(s.p + s.n * s.w * 0.6), Color("a1a899"), 1)
-		else:
-			for side in [-1, 1]:
-				if f.get("side", "both") == "left" and side == -1 or f.get("side", "both") == "right" and side == 1: continue
-				var offset = s.w * 0.5 + float(f.get("width", 1)) * 0.5
-				var color = (Color("b75950") if i % 2 == 0 else Color("cad0c8")) if kind == "curb" else (Color("7e8172") if kind == "barrier" else Color("526750"))
-				draw_line(screen(s.p + s.n * offset * side), screen(t.p + t.n * offset * side), color, maxf(1.5, float(f.get("width", 1)) * zoom), true)
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
 	for i in range(document.get("nodes", []).size()):
+		if not layer_visible("road"): continue
 		var node = document.nodes[i]
 		var p = screen(TrackDocument.point(node))
 		if not Rect2(Vector2(-15, -15), size + Vector2(30, 30)).has_point(p): continue
@@ -286,7 +235,7 @@ func _draw_editor() -> void:
 		var p = screen(Vector2(obj.x, obj.y))
 		draw_rect(Rect2(p - Vector2(15, 15), Vector2(30, 30)), UI.ACCENT, false, 1.5)
 		draw_string(font, p + Vector2(18, -12), str(obj.type).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
-	if mode == "pit" and not document.get("pits", []).is_empty():
+	if mode == "pit" and layer_visible("pits") and not document.get("pits", []).is_empty():
 		for i in range(document.pits[0].nodes.size()):
 			var p = screen(TrackDocument.point(document.pits[0].nodes[i]))
 			draw_circle(p, 5 if i == selected_pit else 3, UI.ACCENT)
@@ -294,7 +243,7 @@ func _draw_editor() -> void:
 
 func _draw_profile() -> void:
 	var r = Rect2(Vector2(20, size.y - 126), Vector2(size.x - 40, 75))
-	draw_style_box(UI.box(Color("10202cee")), r)
+	draw_style_box(UI.box(Color("f7f2e4ee")), r)
 	var low = geometry.heights[0]; var high = low
 	for value in geometry.heights: low = minf(low, value); high = maxf(high, value)
 	var line = PackedVector2Array()
@@ -304,7 +253,17 @@ func _draw_profile() -> void:
 	draw_string(ThemeDB.fallback_font, r.position + Vector2(10, 18), "ELEVATION   %.1f–%.1f m" % [low, high], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
 
 func draw_cars(target: Control) -> void:
-	if sim == null or geometry == null: return
+	if geometry == null: return
+	if preview_running and sim == null:
+		var sample = geometry.sample(preview_distance)
+		var p = screen(sample.p + sample.n * sample.line)
+		target.draw_circle(p, 8, Color("fcf3d8"), true, -1, true)
+		target.draw_circle(p, 5, Color("466d52"), true, -1, true)
+		target.draw_style_box(UI.box(UI.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55)))
+		target.draw_string(ThemeDB.fallback_font, Vector2(28, 39), "REFERENCE LAP  ·  %d km/h" % int(sample.speed * 3.6), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+		target.draw_string(ThemeDB.fallback_font, Vector2(28, 58), "Heuristic preview · not a race simulation", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
+		return
+	if sim == null: return
 	var font = ThemeDB.fallback_font
 	var occupied: Array[Rect2] = []
 	var display_cars = sim.cars.duplicate()
@@ -314,17 +273,16 @@ func draw_cars(target: Control) -> void:
 		var at = sim.car_position(c, alpha)
 		var p = screen(at.p)
 		if not Rect2(Vector2(-30, -30), size + Vector2(60, 60)).has_point(p): continue
-		var radius = maxf(3.5, 2.3 * zoom)
+		var radius = clampf(4.6 + zoom * 0.35, 4.6, 7.5) * dot_scale
 		var color = Color(c.color)
 		if c.dnf: color = Color("697278")
 		if c.id == sim.selected_id:
 			target.draw_arc(p, radius + 5, 0, TAU, 24, UI.ACCENT, 1.8, true)
 			target.draw_circle(p, radius + 9, Color(0.9, 0.75, 0.45, 0.09))
-		target.draw_circle(p + Vector2(1, 2), radius + 1.2, Color("091116"))
-		target.draw_circle(p, radius, color)
-		var tangent = Vector2(at.n.y, -at.n.x)
-		var screen_tangent = Vector2(tangent.x, -tangent.y)
-		target.draw_line(p, p + screen_tangent * (radius + 2), color.lightened(0.2), 1.8, true)
+		target.draw_circle(p + Vector2(1, 2), radius + 2, Color("30493633"), true, -1, true)
+		target.draw_circle(p, radius + 2.2, Color("4e6454"), true, -1, true)
+		target.draw_circle(p, radius + 1.6, Color("fff7df"), true, -1, true)
+		target.draw_circle(p, radius, color, true, -1, true)
 		if show_labels:
 			for offset in [Vector2(radius + 5, -radius - 3), Vector2(-40, -radius - 3), Vector2(radius + 5, radius + 15), Vector2(-40, radius + 15), Vector2(0, -radius - 24)]:
 				var text_pos = p + offset
@@ -332,10 +290,10 @@ func draw_cars(target: Control) -> void:
 				var available = true
 				for previous in occupied:
 					if rect.intersects(previous): available = false; break
-				if not available: continue
+				if not available or not Rect2(Vector2(3, 3), size - Vector2(6, 6)).encloses(rect): continue
 				occupied.append(rect)
-				target.draw_string(font, text_pos + Vector2(1, 1), c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.BG)
-				target.draw_string(font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, color)
+				target.draw_style_box(UI.box(Color("f5eedacc"), Color("b1bca280"), 3, 0), rect.grow(2))
+				target.draw_string(font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("294934"))
 				break
 		if c.blue: target.draw_circle(p + Vector2(-radius - 3, -radius - 3), 3, Color("619acc"))
 	if sim.phase == "lights":
@@ -374,6 +332,7 @@ func _gui_input(event: InputEvent) -> void:
 			if measure_start == Vector2.INF or measure_end != Vector2.INF: measure_start = p; measure_end = Vector2.INF
 			else: measure_end = p; measured.emit(measure_start.distance_to(p))
 			queue_redraw(); return
+		if mode not in ["measure", "select"] and not layer_editable(tool_layer()): accept_event(); return
 		if mode == "reference":
 			if document.has("reference"): _begin_drag("reference", p)
 			return
@@ -388,7 +347,7 @@ func _gui_input(event: InputEvent) -> void:
 			elif event.shift_pressed:
 				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5)); _rebuild_due = true; edited.emit()
 			selection_changed.emit(); queue_redraw(); return
-		if selected >= 0 and selected < document.nodes.size():
+		if layer_editable("road") and selected >= 0 and selected < document.nodes.size():
 			for key in ["in", "out"]:
 				var n = document.nodes[selected]
 				if screen(TrackDocument.point(n) + TrackDocument.handle(n, key)).distance_to(event.position) < 11:
@@ -398,18 +357,18 @@ func _gui_input(event: InputEvent) -> void:
 		if mode == "draw":
 			edit_started.emit(); document.nodes.append(TrackDocument.node_at(p)); selected = document.nodes.size() - 1
 			_rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		if (mode == "insert" or event.double_click) and geometry:
+		if (mode == "insert" or event.double_click) and geometry and layer_editable("road"):
 			var nearest = geometry.nearest(p)
 			if nearest.distance * zoom < 50:
 				edit_started.emit(); selected = TrackDocument.split_segment(document, nearest.segment, clampf(nearest.t, 0.03, 0.97)); _rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
 		selected = -1; selected_object = -1
 		for i in range(document.nodes.size()):
-			if screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: selected = i; break
+			if layer_editable("road") and screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: selected = i; break
 		if selected >= 0: _begin_drag("node", p - TrackDocument.point(document.nodes[selected]))
 		else:
 			for i in range(document.objects.size() - 1, -1, -1):
 				var object = document.objects[i]
-				if screen(Vector2(object.x, object.y)).distance_to(event.position) < 14:
+				if layer_editable("scenery") and screen(Vector2(object.x, object.y)).distance_to(event.position) < 14:
 					selected_object = i; _begin_drag("object", p - Vector2(object.x, object.y)); break
 		selection_changed.emit(); queue_redraw()
 	elif event is InputEventMouseMotion:
@@ -433,9 +392,11 @@ func _gui_input(event: InputEvent) -> void:
 				if dragging == "node": n.x = p.x; n.y = p.y
 				else: TrackDocument.set_handle(n, dragging, p - TrackDocument.point(n))
 			_rebuild_due = dragging not in ["reference", "object"]; queue_redraw()
+			if dragging in ["object", "reference"] and world_layer: world_layer.queue_redraw()
 		elif mode == "measure" and measure_start != Vector2.INF: queue_redraw()
 
 func _begin_drag(kind: String, offset: Vector2) -> void:
+	preview_running = false
 	dragging = kind; _drag_offset = offset; _gesture_changed = false
 
 func _commit_drag() -> void:
@@ -453,3 +414,32 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT: panning = false; _commit_drag()
+
+func layer_visible(key: String) -> bool:
+	return not editing or layer_state.get(key, {}).get("visible", true)
+
+func layer_editable(key: String) -> bool:
+	return layer_visible(key) and not layer_state.get(key, {}).get("locked", false)
+
+func tool_layer() -> String:
+	return {"pit": "pits", "scenery": "scenery", "reference": "reference"}.get(mode, "road")
+
+func set_layer(key: String, field: String, value: bool) -> void:
+	if not layer_state.has(key) or field not in ["visible", "locked"]: return
+	_commit_drag()
+	layer_state[key][field] = value
+	selected = -1; selected_pit = -1; selected_object = -1
+	if world_layer:
+		world_layer.road_visible = layer_visible("road")
+		world_layer.pits_visible = layer_visible("pits")
+		world_layer.scenery_visible = layer_visible("scenery")
+		world_layer.features_visible = layer_visible("features")
+		world_layer.reference_visible = editing and layer_visible("reference")
+		world_layer.queue_redraw()
+	selection_changed.emit(); queue_redraw()
+
+func toggle_preview() -> void:
+	if geometry == null or geometry.preview_only: return
+	preview_running = not preview_running
+	if preview_running: preview_distance = 0.0; preview_laps = 0; preview_elapsed = 0.0
+	if overlay: overlay.queue_redraw()

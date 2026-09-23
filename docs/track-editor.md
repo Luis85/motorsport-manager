@@ -53,3 +53,9 @@ Select/move is still the default. `V`, `I`, `P`, and `M` select move, insertion,
 **Timing:** select a road point and use Track → Set S1/S2. Two distinct boundaries are compiled relative to the start/finish origin. Invalid boundaries produce a warning and fall back to thirds.
 
 **Checks:** inspect clickable findings for sampled self-crossings, height separation, pit alignment and very tight turns. A same-level road crossing blocks Test Weekend and runtime export until corrected. Saving a structurally valid draft remains possible. A grade-separated crossing is reported for review, not treated as proof of bridge/tunnel clearance.
+
+## World and reference lap
+
+The **World** inspector selects an illustrative environment and summer/autumn palette, with undoable document changes that do not alter geometry. Road, pits, scenery, features and reference have workspace-local visibility and lock switches. Locked/hidden layers reject direct edits and relevant inspector actions; camera navigation remains available. These switches are not saved in the track document.
+
+**Preview lap** runs a dot along the full baked line/speed envelope without entering a weekend. Geometric edits stop it; the coalesced drag preview is never used as a valid driving profile. This is a heuristic reference, not a traffic/tyre simulation. Grid visibility is independent. New Tent and Cafe scenery types use the same placement/move/rotate/scale workflow as existing props. See [Graphics](graphics.md).

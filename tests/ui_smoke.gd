@@ -37,6 +37,7 @@ func run():
 	game.editor.redo()
 	check(is_equal_approx(game.editor.document.nodes[0].x, original_x + 12), "Editor redo reapplies node")
 	await test_editor_transactions(game.editor)
+	await test_illustrated_editor(game.editor)
 	game.editor.test_requested.emit(game.editor.document.duplicate(true))
 	await settle()
 	check(game.screen_name == "grand_prix_setup" and not game.editor_draft.is_empty(), "Test weekend preserves unsaved editor draft")
@@ -88,6 +89,7 @@ func run():
 	view.refresh()
 	await capture("09-race")
 	check(app.weekend.phase == "race", "Race is visible")
+	await test_tyre_wall(view, app)
 	var tree_ids = view.rank_rows.map(func(item): return item.get_instance_id())
 	view.select_driver(6)
 	for i in range(30): view.refresh()
@@ -191,3 +193,66 @@ func test_editor_transactions(editor) -> void:
 	await capture("15-editor-checks")
 	check(editor.inspector.get_tab_title(4) == "Checks" and not editor.test_button.disabled, "Designer has a validation workspace and enabled test handoff")
 	editor.inspector.current_tab = 0
+
+
+func test_illustrated_editor(editor) -> void:
+	var canvas = editor.canvas
+	var before = JSON.stringify(editor.document)
+	var history = editor.undo_stack.size()
+	canvas.set_layer("road", "locked", true)
+	var at = canvas.screen(TrackDocument.point(editor.document.nodes[0]))
+	mouse_button(canvas, at, true); mouse_drag(canvas, at, at + Vector2(30, 15)); mouse_button(canvas, at, false)
+	check(JSON.stringify(editor.document) == before and editor.undo_stack.size() == history, "Locked road ignores pointer drags without creating history")
+	canvas.selected = 0; editor.delete_point()
+	check(JSON.stringify(editor.document) == before, "Delete respects the road lock")
+	canvas.set_layer("road", "locked", false)
+	canvas.set_layer("scenery", "visible", false)
+	check(not canvas.world_layer.scenery_visible and JSON.stringify(editor.document) == before, "Hiding scenery changes only the editor view")
+	canvas.set_layer("scenery", "visible", true)
+	canvas.toggle_preview(); canvas._process(0.08)
+	check(canvas.preview_running and canvas.preview_distance > 0, "Reference dot advances along the baked line")
+	check(JSON.stringify(editor.document) == before, "Reference preview does not mutate the authored track")
+	editor.inspector.current_tab = 5
+	await capture("16-illustrated-editor")
+	canvas.preview_running = false; canvas.overlay.queue_redraw()
+	var nodes = editor.document.nodes.duplicate(true)
+	editor.perform(func(): editor.document.visual.season = "autumn"; editor.document.visual.environment = "woodland", true)
+	check(editor.document.nodes == nodes, "Illustration controls do not change the road")
+	await capture("17-autumn-world")
+	editor.undo()
+	check(JSON.stringify(editor.document) == before, "World style changes participate in undo")
+	editor.inspector.current_tab = 0
+
+func test_tyre_wall(view, app) -> void:
+	var c = app.weekend.cars[3]
+	view.tabs.current_tab = 3; view.refresh()
+	check(view.tyre_buttons.size() == 12, "Tyre tab exposes all twelve sets")
+	await settle()
+	check(is_visible_inside(view.tyre_buttons[0]), "Tyre selection is visible before explanatory prose")
+	var ids = view.tyre_buttons.map(func(b): return b.get_instance_id())
+	for i in range(20): view.refresh()
+	check(ids == view.tyre_buttons.map(func(b): return b.get_instance_id()), "Live tyre conditions reuse existing buttons")
+	view.dispatch("select_set", {"set_id": "3-H1"})
+	check(c.next_set_id == "3-H1" and c.set_id != "3-H1", "Tyre selection plans without silently mounting")
+	await capture("18-tyre-allocation")
+	check(is_visible_inside(view.box_button), "Pit call stays visible with allocation open")
+	var stable_clock = app.weekend.clock
+	var builds = view.canvas.world_layer.build_count
+	await settle()
+	var draws = view.canvas.world_layer.draw_count
+	var samples: Array = []
+	var center = view.canvas.center
+	for i in range(45):
+		var start = Time.get_ticks_usec()
+		view.canvas.center += Vector2(0.2, 0.1); view.canvas.queue_redraw()
+		await process_frame
+		samples.append((Time.get_ticks_usec() - start) / 1000.0)
+	samples.sort()
+	Storage.write_json("res://reports/render-performance.json", {"backend": RenderingServer.get_video_adapter_name(), "mode": "paused race; 45 camera frames", "median_ms": samples[22], "p95_ms": samples[42], "static_rebuilds": view.canvas.world_layer.build_count - builds, "static_draw_reissues": view.canvas.world_layer.draw_count - draws})
+	check(view.canvas.world_layer.build_count == builds and view.canvas.world_layer.draw_count == draws, "Camera transforms reuse cached world drawing")
+	check(app.weekend.clock == stable_clock, "Camera and graphics never advance a paused race")
+	view.canvas.center = center; view.canvas.queue_redraw()
+	view.tabs.current_tab = 0; view.refresh()
+	view.canvas.center = app.weekend.car_position(c).p; view.canvas.zoom = 1.25; view.canvas.queue_redraw()
+	await capture("19-trackside-detail")
+	view.canvas.fit()

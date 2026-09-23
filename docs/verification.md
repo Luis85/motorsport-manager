@@ -12,7 +12,7 @@ The verifier performs a headless editor import, deterministic domain tests, and 
 
 ## Automated coverage
 
-The suite includes the original 404 assertions plus the targeted scenarios in `tests/foundation_tests.gd`. Exact totals are emitted in each run’s JSON report. Counts include repeated per-car/per-step invariants, not independent user scenarios. It covers:
+The suite includes the original 404 assertions plus the targeted scenarios in `tests/foundation_tests.gd` and `tests/iteration3_tests.gd`. Exact totals are emitted in each run’s JSON report. Counts include repeated per-car/per-step invariants, not independent user scenarios. It covers:
 
 - All eight bundled layouts: bounded geometry, lengths, continuity, native round trip, sector/pit compilation and runtime export.
 - Exact cubic subdivision, automatic-handle migration, malformed documents, preset differences, snapshot isolation and persistence errors/backups.
@@ -20,7 +20,7 @@ The suite includes the original 404 assertions plus the targeted scenarios in `t
 - Frame-partition invariance, JSON checkpoint continuation including PRNG/surface state, pause and invalid-checkpoint rejection.
 - No-pass neutralization, blue flags, late pit calls, same-step finish ordering, all-retirement termination and wet/rotated-track/vehicle scenarios.
 
-The native UI smoke test opens the real main scene, visits menus/settings/library/editor, exercises editor history and custom-save/test-return behavior, runs a weekend through all phases, checks classification positions and checkpoint reload, and captures **fifteen screenshots**, including a 1100×720 window. It is an integration/smoke test, not a comprehensive pixel-diff or accessibility audit.
+The native UI smoke test opens the real main scene, visits menus/settings/library/editor, exercises editor history and custom-save/test-return behavior, runs a weekend through all phases, checks classification positions and checkpoint reload, and captures **nineteen screenshots**, including a 1100×720 window. It is an integration/smoke test, not a comprehensive pixel-diff or accessibility audit.
 
 ## Iteration-two regressions
 
@@ -39,3 +39,9 @@ The implementation was verified with **Godot 4.7.2 standard on Linux**, using so
 Open the project in the editor and play one dry short weekend. Confirm the actual buttons/keyboard/canvas selection work on your input device; manually command both player cars, call/cancel a stop, and inspect their tyre/fuel response. Save mid-session, close, relaunch, and resume. Try a longer changing-weather race rather than expecting a very short shower to create instant standing water.
 
 In the editor, copy Monaco, manipulate the hairpin/chicane with explicit handles, insert a point, undo, alter height/banking, reposition pit nodes, add a tunnel/bridge range, and save to the library. Import/export that authoring file and test it in a weekend. Add a licensed reference image, calibrate it, and verify it travels with the export. These hands-on checks remain valuable for ergonomics and target-device graphics beyond the automated coverage.
+
+## Iteration-three regressions
+
+Tests verify twelve-set allocation and identity, aggregate wear retention, worn-set remounting, actual garage release, scheduled-gate timing, physical servicing, no fresh-set creation on stock exhaustion, v1/v2 migration, v3 numeric continuation and malformed stock. UI checks cover locked-layer no-op edits, style undo, reference-lap preview, stable set buttons, visible pit actions and cached world drawing under camera motion.
+
+`render-performance.json` records 45 paused-race camera frames, backend name, median/p95 intervals, static regeneration count and static draw reissues. Zero rebuilds/reissues is asserted; observed timing is informational, not a universal FPS threshold. The fixture does not benchmark active 16x racing.

@@ -4,7 +4,7 @@ All player writes use Godot's `user://` directory, displayed in **Settings → L
 
 | Path | Contents |
 |---|---|
-| `user://settings.json` | Fullscreen, VSync, default labels/line and simulation speed |
+| `user://settings.json` | Fullscreen, VSync, default labels/line/speed, scenery detail, dot size and reduced motion |
 | `user://tracks/*.json` | Individually saved custom authoring documents |
 | `user://weekend.json` | Current native weekend checkpoint |
 | `*.bak` | Previous successful value retained by atomic replacement |
@@ -19,7 +19,7 @@ Native checkpoints use a versioned schema and contain a copied track document, v
 
 The checkpoint is written by **Save**, on phase transitions, and when leaving a weekend for the menu. Closing the app with a live weekend also saves. An active session loaded from disk is paused until resumed. The in-memory **Continue Weekend** action retains the already-loaded model. Editing the library cannot alter a checkpoint's embedded geometry.
 
-New checkpoints use native **version 2**. Native version 1 is accepted by adding defaults for split history, courtesy state and service-plan fields. This is a data migration, not a promise to reproduce the previous solver’s future lap times. Authoring documents remain version 1.
+New checkpoints use native **version 3**, including finite set inventories, fitted/planned/frozen-service set identities, one scheduled stop and stint history. Native versions 1 and 2 are accepted. Version 1 first receives the earlier split/courtesy/service defaults; both legacy versions initialize missing stock while retaining fitted aggregate tread and temperature. Historical discarded-set usage was not stored and cannot be reconstructed. This is a data migration, not a promise to reproduce the previous engine’s future lap times. Authoring documents remain version 1 with optional visual metadata.
 
 Nested validation covers telemetry shape, sector records, roster identity/ownership, selected driver indices, unique grid positions, command structure, statistics and pit-box owners. Invalid input is rejected before replacing the active session. A snapshot also deep-copies the circuit so modifying exported data cannot mutate a live weekend.
 

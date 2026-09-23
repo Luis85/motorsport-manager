@@ -7,7 +7,7 @@
 3. In Godot's project manager choose **Import**, select the root `project.godot`, and open it.
 4. Wait for script import, then press **F5**. The configured main scene is `res://scenes/main.tscn`.
 
-The UI is created from native Controls when the scene runs; the editor's saved scene tree is intentionally small. The game does not require an asset download, package-install command, or network access at runtime. Built-in Godot fonts are used.
+The UI is created from native Controls when the scene runs; the editor's saved scene tree is intentionally small. The game does not require an asset download, package-install command, or network access at runtime. Godot's default body font and installed system-serif fallbacks are used; no font files ship.
 
 ## First weekend
 
@@ -41,3 +41,9 @@ The engine was exercised on Linux with software OpenGL. Windows and macOS projec
 In the designer, drag a control point and press Escape; the geometry and redo history should return. Commit another drag, inspect Checks, and test the circuit. To verify custom sectors, select a point and use Track → Set S1/S2. To verify calibration, place the measurement ruler over a known reference-image distance and apply that distance in Reference.
 
 In a weekend, open Telemetry during qualifying to inspect the three measured splits. During the race, switch between Commands/Telemetry/Radio: Box/Cancel remain visible. Zoom or pan while following a driver to release the camera. Try the small supported window and confirm timing selection, text input and pit controls on your own device. These checks supplement the native scripted suite.
+
+## Testing 0.3.0 graphics and strategy
+
+Choose Pinecrest, Dry and six laps. In qualifying, inspect **Tyres**, plan a set and use Send out with delegation disabled. Its condition remains with that set after the run. During the race, plan another usable set, choose lap 2 or a later reachable lap and schedule the stop. Cancel to change the schedule. Observe physical entry/servicing and the updated stint.
+
+In the editor, open **World**, try Autumn/Woodland, hide the grid and preview a reference lap. Lock Road and verify that selection/drag cannot edit it; unlock before continuing. Place a Tent or Cafe from Features. Settings offers simplified scenery, larger dots and direct (reduced-motion) following. These controls do not change simulation results.

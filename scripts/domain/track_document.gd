@@ -33,6 +33,8 @@ static func normalize(raw: Dictionary) -> Dictionary:
 	for key in ["features", "pits", "objects", "timingGates", "cornerMarkers"]:
 		d[key] = d.get(key, [])
 	d.provenance = d.get("provenance", {})
+	d.visual = d.get("visual", {}).duplicate(true)
+	d.visual.merge({"environment": "meadow", "season": "summer", "seed": abs(int(d.id.hash())) % 1000000})
 	d.grid = d.get("grid", {"count": 12, "spacing": 8.0})
 	var normalized: Array = []
 	var missing: Array = []
@@ -89,6 +91,11 @@ static func validate(raw: Variant) -> Array[String]:
 		if not raw.get(key, {}) is Dictionary: return ["Invalid %s object." % key]
 	if not valid_number(raw.get("grid", {}).get("spacing", 8), 6, 20): return ["Grid spacing must be 6–20 metres."]
 	if not raw.get("name", "") is String or str(raw.get("name", "")).strip_edges().is_empty(): errors.append("Give the circuit a name.")
+	if raw.has("visual"):
+		var visual = raw.visual
+		if not visual is Dictionary: return ["Invalid visual settings."]
+		if visual.get("environment", "meadow") not in ["meadow", "woodland", "coastal"] or visual.get("season", "summer") not in ["summer", "autumn"]: return ["Unsupported circuit illustration style."]
+		if not valid_number(visual.get("seed", 1975), 0, 1000000) or visual.get("seed", 1975) != floor(visual.get("seed", 1975)): return ["Invalid scenery seed."]
 	var distinct: Dictionary = {}
 	var polygon: Array = []
 	for n in raw.nodes:

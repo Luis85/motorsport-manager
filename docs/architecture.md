@@ -12,6 +12,7 @@ scripts/domain/
   track_diagnostics.gd         Sampled crossings, pit angles and readiness checks
   race_checkpoint.gd           Nested checkpoint validation
   race_sim.gd                  Deterministic weekend model and commands
+  tyre_inventory.gd            Finite driver-owned tyre sets and retained condition
 scripts/services/
   app.gd                       Library, settings and current-weekend ownership
   storage.gd                   Bounded JSON reads and atomic writes
@@ -19,7 +20,8 @@ scripts/ui/
   ui.gd                        Shared native control/theme helpers
   main.gd                      Main menu, library, settings and screen routing
   editor.gd                    Track authoring actions, undo/redo and inspectors
-  track_canvas.gd               Static circuit canvas and separate car overlay
+  track_canvas.gd               Editing guides, camera and separate live overlays
+  circuit_world.gd              Cached world-space circuit illustration
   weekend.gd                   Timing tower, pit-wall controls, telemetry and log
 scripts/verify.py               Import/domain/rendered-UI verification harness
 data/tracks/catalog.json       Ordered catalog manifest
@@ -54,6 +56,12 @@ Current implementation deliberately uses dictionaries at serialization boundarie
 
 `RacingLine` owns bounded candidate generation and time evaluation. `TrackGeometry` compiles either a lightweight editor preview or an immutable full simulation snapshot. `TrackDiagnostics` consumes that geometry and returns inspectable findings without mutating it; the editor and weekend launcher apply the same blocking rule.
 
-`RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native v1-to-v2 defaulting precedes validation; no browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
+`RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native version 1 receives legacy defaults; versions 1 and 2 migrate missing tyre inventory into version 3 before validation. No browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
 
 `WeekendView` owns persistent rank-position TreeItems and stable pit controls; its 5 Hz refresh updates values, not control instances. The track surface and moving-car overlays are separate from retained static geometry. All player commands still enter through `RaceSim.command`.
+
+## Iteration-three modules
+
+`TyreInventory` owns stable twelve-set allocations, retained aggregate condition and plan/mount helpers; `RaceSim` owns physical timing and service transactions. Checkpoint validation includes the new identities and histories. Views can select a plan but cannot mutate stock or fit tyres directly.
+
+`CircuitWorld` owns retained world-space illustration. Its private seed and cache are independent from `RaceSim`; camera transforms reuse draw commands. `TrackCanvas` owns editing guides and preview, with separate live vehicle/surface overlays. See [Graphics](graphics.md) for caching and visual-only controls.

@@ -1,14 +1,14 @@
 class_name UI
 extends RefCounted
-const BG = Color("0b1218")
-const PANEL = Color("111e27")
-const CARD = Color("182832")
-const INK = Color("e3ecee")
-const MUTED = Color("8ea4ac")
-const ACCENT = Color("e1b96a")
-const LINE = Color("2c414c")
-const GOOD = Color("81b6a0")
-const DANGER = Color("ed8f80")
+const BG = Color("e9e6d8")
+const PANEL = Color("f7f3e7")
+const CARD = Color("efeedf")
+const INK = Color("2c473a")
+const MUTED = Color("61725f")
+const ACCENT = Color("8b6938")
+const LINE = Color("c5cdb7")
+const GOOD = Color("4f795c")
+const DANGER = Color("a15243")
 
 static func box(color: Color, border: Color = LINE, radius: int = 6, padding: int = 12) -> StyleBoxFlat:
 	var s = StyleBoxFlat.new(); s.bg_color = color; s.border_color = border
@@ -21,27 +21,33 @@ static func theme() -> Theme:
 	for type in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "SpinBox", "Tree", "TabBar", "RichTextLabel"]:
 		t.set_color("font_color", type, INK)
 		t.set_color("font_focus_color", type, INK)
-		t.set_color("font_hover_color", type, Color.WHITE)
-		t.set_color("font_disabled_color", type, Color("536c78"))
+		t.set_color("font_pressed_color", type, INK)
+		t.set_color("font_selected_color", type, INK)
+		t.set_color("font_hover_color", type, Color("234733"))
+		t.set_color("font_disabled_color", type, Color("929c86"))
 	for type in ["Button", "OptionButton", "LineEdit", "TextEdit"]:
 		t.set_stylebox("normal", type, box(CARD))
-		t.set_stylebox("hover", type, box(Color("253a45"), MUTED))
-		t.set_stylebox("pressed", type, box(Color("3d3c30"), ACCENT))
+		t.set_stylebox("hover", type, box(Color("e1e5d0"), MUTED))
+		t.set_stylebox("pressed", type, box(Color("d7dec4"), ACCENT))
 		t.set_stylebox("focus", type, box(Color(0, 0, 0, 0), ACCENT, 6, 0))
 		t.set_stylebox("disabled", type, box(PANEL))
 	t.set_stylebox("panel", "PanelContainer", box(PANEL))
 	t.set_stylebox("panel", "PopupMenu", box(CARD))
 	t.set_stylebox("panel", "AcceptDialog", box(PANEL))
 	t.set_stylebox("panel", "Tree", box(BG))
-	t.set_stylebox("selected", "Tree", box(Color("334439"), ACCENT, 3, 4))
-	t.set_stylebox("selected_focus", "Tree", box(Color("334439"), ACCENT, 3, 4))
+	t.set_stylebox("selected", "Tree", box(Color("dbe4cb"), ACCENT, 3, 4))
+	t.set_stylebox("selected_focus", "Tree", box(Color("dbe4cb"), ACCENT, 3, 4))
+	for state in ["normal", "hover", "pressed"]:
+		t.set_stylebox("title_button_" + state, "Tree", box(Color("dce2cd"), LINE, 2, 3))
+	t.set_color("title_button_color", "Tree", INK)
+	t.set_color("font_selected_color", "Tree", INK)
 	t.set_constant("v_separation", "Tree", 10)
 	t.set_constant("separation", "VBoxContainer", 10)
 	t.set_constant("separation", "HBoxContainer", 10)
 	for type in ["TabContainer", "TabBar"]:
 		t.set_stylebox("tab_selected", type, box(CARD, ACCENT, 4, 9))
 		t.set_stylebox("tab_unselected", type, box(PANEL, LINE, 4, 9))
-		t.set_stylebox("tab_hovered", type, box(Color("253a45"), MUTED, 4, 9))
+		t.set_stylebox("tab_hovered", type, box(Color("e1e5d0"), MUTED, 4, 9))
 		t.set_color("font_selected_color", type, ACCENT)
 		t.set_color("font_unselected_color", type, MUTED)
 		t.set_font_size("font_size", type, 12)
@@ -50,6 +56,8 @@ static func theme() -> Theme:
 
 static func label(text: String, size: int = 15, color: Color = INK) -> Label:
 	var l = Label.new(); l.text = text; l.add_theme_font_size_override("font_size", size); l.add_theme_color_override("font_color", color)
+	if size >= 23:
+		var heading_font = SystemFont.new(); heading_font.font_names = PackedStringArray(["Georgia", "Noto Serif", "DejaVu Serif"]); l.add_theme_font_override("font", heading_font)
 	return l
 
 static func paragraph(text: String, color: Color = MUTED) -> Label:
@@ -59,8 +67,9 @@ static func paragraph(text: String, color: Color = MUTED) -> Label:
 static func button(text: String, callback: Callable, primary: bool = false) -> Button:
 	var b = Button.new(); b.text = text; b.custom_minimum_size.y = 40; b.pressed.connect(callback)
 	if primary:
-		b.add_theme_stylebox_override("normal", box(ACCENT, ACCENT, 6, 10)); b.add_theme_color_override("font_color", BG)
-		b.add_theme_color_override("font_hover_color", ACCENT)
+		b.add_theme_stylebox_override("normal", box(Color("345b43"), Color("345b43"), 6, 10)); b.add_theme_color_override("font_color", Color("fff3d8"))
+		b.add_theme_stylebox_override("hover", box(Color("446b50"), ACCENT, 6, 10)); b.add_theme_color_override("font_hover_color", Color("fff3d8"))
+		b.add_theme_stylebox_override("pressed", box(Color("294b38"), ACCENT, 6, 10)); b.add_theme_color_override("font_pressed_color", Color("fff3d8"))
 	return b
 
 static func option(items: Array, callback: Callable, selected: int = 0) -> OptionButton:

@@ -1,6 +1,8 @@
-# Iteration 1 — port status and boundaries
+# Port status and boundaries
 
-> **0.2.0 update:** see [the iteration-two review](iteration-2.md) for the current changes. Lightweight drag previews, ruler-based image calibration, editable scenery transforms, geometric Checks, candidate-time line evaluation, qualifying split histories, persistent timing UI, frozen pit service plans and native v1 checkpoint migration are now implemented. The original port inventory below remains useful as baseline provenance; any conflicting baseline status is superseded by that review.
+> **0.3.0 update:** [Iteration three](iteration-3.md) adds the stylized paper/sage world, finite aggregate tyre stock, scheduled stops, stint feedback, editor layers and reference-lap preview. The table below describes the cumulative native project. Earlier release notes remain historical.
+
+> **Historical 0.2.0 release:** [the iteration-two review](iteration-2.md) records the preceding geometry, timing, pit-service and interaction fixes. Its version-specific checkpoint statements describe that release; current continuity is documented in [Persistence](persistence.md).
 
 ## Source baselines
 
@@ -25,6 +27,8 @@ The seven geographic circuit documents and Pinecrest were converted from the edi
 | Conditions | Tyre temperature/wear, fuel, health/damage, water/rubber, scenario-driven rain, incidents |
 | Race control | Local yellow, simplified virtual safety-car/restart, all-retirement completion |
 | Feedback and storage | Top-down cars, timing tower, speed trace, radio/event logs, pause/speed, exact native checkpoint |
+| Tyres and strategy | Twelve finite sets per driver, retained condition, planned fitting, scheduled pit entry, actual stints |
+| Illustration and editor layers | Warm paper UI, cached stylized scenery, environment/season options, layer locks/visibility, reference-lap preview |
 | Engineering quality | Bounded imports, isolated model, atomic writes, deterministic tests, native-rendered UI tests, CI |
 
 ## Deliberately simplified or not carried over
@@ -33,7 +37,7 @@ The seven geographic circuit documents and Pinecrest were converted from the edi
 
 **Trajectory and physics:** the native solver is a bounded curvature heuristic with a longitudinal speed envelope. It does not port the entire original minimum-time search or guarantee the fastest possible lap. A reference path is followed with simplified traffic lanes; full car footprints, detailed aero/brake/suspension/gearbox modeling, setup familiarity, per-wheel tyres and extensive wet/offline surface-grid behavior are not equivalent to the old engine.
 
-**Weekend rules:** one qualifying session, not practice/Q1/Q2/Q3. No real-series tyre allocation/mandatory compound rules, finite tyre-bank management, detailed stewards/penalties, red flags, collision impulses, or separately driven safety-car vehicle. Engineered pit behavior and race control are management-game abstractions, not a regulations simulator. Audio and visual effects are minimal; driver names and car presets are fictional/generic.
+**Weekend rules:** one qualifying session, not practice/Q1/Q2/Q3. Finite aggregate tyre-bank management and one scheduled stop per car are implemented. No real-series allocation/mandatory compound rules, detailed stewards/penalties, red flags, collision impulses, or separately driven safety-car vehicle. Engineered pit behavior and race control are management-game abstractions, not a regulations simulator. Audio is not implemented. Stylized scenery is native decorative rendering; driver names and car presets are fictional/generic.
 
 **Surrounding game:** no business economy, workshop, hiring, research, energy/day loop, dynasty, historical UI eras, season progression, or Obsidian integration. The requested restart focuses on the standalone circuit editor and weekend. Existing browser/campaign save files are not compatible with the native checkpoint.
 

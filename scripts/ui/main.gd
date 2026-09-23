@@ -23,7 +23,7 @@ func _ready() -> void:
 	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
-	header.add_child(UI.label("NATIVE GODOT  ·  0.2.0", 12, UI.MUTED))
+	header.add_child(UI.label("NATIVE GODOT  ·  0.3.0", 12, UI.MUTED))
 	return_editor_button = UI.button("Return to editor", func(): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))
@@ -46,7 +46,7 @@ func show_menu() -> void:
 	var menu = UI.vbox(menu_panel, true)
 	menu.add_child(UI.label("THE RACE STARTS WITH YOU", 12, UI.ACCENT))
 	menu.add_child(UI.label("Your circuit.\nYour decisions.", 43))
-	menu.add_child(UI.paragraph("Design a circuit. Qualify your drivers. Make the calls from the pit wall. A complete race weekend, rebuilt natively in Godot."))
+	menu.add_child(UI.paragraph("Design a circuit. Qualify your drivers. Settle into the pit wall and make the calls. A complete race weekend, rebuilt natively in Godot."))
 	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 80; menu.add_child(gp)
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 80; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 72
@@ -60,7 +60,7 @@ func show_menu() -> void:
 	showcase.add_child(UI.label("FROM CIRCUIT ATELIER TO THE PIT WALL", 12, UI.MUTED))
 	if not App.library.is_empty():
 		var canvas = TrackCanvas.new(); canvas.show_line = true; canvas.show_grid = false
-		canvas.set_track(TrackGeometry.new(App.library[0])); showcase.add_child(canvas)
+		canvas.set_track(TrackGeometry.new(App.library[mini(7, App.library.size() - 1)])); showcase.add_child(canvas)
 		canvas.call_deferred("fit")
 	showcase.add_child(UI.label("01 / AUTHOR     02 / QUALIFY     03 / RACE", 16, UI.ACCENT))
 	showcase.add_child(UI.paragraph("Seven geographic layouts plus Pinecrest Motor Park. Every library track is editable and immediately usable for a weekend."))
@@ -153,7 +153,8 @@ func continue_weekend() -> void:
 func show_settings() -> void:
 	clear_screen("settings")
 	content.add_child(UI.label("Settings", 32))
-	var panel = UI.panel(); panel.custom_minimum_size.x = 700; content.add_child(panel)
+	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
+	var panel = UI.panel(); panel.custom_minimum_size.x = 640; panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; scroll.add_child(panel)
 	var list = UI.vbox(panel)
 	list.add_child(UI.label("DISPLAY", 15, UI.ACCENT))
 	list.add_child(UI.check("Fullscreen", App.settings.fullscreen, func(value): App.settings.fullscreen = value))
@@ -161,6 +162,11 @@ func show_settings() -> void:
 	list.add_child(UI.check("Show driver labels by default", App.settings.labels, func(value): App.settings.labels = value))
 	list.add_child(UI.check("Show racing line by default", App.settings.racing_line, func(value): App.settings.racing_line = value))
 	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): App.settings.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(App.settings.speed)))
+	list.add_child(UI.label("CALM CIRCUIT PRESENTATION", 15, UI.ACCENT))
+	UI.field(list, "Scenery detail", UI.option(["Rich illustration", "Simple / fewer trees"], func(index): App.settings.scenery_detail = ["rich", "simple"][index], 0 if App.settings.scenery_detail == "rich" else 1))
+	UI.field(list, "Car dot size", UI.option(["Standard", "Large", "Extra large"], func(index): App.settings.dot_scale = [1.0, 1.3, 1.6][index], [1.0, 1.3, 1.6].find(App.settings.dot_scale)))
+	list.add_child(UI.check("Reduced motion / direct follow camera", App.settings.reduced_motion, func(value): App.settings.reduced_motion = value))
+	list.add_child(UI.paragraph("Scenery and dot size change presentation only, never racing results. Display choices apply when a view is opened."))
 	list.add_child(UI.button("Apply and save settings", func():
 		var error = App.save_settings()
 		UI.notify(self, "Settings", "Settings saved." if error.is_empty() else error), true))
@@ -175,7 +181,7 @@ func show_settings() -> void:
 	list.add_child(UI.paragraph("Godot 4.7.2 · Standard GDScript · Compatibility renderer\nTrack authoring and top-down weekend simulation. No browser, npm, .NET or external plugins are required. Company management is not part of this iteration."))
 
 func show_help() -> void:
-	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run two out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre choice and pit calls. Rain changes the surface gradually. A pit call turns automatic strategy off.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. Save to library makes the circuit available for weekends.")
+	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run two out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call turns automatic strategy off.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
 	if editor:

@@ -70,6 +70,7 @@ func run() -> void:
 	test_flags_and_finish()
 	test_wet_and_vehicle()
 	load("res://tests/foundation_tests.gd").new().run(self)
+	load("res://tests/iteration3_tests.gd").new().run(self)
 	finish()
 
 func test_authoring() -> void:

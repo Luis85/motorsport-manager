@@ -24,7 +24,7 @@ Neutralization disables normal passing and caps speed. Virtual safety-car runnin
 
 Five compounds have different pace, wear and wet suitability. Wear accumulates with traveled distance and pace; temperature approaches a phase/compound target. Cold, overheated, worn or weather-mismatched tyres lose grip. Engine mode affects consumption, and fuel itself slightly affects speed. Fuel depletion retires a car; pit stops do not refuel it.
 
-Health and modeled damage affect pace and incident exposure. Optional pit servicing repairs the scalar damage model, not an itemized parts inventory. The chosen compound and repair flag lock when service begins; later orders cannot retroactively change that service. The previous HTML engine's separate aero/suspension/brakes/gearbox components, wear histories, stress system and finite tyre-set allocations are not present here.
+Health and modeled damage affect pace and incident exposure. Optional pit servicing repairs the scalar damage model, not an itemized parts inventory. The chosen compound and repair flag lock when service begins; later orders cannot retroactively change that service. The previous HTML engine's separate aero/suspension/brakes/gearbox components, wear histories, stress system are not present here. Finite driver-owned allocations are now implemented with retained aggregate tread and temperature; see [Tyres and strategy](tyres-and-strategy.md).
 
 ## Surface and weather
 

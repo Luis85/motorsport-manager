@@ -58,3 +58,7 @@ Before runtime export or weekend entry, `TrackDiagnostics` also checks sampled c
 ## Bundled catalog
 
 `data/tracks/catalog.json` is an ordered manifest (`kind: motorsport-manager-track-catalog`, version 1) listing the eight adjacent circuit JSON filenames. Each circuit is an independent authoring document, so geometry changes stay reviewable per track. `Storage.read_catalog()` resolves only adjacent JSON filenames, preserving the library order; imported user tracks do not control this manifest.
+
+## Additive visual metadata (0.3.0)
+
+Authoring version 1 accepts an optional `visual` object: `environment` is `meadow`, `woodland` or `coastal`; `season` is `summer` or `autumn`; `seed` is a bounded integer from 0 to 1,000,000. Normalization fills missing values deterministically from the document identity. Saving a custom copy retains the seed. Runtime version 2 includes the normalized object and `illustration_revision: "cozy-circuit-v1"`. Visual choices do not modify centreline, pit, speed or timing samples. Workspace visibility/lock switches are not authoring fields.

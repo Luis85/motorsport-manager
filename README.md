@@ -10,7 +10,13 @@ The main menu offers **Grand Prix Weekend**, **Track Editor**, **Continue Weeken
 
 For a quick first drive, choose **Pinecrest Motor Park**, **Formula**, **Dry**, and **3 laps**. Start qualifying; delegated engineers run the cars. After qualifying, approve race preparation, the formation lap, and the starting lights. Control **Mercer (08)** and **Moreau (09)** from the right-hand pit wall. Space pauses; keys 1–5 select 1×–16× speed.
 
-## Iteration 0.2.0 — race and designer foundation
+## Iteration 0.3.0 — a calmer circuit world
+
+Warm paper UI, pastel terrain, layered tree canopies and a small stylized paddock; **cars remain dots**. Rich/simple scenery, larger-dot options and reduced camera motion are available in Settings. The editor adds illustrative environment/season choices, layer visibility/locks and a reference-lap dot preview.
+
+Each driver now owns twelve finite tyre sets with retained aggregate wear and temperature. The Tyres tab distinguishes picking from fitting, supports one explicit racing-lap stop, and shows actual stint spans plus approximate advice. Native checkpoint versions 1/2 migrate to version 3; older unrecorded stock history cannot be recovered. See [iteration three](docs/iteration-3.md), [graphics](docs/graphics.md) and [tyres/strategy](docs/tyres-and-strategy.md).
+
+### Retained race and designer foundation
 
 The [iteration review and release notes](docs/iteration-2.md) describe the implemented fixes, new regression scenarios, and remaining port boundaries. The project continues to target Godot 4.7.2.
 
@@ -27,7 +33,7 @@ The [iteration review and release notes](docs/iteration-2.md) describe the imple
 - Twelve drivers, two player-controlled cars, pace/engine commands, delegated strategy, tyre condition/temperature, fuel, pit queues and servicing, weather, rubber/water evolution, overtaking/yielding, incidents, yellow flags, and a simplified safety-car neutralization.
 - Atomic local saves, a validated native checkpoint format, settings, race-log export, deterministic headless tests, and rendered native UI smoke tests.
 
-**Scope:** the complete playable weekend loop and the editor's core authoring workflow are implemented. This is a native reimplementation, not a byte-for-byte port of every JavaScript subsystem. Company/dynasty management is deliberately excluded. Advanced editor wizards, the old engineering/tyre-inventory model, and a globally optimized racing-line solver are not included. See the explicit [port status](docs/port-status.md).
+**Scope:** the complete playable weekend loop and the editor's core authoring workflow are implemented. This is a native reimplementation, not a byte-for-byte port of every JavaScript subsystem. Company/dynasty management is deliberately excluded. Advanced editor wizards, the full per-wheel engineering model, and a globally optimized racing-line solver are not included. See the explicit [port status](docs/port-status.md).
 
 ## Verify
 
@@ -35,7 +41,7 @@ The [iteration review and release notes](docs/iteration-2.md) describe the imple
 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux UI verification needs a display or `xvfb` plus `xauth`; the verifier uses software rendering and isolated user data. `--headless-only` explicitly skips rendered UI checks. CI runs the full suite and uploads logs, JSON reports, and fifteen native screenshots.
+Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux UI verification needs a display or `xvfb` plus `xauth`; the verifier uses software rendering and isolated user data. `--headless-only` explicitly skips rendered UI checks. CI runs the full suite and uploads logs, JSON reports, and nineteen native screenshots.
 
 ## Documentation
 

@@ -58,6 +58,7 @@ func _ready() -> void:
 	undo_button = UI.button("Undo", undo); tools.add_child(undo_button)
 	redo_button = UI.button("Redo", redo); tools.add_child(redo_button)
 	tools.add_child(UI.button("Fit circuit", func(): canvas.fit()))
+	tools.add_child(UI.button("Preview lap", func(): canvas.toggle_preview()))
 	tools.add_child(UI.check("Racing line", true, func(value): canvas.show_line = value; canvas.queue_redraw()))
 	tools.add_child(UI.check("Elevation profile", false, func(value): canvas.show_profile = value; canvas.queue_redraw()))
 	tools.add_child(UI.label("Wheel: zoom · Right-drag: pan · Ctrl: snap · Esc: cancel drag", 12, UI.MUTED))
@@ -217,7 +218,7 @@ func refresh_inspector() -> void:
 			feature_index = document.features.size() - 1, true)))
 	features.add_child(UI.paragraph("Feature ranges wrap around the lap. Bridges and tunnels are top-down annotations; the road height controls the elevation profile and runtime data."))
 	features.add_child(UI.label("SCENERY", 16, UI.ACCENT))
-	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water"], func(index): canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water"][index]; set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water"].find(canvas.scenery_type)))
+	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water", "Tent", "Cafe"], func(index): canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"][index]; set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"].find(canvas.scenery_type)))
 	features.add_child(UI.paragraph("Choose a prop, then click the canvas to place it. Return to Select / move to select and drag existing objects; Point exposes rotation, size and position."))
 	features.add_child(UI.button("Remove last scenery object", func():
 		if not document.objects.is_empty(): perform(func(): document.objects.pop_back())))
@@ -246,6 +247,26 @@ func refresh_inspector() -> void:
 		var button = UI.button("%s · %s" % [str(finding.severity).to_upper(), str(finding.code).capitalize()], func(): focus_finding(index))
 		button.tooltip_text = finding.message; checks.add_child(button); checks.add_child(UI.paragraph(finding.message))
 	checks.add_child(UI.paragraph("Checks cover sampled road crossings, vertical separation, pit angles and very tight radii. They do not certify full road-edge, vehicle-envelope or structural clearance."))
+	# Locks apply to pointer gestures, inspector input and destructive keyboard actions.
+	var point_layer = "scenery" if canvas.selected_object >= 0 else ("pits" if canvas.mode == "pit" else "road")
+	if not canvas.layer_editable(point_layer): disable_inputs(point)
+	if not canvas.layer_editable("road") or not canvas.layer_editable("pits"): disable_inputs(track)
+	if not canvas.layer_editable("features") or not canvas.layer_editable("scenery"): disable_inputs(features)
+	if not canvas.layer_editable("reference"): disable_inputs(reference)
+	var look = inspector_page("World")
+	look.add_child(UI.label("A QUIETER PLACE TO RACE", 15, UI.ACCENT))
+	look.add_child(UI.paragraph("The same illustration is used in the editor and race. Surrounds are stylized, not geographic terrain surveys."))
+	look.add_child(UI.option(["Meadow circuit", "Woodland circuit", "Coastal surround"], func(index): perform(func(): document.visual.environment = ["meadow", "woodland", "coastal"][index]), ["meadow", "woodland", "coastal"].find(document.visual.get("environment", "meadow"))))
+	look.add_child(UI.option(["Summer greens", "Autumn warmth"], func(index): perform(func(): document.visual.season = ["summer", "autumn"][index]), ["summer", "autumn"].find(document.visual.get("season", "summer"))))
+	look.add_child(UI.label("EDITOR LAYERS", 15, UI.ACCENT))
+	look.add_child(UI.paragraph("Hidden or locked layers cannot be edited. These workspace toggles do not delete content, change exports, or hide roads in the race."))
+	for key in canvas.layer_state:
+		look.add_child(UI.label(str(key).capitalize(), 13))
+		var row = UI.hbox(look)
+		row.add_child(UI.check("Visible", canvas.layer_state[key].visible, func(value): canvas.set_layer(key, "visible", value)))
+		row.add_child(UI.check("Locked", canvas.layer_state[key].locked, func(value): canvas.set_layer(key, "locked", value)))
+	look.add_child(UI.check("Construction grid", canvas.show_grid, func(value): canvas.show_grid = value; canvas.queue_redraw()))
+	look.add_child(UI.paragraph("Preview lap shows a reference dot on the baked line; it is not a second physics simulation. Editing automatically stops the preview."))
 	inspector.current_tab = clampi(tab, 0, inspector.get_tab_count() - 1)
 	_refreshing_inspector = false
 
@@ -257,6 +278,8 @@ func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
 		UI.field(parent, "Banking °", UI.spin(node.bank, -45, 45, 0.5, func(value): perform(func(): node.bank = value)))
 
 func delete_point() -> void:
+	var layer = "scenery" if canvas.selected_object >= 0 else ("pits" if canvas.mode == "pit" else "road")
+	if not canvas.layer_editable(layer): status.text = "Layer is hidden or locked. Unlock it in World."; return
 	if canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
 		perform(func(): document.objects.remove_at(canvas.selected_object); canvas.selected_object = -1, true); return
 	if canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty():
@@ -342,7 +365,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
 		var direction = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP * -1, KEY_DOWN: Vector2.DOWN * -1}[event.keycode]
 		var amount = 5.0 if event.shift_pressed else 0.5
-		if canvas.selected >= 0:
+		if canvas.selected >= 0 and canvas.layer_editable("road"):
 			perform(func(): var n = document.nodes[canvas.selected]; n.x += direction.x * amount; n.y += direction.y * amount, true)
 		else: handled = false
 	else: handled = false
@@ -400,3 +423,10 @@ func calibrate_reference() -> void:
 		document.reference.width = width; document.reference.x = center.x; document.reference.y = center.y, true)
 	canvas.measure_end = anchor + (canvas.measure_end - anchor) * ratio
 	canvas.queue_redraw(); status.text = "Reference calibrated to %.2f m. Road geometry was not moved." % known_distance
+
+func disable_inputs(parent: Node) -> void:
+	for child in parent.get_children():
+		if child is BaseButton: child.disabled = true
+		if child is SpinBox: child.editable = false
+		if child is LineEdit: child.editable = false
+		disable_inputs(child)
