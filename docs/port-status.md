@@ -1,46 +1,29 @@
 # Port status and boundaries
 
-> **0.3.0 update:** [Iteration three](iteration-3.md) adds the stylized paper/sage world, finite aggregate tyre stock, scheduled stops, stint feedback, editor layers and reference-lap preview. The table below describes the cumulative native project. Earlier release notes remain historical.
+Current release: **0.4.0**. Read the explicit [feature-parity matrix](feature-parity.md) and [iteration-four notes](iteration-4.md). Earlier iteration documents are historical release records, not competing current specifications.
 
-> **Historical 0.2.0 release:** [the iteration-two review](iteration-2.md) records the preceding geometry, timing, pit-service and interaction fixes. Its version-specific checkpoint statements describe that release; current continuity is documented in [Persistence](persistence.md).
+The source baseline is the user's Circuit Atelier/Track Studio and top-down race-weekend prototype. Native source data, including the eight-circuit library and existing attribution, is retained. This is a native reimplementation, not JavaScript running inside Godot, and it does not promise identical simulation output to every prototype revision.
 
-## Source baselines
+## Delivered foundation
 
-The implementation was informed by the user's **Circuit Atelier v0.4** editor (2026-09-21) and the race-weekend engine embedded in **Obsidian First Light / Energy Dynasty** (2026-09-20), with the earlier `index(1).html` race source used to inspect the qualifying/pit-wall contract. The source was retrieved from the user's file library. The company/era shell is not carried into this iteration.
+The complete **editor → library → measured qualifying → race preparation → formation → start lights → race → classification** loop is playable. Track documents, a compiled geometric model, deterministic simulation, native controls, illustration, save validation and tests have separate responsibilities.
 
-The seven geographic circuit documents and Pinecrest were converted from the editor's actual source data, including its explicit curve handles, rather than redrawing rough replacement silhouettes. Source provenance and the upstream MIT notice are retained. This is a **native reimplementation of the selected workflows**, not JavaScript running inside Godot and not a promise of byte-identical physics results.
+Authoring includes cubic points/handles, exact insertion, width/elevation/banking, separate pit routes, start/finish/sector boundaries, references/calibration, range features, decorative scenery, diagnostics, preview and import/export. Multi-selection, flat scenery groups, planar transforms and connected freehand/pen trace with explicit apply are now available.
 
-## Implemented in Godot
+The weekend includes finite tyre allocation, individual FL/FR/RL/RR condition, five setup fields, live racing brake bias, racecraft modes, seven-strip surface evolution/laboratory, traffic courtesy, pits/queues, weather, incidents, flags, telemetry and resumable guides. Cozy illustration and dot-only cars are retained.
 
-| Area | Native implementation |
-|---|---|
-| App shell | Main menu, weekend library/configuration, editor, settings, help, continue/quit |
-| Track authoring | Closed cubic editing, exact subdivision, point/handle movement, width/elevation/banking |
-| Authoring support | Undo/redo, snap, pan/zoom, reference-image embedding/manual calibration, validation |
-| Pits and features | Separate editable pit route, entry/exit/limiter, curbs/runoff/barriers/tunnels/bridges, source props |
-| Track exchange | Native/Circuit Atelier authoring import; native authoring and sampled runtime export |
-| Shared library | Eight bundled circuits plus writable custom copies, usable by both editor and weekend |
-| Qualifying | Physical garage/out/hot/in runs, measured best lap, manual/delegated release and recall, grid result |
-| Race flow | Preparation, real formation lap, grid approval, red lights, standing start, finish and classification |
-| Player management | Two drivers, pace/engine modes, delegated strategy, compound and pit commands, basic setup |
-| Driving and traffic | Curvature/braking profile, lateral lanes, following/passing, blue flags/qualifying courtesy |
-| Conditions | Tyre temperature/wear, fuel, health/damage, water/rubber, scenario-driven rain, incidents |
-| Race control | Local yellow, simplified virtual safety-car/restart, all-retirement completion |
-| Feedback and storage | Top-down cars, timing tower, speed trace, radio/event logs, pause/speed, exact native checkpoint |
-| Tyres and strategy | Twelve finite sets per driver, retained condition, planned fitting, scheduled pit entry, actual stints |
-| Illustration and editor layers | Warm paper UI, cached stylized scenery, environment/season options, layer locks/visibility, reference-lap preview |
-| Engineering quality | Bounded imports, isolated model, atomic writes, deterministic tests, native-rendered UI tests, CI |
+## Important remaining differences
 
-## Deliberately simplified or not carried over
+**Engineering and people:** the complete itemized component/blueprint/manufacture/fit pipeline, setup familiarity, stress, crew roles and personnel skill progression are not ported. Health and repairable vehicle damage remain scalar. Per-wheel tyre state is a bounded management model, not a rigid-body tyre/vehicle solver.
 
-**Editor:** no full feature parity with every Circuit Atelier v0.4 wizard. Dedicated tangent-arc/chicane/rounded-street helpers, freehand fitting, multiple selection/group transforms, advanced prop editing, elevation constraint solving, georeferenced image alignment, and broad clearance/self-intersection certification are absent. Tunnels and bridges have persisted authoring metadata and top-down annotations, not generated 3D structures. Runtime export contains samples and metadata, not the prototype's full mesh/collision interchange bundle. Authored grid spacing is consumed; some grid placement metadata is only retained.
+**Strategy and race control:** only one pending stop per car, current-rate advice and scenario-based weather are implemented. Rich forecast confidence, multi-stop planning and complete battle/rule systems remain absent. One qualifying session is supported; no practice/Q1/Q2/Q3 structure is claimed. Safety-car neutralization is virtual, with no separate driven safety-car vehicle, red flags or comprehensive penalties.
 
-**Trajectory and physics:** the native solver is a bounded curvature heuristic with a longitudinal speed envelope. It does not port the entire original minimum-time search or guarantee the fastest possible lap. A reference path is followed with simplified traffic lanes; full car footprints, detailed aero/brake/suspension/gearbox modeling, setup familiarity, per-wheel tyres and extensive wet/offline surface-grid behavior are not equivalent to the old engine.
+**Editor:** flat scenery groups are not arbitrary nested hierarchies. Drawing strokes are transient and cannot be saved as the prototype's full editor workspace. Specialized corner/arc/chicane tools, constraint-based elevation, georeferencing services and terrain sculpting remain absent. Supported authoring imports do not imply all historical prototype workspace files round-trip.
 
-**Weekend rules:** one qualifying session, not practice/Q1/Q2/Q3. Finite aggregate tyre-bank management and one scheduled stop per car are implemented. No real-series allocation/mandatory compound rules, detailed stewards/penalties, red flags, collision impulses, or separately driven safety-car vehicle. Engineered pit behavior and race control are management-game abstractions, not a regulations simulator. Audio is not implemented. Stylized scenery is native decorative rendering; driver names and car presets are fictional/generic.
+**Geometry and rendering:** bridges/tunnels remain authored metadata and top-down annotations, not constructed 3D structures. Diagnostics check sampled centerlines, not full road/vehicle/bridge clearances. Runtime export is a sampled native interchange model, not a mesh/collision bundle. The racing-line solver evaluates bounded candidates and does not prove a global optimum. Stylized scenery is decorative, not a vehicle collision system. Audio is not implemented.
 
-**Surrounding game:** no business economy, workshop, hiring, research, energy/day loop, dynasty, historical UI eras, season progression, or Obsidian integration. The requested restart focuses on the standalone circuit editor and weekend. Existing browser/campaign save files are not compatible with the native checkpoint.
+**Surrounding game:** company economy, workshop, research, hiring, energy/day progression, dynasty, seasons, historical UI transitions and Obsidian integration remain excluded. Native saves migrate only supported native versions; browser campaign/session saves are unsupported.
 
 ## Acceptance interpretation
 
-Iteration one provides an importable, runnable Godot project and the full end-to-end playable **editor → track library → qualifying → formation → race → results** workflow. It is a solid native starting point with explicit tested boundaries, not an assertion that every subsystem from every prior prototype has been reproduced. Further parity work should take the above gaps as concrete backlog items and preserve the tested native contracts.
+A passing suite means the covered invariants and native interactions passed on the recorded environment. It is not a declaration of complete parity, perfect balance, target-hardware fluidity or exhaustive manual testing. Continue closing named gaps while preserving this playable foundation.

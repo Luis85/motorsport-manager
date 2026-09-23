@@ -1,22 +1,22 @@
-# Project documentation
+# Motorsport Manager documentation
+
+Current native release: **0.4.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
-| [Getting started](getting-started.md) | Import in Godot, first weekend, first custom track, troubleshooting |
-| [Architecture](architecture.md) | Modules, ownership, scene composition, fixed-step/render separation |
-| [Track editor](track-editor.md) | Tools, exact curve insertion, pits, features, reference images, saves |
-| [Track formats](track-format.md) | Native authoring, Circuit Atelier imports, compiled runtime contract |
-| [Grand Prix weekend](race-weekend.md) | Session flow, pit-wall actions, classification and player decisions |
-| [Simulation](simulation.md) | Geometry, speed envelope, traffic, tyres, fuel, weather, incidents |
-| [Persistence](persistence.md) | Local storage, backup writes, settings, checkpoints, validation |
-| [Verification](verification.md) | Reproducible tests, CI, acceptance checks, coverage limits |
-| [Port status](port-status.md) | Source baselines, implemented parity, simplifications and exclusions |
-| [Graphics](graphics.md) | Art direction, deterministic illustration, cache ownership and preferences |
-| [Tyres and strategy](tyres-and-strategy.md) | Finite allocations, plan/fit lifecycle, scheduled stops and continuity |
+| [Getting started](getting-started.md) | Open the project and exercise the playable workflows |
+| [Iteration 4](iteration-4.md) | Delivered racecraft, editor and interaction changes |
+| [Feature parity](feature-parity.md) | Source-to-native status, adaptations and explicit gaps |
+| [Interaction design](interaction-design.md) | Observation, drafts, commands, guides and error recovery |
+| [Architecture](architecture.md) | Ownership, modules and extension boundaries |
+| [Race weekend](race-weekend.md) | Sessions, pit-wall decisions, timing and classification |
+| [Simulation](simulation.md) | Fixed step, geometry, traffic, tyres and conditions |
+| [Tyres and strategy](tyres-and-strategy.md) | Finite sets, four-wheel condition and physical stop planning |
+| [Track editor](track-editor.md) | Authoring, selection, trace, calibration and validation |
+| [Track formats](track-format.md) | Editable/native exchange and baked runtime schema |
+| [Graphics](graphics.md) | Cozy illustration, dots, preferences and caching |
+| [Persistence](persistence.md) | Atomic saves, v4 checkpoints and native migration |
+| [Verification](verification.md) | Automated checks, reports and environment boundaries |
+| [Port status](port-status.md) | Current acceptance scope and unimplemented systems |
 
-Implementation target: **Godot 4.7.2 standard / GDScript / Compatibility renderer**. Native project version **0.3.0**. Documentation describes implemented behavior, not a proposed future architecture.
-
-
-## Current iteration
-
-[Iteration 3: a calmer circuit world](iteration-3.md) describes the implemented graphics and prototype-parity slice. [Iteration 2](iteration-2.md) is retained as historical release documentation; its checkpoint/version statements apply to that release.
+[Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
