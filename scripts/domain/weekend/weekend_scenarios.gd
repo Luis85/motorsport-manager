@@ -41,7 +41,7 @@ static func build(recipe: Dictionary, library: Array) -> StrategyRaceSim:
 	return sim
 
 static func briefing(sim: StrategyRaceSim) -> String:
-	var p = sim.forecast(3).pit
+	var p = RaceForecaster.pit_prediction(RaceForecaster.capture(sim, 3))
 	var low = INF; var high = 0.0
 	for width in sim.track.widths: low = minf(low, width); high = maxf(high, width)
 	var text = "TEAM OBJECTIVE · Bring both cars home.\n%dlaps · %s reference lap · authored road width %.1f–%.1fm.\nEstimated net pit loss %.0f–%.0fs. No race refuelling or mandatory stop; allocations are driver-owned.\nDry / wet scenarios are fictional rules, not licensed series procedures." % [sim.laps, RaceSim.format_time(sim.track.estimate), low, high, p.loss_low, p.loss_high]
