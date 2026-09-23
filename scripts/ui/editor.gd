@@ -1,6 +1,14 @@
 class_name TrackEditor
 extends VBoxContainer
 signal test_requested(document: Dictionary)
+var section_picker: OptionButton
+var sketch_result: Dictionary = {}
+var sketch_summary: Label
+var context_bar: HFlowContainer
+var guide: ContextGuide
+var selection_summary: Label
+var sketch_preview_button: Button
+var sketch_apply_button: Button
 var undo_button: Button
 var redo_button: Button
 var tool_picker: OptionButton
@@ -36,6 +44,7 @@ func _ready() -> void:
 	dirty_label = UI.label("SAVED", 12, UI.GOOD); title_row.add_child(dirty_label)
 	var space = Control.new(); space.size_flags_horizontal = Control.SIZE_EXPAND_FILL; title_row.add_child(space)
 	title_row.add_child(UI.label("AUTHOR → VALIDATE → DRIVE", 12, UI.MUTED))
+	title_row.add_child(UI.button("Editor guide", func(): guide.open_guide()))
 	var actions = HFlowContainer.new(); add_child(actions)
 	var choices: Array = ["Load a library circuit…"]
 	for track in App.library: choices.append(track.name)
@@ -53,7 +62,7 @@ func _ready() -> void:
 		else: UI.notify(self, "Track needs attention", "\n".join(errors)), true)
 	actions.add_child(test_button)
 	var tools = HFlowContainer.new(); add_child(tools)
-	tool_picker = UI.option(["Select / move [V]", "Insert point [I]", "Draw points", "Edit pit lane [P]", "Set start / finish", "Place scenery", "Measure [M]", "Move reference"], set_tool)
+	tool_picker = UI.option(["Select / move [V]", "Insert point [I]", "Draw points", "Edit pit lane [P]", "Set start / finish", "Place scenery", "Measure [M]", "Move reference", "Freehand trace [D]", "Pen trace", "Select scenery [S]"], set_tool)
 	tools.add_child(tool_picker)
 	undo_button = UI.button("Undo", undo); tools.add_child(undo_button)
 	redo_button = UI.button("Redo", redo); tools.add_child(redo_button)
@@ -62,6 +71,11 @@ func _ready() -> void:
 	tools.add_child(UI.check("Racing line", true, func(value): canvas.show_line = value; canvas.queue_redraw()))
 	tools.add_child(UI.check("Elevation profile", false, func(value): canvas.show_profile = value; canvas.queue_redraw()))
 	tools.add_child(UI.label("Wheel: zoom · Right-drag: pan · Ctrl: snap · Esc: cancel drag", 12, UI.MUTED))
+	context_bar = HFlowContainer.new(); add_child(context_bar)
+	selection_summary = UI.label("", 12, UI.ACCENT); context_bar.add_child(selection_summary)
+	for action in [["Duplicate", "duplicate"], ["Group", "group"], ["Ungroup", "ungroup"], ["Align X", "align_x"], ["Align Y", "align_y"], ["Delete", "delete"]]:
+		var b = UI.button(action[0], func(): selection_action(action[1])); b.custom_minimum_size.y = 30; b.add_theme_font_size_override("font_size", 12); context_bar.add_child(b)
+	context_bar.visible = false
 	var content = UI.hbox(self, true)
 	canvas = TrackCanvas.new(); canvas.editing = true; canvas.show_line = true
 	canvas.set_track(geometry, document); content.add_child(canvas)
@@ -69,11 +83,28 @@ func _ready() -> void:
 	canvas.edit_cancelled.connect(cancel_gesture)
 	canvas.edited.connect(recompile)
 	canvas.selection_changed.connect(refresh_inspector)
+	canvas.sketch_changed.connect(func(): sketch_result.clear(); update_sketch_panel(); update_status())
 	canvas.measured.connect(func(distance): status.text = "Measured %.2f metres. Image calibration is available in Reference." % distance; refresh_inspector())
-	inspector = TabContainer.new(); inspector.custom_minimum_size.x = 330; content.add_child(inspector)
+	var side = UI.vbox(content); side.custom_minimum_size.x = 330
+	section_picker = UI.option(["Point & selection", "Circuit & pit lane", "Features & scenery", "Reference image", "Checks", "World & layers", "Draw new layout"], func(index): inspector.current_tab = index)
+	side.add_child(section_picker)
+	inspector = TabContainer.new(); inspector.tabs_visible = false; inspector.size_flags_vertical = Control.SIZE_EXPAND_FILL; side.add_child(inspector)
+	inspector.tab_changed.connect(func(index): if index >= 0: section_picker.select(index))
 	status = UI.label("", 12, UI.MUTED); add_child(status)
 	recompile(); refresh_inspector(); update_status()
+	setup_guide()
 	call_deferred("fit_canvas")
+
+func setup_guide() -> void:
+	guide = ContextGuide.new()
+	guide.configure("editor", [
+		{"title": "Select, then shape", "body": "Click road points to expose their handles. Shift-click extends a selection; drag empty space for a marquee. A drag is one undo step; Escape cancels it.", "target": func(): return canvas, "reveal": func(): set_tool(0)},
+		{"title": "Arrange scenery together", "body": "Select scenery with S. Shift-click adds objects. Group, duplicate, rotate, scale, align and distribute from the contextual selection controls. Locks protect content.", "target": func(): return inspector, "reveal": func(): set_tool(10); inspector.current_tab = 0},
+		{"title": "Trace without overwriting", "body": "Draw connected freehand strokes or use Pen. Close the loop, preview the generated road, then explicitly Replace. The existing circuit stays untouched before confirmation.", "target": func(): return inspector, "reveal": func(): set_tool(8); inspector.current_tab = 6},
+		{"title": "Review before driving", "body": "Checks points out crossings and pit/timing issues. Click a finding to focus that location. Decorative bridges are not a guarantee of geometric clearance.", "target": func(): return inspector, "reveal": func(): set_tool(0); inspector.current_tab = 4},
+		{"title": "One circuit, two workspaces", "body": "Save to the shared library or use Test weekend. The live race receives an independent circuit snapshot. Unapplied trace drafts must be applied or cleared before testing.", "target": func(): return test_button, "reveal": func(): inspector.current_tab = 1}
+	])
+	add_child(guide)
 
 func fit_canvas() -> void:
 	canvas.fit()
@@ -91,12 +122,17 @@ func perform(action: Callable, rebuild_inspector: bool = false) -> void:
 	if rebuild_inspector: refresh_inspector()
 
 func recompile() -> void:
+	if not sketch_result.is_empty():
+		sketch_result.clear(); canvas.sketch_preview = null; canvas.sketch_note = "Document changed. Preview the trace again before replacing the road."
+		update_sketch_panel()
+	canvas.selection_ids = TrackEdit.indices(document, canvas.selection_kind, canvas.selection_ids)
 	if document.nodes.size() >= 4:
 		geometry = TrackGeometry.new(document, vehicle); findings = TrackDiagnostics.inspect(geometry); canvas.diagnostics = findings; canvas.set_track(geometry, document)
 	else: canvas.document = document; canvas.queue_redraw()
 	update_status()
 
 func undo() -> void:
+	if canvas.mode.begins_with("trace_"): canvas.sketch.undo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if undo_stack.is_empty(): return
 	redo_stack.append(document.duplicate(true)); document = undo_stack.pop_back()
 	canvas.selected = mini(canvas.selected, document.nodes.size() - 1)
@@ -104,15 +140,21 @@ func undo() -> void:
 	recompile(); refresh_inspector()
 
 func redo() -> void:
+	if canvas.mode.begins_with("trace_"): canvas.sketch.redo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if redo_stack.is_empty(): return
 	undo_stack.append(document.duplicate(true)); document = redo_stack.pop_back()
 	recompile(); refresh_inspector()
 
 func update_status() -> void:
-	if undo_button: undo_button.disabled = undo_stack.is_empty()
-	if redo_button: redo_button.disabled = redo_stack.is_empty()
-	dirty = JSON.stringify(document) != saved_signature
-	dirty_label.text = "UNSAVED CHANGES" if dirty else ("LIBRARY SOURCE" if document.get("builtin", false) else "SAVED")
+	var tracing = canvas.mode.begins_with("trace_")
+	if undo_button:
+		undo_button.disabled = canvas.sketch.strokes.is_empty() if tracing else undo_stack.is_empty()
+		undo_button.text = "Undo stroke" if tracing else "Undo"
+	if redo_button:
+		redo_button.disabled = canvas.sketch.future.is_empty() and not canvas.sketch.redo_closed if tracing else redo_stack.is_empty()
+		redo_button.text = "Redo stroke" if tracing else "Redo"
+	dirty = JSON.stringify(document) != saved_signature or not canvas.sketch.strokes.is_empty()
+	dirty_label.text = "UNAPPLIED TRACE" if not canvas.sketch.strokes.is_empty() else "UNSAVED CHANGES" if dirty else ("LIBRARY SOURCE" if document.get("builtin", false) else "SAVED")
 	dirty_label.add_theme_color_override("font_color", UI.ACCENT if dirty else UI.GOOD)
 	var errors = TrackDocument.validate(document)
 	if not errors.is_empty():
@@ -121,8 +163,8 @@ func update_status() -> void:
 		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate), geometry.compile_usec / 1000.0, findings.size()]
 		status.add_theme_color_override("font_color", UI.MUTED)
 	if test_button:
-		test_button.disabled = TrackDiagnostics.blocking(findings) or not errors.is_empty()
-		test_button.tooltip_text = "Resolve blocking findings in Checks before driving." if test_button.disabled else "Test an isolated copy; your unsaved editor draft is preserved."
+		test_button.disabled = TrackDiagnostics.blocking(findings) or not errors.is_empty() or not canvas.sketch.strokes.is_empty()
+		test_button.tooltip_text = "Resolve Checks and apply or clear the trace before driving." if test_button.disabled else "Test an isolated copy; your unsaved editor draft is preserved."
 
 func inspector_page(title: String) -> VBoxContainer:
 	var scroll = ScrollContainer.new(); scroll.name = title; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; inspector.add_child(scroll)
@@ -136,7 +178,17 @@ func refresh_inspector() -> void:
 	var tab = inspector.current_tab
 	UI.clear(inspector)
 	var point = inspector_page("Point")
-	if canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
+	if canvas.selection_ids.size() > 1:
+		point.add_child(UI.label("%d %s ITEMS" % [canvas.selection_ids.size(), canvas.selection_kind.to_upper()], 16, UI.ACCENT))
+		point.add_child(UI.paragraph("Drag any selected item to move the selection. Shift-click toggles membership. Road handles move with their points; widths and elevations stay unchanged."))
+		var turn = UI.spin(15, -180, 180, 1, func(_value): pass); UI.field(point, "Rotation °", turn)
+		point.add_child(UI.button("Rotate selection", func(): apply_selection_result(TrackEdit.transform(document, canvas.selection_kind, canvas.selection_ids, Vector2.ZERO, turn.value))))
+		var factor = UI.spin(1.1, 0.1, 4, 0.1, func(_value): pass); UI.field(point, "Scale factor", factor)
+		point.add_child(UI.button("Scale selection", func(): apply_selection_result(TrackEdit.transform(document, canvas.selection_kind, canvas.selection_ids, Vector2.ZERO, 0, factor.value))))
+		point.add_child(UI.button("Distribute horizontally", func(): selection_action("distribute_x")))
+		point.add_child(UI.button("Distribute vertically", func(): selection_action("distribute_y")))
+		point.add_child(UI.paragraph("Transforms are one undo step. Alignment uses item centres; grouping is flat and applies to scenery only."))
+	elif canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
 		var object = document.objects[canvas.selected_object]
 		point.add_child(UI.label("SCENERY / " + str(object.type).to_upper(), 16, UI.ACCENT))
 		coordinate_fields(point, object, false)
@@ -267,7 +319,31 @@ func refresh_inspector() -> void:
 		row.add_child(UI.check("Locked", canvas.layer_state[key].locked, func(value): canvas.set_layer(key, "locked", value)))
 	look.add_child(UI.check("Construction grid", canvas.show_grid, func(value): canvas.show_grid = value; canvas.queue_redraw()))
 	look.add_child(UI.paragraph("Preview lap shows a reference dot on the baked line; it is not a second physics simulation. Editing automatically stops the preview."))
+	var sketch_page = inspector_page("Draw")
+	sketch_page.add_child(UI.label("TRACE → PREVIEW → APPLY", 16, UI.ACCENT))
+	sketch_page.add_child(UI.paragraph("The existing road remains intact while you draw. Start with freehand or click straight segments with Pen. Right-drag pans between strokes."))
+	var trace_tools = UI.hbox(sketch_page)
+	trace_tools.add_child(UI.button("Freehand [D]", func(): set_tool(8)))
+	trace_tools.add_child(UI.button("Pen", func(): set_tool(9)))
+	sketch_summary = UI.paragraph(""); sketch_page.add_child(sketch_summary)
+	var history = UI.hbox(sketch_page)
+	history.add_child(UI.button("Undo stroke", func(): canvas.sketch.undo(); invalidate_sketch()))
+	history.add_child(UI.button("Redo stroke", func(): canvas.sketch.redo(); invalidate_sketch()))
+	sketch_page.add_child(UI.button("Close loop", func():
+		if canvas.sketch.close_loop(): canvas.pen_anchor = Vector2.INF; invalidate_sketch()
+		else: status.text = "Add at least four trace points before closing."))
+	UI.field(sketch_page, "Simplify metres", UI.spin(canvas.sketch.tolerance, 0.2, 50, 0.2, func(value): canvas.sketch.tolerance = value; invalidate_sketch()))
+	UI.field(sketch_page, "Smoothing", UI.spin(canvas.sketch.smoothing, 0, 1, 0.05, func(value): canvas.sketch.smoothing = value; invalidate_sketch()))
+	UI.field(sketch_page, "Road width m", UI.spin(canvas.sketch.width, 5, 40, 0.5, func(value): canvas.sketch.width = value; invalidate_sketch()))
+	sketch_preview_button = UI.button("Preview generated road", preview_sketch); sketch_page.add_child(sketch_preview_button)
+	sketch_apply_button = UI.button("Replace road with preview", apply_sketch, true); sketch_page.add_child(sketch_apply_button)
+	sketch_page.add_child(UI.button("Clear trace", confirm_clear_trace))
+	sketch_page.add_child(UI.paragraph("Replacement clears old pits, features and timing markers because they reference the old layout. Scenery and the reference image remain. Undo restores the complete old document."))
 	inspector.current_tab = clampi(tab, 0, inspector.get_tab_count() - 1)
+	section_picker.select(inspector.current_tab)
+	context_bar.visible = canvas.selection_ids.size() > 1
+	selection_summary.text = "%d selected · %s" % [canvas.selection_ids.size(), canvas.selection_kind]
+	update_sketch_panel()
 	_refreshing_inspector = false
 
 func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
@@ -280,6 +356,8 @@ func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
 func delete_point() -> void:
 	var layer = "scenery" if canvas.selected_object >= 0 else ("pits" if canvas.mode == "pit" else "road")
 	if not canvas.layer_editable(layer): status.text = "Layer is hidden or locked. Unlock it in World."; return
+	if canvas.selection_ids.size() > 1:
+		selection_action("delete"); return
 	if canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
 		perform(func(): document.objects.remove_at(canvas.selected_object); canvas.selected_object = -1, true); return
 	if canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty():
@@ -291,7 +369,9 @@ func delete_point() -> void:
 func save_document() -> void:
 	if name_field: document.name = name_field.text.strip_edges()
 	var error = App.save_track(document)
-	if error.is_empty(): saved_signature = JSON.stringify(document); update_status(); status.text = "Saved to the track library. The Grand Prix selector will include this circuit."
+	if error.is_empty():
+		saved_signature = JSON.stringify(document); invalidate_sketch(); update_status()
+		status.text = "Committed road saved. Your unapplied trace is still temporary; apply it before leaving." if not canvas.sketch.strokes.is_empty() else "Saved to the track library. The Grand Prix selector will include this circuit."
 	else: UI.notify(self, "Could not save circuit", error)
 
 func export_document() -> void:
@@ -338,12 +418,13 @@ func new_document() -> void:
 		replace_document(d); saved_signature = ""; update_status())
 
 func replace_document(d: Dictionary) -> void:
+	canvas.sketch.clear(); canvas.selection_ids.clear(); canvas.sketch_preview = null; sketch_result.clear(); canvas.stroke.clear(); canvas.pen_anchor = Vector2.INF
 	document = TrackDocument.normalize(d); undo_stack.clear(); redo_stack.clear(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
 	saved_signature = JSON.stringify(document); recompile(); refresh_inspector(); canvas.fit()
 
 func confirm_discard(callback: Callable) -> void:
 	if not dirty: callback.call(); return
-	var dialog = ConfirmationDialog.new(); dialog.title = "Unsaved circuit changes"; dialog.dialog_text = "Discard unsaved changes to this circuit? Saved library files will not be deleted."
+	var dialog = ConfirmationDialog.new(); dialog.title = "Unsaved circuit changes"; dialog.dialog_text = "Discard unsaved circuit changes and any unapplied trace? Saved library files will not be deleted."
 	dialog.ok_button_text = "Discard changes"; add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); callback.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(500, 180))
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -356,6 +437,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if event.shift_pressed: redo()
 		else: undo()
 	elif event.ctrl_pressed and event.keycode == KEY_Y: redo()
+	elif event.ctrl_pressed and event.keycode == KEY_D: selection_action("duplicate")
+	elif event.ctrl_pressed and event.keycode == KEY_G: selection_action("ungroup" if event.shift_pressed else "group")
+	elif event.keycode == KEY_ESCAPE: canvas.select_items(canvas.selection_kind, [])
+	elif event.keycode == KEY_D: set_tool(8)
+	elif event.keycode == KEY_S: set_tool(10)
 	elif event.keycode == KEY_DELETE: delete_point()
 	elif event.keycode == KEY_F: canvas.fit()
 	elif event.keycode == KEY_V: set_tool(0)
@@ -365,7 +451,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	elif event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
 		var direction = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP * -1, KEY_DOWN: Vector2.DOWN * -1}[event.keycode]
 		var amount = 5.0 if event.shift_pressed else 0.5
-		if canvas.selected >= 0 and canvas.layer_editable("road"):
+		if canvas.selection_ids.size() > 1 and canvas.layer_editable(canvas.selection_kind):
+			apply_selection_result(TrackEdit.transform(document, canvas.selection_kind, canvas.selection_ids, direction * amount))
+		elif canvas.selected >= 0 and canvas.layer_editable("road"):
 			perform(func(): var n = document.nodes[canvas.selected]; n.x += direction.x * amount; n.y += direction.y * amount, true)
 		else: handled = false
 	else: handled = false
@@ -373,9 +461,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func set_tool(index: int) -> void:
 	canvas._commit_drag()
-	canvas.mode = ["select", "insert", "draw", "pit", "start", "scenery", "measure", "reference"][index]
+	canvas.mode = ["select", "insert", "draw", "pit", "start", "scenery", "measure", "reference", "trace_freehand", "trace_pen", "select_objects"][index]
 	if tool_picker: tool_picker.select(index)
-	canvas.selected_object = -1; refresh_inspector(); canvas.queue_redraw()
+	canvas.selected_object = -1; canvas.selected = -1; canvas.selection_ids.clear(); refresh_inspector(); canvas.queue_redraw()
+	if index in [8, 9]: inspector.current_tab = 6
+	if index == 10: canvas.selection_kind = "scenery"
+	update_status()
 
 func cancel_gesture() -> void:
 	if undo_stack.is_empty(): return
@@ -383,6 +474,7 @@ func cancel_gesture() -> void:
 	recompile(); refresh_inspector()
 
 func race_errors() -> Array[String]:
+	if not canvas.sketch.strokes.is_empty(): return ["Apply or clear the unapplied trace before testing or exporting runtime data."]
 	var errors = TrackDocument.validate(document)
 	if errors.is_empty():
 		for finding in findings:
@@ -430,3 +522,82 @@ func disable_inputs(parent: Node) -> void:
 		if child is SpinBox: child.editable = false
 		if child is LineEdit: child.editable = false
 		disable_inputs(child)
+
+func apply_selection_result(result: Dictionary) -> void:
+	if not canvas.layer_editable(canvas.selection_kind): status.text = "Unlock and show the selected layer first."; return
+	if not result.ok: status.text = result.error; return
+	if document == result.document: status.text = "Selection is already arranged that way."; return
+	checkpoint(); document = result.document
+	canvas.selection_ids = TrackEdit.indices(document, canvas.selection_kind, result.selection)
+	canvas.selected = canvas.selection_ids[0] if canvas.selection_kind == "road" and not canvas.selection_ids.is_empty() else -1
+	canvas.selected_object = canvas.selection_ids[0] if canvas.selection_kind == "scenery" and not canvas.selection_ids.is_empty() else -1
+	recompile(); refresh_inspector()
+
+func selection_action(action: String) -> void:
+	var kind = canvas.selection_kind; var ids: Array = canvas.selection_ids.duplicate()
+	if ids.is_empty():
+		if canvas.selected_object >= 0: kind = "scenery"; ids = [canvas.selected_object]
+		elif canvas.selected >= 0: kind = "road"; ids = [canvas.selected]
+	canvas.selection_kind = kind
+	if not canvas.layer_editable(kind): status.text = "The selected layer is hidden or locked."; return
+	if action in ["duplicate", "group", "ungroup"] and kind != "scenery": status.text = "Grouping and duplication apply to scenery, not road topology."; return
+	match action:
+		"duplicate": apply_selection_result(TrackEdit.duplicate_scenery(document, ids))
+		"group", "ungroup": apply_selection_result(TrackEdit.group(document, ids, action == "ungroup"))
+		"align_x", "align_y", "distribute_x", "distribute_y": apply_selection_result(TrackEdit.arrange(document, kind, ids, action.right(1), action.begins_with("distribute")))
+		"delete":
+			var selected_indices = TrackEdit.indices(document, kind, ids)
+			if selected_indices.is_empty(): return
+			if kind == "road" and document.nodes.size() - selected_indices.size() < 4: status.text = "Keep at least four road points."; return
+			var copy = document.duplicate(true); var items: Array = copy.nodes if kind == "road" else copy.objects
+			selected_indices.reverse()
+			for index in selected_indices: items.remove_at(index)
+			apply_selection_result({"ok": true, "document": copy, "selection": []})
+
+func invalidate_sketch() -> void:
+	sketch_result.clear(); canvas.sketch_preview = null; canvas.queue_redraw(); update_sketch_panel(); update_status()
+
+func update_sketch_panel() -> void:
+	if not sketch_summary or not is_instance_valid(sketch_summary): return
+	var points = canvas.sketch.points()
+	sketch_summary.text = "%s · %d strokes · %d samples\n%s" % ["CLOSED" if canvas.sketch.closed else "OPEN", canvas.sketch.strokes.size(), points.size(), canvas.sketch_note]
+	if sketch_result.get("ok", false): sketch_summary.text += "\nPreview: %d road points · %.2f km" % [sketch_result.nodes, canvas.sketch_preview.length / 1000]
+	sketch_preview_button.disabled = not canvas.sketch.closed or not canvas.layer_editable("road")
+	sketch_apply_button.disabled = not sketch_result.get("ok", false) or not canvas.layer_editable("road")
+
+func preview_sketch() -> void:
+	if not canvas.layer_editable("road"): return
+	sketch_result = canvas.sketch.compile(document)
+	if sketch_result.ok:
+		canvas.sketch_preview = TrackGeometry.new(sketch_result.document, vehicle)
+		var diagnostics = TrackDiagnostics.inspect(canvas.sketch_preview)
+		if TrackDiagnostics.blocking(diagnostics):
+			sketch_result.ok = false; canvas.sketch_note = "Preview has blocking crossings. Adjust the trace before replacing the road."
+		else: canvas.sketch_note = "Teal is the generated road. Nothing has been replaced yet."
+	else: canvas.sketch_note = sketch_result.error
+	update_sketch_panel(); canvas.queue_redraw()
+
+func apply_sketch() -> void:
+	if not sketch_result.get("ok", false) or not canvas.layer_editable("road"): return
+	var dialog = ConfirmationDialog.new(); dialog.title = "Replace this road?"
+	dialog.dialog_text = "Apply the preview and clear the old pit route, track features and timing markers? Scenery and reference remain. Undo restores the original circuit."
+	dialog.ok_button_text = "Replace road"; add_child(dialog)
+	dialog.confirmed.connect(func(): dialog.queue_free(); commit_sketch())
+	dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(540, 185))
+
+func commit_sketch() -> void:
+	if not sketch_result.get("ok", false) or not canvas.layer_editable("road"): return
+	checkpoint(); document = sketch_result.document.duplicate(true)
+	canvas.sketch.clear(); canvas.pen_anchor = Vector2.INF; canvas.sketch_preview = null; sketch_result.clear()
+	canvas.selection_ids.clear(); canvas.selected = -1; canvas.selected_object = -1
+	recompile(); refresh_inspector(); set_tool(0)
+	status.text = "Traced road applied. Review the generated pit lane and timing before driving. Undo restores the original."
+
+func confirm_clear_trace() -> void:
+	if canvas.sketch.strokes.is_empty(): return
+	var dialog = ConfirmationDialog.new(); dialog.title = "Clear the unapplied trace?"
+	dialog.dialog_text = "Discard these drawing strokes and their preview? The existing road and saved library files stay unchanged. This clears trace history."
+	dialog.ok_button_text = "Clear trace"; add_child(dialog)
+	dialog.confirmed.connect(func():
+		dialog.queue_free(); canvas.sketch.clear(); canvas.pen_anchor = Vector2.INF; invalidate_sketch())
+	dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))

@@ -26,6 +26,7 @@ static func valid(data: Dictionary) -> bool:
 			if not integral(c.get(entry[0]), entry[1], entry[2]): return false
 		if c.get("grid") in grids: return false
 		grids.append(c.get("grid"))
+		if not CarSetup.valid(c): return false
 		if not TyreInventory.valid(c, int(data.get("laps", 12))): return false
 		for entry in [["speed", 0, 200], ["tyre", 0, 100], ["temperature", 0, 200], ["fuel", 0, 200], ["health", 0, 100], ["damage", 0, 1000], ["lane", -40, 40], ["pit_d", 0, 10000000]]:
 			if not number(c.get(entry[0]), entry[1], entry[2]): return false

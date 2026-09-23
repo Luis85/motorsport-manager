@@ -41,6 +41,8 @@ var yellow_sector = -1
 var rain = 0.0
 var water: Array = []
 var rubber: Array = []
+var surface: Array = []
+var surface_accumulator = 0.0
 var weather_name = "Clear skies"
 var events: Array = []
 var commands: Array = []
@@ -62,11 +64,12 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	seed_value = int(options.get("seed", 7314)) & 0xffffffff
 	rng_state = seed_value
 	for i in range(96): water.append(0.6 if scenario == "wet" else 0.0); rubber.append(0.12)
+	surface = RaceSurface.create(track, water, rubber)
 	for i in range(ROSTER.size()):
 		var r = ROSTER[i]
 		cars.append({"id": i, "short": r[0], "name": r[1], "team": r[2], "color": r[3], "skill": r[4], "consistency": r[5], "wet_skill": r[6], "reliability": r[7], "number": r[8], "player": r[2] == "Obsidian", "grid": i + 1, "distance": -i * track.grid_spacing, "previous_distance": -i * track.grid_spacing, "speed": 0.0, "lane": (-1 if i % 2 == 0 else 1) * 2.0, "route": "track", "pace": 1, "engine": 1, "auto": true, "compound": "I" if scenario == "wet" else "M", "tyre": 100.0, "temperature": 65.0, "fuel": float(laps) * 1.13 + 1.5, "health": 100.0, "damage": 0.0, "qual_state": "garage", "qual_runs": 0, "next_qual": 2.0 + i * 3.8, "qual_best": 0.0, "qual_laps": 0, "hot_start": 0.0, "hot_valid": true, "lap_start": 0.0, "last_lap": 0.0, "best_lap": 0.0, "completed": 0, "sectors": [0.0, 0.0, 0.0], "sector_start": 0.0, "pit_order": false, "next_compound": "M", "repair": true, "pit_d": 0.0, "pit_cycle": 0, "pit_stage": "", "pit_timer": 0.0, "pit_stops": 0, "box_d": track.pit_length * (0.30 + ["Volpe", "Aster", "Veridian", "Obsidian", "Nordstar", "Kestrel"].find(r[2]) * 0.055), "loss": 0.0, "dnf": false, "retire_reason": "", "finished": false, "finish_position": 0, "finish_time": 0.0, "formation_done": false, "blue": false, "ai_clock": 0.0, "intent": "Ready for the weekend", "history": [], "setup": 5, "telemetry": [], "last_trace": 0.0, "pit_gate": -1.0, "crossed_at": -1.0, "previous_pit_d": 0.0, "previous_lane": 0.0, "previous_route": "track"})
 	for car in cars:
-		car.merge(CAR_V2.duplicate(true)); TyreInventory.initialize(car)
+		car.merge(CAR_V2.duplicate(true)); TyreInventory.initialize(car); CarSetup.initialize(car)
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
 
 func random_value() -> float:
@@ -126,7 +129,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 			var value = int(payload.get("value", 1))
 			if value not in [1, 2, 4, 8, 16]: return fail("Invalid simulation speed.")
 			speed = value
-		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup", "repair", "select_set", "schedule_pit", "cancel_schedule":
+		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup", "repair", "select_set", "schedule_pit", "cancel_schedule", "setup_all", "brake_bias", "battle_mode":
 			if not c.player: return fail("You manage the two Obsidian drivers only.")
 			if c.dnf or c.finished: return fail("This car is no longer running.")
 			match action:
@@ -137,7 +140,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 				"select_set":
 					if c.route == "pit": return fail("The tyre plan is locked until pit exit.")
 					var item = TyreInventory.find(c, str(payload.get("set_id", "")))
-					if item.is_empty() or item.life <= 1: return fail("That set is exhausted or does not belong to this driver.")
+					if not WheelTyres.usable(item): return fail("That set is exhausted or does not belong to this driver.")
 					if phase == "race" and item.id == c.set_id: return fail("Choose a different set for the next stop.")
 					c.next_compound = item.compound; c.next_set_id = item.id
 				"schedule_pit":
@@ -174,9 +177,21 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 				"recall":
 					if phase != "qualifying" or c.route != "track": return fail("Only an on-track qualifying car can be recalled.")
 					c.qual_state = "inlap"; c.hot_valid = false; c.invalid_reason = "Recalled by the pit wall"
-				"setup":
-					if phase not in ["briefing", "race_preparation"] and c.route != "garage": return fail("Setup changes require the garage or race preparation.")
-					c.setup = clampi(int(payload.get("value", 5)), 1, 9)
+				"setup", "setup_all":
+					if phase not in ["briefing", "race_preparation"] and not (phase == "qualifying" and c.route == "garage"): return fail("Mechanical setup changes require the garage or race preparation.")
+					var changes = {"wing": payload.get("value", 5)} if action == "setup" else payload.get("values", {})
+					if not changes is Dictionary or changes.is_empty(): return fail("Choose at least one setup adjustment.")
+					for key in changes:
+						if not CarSetup.SPECS.has(key) or not RaceCheckpoint.integral(changes[key], CarSetup.SPECS[key][0], CarSetup.SPECS[key][1]): return fail("Setup value is outside the available range.")
+					for key in changes: c.car_setup[key] = int(changes[key])
+					c.setup = c.car_setup.wing
+				"brake_bias":
+					if phase != "race" or c.route != "track": return fail("Live brake bias is available on the racing track.")
+					if not RaceCheckpoint.integral(payload.get("value"), 52, 62): return fail("Brake bias must be 52–62% front.")
+					c.car_setup.bias = int(payload.value)
+				"battle_mode":
+					if payload.get("value") not in ["patient", "balanced", "assertive"]: return fail("Choose patient, balanced or assertive racecraft.")
+					c.battle_mode = payload.value
 			post("radio", "%s · %s %s" % [c.short, action.replace("_", " "), str(payload.get("value", ""))])
 		_: return fail("Unknown command: " + action)
 	commands.append({"tick": snappedf(total_time, STEP), "action": action, "payload": payload.duplicate(true)})
@@ -218,11 +233,12 @@ func step() -> void:
 	for c in cars:
 		c.previous_distance = c.distance; c.previous_pit_d = c.pit_d; c.previous_lane = c.lane; c.previous_route = c.route
 		if c.dnf or c.finished: continue
-		TyreInventory.cool_spares(c, STEP)
 		c.ai_clock -= STEP
 		if c.ai_clock <= 0:
-			c.ai_clock = 1.5; engineer(c)
+			c.ai_clock = 1.5; TyreInventory.cool_spares(c, 1.5); engineer(c)
 		if c.route == "garage":
+			var stored_set = TyreInventory.find(c, c.set_id)
+			WheelTyres.cool(stored_set, STEP); c.tyre = stored_set.life; c.temperature = stored_set.temperature
 			if phase == "qualifying" and not qual_closed and c.auto and c.qual_runs < 2 and clock >= c.next_qual: leave_garage(c)
 			continue
 		if c.route == "pit": update_pit(c, old); continue
@@ -264,10 +280,14 @@ func update_surface() -> void:
 		label = "Heavy shower" if target > 0.5 else ("Light rain" if target > 0 else "Clear skies")
 	rain = target
 	if label != weather_name: weather_name = label; post("weather", label + ". Surface water changes gradually.")
-	for i in range(water.size()):
-		var drainage = 0.0014 * (0.85 + 0.25 * sin(i * 0.79))
-		water[i] = clampf(water[i] + (rain * 0.007 * (1 - water[i]) - drainage) * STEP, 0, 1)
-		rubber[i] = clampf(rubber[i] - rubber[i] * rain * 0.00175 * STEP, 0, 1)
+	surface_accumulator += STEP
+	if surface_accumulator + 0.0000001 >= RaceSurface.INTERVAL:
+		surface_accumulator = maxf(0, surface_accumulator - RaceSurface.INTERVAL)
+		RaceSurface.evolve(surface, rain, RaceSurface.INTERVAL, total_time)
+		RaceSurface.profiles(surface, water, rubber)
+
+func surface_at(c: Dictionary) -> Dictionary:
+	return RaceSurface.sample(surface, c.distance / track.length, c.lane)
 
 func recommended_compound() -> String:
 	var wet = average(water)
@@ -279,7 +299,7 @@ func engineer(c: Dictionary) -> void:
 	c.pace = 0 if c.tyre < 30 or flag != "GREEN" else 1
 	c.engine = 0 if c.fuel < remaining * 1.03 else 1
 	var recommended = recommended_compound()
-	if remaining > 0.8 and c.distance > track.length * 0.25 and (c.tyre < 25 or c.compound != recommended and (recommended in ["I", "W"] or c.compound in ["I", "W"]) or c.damage > 24):
+	if remaining > 0.8 and c.distance > track.length * 0.25 and (not WheelTyres.usable(TyreInventory.find(c, c.set_id)) or c.tyre < 25 or c.compound != recommended and (recommended in ["I", "W"] or c.compound in ["I", "W"]) or c.damage > 24):
 		if not c.pit_order:
 			if TyreInventory.choose(c, recommended, true).is_empty():
 				if c.compound == recommended: return
@@ -288,15 +308,15 @@ func engineer(c: Dictionary) -> void:
 			c.next_compound = recommended; c.next_set_id = ""; queue_pit(c)
 			post("pit", "%s: engineer calls %s tyres." % [c.short, recommended])
 
-func grip(c: Dictionary, cell: int) -> float:
-	var wet = water[cell]
+func grip(c: Dictionary, _cell: int, local: Dictionary = {}) -> float:
+	if local.is_empty(): local = surface_at(c)
+	var wet = local.water
 	var match_factor = 1.0
 	if c.compound in ["S", "M", "H"]: match_factor = maxf(0.4, 1 - maxf(0, wet - 0.07) * 0.85)
 	elif c.compound == "I": match_factor = 0.88 + wet * 0.2 - maxf(0, wet - 0.72) * 0.7
 	else: match_factor = 0.77 + wet * 0.33
-	var wear = clampf(1 - (100 - c.tyre) * 0.0013 - maxf(0, 28 - c.tyre) ** 2 * 0.0003, 0.45, 1)
-	var temperature = clampf(1 - maxf(0, absf(c.temperature - (75 if c.compound in ["I", "W"] else 87)) - 12) * 0.006, 0.7, 1)
-	return clampf((0.94 + rubber[cell] * 0.14 - wet * 0.25) * TYRES[c.compound].grip * match_factor * wear * temperature, 0.25, 1.1)
+	var wheel_factor = WheelTyres.grip(TyreInventory.find(c, c.set_id))
+	return clampf(local.grip * TYRES[c.compound].grip * match_factor * wheel_factor, 0.16, 1.1)
 
 func neutral(c: Dictionary) -> bool:
 	return phase == "formation" or flag in ["SAFETY CAR", "RESTART"] or flag == "YELLOW" and track.sector_at(c.distance) == yellow_sector
@@ -304,13 +324,17 @@ func neutral(c: Dictionary) -> bool:
 func move_car(c: Dictionary, old: Array) -> void:
 	var s = track.sample(c.distance)
 	var cell = int(fposmod(c.distance / track.length, 1) * 96)
-	var g = grip(c, cell)
-	var handling = 1.0 + (c.skill - 85) * 0.002 + (c.setup - 5) * minf(0.008, absf(s.curvature) * 0.18)
-	handling *= 1.0 + (c.wet_skill - 85) * 0.004 * water[cell]
+	var local = surface_at(c)
+	var g = grip(c, cell, local)
+	var effects = CarSetup.effects(c, local.water)
+	var handling = (1.0 + (c.skill - 85) * 0.002) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
+	handling *= 1.0 + (c.wet_skill - 85) * 0.004 * local.water
 	var desired = s.speed * sqrt(g) * handling * (1 - c.damage * 0.003) * (0.988 if c.pace == 0 else (1.01 if c.pace == 2 else 1.0))
 	desired *= (0.974 if c.engine == 0 else (1.014 if c.engine == 2 else 1.0))
 	desired *= (1.0 - maxf(0, 65 - c.health) * 0.002) / (1.0 + c.fuel * 0.0007)
-	if absf(s.curvature) < 0.005: desired *= 1.0 - (c.setup - 5) * 0.003
+	if absf(s.curvature) < 0.005: desired *= effects.straight
+	desired *= 1.0 - maxf(0, c.engine_temperature - 115) * 0.003
+	if not WheelTyres.usable(TyreInventory.find(c, c.set_id)): desired = minf(desired, 27.0)
 	var target_lane = s.line
 	if phase == "qualifying" and c.qual_state != "hotlap": desired = minf(desired * 0.76, 48)
 	if phase == "formation":
@@ -339,7 +363,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 	var passing = false
 	if nearest_id >= 0 and ahead_distance < 75:
 		if phase == "race" and not neutral(c): desired *= 1.022 if absf(s.curvature) < 0.004 else 0.991
-		if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(s.curvature) < 0.035 and s.w > 7.5 and desired > old[nearest_id].speed + 0.4:
+		if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(s.curvature) < 0.035 and s.w > 7.5 and desired > old[nearest_id].speed + ({"patient": 2.0, "balanced": 0.4, "assertive": 0.1}[c.battle_mode]) and not (c.battle_mode == "patient" and local.water > 0.5):
 			var side = -1 if old[nearest_id].lane >= 0 else 1
 			target_lane = clampf(old[nearest_id].lane + side * 3.0, -s.w * 0.5 + 1.4, s.w * 0.5 - 1.4)
 			passing = absf(c.lane - old[nearest_id].lane) >= 2.6
@@ -357,8 +381,8 @@ func move_car(c: Dictionary, old: Array) -> void:
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * 1.8)
 	var limits = TrackGeometry.PRESETS[track.preset]
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
-	var accel = maxf(1.0, limits.accel * g - 9.81 * grade)
-	var brake = maxf(2.0, limits.brake * g + 9.81 * grade)
+	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
+	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
 	var must_pit = phase == "race" and c.pit_order or phase == "qualifying" and c.qual_state == "inlap"
 	if must_pit:
 		if c.pit_gate <= c.distance: plan_pit_gate(c)
@@ -395,33 +419,44 @@ func move_car(c: Dictionary, old: Array) -> void:
 	var moved = maxf(0, next - c.distance)
 	var old_distance = c.distance
 	c.distance = next
-	wear_car(c, moved * s.path_scale, cell)
+	wear_car(c, moved * s.path_scale, cell, effects, local)
+	if c.previous_route == "track":
+		var touched = RaceSurface.deposit(surface, track.length, c, old_distance, next, s.curvature)
+		if not touched.is_empty(): RaceSurface.profiles(surface, water, rubber, touched)
 	if phase == "race": race_crossings(c, old_distance, next)
 	elif phase == "qualifying": qualifying_crossings(c, old_distance, next)
 	if passing and nearest_id >= 0 and ahead_distance < moved - old[nearest_id].speed * STEP / track.sample(old[nearest_id].distance).path_scale and phase == "race":
 		stats.passes += 1; post("pass", "%s passes %s on track." % [c.short, cars[nearest_id].short])
 	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if phase == "qualifying" else "Racing")))
 	if phase == "race" and intensity != "calm" and not neutral(c) and c.route == "track":
-		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + water[cell] * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
+		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + local.water * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
+		risk *= {"patient": 0.9, "balanced": 1.0, "assertive": 1.12}[c.battle_mode]
 		if random_value() < risk * STEP * (2.2 if intensity == "volatile" else 1): incident(c)
 	if total_time - c.last_trace >= 1:
 		c.last_trace = total_time
 		c.telemetry.append([total_time, c.speed * 3.6, c.tyre, c.fuel, (c.speed - old_speed) / STEP])
 		if c.telemetry.size() > 120: c.telemetry.pop_front()
 
-func wear_car(c: Dictionary, distance: float, cell: int) -> void:
+func wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+	if local.is_empty(): local = surface_at(c)
 	var fraction = distance / track.length
 	var effort = 0.55 if phase == "formation" else (1.25 if c.pace == 2 else (0.78 if c.pace == 0 else 1.0))
-	var mismatch = 2.2 if c.compound in ["I", "W"] and water[cell] < 0.15 else 1.0
-	c.tyre = maxf(0.0, c.tyre - TYRES[c.compound].wear * fraction * effort * mismatch)
-	var target = (77.0 if c.compound in ["I", "W"] else 88.0) + (c.pace - 1) * 6 - water[cell] * 8
-	c.temperature = lerpf(c.temperature, target, STEP * 0.04)
+	var mismatch = 2.2 if c.compound in ["I", "W"] and local.water < 0.15 else 1.0
+	var item = TyreInventory.find(c, c.set_id)
+	var curve = track.sample(c.distance).curvature if c.route == "track" else 0.0
+	if effects.is_empty(): effects = CarSetup.effects(c, local.water)
+	WheelTyres.update(item, {"speed": c.speed, "curve": curve, "bias": c.car_setup.bias / 100.0, "brake": c.braking, "throttle": c.throttle, "slip": absf(effects.balance), "water": local.water, "push": effort, "neutral": neutral(c), "care": c.consistency, "wear": TYRES[c.compound].wear * fraction * effort * mismatch, "lap": fraction}, STEP)
+	c.tyre = item.life; c.temperature = item.temperature
+	var engine_target = 91 + c.engine * 8 - (c.car_setup.cooling - 5) * 3 + c.throttle * 12 - local.water * 8
+	c.engine_temperature = lerpf(c.engine_temperature, engine_target, 1 - exp(-STEP * 0.035))
+	c.brake_temperature = lerpf(c.brake_temperature, 100 + c.braking * 680 + c.speed * 0.6, 1 - exp(-STEP * 0.09))
+	if phase == "race" and not neutral(c) and total_time >= c.tyre_event_clock:
+		c.tyre_event_clock = total_time + 2.0
+		check_tyre_incident(c)
 	var fuel_rate = 0.60 if phase == "formation" or phase == "qualifying" and c.qual_state != "hotlap" else ([0.84, 1.0, 1.14][c.engine])
 	c.fuel = maxf(0, c.fuel - fraction * fuel_rate)
-	c.health = maxf(0, c.health - fraction * (0.4 if c.engine < 2 else 0.65))
-	rubber[cell] = minf(1, rubber[cell] + fraction * 96 * 0.003 * (1 - water[cell]))
-	water[cell] = maxf(0, water[cell] - fraction * 96 * 0.004)
-	TyreInventory.sync(c, fraction)
+	c.health = maxf(0, c.health - fraction * (0.4 if c.engine < 2 else 0.65) * (1 + maxf(0, c.engine_temperature - 112) * 0.04))
+	TyreInventory.sync(c)
 	if c.fuel <= 0.00001 and phase == "race": retire(c, "Out of fuel")
 
 func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
@@ -575,6 +610,7 @@ func plan_pit_gate(c: Dictionary) -> void:
 		post("pit", c.short + ": too late to brake safely; pit entry deferred one lap.")
 
 func incident(c: Dictionary) -> void:
+	RaceSurface.contaminate(surface, c.distance / track.length, c.lane, 0.20, c.health < 50)
 	stats.incidents += 1
 	var outcome = random_value()
 	if outcome < 0.08:
@@ -582,7 +618,10 @@ func incident(c: Dictionary) -> void:
 	elif outcome < 0.18 and c.health < 95:
 		retire(c, "Mechanical failure"); flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 22
 	else:
-		c.loss = 3 + random_value() * 7; c.tyre = maxf(0, c.tyre - 5); c.damage += 4 + random_value() * 10
+		c.loss = 3 + random_value() * 7; c.damage += 4 + random_value() * 10
+		var fitted = TyreInventory.find(c, c.set_id)
+		for wheel in WheelTyres.KEYS: fitted.wheels[wheel].life = maxf(0, fitted.wheels[wheel].life - 5)
+		WheelTyres.publish(fitted); c.tyre = fitted.life; c.temperature = fitted.temperature
 		flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 18
 		TyreInventory.sync(c)
 		post("incident", c.short + " spins. Local yellow; car recovering.")
@@ -622,10 +661,10 @@ func car_position(c: Dictionary, alpha: float = 1.0) -> Dictionary:
 func snapshot() -> Dictionary:
 	var saved_cars = cars.duplicate(true)
 	for car in saved_cars: TyreInventory.sync(car)
-	return {"kind": "motorsport-manager-weekend", "version": 3, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
+	return {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
 
 static func restore(data: Dictionary) -> RaceSim:
-	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 3): return null
+	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 4): return null
 	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return null
 	if data.get("phase") not in ["briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return null
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return null
@@ -647,6 +686,21 @@ static func restore(data: Dictionary) -> RaceSim:
 				if not c.get("service_compound") in TYRES: return null
 				var item = TyreInventory.choose(c, c.service_compound, true)
 				c.service_set_id = item.get("id", "")
+	if data.version < 4:
+		for car in data.cars:
+			if not car is Dictionary or not car.get("tyre_sets") is Array: return null
+			for item in car.tyre_sets:
+				if not item is Dictionary or not TrackDocument.valid_number(item.get("life"), 0, 100) or not TrackDocument.valid_number(item.get("temperature"), 0, 200): return null
+				WheelTyres.initialize(item)
+			CarSetup.initialize(car)
+	if data.version < 4:
+		var legacy_geometry = TrackGeometry.new(data.track, data.get("vehicle", "Formula"))
+		for values in [data.water, data.rubber]:
+			for value in values:
+				if not TrackDocument.valid_number(value, 0, 1): return null
+		data.surface = RaceSurface.create(legacy_geometry, data.water, data.rubber); data.surface_accumulator = 0.0
+	if not RaceSurface.valid(data.get("surface"), data.water, data.rubber): return null
+	if not TrackDocument.valid_number(data.get("surface_accumulator"), 0, RaceSurface.INTERVAL): return null
 	if not RaceCheckpoint.valid(data): return null
 	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula")))
 	var baseline = sim.cars
@@ -726,3 +780,32 @@ func strategy_advice(c: Dictionary) -> String:
 	var estimate = maxf(0, (c.tyre - 20) / reference_wear)
 	var next = TyreInventory.planned(c, phase == "race")
 	return "Mounted %s · %.1f laps used\nPlan %s\n~%.1f laps to 20%% tread at current pace.\n%.1f race laps remain. Fuel margin ~%.1f laps.\nEstimate excludes future rain, traffic and incidents." % [item.get("label", "—"), item.get("laps", 0), (next.label + " · %.0f%%" % next.life) if not next.is_empty() else "no usable replacement", estimate, remaining, c.fuel - remaining * [0.84, 1.0, 1.14][c.engine]]
+
+func check_tyre_incident(c: Dictionary) -> void:
+	# Conditional damage uses the race PRNG only. Visual updates never call this path.
+	var item = TyreInventory.find(c, c.set_id)
+	if item.is_empty(): return
+	for key in WheelTyres.KEYS:
+		if item.wheels[key].punctured: return
+	for key in WheelTyres.KEYS:
+		var w = item.wheels[key]
+		if w.life < 8 and (w.life <= 0.5 or random_value() < (8 - w.life) * 0.004):
+			w.punctured = true
+			post("tyre", "%s: %s puncture on %s. Pace limited; select a sound replacement and box." % [c.short, key, item.label])
+			return
+	if intensity != "calm" and c.braking > 0.75 and WheelTyres.average(item, "core") < 68 and random_value() < 0.01 * (1.12 if c.battle_mode == "assertive" else 1.0):
+		var key = WheelTyres.lockup(item, c.car_setup.bias / 100.0, 4.0)
+		c.temperature = item.temperature; c.tyre = item.life
+		post("tyre", "%s: cold-tyre lock-up leaves a flat spot on %s." % [c.short, key])
+
+func car_advisories(c: Dictionary) -> Array[String]:
+	var messages: Array[String] = []
+	var item = TyreInventory.find(c, c.set_id)
+	for key in WheelTyres.KEYS:
+		var wheel = item.wheels[key]
+		if wheel.punctured: messages.append("%s PUNCTURE · plan a replacement and box" % key)
+		elif wheel.life < 15: messages.append("%s tread low · %.0f%% remaining" % [key, wheel.life])
+		elif wheel.core > WheelTyres.OPTIMUM[c.compound] + 20: messages.append("%s core hot · conserve pace" % key)
+	if c.engine_temperature > 115: messages.append("Engine hot · reduce engine mode")
+	if c.fuel < maxf(0, laps - c.distance / track.length): messages.append("Fuel projection short · consider economy mode")
+	return messages
