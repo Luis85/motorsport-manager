@@ -9,7 +9,7 @@ static func policy(car: Dictionary) -> Dictionary:
 	for channel in CHANNELS: owners[channel] = "engineer" if car.auto else "player"
 	return {"driver_id": int(car.id), "owners": owners, "overrides": {}, "revision": 0,
 		"plan": {}, "next_stop": 0, "plan_status": "unplanned", "next_review": 0.0,
-		"last_order_id": "", "plan_intent_id": "", "order_forecast": {}, "visit": {}, "held": {}, "blocked_reason": ""}
+		"last_order_id": "", "plan_intent_id": "", "order_forecast": {}, "visit": {}, "held": {}, "notices": {}, "blocked_reason": ""}
 
 static func draft(car: Dictionary, laps: int, template: String = "balanced") -> Dictionary:
 	var starting = TyreInventory.planned(car)
