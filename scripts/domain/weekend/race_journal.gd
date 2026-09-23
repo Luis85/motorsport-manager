@@ -36,6 +36,9 @@ static func valid(state: Variant, cars: Array, laps: int) -> bool:
 		for key in ["kind", "phase", "related_id", "provenance"]:
 			if not record.get(key) is String: return false
 		if not record.get("evidence") is Dictionary: return false
+		if record.kind == "scenario":
+			for key in ["id", "title", "objective", "hint", "track_hash", "ruleset", "assists"]:
+				if not record.evidence.get(key) is String: return false
 		if record.kind == "pit_exit":
 			if not RaceCheckpoint.number(record.evidence.get("visit_seconds"), 0, 100000000): return false
 			if record.evidence.has("predicted_low"):
@@ -65,6 +68,9 @@ static func valid(state: Variant, cars: Array, laps: int) -> bool:
 		if not p.get("order_forecast") is Dictionary: return false
 		if not valid_prediction(p.order_forecast): return false
 		if not p.get("held") is Dictionary or p.held.size() > 8 or not p.get("visit") is Dictionary: return false
+		if not p.get("notices", {}) is Dictionary or p.get("notices", {}).size() > 8: return false
+		for key in p.get("notices", {}):
+			if not key is String or not p.notices[key] is String: return false
 		for key in p.held:
 			if not key is String or not p.held[key] is String: return false
 		if not p.visit.is_empty():
@@ -95,6 +101,6 @@ static func debrief(state: Dictionary) -> Array[String]:
 			var text = "%.1fs · %s · Measured pit visit %.1fs" % [record.time, who, float(e.get("visit_seconds", 0))]
 			if e.has("predicted_low"): text += " · prior estimate %.1f–%.1fs · residual %+.1fs" % [e.predicted_low, e.predicted_high, e.residual]
 			lines.append(text + " (visit duration, not net race-time loss)")
-		elif record.kind in ["handback", "strategy_order", "plan_blocked"]:
+		elif record.kind in ["handback", "strategy_order", "plan_blocked", "warning"]:
 			lines.append("%.1fs · %s · %s" % [record.time, who, e.get("reason", record.kind.replace("_", " "))])
 	return lines
