@@ -47,3 +47,11 @@ In a weekend, open Telemetry during qualifying to inspect the three measured spl
 Choose Pinecrest, Dry and six laps. In qualifying, inspect **Tyres**, plan a set and use Send out with delegation disabled. Its condition remains with that set after the run. During the race, plan another usable set, choose lap 2 or a later reachable lap and schedule the stop. Cancel to change the schedule. Observe physical entry/servicing and the updated stint.
 
 In the editor, open **World**, try Autumn/Woodland, hide the grid and preview a reference lap. Lock Road and verify that selection/drag cannot edit it; unlock before continuing. Place a Tent or Cafe from Features. Settings offers simplified scenery, larger dots and direct (reduced-motion) following. These controls do not change simulation results.
+
+## Try the new 0.4 workflows
+
+**Setup:** at the weekend briefing select MER, choose Setup & handling, change wing/cooling/bias and inspect the unapplied notice. Switch to MOR and back; MER's draft stays. Apply once, then run qualifying. Mechanical controls lock after release; live brake bias is available during racing.
+
+**Tyres and road:** choose Tyres → Wheels for FL/FR/RL/RR detail, then Allocation to plan a real spare. In Track surface lab click a cell, change the channel and locate it on the map. These inspections do not pause a running session. Expand details to create inspector space without leaving the map.
+
+**Authoring:** use Select scenery [S], Shift-click two props, group and drag them. Escape cancels, Undo restores. Then Freehand trace [D] or Pen trace creates a connected temporary loop. Close, Preview and confirm Replace; the old circuit is preserved before commit. Do not close with an unapplied trace expecting it to be saved. Editor guide and Pit-wall guide can be dismissed and resumed.

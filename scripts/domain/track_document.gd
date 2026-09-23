@@ -148,6 +148,7 @@ static func validate(raw: Variant) -> Array[String]:
 			if typeof(v) not in [TYPE_FLOAT, TYPE_INT] or not is_finite(v) or v < 0 or v > 1: return ["Invalid feature range."]
 	for o in raw.get("objects", []):
 		if not o is Dictionary: return ["Invalid scenery object."]
+		if not o.get("group", "") is String or o.get("group", "").length() > 80: return ["Invalid scenery group identifier."]
 		for key in ["x", "y", "rotation", "scale"]:
 			var v = o.get(key, 0 if key != "scale" else 1)
 			if typeof(v) not in [TYPE_FLOAT, TYPE_INT] or not is_finite(v) or abs(v) > 100000: return ["Invalid scenery coordinates."]

@@ -1,6 +1,7 @@
 class_name TrackCanvas
 extends Control
 ## Native 2D projection. Static track and moving cars are drawn on separate canvases.
+signal sketch_changed
 signal navigated
 signal edit_cancelled
 signal edit_started
@@ -8,6 +9,16 @@ signal edited
 signal selection_changed
 signal car_selected(id: int)
 signal measured(metres: float)
+var selection_kind = "road"
+var selection_ids: Array[int] = []
+var drag_origins: Dictionary = {}
+var marquee_start = Vector2.INF
+var marquee_end = Vector2.INF
+var sketch = TrackSketch.new()
+var sketch_preview: TrackGeometry
+var stroke = PackedVector2Array()
+var pen_anchor = Vector2.INF
+var sketch_note = "Trace a new loop without altering the current circuit."
 var show_surface = false
 var world_layer: CircuitWorld
 var layer_state = {"road": {"visible": true, "locked": false}, "pits": {"visible": true, "locked": false}, "scenery": {"visible": true, "locked": false}, "features": {"visible": true, "locked": false}, "reference": {"visible": true, "locked": false}}
@@ -31,6 +42,8 @@ var show_line = false
 var show_labels = true
 var show_grid = true
 var show_profile = false
+var surface_channel = "water"
+var inspected_fraction = -1.0
 var mode = "select"
 var selected = -1
 var selected_pit = -1
@@ -185,7 +198,7 @@ func _draw() -> void:
 				var p = screen(geometry.sample(finding.fraction * geometry.length, true).p)
 				draw_circle(p, 10, UI.DANGER); draw_string(font, p + Vector2(-2, 5), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, UI.BG)
 		if show_profile: _draw_profile()
-	if editing: _draw_editor()
+	if editing: _draw_editor(); draw_selection(); draw_sketch()
 	if measure_start != Vector2.INF:
 		var end = measure_end if measure_end != Vector2.INF else world(last_mouse)
 		draw_line(screen(measure_start), screen(end), UI.ACCENT, 2, true)
@@ -202,17 +215,22 @@ func _draw() -> void:
 
 func draw_surface(target: Control) -> void:
 	if not show_surface or sim == null or geometry == null: return
-	for i in range(96):
-		var color = Color(0.27, 0.65, 0.85, sim.water[i] * 0.55)
-		var a = geometry.sample(i * geometry.length / 96)
-		var b = geometry.sample((i + 1) * geometry.length / 96)
-		# Short pieces follow the road rather than drawing chords through tight corners.
-		for j in range(6):
-			var p = geometry.sample((i + j / 6.0) * geometry.length / 96)
-			var q = geometry.sample((i + (j + 1) / 6.0) * geometry.length / 96)
-			target.draw_line(screen(p.p), screen(q.p), color, maxf(2, p.w * zoom * 0.85), true)
-	target.draw_style_box(UI.box(Color("f7f2e4ee")), Rect2(Vector2(16, 16), Vector2(238, 46)))
-	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "SURFACE WATER  %d%%  ·  blue = wet" % int(sim.average(sim.water) * 100), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+	for i in range(RaceSurface.STATIONS):
+		for lane in range(RaceSurface.LANES):
+			var data = sim.surface[i].lanes[lane]
+			var value = RaceSurface.grip(data) / 1.14 if surface_channel == "grip" else (data.temperature / 60 if surface_channel == "temperature" else data[surface_channel])
+			var color = Color("4a97b4") if surface_channel == "water" else (Color("629162") if surface_channel == "grip" else Color("a77641"))
+			color.a = clampf(value, 0, 1) * 0.68
+			for j in range(4):
+				var p = geometry.sample((i + j / 4.0) * geometry.length / RaceSurface.STATIONS)
+				var q = geometry.sample((i + (j + 1) / 4.0) * geometry.length / RaceSurface.STATIONS)
+				var lateral = (lane + 0.5) / RaceSurface.LANES - 0.5
+				target.draw_line(screen(p.p + p.n * p.w * lateral), screen(q.p + q.n * q.w * lateral), color, maxf(0.75, p.w * zoom / RaceSurface.LANES), true)
+	target.draw_style_box(UI.box(Color("f7f2e4ee")), Rect2(Vector2(16, 16), Vector2(260, 46)))
+	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+	if inspected_fraction >= 0:
+		var s = geometry.sample(inspected_fraction * geometry.length)
+		target.draw_circle(screen(s.p), 13, UI.ACCENT, false, 2, true)
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
@@ -221,10 +239,10 @@ func _draw_editor() -> void:
 		var node = document.nodes[i]
 		var p = screen(TrackDocument.point(node))
 		if not Rect2(Vector2(-15, -15), size + Vector2(30, 30)).has_point(p): continue
-		var chosen = i == selected
+		var chosen = i == selected or selection_kind == "road" and i in selection_ids
 		draw_circle(p, 6 if chosen else 3.5, UI.ACCENT if chosen else Color("9eb8bd"))
 		draw_circle(p, 2, UI.BG)
-		if chosen:
+		if chosen and (selection_ids.size() <= 1 or i == selected):
 			draw_string(font, p + Vector2(8, -12), "POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
 			for key in ["in", "out"]:
 				var h = screen(TrackDocument.point(node) + TrackDocument.handle(node, key))
@@ -312,7 +330,11 @@ func _gui_input(event: InputEvent) -> void:
 		if event.button_index in [MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]: panning = event.pressed; navigated.emit(); accept_event(); return
 		if event.button_index != MOUSE_BUTTON_LEFT: return
 		grab_focus()
+		if editing and mode in ["trace_freehand", "trace_pen"]:
+			sketch_input(event); accept_event(); return
 		if not event.pressed:
+			if marquee_start != Vector2.INF:
+				finish_marquee(); accept_event(); return
 			_commit_drag()
 			accept_event(); return
 		var p = world(event.position)
@@ -347,7 +369,7 @@ func _gui_input(event: InputEvent) -> void:
 			elif event.shift_pressed:
 				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5)); _rebuild_due = true; edited.emit()
 			selection_changed.emit(); queue_redraw(); return
-		if layer_editable("road") and selected >= 0 and selected < document.nodes.size():
+		if layer_editable("road") and selection_ids.size() <= 1 and selected >= 0 and selected < document.nodes.size():
 			for key in ["in", "out"]:
 				var n = document.nodes[selected]
 				if screen(TrackDocument.point(n) + TrackDocument.handle(n, key)).distance_to(event.position) < 11:
@@ -361,27 +383,58 @@ func _gui_input(event: InputEvent) -> void:
 			var nearest = geometry.nearest(p)
 			if nearest.distance * zoom < 50:
 				edit_started.emit(); selected = TrackDocument.split_segment(document, nearest.segment, clampf(nearest.t, 0.03, 0.97)); _rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		selected = -1; selected_object = -1
-		for i in range(document.nodes.size()):
-			if layer_editable("road") and screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: selected = i; break
-		if selected >= 0: _begin_drag("node", p - TrackDocument.point(document.nodes[selected]))
-		else:
+		var kind = "road"; var hit = -1
+		if mode != "select_objects":
+			for i in range(document.nodes.size()):
+				if layer_editable("road") and screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: hit = i; break
+		if hit < 0:
+			kind = "scenery"
 			for i in range(document.objects.size() - 1, -1, -1):
-				var object = document.objects[i]
-				if layer_editable("scenery") and screen(Vector2(object.x, object.y)).distance_to(event.position) < 14:
-					selected_object = i; _begin_drag("object", p - Vector2(object.x, object.y)); break
-		selection_changed.emit(); queue_redraw()
+				if layer_editable("scenery") and screen(TrackDocument.point(document.objects[i])).distance_to(event.position) < 14: hit = i; break
+		if hit >= 0:
+			var ids: Array = selection_ids.duplicate() if selection_kind == kind else []
+			var linked = group_members(hit) if kind == "scenery" else [hit]
+			if event.shift_pressed:
+				var remove = hit in ids
+				for index in linked:
+					if remove: ids.erase(index)
+					elif index not in ids: ids.append(index)
+			elif hit not in ids: ids = linked
+			select_items(kind, ids)
+			if not event.shift_pressed and not selection_ids.is_empty():
+				drag_origins.clear()
+				var items: Array = document.nodes if kind == "road" else document.objects
+				for index in selection_ids: drag_origins[index] = TrackDocument.point(items[index])
+				_begin_drag("multi", p)
+		else:
+			if not event.shift_pressed: select_items("scenery" if mode == "select_objects" else selection_kind, [])
+			marquee_start = p; marquee_end = p
+		queue_redraw()
 	elif event is InputEventMouseMotion:
 		last_mouse = event.position
 		if panning:
 			center -= Vector2(event.relative.x, -event.relative.y) / zoom; queue_redraw(); return
+		if editing and mode == "trace_freehand" and not stroke.is_empty():
+			var point = world(event.position)
+			if stroke[-1].distance_to(point) * zoom > 3 and stroke.size() < 12000: stroke.append(point)
+			queue_redraw(); return
+		if marquee_start != Vector2.INF:
+			marquee_end = world(event.position); queue_redraw(); return
 		if not dragging.is_empty():
 			var p = world(event.position) - _drag_offset
 			if not _gesture_changed:
 				if event.relative.length_squared() < 0.25: return
 				edit_started.emit(); _gesture_changed = true
 			if event.ctrl_pressed: p = p.snapped(Vector2(5, 5))
-			if dragging == "reference":
+			if dragging == "multi":
+				var items: Array = document.nodes if selection_kind == "road" else document.objects
+				for index in drag_origins:
+					var target: Vector2 = drag_origins[index] + p
+					if absf(target.x) > 100000 or absf(target.y) > 100000: return
+				for index in drag_origins:
+					var target: Vector2 = drag_origins[index] + p
+					items[index].x = target.x; items[index].y = target.y
+			elif dragging == "reference":
 				document.reference.x += event.relative.x / zoom; document.reference.y -= event.relative.y / zoom
 			elif dragging == "object":
 				document.objects[selected_object].x = p.x; document.objects[selected_object].y = p.y
@@ -391,8 +444,8 @@ func _gui_input(event: InputEvent) -> void:
 				var n = document.nodes[selected]
 				if dragging == "node": n.x = p.x; n.y = p.y
 				else: TrackDocument.set_handle(n, dragging, p - TrackDocument.point(n))
-			_rebuild_due = dragging not in ["reference", "object"]; queue_redraw()
-			if dragging in ["object", "reference"] and world_layer: world_layer.queue_redraw()
+			_rebuild_due = dragging not in ["reference", "object"] and not (dragging == "multi" and selection_kind == "scenery"); queue_redraw()
+			if (dragging in ["object", "reference"] or dragging == "multi" and selection_kind == "scenery") and world_layer: world_layer.queue_redraw()
 		elif mode == "measure" and measure_start != Vector2.INF: queue_redraw()
 
 func _begin_drag(kind: String, offset: Vector2) -> void:
@@ -407,6 +460,9 @@ func _commit_drag() -> void:
 	queue_redraw()
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		if not stroke.is_empty() or pen_anchor != Vector2.INF or marquee_start != Vector2.INF:
+			stroke.clear(); pen_anchor = Vector2.INF; marquee_start = Vector2.INF; queue_redraw(); get_viewport().set_input_as_handled(); return
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and not dragging.is_empty():
 		dragging = ""; _rebuild_due = false
 		if _gesture_changed: _gesture_changed = false; edit_cancelled.emit()
@@ -422,13 +478,13 @@ func layer_editable(key: String) -> bool:
 	return layer_visible(key) and not layer_state.get(key, {}).get("locked", false)
 
 func tool_layer() -> String:
-	return {"pit": "pits", "scenery": "scenery", "reference": "reference"}.get(mode, "road")
+	return {"pit": "pits", "scenery": "scenery", "select_objects": "scenery", "reference": "reference"}.get(mode, "road")
 
 func set_layer(key: String, field: String, value: bool) -> void:
 	if not layer_state.has(key) or field not in ["visible", "locked"]: return
 	_commit_drag()
 	layer_state[key][field] = value
-	selected = -1; selected_pit = -1; selected_object = -1
+	selected = -1; selected_pit = -1; selected_object = -1; selection_ids.clear()
 	if world_layer:
 		world_layer.road_visible = layer_visible("road")
 		world_layer.pits_visible = layer_visible("pits")
@@ -443,3 +499,89 @@ func toggle_preview() -> void:
 	preview_running = not preview_running
 	if preview_running: preview_distance = 0.0; preview_laps = 0; preview_elapsed = 0.0
 	if overlay: overlay.queue_redraw()
+
+func select_items(kind: String, ids: Array) -> void:
+	selection_kind = kind; selection_ids = TrackEdit.indices(document, kind, ids)
+	selected = selection_ids[0] if kind == "road" and not selection_ids.is_empty() else -1
+	selected_object = selection_ids[0] if kind == "scenery" and not selection_ids.is_empty() else -1
+	selection_changed.emit(); queue_redraw()
+
+func group_members(index: int) -> Array:
+	var group = str(document.objects[index].get("group", ""))
+	if group.is_empty(): return [index]
+	var ids: Array = []
+	for i in range(document.objects.size()):
+		if document.objects[i].get("group", "") == group: ids.append(i)
+	return ids
+
+func finish_marquee() -> void:
+	var rectangle = Rect2(marquee_start, marquee_end - marquee_start).abs()
+	var kind = "scenery" if mode == "select_objects" else selection_kind
+	var ids: Array = selection_ids.duplicate()
+	if layer_editable(kind):
+		var items: Array = document.nodes if kind == "road" else document.objects
+		for i in range(items.size()):
+			if rectangle.has_point(TrackDocument.point(items[i])):
+				for linked in group_members(i) if kind == "scenery" else [i]:
+					if linked not in ids: ids.append(linked)
+	marquee_start = Vector2.INF; marquee_end = Vector2.INF
+	select_items(kind, ids)
+
+func draw_selection() -> void:
+	if selection_ids.size() > 1:
+		var items: Array = document.nodes if selection_kind == "road" else document.objects
+		var rect = Rect2(); var first = true
+		for index in selection_ids:
+			if index < 0 or index >= items.size(): continue
+			var p = screen(TrackDocument.point(items[index]))
+			draw_rect(Rect2(p - Vector2(8, 8), Vector2(16, 16)), UI.ACCENT, false, 1.5)
+			if first: rect = Rect2(p, Vector2.ZERO); first = false
+			else: rect = rect.expand(p)
+		if not first:
+			draw_rect(rect.grow(16), UI.ACCENT, false, 1.5)
+			draw_string(ThemeDB.fallback_font, rect.position + Vector2(0, -23), "%d selected · Shift-click to add/remove" % selection_ids.size(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+	if marquee_start != Vector2.INF:
+		var rectangle = Rect2(screen(marquee_start), screen(marquee_end) - screen(marquee_start)).abs()
+		draw_rect(rectangle, Color("ac965329")); draw_rect(rectangle, UI.ACCENT, false, 1.5)
+
+func sketch_input(event: InputEventMouseButton) -> void:
+	if not layer_editable("road") or sketch.closed: return
+	var point = world(event.position); var existing = sketch.points()
+	if mode == "trace_pen":
+		if not event.pressed: return
+		if pen_anchor == Vector2.INF: pen_anchor = point if existing.is_empty() else existing[-1]
+		else:
+			if event.shift_pressed:
+				var delta = point - pen_anchor; point = pen_anchor + Vector2.RIGHT.rotated(snappedf(delta.angle(), PI / 12)) * delta.length()
+			if pen_anchor.distance_to(point) > 0.5:
+				sketch.add_stroke(PackedVector2Array([pen_anchor, point]), 16 / zoom); pen_anchor = point; sketch_preview = null; sketch_changed.emit()
+		queue_redraw(); return
+	if event.pressed:
+		if not existing.is_empty() and point.distance_to(existing[-1]) * zoom > 20:
+			sketch_note = "Continue at the END marker; pan with right-drag between strokes."; sketch_changed.emit(); return
+		stroke = PackedVector2Array([point if existing.is_empty() else existing[-1]])
+	else:
+		if stroke.size() >= 2:
+			sketch.add_stroke(stroke, 20 / zoom); sketch_preview = null
+			sketch_note = "Stroke saved. Continue at END, or close the loop when ready."
+		stroke.clear(); sketch_changed.emit()
+	queue_redraw()
+
+func draw_sketch() -> void:
+	var points = sketch.points()
+	var trace = PackedVector2Array()
+	for point in points: trace.append(screen(point))
+	if trace.size() >= 2:
+		draw_polyline(trace, UI.ACCENT, 2.5, true)
+		if sketch.closed: draw_dashed_line(trace[-1], trace[0], UI.ACCENT, 2, 7)
+		for label in [["START", trace[0]], ["END", trace[-1]]]:
+			draw_circle(label[1], 7, UI.PANEL)
+			draw_string(ThemeDB.fallback_font, label[1] + Vector2(9, -9), label[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
+	var current = PackedVector2Array()
+	for point in stroke: current.append(screen(point))
+	if current.size() >= 2: draw_polyline(current, UI.GOOD, 2, true)
+	if pen_anchor != Vector2.INF: draw_line(screen(pen_anchor), last_mouse, UI.GOOD, 1.5, true)
+	if sketch_preview:
+		var preview = PackedVector2Array()
+		for point in sketch_preview.points: preview.append(screen(point))
+		preview.append(preview[0]); draw_polyline(preview, Color("467c78"), 3, true)

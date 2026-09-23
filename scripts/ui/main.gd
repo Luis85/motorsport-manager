@@ -23,7 +23,7 @@ func _ready() -> void:
 	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
-	header.add_child(UI.label("NATIVE GODOT  ·  0.3.0", 12, UI.MUTED))
+	header.add_child(UI.label("NATIVE GODOT  ·  0.4.0", 12, UI.MUTED))
 	return_editor_button = UI.button("Return to editor", func(): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))

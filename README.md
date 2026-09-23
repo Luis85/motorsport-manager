@@ -1,39 +1,22 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current release **0.4.0**.
 
 ## Open and play
 
-Use **Godot 4.7.2, standard edition**. Clone this repository, import its root `project.godot`, let the editor import the scripts, and press **F5**. No npm, .NET, web browser, external assets, or Godot plugins are required.
+Use **Godot 4.7.2 Standard**. Clone the repository, import the root `project.godot`, let Godot import the scripts, then press **F5**. No npm, .NET, browser, external asset service or Godot plugin is required.
 
-The main menu offers **Grand Prix Weekend**, **Track Editor**, **Continue Weekend**, and **Settings**.
+Start with **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry → 3 laps**. Engineers can handle qualifying releases. Approve race preparation, formation and the starting lights when ready. Manage **Mercer (08)** and **Moreau (09)** from the pit wall. Space pauses; 1–5 selects 1×–16×. The main menu also offers Track Editor, Settings and Continue Weekend.
 
-For a quick first drive, choose **Pinecrest Motor Park**, **Formula**, **Dry**, and **3 laps**. Start qualifying; delegated engineers run the cars. After qualifying, approve race preparation, the formation lap, and the starting lights. Control **Mercer (08)** and **Moreau (09)** from the right-hand pit wall. Space pauses; keys 1–5 select 1×–16× speed.
+## Iteration 0.4.0 — racecraft and authoring parity
 
-## Iteration 0.3.0 — a calmer circuit world
+**Weekend:** individual FL/FR/RL/RR tyre condition, finite retained stock, staged five-field setup with Apply/Revert, live front brake bias, patient/balanced/assertive racecraft, a seven-strip surface field and clickable laboratory. Topic selectors, tyre subpages, expandable details and resumable guides improve access without moving the primary pit/release actions into scrolling content.
 
-Warm paper UI, pastel terrain, layered tree canopies and a small stylized paddock; **cars remain dots**. Rich/simple scenery, larger-dot options and reduced camera motion are available in Settings. The editor adds illustrative environment/season choices, layer visibility/locks and a reference-lap dot preview.
+**Designer:** road/scenery multi-selection and marquee, group drag, planar transforms, alignment/distribution, flat scenery groups and duplication. Connected Freehand/Pen trace keeps the old circuit intact through Close → Preview → confirmed Replace. Invalid or stale previews cannot be applied; unfinished traces block testing/runtime export. Trace strokes are temporary, not saved editor-workspace documents.
 
-Each driver now owns twelve finite tyre sets with retained aggregate wear and temperature. The Tyres tab distinguishes picking from fitting, supports one explicit racing-lap stop, and shows actual stint spans plus approximate advice. Native checkpoint versions 1/2 migrate to version 3; older unrecorded stock history cannot be recovered. See [iteration three](docs/iteration-3.md), [graphics](docs/graphics.md) and [tyres/strategy](docs/tyres-and-strategy.md).
+**Protected foundation:** warm paper/green/brass UI, cached stylized scenery and **dot-only cars**; eight bundled circuits; Bezier editing, references, pit lanes and annotated features; measured out/hot/in qualifying; formation/grid/lights/race; finite tyre plans and physical pit service; live timing/telemetry; atomic storage and validated checkpoints.
 
-### Retained race and designer foundation
-
-The [iteration review and release notes](docs/iteration-2.md) describe the implemented fixes, new regression scenarios, and remaining port boundaries. The project continues to target Godot 4.7.2.
-
-**Designer:** coalesced lightweight drag previews, one full bake on release, Escape rollback, reference-image ruler calibration, scenery manipulation, custom sector gates, and a clickable Checks inspector that blocks unsafe sampled road crossings from Test Weekend/runtime export.
-
-**Weekend:** persistent timing rows, always-accessible pit actions, Commands/Telemetry/Radio tabs, measured qualifying splits, stable courtesy/yielding, explicit deferred pit calls, frozen service plans, and lap-distance-first final classification.
-
-### Retained core
-
-- Native Godot Controls and custom 2D rendering, with a shared compiled circuit model. This is not an HTML game wrapped in Godot.
-- Circuit Atelier-style Bézier editing, per-point width/elevation/banking, pit-lane editing, track features, reference images, undo/redo, authoring import/export, and compiled racing-line export.
-- Eight bundled editable circuits: Monaco, Monza, Spa-Francorchamps, Silverstone, Suzuka, Zandvoort, Interlagos, and fictional Pinecrest Motor Park. Custom tracks enter the same weekend library.
-- Full weekend flow: briefing → measured qualifying out/hot/in laps → grid → race preparation → formation lap → start lights → top-down race → classification.
-- Twelve drivers, two player-controlled cars, pace/engine commands, delegated strategy, tyre condition/temperature, fuel, pit queues and servicing, weather, rubber/water evolution, overtaking/yielding, incidents, yellow flags, and a simplified safety-car neutralization.
-- Atomic local saves, a validated native checkpoint format, settings, race-log export, deterministic headless tests, and rendered native UI smoke tests.
-
-**Scope:** the complete playable weekend loop and the editor's core authoring workflow are implemented. This is a native reimplementation, not a byte-for-byte port of every JavaScript subsystem. Company/dynasty management is deliberately excluded. Advanced editor wizards, the full per-wheel engineering model, and a globally optimized racing-line solver are not included. See the explicit [port status](docs/port-status.md).
+See [release notes](docs/iteration-4.md), [feature parity](docs/feature-parity.md) and [interaction design](docs/interaction-design.md). This is a native adaptation, **not complete parity with every prototype subsystem**. Component engineering, people/stress, advanced strategy/rules and constructed 3D tunnels/bridges remain outside this release. Company/dynasty management is deliberately excluded.
 
 ## Verify
 
@@ -41,12 +24,12 @@ The [iteration review and release notes](docs/iteration-2.md) describe the imple
 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux UI verification needs a display or `xvfb` plus `xauth`; the verifier uses software rendering and isolated user data. `--headless-only` explicitly skips rendered UI checks. CI runs the full suite and uploads logs, JSON reports, and nineteen native screenshots.
+Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux rendered UI tests need a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips native UI verification. The verifier imports a clean copy, isolates user data, rejects script errors, and writes reports/screen captures under `reports/`. CI runs the suite and uploads evidence. The **Source project** workflow also archives tracked source into a downloadable project ZIP.
 
-## Documentation
+The generated verification report is authoritative for assertion counts and timing. See [verification](docs/verification.md) for scope and limitations. New checkpoints are v4; supported native v1–v3 saves migrate explicitly. Browser saves are not compatible.
 
-Start at [docs/README.md](docs/README.md): getting started, architecture, editor controls, track formats, weekend mechanics, simulation, persistence, verification, and port status.
+## Documentation and provenance
 
-## License and data
+[Documentation index](docs/README.md) covers setup, architecture, systems, formats, controls and remaining boundaries. The seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. Existing data and attribution are preserved. See [third-party notices](THIRD_PARTY_NOTICES.md).
 
-Project code retains the repository's [MIT license](LICENSE), copyright Luis Mendez. Geographic circuit outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits`, through the Circuit Atelier v0.4 prototype; see [third-party notices](THIRD_PARTY_NOTICES.md). These are unofficial reconstructions, **not laser scans or certified circuit/vehicle simulations**. Local widths, intermediate elevations, banking, pit routes, and scenery contain authored estimates. No official championship branding, car models, or driver likenesses are used.
+These are unofficial reconstructions, **not laser scans or certified circuit/vehicle simulations**. Widths, intermediate elevations, pit routes and scenery contain authored estimates. No official championship branding, car models or driver likenesses are used. Project code retains the repository's [MIT license](LICENSE), copyright Luis Mendez.

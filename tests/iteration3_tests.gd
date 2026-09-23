@@ -79,7 +79,7 @@ func test_saves() -> void:
 	var sim = h.blank_race(h.geometries[7], {"laps": 5, "scenario": "dry", "intensity": "calm"})
 	h.ticks(sim, 300)
 	var data = sim.snapshot()
-	check(data.version == 3, "new checkpoint format is explicitly versioned")
+	check(data.version == 4, "new checkpoint format is explicitly versioned")
 	var restored = RaceSim.restore(JSON.parse_string(JSON.stringify(data, "", true, true)))
 	check(restored != null, "v3 JSON checkpoint validates")
 	if restored:

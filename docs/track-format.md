@@ -62,3 +62,9 @@ Before runtime export or weekend entry, `TrackDiagnostics` also checks sampled c
 ## Additive visual metadata (0.3.0)
 
 Authoring version 1 accepts an optional `visual` object: `environment` is `meadow`, `woodland` or `coastal`; `season` is `summer` or `autumn`; `seed` is a bounded integer from 0 to 1,000,000. Normalization fills missing values deterministically from the document identity. Saving a custom copy retains the seed. Runtime version 2 includes the normalized object and `illustration_revision: "cozy-circuit-v1"`. Visual choices do not modify centreline, pit, speed or timing samples. Workspace visibility/lock switches are not authoring fields.
+
+## Scenery groups and trace boundary (0.4)
+
+Authoring v1 scenery objects may contain an optional `group` string of at most 80 characters. Empty/missing means ungrouped. Group IDs associate flat scenery members; they are not nested entities or arbitrary transform matrices. Duplicate generates new group identities. Normalization and native JSON retain the field; invalid types/oversized identifiers are rejected.
+
+Trace strokes are editor-local temporary data, not an extension to the interchange schema. Confirmed trace compilation emits ordinary native road nodes with Bezier handles; old pit/feature/timing attachments are cleared. Runtime exports remain v2. Supported Circuit Atelier authoring import does not imply support for the prototype's complete workspace, nested groups or mesh/collision bundle.

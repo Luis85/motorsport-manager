@@ -2,11 +2,11 @@
 
 ## Allocation
 
-Every driver owns twelve sets for one weekend: **S1–S3, M1–M3, H1–H2, I1–I2, W1–W2**. Their internal identity includes the immutable driver ID; another driver cannot mount the set. Each records compound, aggregate tread percentage, aggregate temperature, distance in laps, mount count and whether it has been used.
+Every driver owns twelve sets for one weekend: **S1–S3, M1–M3, H1–H2, I1–I2, W1–W2**. Their internal identity includes the immutable driver ID; another driver cannot mount the set. Each records compound, distance in laps, mount count, heat cycles and four individual wheel records; aggregate tread/temperature are derived summaries.
 
 Tread and temperature belong to the set. Removing, selecting or remounting it never restores 100% tread or resets it to a warmed temperature. Spare sets cool gradually toward the modeled ambient temperature. The fitted set's live aggregate tyre state is synchronized after wear/incident updates and into a copied checkpoint snapshot.
 
-This ports the finite allocation shape and retained-condition decision from the prototype. It does **not** port its four-contact-patch thermal/pressure/graining/flat-spot/puncture model. The allocation is a fictional test ruleset, not current Formula 1 or another series' regulations. There are no mandatory compound-use penalties.
+This adapts the prototype allocation and four-contact-patch model: tread, surface/core temperatures, normalized pressure, load, graining, blistering, flat spots and punctures. Coefficients are bounded game rules, not a validated real-vehicle tyre model. The allocation is a fictional test ruleset, not current Formula 1 or another series' regulations. There are no mandatory compound-use penalties.
 
 ## Pick, commit, fit
 
@@ -14,7 +14,7 @@ Open **Tyres** in the right pit wall. All twelve sets show fitted/planned/fresh/
 
 A qualifying **Send out** mounts the selected set when the car leaves its garage. Approving **formation** mounts the prepared starting sets. A racing **Box** call or **Schedule stop** commits physical pit entry; the selected set is fitted during real servicing. Plans cannot switch tyres in the lane. At service start the specific set identity and repair flag are frozen, preventing a later edit from changing work already underway.
 
-A set at or below 1% tread is unavailable for a new fit. The mounted set cannot serve as its own racing replacement. No spare means no accepted replacement stop: the player receives a reason and must choose an available set. Damage-only stops without a replacement are not implemented. Engineers use the same remaining inventory; they cannot manufacture fresh stock. New weekends create a new allocation.
+A set at or below 1% aggregate tread, or with a punctured/exhausted wheel, is unavailable for a new fit. The mounted set cannot serve as its own racing replacement. No spare means no accepted replacement stop: the player receives a reason and must choose an available set. Damage-only stops without a replacement are not implemented. Engineers use the same remaining inventory; they cannot manufacture fresh stock. New weekends create a new allocation.
 
 Selecting a set does not itself disable delegation; delegated qualifying uses that plan at release. Manual pace/engine, immediate pit and scheduled-stop commands disable delegation. A subsequently re-enabled engineer may revise a condition-driven plan; the explicit pending scheduled gate is retained while its pit order exists.
 
@@ -36,6 +36,12 @@ Tread advice estimates laps until 20% tread from the current compound's base wea
 
 ## Save continuity
 
-Checkpoint version 3 stores the allocation, current/planned/service set IDs, absolute pit gate, scheduled lap and actual stints. Validation rejects changed identities, negative or non-finite state, foreign planned IDs and malformed stint records before replacing a session. JSON continuation tests compare exact discrete/random state and a declared numerical tolerance.
+Checkpoint version 4 stores individual wheel/setup/surface data in addition to the allocation, current/planned/service set IDs, absolute pit gate, scheduled lap and actual stints. Validation rejects changed identities, negative or non-finite state, foreign planned IDs and malformed stint records before replacing a session. JSON continuation tests compare exact discrete/random state and a declared numerical tolerance.
 
-Native v1/v2 checkpoints initialize the formerly absent stock while preserving the currently mounted aggregate tread and temperature. Earlier discarded-set history is unknowable and is not fabricated. Browser prototype saves are still incompatible.
+Native v1/v2 checkpoints initialize the formerly absent stock while preserving the currently mounted aggregate tread and temperature. Native v3 retains its stock; all pre-v4 saves receive explicit symmetric wheel defaults because individual wheel history was not recorded. Earlier discarded-set history is unknowable and is not fabricated. Browser prototype saves are still incompatible.
+
+## Wheel detail and emergency recovery (0.4)
+
+Tyres separates Allocation, Wheels and Stop plan. The four stable wheel cards retain selection during refresh. Pressure is relative to the cold reference (×), not bar/psi. Surface and core temperatures differ; heating increments a cycle once and cooling re-arms it. Graining may clean under suitable running conditions, while flat spots/punctures are retained until the set is replaced.
+
+Punctures limit grip/pace and produce a wheel-specific advisory. Only a delegated engineer may advance a future scheduled stop or order early emergency recovery. It still needs sound finite stock and safe pit-entry braking. A manually controlled car receives information, not an automatic strategy override. There is no guaranteed rescue where the remaining physical pit entry lies beyond the race finish.

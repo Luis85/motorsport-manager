@@ -1,0 +1,24 @@
+name: Source project
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive tracked source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=zip --prefix=motorsport-manager/ HEAD -o /tmp/motorsport-manager-source.zip
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: motorsport-manager-source
+          path: /tmp/motorsport-manager-source.zip
+          if-no-files-found: error
+          retention-days: 14
