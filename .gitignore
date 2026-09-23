@@ -1,0 +1,8 @@
+.godot/
+builds/
+reports/*
+!reports/.gdignore
+*.tmp
+*.bak
+__pycache__/
+.DS_Store

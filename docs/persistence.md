@@ -1,0 +1,26 @@
+# Persistence and local data
+
+All player writes use Godot's `user://` directory, displayed in **Settings → Local data**. The application never saves back into packaged `res://data`.
+
+| Path | Contents |
+|---|---|
+| `user://settings.json` | Fullscreen, VSync, default labels/line and simulation speed |
+| `user://tracks/*.json` | Individually saved custom authoring documents |
+| `user://weekend.json` | Current native weekend checkpoint |
+| `*.bak` | Previous successful value retained by atomic replacement |
+
+`Storage.read_json` bounds files to 16 MB and returns structured success/error results. It does not evaluate scripts or instantiate Godot resources from user input. Imported track identifiers are constrained before becoming filenames. Invalid library documents are skipped with an explanatory warning rather than crashing the menu.
+
+Writes create a temporary file, flush it, move the old destination to `.bak`, and rename the temporary file into place. A failed replacement attempts to restore the previous destination. This protects against many interrupted writes, but is not a transactional database or a guarantee against disk/device failure. An invalid main file is reported; backup restoration is a manual recovery action, not a silent automatic fallback.
+
+## Checkpoints
+
+Native checkpoints use a versioned schema and contain a copied track document, vehicle/configuration, session clock/phase, fixed-step accumulator, PRNG, drivers, tyres/fuel/condition, pit queues, surface state, flags, events and commands. Restoration validates the version, shape, enum values, roster and bounded finite values before replacing the current weekend. Numeric integer fields are explicitly converted after JSON decoding.
+
+The checkpoint is written by **Save weekend**, on phase transitions, and when leaving a weekend for the menu. Closing the app with a live weekend also saves. An active session loaded from disk is paused until resumed. The in-memory **Continue Weekend** action retains the already-loaded model. Editing the library cannot alter a checkpoint's embedded geometry.
+
+The old HTML/browser localStorage and campaign checkpoints are incompatible and are not imported. Native race-log export is for analysis, not continuation. There is one active weekend checkpoint in iteration one; multiple save slots and a persistent draft-recovery system are not implemented.
+
+## Tests and user data
+
+The Python verification harness copies the project without import caches into a temporary directory and gives that copy a unique application name. It also assigns temporary XDG/APPDATA directories. This prevents normal player saves from being reused even when a platform ignores those environment variables. Generated reports are copied back into the real project's `reports/` directory. Tests verify JSON round trips, corrupt/missing files, atomic backup behavior, and exact native continuation. The UI test writes a custom circuit and checkpoint only in its isolated application profile.

@@ -1,0 +1,14 @@
+{
+  "kind": "motorsport-manager-track-catalog",
+  "version": 1,
+  "files": [
+    "monaco.json",
+    "monza.json",
+    "spa.json",
+    "silverstone.json",
+    "suzuka.json",
+    "zandvoort.json",
+    "interlagos.json",
+    "hillside.json"
+  ]
+}
