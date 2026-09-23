@@ -124,6 +124,8 @@ func run():
 	check(view.canvas.size.x > 220, "Small-window canvas remains usable")
 	check(is_visible_inside(view.box_button), "Pit action remains inside the small-window viewport")
 	check(tower_positions(view), "Timing tower exposes positions for all twelve cars")
+	check(view.tower.get_column_width(0) >= 26, "Timing positions reserve space for two-digit ranks")
+	check(view.tower.get_column_width(1) >= 42, "Timing identities reserve space for complete three-letter codes")
 	check(app.save_weekend().is_empty(), "Weekend UI checkpoint saves")
 	app.weekend = null
 	check(app.load_weekend().is_empty() and app.weekend.phase == "results", "Completed weekend resumes from disk")

@@ -90,16 +90,17 @@ func _ready() -> void:
 	weather_label = UI.label("", 12, UI.MUTED); strip.add_child(weather_label)
 	strip.add_child(UI.button("Save", save_checkpoint)); strip.add_child(UI.button("Export log", export_log))
 	var body = UI.hbox(self, true)
-	var timing_panel = UI.panel(); timing_panel.custom_minimum_size.x = 246; body.add_child(timing_panel)
+	var timing_panel = UI.panel(); timing_panel.custom_minimum_size.x = 276; body.add_child(timing_panel)
 	var timing = UI.vbox(timing_panel, true)
 	timing.add_child(UI.label("LIVE CLASSIFICATION", 12, UI.ACCENT))
 	tower = Tree.new(); tower.select_mode = Tree.SELECT_ROW; tower.columns = 5; tower.hide_root = true; tower.hide_folding = true
 	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tower.add_theme_font_size_override("font_size", 12); tower.add_theme_font_size_override("title_button_font_size", 10)
 	tower.add_theme_constant_override("v_separation", 9); tower.add_theme_constant_override("indent", 0)
+	tower.add_theme_stylebox_override("panel", UI.box(UI.BG, UI.LINE, 6, 6))
 	for i in range(5):
 		tower.set_column_title(i, ["P", "CAR", "GAP / LAP", "TYRE", "STATE"][i]); tower.set_column_expand(i, false)
-		tower.set_column_custom_minimum_width(i, [17, 29, 64, 27, 33][i])
+		tower.set_column_custom_minimum_width(i, [26, 42, 78, 34, 44][i])
 	tower.item_selected.connect(func():
 		var item = tower.get_selected()
 		if item: select_driver(int(item.get_metadata(0))))
