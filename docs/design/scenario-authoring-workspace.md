@@ -1,0 +1,11 @@
+# Replay scenario authoring — native workspace
+
+Version **0.13.0**. This extends the [retained pit-wall workspace](pitwall-workspace.md); it does not replace its live-race controls or historical audit.
+
+The existing live navigation and two-car cards are retained. **Review → Decision debrief → Replay / sandbox**, the Weekend menu and Find lead to the same independent viewer. Its Return to original action restores the actual retained original nodes, drafts and focus. Explicit replay navigation suspends original processing without changing its pause flag, speed, selected driver or RNG; an alert or guide still cannot do this.
+
+**Author scenario…** occupies the replay footer, not another live pit-wall tab. It first captures a separate frozen checkpoint. A bounded native form collects title, briefing, two different approaches, hint and a supported observed goal. A focus-following vertical form scroll keeps Export and Cancel outside the scroll area. Invalid input keeps the form open with a nearby reason. Export opens a file destination only after the author dialog hides; canceling either stage cannot issue race commands. A finished checkpoint cannot be used as a new challenge start; select an earlier checkpoint.
+
+An imported authored scenario remains a labeled **SANDBOX · SEPARATE SAVE**. A compact Scenario brief action and pending/final goal explanation remain available. Long author text opens the existing bounded reader rather than expanding the entire pit wall or a modal beyond the viewport. The goal only inspects final classification and never grants money, points, XP or hidden pace. The additional brief row consumes some circuit height at the smallest enlarged-text layout; the full timing field may scroll. Both driver command areas and return/time controls remain the fixed priority.
+
+The authoring regression targets 1440×900 and 1100×720 at 100%, 115% and 130%. Real input checks cover the author form, file confirmation, import validation, sandbox phase changes and return. See [0.13 behavior/capability map](../race-weekend-scenario-authoring.md) and [verification evidence](../scenario-authoring-verification.md) for actual results and native images. This does not establish participant comprehension, keyboard-only field discovery beyond tested paths, controller/screen-reader completeness or text support beyond 130%.
