@@ -379,7 +379,7 @@ func refresh() -> void:
 	var c = sim.cars[sim.selected_id]
 	surface_control.set_pressed_no_signal(canvas.show_surface)
 	compact_resources.text = "TYRES %d%%   ·   FUEL %.1f laps   ·   CAR %d%%" % [c.tyre, c.fuel, c.health]
-	var q = sim.phase in ["qualifying", "qualifying_results"]
+	var q = sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"]
 	var order = sim.standings(q); var leader = order[0]
 	rows.clear(); tower.set_block_signals(true)
 	for i in range(order.size()):
@@ -404,7 +404,7 @@ func refresh() -> void:
 				row.set_custom_bg_color(column, Color("dbe3ca") if car.id == sim.selected_id else (Color("edf0dc") if car.player else UI.PANEL))
 		if car.id == sim.selected_id and not row.is_selected(0): row.select(0)
 	tower.set_block_signals(false)
-	var captions = {"briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
+	var captions = {"practice": "End practice…", "practice_results": "Return to briefing", "briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
 	primary_button.text = captions[sim.phase]; primary_button.disabled = sim.phase in ["formation", "lights", "race"] or sim.phase == "qualifying" and sim.qual_closed
 	primary_button.tooltip_text = "Finish the active session before advancing." if primary_button.disabled else "Advance to the next weekend stage."
 	pause_button.text = "Resume" if sim.paused else "Pause"; pause_button.disabled = sim.phase not in RaceSim.ACTIVE
@@ -416,7 +416,7 @@ func refresh() -> void:
 	weather_label.text = "%s · Water %d%%" % [sim.weather_name, int(sim.average(sim.water) * 100)]
 	weather_label.tooltip_text = "Rubber %d%%. Rain and surface water are separate: the road wets and dries gradually." % int(sim.average(sim.rubber) * 100)
 	session_label.text = "%s   /   %s   /   SEED %d" % [sim.phase.replace("_", " ").to_upper(), sim.track.preset.to_upper(), sim.seed_value]
-	var step_index = {"briefing": 0, "qualifying": 0, "qualifying_results": 0, "race_preparation": 1, "formation": 2, "grid_ready": 3, "lights": 3, "race": 4, "results": 5}[sim.phase]
+	var step_index = {"practice": 0, "practice_results": 0, "briefing": 0, "qualifying": 0, "qualifying_results": 0, "race_preparation": 1, "formation": 2, "grid_ready": 3, "lights": 3, "race": 4, "results": 5}[sim.phase]
 	steps[0].get_parent().visible = sim.phase not in RaceSim.ACTIVE
 	for i in range(steps.size()): steps[i].add_theme_color_override("font_color", UI.ACCENT if i == step_index else (UI.GOOD if i < step_index else UI.MUTED))
 	for i in range(2):
@@ -467,7 +467,7 @@ func refresh() -> void:
 				if event.kind not in kinds: continue
 			lines.append("%02d:%02d  %s" % [int(event.time / 60), int(fmod(event.time, 60)), event.text])
 		log_label.text = "\n\n".join(lines) if not lines.is_empty() else "No matching events yet."
-	var hints = {"briefing": "Start qualifying. Engineers schedule runs; switch delegation off to manage releases yourself.", "qualifying": "Only complete hot laps set a time. OUT / HOT / IN / BOX are visible in the timing tower.", "qualifying_results": "The grid is set. Inspect measured splits in Telemetry, then prepare the race.", "race_preparation": "Select your starting tyres and setup. Formation warms the tyres but consumes fuel.", "formation": "One full formation lap. No overtaking; all cars return to their assigned grid slots.", "grid_ready": "The grid is ready. Release the lights when you are ready to start.", "lights": "Five red lights. Race distance begins at lights out.", "race": "Calls use the next safe pit-entry gate. Your pit buttons stay visible while inspecting telemetry or radio.", "results": "Final classification: completed laps first, then finish time. Pit laps are excluded from fastest-lap records."}
+	var hints = {"practice": "Run a useful experiment; tyres, fuel, health and weather remain physical.", "practice_results": "Review measured findings, then return to briefing. No setup bonus is awarded.", "briefing": "Start qualifying. Engineers schedule runs; switch delegation off to manage releases yourself.", "qualifying": "Only complete hot laps set a time. OUT / HOT / IN / BOX are visible in the timing tower.", "qualifying_results": "The grid is set. Inspect measured splits in Telemetry, then prepare the race.", "race_preparation": "Select your starting tyres and setup. Formation warms the tyres but consumes fuel.", "formation": "One full formation lap. No overtaking; all cars return to their assigned grid slots.", "grid_ready": "The grid is ready. Release the lights when you are ready to start.", "lights": "Five red lights. Race distance begins at lights out.", "race": "Calls use the next safe pit-entry gate. Your pit buttons stay visible while inspecting telemetry or radio.", "results": "Final classification: completed laps first, then finish time. Pit laps are excluded from fastest-lap records."}
 	hint.text = hints[sim.phase]
 	if Time.get_ticks_msec() / 1000.0 > feedback_until:
 		radio_label.text = "Space pause · 1–5 speed · Ctrl+Tab driver · B box · Esc close panel · F fit"

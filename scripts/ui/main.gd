@@ -59,6 +59,7 @@ func show_menu() -> void:
 	scenarios.add_child(UI.button("Dry scenarios", show_strategy_scenarios))
 	scenarios.add_child(UI.button("Weather", show_weather_scenarios))
 	scenarios.add_child(UI.button("Recovery", show_recovery_scenarios))
+	scenarios.add_child(UI.button("Practice", show_practice_scenarios))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -147,7 +148,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 			var findings = TrackDiagnostics.inspect(geometry)
 			if TrackDiagnostics.blocking(findings):
 				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-			App.weekend = RecoveryRaceSim.new(geometry, config)
+			App.weekend = PracticeRaceSim.new(geometry, config)
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
@@ -158,7 +159,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 
 func show_weekend() -> void:
 	clear_screen("weekend")
-	var view = PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new()
+	var view = PracticeWeekendView.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
 	view.configure(App.weekend); content.add_child(view)
 	view.new_weekend_requested.connect(show_library)
 	view.menu_requested.connect(go_home)
@@ -288,6 +289,24 @@ func show_recovery_scenarios() -> void:
 			var start = func():
 				var candidate = RecoveryScenarios.build(recipe, App.library)
 				if candidate == null: UI.notify(self, "Scenario unavailable", "The recovery scenario or track is invalid."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
+
+func show_practice_scenarios() -> void:
+	clear_screen("practice_scenarios")
+	content.add_child(UI.label("Learn the circuit, keep the choice", 30))
+	content.add_child(UI.paragraph("Practice spends real resources for useful information. Every scenario permits skipping; no race performance bonus is awarded for participation."))
+	for recipe in PracticeScenarios.catalog():
+		var panel = UI.panel(); content.add_child(panel); var body = UI.vbox(panel)
+		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
+		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.button("Open briefing · seed %d" % recipe.seed, func():
+			var start = func():
+				var candidate = PracticeScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The practice recipe or track is invalid."); return
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
