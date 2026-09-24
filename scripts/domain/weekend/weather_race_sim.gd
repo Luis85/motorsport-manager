@@ -37,7 +37,7 @@ func weather_advice(id: int) -> Dictionary:
 func weather_stale(advice: Dictionary) -> bool:
 	if advice.is_empty() or not RaceCheckpoint.integral(advice.get("driver_id"), 0, 11): return true
 	var id = int(advice.driver_id)
-	return not RaceCheckpoint.number(advice.get("time"), 0, total_time) or total_time - advice.time > RaceForecaster.MAX_AGE or advice.get("key") != RaceForecaster.material_key(self, id, int(policy(id).revision)) or advice.get("weather_key") != WeatherOutlook.signature(weather_observation())
+	return not RaceCheckpoint.number(advice.get("time"), 0, total_time) or total_time - advice.time > RaceForecaster.MAX_AGE or advice.get("key") != RaceForecaster.material_key(self, id, int(policy(id).revision)) or advice.get("weather_key") != weather_outlook().key
 
 func update_surface() -> void:
 	if weather_state.is_empty(): super.update_surface(); return

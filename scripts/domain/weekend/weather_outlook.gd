@@ -35,7 +35,10 @@ static func evaluate(history: Array, observed: Dictionary, lap_seconds: float, m
 	var worst_sector = 0
 	for i in range(1, 3):
 		if observed.sectors[i] > observed.sectors[worst_sector]: worst_sector = i
-	return {"version": VERSION, "time": observed.time, "key": signature(observed), "mode": mode,
+	# Trend evidence can change while present rain/water remain the same. Invalidate on
+	# material public trend revisions too, never on hidden weather-process state.
+	var revision_key = [signature(observed), measured_trend, roundi(slope * 10000), roundi(cloud_slope * 10000)]
+	return {"version": VERSION, "time": observed.time, "key": JSON.stringify(revision_key).sha256_text(), "mode": mode,
 		"observed": observed.duplicate(true), "scope": "Observed rain, cloud and surface history only",
 		"trend": trend, "confidence": "limited trend evidence" if measured_trend else "baseline only; more observations needed",
 		"horizon_seconds": horizon, "arrival": arrival, "message": message, "worst_sector": worst_sector,

@@ -95,6 +95,16 @@ func test_information_boundary() -> void:
 	check(sim.weather_stale(old), "A changed surface invalidates stale green recommendations")
 	old = sim.weather_advice(3); sim.total_time += 6
 	check(sim.weather_stale(old), "Weather snapshots older than five simulated seconds are stale")
+	var revision_sim = fixture(); revision_sim.total_time = 60
+	revision_sim.weather_state.history.clear()
+	var prior = revision_sim.weather_advice(3)
+	var sample = revision_sim.weather_observation(); sample.time = 0
+	sample.mean = 0.8; sample.sectors = [0.8, 0.8, 0.8]; sample.peak = 0.8; sample.off_line_peak = 0.8
+	revision_sim.weather_state.history.append(sample)
+	check(revision_sim.weather_stale(prior), "New trend evidence invalidates a displayed baseline even when current rain and surface are unchanged")
+	prior = revision_sim.weather_advice(3)
+	revision_sim.weather_state.history[0].mean = 0.0; revision_sim.weather_state.history[0].sectors = [0.0, 0.0, 0.0]
+	check(revision_sim.weather_stale(prior), "Materially revised public trend invalidates a crossover without needing a current-rain change")
 	var current = sim.weather_observation(); var anchor = current.duplicate(true)
 	anchor.time = 0; anchor.mean = 0.7; anchor.sectors = [0.7, 0.7, 0.7]; anchor.cloud = 0.2
 	current.time = 60; current.mean = 0.4; current.sectors = [0.3, 0.4, 0.5]; current.cloud = 0.55; current.rain = 0
