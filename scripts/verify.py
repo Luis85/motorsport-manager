@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json"):
+    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -121,6 +121,10 @@ def main() -> int:
             replay = require_report("replay-tests.json")
             replay_scenario = require_report("replay-scenario.json")
             replay_performance = require_report("replay-performance.json")
+            run_phase("scenario-authoring", base + ["--headless", "--script", "res://tests/scenario_authoring_runs.gd"], env, timeout=600)
+            shutil.copy2(project / "reports" / "scenario-authoring-runs.json", REPORTS / "scenario-authoring-runs.json")
+            authoring = require_report("scenario-authoring-runs.json")
+            authoring_ui = None
             replay_ui = None
             rivals_ui = None
             workspace_performance = None
@@ -158,7 +162,7 @@ def main() -> int:
                     run_phase("pitwall-ux", pitwall_command, env)
                     practice_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/practice_ui_smoke.gd") for part in command]
                     run_phase("practice-ui", practice_command, env)
-                    for phase, script in [("rivals-ui", "rivals_ui_tests.gd"), ("workspace-performance", "workspace_performance.gd"), ("replay-ui", "replay_ui_tests.gd")]:
+                    for phase, script in [("rivals-ui", "rivals_ui_tests.gd"), ("workspace-performance", "workspace_performance.gd"), ("replay-ui", "replay_ui_tests.gd"), ("scenario-authoring-ui", "scenario_authoring_ui.gd")]:
                         run_phase(phase, [part.replace("res://tests/ui_smoke.gd", "res://tests/" + script) for part in command], env)
                     performance_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/ux_performance.gd") for part in command]
                     run_phase("ux-performance", performance_command, env)
@@ -176,9 +180,12 @@ def main() -> int:
                 practice_ui = require_report("practice-ui.json")
                 performance = require_report("ux-performance-current.json")
                 replay_ui = require_report("replay-ui.json")
+                authoring_ui = require_report("scenario-authoring-ui.json")
                 rivals_ui = require_report("rivals-ui.json")
                 workspace_performance = require_report("workspace-performance.json")
-            summary = {"passed": True, "mode": "headless-only" if args.headless_only else "full",
+            summary = {"authoring_checks": authoring["checks"],
+                       "authoring_ui_checks": authoring_ui["checks"] if authoring_ui else None,
+                       "passed": True, "mode": "headless-only" if args.headless_only else "full",
                        "replay_checks": replay["checks"], "replay_scenario_checks": replay_scenario["checks"],
                        "replay_performance_checks": replay_performance["checks"], "replay_ui_checks": replay_ui["checks"] if replay_ui else None,
                        "engine": domain["engine"], "domain_checks": domain["checks"],
@@ -201,7 +208,7 @@ def main() -> int:
                        "rivals_ui_checks": rivals_ui["checks"] if rivals_ui else None,
                        "workspace_performance_checks": workspace_performance["checks"] if workspace_performance else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0
