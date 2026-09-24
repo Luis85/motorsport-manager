@@ -4,8 +4,8 @@ const BG = Color("e9e6d8")
 const PANEL = Color("f7f3e7")
 const CARD = Color("efeedf")
 const INK = Color("2c473a")
-const MUTED = Color("61725f")
-const ACCENT = Color("8b6938")
+const MUTED = Color("536650")
+const ACCENT = Color("7d5b2c")
 const LINE = Color("c5cdb7")
 const GOOD = Color("4f795c")
 const DANGER = Color("943f32")
@@ -53,6 +53,9 @@ static func theme() -> Theme:
 		for state in ["normal", "pressed", "disabled"]: t.set_stylebox(state, type, action_box(Color.TRANSPARENT, Color.TRANSPARENT))
 		for state in ["hover", "hover_pressed"]: t.set_stylebox(state, type, action_box(HOVER, MUTED))
 		t.set_stylebox("focus", type, t.get_stylebox("focus", "Button"))
+	t.set_color("font_placeholder_color", "LineEdit", MUTED)
+	t.set_color("caret_color", "LineEdit", INK)
+	t.set_color("selection_color", "LineEdit", SELECTED)
 	t.set_stylebox("panel", "PanelContainer", box(PANEL, LINE, 4, 8))
 	# PopupMenu and TooltipLabel do not inherit the Button text palette.
 	t.set_stylebox("panel", "PopupMenu", box(PANEL, LINE, 4, 6))
@@ -142,7 +145,18 @@ static func field(parent: Node, text: String, control: Control) -> void:
 
 static func notify(parent: Node, title: String, text: String) -> void:
 	var dialog = AcceptDialog.new(); dialog.title = title; dialog.dialog_text = text; dialog.min_size = Vector2i(440, 180)
-	parent.add_child(dialog); dialog.popup_centered(); dialog.confirmed.connect(dialog.queue_free); dialog.canceled.connect(dialog.queue_free)
+	parent.add_child(dialog)
+	var ancestor = parent; var factor = 1.0
+	while ancestor:
+		if ancestor.has_meta("pitwall_text_scale"): factor = float(ancestor.get_meta("pitwall_text_scale")); break
+		ancestor = ancestor.get_parent()
+	PitwallDesign.scale_controls(dialog, factor)
+	var invoker = parent.get_viewport().gui_get_focus_owner() if parent is CanvasItem else null
+	var dismiss = func():
+		dialog.hide(); dialog.queue_free()
+		if is_instance_valid(invoker): PitwallDesign.focus_later(invoker)
+	dialog.confirmed.connect(dismiss); dialog.canceled.connect(dismiss); dialog.popup_centered()
+	PitwallDesign.focus_later(dialog.get_ok_button())
 
 static func file_dialog(parent: Node, save: bool, filters: PackedStringArray, callback: Callable) -> FileDialog:
 	var d = FileDialog.new(); d.file_mode = FileDialog.FILE_MODE_SAVE_FILE if save else FileDialog.FILE_MODE_OPEN_FILE

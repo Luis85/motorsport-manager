@@ -2,7 +2,7 @@ extends Node
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
-var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}}
+var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
 
@@ -14,6 +14,7 @@ func _ready() -> void:
 	apply_settings()
 
 func restore_settings(data: Dictionary) -> void:
+	if data.get("pitwall_text_scale") in [1.0, 1.15, 1.3]: settings.pitwall_text_scale = float(data.pitwall_text_scale)
 	for key in ["fullscreen", "vsync", "labels", "racing_line", "reduced_motion"]:
 		if data.get(key) is bool: settings[key] = data[key]
 	if data.get("scenery_detail") in ["rich", "simple"]: settings.scenery_detail = data.scenery_detail

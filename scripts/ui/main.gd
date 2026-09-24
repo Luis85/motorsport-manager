@@ -73,6 +73,11 @@ func show_menu() -> void:
 	showcase.add_child(UI.paragraph("Seven geographic layouts plus Pinecrest Motor Park. Every library track is editable and immediately usable for a weekend."))
 
 func go_home() -> void:
+	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0) is PitwallWorkspace:
+		content.get_child(0).confirm_leave(_go_home_saved); return
+	_go_home_saved()
+
+func _go_home_saved() -> void:
 	if editor:
 		editor.confirm_discard(func(): editor_draft.clear(); draft_signature = ""; show_menu()); return
 	if App.weekend != null and screen_name == "weekend":
@@ -152,7 +157,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 
 func show_weekend() -> void:
 	clear_screen("weekend")
-	var view = WeatherWeekendView.new() if App.weekend is WeatherRaceSim else (StrategyWeekendView.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+	var view = PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new()
 	view.configure(App.weekend); content.add_child(view)
 	view.new_weekend_requested.connect(show_library)
 	view.menu_requested.connect(go_home)
@@ -172,6 +177,11 @@ func show_settings() -> void:
 	var left = UI.panel(); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(left)
 	var list = UI.vbox(left)
 	list.add_child(UI.label("DISPLAY & DEFAULTS", 14, UI.ACCENT))
+	var text_sample = UI.label("MER · Finish fuel +2.4 laps", 13)
+	var text_choice = UI.option(["100%", "115%", "130%"], func(index): draft.pitwall_text_scale = PitwallDesign.TEXT_SCALES[index]; text_sample.add_theme_font_size_override("font_size", roundi(13 * draft.pitwall_text_scale)), PitwallDesign.TEXT_SCALES.find(draft.get("pitwall_text_scale", 1.0)))
+	text_choice.tooltip_text = "Native pit-wall text. Circuit labels and track-editor text are unchanged. Applied when reopening the weekend."
+	UI.field(list, "Pit-wall text", text_choice); list.add_child(text_sample)
+	text_sample.add_theme_font_size_override("font_size", roundi(13 * draft.get("pitwall_text_scale", 1.0)))
 	list.add_child(UI.check("Fullscreen", draft.fullscreen, func(value): draft.fullscreen = value))
 	list.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): draft.vsync = value))
 	list.add_child(UI.check("Show driver labels by default", draft.labels, func(value): draft.labels = value))
@@ -207,6 +217,11 @@ func show_help() -> void:
 	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
+	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0) is PitwallWorkspace:
+		content.get_child(0).confirm_leave(_quit_saved); return
+	_quit_saved()
+
+func _quit_saved() -> void:
 	if editor:
 		editor.confirm_discard(func(): get_tree().quit()); return
 	if App.weekend != null:

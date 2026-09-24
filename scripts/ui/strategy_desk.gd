@@ -8,6 +8,7 @@ var driver_id = 3
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
 var dirty: Dictionary = {}
+var edited: Dictionary = {}
 var loading = false
 var preview: Dictionary = {}
 var live_preview: Dictionary = {}
@@ -137,6 +138,7 @@ func populate_sets(control: OptionButton, selected: String) -> void:
 		if item.id == selected: control.select(i)
 
 func new_draft(template: String) -> void:
+	edited[driver_id] = true
 	var draft = StrategyPlan.draft(model.cars[driver_id], model.laps, template)
 	if model.phase == "race": draft.starting_set = model.cars[driver_id].set_id
 	drafts[driver_id] = draft; revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = true
@@ -144,6 +146,7 @@ func new_draft(template: String) -> void:
 
 func load_current(discard: bool) -> void:
 	if discard or not drafts.has(driver_id):
+		edited[driver_id] = false
 		var current = model.active_plan(driver_id)
 		drafts[driver_id] = StrategyPlan.draft(model.cars[driver_id], model.laps) if current.is_empty() else current
 		if model.phase == "race": drafts[driver_id].starting_set = model.cars[driver_id].set_id
@@ -165,6 +168,7 @@ func show_draft() -> void:
 
 func changed() -> void:
 	if loading: return
+	edited[driver_id] = true
 	var stops: Array = []
 	for i in range(3):
 		stop_rows[i].row.visible = i < int(stop_count.value)
@@ -193,7 +197,7 @@ func draft_extension() -> void:
 			stops.append({"from_lap": lap, "to_lap": lap, "set_id": stop.set_id})
 		drafts[driver_id].stops = stops
 		drafts[driver_id].starting_set = model.cars[driver_id].set_id
-		dirty[driver_id] = true; show_draft(); show_topic(1); return
+		dirty[driver_id] = true; edited[driver_id] = true; show_draft(); show_topic(1); return
 
 func refresh(force: bool = false) -> void:
 	if model == null or draft_status == null or not drafts.has(driver_id): return
@@ -202,11 +206,11 @@ func refresh(force: bool = false) -> void:
 	var error = StrategyPlan.validate(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
 	if int(revisions[driver_id]) != int(policy.revision): error = "A newer plan is active. Discard/reload before applying."
 	var legal = model.phase in ["briefing", "race_preparation", "race"] and c.route != "pit" and not c.pit_order and not c.dnf and not c.finished
-	apply_button.disabled = not legal or not error.is_empty()
+	apply_button.disabled = not legal or not error.is_empty() or not dirty[driver_id]
 	clear_button.disabled = not legal or policy.plan.is_empty()
 	apply_button.text = "Approve %s plan · delegate pits" % c.short
 	apply_button.tooltip_text = error if not error.is_empty() else "Approve only when no physical stop is already ordered."
-	draft_status.text = ("Draft · " if dirty[driver_id] else "Approved · ") + (error if not error.is_empty() else "Apply to commit changes.")
+	draft_status.text = ("UNAPPLIED · " if dirty[driver_id] else "APPROVED · ") + (error if not error.is_empty() else ("Only approval changes the active plan." if dirty[driver_id] else "No unapplied changes."))
 	plan_status.text = "%s · %s · revision %d" % [c.short, policy.plan_status.replace("_", " "), policy.revision]
 	var other_plan = model.active_plan(6 if driver_id == 3 else 3)
 	var overlaps: Array[String] = []
@@ -267,3 +271,8 @@ static func compact_button(button: Button) -> void:
 		style.content_margin_top = 6; style.content_margin_bottom = 6
 		style.content_margin_left = 8; style.content_margin_right = 8
 		button.add_theme_stylebox_override(state, style)
+
+func has_user_edits() -> bool:
+	for id in edited:
+		if edited[id] and dirty.get(id, false): return true
+	return false
