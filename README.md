@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation: **0.9.0 — integrated pit-wall UX, staged recovery and virtual neutralization**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation: **0.10.0 — optional purposeful practice and measured learning**.
 
 ## Open and play
 
@@ -8,7 +8,17 @@ Use **Godot 4.7.2 Standard**. Import the root `project.godot`, allow script impo
 
 Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Engineers can handle qualifying releases. Approve preparation, formation and starting lights when ready. Manage **Daniel Mercer (MER)** and **Lucas Moreau (MOR)**. Space pauses; 1–5 selects 1×–16×. Track Editor, Settings and Continue Weekend remain available.
 
-Try **Recovery → Protect the finish** or **Is the repair worth it?** for the new reliability decisions. New normal weekends use the recovery model. Earlier dry/weather learning recipes and migrated saves retain their original model semantics rather than silently switching rules.
+Try **Practice → Spend a set to learn** or **Two setups, one question** for optional preparation. New normal weekends include practice plus the existing recovery model. **Recovery → Protect the finish** and **Is the repair worth it?** remain available. Earlier dry/weather learning recipes and migrated saves retain their original model semantics rather than silently switching rules.
+
+## Optional practice and measured learning
+
+At briefing, **Optional practice** opens **Strategy / Practice**. Choose a tyre-life, qualifying-preparation, setup-comparison or wet-learning objective, a real driver-owned set, one to four measured laps and an explicit setup baseline. Each driver has three run opportunities and independent unapplied drafts. **Run**, **Recall** and **End practice** remain above scrolling evidence.
+
+Runs follow physical departure, out/measured/in laps and garage return. They consume finite tyre condition, fuel and lifetime health. Interrupted runs retain partial measurements; practice times never set the qualifying grid. Comparable clean full laps can inform bounded forecast estimates, not physical car performance. Traffic-limited observations remain visible without creating false confidence. Skipping retains the baseline and normal delegation, with no hidden penalty or perfect setup score.
+
+Review the notebook, explicitly end practice and return to briefing before qualifying. Find view and the resumable guide include practice. Text sizes 100%, 115% and 130% preserve access at both supported desktop sizes. Committed evidence persists in **checkpoint v9**; native v1–v8 saves retain their original behavior without fabricated practice history. Unapplied practice drafts do not survive application restart.
+
+See the [0.10 practice handoff](docs/race-weekend-practice.md) for commands, learning tolerances, migration, scenarios and verification: **1,869 passing local checks / 79 native screenshots**, including 162 new checks and a complete physical practice-to-race weekend. This is the first RW-17 increment, not all of Stage D or completed human validation.
 
 ## Task-oriented pit wall
 
@@ -30,7 +40,7 @@ The [UX research record](docs/design/pitwall-ux-research.md) maps 16 primary sou
 
 **Virtual neutralization:** a fictional reference-envelope speed target, no passing, no artificial catch-up or field bunching, an explicit ending interval and persistent local-yellow zones. This is not a physical safety car or licensed-series regulatory completeness. See the [recovery handoff](docs/race-weekend-recovery.md) for exact rules and limitations.
 
-**Checkpoint v8** preserves recovery, service and control state. Supported native v1–v7 saves migrate while retaining their original weather, reliability and flag behavior. Application presentation preferences remain separate. Browser saves are not compatible.
+**The v8 recovery schema**, retained inside new v9 application checkpoints, preserves recovery, service and control state. Supported native v1–v7 saves migrate while retaining their original weather, reliability and flag behavior. Application presentation preferences remain separate. Browser saves are not compatible.
 
 ## Preserved systems
 
@@ -44,12 +54,12 @@ Circuit Atelier retains eight bundled circuits, Bezier editing, references, pit 
 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI tests require a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips rendered UI. The verifier imports a clean copy, isolates user data and rejects script errors as well as failed assertions. It includes the recovery domain/scenario/UI suites **and** compact UX, text-size/navigation and observational-performance suites. Reports and native captures are written to `reports/`; CI publishes evidence and the Source project workflow archives tracked source.
+Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI tests require a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips rendered UI. The verifier imports a clean copy, isolates user data and rejects script errors as well as failed assertions. It includes practice and recovery domain/scenario/UI suites **and** compact UX, text-size/navigation and observational-performance suites. Reports and native captures are written to `reports/`; CI publishes evidence and the Source project workflow archives tracked source.
 
 The generated `reports/verification.json` is authoritative for that run's counts. Historical handoff counts describe their own releases, not this combined tree. See [documentation](docs/README.md) for systems, formats and acceptance boundaries.
 
 ## Remaining scope and provenance
 
-Purposeful optional practice, replay branches, deeper rival/driver systems and once-only campaign settlement remain later work. Physical safety cars, field bunching, red flags, full stewarding and itemized component engineering are not implemented by this slice. Human comprehension, full accessibility/controller/screen-reader coverage, broader balance, forecast calibration and hardware profiling remain open; there is no universal frame-rate guarantee.
+Broader practice calibration, replay branches, deeper rival/driver systems and once-only campaign settlement remain later work. Physical safety cars, field bunching, red flags, full stewarding and itemized component engineering are not implemented by this slice. Human comprehension, full accessibility/controller/screen-reader coverage, broader balance, forecast calibration and hardware profiling remain open; there is no universal frame-rate guarantee.
 
 The seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. Attribution remains in [third-party notices](THIRD_PARTY_NOTICES.md). These are unofficial reconstructions, not laser scans or certified circuit/vehicle simulations. Widths, elevations, pit routes and scenery contain authored estimates. No official championship branding, car models or driver likenesses are used. Code retains the repository's [MIT license](LICENSE), copyright Luis Mendez.

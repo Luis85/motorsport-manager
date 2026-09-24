@@ -3,7 +3,7 @@ extends RefCounted
 ## Fixed-step, seeded simulation. No UI, wall-clock or scene-tree dependencies.
 signal event_posted(entry: Dictionary)
 const STEP = 0.05
-const ACTIVE = ["qualifying", "formation", "lights", "race"]
+const ACTIVE = ["practice", "qualifying", "formation", "lights", "race"]
 const TYRES = {"S": {"grip": 1.035, "wear": 5.5}, "M": {"grip": 1.0, "wear": 3.6}, "H": {"grip": 0.98, "wear": 2.4}, "I": {"grip": 0.95, "wear": 4.0}, "W": {"grip": 0.91, "wear": 4.5}}
 const ROSTER = [
 	["VAL", "Nico Valenti", "Volpe", "c46356", 91, 87, 82, 85, 3],
@@ -179,7 +179,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 					if phase != "qualifying" or c.route != "track": return fail("Only an on-track qualifying car can be recalled.")
 					c.qual_state = "inlap"; c.hot_valid = false; c.invalid_reason = "Recalled by the pit wall"
 				"setup", "setup_all":
-					if phase not in ["briefing", "race_preparation"] and not (phase == "qualifying" and c.route == "garage"): return fail("Mechanical setup changes require the garage or race preparation.")
+					if phase not in ["briefing", "race_preparation"] and not (is_run_session() and c.route == "garage"): return fail("Mechanical setup changes require the garage or race preparation.")
 					var changes = {"wing": payload.get("value", 5)} if action == "setup" else payload.get("values", {})
 					if not changes is Dictionary or changes.is_empty(): return fail("Choose at least one setup adjustment.")
 					for key in changes:
@@ -361,7 +361,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 	desired *= 1.0 - maxf(0, c.engine_temperature - 115) * 0.003
 	if not WheelTyres.usable(TyreInventory.find(c, c.set_id)): desired = minf(desired, 27.0)
 	var target_lane = s.line
-	if phase == "qualifying" and c.qual_state != "hotlap": desired = minf(desired * 0.76, 48)
+	if is_run_session() and c.qual_state != "hotlap": desired = minf(desired * 0.76, 48)
 	if phase == "formation":
 		desired = minf(desired * 0.65, 30)
 		var goal = track.length - (c.grid - 1) * track.grid_spacing
@@ -408,7 +408,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
 	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
 	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
-	var must_pit = phase == "race" and c.pit_order or phase == "qualifying" and c.qual_state == "inlap"
+	var must_pit = phase == "race" and c.pit_order or is_run_session() and c.qual_state == "inlap"
 	if must_pit:
 		if c.pit_gate <= c.distance: plan_pit_gate(c)
 		desired = minf(desired, sqrt(track.pit_limit ** 2 + 2.0 * brake * maxf(0, c.pit_gate - c.distance - 5)))
@@ -420,7 +420,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 		var corner_speed = minf(limits.top, sqrt(maxf(3, limits.lat * g) / maxf(0.00001, absf(future.curvature))))
 		desired = minf(desired, sqrt(corner_speed * corner_speed + 2 * brake * scan))
 		scan += 20
-	if phase == "qualifying" and c.qual_state == "hotlap" and neutral(c):
+	if is_run_session() and c.qual_state == "hotlap" and neutral(c):
 		c.hot_valid = false; c.invalid_reason = "Neutralized sector during the flying lap"
 	var old_speed = c.speed
 	c.speed = move_toward(c.speed, maxf(0, desired), STEP * (accel if desired > c.speed else brake))
@@ -452,10 +452,10 @@ func move_car(c: Dictionary, old: Array) -> void:
 		var touched = RaceSurface.deposit(surface, track.length, c, old_distance, next, s.curvature)
 		if not touched.is_empty(): RaceSurface.profiles(surface, water, rubber, touched)
 	if phase == "race": race_crossings(c, old_distance, next)
-	elif phase == "qualifying": qualifying_crossings(c, old_distance, next)
+	elif is_run_session(): qualifying_crossings(c, old_distance, next)
 	if passing and nearest_id >= 0 and ahead_distance < moved - old[nearest_id].speed * STEP / track.sample(old[nearest_id].distance).path_scale and phase == "race":
 		record_track_pass(c, cars[nearest_id])
-	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if phase == "qualifying" else "Racing")))
+	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if is_run_session() else "Racing")))
 	if phase == "race" and intensity != "calm" and not neutral(c) and c.route == "track":
 		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + local.water * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
 		risk *= {"patient": 0.9, "balanced": 1.0, "assertive": 1.12}[c.battle_mode]
@@ -493,7 +493,7 @@ func wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {
 	if phase == "race" and not neutral(c) and total_time >= c.tyre_event_clock:
 		c.tyre_event_clock = total_time + 2.0
 		check_tyre_incident(c)
-	var fuel_rate = 0.60 if phase == "formation" or phase == "qualifying" and c.qual_state != "hotlap" else ([0.84, 1.0, 1.14][c.engine])
+	var fuel_rate = 0.60 if phase == "formation" or is_run_session() and c.qual_state != "hotlap" else ([0.84, 1.0, 1.14][c.engine])
 	c.fuel = maxf(0, c.fuel - fraction * fuel_rate)
 	c.health = maxf(0, c.health - fraction * (0.4 if c.engine < 2 else 0.65) * (1 + maxf(0, c.engine_temperature - 112) * 0.04))
 	TyreInventory.sync(c)
@@ -532,14 +532,21 @@ func finish_qualifying() -> void:
 	for i in range(order.size()): order[i].grid = i + 1
 	transition("qualifying_results")
 
+func is_run_session() -> bool:
+	return phase == "qualifying"
+
 func leave_garage(c: Dictionary) -> void:
+	depart_on_planned_set(c)
+
+func depart_on_planned_set(c: Dictionary) -> void:
+	# Shared physical departure; eligibility is owned by the session orchestrator.
 	var item = TyreInventory.planned(c)
 	if item.is_empty(): c.next_qual = clock + 60; c.intent = "No usable tyre set; choose a replacement"; return
 	TyreInventory.mount(c, item.id)
 	c.route = "pit"; c.pit_stage = "exit"; c.pit_d = c.box_d
 	c.pit_cycle = 0; c.pit_gate = -1.0; c.qual_state = "outlap"; c.qual_runs += 1; c.fuel = 4.0; c.speed = 0.0
 	c.distance = track.pit_entry + (track.pit_exit - track.pit_entry) * c.pit_d / track.pit_length
-	post("qualifying", "%s leaves the garage for run %d." % [c.short, c.qual_runs])
+	post(phase, "%s leaves the garage for run %d." % [c.short, c.qual_runs])
 
 func update_pit(c: Dictionary, old: Array = []) -> void:
 	var before = c.distance
@@ -547,9 +554,9 @@ func update_pit(c: Dictionary, old: Array = []) -> void:
 	c.intent = ("Crew fitting tyres and repairing damage" if c.service_repair else "Crew fitting tyres") if c.pit_stage == "service" else "Pit lane · speed limiter active"
 	if c.pit_stage == "entry" and c.pit_d >= c.box_d:
 		c.pit_d = c.box_d; c.speed = 0.0
-		if phase == "qualifying":
+		if is_run_session():
 			c.route = "garage"; c.qual_state = "garage"; c.next_qual = clock + 18; c.pit_stage = ""
-			post("qualifying", c.short + " back in the garage."); return
+			post(phase, c.short + " back in the garage."); return
 		if not pit_boxes.has(c.team):
 			pit_boxes[c.team] = c.id; c.pit_stage = "service"; begin_service(c)
 		else: c.intent = "Waiting for teammate's pit box"; return
@@ -719,7 +726,7 @@ func snapshot() -> Dictionary:
 static func restore(data: Dictionary) -> RaceSim:
 	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 4): return null
 	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return null
-	if data.get("phase") not in ["briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return null
+	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return null
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return null
 	data = data.duplicate(true)
 	if data.version == 1:
@@ -797,14 +804,14 @@ func update_yield(c: Dictionary, old: Array) -> float:
 	if c.yield_to >= 0:
 		var other = cars[c.yield_to]
 		var signed_gap = fposmod(old[other.id].distance - old[c.id].distance + track.length * 0.5, track.length) - track.length * 0.5
-		if other.dnf or other.finished or old[other.id].route != "track" or signed_gap > 18 or signed_gap < -220 or total_time - c.yield_clock > 20 or phase == "qualifying" and old[other.id].qual_state != "hotlap":
+		if other.dnf or other.finished or old[other.id].route != "track" or signed_gap > 18 or signed_gap < -220 or total_time - c.yield_clock > 20 or is_run_session() and old[other.id].qual_state != "hotlap":
 			c.yield_to = -1
 	if c.yield_to < 0 and not neutral(c):
 		var closest = 150.0
 		for other in cars:
 			if other.id == c.id or other.dnf or other.finished or old[other.id].route != "track": continue
 			var gap = fposmod(old[c.id].distance - old[other.id].distance, track.length)
-			var courtesy = phase == "qualifying" and c.qual_state in ["outlap", "inlap"] and old[other.id].qual_state == "hotlap"
+			var courtesy = is_run_session() and c.qual_state in ["outlap", "inlap"] and old[other.id].qual_state == "hotlap"
 			var lapped = phase == "race" and old[other.id].distance - old[c.id].distance > track.length * 0.65
 			var closing: float = old[other.id].speed - old[c.id].speed
 			if gap > 0.01 and gap < closest and (courtesy or lapped) and closing > -0.5 and (gap < 45 or gap / maxf(0.1, closing) < 7):

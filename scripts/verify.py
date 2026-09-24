@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "verification.json"):
+    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "verification.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -104,6 +104,13 @@ def main() -> int:
             run_phase("recovery-scenarios", base + ["--headless", "--script", "res://tests/recovery_scenario_runs.gd"], env)
             shutil.copy2(project / "reports" / "recovery-scenarios.json", REPORTS / "recovery-scenarios.json")
             recovery_scenarios = require_report("recovery-scenarios.json")
+            run_phase("practice", base + ["--headless", "--script", "res://tests/practice_tests.gd"], env)
+            shutil.copy2(project / "reports" / "practice-tests.json", REPORTS / "practice-tests.json")
+            practice = require_report("practice-tests.json")
+            run_phase("practice-scenario", base + ["--headless", "--script", "res://tests/practice_scenario_runs.gd"], env)
+            shutil.copy2(project / "reports" / "practice-scenario.json", REPORTS / "practice-scenario.json")
+            practice_scenario = require_report("practice-scenario.json")
+            practice_ui = None
             recovery_ui = None
             weather_ui = None
             compact_ui = None
@@ -135,6 +142,8 @@ def main() -> int:
                     run_phase("compact-ui", compact_command, env)
                     pitwall_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/pitwall_ux_tests.gd") for part in command]
                     run_phase("pitwall-ux", pitwall_command, env)
+                    practice_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/practice_ui_smoke.gd") for part in command]
+                    run_phase("practice-ui", practice_command, env)
                     performance_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/ux_performance.gd") for part in command]
                     run_phase("ux-performance", performance_command, env)
                 finally:
@@ -148,6 +157,7 @@ def main() -> int:
                 recovery_ui = require_report("recovery-ui.json")
                 compact_ui = require_report("compact-ui.json")
                 pitwall_ui = require_report("pitwall-ux.json")
+                practice_ui = require_report("practice-ui.json")
                 performance = require_report("ux-performance-current.json")
             summary = {"passed": True, "mode": "headless-only" if args.headless_only else "full",
                        "engine": domain["engine"], "domain_checks": domain["checks"],
@@ -163,8 +173,11 @@ def main() -> int:
                        "recovery_ui_checks": recovery_ui["checks"] if recovery_ui else None,
                        "compact_ui_checks": compact_ui["checks"] if compact_ui else None,
                        "pitwall_ux_checks": pitwall_ui["checks"] if pitwall_ui else None,
+                       "practice_checks": practice["checks"],
+                       "practice_scenario_checks": practice_scenario["checks"],
+                       "practice_ui_checks": practice_ui["checks"] if practice_ui else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

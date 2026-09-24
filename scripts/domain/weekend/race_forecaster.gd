@@ -6,9 +6,9 @@ const MAX_AGE = 5.0
 
 static func fuel_margin(sim: RaceSim, car: Dictionary) -> float:
 	var remaining = maxf(0, sim.laps - maxf(0, car.distance) / sim.track.length) if sim.phase in ["race", "results"] else float(sim.laps)
-	var formation = 0.6 if sim.phase in ["briefing", "qualifying", "qualifying_results", "race_preparation"] else (0.6 * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
+	var formation = 0.6 if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else (0.6 * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
 	# Qualifying has a separate four-lap fuel load. Do not call it a race shortfall.
-	var available = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["qualifying", "qualifying_results"] else float(car.fuel)
+	var available = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(car.fuel)
 	return available - remaining * [0.84, 1.0, 1.14][car.engine] - formation
 
 static func reachable_gate(sim: RaceSim, car: Dictionary) -> Dictionary:
@@ -36,14 +36,16 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	var own: Dictionary = {}
 	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair", "dnf", "finished"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
-	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
-	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["qualifying", "qualifying_results"] else float(c.fuel)
+	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
+	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
+	own.measured_race_wear = false
 	own.wear = RaceSim.TYRES[c.compound].wear * [0.78, 1.0, 1.25][c.pace] * 1.05
 	if not c.stints.is_empty():
 		var stint = c.stints.back()
 		var travelled = c.distance / sim.track.length - float(stint.get("from", 0))
 		# Actual aggregate depletion is useful after enough running; tiny samples amplify noise.
 		if travelled > 0.5 and stint.has("start_life"):
+			own.measured_race_wear = true
 			own.wear = clampf((stint.start_life - c.tyre) / travelled, own.wear * 0.5, own.wear * 2.5)
 	var public: Array = []
 	var teammate: Dictionary = {}
@@ -151,7 +153,16 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var context = s.get("model_context", {})
 	var operation = float(context.get("health_factor", 1.0)) * float(context.get("thermal_factor", 1.0))
 	var lap = s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003) * operation)
+	lap *= context.get("practice", {}).get(compound, {}).get("lap_factor", 1.0)
 	return maxf(lap, s.reference_lap / float(context.get("neutral_factor", 1.0))) if context.get("neutral_factor", 1.0) < 1 else lap
+
+static func wear_rate(s: Dictionary, item: Dictionary) -> float:
+	var rate = RaceSim.TYRES[item.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
+	if item.id == s.own.set_id: rate = s.own.wear
+	if not (item.id == s.own.set_id and s.own.get("measured_race_wear", false)):
+		rate *= s.get("model_context", {}).get("practice", {}).get(item.compound, {}).get("wear_factor", 1.0)
+	if item.compound in ["I", "W"] and s.water < 0.15: rate *= 2.2
+	return rate
 
 static func limiting_life(item: Dictionary, average_life: float) -> float:
 	var minimum = 100.0
@@ -183,13 +194,18 @@ static func evaluate_candidate(s: Dictionary, id: String, title: String, stops: 
 			index += 1
 		var step = minf(0.5, s.laps - progress)
 		if index < stops.size(): step = minf(step, maxf(0.00001, stops[index].at - progress))
-		var wear = RaceSim.TYRES[current.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
-		if current.id == s.own.set_id: wear = s.own.wear
-		if current.compound in ["I", "W"] and s.water < 0.15: wear *= 2.2
+		var wear = wear_rate(s, current)
 		seconds += lap_time(s, current, life - wear * step * 0.5) * step
 		life = maxf(0, life - wear * step); minimum_life = minf(minimum_life, limiting_life(current, life)); progress += step
 	seconds += pit_cost + warmup + traffic_cost
-	var uncertainty = maxf(3, seconds * 0.06) + stops.size() * 2.25 + traffic_cost
+	var confidence = 0.06
+	var priors = s.get("model_context", {}).get("practice", {})
+	var matched = priors.get(set_by_id(s, s.own.starting_set).get("compound", ""), {})
+	if not matched.is_empty():
+		confidence = float(matched.uncertainty)
+		for stop in stops:
+			confidence = maxf(confidence, priors.get(set_by_id(s, stop.set_id).get("compound", ""), {}).get("uncertainty", 0.06))
+	var uncertainty = maxf(3, seconds * confidence) + stops.size() * 2.25 + traffic_cost
 	var risk = "high" if minimum_life < 10 or s.fuel_margin < 0 else ("moderate" if minimum_life < 25 else "lower")
 	return {"id": id, "title": title, "available": true, "seconds": seconds, "low": maxf(0, seconds - uncertainty), "high": seconds + uncertainty,
 		"risk": risk, "minimum_life": minimum_life, "fuel_margin": s.fuel_margin, "stops": stops.duplicate(true),
@@ -229,7 +245,7 @@ static func evaluate(s: Dictionary) -> Dictionary:
 		if option.available: option.gain = options[0].get("seconds", option.seconds) - option.seconds
 	return {"tick": s.tick, "time": s.time, "key": s.key, "driver_id": int(s.own.id), "model_version": MODEL_VERSION,
 		"scope": s.scope, "options": options, "pit": pit, "gate": s.gate, "replacement_id": replacement_set.get("id", ""),
-		"fuel_margin": s.fuel_margin, "assumptions": ["Estimate, not a calibrated probability band.", "Observed rival pace continues; unknown rival stops may change rejoin order.",
+		"fuel_margin": s.fuel_margin, "practice_evidence": s.get("model_context", {}).get("practice", {}).duplicate(true), "assumptions": ["Estimate, not a calibrated probability band.", "Practice: " + ("no matching samples; baseline model." if s.get("model_context", {}).get("practice", {}).is_empty() else "matching measured laps inform bounded pace/wear estimates, never car performance."), "Observed rival pace continues; unknown rival stops may change rejoin order.",
 			"Current water persists; future weather is not available to this model.", "Current pace and engine modes are held for comparison; future owner responses and override handback are not predicted.", "Working-temperature approximation retains all four wheels’ damage; warm-up is priced separately. No incident or exact finishing-position prediction.", "Remaining-time estimates include each additional stop's full net pit loss."]}
 
 static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool:
