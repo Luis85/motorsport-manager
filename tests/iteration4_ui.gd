@@ -183,7 +183,7 @@ func race_tests() -> void:
 	view.set_detail_expanded(false); h.root.size = Vector2i(1100, 720)
 	view.show_tyres(1); view.refresh()
 	await h.capture("27-small-window-tyres")
-	check(h.is_visible_inside(view.box_button) and h.is_visible_inside(view.detail_picker), "small-window pit action and topic selector remain reachable")
+	check(h.is_visible_inside(view.box_button) and h.is_visible_inside(view.topic_buttons[3]), "small-window pit action and direct Tyres navigation remain reachable")
 	check(view.canvas.size.x > 240, "small-window tyre inspection retains a useful race map")
 	view.set_detail_expanded(true); view.tabs.current_tab = 4; await h.settle()
 	check(h.is_visible_inside(panel.apply_button) and h.is_visible_inside(view.box_button), "expanded small-window setup keeps both commit and primary commands visible")
