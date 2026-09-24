@@ -145,9 +145,12 @@ func refresh() -> void:
 func build_replay_actions() -> void:
 	weekend_menu.get_popup().add_separator()
 	weekend_menu.get_popup().add_item("Replay / sandbox", 20)
+	weekend_menu.get_popup().add_item("Circuit notebook…", 21)
 	weekend_menu.get_popup().id_pressed.connect(func(id):
-		if id == 20: replay_requested.emit())
+		if id == 20: replay_requested.emit()
+		elif id == 21: NotebookWindow.open(self, recording, CircuitNotebook.PATH, weekend_menu))
 	navigator.catalog.append([7, 20, "Review / Replay and sandbox", "recording checkpoint try another decision original result"])
+	navigator.catalog.append([7, 21, "Review / Circuit notebook", "history observations personal notes remembered challenges"])
 	navigator.filter_views("")
 	review_actions = VBoxContainer.new(); detail_actions.add_child(review_actions)
 	var actions = HFlowContainer.new(); review_actions.add_child(actions)
@@ -159,6 +162,7 @@ func build_replay_actions() -> void:
 
 func open_destination(index: int, subtopic: int) -> void:
 	if index == 7 and subtopic == 20: replay_requested.emit(); return
+	if index == 7 and subtopic == 21: NotebookWindow.open(self, recording, CircuitNotebook.PATH, find_button); return
 	super.open_destination(index, subtopic)
 
 func keep_checkpoint() -> void:

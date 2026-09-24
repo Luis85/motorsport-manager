@@ -66,10 +66,12 @@ func show_menu() -> void:
 	menu.add_child(replay_menu)
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
+	replay_menu.get_popup().add_item("Circuit notebook", 2)
 	replay_menu.get_popup().set_item_disabled(1, not FileAccess.file_exists(App.sandbox_path))
 	replay_menu.get_popup().id_pressed.connect(func(id):
 		if id == 0: replay_controller.import_record()
-		else: replay_controller.resume_sandbox())
+		elif id == 1: replay_controller.resume_sandbox()
+		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, replay_menu))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
