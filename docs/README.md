@@ -6,6 +6,7 @@ Current native implementation: **0.13.0** · **Godot 4.7.2 Standard**.
 |---|---|
 | [Authored replay scenarios](race-weekend-scenario-authoring.md) | Current 0.13 frozen challenge briefs, observed goals, native authoring and strict result validation |
 | [0.13 verification and integration](scenario-authoring-verification.md) | Exact code revisions, full regression, native evidence and matched validation costs |
+| [Scenario-authoring workspace](design/scenario-authoring-workspace.md) | Frozen form, fixed actions, sandbox goals, long readers and return/focus behavior |
 | [Independent replay and sandbox](race-weekend-replay.md) | Preserved 0.12 captured records, independent experiments, standalone receipts and session v1/native v10 |
 | [0.12 verification](replay-verification.md) | Historical replay-core full regression and recorder costs |
 | [Contextual rivals and calmer pit wall](race-weekend-rivals.md) | Preserved partial RW-18, native UI refinement, checkpoint v10 and explicit pressure deferral |

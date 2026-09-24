@@ -20,13 +20,30 @@ The interrupted native replay UI batch was already published by a concurrent com
 
 While implementation ran, PR #6 reached main at `455728d`; PR #8 merged into `feat/race-weekend-rivals-ui` at `8bab2a4`; and PR #9 merged into `feat/race-weekend-replay` at `c873823`, at authoring head `05bab294`, before the later authoring tests. The latter two were **feature-branch merges, not delivery to main**. Their merged status must not be read as full integrated acceptance. Duplicate draft #7 was closed without deleting code. This continuation has not merged a PR or modified main.
 
-The final review needs a new direct-to-main PR carrying completed replay, authoring, the later tests and documentation together. The immutable closed #9 metadata remains a record of its partial merge; it cannot be retargeted retrospectively.
+Final integration is reviewed in a new direct-to-main PR carrying completed replay, authoring, the later tests and documentation together; its description records the exact final head. The immutable closed #9 metadata remains a record of its partial merge; it cannot be retargeted retrospectively.
 
-## Executed baseline; final verification status
+## Clean local verification
 
 The untouched recovered integration baseline completed a fresh local **2,013 checks / 90 native screenshots** run. Its then-current runner omitted replay-specific suites; it is not called replay acceptance or a pristine 0.11 main baseline. Summed baseline phase time was **2,013.1 seconds**, a test-run duration, not a game-performance measurement.
 
-**Final expanded clean verification is in progress at this documentation checkpoint. No final full-suite or hosted-CI pass is claimed here.** The runner includes all preserved baseline and replay-core suites plus authoring-specific tests. The completed final report and matched measurements will replace this status before the final handoff.
+**Final expanded clean local run: 2,379 checks / 106 native screenshots, all passing, with no parse/script/runtime errors.** This includes the complete prior 2,219-check replay coverage plus 160 additional authoring/validation checks. No inherited safety assertion was removed. The tested runtime, tests and workflow are exactly `ae4690ab` / tree `2b4d1f6d711d913fcf551cf89d6292e942e29680`; later commits change documentation/history only. Summed final phase time is **2,235.5 seconds**, not game performance.
+
+| Coverage | Passing checks |
+|---|---:|
+| Base domain / native UI | 706 / 113 |
+| Strategy / complete dry scenarios / native UI | 109 / 19 / 34 |
+| Living racecraft and team / native UI | 113 / 33 |
+| Weather / complete wet scenario / native UI | 97 / 10 / 33 |
+| Recovery / complete scenarios / native UI | 128 / 24 / 41 |
+| Compact UI / task-oriented pit wall | 119 / 128 |
+| Practice / complete weekend / native UI | 78 / 17 / 67 |
+| Rival styles / complete scenarios / native UI | 49 / 34 / 47 |
+| Populated workspace/performance contracts | 14 |
+| Replay domain / full race / observer cost / native UI | 59 / 30 / 15 / 111 |
+| Authored full-race experiment / native authoring UI | 42 / 109 |
+| **Total** | **2,379** |
+
+The 160-check delta is nine additional replay-domain assertions, 42 authored full-race checks and 109 authoring/native checks. All 106 PNGs in the evidence selection come from this clean run; three stale development captures in the working reports folder were excluded. The final native replay, scrolled author form and authored sandbox captures were also visually inspected. The additional scenario row costs map height at 1100×720/130%; the timing field scrolls while both driver cards and return/time controls remain visible. Automated reachability and visual inspection are not participant usability validation.
 
 Focused development runs passed **57 replay-domain checks** and **108 authoring-native checks / four captures** before the last wrong-header/receipt and UTF-8 assertions were added. These are focused results, not a substitute for the final clean run. Earlier development exposed an exclusive-dialog error despite a passing JSON summary, a too-large author dialog, malformed scalar comparison errors and a test comparing JSON floats with native integers directly. Those were corrected; engine logs and existing safety assertions remain mandatory gates.
 
@@ -41,6 +58,14 @@ The verifier copies/imports the project afresh, isolates user data and rejects f
 
 Environment: **Godot 4.7.2 Standard (`ed1daf0bf`)**, Linux, **Intel Xeon Platinum 8370C @ 2.80 GHz**, five visible CPUs, Xvfb/X11, software OpenGL/Mesa llvmpipe (LLVM 19.1.7), `LP_NUM_THREADS=2`, Dummy audio. This is not the separate 0.12 stream's AMD EPYC measurement environment.
 
+## Hosted CI: independently confirmed
+
+[Godot verification run 36032501119](https://github.com/Luis85/motorsport-manager/actions/runs/36032501119) completed successfully on exact tested code **`ae4690ab77691197ac883bff2a197f54f0d1f378`**. Its job `107744459067` finished at **17:36:11 UTC on 24 September 2026**; Import and test, Verification runtime and Test evidence all succeeded.
+
+The downloaded `verification-evidence` artifact **10825060474** independently contains **2,379 checks / 106 actual PNGs**, matching the local aggregate. Its ZIP SHA-256 was checked against GitHub's published `40be92eed2750fb917cb3c21156ce91d5b1fb8430dba77d10872cf53e5a39681`. Artifact expiry is **8 October 2026, 17:36:04 UTC**. Hosted JSON summaries are included separately in the handoff bundle; its full hosted archive is a separate download. These are not the local benchmark measurements.
+
+Later documentation-only heads and the new PR merge check have their own CI runs. The code-commit pass is not described as a completed check on a different head. Source packaging alone is never treated as gameplay verification.
+
 ## What the required suites exercise
 
 The unchanged core `replay_scenario_runs.gd` executes optional-practice skip, actual qualifying, preparation, physical formation/lights and a four-lap race, followed by exact reconstruction and an altered branch. The unchanged core native suite includes Find, strategy-draft preservation, focus return, legacy save loading, actual sandbox movement, stable rival row identity and original-disk byte guards.
@@ -51,11 +76,38 @@ The unchanged core `replay_scenario_runs.gd` executes optional-practice skip, ac
 
 The additional replay-domain assertions reject wrong JSON header types and changed frozen identity, exercise observer detach/reset, reject malformed receipt identity, and prove that a non-ASCII export exceeding the UTF-8 byte ceiling preserves the previous file.
 
-## Performance method and open measurement
+## Complete authored-scenario outcomes
 
-The committed recorder benchmark remains observational and counts **1,000 actual fixed steps / 50 simulated seconds**, not paused no-op loops. It performs three alternating recording-off/on pairs, verifies matching sporting hashes and separately measures bookmark, seal and validation operations. Those operations are synchronous and can be visible on larger archives; a small archive is not maximum-size evidence.
+The added fixture executes **32,138 counted fixed steps**: **11,475** original, **11,475** reconstructed and **9,188** in the conserving sandbox. The original archive is **2,217,601 bytes**. It uses the existing disclosed Faster car behind recipe: Pinecrest, Formula, dry/calm, seed 7314, twelve laps, untimed curated preparation grid and fitted M1 sets at 40% tread. Formation and lights are real approvals; no result is forced.
 
-A separate matched comparison is scheduled within this implementation execution **after the final clean run finishes**, not in parallel with it: exact replay core `1fd7978` versus runtime `ae4690ab`, the same committed harness, engine, machine, seed and current rival model. No authoring performance improvement or frame-rate claim is made before those results exist. The preserved populated-workspace and demanding-circuit diagnostics remain part of the regular suite; they are not a replacement for matched recorder/validation measurements.
+| Approach | Mercer | Moreau |
+|---|---|---|
+| Original early stop | P4 · 12 laps · 1 stop · finished | P6 · 12 laps · 0 stops · finished |
+| Sandbox conserve | P2 · 12 laps · 0 stops · finished | P5 · **11 laps** · 0 stops · finished |
+
+The early stop loses places in this fixture. Moreau's lapped result is not an equal-distance time comparison. These are executable alternatives with actual costs, not proof of two optimal strategies, general balance or enjoyment. The finishing goal is met in the conserving sandbox without rewards. The accepted original result and original save bytes remain unchanged. The preserved core replay fixture separately executes actual qualifying and its complete four-lap original/reconstruction/alternative; it was not replaced by this curated preparation start.
+
+## Matched performance: measured costs, no speedup
+
+After the full clean run finished, the same committed `tests/replay_performance.gd` ran **serially** on exact replay core `1fd7978` and runtime `ae4690ab`, with identical engine, machine, seed, current rival policy and `LP_NUM_THREADS=2`. Each revision ran three alternating recording-off/on pairs. Every workload counted **1,000 actual fixed steps / 50 simulated seconds**. Paused no-op loops were not counted. The 15 benchmark contracts passed on both revisions, including exact sporting hashes within each off/on pair. This is headless simulation, not a native FPS or selected-16× playback test.
+
+| Operation / workload | Before median | After median |
+|---|---:|---:|
+| Explicit bookmark | 34.770 ms | 31.173 ms |
+| Seal recording | 230.485 ms | 278.830 ms |
+| Validate recording | 629.322 ms | 693.096 ms |
+| 1,000 steps, recording off | 5.250842 s | 5.923995 s |
+| 1,000 steps, recording on | 5.240687 s | 5.839646 s |
+| Headless throughput, recording off | 9.522 sim-s/wall-s | 8.440 sim-s/wall-s |
+| Headless throughput, recording on | 9.541 sim-s/wall-s | 8.562 sim-s/wall-s |
+
+The archive fixture is **1,327,715 bytes** on both builds. Before/after operation sample ranges were: bookmark **31.460–36.676 / 30.251–50.246 ms**; seal **220.630–232.694 / 218.620–420.105 ms**; validation **617.812–693.989 / 655.486–1,129.828 ms**. Three samples and a serial build order do not establish statistical significance or attribute every change to the added validation. Recording-on being marginally faster than off in some pairs is not interpreted as an optimization benefit.
+
+Validation and sealing were slower at the median, and throughput was lower in the later run. **There is no performance-improvement claim.** Snapshot sealing/validation is synchronous and can produce a visible wait; maximum 16 MB histories and archives with many receipts need separate profiling. No simulation work, seed, stock or failures were removed to improve the numbers.
+
+A supplementary identical harness then ran **1,573 actual preparation steps plus 1,000 recorded steps per build**, after the timed comparison. Initial and endpoint sporting hashes match exactly across versions: initial `304b0bff560dbdb20118c512867b7f9d163a2f05d1e647b01345a2ae84530905`, endpoint `38f0b1e9d416b8bf5ba89a680f88aed6576fe621695ae534fe28775553a8e886`. It excludes only selection, pause, speed and accumulator fields; car, journal and RNG state remain. This supplementary check is not a timing benchmark or part of the 2,379-check aggregate. Its script, reports and logs accompany the paired evidence.
+
+The preserved populated-workspace and Monaco native diagnostics also pass in the full run, including headless-shadow agreement and zero paused dynamic-overlay redraws. They use controlled input frames and are not matched new before/after rendering measurements. The native [authoring workspace contract](design/scenario-authoring-workspace.md) records the layout trade-offs separately.
 
 ## Acceptance boundaries
 
