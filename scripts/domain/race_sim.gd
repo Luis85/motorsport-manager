@@ -374,11 +374,11 @@ func move_car(c: Dictionary, old: Array) -> void:
 	var passing = false
 	if nearest_id >= 0 and ahead_distance < 75:
 		if phase == "race" and not neutral(c): desired *= 1.022 if absf(s.curvature) < 0.004 else 0.991
-		if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(s.curvature) < 0.035 and s.w > 7.5 and desired > old[nearest_id].speed + ({"patient": 2.0, "balanced": 0.4, "assertive": 0.1}[c.battle_mode]) and not (c.battle_mode == "patient" and local.water > 0.5):
-			var side = -1 if old[nearest_id].lane >= 0 else 1
-			target_lane = clampf(old[nearest_id].lane + side * 3.0, -s.w * 0.5 + 1.4, s.w * 0.5 - 1.4)
-			passing = absf(c.lane - old[nearest_id].lane) >= 2.6
-		if not passing and ahead_distance < maxf(12, c.speed * 0.8): desired = minf(desired, maxf(0, old[nearest_id].speed + (ahead_distance - 7) * 0.7))
+	var traffic = traffic_instruction(c, old, nearest_id, ahead_distance, desired, target_lane, s, local)
+	desired = traffic.desired; target_lane = traffic.lane
+	if traffic.attempt and nearest_id >= 0: passing = absf(c.lane - old[nearest_id].lane) >= 2.6
+	if nearest_id >= 0 and ahead_distance < 75 and not passing and ahead_distance < maxf(12, c.speed * 0.8):
+		desired = minf(desired, maxf(0, old[nearest_id].speed + (ahead_distance - 7) * 0.7))
 	# Do not sweep across an occupied lateral lane.
 	for other in cars:
 		if other.id == c.id or other.dnf or old[other.id].route != "track": continue
@@ -411,7 +411,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 	var old_speed = c.speed
 	c.speed = move_toward(c.speed, maxf(0, desired), STEP * (accel if desired > c.speed else brake))
 	var next = c.distance + c.speed * STEP / s.path_scale
-	if nearest_id >= 0 and (neutral(c) or absf(c.lane - old[nearest_id].lane) < 2.6):
+	if nearest_id >= 0 and (neutral(c) or traffic.block_pass or absf(c.lane - old[nearest_id].lane) < 2.6):
 		# Snapshot-based longitudinal constraint: never teleport ahead through a car.
 		var limit = c.distance + ahead_distance - 6.2 + old[nearest_id].speed * STEP / maxf(0.1, track.sample(old[nearest_id].distance).path_scale)
 		if next > limit: next = maxf(c.distance, limit); c.speed = maxf(0, (next - c.distance) * s.path_scale / STEP)
@@ -437,7 +437,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 	if phase == "race": race_crossings(c, old_distance, next)
 	elif phase == "qualifying": qualifying_crossings(c, old_distance, next)
 	if passing and nearest_id >= 0 and ahead_distance < moved - old[nearest_id].speed * STEP / track.sample(old[nearest_id].distance).path_scale and phase == "race":
-		stats.passes += 1; post("pass", "%s passes %s on track." % [c.short, cars[nearest_id].short])
+		record_track_pass(c, cars[nearest_id])
 	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if phase == "qualifying" else "Racing")))
 	if phase == "race" and intensity != "calm" and not neutral(c) and c.route == "track":
 		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + local.water * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
@@ -447,6 +447,18 @@ func move_car(c: Dictionary, old: Array) -> void:
 		c.last_trace = total_time
 		c.telemetry.append([total_time, c.speed * 3.6, c.tyre, c.fuel, (c.speed - old_speed) / STEP])
 		if c.telemetry.size() > 120: c.telemetry.pop_front()
+
+func traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
+	var result = {"desired": desired, "lane": lane, "attempt": false, "block_pass": false}
+	if nearest < 0 or gap >= 75: return result
+	if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(sample.curvature) < 0.035 and sample.w > 7.5 and desired > old[nearest].speed + ({"patient": 2.0, "balanced": 0.4, "assertive": 0.1}[c.battle_mode]) and not (c.battle_mode == "patient" and local.water > 0.5):
+		var side = -1 if old[nearest].lane >= 0 else 1
+		result.lane = clampf(old[nearest].lane + side * 3.0, -sample.w * 0.5 + 1.4, sample.w * 0.5 - 1.4)
+		result.attempt = true
+	return result
+
+func record_track_pass(c: Dictionary, other: Dictionary) -> void:
+	stats.passes += 1; post("pass", "%s passes %s on track." % [c.short, other.short])
 
 func wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	if local.is_empty(): local = surface_at(c)
