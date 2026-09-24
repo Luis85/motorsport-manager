@@ -1,5 +1,6 @@
 extends Control
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
+var replay_controller: ReplayController
 var content: VBoxContainer
 var global_header: HBoxContainer
 var location_label: Label
@@ -32,6 +33,7 @@ func _ready() -> void:
 	header.add_child(UI.button("How to play", show_help))
 	header.add_child(UI.button("Main menu", go_home))
 	content = UI.vbox(shell, true)
+	replay_controller = ReplayController.new(); replay_controller.configure(self); add_child(replay_controller)
 	show_menu()
 
 func clear_screen(name: String) -> void:
@@ -60,6 +62,14 @@ func show_menu() -> void:
 	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles"]: scenarios.get_popup().add_item(title)
 	scenarios.get_popup().id_pressed.connect(func(index):
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios][index].call())
+	var replay_menu = MenuButton.new(); replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
+	menu.add_child(replay_menu)
+	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
+	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
+	replay_menu.get_popup().set_item_disabled(1, not FileAccess.file_exists(App.sandbox_path))
+	replay_menu.get_popup().id_pressed.connect(func(id):
+		if id == 0: replay_controller.import_record()
+		else: replay_controller.resume_sandbox())
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -160,7 +170,12 @@ func show_library(test_track: Dictionary = {}) -> void:
 func show_weekend() -> void:
 	clear_screen("weekend")
 	var view = PracticeWeekendView.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
-	view.configure(App.weekend); content.add_child(view)
+	view.configure(App.weekend)
+	if view is PracticeWeekendView: view.recording = App.ensure_recording()
+	content.add_child(view)
+	if view is PracticeWeekendView: view.replay_requested.connect(func():
+		var error = replay_controller.open_data(view.recording.seal())
+		if not error.is_empty(): UI.notify(self, "Replay unavailable", error))
 	view.new_weekend_requested.connect(show_library)
 	view.menu_requested.connect(go_home)
 
@@ -219,6 +234,15 @@ func show_help() -> void:
 	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
+	if replay_controller and replay_controller.workspace:
+		var active = replay_controller.workspace
+		if active.sandbox_view:
+			active.sandbox_view.confirm_leave(func():
+				var error = active.save_sandbox()
+				if not error.is_empty(): UI.notify(self, "Could not save experiment", error); return
+				replay_controller.close(); request_quit())
+			return
+		replay_controller.close()
 	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0) is PitwallWorkspace:
 		content.get_child(0).confirm_leave(_quit_saved); return
 	_quit_saved()

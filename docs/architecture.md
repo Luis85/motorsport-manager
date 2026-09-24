@@ -1,5 +1,25 @@
 # Architecture
 
+## Current 0.13 authored-scenario boundary
+
+[Scenario authoring](race-weekend-scenario-authoring.md) adds inert author intent to a frozen replay checkpoint; [0.13 verification](scenario-authoring-verification.md) records this increment's actual evidence. `ScenarioBrief` validates bounded text and an allow-listed observed goal. `ReplayScenario` creates and validates a zero-step sandbox record whose initial state, endpoint and briefing agree. It never evaluates author text as code or changes the starting resources to satisfy an objective.
+
+`ScenarioAuthor` owns the native unapplied form. `ReplayWorkspace` captures a separate simulation for that form, exports the resulting envelope and carries the brief into a separately identified sandbox. `ReplayController` validates imports before suspending the original view. Goals inspect final classification; they are not simulation commands and cannot award rewards. Long briefs use the existing bounded reader. No extra simulation or view inheritance layer is introduced.
+
+`WeekendResult.validate` now checks the structured twelve-car classification, twelve owned finite inventories, supported aggregate condition, statistics and provenance before a receipt is accepted or an old ledger reused. `RaceRecord` also checks frozen seed/rules/roster/track identity across its snapshots and safely rejects wrong JSON scalar types. Integrity digests are local consistency checks, not authentication or proof that an imported history was genuinely played.
+
+Application version is **0.13.0**; sporting model `race-weekend-0.12-v1`, embedded native v10 and existing session/replay/result envelopes remain unchanged. See [Persistence](persistence.md) for the new scenario envelope, retained slots and UTF-8 byte limit.
+
+## Retained 0.12 replay composition
+
+[Independent replay and sandbox](race-weekend-replay.md) documents the current ownership and migration contract; [verification](replay-verification.md) records tested revisions. No extra simulation or view inheritance layer is introduced.
+
+`PracticeRaceSim` emits observational accepted-outer-input and completed-fixed-step signals. `RaceRecord` captures exact inputs and bounded checkpoints without invoking gameplay or consuming sporting RNG. `RaceReplay` restores a separate existing `PracticeRaceSim` and advances bounded batches. The existing journal remains causal evidence, not the exact-input transport. `WeekendResult` derives factual classification/resources, while the `ResultReceipts` service persists local idempotent acceptance without awarding campaign consequences.
+
+`App` owns the original weekend and its recorder. `ReplayController` retains/suspends the actual original native view, composes `ReplayWorkspace`, and restores the same nodes/drafts/focus on return. The replay has its own simulation; an experiment has a separate recorder and existing native `PracticeWeekendView`. That view routes its phase autosaves and manual saves to the sandbox slot rather than saving `App.weekend`. Invalid imports do not replace either authority. Explicit replay navigation does not advance the original clock or rewrite its time policy.
+
+`ReplayStorage` uses session v1 around embedded native v10, with origin/slot and engine/model validation. The original and sandbox paths are independent. A future campaign must validate its frozen entry and perform its own atomic settlement; the local standalone receipt is not a substitute for that transaction.
+
 **0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
 
 ## Native project structure
@@ -34,7 +54,7 @@ data/tracks/*.json             Individual bundled authoring circuits
 
 ## Ownership and boundaries
 
-The editor owns a mutable normalized authoring document. Undo/redo stores deep snapshots, bounded to fifty entries. Recompilation produces a separate `TrackGeometry`; a race owns its own geometry/document snapshot. Testing an unsaved draft therefore cannot change an already-running weekend or a packaged library track. `App` owns only the library, current weekend, and settings, not simulation rules.
+The editor owns a mutable normalized authoring document. Undo/redo stores deep snapshots, bounded to fifty entries. Recompilation produces a separate `TrackGeometry`; a race owns its own geometry/document snapshot. Testing an unsaved draft therefore cannot change an already-running weekend or a packaged library track. `App` owns the library, original weekend/recorder, and settings, not simulation rules.
 
 UI screens are assembled programmatically using Godot containers. The declarative `.tscn` holds the application root; all game controls are native nodes, not a webview. A shared theme supplies spacing, focus/hover states, colors, and button treatments. The editor canvas and race viewport reuse the same renderer.
 
@@ -60,7 +80,7 @@ Current implementation deliberately uses dictionaries at serialization boundarie
 
 `RaceCheckpoint` validates nested continuation data before `RaceSim.restore` exposes it to the UI. Native v1–v3 saves migrate to version 4 before validation: legacy inventory defaults, four-wheel/setup defaults and explicit lateral surface cells preserve recorded data without inventing missing history. No browser checkpoint is accepted. Simulation state stays independent of UI nodes, navigation, rendering and wall-clock performance measurements.
 
-`WeekendView` owns persistent rank-position TreeItems and stable pit controls; its 5 Hz refresh updates values, not control instances. The track surface and moving-car overlays are separate from retained static geometry. All player commands still enter through `RaceSim.command`.
+`WeekendView` owns persistent driver-ID-indexed TreeItems, reordered as standings change, and stable pit controls; its 5 Hz refresh updates values, not control instances. The track surface and moving-car overlays are separate from retained static geometry. All player commands still enter through `RaceSim.command`.
 
 ## Iteration-three modules
 
