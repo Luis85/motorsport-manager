@@ -19,7 +19,7 @@ REPORTS = ROOT / "reports"
 ERROR = re.compile(r"SCRIPT ERROR:|Parse Error:|(?:^|\n)ERROR:")
 
 
-def run_phase(name: str, command: list[str], env: dict[str, str], timeout: int = 240) -> None:
+def run_phase(name: str, command: list[str], env: dict[str, str], timeout: int = 360) -> None:
     print(f"[{name}] {' '.join(command)}", flush=True)
     started = time.monotonic()
     try:
@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("domain-tests.json", "ui-smoke.json", "verification.json"):
+    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "verification.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -83,7 +83,18 @@ def main() -> int:
             run_phase("domain", base + ["--headless", "--script", "res://tests/run_tests.gd"], env)
             shutil.copy2(project / "reports" / "domain-tests.json", REPORTS / "domain-tests.json")
             domain = require_report("domain-tests.json")
+            run_phase("strategy", base + ["--headless", "--script", "res://tests/weekend_strategy_tests.gd"], env)
+            shutil.copy2(project / "reports" / "weekend-strategy-tests.json", REPORTS / "weekend-strategy-tests.json")
+            strategy = require_report("weekend-strategy-tests.json")
+            run_phase("scenarios", base + ["--headless", "--script", "res://tests/strategy_scenario_runs.gd"], env)
+            shutil.copy2(project / "reports" / "strategy-scenarios.json", REPORTS / "strategy-scenarios.json")
+            scenarios = require_report("strategy-scenarios.json")
+            run_phase("living-racecraft", base + ["--headless", "--script", "res://tests/living_racecraft_tests.gd"], env)
+            shutil.copy2(project / "reports" / "living-racecraft-tests.json", REPORTS / "living-racecraft-tests.json")
+            living = require_report("living-racecraft-tests.json")
+            living_ui = None
             ui = None
+            strategy_ui = None
             if not args.headless_only:
                 command = base + ["--audio-driver", "Dummy", "--script", "res://tests/ui_smoke.gd"]
                 if sys.platform.startswith("linux"):
@@ -95,15 +106,25 @@ def main() -> int:
                                            "Install xvfb and xauth, or explicitly use --headless-only.")
                 try:
                     run_phase("ui", command, env)
+                    strategy_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/strategy_ui_smoke.gd") for part in command]
+                    run_phase("strategy-ui", strategy_command, env)
+                    living_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/living_racecraft_ui.gd") for part in command]
+                    run_phase("living-racecraft-ui", living_command, env)
                 finally:
                     for artifact in (project / "reports").iterdir():
                         if artifact.is_file() and not artifact.name.startswith("."):
                             shutil.copy2(artifact, REPORTS / artifact.name)
                 ui = require_report("ui-smoke.json")
+                strategy_ui = require_report("strategy-ui.json")
+                living_ui = require_report("living-racecraft-ui.json")
             summary = {"passed": True, "mode": "headless-only" if args.headless_only else "full",
                        "engine": domain["engine"], "domain_checks": domain["checks"],
                        "ui_checks": ui.get("checks", 0) if ui else None,
-                       "screenshots": ui["screenshots"] if ui else 0}
+                       "strategy_checks": strategy["checks"], "scenario_checks": scenarios["checks"],
+                       "strategy_ui_checks": strategy_ui["checks"] if strategy_ui else None,
+                       "living_racecraft_checks": living["checks"],
+                       "living_ui_checks": living_ui["checks"] if living_ui else None,
+                       "screenshots": (ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

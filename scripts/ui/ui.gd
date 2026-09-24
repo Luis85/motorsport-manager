@@ -8,7 +8,26 @@ const MUTED = Color("61725f")
 const ACCENT = Color("8b6938")
 const LINE = Color("c5cdb7")
 const GOOD = Color("4f795c")
-const DANGER = Color("a15243")
+const DANGER = Color("943f32")
+const HOVER = Color("e0e7d4")
+const SELECTED = Color("d5e1c6")
+const PRIMARY = Color("345b43")
+const ON_PRIMARY = Color("fff3d8")
+# Controls share immutable state styles; never mutate these returned resources.
+static var state_styles: Dictionary = {}
+static var style_assignments = 0
+
+static func set_active(button: Button, active: bool, danger: bool = false) -> void:
+	var key = ("danger" if danger else ("active" if active else "normal"))
+	if button.get_meta("visual_state", "") == key: return
+	if not state_styles.has(key): state_styles[key] = box(SELECTED if active else CARD, DANGER if danger else (ACCENT if active else LINE), 4, 6)
+	button.add_theme_stylebox_override("normal", state_styles[key])
+	button.set_meta("visual_state", key); style_assignments += 1
+
+static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
+	var style = box(color, border, 4, 8)
+	style.content_margin_top = 5; style.content_margin_bottom = 5
+	return style
 
 static func box(color: Color, border: Color = LINE, radius: int = 6, padding: int = 12) -> StyleBoxFlat:
 	var s = StyleBoxFlat.new(); s.bg_color = color; s.border_color = border
@@ -17,69 +36,82 @@ static func box(color: Color, border: Color = LINE, radius: int = 6, padding: in
 	return s
 
 static func theme() -> Theme:
-	var t = Theme.new(); t.default_font_size = 15
-	for type in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "SpinBox", "Tree", "TabBar", "RichTextLabel"]:
-		t.set_color("font_color", type, INK)
-		t.set_color("font_focus_color", type, INK)
-		t.set_color("font_pressed_color", type, INK)
-		t.set_color("font_selected_color", type, INK)
-		t.set_color("font_hover_color", type, Color("234733"))
-		t.set_color("font_disabled_color", type, Color("929c86"))
+	var t = Theme.new(); t.default_font_size = 13
+	for type in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "TextEdit", "SpinBox", "Tree", "ItemList", "TabBar", "RichTextLabel", "PopupMenu", "TooltipLabel"]:
+		for state in ["font_color", "font_focus_color", "font_pressed_color", "font_selected_color", "font_hover_color", "font_hover_pressed_color"]: t.set_color(state, type, INK)
+		t.set_color("font_disabled_color", type, MUTED)
+		t.set_color("font_outline_color", type, Color.TRANSPARENT)
 	for type in ["Button", "OptionButton", "LineEdit", "TextEdit"]:
-		t.set_stylebox("normal", type, box(CARD))
-		t.set_stylebox("hover", type, box(Color("e1e5d0"), MUTED))
-		t.set_stylebox("pressed", type, box(Color("d7dec4"), ACCENT))
-		t.set_stylebox("focus", type, box(Color(0, 0, 0, 0), ACCENT, 6, 0))
-		t.set_stylebox("disabled", type, box(PANEL))
-	t.set_stylebox("panel", "PanelContainer", box(PANEL))
-	t.set_stylebox("panel", "PopupMenu", box(CARD))
+		t.set_stylebox("normal", type, action_box(CARD))
+		t.set_stylebox("hover", type, action_box(HOVER, MUTED))
+		t.set_stylebox("pressed", type, action_box(SELECTED, ACCENT))
+		t.set_stylebox("hover_pressed", type, action_box(SELECTED, ACCENT))
+		var focus = box(Color.TRANSPARENT, ACCENT, 4, 0); focus.set_border_width_all(2)
+		t.set_stylebox("focus", type, focus)
+		t.set_stylebox("disabled", type, action_box(PANEL))
+	for type in ["CheckButton", "CheckBox"]:
+		for state in ["normal", "pressed", "disabled"]: t.set_stylebox(state, type, action_box(Color.TRANSPARENT, Color.TRANSPARENT))
+		for state in ["hover", "hover_pressed"]: t.set_stylebox(state, type, action_box(HOVER, MUTED))
+		t.set_stylebox("focus", type, t.get_stylebox("focus", "Button"))
+	t.set_stylebox("panel", "PanelContainer", box(PANEL, LINE, 4, 8))
+	# PopupMenu and TooltipLabel do not inherit the Button text palette.
+	t.set_stylebox("panel", "PopupMenu", box(PANEL, LINE, 4, 6))
+	t.set_stylebox("hover", "PopupMenu", action_box(PRIMARY, PRIMARY))
+	t.set_color("font_hover_color", "PopupMenu", ON_PRIMARY)
+	t.set_color("font_accelerator_color", "PopupMenu", MUTED)
+	t.set_color("font_separator_color", "PopupMenu", MUTED)
+	t.set_constant("v_separation", "PopupMenu", 8)
+	t.set_stylebox("panel", "TooltipPanel", box(INK, ACCENT, 4, 9))
+	t.set_color("font_color", "TooltipLabel", ON_PRIMARY)
+	t.set_font_size("font_size", "TooltipLabel", 13)
 	t.set_stylebox("panel", "AcceptDialog", box(PANEL))
-	t.set_stylebox("panel", "Tree", box(BG))
-	t.set_stylebox("selected", "Tree", box(Color("dbe4cb"), ACCENT, 3, 4))
-	t.set_stylebox("selected_focus", "Tree", box(Color("dbe4cb"), ACCENT, 3, 4))
-	for state in ["normal", "hover", "pressed"]:
-		t.set_stylebox("title_button_" + state, "Tree", box(Color("dce2cd"), LINE, 2, 3))
+	for type in ["Tree", "ItemList"]:
+		t.set_stylebox("panel", type, box(PANEL, LINE, 4, 3))
+		for state in ["selected", "selected_focus"]: t.set_stylebox(state, type, box(SELECTED, ACCENT, 2, 3))
+		t.set_stylebox("hover", type, box(HOVER, MUTED, 2, 3))
+		t.set_color("font_selected_color", type, INK)
+	for state in ["normal", "hover", "pressed"]: t.set_stylebox("title_button_" + state, "Tree", box(SELECTED, LINE, 2, 3))
 	t.set_color("title_button_color", "Tree", INK)
-	t.set_color("font_selected_color", "Tree", INK)
-	t.set_constant("v_separation", "Tree", 10)
-	t.set_constant("separation", "VBoxContainer", 10)
-	t.set_constant("separation", "HBoxContainer", 10)
+	t.set_constant("v_separation", "Tree", 4)
+	for type in ["VBoxContainer", "HBoxContainer", "HFlowContainer", "VFlowContainer"]: t.set_constant("separation", type, 6)
+	for key in ["h_separation", "v_separation"]: t.set_constant(key, "GridContainer", 6)
 	for type in ["TabContainer", "TabBar"]:
-		t.set_stylebox("tab_selected", type, box(CARD, ACCENT, 4, 9))
-		t.set_stylebox("tab_unselected", type, box(PANEL, LINE, 4, 9))
-		t.set_stylebox("tab_hovered", type, box(Color("e1e5d0"), MUTED, 4, 9))
-		t.set_color("font_selected_color", type, ACCENT)
-		t.set_color("font_unselected_color", type, MUTED)
+		t.set_stylebox("tab_selected", type, action_box(SELECTED, ACCENT))
+		t.set_stylebox("tab_unselected", type, action_box(PANEL))
+		t.set_stylebox("tab_hovered", type, action_box(HOVER, MUTED))
+		t.set_color("font_selected_color", type, INK); t.set_color("font_unselected_color", type, MUTED)
 		t.set_font_size("font_size", type, 12)
-	t.set_stylebox("panel", "TabContainer", box(PANEL, LINE, 4, 4))
+	t.set_stylebox("panel", "TabContainer", box(PANEL, LINE, 4, 0))
 	return t
 
-static func label(text: String, size: int = 15, color: Color = INK) -> Label:
+static func label(text: String, size: int = 13, color: Color = INK) -> Label:
 	var l = Label.new(); l.text = text; l.add_theme_font_size_override("font_size", size); l.add_theme_color_override("font_color", color)
 	if size >= 23:
 		var heading_font = SystemFont.new(); heading_font.font_names = PackedStringArray(["Georgia", "Noto Serif", "DejaVu Serif"]); l.add_theme_font_override("font", heading_font)
 	return l
 
 static func paragraph(text: String, color: Color = MUTED) -> Label:
-	var l = label(text, 14, color); l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var l = label(text, 13, color); l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return l
 
 static func button(text: String, callback: Callable, primary: bool = false) -> Button:
-	var b = Button.new(); b.text = text; b.custom_minimum_size.y = 40; b.pressed.connect(callback)
+	var b = Button.new(); b.text = text; b.custom_minimum_size.y = 32; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND; b.pressed.connect(callback)
 	if primary:
-		b.add_theme_stylebox_override("normal", box(Color("345b43"), Color("345b43"), 6, 10)); b.add_theme_color_override("font_color", Color("fff3d8"))
-		b.add_theme_stylebox_override("hover", box(Color("446b50"), ACCENT, 6, 10)); b.add_theme_color_override("font_hover_color", Color("fff3d8"))
-		b.add_theme_stylebox_override("pressed", box(Color("294b38"), ACCENT, 6, 10)); b.add_theme_color_override("font_pressed_color", Color("fff3d8"))
+		b.add_theme_stylebox_override("normal", action_box(PRIMARY, PRIMARY))
+		b.add_theme_stylebox_override("hover", action_box(Color("446b50"), ACCENT))
+		b.add_theme_stylebox_override("pressed", action_box(Color("294b38"), ACCENT))
+		b.add_theme_stylebox_override("hover_pressed", action_box(Color("294b38"), ACCENT))
+		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, ON_PRIMARY)
 	return b
 
 static func option(items: Array, callback: Callable, selected: int = 0) -> OptionButton:
-	var o = OptionButton.new(); o.custom_minimum_size.y = 38
+	var o = OptionButton.new(); o.custom_minimum_size.y = 32; o.fit_to_longest_item = false
 	for item in items: o.add_item(str(item))
 	o.select(selected); o.item_selected.connect(callback)
 	return o
 
 static func spin(value: float, minimum: float, maximum: float, step: float, callback: Callable) -> SpinBox:
-	var s = SpinBox.new(); s.min_value = minimum; s.max_value = maximum; s.step = step; s.value = value; s.custom_minimum_size = Vector2(110, 38)
+	var s = SpinBox.new(); s.min_value = minimum; s.max_value = maximum; s.step = step; s.value = value; s.custom_minimum_size = Vector2(90, 32)
 	s.value_changed.connect(callback)
 	return s
 
@@ -105,7 +137,7 @@ static func clear(parent: Node) -> void:
 
 static func field(parent: Node, text: String, control: Control) -> void:
 	var row = HBoxContainer.new(); parent.add_child(row)
-	var name_label = label(text, 14, MUTED); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var name_label = label(text, 13, MUTED); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label); row.add_child(control)
 
 static func notify(parent: Node, title: String, text: String) -> void:

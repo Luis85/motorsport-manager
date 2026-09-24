@@ -2,11 +2,12 @@ extends Control
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
 var content: VBoxContainer
 var location_label: Label
+var version_label: Label
 var screen_name = "menu"
 var editor: TrackEditor
 var library_canvas: TrackCanvas
 var selected_track: Dictionary
-var config = {"laps": 12, "qual_duration": 480, "scenario": "changeable", "intensity": "standard", "seed": 7314}
+var config = {"laps": 24, "qual_duration": 480, "scenario": "dry", "intensity": "standard", "seed": 7314}
 var vehicle = "Formula"
 var editor_draft: Dictionary = {}
 var draft_signature = ""
@@ -23,7 +24,8 @@ func _ready() -> void:
 	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
-	header.add_child(UI.label("NATIVE GODOT  ·  0.4.0", 12, UI.MUTED))
+	version_label = UI.label("NATIVE GODOT  ·  " + str(ProjectSettings.get_setting("application/config/version", "development")), 12, UI.MUTED)
+	header.add_child(version_label)
 	return_editor_button = UI.button("Return to editor", func(): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))
@@ -51,6 +53,7 @@ func show_menu() -> void:
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 80; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 72
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
+	menu.add_child(UI.button("STRATEGY SCENARIOS", show_strategy_scenarios))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -118,7 +121,10 @@ func show_library(test_track: Dictionary = {}) -> void:
 	controls.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; refresh.call(), TrackGeometry.PRESETS.keys().find(vehicle)))
 	controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
 	controls.add_child(UI.option(["Changing skies", "Dry", "Wet → drying"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
-	controls.add_child(UI.label("LAPS", 12, UI.MUTED)); controls.add_child(UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)))
+	controls.add_child(UI.label("LAPS", 12, UI.MUTED))
+	var lap_input = UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)); controls.add_child(lap_input)
+	controls.add_child(UI.option(["Standard · 24 laps", "Quick · 12 laps", "Custom · uncalibrated"], func(index):
+		if index < 2: lap_input.value = [24, 12][index], 0 if config.laps == 24 else (1 if config.laps == 12 else 2)))
 	controls.add_child(UI.label("QUAL MIN", 12, UI.MUTED)); controls.add_child(UI.spin(config.qual_duration / 60, 2, 30, 1, func(value): config.qual_duration = value * 60))
 	controls.add_child(UI.option(["Standard incidents", "Calm / testing", "Volatile"], func(index): config.intensity = ["standard", "calm", "volatile"][index], ["standard", "calm", "volatile"].find(config.intensity)))
 	controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))
@@ -130,7 +136,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 			var findings = TrackDiagnostics.inspect(geometry)
 			if TrackDiagnostics.blocking(findings):
 				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-			App.weekend = RaceSim.new(geometry, config)
+			App.weekend = StrategyRaceSim.new(geometry, config)
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
@@ -141,7 +147,8 @@ func show_library(test_track: Dictionary = {}) -> void:
 
 func show_weekend() -> void:
 	clear_screen("weekend")
-	var view = WeekendView.new(); view.configure(App.weekend); content.add_child(view)
+	var view = StrategyWeekendView.new() if App.weekend is StrategyRaceSim else WeekendView.new()
+	view.configure(App.weekend); content.add_child(view)
 	view.new_weekend_requested.connect(show_library)
 
 func continue_weekend() -> void:
@@ -181,7 +188,7 @@ func show_settings() -> void:
 	list.add_child(UI.paragraph("Godot 4.7.2 · Standard GDScript · Compatibility renderer\nTrack authoring and top-down weekend simulation. No browser, npm, .NET or external plugins are required. Company management is not part of this iteration."))
 
 func show_help() -> void:
-	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run two out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call turns automatic strategy off.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
+	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
 	if editor:
@@ -193,3 +200,24 @@ func request_quit() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST: request_quit()
+
+func show_strategy_scenarios() -> void:
+	clear_screen("strategy_scenarios")
+	content.add_child(UI.label("Strategy, not scripted victories", 30))
+	content.add_child(UI.paragraph("Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage."))
+	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(scroll)
+	var entries = UI.vbox(scroll, true)
+	for recipe in WeekendScenarios.catalog():
+		if not WeekendScenarios.valid(recipe): continue
+		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
+		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
+		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.button("Open %d-lap scenario · seed %d" % [recipe.laps, recipe.seed], func():
+			var start = func():
+				var candidate = WeekendScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The scenario, track or initial plan is invalid."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace the active weekend?"; confirm.dialog_text = "A scenario starts a new weekend. Export the current evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
