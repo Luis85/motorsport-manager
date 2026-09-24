@@ -37,8 +37,8 @@ func run() -> void:
 		car.speed = 40; car.lane = 0; car.previous_lane = 0
 	root.get_node("App").weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
 	panel = view.team_panel
-	view.detail_picker.select(8); view.detail_picker.item_selected.emit(8); view.refresh(); await settle()
-	check(view.tabs.current_tab == 8 and panel.is_visible_in_tree(), "Team and battles is reachable through the existing native topic picker")
+	view.group_buttons.Team.pressed.emit(); view.refresh(); await settle()
+	check(view.tabs.current_tab == 8 and panel.is_visible_in_tree(), "Team and battles is reachable through the visible primary task navigation")
 	var before = JSON.stringify(model.snapshot())
 	panel.kind.select(1); panel.kind.item_selected.emit(1); panel.duration.value = 2
 	for i in range(30): view.refresh()
@@ -79,7 +79,7 @@ func run() -> void:
 	for size in [Vector2i(1440, 900), Vector2i(1100, 720)]:
 		root.size = size; root.content_scale_size = size; panel.show_topic(0); await settle(); view.refresh(); await settle(); view.canvas.fit()
 		for id in [3, 6]:
-			check(inside(view.decision_controls[id].box) and inside(view.decision_controls[id].battle), "Both primary actions and battle statuses fit %dx%d for driver %d" % [size.x, size.y, id])
+			check(inside(view.decision_controls[id].box) and inside(view.car_cards[id].issue) and inside(view.car_cards[id].details_button) and view.car_cards[id].issue.tooltip_text.contains(view.decision_controls[id].battle.tooltip_text), "Both primary actions, priority status and access to full battle detail fit %dx%d for driver %d" % [size.x, size.y, id])
 		check(inside(view.pause_button) and inside(view.speed_control), "Explicit time controls remain reachable at %dx%d" % [size.x, size.y])
 		check(inside(panel.apply_button), "Cooperation commit stays reachable at %dx%d" % [size.x, size.y])
 		check(view.canvas.size.x >= 300 and view.canvas.size.y >= 170, "Battle workspace remains visible at %dx%d" % [size.x, size.y])
@@ -87,6 +87,14 @@ func run() -> void:
 		check(inside(panel.priority_buttons[3]) and inside(panel.priority_buttons[6]), "Both priority actions are visible without scrolling at %dx%d" % [size.x, size.y])
 		panel.show_topic(0); await settle()
 		await capture("compact" if size.x == 1100 else "desktop")
+	before = JSON.stringify(model.snapshot())
+	view.car_cards[6].details_button.pressed.emit(); await settle()
+	var dialogs = view.get_children().filter(func(node): return node is AcceptDialog and node.visible)
+	var reading = [] if dialogs.is_empty() else dialogs[0].get_children().filter(func(node): return node is RichTextLabel)
+	check(not reading.is_empty() and reading[0].text.contains(view.decision_controls[6].battle.text), "Named Details action preserves full battle status without requiring hover")
+	check(before == JSON.stringify(model.snapshot()), "Opening battle detail neither issues commands nor changes time")
+	if not dialogs.is_empty(): dialogs[0].confirmed.emit()
+	await settle()
 	view.guide.open_guide(); await settle()
 	check(model.paused and model.speed == 8, "Expanded guide retains the user's selected time controls")
 	view.guide.hide()
