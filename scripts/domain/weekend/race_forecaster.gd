@@ -23,6 +23,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 	var c = sim.cars[driver_id]
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
 		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision]
+	if sim is StrategyRaceSim and c.player: facts.append([sim.team_state.revision, sim.team_state.pit_priority.get("deferred_gate", -1)])
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
 		facts.append([other.id, other.route, other.pit_stops, other.dnf, other.finished])

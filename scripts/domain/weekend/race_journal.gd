@@ -17,7 +17,7 @@ static func append(state: Dictionary, sim: RaceSim, kind: String, driver_id: int
 		return id
 	state.records.append({"id": id, "tick": roundi(sim.total_time / RaceSim.STEP), "time": sim.total_time,
 		"phase": sim.phase, "kind": kind, "driver_id": driver_id, "related_id": related,
-		"provenance": "observed" if kind in ["pit_entry", "pit_exit", "result", "handback"] else "command_or_model",
+		"provenance": "observed" if kind in ["pit_entry", "pit_exit", "result", "handback", "pass_completed"] else "command_or_model",
 		"evidence": evidence.duplicate(true)})
 	return id
 
@@ -101,6 +101,6 @@ static func debrief(state: Dictionary) -> Array[String]:
 			var text = "%.1fs · %s · Measured pit visit %.1fs" % [record.time, who, float(e.get("visit_seconds", 0))]
 			if e.has("predicted_low"): text += " · prior estimate %.1f–%.1fs · residual %+.1fs" % [e.predicted_low, e.predicted_high, e.residual]
 			lines.append(text + " (visit duration, not net race-time loss)")
-		elif record.kind in ["handback", "strategy_order", "plan_blocked", "warning"]:
+		elif record.kind in ["handback", "strategy_order", "plan_blocked", "warning", "team_order_outcome", "team_priority_defer", "strategy_response", "pass_completed"]:
 			lines.append("%.1fs · %s · %s" % [record.time, who, e.get("reason", record.kind.replace("_", " "))])
 	return lines
