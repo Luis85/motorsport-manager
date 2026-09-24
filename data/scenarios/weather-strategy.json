@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "scenarios": [
+    {"id":"a-shower-or-a-front","title":"A shower or a front?","track":"hillside","laps":24,"seed":2026,"scenario":"changeable","weather_mode":"seeded","pit_owner":"player","objective":"Bring both cars home while making your own crossover calls.","hint":"Watch cloud and surface trends. Compare keeping the fitted tyres, changing now and waiting; a shower and a lasting front may reward different calls. No rain arrival or winner is scripted."},
+    {"id":"drying-unevenly","title":"Drying unevenly","track":"hillside","laps":24,"seed":86,"scenario":"wet","weather_mode":"seeded","pit_owner":"engineer","objective":"Manage a wet start and learn when local wet sections outweigh a drying line.","hint":"Rain-prone does not guarantee later drying. Engineers compare public observations when no binding plan exists. Inspect all three sectors and take manual pit ownership when you have a different risk preference."},
+    {"id":"crossover-training","title":"Rain is not the road","track":"hillside","laps":12,"seed":7314,"scenario":"wet","weather_mode":"scripted_training","pit_owner":"player","objective":"Learn the difference between falling rain, retained surface water and tyre choice.","hint":"Explicit legacy training schedule: wet conditions ease as this race progresses. The public forecast does not read the schedule; results still depend on actual decisions, traffic and physical stops."}
+  ]
+}
