@@ -27,7 +27,7 @@ func present(view: PracticeWeekendView) -> void:
 	for i in range(order.size()):
 		var car = order[i]
 		if car.player: continue
-		var row = view.rows[i]
+		var row = view.rows[int(car.id)]
 		var state = "OUT" if car.dnf else ("FIN" if car.finished else ("PIT" if car.route == "pit" else ("BOX" if car.route == "garage" else "RUN")))
 		row.set_text(4, state)
 		var description = "%s · %s\n%s\nObserved compound %s; condition and future plans are private." % [car.name, car.team, RivalStyles.PROFILES[sim.rival_styles.drivers[int(car.id)].style].label, car.compound]

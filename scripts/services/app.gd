@@ -5,6 +5,8 @@ var load_errors: Array[String] = []
 var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
+var recording: RaceRecord
+var sandbox_path = "user://sandbox.json"
 
 func _ready() -> void:
 	load_library()
@@ -70,16 +72,30 @@ func save_track(document: Dictionary) -> String:
 		document.id = d.id; document.builtin = false; load_library()
 	return error
 
+func ensure_recording() -> RaceRecord:
+	if not weekend is PracticeRaceSim: return null
+	if recording == null or recording.source == null or recording.source.get_ref() != weekend:
+		recording = RaceRecord.new(); recording.attach(weekend)
+	return recording
+
 func save_weekend() -> String:
 	if weekend == null: return "There is no weekend to save."
+	if weekend is PracticeRaceSim: return ReplayStorage.save_session(checkpoint_path, ensure_recording())
 	return Storage.write_json(checkpoint_path, weekend.snapshot())
 
 func load_weekend() -> String:
 	var result = Storage.read_json(checkpoint_path)
 	if not result.ok: return result.error
 	if not result.data is Dictionary: return "Invalid checkpoint."
-	var restored = PracticeRaceSim.restore_practice(result.data)
-	if restored == null: return "Checkpoint is invalid or incompatible. The current session was not replaced."
-	weekend = restored
+	if result.data.get("kind") == ReplayStorage.SESSION_KIND:
+		var loaded = ReplayStorage.restore_session(result.data)
+		if not loaded.ok: return loaded.error
+		weekend = loaded.sim; recording = loaded.record
+	else:
+		var restored = PracticeRaceSim.restore_practice(result.data)
+		if restored == null: return "Checkpoint is invalid or incompatible. The current session was not replaced."
+		weekend = restored
+		recording = RaceRecord.new(); recording.attach(restored, "legacy")
+	# Existing explicit Continue behavior; recorded inputs retain subsequent context.
 	weekend.paused = weekend.phase in RaceSim.ACTIVE
 	return ""
