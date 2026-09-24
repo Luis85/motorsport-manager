@@ -4,6 +4,7 @@ extends RefCounted
 var record: Dictionary = {}
 var sim: PracticeRaceSim
 var step_index = 0
+var start_step = 0
 var cursor = 0
 var error = ""
 var verified = false
@@ -25,6 +26,7 @@ func seek(index: int) -> bool:
 		snapshot = RaceRecord.apply_types(record.endpoint, record.endpoint_integers); step_index = int(record.steps); cursor = record.inputs.size()
 	else:
 		var mark = record.marks[index]; snapshot = RaceRecord.apply_types(mark.snapshot, mark.integers); step_index = int(mark.step); cursor = int(mark.cursor)
+	start_step = step_index
 	sim = PracticeRaceSim.restore_practice(snapshot)
 	error = ""; verified = false; at_snapshot = true
 	return sim != null
@@ -59,7 +61,7 @@ func tick(budget: int = 32) -> int:
 func branch() -> PracticeRaceSim:
 	if sim == null: return null
 	var copy = PracticeRaceSim.restore_practice(sim.snapshot())
-	if copy != null: copy.paused = copy.phase in RaceSim.ACTIVE
+	if copy != null: copy.paused = true
 	return copy
 
 func lineage() -> Dictionary:
