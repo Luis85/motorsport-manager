@@ -27,6 +27,7 @@ func inside(control: Control) -> bool:
 func run() -> void:
 	root.size = Vector2i(1440, 900); root.content_scale_size = root.size
 	var game = load("res://scenes/main.tscn").instantiate(); root.add_child(game)
+	check(game.version_label.text == "NATIVE GODOT  ·  " + str(ProjectSettings.get_setting("application/config/version")), "Native shell shows the configured project version")
 	model = StrategyRaceSim.new(TrackGeometry.new(root.get_node("App").library[1]), {"laps": 12, "scenario": "dry", "intensity": "calm", "seed": 7021})
 	model.phase = "race"; model.paused = true; model.speed = 8
 	for car in model.cars:

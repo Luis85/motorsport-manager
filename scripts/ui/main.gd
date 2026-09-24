@@ -2,6 +2,7 @@ extends Control
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
 var content: VBoxContainer
 var location_label: Label
+var version_label: Label
 var screen_name = "menu"
 var editor: TrackEditor
 var library_canvas: TrackCanvas
@@ -23,7 +24,8 @@ func _ready() -> void:
 	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
-	header.add_child(UI.label("NATIVE GODOT  ·  0.5.0", 12, UI.MUTED))
+	version_label = UI.label("NATIVE GODOT  ·  " + str(ProjectSettings.get_setting("application/config/version", "development")), 12, UI.MUTED)
+	header.add_child(version_label)
 	return_editor_button = UI.button("Return to editor", func(): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))
