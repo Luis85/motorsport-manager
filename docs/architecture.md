@@ -1,5 +1,7 @@
 # Architecture
 
+**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; older integration and feature-status statements below are historical. [Current verification](notebook-verification.md).
+
 ## Current 0.12 replay composition
 
 [Independent replay and sandbox](race-weekend-replay.md) documents the current ownership and migration contract; [verification](replay-verification.md) records tested revisions. No extra simulation or view inheritance layer is introduced.

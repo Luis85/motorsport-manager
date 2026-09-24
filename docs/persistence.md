@@ -1,5 +1,7 @@
 # Persistence and local data
 
+**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; older integration and feature-status statements below are historical. [Current verification](notebook-verification.md).
+
 ## Current 0.12 envelopes and slots
 
 [Replay and sandbox contracts](race-weekend-replay.md) supersede the historical checkpoint notes below. Application 0.12.0 uses **session/replay envelope v1 around native checkpoint v10**; the core simulation schema is unchanged. Native v1–v10 raw saves still restore through the existing chain and begin a legacy-labeled recording at the restored point, without invented prior input history. Different engine/model original continuation is rejected; compatible saved snapshots remain inspectable through Replay.
@@ -10,7 +12,7 @@ The existing 16 MB limit and temporary/backup write behavior apply to these enve
 
 **0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
 
-All player writes use Godot's `user://` directory, displayed in **Settings → Local data**. The application never saves back into packaged `res://data`.
+Managed continuation, settings, library and notebook files use Godot's `user://` directory, displayed in **Settings → Local data**. Explicit exports use the destination chosen in the native file dialog. The application never automatically saves back into packaged `res://data`.
 
 | Path | Contents |
 |---|---|
@@ -19,6 +21,7 @@ All player writes use Godot's `user://` directory, displayed in **Settings → L
 | `user://weekend.json` | Original session v1 with native v10 endpoint and replay history |
 | `user://sandbox.json` | Independently saved sandbox session, never original authority |
 | `user://weekend-results.json` | Immutable standalone factual results and once-only local receipts |
+| `user://circuit-notebook.json` | Opt-in observed runs and revision-checked personal notes, notebook v1 |
 | `*.bak` | Previous successful value retained by atomic replacement |
 
 `Storage.read_json` bounds files to 16 MB and returns structured success/error results. It does not evaluate scripts or instantiate Godot resources from user input. Imported track identifiers are constrained before becoming filenames. Invalid library documents are skipped with an explanatory warning rather than crashing the menu.

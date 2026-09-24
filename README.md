@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.12.0 — independent replay and sandbox experiments**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.14.0 — circuit notebook and remembered challenges**.
 
 ## Open and play
 
@@ -10,6 +10,14 @@ Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Optio
 
 **Watch / Strategy / Car / Team / Conditions / Review** organize the pit wall. Both driver cards retain urgent information and primary commands. Find / Ctrl+K navigates without issuing orders. Settings offers staged 100%, 115% and 130% pit-wall text. Alerts and guides do not pause the race or change its speed.
 
+## Circuit notebook
+
+**Weekend → Circuit notebook** or **Find / Ctrl+K → Review / Circuit notebook** lets you remember a completed original or sandbox run. Keep actual finishing distance, pit count, qualifying/practice evidence and authored challenge outcomes, then write a separate personal interpretation. Notes persist without changing car performance, forecasts or rewards. Duplicate recording preserves the note; stale edits and corrupt storage fail without overwriting it.
+
+The main menu's **Replays & experiments** opens saved history. Filter by exact circuit snapshot, export the notebook or explicitly forget an entry. Primary actions stay outside scrolling evidence. Opening history never pauses the live race; pause first for reading time. The notebook is opt-in, bounded to 128 runs and 1,200 note characters, and does not silently import old receipts.
+
+See [0.14 behavior and UI contract](docs/race-weekend-notebook.md) and [verification evidence](docs/notebook-verification.md). This PR targets main directly and preserves the 0.12 replay / 0.13 authoring work which earlier stacked PRs merged only into feature branches. The current replay model and native checkpoint v10 remain unchanged.
+
 ## Replay and alternate decisions
 
 At **Review → Decision debrief**, use **Keep checkpoint**, then **Replay / sandbox**. Weekend and Find also open that viewer. Inspect the initial state, a saved checkpoint or endpoint; play the recorded continuation; or **Try another decision** in a separately paused native sandbox. Saved-state inspection and verified re-simulation are labeled differently.
@@ -18,9 +26,9 @@ The original view and unapplied strategy drafts are retained. Its clock does not
 
 **Accept original result** stores a factual completed result once. Repeated event/hash acceptance is a no-op; conflicting results and sandboxes cannot replace the accepted fact. No campaign points, money or XP are awarded. A future campaign must implement its own entry validation and atomic settlement.
 
-Session/replay envelope **v1** retains native checkpoint **v10**. Supported old raw native saves start legacy-labeled partial histories without invented earlier commands. Original continuation requires the saved engine/model. Four retained checkpoints, 4,096 accepted inputs and the shared 16 MB storage ceiling bound recording. This is not video playback, an unlimited timeline or a complete scenario editor.
+Session/replay envelope **v1** retains native checkpoint **v10**. Supported old raw native saves start legacy-labeled partial histories without invented earlier commands. Original continuation requires the saved engine/model. Four retained checkpoints, 4,096 accepted inputs and the shared 16 MB storage ceiling bound recording. This is not video playback or an unlimited timeline. The inherited 0.13 authoring dialog adds a public briefing, two approaches, a hint and one supported goal around a frozen state; arbitrary roster/rule/resource editing remains outside scope.
 
-See [0.12 behavior, migration and native interaction](docs/race-weekend-replay.md) and [executed verification and measurements](docs/replay-verification.md). PR #8 is stacked on unmerged PR #6; these are feature-branch capabilities, not a claim that main already contains them.
+See [0.12 behavior, migration and native interaction](docs/race-weekend-replay.md) and [executed verification and measurements](docs/replay-verification.md). The older handoffs retain their historical integration status; the 0.14 handoff describes the new direct-to-main integration.
 
 ## Retained gameplay and authoring
 
@@ -38,7 +46,7 @@ Optional practice retains comparable measured evidence, not a hidden setup bonus
 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI checks need a display or `xvfb` plus `xauth`. `--headless-only` explicitly omits native UI verification. The runner imports a clean copy, isolates user data, preserves the earlier suites and now requires replay domain, full-race, native interaction and observer-cost checks. It rejects script errors and failed assertions.
+Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI checks need a display or `xvfb` plus `xauth`. `--headless-only` explicitly omits native UI verification. The runner imports a clean copy, isolates user data, preserves the earlier suites and now requires notebook domain/storage and native interaction checks, plus the preserved replay, complete-race and observer-cost suites. It rejects script errors and failed assertions.
 
 Reports and native screenshots are produced under `reports/`. CI publishes evidence; the source workflow archives tracked source. `reports/verification.json` is authoritative for its run. Historical release counts are not current test results; local verification and hosted CI are separate.
 

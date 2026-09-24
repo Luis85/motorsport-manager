@@ -1,10 +1,12 @@
 # Motorsport Manager documentation
 
-Current native implementation: **0.12.0** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.14.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
-| [Independent replay and sandbox](race-weekend-replay.md) | Current RW-19 captured records, native experiments, standalone result receipts, session v1/native v10 and limitations |
+| [Circuit notebook and challenge history](race-weekend-notebook.md) | Current 0.14 opt-in observations, guarded personal notes, inherited authoring and direct-to-main integration |
+| [0.14 verification](notebook-verification.md) | Fresh baseline/final evidence, exact source, native inputs and bounded history cost |
+| [Independent replay and sandbox](race-weekend-replay.md) | Preserved RW-19 captured records, native experiments, standalone result receipts, session v1/native v10 and limitations |
 | [0.12 verification](replay-verification.md) | Exact tested source, complete regression, native interaction and matched recorder costs |
 | [Contextual rivals and calmer pit wall](race-weekend-rivals.md) | Preserved partial RW-18, native UI refinement, checkpoint v10 and explicit pressure deferral |
 | [Workspace specification](design/pitwall-workspace.md) | Observed audit, capability locations, focus, text scaling and human-validation protocol |
@@ -34,6 +36,6 @@ Current native implementation: **0.12.0** · **Godot 4.7.2 Standard**.
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 
-The 0.12 handoff is authoritative for replay/sandbox interaction, session v1 wrapping checkpoint v10, and once-only standalone factual acceptance. It does not implement campaign settlement. The 0.11 handoff remains authoritative for contextual rivals and checkpoint v10. The practice handoff remains authoritative for optional preparation, bounded measured learning and the preserved v9 practice payload. The integration record remains authoritative for the combined 0.9 task navigation and recovery view. The research document explains the UX decisions; it is not human validation. The compact UI handoff records the earlier flat topic toolbar and its historical performance measurements, not the merged release's measured performance. The recovery handoff is authoritative for staged recovery, virtual neutralization and checkpoint v8. Older native saves retain their original model semantics.
+The 0.14 handoff is authoritative for notebook history, the retained 0.13 authoring additions and the direct-to-main integration. Earlier integration-status statements are historical. The 0.12 handoff remains the foundation for replay/sandbox interaction, session v1 wrapping checkpoint v10, and once-only standalone factual acceptance. It does not implement campaign settlement. The 0.11 handoff remains authoritative for contextual rivals and checkpoint v10. The practice handoff remains authoritative for optional preparation, bounded measured learning and the preserved v9 practice payload. The integration record remains authoritative for the combined 0.9 task navigation and recovery view. The research document explains the UX decisions; it is not human validation. The compact UI handoff records the earlier flat topic toolbar and its historical performance measurements, not the merged release's measured performance. The recovery handoff is authoritative for staged recovery, virtual neutralization and checkpoint v8. Older native saves retain their original model semantics.
 
 The 0.7 weather, 0.6 battle/team, 0.5 strategy and 0.4 editor/system documents remain useful for retained behavior except where later handoffs explicitly supersede their UI, model or checkpoint-version statements. No stage is declared human-playtest complete solely because automated checks pass.
