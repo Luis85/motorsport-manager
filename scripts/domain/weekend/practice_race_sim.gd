@@ -1,6 +1,8 @@
 class_name PracticeRaceSim
 extends RecoveryRaceSim
 ## RW-17. Optional session, real finite-resource runs, and observation-derived forecast priors.
+signal input_accepted(action: String, payload: Dictionary, context: Dictionary)
+signal fixed_step_completed
 const PRACTICE_CHECKPOINT_VERSION = 10
 var practice_state: Dictionary = {}
 var rival_styles: Dictionary = {}
@@ -45,6 +47,14 @@ func run_preview(id: int, plan: Dictionary) -> Dictionary:
 		"limit": "Estimate includes out/in laps and pit transit. Slow traffic or wet running can interrupt a run; no completion is guaranteed."}
 
 func command(action: String, payload: Dictionary = {}) -> bool:
+	# Only the outer application command is recorded, not inherited helper commands.
+	var recording = input_accepted.has_connections()
+	var context = {"selected_id": selected_id, "paused": paused, "speed": speed, "accumulator": accumulator} if recording else {}
+	var accepted = _practice_command(action, payload)
+	if accepted and recording: input_accepted.emit(action, payload.duplicate(true), context)
+	return accepted
+
+func _practice_command(action: String, payload: Dictionary) -> bool:
 	last_error = ""
 	if action == "practice_start":
 		if phase != "briefing" or practice_state.status != "available": return fail("Practice is optional and available once, before qualifying.")
@@ -170,9 +180,14 @@ func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
 		a.anchor = observed; a.tainted = false; a.water_sum = 0.0; a.ticks = 0
 
 func step() -> void:
+	var previous_time = total_time
+	_practice_step()
+	if total_time > previous_time: fixed_step_completed.emit()
+
+func _practice_step() -> void:
 	if phase != "practice": super.step(); return
 	if paused: return
-	if not practice_state.closed and clock + STEP >= practice_state.duration: close_practice("Practice clock expired; existing measured lap may finish. Partial findings retained.")
+	if not practice_state.closed and clock + STEP >= practice_state.duration: close_practice("Practice clock expired; existing measured laps may finish. Partial findings retained.")
 	for c in cars:
 		var d = practice_driver(int(c.id))
 		if not c.player and d.runs.is_empty() and clock >= d.next_release and not practice_state.closed:
