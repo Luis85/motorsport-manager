@@ -97,5 +97,21 @@ func run():
 	bad=copy(sealed);bad.marks[0].snapshot.seed_value+=1;redigest(bad)
 	check(not RaceRecord.validate(bad).is_empty(),"Checkpoint cannot change the recording seed")
 	check(RaceRecord.equivalent(original,sim.snapshot()),"Malformed and incompatible imports do not consume source streams")
+	for key in ["kind", "version", "digest"]:
+		bad=copy(sealed);bad[key]=false
+		check(not RaceRecord.validate(bad).is_empty(),"Wrong JSON type for "+key+" is rejected without a script error")
+	bad=copy(sealed);bad.endpoint.laps+=1;redigest(bad)
+	check(not RaceRecord.validate(bad).is_empty(),"Replay endpoint cannot silently change race distance")
+	check(not RaceRecord.equivalent(true,"true"),"Type-mismatched evidence comparison is safely false")
+	var attached=RaceRecord.new();attached.attach(burst);attached.detach()
+	burst.command("speed",{"value":8})
+	check(attached.inputs.is_empty() and attached.seal().is_empty(),"Detaching an observer removes its callbacks safely")
+	attached.attach(burst);burst.command("speed",{"value":4});attached.attach(burst)
+	check(attached.inputs.is_empty() and attached.steps==0,"Reusing an observer starts a fresh bounded trace")
+	check(not ResultReceipts.valid({"kind":ResultReceipts.KIND,"version":1,"results":{record.event_id:{"event_id":true}}}),"Wrong-type receipt identity returns false without a runtime error")
+	var utf_path="user://utf8-export-bound.json"
+	Storage.write_json(utf_path,{"keep":"previous evidence"})
+	var utf_before=FileAccess.get_file_as_bytes(utf_path)
+	check(not Storage.write_json(utf_path,{"text":"界".repeat(5400000)}).is_empty() and FileAccess.get_file_as_bytes(utf_path)==utf_before,"UTF-8 byte limit preserves the previous evidence file")
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"engine":Engine.get_version_info().string}
 	Storage.write_json("res://reports/replay-tests.json",report);print("REPLAY_TESTS ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

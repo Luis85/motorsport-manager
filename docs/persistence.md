@@ -1,8 +1,20 @@
 # Persistence and local data
 
-**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; older integration and feature-status statements below are historical. [Current verification](notebook-verification.md).
+**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; historical integration status and test counts remain in their dated handoffs. [Notebook verification](notebook-verification.md).
 
-## Current 0.12 envelopes and slots
+## Retained 0.13 authoring and validation
+
+The retained 0.13 authoring implementation adds a **scenario envelope v1** (`motorsport-manager-scenario`) containing a **brief v1** and one existing replay v1 sandbox record. The record has zero steps, no inputs/marks, identical initial/endpoint sporting state, a new sandbox identity and retained source lineage. The brief in the outer envelope must match the one embedded in the record. Invalid or mismatched imports do not replace the original or sandbox.
+
+The engine/model, native **v10**, session/replay **v1**, result/receipt **v1** and original/sandbox slots described below remain compatible. Old recordings without a scenario brief do not acquire fabricated instructions or goals. The optional committed brief survives sandbox saving/resume through its parent metadata. Unsubmitted author-form edits are discarded on Cancel; submitted text is retained in that viewer when the file picker is canceled, not across application restart.
+
+Result acceptance now validates the stored factual result structure as well as its digest. Duplicate same-event/same-hash acceptance is byte-preserving; a different result for an accepted identity is rejected. There is no implemented correction transaction, imported-result award path or campaign settlement. Local files and their recalculable digests are not an anti-cheat boundary.
+
+`Storage.write_json` checks **16,000,000 UTF-8 bytes**, matching the read ceiling, rather than counting Unicode characters. Oversized evidence is rejected before the destination file is changed; no marks or receipts are silently evicted to make it fit. The retained count limits (four marks, 4,096 inputs, 256 receipts) do not guarantee every such maximum fits under the byte ceiling. Back up important exports before starting new original or sandbox sessions, each of which still has only one slot.
+
+See [scenario behavior and native workflow](race-weekend-scenario-authoring.md) and [executed 0.13 verification](scenario-authoring-verification.md). The retained 0.12 record below explains the base replay/continuation contract, not this build's test counts.
+
+## Retained 0.12 envelopes and slots
 
 [Replay and sandbox contracts](race-weekend-replay.md) supersede the historical checkpoint notes below. Application 0.12.0 uses **session/replay envelope v1 around native checkpoint v10**; the core simulation schema is unchanged. Native v1–v10 raw saves still restore through the existing chain and begin a legacy-labeled recording at the restored point, without invented prior input history. Different engine/model original continuation is rejected; compatible saved snapshots remain inspectable through Replay.
 
