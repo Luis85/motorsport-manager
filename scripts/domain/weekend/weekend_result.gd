@@ -2,6 +2,7 @@ class_name WeekendResult
 extends RefCounted
 ## A factual, versioned boundary; no campaign finance, scoring or invented diagnosis.
 static func build(record: RaceRecord) -> Dictionary:
+	if record == null or record.source == null: return {}
 	var sim = record.source.get_ref()
 	if sim == null or sim.phase != "results" or not sim.cars.all(func(c): return c.finished or c.dnf): return {}
 	var classification: Array = []

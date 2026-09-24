@@ -90,5 +90,12 @@ func run():
 	burst.command("speed",{"value":4})
 	check(not limit.incomplete.is_empty() and burst.speed==4,"Input limit marks continuity unavailable without suppressing live commands")
 	check(not ResultReceipts.valid({"kind":ResultReceipts.KIND,"version":1,"results":{"bad":{}}}),"Malformed receipt ledger is rejected")
+	bad=copy(sealed);bad.engine="different-engine";redigest(bad)
+	check(not ReplayStorage.restore_session({"kind":ReplayStorage.SESSION_KIND,"version":1,"record":bad}).ok,"Different-engine session cannot silently adopt current provenance")
+	bad=copy(sealed);bad.model="different-model";redigest(bad)
+	check(not ReplayStorage.restore_session({"kind":ReplayStorage.SESSION_KIND,"version":1,"record":bad}).ok,"Different-model original continuation is rejected atomically")
+	bad=copy(sealed);bad.marks[0].snapshot.seed_value+=1;redigest(bad)
+	check(not RaceRecord.validate(bad).is_empty(),"Checkpoint cannot change the recording seed")
+	check(RaceRecord.equivalent(original,sim.snapshot()),"Malformed and incompatible imports do not consume source streams")
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"engine":Engine.get_version_info().string}
 	Storage.write_json("res://reports/replay-tests.json",report);print("REPLAY_TESTS ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

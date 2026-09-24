@@ -115,7 +115,7 @@ static func validate(data: Variant) -> String:
 		previous = int(mark.step); cursor = int(mark.cursor)
 		if cursor > 0 and data.inputs[cursor-1].step > mark.step or cursor < data.inputs.size() and data.inputs[cursor].step < mark.step: return "Checkpoint input cursor is inconsistent."
 		if not mark.get("snapshot") is Dictionary or not valid_types(mark.snapshot, mark.get("integers")) or PracticeRaceSim.restore_practice(mark.snapshot) == null: return "Invalid saved decision checkpoint."
-		if fingerprint(mark.snapshot.track) != fingerprint(data.initial.track) or absf(mark.snapshot.total_time - data.initial.total_time - mark.step * RaceSim.STEP) > 0.00001: return "Checkpoint differs from recording chronology or track."
+		if mark.snapshot.seed_value != data.initial.seed_value or fingerprint(mark.snapshot.track) != fingerprint(data.initial.track) or absf(mark.snapshot.total_time - data.initial.total_time - mark.step * RaceSim.STEP) > 0.00001: return "Checkpoint differs from recording chronology or track."
 	return ""
 
 static func resume(data: Dictionary, sim: PracticeRaceSim) -> RaceRecord:
