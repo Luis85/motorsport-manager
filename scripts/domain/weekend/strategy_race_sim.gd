@@ -199,7 +199,7 @@ func engineer(c: Dictionary) -> void:
 		return
 	if total_time < p.next_review or remaining < 0.8: return
 	p.next_review = total_time + 12.0 + float(c.id % 3)
-	if c.tyre > 80 and c.damage < 24 and c.compound == recommended_compound(): return
+	if c.tyre > 80 and c.damage < 24 and c.compound == recommended_compound() and not contextual_rival(c): return
 	var snapshot = RaceForecaster.capture(self, c.id)
 	var comparison = RaceForecaster.evaluate(snapshot)
 	var candidate: Dictionary = {}
@@ -211,6 +211,7 @@ func engineer(c: Dictionary) -> void:
 	var memory = rival_state.drivers[int(c.id)]
 	if not urgent and flag == "GREEN" and memory.hold_gate >= safe.distance: return
 	if not urgent:
+		if review_rival_style(c, snapshot, comparison): return
 		var response = RivalStrategy.response(snapshot, rival_state.stops, memory, comparison)
 		if not response.is_empty():
 			for field in ["kind", "event_id", "hold_gate", "reason"]: memory[field] = response[field]
@@ -221,6 +222,12 @@ func engineer(c: Dictionary) -> void:
 	var worthwhile = candidate.gain > maxf(3.0, comparison.pit.loss * 0.12) and candidate.risk != "high"
 	if urgent or worthwhile and not TeamOrders.defer_stop(self, c): order_stop(c, item, "Observed-resource recovery" if urgent else "Public timing / tyre-offset comparison favors a stop; estimated gain %.1fs" % candidate.gain)
 
+func contextual_rival(_car: Dictionary) -> bool:
+	return false
+
+func review_rival_style(_car: Dictionary, _snapshot: Dictionary, _comparison: Dictionary) -> bool:
+	return false
+
 func order_stop(c: Dictionary, item: Dictionary, reason: String) -> void:
 	var p = policy(c.id)
 	var source = RaceForecaster.capture(self, c.id, active_plan(c.id), int(p.revision))
@@ -228,7 +235,7 @@ func order_stop(c: Dictionary, item: Dictionary, reason: String) -> void:
 	queue_pit(c)
 	p.order_forecast = RaceForecaster.pit_prediction(source, c.pit_gate)
 	p.last_order_id = RaceJournal.append(strategy_state, self, "strategy_order", c.id, {"reason": reason, "set_id": item.id, "gate": c.pit_gate, "prediction": p.order_forecast, "scope": source.scope}, p.plan_intent_id)
-	post("pit", "%s · %s. Physical pit entry remains authoritative." % [c.short, reason])
+	if not contextual_rival(c): post("pit", "%s · %s. Physical pit entry remains authoritative." % [c.short, reason])
 
 func block_plan(c: Dictionary, reason: String) -> void:
 	var p = policy(c.id)
