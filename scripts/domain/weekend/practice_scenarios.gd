@@ -15,7 +15,7 @@ static func build(recipe: Dictionary, library: Array) -> PracticeRaceSim:
 		if document.id != "hillside": continue
 		var geometry = TrackGeometry.new(document, "Formula")
 		if TrackDiagnostics.blocking(TrackDiagnostics.inspect(geometry)): return null
-		var sim = PracticeRaceSim.new(geometry, {"laps": 12, "scenario": recipe.scenario, "seed": recipe.seed, "intensity": "calm"})
+		var sim = PracticeRaceSim.new(geometry, {"laps": 12, "scenario": recipe.scenario, "seed": recipe.seed, "intensity": "calm", "rival_styles": false})
 		RaceJournal.append(sim.strategy_state, sim, "scenario", -1, {"id": recipe.id, "title": recipe.title, "objective": recipe.objective, "hint": recipe.hint,
 			"track_hash": JSON.stringify(document).sha256_text(), "ruleset": "native-optional-practice-v1", "assists": "Calm incidents for everyone; optional practice; normal finite allocation; no forced outcome."})
 		return sim

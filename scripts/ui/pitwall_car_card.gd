@@ -14,23 +14,23 @@ var prior_style = ""
 
 func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details: Callable) -> void:
 	panel = host; controls = existing
-	var body = host.get_child(0)
+	var body = host.get_child(0); body.add_theme_constant_override("separation", 3)
 	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
 	var header = UI.hbox(body); body.move_child(header, 0)
 	position = UI.label("P—", 22); position.custom_minimum_size.x = 45; header.add_child(position)
-	name_label = UI.button(car.name + " · Details", details); name_label.add_theme_font_size_override("font_size", 14); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
+	name_label = UI.button(car.short + " · " + car.name.get_slice(" ", 1), details); name_label.add_theme_font_size_override("font_size", 14); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
 	status = UI.label("", 12, PitwallDesign.MUTED); header.add_child(status)
 	var metrics = UI.hbox(body); body.move_child(metrics, 1)
 	for text in ["FITTED TYRE", "FINISH FUEL · EST.", "NEXT STOP"]:
-		var column = UI.vbox(metrics); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var column = UI.vbox(metrics); column.add_theme_constant_override("separation", 1); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_child(UI.label(text, 11, PitwallDesign.MUTED))
 		var value = UI.label("—", 13); value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; column.add_child(value); facts.append(value)
-	issue = UI.label("", 12); issue.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(issue); body.move_child(issue, 2)
+	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 30; body.add_child(issue); body.move_child(issue, 2)
 	var old_actions = controls.compare.get_parent()
 	actions = HFlowContainer.new(); actions.add_theme_constant_override("h_separation", 5); actions.add_theme_constant_override("v_separation", 4); body.add_child(actions)
 	for child in old_actions.get_children(): child.reparent(actions)
 	old_actions.queue_free()
-	details_button = name_label; details_button.tooltip_text = "Read this driver's full issue, deadline, control ownership and available actions."
+	details_button = name_label; details_button.tooltip_text = car.name + ": read this driver's full issue, deadline, control ownership and available actions."
 	for button in actions.get_children():
 		button.custom_minimum_size.y = 32
 		button.add_theme_font_size_override("font_size", 12)
@@ -39,8 +39,12 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	var car = model.cars[id]; var policy = model.policy(id); var decision = controls.card
 	var rank = model.standings(model.phase in ["qualifying", "qualifying_results"]).find(car)
 	position.text = "OUT" if car.dnf else "P%d" % (rank + 1)
-	name_label.text = car.name + " · Details"
-	status.text = "FINISHED" if car.finished else ("RETIRED" if car.dnf else ("PIT ORDER" if car.pit_order else ("PITS: YOU" if policy.owners.pit == "player" else "PITS: ENGINEER")))
+	name_label.text = car.short + " · " + car.name.get_slice(" ", 1)
+	var pace_owner = "You" if policy.owners.pace == "player" else "Engineer"
+	status.text = "FINISHED" if car.finished else ("RETIRED" if car.dnf else ("PIT ORDER" if car.pit_order else (["Conserve", "Balanced", "Push"][car.pace] + " · " + pace_owner)))
+	if not car.finished and not car.dnf and not car.pit_order and policy.overrides.has("engine"):
+		status.text = ["Save fuel", "Standard engine", "Engine attack"][car.engine] + " · You"
+	facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
 	var fitted = TyreInventory.find(car, car.set_id)
 	var minimum = 100.0
 	for wheel in fitted.get("wheels", {}).values(): minimum = minf(minimum, float(wheel.get("life", 100)))
@@ -62,5 +66,5 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	var key = "warning" if decision.get("priority", 0) >= 90 else ("selected" if model.selected_id == id else "normal")
 	if prior_style != key:
 		prior_style = key
-		var style = UI.box(UI.PANEL, UI.DANGER if key == "warning" else (UI.PRIMARY if key == "selected" else UI.LINE), 5, 8)
-		style.border_width_left = 3; panel.add_theme_stylebox_override("panel", style)
+		var style = UI.box(UI.PANEL, UI.DANGER if key == "warning" else (UI.PRIMARY if key == "selected" else UI.LINE), 5, 6)
+		style.border_width_left = 1; panel.add_theme_stylebox_override("panel", style)

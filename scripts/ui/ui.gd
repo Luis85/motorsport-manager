@@ -68,6 +68,10 @@ static func theme() -> Theme:
 	t.set_color("font_color", "TooltipLabel", ON_PRIMARY)
 	t.set_font_size("font_size", "TooltipLabel", 13)
 	t.set_stylebox("panel", "AcceptDialog", box(PANEL))
+	# RichTextLabel uses default_color, not Control/Label's font_color.
+	t.set_color("default_color", "RichTextLabel", INK)
+	t.set_color("font_selected_color", "RichTextLabel", INK)
+	t.set_color("selection_color", "RichTextLabel", SELECTED)
 	for type in ["Tree", "ItemList"]:
 		t.set_stylebox("panel", type, box(PANEL, LINE, 4, 3))
 		for state in ["selected", "selected_focus"]: t.set_stylebox(state, type, box(SELECTED, ACCENT, 2, 3))

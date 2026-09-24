@@ -1,12 +1,15 @@
 class_name PracticeRaceSim
 extends RecoveryRaceSim
 ## RW-17. Optional session, real finite-resource runs, and observation-derived forecast priors.
-const PRACTICE_CHECKPOINT_VERSION = 9
+const PRACTICE_CHECKPOINT_VERSION = 10
 var practice_state: Dictionary = {}
+var rival_styles: Dictionary = {}
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
 	practice_state = PracticeEvidence.create(cars, clampf(maxf(600, track.estimate * 7) if geometry != null else 600, 120, 1800))
+
+	rival_styles = RivalStyles.create(cars, options.get("rival_styles", true) == true)
 
 func is_run_session() -> bool:
 	return phase == "practice" or super.is_run_session()
@@ -211,23 +214,51 @@ func car_advisories(c: Dictionary) -> Array[String]:
 	if c.route != "garage" and c.fuel < 1.1: messages.append("Run fuel reserve low; physical return requested.")
 	return messages
 
+func contextual_rival(car: Dictionary) -> bool:
+	return not rival_styles.is_empty() and rival_styles.enabled and not car.player
+
+func review_rival_style(car: Dictionary, source: Dictionary, comparison: Dictionary) -> bool:
+	if not contextual_rival(car): return false
+	var driver = rival_styles.drivers[int(car.id)]
+	if flag != "GREEN": return true # No discretionary style order under a restriction.
+	if driver.hold_gate >= source.gate.distance: return true
+	var decision = RivalStyles.decide(source, rival_state.stops, driver, comparison)
+	if decision.is_empty(): return true
+	RivalStyles.record(rival_styles, decision)
+	if decision.choice == "box" and not TeamOrders.defer_stop(self, car):
+		order_stop(car, TyreInventory.find(car, decision.set_id), decision.reason)
+	return true
+
+func plan_pit_gate(car: Dictionary) -> void:
+	if not contextual_rival(car):
+		super.plan_pit_gate(car); return
+	# Same physical gate calculation as RaceSim. Suppress only the private rival
+	# order acknowledgement; actual pit entries/exits remain public events.
+	var gate = RaceForecaster.reachable_gate(self, car)
+	car.pit_gate = gate.distance; car.pit_deferred = gate.deferred
+
 func snapshot() -> Dictionary:
 	var data = super.snapshot(); data.version = PRACTICE_CHECKPOINT_VERSION
 	data.practice_state = practice_state.duplicate(true)
+	data.rival_styles = rival_styles.duplicate(true)
 	return data
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if not RaceCheckpoint.integral(data.get("version"), 1, PRACTICE_CHECKPOINT_VERSION): return null
-	var native = int(data.version) == PRACTICE_CHECKPOINT_VERSION
+	var native = int(data.version) >= 9
+	var native_styles = int(data.version) == PRACTICE_CHECKPOINT_VERSION
 	if not native and data.get("phase") in ["practice", "practice_results"]: return null
 	var inherited = data.duplicate(true)
-	if native: inherited.version = 8; inherited.erase("practice_state")
+	if native: inherited.version = 8; inherited.erase("practice_state"); inherited.erase("rival_styles")
 	var base = RecoveryRaceSim.restore_recovery(inherited)
 	if base == null: return null
 	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, clampf(maxf(600, base.track.estimate * 7), 120, 1800), "legacy")
 	if not PracticeEvidence.valid(state, base) or not PracticeEvidence.valid_records(base.strategy_state.records, state): return null
-	var sim = PracticeRaceSim.new(base.track)
+	var styles = data.get("rival_styles") if native_styles else RivalStyles.create(base.cars, false)
+	if not RivalStyles.valid(styles, base.cars, base.total_time): return null
+	var sim = PracticeRaceSim.new(base.track, {"rival_styles": false})
 	for key in base.snapshot():
 		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
+	sim.rival_styles = styles.duplicate(true)
 	return sim
