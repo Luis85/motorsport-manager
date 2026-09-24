@@ -14,7 +14,7 @@ var prior_style = ""
 
 func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details: Callable) -> void:
 	panel = host; controls = existing
-	var body = host.get_child(0)
+	var body = host.get_child(0); body.add_theme_constant_override("separation", 3)
 	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
 	var header = UI.hbox(body); body.move_child(header, 0)
 	position = UI.label("P—", 22); position.custom_minimum_size.x = 45; header.add_child(position)
@@ -22,10 +22,10 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 	status = UI.label("", 12, PitwallDesign.MUTED); header.add_child(status)
 	var metrics = UI.hbox(body); body.move_child(metrics, 1)
 	for text in ["FITTED TYRE", "FINISH FUEL · EST.", "NEXT STOP"]:
-		var column = UI.vbox(metrics); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var column = UI.vbox(metrics); column.add_theme_constant_override("separation", 1); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_child(UI.label(text, 11, PitwallDesign.MUTED))
 		var value = UI.label("—", 13); value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; column.add_child(value); facts.append(value)
-	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 34; body.add_child(issue); body.move_child(issue, 2)
+	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 30; body.add_child(issue); body.move_child(issue, 2)
 	var old_actions = controls.compare.get_parent()
 	actions = HFlowContainer.new(); actions.add_theme_constant_override("h_separation", 5); actions.add_theme_constant_override("v_separation", 4); body.add_child(actions)
 	for child in old_actions.get_children(): child.reparent(actions)
@@ -66,5 +66,5 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	var key = "warning" if decision.get("priority", 0) >= 90 else ("selected" if model.selected_id == id else "normal")
 	if prior_style != key:
 		prior_style = key
-		var style = UI.box(UI.PANEL, UI.DANGER if key == "warning" else (UI.PRIMARY if key == "selected" else UI.LINE), 5, 8)
+		var style = UI.box(UI.PANEL, UI.DANGER if key == "warning" else (UI.PRIMARY if key == "selected" else UI.LINE), 5, 6)
 		style.border_width_left = 1; panel.add_theme_stylebox_override("panel", style)

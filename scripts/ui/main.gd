@@ -55,11 +55,11 @@ func show_menu() -> void:
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
-	var scenarios = UI.hbox(menu)
-	scenarios.add_child(UI.button("Dry scenarios", show_strategy_scenarios))
-	scenarios.add_child(UI.button("Weather", show_weather_scenarios))
-	scenarios.add_child(UI.button("Recovery", show_recovery_scenarios))
-	scenarios.add_child(UI.button("Practice", show_practice_scenarios))
+	var scenarios = MenuButton.new(); scenarios.text = "SCENARIO CHALLENGES"; scenarios.focus_mode = Control.FOCUS_ALL; scenarios.flat = false; scenarios.custom_minimum_size.y = 36
+	menu.add_child(scenarios)
+	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles"]: scenarios.get_popup().add_item(title)
+	scenarios.get_popup().id_pressed.connect(func(index):
+		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios][index].call())
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -307,6 +307,25 @@ func show_practice_scenarios() -> void:
 			var start = func():
 				var candidate = PracticeScenarios.build(recipe, App.library)
 				if candidate == null: UI.notify(self, "Scenario unavailable", "The practice recipe or track is invalid."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
+
+func show_rival_scenarios() -> void:
+	clear_screen("rival_scenarios")
+	content.add_child(UI.label("Read the field, choose your response", 30))
+	content.add_child(UI.paragraph("Curated, untimed grids start at race preparation. Formation and start remain physical and require approval. No winner or incident is forced."))
+	for recipe in RivalScenarios.catalog():
+		var panel = UI.panel(); content.add_child(panel); var body = UI.vbox(panel)
+		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
+		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.paragraph("All fitted M1 tyres start at %.0f%% tread; other stock unchanged. Dry · calm incidents · manual player pits · %d laps." % [recipe.life, recipe.laps]))
+		body.add_child(UI.button("Open preparation · seed %d" % recipe.seed, func():
+			var start = func():
+				var candidate = RivalScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The rival recipe or track is invalid."); return
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."

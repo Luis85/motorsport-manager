@@ -6,6 +6,10 @@ var practice_page_index = -1
 var practice_button: Button
 var practice_links: Dictionary = {}
 var practice_debrief_prefix = ""
+var strategy_navigation: HBoxContainer
+var practice_report_stamp = -1
+var rivals_button: Button
+var public_inspector: PublicRivalInspector
 
 func _ready() -> void:
 	super._ready()
@@ -14,7 +18,14 @@ func _ready() -> void:
 	practice_panel = PracticePanel.new(); practice_panel.configure(sim); tabs.add_child(practice_panel)
 	practice_page_index = tabs.get_tab_count() - 1
 	register_topic("Practice", practice_page_index)
-	topic_buttons[practice_page_index].reparent(context_navigation)
+	strategy_navigation = strategy_desk.topic_buttons[0].get_parent()
+	topic_buttons[practice_page_index].reparent(strategy_navigation)
+	topic_buttons[practice_page_index].size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	PitwallDesign.scale_controls(topic_buttons[practice_page_index], text_scale)
+	for i in range(strategy_desk.topic_buttons.size()):
+		var button = strategy_desk.topic_buttons[i]
+		for connection in button.pressed.get_connections(): button.pressed.disconnect(connection.callable)
+		button.pressed.connect(func(): open_topic(6); strategy_desk.show_topic(i); refresh_navigation())
 	practice_panel.command_requested.connect(targeted_command)
 	practice_button = UI.button("Optional practice", func(): open_practice(3))
 	primary_button.get_parent().add_child(practice_button)
@@ -27,12 +38,29 @@ func _ready() -> void:
 	group_buttons.Strategy.tooltip_text += ", optional Practice"
 	guide.steps.append({"title": "Learn before spending your best set", "body": "Practice is optional. Choose a run objective, a real tyre set and a setup trade-off. Run spends tyre condition, fuel, health and time. Interrupted runs retain partial evidence. Only comparable clean laps inform forecast estimates; no hidden setup score or performance bonus exists. End and review before qualifying.", "target": func(): return practice_panel, "reveal": func(): open_practice(3)})
 	PitwallDesign.scale_controls(practice_panel, text_scale); PitwallDesign.scale_controls(practice_button, text_scale)
-	wire_control_help(practice_panel); refresh()
+	public_inspector = PublicRivalInspector.new(); public_inspector.configure(self)
+	for label in public_inspector.masks.values(): PitwallDesign.scale_controls(label, text_scale)
+	rivals_button = UI.button("Rival field", func(): show_reading("Rival field · public profiles", RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops), rivals_button))
+	team_panel.commit_pages[1].add_child(rivals_button); PitwallDesign.scale_controls(rivals_button, text_scale)
+	rivals_button.tooltip_text = "Read public tendencies and actual pit entries. No rival's private plan, fuel, condition or scores are exposed."
+	navigator.catalog.append([8, 1, "Team / Rival field", "rivals profiles protector undercutter conservator adaptive observed tendencies"])
+	guide.steps.append({"title": "Read a rival, not a secret plan", "body": "Team / Battles opens the rival field. Profiles are tendencies, not guaranteed stop laps. Compare your own options and watch actual pit entries. A safe wait, an early stop and a later tyre offset can each be sensible. Lower risk with existing racecraft or resource intents; no encouragement meter is required.", "target": func(): return rivals_button, "reveal": func(): open_topic(8); team_panel.show_topic(1)})
+	wire_control_help(practice_panel); wire_control_help(rivals_button); refresh()
 	if sim.phase in ["practice", "practice_results"]: open_practice(3)
 
 func group_for(index: int) -> String:
 	if practice_page_index >= 0 and index == practice_page_index: return "Strategy"
 	return super.group_for(index)
+
+func refresh_navigation() -> void:
+	super.refresh_navigation()
+	if strategy_navigation == null: return
+	var in_strategy = tabs.current_tab in [6, practice_page_index]
+	strategy_navigation.visible = in_strategy
+	if in_strategy: context_navigation.hide()
+	for i in range(strategy_desk.topic_buttons.size()):
+		PitwallDesign.navigation(strategy_desk.topic_buttons[i], tabs.current_tab == 6 and strategy_desk.topic == i)
+	PitwallDesign.navigation(topic_buttons[practice_page_index], tabs.current_tab == practice_page_index)
 
 func open_practice(id: int) -> void:
 	if practice_panel == null: return
@@ -44,11 +72,13 @@ func primary_action() -> void:
 	else: super.primary_action()
 
 func refresh() -> void:
+	if public_inspector: public_inspector.restore()
 	if debrief_text != null and not practice_debrief_prefix.is_empty(): debrief_text.text = debrief_text.text.trim_prefix(practice_debrief_prefix)
 	super.refresh()
 	if practice_panel == null: return
 	var during = sim.phase in ["practice", "practice_results"]
 	practice_button.visible = sim.phase == "briefing" and sim.practice_state.status == "available"
+	refresh_navigation()
 	if sim.phase == "practice":
 		clock_label.text = "PRACTICE %.0fs" % maxf(0, sim.practice_state.duration - sim.clock)
 		primary_button.visible = not sim.practice_state.closed
@@ -82,8 +112,12 @@ func refresh() -> void:
 	if not during:
 		for id in [3, 6]:
 			car_cards[id].facts[1].get_parent().get_child(0).text = "FINISH FUEL · EST."
-			car_cards[id].facts[2].get_parent().get_child(0).text = "NEXT STOP"
+			car_cards[id].facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if strategy_model.policy(id).owners.pit == "player" else "ENGINEER")
 	if right_panel.visible and tabs.current_tab == 7:
 		var inherited = debrief_text.text.trim_prefix(practice_debrief_prefix)
-		practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join([3, 6].map(func(id): return sim.cars[id].short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n"
+		if practice_report_stamp != int(sim.strategy_state.sequence):
+			practice_report_stamp = int(sim.strategy_state.sequence)
+			practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join([3, 6].map(func(id): return sim.cars[id].short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n" + RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops) + "\n\n"
 		debrief_text.text = practice_debrief_prefix + inherited
+
+	if public_inspector: public_inspector.present(self)

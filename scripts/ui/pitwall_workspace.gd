@@ -16,6 +16,11 @@ var workspace_ready = false
 var exit_dialog: ConfirmationDialog
 var last_invoker: Control
 
+var weekend_menu: MenuButton
+var phase_actions: VBoxContainer
+var header_context: VBoxContainer
+var utility_commands: Array[Button] = []
+
 func _ready() -> void:
 	super._ready()
 	text_scale = float(App.settings.get("pitwall_text_scale", 1.0))
@@ -35,13 +40,16 @@ func _ready() -> void:
 	comparison.present(strategy_desk.preview, strategy_desk.dirty.get(strategy_desk.driver_id, false))
 	var footer = UI.hbox(self)
 	radio_label.reparent(footer); radio_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	messages_button = UI.button("Messages", show_messages); footer.add_child(messages_button)
+	messages_button = UI.button("Messages", show_messages); navigation.add_child(messages_button)
+	navigation.move_child(messages_button, find_button.get_index())
+	PitwallDesign.linear_focus([watch_button] + group_buttons.values() + [messages_button, find_button])
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
 	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
 	navigator.destination_requested.connect(open_destination)
 	# Catalog/dialog controls are scaled separately on construction.
 	for child in get_children():
 		if child != navigator: PitwallDesign.scale_controls(child, text_scale)
+	for card in car_cards.values(): card.issue.custom_minimum_size.y = ceilf(30 * text_scale)
 	workspace_ready = true
 	resized.connect(adapt_layout)
 	wire_control_help(self)
@@ -58,25 +66,57 @@ func build_navigation() -> void:
 		button.tooltip_text = group + " views: " + ", ".join(valid.map(func(index): return topic_buttons[index].text))
 		navigation.add_child(button); group_buttons[group] = button
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; navigation.add_child(spacer)
-	find_button = UI.button("Find view · Ctrl+K", show_navigator); navigation.add_child(find_button)
+	find_button = UI.button("Find · Ctrl+K", show_navigator); navigation.add_child(find_button)
 	find_button.tooltip_text = "Search or browse every pit-wall view. Navigation only; no commands are executed."
 	PitwallDesign.linear_focus([watch_button] + group_buttons.values() + [find_button])
 
 func build_header() -> void:
+	# One stable status/time strip. Secondary file/navigation actions share a native
+	# menu; their original callbacks retain save/exit safety and confirmation rules.
 	var old_heading = title_label.get_parent().get_parent()
+	var old_strip = pause_button.get_parent()
 	var banner = UI.panel(); add_child(banner); move_child(banner, old_heading.get_index())
-	banner.add_theme_stylebox_override("panel", UI.box(UI.INK, UI.INK, 5, 6))
-	old_heading.reparent(banner)
-	title_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
-	session_label.add_theme_color_override("font_color", Color("d5dec9"))
-	title_label.add_theme_font_size_override("font_size", 20)
-	primary_button.custom_minimum_size.x = 150
+	banner.add_theme_stylebox_override("panel", UI.box(UI.INK, UI.INK, 5, 5))
+	var header = UI.hbox(banner)
+	header.add_theme_constant_override("separation", 12)
+	header_context = UI.vbox(header); header_context.custom_minimum_size.x = 150
+	header_context.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_context.add_theme_constant_override("separation", 1)
+	title_label.reparent(header_context); session_label.reparent(header_context)
+	title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	title_label.tooltip_text = sim.track.document.name
+	title_label.add_theme_font_size_override("font_size", 18)
+	session_label.add_theme_font_size_override("font_size", 11)
+	for label in [title_label, session_label]: label.add_theme_color_override("font_color", UI.ON_PRIMARY)
+	var timing = UI.vbox(header); timing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	timing.add_theme_constant_override("separation", 1)
+	clock_label.reparent(timing); clock_label.custom_minimum_size.x = 0
+	clock_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
+	var conditions = UI.hbox(timing); conditions.add_theme_constant_override("separation", 10)
+	flag_label.reparent(conditions); weather_label.reparent(conditions)
+	flag_label.custom_minimum_size.x = 0
+	weather_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
+	phase_actions = UI.vbox(header)
+	pause_button.reparent(header); speed_control.reparent(header)
+	pause_button.custom_minimum_size.x = 85
+	weekend_menu = MenuButton.new(); weekend_menu.text = "Weekend"
+	weekend_menu.focus_mode = Control.FOCUS_ALL
+	weekend_menu.flat = false; weekend_menu.custom_minimum_size.y = 32
+	weekend_menu.tooltip_text = "Save checkpoint, export the race log, resume the guide, or return to the menu. Opening this menu does not pause."
+	header.add_child(weekend_menu)
+	for child in old_strip.get_children():
+		if child is Button:
+			utility_commands.append(child); child.hide()
+			weekend_menu.get_popup().add_item({"Save": "Save checkpoint", "Export log": "Export race log", "Guide": "Resume guide", "Menu": "Main menu"}.get(child.text, child.text))
+	old_strip.hide()
+	weekend_menu.get_popup().id_pressed.connect(func(index):
+		if index >= 0 and index < utility_commands.size(): utility_commands[index].pressed.emit())
+	weekend_menu.get_popup().popup_hide.connect(func(): PitwallDesign.focus_later(weekend_menu))
+	primary_button.reparent(phase_actions); primary_button.custom_minimum_size.x = 150
+	old_heading.hide()
 	timing_panel.custom_minimum_size.x = ceilf(244 * text_scale)
 	tower.add_theme_constant_override("v_separation", 2)
 	for i in range(5): tower.set_column_custom_minimum_width(i, ceili([24, 37, 61, 26, 38][i] * text_scale))
-	# Keep the familiar visible time controls; status is not styled as a disabled action.
-	pause_button.custom_minimum_size.x = 85
-	clock_label.custom_minimum_size.x = 125
 
 func compact_inspector() -> void:
 	# Put targeting and pane controls on one line; avoid a second redundant title row.
@@ -128,10 +168,15 @@ func refresh() -> void:
 	super.refresh()
 	if not workspace_ready: return
 	primary_button.visible = not primary_button.disabled
+	phase_actions.visible = primary_button.visible or sim.phase == "briefing"
+	steps[0].get_parent().hide() # Phase and next approval are already in the status strip.
+	session_label.text = "%s · seed %d" % [sim.track.preset, sim.seed_value]
+	flag_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
 	compact_resources.visible = false
 	teammate_buttons[0].get_parent().visible = true
 	for button in teammate_buttons: button.visible = tabs.current_tab != recovery_page_index
 	strategy_desk.plan_status.visible = false
+	strategy_desk.issue_text.visible = false # Recipient/approval state are already adjacent to the comparison.
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)
 	messages_button.text = "Messages" if messages.is_empty() else "Messages (%d)" % messages.size()
@@ -158,6 +203,11 @@ func show_driver_details(id: int) -> void:
 	var controls = decision_controls[id]; var c = sim.cars[id]
 	var p = strategy_model.policy(id)
 	var text = controls.heading.text + "\n\n" + controls.heading.tooltip_text + "\n\n" + controls.detail.text + "\n\n" + controls.battle.text + "\n\n" + StrategyPlan.ownership_text(p)
+	var cards = DecisionFeed.for_driver(sim, id, p, forecast_cache[id])
+	if cards.size() > 1:
+		text += "\n\nOTHER CURRENT DECISIONS"
+		for card in cards.slice(1): text += "\n\n" + card.title + "\n" + card.get("evidence", "") + "\n" + card.get("fallback", "")
+	text += "\n\nCurrent pace: %s (%s). Engine: %s (%s)." % [["Conserve", "Balanced", "Push"][c.pace], p.owners.pace, ["Save", "Standard", "Attack"][c.engine], p.owners.engine]
 	text += "\n\nBox: " + ("Unavailable. " if controls.box.disabled else "Available. ") + controls.box.tooltip_text
 	show_reading(c.name + " · current decision", text, car_cards[id].details_button)
 
@@ -203,3 +253,9 @@ func _input(event: InputEvent) -> void:
 		if event.keycode == KEY_K and (event.ctrl_pressed or event.meta_pressed):
 			show_navigator(); get_viewport().set_input_as_handled(); return
 	super._input(event)
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	var focused = get_viewport().gui_get_focus_owner()
+	if focused is LineEdit or focused is TextEdit or focused is OptionButton or focused is Range or focused is ItemList or focused is Tree:
+		if not (event is InputEventKey and event.keycode in [KEY_F1, KEY_ESCAPE]): return
+	super._unhandled_key_input(event)

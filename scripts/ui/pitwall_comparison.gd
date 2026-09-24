@@ -8,7 +8,7 @@ var pit_summary: Label
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 4)
-	caption = UI.label("ESTIMATED REMAINING RACE", 11, PitwallDesign.MUTED); add_child(caption)
+	caption = UI.label("ESTIMATED REMAINING RACE", 11, PitwallDesign.MUTED); add_child(caption); caption.hide() # The first row already names active versus unapplied draft.
 	pit_summary = UI.label("", 12); add_child(pit_summary)
 	for i in range(3):
 		var panel = UI.panel(); panel.add_theme_stylebox_override("panel", UI.box(UI.CARD, UI.LINE, 4, 2)); add_child(panel)
@@ -34,5 +34,5 @@ func present(forecast: Dictionary, is_draft: bool = false) -> void:
 		row.detail.tooltip_text = row.detail.text
 	caption.text = "DRAFT ESTIMATES · NOT APPROVED" if is_draft else "ACTIVE PLAN · ESTIMATES"
 	var pit = forecast.get("pit", {})
-	pit_summary.text = "Pit ~%.0f–%.0f s · Rejoin ~P%d–%d" % [pit.get("loss_low", 0), pit.get("loss_high", 0), pit.get("position_low", 0), pit.get("position_high", 0)]
+	pit_summary.text = "Estimates · pit ~%.0f–%.0f s · rejoin ~P%d–%d" % [pit.get("loss_low", 0), pit.get("loss_high", 0), pit.get("position_low", 0), pit.get("position_high", 0)]
 	pit_summary.tooltip_text = "Net pit loss estimate including transit, service and shared-box queue.\n" + "\n".join(forecast.get("assumptions", []))

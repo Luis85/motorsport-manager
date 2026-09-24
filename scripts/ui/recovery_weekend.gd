@@ -5,6 +5,7 @@ var recovery_panel: RecoveryPanel
 var recovery_links: Dictionary = {}
 var recovery_page_index = -1
 var recovery_debrief_prefix = ""
+var recovery_report_sequence = -1
 
 func _ready() -> void:
 	super._ready()
@@ -52,5 +53,7 @@ func refresh() -> void:
 	if right_panel.visible and tabs.current_tab == 7:
 		# Parent views may reuse their rendered journal; replace our prefix instead of appending it.
 		var inherited_text = debrief_text.text.trim_prefix(recovery_debrief_prefix)
-		recovery_debrief_prefix = sim.recovery_debrief() + "\n\n"
+		if recovery_report_sequence != int(sim.strategy_state.sequence):
+			recovery_report_sequence = int(sim.strategy_state.sequence)
+			recovery_debrief_prefix = sim.recovery_debrief() + "\n\n"
 		debrief_text.text = recovery_debrief_prefix + inherited_text
