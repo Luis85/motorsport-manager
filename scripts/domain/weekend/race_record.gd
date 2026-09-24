@@ -29,9 +29,18 @@ static func fingerprint(data: Variant) -> String:
 	return JSON.stringify(JSON.parse_string(JSON.stringify(data, "", true, true)), "", true, true).sha256_text()
 
 func attach(sim: PracticeRaceSim, mode: String = "standalone", lineage: Dictionary = {}) -> void:
+	detach()
+	inputs.clear(); marks.clear(); steps = 0; incomplete = ""
 	source = weakref(sim); origin = mode; parent = lineage.duplicate(true)
 	event_id = identity(); initial = sim.snapshot(); last_phase = sim.phase
 	_connect(sim)
+
+func detach() -> void:
+	var sim = source.get_ref() if source != null else null
+	if sim != null:
+		if sim.input_accepted.is_connected(_accepted): sim.input_accepted.disconnect(_accepted)
+		if sim.fixed_step_completed.is_connected(_stepped): sim.fixed_step_completed.disconnect(_stepped)
+	source = null
 
 func _connect(sim: PracticeRaceSim) -> void:
 	source = weakref(sim)
@@ -47,14 +56,14 @@ func _accepted(action: String, payload: Dictionary, context: Dictionary) -> void
 func _stepped() -> void:
 	steps += 1
 	if steps > MAX_STEPS: incomplete = "Recording step limit reached. Saved snapshots remain usable; continuous replay is unavailable."
-	var sim = source.get_ref()
+	var sim = source.get_ref() if source != null else null
 	if sim.phase != last_phase:
 		last_phase = sim.phase
 		if sim.phase == "race" and marks.size() < MAX_MARKS: bookmark("Race start")
 
 func bookmark(label: String) -> String:
 	if marks.size() >= MAX_MARKS: return "Four checkpoints retained. Export this recording before starting a separate experiment."
-	var sim = source.get_ref()
+	var sim = source.get_ref() if source != null else null
 	if sim == null: return "The source weekend is no longer available."
 	var title = label.strip_edges()
 	if title.is_empty() or title.length() > 64: return "Name the checkpoint using 1–64 characters."
@@ -63,7 +72,7 @@ func bookmark(label: String) -> String:
 	return ""
 
 func seal() -> Dictionary:
-	var sim = source.get_ref()
+	var sim = source.get_ref() if source != null else null
 	if sim == null: return {}
 	var endpoint = sim.snapshot()
 	var manifest = manifest_for(initial)
@@ -80,10 +89,11 @@ static func valid_id(value: Variant) -> bool:
 	return true
 
 static func validate(data: Variant) -> String:
-	if not data is Dictionary or data.get("kind") != KIND or data.get("version") != VERSION: return "Unsupported replay format."
+	if not data is Dictionary or (not data.get("kind") is String or data.kind != KIND) or not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION): return "Unsupported replay format."
 	if not valid_id(data.get("event_id")) or data.get("origin") not in ["standalone", "legacy", "sandbox"]: return "Invalid recording identity or provenance."
 	if not data.get("parent") is Dictionary or not data.get("manifest") is Dictionary: return "Missing recording provenance."
 	if data.origin == "sandbox" and not valid_id(data.parent.get("event_id")): return "Sandbox parent identity is missing."
+	if data.parent.has("scenario") and not ScenarioBrief.validate(data.parent.scenario).is_empty(): return "Invalid saved scenario brief."
 	if not data.get("model") is String or data.model.length() > 100: return "Missing simulation model version."
 	if not data.get("engine") is String or data.engine.length() > 100: return "Missing engine version."
 	if not data.get("incomplete") is String or data.incomplete.length() > 256: return "Invalid continuity status."
@@ -91,11 +101,11 @@ static func validate(data: Variant) -> String:
 	if data.steps > MAX_STEPS and data.incomplete.is_empty(): return "A recording beyond the replay limit must disclose incomplete continuity."
 	if not data.get("inputs") is Array or data.inputs.size() > MAX_INPUTS or not data.get("marks") is Array or data.marks.size() > MAX_MARKS: return "Recording exceeds its collection limits."
 	var content = data.duplicate(true); content.erase("digest")
-	if data.get("digest") != fingerprint(content): return "Recording integrity check failed. The source was not replaced."
+	if (not data.get("digest") is String or data.digest != fingerprint(content)): return "Recording integrity check failed. The source was not replaced."
 	for key in ["initial", "endpoint"]:
 		if not data.get(key) is Dictionary or not valid_types(data[key], data.get(key + "_integers")) or PracticeRaceSim.restore_practice(data[key]) == null: return "Invalid " + key + " checkpoint."
 	if data.initial.version != 10 or data.endpoint.version != 10: return "Replay requires native v10 snapshots. Import older saves through Continue Weekend first."
-	if fingerprint(data.initial.track) != fingerprint(data.endpoint.track) or data.initial.seed_value != data.endpoint.seed_value: return "Recording changes its track or seed."
+	if not equivalent(static_identity(data.initial), static_identity(data.endpoint)): return "Recording changes its frozen track, roster or rules."
 	if absf(float(data.endpoint.total_time) - float(data.initial.total_time) - float(data.steps) * RaceSim.STEP) > 0.00001: return "Recorded time and fixed-step count disagree."
 	if not equivalent(data.manifest, manifest_for(data.initial)): return "Scenario metadata does not match the recorded initial state."
 	var previous = 0
@@ -115,7 +125,7 @@ static func validate(data: Variant) -> String:
 		previous = int(mark.step); cursor = int(mark.cursor)
 		if cursor > 0 and data.inputs[cursor-1].step > mark.step or cursor < data.inputs.size() and data.inputs[cursor].step < mark.step: return "Checkpoint input cursor is inconsistent."
 		if not mark.get("snapshot") is Dictionary or not valid_types(mark.snapshot, mark.get("integers")) or PracticeRaceSim.restore_practice(mark.snapshot) == null: return "Invalid saved decision checkpoint."
-		if mark.snapshot.seed_value != data.initial.seed_value or fingerprint(mark.snapshot.track) != fingerprint(data.initial.track) or absf(mark.snapshot.total_time - data.initial.total_time - mark.step * RaceSim.STEP) > 0.00001: return "Checkpoint differs from recording chronology or track."
+		if not equivalent(static_identity(mark.snapshot), static_identity(data.initial)) or absf(mark.snapshot.total_time - data.initial.total_time - mark.step * RaceSim.STEP) > 0.00001: return "Checkpoint differs from recording chronology or track."
 	return ""
 
 static func resume(data: Dictionary, sim: PracticeRaceSim) -> RaceRecord:
@@ -139,6 +149,7 @@ static func equivalent(a: Variant, b: Variant) -> bool:
 			if not equivalent(a[i], b[i]): return false
 		return true
 	if (a is float or a is int) and (b is float or b is int): return absf(float(a) - float(b)) <= 0.00000001
+	if typeof(a) != typeof(b): return false
 	return a == b
 
 static func sporting(snapshot: Dictionary) -> Dictionary:
@@ -193,3 +204,10 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 		"briefing": "Recorded initial resources and applied settings; no forced result. Changing a decision changes exposure and rival responses.",
 		"scenarios": scenarios, "objectives": scenarios.map(func(s): return s.objective),
 		"assists": "Recorded per-driver ownership and intents; presentation settings are not sporting rules."}
+
+static func static_identity(snapshot: Dictionary) -> Dictionary:
+	var manifest = manifest_for(snapshot)
+	var result = {}
+	for key in ["track_hash", "roster_hash", "vehicle", "seed", "laps", "weather", "incident_exposure", "ruleset"]:
+		result[key] = manifest.get(key)
+	return result
