@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "scenarios": [
+    {"id":"protect-the-finish","title":"Protect the finish","track":"hillside","laps":12,"seed":3108,"damage":[40,20],"health":[72,78],"objective":"Bring both damaged cars home; compare a repair with protecting the current run.","hint":"Disclosed starting condition: MER has 40 aggregate damage and 72% lifetime health; MOR has 20 damage and 78% health. Calm incidents suppress new random faults, not wear. A repair removes damage at a real cost but never restores health or tyres. Pit ownership starts manual; nobody is guaranteed a result."},
+    {"id":"is-the-repair-worth-it","title":"Is the repair worth it?","track":"hillside","laps":4,"seed":3109,"damage":[8,12],"health":[88,85],"objective":"Weigh small damage against the full pit loss in a short race.","hint":"Disclosed starting condition: MER has 8 damage / 88% health and MOR 12 damage / 85% health. Four laps leave little time to earn back a stop. Read the break-even estimate, keep or protect the current run, or pay for a physical repair. No mandatory stop and no outcome script."}
+  ]
+}

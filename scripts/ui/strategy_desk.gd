@@ -245,8 +245,11 @@ Net pit loss %.1f–%.1fs · box wait ~%.1fs
 static func compact_button(button: Button) -> void:
 	button.custom_minimum_size.y = 30
 	button.add_theme_font_size_override("font_size", 12)
-	for state in ["normal", "hover", "pressed", "disabled"]:
-		var style = button.get_theme_stylebox(state).duplicate()
+	# Detached controls have Godot's fallback gray styles, not this application's theme.
+	# Preserve explicit primary styles; build the normal palette without relying on tree order.
+	var colors = {"normal": UI.CARD, "hover": UI.HOVER, "pressed": UI.SELECTED, "hover_pressed": UI.SELECTED, "disabled": UI.PANEL}
+	for state in colors:
+		var style = button.get_theme_stylebox(state).duplicate() if button.has_theme_stylebox_override(state) else UI.action_box(colors[state], UI.ACCENT if state in ["pressed", "hover_pressed"] else UI.LINE)
 		style.content_margin_top = 6; style.content_margin_bottom = 6
 		style.content_margin_left = 8; style.content_margin_right = 8
 		button.add_theme_stylebox_override(state, style)

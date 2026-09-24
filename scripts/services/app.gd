@@ -77,7 +77,7 @@ func load_weekend() -> String:
 	var result = Storage.read_json(checkpoint_path)
 	if not result.ok: return result.error
 	if not result.data is Dictionary: return "Invalid checkpoint."
-	var restored = WeatherRaceSim.restore_weather(result.data)
+	var restored = RecoveryRaceSim.restore_recovery(result.data)
 	if restored == null: return "Checkpoint is invalid or incompatible. The current session was not replaced."
 	weekend = restored
 	weekend.paused = weekend.phase in RaceSim.ACTIVE
