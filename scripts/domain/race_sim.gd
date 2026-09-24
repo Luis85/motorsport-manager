@@ -225,10 +225,7 @@ func step() -> void:
 	update_surface()
 	if phase == "qualifying" and clock >= qual_duration and not qual_closed:
 		qual_closed = true; post("flag", "Qualifying chequered. Completing existing flying laps.")
-	if flag != "GREEN" and clock >= flag_until:
-		if flag == "SAFETY CAR": flag = "RESTART"; flag_until = clock + 8.0
-		else: flag = "GREEN"; yellow_sector = -1
-		post("flag", flag)
+	update_flags()
 	var old: Array = []
 	for c in cars: old.append({"distance": c.distance, "lane": c.lane, "speed": c.speed, "route": c.route, "pit_d": c.pit_d, "pit_stage": c.pit_stage, "qual_state": c.qual_state}); c.crossed_at = -1.0
 	for c in cars:
@@ -263,6 +260,23 @@ func step() -> void:
 		for c in cars:
 			if not c.finished and not c.dnf: done = false
 		if done: transition("results"); post("finish", "Weekend complete. Classification and event log are ready.")
+
+func update_flags() -> void:
+	# Legacy procedure remains unchanged; newer rulesets override this tick-boundary seam.
+	if flag != "GREEN" and clock >= flag_until:
+		if flag == "SAFETY CAR": flag = "RESTART"; flag_until = clock + 8.0
+		else: flag = "GREEN"; yellow_sector = -1
+		post("flag", flag)
+
+func forecast_parameters(_driver_id: int) -> Dictionary:
+	# Allow-listed observable model parameters; never expose a random stream or future event.
+	return {}
+
+func neutral_speed_limit(_c: Dictionary, _sample: Dictionary) -> float:
+	return 25.0 if flag == "YELLOW" else 30.0
+
+func constrain_progress(_c: Dictionary, next: float, _old: Array, _nearest: int) -> float:
+	return next
 
 func average(values: Array) -> float:
 	var sum = 0.0
@@ -355,7 +369,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 		desired = minf(desired, sqrt(2 * 6 * remaining))
 		if remaining < 100: target_lane = (-1 if c.grid % 2 else 1) * 2.0
 		if clock < (c.grid - 1) * 0.22: desired = 0.0
-	if neutral(c): desired = minf(desired, 30 if flag != "YELLOW" else 25)
+	if neutral(c): desired = minf(desired, neutral_speed_limit(c, s))
 	if phase == "race" and clock < 0.15 + (100 - c.skill) * 0.008: desired = 0.0
 	if phase == "race" and clock < 3.0: target_lane = (-1 if c.grid % 2 else 1) * 2.0
 	var nearest_id = -1; var ahead_distance = INF
@@ -415,6 +429,9 @@ func move_car(c: Dictionary, old: Array) -> void:
 		# Snapshot-based longitudinal constraint: never teleport ahead through a car.
 		var limit = c.distance + ahead_distance - 6.2 + old[nearest_id].speed * STEP / maxf(0.1, track.sample(old[nearest_id].distance).path_scale)
 		if next > limit: next = maxf(c.distance, limit); c.speed = maxf(0, (next - c.distance) * s.path_scale / STEP)
+	var permitted_next = constrain_progress(c, next, old, nearest_id)
+	if permitted_next < next:
+		next = maxf(c.distance, permitted_next); c.speed = maxf(0, (next - c.distance) * s.path_scale / STEP)
 	if phase == "formation":
 		var goal = track.length - (c.grid - 1) * track.grid_spacing
 		if next >= goal - 0.2:
@@ -534,18 +551,12 @@ func update_pit(c: Dictionary, old: Array = []) -> void:
 			c.route = "garage"; c.qual_state = "garage"; c.next_qual = clock + 18; c.pit_stage = ""
 			post("qualifying", c.short + " back in the garage."); return
 		if not pit_boxes.has(c.team):
-			var item = TyreInventory.planned(c, true)
-			c.service_set_id = item.get("id", "")
-			pit_boxes[c.team] = c.id; c.pit_stage = "service"; c.service_compound = c.next_compound; c.service_repair = c.repair; c.pit_timer = 3.0 + random_value() * 1.5 + (c.damage * 0.14 if c.service_repair else 0.0)
+			pit_boxes[c.team] = c.id; c.pit_stage = "service"; begin_service(c)
 		else: c.intent = "Waiting for teammate's pit box"; return
 	if c.pit_stage == "service":
 		c.speed = 0.0; c.pit_timer -= STEP
 		if c.pit_timer <= 0:
-			if not c.service_set_id.is_empty(): TyreInventory.mount(c, c.service_set_id)
-			else: post("pit", c.short + ": no replacement available; retaining the current tyres.")
-			record_stint(c)
-			c.next_set_id = ""; c.scheduled_lap = -1
-			if c.service_repair: c.damage = 0.0
+			complete_service(c)
 			c.pit_stops += 1; stats.pits += 1; c.pit_stage = "exit"; pit_boxes.erase(c.team)
 			post("pit", "%s serviced · %s tyres." % [c.short, c.compound])
 		return
@@ -578,7 +589,26 @@ func update_pit(c: Dictionary, old: Array = []) -> void:
 	if phase == "race": race_crossings(c, before, c.distance)
 	if next >= track.pit_length:
 		c.route = "track"; c.pit_stage = ""; c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false; c.lane = track.sample(c.distance).line
-		post("pit", c.short + " rejoins on cold tyres.")
+		post("pit", pit_exit_message(c))
+
+func pit_exit_message(c: Dictionary) -> String:
+	return c.short + " rejoins on cold tyres."
+
+func service_random_value() -> float:
+	return random_value()
+
+func begin_service(c: Dictionary) -> void:
+	var item = TyreInventory.planned(c, true)
+	c.service_set_id = item.get("id", "")
+	c.service_compound = c.next_compound; c.service_repair = c.repair
+	c.pit_timer = 3.0 + service_random_value() * 1.5 + (c.damage * 0.14 if c.service_repair else 0.0)
+
+func complete_service(c: Dictionary) -> void:
+	if not c.service_set_id.is_empty(): TyreInventory.mount(c, c.service_set_id)
+	else: post("pit", c.short + ": no replacement available; retaining the current tyres.")
+	record_stint(c)
+	c.next_set_id = ""; c.scheduled_lap = -1
+	if c.service_repair: c.damage = 0.0
 
 func race_crossings(c: Dictionary, before: float, after: float) -> void:
 	if c.finished or c.dnf: return

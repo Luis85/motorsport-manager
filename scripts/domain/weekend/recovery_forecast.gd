@@ -17,9 +17,10 @@ static func evaluate(source: Dictionary, observed: Dictionary) -> Dictionary:
 	var remaining = maxf(0, s.laps - maxf(0, s.own.distance / s.length))
 	var gain_per_lap = maxf(0, current_lap - repaired_lap)
 	var usable = WheelTyres.usable(item) and RaceForecaster.limiting_life(item, item.life) >= 10
-	var available = s.phase == "race" and s.own.route == "track" and not s.own.pit_order and s.gate.distance < s.laps * s.length and s.own.damage > 0 and usable
+	var available = s.phase == "race" and s.own.route == "track" and not s.own.pit_order and s.gate.distance < s.laps * s.length and s.own.damage > 0 and usable and not s.own.get("dnf", false) and not s.own.get("finished", false)
 	var reason = "A repair-only stop keeps the fitted set. It cannot fix a puncture or exhausted wheel."
-	if s.own.pit_order: reason = "An accepted stop already exists. Cancel it before choosing a different transaction."
+	if s.own.get("dnf", false) or s.own.get("finished", false): reason = "This car is no longer racing; no recovery order can be issued."
+	elif s.own.pit_order: reason = "An accepted stop already exists. Cancel it before choosing a different transaction."
 	elif s.gate.distance >= s.laps * s.length: reason = "No safe pit entry remains before the finish."
 	elif s.own.damage <= 0: reason = "No repairable scalar damage is present; health loss is not repaired in the pit lane."
 	elif s.phase != "race" or s.own.route != "track": reason = "Recovery pit calls require a car racing on track."

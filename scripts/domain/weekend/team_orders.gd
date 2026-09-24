@@ -104,12 +104,13 @@ static func preview(sim) -> Dictionary:
 		var gate = planned_gate(sim, car)
 		var origin = "accepted order" if car.pit_order else ("approved window" if gate >= 0 else "hypothetical next entry")
 		if gate < 0: gate = snapshot.gate.distance
-		var arrival = maxf(0, gate - car.distance) / (sim.track.length / sim.track.estimate) + car.box_d / sim.track.pit_limit + 1.5
+		var context = snapshot.get("model_context", {})
+		var arrival = maxf(0, gate - car.distance) / (sim.track.length / sim.track.estimate * context.get("neutral_factor", 1.0)) + car.box_d / sim.track.pit_limit + 1.5
 		if car.route == "pit":
 			arrival = 0.0 if car.pit_stage == "service" else maxf(0, car.box_d - car.pit_d) / sim.track.pit_limit
 			origin = "physically committed"
 		rows.append({"id": id, "short": car.short, "arrival": arrival,
-			"eligible": not car.dnf and not car.finished and car.pit_stage != "exit", "service": car.pit_timer if car.pit_stage == "service" else 3.75 + (car.damage * 0.14 if car.repair else 0.0), "origin": origin})
+			"eligible": not car.dnf and not car.finished and car.pit_stage != "exit", "service": car.pit_timer if car.pit_stage == "service" else (2.5 if context.get("repair_only", false) else 3.75) + (car.damage * 0.14 if car.repair else 0.0), "origin": origin})
 		if car.dnf or car.finished: rows.back().origin = "not running"; rows.back().arrival = 0.0
 		elif car.pit_stage == "exit": rows.back().origin = "service completed; releasing"; rows.back().arrival = 0.0
 	rows.sort_custom(func(a, b): return a.arrival < b.arrival if a.arrival != b.arrival else a.id < b.id)
@@ -132,10 +133,11 @@ static func defer_stop(sim, car: Dictionary, window: Dictionary = {}) -> bool:
 	if record.deferred_gate >= 0: return safe.distance <= record.deferred_gate
 	var primary_gate = planned_gate(sim, primary)
 	if primary_gate < 0: return false
-	var velocity = sim.track.length / sim.track.estimate
+	var context = sim.forecast_parameters(int(primary.id))
+	var velocity = sim.track.length / sim.track.estimate * context.get("neutral_factor", 1.0)
 	var primary_arrival = maxf(0, primary_gate - primary.distance) / velocity + primary.box_d / sim.track.pit_limit
 	var secondary_arrival = maxf(0, safe.distance - car.distance) / velocity + car.box_d / sim.track.pit_limit
-	var service = 3.75 + (primary.damage * 0.14 if primary.repair else 0.0)
+	var service = (2.5 if context.get("repair_only", false) else 3.75) + (primary.damage * 0.14 if primary.repair else 0.0)
 	if absf(primary_arrival - secondary_arrival) > service + 2.0: return false
 	if (not window.is_empty() and safe.lap >= window.to_lap) or safe.distance + sim.track.length >= sim.laps * sim.track.length:
 		record.status = "queue"; record.reason = "No later legal entry inside the approved window; priority cannot rewrite it."
