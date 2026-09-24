@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation **0.7.0 — uncertain weather and crossover decisions**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation **0.8.0 — compact pit wall, clearer interaction and reduced presentation overhead**.
 
 ## Open and play
 
@@ -8,7 +8,17 @@ Use **Godot 4.7.2 Standard**. Clone the repository, import the root `project.god
 
 Start with **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry → 3 laps**. Engineers can handle qualifying releases. Approve race preparation, formation and the starting lights when ready. Manage **Mercer (08)** and **Moreau (09)** from the pit wall. Space pauses; 1–5 selects 1×–16×. The main menu also offers Track Editor, Settings and Continue Weekend.
 
-## Iteration 0.7.0 — uncertain weather and crossover decisions
+## Iteration 0.8.0 — compact pit wall and performance
+
+The weekend opens in **Watch** with a larger circuit and both drivers' fixed actions. Direct **Drive / Strategy / Tyres / Team / Weather / Setup / Telemetry / Radio / Surface / Debrief** buttons replace the topic dropdown. **Close / Escape** returns to watching; Expand makes room for detail. Plan, setup, cooperation and weather commitments stay outside scrolling content. Qualifying Send/Recall and pending-stop Cancel are available directly on each driver card.
+
+Hover, focus, pressed, popup and tooltip states share an explicit readable palette. **F1** opens persistent control help; Space pauses instead of accidentally activating a focused Box button. Settings and scenario launchers no longer require scrolling. Longer analysis and multi-stop detail can still scroll without hiding their commit actions.
+
+Only visible detail is refreshed; paused overlays retain draw commands; road triangles are batched and surface geometry is reused. The complete local run passed **1,388 checks with 53 native screenshots**. Paired software-rendered benchmarks showed roughly 68% lower Watch refresh cost and 58% fewer draw calls for the declared workload, with identical authoritative outcomes. These are local workload measurements, not a universal FPS guarantee.
+
+See the [0.8 interaction and performance handoff](docs/ui-performance-iteration.md) for controls, exact measurements, test scope and limitations. The concurrently merged 0.7 weather implementation and checkpoint v7 are preserved without changing the simulation.
+
+## Preserved 0.7.0 milestone — uncertain weather and crossover decisions
 
 New normal weekends use **seeded weather** with its own saved random stream. The native **Weather & crossovers** panel separates observed rain from measured sector/line water, compares the current plan with a real tyre change and waiting, and labels its uncertain stress cases rather than promising a result. Both car cards retain Weather access; Box names the driver and physical gate, while Keep plan respects ownership. Rivals use the same observation-only model, not hidden future weather.
 
