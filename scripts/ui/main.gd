@@ -53,7 +53,9 @@ func show_menu() -> void:
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 80; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 72
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
-	menu.add_child(UI.button("STRATEGY SCENARIOS", show_strategy_scenarios))
+	var scenarios = UI.hbox(menu)
+	scenarios.add_child(UI.button("DRY SCENARIOS", show_strategy_scenarios))
+	scenarios.add_child(UI.button("WEATHER SCENARIOS", show_weather_scenarios))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -120,7 +122,8 @@ func show_library(test_track: Dictionary = {}) -> void:
 	controls.add_child(UI.label("CAR", 12, UI.MUTED))
 	controls.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; refresh.call(), TrackGeometry.PRESETS.keys().find(vehicle)))
 	controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
-	controls.add_child(UI.option(["Changing skies", "Dry", "Wet → drying"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
+	controls.add_child(UI.option(["Changing skies", "Dry", "Rain-prone"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
+	controls.add_child(UI.option(["Seeded weather", "Scripted training / legacy"], func(index): config.weather_mode = WeekendWeather.MODES[index], 0 if config.get("weather_mode", "seeded") == "seeded" else 1))
 	controls.add_child(UI.label("LAPS", 12, UI.MUTED))
 	var lap_input = UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)); controls.add_child(lap_input)
 	controls.add_child(UI.option(["Standard · 24 laps", "Quick · 12 laps", "Custom · uncalibrated"], func(index):
@@ -136,7 +139,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 			var findings = TrackDiagnostics.inspect(geometry)
 			if TrackDiagnostics.blocking(findings):
 				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-			App.weekend = StrategyRaceSim.new(geometry, config)
+			App.weekend = WeatherRaceSim.new(geometry, config)
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
@@ -147,7 +150,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 
 func show_weekend() -> void:
 	clear_screen("weekend")
-	var view = StrategyWeekendView.new() if App.weekend is StrategyRaceSim else WeekendView.new()
+	var view = WeatherWeekendView.new() if App.weekend is WeatherRaceSim else (StrategyWeekendView.new() if App.weekend is StrategyRaceSim else WeekendView.new())
 	view.configure(App.weekend); content.add_child(view)
 	view.new_weekend_requested.connect(show_library)
 
@@ -219,5 +222,26 @@ func show_strategy_scenarios() -> void:
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace the active weekend?"; confirm.dialog_text = "A scenario starts a new weekend. Export the current evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
+
+func show_weather_scenarios() -> void:
+	clear_screen("weather_scenarios")
+	content.add_child(UI.label("Forecast, choose, watch the road", 30))
+	content.add_child(UI.paragraph("Seeded conditions use observed-only forecasts. Training explicitly preserves the original schedule. Neither version forces results. All scenarios retain qualifying and start approvals."))
+	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
+	var entries = UI.vbox(scroll, true)
+	for recipe in WeatherScenarios.catalog():
+		if not WeatherScenarios.valid(recipe): continue
+		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
+		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
+		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.button("Open %d laps · %s · seed %d" % [recipe.laps, recipe.weather_mode, recipe.seed], func():
+			var start = func():
+				var candidate = WeatherScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The weather scenario or track is invalid."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This creates a new weekend. Export existing evidence before replacing it."
 				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
 			else: start.call(), true))
