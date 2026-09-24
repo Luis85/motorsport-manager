@@ -4,6 +4,8 @@ extends Control
 var canvas: TrackCanvas
 var forecast: Dictionary = {}
 var enabled = true
+var stamp: Array = []
+var caption_style = UI.box(UI.CARD, UI.LINE, 5, 6)
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -11,7 +13,12 @@ func _ready() -> void:
 	clip_contents = true
 
 func _process(_delta: float) -> void:
-	queue_redraw()
+	if canvas == null: return
+	# The exit band is fixed geometry, not another moving car. Validity is rechecked on draw.
+	var next: Array = [enabled, canvas.center, canvas.zoom, canvas.size, forecast.get("key", ""), forecast.get("time", -1)]
+	if canvas.sim:
+		next.append([canvas.sim.phase, canvas.sim.selected_id, canvas.sim.total_time - float(forecast.get("time", 0)) > RaceForecaster.MAX_AGE])
+	if next != stamp: stamp = next; queue_redraw()
 
 func _draw() -> void:
 	if not enabled or canvas == null or canvas.sim == null or forecast.is_empty(): return
@@ -28,6 +35,6 @@ func _draw() -> void:
 	draw_arc(centre, 11, 0, TAU, 32, UI.ACCENT, 2.0, true)
 	var label = "%s REJOIN ~P%d–%d" % [sim.cars[forecast.driver_id].short, pit.position_low, pit.position_high]
 	var position = Vector2(clampf(centre.x + 16, 8, maxf(8, size.x - 200)), clampf(centre.y - 18, 30, maxf(30, size.y - 48)))
-	draw_style_box(UI.box(UI.CARD, UI.LINE, 5, 6), Rect2(position - Vector2(6, 18), Vector2(204, 44)))
+	draw_style_box(caption_style, Rect2(position - Vector2(6, 18), Vector2(204, 44)))
 	draw_string(ThemeDB.fallback_font, position, label, HORIZONTAL_ALIGNMENT_LEFT, 195, 12, UI.INK)
 	draw_string(ThemeDB.fallback_font, position + Vector2(0, 17), "Fixed exit · uncertain traffic timing", HORIZONTAL_ALIGNMENT_LEFT, 195, 10, UI.MUTED)

@@ -30,8 +30,9 @@ func run() -> void:
 	check(game.screen_name == "recovery_scenarios", "Recovery scenarios are reachable in native main navigation")
 	model = RecoveryScenarios.build(RecoveryScenarios.catalog()[0], app.library)
 	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
-	check(view.get_script().resource_path.ends_with("recovery_weekend.gd") and view.tabs.current_tab == 6, "New model uses native recovery view without removing strategy briefing")
-	view.open_recovery(3); await capture("briefing")
+	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and view.tabs.current_tab == 6, "New model uses the unified pit-wall workspace with recovery and strategy")
+	view.open_recovery(3); view.close_detail(); view.recovery_links[3].pressed.emit(); await capture("briefing")
+	check(view.right_panel.visible and view.tabs.current_tab == view.recovery_page_index and inside(view.topic_buttons[view.recovery_page_index]), "Recovery shortcut reopens its closed topic within Conditions")
 	var panel = view.recovery_panel
 	check(panel.protect_button.disabled and panel.repair_button.disabled and panel.retire_button.disabled, "Briefing cannot issue premature recovery race commands")
 	check(view.recovery_links[3].get_theme_stylebox("normal").bg_color == UI.CARD and view.weather_links[3].get_theme_stylebox("hover").bg_color == UI.HOVER, "Detached compact actions inherit the application palette, not fallback gray")
@@ -94,7 +95,25 @@ func run() -> void:
 	check(app.save_weekend().is_empty() and app.load_weekend().is_empty(), "Application saves and reloads a live v8 recovery weekend")
 	check(app.weekend is RecoveryRaceSim and app.weekend.reliability(6).repair_only and app.weekend.control_state.state == "ending", "Application restores recovery transaction and exact sporting phase")
 	view.tabs.current_tab = 7; view.refresh(); await capture("debrief")
-	var text = view.debrief_text.text; view.refresh()
+	var text = view.debrief_text.text
+	for i in range(25): view.refresh()
 	check("RECOVERY AND RACE CONTROL" in text and text == view.debrief_text.text, "Recovery debrief is stable, not repeatedly appended by refresh")
+	# The merged shell must keep new recovery controls usable with its reading preference.
+	var preferences = app.settings.duplicate(true)
+	app.settings.pitwall_text_scale = 1.3
+	root.size = Vector2i(1100,720); root.content_scale_size = root.size
+	game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	view.open_recovery(3); await settle()
+	for id in [3,6]:
+		check(inside(view.recovery_links[id]) and inside(view.weather_links[id]) and inside(view.decision_controls[id].box), "Scaled merged shell retains three direct actions for driver " + str(id))
+	check(inside(view.recovery_panel.protect_button) and inside(view.recovery_panel.repair_button) and inside(view.recovery_panel.retire_button), "Recovery commands fit the minimum viewport at 130% text")
+	check(view.recovery_panel.repair_button.get_theme_font_size("font_size") >= 14, "Incoming recovery controls receive the native text-size preference")
+	before = JSON.stringify(app.weekend.snapshot())
+	view.show_navigator(); await settle(); view.navigator.filter_views("reliability")
+	check(view.navigator.matches.size() == 1 and view.navigator.matches[0][0] == view.recovery_page_index, "Read-only search includes the merged recovery destination")
+	view.navigator.open_selected(); await settle()
+	check(view.tabs.current_tab == view.recovery_page_index and before == JSON.stringify(app.weekend.snapshot()), "Searching for recovery opens the real panel without changing the v8 model")
+	await capture("merged-large-text")
+	app.settings = preferences
 	var report = {"passed":failures.is_empty(),"checks":checks,"failures":failures,"screenshots":screenshots}
 	Storage.write_json("res://reports/recovery-ui.json",report); print("RECOVERY_UI ",JSON.stringify(report)); quit(0 if failures.is_empty() else 1)

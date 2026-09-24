@@ -15,16 +15,19 @@ var box: Button
 var hold: Button
 var selectors: Array[Button] = []
 var sector_labels: Array[Label] = []
+var navigation_bar: HBoxContainer
+var commit_bar: HBoxContainer
+var refresh_count = 0
 
 func configure(value: WeatherRaceSim) -> void: model = value
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
-	var drivers = HBoxContainer.new(); add_child(drivers)
+	var drivers = HBoxContainer.new(); navigation_bar = drivers; add_child(drivers)
 	for id in [3, 6]:
 		var button = UI.button(model.cars[id].short + " weather", func(): choose_driver(id))
 		StrategyDesk.compact_button(button); drivers.add_child(button); selectors.append(button)
-	var actions = HBoxContainer.new(); add_child(actions)
+	var actions = HBoxContainer.new(); commit_bar = actions; add_child(actions)
 	box = UI.button("Box MER", submit_box, true); actions.add_child(box)
 	hold = UI.button("Keep plan", submit_hold); actions.add_child(hold)
 	var surface_button = UI.button("Surface map", func(): surface_requested.emit()); actions.add_child(surface_button)
@@ -38,7 +41,8 @@ func _ready() -> void:
 	cases_label = UI.paragraph(""); cases_label.add_theme_font_size_override("font_size", 11); add_child(cases_label)
 	for i in range(3):
 		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size", 12); add_child(label); options.append(label)
-	limits = UI.paragraph("", UI.MUTED); limits.add_theme_font_size_override("font_size", 11); add_child(limits)
+	limits = UI.paragraph("", UI.MUTED); limits.add_theme_font_size_override("font_size", 11); limits.visible = false; add_child(limits)
+	add_child(UI.button("Forecast assumptions", func(): UI.notify(self, "Weather forecast limits", limits.text)))
 	refresh()
 
 func choose_driver(id: int) -> void:
@@ -61,6 +65,7 @@ func submit_hold() -> void:
 	advice = {}; refresh()
 
 func refresh() -> void:
+	refresh_count += 1
 	if model == null or summary == null: return
 	if advice.is_empty() or model.weather_stale(advice) or model.total_time - advice.time >= 3: advice = model.weather_advice(driver_id)
 	var c = model.cars[driver_id]; var p = model.policy(driver_id)

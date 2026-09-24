@@ -30,8 +30,11 @@ func run() -> void:
 	check(game.screen_name == "weather_scenarios", "Three weather scenarios are reachable in native navigation")
 	model = WeatherScenarios.build(WeatherScenarios.catalog()[1], app.library)
 	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
-	check(view.get_script().resource_path.ends_with("weather_weekend.gd") and view.tabs.current_tab == 6, "Weather-aware application preserves strategy-first briefing")
-	view.open_weather(3); await capture("briefing")
+	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and not view.right_panel.visible and inside(view.group_buttons["Conditions"]) and inside(view.weather_links[3]), "Weather-aware application opens on the circuit with direct Weather navigation")
+	view.open_weather(3); view.close_detail(); view.weather_links[3].pressed.emit(); await capture("briefing")
+	check(view.right_panel.visible and view.tabs.current_tab == 9, "Weather action reopens the same previously closed topic")
+	var link = view.weather_links[3]
+	check(link.get_theme_stylebox("normal").bg_color == UI.CARD and link.get_theme_stylebox("hover").bg_color == UI.HOVER, "Pre-tree weather actions use the shared readable palette, not engine fallback styles")
 	var panel = view.weather_panel
 	check(panel.box.disabled and panel.hold.disabled, "Briefing comparison cannot issue a premature weather stop")
 	check("Seeded weather" in panel.summary.text and "baseline" in panel.outlook_label.text, "Native UI labels the mode and initial evidence limit")

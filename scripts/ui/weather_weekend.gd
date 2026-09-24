@@ -3,6 +3,7 @@ extends StrategyWeekendView
 ## Weather is a contextual native view over the same live race. No panel changes time controls.
 var weather_panel: WeatherPanel
 var weather_links: Dictionary = {}
+var weather_debrief_stamp: Array = []
 
 func _ready() -> void:
 	super._ready()
@@ -11,6 +12,12 @@ func _ready() -> void:
 	var page = tab_page("Weather")
 	weather_panel = WeatherPanel.new(); weather_panel.configure(sim); page.add_child(weather_panel)
 	weather_panel.command_requested.connect(targeted_command)
+	register_topic("Weather", 9, 5)
+	pin_navigation(9, weather_panel.navigation_bar)
+	weather_panel.commit_bar.reparent(detail_actions)
+	weather_panel.commit_bar.visible = false
+	tabs.tab_changed.connect(func(index): weather_panel.commit_bar.visible = index == 9)
+	call_deferred("wire_control_help", self)
 	weather_panel.surface_requested.connect(func(): canvas.show_surface = true; canvas.queue_redraw())
 	for id in [3, 6]:
 		var link = UI.button("Weather", func(): open_weather(id))
@@ -21,7 +28,7 @@ func _ready() -> void:
 
 func open_weather(id: int) -> void:
 	if weather_panel == null or id not in [3, 6]: return
-	select_driver(id); weather_panel.choose_driver(id); tabs.current_tab = 9; refresh()
+	select_driver(id); weather_panel.choose_driver(id); open_topic(9); refresh()
 
 func refresh() -> void:
 	super.refresh()
@@ -29,7 +36,8 @@ func refresh() -> void:
 	var rainfall = "Heavy rain" if sim.rain >= 0.60 else ("Rain" if sim.rain >= 0.08 else "No rain")
 	weather_label.text = rainfall + " · Line water %d%%" % roundi(sim.average(sim.water) * 100)
 	weather_label.tooltip_text = "Observed rain %.0f%%. Measured surface water is separate; weather mode: %s." % [sim.rain * 100, sim.weather_state.model.mode]
-	if tabs.current_tab == 9:
+	weather_panel.commit_bar.visible = right_panel.visible and tabs.current_tab == 9
+	if right_panel.visible and tabs.current_tab == 9:
 		weather_panel.refresh()
 		pit_note.visible = false; box_button.get_parent().visible = false
 		if not detail_expanded:
@@ -42,7 +50,11 @@ func refresh() -> void:
 		if not issue.is_empty():
 			decision_controls[id].battle.text = "Weather: " + issue + " · compare before calling"
 			decision_controls[id].battle.tooltip_text = issue + ". " + RacecraftController.describe(strategy_model.battle_state, id, sim.cars)
-	if tabs.current_tab == 7:
+	if right_panel.visible and tabs.current_tab == 7:
+		var records = strategy_model.strategy_state.records
+		var next_stamp: Array = [sim.phase, records.size(), records.back().get("id", "") if not records.is_empty() else ""]
+		if next_stamp == weather_debrief_stamp: return
+		weather_debrief_stamp = next_stamp
 		# Rebuild from evidence rather than appending repeatedly during presentation refreshes.
 		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
 		var state = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}

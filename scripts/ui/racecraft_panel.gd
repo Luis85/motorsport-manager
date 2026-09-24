@@ -24,7 +24,7 @@ func configure(model: RaceSim, command: Callable) -> void:
 func _ready() -> void:
 	add_theme_constant_override("separation", 7)
 	add_child(UI.label("GARAGE SETUP", 15, UI.ACCENT))
-	var intro = UI.paragraph("Stage values, then Apply. Hover a row for its trade-off."); intro.add_theme_font_size_override("font_size", 12); add_child(intro)
+	var intro = UI.paragraph("Stage values, then Apply. Focus a field for its trade-off; F1 opens help."); intro.add_theme_font_size_override("font_size", 12); add_child(intro)
 	garage_form = UI.vbox(self); garage_form.add_theme_constant_override("separation", 5)
 	for key in CarSetup.SPECS:
 		var spec = CarSetup.SPECS[key]
@@ -36,7 +36,7 @@ func _ready() -> void:
 		field.custom_minimum_size = Vector2(80, 32); label_row.add_child(field); fields[key] = field
 		field.get_line_edit().add_theme_stylebox_override("normal", UI.box(UI.CARD, UI.LINE, 4, 5))
 		field.get_line_edit().add_theme_font_size_override("font_size", 13)
-		field.tooltip_text = spec[3]; label.tooltip_text = spec[3]
+		field.tooltip_text = spec[3]; field.get_line_edit().tooltip_text = spec[3]; label.tooltip_text = spec[3]
 	actions = UI.hbox(self)
 	apply_button = UI.button("Apply setup", apply_draft, true); actions.add_child(apply_button)
 	reset_button = UI.button("Revert", revert); actions.add_child(reset_button)
@@ -112,7 +112,7 @@ class WheelDashboard extends VBoxContainer:
 		for key in cards:
 			var w = item.wheels[key]
 			cards[key].text = "%s   %d%%\n%.0f° surface / %.0f° core" % [key, w.life, w.surface, w.core]
-			cards[key].add_theme_stylebox_override("normal", UI.box(UI.CARD, UI.DANGER if w.punctured else (UI.ACCENT if key == selected_wheel else UI.LINE), 5, 4))
+			UI.set_active(cards[key], key == selected_wheel, w.punctured)
 			cards[key].tooltip_text = "Front/rear · left/right. Click to inspect retained tyre damage."
 		var w = item.wheels[selected_wheel]
 		details.text = "%s · %s\nPressure %.2f× cold · Load %.2f×\nGraining %.1f · Blistering %.1f · Flat spot %.1f" % [selected_wheel, "PUNCTURED — replace this set" if w.punctured else "condition retained with this set", w.pressure, w.load, w.grain, w.blister, w.flat]

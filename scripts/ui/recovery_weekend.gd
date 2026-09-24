@@ -4,6 +4,7 @@ extends WeatherWeekendView
 var recovery_panel: RecoveryPanel
 var recovery_links: Dictionary = {}
 var recovery_page_index = -1
+var recovery_debrief_prefix = ""
 
 func _ready() -> void:
 	super._ready()
@@ -11,6 +12,7 @@ func _ready() -> void:
 	detail_picker.add_item("Recovery & race control")
 	recovery_panel = RecoveryPanel.new(); recovery_panel.configure(sim); tabs.add_child(recovery_panel)
 	recovery_page_index = tabs.get_tab_count() - 1
+	register_topic("Recovery", recovery_page_index)
 	recovery_panel.command_requested.connect(targeted_command)
 	for id in [3, 6]:
 		var controls = decision_controls[id]
@@ -22,12 +24,12 @@ func _ready() -> void:
 
 func open_recovery(id: int) -> void:
 	if recovery_panel == null or id not in [3, 6]: return
-	select_driver(id); recovery_panel.choose_driver(id); tabs.current_tab = recovery_page_index; refresh()
+	select_driver(id); recovery_panel.choose_driver(id); open_topic(recovery_page_index); refresh()
 
 func refresh() -> void:
 	super.refresh()
 	if recovery_panel == null: return
-	if tabs.current_tab == recovery_page_index:
+	if right_panel.visible and tabs.current_tab == recovery_page_index:
 		recovery_panel.refresh(); pit_note.visible = false; box_button.get_parent().visible = false
 		driver_label.visible = false; resource_row.visible = false; compact_resources.visible = false; intent_label.visible = false
 		teammate_buttons[0].get_parent().visible = false
@@ -47,4 +49,8 @@ func refresh() -> void:
 			var weather = sim.weather_issue(id)
 			decision_controls[id].battle.text = "%s · damage %.0f · health %.0f%%%s" % [observed.stage.to_upper(), observed.damage, observed.health, " · Weather !" if not weather.is_empty() else ""]
 			decision_controls[id].battle.tooltip_text = recovery_links[id].tooltip_text + ("\n" + weather if not weather.is_empty() else "")
-	if tabs.current_tab == 7: debrief_text.text = sim.recovery_debrief() + "\n\n" + debrief_text.text
+	if right_panel.visible and tabs.current_tab == 7:
+		# Parent views may reuse their rendered journal; replace our prefix instead of appending it.
+		var inherited_text = debrief_text.text.trim_prefix(recovery_debrief_prefix)
+		recovery_debrief_prefix = sim.recovery_debrief() + "\n\n"
+		debrief_text.text = recovery_debrief_prefix + inherited_text

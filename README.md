@@ -1,38 +1,42 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation: **0.8.0 — staged recovery and virtual neutralization**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation: **0.9.0 — integrated pit-wall UX, staged recovery and virtual neutralization**.
 
 ## Open and play
 
-Use **Godot 4.7.2 Standard**. Clone the repository, import the root `project.godot`, allow script import, and press **F5**. No npm, .NET, browser, external asset service or Godot plugin is required.
+Use **Godot 4.7.2 Standard**. Import the root `project.godot`, allow script import, then press **F5**. No npm, .NET, browser, external asset service or Godot plugin is required.
 
-Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Engineers can handle qualifying releases. Approve race preparation, formation and the starting lights when ready. Manage **Mercer (08)** and **Moreau (09)**. Space pauses; 1–5 selects 1×–16×. Track Editor, Settings and Continue Weekend remain available.
+Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Engineers can handle qualifying releases. Approve preparation, formation and starting lights when ready. Manage **Daniel Mercer (MER)** and **Lucas Moreau (MOR)**. Space pauses; 1–5 selects 1×–16×. Track Editor, Settings and Continue Weekend remain available.
 
-For the new increment, choose **Recovery → Protect the finish** or **Is the repair worth it?**. In the pit wall, open either driver's **Recovery** button or select **Recovery & race control**. New normal weekends use the latest model. Existing dry/weather learning recipes and migrated saves retain their original model semantics for reproducibility.
+Try **Recovery → Protect the finish** or **Is the repair worth it?** for the new reliability decisions. New normal weekends use the recovery model. Earlier dry/weather learning recipes and migrated saves retain their original model semantics rather than silently switching rules.
 
-## What is new in 0.8
+## Task-oriented pit wall
 
-**Recovery decisions:** scalar normal/warning/degraded/critical/retired condition, accumulated thermal/condition exposure, separate persisted reliability/service random streams, and read-only keep/protect/repair comparisons. Protect saves engine resources for two laps and returns the previous engine owner. Repair only uses the physical pit route and shared box, retaining the fitted tyres and their wear. Repair removes damage, **not lifetime health**. Retirement requires confirmation.
+**Watch, Strategy, Car, Team, Conditions and Review** organize the existing views. Related topics share a contextual inspector. **Conditions → Recovery** and both drivers' direct Recovery buttons open the same recovery controls. **Find view / Ctrl+K** browses or searches available destinations; it never executes a race command.
 
-**Explicit authority:** additional critical repairs require permission, engineer pit ownership, the approved emergency policy and a repair-work budget. Stale actions, unavailable tyre recovery and impossible last-entry requests are rejected rather than silently replaced. Alerts, confirmations and guides never pause or change playback speed automatically.
+Structured driver cards show position, fitted set and weakest-wheel tread, estimated finish-fuel margin, next stop and pit responsibility. Named Details actions expose the full issue and battle context. Both cars retain their fixed Compare/Box/Keep/Save-fuel or session-appropriate release/recall actions, alongside Weather and Recovery.
 
-**One supported neutralization procedure:** fictional virtual running with a reference-envelope speed target, no passing, no artificial catch-up or field bunching, an explicit ending interval and persistent local-yellow zones. Pending incident requests apply before the next whole-field movement snapshot. This is not a physical safety car or a claim of licensed-series regulatory completeness.
+Strategy alternatives remain together with explicitly unapplied/approved states, uncertainty bands and faster/slower wording. Approvals and primary recovery commands stay separate from scrolling analysis. Ordinary navigation does not approve a draft, issue an order or seize time control.
 
-**Native workflow:** fixed recovery actions outside scrolling evidence, persistent shortcuts for both drivers, independent authority drafts, the resumable **Protect the finish** guide, measured repair/control debrief, and corrected compact-button palette inheritance. Checkpoint **v8** preserves the new state; supported older native saves retain their original weather, reliability and flag behavior.
+Settings offers staged **100%, 115% and 130% pit-wall text**, applied when reopening the weekend. Native controls, popups and relevant dialogs scale; custom-drawn circuit labels and the editor do not. Messages retains the view's last 50 command acknowledgements/errors. Menu/Quit warns before abandoning user-edited strategy drafts; this is not cross-restart draft persistence or a global guard for every editor.
 
-The [0.8 implementation handoff](docs/race-weekend-recovery.md) documents the exact rules, command boundaries, model limitations and evidence: **1,449 passing local checks and 54 native screenshots**. This is RW-14/RW-15 plus interaction work, not full GDD or human-playtest acceptance.
+The [UX research record](docs/design/pitwall-ux-research.md) maps 16 primary sources to the interface decisions and explicitly separates guidance from human-validation claims. The [integration record](docs/pr3-integration.md) explains the combined view, conflict resolution and verification. The earlier [compact rendering/performance record](docs/ui-performance-iteration.md) remains historical evidence, not a new performance claim for the merged version.
+
+## Recovery and race control
+
+**Staged condition:** normal/warning/degraded/critical/retired scalar condition, accumulated thermal/condition exposure and separate persisted reliability/service random streams. Read-only comparisons show continuing, protecting engine resources and making a real repair-only stop. Repair retains the fitted tyres and removes damage, **not lifetime health**. Retirement requires a named confirmation.
+
+**Explicit authority:** an additional critical repair requires permission, engineer pit ownership, approved emergency policy and a repair-work budget. Stale actions and impossible requests are rejected rather than silently replaced. Alerts, confirmations and guides never pause or slow the race automatically.
+
+**Virtual neutralization:** a fictional reference-envelope speed target, no passing, no artificial catch-up or field bunching, an explicit ending interval and persistent local-yellow zones. This is not a physical safety car or licensed-series regulatory completeness. See the [recovery handoff](docs/race-weekend-recovery.md) for exact rules and limitations.
+
+**Checkpoint v8** preserves recovery, service and control state. Supported native v1–v7 saves migrate while retaining their original weather, reliability and flag behavior. Application presentation preferences remain separate. Browser saves are not compatible.
 
 ## Preserved systems
 
-The pit wall includes **Compare / Plan / Control**, finite-set multi-stop plans, independent control ownership, bounded temporary intents, uncertain pit/rejoin estimates, persistent battles, safe team cooperation and shared-box priorities. Rivals respond to public stops and weather, not private player drafts or secret future conditions. Both driver cards and user time controls remain available.
+Finite four-wheel tyre stock; independent driver plans and control ownership; temporary intents; physical pit routes/service and a shared box; uncertain rejoin forecasts; persistent battles and safe team cooperation; observation-only weather and rival decisions; out/hot/in qualifying; formation, grid and lights; stable timing, telemetry, surface inspection and measured debriefs remain.
 
-Seeded weather has its own saved stream. **Weather & crossovers** separates observed rain from measured line/sector water and compares current/box/wait stress cases without presenting them as probabilities. Four dry and three weather scenarios remain; the new recovery recipes add two disclosed learning situations.
-
-The foundation retains **flat dot cars**, warm paper/green/brass presentation, eight bundled circuits, out/hot/in qualifying, physical formation and start lights, finite driver-owned four-wheel tyres, staged setup, interpolated timing, stable classification, telemetry, surface inspection and atomic storage.
-
-**Circuit Atelier** retains Bezier editing, references, pit lanes, annotations, multi-selection, planar transforms, alignment/distribution, scenery groups and connected Freehand/Pen tracing. Authoring and racing use separate compiled snapshots. This increment does not redesign the editor or add campaign economics.
-
-See the historical handoffs for retained assumptions: [0.7 weather](docs/race-weekend-weather.md), [0.6 racecraft/team](docs/race-weekend-living-racecraft.md), [0.5 strategy](docs/race-weekend-implementation.md), and [0.4 authoring/race foundation](docs/iteration-4.md). Their then-current version and future-work statements are superseded by the latest handoff where applicable.
+Circuit Atelier retains eight bundled circuits, Bezier editing, references, pit lanes, annotations, multi-selection, transforms, alignment/distribution, scenery groups and connected freehand/pen tracing. Authoring and a running race use separate compiled snapshots. Flat dot cars, warm paper/green/brass presentation, cached scenery, road batches and retained paused overlays remain. This merge does not redesign the editor or add campaign economics.
 
 ## Verify
 
@@ -40,14 +44,12 @@ See the historical handoffs for retained assumptions: [0.7 weather](docs/race-we
 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux rendered UI tests need a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips native UI verification. The verifier imports a clean copy, isolates user data, rejects script errors, and writes reports and native screenshots under `reports/`. CI runs the same suite and publishes evidence. The **Source project** workflow archives tracked source into a project ZIP.
+Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI tests require a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips rendered UI. The verifier imports a clean copy, isolates user data and rejects script errors as well as failed assertions. It includes the recovery domain/scenario/UI suites **and** compact UX, text-size/navigation and observational-performance suites. Reports and native captures are written to `reports/`; CI publishes evidence and the Source project workflow archives tracked source.
 
-The generated verification report is authoritative for counts and timing. [Verification guidance](docs/verification.md) describes the preserved testing foundation; the [0.8 handoff](docs/race-weekend-recovery.md) records current coverage and limitations. New application checkpoints are v8; supported native v1–v7 saves migrate without silently switching their model. Browser saves are not compatible.
+The generated `reports/verification.json` is authoritative for that run's counts. Historical handoff counts describe their own releases, not this combined tree. See [documentation](docs/README.md) for systems, formats and acceptance boundaries.
 
 ## Remaining scope and provenance
 
-Purposeful optional practice, deeper rival/driver systems, replay branches and immutable once-only campaign settlement remain later work. Physical safety cars, field bunching, red flags, full stewarding and itemized component engineering are not implemented by this slice. Broader balance, forecast calibration, human comprehension and dedicated accessibility validation remain open; there is no frame-rate guarantee.
+Purposeful optional practice, replay branches, deeper rival/driver systems and once-only campaign settlement remain later work. Physical safety cars, field bunching, red flags, full stewarding and itemized component engineering are not implemented by this slice. Human comprehension, full accessibility/controller/screen-reader coverage, broader balance, forecast calibration and hardware profiling remain open; there is no universal frame-rate guarantee.
 
-[Documentation index](docs/README.md) covers architecture, systems, formats, controls and boundaries. The seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. Attribution is preserved in [third-party notices](THIRD_PARTY_NOTICES.md).
-
-These are unofficial reconstructions, **not laser scans or certified circuit/vehicle simulations**. Widths, intermediate elevations, pit routes and scenery contain authored estimates. No official championship branding, car models or driver likenesses are used. Project code retains the repository's [MIT license](LICENSE), copyright Luis Mendez.
+The seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. Attribution remains in [third-party notices](THIRD_PARTY_NOTICES.md). These are unofficial reconstructions, not laser scans or certified circuit/vehicle simulations. Widths, elevations, pit routes and scenery contain authored estimates. No official championship branding, car models or driver likenesses are used. Code retains the repository's [MIT license](LICENSE), copyright Luis Mendez.

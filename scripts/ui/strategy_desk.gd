@@ -8,6 +8,7 @@ var driver_id = 3
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
 var dirty: Dictionary = {}
+var edited: Dictionary = {}
 var loading = false
 var preview: Dictionary = {}
 var live_preview: Dictionary = {}
@@ -35,6 +36,11 @@ var extend_draft: Button
 var action_buttons: Array[Button] = []
 var last_refresh = -100.0
 var topic = 0
+var commit_bar: VBoxContainer
+var plan_actions: VBoxContainer
+var compare_actions: HBoxContainer
+var policy_fields: VBoxContainer
+var details_toggle: Button
 var topic_panels: Array[VBoxContainer] = []
 var topic_buttons: Array[Button] = []
 
@@ -43,68 +49,79 @@ func configure(sim: StrategyRaceSim) -> void:
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	add_theme_constant_override("separation", 6)
+	add_theme_constant_override("separation", 5)
 	target_picker = UI.option(["MER · Daniel Mercer", "MOR · Lucas Moreau"], func(index): select_driver([3, 6][index])); add_child(target_picker); target_picker.visible = false
-	plan_status = UI.paragraph(""); plan_status.add_theme_font_size_override("font_size", 12); add_child(plan_status)
 	var topics = UI.hbox(self)
 	for title in ["Compare", "Plan", "Control"]:
 		var index = topic_buttons.size()
 		var button = UI.button(title, func(): show_topic(index)); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size.y = 32; button.add_theme_font_size_override("font_size", 12); topics.add_child(button); topic_buttons.append(button); compact_button(button)
+		topics.add_child(button); topic_buttons.append(button); compact_button(button)
+	plan_status = UI.paragraph(""); plan_status.add_theme_font_size_override("font_size", 12); add_child(plan_status)
 	for i in range(3): topic_panels.append(UI.vbox(self))
 	var compare_panel = topic_panels[0]; var plan_panel = topic_panels[1]; var control_panel = topic_panels[2]
-	var nav = HFlowContainer.new(); plan_panel.add_child(nav)
+	var nav = UI.hbox(plan_panel)
 	for template in ["balanced", "alternate", "no_stop"]:
-		nav.add_child(UI.button(template.replace("_", " ").capitalize(), func(): new_draft(template)))
-	nav.add_child(UI.button("Discard draft / reload", func(): load_current(true)))
+		var b = UI.button(template.replace("_", " ").capitalize(), func(): new_draft(template)); nav.add_child(b); compact_button(b)
+	var discard = UI.button("Reload", func(): load_current(true)); discard.tooltip_text = "Discard this driver's unapplied edits and reload the approved plan."; nav.add_child(discard); compact_button(discard)
 	draft_status = UI.paragraph(""); draft_status.add_theme_font_size_override("font_size", 12); plan_panel.add_child(draft_status)
-	objective = UI.option(["Balanced result", "Protect the finish", "Chase a position"], func(_v): changed()); stack_field(plan_panel, "DRAFT OBJECTIVE", objective)
-	starting_set = UI.option(["Select a set"], func(_v): changed()); stack_field(plan_panel, "STARTING SET · fitted only at formation", starting_set)
-	stop_count = UI.spin(1, 0, 3, 1, func(_v): changed()); stack_field(plan_panel, "PLANNED STOP WINDOWS · zero is legal", stop_count)
+	objective = UI.option(["Balanced result", "Protect the finish", "Chase a position"], func(_v): changed()); stack_field(plan_panel, "Objective", objective)
+	starting_set = UI.option(["Select a set"], func(_v): changed()); starting_set.tooltip_text = "Starting set is fitted at formation, never by editing this draft."; stack_field(plan_panel, "Start on", starting_set)
+	stop_count = UI.spin(1, 0, 3, 1, func(_v): changed()); stack_field(plan_panel, "Stops · first / last lap", stop_count)
 	for i in range(3):
-		var row = UI.vbox(plan_panel)
-		row.add_child(UI.label("STOP %d · earliest / latest lap" % (i + 1), 11, UI.MUTED))
-		var range_row = UI.hbox(row)
-		var first = UI.spin(2 + i * 3, 1, maxi(1, model.laps - 1), 1, func(_v): changed()); range_row.add_child(first)
-		var last = UI.spin(3 + i * 3, 1, maxi(1, model.laps - 1), 1, func(_v): changed()); range_row.add_child(last)
-		var item = UI.option(["Select a set"], func(_v): changed()); row.add_child(item)
+		var row = UI.hbox(plan_panel)
+		row.add_child(UI.label(str(i + 1), 12, UI.MUTED))
+		var first = UI.spin(2 + i * 3, 1, maxi(1, model.laps - 1), 1, func(_v): changed()); first.custom_minimum_size.x = 52; row.add_child(first)
+		var last = UI.spin(3 + i * 3, 1, maxi(1, model.laps - 1), 1, func(_v): changed()); last.custom_minimum_size.x = 52; row.add_child(last)
+		var item = UI.option(["Select a set"], func(_v): changed()); item.size_flags_horizontal = Control.SIZE_EXPAND_FILL; row.add_child(item)
+		first.tooltip_text = "Earliest racing lap in stop window %d" % (i + 1); last.tooltip_text = "Latest racing lap in stop window %d" % (i + 1)
 		stop_rows.append({"row": row, "first": first, "last": last, "set": item})
-	avoid_traffic = UI.check("Avoid rejoin traffic within window", true, func(_v): changed()); plan_panel.add_child(avoid_traffic)
-	emergency = UI.check("Permit emergency tyre recovery", true, func(_v): changed()); emergency.tooltip_text = "Applies only to engineer-owned pits. Manual pit ownership always stays manual."; plan_panel.add_child(emergency)
-	tyre_target = UI.spin(22, 5, 50, 1, func(_v): changed()); stack_field(plan_panel, "TARGET TREAD RESERVE (%)", tyre_target)
-	fuel_target = UI.spin(0.35, 0, 3, 0.05, func(_v): changed()); stack_field(plan_panel, "FUEL RESERVE (lap-equivalent units)", fuel_target)
-	apply_button = UI.button("Approve plan", apply, true); plan_panel.add_child(apply_button)
-	clear_button = UI.button("Clear approved plan · manual pits", func(): command_requested.emit("clear_plan", {"id": driver_id})); plan_panel.add_child(clear_button)
-	plan_panel.add_child(UI.paragraph("Approval delegates only pit windows. Other owners stay unchanged. The chosen set is not fitted and no physical pit order is issued until execution."))
-	control_panel.add_child(UI.label("LIVE OWNERSHIP · takes effect immediately", 12, UI.ACCENT))
+	details_toggle = UI.button("Reserves & contingencies ▸", func(): policy_fields.visible = not policy_fields.visible; details_toggle.text = "Reserves & contingencies ▾" if policy_fields.visible else "Reserves & contingencies ▸")
+	plan_panel.add_child(details_toggle)
+	policy_fields = UI.vbox(plan_panel); policy_fields.visible = false
+	avoid_traffic = UI.check("Avoid traffic inside the window", true, func(_v): changed()); policy_fields.add_child(avoid_traffic)
+	emergency = UI.check("Permit emergency tyre recovery", true, func(_v): changed()); emergency.tooltip_text = "Only for engineer-owned pits. Manual pit ownership always stays manual."; policy_fields.add_child(emergency)
+	tyre_target = UI.spin(22, 5, 50, 1, func(_v): changed()); stack_field(policy_fields, "Tread reserve (%)", tyre_target)
+	fuel_target = UI.spin(0.35, 0, 3, 0.05, func(_v): changed()); stack_field(policy_fields, "Fuel reserve (laps)", fuel_target)
+	# Commit controls are reparented into the inspector's fixed action area by the host.
+	commit_bar = UI.vbox(self); compare_actions = UI.hbox(commit_bar); plan_actions = UI.vbox(commit_bar)
+	apply_button = UI.button("Approve plan", apply, true); plan_actions.add_child(apply_button)
+	clear_button = UI.button("Clear plan · take manual pits", func(): command_requested.emit("clear_plan", {"id": driver_id})); plan_actions.add_child(clear_button)
+	clear_button.tooltip_text = "Clear only this driver's approved windows. Pace, engine and racecraft owners remain unchanged."
+	control_panel.add_child(UI.label("CONTROL OWNER · LIVE, NOT A DRAFT", 11, UI.ACCENT))
 	for channel in StrategyPlan.CHANNELS:
 		var choice = UI.option(["Engineer", "Player"], func(index): command_requested.emit("delegation", {"id": driver_id, "channel": channel, "owner": ["engineer", "player"][index]}))
-		stack_field(control_panel, channel.capitalize(), choice); ownership_controls[channel] = choice
-	override_label = UI.paragraph(""); control_panel.add_child(override_label)
-	var attacks = HFlowContainer.new(); control_panel.add_child(attacks)
+		choice.custom_minimum_size.x = 155; stack_field(control_panel, channel.capitalize(), choice); ownership_controls[channel] = choice
+	override_label = UI.paragraph(""); override_label.add_theme_font_size_override("font_size", 12); control_panel.add_child(override_label)
+	var attacks = GridContainer.new(); attacks.columns = 2; control_panel.add_child(attacks)
 	for entry in [["Push 2 laps", "pace", 2], ["Save tyres 2 laps", "pace", 0], ["Engine attack 2 laps", "engine", 2], ["Save fuel 2 laps", "engine", 0]]:
 		var button = UI.button(entry[0], func(): command_requested.emit("resource_intent", {"id": driver_id, "channel": entry[1], "value": entry[2], "laps": 2}))
-		attacks.add_child(button); action_buttons.append(button)
+		attacks.add_child(button); action_buttons.append(button); compact_button(button)
+		button.tooltip_text = "Temporary %s intent for this driver. Returns to the previous owner after two laps; other channels remain unchanged." % entry[1]
 	briefing_text = UI.paragraph(""); briefing_text.add_theme_font_size_override("font_size", 12); compare_panel.add_child(briefing_text)
 	issue_text = UI.paragraph(""); issue_text.add_theme_font_size_override("font_size", 12); compare_panel.add_child(issue_text)
 	rejoin = UI.paragraph(""); rejoin.add_theme_font_size_override("font_size", 12); compare_panel.add_child(rejoin)
 	estimates = UI.paragraph(""); estimates.add_theme_font_size_override("font_size", 12); compare_panel.add_child(estimates)
-	var actions = HFlowContainer.new(); compare_panel.add_child(actions)
-	box_now = UI.button("Box from this forecast", commit_preview, true); actions.add_child(box_now)
-	extend_draft = UI.button("Put extension in draft", draft_extension); actions.add_child(extend_draft)
-	compare_panel.move_child(actions, 2)
-	compare_panel.add_child(UI.paragraph("Uncalibrated model ranges. Current water and observed rival pace are held constant; future rival stops, incidents and weather are unknown. An extra stop pays the whole pit loss. Pausing and reading do not change the race."))
+	box_now = UI.button("Box from forecast", commit_preview, true); compare_actions.add_child(box_now); compact_button(box_now)
+	extend_draft = UI.button("Draft extension", draft_extension); compare_actions.add_child(extend_draft); compact_button(extend_draft)
+	extend_draft.tooltip_text = "Put an available extension into an unapplied draft. Nothing is ordered until approval."
+	var caveat = UI.paragraph("Estimates, not promises. Current conditions held constant; future stops and weather unknown."); caveat.add_theme_font_size_override("font_size", 11); compare_panel.add_child(caveat)
+	compare_panel.add_child(UI.button("Why / assumptions", func(): UI.notify(self, "Strategy context · " + model.cars[driver_id].short, issue_text.tooltip_text + "\n\n" + "\n".join(preview.get("assumptions", [])) + "\n\n" + WeekendScenarios.briefing(model))))
 	load_current(true); show_topic(0)
 
 func stack_field(parent: Node, text: String, control: Control) -> void:
-	var label = UI.paragraph(text); label.add_theme_font_size_override("font_size", 11); parent.add_child(label)
-	control.size_flags_horizontal = Control.SIZE_EXPAND_FILL; parent.add_child(control)
+	var row = UI.hbox(parent)
+	var label = UI.label(text, 12, UI.MUTED); label.custom_minimum_size.x = 108; row.add_child(label)
+	control.size_flags_horizontal = Control.SIZE_EXPAND_FILL; row.add_child(control)
 
 func show_topic(index: int) -> void:
 	topic = index
+	plan_status.visible = index != 1
 	for i in range(topic_panels.size()):
 		topic_panels[i].visible = i == index
-		topic_buttons[i].modulate = Color.WHITE if i == index else Color(0.78, 0.78, 0.78)
+		UI.set_active(topic_buttons[i], i == index)
+	if commit_bar:
+		commit_bar.visible = index != 2; compare_actions.visible = index == 0; plan_actions.visible = index == 1
+	refresh()
 
 func select_driver(id: int) -> void:
 	if id not in [3, 6] or driver_id == id: return
@@ -121,6 +138,7 @@ func populate_sets(control: OptionButton, selected: String) -> void:
 		if item.id == selected: control.select(i)
 
 func new_draft(template: String) -> void:
+	edited[driver_id] = true
 	var draft = StrategyPlan.draft(model.cars[driver_id], model.laps, template)
 	if model.phase == "race": draft.starting_set = model.cars[driver_id].set_id
 	drafts[driver_id] = draft; revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = true
@@ -128,6 +146,7 @@ func new_draft(template: String) -> void:
 
 func load_current(discard: bool) -> void:
 	if discard or not drafts.has(driver_id):
+		edited[driver_id] = false
 		var current = model.active_plan(driver_id)
 		drafts[driver_id] = StrategyPlan.draft(model.cars[driver_id], model.laps) if current.is_empty() else current
 		if model.phase == "race": drafts[driver_id].starting_set = model.cars[driver_id].set_id
@@ -149,6 +168,7 @@ func show_draft() -> void:
 
 func changed() -> void:
 	if loading: return
+	edited[driver_id] = true
 	var stops: Array = []
 	for i in range(3):
 		stop_rows[i].row.visible = i < int(stop_count.value)
@@ -177,7 +197,7 @@ func draft_extension() -> void:
 			stops.append({"from_lap": lap, "to_lap": lap, "set_id": stop.set_id})
 		drafts[driver_id].stops = stops
 		drafts[driver_id].starting_set = model.cars[driver_id].set_id
-		dirty[driver_id] = true; show_draft(); show_topic(1); return
+		dirty[driver_id] = true; edited[driver_id] = true; show_draft(); show_topic(1); return
 
 func refresh(force: bool = false) -> void:
 	if model == null or draft_status == null or not drafts.has(driver_id): return
@@ -186,13 +206,12 @@ func refresh(force: bool = false) -> void:
 	var error = StrategyPlan.validate(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
 	if int(revisions[driver_id]) != int(policy.revision): error = "A newer plan is active. Discard/reload before applying."
 	var legal = model.phase in ["briefing", "race_preparation", "race"] and c.route != "pit" and not c.pit_order and not c.dnf and not c.finished
-	apply_button.disabled = not legal or not error.is_empty()
+	apply_button.disabled = not legal or not error.is_empty() or not dirty[driver_id]
 	clear_button.disabled = not legal or policy.plan.is_empty()
 	apply_button.text = "Approve %s plan · delegate pits" % c.short
 	apply_button.tooltip_text = error if not error.is_empty() else "Approve only when no physical stop is already ordered."
-	draft_status.text = ("UNAPPLIED DRAFT · " if dirty[driver_id] else "APPROVED PLAN · ") + (error if not error.is_empty() else "Window edits stay here until you approve.")
-	plan_status.text = "%s · %s · revision %d
-%s" % [c.short, policy.plan_status.replace("_", " "), policy.revision, StrategyPlan.ownership_text(policy)]
+	draft_status.text = ("UNAPPLIED · " if dirty[driver_id] else "APPROVED · ") + (error if not error.is_empty() else ("Only approval changes the active plan." if dirty[driver_id] else "No unapplied changes."))
+	plan_status.text = "%s · %s · revision %d" % [c.short, policy.plan_status.replace("_", " "), policy.revision]
 	var other_plan = model.active_plan(6 if driver_id == 3 else 3)
 	var overlaps: Array[String] = []
 	for own_stop in draft.stops:
@@ -210,17 +229,18 @@ func refresh(force: bool = false) -> void:
 ".join(active)
 	for button in action_buttons: button.disabled = model.phase != "race" or c.dnf or c.finished
 	if force or preview.is_empty() or RaceForecaster.stale(model, preview, int(policy.revision)) or model.total_time - last_refresh >= 3:
-		preview = model.forecast(driver_id, draft if dirty[driver_id] else {}); last_refresh = model.total_time
+		preview = model.forecast(driver_id, draft) if dirty[driver_id] else (live_preview if not live_preview.is_empty() and not RaceForecaster.stale(model, live_preview, int(policy.revision)) else model.forecast(driver_id)); last_refresh = model.total_time
 		preview_changed.emit(preview)
 	briefing_text.visible = model.phase in ["briefing", "race_preparation", "qualifying_results"]
-	if briefing_text.visible: briefing_text.text = WeekendScenarios.briefing(model)
+	if briefing_text.visible: briefing_text.tooltip_text = WeekendScenarios.briefing(model); briefing_text.text = "Plan both cars before formation. Starting sets and fuel have real weekend costs."
 	if live_preview.is_empty() or RaceForecaster.stale(model, live_preview, int(policy.revision)) or model.total_time - live_preview.time >= 3:
 		live_preview = model.forecast(driver_id)
 	var current_cards = DecisionFeed.for_driver(model, driver_id, policy, live_preview)
 	var descriptions: Array[String] = []
 	for card in current_cards:
 		descriptions.append(("Acknowledged · " if card.acknowledged else "") + card.title + "\n" + card.evidence + "\n" + card.fallback)
-	issue_text.text = "\n\n".join(descriptions)
+	issue_text.tooltip_text = "\n\n".join(descriptions)
+	issue_text.text = "" if current_cards.is_empty() else ("Acknowledged · " if current_cards[0].acknowledged else "") + current_cards[0].title + "\nIgnored: " + current_cards[0].fallback
 	issue_text.visible = not descriptions.is_empty()
 	var pit = preview.pit
 	rejoin.text = "%s · rejoin estimate P%d–P%d
@@ -232,9 +252,7 @@ Net pit loss %.1f–%.1fs · box wait ~%.1fs
 		if not option.available: lines.append(option.title + " · " + option.reason); continue
 		lines.append("%s
 ~%.0f–%.0fs remaining · %s risk · %+.1fs vs baseline" % [option.title, option.low, option.high, option.risk, option.gain])
-	lines.append("Snapshot tick %d · current conditions only" % preview.tick); estimates.text = "
-
-".join(lines)
+	lines.append("Snapshot tick %d · current conditions only" % preview.tick); estimates.text = "\n".join(lines)
 	box_now.disabled = model.phase != "race" or c.route != "track" or c.pit_order or c.dnf or c.finished or preview.replacement_id.is_empty() or preview.gate.distance >= model.laps * model.track.length
 	box_now.text = "Box %s · %s · lap %d" % [c.short, preview.replacement_id.get_slice("-", 1), preview.gate.lap]
 	box_now.tooltip_text = "This explicit action changes only pit ownership and commits the displayed replacement at the safe entry."
@@ -245,11 +263,16 @@ Net pit loss %.1f–%.1fs · box wait ~%.1fs
 static func compact_button(button: Button) -> void:
 	button.custom_minimum_size.y = 30
 	button.add_theme_font_size_override("font_size", 12)
-	# Detached controls have Godot's fallback gray styles, not this application's theme.
-	# Preserve explicit primary styles; build the normal palette without relying on tree order.
-	var colors = {"normal": UI.CARD, "hover": UI.HOVER, "pressed": UI.SELECTED, "hover_pressed": UI.SELECTED, "disabled": UI.PANEL}
-	for state in colors:
-		var style = button.get_theme_stylebox(state).duplicate() if button.has_theme_stylebox_override(state) else UI.action_box(colors[state], UI.ACCENT if state in ["pressed", "hover_pressed"] else UI.LINE)
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+		# Some controls are compacted before entering the tree; never freeze Godot's fallback palette.
+		var colors = {"normal": UI.CARD, "hover": UI.HOVER, "pressed": UI.SELECTED, "hover_pressed": UI.SELECTED, "disabled": UI.PANEL}
+		var border = UI.ACCENT if state in ["pressed", "hover_pressed"] else (UI.MUTED if state == "hover" else UI.LINE)
+		var style = button.get_theme_stylebox(state).duplicate() if button.has_theme_stylebox_override(state) else UI.action_box(colors[state], border)
 		style.content_margin_top = 6; style.content_margin_bottom = 6
 		style.content_margin_left = 8; style.content_margin_right = 8
 		button.add_theme_stylebox_override(state, style)
+
+func has_user_edits() -> bool:
+	for id in edited:
+		if edited[id] and dirty.get(id, false): return true
+	return false

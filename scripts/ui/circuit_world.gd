@@ -23,6 +23,9 @@ var signature = ""
 var reference_texture: Texture2D
 var reference_visible = false
 var rng = RandomNumberGenerator.new()
+var road_batches: Array = []
+var road_batch_geometry: TrackGeometry
+var road_batch_builds = 0
 
 func configure(g: TrackGeometry, d: Dictionary, rich: bool = true) -> void:
 	geometry = g; document = d; detail = rich
@@ -163,18 +166,29 @@ func _building(dim: Vector2, color: Color, doors: int) -> void:
 	for i in range(doors):
 		draw_rect(Rect2(-dim.x * 0.42 + dim.x * 0.84 * i / doors, -dim.y / 2, dim.x * 0.65 / doors, 3), Color("547064"))
 
-func _draw_road() -> void:
+func prepare_road_batches() -> void:
+	if road_batch_geometry == geometry: return
+	road_batch_geometry = geometry; road_batches.clear(); road_batch_builds += 1
 	var n = geometry.points.size()
 	for pass_index in range(2):
 		var extra = 2.2 if pass_index == 0 else 0.0
-		var color = CREAM if pass_index == 0 else ASPHALT
+		var points = PackedVector2Array(); var indices = PackedInt32Array()
 		for i in range(n):
 			var j = (i + 1) % n
 			var a = geometry.points[i]; var b = geometry.points[j]
 			var ai = geometry.normals[i] * (geometry.widths[i] * 0.5 + extra)
 			var bi = geometry.normals[j] * (geometry.widths[j] * 0.5 + extra)
-			draw_colored_polygon(PackedVector2Array([a + ai, b + bi, b - bi]), color)
-			draw_colored_polygon(PackedVector2Array([a + ai, b - bi, a - ai]), color)
+			var offset = points.size()
+			points.append_array(PackedVector2Array([a + ai, b + bi, b - bi, a - ai]))
+			indices.append_array(PackedInt32Array([offset, offset + 1, offset + 2, offset, offset + 2, offset + 3]))
+		road_batches.append({"points": points, "indices": indices, "colors": PackedColorArray([CREAM if pass_index == 0 else ASPHALT])})
+
+func _draw_road() -> void:
+	prepare_road_batches()
+	var n = geometry.points.size()
+	# Identical triangles and pass order, but two submissions instead of four per station.
+	for batch in road_batches:
+		RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), batch.indices, batch.points, batch.colors)
 	# Thin perimeter antialiasing only, never seams along internal triangle edges.
 	for side in [-1, 1]:
 		var edge = PackedVector2Array()

@@ -1,10 +1,13 @@
 # Motorsport Manager documentation
 
-Current native implementation: **0.8.0** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.9.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
-| [Recovery and race-control handoff](race-weekend-recovery.md) | Current 0.8 scalar recovery, physical repair-only visits, virtual neutralization, v8 migration and verification |
+| [PR #3 integration](pr3-integration.md) | Current 0.9 combined UX/recovery view, conflict resolution and verification |
+| [UX research and decisions](design/pitwall-ux-research.md) | Sixteen primary sources and explicit design/validation boundaries |
+| [Recovery and race control](race-weekend-recovery.md) | Staged reliability, repair-only service, virtual neutralization and checkpoint v8 |
+| [Compact UI and performance](ui-performance-iteration.md) | Historical compact UI milestone; preserved action safety and rendering optimizations |
 | [Uncertain weather handoff](race-weekend-weather.md) | Preserved 0.7 seeded weather, public forecasts, crossover calls, v7 migration, scenarios and verification |
 | [Living racecraft and team handoff](race-weekend-living-racecraft.md) | Preserved 0.6 battles, team orders, public rival responses, v6 persistence and verification |
 | [Race-weekend strategy handoff](race-weekend-implementation.md) | Historical 0.5 milestone; retained strategy controls, ownership and forecast assumptions |
@@ -25,4 +28,6 @@ Current native implementation: **0.8.0** · **Godot 4.7.2 Standard**.
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 
-The 0.8 handoff is authoritative for current recovery/control behavior and v8 application checkpoints. Old saves retain their original model semantics; new normal weekends use the new rules. The 0.7 handoff remains the source for preserved weather behavior, except where the 0.8 forecast and persistence extensions are explicitly documented. The 0.6 handoff remains authoritative for preserved battle/team behavior and its remaining GDD acceptance gates. The 0.5 handoff records the preceding strategy milestone and remains useful for retained controls/model assumptions. The 0.4 system documents describe the preserved base simulation/editor; their single-owner and v4-current statements are superseded by the later handoffs. No stage is declared human-playtest complete solely because automated checks pass.
+The integration record is authoritative for the combined 0.9 task navigation and recovery view. The research document explains the UX decisions; it is not human validation. The compact UI handoff records the earlier flat topic toolbar and its historical performance measurements, not the merged release's measured performance. The recovery handoff is authoritative for staged recovery, virtual neutralization and checkpoint v8. Older native saves retain their original model semantics.
+
+The 0.7 weather, 0.6 battle/team, 0.5 strategy and 0.4 editor/system documents remain useful for retained behavior except where later handoffs explicitly supersede their UI, model or checkpoint-version statements. No stage is declared human-playtest complete solely because automated checks pass.

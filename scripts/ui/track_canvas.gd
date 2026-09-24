@@ -48,6 +48,7 @@ var mode = "select"
 var selected = -1
 var selected_pit = -1
 var zoom = 1.0
+var fit_view_enabled = true
 var center = Vector2.ZERO
 var panning = false
 var dragging = ""
@@ -59,24 +60,30 @@ var backdrop_key = ""
 var overlay: CarOverlay
 var _rebuild_due = false
 var _rebuild_clock = 0.0
+var visual_revision = 0
+var _visual_stamp: Array = []
+var _surface_geometry: TrackGeometry
+var _surface_segments: Array = []
+var surface_geometry_builds = 0
+var _car_label_style = UI.box(Color("f5eedacc"), Color("b1bca280"), 3, 0)
+var _surface_legend_style = UI.box(Color("f7f2e4ee"))
 
 class CarOverlay extends Control:
 	var host: TrackCanvas
 	func _draw():
 		if host != null: host.draw_cars(self)
-	func _process(_delta):
-		if host != null and (host.sim != null or host.preview_running): queue_redraw()
 
 class SurfaceOverlay extends Control:
 	var host: TrackCanvas
 	var clock = 0.0
-	var shown = false
+	var stamp: Array = []
 	func _process(delta):
 		clock -= delta
-		if clock <= 0:
-			clock = 0.3
-			if host != null and (host.show_surface or shown):
-				shown = host.show_surface; queue_redraw()
+		if host == null or clock > 0: return
+		clock = 0.3
+		var next = [host.show_surface, host.surface_channel, host.inspected_fraction, host.center, host.zoom, host.size, host.geometry]
+		if host.show_surface and host.sim: next.append(host.sim.total_time)
+		if next != stamp: stamp = next; queue_redraw()
 	func _draw():
 		if host != null: host.draw_surface(self)
 
@@ -95,7 +102,10 @@ func _ready() -> void:
 	add_child(surface_layer); surface_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay = CarOverlay.new(); overlay.host = self; overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(overlay); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	resized.connect(queue_redraw)
+	resized.connect(func():
+		queue_redraw()
+		if fit_view_enabled: call_deferred("fit"))
+	navigated.connect(func(): fit_view_enabled = false)
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
 	geometry = g
@@ -110,6 +120,7 @@ func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
 	if overlay: overlay.queue_redraw()
 
 func fit() -> void:
+	fit_view_enabled = true
 	if geometry == null or geometry.points.is_empty(): return
 	var visible_bounds = geometry.bounds
 	for p in geometry.pit_points: visible_bounds = visible_bounds.expand(p)
@@ -152,6 +163,16 @@ func _process(delta: float) -> void:
 		geometry = TrackGeometry.new(document, geometry.preset if geometry else "Formula", true)
 		if world_layer: world_layer.configure(geometry, document, rich_scenery)
 		queue_redraw()
+
+	# Observe only visual inputs. Paused scenes retain drawing commands until something changes.
+	var stamp: Array = [center, zoom, size, show_labels, dot_scale, preview_running, preview_distance, geometry, sim]
+	if sim:
+		stamp.append([sim.phase, sim.clock, sim.selected_id, sim.accumulator if not sim.paused and sim.phase in RaceSim.ACTIVE else 0.0])
+		for car in sim.cars:
+			stamp.append([car.distance, car.previous_distance, car.pit_d, car.previous_pit_d, car.lane, car.previous_lane, car.route, car.previous_route, car.pit_stage, car.dnf, car.blue])
+	if stamp != _visual_stamp:
+		_visual_stamp = stamp; visual_revision += 1
+		if overlay: overlay.queue_redraw()
 
 func _draw() -> void:
 	if surface_layer: surface_layer.queue_redraw()
@@ -213,24 +234,38 @@ func _draw() -> void:
 	draw_string(font, Vector2(size.x - 36, 36), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.MUTED)
 	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), UI.MUTED, 1.5)
 
+func build_surface_geometry() -> void:
+	if _surface_geometry == geometry: return
+	_surface_geometry = geometry; _surface_segments.clear(); surface_geometry_builds += 1
+	# Geometry is immutable within a weekend. Water/grip remain live, never cached here.
+	var samples: Array = []
+	for i in range(RaceSurface.STATIONS * 4 + 1): samples.append(geometry.sample(i * geometry.length / (RaceSurface.STATIONS * 4)))
+	for i in range(RaceSurface.STATIONS):
+		var lanes: Array = []
+		for lane in range(RaceSurface.LANES):
+			var segments: Array = []; var lateral = (lane + 0.5) / RaceSurface.LANES - 0.5
+			for j in range(4):
+				var p = samples[i * 4 + j]; var q = samples[i * 4 + j + 1]
+				segments.append([p.p + p.n * p.w * lateral, q.p + q.n * q.w * lateral, p.w])
+			lanes.append(segments)
+		_surface_segments.append(lanes)
+
 func draw_surface(target: Control) -> void:
 	if not show_surface or sim == null or geometry == null: return
+	build_surface_geometry()
 	for i in range(RaceSurface.STATIONS):
 		for lane in range(RaceSurface.LANES):
 			var data = sim.surface[i].lanes[lane]
 			var value = RaceSurface.grip(data) / 1.14 if surface_channel == "grip" else (data.temperature / 60 if surface_channel == "temperature" else data[surface_channel])
 			var color = Color("4a97b4") if surface_channel == "water" else (Color("629162") if surface_channel == "grip" else Color("a77641"))
 			color.a = clampf(value, 0, 1) * 0.68
-			for j in range(4):
-				var p = geometry.sample((i + j / 4.0) * geometry.length / RaceSurface.STATIONS)
-				var q = geometry.sample((i + (j + 1) / 4.0) * geometry.length / RaceSurface.STATIONS)
-				var lateral = (lane + 0.5) / RaceSurface.LANES - 0.5
-				target.draw_line(screen(p.p + p.n * p.w * lateral), screen(q.p + q.n * q.w * lateral), color, maxf(0.75, p.w * zoom / RaceSurface.LANES), true)
-	target.draw_style_box(UI.box(Color("f7f2e4ee")), Rect2(Vector2(16, 16), Vector2(260, 46)))
+			for segment in _surface_segments[i][lane]:
+				target.draw_line(screen(segment[0]), screen(segment[1]), color, maxf(0.75, segment[2] * zoom / RaceSurface.LANES), true)
+	target.draw_style_box(_surface_legend_style, Rect2(Vector2(16, 16), Vector2(260, 46)))
 	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
 	if inspected_fraction >= 0:
-		var s = geometry.sample(inspected_fraction * geometry.length)
-		target.draw_circle(screen(s.p), 13, UI.ACCENT, false, 2, true)
+		var sample = geometry.sample(inspected_fraction * geometry.length)
+		target.draw_circle(screen(sample.p), 13, UI.ACCENT, false, 2, true)
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
@@ -310,7 +345,7 @@ func draw_cars(target: Control) -> void:
 					if rect.intersects(previous): available = false; break
 				if not available or not Rect2(Vector2(3, 3), size - Vector2(6, 6)).encloses(rect): continue
 				occupied.append(rect)
-				target.draw_style_box(UI.box(Color("f5eedacc"), Color("b1bca280"), 3, 0), rect.grow(2))
+				target.draw_style_box(_car_label_style, rect.grow(2))
 				target.draw_string(font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("294934"))
 				break
 		if c.blue: target.draw_circle(p + Vector2(-radius - 3, -radius - 3), 3, Color("619acc"))
