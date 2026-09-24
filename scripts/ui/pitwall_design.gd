@@ -5,9 +5,10 @@ const TEXT_SCALES = [1.0, 1.15, 1.3]
 const MUTED = Color("536650")
 const FOCUS = Color("775220")
 static var nav_styles: Dictionary = {}
+static var popup_themes: Dictionary = {}
 
 static func navigation(button: Button, selected: bool) -> void:
-	if button.get_meta("pitwall_selected", -1) == selected: return
+	if button.has_meta("pitwall_selected") and button.get_meta("pitwall_selected") == selected: return
 	button.set_meta("pitwall_selected", selected)
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
 		var key = state + str(selected)
@@ -31,12 +32,30 @@ static func scale_controls(root: Node, factor: float) -> void:
 		if root is BaseButton or root is SpinBox or root is LineEdit:
 			if not root.has_meta("pitwall_base_height"): root.set_meta("pitwall_base_height", maxf(32, root.custom_minimum_size.y))
 			root.custom_minimum_size.y = ceilf(float(root.get_meta("pitwall_base_height")) * factor)
+	if root is OptionButton or root is MenuButton:
+		if not popup_themes.has(factor):
+			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(13 * factor))
+			popup_themes[factor] = popup_theme
+		root.get_popup().theme = popup_themes[factor]
+	if root is SpinBox: scale_controls(root.get_line_edit(), factor)
+	if root is AcceptDialog:
+		scale_controls(root.get_ok_button(), factor); scale_controls(root.get_label(), factor)
+		if root is ConfirmationDialog: scale_controls(root.get_cancel_button(), factor)
 	for child in root.get_children(): scale_controls(child, factor)
 
 static func linear_focus(controls: Array) -> void:
 	if controls.is_empty(): return
 	for i in range(controls.size()):
-		controls[i].focus_next = controls[i].get_path_to(controls[(i + 1) % controls.size()])
-		controls[i].focus_previous = controls[i].get_path_to(controls[posmod(i - 1, controls.size())])
-		controls[i].focus_neighbor_right = controls[i].focus_next
-		controls[i].focus_neighbor_left = controls[i].focus_previous
+		controls[i].focus_next = controls[i].get_path_to(controls[i + 1]) if i + 1 < controls.size() else NodePath()
+		controls[i].focus_previous = controls[i].get_path_to(controls[i - 1]) if i > 0 else NodePath()
+		# Arrow navigation wraps within this group; Tab must be able to leave it.
+		controls[i].focus_neighbor_right = controls[i].get_path_to(controls[(i + 1) % controls.size()])
+		controls[i].focus_neighbor_left = controls[i].get_path_to(controls[posmod(i - 1, controls.size())])
+
+static func focus_later(control: Control) -> void:
+	# A view may close before the deferred focus request executes.
+	_restore_focus.call_deferred(weakref(control))
+
+static func _restore_focus(reference: WeakRef) -> void:
+	var control = reference.get_ref()
+	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree() and not control.is_queued_for_deletion(): control.grab_focus()
