@@ -33,7 +33,7 @@ static func response(snapshot: Dictionary, observations: Array, memory: Dictiona
 	var fresh_gain = RaceForecaster.lap_time(snapshot, current, current.life) - RaceForecaster.lap_time(snapshot, replacement, replacement.life)
 	for index in range(observations.size() - 1, -1, -1):
 		var event = observations[index]
-		if event.driver_id == snapshot.own.id or event.event_id == memory.event_id: continue
+		if event.driver_id == snapshot.own.id or event.driver_id == snapshot.teammate.get("id", -1) or event.event_id == memory.event_id: continue
 		var age = snapshot.time - event.time
 		if age < 0 or age > minf(40, snapshot.reference_lap): continue
 		var rival: Dictionary = {}

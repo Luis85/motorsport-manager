@@ -2,12 +2,18 @@ class_name StrategyRaceSim
 extends RaceSim
 ## Incremental strategy layer. The original fixed-step movement, tyres and classification stay authoritative.
 const GLOBAL_COMMANDS = ["qualify", "close_qualifying", "prepare_race", "formation", "lights", "pause", "speed"]
-const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_intent", "hold_decision", "retire_car"]
+const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_intent", "hold_decision", "retire_car", "team_order", "cancel_team_order"]
 var strategy_state: Dictionary = {}
+var battle_state: Dictionary = {}
+var team_state: Dictionary = {}
+var rival_state: Dictionary = {}
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
 	strategy_state = RaceJournal.create(cars)
+	battle_state = RacecraftController.create(cars)
+	team_state = TeamOrders.create()
+	rival_state = RivalStrategy.create(cars)
 
 func policy(id: int) -> Dictionary:
 	return strategy_state.policies[id]
@@ -83,6 +89,7 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 	var intent_id = RaceJournal.append(strategy_state, self, "command", -1 if global else id, evidence)
 	if action == "resource_intent": p.overrides[accepted_payload.channel].id = intent_id
 	if action == "approve_plan": p.plan_intent_id = intent_id
+	if action == "team_order": team_state[TeamOrders.slot(accepted_payload.kind)].intent_id = intent_id
 	if action in ["pit", "schedule_pit"]:
 		p.last_order_id = intent_id; p.order_forecast = RaceForecaster.pit_prediction(prior, c.pit_gate)
 		RaceJournal.append(strategy_state, self, "strategy_order", id, {"reason": "Manual pit order accepted for lap %d%s" % [int(round((c.pit_gate - track.pit_entry) / track.length)) + 1, " · deferred to the next safe entry" if c.pit_deferred else ""], "prediction": p.order_forecast}, intent_id)
@@ -93,6 +100,15 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 func policy_command(action: String, payload: Dictionary) -> bool:
 	var c = cars[int(payload.id)]; var p = policy(c.id)
 	match action:
+		"team_order":
+			var error = TeamOrders.validate(self, payload)
+			if not error.is_empty(): return fail(error)
+			TeamOrders.accept(self, payload)
+		"cancel_team_order":
+			if payload.get("slot") not in ["track_order", "pit_priority"] or payload.get("revision") != team_state.revision: return fail("Review the current team instruction before cancelling it.")
+			var record = team_state[payload.slot]
+			if not TeamOrders.active(record) or payload.get("intent_id") != record.intent_id or int(payload.id) not in [int(record.actor_id), int(record.teammate_id)]: return fail("There is no matching active team instruction.")
+			TeamOrders.finish(self, payload.slot, "cancelled", "Cancelled by the pit wall; physical positions and accepted pit orders are unchanged.")
 		"approve_plan":
 			if phase not in ["briefing", "race_preparation", "race"] or c.route == "pit" or c.pit_order: return fail("Approve a plan in preparation or on track with no committed pit order.")
 			if not RaceCheckpoint.integral(payload.get("revision"), 0, 1000000) or payload.revision != p.revision: return fail("This draft is based on an older plan. Reload the current plan before applying.")
@@ -176,6 +192,7 @@ func engineer(c: Dictionary) -> void:
 		if safe.lap > window.to_lap: block_plan(c, "The approved window is no longer reachable. Re-plan or take manual control."); return
 		var item = TyreInventory.find(c, window.set_id)
 		if not WheelTyres.usable(item) or item.id == c.set_id: block_plan(c, "The approved replacement set is unavailable. Choose a new plan."); return
+		if TeamOrders.defer_stop(self, c, window): return
 		var preview = RaceForecaster.pit_prediction(RaceForecaster.capture(self, c.id))
 		if "avoid_traffic" in p.plan.branches and safe.lap < window.to_lap and (preview.queue > 1 or not preview.traffic.is_empty()) and not emergency: return
 		order_stop(c, item, "Approved window: lap %d–%d; estimated queue %.1fs" % [window.from_lap, window.to_lap, preview.queue])
@@ -191,9 +208,18 @@ func engineer(c: Dictionary) -> void:
 	var item = RaceForecaster.replacement(snapshot)
 	if item.is_empty() or candidate.is_empty(): return
 	var urgent = c.tyre < 18 or c.damage > 24 or c.compound != recommended_compound() and (c.compound in ["I", "W"] or recommended_compound() in ["I", "W"])
+	var memory = rival_state.drivers[int(c.id)]
+	if not urgent and flag == "GREEN" and memory.hold_gate >= safe.distance: return
+	if not urgent:
+		var response = RivalStrategy.response(snapshot, rival_state.stops, memory, comparison)
+		if not response.is_empty():
+			for field in ["kind", "event_id", "hold_gate", "reason"]: memory[field] = response[field]
+			RaceJournal.append(strategy_state, self, "strategy_response", int(c.id), {"reason": response.reason, "kind": response.kind, "observation": response.evidence})
+			if response.kind == "cover" and not TeamOrders.defer_stop(self, c): order_stop(c, item, response.reason)
+			return
 	# Same public-context candidate model for every team; no hidden boost or future weather.
 	var worthwhile = candidate.gain > maxf(3.0, comparison.pit.loss * 0.12) and candidate.risk != "high"
-	if urgent or worthwhile: order_stop(c, item, "Observed-resource recovery" if urgent else "Public timing / tyre-offset comparison favors a stop; estimated gain %.1fs" % candidate.gain)
+	if urgent or worthwhile and not TeamOrders.defer_stop(self, c): order_stop(c, item, "Observed-resource recovery" if urgent else "Public timing / tyre-offset comparison favors a stop; estimated gain %.1fs" % candidate.gain)
 
 func order_stop(c: Dictionary, item: Dictionary, reason: String) -> void:
 	var p = policy(c.id)
@@ -237,6 +263,7 @@ func step() -> void:
 				RaceJournal.append(strategy_state, self, "handback", car.id, {"reason": "%s intent ended; control returned to %s" % [channel.capitalize(), p.owners[channel]]}, intent.id)
 				post("radio", "%s · %s control returned to %s." % [car.short, channel, p.owners[channel]])
 		if previous_phase == "race" and routes[car.id] == "track" and car.route == "pit":
+			RivalStrategy.observe_entry(rival_state, RaceForecaster.capture(self, (int(car.id) + 1) % cars.size()), int(car.id))
 			var entry_id = RaceJournal.append(strategy_state, self, "pit_entry", car.id, {"gate": car.pit_gate, "set_id": car.next_set_id}, p.last_order_id)
 			p.visit = {"entered_at": total_time, "entry_id": entry_id, "prediction": p.order_forecast.duplicate(true)}
 		elif previous_phase == "race" and routes[car.id] == "pit" and car.route == "track" and not p.visit.is_empty():
@@ -250,6 +277,8 @@ func step() -> void:
 				if p.next_stop >= p.plan.stops.size(): p.plan_status = "completed"
 			p.visit = {}; p.order_forecast = {}; p.next_review = total_time + 12
 		sync_ownership(car)
+	RacecraftController.after_step(self)
+	TeamOrders.after_step(self)
 	if phase == "race" and roundi(total_time / STEP) % 20 == 0:
 		for id in [3, 6]: observe_warnings(cars[id])
 	if previous_phase != "results" and phase == "results":
@@ -259,21 +288,29 @@ func step() -> void:
 
 func snapshot() -> Dictionary:
 	var data = super.snapshot()
-	data.version = 5; data.strategy_state = strategy_state.duplicate(true)
+	data.version = 6; data.strategy_state = strategy_state.duplicate(true)
+	data.battle_state = battle_state.duplicate(true); data.team_state = team_state.duplicate(true); data.rival_state = rival_state.duplicate(true)
 	return data
 
 static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
-	if not RaceCheckpoint.integral(data.get("version"), 1, 5): return null
+	if not RaceCheckpoint.integral(data.get("version"), 1, 6): return null
 	var legacy = data.duplicate(true)
-	var is_strategy = int(legacy.version) == 5
+	var is_strategy = int(legacy.version) >= 5
+	var is_living = int(legacy.version) == 6
 	if is_strategy: legacy.version = 4; legacy.erase("strategy_state")
+	for key in ["battle_state", "team_state", "rival_state"]: legacy.erase(key)
 	var base = RaceSim.restore(legacy)
 	if base == null: return null
 	var state = data.get("strategy_state") if is_strategy else RaceJournal.create(base.cars)
 	if not RaceJournal.valid(state, base.cars, base.laps): return null
+	var battles = data.get("battle_state") if is_living else RacecraftController.create(base.cars)
+	var team = data.get("team_state") if is_living else TeamOrders.create()
+	var rivals = data.get("rival_state") if is_living else RivalStrategy.create(base.cars)
+	if not RacecraftController.valid(battles, base.cars, base.total_time) or not TeamOrders.valid(team, base.cars, base.total_time) or not RivalStrategy.valid(rivals, base.cars, base.total_time): return null
 	var sim = StrategyRaceSim.new(base.track)
 	for key in base.snapshot():
 		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
+	sim.battle_state = battles.duplicate(true); sim.team_state = team.duplicate(true); sim.rival_state = rivals.duplicate(true)
 	sim.strategy_state = state.duplicate(true)
 	sim.strategy_state.sequence = int(sim.strategy_state.sequence)
 	for record in sim.strategy_state.records:
@@ -287,6 +324,29 @@ static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 			p.overrides[channel].previous_value = int(p.overrides[channel].previous_value)
 		sim.sync_ownership(car)
 	return sim
+
+func traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
+	var base = super.traffic_instruction(c, old, nearest, gap, desired, lane, sample, local)
+	if phase != "race": return base
+	var blocked = TeamOrders.track_blocks(self, c, nearest)
+	var result = RacecraftController.instruction(self, c, old, nearest, base, sample, local, blocked)
+	var record = battle_state.drivers[int(c.id)]
+	if not result.attempt and (blocked or nearest == int(record.target_id) and nearest >= 0):
+		result.lane = lane
+		if nearest >= 0 and old[nearest].distance > old[int(c.id)].distance: result.block_pass = true
+	return TeamOrders.traffic(self, c, old, nearest, result, sample, local)
+
+func record_track_pass(_c: Dictionary, _other: Dictionary) -> void:
+	# A centre-line crossing is not a resolved contest. after_step records clearance once.
+	pass
+
+func move_car(c: Dictionary, old: Array) -> void:
+	super.move_car(c, old)
+	if phase != "race" or c.pit_order or c.blue or c.route != "track": return
+	c.intent = RacecraftController.describe(battle_state, int(c.id), cars)
+	var order = team_state.track_order
+	if TeamOrders.active(order) and int(c.id) in [int(order.actor_id), int(order.teammate_id)]:
+		c.intent = "Team %s · %s" % [order.kind, order.reason]
 
 func observe_warnings(c: Dictionary) -> void:
 	var p = policy(c.id)

@@ -167,7 +167,7 @@ func test_persistence_and_execution() -> void:
 	check(sim.policy(3).owners.pit == "player" and sim.policy(3).overrides.has("pace"), "A manual stop does not cancel a temporary push")
 	var saved = sim.snapshot()
 	var disk = JSON.parse_string(JSON.stringify(saved, "", false, true))
-	check(saved.version == 5 and RaceJournal.valid(saved.strategy_state, sim.cars, sim.laps), "Version 5 stores valid journal, plan and active intent data")
+	check(saved.version == 6 and RaceJournal.valid(saved.strategy_state, sim.cars, sim.laps), "Version 6 stores valid journal, plan and active intent data")
 	var restored = StrategyRaceSim.restore_weekend(saved)
 	check(restored != null, "A live strategy checkpoint restores successfully")
 	if restored == null: return

@@ -24,6 +24,8 @@ static func validate(sim, payload: Dictionary) -> String:
 	if not RaceCheckpoint.integral(payload.get("laps"), 1, 5): return "Choose an expiry of one to five laps."
 	if active(sim.team_state[slot(payload.kind)]): return "Cancel the active instruction before replacing it."
 	if car.route != "track" or mate.route != "track" or car.pit_order or mate.pit_order: return "Existing pit orders and physical commitment take priority; they cannot be reordered."
+	if payload.kind == "pit_priority":
+		if RaceForecaster.reachable_gate(sim, car).distance >= sim.laps * sim.track.length or RaceForecaster.reachable_gate(sim, mate).distance >= sim.laps * sim.track.length: return "No shared pit opportunity remains before the finish."
 	if payload.kind != "pit_priority":
 		var gap = car.distance - mate.distance
 		if gap < RacecraftController.CLEARANCE or gap > sim.track.length * 0.45: return "The named first driver must be clearly ahead on the same racing lap."
@@ -116,10 +118,14 @@ static func preview(sim) -> Dictionary:
 
 static func defer_stop(sim, car: Dictionary, window: Dictionary = {}) -> bool:
 	var record = sim.team_state.pit_priority
-	if not active(record) or car.id != record.teammate_id: return false
+	if not active(record) or car.id != record.teammate_id or not StrategyPlan.owns(sim.policy(car.id), "pit"): return false
 	var primary = sim.cars[int(record.actor_id)]
 	var safe = RaceForecaster.reachable_gate(sim, car)
-	var safe_resources = WheelTyres.usable(TyreInventory.find(car, car.set_id)) and car.tyre - RaceSim.TYRES[car.compound].wear * 1.5 > 18 and car.damage < 24
+	var mounted = TyreInventory.find(car, car.set_id)
+	var limiting_life = float(car.tyre)
+	for wheel in mounted.get("wheels", {}).values(): limiting_life = minf(limiting_life, wheel.life)
+	var safe_resources = WheelTyres.usable(mounted) and limiting_life - RaceSim.TYRES[car.compound].wear * 1.5 > 18 and car.damage < 24
+	if car.compound != sim.recommended_compound() and (car.compound in ["I", "W"] or sim.recommended_compound() in ["I", "W"]): safe_resources = false
 	if not safe_resources:
 		record.status = "queue"; record.reason = "Recovery takes priority; a physical queue may be necessary."
 		return false
@@ -145,7 +151,9 @@ static func after_step(sim) -> void:
 		var record = sim.team_state[key]
 		if not active(record): continue
 		var car = sim.cars[int(record.actor_id)]; var mate = sim.cars[int(record.teammate_id)]
-		if record.kind == "yield" and mate.distance - car.distance > RacecraftController.CLEARANCE and car.route == "track" and mate.route == "track":
+		if car.dnf or mate.dnf:
+			finish(sim, key, "expired", "An affected driver retired; no cooperation result is attributed to that retirement.")
+		elif record.kind == "yield" and mate.distance - car.distance > RacecraftController.CLEARANCE and car.route == "track" and mate.route == "track":
 			finish(sim, key, "completed", "%s physically cleared %s; the cooperation instruction is complete." % [mate.short, car.short])
 		elif record.kind == "pit_priority" and car.pit_stops > record.initial_stops[0] and mate.pit_stops > record.initial_stops[1]:
 			finish(sim, key, "completed", "Both physical services completed; pit priority has ended.")
