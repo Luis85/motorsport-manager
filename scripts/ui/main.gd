@@ -62,7 +62,7 @@ func show_menu() -> void:
 	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles"]: scenarios.get_popup().add_item(title)
 	scenarios.get_popup().id_pressed.connect(func(index):
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios][index].call())
-	var replay_menu = MenuButton.new(); replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
+	var replay_menu = MenuButton.new(); replay_menu.focus_mode = Control.FOCUS_ALL; replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
 	menu.add_child(replay_menu)
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)

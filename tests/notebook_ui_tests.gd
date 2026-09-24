@@ -53,6 +53,10 @@ func open_find():
 func run():
 	app = root.get_node("App"); app.checkpoint_path = "user://notebook-ui-original.json"
 	game = load("res://scenes/main.tscn").instantiate(); root.add_child(game); await settle()
+	var replay_menu
+	for button in game.find_children("*", "MenuButton", true, false):
+		if button.text == "REPLAYS & EXPERIMENTS": replay_menu = button
+	check(replay_menu != null and replay_menu.focus_mode == Control.FOCUS_ALL, "Main-menu notebook invoker accepts ordinary keyboard focus")
 	for size in [Vector2i(1440, 900), Vector2i(1100, 720), Vector2i(1920, 1080)]:
 		for scale in ([1.3] if size.x == 1920 else [1.0, 1.15, 1.3]):
 			root.size = size; root.content_scale_size = size; DisplayServer.window_set_size(size); app.settings.pitwall_text_scale = scale
