@@ -1,5 +1,7 @@
 # Persistence and local data
 
+**0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
+
 All player writes use Godot's `user://` directory, displayed in **Settings → Local data**. The application never saves back into packaged `res://data`.
 
 | Path | Contents |

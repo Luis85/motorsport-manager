@@ -106,3 +106,14 @@ All consulted 24 September 2026. Paraphrases above are scoped to the listed guid
 - **S14** Microsoft, *XAG115: Error messages and destructive actions*: https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/115
 - **S15** Godot, *Custom drawing in 2D*: https://docs.godotengine.org/en/stable/tutorials/2d/custom_drawing_in_2d.html
 - **S16** Godot, *General optimization tips*: https://docs.godotengine.org/en/stable/tutorials/performance/general_optimization.html
+
+## 0.11 targeted follow-up — 24 September 2026
+
+Existing research above remains the basis. New native observations, not generic competitor imitation, motivated these changes:
+
+- **Godot containers:** [official container guidance](https://docs.godotengine.org/en/stable/tutorials/ui/gui_containers.html) supports reparenting stable controls into containers instead of manual pixel placement. Applied to the consolidated header and shared Strategy/Practice topic row; native clipping tests prove actual supported layouts, not usability.
+- **Native focus:** [Godot GUI navigation](https://docs.godotengine.org/en/stable/tutorials/ui/gui_navigation.html) and [MenuButton class reference](https://docs.godotengine.org/en/stable/classes/class_menubutton.html) distinguish focus behavior. The observed Escape-return defect was fixed with explicit FOCUS_ALL and deferred focus restoration. [XAG 113](https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/113) informs predictable focus as a design objective; actual mouse and keyboard events are tested.
+- **Rendered text color:** [RichTextLabel reference](https://docs.godotengine.org/en/stable/classes/class_richtextlabel.html) identifies `default_color` as rich text's default foreground. Inspection found white-on-paper dialog text despite ordinary Label colors being correct. The theme now sets the actual rich-text property and tests it against the rendered dialog stylebox. [XAG 102](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/102) is a contrast design reference, not a certification claim.
+- **Enlarged text:** [XAG 101](https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/101) motivates readable text and accommodation rather than merely shrinking controls. Redundant header/topic rows and vertical gaps were removed; all three strategy alternatives are checked at 130%. Testing only to 130% does not establish the guideline's broader accessibility coverage.
+
+See [workspace specification](pitwall-workspace.md) for observed screen/state/reproduction, capability mapping, task costs and still-open human-validation gates. No public player complaints or new player interviews were used as measured evidence for this iteration.

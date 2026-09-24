@@ -1,5 +1,7 @@
 # Prototype-to-Godot feature parity
 
+**0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
+
 Current native release: **0.4.0**. Scope: **race weekend and track editor** only.
 
 This is a behavior-level map, not a percentage score. “Adapted” means the decision or interaction exists natively, with a different implementation or explicitly reduced model. It does not claim identical lap times, complete compatibility with every embedded prototype revision, or compliance with real-series sporting rules.
