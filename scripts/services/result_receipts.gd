@@ -31,6 +31,7 @@ static func valid(data: Variant) -> bool:
 	if not data is Dictionary or (not data.get("kind") is String or data.kind != KIND) or not RaceCheckpoint.integral(data.get("version"), 1, 1) or not data.get("results") is Dictionary or data.results.size() > MAX_RESULTS: return false
 	for id in data.results:
 		var result = data.results[id]
-		if not RaceRecord.valid_id(id) or not result is Dictionary or result.get("event_id") != id or result.get("origin") not in ["standalone", "legacy"]: return false
+		if not RaceRecord.valid_id(id) or not result is Dictionary: return false
 		if not WeekendResult.validate(result).is_empty(): return false
+		if result.event_id != id or result.origin not in ["standalone", "legacy"]: return false
 	return true
