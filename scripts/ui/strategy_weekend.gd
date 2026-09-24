@@ -9,6 +9,8 @@ var decision_controls: Dictionary = {}
 var decision_bar: HBoxContainer
 var debrief_text: Label
 var debrief_sequence = -1
+var team_panel: TeamOrdersPanel
+var battle_overlay: BattleOverlay
 
 func _ready() -> void:
 	super._ready()
@@ -26,6 +28,12 @@ func _ready() -> void:
 	debrief_page.add_child(UI.paragraph("A good call can have a poor result. Compare the assumptions recorded at the time with measured outcomes; no alternate finishing position is presented as fact."))
 	debrief_page.add_child(UI.button("Export decision evidence", export_evidence))
 	debrief_text = UI.paragraph(""); debrief_text.add_theme_font_size_override("font_size", 12); debrief_page.add_child(debrief_text)
+	detail_picker.add_item("Team & battles")
+	var team_page = tab_page("Team & battles")
+	team_panel = TeamOrdersPanel.new(); team_panel.configure(strategy_model); team_page.add_child(team_panel)
+	team_panel.command_requested.connect(targeted_command)
+	team_panel.watch_requested.connect(func(id): select_driver(id); set_follow(true))
+	battle_overlay = BattleOverlay.new(); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
 	rejoin_overlay = RejoinOverlay.new(); rejoin_overlay.canvas = canvas; canvas.add_child(rejoin_overlay)
 	var map_controls = canvas.get_parent().get_child(0)
 	map_controls.add_child(UI.check("Rejoin estimate", true, func(value): rejoin_overlay.enabled = value))
@@ -44,7 +52,8 @@ func _ready() -> void:
 		var hold = UI.button("Keep plan", func(): keep_plan(id)); actions.add_child(hold)
 		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); actions.add_child(save)
 		for button in [compare, box, hold, save]: StrategyDesk.compact_button(button)
-		decision_controls[id] = {"heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare}
+		var battle = UI.label("", 11, UI.ACCENT); battle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(battle)
+		decision_controls[id] = {"battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare}
 	pit_note.max_lines_visible = 2
 	radio_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	automate.text = "Delegate all domains (reset overrides)"
@@ -97,10 +106,18 @@ func refresh() -> void:
 		controls.box.tooltip_text = "Fit %s at the next safe entry on lap %d. Estimate P%d–%d; ignoring this button retains the current owner." % [f.replacement_id, f.gate.lap, f.pit.position_low, f.pit.position_high]
 		controls.hold.disabled = card.is_empty(); controls.hold.tooltip_text = "Acknowledge this issue without changing the plan or time controls."
 		controls.save.disabled = sim.phase != "race" or c.dnf or c.finished
+		var battle = strategy_model.battle_state.drivers[id]
+		controls.battle.text = "Team & battles: " + (RacecraftController.LABELS[battle.phase] + (" " + sim.cars[int(battle.target_id)].short if battle.target_id >= 0 else ""))
+		controls.battle.tooltip_text = RacecraftController.describe(strategy_model.battle_state, id, sim.cars)
+		if TeamOrders.active(strategy_model.team_state.track_order):
+			controls.battle.text = "Team " + strategy_model.team_state.track_order.kind + " · " + strategy_model.team_state.track_order.reason
+			controls.battle.tooltip_text = controls.battle.text
+		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
 	if sim.selected_id in [3, 6]: rejoin_overlay.forecast = forecast_cache[sim.selected_id]
 	else: rejoin_overlay.forecast = {}
 	strategy_desk.refresh()
-	var strategic_page = tabs.current_tab in [6, 7]
+	if tabs.current_tab == 8: team_panel.refresh()
+	var strategic_page = tabs.current_tab in [6, 7, 8]
 	trace.visible = tabs.current_tab == 1
 	pit_note.visible = not strategic_page
 	box_button.get_parent().visible = not strategic_page
@@ -109,6 +126,8 @@ func refresh() -> void:
 	if not detail_expanded:
 		driver_label.visible = not strategic_page; resource_row.visible = not strategic_page
 		compact_resources.visible = strategic_page; intent_label.visible = not strategic_page
+	teammate_buttons[0].get_parent().visible = tabs.current_tab != 8
+	if tabs.current_tab == 8: compact_resources.visible = false
 	if tabs.current_tab == 7 and int(strategy_model.strategy_state.sequence) != debrief_sequence:
 		debrief_sequence = int(strategy_model.strategy_state.sequence)
 		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
@@ -127,11 +146,12 @@ func export_evidence() -> void:
 func setup_guide() -> void:
 	guide = ContextGuide.new()
 	guide.configure("pit wall", [
-		{"title": "Your objective and your two cars", "body": "Bring both Obsidian cars home. MER and MOR have separate plans and control owners. Both cards stay visible when you inspect a rival. This guide does not pause the race; use Space for reading time.", "target": func(): return teammate_buttons[0].get_parent()},
+		{"title": "Your objective and your two cars", "body": "Bring both Obsidian cars home. MER and MOR have separate plans and control owners. Both cards stay visible when you inspect a rival. This guide does not pause the race; use Space for reading time.", "target": func(): return teammate_buttons[0].get_parent(), "reveal": func(): open_strategy(3)},
 		{"title": "Read a decision before reacting", "body": "A card connects a current issue to evidence, a trade-off and a deadline. Compare opens details. Keep plan acknowledges the issue without changing an order. No alert changes your speed or pauses automatically.", "target": func(): return decision_bar},
 		{"title": "Compare, then commit", "body": "Pit loss, warm-up and possible rejoin traffic are estimates, not promises. A forecast Box call names the driver, set and safe gate. It is rejected if the displayed assumptions become stale.", "target": func(): return tabs, "reveal": func(): open_strategy(3)},
 		{"title": "Approve a plan, not a teleport", "body": "In Plan, choose a starting set and up to three windows. Draft edits do nothing until Approve. Approval delegates pit timing inside those windows; physical entry, inventory and the shared box still govern execution.", "target": func(): return tabs, "reveal": func(): open_strategy(3); strategy_desk.show_topic(1)},
 		{"title": "Delegate the work, retain intent", "body": "Control separates pace, engine, pit strategy, racecraft and qualifying. A two-lap push returns to the prior owner automatically. It does not disable fuel protection or replace a pit plan.", "target": func(): return tabs, "reveal": func(): open_strategy(3); strategy_desk.show_topic(2)},
+		{"title": "Two drivers, one team", "body": "Team & battles provides bounded hold, allow-through and pit-priority instructions. Both drivers are named. Safe road geometry, flags and physical pit commitments take precedence. Battles retain a target and phases; Watch follows the selected contest until you pan or zoom.", "target": func(): return tabs, "reveal": func(): tabs.current_tab = 8},
 		{"title": "Learn from measured consequences", "body": "The debrief records accepted calls and measured pit visits. It compares actual duration with the estimate recorded at the call. No hypothetical finishing position is claimed as fact. Export keeps the full evidence.", "target": func(): return tabs, "reveal": func(): tabs.current_tab = 7}
 	])
 	add_child(guide)
