@@ -1,5 +1,7 @@
 # Race-weekend strategy — 0.5 implementation and handoff
 
+> **Historical milestone:** this document records 0.5.0, including its then-current v5 schema, test counts and outstanding work. See [Living racecraft and team coordination (0.6.0)](race-weekend-living-racecraft.md) for delivered battle/team mechanisms, public rival responses, current v6 migration and the latest verification. The retained strategy controls and forecast limitations below still apply unless explicitly superseded.
+
 Design basis: **Motorsport Manager — Race Weekend GDD v1.0**, supplied 23 September 2026. Inspected and preserved baseline: `e340eb4959922ed86dc6ff72628e856334102466` (native Godot 0.4.0).
 
 **Delivery status:** a playable first implementation of the GDD's Stage A strategy-and-consequence loop, plus initial qualifying-release and interaction improvements. **This is not completion of the entire GDD, nor completion of its human-playtest definition of done.** No claim is made that every strategy is balanced, forecasts are calibrated probabilities, or the full P1/P2 roadmap exists.

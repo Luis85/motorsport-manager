@@ -1,10 +1,11 @@
 # Motorsport Manager documentation
 
-Current native implementation: **0.5.0** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.6.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
-| [Race-weekend strategy handoff](race-weekend-implementation.md) | Current 0.5 controls, ownership, forecasts, v5 persistence, tests and remaining GDD work |
+| [Living racecraft and team handoff](race-weekend-living-racecraft.md) | Current 0.6 battles, team orders, public rival responses, v6 persistence and verification |
+| [Race-weekend strategy handoff](race-weekend-implementation.md) | Historical 0.5 milestone; retained strategy controls, ownership and forecast assumptions |
 | [Getting started](getting-started.md) | Open the project and exercise the playable workflows |
 | [Iteration 4](iteration-4.md) | Delivered racecraft, editor and interaction changes |
 | [Feature parity](feature-parity.md) | Source-to-native status, adaptations and explicit gaps |
@@ -16,10 +17,10 @@ Current native implementation: **0.5.0** · **Godot 4.7.2 Standard**.
 | [Track editor](track-editor.md) | Authoring, selection, trace, calibration and validation |
 | [Track formats](track-format.md) | Editable/native exchange and baked runtime schema |
 | [Graphics](graphics.md) | Cozy illustration, dots, preferences and caching |
-| [Persistence](persistence.md) | Atomic saves and base checkpoint migrations; see the 0.5 handoff for v5 |
+| [Persistence](persistence.md) | Atomic saves and base checkpoint migrations; see the 0.6 handoff for current v6 |
 | [Verification](verification.md) | Automated checks, reports and environment boundaries |
 | [Port status](port-status.md) | Current acceptance scope and unimplemented systems |
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 
-The 0.5 handoff is authoritative for the new strategy application. The 0.4 system documents remain detailed references for the unchanged base simulation/editor; their earlier single-owner and v4-current descriptions are superseded by the handoff. Stage A acceptance and the later GDD stages are explicitly tracked there, not silently marked complete.
+The 0.6 handoff is authoritative for the current battle/team application and its remaining GDD acceptance gates. The 0.5 handoff records the preceding strategy milestone and remains useful for retained controls/model assumptions. The 0.4 system documents describe the preserved base simulation/editor; their single-owner and v4-current statements are superseded by the later handoffs. No stage is declared human-playtest complete solely because automated checks pass.
