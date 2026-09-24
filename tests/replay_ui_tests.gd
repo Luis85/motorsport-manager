@@ -63,7 +63,13 @@ func run():
 			await capture(tag)
 			await click(w.play_button); await settle(8)
 			check(w.player.verified and RaceRecord.equivalent(original,sim.snapshot()), "Native playback verifies actual recorded steps without consuming source state " + tag)
+			# Make any inherited App autosave observable, including the first refresh.
+			Storage.write_json(app.checkpoint_path, {"guard": "sandbox must not write the original slot", "case": tag})
+			var guarded_original = FileAccess.get_file_as_string(app.checkpoint_path)
 			await click(w.branch_button); await settle()
+			check(FileAccess.get_file_as_string(app.checkpoint_path) == guarded_original, "Sandbox phase autosave never writes the original slot " + tag)
+			var autosaved = Storage.read_json(app.sandbox_path)
+			check(autosaved.ok and autosaved.data.record.origin == "sandbox", "Sandbox initial phase autosaves its own continuation " + tag)
 			check(w.sandbox_view != null and w.sandbox_view.sim != sim and w.sandbox_view.sim.paused, "Sandbox is a separately paused native weekend " + tag)
 			check(app.weekend==sim and app.recording.origin=="standalone", "Sandbox never becomes App original authority " + tag)
 			if w.sandbox_view:
