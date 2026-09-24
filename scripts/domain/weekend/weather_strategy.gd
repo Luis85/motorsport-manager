@@ -50,9 +50,7 @@ static func score(source: Dictionary, outlook: Dictionary, stops: Array, target_
 		# Retain part of the observed wettest-sector offset; never assume the line is uniformly dry.
 		var contrast = maxf(0, outlook.observed.sectors[outlook.worst_sector] - outlook.observed.mean) * 0.5
 		s.water = clampf(lerpf(outlook.observed.mean, target_water, fraction) + contrast, 0, 1)
-		var wear = RaceSim.TYRES[item.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
-		if item.id == s.own.set_id: wear = s.own.wear
-		if item.compound in ["I", "W"] and s.water < 0.15: wear *= 2.2
+		var wear = RaceForecaster.wear_rate(s, item)
 		time += RaceForecaster.lap_time(s, item, life - wear * step * 0.5) * step
 		life = maxf(0, life - wear * step); minimum = minf(minimum, RaceForecaster.limiting_life(item, life)); progress += step
 	return {"available": true, "seconds": time + pit_cost + traffic_cost, "minimum_life": minimum,
