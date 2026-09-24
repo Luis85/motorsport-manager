@@ -23,6 +23,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 	var c = sim.cars[driver_id]
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
 		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision]
+	facts.append(sim.forecast_parameters(driver_id).get("key", []))
 	if sim is StrategyRaceSim and c.player: facts.append([sim.team_state.revision, sim.team_state.pit_priority.get("deferred_gate", -1)])
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
@@ -33,7 +34,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revision: int = 0) -> Dictionary:
 	var c = sim.cars[driver_id]
 	var own: Dictionary = {}
-	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair"]: own[key] = c[key]
+	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair", "dnf", "finished"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
 	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
 	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["qualifying", "qualifying_results"] else float(c.fuel)
@@ -68,7 +69,8 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 		"own": own, "public": public, "teammate": teammate, "plan": plan.duplicate(true), "laps": sim.laps,
 		"length": sim.track.length, "reference_lap": sim.track.estimate, "pit_length": sim.track.pit_length,
 		"pit_limit": sim.track.pit_limit, "pit_entry": sim.track.pit_entry, "pit_exit": sim.track.pit_exit,
-		"water": sim.average(sim.water), "flag": sim.flag, "gate": gate, "fuel_margin": fuel_margin(sim, c)}
+		"water": sim.average(sim.water), "flag": sim.flag, "gate": gate, "fuel_margin": fuel_margin(sim, c),
+		"model_context": sim.forecast_parameters(driver_id)}
 
 static func set_by_id(s: Dictionary, id: String) -> Dictionary:
 	for item in s.own.inventory:
@@ -92,9 +94,11 @@ static func replacement(s: Dictionary) -> Dictionary:
 static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 	var own = s.own
 	if gate < 0: gate = s.gate.distance
-	var mean_speed = s.length / maxf(10, s.reference_lap)
+	var context = s.get("model_context", {})
+	var running_lap = s.reference_lap / float(context.get("neutral_factor", 1.0))
+	var mean_speed = s.length / maxf(10, running_lap)
 	var entry_eta = maxf(0, gate - own.distance) / mean_speed
-	var service = 3.75 + (own.damage * 0.14 if own.repair else 0.0)
+	var service = (2.5 if context.get("repair_only", false) else 3.75) + (own.damage * 0.14 if own.repair else 0.0)
 	var arrival = entry_eta + own.box_d / s.pit_limit + 1.5
 	var queue = 0.0
 	var mate = s.teammate
@@ -105,17 +109,17 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 			elif mate.pit_stage == "entry": other_arrival = maxf(0, mate.box_d - mate.pit_d) / s.pit_limit
 		elif mate.pit_order:
 			other_arrival = maxf(0, mate.pit_gate - mate.distance) / mean_speed + mate.box_d / s.pit_limit + 1.5
-		var mate_service = 3.75 + (mate.damage * 0.14 if mate.repair else 0.0)
+		var mate_service = (2.5 if context.get("teammate_repair_only", false) else 3.75) + (mate.damage * 0.14 if mate.repair else 0.0)
 		if other_arrival <= arrival: queue = maxf(0, other_arrival + mate_service - arrival)
 	var visit = s.pit_length / s.pit_limit + service + 3.0 + queue
 	var uncertainty = 2.25 + (2.0 if queue > 0 else 0.0)
-	var skipped = (s.pit_exit - s.pit_entry) / s.length * s.reference_lap
+	var skipped = (s.pit_exit - s.pit_entry) / s.length * running_lap
 	var exit_station = gate + s.pit_exit - s.pit_entry
 	var position = 1; var lower_position = 1; var upper_position = 1
 	var traffic: Array[String] = []
 	for other in s.public:
 		if other.dnf: continue
-		var velocity = s.length / other.lap_seconds
+		var velocity = s.length / maxf(other.lap_seconds, running_lap) if context.get("neutral_factor", 1.0) < 1 else s.length / other.lap_seconds
 		var projected = other.distance + velocity * (entry_eta + visit)
 		if other.finished or projected > exit_station: position += 1
 		if other.finished or projected - velocity * uncertainty > exit_station: lower_position += 1
@@ -124,7 +128,8 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 	return {"visit": visit, "visit_low": maxf(service, visit - uncertainty), "visit_high": visit + uncertainty,
 		"loss": maxf(0, visit - skipped), "loss_low": maxf(0, visit - skipped - uncertainty), "loss_high": maxf(0, visit - skipped + uncertainty),
 		"queue": queue, "position": position, "position_low": lower_position, "position_high": upper_position,
-		"traffic": traffic, "exit_station": exit_station, "gate": gate, "entry_eta": entry_eta, "warmup": 1.5}
+		"traffic": traffic, "exit_station": exit_station, "gate": gate, "entry_eta": entry_eta, "warmup": 0.0 if context.get("repair_only", false) else 1.5,
+		"assumptions": context.get("rule_summary", "Current conditions held constant; no future incidents predicted.")}
 
 static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var compound = item.compound
@@ -143,7 +148,10 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var grip = wheel_grip * 0.25 * RaceSim.TYRES[compound].grip * match_factor
 	var handling = (1 + (s.own.skill - 85) * 0.002) * [0.988, 1.0, 1.01][s.own.pace] * [0.974, 1.0, 1.014][s.own.engine]
 	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * 0.00035
-	return s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003))
+	var context = s.get("model_context", {})
+	var operation = float(context.get("health_factor", 1.0)) * float(context.get("thermal_factor", 1.0))
+	var lap = s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003) * operation)
+	return maxf(lap, s.reference_lap / float(context.get("neutral_factor", 1.0))) if context.get("neutral_factor", 1.0) < 1 else lap
 
 static func limiting_life(item: Dictionary, average_life: float) -> float:
 	var minimum = 100.0
@@ -201,6 +209,10 @@ static func evaluate(s: Dictionary) -> Dictionary:
 	var options: Array = [evaluate_candidate(s, "current", "Keep current plan", planned)]
 	if s.own.route == "pit": options = [{"id": "current", "title": "Physical pit visit in progress", "available": false, "reason": "Service is committed. Compare future stints after rejoining."}]
 	var replacement_set = replacement(s)
+	var repair_pending = s.get("model_context", {}).get("repair_only", false) and s.own.pit_order
+	if repair_pending:
+		options = [{"id": "current", "title": "Repair-only visit ordered", "available": false, "reason": "The fitted set is retained. Cancel before entry to change the transaction, or compare future tyre stints after rejoining."}]
+		replacement_set = {}
 	var pit = pit_prediction(s)
 	if not replacement_set.is_empty() and s.gate.distance < s.laps * s.length and s.own.route == "track":
 		var now = s.gate.distance / s.length

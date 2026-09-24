@@ -56,8 +56,9 @@ func show_menu() -> void:
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
 	var scenarios = UI.hbox(menu)
-	scenarios.add_child(UI.button("DRY SCENARIOS", show_strategy_scenarios))
-	scenarios.add_child(UI.button("WEATHER SCENARIOS", show_weather_scenarios))
+	scenarios.add_child(UI.button("Dry scenarios", show_strategy_scenarios))
+	scenarios.add_child(UI.button("Weather", show_weather_scenarios))
+	scenarios.add_child(UI.button("Recovery", show_recovery_scenarios))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
@@ -146,7 +147,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 			var findings = TrackDiagnostics.inspect(geometry)
 			if TrackDiagnostics.blocking(findings):
 				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-			App.weekend = WeatherRaceSim.new(geometry, config)
+			App.weekend = RecoveryRaceSim.new(geometry, config)
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
@@ -270,5 +271,25 @@ func show_weather_scenarios() -> void:
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This creates a new weekend. Export existing evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
+
+func show_recovery_scenarios() -> void:
+	clear_screen("recovery_scenarios")
+	content.add_child(UI.label("Protect the result, or pay for a repair", 30))
+	content.add_child(UI.paragraph("Disclosed scalar condition, ordinary physical racing and no guaranteed outcome. Both scenarios start at briefing; qualifying, preparation and start approvals remain yours."))
+	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
+	var entries = UI.vbox(scroll, true)
+	for recipe in RecoveryScenarios.catalog():
+		if not RecoveryScenarios.valid(recipe): continue
+		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
+		body.add_child(UI.label(recipe.title, 20, UI.ACCENT)); body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.button("Open %d laps · seed %d" % [recipe.laps, recipe.seed], func():
+			var start = func():
+				var candidate = RecoveryScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The recovery scenario or track is invalid."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
 				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
 			else: start.call(), true))

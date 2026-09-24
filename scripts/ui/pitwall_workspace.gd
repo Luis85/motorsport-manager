@@ -1,7 +1,7 @@
 class_name PitwallWorkspace
-extends WeatherWeekendView
+extends RecoveryWeekendView
 ## Task-oriented native shell over the existing controls and command boundary.
-const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 5], "Review": [1, 2, 7]}
+const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7]}
 var group_buttons: Dictionary = {}
 var group_memory: Dictionary = {}
 var context_navigation: HBoxContainer
@@ -37,7 +37,7 @@ func _ready() -> void:
 	radio_label.reparent(footer); radio_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	messages_button = UI.button("Messages", show_messages); footer.add_child(messages_button)
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
-	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale)
+	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
 	navigator.destination_requested.connect(open_destination)
 	# Catalog/dialog controls are scaled separately on construction.
 	for child in get_children():
@@ -130,6 +130,7 @@ func refresh() -> void:
 	primary_button.visible = not primary_button.disabled
 	compact_resources.visible = false
 	teammate_buttons[0].get_parent().visible = true
+	for button in teammate_buttons: button.visible = tabs.current_tab != recovery_page_index
 	strategy_desk.plan_status.visible = false
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)

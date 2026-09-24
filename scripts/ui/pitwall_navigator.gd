@@ -22,13 +22,14 @@ const DESTINATIONS = [
 	[8, 1, "Team / Battles", "overtake attack defend watch"],
 	[8, 2, "Team / Shared pit box", "queue double stack priority"],
 	[9, 0, "Conditions / Weather", "rain crossover intermediate wet forecast"],
+	[10, 0, "Conditions / Recovery", "reliability repair damage health protect retire virtual neutralization flags"],
 	[5, 0, "Conditions / Surface lab", "water grip rubber debris advanced"],
 	[1, 0, "Review / Telemetry", "lap speed timing sectors"],
 	[2, 0, "Review / Radio", "events messages flags"],
 	[7, 0, "Review / Debrief", "results decisions evidence export outcomes"]
 ]
 
-func configure(has_weather: bool, scale_factor: float) -> void:
+func configure(has_weather: bool, scale_factor: float, has_recovery: bool = false) -> void:
 	title = "Find a view"; ok_button_text = "Open view"; cancel_button_text = "Close"
 	min_size = Vector2i(520, 400); size = Vector2i(570, 450)
 	var body = UI.vbox(self); body.custom_minimum_size = Vector2(530, 350)
@@ -41,7 +42,9 @@ func configure(has_weather: bool, scale_factor: float) -> void:
 	results.auto_height = false
 	results.add_theme_constant_override("v_separation", 10); body.add_child(results)
 	for entry in DESTINATIONS:
-		if entry[0] != 9 or has_weather: catalog.append(entry)
+		if entry[0] == 9 and not has_weather: continue
+		if entry[0] == 10 and not has_recovery: continue
+		catalog.append(entry)
 	search.text_changed.connect(filter_views)
 	search.text_submitted.connect(func(_text): open_selected())
 	search.gui_input.connect(search_key)
