@@ -34,9 +34,8 @@ func _ready() -> void:
 	team_panel.command_requested.connect(targeted_command)
 	team_panel.watch_requested.connect(func(id): select_driver(id); set_follow(true))
 	battle_overlay = BattleOverlay.new(); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
-	rejoin_overlay = RejoinOverlay.new(); rejoin_overlay.canvas = canvas; canvas.add_child(rejoin_overlay)
-	var map_controls = canvas.get_parent().get_child(0)
-	map_controls.add_child(UI.check("Rejoin estimate", true, func(value): rejoin_overlay.enabled = value))
+	rejoin_overlay = RejoinOverlay.new(); rejoin_overlay.enabled = false; rejoin_overlay.canvas = canvas; canvas.add_child(rejoin_overlay)
+	add_layer("Pit rejoin estimate", false, func(value): rejoin_overlay.enabled = value; rejoin_overlay.queue_redraw())
 	decision_bar = HBoxContainer.new(); decision_bar.add_theme_constant_override("separation", 8); add_child(decision_bar)
 	move_child(decision_bar, hint.get_index()); hint.visible = false
 	for id in [3, 6]:
@@ -49,18 +48,27 @@ func _ready() -> void:
 		var actions = HBoxContainer.new(); actions.add_theme_constant_override("separation", 5); body.add_child(actions)
 		var compare = UI.button("Compare " + sim.cars[id].short, func(): open_strategy(id)); actions.add_child(compare)
 		var box = UI.button("Box " + sim.cars[id].short, func(): box_from_card(id), true); actions.add_child(box)
+		var send = UI.button("Send " + sim.cars[id].short, func(): targeted_command("send", {"id": id}), true); actions.add_child(send)
+		var recall = UI.button("Recall " + sim.cars[id].short, func(): targeted_command("recall", {"id": id})); actions.add_child(recall)
 		var hold = UI.button("Keep plan", func(): keep_plan(id)); actions.add_child(hold)
 		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); actions.add_child(save)
-		for button in [compare, box, hold, save]: StrategyDesk.compact_button(button)
+		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); actions.add_child(cancel)
+		for button in [compare, box, hold, save, cancel, send, recall]: StrategyDesk.compact_button(button)
 		var battle = UI.label("", 11, UI.ACCENT); battle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(battle)
-		decision_controls[id] = {"battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare}
+		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare}
 	pit_note.max_lines_visible = 2
 	radio_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	automate.text = "Delegate all domains (reset overrides)"
-	tabs.current_tab = 6; refresh()
+	register_topic("Strategy", 6, 2); register_topic("Team", 8, 4); register_topic("Debrief", 7)
+	pin_navigation(6, strategy_desk.topic_buttons[0].get_parent())
+	pin_navigation(8, team_panel.topic_bar)
+	team_panel.commit_bar.reparent(detail_actions)
+	strategy_desk.commit_bar.reparent(detail_actions)
+	tabs.tab_changed.connect(func(index): strategy_desk.commit_bar.visible = index == 6 and strategy_desk.topic != 2)
+	tabs.current_tab = 6; refresh(); close_detail()
 
 func open_strategy(id: int) -> void:
-	select_driver(id); tabs.current_tab = 6; strategy_desk.select_driver(id); strategy_desk.show_topic(0)
+	select_driver(id); open_topic(6); strategy_desk.select_driver(id); strategy_desk.show_topic(0)
 
 func targeted_command(action: String, payload: Dictionary) -> void:
 	if not strategy_model.command(action, payload): feedback(strategy_model.last_error)
@@ -104,6 +112,18 @@ func refresh() -> void:
 		controls.heading.tooltip_text = explanation; controls.detail.tooltip_text = explanation; controls.summary.tooltip_text = controls.summary.text
 		controls.box.disabled = sim.phase != "race" or c.route != "track" or c.pit_order or c.dnf or c.finished or f.replacement_id.is_empty() or f.gate.distance >= sim.laps * sim.track.length
 		controls.box.tooltip_text = "Fit %s at the next safe entry on lap %d. Estimate P%d–%d; ignoring this button retains the current owner." % [f.replacement_id, f.gate.lap, f.pit.position_low, f.pit.position_high]
+		var qualifying = sim.phase in ["qualifying", "qualifying_results"]
+		controls.box.visible = not qualifying; controls.hold.visible = not qualifying
+		controls.send.visible = qualifying; controls.recall.visible = qualifying
+		var release = RaceForecaster.qualifying_release(sim, c) if qualifying else {}
+		controls.send.disabled = not qualifying or c.dnf or c.finished or c.route != "garage" or not release.get("can_start_hotlap", false)
+		controls.send.tooltip_text = "Release %s on the planned set. The estimate checks whether a legal flying lap can begin." % c.short
+		if qualifying and not release.get("can_start_hotlap", false): controls.send.tooltip_text = "Not enough qualifying time to begin a flying lap. Already-started flying laps may finish."
+		controls.recall.disabled = not qualifying or c.dnf or c.finished or c.route != "track"
+		controls.recall.tooltip_text = "Recall %s to the garage; actual entry and tyre wear remain physical." % c.short
+		controls.cancel.visible = not qualifying and c.pit_order; controls.cancel.disabled = c.route != "track" or c.dnf or c.finished
+		controls.cancel.tooltip_text = "Cancel %s's accepted pit order before physical commitment. Committed entries cannot be canceled." % c.short
+		controls.save.visible = not qualifying and not c.pit_order
 		controls.hold.disabled = card.is_empty(); controls.hold.tooltip_text = "Acknowledge this issue without changing the plan or time controls."
 		controls.save.disabled = sim.phase != "race" or c.dnf or c.finished
 		var battle = strategy_model.battle_state.drivers[id]
@@ -112,23 +132,28 @@ func refresh() -> void:
 		if TeamOrders.active(strategy_model.team_state.track_order):
 			controls.battle.text = "Team " + strategy_model.team_state.track_order.kind + " · " + strategy_model.team_state.track_order.reason
 			controls.battle.tooltip_text = controls.battle.text
+		if qualifying:
+			controls.detail.text = "%s · %s" % [c.qual_state.to_upper(), "Flying lap can start" if release.get("can_start_hotlap", false) else "No new timed attempt"]
+			controls.battle.text = "Qualifying owner: " + p.owners.qualifying
 		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
 	if sim.selected_id in [3, 6]: rejoin_overlay.forecast = forecast_cache[sim.selected_id]
 	else: rejoin_overlay.forecast = {}
-	strategy_desk.refresh()
-	if tabs.current_tab == 8: team_panel.refresh()
-	var strategic_page = tabs.current_tab in [6, 7, 8]
-	trace.visible = tabs.current_tab == 1
-	pit_note.visible = not strategic_page
-	box_button.get_parent().visible = not strategic_page
-	# The two fixed cards own the primary pit actions on strategy pages.
-	# Existing controls remain in their original topics, avoiding duplicate buttons.
-	if not detail_expanded:
-		driver_label.visible = not strategic_page; resource_row.visible = not strategic_page
-		compact_resources.visible = strategic_page; intent_label.visible = not strategic_page
+	if right_panel.visible and tabs.current_tab == 6:
+		strategy_desk.live_preview = forecast_cache[strategy_desk.driver_id]
+		strategy_desk.refresh()
+	if right_panel.visible and tabs.current_tab == 8: team_panel.refresh()
+	# Fixed driver cards own race actions; the inspector contains only the selected task.
+	send_button.get_parent().visible = false
+	team_panel.commit_bar.visible = tabs.current_tab == 8
+	trace.visible = right_panel.visible and tabs.current_tab == 1
+	pit_note.visible = false; box_button.get_parent().visible = false
+	driver_label.visible = sim.selected_id not in [3, 6]
+	resource_row.visible = false; compact_resources.visible = false; intent_label.visible = false
 	teammate_buttons[0].get_parent().visible = tabs.current_tab != 8
-	if tabs.current_tab == 8: compact_resources.visible = false
-	if tabs.current_tab == 7 and int(strategy_model.strategy_state.sequence) != debrief_sequence:
+	if tabs.current_tab == 8: driver_label.visible = false
+	strategy_desk.commit_bar.visible = tabs.current_tab == 6 and strategy_desk.topic != 2
+	refresh_navigation()
+	if right_panel.visible and tabs.current_tab == 7 and int(strategy_model.strategy_state.sequence) != debrief_sequence:
 		debrief_sequence = int(strategy_model.strategy_state.sequence)
 		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
 		var view = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}
@@ -151,7 +176,17 @@ func setup_guide() -> void:
 		{"title": "Compare, then commit", "body": "Pit loss, warm-up and possible rejoin traffic are estimates, not promises. A forecast Box call names the driver, set and safe gate. It is rejected if the displayed assumptions become stale.", "target": func(): return tabs, "reveal": func(): open_strategy(3)},
 		{"title": "Approve a plan, not a teleport", "body": "In Plan, choose a starting set and up to three windows. Draft edits do nothing until Approve. Approval delegates pit timing inside those windows; physical entry, inventory and the shared box still govern execution.", "target": func(): return tabs, "reveal": func(): open_strategy(3); strategy_desk.show_topic(1)},
 		{"title": "Delegate the work, retain intent", "body": "Control separates pace, engine, pit strategy, racecraft and qualifying. A two-lap push returns to the prior owner automatically. It does not disable fuel protection or replace a pit plan.", "target": func(): return tabs, "reveal": func(): open_strategy(3); strategy_desk.show_topic(2)},
-		{"title": "Two drivers, one team", "body": "Team & battles provides bounded hold, allow-through and pit-priority instructions. Both drivers are named. Safe road geometry, flags and physical pit commitments take precedence. Battles retain a target and phases; Watch follows the selected contest until you pan or zoom.", "target": func(): return tabs, "reveal": func(): tabs.current_tab = 8},
-		{"title": "Learn from measured consequences", "body": "The debrief records accepted calls and measured pit visits. It compares actual duration with the estimate recorded at the call. No hypothetical finishing position is claimed as fact. Export keeps the full evidence.", "target": func(): return tabs, "reveal": func(): tabs.current_tab = 7}
+		{"title": "Two drivers, one team", "body": "Team & battles provides bounded hold, allow-through and pit-priority instructions. Both drivers are named. Safe road geometry, flags and physical pit commitments take precedence. Battles retain a target and phases; Watch follows the selected contest until you pan or zoom.", "target": func(): return tabs, "reveal": func(): open_topic(8)},
+		{"title": "Learn from measured consequences", "body": "The debrief records accepted calls and measured pit visits. It compares actual duration with the estimate recorded at the call. No hypothetical finishing position is claimed as fact. Export keeps the full evidence.", "target": func(): return tabs, "reveal": func(): open_topic(7)}
 	])
 	add_child(guide)
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
+		var focus = get_viewport().gui_get_focus_owner()
+		if focus is LineEdit or focus is TextEdit: return
+		if sim.selected_id in decision_controls and not decision_controls[sim.selected_id].box.disabled:
+			box_from_card(sim.selected_id); get_viewport().set_input_as_handled()
+		return
+	super._unhandled_key_input(event)

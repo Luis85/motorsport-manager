@@ -5,6 +5,10 @@ signal command_requested(action: String, payload: Dictionary)
 signal watch_requested(driver_id: int)
 var sim: StrategyRaceSim
 var topics: OptionButton
+var topic_bar: HBoxContainer
+var commit_bar: VBoxContainer
+var commit_pages: Array[Control] = []
+var topic_buttons: Array[Button] = []
 var pages: Array[Control] = []
 var actor: OptionButton
 var kind: OptionButton
@@ -32,9 +36,16 @@ func text(value: String, color: Color = UI.MUTED) -> Label:
 func _ready() -> void:
 	add_theme_constant_override("separation", 7)
 	topics = UI.option(["Cooperate", "Battles", "Shared pit box"], show_topic)
-	add_child(topics); StrategyDesk.compact_button(topics); topics.add_theme_font_size_override("font_size", 12)
+	add_child(topics); topics.visible = false
+	topic_bar = UI.hbox(self)
+	for i in range(3):
+		var button = UI.button(["Cooperate", "Battles", "Pit box"][i], func(): show_topic(i)); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		topic_bar.add_child(button); topic_buttons.append(button); StrategyDesk.compact_button(button)
+	StrategyDesk.compact_button(topics); topics.add_theme_font_size_override("font_size", 12)
 	for i in range(3):
 		var page = UI.vbox(self); page.add_theme_constant_override("separation", 7); pages.append(page)
+	commit_bar = UI.vbox(self)
+	for i in range(3): commit_pages.append(UI.vbox(commit_bar))
 	var page = pages[0]
 	actor = UI.option(["MER ahead · MOR following", "MOR ahead · MER following"], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
 	kind = UI.option(["Hold relative team position", "Allow the teammate through"], func(_index): refresh()); page.add_child(kind); StrategyDesk.compact_button(kind); kind.add_theme_font_size_override("font_size", 12)
@@ -43,34 +54,37 @@ func _ready() -> void:
 	duration.get_line_edit().add_theme_stylebox_override("normal", UI.box(UI.CARD, UI.LINE, 4, 6))
 	UI.field(page, "Expiry (actor's laps)", duration)
 	apply_button = UI.button("Apply team instruction", func(): command_requested.emit("team_order", draft()))
-	page.add_child(apply_button); StrategyDesk.compact_button(apply_button)
+	commit_pages[0].add_child(apply_button); StrategyDesk.compact_button(apply_button)
 	validation = text(""); page.add_child(validation)
 	track_status = text("", UI.INK); page.add_child(track_status)
-	cancel_buttons.track_order = UI.button("Cancel cooperation", func(): cancel("track_order")); page.add_child(cancel_buttons.track_order); StrategyDesk.compact_button(cancel_buttons.track_order)
-	page.add_child(text("Ownership, pace and engine policies remain unchanged. A safe opportunity is not guaranteed."))
+	cancel_buttons.track_order = UI.button("Cancel cooperation", func(): cancel("track_order")); commit_pages[0].add_child(cancel_buttons.track_order); StrategyDesk.compact_button(cancel_buttons.track_order)
+	
 	page = pages[1]
-	var watch_row = UI.hbox(page)
+	var watch_row = UI.hbox(commit_pages[1])
 	for id in [3, 6]:
 		page.add_child(UI.label(sim.cars[id].short + " / CURRENT CONTEST", 11, UI.ACCENT))
 		battle_labels[id] = text("", UI.INK); page.add_child(battle_labels[id])
 		var button = UI.button("Watch " + sim.cars[id].short, func(): watch_requested.emit(id))
 		watch_row.add_child(button); StrategyDesk.compact_button(button); watch_buttons[id] = button
-	page.add_child(text("Watch follows the chosen car without changing time. Pan or zoom releases the camera. The paired outline identifies its current contest."))
+	
 	public_stops = text(""); page.add_child(public_stops)
 	page = pages[2]
-	page.add_child(text("Two-lap priority · no reordering of accepted stops."))
+	page.add_child(text("Two-lap priority · accepted stops are never reordered."))
+	var priorities = UI.hbox(commit_pages[2])
 	for id in [3, 6]:
-		var button = UI.button("Give " + sim.cars[id].short + " pit priority", func():
+		var button = UI.button(sim.cars[id].short + " first", func():
 			command_requested.emit("team_order", {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "pit_priority", "laps": 2, "revision": revision}))
-		page.add_child(button); StrategyDesk.compact_button(button); priority_buttons[id] = button
+		priorities.add_child(button); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; StrategyDesk.compact_button(button); priority_buttons[id] = button
 	preview_text = text("", UI.INK); page.add_child(preview_text)
 	priority_status = text(""); page.add_child(priority_status)
-	cancel_buttons.pit_priority = UI.button("Cancel pit priority", func(): cancel("pit_priority")); page.add_child(cancel_buttons.pit_priority); StrategyDesk.compact_button(cancel_buttons.pit_priority)
-	page.add_child(text("Priority may defer the other car by one entry, only within delegated authority and the approved window. Manual or committed orders are never moved. The mandate ends after two laps of the named car, or both services."))
+	cancel_buttons.pit_priority = UI.button("Cancel pit priority", func(): cancel("pit_priority")); commit_pages[2].add_child(cancel_buttons.pit_priority); StrategyDesk.compact_button(cancel_buttons.pit_priority)
+	
 	show_topic(0); refresh()
 
 func show_topic(index: int) -> void:
-	for i in range(pages.size()): pages[i].visible = i == index
+	for i in range(pages.size()):
+		pages[i].visible = i == index; commit_pages[i].visible = i == index
+		UI.set_active(topic_buttons[i], i == index)
 	if topics: topics.select(index)
 	refresh()
 
@@ -99,7 +113,10 @@ func refresh() -> void:
 	validation.text = error if not error.is_empty() else ("Only the following teammate holds back; rivals remain free to race." if proposed.kind == "hold" else "Waits for clear, wide road. Moving aside and slowing have a real cost; a swap is not guaranteed.")
 	track_status.text = status_text(sim.team_state.track_order, "No cooperation instruction. Both drivers follow their normal racecraft policies.")
 	priority_status.text = status_text(sim.team_state.pit_priority, "No priority. Physical arrival decides the shared box.")
-	for key in cancel_buttons: cancel_buttons[key].disabled = not TeamOrders.active(sim.team_state[key])
+	for key in cancel_buttons:
+		cancel_buttons[key].disabled = not TeamOrders.active(sim.team_state[key])
+		cancel_buttons[key].visible = not sim.team_state[key].is_empty()
+		cancel_buttons[key].tooltip_text = "Cancel only an active instruction. Completed or canceled outcomes remain in the debrief."
 	for id in [3, 6]:
 		battle_labels[id].text = RacecraftController.describe(sim.battle_state, id, sim.cars)
 		watch_buttons[id].disabled = sim.cars[id].dnf or sim.cars[id].finished or sim.battle_state.drivers[id].target_id < 0
