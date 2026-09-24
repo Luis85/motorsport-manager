@@ -1,6 +1,7 @@
 extends Control
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
 var content: VBoxContainer
+var global_header: HBoxContainer
 var location_label: Label
 var version_label: Label
 var screen_name = "menu"
@@ -17,11 +18,11 @@ func _ready() -> void:
 	theme = UI.theme()
 	get_tree().auto_accept_quit = false
 	var margin = MarginContainer.new(); add_child(margin); margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]: margin.add_theme_constant_override("margin_" + side, 16)
-	var shell = UI.vbox(margin, true)
-	var header = UI.hbox(shell)
-	header.add_child(UI.button("MM /", go_home))
-	header.add_child(UI.label("MOTORSPORT MANAGER", 16, UI.ACCENT))
+	for side in ["left", "right", "top", "bottom"]: margin.add_theme_constant_override("margin_" + side, 10)
+	var shell = UI.vbox(margin, true); shell.add_theme_constant_override("separation", 6)
+	var header = UI.hbox(shell); global_header = header
+	header.add_child(UI.label("MM /", 14, UI.ACCENT))
+	header.add_child(UI.label("MOTORSPORT MANAGER", 14, UI.ACCENT))
 	location_label = UI.label("MAIN MENU", 12, UI.MUTED); header.add_child(location_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
 	version_label = UI.label("NATIVE GODOT  ·  " + str(ProjectSettings.get_setting("application/config/version", "development")), 12, UI.MUTED)
@@ -34,6 +35,7 @@ func _ready() -> void:
 	show_menu()
 
 func clear_screen(name: String) -> void:
+	global_header.visible = name != "weekend"
 	if screen_name == "weekend" and App.weekend != null:
 		App.weekend.paused = App.weekend.phase in RaceSim.ACTIVE
 		var error = App.save_weekend()
@@ -47,11 +49,11 @@ func show_menu() -> void:
 	var menu_panel = UI.panel(); menu_panel.custom_minimum_size.x = 440; row.add_child(menu_panel)
 	var menu = UI.vbox(menu_panel, true)
 	menu.add_child(UI.label("THE RACE STARTS WITH YOU", 12, UI.ACCENT))
-	menu.add_child(UI.label("Your circuit.\nYour decisions.", 43))
+	menu.add_child(UI.label("Your circuit.\nYour decisions.", 35))
 	menu.add_child(UI.paragraph("Design a circuit. Qualify your drivers. Settle into the pit wall and make the calls. A complete race weekend, rebuilt natively in Godot."))
-	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 80; menu.add_child(gp)
-	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 80; menu.add_child(track_editor_button)
-	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 72
+	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
+	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
+	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
 	var scenarios = UI.hbox(menu)
 	scenarios.add_child(UI.button("DRY SCENARIOS", show_strategy_scenarios))
@@ -153,6 +155,7 @@ func show_weekend() -> void:
 	var view = WeatherWeekendView.new() if App.weekend is WeatherRaceSim else (StrategyWeekendView.new() if App.weekend is StrategyRaceSim else WeekendView.new())
 	view.configure(App.weekend); content.add_child(view)
 	view.new_weekend_requested.connect(show_library)
+	view.menu_requested.connect(go_home)
 
 func continue_weekend() -> void:
 	if App.weekend == null:
@@ -162,33 +165,43 @@ func continue_weekend() -> void:
 
 func show_settings() -> void:
 	clear_screen("settings")
-	content.add_child(UI.label("Settings", 32))
-	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
-	var panel = UI.panel(); panel.custom_minimum_size.x = 640; panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; scroll.add_child(panel)
-	var list = UI.vbox(panel)
-	list.add_child(UI.label("DISPLAY", 15, UI.ACCENT))
-	list.add_child(UI.check("Fullscreen", App.settings.fullscreen, func(value): App.settings.fullscreen = value))
-	list.add_child(UI.check("Vertical synchronization", App.settings.vsync, func(value): App.settings.vsync = value))
-	list.add_child(UI.check("Show driver labels by default", App.settings.labels, func(value): App.settings.labels = value))
-	list.add_child(UI.check("Show racing line by default", App.settings.racing_line, func(value): App.settings.racing_line = value))
-	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): App.settings.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(App.settings.speed)))
-	list.add_child(UI.label("CALM CIRCUIT PRESENTATION", 15, UI.ACCENT))
-	UI.field(list, "Scenery detail", UI.option(["Rich illustration", "Simple / fewer trees"], func(index): App.settings.scenery_detail = ["rich", "simple"][index], 0 if App.settings.scenery_detail == "rich" else 1))
-	UI.field(list, "Car dot size", UI.option(["Standard", "Large", "Extra large"], func(index): App.settings.dot_scale = [1.0, 1.3, 1.6][index], [1.0, 1.3, 1.6].find(App.settings.dot_scale)))
-	list.add_child(UI.check("Reduced motion / direct follow camera", App.settings.reduced_motion, func(value): App.settings.reduced_motion = value))
-	list.add_child(UI.paragraph("Scenery and dot size change presentation only, never racing results. Display choices apply when a view is opened."))
-	list.add_child(UI.button("Apply and save settings", func():
-		var error = App.save_settings()
-		UI.notify(self, "Settings", "Settings saved." if error.is_empty() else error), true))
-	list.add_child(UI.label("LOCAL DATA", 15, UI.ACCENT))
-	list.add_child(UI.paragraph("Track library, settings and the active weekend checkpoint are stored in Godot's user-data directory. Atomic saves retain the previous file as .bak. Bundled circuits are never overwritten."))
+	content.add_child(UI.label("Settings", 28))
+	content.add_child(UI.paragraph("Changes are staged until Apply. Visual preferences do not change the race model."))
+	var draft = App.settings.duplicate(true)
+	var columns = UI.hbox(content)
+	var left = UI.panel(); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(left)
+	var list = UI.vbox(left)
+	list.add_child(UI.label("DISPLAY & DEFAULTS", 14, UI.ACCENT))
+	list.add_child(UI.check("Fullscreen", draft.fullscreen, func(value): draft.fullscreen = value))
+	list.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): draft.vsync = value))
+	list.add_child(UI.check("Show driver labels by default", draft.labels, func(value): draft.labels = value))
+	list.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): draft.racing_line = value))
+	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): draft.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(draft.speed)))
+	var right = UI.panel(); right.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(right)
+	list = UI.vbox(right)
+	list.add_child(UI.label("CIRCUIT PRESENTATION", 14, UI.ACCENT))
+	UI.field(list, "Scenery detail", UI.option(["Rich illustration", "Simple / fewer trees"], func(index): draft.scenery_detail = ["rich", "simple"][index], 0 if draft.scenery_detail == "rich" else 1))
+	UI.field(list, "Car dot size", UI.option(["Standard", "Large", "Extra large"], func(index): draft.dot_scale = [1.0, 1.3, 1.6][index], [1.0, 1.3, 1.6].find(draft.dot_scale)))
+	list.add_child(UI.check("Reduced motion / direct follow camera", draft.reduced_motion, func(value): draft.reduced_motion = value))
+	list.add_child(UI.paragraph("Presentation choices apply when a view opens. Use Layers on the map for immediate line, label and surface changes. Simple scenery reduces decorative trees; it never changes grip, weather or driving."))
+	var data_panel = UI.panel(); content.add_child(data_panel); list = UI.vbox(data_panel)
+	list.add_child(UI.label("LOCAL DATA", 14, UI.ACCENT))
+	list.add_child(UI.paragraph("Tracks, settings and the active weekend are stored on this device. Atomic saves retain the previous file as .bak. Bundled circuits are never overwritten."))
 	var path = ProjectSettings.globalize_path("user://")
-	var path_label = UI.paragraph(path); list.add_child(path_label)
-	var actions = UI.hbox(list)
-	actions.add_child(UI.button("Copy data path", func(): DisplayServer.clipboard_set(path)))
-	actions.add_child(UI.button("Open data folder", func(): OS.shell_open(path)))
-	list.add_child(UI.label("ABOUT THIS BUILD", 15, UI.ACCENT))
-	list.add_child(UI.paragraph("Godot 4.7.2 · Standard GDScript · Compatibility renderer\nTrack authoring and top-down weekend simulation. No browser, npm, .NET or external plugins are required. Company management is not part of this iteration."))
+	var path_label = UI.paragraph(path); path_label.add_theme_font_size_override("font_size", 12); list.add_child(path_label)
+	var data_actions = UI.hbox(list)
+	data_actions.add_child(UI.button("Copy data path", func(): DisplayServer.clipboard_set(path)))
+	data_actions.add_child(UI.button("Open data folder", func(): OS.shell_open(path)))
+	content.add_child(UI.paragraph("Godot 4.7.2 · Native GDScript · Compatibility renderer · No browser or external plugin required."))
+	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(spacer)
+	var note = UI.paragraph("Space pauses a live weekend. Enter activates a focused button. Text fields keep normal editing behavior."); content.add_child(note)
+	var actions = UI.hbox(content)
+	actions.add_child(UI.button("Apply and save settings", func():
+		var previous = App.settings.duplicate(true); App.settings = draft.duplicate(true)
+		var error = App.save_settings()
+		if not error.is_empty(): App.settings = previous; App.apply_settings()
+		note.text = "Settings saved. Display defaults apply when you reopen a view." if error.is_empty() else "Settings were not saved: " + error, true))
+	actions.add_child(UI.button("Back without applying", show_menu))
 
 func show_help() -> void:
 	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
@@ -208,13 +221,13 @@ func show_strategy_scenarios() -> void:
 	clear_screen("strategy_scenarios")
 	content.add_child(UI.label("Strategy, not scripted victories", 30))
 	content.add_child(UI.paragraph("Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage."))
-	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(scroll)
-	var entries = UI.vbox(scroll, true)
+	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(entries)
 	for recipe in WeekendScenarios.catalog():
 		if not WeekendScenarios.valid(recipe): continue
-		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
+		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; panel.size_flags_vertical = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
 		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(spacer)
 		body.add_child(UI.button("Open %d-lap scenario · seed %d" % [recipe.laps, recipe.seed], func():
 			var start = func():
 				var candidate = WeekendScenarios.build(recipe, App.library)
@@ -229,11 +242,10 @@ func show_weather_scenarios() -> void:
 	clear_screen("weather_scenarios")
 	content.add_child(UI.label("Forecast, choose, watch the road", 30))
 	content.add_child(UI.paragraph("Seeded conditions use observed-only forecasts. Training explicitly preserves the original schedule. Neither version forces results. All scenarios retain qualifying and start approvals."))
-	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
-	var entries = UI.vbox(scroll, true)
+	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL; content.add_child(entries)
 	for recipe in WeatherScenarios.catalog():
 		if not WeatherScenarios.valid(recipe): continue
-		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
+		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
 		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
 		body.add_child(UI.button("Open %d laps · %s · seed %d" % [recipe.laps, recipe.weather_mode, recipe.seed], func():
