@@ -7,15 +7,16 @@ var latest: Dictionary = {}
 var pit_summary: Label
 
 func _ready() -> void:
+	add_theme_constant_override("separation", 4)
 	caption = UI.label("ESTIMATED REMAINING RACE", 11, PitwallDesign.MUTED); add_child(caption)
 	pit_summary = UI.label("", 12); add_child(pit_summary)
 	for i in range(3):
-		var panel = UI.panel(); panel.add_theme_stylebox_override("panel", UI.box(UI.CARD, UI.LINE, 4, 6)); add_child(panel)
-		var body = UI.vbox(panel)
+		var panel = UI.panel(); panel.add_theme_stylebox_override("panel", UI.box(UI.CARD, UI.LINE, 4, 2)); add_child(panel)
+		var body = UI.vbox(panel); body.add_theme_constant_override("separation", 0)
 		var header = UI.hbox(body)
 		var title = UI.label("", 13); title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(title)
 		var value = UI.label("", 13); header.add_child(value)
-		var detail = UI.label("", 12, PitwallDesign.MUTED); detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(detail)
+		var detail = UI.label("", 12, PitwallDesign.MUTED); detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; body.add_child(detail)
 		rows.append({"panel": panel, "title": title, "value": value, "detail": detail})
 
 func present(forecast: Dictionary, is_draft: bool = false) -> void:
