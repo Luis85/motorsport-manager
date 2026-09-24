@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation **0.6.0 — living racecraft and team coordination**.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, manage the race from the pit wall**. Current implementation **0.7.0 — uncertain weather and crossover decisions**.
 
 ## Open and play
 
@@ -8,7 +8,15 @@ Use **Godot 4.7.2 Standard**. Clone the repository, import the root `project.god
 
 Start with **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry → 3 laps**. Engineers can handle qualifying releases. Approve race preparation, formation and the starting lights when ready. Manage **Mercer (08)** and **Moreau (09)** from the pit wall. Space pauses; 1–5 selects 1×–16×. The main menu also offers Track Editor, Settings and Continue Weekend.
 
-## Iteration 0.6.0 — living racecraft and team coordination
+## Iteration 0.7.0 — uncertain weather and crossover decisions
+
+New normal weekends use **seeded weather** with its own saved random stream. The native **Weather & crossovers** panel separates observed rain from measured sector/line water, compares the current plan with a real tyre change and waiting, and labels its uncertain stress cases rather than promising a result. Both car cards retain Weather access; Box names the driver and physical gate, while Keep plan respects ownership. Rivals use the same observation-only model, not hidden future weather.
+
+Try **Weather Scenarios → Drying unevenly** or **A shower or a front?**. **Rain is not the road** explicitly preserves the scripted legacy training schedule. The resumable guide teaches actual controls without pausing. Checkpoint **v7** preserves the weather stream, public history, decisions and all inherited team/strategy state; old saves retain their original schedule rather than being rerolled.
+
+See the [0.7 weather implementation and verification handoff](docs/race-weekend-weather.md): **1,263 passing local checks and 46 native screenshots**, including a complete 24-lap seeded wet weekend and the preserved dry scenarios. This is the RW-12/RW-13 slice, **not all of Stage C or the entire GDD**. Reliability, coherent neutralization, practice, replay, broad balance and human validation remain open.
+
+## Preserved 0.6.0 milestone — living racecraft and team coordination
 
 The live pit wall now includes **Team & battles → Cooperate / Battles / Shared pit box**. Persistent contest targets and phases develop through the existing physical corridor solver. Completed passes require measured overlap and clearance, with paired visual feedback and a player-controlled Watch action.
 
@@ -16,11 +24,11 @@ Name both teammates to hold relative position, allow a safe pass or grant bounde
 
 Checkpoint **v6** preserves battle, team and rival-response state; native v1–v5 saves migrate explicitly. The debrief links commands to actual cooperation, pass and pit outcomes. Both car cards and primary controls remain reachable at the tested desktop sizes. The guide now includes team coordination.
 
-See the [0.6 implementation and verification handoff](docs/race-weekend-living-racecraft.md). This is a playable **Stage B slice**, not completion of every GDD acceptance gate. Broad balance, calibrated forecast coverage and human playtesting remain open. Weather, reliability, deeper neutralization, practice and replay retain their documented later-stage scope.
+See the [0.6 implementation and verification handoff](docs/race-weekend-living-racecraft.md). This is a playable **Stage B slice**, not completion of every GDD acceptance gate. Broad balance, calibrated forecast coverage and human playtesting remain open. The 0.7 weather work above extends this milestone; reliability, deeper neutralization, practice and replay retain their documented later-stage scope.
 
 ## Preserved 0.5.0 milestone — strategy and consequence
 
-Start **Strategy Scenarios → Two routes to the finish** to exercise the dry 24-lap slice. The native pit wall adds persistent two-car decision cards, **Compare / Plan / Control**, editable multi-stop windows, independent ownership and temporary push/save handback. Pit-rejoin estimates include geometry, finite sets, retained wheel damage, possible traffic and shared-box waiting. Forecasts remain observational and explicitly uncertain; physical execution produces measured debrief evidence.
+Start **Dry Scenarios → Two routes to the finish** to exercise the dry 24-lap slice. The native pit wall adds persistent two-car decision cards, **Compare / Plan / Control**, editable multi-stop windows, independent ownership and temporary push/save handback. Pit-rejoin estimates include geometry, finite sets, retained wheel damage, possible traffic and shared-box waiting. Forecasts remain observational and explicitly uncertain; physical execution produces measured debrief evidence.
 
 Four scenario recipes are playable from briefing through results. The resumable guide explains real controls without auto-pausing. The strategy checkpoint extension persists owners, intents, plans, pit evidence and warnings without fabricated history; 0.6 extends it to v6. Normal setup defaults to 24 dry laps and retains 12-lap/custom choices without hidden format compression.
 
@@ -44,7 +52,7 @@ python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 
 Alternatively put `godot` on PATH or set `GODOT_BINARY`. Linux rendered UI tests need a display or `xvfb` plus `xauth`. `--headless-only` explicitly skips native UI verification. The verifier imports a clean copy, isolates user data, rejects script errors, and writes reports/screen captures under `reports/`. CI runs the suite and uploads evidence. The **Source project** workflow also archives tracked source into a downloadable project ZIP.
 
-The generated verification report is authoritative for assertion counts and timing. See [verification](docs/verification.md) for scope and limitations. New application checkpoints are v6; supported native v1–v5 saves migrate explicitly. Browser saves are not compatible.
+The generated verification report is authoritative for assertion counts and timing. See [verification](docs/verification.md) for scope and limitations. New application checkpoints are v7; supported native v1–v6 saves migrate explicitly without changing their original weather schedule. Browser saves are not compatible.
 
 ## Documentation and provenance
 
