@@ -76,10 +76,11 @@ func run() -> void:
 	check(view.navigator.matches.size() == 1, "Find view searches the new Practice destination")
 	view.navigator.open_selected(); await settle()
 	check(view.tabs.current_tab == view.practice_page_index, "Find view opens the actual practice panel")
-	view.guide.open_guide(); view.guide.show_step(view.guide.steps.size()-1); await capture("guide")
+	var practice_step = view.guide.steps.find_custom(func(step): return step.title == "Learn before spending your best set")
+	view.guide.open_guide(); view.guide.show_step(practice_step); await capture("guide")
 	check("Learn before" in view.guide.title_label.text and model.speed == 8, "Resumable tutorial teaches optional runs without slowing simulation")
 	view.guide.dismiss()
-	check(app.save_weekend().is_empty() and app.load_weekend().is_empty() and app.weekend is PracticeRaceSim, "Application persists a version-nine live practice weekend")
+	check(app.save_weekend().is_empty() and app.load_weekend().is_empty() and app.weekend is PracticeRaceSim, "Application persists the current-schema live practice weekend")
 	view.open_topic(7); view.refresh(); var text = view.debrief_text.text
 	for i in range(20): view.refresh()
 	check("PRACTICE NOTEBOOK" in text and text == view.debrief_text.text, "Practice notebook is included once in the stable causal debrief")
