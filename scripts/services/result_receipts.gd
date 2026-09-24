@@ -9,6 +9,8 @@ static func accept(record: RaceRecord, path: String = "user://weekend-results.js
 	if record == null or record.origin == "sandbox": return {"ok": false, "message": "Sandbox results cannot be accepted as an original weekend."}
 	var result = WeekendResult.build(record)
 	if result.is_empty(): return {"ok": false, "message": "Complete the original weekend before accepting its result."}
+	var validation = WeekendResult.validate(result)
+	if not validation.is_empty(): return {"ok": false, "message": validation}
 	var ledger = {"kind": KIND, "version": 1, "results": {}}
 	if FileAccess.file_exists(path):
 		var read = Storage.read_json(path)
@@ -26,10 +28,10 @@ static func accept(record: RaceRecord, path: String = "user://weekend-results.js
 	return {"ok": true, "already_accepted": false, "message": "Original result accepted on this device. No campaign points, money or XP were awarded.", "result": result.duplicate(true)}
 
 static func valid(data: Variant) -> bool:
-	if not data is Dictionary or data.get("kind") != KIND or data.get("version") != 1 or not data.get("results") is Dictionary or data.results.size() > MAX_RESULTS: return false
+	if not data is Dictionary or (not data.get("kind") is String or data.kind != KIND) or not RaceCheckpoint.integral(data.get("version"), 1, 1) or not data.get("results") is Dictionary or data.results.size() > MAX_RESULTS: return false
 	for id in data.results:
 		var result = data.results[id]
-		if not RaceRecord.valid_id(id) or not result is Dictionary or result.get("event_id") != id or result.get("kind") != "motorsport-manager-weekend-result" or result.get("version") != 1 or result.get("origin") not in ["standalone", "legacy"] or result.get("final") != true: return false
-		var content = result.duplicate(true); content.erase("digest")
-		if result.get("digest") != RaceRecord.fingerprint(content): return false
+		if not RaceRecord.valid_id(id) or not result is Dictionary: return false
+		if not WeekendResult.validate(result).is_empty(): return false
+		if result.event_id != id or result.origin not in ["standalone", "legacy"]: return false
 	return true

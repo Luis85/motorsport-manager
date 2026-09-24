@@ -17,7 +17,7 @@ static func write_json(path: String, data: Variant) -> String:
 	if err != OK: return "Cannot create destination folder: " + error_string(err)
 	var temporary = absolute + ".tmp"
 	var text = JSON.stringify(data, "\t", false, true)
-	if text.length() > MAX_BYTES: return "Export exceeds 16 MB. Reduce reference-image size."
+	if text.to_utf8_buffer().size() > MAX_BYTES: return "Export exceeds 16 MB. Reduce retained evidence or reference-image size."
 	var file = FileAccess.open(temporary, FileAccess.WRITE)
 	if file == null: return "Cannot write destination: " + error_string(FileAccess.get_open_error())
 	file.store_string(text); file.flush()

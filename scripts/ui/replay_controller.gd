@@ -16,6 +16,11 @@ func open_current() -> void:
 
 func open_data(data: Variant) -> String:
 	if workspace != null: return "Close the current replay first."
+	if not data is Dictionary or not data.get("kind") is String: return "Unsupported recording or scenario header."
+	if data is Dictionary and data.get("kind") == ReplayScenario.KIND:
+		var scenario_error = ReplayScenario.validate(data)
+		if not scenario_error.is_empty(): return scenario_error
+		data = data.record
 	if data is Dictionary and data.get("kind") == ReplayStorage.SESSION_KIND: data = data.get("record")
 	var player = RaceReplay.new(); var error = player.load_record(data) if data is Dictionary else "The file does not contain a recording."
 	if not error.is_empty(): return error
