@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "compact-ui.json", "ux-performance-current.json", "verification.json"):
+    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "verification.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -100,6 +100,7 @@ def main() -> int:
             weather_scenario = require_report("weather-scenario.json")
             weather_ui = None
             compact_ui = None
+            pitwall_ui = None
             performance = None
             living_ui = None
             ui = None
@@ -123,6 +124,8 @@ def main() -> int:
                     run_phase("weather-ui", weather_command, env)
                     compact_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/compact_ui_tests.gd") for part in command]
                     run_phase("compact-ui", compact_command, env)
+                    pitwall_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/pitwall_ux_tests.gd") for part in command]
+                    run_phase("pitwall-ux", pitwall_command, env)
                     performance_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/ux_performance.gd") for part in command]
                     run_phase("ux-performance", performance_command, env)
                 finally:
@@ -134,6 +137,7 @@ def main() -> int:
                 living_ui = require_report("living-racecraft-ui.json")
                 weather_ui = require_report("weather-ui.json")
                 compact_ui = require_report("compact-ui.json")
+                pitwall_ui = require_report("pitwall-ux.json")
                 performance = require_report("ux-performance-current.json")
             summary = {"passed": True, "mode": "headless-only" if args.headless_only else "full",
                        "engine": domain["engine"], "domain_checks": domain["checks"],
@@ -145,8 +149,9 @@ def main() -> int:
                        "weather_checks": weather["checks"], "weather_scenario_checks": weather_scenario["checks"],
                        "weather_ui_checks": weather_ui["checks"] if weather_ui else None,
                        "compact_ui_checks": compact_ui["checks"] if compact_ui else None,
+                       "pitwall_ux_checks": pitwall_ui["checks"] if pitwall_ui else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

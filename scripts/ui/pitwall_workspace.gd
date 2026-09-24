@@ -71,9 +71,9 @@ func build_header() -> void:
 	session_label.add_theme_color_override("font_color", Color("d5dec9"))
 	title_label.add_theme_font_size_override("font_size", 20)
 	primary_button.custom_minimum_size.x = 150
-	timing_panel.custom_minimum_size.x = 244
+	timing_panel.custom_minimum_size.x = ceilf(244 * text_scale)
 	tower.add_theme_constant_override("v_separation", 2)
-	for i in range(5): tower.set_column_custom_minimum_width(i, [24, 37, 61, 26, 38][i])
+	for i in range(5): tower.set_column_custom_minimum_width(i, ceili([24, 37, 61, 26, 38][i] * text_scale))
 	# Keep the familiar visible time controls; status is not styled as a disabled action.
 	pause_button.custom_minimum_size.x = 85
 	clock_label.custom_minimum_size.x = 125

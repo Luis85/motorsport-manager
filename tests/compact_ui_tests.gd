@@ -81,7 +81,7 @@ func run() -> void:
 	check(not view.right_panel.visible and inside(view.watch_button), "A weekend opens circuit-first with a visible Watch action")
 	check(not game.global_header.visible, "The race has one session header rather than a duplicated application banner")
 	check(view.canvas.size.x >= 650 and view.canvas.size.y >= 330, "Watch gives the circuit useful space at the minimum desktop size")
-	for index in [0,6,3,8,4,1,2,5,7]: check(inside(view.topic_buttons[index]), "Direct task navigation fits without scrolling: " + str(index))
+	for group in view.group_buttons: check(inside(view.group_buttons[group]), "Primary task navigation fits without scrolling: " + group)
 	await capture("watch")
 	var before = JSON.stringify(model.snapshot())
 	var identity = view.decision_controls[6].box.get_instance_id()
