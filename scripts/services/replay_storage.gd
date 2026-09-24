@@ -10,7 +10,7 @@ static func save_session(path: String, record: RaceRecord) -> String:
 	return Storage.write_json(path, {"kind": SESSION_KIND, "version": 1, "record": data})
 
 static func restore_session(data: Variant, sandbox: bool = false) -> Dictionary:
-	if not data is Dictionary or data.get("kind") != SESSION_KIND or data.get("version") != 1: return {"ok": false, "error": "Unsupported session envelope."}
+	if not data is Dictionary or (not data.get("kind") is String or data.kind != SESSION_KIND) or not RaceCheckpoint.integral(data.get("version"), 1, 1): return {"ok": false, "error": "Unsupported session envelope."}
 	var error = RaceRecord.validate(data.get("record"))
 	if not error.is_empty(): return {"ok": false, "error": error}
 	if data.record.engine != Engine.get_version_info().string or data.record.model != RaceRecord.MODEL:
