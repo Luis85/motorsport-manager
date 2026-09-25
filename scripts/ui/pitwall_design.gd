@@ -4,6 +4,23 @@ extends RefCounted
 const TEXT_SCALES = [1.0, 1.15, 1.3]
 const MUTED = Color("536650")
 const FOCUS = Color("775220")
+# Race-weekend layout contract (1440x900 reference, scales down through host adaptation).
+const HEADER_HEIGHT = 64
+const TOOLBAR_HEIGHT = 42
+const TIMING_WIDTH = 236
+const DRIVER_RAIL_WIDTH = 400
+const DRIVER_RAIL_EXPANDED = 520
+const DECISION_MIN_HEIGHT = 72
+const BREAKPOINT_COMPACT = 1280
+const BREAKPOINT_CONDENSED = 1100
+const SPACE_1 = 4
+const SPACE_2 = 8
+const SPACE_3 = 12
+const SPACE_4 = 16
+const SPACE_5 = 24
+const RADIUS_SM = 3
+const RADIUS_MD = 5
+const RADIUS_LG = 8
 static var nav_styles: Dictionary = {}
 static var popup_themes: Dictionary = {}
 
