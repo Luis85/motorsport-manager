@@ -1,7 +1,7 @@
 class_name PitwallWorkspace
 extends RecoveryWeekendView
 ## Task-oriented native shell over the existing controls and command boundary.
-const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7, 11]}
+const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7]}
 var group_buttons: Dictionary = {}
 var group_memory: Dictionary = {}
 var context_navigation: HBoxContainer
@@ -21,7 +21,7 @@ var phase_actions: VBoxContainer
 var header_context: VBoxContainer
 var utility_commands: Array[Button] = []
 var results_panel: SessionResultsPanel
-var results_page_index = 11
+var results_page_index = -1
 
 func _ready() -> void:
 	super._ready()
@@ -29,6 +29,7 @@ func _ready() -> void:
 	set_meta("pitwall_text_scale", text_scale)
 	detail_picker.add_item("Session results")
 	var results_page = tab_page("Session results")
+	results_page_index = tabs.get_tab_count() - 1
 	results_panel = SessionResultsPanel.new(); results_panel.configure(sim); results_page.add_child(results_panel)
 	register_topic("Results", results_page_index)
 	build_navigation()
@@ -134,6 +135,7 @@ func compact_inspector() -> void:
 	old_row.hide()
 
 func group_for(index: int) -> String:
+	if index == results_page_index: return "Review"
 	for group in GROUPS:
 		if index in GROUPS[group]: return group
 	return ""
