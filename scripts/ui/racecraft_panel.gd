@@ -7,6 +7,8 @@ var fields: Dictionary = {}
 var sliders: Dictionary = {}
 var draft_effects: Label
 var drafts: Dictionary = {}
+var edited: Dictionary = {}
+var delta_labels: Dictionary = {}
 var loaded_driver = -1
 var apply_button: Button
 var reset_button: Button
@@ -32,8 +34,10 @@ func _ready() -> void:
 		var spec = CarSetup.SPECS[key]
 		var label_row = UI.hbox(garage_form)
 		var label = UI.label(spec[2], 13); label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; label_row.add_child(label)
+		var delta = UI.label("", 11, UI.MUTED); label_row.add_child(delta); delta_labels[key] = delta
 		var field = UI.spin(CarSetup.DEFAULTS[key], spec[0], spec[1], 1, func(value):
-			if loaded_driver >= 0: drafts[loaded_driver][key] = int(value)
+			if loaded_driver >= 0:
+				drafts[loaded_driver][key] = int(value); edited[loaded_driver] = true
 			refresh_status())
 		field.custom_minimum_size = Vector2(80,32)
 		var slider=HSlider.new();slider.min_value=spec[0];slider.max_value=spec[1];slider.step=1
@@ -70,6 +74,9 @@ func refresh() -> void:
 		if not drafts.has(c.id): drafts[c.id] = c.car_setup.duplicate()
 		for key in fields: fields[key].set_value_no_signal(drafts[c.id][key])
 		bias.set_value_no_signal(c.car_setup.bias)
+	if not edited.get(c.id, false):
+		drafts[c.id] = c.car_setup.duplicate()
+		for key in fields: fields[key].set_value_no_signal(drafts[c.id][key])
 	for key in fields:
 		fields[key].editable=garage_allowed();sliders[key].editable=garage_allowed();sliders[key].set_value_no_signal(fields[key].value)
 	bias.editable = c.player and not c.dnf and not c.finished and sim.phase == "race" and c.route == "track"
@@ -86,8 +93,13 @@ func refresh() -> void:
 func refresh_status() -> void:
 	if not note or loaded_driver < 0: return
 	var changed = drafts[loaded_driver] != sim.cars[loaded_driver].car_setup
+	if not changed: edited[loaded_driver] = false
+	for key in delta_labels:
+		delta_labels[key].text = "%d → %d" % [sim.cars[loaded_driver].car_setup[key], drafts[loaded_driver][key]]
+		delta_labels[key].tooltip_text = "Fitted → unapplied draft. " + CarSetup.SPECS[key][3]
 	apply_button.disabled = not changed or not garage_allowed(); reset_button.disabled = not changed
-	note.text = "Unapplied adjustments · no effect yet." if changed else "Setup is applied."
+	note.text = sim.cars[loaded_driver].name + (" · Unapplied adjustments · no effect yet." if changed else " · Setup is applied.")
+	apply_button.tooltip_text = "Apply only to " + sim.cars[loaded_driver].name + "." if garage_allowed() else "Mechanical changes unlock in the garage or race preparation."
 	if not garage_allowed(): note.text += "\nMechanical changes unlock in the garage or race preparation."
 	if draft_effects:
 		var c=sim.cars[loaded_driver].duplicate();c.car_setup=drafts[loaded_driver]
@@ -100,7 +112,13 @@ func apply_draft() -> void:
 	dispatch.call("setup_all", {"values": drafts[loaded_driver].duplicate()})
 	refresh_status()
 
+func has_user_edits() -> bool:
+	for id in drafts:
+		if edited.get(id, false) and drafts[id] != sim.cars[id].car_setup: return true
+	return false
+
 func revert() -> void:
+	edited[loaded_driver] = false
 	drafts[loaded_driver] = sim.cars[loaded_driver].car_setup.duplicate()
 	for key in fields: fields[key].set_value_no_signal(drafts[loaded_driver][key])
 	refresh_status()

@@ -208,7 +208,8 @@ func adapt_layout() -> void:
 		var destination = driver_rail if use_rail else decision_bar
 		for id in [3, 6]:
 			var panel = car_cards[id].panel
-			car_cards[id].status.custom_minimum_size.x = ceilf(124 * text_scale)
+			car_cards[id].set_stacked(use_rail)
+			car_cards[id].status.custom_minimum_size.x = 0
 			car_cards[id].rival.visible = not (right_panel.visible and size.y <= 800)
 			car_cards[id].issue.custom_minimum_size.y = ceilf((0 if right_panel.visible and size.y <= 800 else 30) * text_scale)
 			if panel.get_parent() != destination:
@@ -336,9 +337,10 @@ func show_reading(title: String, text: String, invoker: Control) -> void:
 
 func confirm_leave(proceed: Callable) -> void:
 	if is_instance_valid(exit_dialog): return
-	if not strategy_desk.has_user_edits(): proceed.call(); return
-	exit_dialog = ConfirmationDialog.new(); exit_dialog.title = "Leave unapplied strategy edits?"
-	exit_dialog.dialog_text = "Your active race is saved separately. Unapplied strategy edits will be discarded when this view closes.\n\nStay to review or approve them, or leave without applying."
+	var kinds = unapplied_draft_kinds()
+	if kinds.is_empty(): proceed.call(); return
+	exit_dialog = ConfirmationDialog.new(); exit_dialog.title = "Leave unapplied edits?"
+	exit_dialog.dialog_text = "Your active race is saved separately. Unapplied %s edits will be discarded when this view closes.\n\nStay to review or approve them, or leave without applying." % ", ".join(kinds)
 	exit_dialog.ok_button_text = "Leave without applying"; exit_dialog.cancel_button_text = "Stay and review"
 	add_child(exit_dialog); PitwallDesign.scale_controls(exit_dialog, text_scale)
 	exit_dialog.confirmed.connect(func(): exit_dialog.queue_free(); proceed.call())
@@ -408,3 +410,9 @@ func open_analysis_workspace() -> void:
 
 func open_journal_workspace() -> void:
 	open_results_workspace();results_workspace.show_page(3)
+
+func unapplied_draft_kinds() -> Array[String]:
+	var kinds: Array[String] = []
+	if strategy_desk.has_user_edits(): kinds.append("strategy")
+	if racecraft.has_user_edits(): kinds.append("setup")
+	return kinds

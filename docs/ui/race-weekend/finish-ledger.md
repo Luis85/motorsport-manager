@@ -52,3 +52,19 @@ Baseline red suite: **25 checks, 11 expected assertion failures, 4 native captur
 Green increment: fresh import and **47 finishing + 68 completion + 89 repair = 204 native checks**, with log scanning, Linux Xvfb / Mesa llvmpipe / Dummy audio / pinned 4.7.2 / LP_NUM_THREADS=2. New receipts match journal command IDs, override IDs/expiry, qualifying run numbers and order→entry→exit records. Qualifying completion can truthfully report an invalid lap. Missing journal identity is unavailable, not a successful outcome. Reopening retains the accepted receipt; a new review is explicit.
 
 The full runner retains all prior suites and now includes `ui_finish_tests.gd`. Baseline full-run completion, broader populated screenshots, native pointer coverage and final-head hosted CI are distinct later gates. Evidence is retained in the delivered verification bundle; do not equate this targeted increment with final acceptance of G01–G18.
+
+
+## Continuation: observation and analytical evidence
+
+Recovered the last published head `d1a654d763659556ee219c5a639804e7f8ea6104`, tree `df174f6d71a71c6a7d209bad0d31376bda130201`, from hosted verification #264 / 36179960438. The run succeeded. The PR remained open and no comments/reviews were returned. The recovered artifact tree equals the remote Git tree; the handoff fallback was not overlaid onto it. Unpublished work from the interrupted container was not assumed to exist.
+
+- **WP03 / G02–G03:** Full actual driver identity, responsive status placement, visible queue severity and per-driver cardinality, and a stable issue selector that makes each pending action reviewable. Selecting an issue is observation; it does not re-authorize a historical receipt.
+- **WP04 / G04:** Required time and latest feasible qualifying release are visible rather than hover-only. The circuit continues to provide spatial traffic context; no release guarantees a clear lap.
+- **WP06 / G06:** Optional strategy timeline gains a distance ruler, typed compound strips, current-distance cursor and native stop/option inspection. It displays existing candidate plans only.
+- **WP08 / G08–G09:** Exact timestamp-aligned own-driver telemetry comparison, distinct solid/circle versus dashed/square traces, retained-sample counts and missing values. A new native pixel regression reproduced disappearing isolated points beside gaps; finite points now remain visible without bridging a gap.
+- **WP09 / G10:** Fitted-to-draft deltas for the same five setup axes, shared edited-state safeguards, setup-only exit warning, and explicit limiting punctures on finite tyre readouts. No mechanical change occurs on editing.
+- **WP12 / G14:** Actual lap/run coordinates, narrow padded measured ranges, unavailable laps retained, invalid/pit annotations and compatible teammate comparison. A reproducing fixture found that practice crossing timestamps were being treated as lap durations; the copied presentation record now uses recorded `seconds` while preserving the crossing timestamp separately. No practice record is mutated.
+
+The new `ui_finish_observation_tests.gd` and `ui_finish_analysis_tests.gd` are registered in the full runner alongside every retained suite. Boundary fixtures are explicitly synthetic; populated physical-session and full visual-matrix acceptance remain separate work. Native red evidence: six observation assertions; nine initial analysis assertions; isolated-point pixel assertion; practice duration assertion. Harness mistakes are retained as diagnostics, not counted as product-defect reproductions.
+
+**Platform evidence remains separate:** Linux/Xvfb/Mesa llvmpipe native events do not certify Windows, physical controllers, screen readers or broad hardware performance. Final work-package closure will be recorded against actual completed evidence, not this implementation list.

@@ -10,6 +10,8 @@ var snapshot: Dictionary = {}
 var stage = "REVIEW"
 var pending_action = ""
 var pending_payload: Dictionary = {}
+var issue_selector: OptionButton
+var issue_choices: Array = []
 var heading: Label
 var facts: Label
 var evidence: Label
@@ -40,6 +42,9 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 8)
 	status = RaceStatusBadge.new(); add_child(status)
 	heading = UI.paragraph("Review a decision",UI.INK); heading.add_theme_font_size_override("font_size",PitwallDesign.TYPE.heading); add_child(heading)
+	issue_selector = OptionButton.new(); issue_selector.fit_to_longest_item = false; add_child(issue_selector)
+	issue_selector.accessibility_name = "Issue to review for the named driver"
+	issue_selector.item_selected.connect(select_issue)
 	facts = UI.paragraph(""); add_child(facts);facts.hide()
 	var metrics=UI.hbox(self)
 	measured=UI.paragraph("");metrics.add_child(measured)
@@ -85,6 +90,13 @@ ESTIMATE · finish margin %+.1f laps
 
 ".join(lines) if not lines.is_empty() else "No pending issue. Existing plan and owners continue."
 	evidence.text += "\n\n" + snapshot.get("battle", "") + "\n" + snapshot.get("battle_detail", "")
+	issue_choices.clear(); issue_selector.clear()
+	for entry in snapshot.decisions:
+		if not entry.acknowledged: issue_choices.append(entry)
+	for entry in issue_choices:
+		issue_selector.add_item(entry.title)
+		if entry.get("issue", "") == snapshot.primary.get("issue", ""): issue_selector.select(issue_selector.item_count - 1)
+	issue_selector.visible = issue_choices.size() > 1
 	comparison.present(snapshot.forecast)
 	refresh_state()
 
@@ -95,6 +107,7 @@ func refresh_state() -> void:
 	var race = model.phase == "race"; var live = not car.dnf and not car.finished
 	var locked = stage not in ["REVIEW", "CONFIRM"]
 	var f = snapshot.forecast
+	issue_selector.disabled = locked
 	box.visible = race; fuel.visible = race and snapshot.primary.get("issue","")=="fuel"; release.visible = model.phase == "qualifying"
 	box.disabled = locked or stale or not live or car.route != "track" or car.pit_order or f.replacement_id.is_empty() or f.gate.distance >= model.laps * model.track.length
 	fuel.disabled = locked or stale or not live or not race
@@ -163,3 +176,12 @@ func reset_review() -> void:
 	if stage not in ["REVIEW", "CONFIRM"]: return
 	stage = "REVIEW"; pending_action = ""; pending_payload.clear()
 	message.text = "No new command issued."; refresh_state()
+
+func select_issue(index: int) -> void:
+	# Select only from this immutable reviewed snapshot. No new source or order.
+	if stage not in ["REVIEW", "CONFIRM"] or index < 0 or index >= issue_choices.size(): return
+	reset_review()
+	snapshot.primary = issue_choices[index].duplicate(true)
+	heading.text = snapshot.name + " · " + snapshot.primary.title
+	message.text = snapshot.primary.evidence + "\n" + snapshot.primary.fallback
+	refresh_state()
