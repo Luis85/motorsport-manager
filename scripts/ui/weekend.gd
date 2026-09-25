@@ -99,6 +99,10 @@ var session_strip: PanelContainer
 var decision_badge: Label
 var decision_signature = ""
 var decision_snoozed_signature = ""
+var driver_status_card: PanelContainer
+var driver_position_label: Label
+var driver_rival_label: Label
+var driver_plan_label: Label
 
 class StintPlot extends Control:
 	var sim: RaceSim
@@ -222,8 +226,14 @@ func _ready() -> void:
 	for id in [3, 6]:
 		var b = UI.button("", func(): select_driver(id)); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; b.add_theme_font_size_override("font_size", 12)
 		teammates.add_child(b); teammate_buttons.append(b)
-	driver_label = UI.label("", 13, UI.ACCENT); wall.add_child(driver_label)
-	intent_label = UI.label("", 12, UI.MUTED); intent_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; wall.add_child(intent_label)
+	driver_status_card = UI.race_panel(false, 6); wall.add_child(driver_status_card)
+	var driver_status = UI.vbox(driver_status_card)
+	var driver_heading = UI.hbox(driver_status)
+	driver_label = UI.label("", 14, UI.ACCENT); driver_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; driver_heading.add_child(driver_label)
+	driver_position_label = UI.label("", 18, UI.INK); driver_heading.add_child(driver_position_label)
+	driver_rival_label = UI.label("", 11, UI.MUTED); driver_status.add_child(driver_rival_label)
+	intent_label = UI.label("", 12, UI.MUTED); intent_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; driver_status.add_child(intent_label)
+	driver_plan_label = UI.label("", 11, UI.MUTED); driver_plan_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; driver_status.add_child(driver_plan_label)
 	resource_row = UI.hbox(wall)
 	for title in ["TYRES", "FUEL", "INTEGRITY"]:
 		var cell = UI.vbox(resource_row); cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL; cell.add_theme_constant_override("separation", 3)
@@ -457,7 +467,12 @@ func refresh() -> void:
 		teammate_buttons[i].text = "%s · P%d" % [teammate.short, order.find(teammate) + 1]
 		UI.set_active(teammate_buttons[i], teammate.id == c.id)
 	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", Color(c.color).darkened(0.35))
+	var selected_position = order.find(c) + 1
+	driver_position_label.text = "P%d" % selected_position
+	var nearest = order[selected_position - 2] if selected_position > 1 else (order[1] if order.size() > 1 else null)
+	driver_rival_label.text = ("Nearest rival · %s" % nearest.short) if nearest != null else "Leading the field"
 	intent_label.text = "Finished P%d" % c.finish_position if c.finished else ("Retired: " + c.retire_reason if c.dnf else c.intent); intent_label.tooltip_text = intent_label.text
+	driver_plan_label.text = "%s %d%%   ·   Fuel %+.1f laps   ·   %s" % [c.compound, c.tyre, c.fuel, ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
 	var values = [c.tyre, c.fuel, c.health]
 	for i in range(3):
 		resource_labels[i].text = "%.1f laps" % values[i] if i == 1 else "%d%%" % values[i]
@@ -596,7 +611,7 @@ func set_detail_expanded(value: bool) -> void:
 	detail_expanded = value
 	timing_panel.visible = not value
 	right_panel.custom_minimum_size.x = 520 if value else 360
-	driver_label.visible = not value; intent_label.visible = not value; resource_row.visible = not value
+	driver_status_card.visible = not value; resource_row.visible = not value
 	compact_resources.visible = value; expand_button.text = "Collapse" if value else "Expand"
 	open_detail()
 	# A layout change is presentation only. Preserve the camera's world-space center.
