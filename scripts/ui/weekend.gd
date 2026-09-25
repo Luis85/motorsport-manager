@@ -96,6 +96,9 @@ var decision_text: Label
 var decision_review: Button
 var decision_hold: Button
 var session_strip: PanelContainer
+var decision_badge: Label
+var decision_signature = ""
+var decision_snoozed_signature = ""
 
 class StintPlot extends Control:
 	var sim: RaceSim
@@ -316,9 +319,10 @@ func _ready() -> void:
 	decision_strip = UI.race_panel(false, 7); add_child(decision_strip)
 	var decision_row = UI.hbox(decision_strip)
 	decision_row.add_child(UI.label("DECISION QUEUE", 11, UI.ACCENT))
+	decision_badge = UI.label("CLEAR", 10, UI.GOOD); decision_badge.custom_minimum_size.x = 54; decision_row.add_child(decision_badge)
 	decision_text = UI.label("No urgent decision · stay on plan", 12, UI.MUTED); decision_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL; decision_row.add_child(decision_text)
-	decision_review = UI.button("Review", func(): open_topic(3)); decision_row.add_child(decision_review)
-	decision_hold = UI.button("Keep plan", func(): feedback("Plan retained · review again when conditions materially change")); decision_row.add_child(decision_hold)
+	decision_review = UI.button("Review", review_decision); decision_review.tooltip_text = "Open the most relevant control surface for this issue. Reviewing never changes the race."; decision_row.add_child(decision_review)
+	decision_hold = UI.button("Keep plan", hold_decision); decision_hold.tooltip_text = "Acknowledge this state until the underlying condition materially changes."; decision_row.add_child(decision_hold)
 	hint = UI.paragraph(""); hint.add_theme_font_size_override("font_size", 12); add_child(hint)
 	radio_label = UI.label("", 11, UI.MUTED); add_child(radio_label)
 	refresh(); setup_guide(); call_deferred("wire_control_help", self)
@@ -391,14 +395,14 @@ func refresh() -> void:
 	if tower == null: return
 	var c = sim.cars[sim.selected_id]
 	if decision_text:
-		var urgent = c.health < 55 or c.tyre < 28 or c.fuel < 1.2 or c.scheduled_lap > 0
-		if c.health < 55: decision_text.text = "%s · Car condition requires a pit/recovery decision" % c.short
-		elif c.tyre < 28: decision_text.text = "%s · Tyre life is becoming the limiting factor" % c.short
-		elif c.fuel < 1.2: decision_text.text = "%s · Fuel margin is tight · compare pace policy" % c.short
-		elif c.scheduled_lap > 0: decision_text.text = "%s · Pit plan active · next stop is approaching" % c.short
-		else: decision_text.text = "No urgent decision · watch the race and stay on plan"
-		decision_review.visible = urgent
-		decision_hold.visible = urgent
+		var issue = current_decision(c)
+		decision_signature = issue.signature
+		var actionable = not issue.signature.is_empty() and issue.signature != decision_snoozed_signature
+		decision_text.text = issue.text if actionable else ("Plan acknowledged · watching for a material change" if not issue.signature.is_empty() else "No urgent decision · watch the race and stay on plan")
+		decision_badge.text = issue.badge if actionable else ("HOLD" if not issue.signature.is_empty() else "CLEAR")
+		decision_badge.add_theme_color_override("font_color", issue.color if actionable else (UI.ACCENT if not issue.signature.is_empty() else UI.GOOD))
+		decision_review.visible = actionable
+		decision_hold.visible = actionable
 	surface_control.set_pressed_no_signal(canvas.show_surface)
 	compact_resources.text = "TYRES %d%%   ·   FUEL %.1f laps   ·   CAR %d%%" % [c.tyre, c.fuel, c.health]
 	var q = sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"]
@@ -509,6 +513,29 @@ func refresh() -> void:
 		var error = App.save_weekend()
 		if not error.is_empty(): feedback("Autosave failed: " + error)
 
+func current_decision(c: Dictionary) -> Dictionary:
+	if not c.player or c.dnf or c.finished: return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
+	if c.health < 55:
+		return {"signature": "%s:health:%d" % [c.id, int(c.health / 10)], "text": "%s · Car condition %d%% · review recovery or pit service" % [c.short, c.health], "badge": "CAR", "color": UI.DANGER, "topic": 0}
+	if c.tyre < 28:
+		return {"signature": "%s:tyre:%d" % [c.id, int(c.tyre / 5)], "text": "%s · Tyre life %d%% · current set is becoming the limiting factor" % [c.short, c.tyre], "badge": "TYRE", "color": UI.ACCENT, "topic": 3}
+	if c.fuel < 1.2:
+		return {"signature": "%s:fuel:%d" % [c.id, int(c.fuel * 4)], "text": "%s · Fuel margin %.1f laps · review pace and engine policy" % [c.short, c.fuel], "badge": "FUEL", "color": UI.ACCENT, "topic": 0}
+	if c.scheduled_lap > 0:
+		return {"signature": "%s:pit:%d" % [c.id, c.scheduled_lap], "text": "%s · Pit plan active for lap %d · review stop plan before commitment" % [c.short, c.scheduled_lap], "badge": "PIT", "color": UI.ACCENT, "topic": 3}
+	return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
+
+func review_decision() -> void:
+	var issue = current_decision(sim.cars[sim.selected_id])
+	if issue.signature.is_empty(): return
+	open_topic(issue.topic)
+
+func hold_decision() -> void:
+	if decision_signature.is_empty(): return
+	decision_snoozed_signature = decision_signature
+	feedback("Plan retained · this prompt returns only after the underlying condition changes")
+	refresh()
+
 func save_checkpoint() -> void:
 	var error = App.save_weekend()
 	feedback("Weekend saved. Continue resumes this checkpoint." if error.is_empty() else error)
@@ -589,6 +616,7 @@ func refresh_navigation() -> void:
 
 func open_topic(index: int) -> void:
 	open_detail()
+	if trace: trace.visible = index == 1
 	if tabs.current_tab != index: tabs.current_tab = index
 	else: refresh_navigation(); refresh()
 
