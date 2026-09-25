@@ -17,7 +17,7 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 	var body = host.get_child(0); body.add_theme_constant_override("separation", 3)
 	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
 	var header = UI.hbox(body); body.move_child(header, 0)
-	position = UI.label("P—", 22); position.custom_minimum_size.x = 45; header.add_child(position)
+	position = UI.label("P—", 24, UI.RACE_INK); position.custom_minimum_size.x = 50; header.add_child(position)
 	name_label = UI.button(car.short + " · " + car.name.get_slice(" ", 1), details); name_label.add_theme_font_size_override("font_size", 14); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
 	status = UI.label("", 12, PitwallDesign.MUTED); header.add_child(status)
 	var metrics = UI.hbox(body); body.move_child(metrics, 1)
@@ -66,5 +66,5 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	var key = "warning" if decision.get("priority", 0) >= 90 else ("selected" if model.selected_id == id else "normal")
 	if prior_style != key:
 		prior_style = key
-		var style = UI.box(UI.PANEL, UI.DANGER if key == "warning" else (UI.PRIMARY if key == "selected" else UI.LINE), 5, 6)
-		style.border_width_left = 1; panel.add_theme_stylebox_override("panel", style)
+		var style = UI.box(Color("fff2dc") if key == "warning" else UI.RACE_CREAM, UI.DANGER if key == "warning" else (UI.GOLD if key == "selected" else UI.LINE), PitwallDesign.RADIUS_MD, PitwallDesign.SPACE_2)
+		style.border_width_left = 3 if key in ["warning", "selected"] else 1; panel.add_theme_stylebox_override("panel", style)
