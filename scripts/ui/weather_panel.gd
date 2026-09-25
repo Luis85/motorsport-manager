@@ -18,6 +18,7 @@ var sector_labels: Array[Label] = []
 var navigation_bar: HBoxContainer
 var commit_bar: HBoxContainer
 var refresh_count = 0
+var outlook_chart: RaceMetricChart
 
 func configure(value: WeatherRaceSim) -> void: model = value
 
@@ -38,6 +39,7 @@ func _ready() -> void:
 		var label = UI.label("", 11, UI.ACCENT); label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		sectors.add_child(label); sector_labels.append(label)
 	outlook_label = UI.paragraph(""); outlook_label.add_theme_font_size_override("font_size", 12); add_child(outlook_label)
+	outlook_chart = RaceMetricChart.new(); outlook_chart.custom_minimum_size.y = 130; add_child(outlook_chart)
 	cases_label = UI.paragraph(""); cases_label.add_theme_font_size_override("font_size", 11); add_child(cases_label)
 	for i in range(3):
 		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size", 12); add_child(label); options.append(label)
@@ -85,6 +87,8 @@ func refresh() -> void:
 	outlook_label.text = "%s · %s\n%s\nWettest line point %.0f%%; off-line peak %.0f%%. Rainfall is not surface grip." % [outlook.trend.capitalize(), outlook.confidence, outlook.message, observed.peak * 100, observed.off_line_peak * 100]
 	if not outlook.arrival.is_empty(): outlook_label.text += "\nPossible rain window: %.0f–%.0f simulated seconds (~%.0f–%.0fs at %d×); unknown duration." % [outlook.arrival.low, outlook.arrival.high, outlook.arrival.low / model.speed, outlook.arrival.high / model.speed, model.speed]
 	cases_label.text = "STRESS CASES · %.1f-lap horizon%s\nLine water after ~%.0fs: drier %.0f%% / trend %.0f%% / wetter %.0f%%. Not probabilities." % [advice.horizon_laps, " (partial race)" if advice.partial_horizon else "", outlook.horizon_seconds, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100]
+	if outlook_chart:
+		outlook_chart.present("Line water outlook · stress envelope", "% water", [observed.mean * 100, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100], 0.0, 100.0)
 	for i in range(3):
 		options[i].visible = i < advice.options.size()
 		if not options[i].visible: continue
