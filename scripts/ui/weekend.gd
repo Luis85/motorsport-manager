@@ -32,7 +32,7 @@ var recall_button: Button
 var setup: SpinBox
 var log_label: RichTextLabel
 var history_label: RichTextLabel
-var trace: TelemetryPlot
+var trace: RaceMetricChart
 var speed_control: OptionButton
 var follow_control: CheckButton
 var surface_control: CheckButton
@@ -95,6 +95,11 @@ var decision_strip: PanelContainer
 var decision_text: Label
 var decision_review: Button
 var decision_hold: Button
+var session_header: RaceSessionHeader
+var timing_view: RaceTimingTower
+var race_workspace: RaceObservationWorkspace
+var qualifying_workspace: RaceQualifyingWorkspace
+var tyre_readout: RaceTyreReadout
 var session_strip: PanelContainer
 var decision_badge: Label
 var decision_signature = ""
@@ -103,9 +108,10 @@ var driver_status_card: PanelContainer
 var driver_position_label: Label
 var driver_rival_label: Label
 var driver_plan_label: Label
+var telemetry_inspector: RaceTelemetryInspector
+var radio_inspector: RaceRadioInspector
 var telemetry_chart: RaceMetricChart
 var telemetry_sectors: RaceSectorTable
-var ui_snapshot: RaceUISnapshot
 var top_secondary_actions: MenuButton
 var race_context_label: Label
 
@@ -132,84 +138,30 @@ class StintPlot extends Control:
 		draw_string(ThemeDB.fallback_font, Vector2(10, 77), "START                         LAP %d" % sim.laps, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
 
 
-class TelemetryPlot extends Control:
-	var sim: RaceSim
-	func _ready(): custom_minimum_size.y = 104
-	func _draw():
-		draw_style_box(UI.box(UI.PANEL), Rect2(Vector2.ZERO, size))
-		draw_string(ThemeDB.fallback_font, Vector2(14, 20), "TELEMETRY   /   SPEED · km/h                                      LAST 120 s", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
-		for i in range(1, 4):
-			var y = 29 + i * (size.y - 40) / 4
-			draw_line(Vector2(14, y), Vector2(size.x - 14, y), UI.LINE, 1)
-		if sim == null: return
-		var c = sim.cars[sim.selected_id]; var samples: Array = c.telemetry
-		if samples.size() < 2:
-			draw_string(ThemeDB.fallback_font, Vector2(14, 63), "Live speed trace appears after the car leaves its garage.", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, UI.MUTED)
-			return
-		var line = PackedVector2Array()
-		for i in range(samples.size()):
-			line.append(Vector2(14 + (size.x - 28) * i / maxf(1, samples.size() - 1), size.y - 12 - clampf(samples[i][1] / 340.0, 0, 1) * (size.y - 43)))
-		draw_polyline(line, Color(c.color).darkened(0.25), 1.8, true)
-
 func configure(value: RaceSim) -> void:
 	sim = value
 
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 5)
-	session_strip = UI.race_panel(true, 8); add_child(session_strip)
-	var heading = UI.hbox(session_strip)
-	var titles = UI.hbox(heading); titles.alignment = BoxContainer.ALIGNMENT_BEGIN
-	title_label = UI.race_label(sim.track.document.name.to_upper(), 22, true); titles.add_child(title_label)
-	session_label = UI.race_label("", 12); titles.add_child(session_label); session_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; session_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; heading.add_child(spacer)
-	primary_button = UI.race_button("Start qualifying", primary_action, true); primary_button.custom_minimum_size.x = 174; heading.add_child(primary_button)
-	var progress = UI.hbox(self)
-	for text in ["01 Qualifying", "02 Preparation", "03 Formation", "04 Start", "05 Race", "06 Results"]:
-		var step = UI.label(text, 11, UI.MUTED); step.size_flags_horizontal = Control.SIZE_EXPAND_FILL; progress.add_child(step); steps.append(step)
-	var strip_panel = UI.race_panel(true, 5); add_child(strip_panel)
-	var strip = HBoxContainer.new(); strip_panel.add_child(strip)
-	pause_button = UI.race_button("Ⅱ  Pause", func(): dispatch("pause")); strip.add_child(pause_button)
-	speed_control = UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): dispatch("speed", {"value": [1, 2, 4, 8, 16][index]})); strip.add_child(speed_control)
-	clock_label = UI.race_label("", 14, true); clock_label.custom_minimum_size.x = 144; strip.add_child(clock_label)
-	flag_label = UI.race_label("●  GREEN", 12); flag_label.add_theme_color_override("font_color", UI.GOOD); flag_label.custom_minimum_size.x = 96; strip.add_child(flag_label)
-	weather_label = UI.race_label("", 12); weather_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; weather_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; strip.add_child(weather_label)
-	race_context_label = UI.race_label("", 11); race_context_label.custom_minimum_size.x = 145; strip.add_child(race_context_label)
-	top_secondary_actions = MenuButton.new(); top_secondary_actions.text = "Weekend"; top_secondary_actions.custom_minimum_size.y = 32; strip.add_child(top_secondary_actions)
-	top_secondary_actions.get_popup().add_item("Save checkpoint", 0)
-	top_secondary_actions.get_popup().add_item("Export race log…", 1)
-	top_secondary_actions.get_popup().add_separator()
-	top_secondary_actions.get_popup().add_item("Open guide", 2)
-	top_secondary_actions.get_popup().add_item("Main menu", 3)
-	top_secondary_actions.get_popup().id_pressed.connect(weekend_action)
+	session_header = RaceSessionHeader.new(); session_header.configure(sim); add_child(session_header)
+	session_strip = session_header
+	session_header.action_requested.connect(dispatch); session_header.utility_requested.connect(weekend_action); session_header.advance_requested.connect(primary_action)
+	title_label = session_header.title_label; session_label = session_header.session_label
+	clock_label = session_header.clock_label; flag_label = session_header.flag_label; weather_label = session_header.weather_label
+	race_context_label = session_header.context_label; primary_button = session_header.primary_button
+	pause_button = session_header.pause_button; speed_control = session_header.speed_control; top_secondary_actions = session_header.weekend_menu
+	steps = session_header.steps
 	navigation = UI.hbox(self); navigation.add_theme_constant_override("separation", 3)
 	watch_button = UI.button("Race view", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
-	var body = UI.hbox(self, true)
-	timing_panel = UI.race_panel(true, 6); timing_panel.custom_minimum_size.x = 232; body.add_child(timing_panel)
-	var timing = UI.vbox(timing_panel, true)
-	timing.add_child(UI.race_label("LIVE CLASSIFICATION", 12, true))
-	tower = Tree.new(); tower.select_mode = Tree.SELECT_ROW; tower.columns = 5; tower.hide_root = true; tower.hide_folding = true
-	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tower.add_theme_font_size_override("font_size", 12); tower.add_theme_font_size_override("title_button_font_size", 10)
-	tower.add_theme_constant_override("v_separation", 4); tower.add_theme_constant_override("indent", 0)
-	tower.add_theme_stylebox_override("panel", UI.box(UI.RACE_DARK, Color("426558"), 4, 2))
-	tower.add_theme_color_override("font_color", Color("edf0df"))
-	tower.add_theme_color_override("font_selected_color", UI.RACE_INK)
-	tower.add_theme_color_override("title_button_color", UI.GOLD)
-	tower.add_theme_stylebox_override("title_button_normal", UI.box(UI.RACE_DARK_3, Color("426558"), 2, 3))
-	tower.add_theme_stylebox_override("title_button_hover", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
-	tower.add_theme_stylebox_override("title_button_pressed", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
-	for i in range(5):
-		tower.set_column_title(i, ["P", "CAR", "GAP / LAP", "TYRE", "STATE"][i]); tower.set_column_expand(i, false)
-		tower.set_column_custom_minimum_width(i, [26, 42, 67, 28, 37][i])
-	tower.item_selected.connect(func():
-		var item = tower.get_selected()
-		if item: select_driver(int(item.get_metadata(0))))
-	timing.add_child(tower)
-	var root_item = tower.create_item()
-	for i in range(12): rank_rows.append(tower.create_item(root_item))
-	var legend = UI.race_label("* Your team   |   ~ Estimated gap", 11); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
+	race_workspace = RaceObservationWorkspace.new(); add_child(race_workspace)
+	var body = race_workspace
+	timing_view = RaceTimingTower.new(); timing_view.configure(sim); body.add_child(timing_view)
+	timing_panel = timing_view; tower = timing_view.tower; rows = timing_view.rows; rank_rows = timing_view.rank_rows; rendered_rows = timing_view.rendered_rows
+	timing_view.driver_selected.connect(select_driver)
 	var visual = UI.vbox(body, true)
+	qualifying_workspace = RaceQualifyingWorkspace.new(); qualifying_workspace.configure(sim); visual.add_child(qualifying_workspace); qualifying_workspace.hide()
+	qualifying_workspace.inspect_requested.connect(_inspect_qualifying)
 	var view_row = HBoxContainer.new(); map_controls = view_row; visual.add_child(view_row)
 	view_row.add_child(UI.button("Fit · F", func(): set_follow(false); canvas.fit()))
 	follow_control = UI.check("Follow", false, set_follow); view_row.add_child(follow_control)
@@ -228,7 +180,6 @@ func _ready() -> void:
 	canvas = TrackCanvas.new(); canvas.sim = sim; canvas.show_line = App.settings.racing_line; canvas.show_labels = App.settings.labels; canvas.show_grid = false
 	canvas.set_track(sim.track); visual.add_child(canvas); canvas.car_selected.connect(select_driver)
 	canvas.navigated.connect(func(): set_follow(false))
-	trace = TelemetryPlot.new(); trace.sim = sim; trace.visible = false; visual.add_child(trace)
 	right_panel = UI.race_panel(false, 8); right_panel.custom_minimum_size.x = 360; body.add_child(right_panel)
 	var wall = UI.vbox(right_panel, true); wall.add_theme_constant_override("separation", 5)
 	
@@ -292,21 +243,18 @@ func _ready() -> void:
 	commands.add_child(UI.button("Open complete setup →", func(): tabs.current_tab = 4))
 	command_note = UI.paragraph("", UI.MUTED); command_note.add_theme_font_size_override("font_size", 12); drive_pages[0].add_child(command_note)
 	var telemetry = tab_page("Telemetry")
-	telemetry_label = UI.label("", 14); telemetry.add_child(telemetry_label)
-	telemetry_chart = RaceMetricChart.new(); telemetry.add_child(telemetry_chart)
-	telemetry_sectors = RaceSectorTable.new(); telemetry.add_child(telemetry_sectors)
-	history_label = RichTextLabel.new(); history_label.custom_minimum_size = Vector2(245, 150); history_label.add_theme_font_size_override("normal_font_size", 12); telemetry.add_child(history_label)
+	telemetry_inspector = RaceTelemetryInspector.new();telemetry_inspector.configure(sim);telemetry.add_child(telemetry_inspector)
+	telemetry_label=telemetry_inspector.metric_label;telemetry_chart=telemetry_inspector.chart;telemetry_sectors=telemetry_inspector.sectors;history_label=telemetry_inspector.history;trace=telemetry_chart
 	var radio = tab_page("Radio")
-	radio.add_child(UI.paragraph("Latest first. Reading radio does not pause a live session; use Space to pause."))
-	radio.add_child(UI.option(["All events", "Flags & incidents", "Pit decisions", "Tyre condition", "Weather"], func(index):
-		radio_filter = ["all", "flags", "pit", "tyre", "weather"][index]; last_event_count = -1; refresh()))
-	log_label = RichTextLabel.new(); log_label.custom_minimum_size = Vector2(245, 300); log_label.selection_enabled = true; log_label.add_theme_font_size_override("normal_font_size", 12); radio.add_child(log_label)
+	radio_inspector=RaceRadioInspector.new();radio_inspector.configure(sim);radio.add_child(radio_inspector)
+	radio_inspector.filter_changed.connect(_set_radio_filter);log_label=radio_inspector.source
 	var tyres = tab_page("Tyres")
 	var tyre_sections = UI.hbox(tyres)
 	for index in range(3):
 		var b = UI.button(["Allocation", "Wheels", "Stop plan"][index], func(): show_tyres(index))
 		b.add_theme_font_size_override("font_size", 12); b.custom_minimum_size.y = 32; b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tyre_sections.add_child(b); tyre_nav.append(b)
 	var stock = UI.vbox(tyres); tyre_pages.append(stock)
+	tyre_readout=RaceTyreReadout.new();tyre_readout.configure(sim);stock.add_child(tyre_readout)
 	stock.add_child(UI.label("PLAN A SET · THEN BOX / SEND", 12, UI.ACCENT))
 	var sets = GridContainer.new(); sets.columns = 3; stock.add_child(sets)
 	for index in range(12):
@@ -370,11 +318,8 @@ func setup_guide() -> void:
 	add_child(guide)
 
 func tab_page(title: String) -> VBoxContainer:
-	var scroll = ScrollContainer.new(); scroll.name = title; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; tabs.add_child(scroll)
-	var margin = MarginContainer.new(); margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL; scroll.add_child(margin)
-	for side in ["left", "right", "top", "bottom"]: margin.add_theme_constant_override("margin_" + side, 5)
-	var page = UI.vbox(margin); page.add_theme_constant_override("separation", 6)
-	return page
+	var scroll=RaceInspectorPage.new();scroll.name=title;tabs.add_child(scroll)
+	return scroll.body
 
 func fit_canvas() -> void: canvas.fit()
 
@@ -435,30 +380,9 @@ func refresh() -> void:
 	compact_resources.text = "TYRES %d%%   ·   FUEL %.1f laps   ·   CAR %d%%" % [c.tyre, c.fuel, c.health]
 	var q = sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"]
 	var order = sim.standings(q); var leader = order[0]
-	rows.clear(); tower.set_block_signals(true)
-	for i in range(order.size()):
-		var car = order[i]; var row = rank_rows[i]; rows[car.id] = row
-		var text = "LEADER" if i == 0 else "~+%.1fs" % [maxf(0, leader.distance - car.distance) / maxf(15, car.speed)]
-		if q: text = RaceSim.format_time(car.qual_best)
-		elif car.dnf: text = "DNF"
-		elif sim.phase in ["briefing", "race_preparation", "formation", "grid_ready", "lights"]: text = "GRID %d" % car.grid
-		elif car.finished:
-			text = "WINNER" if i == 0 else ("+%d L" % (leader.completed - car.completed) if car.completed < leader.completed else "+%.3f" % (car.finish_time - leader.finish_time))
-		elif leader.distance - car.distance >= sim.track.length: text = "+%d L" % int((leader.distance - car.distance) / sim.track.length)
-		var state = "DNF" if car.dnf else ("FIN" if car.finished else ("PIT" if car.route == "pit" else ({"garage": "BOX", "outlap": "OUT", "hotlap": "HOT", "inlap": "IN"}.get(car.qual_state, "") if q else ("BLUE" if car.blue else "%d%%" % car.tyre))))
-		var tooltip = "%s · %s\n%s\nTyres %.0f%% · %s\nBest %s" % [car.name, car.team, car.intent, car.tyre, car.compound, RaceSim.format_time(car.qual_best if q else car.best_lap)]
-		var appearance = [car.id, text, car.compound, state, tooltip, car.id == sim.selected_id]
-		if rendered_rows.get(i) != appearance:
-			rendered_rows[i] = appearance
-			row.set_text(0, str(i + 1)); row.set_text(1, car.short + ("*" if car.player else "")); row.set_custom_color(1, Color(car.color).darkened(0.32)); row.set_metadata(0, car.id)
-			row.set_text(2, text); row.set_text(3, car.compound); row.set_text(4, state)
-			row.set_custom_color(4, UI.ACCENT if state == "HOT" else (UI.DANGER if car.dnf else UI.MUTED))
-			for column in range(5):
-				row.set_tooltip_text(column, tooltip)
-				row.set_custom_bg_color(column, UI.GOLD.lightened(0.18) if car.id == sim.selected_id else (Color("315c4d") if car.player else UI.RACE_DARK))
-				row.set_custom_color(column, UI.RACE_INK if car.id == sim.selected_id else (Color("edf0df") if column != 4 else (UI.GOLD if state == "HOT" else (Color("e58b78") if car.dnf else Color("b8c6bc")))))
-		if car.id == sim.selected_id and not row.is_selected(0): row.select(0)
-	tower.set_block_signals(false)
+	timing_view.present()
+	qualifying_workspace.visible = sim.phase == "qualifying" and not right_panel.visible
+	if qualifying_workspace.visible: qualifying_workspace.present()
 	var captions = {"practice": "End practice…", "practice_results": "Return to briefing", "briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
 	primary_button.text = captions[sim.phase]; primary_button.disabled = sim.phase in ["formation", "lights", "race"] or sim.phase == "qualifying" and sim.qual_closed
 	primary_button.tooltip_text = "Finish the active session before advancing." if primary_button.disabled else "Advance to the next weekend stage."
@@ -502,10 +426,7 @@ func refresh() -> void:
 			history.append("%s %d   %s%s" % ["Run" if q else "Lap", lap.get("run", lap.get("lap", 0)), RaceSim.format_time(lap.time), " · INVALID" if not lap.get("valid", true) else (" · PIT" if lap.get("pit_lap", false) else "")])
 			if q and lap.has("sectors"): history.append("%.2f / %.2f / %.2f" % [lap.sectors[0], lap.sectors[1], lap.sectors[2]])
 		history_label.text = "\n\n".join(history)
-		if telemetry_chart:
-			var speeds: Array = []
-			for sample in c.telemetry: speeds.append(float(sample[1]))
-			telemetry_chart.present("Speed trace · measured", "km/h", speeds, 0.0, 340.0)
+		telemetry_inspector.present()
 		if telemetry_sectors: telemetry_sectors.present(records)
 	automate.set_pressed_no_signal(c.auto); repair.set_pressed_no_signal(c.repair)
 	battle_picker.select(["patient", "balanced", "assertive"].find(c.battle_mode))
@@ -523,6 +444,7 @@ func refresh() -> void:
 	command_note.text = "Spectating a rival. Select MER or MOR to give commands." if not c.player else ("Engineer controls releases and strategy." if c.auto else "Manual control. Pace, engine and pit calls are yours.")
 	pit_note.text = ("Existing hot laps may finish." if sim.qual_closed else "Garage → Out → Hot → In → Garage") if q else (sim.pit_status(c) if c.pit_order or c.route == "pit" else "Planned compound: %s · %s\nRecommended now: %s" % [c.next_compound, "repair" if c.repair else "tyres only", sim.recommended_compound()])
 	box_button.tooltip_text = "Late calls defer safely to the following pit entry."; cancel_box.tooltip_text = "A car already in the pit lane cannot cancel entry."
+	if radio_inspector and right_panel.visible and tabs.current_tab==2: radio_inspector.present()
 	var signature = str(sim.events.back()) if not sim.events.is_empty() else ""
 	if right_panel.visible and tabs.current_tab == 2 and (last_event_count != sim.events.size() or signature != last_event_signature):
 		last_event_signature = signature
@@ -618,6 +540,7 @@ func show_tyres(index: int) -> void:
 	tabs.get_tab_control(3).scroll_vertical = 0
 
 func refresh_tyres(c: Dictionary, controllable: bool) -> void:
+	if tyre_readout:tyre_readout.present()
 	if tyre_buttons.is_empty(): return
 	var planned = TyreInventory.planned(c, sim.phase == "race")
 	for i in range(12):
@@ -723,3 +646,9 @@ func _input(event: InputEvent) -> void:
 	if event.keycode != KEY_SPACE or sim == null or sim.phase not in RaceSim.ACTIVE: return
 	if focus is LineEdit or focus is TextEdit: return
 	dispatch("pause"); get_viewport().set_input_as_handled()
+
+func _inspect_qualifying(id: int) -> void:
+	select_driver(id); open_topic(0)
+
+func _set_radio_filter(index: int) -> void:
+	radio_filter=["all","flags","pit","tyre","weather"][index];last_event_count=-1;refresh()

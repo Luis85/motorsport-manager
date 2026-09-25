@@ -50,7 +50,7 @@ func run() -> void:
 	var before = JSON.stringify(model.snapshot())
 	check(view.weekend_menu == view.top_secondary_actions, "Composed header retains the original working utility menu")
 	for id in [0, 1, 2, 3]: check(view.weekend_menu.get_popup().get_item_index(id) >= 0, "Utility action preserved: " + str(id))
-	check(not view.session_strip.visible and not view.decision_strip.visible, "Empty inherited header and duplicate decision strip do not consume layout")
+	check(view.session_header.visible and view.session_strip == view.session_header and not view.decision_strip.visible, "Extracted session header is unique; duplicate heuristic decision strip remains hidden")
 	check(view.driver_rail.is_visible_in_tree() and view.car_cards[3].panel.get_parent() == view.driver_rail, "Wide Race view uses the two-car rail")
 	for id in [3, 6]:
 		check(inside(view.decision_controls[id].box) and inside(view.car_cards[id].details_button), "Wide card and primary action are reachable: " + str(id))

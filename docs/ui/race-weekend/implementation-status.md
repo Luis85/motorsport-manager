@@ -1,41 +1,38 @@
-# Race-weekend UI: implementation status and repair audit
+# UI-01–UI-10 implementation reconciliation
 
-Reviewed 25 September 2026 against the proposed UI-01–UI-10 plan, the approved visual boards, the actual native inheritance stack, and executable Godot tests.
+## Baseline and status
 
-## Status correction
+This delivery builds on the repaired PR #12 head `0f450c542efc8864fef2b0dd32c2fad68be25c2e`, not on main and not on a replacement prototype. The earlier repair correctly described component and screen gaps. The current source implements those code gaps. Test outcomes and hardware/manual acceptance are recorded separately in `verification-completion.md`; implementation does not by itself imply certified usability or a successful hosted run.
 
-The earlier statement that the entire UI architecture plan was executed was too broad. The earlier PR added styling, several primitives and a results tab, but did not complete the proposed component extraction or pixel-level screen migration. It also failed clean Godot import. Existing screens are implemented functionality, not evidence that their complete redesign was delivered.
-
-This revision prioritizes a runnable, tested native game and correct information over additional decorative features. The visual boards remain a direction, not a source of sporting rules, new simulation variables, or guaranteed forecasts.
-
-## Plan reconciliation
-
-| Increment | Current state | Remaining work / acceptance gate |
+| Increment | Integrated delivery | Acceptance evidence |
 |---|---|---|
-| UI-01: design system | Green/cream/brass theme, accessible button states, shared styles, scaling and layout tokens exist. The current design/interaction contracts are documented. | Race helpers remain partly in `UI`; unused tokens and snapshot/badge prototypes must not be presented as a completed design-system migration. |
-| UI-02: header and timing | Native header and timing work in the composed production view. Empty inherited chrome and broken utility callbacks are repaired; selected rows and both player identities are readable. | They still use the `WeekendView` / `PitwallWorkspace` composition, not separately extracted SessionHeader/TimingTower components. |
-| UI-03: driver cards and decisions | Both real drivers keep independently targeted actions and the existing authoritative DecisionFeed. Duplicate local prompts are hidden. Critical fuel recovery remains directly reachable. | A dedicated reusable decision drawer and independent queue component are not yet extracted. |
-| UI-04: race overview | Wide Race view now places the existing two cards in a right rail beside timing and the circuit; compact and analysis views keep both below the circuit. Live radio is available in the rail. | No photographic portraits or licensed broadcast artwork. Visual fidelity remains an authored native illustration, not the photorealistic scenery in the generated boards. |
-| UI-05: qualifying and practice | Existing physical out/hot/in laps, release checks, per-driver practice drafts and measured evidence remain accessible. Practice and qualifying results have distinct semantics. | Separate top-level workspace classes and a redesigned simultaneous two-programme practice dashboard remain future extraction/design work. The game still uses one qualifying session. |
-| UI-06: strategy and weather | Compare/Plan/Control and weather alternatives remain operative. All three comparison alternatives fit the tested 1100×720 / 130% view. Weather cases are correctly categorical. | No invented probability curves or cumulative strategy timeline. A richer strategy visualization requires actual model-supported series. |
-| UI-07: telemetry, tyres, setup | Measured speed chart, bounded sector rows, retained finite tyre allocation and staged five-field setup remain integrated. Missing values are `—`, not zero measurements. | Dedicated chart/inspector architecture and advanced component telemetry are not implemented. Extra setup controls in the board are not supported mechanics. |
-| UI-08: team and radio | Existing cooperation, battles, shared-box preview, recoverable radio and explicit authority remain. The overview reports actual box occupation. | Full visual redesign into new top-level components remains incremental. |
-| UI-09: results and debrief | Results is routed into Review and the view finder. Qualifying, practice, race/lapped/DNF and live/unavailable states are separated; selection survives refresh. Existing debrief/notebook/replay evidence remains intact. | Results is a native contextual workspace, not an automatically substituted full-screen scene. |
-| UI-10: responsive, accessibility, performance | Native tests exercise small windows, 100/115/130% text, focus, commands, unchanged authoritative state and stable UI resources. Charts and result rows avoid unnecessary reconstruction. | Controller/screen-reader completeness, >130% text, broad hardware profiling and human usability testing remain unvalidated. |
+| UI-01 — design system | `PitwallDesign` owns race palettes, state styles, typography roles and shared surfaces. `UI.race_*` and colour aliases delegate for compatibility. Badges are used in the drawer/dashboard. The unused snapshot prototype and obsolete fixed layout tokens are removed. | Fresh class loading; actual scene-component assertions; stable style/node checks. |
+| UI-02 — header and timing | `RaceSessionHeader` owns the sole real header and menu; `RaceTimingTower` owns classification rows and cached presentation. Existing view fields alias those controls, preserving commands and integrations. | Unique-header/menu, exact Tree ownership, selected-row/focus and stable-refresh tests. |
+| UI-03 — cards and decisions | Integrated `RaceDecisionQueue`, immutable `RaceDecisionViewModel` and `RaceDecisionDrawer`. Evidence, explicit confirmation, stale rejection, acknowledgement, execution and observed outcome are distinct. Full battle context remains readable without hover. | Native Enter/A staging, exact-driver commitment, rejection of stale evidence, Keep-plan invariants, legacy battle-detail regression. |
+| UI-04 — race overview | Shared `RaceObservationWorkspace`, illustrated circuit, wide two-car rail and compact bottom cards; original vector driver emblems; live radio. Empty queue does not waste compact observation height. | Rendered wide/compact captures, persistent actions, no node/reparent churn during steady refresh. |
+| UI-05 — qualifying and practice | `RaceQualifyingWorkspace` provides run state, best lap and feasible-release context alongside the circuit. `RacePracticeWorkspace` displays two real independent programmes; `RacePracticeProgrammeCard` reuses validated drafts/releases/recalls and measured evidence. | Both-programme controls, shared per-driver drafts, actual targeted release, unchanged ownership/time and existing practice/qualifying suites. |
+| UI-06 — strategy and weather | `RaceAnalysisWorkspace` reuses the active inspector at full size. `RaceStrategyChart` draws model-supported stop schedules and remaining-time ranges. Weather retains independent same-horizon cases and separate observations, sector conditions and alternatives. | Forecaster data equality, no state mutation, compact three-alternative reachability and native weather regressions. |
+| UI-07 — telemetry, tyres, setup | `RaceInspectorPage` supplies scrolling-content/fixed-action composition. `RaceTelemetryInspector` selects recorded speed/tread/fuel/acceleration; current temperatures are labeled current, not histories. `RaceTyreReadout` distinguishes fitted/planned identities. Setup sliders share the actual five-field draft and display model-derived draft effects. | Correct units, private-rival masks, missing values, slider/draft synchronization, explicit application and finite-tyre tests. |
+| UI-08 — team and radio | Both team drivers' intent/authority precede actual cooperation/battle/pit-priority controls. `RaceRadioInspector` uses chronological message cards, filters, bounded pages and an explicit history snapshot. | Named-driver authority, observations, history-mode and existing team/radio tests. |
+| UI-09 — results and debrief | `RaceResultsWorkspace` supplies full classification, measured laps/sectors, fitted stint history and structured accepted-command/observed-outcome evidence (`RaceJournalView`). It reuses the same stable results table. Next, export, debrief, notebook and replay retain existing semantics. Completion transitions open a session workspace without merging original and sandbox authority. | Results semantics, reparent/restore/selection, lapped/DNF/untimed/practice tests and replay/notebook suites. |
+| UI-10 — responsive/accessibility/performance | Layout adapts at supported desktop sizes and 100/115/130% text. Native accessibility metadata/text alternatives, keyboard routing and gamepad buttons are integrated; modal windows block global controller commands. Component caches replace the unused speculative snapshot layer. | Small-window native input, repeat-refresh node/style assertions, synthetic controller events and existing observational performance workloads. |
 
-## Repaired defects
+## Explicit adaptations of generated concepts
 
-- **Blocking parser error:** an inline `match` inside a popup lambda ended with a mismatched closure and caused the dependent UI classes to fail parsing. A named callback replaces it.
-- **Composed header:** the production host reparented labels but left empty panel wrappers visible. Its utility-menu reconstruction then lost the original callbacks. The host now keeps one real menu and hides the emptied wrappers.
-- **Misleading duplicated advice:** a new selected-car heuristic strip duplicated the established two-driver DecisionFeed and mislabeled remaining fuel as finish margin. Production uses the existing feed; legacy copy uses the actual finish-margin estimate.
-- **Incorrect result claims:** a live leader was shown as a winner; untimed qualifying implied pole; practice used qualifying/race data; lapped finishes could show a false zero-second deficit. Results now expose the appropriate authoritative session evidence and unavailable states.
-- **Index collisions:** Results could be grouped as Recovery in weekend variants. Groups and result destinations are derived per view, and Results is searchable.
-- **Misleading forecast graphic:** Now/Drier/Trend/Wetter are independent stress cases, not sequential future observations. The chart now labels and draws them as categories without implying probabilities.
-- **Invalid UI ownership:** hidden action Nodes were created without parents. They are now owned by the scene and released with it.
-- **State contrast and resource churn:** selected-button hover and selected timing colors were inconsistent; per-refresh style creation conflicted between parent and child cards. Styles now have complete states and shared change-only application.
-- **Information boundary:** additional driver fields and traces are masked when inspecting a rival; private fuel and tyre state are not exposed through the new surfaces.
-- **Compact comparison clipping:** redundant local strategy status could return after the host hid it. The component now respects its compact host, and spacing preserves all three alternatives without reducing their content.
+These are domain-preserving implementations, not missing decorative variables disguised as data:
 
-## Invariants preserved
+- The actual drivers remain Daniel Mercer / Lucas Moreau; original vector emblems replace invented photographic portraits.
+- Qualifying remains one physical session, not three unsupported elimination stages.
+- Practice offers the four implemented objectives: tyre-life estimate, qualifying preparation, setup comparison and wet-condition learning. Progress is measured samples/runs, not an invented completion bonus.
+- Strategy shows supplied stop schedules and uncertainty ranges. It does not synthesize a cumulative race-time or probability curve the model cannot provide.
+- Setup exposes wing, balance, suspension, cooling and brake bias. Unsupported front/rear anti-roll, gear or tyre-pressure controls are not added as inert sliders.
+- Telemetry uses four actual recorded channels plus labeled current model temperatures. It does not manufacture engine/brake histories or private rival state.
+- The track remains authored native illustration and dot cars, consistent with the game's rendering direction. This is not pixel-identical photoreal scenery or licensed broadcast art.
 
-No production file under `scripts/domain/` changes in this repair. There is no RNG, tyre-identity, pit-routing, save-schema, race-balance, automatic pause, or playback-speed change. Existing notebook, replay and scenario-authoring work from main is included in the integrated source. Import, direct script loading, native interaction, and domain/scenario tests serve different purposes; one passing stage does not imply the others passed.
+## External acceptance, not hidden completion claims
+
+Physical controller hardware, Windows-specific screen-reader behavior, broad GPU/CPU coverage and human playtesting still require their respective environments. Automated synthetic events and Control metadata establish implemented routes, not complete OS/hardware certification. Text scales above the supported 130% preference are not represented as tested. Hosted CI status must be checked independently of local results and mergeability.
+
+## Safety and compatibility
+
+No file under `scripts/domain/` or `scripts/services/` changes in this delivery. No save schema, sporting rules, tyre identity, pit routing, balance or RNG changes. Existing replay, independent sandbox, notebook, scenario authoring and exact original-result acceptance remain on the same host command boundary. Extraction changes the control ownership/composition, not the race authority.

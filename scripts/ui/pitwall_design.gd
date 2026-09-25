@@ -5,14 +5,9 @@ const TEXT_SCALES = [1.0, 1.15, 1.3]
 const MUTED = Color("536650")
 const FOCUS = Color("775220")
 # Race-weekend layout contract (1440x900 reference, scales down through host adaptation).
-const HEADER_HEIGHT = 64
-const TOOLBAR_HEIGHT = 42
 const TIMING_WIDTH = 236
 const DRIVER_RAIL_WIDTH = 400
 const DRIVER_RAIL_EXPANDED = 520
-const DECISION_MIN_HEIGHT = 72
-const BREAKPOINT_COMPACT = 1280
-const BREAKPOINT_CONDENSED = 1100
 const SPACE_1 = 4
 const SPACE_2 = 8
 const SPACE_3 = 12
@@ -21,6 +16,14 @@ const SPACE_5 = 24
 const RADIUS_SM = 3
 const RADIUS_MD = 5
 const RADIUS_LG = 8
+const RACE_DARK = Color("102d28")
+const RACE_DARK_2 = Color("173e35")
+const RACE_DARK_3 = Color("234b3f")
+const GOLD = Color("d4ad58")
+const RACE_CREAM = Color("f6f0df")
+const RACE_INK = Color("17332b")
+const TYPE = {"display": 22, "heading": 18, "driver": 14, "position": 22, "metric": 15, "body": 13, "caption": 11}
+static var race_styles: Dictionary = {}
 static var nav_styles: Dictionary = {}
 static var popup_themes: Dictionary = {}
 
@@ -76,3 +79,40 @@ static func focus_later(control: Control) -> void:
 static func _restore_focus(reference: WeakRef) -> void:
 	var control = reference.get_ref()
 	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree() and not control.is_queued_for_deletion(): control.grab_focus()
+
+static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UI.box(RACE_DARK_2 if dark else RACE_CREAM, Color("426558") if dark else UI.LINE, 5, padding))
+	return panel
+
+static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
+	var l = UI.label(text, size, GOLD if accent else Color("edf0df"))
+	return l
+
+static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
+	var b = UI.button(text, callback)
+	b.add_theme_stylebox_override("normal", UI.action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
+	b.add_theme_stylebox_override("hover", UI.action_box(GOLD.lightened(0.15) if selected else Color("315c4d"), GOLD))
+	for state in ["pressed", "hover_pressed"]: b.add_theme_stylebox_override(state, UI.action_box(GOLD, GOLD))
+	b.add_theme_stylebox_override("disabled", UI.action_box(RACE_DARK_2, Color("4e6b61")))
+	b.add_theme_color_override("font_disabled_color", Color("b8c6bc"))
+	var focus = UI.box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
+	for state in ["font_color", "font_hover_color", "font_focus_color"]:
+		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
+	for state in ["font_pressed_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, RACE_INK)
+	return b
+
+static func race_card_state(panel: PanelContainer, state: String) -> void:
+	if panel.get_meta("race_card_state", "") == state: return
+	var key = "race_card_" + state
+	if not race_styles.has(key):
+		var style = UI.box(Color("fff2dc") if state == "warning" else RACE_CREAM, UI.DANGER if state == "warning" else (GOLD if state == "selected" else UI.LINE), 5, 8)
+		style.border_width_left = 3 if state in ["warning", "selected"] else 1
+		race_styles[key] = style
+	panel.add_theme_stylebox_override("panel", race_styles[key])
+	panel.set_meta("race_card_state", state); UI.style_assignments += 1
+
+
+static func chart_surface() -> StyleBoxFlat:
+	if not race_styles.has("chart"): race_styles.chart = UI.box(RACE_CREAM,UI.LINE,RADIUS_MD,10)
+	return race_styles.chart

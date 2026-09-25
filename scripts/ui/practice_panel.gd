@@ -22,6 +22,7 @@ var evidence: Label
 var scroll: ScrollContainer
 var binding = false
 var confirmation: ConfirmationDialog
+var dashboard_host = false
 
 func configure(value: PracticeRaceSim) -> void:
 	model = value
@@ -105,14 +106,14 @@ func refresh() -> void:
 	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != PracticeEvidence.state_key(state, c):
 		preview = model.run_preview(driver_id, drafts[driver_id]); preview.draft = drafts[driver_id].duplicate(true)
 	for i in range(2): UI.set_active(driver_buttons[i], driver_id == [3, 6][i])
-	start.visible = model.phase == "briefing" and state.status == "available"
+	start.visible = not dashboard_host and model.phase == "briefing" and state.status == "available"
 	run.visible = model.phase == "practice"; recall.visible = run.visible
 	run.disabled = not preview.available; run.text = "Run " + c.short
 	run.tooltip_text = preview.reason if run.disabled else "Commit %s's displayed objective, set and setup. Only practice settings are applied; race ownership is unchanged." % c.short
 	recall.text = "Recall " + c.short
 	recall.disabled = d.active.is_empty() or d.active.get("returning", false) or c.pit_stage == "entry"
 	recall.tooltip_text = "Return at the next physical entry. An interrupted lap does not become a clean full-lap sample."
-	finish.visible = model.phase in ["practice", "practice_results"]
+	finish.visible = not dashboard_host and model.phase in ["practice", "practice_results"]
 	finish.text = "Return to briefing" if model.phase == "practice_results" else ("Returning cars…" if state.closed else "End practice…")
 	finish.disabled = model.phase == "practice" and state.closed
 	for i in range(c.tyre_sets.size()):

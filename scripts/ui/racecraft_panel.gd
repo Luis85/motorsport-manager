@@ -4,6 +4,8 @@ extends VBoxContainer
 var sim: RaceSim
 var dispatch: Callable
 var fields: Dictionary = {}
+var sliders: Dictionary = {}
+var draft_effects: Label
 var drafts: Dictionary = {}
 var loaded_driver = -1
 var apply_button: Button
@@ -33,7 +35,13 @@ func _ready() -> void:
 		var field = UI.spin(CarSetup.DEFAULTS[key], spec[0], spec[1], 1, func(value):
 			if loaded_driver >= 0: drafts[loaded_driver][key] = int(value)
 			refresh_status())
-		field.custom_minimum_size = Vector2(80, 32); label_row.add_child(field); fields[key] = field
+		field.custom_minimum_size = Vector2(80,32)
+		var slider=HSlider.new();slider.min_value=spec[0];slider.max_value=spec[1];slider.step=1
+		slider.custom_minimum_size.x=90;slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		label_row.add_child(slider);label_row.add_child(field);fields[key]=field;sliders[key]=slider
+		slider.value_changed.connect(func(value): field.value=value)
+		slider.tooltip_text=spec[3];slider.accessibility_name=spec[2]+" draft"
+		field.value_changed.connect(func(value): slider.set_value_no_signal(value))
 		field.get_line_edit().add_theme_stylebox_override("normal", UI.box(UI.CARD, UI.LINE, 4, 5))
 		field.get_line_edit().add_theme_font_size_override("font_size", 13)
 		field.tooltip_text = spec[3]; field.get_line_edit().tooltip_text = spec[3]; label.tooltip_text = spec[3]
@@ -45,6 +53,7 @@ func _ready() -> void:
 	live_row = UI.hbox(self)
 	bias = UI.spin(56, 52, 62, 1, func(_value): pass); bias.custom_minimum_size.x = 80; live_row.add_child(bias)
 	bias_button = UI.button("Set front %", func(): dispatch.call("brake_bias", {"value": int(bias.value)})); live_row.add_child(bias_button)
+	draft_effects=UI.paragraph("");garage_form.add_child(draft_effects)
 	effects_label = UI.paragraph(""); add_child(effects_label)
 	heat_label = UI.paragraph(""); add_child(heat_label)
 	refresh()
@@ -61,7 +70,8 @@ func refresh() -> void:
 		if not drafts.has(c.id): drafts[c.id] = c.car_setup.duplicate()
 		for key in fields: fields[key].set_value_no_signal(drafts[c.id][key])
 		bias.set_value_no_signal(c.car_setup.bias)
-	for key in fields: fields[key].editable = garage_allowed()
+	for key in fields:
+		fields[key].editable=garage_allowed();sliders[key].editable=garage_allowed();sliders[key].set_value_no_signal(fields[key].value)
 	bias.editable = c.player and not c.dnf and not c.finished and sim.phase == "race" and c.route == "track"
 	bias_button.disabled = not bias.editable
 	live_heading.visible = sim.phase == "race"; live_row.visible = sim.phase == "race"
@@ -79,6 +89,11 @@ func refresh_status() -> void:
 	apply_button.disabled = not changed or not garage_allowed(); reset_button.disabled = not changed
 	note.text = "Unapplied adjustments · no effect yet." if changed else "Setup is applied."
 	if not garage_allowed(): note.text += "\nMechanical changes unlock in the garage or race preparation."
+	if draft_effects:
+		var c=sim.cars[loaded_driver].duplicate();c.car_setup=drafts[loaded_driver]
+		var effect=CarSetup.effects(c,sim.average(sim.water))
+		draft_effects.text="DRAFT EFFECTS · CURRENT TYRE/SURFACE HELD CONSTANT\nCorner %+.1f%% · straight %+.1f%% · traction %+.1f%%\nChanges have no effect until Apply." % [(effect.corner-1)*100,(effect.straight-1)*100,(effect.traction-1)*100]
+		for key in sliders:sliders[key].set_value_no_signal(fields[key].value)
 
 func apply_draft() -> void:
 	if not garage_allowed(): return

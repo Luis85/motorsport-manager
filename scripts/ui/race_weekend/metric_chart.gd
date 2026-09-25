@@ -13,7 +13,7 @@ var update_count = 0
 var panel_style: StyleBoxFlat
 
 func _ready() -> void:
-	panel_style = UI.box(UI.RACE_CREAM, UI.LINE, 5, 10)
+	panel_style = PitwallDesign.chart_surface()
 	focus_mode = Control.FOCUS_ALL
 	_update_minimum()
 
@@ -39,6 +39,8 @@ func _set_data(next_title: String, next_unit: String, values: Array, low: float,
 	title = next_title; unit = next_unit; series = safe_values; minimum = low; maximum = high
 	categories = labels.duplicate(); mode = next_mode; update_count += 1
 	tooltip_text = title + (". Independent same-horizon stress cases, not probabilities or a timeline." if mode == "cases" else ". Measured samples in chronological order; no future prediction.")
+	accessibility_name=title
+	accessibility_description=tooltip_text+" Values: "+str(series)+" "+unit
 	queue_redraw()
 
 func _draw() -> void:

@@ -25,6 +25,7 @@ var watch_buttons: Dictionary = {}
 var public_stops: Label
 var revision = 0
 var rendered_orders: Dictionary = {}
+var driver_summaries: Dictionary = {}
 
 func configure(value: StrategyRaceSim) -> void:
 	sim = value
@@ -46,6 +47,12 @@ func _ready() -> void:
 		var page = UI.vbox(self); page.add_theme_constant_override("separation", 7); pages.append(page)
 	commit_bar = UI.vbox(self)
 	for i in range(3): commit_pages.append(UI.vbox(commit_bar))
+	var people=UI.hbox(self);move_child(people,0)
+	for id in [3,6]:
+		var panel=PitwallDesign.race_panel(false,8);panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;people.add_child(panel)
+		var body=UI.vbox(panel)
+		body.add_child(UI.label(sim.cars[id].short+" / "+sim.cars[id].name.get_slice(" ",1),14,UI.INK))
+		var value=UI.paragraph("");body.add_child(value);driver_summaries[id]=value
 	var page = pages[0]
 	actor = UI.option(["MER ahead · MOR following", "MOR ahead · MER following"], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
 	kind = UI.option(["Hold relative team position", "Allow the teammate through"], func(_index): refresh()); page.add_child(kind); StrategyDesk.compact_button(kind); kind.add_theme_font_size_override("font_size", 12)
@@ -105,6 +112,9 @@ func status_text(record: Dictionary, empty: String) -> String:
 
 func refresh() -> void:
 	if not is_node_ready() or sim == null or apply_button == null: return
+	for id in driver_summaries:
+		var c=sim.cars[id];var policy=sim.policy(id)
+		driver_summaries[id].text="%s\nPit owner: %s\n%s" % [c.intent,policy.owners.pit,"In pit lane" if c.route=="pit" else "Pit order accepted" if c.pit_order else "No pit order"]
 	revision = int(sim.team_state.revision)
 	rendered_orders = {"track_order": sim.team_state.track_order.duplicate(true), "pit_priority": sim.team_state.pit_priority.duplicate(true)}
 	var proposed = draft(); var error = TeamOrders.validate(sim, proposed)

@@ -1,21 +1,9 @@
-# Race Weekend UI overhaul
+# Race-weekend UI migration
 
-The native pit wall follows the approved green/cream/brass design direction: race state first, timing and circuit for observation, two persistent driver cards, and contextual analysis. The visual boards are not authoritative specifications for extra sporting rules or unsupported simulation data.
+The initial styling PR was repaired at `0f450c542efc8864fef2b0dd32c2fad68be25c2e`. That repair fixed import/composition defects but did not complete the UI architecture plan. The following delivery implements the named component, interaction and workspace gaps on the same PR branch.
 
-## Current implementation
+See the [current UI specification](ui/race-weekend/README.md), [UI-01–UI-10 reconciliation](ui/race-weekend/implementation-status.md), [component catalog](ui/race-weekend/component-catalog.md), and [executed verification](ui/race-weekend/verification-completion.md). The previous repair report remains historical evidence, not a test claim for this source.
 
-The production stack remains `WeekendView → StrategyWeekendView → WeatherWeekendView → RecoveryWeekendView → PitwallWorkspace → PracticeWeekendView`. It hosts real Strategy, Car, Team, Conditions and Review surfaces. Wide Race view uses a right-hand two-car rail; compact/analysis views retain both cards below the circuit. The original command boundary, finite inventories, staged setup and player-controlled time remain unchanged.
+The production host now composes extracted header/timing, an independent decision queue/drawer, focused analysis, simultaneous practice programmes and full session results. Native inspectors use actual simulation-supported charts, finite set identity, staged setup, structured team/radio/evidence and modal-aware keyboard/controller routes. Existing domain/persistence authority remains unchanged.
 
-The earlier cumulative implementation notes overstated completion of the architectural plan. See the [increment-by-increment implementation audit](ui/race-weekend/implementation-status.md) for delivered behavior, repaired defects and remaining work. See the [verification protocol](ui/race-weekend/verification-repair.md) for exact methods and evidence limits.
-
-## Interaction contracts
-
-- Observation, selection, comparison and draft editing never issue race commands.
-- Both driver identities and their primary actions remain explicit.
-- Keep plan uses the existing domain acknowledgement and does not silently change ownership.
-- Accepted and rejected commands receive recoverable feedback.
-- Important data is labeled measured, estimated or unavailable; independent weather cases are not drawn as a future timeline.
-- Session Results does not declare a final winner during live running or invent missing practice/qualifying evidence.
-- Keyboard focus, text scaling and responsive layout are native behavior, not inferred from a static mockup.
-
-The full plan is not considered finished merely because its panel names exist. Native testing, authored visual refinement, additional component extraction, and user playtesting are separate completion gates.
+Illustrated dot cars and original vector identities are deliberate adaptations of the visual boards. The mockups are not a license to invent probabilities, additional sporting stages, extra setup axes or measurements the domain does not produce. Manual platform/hardware/accessibility acceptance remains separate from source delivery.

@@ -7,7 +7,7 @@ var latest: Dictionary = {}
 var pit_summary: Label
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 3)
+	add_theme_constant_override("separation", 2)
 	caption = UI.label("ESTIMATED REMAINING RACE", 11, PitwallDesign.MUTED); add_child(caption); caption.hide() # The first row already names active versus unapplied draft.
 	pit_summary = UI.label("", 12); add_child(pit_summary)
 	for i in range(3):

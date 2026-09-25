@@ -42,7 +42,8 @@ func _ready() -> void:
 	outlook_chart = RaceMetricChart.new(); outlook_chart.custom_minimum_size.y = 130; add_child(outlook_chart)
 	cases_label = UI.paragraph(""); cases_label.add_theme_font_size_override("font_size", 11); add_child(cases_label)
 	for i in range(3):
-		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size", 12); add_child(label); options.append(label)
+		var surface=PitwallDesign.race_panel(false,8);add_child(surface)
+		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size",12);surface.add_child(label);options.append(label)
 	limits = UI.paragraph("", UI.MUTED); limits.add_theme_font_size_override("font_size", 11); limits.visible = false; add_child(limits)
 	add_child(UI.button("Forecast assumptions", func(): UI.notify(self, "Weather forecast limits", limits.text)))
 	refresh()

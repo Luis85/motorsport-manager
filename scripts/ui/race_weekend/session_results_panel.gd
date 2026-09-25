@@ -21,6 +21,7 @@ func _ready() -> void:
 	classification.size_flags_vertical = Control.SIZE_EXPAND_FILL; add_child(classification)
 	var root_item = classification.create_item()
 	for car in model.cars: rows.append(classification.create_item(root_item))
+	resized.connect(_layout_columns)
 	refresh()
 
 static func presentation(sim: RaceSim) -> Dictionary:
@@ -74,3 +75,16 @@ func refresh() -> void:
 			rows[i].set_text(column, entry.text[column])
 			rows[i].set_tooltip_text(column, data.titles[column] + ": " + entry.text[column])
 			rows[i].set_custom_bg_color(column, UI.SELECTED if entry.player else UI.PANEL)
+	_layout_columns()
+
+func _layout_columns() -> void:
+	if classification==null or rendered.is_empty():return
+	var wide=size.x>760
+	for column in range(6):
+		classification.set_column_expand(column,(column==1 or column==5) if wide else column in [2,5])
+		if wide:classification.set_column_custom_minimum_width(column,[48,240,140,100,80,180][column])
+		else:classification.set_column_custom_minimum_width(column,ceili([28,48,80,38,32,80][column]*classification.get_theme_font_size("font_size")/13.0))
+	for row in rows:
+		if row.visible and row.get_metadata(0)!=null:
+			var c=model.cars[int(row.get_metadata(0))]
+			row.set_text(1,c.name if wide else c.short)

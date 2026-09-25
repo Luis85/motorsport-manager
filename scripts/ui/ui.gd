@@ -13,12 +13,12 @@ const HOVER = Color("e0e7d4")
 const SELECTED = Color("d5e1c6")
 const PRIMARY = Color("173e35")
 const ON_PRIMARY = Color("fff3d8")
-const RACE_DARK = Color("102d28")
-const RACE_DARK_2 = Color("173e35")
-const RACE_DARK_3 = Color("234b3f")
-const GOLD = Color("d4ad58")
-const RACE_CREAM = Color("f6f0df")
-const RACE_INK = Color("17332b")
+const RACE_DARK = PitwallDesign.RACE_DARK
+const RACE_DARK_2 = PitwallDesign.RACE_DARK_2
+const RACE_DARK_3 = PitwallDesign.RACE_DARK_3
+const GOLD = PitwallDesign.GOLD
+const RACE_CREAM = PitwallDesign.RACE_CREAM
+const RACE_INK = PitwallDesign.RACE_INK
 # Controls share immutable state styles; never mutate these returned resources.
 static var state_styles: Dictionary = {}
 static var style_assignments = 0
@@ -30,37 +30,18 @@ static func set_active(button: Button, active: bool, danger: bool = false) -> vo
 	button.add_theme_stylebox_override("normal", state_styles[key])
 	button.set_meta("visual_state", key); style_assignments += 1
 
+# Compatibility delegates; new race components use PitwallDesign directly.
 static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
-	var panel = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", box(RACE_DARK_2 if dark else RACE_CREAM, Color("426558") if dark else LINE, 5, padding))
-	return panel
+	return PitwallDesign.race_panel(dark, padding)
 
 static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
-	var l = label(text, size, GOLD if accent else Color("edf0df"))
-	return l
+	return PitwallDesign.race_label(text, size, accent)
 
 static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
-	var b = button(text, callback)
-	b.add_theme_stylebox_override("normal", action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
-	b.add_theme_stylebox_override("hover", action_box(GOLD.lightened(0.15) if selected else Color("315c4d"), GOLD))
-	for state in ["pressed", "hover_pressed"]: b.add_theme_stylebox_override(state, action_box(GOLD, GOLD))
-	b.add_theme_stylebox_override("disabled", action_box(RACE_DARK_2, Color("4e6b61")))
-	b.add_theme_color_override("font_disabled_color", Color("b8c6bc"))
-	var focus = box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
-	for state in ["font_color", "font_hover_color", "font_focus_color"]:
-		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
-	for state in ["font_pressed_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, RACE_INK)
-	return b
+	return PitwallDesign.race_button(text, callback, selected)
 
 static func race_card_state(panel: PanelContainer, state: String) -> void:
-	if panel.get_meta("race_card_state", "") == state: return
-	var key = "race_card_" + state
-	if not state_styles.has(key):
-		var style = box(Color("fff2dc") if state == "warning" else RACE_CREAM, DANGER if state == "warning" else (GOLD if state == "selected" else LINE), 5, 8)
-		style.border_width_left = 3 if state in ["warning", "selected"] else 1
-		state_styles[key] = style
-	panel.add_theme_stylebox_override("panel", state_styles[key])
-	panel.set_meta("race_card_state", state); style_assignments += 1
+	PitwallDesign.race_card_state(panel, state)
 
 static func resource_state(bar: ProgressBar, value: Label, risk: bool) -> void:
 	if bar.has_meta("resource_risk") and bar.get_meta("resource_risk") == risk: return
