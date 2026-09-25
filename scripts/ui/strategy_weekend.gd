@@ -154,10 +154,10 @@ func refresh() -> void:
 	team_panel.commit_bar.visible = tabs.current_tab == 8
 	trace.visible = right_panel.visible and tabs.current_tab == 1
 	pit_note.visible = false; box_button.get_parent().visible = false
-	driver_label.visible = sim.selected_id not in [3, 6]
-	resource_row.visible = false; compact_resources.visible = false; intent_label.visible = false
+	driver_status_card.visible = right_panel.visible and sim.selected_id not in [3, 6]
+	resource_row.visible = false; compact_resources.visible = false
 	teammate_buttons[0].get_parent().visible = tabs.current_tab != 8
-	if tabs.current_tab == 8: driver_label.visible = false
+	if tabs.current_tab == 8: driver_status_card.visible = false
 	strategy_desk.commit_bar.visible = tabs.current_tab == 6 and strategy_desk.topic != 2
 	refresh_navigation()
 	if right_panel.visible and tabs.current_tab == 7 and int(strategy_model.strategy_state.sequence) != debrief_sequence:
