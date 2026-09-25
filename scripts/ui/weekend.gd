@@ -103,6 +103,9 @@ var driver_status_card: PanelContainer
 var driver_position_label: Label
 var driver_rival_label: Label
 var driver_plan_label: Label
+var telemetry_chart: RaceMetricChart
+var telemetry_sectors: RaceSectorTable
+var ui_snapshot: RaceUISnapshot
 var top_secondary_actions: MenuButton
 var race_context_label: Label
 
@@ -295,7 +298,9 @@ func _ready() -> void:
 	command_note = UI.paragraph("", UI.MUTED); command_note.add_theme_font_size_override("font_size", 12); drive_pages[0].add_child(command_note)
 	var telemetry = tab_page("Telemetry")
 	telemetry_label = UI.label("", 14); telemetry.add_child(telemetry_label)
-	history_label = RichTextLabel.new(); history_label.custom_minimum_size = Vector2(245, 215); history_label.add_theme_font_size_override("normal_font_size", 12); telemetry.add_child(history_label)
+	telemetry_chart = RaceMetricChart.new(); telemetry.add_child(telemetry_chart)
+	telemetry_sectors = RaceSectorTable.new(); telemetry.add_child(telemetry_sectors)
+	history_label = RichTextLabel.new(); history_label.custom_minimum_size = Vector2(245, 150); history_label.add_theme_font_size_override("normal_font_size", 12); telemetry.add_child(history_label)
 	var radio = tab_page("Radio")
 	radio.add_child(UI.paragraph("Latest first. Reading radio does not pause a live session; use Space to pause."))
 	radio.add_child(UI.option(["All events", "Flags & incidents", "Pit decisions", "Tyre condition", "Weather"], func(index):
@@ -421,6 +426,8 @@ func _process(delta: float) -> void:
 func refresh() -> void:
 	ui_refresh_count += 1
 	if tower == null: return
+	var previous_snapshot = ui_snapshot
+	ui_snapshot = RaceUISnapshot.capture(sim)
 	var c = sim.cars[sim.selected_id]
 	if decision_text:
 		var issue = current_decision(c)
@@ -503,6 +510,11 @@ func refresh() -> void:
 			history.append("%s %d   %s%s" % ["Run" if q else "Lap", lap.get("run", lap.get("lap", 0)), RaceSim.format_time(lap.time), " · INVALID" if not lap.get("valid", true) else (" · PIT" if lap.get("pit_lap", false) else "")])
 			if q and lap.has("sectors"): history.append("%.2f / %.2f / %.2f" % [lap.sectors[0], lap.sectors[1], lap.sectors[2]])
 		history_label.text = "\n\n".join(history)
+		if telemetry_chart:
+			var speeds: Array = []
+			for sample in c.telemetry: speeds.append(float(sample[1]) * 3.6)
+			telemetry_chart.present("Speed trace · measured", "km/h", speeds, 0.0, 340.0)
+		if telemetry_sectors: telemetry_sectors.present(records)
 	automate.set_pressed_no_signal(c.auto); repair.set_pressed_no_signal(c.repair)
 	battle_picker.select(["patient", "balanced", "assertive"].find(c.battle_mode))
 	pace.select(c.pace); engine.select(c.engine); compound.select(["S", "M", "H", "I", "W"].find(c.next_compound)); setup.set_value_no_signal(c.setup)
