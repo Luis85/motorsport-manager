@@ -91,6 +91,11 @@ var drive_topic = 0
 var help_target: Control
 var ui_refresh_count = 0
 var detail_refresh_count = 0
+var decision_strip: PanelContainer
+var decision_text: Label
+var decision_review: Button
+var decision_hold: Button
+var session_strip: PanelContainer
 
 class StintPlot extends Control:
 	var sim: RaceSim
@@ -140,24 +145,26 @@ func configure(value: RaceSim) -> void:
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 5)
-	var heading = UI.hbox(self)
+	session_strip = UI.race_panel(true, 8); add_child(session_strip)
+	var heading = UI.hbox(session_strip)
 	var titles = UI.hbox(heading); titles.alignment = BoxContainer.ALIGNMENT_BEGIN
-	title_label = UI.label(sim.track.document.name, 22); titles.add_child(title_label)
-	session_label = UI.label("", 12, UI.MUTED); titles.add_child(session_label); session_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; session_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_label = UI.race_label(sim.track.document.name.to_upper(), 22, true); titles.add_child(title_label)
+	session_label = UI.race_label("", 12); titles.add_child(session_label); session_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; session_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; heading.add_child(spacer)
-	primary_button = UI.button("Start qualifying", primary_action, true); primary_button.custom_minimum_size.x = 174; heading.add_child(primary_button)
+	primary_button = UI.race_button("Start qualifying", primary_action, true); primary_button.custom_minimum_size.x = 174; heading.add_child(primary_button)
 	var progress = UI.hbox(self)
 	for text in ["01 Qualifying", "02 Preparation", "03 Formation", "04 Start", "05 Race", "06 Results"]:
 		var step = UI.label(text, 11, UI.MUTED); step.size_flags_horizontal = Control.SIZE_EXPAND_FILL; progress.add_child(step); steps.append(step)
-	var strip = HBoxContainer.new(); add_child(strip)
-	pause_button = UI.button("Pause", func(): dispatch("pause")); strip.add_child(pause_button)
+	var strip_panel = UI.race_panel(true, 5); add_child(strip_panel)
+	var strip = HBoxContainer.new(); strip_panel.add_child(strip)
+	pause_button = UI.race_button("Ⅱ  Pause", func(): dispatch("pause")); strip.add_child(pause_button)
 	speed_control = UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): dispatch("speed", {"value": [1, 2, 4, 8, 16][index]})); strip.add_child(speed_control)
-	clock_label = UI.label("", 14); clock_label.custom_minimum_size.x = 144; strip.add_child(clock_label)
-	flag_label = UI.label("GREEN", 12, UI.GOOD); flag_label.custom_minimum_size.x = 84; strip.add_child(flag_label)
-	weather_label = UI.label("", 12, UI.MUTED); weather_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; weather_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; strip.add_child(weather_label)
-	strip.add_child(UI.button("Save", save_checkpoint)); strip.add_child(UI.button("Export log", export_log))
-	strip.add_child(UI.button("Guide", func(): guide.open_guide()))
-	strip.add_child(UI.button("Menu", func(): menu_requested.emit()))
+	clock_label = UI.race_label("", 14, true); clock_label.custom_minimum_size.x = 144; strip.add_child(clock_label)
+	flag_label = UI.race_label("●  GREEN", 12); flag_label.add_theme_color_override("font_color", UI.GOOD); flag_label.custom_minimum_size.x = 96; strip.add_child(flag_label)
+	weather_label = UI.race_label("", 12); weather_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; weather_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; strip.add_child(weather_label)
+	strip.add_child(UI.race_button("Save", save_checkpoint)); strip.add_child(UI.race_button("Log", export_log))
+	strip.add_child(UI.race_button("Guide", func(): guide.open_guide()))
+	strip.add_child(UI.race_button("Menu", func(): menu_requested.emit()))
 	navigation = UI.hbox(self); navigation.add_theme_constant_override("separation", 3)
 	watch_button = UI.button("Watch", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
 	var body = UI.hbox(self, true)
@@ -198,8 +205,8 @@ func _ready() -> void:
 	canvas = TrackCanvas.new(); canvas.sim = sim; canvas.show_line = App.settings.racing_line; canvas.show_labels = App.settings.labels; canvas.show_grid = false
 	canvas.set_track(sim.track); visual.add_child(canvas); canvas.car_selected.connect(select_driver)
 	canvas.navigated.connect(func(): set_follow(false))
-	trace = TelemetryPlot.new(); trace.sim = sim; visual.add_child(trace)
-	right_panel = UI.panel(); right_panel.custom_minimum_size.x = 360; body.add_child(right_panel)
+	trace = TelemetryPlot.new(); trace.sim = sim; trace.visible = false; visual.add_child(trace)
+	right_panel = UI.race_panel(false, 8); right_panel.custom_minimum_size.x = 360; body.add_child(right_panel)
 	var wall = UI.vbox(right_panel, true); wall.add_theme_constant_override("separation", 5)
 	
 	var teammates = UI.hbox(wall)
@@ -306,6 +313,12 @@ func _ready() -> void:
 	recall_button = UI.button("Recall", func(): dispatch("recall")); runs.add_child(recall_button)
 	detail_actions = UI.vbox(wall); detail_actions.add_theme_constant_override("separation", 4)
 	for entry in [["Drive", 0], ["Tyres", 3], ["Setup", 4], ["Telemetry", 1], ["Radio", 2], ["Surface", 5]]: register_topic(entry[0], entry[1])
+	decision_strip = UI.race_panel(false, 7); add_child(decision_strip)
+	var decision_row = UI.hbox(decision_strip)
+	decision_row.add_child(UI.label("DECISION QUEUE", 11, UI.ACCENT))
+	decision_text = UI.label("No urgent decision · stay on plan", 12, UI.MUTED); decision_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL; decision_row.add_child(decision_text)
+	decision_review = UI.button("Review", func(): open_topic(3)); decision_row.add_child(decision_review)
+	decision_hold = UI.button("Keep plan", func(): feedback("Plan retained · review again when conditions materially change")); decision_row.add_child(decision_hold)
 	hint = UI.paragraph(""); hint.add_theme_font_size_override("font_size", 12); add_child(hint)
 	radio_label = UI.label("", 11, UI.MUTED); add_child(radio_label)
 	refresh(); setup_guide(); call_deferred("wire_control_help", self)
@@ -377,6 +390,15 @@ func refresh() -> void:
 	ui_refresh_count += 1
 	if tower == null: return
 	var c = sim.cars[sim.selected_id]
+	if decision_text:
+		var urgent = c.health < 55 or c.tyre < 28 or c.fuel < 1.2 or c.scheduled_lap > 0
+		if c.health < 55: decision_text.text = "%s · Car condition requires a pit/recovery decision" % c.short
+		elif c.tyre < 28: decision_text.text = "%s · Tyre life is becoming the limiting factor" % c.short
+		elif c.fuel < 1.2: decision_text.text = "%s · Fuel margin is tight · compare pace policy" % c.short
+		elif c.scheduled_lap > 0: decision_text.text = "%s · Pit plan active · next stop is approaching" % c.short
+		else: decision_text.text = "No urgent decision · watch the race and stay on plan"
+		decision_review.visible = urgent
+		decision_hold.visible = urgent
 	surface_control.set_pressed_no_signal(canvas.show_surface)
 	compact_resources.text = "TYRES %d%%   ·   FUEL %.1f laps   ·   CAR %d%%" % [c.tyre, c.fuel, c.health]
 	var q = sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"]
