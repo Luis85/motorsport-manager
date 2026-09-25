@@ -103,6 +103,8 @@ var driver_status_card: PanelContainer
 var driver_position_label: Label
 var driver_rival_label: Label
 var driver_plan_label: Label
+var top_secondary_actions: MenuButton
+var race_context_label: Label
 
 class StintPlot extends Control:
 	var sim: RaceSim
@@ -169,11 +171,21 @@ func _ready() -> void:
 	clock_label = UI.race_label("", 14, true); clock_label.custom_minimum_size.x = 144; strip.add_child(clock_label)
 	flag_label = UI.race_label("●  GREEN", 12); flag_label.add_theme_color_override("font_color", UI.GOOD); flag_label.custom_minimum_size.x = 96; strip.add_child(flag_label)
 	weather_label = UI.race_label("", 12); weather_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; weather_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; strip.add_child(weather_label)
-	strip.add_child(UI.race_button("Save", save_checkpoint)); strip.add_child(UI.race_button("Log", export_log))
-	strip.add_child(UI.race_button("Guide", func(): guide.open_guide()))
-	strip.add_child(UI.race_button("Menu", func(): menu_requested.emit()))
+	race_context_label = UI.race_label("TRACK --°C   ·   AIR --°C", 11); race_context_label.custom_minimum_size.x = 145; strip.add_child(race_context_label)
+	top_secondary_actions = MenuButton.new(); top_secondary_actions.text = "Weekend"; top_secondary_actions.custom_minimum_size.y = 32; strip.add_child(top_secondary_actions)
+	top_secondary_actions.get_popup().add_item("Save checkpoint", 0)
+	top_secondary_actions.get_popup().add_item("Export race log…", 1)
+	top_secondary_actions.get_popup().add_separator()
+	top_secondary_actions.get_popup().add_item("Open guide", 2)
+	top_secondary_actions.get_popup().add_item("Main menu", 3)
+	top_secondary_actions.get_popup().id_pressed.connect(func(id):
+		match id:
+			0: save_checkpoint()
+			1: export_log()
+			2: guide.open_guide()
+			3: menu_requested.emit())
 	navigation = UI.hbox(self); navigation.add_theme_constant_override("separation", 3)
-	watch_button = UI.button("Watch", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
+	watch_button = UI.button("Race view", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
 	var body = UI.hbox(self, true)
 	timing_panel = UI.race_panel(true, 6); timing_panel.custom_minimum_size.x = 232; body.add_child(timing_panel)
 	var timing = UI.vbox(timing_panel, true)
@@ -458,6 +470,8 @@ func refresh() -> void:
 	clock_label.text = "QUAL %s" % RaceSim.format_time(maxf(0.001, sim.qual_duration - sim.clock)) if q and sim.phase != "qualifying_results" else ("LAP %d / %d · %s" % [running_lap, sim.laps, RaceSim.format_time(sim.race_time)] if sim.phase in ["race", "results"] else sim.phase.replace("_", " ").to_upper())
 	weather_label.text = "%s · Water %d%%" % [sim.weather_name, int(sim.average(sim.water) * 100)]
 	weather_label.tooltip_text = "Rubber %d%%. Rain and surface water are separate: the road wets and dries gradually." % int(sim.average(sim.rubber) * 100)
+	if race_context_label:
+		race_context_label.text = "SURFACE %d%% WATER   ·   RUBBER %d%%" % [int(sim.average(sim.water) * 100), int(sim.average(sim.rubber) * 100)]
 	session_label.text = "%s   /   %s   /   SEED %d" % [sim.phase.replace("_", " ").to_upper(), sim.track.preset.to_upper(), sim.seed_value]
 	var step_index = {"practice": 0, "practice_results": 0, "briefing": 0, "qualifying": 0, "qualifying_results": 0, "race_preparation": 1, "formation": 2, "grid_ready": 3, "lights": 3, "race": 4, "results": 5}[sim.phase]
 	steps[0].get_parent().visible = sim.phase not in RaceSim.ACTIVE
@@ -477,6 +491,9 @@ func refresh() -> void:
 	for i in range(3):
 		resource_labels[i].text = "%.1f laps" % values[i] if i == 1 else "%d%%" % values[i]
 		resource_bars[i].value = clampf(values[i] / maxf(1, sim.laps) * 100, 0, 100) if i == 1 else values[i]
+		var risk = (i == 0 and c.tyre < 28) or (i == 1 and c.fuel < 1.2) or (i == 2 and c.health < 55)
+		resource_bars[i].add_theme_stylebox_override("fill", UI.box(UI.DANGER if risk else UI.GOOD, UI.DANGER if risk else UI.GOOD, 2, 0))
+		resource_labels[i].add_theme_color_override("font_color", UI.DANGER if risk else UI.INK)
 	if right_panel.visible and tabs.current_tab == 1:
 		telemetry_label.text = "%d km/h · %d°C tyres\nThrottle %d%% · Brake %d%%\nDamage %d%% · Pit stops %d\nBest  %s\nLast   %s\nS1 %s\nS2 %s\nS3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, c.damage, c.pit_stops, RaceSim.format_time(c.qual_best if q else c.best_lap), RaceSim.format_time(c.last_lap), RaceSim.format_time(c.sectors[0]), RaceSim.format_time(c.sectors[1]), RaceSim.format_time(c.sectors[2])]
 		var records: Array = c.qual_history if q else c.history
