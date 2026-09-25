@@ -43,3 +43,14 @@ The follow-up pass tightened the implementation rather than adding race mechanic
 - The timing tower now shares the dark race chrome and uses a high-contrast selected row, while player cars remain distinguishable without relying on color alone.
 - Race buttons now have explicit keyboard-focus and pressed states matching the gold interaction accent.
 - The decision system remains presentation-only and consumes no race RNG or hidden future state.
+
+## Concept-alignment pass
+
+A second polishing pass closes additional gaps to the approved high-fidelity boards:
+
+- The selected-driver surface now reads as a compact race card: large position, driver identity, nearest-rival context, current intent, compound/condition, fuel margin and pit-plan state.
+- Strategy weekends use two equal cream driver/decision cards as the persistent team layer, matching the two-car pit-wall concept rather than a generic notification strip.
+- The two-card area now carries a persistent team summary with both positions and shared-box coordination state.
+- High-priority strategy cards gain a restrained danger border/surface treatment without changing simulation time or issuing a command.
+- The live classification, circuit, two-car strategy cards and contextual inspector now form the primary four-part race hierarchy from the concept board.
+- Deep strategy, telemetry, weather, team orders and debrief remain progressive-disclosure surfaces instead of competing with the circuit by default.
