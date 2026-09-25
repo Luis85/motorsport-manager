@@ -46,16 +46,22 @@ func _ready() -> void:
 		var summary = UI.label("", 11, UI.MUTED); summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(summary)
 		var detail = UI.label("", 11); detail.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(detail)
 		var actions = HBoxContainer.new(); actions.add_theme_constant_override("separation", 5); body.add_child(actions)
-		var compare = UI.button("Compare " + sim.cars[id].short, func(): open_strategy(id)); actions.add_child(compare)
-		var box = UI.button("Box " + sim.cars[id].short, func(): box_from_card(id), true); actions.add_child(box)
-		var send = UI.button("Send " + sim.cars[id].short, func(): targeted_command("send", {"id": id}), true); actions.add_child(send)
-		var recall = UI.button("Recall " + sim.cars[id].short, func(): targeted_command("recall", {"id": id})); actions.add_child(recall)
-		var hold = UI.button("Keep plan", func(): keep_plan(id)); actions.add_child(hold)
-		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); actions.add_child(save)
-		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); actions.add_child(cancel)
-		for button in [compare, box, hold, save, cancel, send, recall]: StrategyDesk.compact_button(button)
+		var compare = UI.button("Compare", func(): open_strategy(id)); compare.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(compare)
+		var box = UI.button("Box this lap", func(): box_from_card(id), true); box.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(box)
+		var send = UI.button("Release now", func(): targeted_command("send", {"id": id}), true); send.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(send)
+		var recall = UI.button("Recall", func(): targeted_command("recall", {"id": id})); recall.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(recall)
+		var hold = UI.button("Keep plan", func(): keep_plan(id)); hold.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(hold)
+		var more = MenuButton.new(); more.text = "More"; more.custom_minimum_size.y = 30; actions.add_child(more)
+		more.get_popup().add_item("Save fuel for 2 laps", 0)
+		more.get_popup().add_item("Cancel accepted pit order", 1)
+		more.get_popup().id_pressed.connect(func(action_id):
+			if action_id == 0: targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})
+			elif action_id == 1: targeted_command("cancel_pit", {"id": id}))
+		for button in [compare, box, hold, send, recall]: StrategyDesk.compact_button(button)
+		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); save.visible = false
+		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); cancel.visible = false
 		var battle = UI.label("", 11, UI.ACCENT); battle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(battle)
-		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare, "panel": panel}
+		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare, "panel": panel, "more": more}
 	team_summary_label = UI.label("TWO CARS · ONE TEAM", 10, UI.MUTED); team_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; add_child(team_summary_label)
 	move_child(team_summary_label, decision_bar.get_index() + 1)
 	pit_note.max_lines_visible = 2
@@ -125,9 +131,11 @@ func refresh() -> void:
 		if qualifying and not release.get("can_start_hotlap", false): controls.send.tooltip_text = "Not enough qualifying time to begin a flying lap. Already-started flying laps may finish."
 		controls.recall.disabled = not qualifying or c.dnf or c.finished or c.route != "track"
 		controls.recall.tooltip_text = "Recall %s to the garage; actual entry and tyre wear remain physical." % c.short
-		controls.cancel.visible = not qualifying and c.pit_order; controls.cancel.disabled = c.route != "track" or c.dnf or c.finished
+		controls.cancel.visible = false; controls.cancel.disabled = c.route != "track" or c.dnf or c.finished
 		controls.cancel.tooltip_text = "Cancel %s's accepted pit order before physical commitment. Committed entries cannot be canceled." % c.short
-		controls.save.visible = not qualifying and not c.pit_order
+		controls.save.visible = false
+		controls.more.visible = not qualifying
+		controls.more.disabled = c.dnf or c.finished
 		controls.hold.disabled = card.is_empty(); controls.hold.tooltip_text = "Acknowledge this issue without changing the plan or time controls."
 		controls.save.disabled = sim.phase != "race" or c.dnf or c.finished
 		var battle = strategy_model.battle_state.drivers[id]
