@@ -168,9 +168,9 @@ func _ready() -> void:
 	navigation = UI.hbox(self); navigation.add_theme_constant_override("separation", 3)
 	watch_button = UI.button("Watch", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
 	var body = UI.hbox(self, true)
-	timing_panel = UI.panel(); timing_panel.custom_minimum_size.x = 232; body.add_child(timing_panel)
+	timing_panel = UI.race_panel(true, 6); timing_panel.custom_minimum_size.x = 232; body.add_child(timing_panel)
 	var timing = UI.vbox(timing_panel, true)
-	timing.add_child(UI.label("LIVE CLASSIFICATION", 12, UI.ACCENT))
+	timing.add_child(UI.race_label("LIVE CLASSIFICATION", 12, true))
 	tower = Tree.new(); tower.select_mode = Tree.SELECT_ROW; tower.columns = 5; tower.hide_root = true; tower.hide_folding = true
 	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tower.add_theme_font_size_override("font_size", 12); tower.add_theme_font_size_override("title_button_font_size", 10)
@@ -185,7 +185,7 @@ func _ready() -> void:
 	timing.add_child(tower)
 	var root_item = tower.create_item()
 	for i in range(12): rank_rows.append(tower.create_item(root_item))
-	var legend = UI.label("MER / MOR · Your cars   |   ~ Estimate", 11, UI.MUTED); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
+	var legend = UI.race_label("MER / MOR · Your cars   |   ~ Estimate", 11); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
 	var visual = UI.vbox(body, true)
 	var view_row = HBoxContainer.new(); map_controls = view_row; visual.add_child(view_row)
 	view_row.add_child(UI.button("Fit · F", func(): set_follow(false); canvas.fit()))
