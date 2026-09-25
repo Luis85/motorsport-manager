@@ -122,6 +122,8 @@ func refresh() -> void:
 		controls.heading.tooltip_text = explanation; controls.detail.tooltip_text = explanation; controls.summary.tooltip_text = controls.summary.text
 		controls.box.disabled = sim.phase != "race" or c.route != "track" or c.pit_order or c.dnf or c.finished or f.replacement_id.is_empty() or f.gate.distance >= sim.laps * sim.track.length
 		controls.box.tooltip_text = "Fit %s at the next safe entry on lap %d. Estimate P%d–%d; ignoring this button retains the current owner." % [f.replacement_id, f.gate.lap, f.pit.position_low, f.pit.position_high]
+		controls.compare.text = "Compare details" if not card.is_empty() else "Strategy"
+		controls.box.text = "Box this lap" if f.gate.lap <= int(c.distance / sim.track.length) + 1 else "Box lap %d" % f.gate.lap
 		var qualifying = sim.phase in ["qualifying", "qualifying_results"]
 		controls.box.visible = not qualifying; controls.hold.visible = not qualifying
 		controls.send.visible = qualifying; controls.recall.visible = qualifying
