@@ -1,7 +1,8 @@
 class_name PitwallWorkspace
 extends RecoveryWeekendView
 ## Task-oriented native shell over the existing controls and command boundary.
-const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7]}
+# The optional recovery/results/practice pages have per-instance indices.
+var GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 5], "Review": [1, 2, 7]}
 var group_buttons: Dictionary = {}
 var group_memory: Dictionary = {}
 var context_navigation: HBoxContainer
@@ -22,6 +23,11 @@ var header_context: VBoxContainer
 var utility_commands: Array[Button] = []
 var results_panel: SessionResultsPanel
 var results_page_index = -1
+var driver_rail: VBoxContainer
+var radio_digest: Label
+var rail_radio_button: Button
+var layout_changes = 0
+var adapting = false
 
 func _ready() -> void:
 	super._ready()
@@ -30,15 +36,19 @@ func _ready() -> void:
 	detail_picker.add_item("Session results")
 	var results_page = tab_page("Session results")
 	results_page_index = tabs.get_tab_count() - 1
+	GROUPS.Review.append(results_page_index)
+	if recovery_page_index >= 0: GROUPS.Conditions.insert(1, recovery_page_index)
 	results_panel = SessionResultsPanel.new(); results_panel.configure(sim); results_page.add_child(results_panel)
 	register_topic("Results", results_page_index)
 	build_navigation()
 	build_header()
 	compact_inspector()
+	strategy_desk.compact_host = true
 	for id in [3, 6]:
 		var card = PitwallCarCard.new()
 		card.build(decision_controls[id].compare.get_parent().get_parent().get_parent(), decision_controls[id], sim.cars[id], func(): show_driver_details(id))
 		car_cards[id] = card
+	build_driver_rail()
 	comparison = PitwallComparison.new(); strategy_desk.estimates.get_parent().add_child(comparison)
 	strategy_desk.estimates.get_parent().move_child(comparison, strategy_desk.estimates.get_index())
 	strategy_desk.estimates.visible = false
@@ -53,10 +63,12 @@ func _ready() -> void:
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
 	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
 	navigator.destination_requested.connect(open_destination)
+	navigator.catalog.append([results_page_index, 0, "Review / Results", "results classification qualifying practice race laps retired finish"])
+	navigator.filter_views("")
 	# Catalog/dialog controls are scaled separately on construction.
 	for child in get_children():
 		if child != navigator: PitwallDesign.scale_controls(child, text_scale)
-	for card in car_cards.values(): card.issue.custom_minimum_size.y = ceilf(30 * text_scale)
+	for card in car_cards.values(): card.issue.custom_minimum_size.y = ceilf(18 * text_scale)
 	workspace_ready = true
 	resized.connect(adapt_layout)
 	wire_control_help(self)
@@ -83,7 +95,7 @@ func build_header() -> void:
 	var old_heading = title_label.get_parent().get_parent()
 	var old_strip = pause_button.get_parent()
 	var banner = UI.panel(); add_child(banner); move_child(banner, old_heading.get_index())
-	banner.add_theme_stylebox_override("panel", UI.box(UI.INK, UI.INK, 5, 5))
+	banner.add_theme_stylebox_override("panel", UI.box(UI.RACE_DARK_2, UI.RACE_DARK_2, 5, 5))
 	var header = UI.hbox(banner)
 	header.add_theme_constant_override("separation", 12)
 	header_context = UI.vbox(header); header_context.custom_minimum_size.x = 150
@@ -106,20 +118,18 @@ func build_header() -> void:
 	phase_actions = UI.vbox(header)
 	pause_button.reparent(header); speed_control.reparent(header)
 	pause_button.custom_minimum_size.x = 85
-	weekend_menu = MenuButton.new(); weekend_menu.text = "Weekend"
+	# Reparent the working menu; synthesizing it from hidden Button children lost
+	# Save/Export/Guide callbacks after the base header acquired a MenuButton.
+	weekend_menu = top_secondary_actions
+	weekend_menu.reparent(header)
 	weekend_menu.focus_mode = Control.FOCUS_ALL
-	weekend_menu.flat = false; weekend_menu.custom_minimum_size.y = 32
+	weekend_menu.flat = false
 	weekend_menu.tooltip_text = "Save checkpoint, export the race log, resume the guide, or return to the menu. Opening this menu does not pause."
-	header.add_child(weekend_menu)
-	for child in old_strip.get_children():
-		if child is Button:
-			utility_commands.append(child); child.hide()
-			weekend_menu.get_popup().add_item({"Save": "Save checkpoint", "Export log": "Export race log", "Guide": "Resume guide", "Menu": "Main menu"}.get(child.text, child.text))
-	old_strip.hide()
-	weekend_menu.get_popup().id_pressed.connect(func(index):
-		if index >= 0 and index < utility_commands.size(): utility_commands[index].pressed.emit())
 	weekend_menu.get_popup().popup_hide.connect(func(): PitwallDesign.focus_later(weekend_menu))
 	primary_button.reparent(phase_actions); primary_button.custom_minimum_size.x = 150
+	# Hide the actual wrappers, not just their emptied layout children.
+	old_strip.get_parent().hide()
+	session_strip.hide()
 	old_heading.hide()
 	timing_panel.custom_minimum_size.x = ceilf(244 * text_scale)
 	tower.add_theme_constant_override("v_separation", 2)
@@ -156,11 +166,46 @@ func refresh_navigation() -> void:
 	if right_panel.visible: detail_caption.text = current + " / " + topic_buttons[tabs.current_tab].text
 	adapt_layout()
 
+func build_driver_rail() -> void:
+	driver_rail = VBoxContainer.new(); timing_panel.get_parent().add_child(driver_rail)
+	driver_rail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	driver_rail.add_theme_constant_override("separation", PitwallDesign.SPACE_2)
+	var panel = UI.race_panel(false, 8); driver_rail.add_child(panel)
+	var body = UI.vbox(panel)
+	body.add_child(UI.label("RACE CONTROL", 11, UI.ACCENT))
+	radio_digest = UI.paragraph("Race messages appear here. Full history remains in Review / Radio.")
+	radio_digest.max_lines_visible = 4; radio_digest.custom_minimum_size.y = 62
+	body.add_child(radio_digest)
+	rail_radio_button = UI.button("Open race radio", func(): open_topic(2)); body.add_child(rail_radio_button)
+	driver_rail.hide()
+
 func adapt_layout() -> void:
-	if not workspace_ready: return
+	if not workspace_ready or adapting: return
+	adapting = true
 	var enlarged = text_scale > 1.0
 	right_panel.custom_minimum_size.x = (560 if detail_expanded else 490) if enlarged else (520 if detail_expanded else 400)
 	timing_panel.visible = not right_panel.visible or not (detail_expanded or enlarged and size.x < 1300)
+	# Preserve the same controls and explicit driver bindings across layouts.
+	# Wide observation uses the concept's right rail; analysis/compact modes keep
+	# both cars below the map, so the inspector never creates a four-column squeeze.
+	var use_rail = not right_panel.visible and size.x >= 1360 and size.y >= 790 and text_scale <= 1.15
+	if driver_rail:
+		driver_rail.custom_minimum_size.x = ceilf(340 * text_scale)
+		var destination = driver_rail if use_rail else decision_bar
+		for id in [3, 6]:
+			var panel = car_cards[id].panel
+			car_cards[id].status.custom_minimum_size.x = ceilf(112 * text_scale)
+			car_cards[id].rival.visible = not (right_panel.visible and enlarged and size.y <= 800)
+			if panel.get_parent() != destination:
+				var focus = get_viewport().gui_get_focus_owner()
+				var restore = focus != null and panel.is_ancestor_of(focus)
+				panel.reparent(destination)
+				if use_rail: destination.move_child(panel, 0 if id == 3 else 1)
+				layout_changes += 1
+				if restore: PitwallDesign.focus_later(focus)
+		driver_rail.visible = use_rail
+		decision_bar.visible = not use_rail
+	adapting = false
 
 func open_topic(index: int) -> void:
 	if workspace_ready and not right_panel.visible:
@@ -178,7 +223,8 @@ func refresh() -> void:
 	primary_button.visible = not primary_button.disabled
 	phase_actions.visible = primary_button.visible or sim.phase == "briefing"
 	steps[0].get_parent().hide() # Phase and next approval are already in the status strip.
-	session_label.text = "%s · seed %d" % [sim.track.preset, sim.seed_value]
+	session_label.text = "%s · %s" % [sim.track.preset, sim.phase.replace("_", " ").capitalize()]
+	session_label.tooltip_text = "Seed %d · %s" % [sim.seed_value, sim.track.document.name]
 	flag_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
 	compact_resources.visible = false
 	teammate_buttons[0].get_parent().visible = true
@@ -187,10 +233,11 @@ func refresh() -> void:
 	strategy_desk.issue_text.visible = false # Recipient/approval state are already adjacent to the comparison.
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)
-	if results_panel:
-		results_panel.visible = sim.phase in ["qualifying_results", "practice_results", "results"] or tabs.current_tab == results_page_index
-		if results_panel.visible: results_panel.refresh()
-	topic_buttons[results_page_index].visible = group_for(results_page_index) == group_for(tabs.current_tab) and sim.phase in ["qualifying_results", "practice_results", "results"]
+	if radio_digest and not sim.events.is_empty():
+		var latest = sim.events.back()
+		radio_digest.text = "%02d:%02d · %s" % [int(latest.time / 60), int(fmod(latest.time, 60)), latest.text]
+		radio_digest.tooltip_text = radio_digest.text
+	if right_panel.visible and tabs.current_tab == results_page_index: results_panel.refresh()
 	messages_button.text = "Messages" if messages.is_empty() else "Messages (%d)" % messages.size()
 	# Empty, already-approved drafts are not presented as a new commitment.
 	if not strategy_desk.dirty.get(strategy_desk.driver_id, true): strategy_desk.apply_button.disabled = true

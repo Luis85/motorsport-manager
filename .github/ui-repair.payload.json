@@ -1,5 +1,0 @@
-{
-  "base_commit": "cc1b90dbba07bbb35160e3c46a6257305660bf8f",
-  "sha256": "02c00a87162bd5ad2cb2b956b56987e7038f483c203266bf35c760295aa90b39",
-  "purpose": "One-time transport of the locally tested UI repair; payload files are removed by publication and the temporary publisher is removed immediately afterward."
-}

@@ -174,19 +174,14 @@ func _ready() -> void:
 	clock_label = UI.race_label("", 14, true); clock_label.custom_minimum_size.x = 144; strip.add_child(clock_label)
 	flag_label = UI.race_label("●  GREEN", 12); flag_label.add_theme_color_override("font_color", UI.GOOD); flag_label.custom_minimum_size.x = 96; strip.add_child(flag_label)
 	weather_label = UI.race_label("", 12); weather_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; weather_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; strip.add_child(weather_label)
-	race_context_label = UI.race_label("TRACK --°C   ·   AIR --°C", 11); race_context_label.custom_minimum_size.x = 145; strip.add_child(race_context_label)
+	race_context_label = UI.race_label("", 11); race_context_label.custom_minimum_size.x = 145; strip.add_child(race_context_label)
 	top_secondary_actions = MenuButton.new(); top_secondary_actions.text = "Weekend"; top_secondary_actions.custom_minimum_size.y = 32; strip.add_child(top_secondary_actions)
 	top_secondary_actions.get_popup().add_item("Save checkpoint", 0)
 	top_secondary_actions.get_popup().add_item("Export race log…", 1)
 	top_secondary_actions.get_popup().add_separator()
 	top_secondary_actions.get_popup().add_item("Open guide", 2)
 	top_secondary_actions.get_popup().add_item("Main menu", 3)
-	top_secondary_actions.get_popup().id_pressed.connect(func(id):
-		match id:
-			0: save_checkpoint()
-			1: export_log()
-			2: guide.open_guide()
-			3: menu_requested.emit())
+	top_secondary_actions.get_popup().id_pressed.connect(weekend_action)
 	navigation = UI.hbox(self); navigation.add_theme_constant_override("separation", 3)
 	watch_button = UI.button("Race view", close_detail); watch_button.tooltip_text = "Close the inspector and give the circuit more space. No orders or time changes."; navigation.add_child(watch_button)
 	var body = UI.hbox(self, true)
@@ -213,7 +208,7 @@ func _ready() -> void:
 	timing.add_child(tower)
 	var root_item = tower.create_item()
 	for i in range(12): rank_rows.append(tower.create_item(root_item))
-	var legend = UI.race_label("MER / MOR · Your cars   |   ~ Estimate", 11); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
+	var legend = UI.race_label("* Your team   |   ~ Estimated gap", 11); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
 	var visual = UI.vbox(body, true)
 	var view_row = HBoxContainer.new(); map_controls = view_row; visual.add_child(view_row)
 	view_row.add_child(UI.button("Fit · F", func(): set_follow(false); canvas.fit()))
@@ -426,10 +421,8 @@ func _process(delta: float) -> void:
 func refresh() -> void:
 	ui_refresh_count += 1
 	if tower == null: return
-	var previous_snapshot = ui_snapshot
-	ui_snapshot = RaceUISnapshot.capture(sim)
 	var c = sim.cars[sim.selected_id]
-	if decision_text:
+	if decision_text and decision_strip.visible:
 		var issue = current_decision(c)
 		decision_signature = issue.signature
 		var actionable = not issue.signature.is_empty() and issue.signature != decision_snoozed_signature
@@ -457,13 +450,13 @@ func refresh() -> void:
 		var appearance = [car.id, text, car.compound, state, tooltip, car.id == sim.selected_id]
 		if rendered_rows.get(i) != appearance:
 			rendered_rows[i] = appearance
-			row.set_text(0, str(i + 1)); row.set_text(1, car.short); row.set_custom_color(1, Color(car.color).darkened(0.32)); row.set_metadata(0, car.id)
+			row.set_text(0, str(i + 1)); row.set_text(1, car.short + ("*" if car.player else "")); row.set_custom_color(1, Color(car.color).darkened(0.32)); row.set_metadata(0, car.id)
 			row.set_text(2, text); row.set_text(3, car.compound); row.set_text(4, state)
 			row.set_custom_color(4, UI.ACCENT if state == "HOT" else (UI.DANGER if car.dnf else UI.MUTED))
 			for column in range(5):
 				row.set_tooltip_text(column, tooltip)
 				row.set_custom_bg_color(column, UI.GOLD.lightened(0.18) if car.id == sim.selected_id else (Color("315c4d") if car.player else UI.RACE_DARK))
-				if car.id != sim.selected_id: row.set_custom_color(column, Color("edf0df") if column != 4 else (UI.GOLD if state == "HOT" else (Color("e58b78") if car.dnf else Color("b8c6bc"))))
+				row.set_custom_color(column, UI.RACE_INK if car.id == sim.selected_id else (Color("edf0df") if column != 4 else (UI.GOLD if state == "HOT" else (Color("e58b78") if car.dnf else Color("b8c6bc")))))
 		if car.id == sim.selected_id and not row.is_selected(0): row.select(0)
 	tower.set_block_signals(false)
 	var captions = {"practice": "End practice…", "practice_results": "Return to briefing", "briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
@@ -471,8 +464,8 @@ func refresh() -> void:
 	primary_button.tooltip_text = "Finish the active session before advancing." if primary_button.disabled else "Advance to the next weekend stage."
 	pause_button.text = "Resume" if sim.paused else "Pause"; pause_button.disabled = sim.phase not in RaceSim.ACTIVE
 	speed_control.select([1, 2, 4, 8, 16].find(sim.speed))
-	flag_label.text = "PAUSED" if sim.paused else ("CHEQUERED" if sim.chequered or q and sim.qual_closed else sim.flag)
-	flag_label.add_theme_color_override("font_color", UI.ACCENT if sim.paused or sim.flag != "GREEN" else UI.GOOD)
+	flag_label.text = ("PAUSED · " if sim.paused else "") + ("CHEQUERED" if sim.chequered or q and sim.qual_closed else sim.flag)
+	flag_label.add_theme_color_override("font_color", UI.GOLD if sim.paused or sim.flag != "GREEN" else Color("c9e8cb"))
 	var running_lap = clampi(int(floor(maxf(0, leader.distance) / sim.track.length)) + 1, 1, sim.laps)
 	clock_label.text = "QUAL %s" % RaceSim.format_time(maxf(0.001, sim.qual_duration - sim.clock)) if q and sim.phase != "qualifying_results" else ("LAP %d / %d · %s" % [running_lap, sim.laps, RaceSim.format_time(sim.race_time)] if sim.phase in ["race", "results"] else sim.phase.replace("_", " ").to_upper())
 	weather_label.text = "%s · Water %d%%" % [sim.weather_name, int(sim.average(sim.water) * 100)]
@@ -490,17 +483,16 @@ func refresh() -> void:
 	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", Color(c.color).darkened(0.35))
 	var selected_position = order.find(c) + 1
 	driver_position_label.text = "P%d" % selected_position
-	var nearest = order[selected_position - 2] if selected_position > 1 else (order[1] if order.size() > 1 else null)
-	driver_rival_label.text = ("Nearest rival · %s" % nearest.short) if nearest != null else "Leading the field"
+	var nearest = order[selected_position - 2] if selected_position > 1 else null
+	driver_rival_label.text = ("Car ahead · %s" % nearest.short) if nearest != null else "Leading the classification"
 	intent_label.text = "Finished P%d" % c.finish_position if c.finished else ("Retired: " + c.retire_reason if c.dnf else c.intent); intent_label.tooltip_text = intent_label.text
-	driver_plan_label.text = "%s %d%%   ·   Fuel %+.1f laps   ·   %s" % [c.compound, c.tyre, c.fuel, ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
+	driver_plan_label.text = "%s %d%%   ·   Finish fuel ~%+.1f laps   ·   %s" % [c.compound, c.tyre, RaceForecaster.fuel_margin(sim, c), ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
 	var values = [c.tyre, c.fuel, c.health]
 	for i in range(3):
 		resource_labels[i].text = "%.1f laps" % values[i] if i == 1 else "%d%%" % values[i]
 		resource_bars[i].value = clampf(values[i] / maxf(1, sim.laps) * 100, 0, 100) if i == 1 else values[i]
-		var risk = (i == 0 and c.tyre < 28) or (i == 1 and c.fuel < 1.2) or (i == 2 and c.health < 55)
-		resource_bars[i].add_theme_stylebox_override("fill", UI.box(UI.DANGER if risk else UI.GOOD, UI.DANGER if risk else UI.GOOD, 2, 0))
-		resource_labels[i].add_theme_color_override("font_color", UI.DANGER if risk else UI.INK)
+		var risk = (i == 0 and c.tyre < 28) or (i == 1 and sim.phase == "race" and RaceForecaster.fuel_margin(sim, c) < 0.35) or (i == 2 and c.health < 55)
+		UI.resource_state(resource_bars[i], resource_labels[i], risk)
 	if right_panel.visible and tabs.current_tab == 1:
 		telemetry_label.text = "%d km/h · %d°C tyres\nThrottle %d%% · Brake %d%%\nDamage %d%% · Pit stops %d\nBest  %s\nLast   %s\nS1 %s\nS2 %s\nS3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, c.damage, c.pit_stops, RaceSim.format_time(c.qual_best if q else c.best_lap), RaceSim.format_time(c.last_lap), RaceSim.format_time(c.sectors[0]), RaceSim.format_time(c.sectors[1]), RaceSim.format_time(c.sectors[2])]
 		var records: Array = c.qual_history if q else c.history
@@ -565,14 +557,14 @@ func refresh() -> void:
 		if not error.is_empty(): feedback("Autosave failed: " + error)
 
 func current_decision(c: Dictionary) -> Dictionary:
-	if not c.player or c.dnf or c.finished: return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
+	if sim.phase != "race" or not c.player or c.dnf or c.finished or c.route == "pit": return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
 	if c.health < 55:
 		return {"signature": "%s:health:%d" % [c.id, int(c.health / 10)], "text": "%s · Car condition %d%% · review recovery or pit service" % [c.short, c.health], "badge": "CAR", "color": UI.DANGER, "topic": 0}
 	if c.tyre < 28:
 		return {"signature": "%s:tyre:%d" % [c.id, int(c.tyre / 5)], "text": "%s · Tyre life %d%% · current set is becoming the limiting factor" % [c.short, c.tyre], "badge": "TYRE", "color": UI.ACCENT, "topic": 3}
-	if c.fuel < 1.2:
-		return {"signature": "%s:fuel:%d" % [c.id, int(c.fuel * 4)], "text": "%s · Fuel margin %.1f laps · review pace and engine policy" % [c.short, c.fuel], "badge": "FUEL", "color": UI.ACCENT, "topic": 0}
-	if c.scheduled_lap > 0:
+	if RaceForecaster.fuel_margin(sim, c) < 0.35:
+		return {"signature": "%s:fuel:%d" % [c.id, int(floor(RaceForecaster.fuel_margin(sim, c) * 4))], "text": "%s · Estimated finish fuel %+.1f laps · review engine policy" % [c.short, RaceForecaster.fuel_margin(sim, c)], "badge": "FUEL", "color": UI.ACCENT, "topic": 0}
+	if c.scheduled_lap > 0 and c.scheduled_lap <= int(maxf(0, c.distance) / sim.track.length) + 2:
 		return {"signature": "%s:pit:%d" % [c.id, c.scheduled_lap], "text": "%s · Pit plan active for lap %d · review stop plan before commitment" % [c.short, c.scheduled_lap], "badge": "PIT", "color": UI.ACCENT, "topic": 3}
 	return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
 
@@ -586,6 +578,13 @@ func hold_decision() -> void:
 	decision_snoozed_signature = decision_signature
 	feedback("Plan retained · this prompt returns only after the underlying condition changes")
 	refresh()
+
+func weekend_action(id: int) -> void:
+	match id:
+		0: save_checkpoint()
+		1: export_log()
+		2: guide.open_guide()
+		3: menu_requested.emit()
 
 func save_checkpoint() -> void:
 	var error = App.save_weekend()
@@ -679,7 +678,8 @@ func close_detail() -> void:
 	if not right_panel: return
 	detail_expanded = false; timing_panel.visible = true; right_panel.visible = false
 	right_panel.custom_minimum_size.x = 360; expand_button.text = "Expand"
-	trace.visible = false; refresh_navigation()
+	trace.visible = false; driver_status_card.visible = true; resource_row.visible = true; compact_resources.visible = false
+	refresh_navigation()
 	watch_button.grab_focus()
 
 func wire_control_help(node: Node) -> void:

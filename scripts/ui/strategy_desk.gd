@@ -35,6 +35,7 @@ var box_now: Button
 var extend_draft: Button
 var action_buttons: Array[Button] = []
 var last_refresh = -100.0
+var compact_host = false
 var topic = 0
 var commit_bar: VBoxContainer
 var plan_actions: VBoxContainer
@@ -115,7 +116,7 @@ func stack_field(parent: Node, text: String, control: Control) -> void:
 
 func show_topic(index: int) -> void:
 	topic = index
-	plan_status.visible = index != 1
+	plan_status.visible = index != 1 and not compact_host
 	for i in range(topic_panels.size()):
 		topic_panels[i].visible = i == index
 		UI.set_active(topic_buttons[i], i == index)
@@ -241,7 +242,7 @@ func refresh(force: bool = false) -> void:
 		descriptions.append(("Acknowledged · " if card.acknowledged else "") + card.title + "\n" + card.evidence + "\n" + card.fallback)
 	issue_text.tooltip_text = "\n\n".join(descriptions)
 	issue_text.text = "" if current_cards.is_empty() else ("Acknowledged · " if current_cards[0].acknowledged else "") + current_cards[0].title + "\nIgnored: " + current_cards[0].fallback
-	issue_text.visible = not descriptions.is_empty()
+	issue_text.visible = not compact_host and not descriptions.is_empty()
 	var pit = preview.pit
 	rejoin.text = "%s · rejoin estimate P%d–P%d
 Net pit loss %.1f–%.1fs · box wait ~%.1fs

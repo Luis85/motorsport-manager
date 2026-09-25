@@ -34,7 +34,7 @@ func present(view: PracticeWeekendView) -> void:
 		for column in range(5): row.set_tooltip_text(column, description)
 	var car = sim.cars[sim.selected_id]
 	if car.player: return
-	for control in [view.resource_row, view.compact_resources, view.intent_label, view.pit_note, view.advisory_button]: conceal(control)
+	for control in [view.resource_row, view.compact_resources, view.intent_label, view.driver_plan_label, view.pit_note, view.advisory_button, view.trace]: conceal(control)
 	for index in masks:
 		var label = masks[index]
 		for child in label.get_parent().get_children():

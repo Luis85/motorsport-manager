@@ -42,15 +42,32 @@ static func race_label(text: String, size: int = 12, accent: bool = false) -> La
 static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
 	var b = button(text, callback)
 	b.add_theme_stylebox_override("normal", action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
-	b.add_theme_stylebox_override("hover", action_box(Color("315c4d"), GOLD))
-	b.add_theme_stylebox_override("pressed", action_box(GOLD, GOLD))
-	b.add_theme_stylebox_override("hover_pressed", action_box(GOLD, GOLD))
+	b.add_theme_stylebox_override("hover", action_box(GOLD.lightened(0.15) if selected else Color("315c4d"), GOLD))
+	for state in ["pressed", "hover_pressed"]: b.add_theme_stylebox_override(state, action_box(GOLD, GOLD))
+	b.add_theme_stylebox_override("disabled", action_box(RACE_DARK_2, Color("4e6b61")))
+	b.add_theme_color_override("font_disabled_color", Color("b8c6bc"))
 	var focus = box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
 	for state in ["font_color", "font_hover_color", "font_focus_color"]:
 		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
-	b.add_theme_color_override("font_pressed_color", RACE_INK)
-	b.add_theme_color_override("font_hover_pressed_color", RACE_INK)
+	for state in ["font_pressed_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, RACE_INK)
 	return b
+
+static func race_card_state(panel: PanelContainer, state: String) -> void:
+	if panel.get_meta("race_card_state", "") == state: return
+	var key = "race_card_" + state
+	if not state_styles.has(key):
+		var style = box(Color("fff2dc") if state == "warning" else RACE_CREAM, DANGER if state == "warning" else (GOLD if state == "selected" else LINE), 5, 8)
+		style.border_width_left = 3 if state in ["warning", "selected"] else 1
+		state_styles[key] = style
+	panel.add_theme_stylebox_override("panel", state_styles[key])
+	panel.set_meta("race_card_state", state); style_assignments += 1
+
+static func resource_state(bar: ProgressBar, value: Label, risk: bool) -> void:
+	if bar.has_meta("resource_risk") and bar.get_meta("resource_risk") == risk: return
+	var key = "resource_" + str(risk)
+	if not state_styles.has(key): state_styles[key] = box(DANGER if risk else GOOD, DANGER if risk else GOOD, 2, 0)
+	bar.add_theme_stylebox_override("fill", state_styles[key]); value.add_theme_color_override("font_color", DANGER if risk else INK)
+	bar.set_meta("resource_risk", risk); style_assignments += 1
 
 static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
 	var style = box(color, border, 4, 8)

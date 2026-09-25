@@ -10,22 +10,23 @@ var controls: Dictionary
 var details_button: Button
 var panel: PanelContainer
 var actions: HFlowContainer
-var prior_style = ""
+var rival: Label
 
 func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details: Callable) -> void:
 	panel = host; controls = existing
 	var body = host.get_child(0); body.add_theme_constant_override("separation", 3)
 	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
 	var header = UI.hbox(body); body.move_child(header, 0)
-	position = UI.label("P—", 24, UI.RACE_INK); position.custom_minimum_size.x = 50; header.add_child(position)
-	name_label = UI.button(car.short + " · " + car.name.get_slice(" ", 1), details); name_label.add_theme_font_size_override("font_size", 14); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
-	status = UI.label("", 12, PitwallDesign.MUTED); header.add_child(status)
+	position = UI.label("P—", 22, UI.RACE_INK); position.custom_minimum_size.x = 50; header.add_child(position)
+	name_label = UI.button(car.short + " · " + car.name.get_slice(" ", 1), details); name_label.add_theme_font_size_override("font_size", 14); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.clip_text = true; name_label.custom_minimum_size.x = 80; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
+	status = UI.label("", 12, PitwallDesign.MUTED); status.custom_minimum_size.x = 112; status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; header.add_child(status)
 	var metrics = UI.hbox(body); body.move_child(metrics, 1)
 	for text in ["FITTED TYRE", "FINISH FUEL · EST.", "NEXT STOP"]:
 		var column = UI.vbox(metrics); column.add_theme_constant_override("separation", 1); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_child(UI.label(text, 11, PitwallDesign.MUTED))
 		var value = UI.label("—", 13); value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; column.add_child(value); facts.append(value)
-	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 30; body.add_child(issue); body.move_child(issue, 2)
+	rival = UI.label("", 11, UI.MUTED); rival.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(rival); body.move_child(rival, 2)
+	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 30; body.add_child(issue); body.move_child(issue, 3)
 	var old_actions = controls.compare.get_parent()
 	actions = HFlowContainer.new(); actions.add_theme_constant_override("h_separation", 5); actions.add_theme_constant_override("v_separation", 4); body.add_child(actions)
 	for child in old_actions.get_children(): child.reparent(actions)
@@ -37,13 +38,25 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 
 func refresh(model: StrategyRaceSim, id: int) -> void:
 	var car = model.cars[id]; var policy = model.policy(id); var decision = controls.card
-	var rank = model.standings(model.phase in ["qualifying", "qualifying_results"]).find(car)
+	var order = model.standings(model.phase in ["qualifying", "qualifying_results"])
+	var rank = order.find(car)
+	if model.phase in ["qualifying", "qualifying_results"]:
+		rival.text = "Best valid lap · " + RaceSim.format_time(car.qual_best)
+	elif model.phase in ["practice", "practice_results"]:
+		rival.text = "Measured practice · no classified position"
+	elif rank > 0 and not car.finished and not car.dnf:
+		var ahead = order[rank - 1]
+		rival.text = "Ahead · %s · ~%.1fs" % [ahead.short, maxf(0, ahead.distance - car.distance) / maxf(15, car.speed)]
+	else:
+		rival.text = "Final result" if car.finished or car.dnf else "Leading the field"
+	rival.tooltip_text = rival.text + ". Live gap is distance-derived, not a gate measurement."
 	position.text = "OUT" if car.dnf else "P%d" % (rank + 1)
 	name_label.text = car.short + " · " + car.name.get_slice(" ", 1)
 	var pace_owner = "You" if policy.owners.pace == "player" else "Engineer"
 	status.text = "FINISHED" if car.finished else ("RETIRED" if car.dnf else ("PIT ORDER" if car.pit_order else (["Conserve", "Balanced", "Push"][car.pace] + " · " + pace_owner)))
 	if not car.finished and not car.dnf and not car.pit_order and policy.overrides.has("engine"):
 		status.text = ["Save fuel", "Standard engine", "Engine attack"][car.engine] + " · You"
+	status.tooltip_text = status.text + ". " + StrategyPlan.ownership_text(policy)
 	facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
 	var fitted = TyreInventory.find(car, car.set_id)
 	var minimum = 100.0
@@ -64,7 +77,4 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	if car.route == "pit": issue.text = "In pit lane · frozen service plan and physical queue"
 	if car.finished or car.dnf: issue.text = "Race complete · open Review / Debrief for measured outcomes"
 	var key = "warning" if decision.get("priority", 0) >= 90 else ("selected" if model.selected_id == id else "normal")
-	if prior_style != key:
-		prior_style = key
-		var style = UI.box(Color("fff2dc") if key == "warning" else UI.RACE_CREAM, UI.DANGER if key == "warning" else (UI.GOLD if key == "selected" else UI.LINE), PitwallDesign.RADIUS_MD, PitwallDesign.SPACE_2)
-		style.border_width_left = 3 if key in ["warning", "selected"] else 1; panel.add_theme_stylebox_override("panel", style)
+	UI.race_card_state(panel, key)

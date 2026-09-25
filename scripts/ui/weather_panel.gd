@@ -88,7 +88,7 @@ func refresh() -> void:
 	if not outlook.arrival.is_empty(): outlook_label.text += "\nPossible rain window: %.0f–%.0f simulated seconds (~%.0f–%.0fs at %d×); unknown duration." % [outlook.arrival.low, outlook.arrival.high, outlook.arrival.low / model.speed, outlook.arrival.high / model.speed, model.speed]
 	cases_label.text = "STRESS CASES · %.1f-lap horizon%s\nLine water after ~%.0fs: drier %.0f%% / trend %.0f%% / wetter %.0f%%. Not probabilities." % [advice.horizon_laps, " (partial race)" if advice.partial_horizon else "", outlook.horizon_seconds, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100]
 	if outlook_chart:
-		outlook_chart.present("Line water outlook · stress envelope", "% water", [observed.mean * 100, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100], 0.0, 100.0)
+		outlook_chart.present_cases("Now / independent stress cases", ["Now", "Drier", "Trend", "Wetter"], [observed.mean * 100, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100])
 	for i in range(3):
 		options[i].visible = i < advice.options.size()
 		if not options[i].visible: continue

@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
+    for name in ("script-load.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -79,7 +79,18 @@ def main() -> int:
             base = [executable, "--path", str(project)]
             env = dict(os.environ, GODOT_SILENCE_ROOT_WARNING="1", LIBGL_ALWAYS_SOFTWARE="1",
                        XDG_DATA_HOME=user_dir, APPDATA=user_dir)
-            run_phase("import", base + ["--headless", "--editor", "--quit"], env)
+            try:
+                run_phase("import", base + ["--headless", "--editor", "--quit"], env)
+            except RuntimeError:
+                # Import can report only a dependency cascade; preserve direct root diagnostics.
+                try:
+                    run_phase("script-load-diagnostics", base + ["--headless", "--script", "res://tests/script_load_tests.gd"], env)
+                except RuntimeError:
+                    pass
+                raise
+            run_phase("script-load", base + ["--headless", "--script", "res://tests/script_load_tests.gd"], env)
+            shutil.copy2(project / "reports" / "script-load.json", REPORTS / "script-load.json")
+            script_load = require_report("script-load.json")
             run_phase("domain", base + ["--headless", "--script", "res://tests/run_tests.gd"], env)
             shutil.copy2(project / "reports" / "domain-tests.json", REPORTS / "domain-tests.json")
             domain = require_report("domain-tests.json")
@@ -153,6 +164,7 @@ def main() -> int:
                         raise RuntimeError("Native UI verification needs a display or xvfb-run. "
                                            "Install xvfb and xauth, or explicitly use --headless-only.")
                 try:
+                    run_phase("ui-repair", [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_repair_tests.gd") for part in command], env)
                     run_phase("ui", command, env)
                     strategy_command = [part.replace("res://tests/ui_smoke.gd", "res://tests/strategy_ui_smoke.gd") for part in command]
                     run_phase("strategy-ui", strategy_command, env)
@@ -176,6 +188,7 @@ def main() -> int:
                     for artifact in (project / "reports").iterdir():
                         if artifact.is_file() and not artifact.name.startswith("."):
                             shutil.copy2(artifact, REPORTS / artifact.name)
+                repair_ui = require_report("ui-repair.json")
                 ui = require_report("ui-smoke.json")
                 strategy_ui = require_report("strategy-ui.json")
                 living_ui = require_report("living-racecraft-ui.json")
@@ -190,7 +203,9 @@ def main() -> int:
                 notebook_ui = require_report("notebook-ui.json")
                 rivals_ui = require_report("rivals-ui.json")
                 workspace_performance = require_report("workspace-performance.json")
-            summary = {"notebook_checks": notebook["checks"],
+            summary = {"script_load_checks": script_load["checks"],
+                       "ui_repair_checks": repair_ui["checks"] if not args.headless_only else None,
+                       "notebook_checks": notebook["checks"],
                        "notebook_ui_checks": notebook_ui["checks"] if notebook_ui else None,
                        "authoring_checks": authoring["checks"],
                        "authoring_ui_checks": authoring_ui["checks"] if authoring_ui else None,
@@ -217,7 +232,7 @@ def main() -> int:
                        "rivals_ui_checks": rivals_ui["checks"] if rivals_ui else None,
                        "workspace_performance_checks": workspace_performance["checks"] if workspace_performance else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

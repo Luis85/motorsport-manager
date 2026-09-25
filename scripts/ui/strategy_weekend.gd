@@ -17,6 +17,7 @@ func _ready() -> void:
 	super._ready()
 	strategy_model = sim as StrategyRaceSim
 	if strategy_model == null: return
+	decision_strip.hide()
 	canvas.custom_minimum_size.y = 170
 	add_theme_constant_override("separation", 6)
 	detail_picker.add_item("Strategy desk")
@@ -51,15 +52,17 @@ func _ready() -> void:
 		var send = UI.button("Release now", func(): targeted_command("send", {"id": id}), true); send.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(send)
 		var recall = UI.button("Recall", func(): targeted_command("recall", {"id": id})); recall.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(recall)
 		var hold = UI.button("Keep plan", func(): keep_plan(id)); hold.size_flags_horizontal = Control.SIZE_EXPAND_FILL; actions.add_child(hold)
-		var more = MenuButton.new(); more.text = "More"; more.custom_minimum_size.y = 30; actions.add_child(more)
+		var more = MenuButton.new(); more.text = "More"; more.flat = false; more.focus_mode = Control.FOCUS_ALL; more.custom_minimum_size.y = 30; actions.add_child(more)
 		more.get_popup().add_item("Save fuel for 2 laps", 0)
 		more.get_popup().add_item("Cancel accepted pit order", 1)
 		more.get_popup().id_pressed.connect(func(action_id):
 			if action_id == 0: targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})
 			elif action_id == 1: targeted_command("cancel_pit", {"id": id}))
 		for button in [compare, box, hold, send, recall]: StrategyDesk.compact_button(button)
-		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); save.visible = false
-		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); cancel.visible = false
+		# Retain compatibility references as owned hidden controls, not orphan Nodes.
+		var save = UI.button("Save fuel", func(): targeted_command("resource_intent", {"id": id, "channel": "engine", "value": 0, "laps": 2})); actions.add_child(save); actions.move_child(save, more.get_index()); save.hide()
+		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); body.add_child(cancel); cancel.hide()
+		more.get_popup().about_to_popup.connect(func(): update_more_actions(id))
 		var battle = UI.label("", 11, UI.ACCENT); battle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(battle)
 		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare, "panel": panel, "more": more}
 	team_summary_label = UI.label("TWO CARS · ONE TEAM", 10, UI.MUTED); team_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; add_child(team_summary_label)
@@ -74,6 +77,14 @@ func _ready() -> void:
 	strategy_desk.commit_bar.reparent(detail_actions)
 	tabs.tab_changed.connect(func(index): strategy_desk.commit_bar.visible = index == 6 and strategy_desk.topic != 2)
 	tabs.current_tab = 6; refresh(); close_detail()
+
+func update_more_actions(id: int) -> void:
+	if not decision_controls.has(id): return
+	var c = sim.cars[id]
+	var live = sim.phase == "race" and not c.dnf and not c.finished
+	var popup = decision_controls[id].more.get_popup()
+	popup.set_item_disabled(popup.get_item_index(0), not live)
+	popup.set_item_disabled(popup.get_item_index(1), not live or not c.pit_order or c.route != "track")
 
 func open_strategy(id: int) -> void:
 	select_driver(id); open_topic(6); strategy_desk.select_driver(id); strategy_desk.show_topic(0)
@@ -110,8 +121,7 @@ func refresh() -> void:
 		var cards = DecisionFeed.for_driver(sim, id, p, f)
 		var card = DecisionFeed.primary(cards)
 		var controls = decision_controls[id]; controls.card = card
-		var urgent = card.get("priority", 0) >= 90
-		controls.panel.add_theme_stylebox_override("panel", UI.box(Color("fff2dc") if urgent else UI.RACE_CREAM, UI.DANGER if urgent else UI.LINE, 6, 8))
+		UI.race_card_state(controls.panel, "warning" if card.get("priority", 0) >= 90 else ("selected" if sim.selected_id == id else "normal"))
 		var status = "Finished" if c.finished else ("Retired" if c.dnf else ("Pit order executing" if c.pit_order else "On plan · " + p.plan.get("objective", "balanced").replace("_", " ")))
 		controls.heading.text = "%s · %s" % [c.short, ("! " if card.get("priority", 0) >= 90 else "") + card.get("title", status)]
 		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [c.set_id.get_slice("-", 1), c.tyre, RaceForecaster.fuel_margin(sim, c), StrategyPlan.ownership_text(p)]
@@ -135,9 +145,11 @@ func refresh() -> void:
 		controls.recall.tooltip_text = "Recall %s to the garage; actual entry and tyre wear remain physical." % c.short
 		controls.cancel.visible = false; controls.cancel.disabled = c.route != "track" or c.dnf or c.finished
 		controls.cancel.tooltip_text = "Cancel %s's accepted pit order before physical commitment. Committed entries cannot be canceled." % c.short
-		controls.save.visible = false
+		# A critical fuel shortfall promotes its recovery action out of More.
+		controls.save.visible = sim.phase == "race" and not c.dnf and not c.finished and RaceForecaster.fuel_margin(sim, c) < 0
 		controls.more.visible = not qualifying
 		controls.more.disabled = c.dnf or c.finished
+		update_more_actions(id)
 		controls.hold.disabled = card.is_empty(); controls.hold.tooltip_text = "Acknowledge this issue without changing the plan or time controls."
 		controls.save.disabled = sim.phase != "race" or c.dnf or c.finished
 		var battle = strategy_model.battle_state.drivers[id]
@@ -151,8 +163,12 @@ func refresh() -> void:
 			controls.battle.text = "Qualifying owner: " + p.owners.qualifying
 		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
 	if team_summary_label:
-		var a = sim.cars[3]; var b = sim.cars[6]
-		team_summary_label.text = "TWO CARS · ONE TEAM   ·   %s %s   /   %s %s   ·   Shared box: %s" % [a.short, "P%d" % (sim.standings().find(a) + 1), b.short, "P%d" % (sim.standings().find(b) + 1), "coordinate stops" if a.scheduled_lap > 0 and b.scheduled_lap > 0 else "clear"]
+		var occupant = int(sim.pit_boxes.get(sim.cars[3].team, -1))
+		var arrivals: Array[String] = []
+		for id in [3, 6]:
+			if sim.cars[id].route == "pit" and sim.cars[id].pit_stage == "entry": arrivals.append(sim.cars[id].short)
+		team_summary_label.text = "SHARED PIT BOX · " + (sim.cars[occupant].short + " in service" if occupant >= 0 else "No car in service")
+		if not arrivals.is_empty(): team_summary_label.text += " · Approaching: " + ", ".join(arrivals)
 	if sim.selected_id in [3, 6]: rejoin_overlay.forecast = forecast_cache[sim.selected_id]
 	else: rejoin_overlay.forecast = {}
 	if right_panel.visible and tabs.current_tab == 6:
