@@ -44,9 +44,12 @@ static func race_button(text: String, callback: Callable, selected: bool = false
 	b.add_theme_stylebox_override("normal", action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
 	b.add_theme_stylebox_override("hover", action_box(Color("315c4d"), GOLD))
 	b.add_theme_stylebox_override("pressed", action_box(GOLD, GOLD))
+	b.add_theme_stylebox_override("hover_pressed", action_box(GOLD, GOLD))
+	var focus = box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
 	for state in ["font_color", "font_hover_color", "font_focus_color"]:
 		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
 	b.add_theme_color_override("font_pressed_color", RACE_INK)
+	b.add_theme_color_override("font_hover_pressed_color", RACE_INK)
 	return b
 
 static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
