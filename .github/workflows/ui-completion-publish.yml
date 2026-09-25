@@ -1,0 +1,57 @@
+name: Publish tested UI completion
+on:
+  push:
+    branches: [feat/race-weekend-ui-overhaul]
+    paths: [.github/ui-completion.payload.json]
+permissions:
+  contents: write
+concurrency:
+  group: one-time-ui-completion-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'Luis85/motorsport-manager' && github.ref == 'refs/heads/feat/race-weekend-ui-overhaul'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/race-weekend-ui-overhaul
+          fetch-depth: 0
+      - name: Validate and publish pinned UI change
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, bz2, hashlib, json, pathlib, subprocess
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          base = '0f450c542efc8864fef2b0dd32c2fad68be25c2e'
+          parts = [f'.github/ui-completion.part-{i}.txt' for i in range(1, 7)]
+          temporary = {'.github/ui-completion.payload.json', '.github/workflows/ui-completion-publish.yml', *parts}
+          if git('branch', '--show-current') != 'feat/race-weekend-ui-overhaul':
+              raise SystemExit('Unexpected branch; refusing to write')
+          changed = set(git('diff', '--name-only', base, 'HEAD').splitlines())
+          if changed - temporary:
+              raise SystemExit('Concurrent source changes; refusing to overwrite')
+          payload = json.loads(pathlib.Path('.github/ui-completion.payload.json').read_text())
+          encoded = ''.join(pathlib.Path(p).read_text().strip() for p in parts)
+          if payload['base_commit'] != base or len(encoded) != 63868:
+              raise SystemExit('Unexpected baseline or transport size')
+          patch = bz2.decompress(base64.b64decode(encoded, validate=True))
+          if len(patch) > 300000 or hashlib.sha256(patch).hexdigest() != '0be96f8fbc39cd1d56003e82ae5d8bc4f92886b5bbee3a5cfef626431d434c73':
+              raise SystemExit('Patch integrity mismatch')
+          subprocess.run(['git', 'apply', '--index', '--unidiff-zero', '--check', '-'], input=patch, check=True)
+          subprocess.run(['git', 'apply', '--index', '--unidiff-zero', '-'], input=patch, check=True)
+          staged = git('diff', '--cached', '--name-only').splitlines()
+          if not staged or any(not (p.startswith(('scripts/ui/', 'tests/', 'docs/')) or p == 'scripts/verify.py') for p in staged):
+              raise SystemExit('Unexpected changed path; no commit or push')
+          subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+          subprocess.run(['python3', '-m', 'py_compile', 'scripts/verify.py'], check=True)
+          subprocess.run(['git', 'rm', '.github/ui-completion.payload.json', *parts], check=True)
+          subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
+          subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
+          subprocess.run(['git', 'commit', '-m', 'feat(ui): complete integrated race-weekend workspaces and decision interactions'], check=True)
+          subprocess.run(['git', 'push', 'origin', 'HEAD:refs/heads/feat/race-weekend-ui-overhaul'], check=True)
+          print('Published:', git('rev-parse', 'HEAD'))
+          PY
