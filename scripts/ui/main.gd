@@ -62,14 +62,16 @@ func show_menu() -> void:
 	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles"]: scenarios.get_popup().add_item(title)
 	scenarios.get_popup().id_pressed.connect(func(index):
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios][index].call())
-	var replay_menu = MenuButton.new(); replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
+	var replay_menu = MenuButton.new(); replay_menu.focus_mode = Control.FOCUS_ALL; replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
 	menu.add_child(replay_menu)
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
+	replay_menu.get_popup().add_item("Circuit notebook", 2)
 	replay_menu.get_popup().set_item_disabled(1, not FileAccess.file_exists(App.sandbox_path))
 	replay_menu.get_popup().id_pressed.connect(func(id):
 		if id == 0: replay_controller.import_record()
-		else: replay_controller.resume_sandbox())
+		elif id == 1: replay_controller.resume_sandbox()
+		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, replay_menu))
 	menu.add_child(UI.button("SETTINGS", show_settings))
 	menu.add_child(UI.button("QUIT", request_quit))
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)

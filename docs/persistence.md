@@ -1,8 +1,10 @@
 # Persistence and local data
 
-## Current 0.13 authoring and validation
+**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; historical integration status and test counts remain in their dated handoffs. [Notebook verification](notebook-verification.md).
 
-Application **0.13.0** adds a **scenario envelope v1** (`motorsport-manager-scenario`) containing a **brief v1** and one existing replay v1 sandbox record. The record has zero steps, no inputs/marks, identical initial/endpoint sporting state, a new sandbox identity and retained source lineage. The brief in the outer envelope must match the one embedded in the record. Invalid or mismatched imports do not replace the original or sandbox.
+## Retained 0.13 authoring and validation
+
+The retained 0.13 authoring implementation adds a **scenario envelope v1** (`motorsport-manager-scenario`) containing a **brief v1** and one existing replay v1 sandbox record. The record has zero steps, no inputs/marks, identical initial/endpoint sporting state, a new sandbox identity and retained source lineage. The brief in the outer envelope must match the one embedded in the record. Invalid or mismatched imports do not replace the original or sandbox.
 
 The engine/model, native **v10**, session/replay **v1**, result/receipt **v1** and original/sandbox slots described below remain compatible. Old recordings without a scenario brief do not acquire fabricated instructions or goals. The optional committed brief survives sandbox saving/resume through its parent metadata. Unsubmitted author-form edits are discarded on Cancel; submitted text is retained in that viewer when the file picker is canceled, not across application restart.
 
@@ -22,7 +24,7 @@ The existing 16 MB limit and temporary/backup write behavior apply to these enve
 
 **0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
 
-All player writes use Godot's `user://` directory, displayed in **Settings → Local data**. The application never saves back into packaged `res://data`.
+Managed continuation, settings, library and notebook files use Godot's `user://` directory, displayed in **Settings → Local data**. Explicit exports use the destination chosen in the native file dialog. The application never automatically saves back into packaged `res://data`.
 
 | Path | Contents |
 |---|---|
@@ -31,6 +33,7 @@ All player writes use Godot's `user://` directory, displayed in **Settings → L
 | `user://weekend.json` | Original session v1 with native v10 endpoint and replay history |
 | `user://sandbox.json` | Independently saved sandbox session, never original authority |
 | `user://weekend-results.json` | Immutable standalone factual results and once-only local receipts |
+| `user://circuit-notebook.json` | Opt-in observed runs and revision-checked personal notes, notebook v1 |
 | `*.bak` | Previous successful value retained by atomic replacement |
 
 `Storage.read_json` bounds files to 16 MB and returns structured success/error results. It does not evaluate scripts or instantiate Godot resources from user input. Imported track identifiers are constrained before becoming filenames. Invalid library documents are skipped with an explanatory warning rather than crashing the menu.
