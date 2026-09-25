@@ -512,7 +512,7 @@ func refresh() -> void:
 		history_label.text = "\n\n".join(history)
 		if telemetry_chart:
 			var speeds: Array = []
-			for sample in c.telemetry: speeds.append(float(sample[1]) * 3.6)
+			for sample in c.telemetry: speeds.append(float(sample[1]))
 			telemetry_chart.present("Speed trace · measured", "km/h", speeds, 0.0, 340.0)
 		if telemetry_sectors: telemetry_sectors.present(records)
 	automate.set_pressed_no_signal(c.auto); repair.set_pressed_no_signal(c.repair)
