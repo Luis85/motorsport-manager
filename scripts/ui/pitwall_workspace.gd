@@ -57,7 +57,7 @@ func _ready() -> void:
 	decision_drawer = RaceDecisionDrawer.new(); decision_drawer.configure(strategy_model); decision_page.add_child(decision_drawer)
 	decision_drawer.commit_bar.reparent(detail_actions)
 	decision_drawer.command_requested.connect(_decision_command)
-	decision_drawer.refresh_requested.connect(open_decision)
+	decision_drawer.refresh_requested.connect(func(id): open_decision(id, true))
 	decision_drawer.detail_requested.connect(open_strategy)
 	register_topic("Decision",decision_page_index)
 	build_navigation()
@@ -286,14 +286,14 @@ func open_destination(index: int, subtopic: int) -> void:
 func show_driver_details(id: int) -> void:
 	open_decision(id)
 
-func open_decision(id: int) -> void:
+func open_decision(id: int, new_review: bool = false) -> void:
 	if id not in [3,6] or decision_drawer == null: return
 	select_driver(id)
 	forecast_cache[id] = strategy_model.forecast(id)
 	var evidence = RaceDecisionViewModel.capture(strategy_model,id,forecast_cache[id])
 	evidence.battle = decision_controls[id].battle.text
 	evidence.battle_detail = decision_controls[id].battle.tooltip_text
-	decision_drawer.present(evidence)
+	decision_drawer.present(evidence, new_review)
 	open_topic(decision_page_index)
 	PitwallDesign.focus_later(decision_drawer.refresh_button)
 

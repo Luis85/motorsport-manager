@@ -27,8 +27,14 @@ var fuel: Button
 var release: Button
 var message: Label
 var stale = false
+# At most one last accepted receipt per owned driver; not a second draft/command store.
+var receipts: Dictionary = {}
+var receipt: Dictionary = {}
+var submit_sequence = -1
 
-func configure(value: StrategyRaceSim) -> void: model = value
+func configure(value: StrategyRaceSim) -> void:
+	if model != value: receipts.clear(); receipt.clear()
+	model = value
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
@@ -52,11 +58,16 @@ func _ready() -> void:
 	refresh_button = UI.button("Refresh evidence", func(): refresh_requested.emit(snapshot.get("driver_id",3))); actions.add_child(refresh_button)
 	var details = UI.button("Open full strategy", func(): detail_requested.emit(snapshot.get("driver_id",3))); actions.add_child(details)
 
-func present(value: Dictionary) -> void:
-	snapshot = value.duplicate(true); stage = "REVIEW"; pending_action = ""; pending_payload.clear()
+func present(value: Dictionary, new_review: bool = false) -> void:
+	# Reopening is observational. A fresh review requires the explicit review action.
+	receipt = {} if new_review else receipts.get(int(value.get("driver_id", -1)), {})
+	snapshot = value.duplicate(true) if receipt.is_empty() else receipt.snapshot.duplicate(true)
+	stage = "REVIEW" if receipt.is_empty() else "EXECUTING"
+	pending_action = "" if receipt.is_empty() else receipt.action
+	pending_payload = {} if receipt.is_empty() else receipt.payload.duplicate(true)
 	message.text = "Choose an option to review its commitment. Reading does not pause the race."
 	if snapshot.is_empty(): return
-	heading.text = snapshot.short + " · " + snapshot.primary.get("title","Review current plan")
+	heading.text = snapshot.name + " · " + snapshot.primary.get("title","Review current plan")
 	facts.text = "OBSERVED AT SNAPSHOT
 P%d · fitted %s · tyre %.0f%%
 Fuel remaining %.2f lap units
@@ -82,53 +93,73 @@ func refresh_state() -> void:
 	var car = model.cars[int(snapshot.driver_id)]
 	stale = RaceForecaster.stale(model,snapshot.forecast,int(model.policy(snapshot.driver_id).revision)) or snapshot.phase != model.phase
 	var race = model.phase == "race"; var live = not car.dnf and not car.finished
+	var locked = stage not in ["REVIEW", "CONFIRM"]
 	var f = snapshot.forecast
 	box.visible = race; fuel.visible = race and snapshot.primary.get("issue","")=="fuel"; release.visible = model.phase == "qualifying"
-	box.disabled = stale or not live or car.route != "track" or car.pit_order or f.replacement_id.is_empty() or f.gate.distance >= model.laps * model.track.length
-	fuel.disabled = stale or not live or not race
-	release.disabled = stale or not live or not RaceForecaster.qualifying_release(model,car).can_start_hotlap
-	hold.disabled = stale or snapshot.primary.is_empty() or stage in ["EXECUTING","OUTCOME","ACKNOWLEDGED"]
+	box.disabled = locked or stale or not live or car.route != "track" or car.pit_order or f.replacement_id.is_empty() or f.gate.distance >= model.laps * model.track.length
+	fuel.disabled = locked or stale or not live or not race
+	release.disabled = locked or stale or not live or not RaceForecaster.qualifying_release(model,car).can_start_hotlap
+	hold.disabled = locked or stale or snapshot.primary.is_empty()
 	cancel.visible = stage == "CONFIRM"
-	box.text = "Confirm %s pit call" % snapshot.short if stage == "CONFIRM" and pending_action == "pit" else "Box %s · lap %d" % [snapshot.short,f.gate.lap]
-	fuel.text = "Confirm saving 2 laps" if stage == "CONFIRM" and pending_action == "resource_intent" else "Save fuel 2 laps"
-	release.text = "Confirm release" if stage == "CONFIRM" and pending_action == "send" else "Release now"
-	if stage == "EXECUTING":
-		if car.dnf or car.finished: stage = "OUTCOME"; message.text = "Session ended · inspect measured outcomes in Review / Debrief."
-		elif car.pit_stops > snapshot.pit_stops and car.route == "track": stage = "OUTCOME"; message.text = "Pit visit completed · measured service and consequences are in Review / Debrief."
-		else: message.text = "Accepted · " + model.pit_status(car) if pending_action == "pit" else "Accepted · current driver state: " + car.intent
-	status.present("STALE EVIDENCE" if stale and stage in ["REVIEW","CONFIRM"] else stage, "warning" if stale else "info")
+	box.text = "Confirm %s pit call" % snapshot.name if stage == "CONFIRM" and pending_action == "pit" else "Box %s · lap %d" % [snapshot.short,f.gate.lap]
+	fuel.text = "Confirm %s saving 2 laps" % snapshot.name if stage == "CONFIRM" and pending_action == "resource_intent" else "Save fuel 2 laps"
+	release.text = "Confirm %s release" % snapshot.name if stage == "CONFIRM" and pending_action == "send" else "Release now"
+	if stage == "EXECUTING" and not receipt.is_empty():
+		var progress = RaceDecisionViewModel.receipt_progress(model, receipt)
+		if progress.terminal:
+			receipt.outcome = progress; stage = "OUTCOME"
+		else:
+			receipt.record_offset = model.strategy_state.records.size()
+			if progress.has("entry_id"): receipt.entry_id = progress.entry_id
+			if progress.has("recalled"): receipt.recalled = progress.recalled
+		message.text = "%s · %s
+%s" % [progress.label, snapshot.name, progress.detail]
+	refresh_button.text = "Review a new decision" if locked else "Refresh evidence"
+	refresh_button.disabled = stage == "SUBMITTING"
+
+	status.present("STALE EVIDENCE" if stale and stage in ["REVIEW","CONFIRM"] else stage, "warning" if stale and not locked else "info")
 	source_status.text = "Snapshot %.1fs · %s
 Estimated rejoin P%d–P%d. Current conditions only; not a promised result.
-%s" % [f.time,"refresh required before commitment" if stale else "displayed assumptions still valid",f.pit.position_low,f.pit.position_high,"Race is paused by you." if model.paused else "Race continues at %d×. Space pauses." % model.speed]
+%s" % [f.time,"accepted receipt · no repeat command" if locked else ("refresh required before commitment" if stale else "displayed assumptions still valid"),f.pit.position_low,f.pit.position_high,"Race is paused by you." if model.paused else "Race continues at %d×. Space pauses." % model.speed]
 	for button in [box,fuel,release,hold]:
 		button.tooltip_text = "Evidence is stale. Refresh explicitly; the displayed order is never replaced silently." if stale else "Targets " + snapshot.name + ". Confirm before issuing a new order."
 
 func prepare(action: String) -> void:
 	refresh_state()
-	if snapshot.is_empty() or stale: return
+	if snapshot.is_empty() or stale or stage not in ["REVIEW", "CONFIRM"]: return
 	if (action == "pit" and box.disabled) or (action == "send" and release.disabled) or (action == "resource_intent" and fuel.disabled): return
 	if stage == "CONFIRM" and pending_action == action:
+		stage = "SUBMITTING"; submit_sequence = int(model.strategy_state.sequence)
 		command_requested.emit(pending_action,pending_payload.duplicate(true)); return
 	stage = "CONFIRM"; pending_action = action
 	pending_payload = RaceDecisionViewModel.pit_payload(snapshot) if action == "pit" else {"id":snapshot.driver_id}
 	if action == "resource_intent": pending_payload.merge({"channel":"engine","value":0,"laps":2})
-	message.text = "CONFIRM · " + ("%s fits %s at safe entry lap %d. Pit ownership becomes manual; other owners stay unchanged." % [snapshot.short,snapshot.forecast.replacement_id,snapshot.forecast.gate.lap] if action == "pit" else ("%s saves fuel for two laps, then returns to the previous engine owner." % snapshot.short if action == "resource_intent" else "%s leaves the garage on the planned real tyre set." % snapshot.short))
+	message.text = "CONFIRM · " + ("%s fits %s at safe entry lap %d. Pit ownership becomes manual; other owners stay unchanged." % [snapshot.name,snapshot.forecast.replacement_id,snapshot.forecast.gate.lap] if action == "pit" else ("%s saves fuel for two laps, then returns to the previous engine owner." % snapshot.name if action == "resource_intent" else "%s leaves the garage on the planned real tyre set." % snapshot.name))
 	refresh_state()
 
 func keep_plan() -> void:
 	refresh_state()
 	if hold.disabled: return
 	var entry = snapshot.primary
-	command_requested.emit("hold_decision",{"id":snapshot.driver_id,"issue":entry.issue,"key":entry.key})
+	pending_action = "hold_decision"
+	pending_payload = {"id":snapshot.driver_id,"issue":entry.issue,"key":entry.key}
+	stage = "SUBMITTING"; submit_sequence = int(model.strategy_state.sequence)
+	command_requested.emit(pending_action, pending_payload.duplicate(true))
 
 func command_result(accepted: bool, reason: String, action: String) -> void:
+	# Synchronous boundary today; also reject duplicate or mismatched late callbacks.
+	if stage != "SUBMITTING" or action != pending_action: return
 	if accepted:
 		stage = "ACKNOWLEDGED" if action == "hold_decision" else "EXECUTING"
+		if action != "hold_decision":
+			receipt = RaceDecisionViewModel.accepted_receipt(model, snapshot, action, pending_payload, submit_sequence)
+			receipts[int(snapshot.driver_id)] = receipt
 		message.text = "Plan retained. No pit order, pause or speed change." if action == "hold_decision" else "Command accepted. Execution remains physical."
 	else:
-		stage = "REVIEW"; message.text = "Not accepted: " + reason + ". Refresh or review; no replacement order was sent."
+		stage = "REJECTED"; message.text = "Rejected · " + reason + ". Refresh or review; no replacement order was sent."
 	refresh_state()
 
 func reset_review() -> void:
+	if stage not in ["REVIEW", "CONFIRM"]: return
 	stage = "REVIEW"; pending_action = ""; pending_payload.clear()
 	message.text = "No new command issued."; refresh_state()
