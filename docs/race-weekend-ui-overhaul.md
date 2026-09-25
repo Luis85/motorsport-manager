@@ -31,3 +31,15 @@ The race weekend uses deep racing green for structural chrome, cream for decisio
 - The circuit receives more vertical space in the default watch state.
 - No live telemetry refresh rebuilds stable controls.
 - Decision queue derives only from existing authoritative race state; it does not invent forecast outcomes.
+
+## Polishing pass
+
+The follow-up pass tightened the implementation rather than adding race mechanics:
+
+- Decision prompts now carry explicit CAR / TYRE / FUEL / PIT / CLEAR status text in addition to color.
+- Keep plan suppresses an acknowledged prompt until the underlying state crosses a new material band; it no longer repeats the same issue every refresh.
+- Review routes to the relevant contextual surface instead of always opening tyres.
+- Telemetry visualization appears only when Telemetry is intentionally opened and disappears again in Watch mode.
+- The timing tower now shares the dark race chrome and uses a high-contrast selected row, while player cars remain distinguishable without relying on color alone.
+- Race buttons now have explicit keyboard-focus and pressed states matching the gold interaction accent.
+- The decision system remains presentation-only and consumes no race RNG or hidden future state.
