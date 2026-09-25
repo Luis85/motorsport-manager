@@ -27,17 +27,19 @@ jobs:
           def git(*args):
               return subprocess.check_output(['git', *args], text=True).strip()
           base = 'cc1b90dbba07bbb35160e3c46a6257305660bf8f'
-          temporary = {'.github/ui-repair.payload.json', '.github/workflows/ui-repair-publish.yml'}
+          parts = [f'.github/ui-repair.part-{i}.txt' for i in range(1, 4)]
+          temporary = {'.github/ui-repair.payload.json', '.github/workflows/ui-repair-publish.yml', *parts}
           if git('branch', '--show-current') != 'feat/race-weekend-ui-overhaul':
               raise SystemExit('Unexpected branch; no write performed')
           changed = set(git('diff', '--name-only', base, 'HEAD').splitlines())
           if changed - temporary:
               raise SystemExit('Concurrent source changes detected; refusing to overwrite them')
           payload = json.loads(pathlib.Path('.github/ui-repair.payload.json').read_text())
-          patch = gzip.decompress(base64.b64decode(payload['patch_gzip_base64'], validate=True))
-          if len(patch) > 200000 or payload['base_commit'] != base:
+          encoded = ''.join(pathlib.Path(p).read_text().strip() for p in parts)
+          if len(encoded) != 30728 or payload['base_commit'] != base:
               raise SystemExit('Unexpected repair size or baseline')
-          if hashlib.sha256(patch).hexdigest() != '02c00a87162bd5ad2cb2b956b56987e7038f483c203266bf35c760295aa90b39':
+          patch = gzip.decompress(base64.b64decode(encoded, validate=True))
+          if len(patch) > 200000 or hashlib.sha256(patch).hexdigest() != '02c00a87162bd5ad2cb2b956b56987e7038f483c203266bf35c760295aa90b39':
               raise SystemExit('Patch digest mismatch')
           subprocess.run(['git', 'apply', '--index', '--unidiff-zero', '--check', '-'], input=patch, check=True)
           subprocess.run(['git', 'apply', '--index', '--unidiff-zero', '-'], input=patch, check=True)
@@ -46,7 +48,7 @@ jobs:
               raise SystemExit('Patch changed an unexpected path; no commit or push')
           subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
           subprocess.run(['python3', '-m', 'py_compile', 'scripts/verify.py'], check=True)
-          subprocess.run(['git', 'rm', '.github/ui-repair.payload.json'], check=True)
+          subprocess.run(['git', 'rm', '.github/ui-repair.payload.json', *parts], check=True)
           subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], check=True)
           subprocess.run(['git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], check=True)
           subprocess.run(['git', 'commit', '-m', 'fix(ui): repair native Godot import, composition, evidence and responsive regressions'], check=True)
