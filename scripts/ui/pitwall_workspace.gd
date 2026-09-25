@@ -1,7 +1,7 @@
 class_name PitwallWorkspace
 extends RecoveryWeekendView
 ## Task-oriented native shell over the existing controls and command boundary.
-const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7]}
+const GROUPS = {"Strategy": [6], "Car": [0, 3, 4], "Team": [8], "Conditions": [9, 10, 5], "Review": [1, 2, 7, 11]}
 var group_buttons: Dictionary = {}
 var group_memory: Dictionary = {}
 var context_navigation: HBoxContainer
@@ -20,11 +20,17 @@ var weekend_menu: MenuButton
 var phase_actions: VBoxContainer
 var header_context: VBoxContainer
 var utility_commands: Array[Button] = []
+var results_panel: SessionResultsPanel
+var results_page_index = 11
 
 func _ready() -> void:
 	super._ready()
 	text_scale = float(App.settings.get("pitwall_text_scale", 1.0))
 	set_meta("pitwall_text_scale", text_scale)
+	detail_picker.add_item("Session results")
+	var results_page = tab_page("Session results")
+	results_panel = SessionResultsPanel.new(); results_panel.configure(sim); results_page.add_child(results_panel)
+	register_topic("Results", results_page_index)
 	build_navigation()
 	build_header()
 	compact_inspector()
@@ -179,6 +185,10 @@ func refresh() -> void:
 	strategy_desk.issue_text.visible = false # Recipient/approval state are already adjacent to the comparison.
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)
+	if results_panel:
+		results_panel.visible = sim.phase in ["qualifying_results", "practice_results", "results"] or tabs.current_tab == results_page_index
+		if results_panel.visible: results_panel.refresh()
+	topic_buttons[results_page_index].visible = group_for(results_page_index) == group_for(tabs.current_tab) and sim.phase in ["qualifying_results", "practice_results", "results"]
 	messages_button.text = "Messages" if messages.is_empty() else "Messages (%d)" % messages.size()
 	# Empty, already-approved drafts are not presented as a new commitment.
 	if not strategy_desk.dirty.get(strategy_desk.driver_id, true): strategy_desk.apply_button.disabled = true
