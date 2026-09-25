@@ -11,8 +11,14 @@ const GOOD = Color("4f795c")
 const DANGER = Color("943f32")
 const HOVER = Color("e0e7d4")
 const SELECTED = Color("d5e1c6")
-const PRIMARY = Color("345b43")
+const PRIMARY = Color("173e35")
 const ON_PRIMARY = Color("fff3d8")
+const RACE_DARK = Color("102d28")
+const RACE_DARK_2 = Color("173e35")
+const RACE_DARK_3 = Color("234b3f")
+const GOLD = Color("d4ad58")
+const RACE_CREAM = Color("f6f0df")
+const RACE_INK = Color("17332b")
 # Controls share immutable state styles; never mutate these returned resources.
 static var state_styles: Dictionary = {}
 static var style_assignments = 0
@@ -23,6 +29,25 @@ static func set_active(button: Button, active: bool, danger: bool = false) -> vo
 	if not state_styles.has(key): state_styles[key] = box(SELECTED if active else CARD, DANGER if danger else (ACCENT if active else LINE), 4, 6)
 	button.add_theme_stylebox_override("normal", state_styles[key])
 	button.set_meta("visual_state", key); style_assignments += 1
+
+static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", box(RACE_DARK_2 if dark else RACE_CREAM, Color("426558") if dark else LINE, 5, padding))
+	return panel
+
+static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
+	var l = label(text, size, GOLD if accent else Color("edf0df"))
+	return l
+
+static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
+	var b = button(text, callback)
+	b.add_theme_stylebox_override("normal", action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
+	b.add_theme_stylebox_override("hover", action_box(Color("315c4d"), GOLD))
+	b.add_theme_stylebox_override("pressed", action_box(GOLD, GOLD))
+	for state in ["font_color", "font_hover_color", "font_focus_color"]:
+		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
+	b.add_theme_color_override("font_pressed_color", RACE_INK)
+	return b
 
 static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
 	var style = box(color, border, 4, 8)
