@@ -18,6 +18,13 @@ jobs:
         with:
           ref: feat/race-weekend-ui-overhaul
           fetch-depth: 0
+      - name: Preserve bounded transport diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-completion-transport
+          path: .github/ui-completion.part-*.txt
+          include-hidden-files: true
+          retention-days: 1
       - name: Validate and publish pinned UI change
         shell: bash
         run: |
@@ -35,7 +42,17 @@ jobs:
           if changed - temporary:
               raise SystemExit('Concurrent source changes; refusing to overwrite')
           payload = json.loads(pathlib.Path('.github/ui-completion.payload.json').read_text())
-          encoded = ''.join(pathlib.Path(p).read_text().strip() for p in parts)
+          chunks = [pathlib.Path(p).read_text().strip() for p in parts]
+          # Transport corrections cannot change the pinned source patch digest.
+          for correction in payload.get('transport_corrections', []):
+              part, start, old, new = correction
+              if not 1 <= part <= 6 or not 0 <= start <= len(chunks[part - 1]):
+                  raise SystemExit('Invalid transport correction')
+              text = chunks[part - 1]
+              if text[start:start + len(old)] != old:
+                  raise SystemExit('Transport correction baseline mismatch')
+              chunks[part - 1] = text[:start] + new + text[start + len(old):]
+          encoded = ''.join(chunks)
           if payload['base_commit'] != base or len(encoded) != 63868:
               raise SystemExit('Unexpected baseline or transport size')
           patch = bz2.decompress(base64.b64decode(encoded, validate=True))
