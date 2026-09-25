@@ -12,6 +12,12 @@ jobs:
       GODOT_VERSION: 4.7.2
     steps:
       - uses: actions/checkout@v4
+      - name: Record verification source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=zip HEAD -o /tmp/verification-source.zip
+          git rev-parse HEAD > /tmp/verification-source.sha
       - name: Install pinned Godot editor
         shell: bash
         run: |
@@ -31,10 +37,22 @@ jobs:
             echo 'Repository bootstrap: project follows in the next implementation commit.'
           fi
       - name: Verification runtime
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: godot-test-runtime
           path: /tmp/godot/Godot_*
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Exact verification source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-source
+          path: |
+            /tmp/verification-source.zip
+            /tmp/verification-source.sha
+          if-no-files-found: ignore
           retention-days: 1
       - name: Test evidence
         if: always()
