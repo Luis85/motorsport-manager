@@ -54,3 +54,20 @@ A second polishing pass closes additional gaps to the approved high-fidelity boa
 - High-priority strategy cards gain a restrained danger border/surface treatment without changing simulation time or issuing a command.
 - The live classification, circuit, two-car strategy cards and contextual inspector now form the primary four-part race hierarchy from the concept board.
 - Deep strategy, telemetry, weather, team orders and debrief remain progressive-disclosure surfaces instead of competing with the circuit by default.
+
+## Deep review and refinement pass
+
+The implementation was reviewed against the approved master race view, decision-drawer and two-car pit-wall concepts. The largest remaining mismatch was not missing functionality but too much simultaneously visible secondary control. This pass therefore reduces chrome while retaining every existing capability.
+
+### Findings addressed
+
+- The session bar had drifted back toward an application toolbar. Save, export, guide and menu are now grouped under one Weekend menu so lap/flag/weather/time information carries the visual weight.
+- The race context strip now exposes measured surface water and rubber beside the existing weather state, keeping the top bar focused on information that can change a call.
+- Driver resource bars now reinforce low tyre, fuel and integrity states with redundant text/color treatment rather than remaining visually neutral.
+- Strategy cards previously exposed up to seven actions at once. They now privilege Compare, Box/Release and Keep plan; low-frequency fuel/cancel operations move under More.
+- Contextual button labels describe the actual next action: Box this lap / Box lap N, Compare details, Release now.
+- The two-car cards remain persistent and symmetric; deep analysis stays in the inspector. No capability was removed.
+
+### Review conclusion
+
+The live race now more closely follows the intended interaction rhythm: read the track and classification, scan both cars, react only when a decision becomes material, inspect evidence when needed, then commit one clear action. Secondary application commands and low-frequency race controls no longer compete with this loop.
