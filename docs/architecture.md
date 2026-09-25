@@ -1,6 +1,8 @@
 # Architecture
 
-## Current 0.13 authored-scenario boundary
+**0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; historical integration status and test counts remain in their dated handoffs. [Notebook verification](notebook-verification.md).
+
+## Retained 0.13 authored-scenario boundary
 
 [Scenario authoring](race-weekend-scenario-authoring.md) adds inert author intent to a frozen replay checkpoint; [0.13 verification](scenario-authoring-verification.md) records this increment's actual evidence. `ScenarioBrief` validates bounded text and an allow-listed observed goal. `ReplayScenario` creates and validates a zero-step sandbox record whose initial state, endpoint and briefing agree. It never evaluates author text as code or changes the starting resources to satisfy an objective.
 
@@ -8,7 +10,7 @@
 
 `WeekendResult.validate` now checks the structured twelve-car classification, twelve owned finite inventories, supported aggregate condition, statistics and provenance before a receipt is accepted or an old ledger reused. `RaceRecord` also checks frozen seed/rules/roster/track identity across its snapshots and safely rejects wrong JSON scalar types. Integrity digests are local consistency checks, not authentication or proof that an imported history was genuinely played.
 
-Application version is **0.13.0**; sporting model `race-weekend-0.12-v1`, embedded native v10 and existing session/replay/result envelopes remain unchanged. See [Persistence](persistence.md) for the new scenario envelope, retained slots and UTF-8 byte limit.
+Current application version is **0.14.0**; sporting model `race-weekend-0.12-v1`, embedded native v10 and existing session/replay/result envelopes remain unchanged. See [Persistence](persistence.md) for the new scenario envelope, retained slots and UTF-8 byte limit.
 
 ## Retained 0.12 replay composition
 
