@@ -11,6 +11,7 @@ var debrief_text: Label
 var debrief_sequence = -1
 var team_panel: TeamOrdersPanel
 var battle_overlay: BattleOverlay
+var team_summary_label: Label
 
 func _ready() -> void:
 	super._ready()
@@ -39,8 +40,7 @@ func _ready() -> void:
 	decision_bar = HBoxContainer.new(); decision_bar.add_theme_constant_override("separation", 8); add_child(decision_bar)
 	move_child(decision_bar, hint.get_index()); hint.visible = false
 	for id in [3, 6]:
-		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; panel.size_flags_stretch_ratio = 1.0; decision_bar.add_child(panel)
-		panel.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.LINE, 6, 8))
+		var panel = UI.race_panel(false, 8); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; panel.size_flags_stretch_ratio = 1.0; decision_bar.add_child(panel)
 		var body = UI.vbox(panel); body.add_theme_constant_override("separation", 4); body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var heading = UI.label("", 12, UI.ACCENT); heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(heading)
 		var summary = UI.label("", 11, UI.MUTED); summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(summary)
@@ -55,7 +55,9 @@ func _ready() -> void:
 		var cancel = UI.button("Cancel pit", func(): targeted_command("cancel_pit", {"id": id})); actions.add_child(cancel)
 		for button in [compare, box, hold, save, cancel, send, recall]: StrategyDesk.compact_button(button)
 		var battle = UI.label("", 11, UI.ACCENT); battle.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(battle)
-		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare}
+		decision_controls[id] = {"send": send, "recall": recall, "cancel": cancel, "battle": battle, "heading": heading, "summary": summary, "detail": detail, "box": box, "hold": hold, "save": save, "card": {}, "compare": compare, "panel": panel}
+	team_summary_label = UI.label("TWO CARS · ONE TEAM", 10, UI.MUTED); team_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; add_child(team_summary_label)
+	move_child(team_summary_label, decision_bar.get_index() + 1)
 	pit_note.max_lines_visible = 2
 	radio_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	automate.text = "Delegate all domains (reset overrides)"
@@ -102,6 +104,8 @@ func refresh() -> void:
 		var cards = DecisionFeed.for_driver(sim, id, p, f)
 		var card = DecisionFeed.primary(cards)
 		var controls = decision_controls[id]; controls.card = card
+		var urgent = card.get("priority", 0) >= 90
+		controls.panel.add_theme_stylebox_override("panel", UI.box(Color("fff2dc") if urgent else UI.RACE_CREAM, UI.DANGER if urgent else UI.LINE, 6, 8))
 		var status = "Finished" if c.finished else ("Retired" if c.dnf else ("Pit order executing" if c.pit_order else "On plan · " + p.plan.get("objective", "balanced").replace("_", " ")))
 		controls.heading.text = "%s · %s" % [c.short, ("! " if card.get("priority", 0) >= 90 else "") + card.get("title", status)]
 		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [c.set_id.get_slice("-", 1), c.tyre, RaceForecaster.fuel_margin(sim, c), StrategyPlan.ownership_text(p)]
@@ -136,6 +140,9 @@ func refresh() -> void:
 			controls.detail.text = "%s · %s" % [c.qual_state.to_upper(), "Flying lap can start" if release.get("can_start_hotlap", false) else "No new timed attempt"]
 			controls.battle.text = "Qualifying owner: " + p.owners.qualifying
 		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
+	if team_summary_label:
+		var a = sim.cars[3]; var b = sim.cars[6]
+		team_summary_label.text = "TWO CARS · ONE TEAM   ·   %s %s   /   %s %s   ·   Shared box: %s" % [a.short, "P%d" % (sim.standings().find(a) + 1), b.short, "P%d" % (sim.standings().find(b) + 1), "coordinate stops" if a.scheduled_lap > 0 and b.scheduled_lap > 0 else "clear"]
 	if sim.selected_id in [3, 6]: rejoin_overlay.forecast = forecast_cache[sim.selected_id]
 	else: rejoin_overlay.forecast = {}
 	if right_panel.visible and tabs.current_tab == 6:
