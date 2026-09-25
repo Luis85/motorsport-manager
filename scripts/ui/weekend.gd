@@ -178,7 +178,13 @@ func _ready() -> void:
 	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tower.add_theme_font_size_override("font_size", 12); tower.add_theme_font_size_override("title_button_font_size", 10)
 	tower.add_theme_constant_override("v_separation", 4); tower.add_theme_constant_override("indent", 0)
-	tower.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.LINE, 4, 2))
+	tower.add_theme_stylebox_override("panel", UI.box(UI.RACE_DARK, Color("426558"), 4, 2))
+	tower.add_theme_color_override("font_color", Color("edf0df"))
+	tower.add_theme_color_override("font_selected_color", UI.RACE_INK)
+	tower.add_theme_color_override("title_button_color", UI.GOLD)
+	tower.add_theme_stylebox_override("title_button_normal", UI.box(UI.RACE_DARK_3, Color("426558"), 2, 3))
+	tower.add_theme_stylebox_override("title_button_hover", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
+	tower.add_theme_stylebox_override("title_button_pressed", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
 	for i in range(5):
 		tower.set_column_title(i, ["P", "CAR", "GAP / LAP", "TYRE", "STATE"][i]); tower.set_column_expand(i, false)
 		tower.set_column_custom_minimum_width(i, [26, 42, 67, 28, 37][i])
@@ -427,7 +433,8 @@ func refresh() -> void:
 			row.set_custom_color(4, UI.ACCENT if state == "HOT" else (UI.DANGER if car.dnf else UI.MUTED))
 			for column in range(5):
 				row.set_tooltip_text(column, tooltip)
-				row.set_custom_bg_color(column, Color("dbe3ca") if car.id == sim.selected_id else (Color("edf0dc") if car.player else UI.PANEL))
+				row.set_custom_bg_color(column, UI.GOLD.lightened(0.18) if car.id == sim.selected_id else (Color("315c4d") if car.player else UI.RACE_DARK))
+				if car.id != sim.selected_id: row.set_custom_color(column, Color("edf0df") if column != 4 else (UI.GOLD if state == "HOT" else (Color("e58b78") if car.dnf else Color("b8c6bc"))))
 		if car.id == sim.selected_id and not row.is_selected(0): row.select(0)
 	tower.set_block_signals(false)
 	var captions = {"practice": "End practice…", "practice_results": "Return to briefing", "briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
