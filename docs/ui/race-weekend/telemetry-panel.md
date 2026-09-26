@@ -15,3 +15,9 @@ One selected trace replaces the duplicated under-circuit plot. Selecting a metri
 ## Shared acceptance
 
 Use the [layout](layout-system.md), [responsive](responsive-behaviour.md), [accessibility](accessibility.md) and [interaction](interaction-model.md) contracts. Rendering this screen does not create a command or alter pause/speed. Actual executable coverage is recorded in [verification](verification-completion.md).
+
+## Finishing contract
+
+Recorded traces use elapsed coordinates, selected-value readouts and retained-range controls. Own-driver comparison aligns exact timestamps, with gaps for missing positions; solid-circle/dashed-square encoding remains meaningful beyond color. Temperature/condition is separately labeled current model state.
+
+See [SC00–SC14](finish-specification.md) and the [finishing ledger](finish-ledger.md) for current acceptance evidence.

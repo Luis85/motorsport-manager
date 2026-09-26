@@ -56,6 +56,25 @@ func run() -> void:
 	var summary = visible_copy(view.qualifying_workspace)
 	check(summary.contains("%.0f" % release.required_seconds) and summary.to_lower().contains("latest"), "G04 required hot-lap time and latest release are visible outside hover")
 	await capture("qualifying-release-context", "Real qualifying approval, both cars still in the garage")
+	# Native compact presentation regression: the release estimate is not a live
+	# countdown for a car already on a hot lap, and its elapsed-time basis must fit.
+	root.size = Vector2i(1100,720); root.content_scale_size = root.size
+	app.settings.pitwall_text_scale = 1.3; await reset()
+	for id in [3,6]:
+		view.open_decision(id,true); await settle(); await confirm(view.decision_drawer.release)
+	view.close_detail()
+	check(await advance_until(func():return model.cars[3].qual_state == "hotlap" and model.cars[6].qual_state == "hotlap",300), "G04 compact wording is reviewed against actual active hot laps")
+	view.refresh(); await settle()
+	var before_text = JSON.stringify(model.snapshot())
+	for id in [3,6]:
+		var label = view.qualifying_workspace.labels[id]
+		var font = label.get_theme_font("font"); var font_size = label.get_theme_font_size("font_size")
+		for line in label.text.split("\n"):
+			check(font.get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x <= label.size.x, "G04 complete qualifying timing line fits at 1100/130: " + model.cars[id].short)
+		check(label.text.contains("Next run") and label.text.contains("elapsed"), "G04 active run distinguishes the next-release estimate and elapsed session time")
+	view.qualifying_workspace.present()
+	check(before_text == JSON.stringify(model.snapshot()), "G04 qualifying presentation does not alter the active run or time controls")
+	await capture("qualifying-compact-context", "Physically active hot laps; release estimate describes a new run, not current-lap ETA")
 	var report = {"passed":failures.is_empty(),"checks":checks,"errors":failures,"captures":captures,"screenshots":captures.size(),"engine":Engine.get_version_info().string}
 	Storage.write_json("res://reports/ui-finish-observation.json",report)
 	print("UI_FINISH_OBSERVATION ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

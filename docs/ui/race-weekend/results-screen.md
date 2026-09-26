@@ -15,3 +15,9 @@ Completion opens session review; reopening/closing restores the original table p
 ## Shared acceptance
 
 Use the [layout](layout-system.md), [responsive](responsive-behaviour.md), [accessibility](accessibility.md) and [interaction](interaction-model.md) contracts. Rendering this screen does not create a command or alter pause/speed. Actual executable coverage is recorded in [verification](verification-completion.md).
+
+## Finishing contract
+
+Lap/run coordinates, padded measured ranges, invalid/pit annotations and compatible own-driver comparison are integrated. Practice uses recorded lap duration, not the crossing timestamp. Fitted-stint inspection and explicit entry/exit-correlated visit selection provide bounded text alternatives; absence of evidence is not a completed visit.
+
+See [SC00–SC14](finish-specification.md) and the [finishing ledger](finish-ledger.md) for current acceptance evidence.

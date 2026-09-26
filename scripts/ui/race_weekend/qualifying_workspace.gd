@@ -16,12 +16,16 @@ func present() -> void:
 	if labels.is_empty(): return
 	for id in labels:
 		var c = model.cars[id]; var release = RaceForecaster.qualifying_release(model,c)
-		var availability = "Release available" if release.can_start_hotlap else ("Already running" if c.route != "garage" else "Too late for a new hot lap")
-		if model.qual_closed: availability = "Session closed · current hot lap may finish" if c.qual_state == "hotlap" else "Session closed · no new release"
-		elif c.qual_state == "inlap": availability = "Returning to garage"
 		var benchmark = INF
 		for other in model.cars:
 			if other.qual_best > 0: benchmark = minf(benchmark,other.qual_best)
-		var delta = " · %+.3fs to fastest" % (c.qual_best-benchmark) if c.qual_best>0 and is_finite(benchmark) else " · untimed"
-		labels[id].text = "%s · %s · Best %s%s\n%s · Est. %.0fs to hot lap · latest %.0fs session" % [c.qual_state.to_upper(), c.set_id, RaceSim.format_time(c.qual_best), delta, availability, release.required_seconds, release.latest_release]
-		labels[id].tooltip_text = "Estimated %.0fs until hot lap. Latest feasible release at session time %.0fs. Traffic is visible on the circuit; no guaranteed gap." % [release.required_seconds,release.latest_release]
+		var lap = "Untimed" if c.qual_best <= 0 else RaceSim.format_time(c.qual_best)
+		if c.qual_best > 0 and is_finite(benchmark): lap += " (%+.3fs)" % (c.qual_best - benchmark)
+		# This is the cost/last start of a NEW release, not time remaining on the
+		# current out/hot/in lap. Keep its elapsed-session basis visible at 130%.
+		var kind = "Release open" if release.can_start_hotlap else ("Next run" if c.route != "garage" else "Too late")
+		var timing = "%s · need ~%.0fs · latest %.0fs elapsed" % [kind,release.required_seconds,release.latest_release]
+		if model.qual_closed:
+			timing = "Closed · existing hot lap may finish" if c.qual_state == "hotlap" else "Closed · no new release"
+		labels[id].text = "%s · %s · %s\n%s" % [c.qual_state.to_upper(),c.set_id,lap,timing]
+		labels[id].tooltip_text = "Best valid lap; signed gap is to the fastest valid lap in this session. A new release needs an estimated %.0fs to begin a hot lap, with its latest feasible start at %.0fs elapsed session time. This is not the current lap's countdown. Traffic remains visible on the circuit; a clear lap is not guaranteed." % [release.required_seconds,release.latest_release]

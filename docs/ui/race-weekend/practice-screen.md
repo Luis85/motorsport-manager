@@ -15,3 +15,9 @@ Drafts are shared with the compact editor but independent across drivers. Start 
 ## Shared acceptance
 
 Use the [layout](layout-system.md), [responsive](responsive-behaviour.md), [accessibility](accessibility.md) and [interaction](interaction-model.md) contracts. Rendering this screen does not create a command or alter pause/speed. Actual executable coverage is recorded in [verification](verification-completion.md).
+
+## Finishing contract
+
+Dashboard and inspector share both the per-driver drafts and genuine edited flags. Complete sessions prioritize recorded programmes, actual duration/sample quality and observed costs rather than a fresh run estimate. Practice-only edits receive the same safe-exit warning. Zero comparable clean samples retains baseline estimates truthfully.
+
+See [SC00–SC14](finish-specification.md) and the [finishing ledger](finish-ledger.md) for current acceptance evidence.

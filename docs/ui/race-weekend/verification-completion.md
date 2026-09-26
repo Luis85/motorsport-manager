@@ -1,3 +1,5 @@
+> **Historical d583 completion evidence.** The finishing continuation, later hosted run outcomes, expanded matrix and remaining platform gates are recorded in [verification-finish.md](verification-finish.md) and [finish-ledger.md](finish-ledger.md). Counts below are retained as the original dated evidence, not the current final-head total.
+
 # UI completion: executed verification
 
 ## Source and environment

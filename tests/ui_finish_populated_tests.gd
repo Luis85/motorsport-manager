@@ -205,6 +205,41 @@ func render_profile(profile: Array) -> void:
 			await shoot(state+"-"+str(page),state)
 	Storage.write_json("res://reports/ui-finish-populated-progress.json",{"inspected":inspected,"checks":checks,"errors":failures})
 
+func primary_profile(profile: Array) -> void:
+	# Complete the cross-product of supported text preferences on primary tasks,
+	# plus both wide profiles, using the same physically generated source states.
+	root.size=Vector2i(profile[0],profile[1]);root.content_scale_size=root.size
+	app.settings.pitwall_text_scale=profile[2]
+	var tag="matrix-%d-" % roundi(profile[2]*100)
+	await restore_state("race");view.close_detail();await settle()
+	header_and_drivers(tag+str(profile));var before=race_fingerprint()
+	for id in [3,6]:check(reachable(view.decision_controls[id].box),"G16 both native pit actions fit "+tag+str(profile))
+	await shoot(tag+"race","race")
+	await click(view.car_cards[3].name_label);await settle()
+	await click(view.decision_drawer.box)
+	check(view.decision_drawer.stage=="CONFIRM" and before==race_fingerprint(),"G16 native staging is still observation at "+tag+str(profile))
+	check(reachable(view.decision_drawer.box) and reachable(view.decision_drawer.cancel),"G16 Confirm and Back remain outside scrolling at "+tag+str(profile))
+	await shoot(tag+"confirmation","race")
+	view.close_detail();view.open_strategy(3);await click(view.focus_button);await settle()
+	header_and_drivers(tag+"strategy")
+	check(reachable(view.strategy_desk.box_now),"G16 strategy action stays fixed "+tag+str(profile))
+	await shoot(tag+"strategy","race")
+	check(before==race_fingerprint(),"G16 cross-profile review cannot issue a command "+tag+str(profile))
+	await restore_state("practice-results");view.open_practice_workspace();await settle()
+	for id in [3,6]:
+		check(reachable(view.practice_workspace.panels[id].summary),"G16 both populated practice summaries fit "+tag+str(profile))
+	check(reachable(view.practice_workspace.finish),"G16 practice continuation stays fixed "+tag+str(profile))
+	await shoot(tag+"practice","practice-results")
+	await restore_state("results");view.open_results_workspace();await click(view.results_workspace.buttons[1]);await settle()
+	var chart=view.results_workspace.laps;chart.grab_focus();await key(KEY_HOME)
+	var at=chart.cursor;before=race_fingerprint()
+	root.size=Vector2i(maxi(1100,profile[0]-40),maxi(720,profile[1]-40));root.content_scale_size=root.size;await settle(8)
+	root.size=Vector2i(profile[0],profile[1]);root.content_scale_size=root.size;await settle(8)
+	check(root.gui_get_focus_owner()==chart and chart.cursor==at,"G16 live resize preserves chart focus and selected evidence "+tag+str(profile))
+	check(reachable(chart) and reachable(view.results_workspace.next_button),"G16 populated result chart and fixed Next fit "+tag+str(profile))
+	check(before==race_fingerprint(),"G16 resizing focused results leaves the original race unchanged "+tag+str(profile))
+	await shoot(tag+"results","results")
+
 func run() -> void:
 	root.size=Vector2i(1440,900);root.content_scale_size=root.size
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game);app=root.get_node("App");await settle();app.settings.pitwall_text_scale=1.0
@@ -213,6 +248,7 @@ func run() -> void:
 	for profile in [[1440,900,1.0],[1280,800,1.15],[1100,720,1.3]]:await render_profile(profile)
 	root.size=Vector2i(1920,1080);root.content_scale_size=root.size;app.settings.pitwall_text_scale=1.0
 	await restore_state("race");view.close_detail();await settle();header_and_drivers("wide");await shoot("race","race")
+	for profile in [[1440,900,1.15],[1440,900,1.3],[1280,800,1.0],[1280,800,1.3],[1100,720,1.0],[1100,720,1.15],[1920,1080,1.0],[1920,1080,1.3]]:await primary_profile(profile)
 	var report={"passed":failures.is_empty(),"checks":checks,"errors":failures,"captures":captures,"screenshots":captures.size(),"physical_states":provenance,"inspected":inspected,"engine":Engine.get_version_info().string}
 	Storage.write_json("res://reports/ui-finish-populated.json",report)
 	print("UI_FINISH_POPULATED ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

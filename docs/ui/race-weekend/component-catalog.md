@@ -24,3 +24,8 @@ All new components below are constructed by the production scene stack. No featu
 | `accessibility.gd`, `gamepad_navigation.gd` | Semantic metadata, chart alternatives and modal-aware controller navigation |
 
 `PitwallDesign` owns the race design language. Existing `PitwallCarCard`, `StrategyDesk`, `WeatherPanel`, `TeamOrdersPanel`, `RacecraftPanel` and `PracticePanel` remain domain-aware presenters/adapters. Their duplicate construction is avoided; their commands still route through the existing host. `RaceUISnapshot` was removed rather than claimed as a completed performance layer: complete presentation stamps live where data is rendered.
+
+
+## Finishing acceptance
+
+The finishing pass additionally integrates `RacePitServicePanel` and `RaceTeamIntentTimeline` as read-only presentations, plus correlated result-visit inspection. `RaceMetricChart` preserves missing positions and exact observed comparison domains. Their host routes and semantic states are in [finish-specification.md](finish-specification.md); there is no new command authority.
