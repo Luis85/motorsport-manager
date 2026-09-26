@@ -1,12 +1,18 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.15.1 — Race Weekend UI Clarity**, retaining the native race-weekend workspaces, circuit notebook and authored replay scenarios.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current implementation: **0.16.0 — Race Director**, a new default race-weekend layout and moment-paced interaction loop over the existing native simulation.
 
-## UI clarity and safe interactions
+## Race Director: decide, watch, learn
 
-Tactics now follow **Plan → Review → Follow the outcome** with the same driver-specific drafts and simulation. Core choices stay together; limits expand on demand with their values summarized. Compare and approval have separate primary actions. Ending a tactic or resetting a draft asks for confirmation; an accepted physical pit stop is not silently cancelled. **Find** previews its destinations, recovers from empty searches and opens tactical evidence directly. **Full view**, **Widen** and **Keep plan** clarify existing controls.
+**Pit wall / Race plan / Garage / Review** replaces the always-open collection of engineering panels in the default view. Both named drivers stay visible below the circuit. **All tools / Ctrl+K** retains the complete expert workspaces. Optional practice opens the existing two-driver programme dashboard.
 
-See the [research, audit and interaction contract](docs/race-weekend-ui-clarity.md). Native verification includes the new `ui_clarity_tests.gd` suite alongside all existing checks. This patch changes presentation, not the tactical model, save version, race physics or rival behavior.
+**Pause & decide** freezes a named driver's situation. Choose a two-lap pace, tyre-protection or fuel-saving call, or review a physical pit stop, then confirm the driver. Qualifying offers a banker run or recall instead. Acceptance becomes a correlated execution/outcome view with actual resource observations, not a promise of a pass. Stale choices require an explicit refresh.
+
+**Next moment · 8×** explicitly watches real fixed steps until an observed change or a quiet segment of three lap-distances, capped at 180 simulated seconds. It then pauses and restores the previous speed. It never skips a stop, approves the next phase or issues a car order. Manual speed cancels the watch; ordinary navigation remains observational. **Keep orders & watch** is a valid choice.
+
+The previous **Engineering** layout remains selectable in Settings or **Weekend → Switch pit-wall layout**. Both layouts use the same model and advanced drafts. The new guide has independent saved progress. The track editor is not redesigned.
+
+See [the 18-source research, audit and design decisions](docs/design/race-director-research.md), [behavior and compatibility](docs/race-director.md), and [verification scope and results](docs/race-director-verification.md). Automated checks do not establish human enjoyment or universal accessibility.
 
 ## Open and play
 
@@ -14,7 +20,7 @@ Use **Godot 4.7.2 Standard**. Import the root `project.godot`, allow script impo
 
 Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Optional practice buys information with real resources; skipping remains available. Engineers can handle qualifying releases. Approve preparation, formation and starting lights when ready. Manage **Daniel Mercer (MER)** and **Lucas Moreau (MOR)**. Space pauses; 1–5 selects 1×–16×. Native controls preserve text-editing shortcuts. Track Editor, Settings and Continue Weekend remain available.
 
-**Watch / Strategy / Car / Team / Conditions / Review** organize the pit wall. Both driver cards retain urgent information and primary commands. Find / Ctrl+K navigates without issuing orders. Settings offers staged 100%, 115% and 130% pit-wall text. Alerts and guides do not pause the race or change its speed.
+**Race Director** is the default; the retained Engineering layout uses **Watch / Strategy / Car / Team / Conditions / Review**. All tools / Ctrl+K navigates without issuing orders. Settings offers 100%, 115% and 130% pit-wall text. Ordinary alerts, browsing and guides do not pause. The explicitly labelled **Pause & decide** and **Next moment** controls do change time as described above.
 
 ## Strategic Duels
 
@@ -62,7 +68,7 @@ Optional practice retains comparable measured evidence, not a hidden setup bonus
 
 **Scenario challenges** contains dry strategy, weather, recovery, practice, rival-style and strategic-duel recipes. Their starting resources and assistance are disclosed, and no winner is forced. Historical recipes and migrated saves retain their model semantics. See the [documentation index](docs/README.md) for each retained implementation and its limits.
 
-**Circuit Atelier** retains eight bundled circuits, Bezier editing, background references, pit lanes, annotations, multi-selection, transforms, alignment/distribution, scenery groups and connected freehand/pen tracing. Authoring and live races use separate snapshots. Flat dot cars and the warm paper/green/brass presentation remain. This increment does not redesign the editor or add a campaign.
+**Circuit Atelier** retains eight bundled circuits, Bezier editing, background references, pit lanes, annotations, multi-selection, transforms, alignment/distribution, scenery groups and connected freehand/pen tracing. Authoring and live races use separate snapshots. Flat dot cars remain. Race Director adds a graphite/brass live pit wall; the editor and advanced engineering workspaces retain their paper/green/brass presentation. This increment does not add a campaign.
 
 ## Verify
 
@@ -79,3 +85,14 @@ Reports and native screenshots are produced under `reports/`. CI publishes evide
 Driver pressure, arbitrary race-state/scenario editing, broader strategy calibration, actual campaign settlement, physical safety cars, red flags, full stewarding and itemized component engineering remain outside this slice. Human comprehension/accessibility testing, controller/screen-reader completeness, text beyond 130%, broad seed/circuit validation and hardware profiling remain open. There is no universal frame-rate guarantee.
 
 The seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. Attribution remains in [third-party notices](THIRD_PARTY_NOTICES.md). These are unofficial reconstructions, not laser scans or certified circuit/vehicle simulations. Widths, elevations, pit routes and scenery include authored estimates. No official championship branding, car models or driver likenesses are used. Code retains the [MIT license](LICENSE), copyright Luis Mendez.
+
+### Layout-specific native verification
+
+The full runner requires new Race Director domain, native layout/interaction and actual-weekend journey suites. It also runs all previous suites; detailed old-panel assertions use the shipping **Engineering** preference through `-- --pitwall-layout=engineering`. Neither layout uses a separate test simulation. The public launch override accepts only `director` or `engineering` and does not itself write settings.
+
+```sh
+# Launch a specific layout without changing its saved preference:
+godot --path . -- --pitwall-layout=director
+# Run one inherited panel suite against its documented layout:
+godot --path . --script res://tests/practice_ui_smoke.gd -- --pitwall-layout=engineering
+```
