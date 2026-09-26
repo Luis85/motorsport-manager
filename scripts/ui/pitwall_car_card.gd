@@ -36,6 +36,14 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 	for button in actions.get_children():
 		button.custom_minimum_size.y = 32
 		button.add_theme_font_size_override("font_size", 12)
+		# These are compact, persistent driver actions. Preserve the full label,
+		# focus outline and scaled target height; trim only horizontal decoration.
+		# Six ordinary actions then fit at 1100/130 without stealing another row
+		# from the comparison above. Clone once, never mutate shared theme styles.
+		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			var style = button.get_theme_stylebox(state).duplicate()
+			style.content_margin_left = 4; style.content_margin_right = 4
+			button.add_theme_stylebox_override(state, style)
 
 func refresh(model: StrategyRaceSim, id: int) -> void:
 	var car = model.cars[id]; var policy = model.policy(id); var decision = controls.card

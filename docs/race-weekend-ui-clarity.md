@@ -113,6 +113,18 @@ Next, run moderated tasks with both first-time and experienced management-game p
 
 No production domain/service, race physics, AI behavior, forecast model, save schema or replay model change is intended. Application patch numbering identifies UI polish, not a new simulation model.
 
+## Continuation: compact comparison regression
+
+The first complete hosted pass on head `4d660d5b940667b4c3450fc6c9fa973f3b265d95` reached `rivals-ui` and failed the retained assertion that all three ordinary strategy alternatives fit without scrolling at 1100×720 / 130% text (run `36256853999`). Earlier focused tactical passes did not establish whole-shell correctness.
+
+The recovered native screenshot and a local reproduction showed six ordinary driver actions requiring 532 pixels in a 520-pixel row. The clearer **Keep plan** label tipped Recovery onto a second row. That extra 46 pixels reduced the inspector's reading area, clipping the third alternative. This is the expected wrapping behavior of Godot's HFlowContainer [19], not a forecast or simulation failure.
+
+The compact driver-card builder now clones each action style once and reduces only left/right content padding from eight to four pixels. Text, full labels, focus outlines, state colors, the five-pixel gaps and the scaled minimum target height are preserved. All six ordinary direct actions remain available; Weather and Recovery are not buried in More. Additional or unusually long alert actions may still wrap normally rather than being truncated.
+
+The unchanged three-alternative assertion passes in the focused reproduction. Thirteen extra assertions check complete driver-action labels, retained text size and target height across all six profiles, and reuse of the same style resources during refresh. The focused rivals suite contains 60 checks / 11 captures. Use the final exact-source full-run report for integrated completion; this subsection does not turn a partial or superseded run into a full pass.
+
+The resumed verification also retains receipt keyboard scrolling, safe confirmation, first-popup bounds, guide traversal and the post-service full-view return tests. No domain/service bytes or race models are changed by this repair.
+
 ## Sources and evidence limits
 
 Accessed 26 September 2026. Guidance is paraphrased and applied to this product; no source establishes that these particular changes have succeeded with human players.
@@ -135,3 +147,4 @@ Accessed 26 September 2026. Guidance is paraphrased and applied to this product;
 16. Game Accessibility Guidelines — [Use simple clear language](https://gameaccessibilityguidelines.com/use-simple-clear-language/).
 17. W3C — [Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
 18. GOV.UK Design System — [Error message](https://design-system.service.gov.uk/components/error-message/).
+19. Godot Engine — [HFlowContainer](https://docs.godotengine.org/en/stable/classes/class_hflowcontainer.html). Native wrapping behavior; the numerical layout measurements above are from this project, not from the documentation.
