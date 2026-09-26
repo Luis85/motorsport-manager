@@ -40,6 +40,7 @@ func run_preview(id: int, plan: Dictionary) -> Dictionary:
 	elif c.route != "garage" or c.dnf or c.finished: reason = "Wait for this car to return to its garage."
 	elif d.runs.size() >= PracticeEvidence.MAX_RUNS: reason = "Three runs used; retain the remaining stock for qualifying and racing."
 	elif plan.get("objective") not in PracticeEvidence.OBJECTIVES or not valid_laps: reason = "Choose a supported objective and one to four measured laps."
+	elif plan.has("manual_modes") and not plan.manual_modes is bool: reason = "Use an explicit manual-mode choice."
 	elif not plan.get("baseline") in PracticeEvidence.BASELINES: reason = "Choose a named baseline or the current applied setup."
 	elif not plan.get("set_id") is String or not WheelTyres.usable(TyreInventory.find(c, plan.set_id)): reason = "Choose a usable set belonging to this driver."
 	elif clock + duration > practice_state.duration: reason = "Insufficient session time for this run and its return margin. Shorten the run or finish practice."
@@ -98,6 +99,17 @@ func _practice_command(action: String, payload: Dictionary) -> bool:
 		if not RaceCheckpoint.number(payload.get("time"), 0, total_time) or total_time - payload.time > RaceForecaster.MAX_AGE: return fail("The release estimate expired. Review the current session time.")
 		launch_run(id, plan)
 		return true
+	if phase == "practice" and action in ["pace", "engine"]:
+		# Explicit live modes use the same validated, recorded command path as racing.
+		# A mixed-mode practice lap must never become a clean calibration sample.
+		if not super.command(action, payload): return false
+		var id = int(payload.id); var d = practice_driver(id)
+		if not d.active.is_empty():
+			d.active.tainted = true
+			d.active.live_modes = {"pace": cars[id].pace, "engine": cars[id].engine}
+			d.runs.back()["previous_" + action] = cars[id][action]
+			d.revision += 1
+		return true
 	if phase == "practice" and action not in ["pause", "speed", "setup", "setup_all", "select_set", "compound"]:
 		return fail("During practice use Run, Recall or End practice. Race orders and ownership remain unchanged.")
 	if phase == "practice" and action in ["setup", "setup_all", "select_set", "compound"]:
@@ -121,8 +133,8 @@ func launch_run(id: int, plan: Dictionary) -> void:
 	var c = cars[id]; var d = practice_driver(id)
 	var run = {"id": "P%d-%d" % [id, d.runs.size() + 1], "objective": plan.objective,
 		"target": int(plan.laps), "set_id": plan.set_id, "compound": TyreInventory.find(c, plan.set_id).compound,
-		"setup": PracticeEvidence.setup_for(c, plan.baseline), "pace": 2 if plan.objective == "qualifying" else 1,
-		"engine": 2 if plan.objective == "qualifying" else 1, "previous_pace": c.pace, "previous_engine": c.engine,
+		"setup": PracticeEvidence.setup_for(c, plan.baseline), "pace": c.pace if plan.get("manual_modes", false) == true else (2 if plan.objective == "qualifying" else 1),
+		"engine": c.engine if plan.get("manual_modes", false) == true else (2 if plan.objective == "qualifying" else 1), "previous_pace": c.pace, "previous_engine": c.engine,
 		"samples": [], "end": {}, "reason": "Running; return after the requested measured laps."}
 	c.car_setup = run.setup.duplicate(); c.setup = c.car_setup.wing; c.pace = run.pace; c.engine = run.engine
 	c.next_set_id = plan.set_id; c.next_compound = run.compound
@@ -169,7 +181,7 @@ func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
 		var item = TyreInventory.find(c, c.set_id)
 		var predicted = RaceForecaster.lap_time(snapshot, item, (a.anchor.life + c.tyre) * 0.5)
 		var reference_wear = TYRES[c.compound].wear * [0.78, 1.0, 1.25][c.pace] * 1.05 * (2.2 if c.compound in ["I", "W"] and water_mean < 0.15 else 1.0)
-		var clean = not a.tainted and c.hot_valid and absf(observed.water - a.anchor.water) < 0.10 and absf(observed.damage - a.anchor.damage) < 0.001
+		var clean = not a.tainted and c.pace == run.pace and c.engine == run.engine and c.hot_valid and absf(observed.water - a.anchor.water) < 0.10 and absf(observed.damage - a.anchor.damage) < 0.001
 		var sample = {"time": at, "seconds": seconds, "wear": wear, "wear_ratio": wear / reference_wear,
 			"model_ratio": seconds / maxf(1, predicted), "water": water_mean, "fuel": a.anchor.fuel,
 			"health": observed.health, "damage": observed.damage, "clean": clean,

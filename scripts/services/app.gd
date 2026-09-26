@@ -2,7 +2,7 @@ extends Node
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
-var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "director"}
+var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal"}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
 var recording: RaceRecord
@@ -13,13 +13,15 @@ func _ready() -> void:
 	if FileAccess.file_exists("user://settings.json"):
 		var result = Storage.read_json("user://settings.json")
 		if result.ok and result.data is Dictionary: restore_settings(result.data)
-	# Public one-launch layout override; useful for comparing both shipped interfaces.
+	# Developer/test-only launch override for retained regression workspaces.
 	for arg in OS.get_cmdline_user_args():
-		if arg in ["--pitwall-layout=director", "--pitwall-layout=engineering"]: settings.pitwall_layout = arg.get_slice("=",1)
+		if arg in ["--pitwall-layout=minimal", "--pitwall-layout=director", "--pitwall-layout=engineering"]: settings.pitwall_layout = arg.get_slice("=",1)
 	apply_settings()
 
 func restore_settings(data: Dictionary) -> void:
-	if data.get("pitwall_layout") in ["director", "engineering"]: settings.pitwall_layout = data.pitwall_layout
+	# Saved legacy layouts must not bypass the new minimal default. Old screens
+	# remain reachable only by an explicit developer/test launch override.
+	settings.pitwall_layout = "minimal"
 	if data.get("pitwall_text_scale") in [1.0, 1.15, 1.3]: settings.pitwall_text_scale = float(data.pitwall_text_scale)
 	for key in ["fullscreen", "vsync", "labels", "racing_line", "reduced_motion"]:
 		if data.get(key) is bool: settings[key] = data[key]
