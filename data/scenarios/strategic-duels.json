@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "scenarios": [
+    {"id":"duel-clear-air","title":"An earlier route past the rival","track":"hillside","laps":24,"seed":7314,"life":48.0,"grid":[0,3,1,6,2,4,5,7,8,9,10,11],"objective":"Bring both cars home and investigate an earlier stop against a named rival.","hint":"Compare Undercut with Extend. The early stop spends a fresh set and exposes a longer final stint; a rival may cover. An opportunity is not a promised gain."},
+    {"id":"duel-position","title":"Track position has a price","track":"monaco","laps":12,"seed":2026,"life":85.0,"grid":[0,3,1,6,2,4,5,7,8,9,10,11],"objective":"Compare retaining track position with paying for a fresh-tyre stop.","hint":"The fitted sets have substantial life. Review the full pit loss and likely rejoin, then retain the current plan or approve a bounded extension. No stop is compulsory."},
+    {"id":"duel-two-cars","title":"Two opportunities, one pit box","track":"hillside","laps":16,"seed":4281,"life":42.0,"grid":[0,3,6,1,2,4,5,7,8,9,10,11],"objective":"Compare a split approach for MER and MOR against running similar windows.","hint":"Read both plans before approving either. MER starts P2 and MOR P3, but their actual arrival times decide service order. An uncommitted priority cannot reorder cars already in the lane."},
+    {"id":"duel-final-stint","title":"Fresh tyres, little distance","track":"monza","laps":6,"seed":942,"life":45.0,"grid":[0,3,1,6,2,4,5,7,8,9,10,11],"objective":"Finish the short final-stint exercise and decide whether any stop can repay its cost.","hint":"This is a disclosed six-lap exercise from an untimed preparation grid, not an invented mid-race history. Compare stopping, extending, and no stop; every fitted set starts used."}
+  ]
+}

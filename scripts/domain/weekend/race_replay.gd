@@ -33,7 +33,7 @@ func seek(index: int) -> bool:
 
 func tick(budget: int = 32) -> int:
 	if not error.is_empty() or record.is_empty() or verified: return 0
-	if record.engine != Engine.get_version_info().string or record.model != RaceRecord.MODEL:
+	if record.engine != Engine.get_version_info().string or not RaceRecord.model_supported(record):
 		error = "Saved engine or model differs. Inspect checkpoints or try a labeled sandbox; original replay is unavailable."; return 0
 	if not record.incomplete.is_empty(): error = record.incomplete; return 0
 	at_snapshot = false
