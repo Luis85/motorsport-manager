@@ -90,5 +90,41 @@ func run() -> void:
 	view.refresh(); await settle()
 	check(model.policy(3).owners.pit == "player", "Physical completion hands back to the previous owner")
 	await capture("duels-physical-exit", "Actual mandate approval, physical entry, service, fitting and exit")
+	await focus_return_checks(panel)
 	var report={"passed":failures.is_empty(),"checks":checks,"errors":failures,"screenshots":captures.size(),"captures":captures,"engine":Engine.get_version_info().string}
 	Storage.write_json("res://reports/tactical-duel-ui.json",report); print("TACTICAL_DUEL_UI ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)
+
+func find_action(node: Node, text: String):
+	if node is Button and node.text == text: return node
+	for child in node.get_children():
+		var found = find_action(child, text)
+		if found != null: return found
+	return null
+
+func focus_return_checks(panel: TacticalPlanPanel) -> void:
+	# Exercise the full-size route at the smallest enlarged-text profile. The same
+	# actual post-service race and draft controls are retained; no fixture outcome is injected.
+	panel.authority.select(1); panel.changed()
+	var draft = panel.drafts[3].duplicate(true)
+	var before = RaceRecord.fingerprint(model.snapshot())
+	await click(view.focus_button); await settle(10)
+	check(view.full_workspace == view.analysis_workspace and view.analysis_workspace.visible, "Native Focus opens the current tactical task")
+	check(panel == view.duel_workspace.panel, "Focused tactics reuse the same draft controls")
+	check(panel.comparison_scroll().size.y >= 200, "Focused form provides useful reading height at 1100/130")
+	check(inside(view.pause_button), "Focused tactics keep player time control reachable")
+	for id in [3,6]: check(inside(view.analysis_workspace.drivers[id]), "Both named drivers remain reachable in focused tactics")
+	await scroll_to(panel.fuel)
+	check(inside(panel.fuel), "Focused reserves remain reachable with native scrolling")
+	await click(panel.refresh_button)
+	check(root.gui_get_focus_owner() == panel.comparison, "Focused comparison receives keyboard focus")
+	check(inside(panel.approve_button) and inside(panel.end_button), "Focused commit controls remain outside the scrolling form")
+	await capture("duels-focused", "Actual post-service race; native Focus reuses the same unapplied draft and comparison")
+	var back = find_action(view.analysis_workspace, "Back to pit wall")
+	check(back != null, "Focused tactics provide a visible return action")
+	if back != null: await click(back)
+	await settle(10)
+	check(view.full_workspace == null and view.race_workspace.visible, "Return restores the native pit wall")
+	check(panel.drafts[3] == draft and view.unapplied_draft_kinds().has("tactical plan"), "Return retains the explicit driver's unapplied draft")
+	check(before == RaceRecord.fingerprint(model.snapshot()), "Focus, comparison and return preserve authoritative state and RNG")
+	check(view.focus_button.is_visible_in_tree() and root.gui_get_focus_owner() == view.focus_button, "Return restores the visible native invoker without a telemetry refresh")
+	await capture("duels-focus-return", "Same physical post-service state, draft and invoker restored without advancing time")
