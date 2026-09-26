@@ -49,6 +49,8 @@ var selected = -1
 var selected_pit = -1
 var zoom = 1.0
 var fit_view_enabled = true
+# Presentation padding; the editor and Engineering layout retain the original inset.
+var fit_padding = Vector2(90, 110)
 var center = Vector2.ZERO
 var panning = false
 var dragging = ""
@@ -130,7 +132,7 @@ func fit() -> void:
 		visible_bounds = visible_bounds.expand(roof + Vector2(30, 30)).expand(roof - Vector2(30, 30))
 	visible_bounds = visible_bounds.grow(20)
 	center = visible_bounds.get_center()
-	zoom = minf(maxf(100, size.x - 90) / maxf(20, visible_bounds.size.x), maxf(100, size.y - 110) / maxf(20, visible_bounds.size.y))
+	zoom = minf(maxf(100, size.x - fit_padding.x) / maxf(20, visible_bounds.size.x), maxf(100, size.y - fit_padding.y) / maxf(20, visible_bounds.size.y))
 	zoom = clampf(zoom, 0.04, 12)
 	queue_redraw()
 
