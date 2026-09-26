@@ -54,6 +54,7 @@ var option_rows: Array = []
 var confirm_dialog: ConfirmationDialog
 var pending: Dictionary = {}
 var notice = ""
+var reveal_serial = 0
 
 func configure(sim: PracticeRaceSim) -> void: model = sim
 
@@ -102,7 +103,7 @@ func _ready() -> void:
 	review_body = UI.vbox(self)
 	comparison = UI.paragraph("", UI.INK); comparison.focus_mode = Control.FOCUS_ALL; review_body.add_child(comparison)
 	comparison.accessibility_name = "Captured tactical comparison. Page Up and Page Down read evidence."
-	comparison.gui_input.connect(comparison_input)
+	comparison.gui_input.connect(reading_input.bind(comparison))
 	reading_focus(comparison)
 	for i in range(3):
 		var card = UI.panel(); review_body.add_child(card)
@@ -113,6 +114,8 @@ func _ready() -> void:
 	case_copy = UI.paragraph(""); review_body.add_child(case_copy)
 	status_body = UI.vbox(self)
 	status_copy = UI.paragraph("", UI.INK); status_copy.focus_mode = Control.FOCUS_ALL; status_body.add_child(status_copy)
+	status_copy.accessibility_name = "Tactical follow-up. Page Up and Page Down read the receipt."
+	status_copy.gui_input.connect(reading_input.bind(status_copy))
 	reading_focus(status_copy)
 	var tools = UI.hbox(self)
 	evidence_button = UI.button("Plan evidence", show_evidence); tools.add_child(evidence_button)
@@ -217,15 +220,17 @@ func first_invalid_control() -> Control:
 	return last
 
 func reveal_control(control: Control) -> void:
+	reveal_serial += 1
+	var request = reveal_serial
 	await get_tree().process_frame
-	if not is_instance_valid(control) or not control.is_visible_in_tree(): return
+	if request != reveal_serial or not is_instance_valid(control) or not control.is_visible_in_tree(): return
 	var target = control.get_line_edit() if control is SpinBox else control
 	target.grab_focus()
 	# Let ScrollContainer follow_focus and the newly shown layout settle first.
 	# Revealing both synchronously can add the same scroll offset twice.
 	await get_tree().process_frame
 	await get_tree().process_frame
-	if not is_instance_valid(control) or not control.is_visible_in_tree() or not target.has_focus(): return
+	if request != reveal_serial or not is_instance_valid(control) or not control.is_visible_in_tree() or not target.has_focus(): return
 	var scroll = comparison_scroll()
 	if scroll != null:
 		var reveal = control.get_parent() as Control if control == first or control == last else control
@@ -238,11 +243,14 @@ func comparison_scroll() -> ScrollContainer:
 	return ancestor as ScrollContainer
 
 func reveal_comparison() -> void:
+	reveal_serial += 1
+	var request = reveal_serial
 	await get_tree().process_frame
+	if request != reveal_serial or not comparison.has_focus(): return
 	var scroll = comparison_scroll()
 	if scroll != null and comparison.is_visible_in_tree(): scroll.scroll_vertical += roundi(comparison.global_position.y - scroll.global_position.y)
 
-func comparison_input(event: InputEvent) -> void:
+func reading_input(event: InputEvent, reader: Control) -> void:
 	if not event is InputEventKey or not event.pressed: return
 	var scroll = comparison_scroll()
 	if scroll == null: return
@@ -250,10 +258,12 @@ func comparison_input(event: InputEvent) -> void:
 	match event.keycode:
 		KEY_PAGEDOWN: scroll.scroll_vertical += stride
 		KEY_PAGEUP: scroll.scroll_vertical -= stride
-		KEY_HOME: scroll.scroll_vertical += roundi(comparison.global_position.y - scroll.global_position.y)
+		KEY_HOME: scroll.scroll_vertical += roundi(reader.global_position.y - scroll.global_position.y)
 		KEY_END: scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
 		_: return
-	comparison.accept_event()
+	# A delayed focus reveal must never undo the player's own reading navigation.
+	reveal_serial += 1
+	reader.accept_event()
 
 func approve() -> void:
 	# Button state and domain revision/key guards both protect duplicate/stale input.
