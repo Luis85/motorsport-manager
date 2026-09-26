@@ -183,6 +183,8 @@ func build_replay_actions() -> void:
 	review_actions.add_child(result_notice); PitwallDesign.scale_controls(review_actions, text_scale)
 
 func open_destination(index: int, subtopic: int) -> void:
+	if duel_workspace != null and index == duel_workspace.index and subtopic == 1:
+		duel_workspace.panel.reading_requested.emit("Tactical evidence", TacticalDuels.debrief(sim), find_button); return
 	if index == 7 and subtopic == 20: replay_requested.emit(); return
 	if index == 7 and subtopic == 21: NotebookWindow.open(self, recording, CircuitNotebook.PATH, find_button); return
 	super.open_destination(index, subtopic)

@@ -81,7 +81,7 @@ func _ready() -> void:
 	inspector_home=right_panel.get_parent()
 	analysis_workspace=RaceAnalysisWorkspace.new();analysis_workspace.configure(strategy_model);add_child(analysis_workspace);move_child(analysis_workspace,race_workspace.get_index()+1);analysis_workspace.hide()
 	analysis_workspace.close_requested.connect(close_session_workspace);analysis_workspace.driver_requested.connect(select_driver)
-	focus_button=UI.button("Focus",open_analysis_workspace);teammate_buttons[0].get_parent().add_child(focus_button)
+	focus_button=UI.button("Full view",open_analysis_workspace);teammate_buttons[0].get_parent().add_child(focus_button)
 	focus_button.tooltip_text="Open this task in a full workspace. The same drafts and explicit commit actions are retained."
 
 	results_home = results_panel.get_parent()
@@ -443,7 +443,14 @@ func configure_finishing_guide() -> void:
 			return full_workspace.panels[3].scroll.get_global_rect()
 		if is_instance_valid(full_workspace) and full_workspace.visible:
 			return Rect2(full_workspace.global_position + Vector2(0,96), Vector2(size.x * 0.45, maxf(230, full_workspace.size.y - 165)))
-		return canvas.get_global_rect()
+		var observation = canvas.get_global_rect()
+		if observation.size.y < 230.0 * text_scale:
+			# Wrapped driver actions shorten the map at enlarged text. Include the
+			# map toolbar lane, not the persistent session controls or either driver.
+			var top = race_workspace.get_global_rect().position.y
+			observation.size.y += observation.position.y - top
+			observation.position.y = top
+		return observation
 	# Update obsolete wrapper targets after the actual native cards have been composed.
 	guide.steps[0].target = func(): return car_cards[3].name_label
 	guide.steps[0].reveal = func(): close_detail()
@@ -455,8 +462,8 @@ func configure_finishing_guide() -> void:
 	guide.steps.append({"title":"Stage five setup trade-offs", "body":"Setup has wing, balance, suspension, cooling and brake bias. Sliders and numeric fields edit the same per-driver draft. Each axis shows fitted → draft; estimates hold current tyres and surface constant. Apply is explicit and legal only in the garage or preparation. Live brake bias is a separate race command.","target":func():return racecraft,"reveal":func():open_topic(4)})
 	guide.steps.append({"title":"Fitted is not planned", "body":"Tyres shows the fitted finite set, its limiting wheel and the planned replacement. A puncture takes precedence over an average percentage. Selection does not renew or fit a set; release, formation and physical service use the existing ownership and inventory rules.","target":func():return tyre_readout,"reveal":func():open_topic(3);show_tyres(0)})
 	guide.steps.append({"title":"Review each issue, then confirm", "body":"The stable MER/MOR queue counts every unacknowledged issue. Choose an issue inside the drawer to review its evidence and exact driver. Confirmation sends only the reviewed action; accepted, executing and completed are different. Refresh stale evidence explicitly. Nothing pauses automatically.","target":func():return decision_drawer,"reveal":func():open_decision(3)})
-	guide.steps.append({"title":"Read recorded evidence", "body":"Telemetry offers four recorded channels, a time range and your teammate's compatible samples. Solid circles and dashed squares retain missing values as gaps. Arrow keys inspect samples; inspection never issues a command. Focus opens the same controls in a larger workspace.","target":func():return telemetry_inspector,"reveal":func():open_topic(1)})
+	guide.steps.append({"title":"Read recorded evidence", "body":"Telemetry offers four recorded channels, a time range and your teammate's compatible samples. Solid circles and dashed squares retain missing values as gaps. Arrow keys inspect samples; inspection never issues a command. Full view opens the same controls in a larger workspace.","target":func():return telemetry_inspector,"reveal":func():open_topic(1)})
 	guide.steps.append({"title":"Two cars, one physical box", "body":"Team / Pit box shows actual approach, entry, queue, service and exit. Cancellation ends at entry. The whole-car service timer is not pit-lane time or per-wheel progress. Team / Plans inspects accepted windows and existing bounded overrides; it does not schedule new commands.","target":func():return team_panel.service_view,"reveal":func():open_topic(8);team_panel.show_topic(2)})
 	guide.steps.append({"title":"Keep the result and the experiment separate", "body":"Session results retain measured classifications, laps, fitted stints and decision evidence. Original result acceptance remains explicit in Debrief. Replays and sandbox experiments cannot overwrite or settle the original. Export and notebook routes retain that provenance.","target":func():return results_workspace,"reveal":func():open_results_workspace()})
 
-	guide.steps.append({"title":"Focus without making a second draft", "body":"Focus expands the current analysis task, retaining the same controls, per-driver drafts and explicit action footer. Both drivers remain reachable above it. Back to pit wall restores the original inspector; neither transition changes playback speed or orders.","target":func():return analysis_workspace.heading,"reveal":func():open_topic(1);open_analysis_workspace()})
+	guide.steps.append({"title":"Expand the task, not the draft", "body":"Full view expands the current analysis task, retaining the same controls, per-driver drafts and explicit action footer. Both drivers remain reachable above it. Back to pit wall restores the original inspector; neither transition changes playback speed or orders.","target":func():return analysis_workspace.heading,"reveal":func():open_topic(1);open_analysis_workspace()})

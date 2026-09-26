@@ -8,7 +8,7 @@ func configure(view) -> void:
 	host = view
 	host.detail_picker.add_item("Tactical plan")
 	var page = host.tab_page("Tactical plan"); index = host.tabs.get_tab_count() - 1
-	panel = TacticalPlanPanel.new(); panel.configure(host.sim); page.add_child(panel)
+	panel = TacticalPlanPanel.new(); panel.configure(host.sim); panel.text_scale = host.text_scale; page.add_child(panel)
 	panel.commit_bar.reparent(host.detail_actions)
 	host.register_topic("Tactics", index)
 	host.topic_buttons[index].reparent(host.strategy_navigation)
@@ -24,9 +24,9 @@ func configure(view) -> void:
 		menu.id_pressed.connect(func(action):
 			if action == 60: open_for(id))
 	host.navigator.catalog.append([index, 0, "Strategy / Tactics", "duel undercut extend target rival conditional mandate"])
-	host.navigator.catalog.append([index, 0, "Review / Tactical evidence", "intent pit cycle consequence both plans history"])
+	host.navigator.catalog.append([index, 1, "Review / Tactical evidence", "intent pit cycle consequence both plans history"])
 	host.navigator.filter_views("")
-	host.guide.steps.append({"title": "Plan a strategic duel", "body": "Choose a named rival and compare an undercut with extending. Recommend only leaves commands with the existing owners. Delegating a tactic authorizes one bounded pit decision, never a hidden push. End plan does not cancel an accepted stop. Use Plan evidence to follow approval, physical execution and the observed outcome.", "target": func(): return panel, "reveal": func(): open_for(3)})
+	host.guide.steps.append({"title": "Plan a strategic duel", "body": "Choose a named rival and compare an undercut with extending. Recommend only leaves commands with the existing owners. Delegating a tactic authorizes one bounded pit decision, never a hidden push. Use Compare options, review the captured estimates, then approve the named driver. Limits and contingencies can be expanded without changing them. End tactic asks for confirmation and does not cancel an accepted stop. Use Plan evidence to follow approval, physical execution and the observed outcome.", "target": func(): return panel, "reveal": func(): open_for(3)})
 	PitwallDesign.scale_controls(panel, host.text_scale)
 	PitwallDesign.scale_controls(panel.commit_bar, host.text_scale)
 	PitwallDesign.scale_controls(host.topic_buttons[index], host.text_scale)

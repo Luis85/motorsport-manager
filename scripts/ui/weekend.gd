@@ -210,7 +210,7 @@ func _ready() -> void:
 	detail_picker.tooltip_text = "Inspect one topic at a time. Primary pit actions remain below."
 	var topic_row = UI.hbox(wall); detail_picker.visible = false; topic_row.add_child(detail_picker)
 	detail_caption = UI.label("Drive", 13, UI.ACCENT); detail_caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL; topic_row.add_child(detail_caption)
-	expand_button = UI.button("Expand", func(): set_detail_expanded(not detail_expanded)); expand_button.add_theme_font_size_override("font_size", 12)
+	expand_button = UI.button("Widen", func(): set_detail_expanded(not detail_expanded)); expand_button.add_theme_font_size_override("font_size", 12)
 	expand_button.tooltip_text = "Give this topic more space. The timing tower is temporarily hidden; the map and pit actions stay available."; topic_row.add_child(expand_button)
 	var close_button = UI.button("Close", close_detail); close_button.tooltip_text = "Return to watching. Drafts remain unapplied and are retained."; topic_row.add_child(close_button)
 	detail_nav_host = UI.vbox(wall)
@@ -563,7 +563,7 @@ func set_detail_expanded(value: bool) -> void:
 	timing_panel.visible = not value
 	right_panel.custom_minimum_size.x = 520 if value else 360
 	driver_status_card.visible = not value; resource_row.visible = not value
-	compact_resources.visible = value; expand_button.text = "Collapse" if value else "Expand"
+	compact_resources.visible = value; expand_button.text = "Narrow" if value else "Widen"
 	open_detail()
 	# A layout change is presentation only. Preserve the camera's world-space center.
 	refresh()
@@ -600,7 +600,7 @@ func open_detail() -> void:
 func close_detail() -> void:
 	if not right_panel: return
 	detail_expanded = false; timing_panel.visible = true; right_panel.visible = false
-	right_panel.custom_minimum_size.x = 360; expand_button.text = "Expand"
+	right_panel.custom_minimum_size.x = 360; expand_button.text = "Widen"
 	trace.visible = false; driver_status_card.visible = true; resource_row.visible = true; compact_resources.visible = false
 	refresh_navigation()
 	watch_button.grab_focus()

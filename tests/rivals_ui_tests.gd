@@ -53,11 +53,25 @@ func run():
 			var all_options=true
 			for row in view.comparison.rows: all_options=all_options and inside(row.panel)
 			check(all_options,"All three complete alternatives fit without scrolling "+label)
+			for id in [3,6]:
+				var readable_actions=true
+				for button in view.car_cards[id].actions.get_children():
+					if not button.is_visible_in_tree(): continue
+					var label_width=button.get_theme_font("font").get_string_size(button.text,HORIZONTAL_ALIGNMENT_LEFT,-1,button.get_theme_font_size("font_size")).x
+					var decoration=button.get_theme_stylebox("normal").get_minimum_size().x
+					readable_actions=readable_actions and inside(button) and button.size.y>=ceilf(32*scale) and button.get_theme_font_size("font_size")==roundi(12*scale) and button.size.x>=ceilf(label_width+decoration)
+				check(readable_actions,"Complete driver action labels and scaled targets remain visible %d / %s"%[id,label])
 			check(before==JSON.stringify(sim.snapshot()),"Mouse navigation never commits or advances "+label)
 			await capture(label)
 	await build(Vector2i(1920,1080),1.3);await capture("wide-watch")
 	check(inside(view.decision_controls[6].box) and view.canvas.size.x>1000,"Wide desktop preserves dominant circuit and both drivers")
 	await build(Vector2i(1100,720),1.3)
+	var retained_styles=[]
+	for button in view.car_cards[3].actions.get_children(): retained_styles.append(button.get_theme_stylebox("normal").get_instance_id())
+	for i in range(20): view.refresh()
+	var refreshed_styles=[]
+	for button in view.car_cards[3].actions.get_children(): refreshed_styles.append(button.get_theme_stylebox("normal").get_instance_id())
+	check(retained_styles==refreshed_styles,"Driver action styles are reused during telemetry refresh, not rebuilt")
 	var before=JSON.stringify(sim.snapshot())
 	await click(view.weekend_menu)
 	check(view.weekend_menu.get_popup().visible and before==JSON.stringify(sim.snapshot()),"Actual menu click opens a native popup without changing pause or gameplay")

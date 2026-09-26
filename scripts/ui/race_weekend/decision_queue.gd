@@ -18,7 +18,7 @@ func _ready() -> void:
 		var badge = RaceStatusBadge.new(); group.add_child(badge)
 		var review = UI.button("", func(): review_requested.emit(id)); group.add_child(review)
 		review.clip_text = true; review.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var hold = UI.button("Keep", func(): hold_requested.emit(id)); group.add_child(hold)
+		var hold = UI.button("Keep plan", func(): hold_requested.emit(id)); group.add_child(hold)
 		hold.tooltip_text = "Acknowledge this driver's current issue without changing the plan or time controls."
 		slots[id] = {"review":review,"hold":hold,"badge":badge,"stamp":[]}
 

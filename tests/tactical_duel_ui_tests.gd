@@ -1,6 +1,8 @@
 extends "res://tests/ui_finish_observation_tests.gd"
 ## Native pointer/key inputs over the existing application; no browser replacement.
 func scroll_to(control: Control) -> void:
+	# Measure after stage/focus layout has settled, not during a hidden-to-shown transition.
+	await settle(4)
 	var page = control.get_parent()
 	while page != null and not page is ScrollContainer: page = page.get_parent()
 	if page != null: page.ensure_control_visible(control)
@@ -23,7 +25,7 @@ func run() -> void:
 	await click(panel.refresh_button)
 	check(panel.preview.get("available", false), "Native Compare produces a feasible preparation comparison")
 	check(root.gui_get_focus_owner() == panel.comparison, "Comparison moves focus to the frozen evidence, not a command")
-	check(panel.comparison.text.contains("RIVAL RESPONSE CASES"), "The player can compare response assumptions without a hidden-rival oracle")
+	check(panel.case_copy.text.contains("RIVAL RESPONSE CASES"), "The player can compare response assumptions without a hidden-rival oracle")
 	var evidence_scroll = panel.comparison_scroll()
 	check(absf(panel.comparison.global_position.y - evidence_scroll.global_position.y) < 15, "Long comparison opens at its heading rather than hiding its first options")
 	var scroll_before = evidence_scroll.scroll_vertical
@@ -37,6 +39,8 @@ func run() -> void:
 	check(TacticalDuels.current(model,3).plan.authority == "recommend", "Default native approval grants no execution authority")
 	check(model.policy(3).owners.pit == "player", "Recommendation preserves manual pit ownership")
 	await click(panel.end_button)
+	check(panel.confirm_dialog != null, "Ending a tactic first opens a native confirmation")
+	await click_dialog(panel.confirm_dialog.get_ok_button())
 	check(TacticalDuels.current(model,3).status == "abandoned", "Native End plan explicitly ends the recommendation")
 	await scroll_to(panel.authority); panel.authority.grab_focus(); await key(KEY_ENTER); await key(KEY_DOWN); await key(KEY_ENTER)
 	check(panel.drafts[3].authority == "execute", "Native keyboard explicitly selects pit authority")
@@ -49,7 +53,7 @@ func run() -> void:
 	await click(panel.refresh_button); await click(panel.approve_button)
 	check(TacticalDuels.current(model,3).borrowed_pits and not TacticalDuels.live(TacticalDuels.current(model,6)), "Approval changes only the reviewed driver")
 	check(not view.unapplied_draft_kinds().has("tactical plan"), "Successful approval clears the corresponding unsaved draft marker")
-	var accepted = model.commands.size(); await click(panel.approve_button)
+	var accepted = model.commands.size(); panel.approve()
 	check(model.commands.size() == accepted, "Repeated activation cannot duplicate a committed mandate")
 	await scroll_to(panel.evidence_button); before = RaceRecord.fingerprint(model.snapshot())
 	await click(panel.evidence_button); await settle()
@@ -58,7 +62,7 @@ func run() -> void:
 	check(root.gui_get_focus_owner() == panel.evidence_button, "Escape restores the evidence invoker")
 	await scroll_to(panel.team_button); await click(panel.team_button); await key(KEY_ESCAPE)
 	check(root.gui_get_focus_owner() == panel.team_button, "Two-car comparison returns native focus")
-	await click(panel.refresh_button)
+	await click(panel.edit_button); await click(panel.refresh_button)
 	await capture("duels-comparison", "Native Compare scrolls to fixed evidence with conditional rival response cases; no command")
 	await scroll_to(panel.picker)
 	await capture("duels-authority", "Shipped untimed preparation grid; native recommendation, cancel, keyboard authority and approval")
@@ -66,8 +70,10 @@ func run() -> void:
 		for scale in [1.0,1.15,1.3]:
 			root.size = resolution; root.content_scale_size = resolution; app.settings.pitwall_text_scale = scale
 			await reset(); workspace = view.duel_workspace; panel = workspace.panel; workspace.open_for(3); await settle(8)
-			for control in [panel.refresh_button,panel.approve_button,panel.end_button,view.pause_button]:
+			check(not panel.approve_button.visible, "An approved receipt does not ask for duplicate approval")
+			for control in [panel.edit_button,panel.end_button,view.pause_button]:
 				check(inside(control), "Primary action reachable at %s / %.2f: %s" % [resolution,scale,control.text])
+			await click(panel.edit_button); await scroll_to(panel.limits_button); await click(panel.limits_button)
 			await scroll_to(panel.fuel)
 			check(inside(panel.fuel), "Reserve can be reached without horizontal scrolling")
 			await scroll_to(panel.picker)
@@ -113,11 +119,13 @@ func focus_return_checks(panel: TacticalPlanPanel) -> void:
 	check(panel.comparison_scroll().size.y >= 200, "Focused form provides useful reading height at 1100/130")
 	check(inside(view.pause_button), "Focused tactics keep player time control reachable")
 	for id in [3,6]: check(inside(view.analysis_workspace.drivers[id]), "Both named drivers remain reachable in focused tactics")
+	if not panel.limits_body.visible:
+		await scroll_to(panel.limits_button); await click(panel.limits_button)
 	await scroll_to(panel.fuel)
 	check(inside(panel.fuel), "Focused reserves remain reachable with native scrolling")
 	await click(panel.refresh_button)
 	check(root.gui_get_focus_owner() == panel.comparison, "Focused comparison receives keyboard focus")
-	check(inside(panel.approve_button) and inside(panel.end_button), "Focused commit controls remain outside the scrolling form")
+	check(inside(panel.approve_button) and inside(panel.refresh_button), "Focused commit controls remain outside the scrolling form")
 	await capture("duels-focused", "Actual post-service race; native Focus reuses the same unapplied draft and comparison")
 	var back = find_action(view.analysis_workspace, "Back to pit wall")
 	check(back != null, "Focused tactics provide a visible return action")
@@ -128,3 +136,10 @@ func focus_return_checks(panel: TacticalPlanPanel) -> void:
 	check(before == RaceRecord.fingerprint(model.snapshot()), "Focus, comparison and return preserve authoritative state and RNG")
 	check(view.focus_button.is_visible_in_tree() and root.gui_get_focus_owner() == view.focus_button, "Return restores the visible native invoker without a telemetry refresh")
 	await capture("duels-focus-return", "Same physical post-service state, draft and invoker restored without advancing time")
+
+func click_dialog(control: Control) -> void:
+	control.grab_focus()
+	var window = control.get_window()
+	for down in [true, false]:
+		var event = InputEventKey.new(); event.keycode = KEY_ENTER; event.pressed = down
+		window.push_input(event); await settle(3)
