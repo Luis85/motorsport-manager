@@ -243,7 +243,22 @@ static func valid(state: Variant, sim: StrategyRaceSim) -> bool:
 			if r != d.active and (r.status not in TERMINAL or r.borrowed_pits): return false
 		if owns(d.active):
 			if sim.policy(id).owners.pit != "engineer" or sim.policy(id).revision != d.active.policy_revision: return false
+		if not valid_active(d.active, sim, id): return false
 	return true
+
+static func valid_active(r: Dictionary, sim: StrategyRaceSim, id: int) -> bool:
+	if r.is_empty() or r.status in TERMINAL + ["review"]: return true
+	if r.status in ["approved", "preparing"]: return r.order_id.is_empty() and r.own_entry < 0 and r.own_exit < 0
+	if sim.phase != "race": return false
+	if r.status == "evaluating": return r.own_exit >= 0 and not r.borrowed_pits
+	# A claimed accepted/executing tactic must refer to the actual current pit
+	# transaction. Otherwise a corrupt save could suppress ordinary pit control
+	# forever while waiting for an order which the physical model never received.
+	var car = sim.cars[id]
+	if not r.borrowed_pits or not car.pit_order or sim.policy(id).last_order_id != r.order_id: return false
+	if absf(float(car.pit_gate) - float(r.gate)) > 0.00001: return false
+	if r.status == "ordered": return car.route == "track" and r.own_entry < 0
+	return r.status == "executing" and car.route == "pit" and r.own_entry >= 0 and r.own_exit < 0
 
 static func valid_record(r: Variant, sim: StrategyRaceSim, id: int) -> bool:
 	if not r is Dictionary or r.size() != 23 or r.get("driver_id") != id: return false
@@ -275,6 +290,9 @@ static func valid_record(r: Variant, sim: StrategyRaceSim, id: int) -> bool:
 		if not event is Dictionary or event.size() != 3 or event.get("status") not in STATES or not event.get("reason") is String or event.reason.length() > 700: return false
 		if not RaceCheckpoint.number(event.get("time"), previous, r.updated_at): return false
 		previous = float(event.time)
+	if not r.events_truncated:
+		var latest = r.events.back()
+		if latest.status != r.status or latest.reason != r.reason or absf(float(latest.time) - float(r.updated_at)) > 0.00001: return false
 	var f = r.get("forecast")
 	if not f is Dictionary or f.size() != 9 or not f.get("key") is String or f.key.length() != 64 or not f.key.is_valid_hex_number(false): return false
 	if not f.get("rival_cases") is String or f.rival_cases.length() > 1600: return false

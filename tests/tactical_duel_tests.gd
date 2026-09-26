@@ -72,6 +72,14 @@ func run() -> void:
 	for key in ["target_id", "from_lap", "authority", "avoid_traffic"]:
 		var bad = json_copy(checkpoint); bad.duel_state.drivers[3].active.plan[key] = []
 		check(PracticeRaceSim.restore_practice(bad) == null, "Malformed saved plan rejected before replacement: " + key)
+	var fabricated = json_copy(checkpoint)
+	fabricated.duel_state.drivers[3].active.status = "ordered"
+	fabricated.duel_state.drivers[3].active.order_id = "rw-987"
+	fabricated.duel_state.drivers[3].active.gate = 0.0
+	check(PracticeRaceSim.restore_practice(fabricated) == null, "A fabricated order without physical acceptance is rejected")
+	fabricated = json_copy(checkpoint)
+	fabricated.duel_state.drivers[3].active.events.back().reason = "Unrecorded replacement explanation"
+	check(PracticeRaceSim.restore_practice(fabricated) == null, "Untruncated tactical status must agree with its latest event")
 	var bad = json_copy(checkpoint); bad.duel_state.drivers[3].active.borrowed_pits = "yes"
 	check(PracticeRaceSim.restore_practice(bad) == null, "Malformed saved authority rejected")
 	bad = json_copy(checkpoint); bad.duel_state.drivers[3].active.forecast.gain = "win"
@@ -90,9 +98,13 @@ func run() -> void:
 		for i in range(100): sim.step(); restored.step()
 		check(RaceRecord.equivalent(sim.snapshot(), restored.snapshot()), "Saved continuation has identical resources, mandate, journal and RNG")
 	var runtime_limit = 8000
+	var checked_entry = false
 	for i in range(runtime_limit):
 		if sim.duel_state.drivers[3].active.own_exit >= 0: break
 		sim.step()
+		if not checked_entry and sim.duel_state.drivers[3].active.own_entry >= 0:
+			checked_entry = true
+			check(PracticeRaceSim.restore_practice(json_copy(sim.snapshot())) != null, "A physically executing pit visit restores with its actual transaction")
 	var active = sim.duel_state.drivers[3].active
 	check(active.own_entry >= 0 and active.own_exit > active.own_entry and sim.cars[3].pit_stops == 1, "The mandate produces a real entry, service and physical exit")
 	check(sim.cars[3].set_id == active.plan.set_id, "Physical fitting selects a driver-owned replacement")
@@ -106,6 +118,17 @@ func run() -> void:
 	sim = fresh(); check(sim.command("duel_approve", approval(sim, draft(sim))), "Cancellation fixture approved")
 	sim.engineer(sim.cars[3]); var gate = sim.cars[3].pit_gate
 	check(sim.cars[3].pit_order, "An engineer uses the normal pit-order transaction")
+	var ordered = json_copy(sim.snapshot())
+	check(PracticeRaceSim.restore_practice(ordered) != null, "An actual accepted order restores before entry")
+	for corruption in ["order_reference", "gate", "stage"]:
+		var damaged = json_copy(ordered)
+		match corruption:
+			"order_reference": damaged.strategy_state.policies[3].last_order_id = "rw-987654"
+			"gate": damaged.duel_state.drivers[3].active.gate += sim.track.length
+			"stage":
+				damaged.duel_state.drivers[3].active.status = "preparing"
+				damaged.duel_state.drivers[3].active.events.back().status = "preparing"
+		check(PracticeRaceSim.restore_practice(damaged) == null, "Accepted tactic rejects mismatched physical transaction: " + corruption)
 	var record = sim.duel_state.drivers[3].active
 	check(sim.command("duel_cancel", {"id": 3, "revision": sim.duel_state.drivers[3].revision, "plan_id": record.id}), "Plan may be ended without cancelling its already accepted stop")
 	check(sim.cars[3].pit_order and sim.cars[3].pit_gate == gate, "Ending a mandate preserves the accepted physical gate")
