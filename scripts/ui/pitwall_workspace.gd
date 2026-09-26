@@ -24,8 +24,8 @@ var utility_commands: Array[Button] = []
 var results_panel: SessionResultsPanel
 var results_page_index = -1
 var driver_rail: VBoxContainer
-var radio_digest: Label
-var rail_radio_button: Button
+var race_read_panel: RaceReadPanel
+var race_read_button: Button
 var layout_changes = 0
 var adapting = false
 var decision_queue: RaceDecisionQueue
@@ -76,6 +76,8 @@ func _ready() -> void:
 		popup.id_pressed.connect(func(action_id):
 			if action_id == 2: select_driver(id); open_topic(8); team_panel.show_topic(2))
 	build_driver_rail()
+	race_read_button = UI.button("Race read", show_race_read); map_controls.add_child(race_read_button)
+	race_read_button.tooltip_text = "Read both drivers’ current stakes and trade-offs in a fixed snapshot. Observation only; the race keeps its current time controls."
 	inspector_home=right_panel.get_parent()
 	analysis_workspace=RaceAnalysisWorkspace.new();analysis_workspace.configure(strategy_model);add_child(analysis_workspace);move_child(analysis_workspace,race_workspace.get_index()+1);analysis_workspace.hide()
 	analysis_workspace.close_requested.connect(close_session_workspace);analysis_workspace.driver_requested.connect(select_driver)
@@ -110,6 +112,7 @@ func _ready() -> void:
 	navigator.destination_requested.connect(open_destination)
 	navigator.catalog.append([8, 2, "Team / Pit service", "accepted approach entry queue frozen service actual exit cancel stop"])
 	navigator.catalog.append([8, 3, "Team / Accepted plans", "shared windows bounded pace fuel engine override timeline"])
+	navigator.catalog.append([2, 1, "Review / Read the race", "stakes trade-offs next decision both drivers observed evidence story snapshot"])
 	navigator.catalog.append([results_page_index, 0, "Review / Results", "results classification qualifying practice race laps retired finish"])
 	navigator.catalog.append([decision_page_index,0,"Strategy / Decision review","decision evidence confirm deadline acknowledgement"])
 	navigator.filter_views("")
@@ -189,13 +192,9 @@ func build_driver_rail() -> void:
 	driver_rail = VBoxContainer.new(); timing_panel.get_parent().add_child(driver_rail)
 	driver_rail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	driver_rail.add_theme_constant_override("separation", PitwallDesign.SPACE_2)
-	var panel = UI.race_panel(false, 8); driver_rail.add_child(panel)
-	var body = UI.vbox(panel)
-	body.add_child(UI.label("RACE CONTROL", 11, UI.ACCENT))
-	radio_digest = UI.paragraph("Race messages appear here. Full history remains in Review / Radio.")
-	radio_digest.max_lines_visible = 4; radio_digest.custom_minimum_size.y = 62
-	body.add_child(radio_digest)
-	rail_radio_button = UI.button("Open race radio", func(): open_topic(2)); body.add_child(rail_radio_button)
+	race_read_panel = RaceReadPanel.new(); driver_rail.add_child(race_read_panel)
+	race_read_panel.reading_requested.connect(show_race_read)
+	race_read_panel.radio_requested.connect(func(): open_topic(2))
 	driver_rail.hide()
 
 func adapt_layout() -> void:
@@ -262,11 +261,8 @@ func refresh() -> void:
 	strategy_desk.issue_text.visible = false # Recipient/approval state are already adjacent to the comparison.
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)
-	if radio_digest and not sim.events.is_empty():
-		var latest = sim.events.back()
-		radio_digest.text = "%02d:%02d · %s" % [int(latest.time / 60), int(fmod(latest.time, 60)), latest.text]
-		radio_digest.tooltip_text = radio_digest.text
 	if decision_queue: decision_queue.present(strategy_model,forecast_cache)
+	if race_read_panel and race_read_panel.is_visible_in_tree(): race_read_panel.present(RaceReadModel.capture(strategy_model, forecast_cache))
 	if decision_drawer:
 		decision_drawer.commit_bar.visible = right_panel.visible and tabs.current_tab == decision_page_index
 		if decision_drawer.commit_bar.visible: decision_drawer.refresh_state()
@@ -284,6 +280,7 @@ func show_navigator() -> void:
 	navigator.show_picker(get_viewport().gui_get_focus_owner() if get_viewport().gui_get_focus_owner() else find_button)
 
 func open_destination(index: int, subtopic: int) -> void:
+	if index == 2 and subtopic == 1: show_race_read(); return
 	if not topic_buttons.has(index): return
 	open_topic(index)
 	match index:
@@ -329,6 +326,14 @@ func feedback(text: String) -> void:
 	if messages.size() > 50: messages.pop_front()
 	if messages_button: messages_button.text = "Messages (%d)" % messages.size()
 
+func show_race_read() -> void:
+	var invoker = get_viewport().gui_get_focus_owner()
+	if invoker == null: invoker = race_read_button
+	var origin = "SESSION OBSERVATION · not a race result\n\n"
+	if get("recording") is RaceRecord and get("recording").origin == "sandbox":
+		origin = "SANDBOX OBSERVATION · not the original race result\n\n"
+	show_reading("Read the race", origin + RaceReadModel.reading(RaceReadModel.capture(strategy_model, forecast_cache)), invoker)
+
 func show_messages() -> void:
 	var lines = messages.duplicate(); lines.reverse()
 	show_reading("Command messages", "No commands or errors in this view yet. Race events are in Review / Radio." if lines.is_empty() else "Local UI history · latest first · not a race outcome record\n\n" + "\n\n".join(lines), messages_button)
@@ -337,6 +342,8 @@ func show_reading(title: String, text: String, invoker: Control) -> void:
 	var dialog = AcceptDialog.new(); dialog.title = title; dialog.size = Vector2i(620, 410)
 	add_child(dialog)
 	var content = RichTextLabel.new(); content.text = text; content.selection_enabled = true
+	content.focus_mode = Control.FOCUS_ALL; content.accessibility_name = title + " text"
+	content.tooltip_text = "Tab to this reading area; Page Up / Page Down scroll. Escape closes and restores focus."
 	content.custom_minimum_size = Vector2(540, 300)
 	dialog.add_child(content)
 	PitwallDesign.scale_controls(dialog, text_scale)
