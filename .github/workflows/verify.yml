@@ -5,7 +5,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: godot-verification-${{ github.head_ref || github.ref_name }}
+  # Keep branch pushes and PR test-merges independent. A push must never
+  # cancel the required PR verification (or vice versa). Newer runs of the
+  # same event/ref still supersede their obsolete predecessor.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
