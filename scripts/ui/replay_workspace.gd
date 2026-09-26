@@ -124,7 +124,7 @@ func mount_sandbox(sim: PracticeRaceSim, record: RaceRecord) -> void:
 	mode_title.text = "SANDBOX · SEPARATE SAVE"
 	sandbox_return = UI.button("Return to replay", leave_sandbox); return_button.get_parent().add_child(sandbox_return)
 	PitwallDesign.scale_controls(sandbox_return, float(App.settings.pitwall_text_scale))
-	sandbox_view = PracticeWeekendView.new(); sandbox_view.configure(sim); sandbox_view.recording = record
+	sandbox_view = RaceDirectorWorkspace.new(); sandbox_view.director_enabled = App.settings.get("pitwall_layout", "director") != "engineering"; sandbox_view.configure(sim); sandbox_view.recording = record
 	sandbox_shell.add_child(sandbox_view)
 	sandbox_view.menu_requested.connect(leave_sandbox); sandbox_view.new_weekend_requested.connect(leave_sandbox)
 	sandbox_view.replay_requested.connect(func(): sandbox_view.show_reading("Sandbox recording", "Return to replay to inspect the source. Save this experiment in its separate slot; Resume sandbox opens it from the main menu.", sandbox_view.weekend_menu))

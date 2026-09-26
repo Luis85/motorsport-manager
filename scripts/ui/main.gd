@@ -169,9 +169,10 @@ func show_library(test_track: Dictionary = {}) -> void:
 		else: start.call(), true))
 	refresh.call()
 
-func show_weekend() -> void:
+func show_weekend(layout: String = "") -> void:
 	clear_screen("weekend")
-	var view = PracticeWeekendView.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+	var view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+	if view is RaceDirectorWorkspace: view.director_enabled = (layout if not layout.is_empty() else App.settings.get("pitwall_layout", "director")) != "engineering"
 	view.configure(App.weekend)
 	if view is PracticeWeekendView: view.recording = App.ensure_recording()
 	content.add_child(view)
@@ -205,6 +206,7 @@ func show_settings() -> void:
 	list.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): draft.vsync = value))
 	list.add_child(UI.check("Show driver labels by default", draft.labels, func(value): draft.labels = value))
 	list.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): draft.racing_line = value))
+	UI.field(list, "Pit-wall layout", UI.option(["Race Director · track & decisions", "Engineering · detailed controls"], func(index): draft.pitwall_layout = ["director", "engineering"][index], 1 if draft.get("pitwall_layout", "director") == "engineering" else 0))
 	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): draft.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(draft.speed)))
 	var right = UI.panel(); right.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(right)
 	list = UI.vbox(right)

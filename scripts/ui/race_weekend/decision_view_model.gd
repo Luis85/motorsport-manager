@@ -37,7 +37,7 @@ static func accepted_receipt(model: StrategyRaceSim, value: Dictionary, action: 
 		"snapshot": value.duplicate(true), "payload": payload.duplicate(true),
 		"run": int(car.qual_runs), "set_id": car.set_id, "channel": payload.get("channel", ""),
 		"until_distance": model.policy(id).overrides.get(payload.get("channel", ""), {}).get("until_distance", 0.0),
-		"outcome": {}, "entry_id": "", "recalled": false}
+		"outcome": {}, "entry_id": "", "recalled": action == "recall"}
 
 static func terminal(label: String, detail: String) -> Dictionary:
 	return {"terminal": true, "label": label, "detail": detail}
@@ -81,7 +81,7 @@ static func receipt_progress(model: StrategyRaceSim, receipt: Dictionary) -> Dic
 			recalled = true
 		if record.kind == "command" and evidence.get("action") == "retire_car":
 			return terminal("Interrupted", "The reviewed driver was explicitly retired before this action completed.")
-	if action == "send":
+	if action in ["send", "recall"]:
 		var lap: Dictionary = {}
 		for candidate in car.qual_history:
 			if int(candidate.run) == int(receipt.run): lap = candidate; break

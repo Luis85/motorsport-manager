@@ -206,7 +206,7 @@ func advance(real_delta: float) -> void:
 	if paused or phase not in ACTIVE: return
 	accumulator += clampf(real_delta, 0, 0.25) * speed
 	var ticks = 0
-	while accumulator + 0.0000001 >= STEP and phase in ACTIVE and ticks < 100:
+	while accumulator + 0.0000001 >= STEP and phase in ACTIVE and not paused and ticks < 100:
 		accumulator = maxf(0, accumulator - STEP)
 		step(); ticks += 1
 

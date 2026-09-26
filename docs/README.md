@@ -1,15 +1,22 @@
 # Motorsport Manager documentation
 
-Current native implementation: **0.15.0** · **Godot 4.7.2 Standard**.
+## Race Director — 0.16.0
+
+- [Research, audit and design decisions](design/race-director-research.md)
+- [Native behavior and compatibility](race-director.md)
+- [Verification and acceptance boundaries](race-director-verification.md)
+
+
+Current native implementation: **0.16.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
-| [Strategic Duels](race-weekend-strategic-duels.md) | Current 0.15 named-rival tactics, explicit authority, two-car comparison, physical outcomes, v11 compatibility and bounded experiment results |
+| [Strategic Duels](race-weekend-strategic-duels.md) | Retained 0.15 named-rival tactics, explicit authority, two-car comparison, physical outcomes, v11 compatibility and bounded experiment results |
 | [Race-weekend engagement research](design/race-weekend-engagement-polish.md) | Fourteen primary sources, product review and implemented observational race-reading design |
 | [Engagement polish verification](ui/race-weekend/polish-verification.md) | CI diagnosis, regression-first repairs, 136 targeted native checks, player routes and validation boundaries |
 | [Race-weekend UI migration](ui/race-weekend/README.md) | Integrated components, decision lifecycle, programme/results workspaces, screen contracts and code-delivery audit |
 | [UI migration verification](ui/race-weekend/verification-completion.md) | Executed native input, layout, regression and script-load evidence; explicit platform boundaries |
-| [Circuit notebook and challenge history](race-weekend-notebook.md) | Current 0.14 opt-in observations, guarded personal notes, inherited authoring and direct-to-main integration |
+| [Circuit notebook and challenge history](race-weekend-notebook.md) | Retained 0.14 opt-in observations, guarded personal notes, inherited authoring and direct-to-main integration |
 | [0.14 verification](notebook-verification.md) | Fresh baseline/final evidence, exact source, native inputs and bounded history cost |
 | [Authored replay scenarios](race-weekend-scenario-authoring.md) | Retained 0.13 frozen challenge briefs, observed goals, native authoring and strict result validation |
 | [0.13 verification and integration](scenario-authoring-verification.md) | Exact code revisions, full regression, native evidence and matched validation costs |

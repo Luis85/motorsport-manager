@@ -29,7 +29,7 @@ func run() -> void:
 	check(game.screen_name == "practice_scenarios", "Practice scenarios are reachable from native menu")
 	model = PracticeScenarios.build(PracticeScenarios.catalog()[0], app.library)
 	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); await settle()
-	check(view.get_script().resource_path.ends_with("practice_weekend.gd") and inside(view.practice_button), "New normal practice workspace retains merged shell and visible opt-in")
+	check(view.get_script().resource_path.get_file() in ["practice_weekend.gd", "race_director_workspace.gd"] and inside(view.practice_button), "New normal practice workspace retains merged shell and visible opt-in")
 	var before = JSON.stringify(model.snapshot())
 	view.practice_button.pressed.emit(); await settle()
 	check(before == JSON.stringify(model.snapshot()) and view.group_for(view.practice_page_index) == "Strategy", "Opening optional practice is observational within Strategy navigation")
