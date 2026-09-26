@@ -1,6 +1,12 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.15.0 — Strategic Duels**, retaining the native race-weekend workspaces, circuit notebook and authored replay scenarios.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.15.1 — Race Weekend UI Clarity**, retaining the native race-weekend workspaces, circuit notebook and authored replay scenarios.
+
+## UI clarity and safe interactions
+
+Tactics now follow **Plan → Review → Follow the outcome** with the same driver-specific drafts and simulation. Core choices stay together; limits expand on demand with their values summarized. Compare and approval have separate primary actions. Ending a tactic or resetting a draft asks for confirmation; an accepted physical pit stop is not silently cancelled. **Find** previews its destinations, recovers from empty searches and opens tactical evidence directly. **Full view**, **Widen** and **Keep plan** clarify existing controls.
+
+See the [research, audit and interaction contract](docs/race-weekend-ui-clarity.md). Native verification includes the new `ui_clarity_tests.gd` suite alongside all existing checks. This patch changes presentation, not the tactical model, save version, race physics or rival behavior.
 
 ## Open and play
 

@@ -17,7 +17,7 @@ func _ready() -> void:
 	recovery_panel.command_requested.connect(targeted_command)
 	for id in [3, 6]:
 		var controls = decision_controls[id]
-		controls.compare.text = "Strategy"; controls.hold.text = "Keep"; controls.save.text = "Fuel"
+		controls.compare.text = "Strategy"; controls.hold.text = "Keep plan"; controls.save.text = "Fuel"
 		var link = UI.button("Recovery", func(): open_recovery(id)); RecoveryPanel.compact(link)
 		controls.compare.get_parent().add_child(link); recovery_links[id] = link
 	guide.steps.insert(7, {"title": "Protect the finish", "body": "Recovery compares continuing, saving engine resources and a real repair-only stop. Repair removes aggregate damage, not lifetime health; the fitted tyres retain their wear. Additional emergency stops require explicit authority and engineer pit ownership. Read the published virtual-neutralization rules below. Actions stay above the scrolling evidence.", "target": func(): return recovery_panel, "reveal": func(): open_recovery(3)})

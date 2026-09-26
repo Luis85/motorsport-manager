@@ -81,7 +81,7 @@ func _ready() -> void:
 	inspector_home=right_panel.get_parent()
 	analysis_workspace=RaceAnalysisWorkspace.new();analysis_workspace.configure(strategy_model);add_child(analysis_workspace);move_child(analysis_workspace,race_workspace.get_index()+1);analysis_workspace.hide()
 	analysis_workspace.close_requested.connect(close_session_workspace);analysis_workspace.driver_requested.connect(select_driver)
-	focus_button=UI.button("Focus",open_analysis_workspace);teammate_buttons[0].get_parent().add_child(focus_button)
+	focus_button=UI.button("Full view",open_analysis_workspace);teammate_buttons[0].get_parent().add_child(focus_button)
 	focus_button.tooltip_text="Open this task in a full workspace. The same drafts and explicit commit actions are retained."
 
 	results_home = results_panel.get_parent()
