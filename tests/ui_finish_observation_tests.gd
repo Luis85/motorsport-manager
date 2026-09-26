@@ -2,6 +2,7 @@ extends "res://tests/ui_finish_tests.gd"
 ## G02–G04: native reproductions first; boundary data is explicitly synthetic.
 
 func click(control: Control) -> void:
+	await settle(3)
 	var point = control.get_global_rect().get_center()
 	var motion = InputEventMouseMotion.new(); motion.position = point; motion.global_position = point
 	Input.parse_input_event(motion); await settle(2)

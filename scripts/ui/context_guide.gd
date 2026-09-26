@@ -7,6 +7,9 @@ var step_index = 0
 var card: PanelContainer
 var title_label: Label
 var body_label: Label
+var body_scroll: ScrollContainer
+# Optional host-owned observation area. Other product guides retain their placement.
+var placement_region: Callable
 var counter: Label
 var back_button: Button
 var next_button: Button
@@ -26,8 +29,10 @@ func _ready() -> void:
 	var head = UI.hbox(box)
 	counter = UI.label("", 11, UI.ACCENT); counter.size_flags_horizontal = Control.SIZE_EXPAND_FILL; head.add_child(counter)
 	head.add_child(UI.button("Dismiss", dismiss))
-	title_label = UI.label("", 20); box.add_child(title_label)
-	body_label = UI.paragraph(""); body_label.custom_minimum_size.x = 315; box.add_child(body_label)
+	title_label = UI.paragraph("", UI.INK); title_label.add_theme_font_size_override("font_size",20); box.add_child(title_label)
+	body_scroll = ScrollContainer.new(); body_scroll.custom_minimum_size.y = 130
+	body_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; box.add_child(body_scroll)
+	body_label = UI.paragraph(""); body_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body_scroll.add_child(body_label)
 	var actions = UI.hbox(box)
 	back_button = UI.button("Back", func(): show_step(step_index - 1)); actions.add_child(back_button)
 	actions.add_child(UI.button("Restart", func(): done = false; show_step(0)))
@@ -48,6 +53,7 @@ func show_step(index: int) -> void:
 	target = step.target.call() if step.has("target") else null
 	counter.text = "%s · %d / %d" % [flow.to_upper(), step_index + 1, steps.size()]
 	title_label.text = step.title; body_label.text = step.body
+	body_scroll.scroll_vertical = 0
 	back_button.disabled = step_index == 0
 	next_button.text = "Finish" if step_index == steps.size() - 1 else "Next"
 	store_progress(); queue_redraw()
@@ -70,8 +76,20 @@ func dismiss() -> void:
 func _process(_delta: float) -> void:
 	if not visible: return
 	position = get_parent().global_position; size = get_parent().size
-	# The left of the workspace leaves the right-hand command/inspector surface exposed.
-	card.position = Vector2(10, maxf(8, size.y - card.size.y - 12))
+	if placement_region.is_valid():
+		var area: Rect2 = placement_region.call()
+		area.position -= global_position
+		var scale_factor = get_theme_font_size("font_size") / 13.0
+		var width = minf(370 * scale_factor, maxf(315, area.size.x - 16))
+		card.custom_minimum_size.x = width
+		card.size.x = width
+		# Long explanatory copy may scroll; Dismiss/Back/Next may not.
+		var chrome = card.get_combined_minimum_size().y - body_scroll.custom_minimum_size.y
+		body_scroll.custom_minimum_size.y = clampf(area.size.y - chrome - 16, 64, 145 * scale_factor)
+		card.reset_size()
+		card.position = Vector2(clampf(area.position.x + 8, 8, size.x - card.size.x - 8), maxf(8,area.position.y + 8))
+	else:
+		card.position = Vector2(10, maxf(8, size.y - card.size.y - 12))
 	queue_redraw()
 
 func _draw() -> void:

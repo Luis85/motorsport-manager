@@ -60,7 +60,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("script-load.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
+    for name in ("script-load.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish-execution.json", "ui-finish-guide.json", "ui-finish-soak.json", "ui-finish-states.json", "ui-finish-populated.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -155,6 +155,11 @@ def main() -> int:
             ui = None
             finish_observation = None
             finish_analysis = None
+            finish_execution = None
+            finish_guide = None
+            finish_soak = None
+            finish_states = None
+            finish_populated = None
             finish_ui = None
             strategy_ui = None
             if not args.headless_only:
@@ -167,7 +172,7 @@ def main() -> int:
                         raise RuntimeError("Native UI verification needs a display or xvfb-run. "
                                            "Install xvfb and xauth, or explicitly use --headless-only.")
                 try:
-                    for name in ("observation", "analysis"):
+                    for name in ("observation", "analysis", "execution", "guide", "populated", "states", "soak"):
                         run_phase("ui-finish-" + name, [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_finish_" + name + "_tests.gd") for part in command], env)
                     run_phase("ui-finish", [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_finish_tests.gd") for part in command], env)
                     run_phase("ui-repair", [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_repair_tests.gd") for part in command], env)
@@ -197,6 +202,11 @@ def main() -> int:
                             shutil.copy2(artifact, REPORTS / artifact.name)
                 finish_observation = require_report("ui-finish-observation.json")
                 finish_analysis = require_report("ui-finish-analysis.json")
+                finish_execution = require_report("ui-finish-execution.json")
+                finish_guide = require_report("ui-finish-guide.json")
+                finish_soak = require_report("ui-finish-soak.json")
+                finish_states = require_report("ui-finish-states.json")
+                finish_populated = require_report("ui-finish-populated.json")
                 finish_ui = require_report("ui-finish.json")
                 repair_ui = require_report("ui-repair.json")
                 completion_ui = require_report("ui-completion.json")
@@ -214,8 +224,13 @@ def main() -> int:
                 notebook_ui = require_report("notebook-ui.json")
                 rivals_ui = require_report("rivals-ui.json")
                 workspace_performance = require_report("workspace-performance.json")
-            summary = {"ui_finish_observation_checks": finish_observation["checks"] if finish_observation else None,
+            summary = {"ui_finish_soak_checks": finish_soak["checks"] if finish_soak else None,
+                       "ui_finish_states_checks": finish_states["checks"] if finish_states else None,
+                       "ui_finish_observation_checks": finish_observation["checks"] if finish_observation else None,
                        "ui_finish_analysis_checks": finish_analysis["checks"] if finish_analysis else None,
+                       "ui_finish_execution_checks": finish_execution["checks"] if finish_execution else None,
+                       "ui_finish_guide_checks": finish_guide["checks"] if finish_guide else None,
+                       "ui_finish_populated_checks": finish_populated["checks"] if finish_populated else None,
                        "ui_finish_checks": finish_ui["checks"] if finish_ui else None,
                        "script_load_checks": script_load["checks"],
                        "ui_repair_checks": repair_ui["checks"] if not args.headless_only else None,
@@ -247,7 +262,7 @@ def main() -> int:
                        "rivals_ui_checks": rivals_ui["checks"] if rivals_ui else None,
                        "workspace_performance_checks": workspace_performance["checks"] if workspace_performance else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (finish_observation["screenshots"] + finish_analysis["screenshots"] + finish_execution["screenshots"] + finish_guide["screenshots"] + finish_soak["screenshots"] + finish_states["screenshots"] + finish_populated["screenshots"] + finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

@@ -54,6 +54,6 @@ func present() -> void:
 		var e=matches[at]
 		rows[i].title.text="%02d:%02d  /  %s" % [int(e.time/60),int(fmod(e.time,60)),str(e.kind).to_upper()]
 		rows[i].text.text=e.text
-	caption.text=("HISTORY SNAPSHOT" if history_mode else "LIVE · newest first")+" · %d messages · page %d" % [matches.size(),page+1]
+	caption.text=("HISTORY SNAPSHOT" if history_mode else "LIVE · newest first")+" · %d messages · page %d/%d\n%d retained events (limit 2000); earliest retained %.1fs." % [matches.size(),page+1,maxi(1,ceili(matches.size()/8.0)),events.size(),float(events.front().time) if not events.is_empty() else 0.0]
 	if matches.is_empty():caption.text+=" · No matching messages"
 	newer.disabled=page==0;older.disabled=(page+1)*8>=matches.size();UI.set_active(live,not history_mode)

@@ -18,6 +18,7 @@ func _ready() -> void:
 	weather_panel.commit_bar.visible = false
 	tabs.tab_changed.connect(func(index): weather_panel.commit_bar.visible = index == 9)
 	call_deferred("wire_control_help", self)
+	weather_panel.sector_requested.connect(inspect_weather_sector)
 	weather_panel.surface_requested.connect(func(): canvas.show_surface = true; canvas.queue_redraw())
 	for id in [3, 6]:
 		var link = UI.button("Weather", func(): open_weather(id))
@@ -60,3 +61,15 @@ func refresh() -> void:
 		var state = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}
 		debrief_text.text = WeekendScenarios.team_result(strategy_model) + "\n\n" + sim.weather_debrief() + "\n\n" + "\n\n".join(RaceJournal.debrief(state))
 		if subset.size() > 100: debrief_text.text += "\n\nLatest 100 team records. Export retains the full journal."
+
+func inspect_weather_sector(index: int) -> void:
+	if index < 0 or index >= 3: return
+	# Locate an existing field cell in this measured sector; no forecast or weather write.
+	var left = 0.0 if index == 0 else float(sim.track.sector_ends[index - 1])
+	var right = float(sim.track.sector_ends[index])
+	surface_lab.station = clampi(int((left + right) * 0.5 / sim.track.length * 96), 0, 95)
+	surface_lab.lane = 3
+	canvas.inspected_fraction = (surface_lab.station + 0.5) / 96.0
+	canvas.center = sim.track.sample(canvas.inspected_fraction * sim.track.length).p
+	canvas.navigated.emit(); canvas.show_surface = true; canvas.queue_redraw()
+	open_topic(5); surface_lab.refresh()

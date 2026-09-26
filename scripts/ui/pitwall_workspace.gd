@@ -68,6 +68,13 @@ func _ready() -> void:
 		var card = PitwallCarCard.new()
 		card.build(decision_controls[id].compare.get_parent().get_parent().get_parent(), decision_controls[id], sim.cars[id], func(): show_driver_details(id))
 		car_cards[id] = card
+	team_panel.plan_requested.connect(open_strategy)
+	for button in team_panel.topic_buttons: button.pressed.connect(refresh_navigation)
+	for id in [3,6]:
+		var popup = decision_controls[id].more.get_popup()
+		popup.add_item("Open pit service",2)
+		popup.id_pressed.connect(func(action_id):
+			if action_id == 2: select_driver(id); open_topic(8); team_panel.show_topic(2))
 	build_driver_rail()
 	inspector_home=right_panel.get_parent()
 	analysis_workspace=RaceAnalysisWorkspace.new();analysis_workspace.configure(strategy_model);add_child(analysis_workspace);move_child(analysis_workspace,race_workspace.get_index()+1);analysis_workspace.hide()
@@ -101,6 +108,8 @@ func _ready() -> void:
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
 	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
 	navigator.destination_requested.connect(open_destination)
+	navigator.catalog.append([8, 2, "Team / Pit service", "accepted approach entry queue frozen service actual exit cancel stop"])
+	navigator.catalog.append([8, 3, "Team / Accepted plans", "shared windows bounded pace fuel engine override timeline"])
 	navigator.catalog.append([results_page_index, 0, "Review / Results", "results classification qualifying practice race laps retired finish"])
 	navigator.catalog.append([decision_page_index,0,"Strategy / Decision review","decision evidence confirm deadline acknowledgement"])
 	navigator.filter_views("")
@@ -110,6 +119,7 @@ func _ready() -> void:
 	for card in car_cards.values(): card.issue.custom_minimum_size.y = ceilf(18 * text_scale)
 	gamepad_navigation=RaceGamepadNavigation.new();gamepad_navigation.configure(self);add_child(gamepad_navigation)
 	RaceAccessibility.describe(self)
+	configure_finishing_guide()
 	workspace_ready = true
 	resized.connect(adapt_layout)
 	wire_control_help(self)
@@ -161,8 +171,9 @@ func refresh_navigation() -> void:
 	if analysis_workspace and full_workspace==analysis_workspace:
 		var title=topic_buttons[tabs.current_tab].text
 		if tabs.current_tab==6:title=strategy_desk.topic_buttons[strategy_desk.topic].text
+		if tabs.current_tab==8:title=team_panel.topic_buttons[team_panel.topics.selected].text
 		analysis_workspace.heading.text=(current+" / "+title).to_upper()
-	if not current.is_empty(): group_memory[current] = tabs.current_tab
+	if not current.is_empty() and tabs.current_tab != decision_page_index: group_memory[current] = tabs.current_tab
 	for group in group_buttons: PitwallDesign.navigation(group_buttons[group], right_panel.visible and group == current)
 	PitwallDesign.navigation(watch_button, not right_panel.visible)
 	var visible_count = 0
@@ -416,3 +427,27 @@ func unapplied_draft_kinds() -> Array[String]:
 	if strategy_desk.has_user_edits(): kinds.append("strategy")
 	if racecraft.has_user_edits(): kinds.append("setup")
 	return kinds
+
+func configure_finishing_guide() -> void:
+	guide.placement_region = func():
+		if is_instance_valid(full_workspace) and full_workspace is RacePracticeWorkspace and full_workspace.visible:
+			return full_workspace.panels[3].scroll.get_global_rect()
+		if is_instance_valid(full_workspace) and full_workspace.visible:
+			return Rect2(full_workspace.global_position + Vector2(0,96), Vector2(size.x * 0.45, maxf(230, full_workspace.size.y - 165)))
+		return canvas.get_global_rect()
+	# Update obsolete wrapper targets after the actual native cards have been composed.
+	guide.steps[0].target = func(): return car_cards[3].name_label
+	guide.steps[0].reveal = func(): close_detail()
+	guide.steps[1].title = "Keep time under your control"
+	guide.steps[1].body = "The fixed header identifies this event, session, observed flag and weather. Pause and speed are separate from the next session approval. Opening a guide, reviewing a car or inspecting a chart never changes either. Space pauses; 1–5 selects speed from non-editing controls."
+	guide.steps[1].target = func(): return session_header
+	guide.steps[1].reveal = func(): close_detail()
+	guide.steps[3].body = "Plan stages a driver-owned starting set and zero to three stop windows. Fitted-to-draft changes and validation stay visible. Approve delegates timing within those accepted windows; it does not fit tyres or create an immediate physical Box order. Rejected drafts keep the current plan."
+	guide.steps.append({"title":"Stage five setup trade-offs", "body":"Setup has wing, balance, suspension, cooling and brake bias. Sliders and numeric fields edit the same per-driver draft. Each axis shows fitted → draft; estimates hold current tyres and surface constant. Apply is explicit and legal only in the garage or preparation. Live brake bias is a separate race command.","target":func():return racecraft,"reveal":func():open_topic(4)})
+	guide.steps.append({"title":"Fitted is not planned", "body":"Tyres shows the fitted finite set, its limiting wheel and the planned replacement. A puncture takes precedence over an average percentage. Selection does not renew or fit a set; release, formation and physical service use the existing ownership and inventory rules.","target":func():return tyre_readout,"reveal":func():open_topic(3);show_tyres(0)})
+	guide.steps.append({"title":"Review each issue, then confirm", "body":"The stable MER/MOR queue counts every unacknowledged issue. Choose an issue inside the drawer to review its evidence and exact driver. Confirmation sends only the reviewed action; accepted, executing and completed are different. Refresh stale evidence explicitly. Nothing pauses automatically.","target":func():return decision_drawer,"reveal":func():open_decision(3)})
+	guide.steps.append({"title":"Read recorded evidence", "body":"Telemetry offers four recorded channels, a time range and your teammate's compatible samples. Solid circles and dashed squares retain missing values as gaps. Arrow keys inspect samples; inspection never issues a command. Focus opens the same controls in a larger workspace.","target":func():return telemetry_inspector,"reveal":func():open_topic(1)})
+	guide.steps.append({"title":"Two cars, one physical box", "body":"Team / Pit box shows actual approach, entry, queue, service and exit. Cancellation ends at entry. The whole-car service timer is not pit-lane time or per-wheel progress. Team / Plans inspects accepted windows and existing bounded overrides; it does not schedule new commands.","target":func():return team_panel.service_view,"reveal":func():open_topic(8);team_panel.show_topic(2)})
+	guide.steps.append({"title":"Keep the result and the experiment separate", "body":"Session results retain measured classifications, laps, fitted stints and decision evidence. Original result acceptance remains explicit in Debrief. Replays and sandbox experiments cannot overwrite or settle the original. Export and notebook routes retain that provenance.","target":func():return results_workspace,"reveal":func():open_results_workspace()})
+
+	guide.steps.append({"title":"Focus without making a second draft", "body":"Focus expands the current analysis task, retaining the same controls, per-driver drafts and explicit action footer. Both drivers remain reachable above it. Back to pit wall restores the original inspector; neither transition changes playback speed or orders.","target":func():return analysis_workspace.heading,"reveal":func():open_topic(1);open_analysis_workspace()})

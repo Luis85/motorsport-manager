@@ -35,14 +35,14 @@ func present() -> void:
 	for id in panels:
 		var panel = panels[id]; panel.refresh(); panel.start.hide(); panel.finish.hide()
 		var driver = model.practice_driver(id)
-		var state = "RUNNING" if not driver.active.is_empty() else ("COMPLETE" if driver.runs.size() >= PracticeEvidence.MAX_RUNS or model.practice_state.status == "complete" else ("UNAVAILABLE" if model.practice_state.status in ["skipped", "legacy"] or not (can_prepare or during) else "READY"))
+		var state = "RUNNING" if not driver.active.is_empty() else ("SESSION CLOSED" if model.practice_state.status == "complete" else "RUN LIMIT" if driver.runs.size() >= PracticeEvidence.MAX_RUNS else ("UNAVAILABLE" if model.practice_state.status in ["skipped", "legacy"] or not (can_prepare or during) else "READY"))
 		badges[id].present(state + " · %d/%d runs" % [driver.runs.size(),PracticeEvidence.MAX_RUNS],"info")
 	if model.phase == "practice":
 		summary.text = "SESSION %s · %.0fs remaining · tyres, fuel and time are real resources" % [model.practice_state.status.to_upper(),maxf(0,model.practice_state.duration-model.clock)]
 	elif can_prepare:
 		summary.text = "OPTIONAL PRACTICE · %.0fs session · start when both run drafts are ready" % model.practice_state.duration
 	else:
-		summary.text = "PRACTICE EVIDENCE · %s · practice cannot start after qualifying" % model.practice_state.status.to_upper()
+		summary.text = "PRACTICE EVIDENCE · %s · retained measurements, not a proposed new run" % model.practice_state.status.to_upper()
 	session_action.visible = model.phase == "briefing" and model.practice_state.status == "available"
 	finish.visible = model.phase in ["practice","practice_results"]
 	finish.text = "Return to briefing" if model.phase == "practice_results" else "End practice…"

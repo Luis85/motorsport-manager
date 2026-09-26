@@ -17,5 +17,11 @@ func present() -> void:
 	for id in labels:
 		var c = model.cars[id]; var release = RaceForecaster.qualifying_release(model,c)
 		var availability = "Release available" if release.can_start_hotlap else ("Already running" if c.route != "garage" else "Too late for a new hot lap")
-		labels[id].text = "%s · %s · Best %s\n%s · Est. %.0fs to hot lap · latest %.0fs session" % [c.qual_state.to_upper(), c.set_id, RaceSim.format_time(c.qual_best), availability, release.required_seconds, release.latest_release]
+		if model.qual_closed: availability = "Session closed · current hot lap may finish" if c.qual_state == "hotlap" else "Session closed · no new release"
+		elif c.qual_state == "inlap": availability = "Returning to garage"
+		var benchmark = INF
+		for other in model.cars:
+			if other.qual_best > 0: benchmark = minf(benchmark,other.qual_best)
+		var delta = " · %+.3fs to fastest" % (c.qual_best-benchmark) if c.qual_best>0 and is_finite(benchmark) else " · untimed"
+		labels[id].text = "%s · %s · Best %s%s\n%s · Est. %.0fs to hot lap · latest %.0fs session" % [c.qual_state.to_upper(), c.set_id, RaceSim.format_time(c.qual_best), delta, availability, release.required_seconds, release.latest_release]
 		labels[id].tooltip_text = "Estimated %.0fs until hot lap. Latest feasible release at session time %.0fs. Traffic is visible on the circuit; no guaranteed gap." % [release.required_seconds,release.latest_release]

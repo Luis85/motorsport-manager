@@ -18,6 +18,11 @@ var mode = 0
 var next_button: Button
 var stint_chart: RaceStintHistory
 var journal: RaceJournalView
+var stint_detail: Label
+var pit_visit_selector: OptionButton
+var pit_visit_detail: Label
+var pit_visits: Array = []
+var visit_stamp: Array = []
 func configure(value: RaceSim) -> void: model = value
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -41,6 +46,12 @@ func _ready() -> void:
 	stint_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; pages[2].add_child(stint_scroll)
 	var stint_body = UI.vbox(stint_scroll); stint_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stint_chart=RaceStintHistory.new();stint_body.add_child(stint_chart)
+	stint_detail=UI.paragraph("");stint_body.add_child(stint_detail)
+	stint_chart.selection_changed.connect(func(value):stint_detail.text=value)
+	pit_visit_selector=OptionButton.new();pit_visit_selector.fit_to_longest_item=false;stint_body.add_child(pit_visit_selector)
+	pit_visit_selector.accessibility_name="Completed physical pit visit to inspect"
+	pit_visit_selector.item_selected.connect(show_pit_visit)
+	pit_visit_detail=UI.paragraph("");stint_body.add_child(pit_visit_detail)
 	narrative = UI.paragraph(""); stint_body.add_child(narrative)
 	var explanation = UI.paragraph("Measured consequences remain separate from estimates. Open the debrief for accepted orders, estimated losses at the time of the call, and actual pit visits. Experiments cannot replace the original result.")
 	pages[3].add_child(explanation)
@@ -71,6 +82,7 @@ func present() -> void:
 		next_button.tooltip_text="Complete the session before advancing." if next_button.disabled else "Advance explicitly; original result acceptance remains separate."
 	if journal and mode==3:journal.present()
 	if stint_chart:stint_chart.visible=model.phase=="results";stint_chart.present(model)
+	refresh_pit_visits()
 	var c = model.cars[driver_id]
 	var records = lap_records(driver_id)
 	var data = lap_data(records)
@@ -145,3 +157,37 @@ func lap_data(records: Array) -> Dictionary:
 		if not entry.get("valid", true) or entry.get("pit_lap", false): label += " !"
 		labels.append(label)
 	return {"values":values,"positions":positions,"labels":labels}
+
+func refresh_pit_visits() -> void:
+	if pit_visit_selector==null:return
+	pit_visit_selector.visible=model.phase=="results"
+	pit_visit_detail.visible=pit_visit_selector.visible;stint_detail.visible=pit_visit_selector.visible
+	if not model is StrategyRaceSim or model.phase!="results":return
+	var records=model.strategy_state.records
+	var next=[records.size(),records.back().get("id","") if not records.is_empty() else "",model.phase]
+	if next==visit_stamp:return
+	visit_stamp=next
+	var selected_id=pit_visits[pit_visit_selector.selected].exit.id if pit_visit_selector.selected>=0 and pit_visit_selector.selected<pit_visits.size() else ""
+	pit_visits.clear();pit_visit_selector.clear()
+	var entries: Dictionary={}
+	for record in records:
+		if record.driver_id not in [3,6]:continue
+		if record.kind=="pit_entry":entries[record.id]=record
+		elif record.kind=="pit_exit" and entries.has(record.related_id):
+			var entry=entries[record.related_id]
+			if entry.driver_id!=record.driver_id:continue
+			pit_visits.append({"entry":entry.duplicate(true),"exit":record.duplicate(true)})
+			pit_visit_selector.add_item("%s · entry %.1fs → exit %.1fs" % [model.cars[int(record.driver_id)].name,entry.time,record.time])
+			if record.id==selected_id:pit_visit_selector.select(pit_visits.size()-1)
+	pit_visit_selector.disabled=pit_visits.is_empty()
+	show_pit_visit(pit_visit_selector.selected)
+
+func show_pit_visit(index: int) -> void:
+	if index<0 or index>=pit_visits.size():
+		pit_visit_detail.text="No correlated completed race visits in retained records. Planned windows and incomplete entries are not results."
+		return
+	var visit=pit_visits[index];var actual=visit.exit.evidence
+	pit_visit_detail.text="MEASURED VISIT · %s\n%s → %s · %.2fs total pit visit\nFitted %s · includes physical entry, any queue, service and exit." % [model.cars[int(visit.exit.driver_id)].name,visit.entry.id,visit.exit.id,actual.visit_seconds,actual.fitted_set]
+	if actual.has("predicted_low") and actual.has("predicted_high"):
+		pit_visit_detail.text+="\nEstimate recorded at the call: %.1f–%.1fs. This is not an individual wheel timer." % [actual.predicted_low,actual.predicted_high]
+	pit_visit_detail.accessibility_description=pit_visit_detail.text

@@ -3,6 +3,7 @@ extends VBoxContainer
 ## Stable native controls; all calculations are observational and commands name their own driver.
 signal command_requested(action: String, payload: Dictionary)
 signal surface_requested
+signal sector_requested(index: int)
 var model: WeatherRaceSim
 var driver_id = 3
 var advice: Dictionary = {}
@@ -15,6 +16,7 @@ var box: Button
 var hold: Button
 var selectors: Array[Button] = []
 var sector_labels: Array[Label] = []
+var sector_buttons: Array[Button] = []
 var navigation_bar: HBoxContainer
 var commit_bar: HBoxContainer
 var refresh_count = 0
@@ -33,14 +35,20 @@ func _ready() -> void:
 	hold = UI.button("Keep plan", submit_hold); actions.add_child(hold)
 	var surface_button = UI.button("Surface map", func(): surface_requested.emit()); actions.add_child(surface_button)
 	for button in [box, hold, surface_button]: StrategyDesk.compact_button(button)
+	add_child(UI.label("OBSERVED NOW",11,UI.ACCENT))
 	summary = UI.paragraph(""); summary.add_theme_font_size_override("font_size", 12); add_child(summary)
+	add_child(UI.label("TRACK BY SECTOR · INSPECT",11,UI.ACCENT))
 	var sectors = HBoxContainer.new(); add_child(sectors)
 	for i in range(3):
 		var label = UI.label("", 11, UI.ACCENT); label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sectors.add_child(label); sector_labels.append(label)
+		var cell=UI.vbox(sectors);cell.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		cell.add_child(label); sector_labels.append(label)
+		var inspect=UI.button("Inspect S%d" % (i+1),func():sector_requested.emit(i));StrategyDesk.compact_button(inspect);cell.add_child(inspect);sector_buttons.append(inspect)
+	add_child(UI.label("PUBLIC OUTLOOK · UNCERTAIN",11,UI.ACCENT))
 	outlook_label = UI.paragraph(""); outlook_label.add_theme_font_size_override("font_size", 12); add_child(outlook_label)
 	outlook_chart = RaceMetricChart.new(); outlook_chart.custom_minimum_size.y = 130; add_child(outlook_chart)
 	cases_label = UI.paragraph(""); cases_label.add_theme_font_size_override("font_size", 11); add_child(cases_label)
+	add_child(UI.label("AVAILABLE CHOICES · ESTIMATES",11,UI.ACCENT))
 	for i in range(3):
 		var surface=PitwallDesign.race_panel(false,8);add_child(surface)
 		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size",12);surface.add_child(label);options.append(label)

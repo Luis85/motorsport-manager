@@ -17,11 +17,14 @@ func configure(value: RaceSim) -> void: model = value
 func _ready() -> void:
 	add_theme_constant_override("separation",8)
 	metric_label = UI.paragraph("",UI.INK); add_child(metric_label)
-	selector = UI.option(["Speed · km/h","Tyre life · %","Fuel remaining · lap units","Acceleration · m/s²"],_choose); add_child(selector)
-	range_selector = UI.option(["Last 120 seconds", "Last 60 seconds", "Last 30 seconds", "All retained samples"], func(index): range_seconds = [120.0, 60.0, 30.0, INF][index]; present()); add_child(range_selector)
+	var tools = UI.hbox(self)
+	selector = UI.option(["Speed · km/h","Tyre life · %","Fuel remaining · lap units","Acceleration · m/s²"],_choose); tools.add_child(selector)
+	range_selector = UI.option(["Last 120 seconds", "Last 60 seconds", "Last 30 seconds", "All retained samples"], func(index): range_seconds = [120.0, 60.0, 30.0, INF][index]; present()); tools.add_child(range_selector)
 	compare = UI.check("Compare teammate · recorded samples only", false, func(_value): present()); add_child(compare)
 	range_note = UI.paragraph(""); add_child(range_note)
 	chart = RaceMetricChart.new(); add_child(chart)
+	# Recorded traces lead; instantaneous state and retained-range detail follow.
+	move_child(range_note,get_child_count()-1);move_child(metric_label,get_child_count()-1)
 	powertrain = UI.paragraph(""); add_child(powertrain)
 	sectors = RaceSectorTable.new(); add_child(sectors)
 	history = RichTextLabel.new(); history.custom_minimum_size.y = 125; history.selection_enabled = true; add_child(history)

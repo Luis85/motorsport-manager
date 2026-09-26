@@ -418,7 +418,7 @@ func refresh() -> void:
 		var risk = (i == 0 and c.tyre < 28) or (i == 1 and sim.phase == "race" and RaceForecaster.fuel_margin(sim, c) < 0.35) or (i == 2 and c.health < 55)
 		UI.resource_state(resource_bars[i], resource_labels[i], risk)
 	if right_panel.visible and tabs.current_tab == 1:
-		telemetry_label.text = "%d km/h · %d°C tyres\nThrottle %d%% · Brake %d%%\nDamage %d%% · Pit stops %d\nBest  %s\nLast   %s\nS1 %s\nS2 %s\nS3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, c.damage, c.pit_stops, RaceSim.format_time(c.qual_best if q else c.best_lap), RaceSim.format_time(c.last_lap), RaceSim.format_time(c.sectors[0]), RaceSim.format_time(c.sectors[1]), RaceSim.format_time(c.sectors[2])]
+		telemetry_label.text = "CURRENT MODEL · %d km/h · %d°C tyre · throttle %d%% / brake %d%%\nBest %s · Last %s\nS1 %s · S2 %s · S3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, RaceSim.format_time(c.qual_best if q else c.best_lap), RaceSim.format_time(c.last_lap), RaceSim.format_time(c.sectors[0]), RaceSim.format_time(c.sectors[1]), RaceSim.format_time(c.sectors[2])]
 		var records: Array = c.qual_history if q else c.history
 		var history: Array[String] = ["MEASURED FLYING LAPS" if q else "RACE LAP HISTORY"]
 		for i in range(maxi(0, records.size() - 8), records.size()):

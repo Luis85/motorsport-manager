@@ -57,7 +57,12 @@ func _ready() -> void:
 	practice_workspace = RacePracticeWorkspace.new(); practice_workspace.configure(sim); add_child(practice_workspace);move_child(practice_workspace,race_workspace.get_index()+1); practice_workspace.hide()
 	for id in practice_workspace.panels:
 		practice_workspace.panels[id].drafts=practice_panel.drafts
+		practice_workspace.panels[id].edited=practice_panel.edited
 		practice_workspace.panels[id].choose_driver(id)
+	for step in guide.steps:
+		if step.title == "Learn before spending your best set":
+			step.target = func(): return practice_workspace.panels[3]
+			step.reveal = open_practice_workspace
 	practice_workspace.command_requested.connect(targeted_command)
 	practice_workspace.close_requested.connect(close_session_workspace)
 	practice_dashboard_button = UI.button("Dashboard",open_practice_workspace); strategy_navigation.add_child(practice_dashboard_button)
@@ -74,7 +79,7 @@ func group_for(index: int) -> String:
 func refresh_navigation() -> void:
 	super.refresh_navigation()
 	if strategy_navigation == null: return
-	var in_strategy = tabs.current_tab in [6, practice_page_index]
+	var in_strategy = tabs.current_tab in [6, practice_page_index, decision_page_index]
 	strategy_navigation.visible = in_strategy
 	if in_strategy: context_navigation.hide()
 	for i in range(strategy_desk.topic_buttons.size()):
@@ -206,3 +211,8 @@ func open_practice_workspace() -> void:
 	close_session_workspace();full_invoker=invoker; full_workspace = practice_workspace
 	practice_workspace.show(); practice_workspace.present(); adapt_layout()
 	PitwallDesign.focus_later(practice_workspace.panels[3].objective_buttons.tyre_life)
+
+func unapplied_draft_kinds() -> Array[String]:
+	var kinds = super.unapplied_draft_kinds()
+	if practice_panel and practice_panel.has_user_edits(): kinds.append("practice")
+	return kinds
