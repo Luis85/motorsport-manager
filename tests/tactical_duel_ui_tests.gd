@@ -1,6 +1,8 @@
 extends "res://tests/ui_finish_observation_tests.gd"
 ## Native pointer/key inputs over the existing application; no browser replacement.
 func scroll_to(control: Control) -> void:
+	# Measure after stage/focus layout has settled, not during a hidden-to-shown transition.
+	await settle(4)
 	var page = control.get_parent()
 	while page != null and not page is ScrollContainer: page = page.get_parent()
 	if page != null: page.ensure_control_visible(control)
