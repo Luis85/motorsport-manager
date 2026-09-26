@@ -12,7 +12,7 @@ static func build(record: RaceRecord) -> Dictionary:
 			"finish_time": c.finish_time, "points_eligibility": "not_defined_by_standalone_rules"})
 	var data = {"kind": "motorsport-manager-weekend-result", "version": 1, "event_id": record.event_id,
 		"origin": record.origin, "parent": record.parent.duplicate(true), "engine": Engine.get_version_info().string,
-		"checkpoint_version": 10, "model": RaceRecord.MODEL, "ruleset": RaceRecord.manifest_for(record.initial).ruleset, "track_hash": RaceRecord.fingerprint(sim.track.document),
+		"checkpoint_version": int(record.initial.version), "model": RaceRecord.model_for(record.initial), "ruleset": RaceRecord.manifest_for(record.initial).ruleset, "track_hash": RaceRecord.fingerprint(sim.track.document),
 		"roster_hash": RaceRecord.fingerprint(record.initial.cars.map(func(c): return {"id": c.id, "name": c.name, "team": c.team})),
 		"classification": classification, "final": true, "achievements": [],
 		"returned_resources": sim.cars.map(func(c): return {"driver_id": c.id, "health": c.health, "damage": c.damage, "tyres": c.tyre_sets.duplicate(true)}),
@@ -25,8 +25,10 @@ static func validate(data: Variant) -> String:
 	if not RaceRecord.valid_id(data.get("event_id")) or data.get("origin") not in ["standalone", "legacy", "sandbox"] or (not data.get("final") is bool or not data.final): return "Invalid result identity or completion."
 	for key in ["track_hash", "roster_hash"]:
 		if not data.get(key) is String or data[key].length() != 64 or not data[key].is_valid_hex_number(false): return "Invalid result manifest hash."
-	if not RaceCheckpoint.integral(data.get("checkpoint_version"), 10, 10) or not data.get("model") is String or not data.get("engine") is String: return "Missing result model metadata."
+	if not RaceCheckpoint.integral(data.get("checkpoint_version"), 10, 11) or not data.get("model") is String or not data.get("engine") is String: return "Missing result model metadata."
 	if not data.get("parent") is Dictionary or not data.get("ruleset") is Dictionary or not data.get("achievements") is Array or not data.achievements.is_empty(): return "Unsupported result provenance or achievements."
+	if data.checkpoint_version == 11:
+		if data.model != TacticalDuels.MODEL or data.ruleset.get("checkpoint_schema") != 11 or not data.ruleset.get("tactical_duels") is bool or not data.ruleset.tactical_duels: return "Tactical result model and ruleset disagree."
 	if data.origin == "sandbox" and not RaceRecord.valid_id(data.parent.get("event_id")): return "Missing sandbox lineage."
 	if not data.get("classification") is Array or data.classification.size() != 12: return "Result must account for all twelve entrants."
 	var identities = {}

@@ -6,12 +6,15 @@ signal fixed_step_completed
 const PRACTICE_CHECKPOINT_VERSION = 10
 var practice_state: Dictionary = {}
 var rival_styles: Dictionary = {}
+var duel_state: Dictionary = {}
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
 	practice_state = PracticeEvidence.create(cars, clampf(maxf(600, track.estimate * 7) if geometry != null else 600, 120, 1800))
 
 	rival_styles = RivalStyles.create(cars, options.get("rival_styles", true) == true)
+	# Explicit new-weekend opt-in preserves historical saves, recipes and recordings.
+	duel_state = TacticalDuels.create(cars, options.get("tactical_duels", false) == true)
 
 func is_run_session() -> bool:
 	return phase == "practice" or super.is_run_session()
@@ -47,10 +50,12 @@ func run_preview(id: int, plan: Dictionary) -> Dictionary:
 		"limit": "Estimate includes out/in laps and pit transit. Slow traffic or wet running can interrupt a run; no completion is guaranteed."}
 
 func command(action: String, payload: Dictionary = {}) -> bool:
+	last_error = ""
 	# Only the outer application command is recorded, not inherited helper commands.
 	var recording = input_accepted.has_connections()
 	var context = {"selected_id": selected_id, "paused": paused, "speed": speed, "accumulator": accumulator} if recording else {}
-	var accepted = _practice_command(action, payload)
+	var accepted = TacticalDuels.command(self, action, payload) if action in TacticalDuels.ACTIONS else _practice_command(action, payload)
+	if accepted: TacticalDuels.after_command(self, action, payload)
 	if accepted and recording: input_accepted.emit(action, payload.duplicate(true), context)
 	return accepted
 
@@ -182,7 +187,9 @@ func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
 func step() -> void:
 	var previous_time = total_time
 	_practice_step()
-	if total_time > previous_time: fixed_step_completed.emit()
+	if total_time > previous_time:
+		TacticalDuels.after_step(self)
+		fixed_step_completed.emit()
 
 func _practice_step() -> void:
 	if phase != "practice": super.step(); return
@@ -237,7 +244,7 @@ func review_rival_style(car: Dictionary, source: Dictionary, comparison: Diction
 	var driver = rival_styles.drivers[int(car.id)]
 	if flag != "GREEN": return true # No discretionary style order under a restriction.
 	if driver.hold_gate >= source.gate.distance: return true
-	var decision = RivalStyles.decide(source, rival_state.stops, driver, comparison)
+	var decision = DuelRivalPolicy.decide(source, rival_state.stops, driver, comparison) if duel_state.get("enabled", false) else RivalStyles.decide(source, rival_state.stops, driver, comparison)
 	if decision.is_empty(): return true
 	RivalStyles.record(rival_styles, decision)
 	if decision.choice == "box" and not TeamOrders.defer_stop(self, car):
@@ -256,24 +263,49 @@ func snapshot() -> Dictionary:
 	var data = super.snapshot(); data.version = PRACTICE_CHECKPOINT_VERSION
 	data.practice_state = practice_state.duplicate(true)
 	data.rival_styles = rival_styles.duplicate(true)
+	if duel_state.get("enabled", false):
+		data.version = TacticalDuels.CHECKPOINT_VERSION
+		data.duel_state = duel_state.duplicate(true)
 	return data
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:
-	if not RaceCheckpoint.integral(data.get("version"), 1, PRACTICE_CHECKPOINT_VERSION): return null
+	if not RaceCheckpoint.integral(data.get("version"), 1, TacticalDuels.CHECKPOINT_VERSION): return null
 	var native = int(data.version) >= 9
-	var native_styles = int(data.version) == PRACTICE_CHECKPOINT_VERSION
+	var native_styles = int(data.version) >= PRACTICE_CHECKPOINT_VERSION
+	var native_duels = int(data.version) == TacticalDuels.CHECKPOINT_VERSION
+	if not native_duels and data.has("duel_state"): return null
 	if not native and data.get("phase") in ["practice", "practice_results"]: return null
 	var inherited = data.duplicate(true)
-	if native: inherited.version = 8; inherited.erase("practice_state"); inherited.erase("rival_styles")
+	if native: inherited.version = 8; inherited.erase("practice_state"); inherited.erase("rival_styles"); inherited.erase("duel_state")
 	var base = RecoveryRaceSim.restore_recovery(inherited)
 	if base == null: return null
 	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, clampf(maxf(600, base.track.estimate * 7), 120, 1800), "legacy")
 	if not PracticeEvidence.valid(state, base) or not PracticeEvidence.valid_records(base.strategy_state.records, state): return null
 	var styles = data.get("rival_styles") if native_styles else RivalStyles.create(base.cars, false)
 	if not RivalStyles.valid(styles, base.cars, base.total_time): return null
+	if native_duels and not TacticalDuels.valid(data.get("duel_state"), base): return null
 	var sim = PracticeRaceSim.new(base.track, {"rival_styles": false})
 	for key in base.snapshot():
 		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
+	if native_duels: sim.duel_state = data.duel_state.duplicate(true)
 	return sim
+
+func manage_resources(c: Dictionary, only_channel: String = "") -> void:
+	super.manage_resources(c, only_channel)
+	if not duel_state.is_empty(): TacticalDuels.resource_targets(self, c, only_channel)
+
+func engineer(c: Dictionary) -> void:
+	var record = TacticalDuels.current(self, int(c.id))
+	if TacticalDuels.owns(record) and phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order:
+		var sound = WheelTyres.usable(TyreInventory.find(c, c.set_id))
+		var dry_safe = c.tyre >= 18 and c.damage <= 24 and sound and average(water) <= 0.10 and rain < 0.08 and c.compound not in ["I", "W"] and RaceReliability.stage(c, reliability(int(c.id))) not in ["degraded", "critical"]
+		if not dry_safe:
+			# A narrow dry mandate cannot create previously absent emergency consent.
+			# Restore the real previous owner before the existing recovery/weather logic.
+			TacticalDuels.finish(self, int(c.id), "review", "Outside the dry tactic's resource/reliability envelope. Previous pit ownership resumes; review recovery or weather strategy.")
+		else:
+			manage_resources(c)
+			if TacticalDuels.review(self, c): return
+	super.engineer(c)

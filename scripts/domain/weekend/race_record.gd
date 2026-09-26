@@ -76,7 +76,7 @@ func seal() -> Dictionary:
 	if sim == null: return {}
 	var endpoint = sim.snapshot()
 	var manifest = manifest_for(initial)
-	var data = {"kind": KIND, "version": VERSION, "model": MODEL, "engine": Engine.get_version_info().string, "event_id": event_id, "origin": origin,
+	var data = {"kind": KIND, "version": VERSION, "model": model_for(initial), "engine": Engine.get_version_info().string, "event_id": event_id, "origin": origin,
 		"parent": parent.duplicate(true), "manifest": manifest, "initial": initial.duplicate(true), "inputs": inputs.duplicate(true),
 		"initial_integers": integer_paths(initial), "endpoint_integers": integer_paths(endpoint), "marks": marks.duplicate(true), "steps": steps, "incomplete": incomplete, "endpoint": endpoint}
 	data.digest = fingerprint(data)
@@ -104,7 +104,7 @@ static func validate(data: Variant) -> String:
 	if (not data.get("digest") is String or data.digest != fingerprint(content)): return "Recording integrity check failed. The source was not replaced."
 	for key in ["initial", "endpoint"]:
 		if not data.get(key) is Dictionary or not valid_types(data[key], data.get(key + "_integers")) or PracticeRaceSim.restore_practice(data[key]) == null: return "Invalid " + key + " checkpoint."
-	if data.initial.version != 10 or data.endpoint.version != 10: return "Replay requires native v10 snapshots. Import older saves through Continue Weekend first."
+	if not RaceCheckpoint.integral(data.initial.version, 10, 11) or data.endpoint.version != data.initial.version: return "Replay requires matching native v10 or v11 snapshots. Import older saves through Continue Weekend first."
 	if not equivalent(static_identity(data.initial), static_identity(data.endpoint)): return "Recording changes its frozen track, roster or rules."
 	if absf(float(data.endpoint.total_time) - float(data.initial.total_time) - float(data.steps) * RaceSim.STEP) > 0.00001: return "Recorded time and fixed-step count disagree."
 	if not equivalent(data.manifest, manifest_for(data.initial)): return "Scenario metadata does not match the recorded initial state."
@@ -191,9 +191,10 @@ static func typed_payload(entry: Dictionary) -> Dictionary:
 	return apply_types(entry.payload, entry.integers)
 
 static func manifest_for(snapshot: Dictionary) -> Dictionary:
-	var rules = {"checkpoint_schema": 10, "weather": snapshot.weather_state.model.mode,
+	var rules = {"checkpoint_schema": int(snapshot.version), "weather": snapshot.weather_state.model.mode,
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
+	if int(snapshot.version) == 11: rules.tactical_duels = true
 	var scenarios: Array = []
 	for entry in snapshot.strategy_state.records:
 		if entry.kind == "scenario" and scenarios.size() < 3: scenarios.append(entry.evidence.duplicate(true))
@@ -211,3 +212,9 @@ static func static_identity(snapshot: Dictionary) -> Dictionary:
 	for key in ["track_hash", "roster_hash", "vehicle", "seed", "laps", "weather", "incident_exposure", "ruleset"]:
 		result[key] = manifest.get(key)
 	return result
+
+static func model_for(snapshot: Dictionary) -> String:
+	return TacticalDuels.MODEL if int(snapshot.get("version", 0)) == 11 else MODEL
+
+static func model_supported(data: Dictionary) -> bool:
+	return data.get("initial") is Dictionary and data.get("model") == model_for(data.initial)

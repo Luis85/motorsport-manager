@@ -397,6 +397,8 @@ func close_session_workspace() -> void:
 	var closing=is_instance_valid(full_workspace) and full_workspace.visible
 	if is_instance_valid(full_workspace): full_workspace.hide()
 	full_workspace = null
+	# Restore the invoker row before choosing a focus target; telemetry refresh may be paused.
+	if not teammate_buttons.is_empty(): teammate_buttons[0].get_parent().show()
 	if inspector_home and right_panel.get_parent()!=inspector_home:
 		right_panel.reparent(inspector_home);inspector_home.move_child(right_panel,mini(2,inspector_home.get_child_count()-1))
 		right_panel.size_flags_horizontal=Control.SIZE_FILL

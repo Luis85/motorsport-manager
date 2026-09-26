@@ -60,8 +60,10 @@ static func validate(entry: Variant) -> bool:
 	if context.get("incident_exposure") not in ["calm", "standard", "volatile"]: return false
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
-	if not rules is Dictionary or rules.size() != 5: return false
-	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 10) or rules.get("weather") not in WeekendWeather.MODES: return false
+	if not rules is Dictionary: return false
+	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5): return false
+	if rules.get("checkpoint_schema") == 11 and (not rules.get("tactical_duels") is bool or not rules.tactical_duels): return false
+	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 11) or rules.get("weather") not in WeekendWeather.MODES: return false
 	if rules.get("reliability") not in ["legacy", "staged"] or not rules.get("rival_styles") is bool: return false
 	if rules.get("race_control") not in ["virtual-neutralization-v1", "legacy-speed-cap"]: return false
 	if not f.get("players") is Array or f.players.size() != 2: return false

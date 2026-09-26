@@ -101,6 +101,6 @@ static func debrief(state: Dictionary) -> Array[String]:
 			var text = "%.1fs · %s · Measured pit visit %.1fs" % [record.time, who, float(e.get("visit_seconds", 0))]
 			if e.has("predicted_low"): text += " · prior estimate %.1f–%.1fs · residual %+.1fs" % [e.predicted_low, e.predicted_high, e.residual]
 			lines.append(text + " (visit duration, not net race-time loss)")
-		elif record.kind in ["handback", "strategy_order", "plan_blocked", "warning", "team_order_outcome", "team_priority_defer", "strategy_response", "pass_completed"]:
+		elif record.kind in ["handback", "strategy_order", "plan_blocked", "warning", "team_order_outcome", "team_priority_defer", "strategy_response", "pass_completed", "tactical_plan"]:
 			lines.append("%.1fs · %s · %s" % [record.time, who, e.get("reason", record.kind.replace("_", " "))])
 	return lines
