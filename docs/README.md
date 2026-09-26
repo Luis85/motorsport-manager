@@ -1,9 +1,10 @@
 # Motorsport Manager documentation
 
-Current native implementation: **0.14.0** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.15.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
+| [Strategic Duels](race-weekend-strategic-duels.md) | Current 0.15 named-rival tactics, explicit authority, two-car comparison, physical outcomes, v11 compatibility and bounded experiment results |
 | [Race-weekend engagement research](design/race-weekend-engagement-polish.md) | Fourteen primary sources, product review and implemented observational race-reading design |
 | [Engagement polish verification](ui/race-weekend/polish-verification.md) | CI diagnosis, regression-first repairs, 136 targeted native checks, player routes and validation boundaries |
 | [Race-weekend UI migration](ui/race-weekend/README.md) | Integrated components, decision lifecycle, programme/results workspaces, screen contracts and code-delivery audit |
@@ -37,16 +38,16 @@ Current native implementation: **0.14.0** · **Godot 4.7.2 Standard**.
 | [Track editor](track-editor.md) | Authoring, selection, trace, calibration and validation |
 | [Track formats](track-format.md) | Editable/native exchange and baked runtime schema |
 | [Graphics](graphics.md) | Cozy illustration, dots, preferences and caching |
-| [Persistence](persistence.md) | Notebook v1, session/replay v1, scenario v1 and native v10; current storage and validation contracts |
+| [Persistence](persistence.md) | Retained notebook/session/scenario storage; the 0.15 handoff supersedes native v10-only statements |
 | [Verification](verification.md) | Automated checks, reports and environment boundaries |
 | [Port status](port-status.md) | Current acceptance scope and unimplemented systems |
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 
-The 0.11 handoff remains authoritative for contextual rivals and checkpoint v10. The practice handoff remains authoritative for optional preparation, bounded measured learning and the preserved v9 practice payload. The integration record remains authoritative for the combined 0.9 task navigation and recovery view. The research document explains the UX decisions; it is not human validation. The compact UI handoff records the earlier flat topic toolbar and its historical performance measurements, not the merged release's measured performance. The recovery handoff is authoritative for staged recovery, virtual neutralization and checkpoint v8. Older native saves retain their original model semantics.
+The 0.15 handoff supersedes the current tactical model and v11 statements. The 0.11 handoff remains authoritative for retained contextual-rival behavior and earlier checkpoint v10. The practice handoff remains authoritative for optional preparation, bounded measured learning and the preserved v9 practice payload. The integration record remains authoritative for the combined 0.9 task navigation and recovery view. The research document explains the UX decisions; it is not human validation. The compact UI handoff records the earlier flat topic toolbar and its historical performance measurements, not the merged release's measured performance. The recovery handoff is authoritative for staged recovery, virtual neutralization and checkpoint v8. Older native saves retain their original model semantics.
 
 The 0.7 weather, 0.6 battle/team, 0.5 strategy and 0.4 editor/system documents remain useful for retained behavior except where later handoffs explicitly supersede their UI, model or checkpoint-version statements. No stage is declared human-playtest complete solely because automated checks pass.
 
-The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. The sporting replay model remains `race-weekend-0.12-v1`, with embedded checkpoint v10 and existing legacy semantics. A goal is observed evidence, not an automatic reward.
+The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. Earlier recordings retain `race-weekend-0.12-v1` and checkpoint v10. New tactical recordings use `race-weekend-0.15-duels-v1` and checkpoint v11, with no silent conversion of the original rules. A goal is observed evidence, not an automatic reward.
 
-The 0.14 notebook handoff governs opt-in run history, guarded personal interpretations and remembered challenge outcomes. PR #11 has integrated the 0.12/0.13 work into main; PR #10 is reconciled with that target while retaining both scenario-authoring and notebook verification. Historical handoff counts describe their named revisions, not this combined run. Consult PR #10 and its current `reports/verification.json` for integration evidence.
+The 0.14 notebook handoff governs opt-in run history, guarded personal interpretations and remembered challenge outcomes. The 0.12–0.14 work and PR #12 native workspaces are merged into main. All retained suites remain mandatory. Historical handoff counts describe their named revisions; consult the current feature PR and its exact-head `reports/verification.json` for new integration evidence.

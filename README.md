@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.14.0 — circuit notebook and remembered challenges**, retaining authored replay scenarios and validated result evidence.
+A native, local-first motorsport game: **author a circuit, qualify your drivers, and manage two cars from the pit wall**. Current feature-branch implementation: **0.15.0 — Strategic Duels**, retaining the native race-weekend workspaces, circuit notebook and authored replay scenarios.
 
 ## Open and play
 
@@ -10,13 +10,21 @@ Start **Grand Prix Weekend → Pinecrest Motor Park → Formula → Dry**. Optio
 
 **Watch / Strategy / Car / Team / Conditions / Review** organize the pit wall. Both driver cards retain urgent information and primary commands. Find / Ctrl+K navigates without issuing orders. Settings offers staged 100%, 115% and 130% pit-wall text. Alerts and guides do not pause the race or change its speed.
 
+## Strategic Duels
+
+New weekends provide **Strategy → Tactics** and driver **More → Tactical plan**. Compare an undercut against a named rival with a bounded extension, choose a real replacement set and resource limits, then approve recommendation-only or explicit pit authority. Only pit timing is borrowed; manual resource control stays yours. Conditions can request review instead of forcing a stop. End plan does not cancel an already accepted physical pit order.
+
+**Both cars** compares ordinary plans and early/extended splits without issuing commands. **Plan evidence** follows approval, actual entry/service/exit and observed relative position. The rival may cover an observed stop, decline an expensive response, or avoid its teammate's accepted service. No hidden rival information or pace bonus is added.
+
+**Scenario challenges → Strategic duels** contains four disclosed dry exercises on Pinecrest, Monaco and Monza. They start at untimed preparation grids with explicitly used tyres; formation and lights remain physical. No winner or reward is forced. The new model uses checkpoint v11; older weekends and recipes retain their earlier rules. See [behavior, compatibility, experiments and verification](docs/race-weekend-strategic-duels.md). Broad balance and human engagement remain validation work, not inferred from test counts.
+
 ## Circuit notebook
 
 **Weekend → Circuit notebook** or **Find / Ctrl+K → Review / Circuit notebook** lets you remember a completed original or sandbox run. Keep actual finishing distance, pit count, qualifying/practice evidence and authored challenge outcomes, then write a separate personal interpretation. Notes persist without changing car performance, forecasts or rewards. Duplicate recording preserves the note; stale edits and corrupt storage fail without overwriting it.
 
 The main menu's **Replays & experiments** opens saved history. Filter by exact circuit snapshot, export the notebook or explicitly forget an entry. Primary actions stay outside scrolling evidence. Opening history never pauses the live race; pause first for reading time. The notebook is opt-in, bounded to 128 runs and 1,200 note characters, and does not silently import old receipts.
 
-See [0.14 behavior and UI contract](docs/race-weekend-notebook.md) and [verification evidence](docs/notebook-verification.md). PR #11 has now integrated replay and scenario authoring into main. PR #10 targets main directly and retains those changes alongside the notebook; both test suites remain mandatory. The current replay model and native checkpoint v10 remain unchanged.
+See [0.14 behavior and UI contract](docs/race-weekend-notebook.md) and [verification evidence](docs/notebook-verification.md). The notebook and authored scenarios are retained in main and their tests remain mandatory. New tactical weekends use the versioned v11 model described above; earlier recordings retain v10.
 
 ## Author a situation worth revisiting
 
@@ -24,7 +32,7 @@ Open **Review → Decision debrief → Replay / sandbox**, select a saved state 
 
 Import through **Replays & experiments → Open recording or scenario…**, then **Try another decision**. Read the scenario brief and use the ordinary native pit wall. A goal remains pending until final classification and never awards campaign points, money or XP. Both return actions and the sandbox's separate save remain available. Long authoring forms scroll while Export and Cancel stay fixed.
 
-The new scenario envelope is **v1**. Existing session/replay **v1**, result/receipt **v1** and embedded native checkpoint **v10** remain. Stronger validation checks frozen identity, final result structure and owned returned tyre sets; malformed evidence cannot silently replace existing receipts. The 16 MB file ceiling counts UTF-8 bytes, not characters.
+The scenario envelope is **v1**. Session/replay **v1** and result/receipt **v1** remain, with matching embedded native **v10 or v11** model metadata. Stronger validation checks frozen identity, final result structure and owned returned tyre sets; malformed evidence cannot silently replace existing receipts. The 16 MB file ceiling counts UTF-8 bytes, not characters.
 
 See [scenario behavior and compatibility](docs/race-weekend-scenario-authoring.md) and [0.13 executed evidence and integration status](docs/scenario-authoring-verification.md). The 0.12 replay and 0.13 authoring capabilities are retained from main; their handoffs keep historical integration and verification records.
 
@@ -46,7 +54,7 @@ Finite driver-owned four-wheel tyre sets, actual resource costs, independent com
 
 Optional practice retains comparable measured evidence, not a hidden setup bonus. Persistent battles and four contextual rival tendencies use the same legal stock and movement rules. Public rival inspection does not disclose exact private condition or future plans. Qualifying, formation, grid, lights, lapped finishes and all-retired classification remain native simulation responsibilities.
 
-**Scenario challenges** contains dry strategy, weather, recovery, practice and rival-style recipes. Their starting resources and assistance are disclosed, and no winner is forced. Historical recipes and migrated saves retain their model semantics. See the [documentation index](docs/README.md) for each retained implementation and its limits.
+**Scenario challenges** contains dry strategy, weather, recovery, practice, rival-style and strategic-duel recipes. Their starting resources and assistance are disclosed, and no winner is forced. Historical recipes and migrated saves retain their model semantics. See the [documentation index](docs/README.md) for each retained implementation and its limits.
 
 **Circuit Atelier** retains eight bundled circuits, Bezier editing, background references, pit lanes, annotations, multi-selection, transforms, alignment/distribution, scenery groups and connected freehand/pen tracing. Authoring and live races use separate snapshots. Flat dot cars and the warm paper/green/brass presentation remain. This increment does not redesign the editor or add a campaign.
 
@@ -56,7 +64,7 @@ Optional practice retains comparable measured evidence, not a hidden setup bonus
 LP_NUM_THREADS=2 python3 scripts/verify.py --godot /path/to/Godot_v4.7.2-stable_linux.x86_64
 ```
 
-Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI checks need a display or `xvfb` plus `xauth`. `--headless-only` explicitly omits native UI verification. The runner imports a clean copy, isolates user data, preserves the earlier suites and requires replay domain, complete-race, native interaction and observer-cost checks plus the authored-scenario and notebook domain/storage/native interaction suites. It rejects script errors even when a JSON summary claims success.
+Alternatively set `GODOT_BINARY` or put `godot` on PATH. Linux native UI checks need a display or `xvfb` plus `xauth`. `--headless-only` explicitly omits native UI verification. The runner imports a clean copy, isolates user data, preserves the earlier suites and requires replay domain, complete-race, native interaction and observer-cost checks plus authored-scenario, notebook and tactical-plan domain/storage/native interaction and complete-race suites. It rejects script errors even when a JSON summary claims success.
 
 Reports and native screenshots are produced under `reports/`. CI publishes evidence; the source workflow archives tracked source. `reports/verification.json` is authoritative for its run. Historical release counts are not current integration test results; local verification and hosted CI are separate.
 

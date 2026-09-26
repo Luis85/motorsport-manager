@@ -9,7 +9,7 @@ var screen_name = "menu"
 var editor: TrackEditor
 var library_canvas: TrackCanvas
 var selected_track: Dictionary
-var config = {"laps": 24, "qual_duration": 480, "scenario": "dry", "intensity": "standard", "seed": 7314}
+var config = {"laps": 24, "qual_duration": 480, "scenario": "dry", "intensity": "standard", "seed": 7314, "tactical_duels": true}
 var vehicle = "Formula"
 var editor_draft: Dictionary = {}
 var draft_signature = ""
@@ -59,9 +59,9 @@ func show_menu() -> void:
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
 	var scenarios = MenuButton.new(); scenarios.text = "SCENARIO CHALLENGES"; scenarios.focus_mode = Control.FOCUS_ALL; scenarios.flat = false; scenarios.custom_minimum_size.y = 36
 	menu.add_child(scenarios)
-	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles"]: scenarios.get_popup().add_item(title)
+	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"]: scenarios.get_popup().add_item(title)
 	scenarios.get_popup().id_pressed.connect(func(index):
-		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios][index].call())
+		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios, show_duel_scenarios][index].call())
 	var replay_menu = MenuButton.new(); replay_menu.focus_mode = Control.FOCUS_ALL; replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
 	menu.add_child(replay_menu)
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
@@ -355,5 +355,27 @@ func show_rival_scenarios() -> void:
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
+				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
+			else: start.call(), true))
+
+func show_duel_scenarios() -> void:
+	clear_screen("duel_scenarios")
+	content.add_child(UI.label("Strategic duels · two cars, competing plans", 27))
+	content.add_child(UI.paragraph("Four disclosed dry exercises. Compare, approve or deliberately wait, then inspect the actual outcome. No scripted victories or campaign rewards."))
+	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(scroll)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var entries = UI.vbox(scroll); entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for recipe in DuelScenarios.catalog():
+		var card = UI.panel(); entries.add_child(card); var body = UI.vbox(card)
+		body.add_child(UI.label(recipe.title, 21, UI.ACCENT))
+		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
+		body.add_child(UI.paragraph("%s · %d laps · all fitted tyres %.0f%% · untimed grid · calm incidents" % [recipe.track.capitalize(), recipe.laps, recipe.life]))
+		body.add_child(UI.button("Open preparation · seed %d" % recipe.seed, func():
+			var start = func():
+				var candidate = DuelScenarios.build(recipe, App.library)
+				if candidate == null: UI.notify(self, "Scenario unavailable", "The shipped recipe or circuit did not validate."); return
+				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
+			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
+				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This opens a new exercise. Save or export current evidence before replacing it."
 				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
 			else: start.call(), true))

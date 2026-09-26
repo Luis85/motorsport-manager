@@ -53,6 +53,11 @@ static func race_story(model: StrategyRaceSim, id: int, policy: Dictionary, fore
 		return story(id, 80, "The stop is unfolding", model.pit_status(car), "The accepted visit is now physical; cancellation is closed after pit entry.", "Watch Team / Pit service. Service completion is not yet a measured pit exit.")
 	if car.pit_order:
 		return story(id, 75, "Approaching the accepted stop", "A physical pit order is active, not just a draft window.", "Retain the call or explicitly cancel before pit entry; the current order does not change by reading this.", "Watch the named driver's approach, then the shared box and actual rejoin.")
+	if model is PracticeRaceSim and model.duel_state.get("enabled", false):
+		var tactic = TacticalDuels.current(model, id)
+		if TacticalDuels.live(tactic):
+			return story(id, 65, TacticalForecast.LABELS[tactic.plan.kind] + " / " + model.cars[int(tactic.plan.target_id)].short,
+				tactic.reason, "Pit timing delegated within the mandate." if tactic.borrowed_pits else "No tactical execution authority; current owners retain control.", "Strategy / Tactics retains the target, window and decision-time evidence. End plan does not cancel an accepted stop.")
 	if not issue.is_empty():
 		return story(id, int(issue.priority), issue.title, issue.evidence, "Pit for the proposed tyre opportunity, or stay out and preserve the option. Neither is guaranteed to be faster.", "Compare the alternatives and rejoin range. " + DecisionFeed.deadline_text(issue, model))
 	var contest = RaceContestReadModel.observed_contest(model, id)

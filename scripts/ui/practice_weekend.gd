@@ -19,6 +19,7 @@ var rivals_button: Button
 var public_inspector: PublicRivalInspector
 var practice_workspace: RacePracticeWorkspace
 var practice_dashboard_button: Button
+var duel_workspace: DuelWorkspace
 
 func _ready() -> void:
 	super._ready()
@@ -68,18 +69,21 @@ func _ready() -> void:
 	practice_dashboard_button = UI.button("Dashboard",open_practice_workspace); strategy_navigation.add_child(practice_dashboard_button)
 	PitwallDesign.scale_controls(practice_workspace,text_scale); PitwallDesign.scale_controls(practice_dashboard_button,text_scale)
 	build_replay_actions()
+	if sim.duel_state.get("enabled", false):
+		duel_workspace = DuelWorkspace.new(); duel_workspace.configure(self)
 	RaceAccessibility.describe(self)
 	wire_control_help(practice_panel); wire_control_help(rivals_button); refresh()
 	if sim.phase in ["practice", "practice_results"]: open_practice(3)
 
 func group_for(index: int) -> String:
+	if duel_workspace != null and index == duel_workspace.index: return "Strategy"
 	if practice_page_index >= 0 and index == practice_page_index: return "Strategy"
 	return super.group_for(index)
 
 func refresh_navigation() -> void:
 	super.refresh_navigation()
 	if strategy_navigation == null: return
-	var in_strategy = tabs.current_tab in [6, practice_page_index, decision_page_index]
+	var in_strategy = tabs.current_tab in [6, practice_page_index, decision_page_index] or (duel_workspace != null and tabs.current_tab == duel_workspace.index)
 	strategy_navigation.visible = in_strategy
 	if in_strategy: context_navigation.hide()
 	for i in range(strategy_desk.topic_buttons.size()):
@@ -116,7 +120,7 @@ func refresh() -> void:
 		primary_button.visible = not sim.practice_state.closed
 		flag_label.text = "PAUSED" if sim.paused else ("RETURNING" if sim.practice_state.closed else "PRACTICE")
 	if sim.phase == "practice_results": clock_label.text = "PRACTICE REVIEW"
-	tower.get_parent().get_child(0).text = "PRACTICE · MEASURED LAPS" if during else "LIVE CLASSIFICATION"
+	tower.get_parent().get_child(0).text = "PRACTICE · MEASURED LAPS" if during else "LIVE_CLASSIFICATION".replace("_", " ")
 	if during:
 		for c in sim.cars:
 			var times: Array = []
@@ -153,6 +157,7 @@ func refresh() -> void:
 		debrief_text.text = practice_debrief_prefix + inherited
 
 	if public_inspector: public_inspector.present(self)
+	if duel_workspace != null: duel_workspace.refresh()
 	if review_actions:
 		review_actions.visible = recording != null and right_panel.visible and tabs.current_tab == 7
 		accept_button.disabled = recording == null or recording.origin == "sandbox" or sim.phase != "results"
@@ -215,4 +220,5 @@ func open_practice_workspace() -> void:
 func unapplied_draft_kinds() -> Array[String]:
 	var kinds = super.unapplied_draft_kinds()
 	if practice_panel and practice_panel.has_user_edits(): kinds.append("practice")
+	if duel_workspace and duel_workspace.panel.edited.values().has(true): kinds.append("tactical plan")
 	return kinds

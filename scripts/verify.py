@@ -91,7 +91,7 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("script-load.json", "ui-polish.json", "race-read-performance.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish-execution.json", "ui-finish-guide.json", "ui-finish-soak.json", "ui-finish-states.json", "ui-finish-populated.json", "ui-finish-details.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
+    for name in ("tactical-duel-tests.json", "duel-contracts.json", "duel-scenarios.json", "tactical-duel-ui.json", "script-load.json", "ui-polish.json", "race-read-performance.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish-execution.json", "ui-finish-guide.json", "ui-finish-soak.json", "ui-finish-states.json", "ui-finish-populated.json", "ui-finish-details.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
@@ -175,6 +175,13 @@ def main() -> int:
             for report in ["notebook-tests.json", "notebook-performance.json"]:
                 shutil.copy2(project / "reports" / report, REPORTS / report)
             notebook = require_report("notebook-tests.json")
+            for phase, script, report in [("tactical-duels", "tactical_duel_tests.gd", "tactical-duel-tests.json"), ("duel-contracts", "duel_contract_tests.gd", "duel-contracts.json"), ("duel-scenarios", "duel_scenario_runs.gd", "duel-scenarios.json")]:
+                run_phase(phase, base + ["--headless", "--script", "res://tests/" + script], env, timeout=1500 if phase == "duel-scenarios" else 360)
+                shutil.copy2(project / "reports" / report, REPORTS / report)
+            tactical = require_report("tactical-duel-tests.json")
+            duel_contracts = require_report("duel-contracts.json")
+            duel_scenarios = require_report("duel-scenarios.json")
+            tactical_ui = None
             notebook_ui = None
             replay_ui = None
             rivals_ui = None
@@ -208,6 +215,7 @@ def main() -> int:
                         raise RuntimeError("Native UI verification needs a display or xvfb-run. "
                                            "Install xvfb and xauth, or explicitly use --headless-only.")
                 try:
+                    run_phase("tactical-duel-ui", [part.replace("res://tests/ui_smoke.gd", "res://tests/tactical_duel_ui_tests.gd") for part in command], env)
                     run_phase("ui-polish", [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_polish_tests.gd") for part in command], env)
                     for name in ("observation", "analysis", "execution", "guide", "populated", "details", "states", "soak"):
                         run_phase("ui-finish-" + name, [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_finish_" + name + "_tests.gd") for part in command], env)
@@ -237,6 +245,7 @@ def main() -> int:
                     for artifact in (project / "reports").iterdir():
                         if artifact.is_file() and not artifact.name.startswith("."):
                             shutil.copy2(artifact, REPORTS / artifact.name)
+                tactical_ui = require_report("tactical-duel-ui.json")
                 polish_ui = require_report("ui-polish.json")
                 require_report("race-read-performance.json")
                 finish_observation = require_report("ui-finish-observation.json")
@@ -264,7 +273,9 @@ def main() -> int:
                 notebook_ui = require_report("notebook-ui.json")
                 rivals_ui = require_report("rivals-ui.json")
                 workspace_performance = require_report("workspace-performance.json")
-            summary = {"runner_isolation_tests": "passed (including native user data resolver)",
+            summary = {"tactical_duel_checks": tactical["checks"], "duel_contract_checks": duel_contracts["checks"],
+                       "duel_scenario_checks": duel_scenarios["checks"], "tactical_duel_ui_checks": tactical_ui["checks"] if tactical_ui else None,
+                       "runner_isolation_tests": "passed (including native user data resolver)",
                        "ui_polish_checks": polish_ui["checks"] if polish_ui else None,
                        "ui_finish_soak_checks": finish_soak["checks"] if finish_soak else None,
                        "ui_finish_states_checks": finish_states["checks"] if finish_states else None,
@@ -305,7 +316,7 @@ def main() -> int:
                        "rivals_ui_checks": rivals_ui["checks"] if rivals_ui else None,
                        "workspace_performance_checks": workspace_performance["checks"] if workspace_performance else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (polish_ui["screenshots"] + finish_details["screenshots"] + finish_observation["screenshots"] + finish_analysis["screenshots"] + finish_execution["screenshots"] + finish_guide["screenshots"] + finish_soak["screenshots"] + finish_states["screenshots"] + finish_populated["screenshots"] + finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (tactical_ui["screenshots"] + polish_ui["screenshots"] + finish_details["screenshots"] + finish_observation["screenshots"] + finish_analysis["screenshots"] + finish_execution["screenshots"] + finish_guide["screenshots"] + finish_soak["screenshots"] + finish_states["screenshots"] + finish_populated["screenshots"] + finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0
