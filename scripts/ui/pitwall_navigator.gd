@@ -61,8 +61,12 @@ func show_picker(focus: Control) -> void:
 
 func filter_views(query: String) -> void:
 	matches.clear(); results.clear()
-	var words = query.strip_edges().to_lower().split(" ", false)
-	for entry in catalog:
+	var normalized = query.strip_edges().to_lower()
+	var words = normalized.split(" ", false)
+	# An exact destination name takes precedence over incidental keyword matches.
+	# For example, Practice opens the programme view, not Session Results.
+	var exact = catalog.filter(func(entry): return not normalized.is_empty() and (str(entry[2]).to_lower() == normalized or str(entry[2]).get_slice("/", 1).strip_edges().to_lower() == normalized))
+	for entry in (exact if not exact.is_empty() else catalog):
 		var haystack = (entry[2] + " " + entry[3]).to_lower()
 		var accepts = true
 		for word in words:

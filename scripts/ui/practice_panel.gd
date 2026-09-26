@@ -5,6 +5,8 @@ signal command_requested(action: String, payload: Dictionary)
 var model: PracticeRaceSim
 var driver_id = 3
 var drafts: Dictionary = {}
+# Shared by both routes; only real user edits count, not constructed defaults.
+var edited: Dictionary = {}
 var preview: Dictionary = {}
 var driver_buttons: Array[Button] = []
 var start: Button
@@ -22,10 +24,16 @@ var evidence: Label
 var scroll: ScrollContainer
 var binding = false
 var confirmation: ConfirmationDialog
+var dashboard_host = false
 
 func configure(value: PracticeRaceSim) -> void:
 	model = value
-	for id in [3, 6]: drafts[id] = {"objective": "tyre_life", "set_id": model.cars[id].set_id, "laps": 2, "baseline": "current"}
+	for id in [3, 6]:
+		drafts[id] = {"objective": "tyre_life", "set_id": model.cars[id].set_id, "laps": 2, "baseline": "current"}
+		var driver=model.practice_driver(id)
+		if not driver.active.is_empty() and not driver.runs.is_empty():
+			var run_record=driver.runs.back()
+			drafts[id].merge({"objective":run_record.objective,"set_id":run_record.set_id,"laps":run_record.target},true)
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 6)
@@ -79,12 +87,15 @@ func choose_driver(id: int) -> void:
 
 func update_draft(key: String, value: Variant) -> void:
 	if binding: return
+	if drafts[driver_id][key] != value: edited[driver_id] = true
 	drafts[driver_id][key] = value; refresh()
 
 func submit_run() -> void:
 	if preview.is_empty() or run.disabled: return
+	var previous_runs = model.practice_driver(driver_id).runs.size()
 	command_requested.emit("practice_run", {"id": driver_id, "plan": drafts[driver_id].duplicate(true),
 		"revision": preview.revision, "time": preview.time, "key": preview.key})
+	if model.practice_driver(driver_id).runs.size() > previous_runs: edited[driver_id] = false
 	refresh()
 
 func finish_session() -> void:
@@ -105,14 +116,14 @@ func refresh() -> void:
 	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != PracticeEvidence.state_key(state, c):
 		preview = model.run_preview(driver_id, drafts[driver_id]); preview.draft = drafts[driver_id].duplicate(true)
 	for i in range(2): UI.set_active(driver_buttons[i], driver_id == [3, 6][i])
-	start.visible = model.phase == "briefing" and state.status == "available"
+	start.visible = not dashboard_host and model.phase == "briefing" and state.status == "available"
 	run.visible = model.phase == "practice"; recall.visible = run.visible
 	run.disabled = not preview.available; run.text = "Run " + c.short
 	run.tooltip_text = preview.reason if run.disabled else "Commit %s's displayed objective, set and setup. Only practice settings are applied; race ownership is unchanged." % c.short
 	recall.text = "Recall " + c.short
 	recall.disabled = d.active.is_empty() or d.active.get("returning", false) or c.pit_stage == "entry"
 	recall.tooltip_text = "Return at the next physical entry. An interrupted lap does not become a clean full-lap sample."
-	finish.visible = model.phase in ["practice", "practice_results"]
+	finish.visible = not dashboard_host and model.phase in ["practice", "practice_results"]
 	finish.text = "Return to briefing" if model.phase == "practice_results" else ("Returning cars…" if state.closed else "End practice…")
 	finish.disabled = model.phase == "practice" and state.closed
 	for i in range(c.tyre_sets.size()):
@@ -125,10 +136,22 @@ func refresh() -> void:
 	setup_summary.text = "Setup on release: wing %d / balance %d / suspension %d / cooling %d / bias %d%%" % [applied_setup.wing, applied_setup.balance, applied_setup.suspension, applied_setup.cooling, applied_setup.bias]
 	if not d.active.is_empty(): summary.text = "%s · %s · %d/%d measured laps · %s" % [c.short, c.qual_state.to_upper(), d.runs.back().samples.size(), d.runs.back().target, d.runs.back().set_id]
 	if state.status == "legacy": summary.text = c.short + " · Older weekend: no practice history. Start a new normal weekend to use optional practice."
-	forecast_text.text = "Run estimate ~%.0fs simulated (~%.0fs at %d×); session remaining %.0fs. Garage fuel load %.2f lap units, including return reserve.\n%s" % [preview.duration, preview.duration / model.speed, model.speed, preview.remaining, preview.fuel, preview.limit]
-	if not preview.available: forecast_text.text = preview.reason + "\n" + forecast_text.text
+	forecast_text.text = run_estimate_text()
 	var priors = model.forecast_parameters(driver_id).get("practice", {})
 	forecast_text.text += "\n\nForecast learning: " + ("no matching clean samples; baseline estimates." if priors.is_empty() else " / ".join(priors.keys().map(func(key): return key + ": " + priors[key].label)))
 	evidence.text = PracticeEvidence.report(state, driver_id)
 	for control in [purpose, sets, baseline]: control.disabled = not d.active.is_empty() or state.status in ["complete", "skipped", "legacy"]
 	lap_count.editable = d.active.is_empty() and state.status in ["available", "running"]
+
+func has_user_edits() -> bool:
+	return edited.values().has(true)
+
+func run_estimate_text() -> String:
+	var state=model.practice_state;var driver=model.practice_driver(driver_id)
+	if state.status in ["complete","skipped","legacy"] or model.phase not in ["briefing","practice"]:
+		return "SESSION COMPLETE · recorded evidence only. No further run budget." if state.status=="complete" else "Practice is unavailable here. Retained observations remain readable; no future run is proposed."
+	if state.closed:return "SESSION CLOSING · existing cars return physically. No new run can start."
+	if not driver.active.is_empty():
+		var record=driver.runs.back()
+		return "ACCEPTED RUN · %s · %d/%d measured laps\n%.0fs session remaining; %s. No new release is proposed." % [record.set_id,record.samples.size(),record.target,maxf(0,state.duration-model.clock),"returning to garage" if driver.active.get("returning",false) else "physical execution continues"]
+	return ("DRAFT RUN ESTIMATE" if preview.available else preview.reason)+"\n~%.0fs simulated (~%.0fs at %d×); session remaining %.0fs.\nGarage fuel %.2f lap units, including return reserve.\n%s" % [preview.duration,preview.duration/model.speed,model.speed,preview.remaining,preview.fuel,preview.limit]

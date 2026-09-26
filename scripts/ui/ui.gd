@@ -11,8 +11,14 @@ const GOOD = Color("4f795c")
 const DANGER = Color("943f32")
 const HOVER = Color("e0e7d4")
 const SELECTED = Color("d5e1c6")
-const PRIMARY = Color("345b43")
+const PRIMARY = Color("173e35")
 const ON_PRIMARY = Color("fff3d8")
+const RACE_DARK = PitwallDesign.RACE_DARK
+const RACE_DARK_2 = PitwallDesign.RACE_DARK_2
+const RACE_DARK_3 = PitwallDesign.RACE_DARK_3
+const GOLD = PitwallDesign.GOLD
+const RACE_CREAM = PitwallDesign.RACE_CREAM
+const RACE_INK = PitwallDesign.RACE_INK
 # Controls share immutable state styles; never mutate these returned resources.
 static var state_styles: Dictionary = {}
 static var style_assignments = 0
@@ -23,6 +29,26 @@ static func set_active(button: Button, active: bool, danger: bool = false) -> vo
 	if not state_styles.has(key): state_styles[key] = box(SELECTED if active else CARD, DANGER if danger else (ACCENT if active else LINE), 4, 6)
 	button.add_theme_stylebox_override("normal", state_styles[key])
 	button.set_meta("visual_state", key); style_assignments += 1
+
+# Compatibility delegates; new race components use PitwallDesign directly.
+static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
+	return PitwallDesign.race_panel(dark, padding)
+
+static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
+	return PitwallDesign.race_label(text, size, accent)
+
+static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
+	return PitwallDesign.race_button(text, callback, selected)
+
+static func race_card_state(panel: PanelContainer, state: String) -> void:
+	PitwallDesign.race_card_state(panel, state)
+
+static func resource_state(bar: ProgressBar, value: Label, risk: bool) -> void:
+	if bar.has_meta("resource_risk") and bar.get_meta("resource_risk") == risk: return
+	var key = "resource_" + str(risk)
+	if not state_styles.has(key): state_styles[key] = box(DANGER if risk else GOOD, DANGER if risk else GOOD, 2, 0)
+	bar.add_theme_stylebox_override("fill", state_styles[key]); value.add_theme_color_override("font_color", DANGER if risk else INK)
+	bar.set_meta("resource_risk", risk); style_assignments += 1
 
 static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
 	var style = box(color, border, 4, 8)

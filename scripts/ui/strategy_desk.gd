@@ -3,6 +3,8 @@ extends VBoxContainer
 ## All plan editing is local until Approve. Live controls name their driver explicitly.
 signal command_requested(action: String, payload: Dictionary)
 signal preview_changed(forecast: Dictionary)
+var timeline: RaceStrategyChart
+var timeline_toggle: Button
 var model: StrategyRaceSim
 var driver_id = 3
 var drafts: Dictionary = {}
@@ -35,6 +37,7 @@ var box_now: Button
 var extend_draft: Button
 var action_buttons: Array[Button] = []
 var last_refresh = -100.0
+var compact_host = false
 var topic = 0
 var commit_bar: VBoxContainer
 var plan_actions: VBoxContainer
@@ -106,6 +109,8 @@ func _ready() -> void:
 	extend_draft.tooltip_text = "Put an available extension into an unapplied draft. Nothing is ordered until approval."
 	var caveat = UI.paragraph("Estimates, not promises. Current conditions held constant; future stops and weather unknown."); caveat.add_theme_font_size_override("font_size", 11); compare_panel.add_child(caveat)
 	compare_panel.add_child(UI.button("Why / assumptions", func(): UI.notify(self, "Strategy context · " + model.cars[driver_id].short, issue_text.tooltip_text + "\n\n" + "\n".join(preview.get("assumptions", [])) + "\n\n" + WeekendScenarios.briefing(model))))
+	timeline_toggle=UI.button("Stint timeline ▸",_toggle_timeline);compare_panel.add_child(timeline_toggle)
+	timeline=RaceStrategyChart.new();compare_panel.add_child(timeline);timeline.hide()
 	load_current(true); show_topic(0)
 
 func stack_field(parent: Node, text: String, control: Control) -> void:
@@ -115,7 +120,7 @@ func stack_field(parent: Node, text: String, control: Control) -> void:
 
 func show_topic(index: int) -> void:
 	topic = index
-	plan_status.visible = index != 1
+	plan_status.visible = index != 1 and not compact_host
 	for i in range(topic_panels.size()):
 		topic_panels[i].visible = i == index
 		UI.set_active(topic_buttons[i], i == index)
@@ -241,7 +246,8 @@ func refresh(force: bool = false) -> void:
 		descriptions.append(("Acknowledged · " if card.acknowledged else "") + card.title + "\n" + card.evidence + "\n" + card.fallback)
 	issue_text.tooltip_text = "\n\n".join(descriptions)
 	issue_text.text = "" if current_cards.is_empty() else ("Acknowledged · " if current_cards[0].acknowledged else "") + current_cards[0].title + "\nIgnored: " + current_cards[0].fallback
-	issue_text.visible = not descriptions.is_empty()
+	issue_text.visible = not compact_host and not descriptions.is_empty()
+	if timeline and timeline.visible: timeline.present(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set","")))
 	var pit = preview.pit
 	rejoin.text = "%s · rejoin estimate P%d–P%d
 Net pit loss %.1f–%.1fs · box wait ~%.1fs
@@ -276,3 +282,8 @@ func has_user_edits() -> bool:
 	for id in edited:
 		if edited[id] and dirty.get(id, false): return true
 	return false
+
+func _toggle_timeline() -> void:
+	timeline.visible=not timeline.visible
+	timeline_toggle.text="Stint timeline ▾" if timeline.visible else "Stint timeline ▸"
+	if timeline.visible: timeline.present(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set","")))

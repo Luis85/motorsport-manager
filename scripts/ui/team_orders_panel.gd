@@ -3,6 +3,11 @@ extends VBoxContainer
 ## Stable native controls: changing a selection is a draft, never a team instruction.
 signal command_requested(action: String, payload: Dictionary)
 signal watch_requested(driver_id: int)
+signal plan_requested(driver_id: int)
+var service_view: RacePitServicePanel
+var intent_timeline: RaceTeamIntentTimeline
+var intent_detail: Label
+var cancel_stop_buttons: Dictionary = {}
 var sim: StrategyRaceSim
 var topics: OptionButton
 var topic_bar: HBoxContainer
@@ -25,6 +30,8 @@ var watch_buttons: Dictionary = {}
 var public_stops: Label
 var revision = 0
 var rendered_orders: Dictionary = {}
+var driver_summaries: Dictionary = {}
+var people_summary: HBoxContainer
 
 func configure(value: StrategyRaceSim) -> void:
 	sim = value
@@ -35,17 +42,23 @@ func text(value: String, color: Color = UI.MUTED) -> Label:
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 7)
-	topics = UI.option(["Cooperate", "Battles", "Shared pit box"], show_topic)
+	topics = UI.option(["Cooperate", "Battles", "Shared pit box", "Accepted plans"], show_topic)
 	add_child(topics); topics.visible = false
 	topic_bar = UI.hbox(self)
-	for i in range(3):
-		var button = UI.button(["Cooperate", "Battles", "Pit box"][i], func(): show_topic(i)); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for i in range(4):
+		var button = UI.button(["Cooperate", "Battles", "Pit box", "Plans"][i], func(): show_topic(i)); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		topic_bar.add_child(button); topic_buttons.append(button); StrategyDesk.compact_button(button)
 	StrategyDesk.compact_button(topics); topics.add_theme_font_size_override("font_size", 12)
-	for i in range(3):
+	for i in range(4):
 		var page = UI.vbox(self); page.add_theme_constant_override("separation", 7); pages.append(page)
 	commit_bar = UI.vbox(self)
-	for i in range(3): commit_pages.append(UI.vbox(commit_bar))
+	for i in range(4): commit_pages.append(UI.vbox(commit_bar))
+	var people=UI.hbox(self);people_summary=people;move_child(people,0)
+	for id in [3,6]:
+		var panel=PitwallDesign.race_panel(false,8);panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;people.add_child(panel)
+		var body=UI.vbox(panel)
+		body.add_child(UI.label(sim.cars[id].short+" / "+sim.cars[id].name.get_slice(" ",1),14,UI.INK))
+		var value=UI.paragraph("");body.add_child(value);driver_summaries[id]=value
 	var page = pages[0]
 	actor = UI.option(["MER ahead · MOR following", "MOR ahead · MER following"], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
 	kind = UI.option(["Hold relative team position", "Allow the teammate through"], func(_index): refresh()); page.add_child(kind); StrategyDesk.compact_button(kind); kind.add_theme_font_size_override("font_size", 12)
@@ -79,6 +92,18 @@ func _ready() -> void:
 	priority_status = text(""); page.add_child(priority_status)
 	cancel_buttons.pit_priority = UI.button("Cancel pit priority", func(): cancel("pit_priority")); commit_pages[2].add_child(cancel_buttons.pit_priority); StrategyDesk.compact_button(cancel_buttons.pit_priority)
 	
+	service_view = RacePitServicePanel.new(); service_view.configure(sim); pages[2].add_child(service_view)
+	pages[2].move_child(service_view,0)
+	var cancel_row = UI.hbox(commit_pages[2]); commit_pages[2].move_child(cancel_row,0)
+	for id in [3,6]:
+		var button = UI.button("Cancel " + sim.cars[id].short + " stop",func():command_requested.emit("cancel_pit",{"id":id}))
+		cancel_row.add_child(button); StrategyDesk.compact_button(button); cancel_stop_buttons[id] = button
+	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(sim); pages[3].add_child(intent_timeline)
+	intent_detail = UI.paragraph(""); pages[3].add_child(intent_detail)
+	intent_timeline.selection_changed.connect(func(value):intent_detail.text=value)
+	pages[3].add_child(UI.paragraph("Pit windows authorize existing engineer discretion; outlined pace/engine bars are already-issued bounded overrides. Current-distance lines are measured. Neither selecting nor inspecting a bar issues a command."))
+	var edit_row = UI.hbox(commit_pages[3])
+	for id in [3,6]: edit_row.add_child(UI.button("Review " + sim.cars[id].short + " plan",func():plan_requested.emit(id)))
 	show_topic(0); refresh()
 
 func show_topic(index: int) -> void:
@@ -86,6 +111,7 @@ func show_topic(index: int) -> void:
 		pages[i].visible = i == index; commit_pages[i].visible = i == index
 		UI.set_active(topic_buttons[i], i == index)
 	if topics: topics.select(index)
+	if people_summary: people_summary.visible = index not in [2,3]
 	refresh()
 
 func draft() -> Dictionary:
@@ -105,6 +131,16 @@ func status_text(record: Dictionary, empty: String) -> String:
 
 func refresh() -> void:
 	if not is_node_ready() or sim == null or apply_button == null: return
+	for id in driver_summaries:
+		var c=sim.cars[id];var policy=sim.policy(id)
+		driver_summaries[id].text="%s\nPit owner: %s\n%s" % [c.intent,policy.owners.pit,"In pit lane" if c.route=="pit" else "Pit order accepted" if c.pit_order else "No pit order"]
+	if service_view: service_view.present()
+	for id in cancel_stop_buttons:
+		var c = sim.cars[id]
+		cancel_stop_buttons[id].disabled = sim.phase != "race" or c.dnf or c.finished or not c.pit_order or c.route != "track"
+		cancel_stop_buttons[id].tooltip_text = "Cancel %s's accepted stop before entry only. After entry, routing and service stay physically committed." % c.name
+	if intent_timeline:
+		intent_timeline.present(); intent_detail.text = intent_timeline.selected_text()
 	revision = int(sim.team_state.revision)
 	rendered_orders = {"track_order": sim.team_state.track_order.duplicate(true), "pit_priority": sim.team_state.pit_priority.duplicate(true)}
 	var proposed = draft(); var error = TeamOrders.validate(sim, proposed)

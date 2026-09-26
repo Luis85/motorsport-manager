@@ -4,6 +4,10 @@ Current native implementation: **0.14.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
+| [Race-weekend engagement research](design/race-weekend-engagement-polish.md) | Fourteen primary sources, product review and implemented observational race-reading design |
+| [Engagement polish verification](ui/race-weekend/polish-verification.md) | CI diagnosis, regression-first repairs, 136 targeted native checks, player routes and validation boundaries |
+| [Race-weekend UI migration](ui/race-weekend/README.md) | Integrated components, decision lifecycle, programme/results workspaces, screen contracts and code-delivery audit |
+| [UI migration verification](ui/race-weekend/verification-completion.md) | Executed native input, layout, regression and script-load evidence; explicit platform boundaries |
 | [Circuit notebook and challenge history](race-weekend-notebook.md) | Current 0.14 opt-in observations, guarded personal notes, inherited authoring and direct-to-main integration |
 | [0.14 verification](notebook-verification.md) | Fresh baseline/final evidence, exact source, native inputs and bounded history cost |
 | [Authored replay scenarios](race-weekend-scenario-authoring.md) | Retained 0.13 frozen challenge briefs, observed goals, native authoring and strict result validation |

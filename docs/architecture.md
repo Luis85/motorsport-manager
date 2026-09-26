@@ -97,3 +97,12 @@ Current implementation deliberately uses dictionaries at serialization boundarie
 `TrackEdit` implements transactional planar selection operations; `TrackSketch` owns connected transient strokes and compiles a candidate authoring document. Neither accesses UI or app state. The editor owns preview/apply/discard and commits history once.
 
 `RacecraftPanel` owns per-driver setup drafts, stable input controls and the wheel dashboard. `SurfaceLab` observes authoritative cells. `ContextGuide` owns UI navigation/highlighting and local progress only. Topic selectors and expandable details change presentation without issuing simulation commands.
+
+
+## Extracted race-weekend presentation (PR #12 follow-through)
+
+The existing session inheritance remains the orchestration/command boundary. `RaceSessionHeader`, `RaceTimingTower` and `RaceObservationWorkspace` own the actual constructed controls; legacy host fields alias those components to retain integrations. `RaceDecisionViewModel` freezes displayed evidence, `RaceDecisionQueue` owns attention slots, and `RaceDecisionDrawer` owns review/confirmation/acknowledgement/execution presentation. Commands still return to the host/domain once.
+
+Full `RaceAnalysisWorkspace`, `RacePracticeWorkspace` and `RaceResultsWorkspace` reuse existing inspector/results controls and draft references rather than duplicating model state. `RaceInspectorPage` preserves the scrolling-content/fixed-action and private-rival masking boundary. Recorded metrics, radio pages, stint intervals and journal records are separate renderers with change-only presentation caches. The unused global snapshot prototype is removed; source-of-truth remains the simulation and existing immutable forecast payloads.
+
+No domain/service/save schema changes are needed for this migration. See `docs/ui/race-weekend/component-catalog.md` for the integrated file map.

@@ -3,6 +3,7 @@ extends VBoxContainer
 ## Stable native controls; all calculations are observational and commands name their own driver.
 signal command_requested(action: String, payload: Dictionary)
 signal surface_requested
+signal sector_requested(index: int)
 var model: WeatherRaceSim
 var driver_id = 3
 var advice: Dictionary = {}
@@ -15,9 +16,11 @@ var box: Button
 var hold: Button
 var selectors: Array[Button] = []
 var sector_labels: Array[Label] = []
+var sector_buttons: Array[Button] = []
 var navigation_bar: HBoxContainer
 var commit_bar: HBoxContainer
 var refresh_count = 0
+var outlook_chart: RaceMetricChart
 
 func configure(value: WeatherRaceSim) -> void: model = value
 
@@ -32,15 +35,23 @@ func _ready() -> void:
 	hold = UI.button("Keep plan", submit_hold); actions.add_child(hold)
 	var surface_button = UI.button("Surface map", func(): surface_requested.emit()); actions.add_child(surface_button)
 	for button in [box, hold, surface_button]: StrategyDesk.compact_button(button)
+	add_child(UI.label("OBSERVED NOW",11,UI.ACCENT))
 	summary = UI.paragraph(""); summary.add_theme_font_size_override("font_size", 12); add_child(summary)
+	add_child(UI.label("TRACK BY SECTOR · INSPECT",11,UI.ACCENT))
 	var sectors = HBoxContainer.new(); add_child(sectors)
 	for i in range(3):
 		var label = UI.label("", 11, UI.ACCENT); label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sectors.add_child(label); sector_labels.append(label)
+		var cell=UI.vbox(sectors);cell.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		cell.add_child(label); sector_labels.append(label)
+		var inspect=UI.button("Inspect S%d" % (i+1),func():sector_requested.emit(i));StrategyDesk.compact_button(inspect);cell.add_child(inspect);sector_buttons.append(inspect)
+	add_child(UI.label("PUBLIC OUTLOOK · UNCERTAIN",11,UI.ACCENT))
 	outlook_label = UI.paragraph(""); outlook_label.add_theme_font_size_override("font_size", 12); add_child(outlook_label)
+	outlook_chart = RaceMetricChart.new(); outlook_chart.custom_minimum_size.y = 130; add_child(outlook_chart)
 	cases_label = UI.paragraph(""); cases_label.add_theme_font_size_override("font_size", 11); add_child(cases_label)
+	add_child(UI.label("AVAILABLE CHOICES · ESTIMATES",11,UI.ACCENT))
 	for i in range(3):
-		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size", 12); add_child(label); options.append(label)
+		var surface=PitwallDesign.race_panel(false,8);add_child(surface)
+		var label = UI.paragraph(""); label.add_theme_font_size_override("font_size",12);surface.add_child(label);options.append(label)
 	limits = UI.paragraph("", UI.MUTED); limits.add_theme_font_size_override("font_size", 11); limits.visible = false; add_child(limits)
 	add_child(UI.button("Forecast assumptions", func(): UI.notify(self, "Weather forecast limits", limits.text)))
 	refresh()
@@ -85,6 +96,8 @@ func refresh() -> void:
 	outlook_label.text = "%s · %s\n%s\nWettest line point %.0f%%; off-line peak %.0f%%. Rainfall is not surface grip." % [outlook.trend.capitalize(), outlook.confidence, outlook.message, observed.peak * 100, observed.off_line_peak * 100]
 	if not outlook.arrival.is_empty(): outlook_label.text += "\nPossible rain window: %.0f–%.0f simulated seconds (~%.0f–%.0fs at %d×); unknown duration." % [outlook.arrival.low, outlook.arrival.high, outlook.arrival.low / model.speed, outlook.arrival.high / model.speed, model.speed]
 	cases_label.text = "STRESS CASES · %.1f-lap horizon%s\nLine water after ~%.0fs: drier %.0f%% / trend %.0f%% / wetter %.0f%%. Not probabilities." % [advice.horizon_laps, " (partial race)" if advice.partial_horizon else "", outlook.horizon_seconds, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100]
+	if outlook_chart:
+		outlook_chart.present_cases("Now / independent stress cases", ["Now", "Drier", "Trend", "Wetter"], [observed.mean * 100, outlook.cases[0].water * 100, outlook.cases[1].water * 100, outlook.cases[2].water * 100])
 	for i in range(3):
 		options[i].visible = i < advice.options.size()
 		if not options[i].visible: continue

@@ -17,6 +17,8 @@ var strategy_navigation: HBoxContainer
 var practice_report_stamp = -1
 var rivals_button: Button
 var public_inspector: PublicRivalInspector
+var practice_workspace: RacePracticeWorkspace
+var practice_dashboard_button: Button
 
 func _ready() -> void:
 	super._ready()
@@ -52,7 +54,21 @@ func _ready() -> void:
 	rivals_button.tooltip_text = "Read public tendencies and actual pit entries. No rival's private plan, fuel, condition or scores are exposed."
 	navigator.catalog.append([8, 1, "Team / Rival field", "rivals profiles protector undercutter conservator adaptive observed tendencies"])
 	guide.steps.append({"title": "Read a rival, not a secret plan", "body": "Team / Battles opens the rival field. Profiles are tendencies, not guaranteed stop laps. Compare your own options and watch actual pit entries. A safe wait, an early stop and a later tyre offset can each be sensible. Lower risk with existing racecraft or resource intents; no encouragement meter is required.", "target": func(): return rivals_button, "reveal": func(): open_topic(8); team_panel.show_topic(1)})
+	practice_workspace = RacePracticeWorkspace.new(); practice_workspace.configure(sim); add_child(practice_workspace);move_child(practice_workspace,race_workspace.get_index()+1); practice_workspace.hide()
+	for id in practice_workspace.panels:
+		practice_workspace.panels[id].drafts=practice_panel.drafts
+		practice_workspace.panels[id].edited=practice_panel.edited
+		practice_workspace.panels[id].choose_driver(id)
+	for step in guide.steps:
+		if step.title == "Learn before spending your best set":
+			step.target = func(): return practice_workspace.panels[3]
+			step.reveal = open_practice_workspace
+	practice_workspace.command_requested.connect(targeted_command)
+	practice_workspace.close_requested.connect(close_session_workspace)
+	practice_dashboard_button = UI.button("Dashboard",open_practice_workspace); strategy_navigation.add_child(practice_dashboard_button)
+	PitwallDesign.scale_controls(practice_workspace,text_scale); PitwallDesign.scale_controls(practice_dashboard_button,text_scale)
 	build_replay_actions()
+	RaceAccessibility.describe(self)
 	wire_control_help(practice_panel); wire_control_help(rivals_button); refresh()
 	if sim.phase in ["practice", "practice_results"]: open_practice(3)
 
@@ -63,7 +79,7 @@ func group_for(index: int) -> String:
 func refresh_navigation() -> void:
 	super.refresh_navigation()
 	if strategy_navigation == null: return
-	var in_strategy = tabs.current_tab in [6, practice_page_index]
+	var in_strategy = tabs.current_tab in [6, practice_page_index, decision_page_index]
 	strategy_navigation.visible = in_strategy
 	if in_strategy: context_navigation.hide()
 	for i in range(strategy_desk.topic_buttons.size()):
@@ -92,6 +108,7 @@ func refresh() -> void:
 		if not error.is_empty(): feedback("Sandbox autosave failed: " + error)
 	if practice_panel == null: return
 	var during = sim.phase in ["practice", "practice_results"]
+	if session_workspace_button and during: session_workspace_button.show(); session_workspace_button.text = "Practice dashboard"
 	practice_button.visible = sim.phase == "briefing" and sim.practice_state.status == "available"
 	refresh_navigation()
 	if sim.phase == "practice":
@@ -183,3 +200,19 @@ func save_checkpoint() -> void:
 		var error = ReplayStorage.save_session(App.sandbox_path, recording)
 		show_reading("Save sandbox", "Experiment saved in a separate slot. The original weekend is unchanged." if error.is_empty() else error, weekend_menu)
 	else: super.save_checkpoint()
+
+func open_session_workspace() -> void:
+	if sim.phase in ["practice","practice_results"]: open_practice_workspace()
+	else: super.open_session_workspace()
+
+func open_practice_workspace() -> void:
+	if practice_workspace == null: return
+	var invoker=get_viewport().gui_get_focus_owner()
+	close_session_workspace();full_invoker=invoker; full_workspace = practice_workspace
+	practice_workspace.show(); practice_workspace.present(); adapt_layout()
+	PitwallDesign.focus_later(practice_workspace.panels[3].objective_buttons.tyre_life)
+
+func unapplied_draft_kinds() -> Array[String]:
+	var kinds = super.unapplied_draft_kinds()
+	if practice_panel and practice_panel.has_user_edits(): kinds.append("practice")
+	return kinds
