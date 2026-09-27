@@ -105,7 +105,7 @@ func run() -> void:
 	check(model.last_error.contains("stale"), "Stale native Box activation explains why it was rejected")
 	model.paused = true
 	check(app.save_weekend().is_empty(), "Integrated version-five weekend saves through App")
-	check(app.load_weekend().is_empty() and app.weekend is StrategyRaceSim, "App restores the strategy-aware simulation, not only the legacy car state")
+	check(app.load_weekend().is_empty() and app.weekend is RaceSim and app.weekend.has_mechanic("strategy"), "App restores the strategy-aware simulation, not only the legacy car state")
 	check(app.weekend.strategy_state.records.any(func(record): return record.driver_id in [3,6]), "JSON-restored team journal remains visible to native driver filters")
 	for car in model.cars: model.retire(car, "UI result fixture")
 	model.paused = false; model.step(); view.tabs.current_tab = 7; view.refresh()

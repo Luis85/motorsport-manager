@@ -98,7 +98,9 @@ func run():
 		if i >= 3: read_cost.append((Time.get_ticks_usec() - started) / 1000.0)
 		if not measured.ok: check(false, "Populated benchmark notebook must validate")
 	read_cost.sort()
-	var performance = {"cpu": OS.get_processor_name(), "engine": Engine.get_version_info().string, "entries": CircuitNotebook.MAX_ENTRIES, "note_characters_each": NotebookEntry.MAX_NOTE,
+	var samples_valid = read_cost.size() == 20 and read_cost.all(func(value): return is_finite(value) and value >= 0.0)
+	check(samples_valid, "Notebook diagnostics contain twenty finite non-negative measurements")
+	var performance = {"passed": samples_valid, "cpu": OS.get_processor_name(), "engine": Engine.get_version_info().string, "entries": CircuitNotebook.MAX_ENTRIES, "note_characters_each": NotebookEntry.MAX_NOTE,
 		"bytes": FileAccess.get_file_as_bytes(full_path).size(), "samples": read_cost.size(), "median_ms": read_cost[read_cost.size()/2], "p95_ms": read_cost[int(ceil(read_cost.size()*0.95))-1],
 		"scope":"Synthetic full compact notebook; synchronous disk read plus validation. Three warm-ups, twenty serial samples. Not a baseline speedup, UI frame time or maximum 16MB replay measurement."}
 	Storage.write_json("res://reports/notebook-performance.json", performance)

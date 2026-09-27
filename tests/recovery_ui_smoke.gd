@@ -93,7 +93,7 @@ func run() -> void:
 	check(not model.paused and model.speed == 8, "Recovery guide never pauses or slows the race")
 	view.guide.dismiss()
 	check(app.save_weekend().is_empty() and app.load_weekend().is_empty(), "Application saves and reloads a live v8 recovery weekend")
-	check(app.weekend is RecoveryRaceSim and app.weekend.reliability(6).repair_only and app.weekend.control_state.state == "ending", "Application restores recovery transaction and exact sporting phase")
+	check(app.weekend is RaceSim and app.weekend.has_mechanic("recovery") and app.weekend.reliability(6).repair_only and app.weekend.control_state.state == "ending", "Application restores recovery transaction and exact sporting phase")
 	view.tabs.current_tab = 7; view.refresh(); await capture("debrief")
 	var text = view.debrief_text.text
 	for i in range(25): view.refresh()

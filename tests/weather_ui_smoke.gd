@@ -86,7 +86,7 @@ func run() -> void:
 	check(not model.paused and model.speed == 8, "Weather onboarding never pauses or slows the simulation")
 	view.guide.dismiss()
 	check(app.save_weekend().is_empty(), "Application saves version-seven weather weekend")
-	check(app.load_weekend().is_empty() and app.weekend is WeatherRaceSim and app.weekend.cars[6].pit_order, "Application restores weather identity, ownership and physical pending orders")
+	check(app.load_weekend().is_empty() and app.weekend is RaceSim and app.weekend.has_mechanic("weather") and app.weekend.cars[6].pit_order, "Application restores weather identity, ownership and physical pending orders")
 	view.tabs.current_tab = 7; view.refresh(); await capture("debrief")
 	check("Weather decision evidence" in view.debrief_text.text and "not a measured alternative" in view.debrief_text.text, "Native debrief separates observed conditions from estimated alternate gains")
 	var report = {"passed":failures.is_empty(),"checks":checks,"failures":failures,"screenshots":screenshots}
