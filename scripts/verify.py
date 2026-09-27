@@ -14,6 +14,8 @@ import tempfile
 import time
 import uuid
 
+from verification_process import execute_process
+
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
 ERROR = re.compile(r"SCRIPT ERROR:|Parse Error:|(?:^|\n)ERROR:")
@@ -54,9 +56,7 @@ def run_phase(name: str, command: list[str], env: dict[str, str], timeout: int =
     print(f"[{name}] {' '.join(command)}", flush=True)
     started = time.monotonic()
     try:
-        result = subprocess.run(command, cwd=ROOT, env=env, text=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                timeout=timeout, check=False)
+        result = execute_process(command, cwd=ROOT, env=env, timeout=timeout)
     except subprocess.TimeoutExpired as exc:
         output = exc.stdout or b""
         if isinstance(output, bytes):
