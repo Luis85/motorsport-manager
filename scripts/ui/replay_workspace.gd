@@ -114,7 +114,7 @@ func start_sandbox() -> void:
 	var record = RaceRecord.new(); record.attach(sim, "sandbox", parent)
 	mount_sandbox(sim, record)
 
-func mount_sandbox(sim: PracticeRaceSim, record: RaceRecord) -> void:
+func mount_sandbox(sim: RaceSim, record: RaceRecord) -> void:
 	playing = false; sandbox_record = record; viewer.hide()
 	sandbox_shell = UI.vbox(self, true)
 	if record.parent.has("scenario"):

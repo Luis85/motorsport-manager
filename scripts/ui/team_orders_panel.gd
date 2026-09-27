@@ -8,7 +8,7 @@ var service_view: RacePitServicePanel
 var intent_timeline: RaceTeamIntentTimeline
 var intent_detail: Label
 var cancel_stop_buttons: Dictionary = {}
-var sim: StrategyRaceSim
+var sim: RaceSim
 var topics: OptionButton
 var topic_bar: HBoxContainer
 var commit_bar: VBoxContainer
@@ -33,7 +33,7 @@ var rendered_orders: Dictionary = {}
 var driver_summaries: Dictionary = {}
 var people_summary: HBoxContainer
 
-func configure(value: StrategyRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	sim = value
 
 func text(value: String, color: Color = UI.MUTED) -> Label:

@@ -1,7 +1,7 @@
 class_name StrategyWeekendView
 extends WeekendView
 ## A playable strategy surface around the existing native pit wall, not another simulation.
-var strategy_model: StrategyRaceSim
+var strategy_model: RaceSim
 var strategy_desk: StrategyDesk
 var rejoin_overlay: RejoinOverlay
 var forecast_cache: Dictionary = {}
@@ -15,7 +15,7 @@ var team_summary_label: Label
 
 func _ready() -> void:
 	super._ready()
-	strategy_model = sim as StrategyRaceSim
+	strategy_model = sim as RaceSim
 	if strategy_model == null: return
 	decision_strip.hide()
 	canvas.custom_minimum_size.y = 170

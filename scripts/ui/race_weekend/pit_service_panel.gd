@@ -2,7 +2,7 @@ class_name RacePitServicePanel
 extends VBoxContainer
 ## Read-only presentation of accepted orders and recorded physical pit visits.
 ## No queue forecast, progress tween, wheel timer, or command executor lives here.
-var model: StrategyRaceSim
+var model: RaceSim
 var cards: Dictionary = {}
 var record_index = 0
 var last_record_id = ""
@@ -10,7 +10,7 @@ var entries: Dictionary = {}
 var visits: Dictionary = {}
 var commands: Dictionary = {}
 
-func configure(value: StrategyRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	model = value
 	record_index = 0; last_record_id = ""
 	entries.clear(); visits.clear(); commands.clear()
@@ -60,7 +60,7 @@ func describe(id: int) -> Dictionary:
 	var c = model.cars[id]; var policy = model.policy(id)
 	if model.phase not in ["race", "results"]:
 		return {"stage":"NOT APPLICABLE", "text":"Race pit service is not active in this session. Garage fitting and qualifying/practice pit transit are not race pit visits.", "remaining":-1.0,"duration":0.0,"exit_id":"","visit_seconds":-1.0}
-	var job: Dictionary = model.reliability(id).service if model is RecoveryRaceSim else {}
+	var job: Dictionary = model.reliability(id).service if (model is RaceSim and model.has_mechanic("recovery")) else {}
 	var visit = visits.get(id, {})
 	var recent_command = commands.get(id, {})
 	var stage = "NO STOP"

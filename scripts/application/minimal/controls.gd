@@ -2,10 +2,10 @@ class_name MinimalRaceControls
 extends RefCounted
 ## Small command adapter. Reads are pure; only explicit player actions issue orders.
 ## Every mutation goes through the existing recorded simulation command boundary.
-var sim: PracticeRaceSim
+var sim: RaceSim
 var message = ""
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	sim = value
 
 func owned(id: int) -> bool:

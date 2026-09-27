@@ -108,7 +108,7 @@ func _ready() -> void:
 	navigation.move_child(messages_button, find_button.get_index())
 	PitwallDesign.linear_focus([watch_button] + group_buttons.values() + [messages_button, find_button])
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
-	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
+	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure((sim is RaceSim and sim.has_mechanic("weather")), text_scale, (sim is RaceSim and sim.has_mechanic("recovery")))
 	navigator.destination_requested.connect(open_destination)
 	navigator.catalog.append([8, 2, "Team / Pit service", "accepted approach entry queue frozen service actual exit cancel stop"])
 	navigator.catalog.append([8, 3, "Team / Accepted plans", "shared windows bounded pace fuel engine override timeline"])

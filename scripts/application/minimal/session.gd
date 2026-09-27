@@ -7,7 +7,7 @@ var query: MinimalWeekendQuery
 var visual_source: RaceVisualPort
 var runner: RaceSessionRunner
 
-func _init(simulation: PracticeRaceSim) -> void:
+func _init(simulation: RaceSim) -> void:
 	controls.configure(simulation)
 	query = MinimalWeekendQuery.new(simulation)
 	visual_source = RaceVisualSource.new(simulation)

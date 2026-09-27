@@ -2,7 +2,7 @@ class_name RaceContestReadModel
 extends RefCounted
 ## Pure, observed battle state shared by the canvas and race reading.
 
-static func observed_contest(sim: StrategyRaceSim, id: int) -> Dictionary:
+static func observed_contest(sim: RaceSim, id: int) -> Dictionary:
 	# Presentation-only: never infer a contest from screen-space proximity or RNG.
 	if sim.phase != "race" or id < 0 or id >= sim.cars.size(): return {}
 	var record: Dictionary = sim.battle_state.drivers[id]
@@ -13,7 +13,7 @@ static func observed_contest(sim: StrategyRaceSim, id: int) -> Dictionary:
 				record = candidate; break
 	return record.duplicate(true)
 
-static func _active_pair(sim: StrategyRaceSim, record: Dictionary) -> bool:
+static func _active_pair(sim: RaceSim, record: Dictionary) -> bool:
 	if record.is_empty() or record.phase in ["idle", "recover", "resolve"]: return false
 	var id = int(record.driver_id); var target = int(record.target_id)
 	if id < 0 or target < 0 or id >= sim.cars.size() or target >= sim.cars.size(): return false

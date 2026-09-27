@@ -5,7 +5,7 @@ extends VBoxContainer
 signal command_requested(action: String, payload: Dictionary)
 signal refresh_requested(id: int)
 signal detail_requested(id: int)
-var model: StrategyRaceSim
+var model: RaceSim
 var snapshot: Dictionary = {}
 var stage = "REVIEW"
 var pending_action = ""
@@ -34,7 +34,7 @@ var receipts: Dictionary = {}
 var receipt: Dictionary = {}
 var submit_sequence = -1
 
-func configure(value: StrategyRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	if model != value: receipts.clear(); receipt.clear()
 	model = value
 

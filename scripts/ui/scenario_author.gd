@@ -2,13 +2,13 @@ class_name ScenarioAuthor
 extends ConfirmationDialog
 ## Draft a challenge around a frozen state; no simulation commands are available here.
 signal scenario_ready(data: Dictionary)
-var source_sim: PracticeRaceSim
+var source_sim: RaceSim
 var lineage: Dictionary
 var fields: Dictionary = {}
 var goal: OptionButton
 var notice: Label
 
-func configure(sim: PracticeRaceSim, parent: Dictionary, existing: Dictionary = {}) -> void:
+func configure(sim: RaceSim, parent: Dictionary, existing: Dictionary = {}) -> void:
 	source_sim = sim; lineage = parent.duplicate(true)
 	title = "Author a scenario · frozen sandbox state"
 	ok_button_text = "Export scenario…"; cancel_button_text = "Cancel draft"; dialog_hide_on_ok = false

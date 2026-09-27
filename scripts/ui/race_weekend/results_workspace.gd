@@ -55,11 +55,11 @@ func _ready() -> void:
 	narrative = UI.paragraph(""); stint_body.add_child(narrative)
 	var explanation = UI.paragraph("Measured consequences remain separate from estimates. Open the debrief for accepted orders, estimated losses at the time of the call, and actual pit visits. Experiments cannot replace the original result.")
 	pages[3].add_child(explanation)
-	if model is StrategyRaceSim:
+	if (model is RaceSim and model.has_mechanic("strategy")):
 		journal=RaceJournalView.new();journal.configure(model);journal.size_flags_vertical=Control.SIZE_EXPAND_FILL;pages[3].add_child(journal)
 	var deep = UI.hbox(pages[3])
 	for label in [["Open debrief","debrief"],["Circuit notebook","notebook"],["Replay / sandbox","replay"]]:
-		if label[1] in ["notebook","replay"] and not model is PracticeRaceSim:continue
+		if label[1] in ["notebook","replay"] and not (model is RaceSim and model.has_mechanic("practice")):continue
 		deep.add_child(UI.button(label[0],func(): action_requested.emit(label[1])))
 	var actions = UI.hbox(self)
 	for label in [["Export evidence","export"],["Next session / weekend","next"]]:
@@ -133,7 +133,7 @@ func lap_records(id: int) -> Array:
 	if model.phase == "qualifying_results": return c.qual_history
 	if model.phase == "practice_results":
 		var records: Array = []
-		if model is PracticeRaceSim:
+		if (model is RaceSim and model.has_mechanic("practice")):
 			for run in model.practice_driver(id).runs:
 				for i in range(run.samples.size()):
 					var sample = run.samples[i].duplicate(true)
@@ -162,7 +162,7 @@ func refresh_pit_visits() -> void:
 	if pit_visit_selector==null:return
 	pit_visit_selector.visible=model.phase=="results"
 	pit_visit_detail.visible=pit_visit_selector.visible;stint_detail.visible=pit_visit_selector.visible
-	if not model is StrategyRaceSim or model.phase!="results":return
+	if not (model is RaceSim and model.has_mechanic("strategy")) or model.phase!="results":return
 	var records=model.strategy_state.records
 	var next=[records.size(),records.back().get("id","") if not records.is_empty() else "",model.phase]
 	if next==visit_stamp:return

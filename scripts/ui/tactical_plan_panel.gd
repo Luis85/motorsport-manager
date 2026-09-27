@@ -4,7 +4,7 @@ extends VBoxContainer
 signal command_requested(action: String, payload: Dictionary)
 signal driver_selected(id: int)
 signal reading_requested(title: String, text: String, invoker: Control)
-var model: PracticeRaceSim
+var model: RaceSim
 var driver_id = 3
 var text_scale = 1.0
 var drafts: Dictionary = {}
@@ -56,7 +56,7 @@ var pending: Dictionary = {}
 var notice = ""
 var reveal_serial = 0
 
-func configure(sim: PracticeRaceSim) -> void: model = sim
+func configure(sim: RaceSim) -> void: model = sim
 
 func field(title: String, control: Control, parent: Node = null) -> void:
 	var container = parent if parent != null else plan_body

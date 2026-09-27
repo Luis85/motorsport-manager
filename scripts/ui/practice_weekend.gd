@@ -23,7 +23,7 @@ var duel_workspace: DuelWorkspace
 
 func _ready() -> void:
 	super._ready()
-	if not sim is PracticeRaceSim: return
+	if not (sim is RaceSim and sim.has_mechanic("practice")): return
 	detail_picker.add_item("Practice")
 	practice_panel = PracticePanel.new(); practice_panel.configure(sim); tabs.add_child(practice_panel)
 	practice_page_index = tabs.get_tab_count() - 1

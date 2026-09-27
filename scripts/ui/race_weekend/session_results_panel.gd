@@ -41,7 +41,7 @@ static func presentation(sim: RaceSim) -> Dictionary:
 			text = [str(i + 1) if valid else "—", car.short, RaceSim.format_time(car.qual_best), gap, str(car.qual_laps), "TIMED" if valid else "NO TIME"]
 		elif mode == "practice":
 			var samples: Array = []; var runs: Array = []
-			if sim is PracticeRaceSim: runs = sim.practice_driver(int(car.id)).runs
+			if (sim is RaceSim and sim.has_mechanic("practice")): runs = sim.practice_driver(int(car.id)).runs
 			for run in runs:
 				for sample in run.samples:
 					if float(sample.get("seconds", 0)) > 0: samples.append(float(sample.seconds))

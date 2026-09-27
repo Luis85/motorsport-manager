@@ -4,7 +4,7 @@ extends RefCounted
 ## NOT a persisted psychological state, an incident probability or a pace modifier.
 const STRESS_VERSION = "current-demand-v1"
 
-static func stress(sim: PracticeRaceSim, car: Dictionary, tyre_life: float, punctured: bool) -> Dictionary:
+static func stress(sim: RaceSim, car: Dictionary, tyre_life: float, punctured: bool) -> Dictionary:
 	var inactive = car.dnf or car.finished or sim.phase not in RaceSim.ACTIVE or car.route == "garage" or sim.phase == "lights" or (car.route == "pit" and car.speed <= 0.1)
 	if inactive:
 		return {"value":-1, "text":"—", "band":"Unavailable", "cause":"", "note":"Not driving", "reason":"No active driving demand is estimated in the garage, after retirement or after the finish.", "factors":[], "version":STRESS_VERSION}
@@ -38,7 +38,7 @@ static func stress(sim: PracticeRaceSim, car: Dictionary, tyre_life: float, punc
 		"reason":"Estimated current driving demand, not measured emotion or mistake probability. Base %d; %s. No performance effect or accumulated stress history." % [7 if car.pace == 0 else 15, ", ".join(evidence) if not evidence.is_empty() else "no added demand"],
 		"factors":factors, "version":STRESS_VERSION}
 
-static func lap_context(sim: PracticeRaceSim, car: Dictionary) -> Dictionary:
+static func lap_context(sim: RaceSim, car: Dictionary) -> Dictionary:
 	var best = 0.0; var last = 0.0; var label = "LAST LAP"
 	if sim.phase in ["practice", "practice_results"]:
 		best = MinimalRaceTiming.practice_best(sim, car.id)
@@ -56,13 +56,13 @@ static func lap_context(sim: PracticeRaceSim, car: Dictionary) -> Dictionary:
 		label = "QUALIFYING"; best = car.qual_best; last = best
 	return {"label":label, "last":MinimalRaceTiming.format_time(last), "best":MinimalRaceTiming.format_time(best)}
 
-static func gap_text(sim: PracticeRaceSim, front: Dictionary, back: Dictionary) -> String:
+static func gap_text(sim: RaceSim, front: Dictionary, back: Dictionary) -> String:
 	var distance = maxf(0, front.distance - back.distance)
 	if distance >= sim.track.length: return "%d L" % int(distance / sim.track.length)
 	if front.speed <= 0.1: return "—"
 	return "~%.1fs" % (distance / front.speed)
 
-static func race_context(sim: PracticeRaceSim, car: Dictionary) -> String:
+static func race_context(sim: RaceSim, car: Dictionary) -> String:
 	if car.dnf: return "Retired · " + car.retire_reason
 	if car.finished: return "%d laps completed · %d stops" % [car.completed, car.pit_stops]
 	if sim.phase != "race":

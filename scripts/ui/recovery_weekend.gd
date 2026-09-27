@@ -9,7 +9,7 @@ var recovery_report_sequence = -1
 
 func _ready() -> void:
 	super._ready()
-	if not sim is RecoveryRaceSim: return
+	if not (sim is RaceSim and sim.has_mechanic("recovery")): return
 	detail_picker.add_item("Recovery & race control")
 	recovery_panel = RecoveryPanel.new(); recovery_panel.configure(sim); tabs.add_child(recovery_panel)
 	recovery_page_index = tabs.get_tab_count() - 1

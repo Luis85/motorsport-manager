@@ -3,7 +3,7 @@ extends RefCounted
 ## Observational player-car data only. Never synchronizes, mounts or repairs a set.
 const COMPOUNDS = {"S":"Soft", "M":"Medium", "H":"Hard", "I":"Inter", "W":"Wet"}
 
-static func capture(sim: PracticeRaceSim, id: int) -> Dictionary:
+static func capture(sim: RaceSim, id: int) -> Dictionary:
 	if id < 0 or id >= sim.cars.size() or not sim.cars[id].player: return {}
 	var car = sim.cars[id]; var fitted = TyreInventory.find(car, car.get("set_id", ""))
 	var punctured = false

@@ -11,7 +11,7 @@ static func chapter(phase: String) -> Array:
 		"race": return ["04 / RACE", "Make a call. Watch the consequence.", "Keep existing orders, send a two-lap radio instruction, or compare a physical pit stop."]
 		_: return ["05 / LEARN AGAIN", "The result is evidence, not an explanation.", "Review actual laps and stops. Replay a different decision without overwriting the original result."]
 
-static func car(model: StrategyRaceSim, id: int, forecast: Dictionary = {}) -> Dictionary:
+static func car(model: RaceSim, id: int, forecast: Dictionary = {}) -> Dictionary:
 	var c = model.cars[id]
 	var policy = model.policy(id)
 	var order = model.standings(model.phase in ["qualifying", "qualifying_results"])
@@ -47,7 +47,7 @@ static func car(model: StrategyRaceSim, id: int, forecast: Dictionary = {}) -> D
 		"fuel":c.fuel,"compound":c.compound,"fuel_margin":margin,"status":status,"plan":plan,"rival":rival,
 		"issue":issue,"terminal":c.dnf or c.finished,"owner":policy.owners.get("pit", "player")}
 
-static func spotlight(model: StrategyRaceSim, forecasts: Dictionary) -> Dictionary:
+static func spotlight(model: RaceSim, forecasts: Dictionary) -> Dictionary:
 	var headline = chapter(model.phase)
 	var value = {"eyebrow":headline[0],"title":headline[1],"detail":headline[2],"id":3,"priority":0}
 	for id in [3, 6]:

@@ -3,11 +3,11 @@ extends VBoxContainer
 ## Focused analysis reuses the live inspector and its fixed commit boundary.
 signal close_requested
 signal driver_requested(id: int)
-var model: StrategyRaceSim
+var model: RaceSim
 var heading: Label
 var drivers: Dictionary = {}
 var content: VBoxContainer
-func configure(value: StrategyRaceSim) -> void:model=value
+func configure(value: RaceSim) -> void:model=value
 func _ready() -> void:
 	size_flags_vertical=Control.SIZE_EXPAND_FILL
 	var row=UI.hbox(self)

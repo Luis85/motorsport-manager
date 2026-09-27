@@ -35,7 +35,7 @@ func selected_stints() -> Dictionary:
 		"pit_gate": car.pit_gate, "laps": simulation.laps, "length": simulation.track.length}
 
 func intentions() -> Dictionary:
-	var simulation: StrategyRaceSim = _source.get_ref()
+	var simulation: RaceSim = _source.get_ref()
 	if simulation == null:
 		return {}
 	var reading = stints(simulation)

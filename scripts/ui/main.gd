@@ -182,9 +182,9 @@ func show_weekend(layout: String = "") -> void:
 	clear_screen("weekend")
 	var chosen_layout = layout if not layout.is_empty() else App.settings.get("pitwall_layout", "minimal")
 	var view
-	if App.weekend is PracticeRaceSim and chosen_layout == "minimal": view = MinimalRaceWorkspace.new()
+	if (App.weekend is RaceSim and App.weekend.has_mechanic("practice")) and chosen_layout == "minimal": view = MinimalRaceWorkspace.new()
 	else:
-		view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+		view = RaceDirectorWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("practice")) else (PitwallWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("strategy")) else WeekendView.new())
 		if view is RaceDirectorWorkspace: view.director_enabled = chosen_layout != "engineering"
 	if view is MinimalRaceWorkspace:
 		view.configure(MinimalRaceSession.new(App.weekend), App.settings)

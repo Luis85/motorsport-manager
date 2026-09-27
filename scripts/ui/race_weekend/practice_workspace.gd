@@ -3,13 +3,13 @@ extends VBoxContainer
 ## Both drivers' independent real programme drafts, in one engineering workspace.
 signal command_requested(action: String,payload: Dictionary)
 signal close_requested
-var model: PracticeRaceSim
+var model: RaceSim
 var panels: Dictionary = {}
 var badges: Dictionary = {}
 var session_action: Button
 var finish: Button
 var summary: Label
-func configure(value: PracticeRaceSim) -> void: model = value
+func configure(value: RaceSim) -> void: model = value
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var top = UI.hbox(self)

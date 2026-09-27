@@ -54,7 +54,22 @@ var selected_id = 3
 var last_error = ""
 var stats = {"passes": 0, "incidents": 0, "pits": 0, "blue_flags": 0}
 
+signal input_accepted(action: String, payload: Dictionary, context: Dictionary)
+signal fixed_step_completed
+var strategy_state: Dictionary = {}
+var battle_state: Dictionary = {}
+var team_state: Dictionary = {}
+var rival_state: Dictionary = {}
+var weather_state: Dictionary = {}
+var reliability_state: Dictionary = {}
+var control_state: Dictionary = {}
+var practice_state: Dictionary = {}
+var rival_styles: Dictionary = {}
+var duel_state: Dictionary = {}
+var mechanics: RaceMechanics
+
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
+	mechanics = RaceMechanics.new(self)
 	if geometry == null: return
 	track = TrackGeometry.new(geometry.document, geometry.preset) if geometry.preview_only else geometry.detached_copy()
 	laps = clampi(int(options.get("laps", 12)), 1, 100)
@@ -86,7 +101,7 @@ func transition(next: String) -> void:
 	phase = next; clock = 0.0; accumulator = 0.0; paused = false
 	post("session", next.replace("_", " ").capitalize())
 
-func command(action: String, payload: Dictionary = {}) -> bool:
+func _base_command(action: String, payload: Dictionary = {}) -> bool:
 	last_error = ""
 	var id = int(payload.get("id", selected_id))
 	if id < 0 or id >= cars.size(): return fail("Unknown driver.")
@@ -206,7 +221,7 @@ func advance(real_delta: float) -> void:
 	# owned by RaceSessionRunner, never by a visual node.
 	RaceStepClock.advance(self, real_delta)
 
-func step() -> void:
+func _base_step() -> void:
 	if paused or phase not in ACTIVE: return
 	clock += STEP; total_time += STEP
 	if phase == "lights":
@@ -257,21 +272,21 @@ func step() -> void:
 			if not c.finished and not c.dnf: done = false
 		if done: transition("results"); post("finish", "Weekend complete. Classification and event log are ready.")
 
-func update_flags() -> void:
+func _base_update_flags() -> void:
 	# Legacy procedure remains unchanged; newer rulesets override this tick-boundary seam.
 	if flag != "GREEN" and clock >= flag_until:
 		if flag == "SAFETY CAR": flag = "RESTART"; flag_until = clock + 8.0
 		else: flag = "GREEN"; yellow_sector = -1
 		post("flag", flag)
 
-func forecast_parameters(_driver_id: int) -> Dictionary:
+func _base_forecast_parameters(_driver_id: int) -> Dictionary:
 	# Allow-listed observable model parameters; never expose a random stream or future event.
 	return {}
 
-func neutral_speed_limit(_c: Dictionary, _sample: Dictionary) -> float:
+func _base_neutral_speed_limit(_c: Dictionary, _sample: Dictionary) -> float:
 	return 25.0 if flag == "YELLOW" else 30.0
 
-func constrain_progress(_c: Dictionary, next: float, _old: Array, _nearest: int) -> float:
+func _base_constrain_progress(_c: Dictionary, next: float, _old: Array, _nearest: int) -> float:
 	return next
 
 func average(values: Array) -> float:
@@ -279,7 +294,7 @@ func average(values: Array) -> float:
 	for value in values: sum += value
 	return sum / maxf(1, values.size())
 
-func update_surface() -> void:
+func _base_update_surface() -> void:
 	var target = 0.0; var label = "Clear skies"
 	if scenario == "wet":
 		target = 0.65 if phase != "race" or clock < 170 else (0.18 if clock < 280 else 0.0)
@@ -304,7 +319,7 @@ func recommended_compound() -> String:
 	var wet = average(water)
 	return "W" if wet > 0.68 else ("I" if wet > 0.24 else "M")
 
-func engineer(c: Dictionary) -> void:
+func _base_engineer(c: Dictionary) -> void:
 	if not c.auto or phase != "race" or c.route != "track" or c.dnf or c.finished: return
 	var remaining = maxf(0, laps - c.distance / track.length)
 	var emergency = not WheelTyres.usable(TyreInventory.find(c, c.set_id))
@@ -339,10 +354,10 @@ func grip(c: Dictionary, _cell: int, local: Dictionary = {}) -> float:
 	var wheel_factor = WheelTyres.grip(TyreInventory.find(c, c.set_id))
 	return clampf(local.grip * TYRES[c.compound].grip * match_factor * wheel_factor, 0.16, 1.1)
 
-func neutral(c: Dictionary) -> bool:
+func _base_neutral(c: Dictionary) -> bool:
 	return phase == "formation" or flag in ["SAFETY CAR", "RESTART"] or flag == "YELLOW" and track.sector_at(c.distance) == yellow_sector
 
-func move_car(c: Dictionary, old: Array) -> void:
+func _base_move_car(c: Dictionary, old: Array) -> void:
 	var s = track.sample(c.distance)
 	var cell = int(fposmod(c.distance / track.length, 1) * 96)
 	var local = surface_at(c)
@@ -461,7 +476,7 @@ func move_car(c: Dictionary, old: Array) -> void:
 		c.telemetry.append([total_time, c.speed * 3.6, c.tyre, c.fuel, (c.speed - old_speed) / STEP])
 		if c.telemetry.size() > 120: c.telemetry.pop_front()
 
-func traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
+func _base_traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
 	var result = {"desired": desired, "lane": lane, "attempt": false, "block_pass": false}
 	if nearest < 0 or gap >= 75: return result
 	if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(sample.curvature) < 0.035 and sample.w > 7.5 and desired > old[nearest].speed + ({"patient": 2.0, "balanced": 0.4, "assertive": 0.1}[c.battle_mode]) and not (c.battle_mode == "patient" and local.water > 0.5):
@@ -470,22 +485,22 @@ func traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, de
 		result.attempt = true
 	return result
 
-func record_track_pass(c: Dictionary, other: Dictionary) -> void:
+func _base_record_track_pass(c: Dictionary, other: Dictionary) -> void:
 	stats.passes += 1; post("pass", "%s passes %s on track." % [c.short, other.short])
 
-func wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+func _base_wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	RaceVehicleCondition.wear_car(self, c, distance, cell, effects, local)
 
-func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
+func _base_qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
 	RaceTiming.qualifying_crossings(self, c, before, after)
 
 func finish_qualifying() -> void:
 	RaceTiming.finish_qualifying(self)
 
-func is_run_session() -> bool:
+func _base_is_run_session() -> bool:
 	return phase == "qualifying"
 
-func leave_garage(c: Dictionary) -> void:
+func _base_leave_garage(c: Dictionary) -> void:
 	RacePitService.leave_garage(self, c)
 
 func depart_on_planned_set(c: Dictionary) -> void:
@@ -498,19 +513,19 @@ func depart_on_planned_set(c: Dictionary) -> void:
 	c.distance = track.pit_entry + (track.pit_exit - track.pit_entry) * c.pit_d / track.pit_length
 	post(phase, "%s leaves the garage for run %d." % [c.short, c.qual_runs])
 
-func update_pit(c: Dictionary, old: Array = []) -> void:
+func _base_update_pit(c: Dictionary, old: Array = []) -> void:
 	RacePitService.update_pit(self, c, old)
 
-func pit_exit_message(c: Dictionary) -> String:
+func _base_pit_exit_message(c: Dictionary) -> String:
 	return c.short + " rejoins on cold tyres."
 
-func service_random_value() -> float:
+func _base_service_random_value() -> float:
 	return random_value()
 
-func begin_service(c: Dictionary) -> void:
+func _base_begin_service(c: Dictionary) -> void:
 	RacePitService.begin_service(self, c)
 
-func complete_service(c: Dictionary) -> void:
+func _base_complete_service(c: Dictionary) -> void:
 	RacePitService.complete_service(self, c)
 
 func race_crossings(c: Dictionary, before: float, after: float) -> void:
@@ -522,10 +537,10 @@ func resolve_finishes() -> void:
 func queue_pit(c: Dictionary) -> void:
 	RacePitService.queue_pit(self, c)
 
-func plan_pit_gate(c: Dictionary) -> void:
+func _base_plan_pit_gate(c: Dictionary) -> void:
 	RacePitService.plan_pit_gate(self, c)
 
-func incident(c: Dictionary) -> void:
+func _base_incident(c: Dictionary) -> void:
 	RaceSurface.contaminate(surface, c.distance / track.length, c.lane, 0.20, c.health < 50)
 	stats.incidents += 1
 	var outcome = random_value()
@@ -542,7 +557,7 @@ func incident(c: Dictionary) -> void:
 		TyreInventory.sync(c)
 		post("incident", c.short + " spins. Local yellow; car recovering.")
 
-func retire(c: Dictionary, reason: String) -> void:
+func _base_retire(c: Dictionary, reason: String) -> void:
 	c.dnf = true; c.speed = 0.0; c.retire_reason = reason; c.completed = int(maxf(0, floor(c.distance / track.length)))
 	if pit_boxes.get(c.team, -1) == c.id: pit_boxes.erase(c.team)
 	post("retirement", "%s retires: %s." % [c.short, reason])
@@ -560,7 +575,7 @@ func car_position(c: Dictionary, alpha: float = 1.0) -> Dictionary:
 	s.p += s.n * lerpf(c.previous_lane, c.lane, alpha)
 	return s
 
-func snapshot() -> Dictionary:
+func _base_snapshot() -> Dictionary:
 	var saved_cars = cars.duplicate(true)
 	for car in saved_cars: TyreInventory.sync(car)
 	return {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
@@ -640,7 +655,7 @@ static func format_time(value: float) -> String:
 	if value <= 0: return "—"
 	return "%d:%06.3f" % [int(value / 60), fmod(value, 60)]
 
-func update_yield(c: Dictionary, old: Array) -> float:
+func _base_update_yield(c: Dictionary, old: Array) -> float:
 	# Hysteresis keeps a courtesy manoeuvre stable until the priority car has cleared.
 	if neutral(c) or c.route != "track": c.yield_to = -1
 	if c.yield_to >= 0:
@@ -662,10 +677,10 @@ func update_yield(c: Dictionary, old: Array) -> float:
 	var s = track.sample(c.distance)
 	return c.yield_side * maxf(0, s.w * 0.5 - 1.5) if c.yield_to >= 0 else s.line
 
-func pit_status(c: Dictionary) -> String:
+func _base_pit_status(c: Dictionary) -> String:
 	return RacePitService.pit_status(self, c)
 
-func record_stint(c: Dictionary) -> void:
+func _base_record_stint(c: Dictionary) -> void:
 	RacePitService.record_stint(self, c)
 
 func strategy_advice(c: Dictionary) -> String:
@@ -693,7 +708,7 @@ func check_tyre_incident(c: Dictionary) -> void:
 		c.temperature = item.temperature; c.tyre = item.life
 		post("tyre", "%s: cold-tyre lock-up leaves a flat spot on %s." % [c.short, key])
 
-func car_advisories(c: Dictionary) -> Array[String]:
+func _base_car_advisories(c: Dictionary) -> Array[String]:
 	var messages: Array[String] = []
 	var item = TyreInventory.find(c, c.set_id)
 	for key in WheelTyres.KEYS:
@@ -704,3 +719,196 @@ func car_advisories(c: Dictionary) -> Array[String]:
 	if c.engine_temperature > 115: messages.append("Engine hot · reduce engine mode")
 	if c.fuel < maxf(0, laps - c.distance / track.length): messages.append("Fuel projection short · consider economy mode")
 	return messages
+
+## Stable aggregate entry points; providers are resolved once at construction.
+func policy(id: int) -> Dictionary:
+	return mechanics.invoke("policy", [id])
+
+func active_plan(id: int) -> Dictionary:
+	return mechanics.invoke("active_plan", [id])
+
+func forecast(id: int, draft: Dictionary = {}) -> Dictionary:
+	return mechanics.invoke("forecast", [id, draft])
+
+func sync_ownership(c: Dictionary) -> void:
+	mechanics.invoke("sync_ownership", [c])
+
+func command(action: String, payload: Dictionary = {}) -> bool:
+	return mechanics.invoke("command", [action, payload])
+
+func policy_command(action: String, payload: Dictionary) -> bool:
+	return mechanics.invoke("policy_command", [action, payload])
+
+func manage_resources(c: Dictionary, only_channel: String = "") -> void:
+	mechanics.invoke("manage_resources", [c, only_channel])
+
+func engineer(c: Dictionary) -> void:
+	mechanics.invoke("engineer", [c])
+
+func contextual_rival(_car: Dictionary) -> bool:
+	return mechanics.invoke("contextual_rival", [_car])
+
+func review_rival_style(_car: Dictionary, _snapshot: Dictionary, _comparison: Dictionary) -> bool:
+	return mechanics.invoke("review_rival_style", [_car, _snapshot, _comparison])
+
+func order_stop(c: Dictionary, item: Dictionary, reason: String) -> void:
+	mechanics.invoke("order_stop", [c, item, reason])
+
+func block_plan(c: Dictionary, reason: String) -> void:
+	mechanics.invoke("block_plan", [c, reason])
+
+func leave_garage(c: Dictionary) -> void:
+	mechanics.invoke("leave_garage", [c])
+
+func record_stint(c: Dictionary) -> void:
+	mechanics.invoke("record_stint", [c])
+
+func step() -> void:
+	mechanics.invoke("step", [])
+
+func snapshot() -> Dictionary:
+	return mechanics.invoke("snapshot", [])
+
+func traffic_instruction(c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
+	return mechanics.invoke("traffic_instruction", [c, old, nearest, gap, desired, lane, sample, local])
+
+func record_track_pass(c: Dictionary, other: Dictionary) -> void:
+	mechanics.invoke("record_track_pass", [c, other])
+
+func move_car(c: Dictionary, old: Array) -> void:
+	mechanics.invoke("move_car", [c, old])
+
+func observe_warnings(c: Dictionary) -> void:
+	mechanics.invoke("observe_warnings", [c])
+
+func weather_observation() -> Dictionary:
+	return mechanics.invoke("weather_observation", [])
+
+func weather_outlook() -> Dictionary:
+	return mechanics.invoke("weather_outlook", [])
+
+func weather_advice(id: int) -> Dictionary:
+	return mechanics.invoke("weather_advice", [id])
+
+func weather_stale(advice: Dictionary) -> bool:
+	return mechanics.invoke("weather_stale", [advice])
+
+func update_surface() -> void:
+	mechanics.invoke("update_surface", [])
+
+func weather_issue(id: int) -> String:
+	return mechanics.invoke("weather_issue", [id])
+
+func weather_debrief() -> String:
+	return mechanics.invoke("weather_debrief", [])
+
+func enhanced() -> bool:
+	return mechanics.invoke("enhanced", [])
+
+func reliability(id: int) -> Dictionary:
+	return mechanics.invoke("reliability", [id])
+
+func recovery_advice(id: int) -> Dictionary:
+	return mechanics.invoke("recovery_advice", [id])
+
+func recovery_stale(advice: Dictionary) -> bool:
+	return mechanics.invoke("recovery_stale", [advice])
+
+func forecast_parameters(_driver_id: int) -> Dictionary:
+	return mechanics.invoke("forecast_parameters", [_driver_id])
+
+func log_recovery_command(action: String, payload: Dictionary, reason: String) -> void:
+	mechanics.invoke("log_recovery_command", [action, payload, reason])
+
+func issue_repair(c: Dictionary, manual: bool, reason: String) -> void:
+	mechanics.invoke("issue_repair", [c, manual, reason])
+
+func wear_car(c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+	mechanics.invoke("wear_car", [c, distance, cell, effects, local])
+
+func observe_reliability(c: Dictionary) -> void:
+	mechanics.invoke("observe_reliability", [c])
+
+func service_random_value() -> float:
+	return mechanics.invoke("service_random_value", [])
+
+func begin_service(c: Dictionary) -> void:
+	mechanics.invoke("begin_service", [c])
+
+func complete_service(c: Dictionary) -> void:
+	mechanics.invoke("complete_service", [c])
+
+func update_pit(c: Dictionary, old: Array = []) -> void:
+	mechanics.invoke("update_pit", [c, old])
+
+func pit_exit_message(c: Dictionary) -> String:
+	return mechanics.invoke("pit_exit_message", [c])
+
+func pit_status(c: Dictionary) -> String:
+	return mechanics.invoke("pit_status", [c])
+
+func update_flags() -> void:
+	mechanics.invoke("update_flags", [])
+
+func neutral(c: Dictionary) -> bool:
+	return mechanics.invoke("neutral", [c])
+
+func neutral_speed_limit(_c: Dictionary, _sample: Dictionary) -> float:
+	return mechanics.invoke("neutral_speed_limit", [_c, _sample])
+
+func constrain_progress(_c: Dictionary, next: float, _old: Array, _nearest: int) -> float:
+	return mechanics.invoke("constrain_progress", [_c, next, _old, _nearest])
+
+func update_yield(c: Dictionary, old: Array) -> float:
+	return mechanics.invoke("update_yield", [c, old])
+
+func incident(c: Dictionary) -> void:
+	mechanics.invoke("incident", [c])
+
+func retire(c: Dictionary, reason: String) -> void:
+	mechanics.invoke("retire", [c, reason])
+
+func recovery_debrief() -> String:
+	return mechanics.invoke("recovery_debrief", [])
+
+func is_run_session() -> bool:
+	return mechanics.invoke("is_run_session", [])
+
+func practice_driver(id: int) -> Dictionary:
+	return mechanics.invoke("practice_driver", [id])
+
+func run_preview(id: int, plan: Dictionary) -> Dictionary:
+	return mechanics.invoke("run_preview", [id, plan])
+
+func _practice_command(action: String, payload: Dictionary) -> bool:
+	return mechanics.invoke("_practice_command", [action, payload])
+
+func record_practice(action: String, id: int, evidence: Dictionary) -> void:
+	mechanics.invoke("record_practice", [action, id, evidence])
+
+func launch_run(id: int, plan: Dictionary) -> void:
+	mechanics.invoke("launch_run", [id, plan])
+
+func close_practice(reason: String) -> void:
+	mechanics.invoke("close_practice", [reason])
+
+func reset_run_counters() -> void:
+	mechanics.invoke("reset_run_counters", [])
+
+func qualifying_crossings(c: Dictionary, before: float, after: float) -> void:
+	mechanics.invoke("qualifying_crossings", [c, before, after])
+
+func _practice_step() -> void:
+	mechanics.invoke("_practice_step", [])
+
+func car_advisories(c: Dictionary) -> Array[String]:
+	return mechanics.invoke("car_advisories", [c])
+
+func plan_pit_gate(c: Dictionary) -> void:
+	mechanics.invoke("plan_pit_gate", [c])
+
+func has_mechanic(identity: String) -> bool:
+	return mechanics != null and mechanics.has_mechanic(identity)
+
+func mechanic_catalog() -> Array:
+	return mechanics.describe()

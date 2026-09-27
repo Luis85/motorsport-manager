@@ -2,7 +2,7 @@ class_name RecoveryPanel
 extends VBoxContainer
 ## Actions are siblings of the scrolling evidence. Refresh never replaces a focused control.
 signal command_requested(action: String, payload: Dictionary)
-var model: RecoveryRaceSim
+var model: RaceSim
 var driver_id = 3
 var advice: Dictionary = {}
 var selectors: Array[Button] = []
@@ -25,7 +25,7 @@ var authority_drafts: Dictionary = {}
 var retirement_dialog: ConfirmationDialog
 var retirement_payload: Dictionary = {}
 
-func configure(value: RecoveryRaceSim) -> void: model = value
+func configure(value: RaceSim) -> void: model = value
 
 func _ready() -> void:
 	name = "Recovery"; add_theme_constant_override("separation", 7)

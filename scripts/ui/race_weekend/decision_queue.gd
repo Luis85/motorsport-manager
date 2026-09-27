@@ -22,7 +22,7 @@ func _ready() -> void:
 		hold.tooltip_text = "Acknowledge this driver's current issue without changing the plan or time controls."
 		slots[id] = {"review":review,"hold":hold,"badge":badge,"stamp":[]}
 
-func present(model: StrategyRaceSim, forecasts: Dictionary) -> void:
+func present(model: RaceSim, forecasts: Dictionary) -> void:
 	if count == null: return
 	var total = 0
 	for id in slots:

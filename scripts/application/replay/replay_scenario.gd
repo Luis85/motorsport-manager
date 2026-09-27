@@ -3,7 +3,7 @@ extends RefCounted
 ## A shareable starting state plus inert author intent. Never an executable script.
 const KIND = "motorsport-manager-scenario"
 
-static func build(sim: PracticeRaceSim, lineage: Dictionary, brief: Dictionary) -> Dictionary:
+static func build(sim: RaceSim, lineage: Dictionary, brief: Dictionary) -> Dictionary:
 	if sim == null or sim.phase == "results" or not ScenarioBrief.validate(brief).is_empty(): return {}
 	if not RaceRecord.valid_id(lineage.get("event_id")): return {}
 	var parent = lineage.duplicate(true); parent.scenario = brief.duplicate(true)

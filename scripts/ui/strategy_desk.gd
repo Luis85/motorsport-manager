@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal preview_changed(forecast: Dictionary)
 var timeline: RaceStrategyChart
 var timeline_toggle: Button
-var model: StrategyRaceSim
+var model: RaceSim
 var driver_id = 3
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
@@ -47,7 +47,7 @@ var details_toggle: Button
 var topic_panels: Array[VBoxContainer] = []
 var topic_buttons: Array[Button] = []
 
-func configure(sim: StrategyRaceSim) -> void:
+func configure(sim: RaceSim) -> void:
 	model = sim
 
 func _ready() -> void:

@@ -5,7 +5,7 @@ signal close_requested
 signal command_requested(action: String, payload: Dictionary)
 signal watch_requested
 signal details_requested(id: int)
-var model: PracticeRaceSim
+var model: RaceSim
 var snapshot: Dictionary = {}
 var selected = ""
 var submitted = false
@@ -32,7 +32,7 @@ var outcome_title: Label
 var outcome_metrics: Label
 var outcome_detail: Label
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	model = value
 
 func _ready() -> void:

@@ -4,11 +4,11 @@ extends RefCounted
 ## No authority, live car dictionaries, inventory resources or simulation methods escape.
 var _source: WeakRef
 
-func _init(simulation: PracticeRaceSim) -> void:
+func _init(simulation: RaceSim) -> void:
 	_source = weakref(simulation)
 
 func capture() -> Dictionary:
-	var simulation: PracticeRaceSim = _source.get_ref()
+	var simulation: RaceSim = _source.get_ref()
 	if simulation == null:
 		return {}
 	var cars: Array = []

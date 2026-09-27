@@ -2,7 +2,7 @@ class_name RaceDecisionViewModel
 extends RefCounted
 ## One presentation snapshot, sourced only from the existing public forecaster/feed.
 ## A rendered option remains bound to its driver, set, safe gate and source revision.
-static func capture(model: StrategyRaceSim, id: int, forecast: Dictionary) -> Dictionary:
+static func capture(model: RaceSim, id: int, forecast: Dictionary) -> Dictionary:
 	if id not in [3, 6] or forecast.is_empty(): return {}
 	var car = model.cars[id]; var policy = model.policy(id)
 	var entries = DecisionFeed.for_driver(model, id, policy, forecast)
@@ -21,7 +21,7 @@ static func pit_payload(value: Dictionary) -> Dictionary:
 
 ## UI receipt only: references the command journal and physical run/override identity.
 ## No save data, policy, RNG, orders or simulation time are changed by these queries.
-static func accepted_receipt(model: StrategyRaceSim, value: Dictionary, action: String, payload: Dictionary, after_sequence: int) -> Dictionary:
+static func accepted_receipt(model: RaceSim, value: Dictionary, action: String, payload: Dictionary, after_sequence: int) -> Dictionary:
 	var id = int(value.driver_id)
 	var car = model.cars[id]
 	var record: Dictionary = {}
@@ -42,7 +42,7 @@ static func accepted_receipt(model: StrategyRaceSim, value: Dictionary, action: 
 static func terminal(label: String, detail: String) -> Dictionary:
 	return {"terminal": true, "label": label, "detail": detail}
 
-static func receipt_progress(model: StrategyRaceSim, receipt: Dictionary) -> Dictionary:
+static func receipt_progress(model: RaceSim, receipt: Dictionary) -> Dictionary:
 	if not receipt.get("outcome", {}).is_empty(): return receipt.outcome
 	var id = int(receipt.driver_id)
 	var car = model.cars[id]

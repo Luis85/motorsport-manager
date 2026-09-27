@@ -2,7 +2,7 @@ class_name PracticePanel
 extends VBoxContainer
 ## Per-driver unapplied run drafts. Commands remain fixed above scrolling evidence.
 signal command_requested(action: String, payload: Dictionary)
-var model: PracticeRaceSim
+var model: RaceSim
 var driver_id = 3
 var drafts: Dictionary = {}
 # Shared by both routes; only real user edits count, not constructed defaults.
@@ -26,7 +26,7 @@ var binding = false
 var confirmation: ConfirmationDialog
 var dashboard_host = false
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	model = value
 	for id in [3, 6]:
 		drafts[id] = {"objective": "tyre_life", "set_id": model.cars[id].set_id, "laps": 2, "baseline": "current"}

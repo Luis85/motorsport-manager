@@ -7,7 +7,7 @@ var weather_debrief_stamp: Array = []
 
 func _ready() -> void:
 	super._ready()
-	if not sim is WeatherRaceSim: return
+	if not (sim is RaceSim and sim.has_mechanic("weather")): return
 	detail_picker.add_item("Weather & crossovers")
 	var page = tab_page("Weather")
 	weather_panel = WeatherPanel.new(); weather_panel.configure(sim); page.add_child(weather_panel)

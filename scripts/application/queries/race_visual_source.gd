@@ -23,7 +23,7 @@ func capture() -> Dictionary:
 			"current_position": simulation.car_position(car).p,
 		})
 	var contest: Dictionary = {}
-	if simulation is StrategyRaceSim:
+	if (simulation is RaceSim and simulation.has_mechanic("strategy")):
 		var record = RaceContestReadModel.observed_contest(simulation, simulation.selected_id)
 		if not record.is_empty():
 			var first: Dictionary = cars[int(record.driver_id)]
@@ -57,7 +57,7 @@ func surface_values(channel: String) -> Array:
 
 func rejoin(forecast: Dictionary) -> Dictionary:
 	var simulation: RaceSim = _source.get_ref()
-	if not simulation is StrategyRaceSim or simulation.phase != "race" or forecast.is_empty():
+	if not (simulation is RaceSim and simulation.has_mechanic("strategy")) or simulation.phase != "race" or forecast.is_empty():
 		return {}
 	var id = int(forecast.get("driver_id", -1))
 	if id < 0 or id >= simulation.cars.size():

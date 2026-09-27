@@ -10,14 +10,14 @@ static func format_time(value: float) -> String:
 	var ms = roundi(value * 1000)
 	return "%d:%02d.%03d" % [ms / 60000, (ms / 1000) % 60, ms % 1000]
 
-static func practice_best(sim: PracticeRaceSim, id: int) -> float:
+static func practice_best(sim: RaceSim, id: int) -> float:
 	var best = 0.0
 	for run in sim.practice_driver(id).runs:
 		for lap in run.samples:
 			if lap.seconds > 0 and (best == 0 or lap.seconds < best): best = lap.seconds
 	return best
 
-static func rows(sim: PracticeRaceSim) -> Array:
+static func rows(sim: RaceSim) -> Array:
 	var practice = sim.phase in ["practice", "practice_results"]
 	var timed = sim.phase in TIMED
 	var order = sim.standings(); var times = {}
@@ -55,7 +55,7 @@ static func rows(sim: PracticeRaceSim) -> Array:
 static func tag(status: String) -> String:
 	return {"Retired":"RET", "Finished":"FIN", "Garage":"GAR", "Pit stop":"PIT", "Pit exit":"OUT", "Pit entry":"IN", "Out lap":"OUT", "Flying lap":"FLY", "In lap":"IN", "Ready":"—", "Formation":"FORM", "On grid":"GRID", "Box this lap":"BOX", "Racing":"RUN"}.get(status, "—")
 
-static func state(sim: PracticeRaceSim, car: Dictionary) -> String:
+static func state(sim: RaceSim, car: Dictionary) -> String:
 	if car.dnf: return "Retired"
 	if car.finished: return "Finished"
 	if sim.phase in ["briefing", "race_preparation", "grid_ready"]: return "Ready"

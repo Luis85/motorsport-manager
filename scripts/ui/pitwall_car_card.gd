@@ -45,7 +45,7 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 			style.content_margin_left = 4; style.content_margin_right = 4
 			button.add_theme_stylebox_override(state, style)
 
-func refresh(model: StrategyRaceSim, id: int) -> void:
+func refresh(model: RaceSim, id: int) -> void:
 	var car = model.cars[id]; var policy = model.policy(id); var decision = controls.card
 	var order = model.standings(model.phase in ["qualifying", "qualifying_results"])
 	var rank = order.find(car)

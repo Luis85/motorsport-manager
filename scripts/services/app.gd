@@ -120,14 +120,14 @@ func save_track(document: Dictionary) -> String:
 	return error
 
 func ensure_recording() -> RaceRecord:
-	if not weekend is PracticeRaceSim: return null
+	if not (weekend is RaceSim and weekend.has_mechanic("practice")): return null
 	if recording == null or recording.source == null or recording.source.get_ref() != weekend:
 		recording = RaceRecord.new(); recording.attach(weekend)
 	return recording
 
 func save_weekend() -> String:
 	if weekend == null: return "There is no weekend to save."
-	if weekend is PracticeRaceSim: return ReplayStorage.save_session(checkpoint_path, ensure_recording())
+	if (weekend is RaceSim and weekend.has_mechanic("practice")): return ReplayStorage.save_session(checkpoint_path, ensure_recording())
 	return Storage.write_json(checkpoint_path, weekend.snapshot())
 
 func load_weekend() -> String:

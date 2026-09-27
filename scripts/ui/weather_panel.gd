@@ -4,7 +4,7 @@ extends VBoxContainer
 signal command_requested(action: String, payload: Dictionary)
 signal surface_requested
 signal sector_requested(index: int)
-var model: WeatherRaceSim
+var model: RaceSim
 var driver_id = 3
 var advice: Dictionary = {}
 var summary: Label
@@ -22,7 +22,7 @@ var commit_bar: HBoxContainer
 var refresh_count = 0
 var outlook_chart: RaceMetricChart
 
-func configure(value: WeatherRaceSim) -> void: model = value
+func configure(value: RaceSim) -> void: model = value
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
