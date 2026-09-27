@@ -91,30 +91,31 @@ func run() -> void:
 	check(view.results_page_index in view.GROUPS.Review and view.results_page_index not in view.GROUPS.Conditions, "Results index cannot masquerade as optional Recovery")
 	check(view.navigator.catalog.any(func(item): return item[0] == view.results_page_index), "Results is in the searchable catalog")
 	var result_model = PracticeRaceSim.new(model.track, {"laps":24,"scenario":"dry","intensity":"calm","seed":19})
+	var result_query = RaceViewQuery.new(result_model)
 	result_model.phase = "qualifying_results"
-	var result = SessionResultsPanel.presentation(result_model)
+	var result = SessionResultsPanel.presentation(result_query)
 	check(result.rows.all(func(row): return row.text[5] == "NO TIME" and row.text[3] != "POLE"), "Untimed qualifying field does not invent a pole sitter")
 	result_model.cars[3].qual_best = 91.2; result_model.cars[3].best_lap = 88
-	result = SessionResultsPanel.presentation(result_model)
+	result = SessionResultsPanel.presentation(result_query)
 	check(result.rows[0].id == 3 and result.rows[0].text[2] == RaceSim.format_time(91.2), "Qualifying result uses the valid qualifying time, not race best")
 	result_model.phase = "practice_results"
-	result = SessionResultsPanel.presentation(result_model)
+	result = SessionResultsPanel.presentation(result_query)
 	check(result.rows.all(func(row): return row.text[0] == "—" and row.text[2] == "—"), "Practice has neither invented rank nor missing-sample lap time")
 	result_model.phase = "results"
 	for car in result_model.cars: car.dnf = true; car.completed = 0
 	result_model.cars[0].dnf = false; result_model.cars[0].finished = true; result_model.cars[0].completed = 24; result_model.cars[0].finish_time = 500
 	result_model.cars[3].dnf = false; result_model.cars[3].finished = true; result_model.cars[3].completed = 23; result_model.cars[3].finish_time = 490
 	result_model.cars[6].completed = 22; result_model.cars[6].distance = 22 * result_model.track.length
-	result = SessionResultsPanel.presentation(result_model)
+	result = SessionResultsPanel.presentation(result_query)
 	check(result.rows[1].id == 3 and result.rows[1].text[2] == "+1 L", "Lapped finisher keeps lap deficit rather than a fabricated zero time gap")
 	check(result.rows[2].id == 6 and result.rows[2].text[2] == "DNF", "Retired result retains its actual completed distance")
-	view.results_panel.model = result_model; view.results_panel.refresh(); await settle()
+	view.results_panel.model = result_query; view.results_panel.refresh(); await settle()
 	var row_instance = view.results_panel.rows[0]; row_instance.select(0)
 	var builds = view.results_panel.rebuild_count
 	for i in range(20): view.results_panel.refresh()
 	check(builds == view.results_panel.rebuild_count and row_instance == view.results_panel.rows[0] and row_instance.is_selected(0), "Result refresh preserves TreeItems and user selection")
 	await capture("results")
-	view.results_panel.model = model
+	view.results_panel.model = view.sim
 	check(before == JSON.stringify(model.snapshot()), "All evidence comparisons leave live race and random state unchanged")
 	for pair in [[Vector2i(1280,800),1.15],[Vector2i(1100,720),1.3]]:
 		root.size = pair[0]; root.content_scale_size = root.size; app.settings.pitwall_text_scale = pair[1]

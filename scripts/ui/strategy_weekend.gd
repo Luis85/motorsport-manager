@@ -203,6 +203,7 @@ func export_evidence() -> void:
 
 func setup_guide() -> void:
 	guide = ContextGuide.new()
+	guide.presentation_services = presentation_services
 	guide.configure("pit wall", [
 		{"title": "Your objective and your two cars", "body": "Bring both Obsidian cars home. MER and MOR have separate plans and control owners. Both cards stay visible when you inspect a rival. This guide does not pause the race; use Space for reading time.", "target": func(): return teammate_buttons[0].get_parent(), "reveal": func(): open_strategy(3)},
 		{"title": "Read a decision before reacting", "body": "A card connects a current issue to evidence, a trade-off and a deadline. Compare opens details. Keep plan acknowledges the issue without changing an order. No alert changes your speed or pauses automatically.", "target": func(): return decision_bar},

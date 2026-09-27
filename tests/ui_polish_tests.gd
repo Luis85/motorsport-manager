@@ -6,15 +6,15 @@ func queue_regressions() -> void:
 	var queue = view.decision_queue
 	check(not queue.slots[3].review.text.contains("On plan"), "P01 an empty issue list must not claim an approved plan exists")
 	model.cars[3].fuel = 1.0
-	queue.present(model, {})
+	queue.present(view.sim, {})
 	check(queue.entries.get(3, {}).get("issue") == "fuel", "P02 urgent fuel advice remains visible when the optional forecast cache is absent")
 	var fitted = TyreInventory.find(model.cars[6], model.cars[6].set_id)
 	fitted.wheels.FL.punctured = true
-	queue.present(model, {})
+	queue.present(view.sim, {})
 	check(queue.entries.get(6, {}).get("issue") == "tyre" and queue.pending_count >= 2, "P02 missing forecasts cannot hide the teammate's damaged tyre")
-	queue.present(model, {3:model.forecast(3),6:model.forecast(6)})
+	queue.present(view.sim, {3:model.forecast(3),6:model.forecast(6)})
 	model.cars[3].dnf = true; model.cars[6].finished = true
-	queue.present(model, {})
+	queue.present(view.sim, {})
 	check(queue.entries[3].is_empty() and queue.slots[3].hold.disabled, "P03 retirement clears stale acknowledgement targets without a forecast")
 	check(queue.entries[6].is_empty() and queue.slots[6].hold.disabled, "P03 finishing clears stale teammate acknowledgement targets")
 	check(queue.slots[3].review.text.contains("Retired") and queue.slots[6].review.text.contains("Finished"), "P03 terminal driver states are explicit in the stable queue slots")
