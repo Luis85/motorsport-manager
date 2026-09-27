@@ -52,8 +52,8 @@ func show_menu() -> void:
 	var menu = UI.vbox(menu_panel, true)
 	menu.add_child(UI.label("THE RACE STARTS WITH YOU", 12, UI.ACCENT))
 	menu.add_child(UI.label("Your circuit.\nYour decisions.", 35))
-	menu.add_child(UI.paragraph("Design a circuit. Qualify your drivers. Settle into the pit wall and make the calls. A complete race weekend, rebuilt natively in Godot."))
-	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
+	menu.add_child(UI.paragraph("Design a circuit. Practice and qualify your drivers. Settle into the pit wall and make the calls. A complete race weekend, rebuilt natively in Godot."))
+	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Practice · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
 	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
@@ -64,6 +64,8 @@ func show_menu() -> void:
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios, show_duel_scenarios][index].call())
 	var replay_menu = MenuButton.new(); replay_menu.focus_mode = Control.FOCUS_ALL; replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
 	menu.add_child(replay_menu)
+	# Advanced tools are retained for development, not surfaced in the minimal game.
+	if App.settings.get("pitwall_layout", "minimal") == "minimal": scenarios.hide(); replay_menu.hide()
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
 	replay_menu.get_popup().add_item("Circuit notebook", 2)
@@ -87,7 +89,7 @@ func show_menu() -> void:
 	showcase.add_child(UI.paragraph("Seven geographic layouts plus Pinecrest Motor Park. Every library track is editable and immediately usable for a weekend."))
 
 func go_home() -> void:
-	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0) is PitwallWorkspace:
+	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0).has_method("confirm_leave"):
 		content.get_child(0).confirm_leave(_go_home_saved); return
 	_go_home_saved()
 
@@ -121,7 +123,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	if candidates.is_empty(): content.add_child(UI.paragraph("No valid circuits are available. Open the track editor to create one.")); return
 	selected_track = candidates[0]
 	content.add_child(UI.label("Choose your Grand Prix", 30))
-	content.add_child(UI.paragraph("A weekend progresses through qualifying, race preparation, formation, start lights and the race. You approve each session transition."))
+	content.add_child(UI.paragraph("Practice → Qualifying → Race. Keep the same screen and controls throughout; start the next session when ready."))
 	var body = UI.hbox(content, true)
 	var side = UI.panel(); side.custom_minimum_size.x = 295; body.add_child(side)
 	var left = UI.vbox(side, true); left.add_child(UI.label("TRACK LIBRARY", 14, UI.ACCENT))
@@ -140,18 +142,24 @@ func show_library(test_track: Dictionary = {}) -> void:
 	left.add_child(UI.paragraph("Edited tracks saved in Circuit Atelier appear here. Race sessions use their own compiled copy, so editing cannot change a running weekend."))
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
-	controls.add_child(UI.label("CAR", 12, UI.MUTED))
-	controls.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; refresh.call(), TrackGeometry.PRESETS.keys().find(vehicle)))
-	controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
-	controls.add_child(UI.option(["Changing skies", "Dry", "Rain-prone"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
-	controls.add_child(UI.option(["Seeded weather", "Scripted training / legacy"], func(index): config.weather_mode = WeekendWeather.MODES[index], 0 if config.get("weather_mode", "seeded") == "seeded" else 1))
-	controls.add_child(UI.label("LAPS", 12, UI.MUTED))
-	var lap_input = UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)); controls.add_child(lap_input)
-	controls.add_child(UI.option(["Standard · 24 laps", "Quick · 12 laps", "Custom · uncalibrated"], func(index):
-		if index < 2: lap_input.value = [24, 12][index], 0 if config.laps == 24 else (1 if config.laps == 12 else 2)))
-	controls.add_child(UI.label("QUAL MIN", 12, UI.MUTED)); controls.add_child(UI.spin(config.qual_duration / 60, 2, 30, 1, func(value): config.qual_duration = value * 60))
-	controls.add_child(UI.option(["Standard incidents", "Calm / testing", "Volatile"], func(index): config.intensity = ["standard", "calm", "volatile"][index], ["standard", "calm", "volatile"].find(config.intensity)))
-	controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))
+	if App.settings.get("pitwall_layout", "minimal") == "minimal":
+		controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
+		controls.add_child(UI.option(["Dry", "Changing skies", "Rain-prone"], func(index): config.scenario = ["dry", "changeable", "wet"][index], ["dry", "changeable", "wet"].find(config.scenario)))
+		controls.add_child(UI.label("RACE LAPS", 12, UI.MUTED))
+		controls.add_child(UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)))
+	else:
+		controls.add_child(UI.label("CAR", 12, UI.MUTED))
+		controls.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; refresh.call(), TrackGeometry.PRESETS.keys().find(vehicle)))
+		controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
+		controls.add_child(UI.option(["Changing skies", "Dry", "Rain-prone"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
+		controls.add_child(UI.option(["Seeded weather", "Scripted training / legacy"], func(index): config.weather_mode = WeekendWeather.MODES[index], 0 if config.get("weather_mode", "seeded") == "seeded" else 1))
+		controls.add_child(UI.label("LAPS", 12, UI.MUTED))
+		var lap_input = UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)); controls.add_child(lap_input)
+		controls.add_child(UI.option(["Standard · 24 laps", "Quick · 12 laps", "Custom · uncalibrated"], func(index):
+			if index < 2: lap_input.value = [24, 12][index], 0 if config.laps == 24 else (1 if config.laps == 12 else 2)))
+		controls.add_child(UI.label("QUAL MIN", 12, UI.MUTED)); controls.add_child(UI.spin(config.qual_duration / 60, 2, 30, 1, func(value): config.qual_duration = value * 60))
+		controls.add_child(UI.option(["Standard incidents", "Calm / testing", "Volatile"], func(index): config.intensity = ["standard", "calm", "volatile"][index], ["standard", "calm", "volatile"].find(config.intensity)))
+		controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))
 	var launch = UI.hbox(content)
 	launch.add_child(UI.paragraph("Qualifying is automatically extended when necessary to allow complete out/hot/in laps. Presets are game estimates, not licensed vehicle models."))
 	launch.add_child(UI.button("Open weekend briefing", func():
@@ -164,17 +172,21 @@ func show_library(test_track: Dictionary = {}) -> void:
 			App.weekend.speed = App.settings.speed
 			show_weekend()
 		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
-			var dialog = ConfirmationDialog.new(); dialog.title = "Replace current weekend?"; dialog.dialog_text = "This starts a new weekend and replaces the active checkpoint. Export the current race log first to retain its history."
+			var dialog = ConfirmationDialog.new(); dialog.title = "Replace current weekend?"; dialog.dialog_text = "This starts a new weekend and replaces the active checkpoint. Cancel to keep the current weekend."
 			add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); start.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))
 		else: start.call(), true))
 	refresh.call()
 
 func show_weekend(layout: String = "") -> void:
 	clear_screen("weekend")
-	var view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
-	if view is RaceDirectorWorkspace: view.director_enabled = (layout if not layout.is_empty() else App.settings.get("pitwall_layout", "director")) != "engineering"
+	var chosen_layout = layout if not layout.is_empty() else App.settings.get("pitwall_layout", "minimal")
+	var view
+	if App.weekend is PracticeRaceSim and chosen_layout == "minimal": view = MinimalRaceWorkspace.new()
+	else:
+		view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+		if view is RaceDirectorWorkspace: view.director_enabled = chosen_layout != "engineering"
 	view.configure(App.weekend)
-	if view is PracticeWeekendView: view.recording = App.ensure_recording()
+	if view is PracticeWeekendView or view is MinimalRaceWorkspace: view.recording = App.ensure_recording()
 	content.add_child(view)
 	if view is PracticeWeekendView: view.replay_requested.connect(func():
 		var error = replay_controller.open_data(view.recording.seal())
@@ -197,7 +209,7 @@ func show_settings() -> void:
 	var left = UI.panel(); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(left)
 	var list = UI.vbox(left)
 	list.add_child(UI.label("DISPLAY & DEFAULTS", 14, UI.ACCENT))
-	var text_sample = UI.label("MER · Finish fuel +2.4 laps", 13)
+	var text_sample = UI.label("MER · Box this lap", 13)
 	var text_choice = UI.option(["100%", "115%", "130%"], func(index): draft.pitwall_text_scale = PitwallDesign.TEXT_SCALES[index]; text_sample.add_theme_font_size_override("font_size", roundi(13 * draft.pitwall_text_scale)), PitwallDesign.TEXT_SCALES.find(draft.get("pitwall_text_scale", 1.0)))
 	text_choice.tooltip_text = "Native pit-wall text. Circuit labels and track-editor text are unchanged. Applied when reopening the weekend."
 	UI.field(list, "Pit-wall text", text_choice); list.add_child(text_sample)
@@ -205,8 +217,8 @@ func show_settings() -> void:
 	list.add_child(UI.check("Fullscreen", draft.fullscreen, func(value): draft.fullscreen = value))
 	list.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): draft.vsync = value))
 	list.add_child(UI.check("Show driver labels by default", draft.labels, func(value): draft.labels = value))
-	list.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): draft.racing_line = value))
-	UI.field(list, "Pit-wall layout", UI.option(["Race Director · track & decisions", "Engineering · detailed controls"], func(index): draft.pitwall_layout = ["director", "engineering"][index], 1 if draft.get("pitwall_layout", "director") == "engineering" else 0))
+	if App.settings.get("pitwall_layout", "minimal") != "minimal": list.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): draft.racing_line = value))
+	list.add_child(UI.paragraph("Race weekend: timing on the left, race in the centre, driver controls on the right."))
 	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): draft.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(draft.speed)))
 	var right = UI.panel(); right.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(right)
 	list = UI.vbox(right)
@@ -214,7 +226,7 @@ func show_settings() -> void:
 	UI.field(list, "Scenery detail", UI.option(["Rich illustration", "Simple / fewer trees"], func(index): draft.scenery_detail = ["rich", "simple"][index], 0 if draft.scenery_detail == "rich" else 1))
 	UI.field(list, "Car dot size", UI.option(["Standard", "Large", "Extra large"], func(index): draft.dot_scale = [1.0, 1.3, 1.6][index], [1.0, 1.3, 1.6].find(draft.dot_scale)))
 	list.add_child(UI.check("Reduced motion / direct follow camera", draft.reduced_motion, func(value): draft.reduced_motion = value))
-	list.add_child(UI.paragraph("Presentation choices apply when a view opens. Use Layers on the map for immediate line, label and surface changes. Simple scenery reduces decorative trees; it never changes grip, weather or driving."))
+	list.add_child(UI.paragraph("Presentation choices apply when a view opens. Simple scenery reduces decorative trees; it never changes grip, weather or driving."))
 	var data_panel = UI.panel(); content.add_child(data_panel); list = UI.vbox(data_panel)
 	list.add_child(UI.label("LOCAL DATA", 14, UI.ACCENT))
 	list.add_child(UI.paragraph("Tracks, settings and the active weekend are stored on this device. Atomic saves retain the previous file as .bak. Bundled circuits are never overwritten."))
@@ -235,6 +247,9 @@ func show_settings() -> void:
 	actions.add_child(UI.button("Back without applying", show_menu))
 
 func show_help() -> void:
+	if App.settings.get("pitwall_layout", "minimal") == "minimal":
+		UI.notify(self, "Your first Grand Prix", "1. Start practice. Choose MER or MOR and Send out. Each run measures two laps and returns automatically. End practice when ready.\n\n2. Start qualifying. Send each driver for an out lap, one flying lap and an in lap. Only the flying lap sets a grid time.\n\n3. Start formation, then Start race when the grid is ready.\n\n4. Choose a driver to Push, Calm, change engine mode or Box this lap. Press an active pace button again for Normal. Crew selects real available tyres; no tyre/setup screens are needed. Box in practice or qualifying abandons an unfinished timed lap.\n\n5. Space plays/pauses; 1–5 change speed; F fits the circuit. Menu pauses and saves. Detailed telemetry and strategy tools are not part of this interface.")
+		return
 	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
@@ -247,7 +262,7 @@ func request_quit() -> void:
 				replay_controller.close(); request_quit())
 			return
 		replay_controller.close()
-	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0) is PitwallWorkspace:
+	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0).has_method("confirm_leave"):
 		content.get_child(0).confirm_leave(_quit_saved); return
 	_quit_saved()
 

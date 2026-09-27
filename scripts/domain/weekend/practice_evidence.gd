@@ -151,7 +151,13 @@ static func valid(state: Variant, sim: RaceSim) -> bool:
 			if not a.get("returning") is bool or a.water_sum > a.ticks + 0.000001: return false
 			if not a.anchor.is_empty() and a.anchor.time < d.runs.back().start.time: return false
 			if c.qual_state == "hotlap" and a.anchor.is_empty(): return false
-			if c.car_setup != d.runs.back().setup or c.pace != d.runs.back().pace or c.engine != d.runs.back().engine: return false
+			if c.car_setup != d.runs.back().setup: return false
+			# Optional explicit live orders preserve the original run's measured-mode
+			# baseline. Legacy runs still require that exact baseline on the car.
+			var modes = a.get("live_modes", {"pace": d.runs.back().pace, "engine": d.runs.back().engine})
+			if not modes is Dictionary or modes.size() != 2: return false
+			for channel in ["pace", "engine"]:
+				if not RaceCheckpoint.integral(modes.get(channel), 0, 2) or c[channel] != modes[channel]: return false
 		if state.status == "running" and (c.qual_best != 0 or c.qual_runs != 0 or not c.qual_history.is_empty()): return false
 		if state.status == "running" and c.route != "garage" and not c.dnf and d.active.is_empty(): return false
 	return true
