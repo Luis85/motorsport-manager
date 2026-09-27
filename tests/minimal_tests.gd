@@ -150,8 +150,79 @@ func test_readouts_and_timing() -> void:
 	car.dnf = true; car.finished = false; car.retire_reason = "Out of fuel"
 	check(MinimalDriverReadout.capture(sim,3).retire_reason == "Out of fuel", "Retirement explanation uses the recorded reason")
 
+func test_driver_context() -> void:
+	# Explicit synthetic read-model boundaries, distinct from the native physical journey.
+	var sim = fixture(); sim.phase = "race"; sim.paused = true
+	for c in sim.cars: c.route = "garage"
+	var car = sim.cars[3]; car.route = "track"; car.speed = 40; car.distance = 800.0
+	car.pace = 1; car.damage = 0; car.loss = 0
+	var first = MinimalDriverReadout.capture(sim,3)
+	check(first.stress.value == 15 and first.stress.band == "Low", "Stress has a documented clean-running baseline, not random filler")
+	car.pace = 2
+	var pushing = MinimalDriverReadout.capture(sim,3)
+	check(pushing.stress.value == 35 and pushing.stress.text.begins_with("~") and "Push" in pushing.stress.reason, "Push raises explicitly estimated demand and states its input")
+	car.pace = 0
+	check(MinimalDriverReadout.capture(sim,3).stress.value == 7, "Existing Calm pace lowers current demand without another action")
+	car.pace = 2; sim.cars[6].route = "track"; sim.cars[6].distance = 805; sim.cars[6].speed = 40
+	check(MinimalDriverReadout.capture(sim,3).stress.value > pushing.stress.value, "Real along-track traffic raises driving-demand estimate")
+	sim.cars[6].distance = 1800
+	check(MinimalDriverReadout.capture(sim,3).stress.value == pushing.stress.value, "Distant track stations do not create pressure from apparent 2D proximity")
+	car.damage = 50; car.loss = 2
+	var fitted = TyreInventory.find(car,car.set_id); fitted.wheels.FL.punctured = true
+	var high = MinimalDriverReadout.capture(sim,3)
+	check(high.stress.value <= 100 and high.stress.band == "High" and "Puncture" in high.stress.reason, "Combined demand is bounded and explains the affected tyre")
+	check("No performance effect" in high.stress.reason, "Stress does not pretend to be an implemented performance mechanic")
+	check(MinimalDriverReadout.capture(sim,6).stress.value < high.stress.value, "Stress belongs to each driver, not the selected card or teammate")
+	var before = JSON.stringify(sim.snapshot())
+	for i in range(200): MinimalDriverReadout.capture(sim,3); MinimalDriverReadout.capture(sim,6)
+	check(before == JSON.stringify(sim.snapshot()), "Two hundred card refreshes cannot mutate state, history, RNG or time")
+	car.finished = true
+	check(MinimalDriverReadout.capture(sim,3).stress.value == -1, "No live stress estimate persists after the finish")
+	car.finished = false; car.dnf = true
+	check(MinimalDriverReadout.capture(sim,3).stress.text == "—", "Retired driver has unavailable stress, not a fake zero")
+	car.dnf = false; car.route = "garage"
+	check(MinimalDriverReadout.capture(sim,3).stress.value == -1, "Garage driver is not assigned active driving demand")
+	car.route = "track"; sim.phase = "lights"
+	check(MinimalDriverReadout.capture(sim,3).stress.value == -1, "Stationary start lights are not presented as active driving stress")
+	sim.phase = "qualifying"; car.qual_best = 83.456
+	car.qual_history = [{"time":83.456,"valid":true},{"time":82.5,"valid":false}]
+	check(MinimalDriverReadout.capture(sim,3).lap.last == "1:23.456", "Invalid qualifying lap cannot replace the last valid measured attempt")
+	sim.phase = "practice"; sim.practice_driver(3).runs = [{"samples":[{"seconds":87.25},{"seconds":86.5}]}]
+	var reading = MinimalDriverReadout.capture(sim,3)
+	check(reading.lap.last == "1:26.500" and reading.lap.best == "1:26.500", "Practice card uses actual practice seconds, never qualifying data")
+	check("Best measured" in reading.context, "Practice distinguishes measured observation from valid qualifying classification")
+	sim.phase = "formation"
+	reading = MinimalDriverReadout.capture(sim,3)
+	check(reading.lap.label == "QUALIFYING" and reading.lap.last == "1:23.456", "Grid-phase timing is explicitly the qualifying result")
+	sim.phase = "race"; car.last_lap = 91.234; car.best_lap = 84; car.history = [{"pit_lap":true}]
+	reading = MinimalDriverReadout.capture(sim,3)
+	check(reading.lap.label == "LAST · PIT LAP" and reading.lap.last == "1:31.234", "A slow pit lap is labeled, not confused with clean pace")
+	car.engine_temperature = 122; car.speed = 50
+	reading = MinimalDriverReadout.capture(sim,3)
+	check(reading.engine_hot and reading.engine_temp == "Engine 122°C" and reading.speed == "180 km/h", "Engine heat and speed use actual simulation values and units")
+	for c in sim.cars: c.dnf = c.id not in [0,3,6]; c.finished = false
+	sim.cars[0].distance = 880; sim.cars[0].speed = 40; sim.cars[6].distance = 760; sim.cars[6].speed = 40
+	car.distance = 800; car.speed = 40
+	reading = MinimalDriverReadout.capture(sim,3)
+	check("Ahead" in reading.context and "~2.0s" in reading.context and "Behind" in reading.context and "~1.0s" in reading.context, "Neighbor gaps are signed by explicit Ahead/Behind and marked as estimates")
+	sim.cars[0].finished = true; sim.cars[0].finish_position = 1; sim.cars[0].completed = sim.laps
+	check("finished" in MinimalDriverReadout.capture(sim,3).context and not "Leading" in MinimalDriverReadout.capture(sim,3).context, "A finished leader cannot make the next running car falsely appear to lead")
+	check(MinimalDriverContext.gap_text(sim, {"distance":200.0,"speed":0}, {"distance":100.0}) == "—", "Stationary time-gap estimation remains unknown")
+	check(MinimalDriverContext.gap_text(sim, {"distance":sim.track.length*2.5,"speed":40}, {"distance":0}) == "2 L", "Whole-lap deficits are not expressed as precise seconds")
+	check(MinimalDriverReadout.capture(sim,0).is_empty() and MinimalDriverReadout.capture(sim,-1).is_empty(), "Private card information is only exposed for managed drivers")
+	# Real supported continuation, no synthetic pressure state added to the archive.
+	sim = fixture(); var control = controller(sim); control.advance_stage(); control.send_out(3); control.play()
+	for i in range(300): sim.step()
+	var restored = PracticeRaceSim.restore_practice(JSON.parse_string(JSON.stringify(sim.snapshot(),"",false,true)))
+	check(restored != null, "Enriched cards require no checkpoint migration")
+	if restored:
+		check(same(MinimalDriverReadout.capture(sim,3),MinimalDriverReadout.capture(restored,3)), "Stress and card readouts reproduce from the restored authoritative state")
+		for i in range(300):
+			sim.step(); restored.step(); MinimalDriverReadout.capture(sim,3); MinimalDriverReadout.capture(sim,6)
+		check(same(sim.snapshot(),restored.snapshot()), "Showing enriched cards for one of two equivalent runs leaves sporting state and RNG identical")
+
 func run() -> void:
 	var started=Time.get_ticks_msec(); geometry=TrackGeometry.new(Storage.read_catalog().data[7])
-	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes(); test_readouts_and_timing()
+	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes(); test_readouts_and_timing(); test_driver_context()
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"metrics":metrics,"elapsed_seconds":(Time.get_ticks_msec()-started)/1000.0}
 	Storage.write_json("res://reports/minimal-tests.json",report);print("MINIMAL_TESTS ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

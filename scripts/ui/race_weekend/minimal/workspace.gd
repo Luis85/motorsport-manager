@@ -25,6 +25,12 @@ var driver_buttons: Dictionary = {}
 var selected_id = 3
 var session_label: Label
 var clock_label: Label
+var pit_identity: Label
+var engine_description: Label
+var timing_stack: VBoxContainer
+var pit_masthead: HBoxContainer
+var pit_selected_panel: PanelContainer
+var pit_right: VBoxContainer
 var name_label: Label
 var state_label: Label
 var hint_label: Label
@@ -94,7 +100,7 @@ func build_toolbar() -> void:
 func build_body() -> void:
 	body = HBoxContainer.new(); body.size_flags_vertical = Control.SIZE_EXPAND_FILL; add_child(body)
 	timing_panel = PanelContainer.new(); timing_panel.custom_minimum_size.x = 270 * text_scale; body.add_child(timing_panel)
-	var left = VBoxContainer.new(); timing_panel.add_child(left)
+	var left = VBoxContainer.new(); timing_stack = left; timing_panel.add_child(left)
 	var tower_heading = HBoxContainer.new(); left.add_child(tower_heading)
 	var tower_title = label("Timing", 16); tower_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tower_heading.add_child(tower_title)
 	timing_caption = label("", 11, true); tower_heading.add_child(timing_caption)
@@ -140,28 +146,47 @@ func build_body() -> void:
 		if controls.owned(id): select_driver(id)
 		else: sim.selected_id = selected_id)
 	canvas.tooltip_text = sim.track.document.name + " · Wheel to zoom; drag with the middle mouse button to pan; F to fit."
-	pitwall = PanelContainer.new(); pitwall.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(MinimalRaceStyle.PANEL, MinimalRaceStyle.LINE, roundi(9 * text_scale))); pitwall.custom_minimum_size.x = 244 * text_scale; body.add_child(pitwall)
-	var right = VBoxContainer.new(); right.add_theme_constant_override("separation", roundi(3 * text_scale)); pitwall.add_child(right)
-	right.add_child(label("Pitwall", 16))
-	var choices = HBoxContainer.new(); right.add_child(choices)
+	build_pitwall()
+
+func build_pitwall() -> void:
+	pitwall = PanelContainer.new()
+	pitwall.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(MinimalRaceStyle.PANEL, MinimalRaceStyle.LINE, roundi(10 * text_scale)))
+	pitwall.custom_minimum_size.x = 244 * text_scale; body.add_child(pitwall)
+	var right = VBoxContainer.new(); pit_right = right
+	right.add_theme_constant_override("separation", roundi(7 * text_scale)); pitwall.add_child(right)
+	var masthead = HBoxContainer.new(); pit_masthead = masthead; right.add_child(masthead)
+	var title = label("PITWALL", 11, true); title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; masthead.add_child(title)
+	masthead.add_child(label("MANUAL", 10, true))
+	var choices = HBoxContainer.new(); choices.add_theme_constant_override("separation", 3); right.add_child(choices)
 	for car in sim.cars:
 		if not car.player: continue
 		var id = int(car.id)
 		var choice = button(car.short, func(): select_driver(id), true)
 		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL; choice.tooltip_text = car.name
 		choice.accessibility_name = "Select " + car.name; choices.add_child(choice); driver_buttons[id] = choice
-	var driver_heading = HBoxContainer.new(); right.add_child(driver_heading)
-	name_label = label(""); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; driver_heading.add_child(name_label)
-	state_label = label("", 11, true); driver_heading.add_child(state_label)
-	right.add_child(HSeparator.new())
-	send_button = button("Send out", func(): driver_action("send")); right.add_child(send_button)
-	box_button = button("Box this lap", func(): driver_action("box")); right.add_child(box_button)
+	var selected_panel = PanelContainer.new(); pit_selected_panel = selected_panel
+	selected_panel.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(Color("1e3036"), Color.TRANSPARENT, roundi(8*text_scale))); right.add_child(selected_panel)
+	var selected_row = HBoxContainer.new(); selected_panel.add_child(selected_row)
+	pit_identity = label("", 22); selected_row.add_child(pit_identity)
+	var names = VBoxContainer.new(); names.add_theme_constant_override("separation", 0); names.size_flags_horizontal = Control.SIZE_EXPAND_FILL; selected_row.add_child(names)
+	name_label = label("", 14); names.add_child(name_label)
+	state_label = label("", 11, true); names.add_child(state_label)
+	right.add_child(label("PIT OPERATIONS", 10, true))
+	var pit_actions = HBoxContainer.new(); pit_actions.add_theme_constant_override("separation", roundi(5*text_scale)); right.add_child(pit_actions)
+	send_button = button("Send out", func(): driver_action("send")); pit_actions.add_child(send_button)
+	box_button = button("Box this lap", func(): driver_action("box")); pit_actions.add_child(box_button)
+	for node in [send_button, box_button]:
+		node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		for state in ["normal","hover","pressed","disabled"]:
+			var style = node.get_theme_stylebox(state).duplicate()
+			style.content_margin_left = 6*text_scale; style.content_margin_right = 6*text_scale
+			node.add_theme_stylebox_override(state,style)
 	pace_label = label("Pace · Normal", 12, true); right.add_child(pace_label)
-	var pace_row = HBoxContainer.new(); right.add_child(pace_row)
+	var pace_row = HBoxContainer.new(); pace_row.add_theme_constant_override("separation", roundi(5*text_scale)); right.add_child(pace_row)
 	push_button = button("Push", func(): driver_action("push"), true); pace_row.add_child(push_button)
 	calm_button = button("Calm", func(): driver_action("calm"), true); pace_row.add_child(calm_button)
-	for node in [push_button, calm_button]: node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.add_child(label("Engine mode", 12, true))
+	for node in [push_button,calm_button]: node.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right.add_child(label("ENGINE MODE", 10, true))
 	engine_control = OptionButton.new(); engine_control.custom_minimum_size.y = 36 * text_scale
 	for text in ["Save", "Standard", "Power"]: engine_control.add_item(text)
 	engine_control.get_popup().about_to_popup.connect(func(): engine_target_id = selected_id; engine_target_phase = sim.phase)
@@ -170,9 +195,14 @@ func build_body() -> void:
 			controls.mode(engine_target_id, "engine", index); remember_message()
 		refresh())
 	engine_control.accessibility_name = "Engine mode for selected driver"; right.add_child(engine_control)
+	engine_description = label("", 11, true); right.add_child(engine_description)
 	right.add_child(HSeparator.new())
-	receipt_label = label("", 12); receipt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; receipt_label.size.x = 220 * text_scale; receipt_label.max_lines_visible = 1 if get_viewport_rect().size.y <= 760 else 2; receipt_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(receipt_label)
-	hint_label = label("", 12, true); hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; hint_label.size.x = 220 * text_scale; hint_label.max_lines_visible = 1 if get_viewport_rect().size.y <= 760 else 2; hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(hint_label)
+	receipt_label = label("", 12); receipt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	receipt_label.size.x = 220*text_scale; receipt_label.max_lines_visible = 2
+	receipt_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(receipt_label)
+	hint_label = label("", 12, true); hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint_label.size.x = 220*text_scale; hint_label.max_lines_visible = 2
+	hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(hint_label)
 	var space = Control.new(); space.size_flags_vertical = Control.SIZE_EXPAND_FILL; right.add_child(space)
 
 func select_driver(id: int) -> void:
@@ -202,7 +232,13 @@ func refresh() -> void:
 	var compact = int(get_viewport_rect().size.y <= 760)
 	if compact != compact_profile:
 		compact_profile = compact
-		tower.add_theme_constant_override("v_separation", roundi((1 if compact else 5) * text_scale))
+		pit_right.add_theme_constant_override("separation", roundi((2 if compact else 7)*text_scale))
+		pit_masthead.visible = not compact; engine_description.visible = not compact
+		var pad = roundi((2 if compact else 8)*text_scale)
+		pit_selected_panel.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(Color("1e3036"), Color.TRANSPARENT, pad))
+		tower.add_theme_constant_override("v_separation", roundi((0 if compact and text_scale >= 1.25 else (1 if compact else 3)) * text_scale))
+		timing_stack.add_theme_constant_override("separation", roundi((4 if compact else 8)*text_scale))
+		timing_panel.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(MinimalRaceStyle.PANEL, MinimalRaceStyle.LINE, roundi((6 if compact else 12)*text_scale)))
 		receipt_label.max_lines_visible = 1 if compact else 2; hint_label.max_lines_visible = 1 if compact else 2
 		for card in driver_cards.values(): card.set_compact(compact == 1)
 	var active = sim.phase in RaceSim.ACTIVE
@@ -226,7 +262,9 @@ func refresh() -> void:
 	primary_button.tooltip_text = "Close the session; current timed laps may finish. Playback resumes to bring cars home." if sim.phase in ["practice","qualifying"] else "Advance only when you are ready."
 	var car = sim.cars[selected_id]
 	for id in driver_buttons: driver_buttons[id].set_pressed_no_signal(id == selected_id)
-	name_label.text = car.name; state_label.text = MinimalRaceTiming.tag(MinimalRaceTiming.state(sim,car)); state_label.tooltip_text = MinimalRaceTiming.state(sim,car)
+	name_label.text = car.name; state_label.text = MinimalRaceTiming.state(sim,car); state_label.tooltip_text = state_label.text
+	pit_identity.text = "#%02d" % car.number; pit_identity.add_theme_color_override("font_color", Color(car.color))
+	engine_description.text = ["Less fuel · less power", "Balanced fuel use", "More fuel · more heat"][car.engine]
 	send_button.disabled = not controls.send_reason(selected_id).is_empty()
 	send_button.tooltip_text = controls.send_reason(selected_id) if send_button.disabled else "Release " + car.name + ". Practice: two measured laps. Qualifying: one flying lap. Automatic physical return."
 	box_button.disabled = not controls.box_reason(selected_id).is_empty()
