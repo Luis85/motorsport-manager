@@ -295,7 +295,7 @@ func test_forecast_edges_and_decisions() -> void:
 
 func test_scenario_content() -> void:
 	var library = Storage.read_catalog().data
-	var recipes = WeekendScenarios.catalog()
+	var recipes = ScenarioCatalog.read("dry")
 	check(recipes.size() == 4, "The initial pack contains four playable dry strategy recipes")
 	for recipe in recipes:
 		check(WeekendScenarios.valid(recipe), "Scenario schema is valid: " + recipe.id)

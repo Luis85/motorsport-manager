@@ -3,8 +3,13 @@ extends VBoxContainer
 ## An independent viewer. It has no original RaceSim reference or tactical commands.
 signal close_requested
 var player: RaceReplay
-var playing = false
-var budget = 16
+var playback = ReplayPlayback.new()
+var playing: bool:
+	get: return playback.playing
+	set(value): playback.playing = value
+var budget: int:
+	get: return playback.budget
+	set(value): playback.budget = value
 var clock = 0.0
 var mode_title: Label
 var sandbox_return: Button
@@ -28,6 +33,7 @@ var scenario_details_button: Button
 
 func configure(replay: RaceReplay) -> void:
 	player = replay
+	playback.player = replay
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -43,7 +49,7 @@ func _ready() -> void:
 	actions.add_child(UI.option(["Steady replay", "Fast replay", "Fastest replay"], func(index): budget = [16,32,64][index]))
 	branch_button = UI.button("Try another decision", start_sandbox, true); actions.add_child(branch_button)
 	status = UI.paragraph(""); viewer.add_child(status)
-	canvas = TrackCanvas.new(); canvas.show_grid = false; viewer.add_child(canvas); canvas.custom_minimum_size = Vector2(300, 160)
+	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.show_grid = false; viewer.add_child(canvas); canvas.custom_minimum_size = Vector2(300, 160)
 	var card = UI.panel(); viewer.add_child(card); summary = UI.paragraph(""); card.add_child(summary)
 	var footer = UI.hbox(viewer)
 	footer.add_child(UI.button("Export recording", func(): export_data(player.record, "weekend.replay.json")))
@@ -57,7 +63,7 @@ func seek(index: int) -> void:
 	playing = false
 	if not player.seek(index): last_error = "That checkpoint is unavailable."
 	else:
-		last_error = ""; canvas.set_track(player.sim.track); canvas.sim = player.sim; canvas.call_deferred("fit")
+		last_error = ""; canvas.set_track(player.sim.track); canvas.visual_source = RaceVisualSource.new(player.sim); canvas.call_deferred("fit")
 	refresh()
 
 func toggle_play() -> void:
@@ -70,9 +76,6 @@ func _process(delta: float) -> void:
 		if clock >= 0.2 and scenario_status != null:
 			clock = 0; scenario_status.text = ScenarioBrief.assessment(sandbox_record.parent.scenario, sandbox_view.sim)
 		return
-	if playing:
-		player.tick(budget)
-		if player.verified or not player.error.is_empty(): playing = false
 	clock += delta
 	if clock >= 0.2: clock = 0; refresh()
 
@@ -126,6 +129,7 @@ func mount_sandbox(sim: PracticeRaceSim, record: RaceRecord) -> void:
 	PitwallDesign.scale_controls(sandbox_return, float(App.settings.pitwall_text_scale))
 	sandbox_view = RaceDirectorWorkspace.new(); sandbox_view.director_enabled = App.settings.get("pitwall_layout", "director") != "engineering"; sandbox_view.configure(sim); sandbox_view.recording = record
 	sandbox_shell.add_child(sandbox_view)
+	App.activate_session(sandbox_view.session_runner, record)
 	sandbox_view.menu_requested.connect(leave_sandbox); sandbox_view.new_weekend_requested.connect(leave_sandbox)
 	sandbox_view.replay_requested.connect(func(): sandbox_view.show_reading("Sandbox recording", "Return to replay to inspect the source. Save this experiment in its separate slot; Resume sandbox opens it from the main menu.", sandbox_view.weekend_menu))
 	sandbox_view.guide.hide()
@@ -141,6 +145,7 @@ func leave_sandbox() -> void:
 func _leave_sandbox_saved() -> void:
 	var error = save_sandbox()
 	if not error.is_empty(): UI.notify(self, "Experiment not saved", error); return
+	App.stop_session()
 	sandbox_shell.process_mode = Node.PROCESS_MODE_DISABLED
 	remove_child(sandbox_shell); sandbox_shell.queue_free(); sandbox_shell = null; sandbox_view = null; sandbox_record = null
 	scenario_status = null

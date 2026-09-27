@@ -1,11 +1,6 @@
 class_name RecoveryScenarios
 extends RefCounted
 ## Initial conditions are disclosed, not injected at a dramatic point during the race.
-static func catalog() -> Array:
-	var result = Storage.read_json("res://data/scenarios/recovery.json")
-	if not result.ok or not result.data is Dictionary or result.data.get("version") != 1 or not result.data.get("scenarios") is Array: return []
-	return result.data.scenarios
-
 static func valid(recipe: Variant) -> bool:
 	if not recipe is Dictionary: return false
 	for key in ["id", "title", "track", "objective", "hint"]:

@@ -28,8 +28,8 @@ func run() -> void:
 	var app = root.get_node("App")
 	game.show_recovery_scenarios(); await capture("scenarios")
 	check(game.screen_name == "recovery_scenarios", "Recovery scenarios are reachable in native main navigation")
-	model = RecoveryScenarios.build(RecoveryScenarios.catalog()[0], app.library)
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	model = RecoveryScenarios.build(ScenarioCatalog.read("recovery")[0], app.library)
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and view.tabs.current_tab == 6, "New model uses the unified pit-wall workspace with recovery and strategy")
 	view.open_recovery(3); view.close_detail(); view.recovery_links[3].pressed.emit(); await capture("briefing")
 	check(view.right_panel.visible and view.tabs.current_tab == view.recovery_page_index and inside(view.topic_buttons[view.recovery_page_index]), "Recovery shortcut reopens its closed topic within Conditions")
@@ -102,7 +102,7 @@ func run() -> void:
 	var preferences = app.settings.duplicate(true)
 	app.settings.pitwall_text_scale = 1.3
 	root.size = Vector2i(1100,720); root.content_scale_size = root.size
-	game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	view.open_recovery(3); await settle()
 	for id in [3,6]:
 		check(inside(view.recovery_links[id]) and inside(view.weather_links[id]) and inside(view.decision_controls[id].box), "Scaled merged shell retains three direct actions for driver " + str(id))

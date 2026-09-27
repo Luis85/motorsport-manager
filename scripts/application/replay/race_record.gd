@@ -26,7 +26,7 @@ static func identity() -> String:
 
 static func fingerprint(data: Variant) -> String:
 	# Normalize JSON's number/key representation before computing an integrity digest.
-	return JSON.stringify(JSON.parse_string(JSON.stringify(data, "", true, true)), "", true, true).sha256_text()
+	return RaceStateValue.fingerprint(data)
 
 func attach(sim: PracticeRaceSim, mode: String = "standalone", lineage: Dictionary = {}) -> void:
 	detach()

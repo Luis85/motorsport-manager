@@ -18,7 +18,7 @@ func long_race(seed_value: int) -> void:
 	check(await advance_until(func():return model.phase=="grid_ready",240),"G17 soak formation remains physical")
 	view.refresh();await click(view.primary_button)
 	check(await advance_until(func():return model.phase=="race",10),"G17 soak lights start through native approval")
-	view.refresh();view.set_process(true);await settle()
+	view.refresh();view.set_process(true); view.session_runner.automatic = true;await settle()
 
 func run() -> void:
 	var seconds=30.0
@@ -74,7 +74,7 @@ func run() -> void:
 			Storage.write_json("res://reports/ui-finish-soak-progress.json",{"target_wall_seconds":seconds,"elapsed_wall_seconds":elapsed,"frames":frame,"observations":observations,"failures":failures})
 			if next_checkpoint==0.0 or elapsed>seconds-31:await capture("soak-%d" % int(elapsed),"Physical changeable-weather race under the production native frame loop; explicit pause checkpoints, no synthetic sporting events")
 			next_checkpoint=elapsed+30.0
-	await key(KEY_SPACE);view.set_process(false)
+	await key(KEY_SPACE);view.set_process(false); view.session_runner.automatic = false
 	check(PitwallDesign.race_styles.size()<=baseline_styles+4,"G17 cached race styles remain bounded after the sustained workload")
 	var report={"passed":failures.is_empty(),"checks":checks,"errors":failures,"captures":captures,"screenshots":captures.size(),"engine":Engine.get_version_info().string,"cpu":OS.get_processor_name(),"renderer":RenderingServer.get_video_adapter_name(),"display":DisplayServer.get_name(),"viewport":"1100x720","text_scale":1.3,"wall_seconds":(Time.get_ticks_msec()-start)/1000.0,"target_wall_seconds":seconds,"frames":frame,"frame_sample_every":6,"frame_distribution":quantiles(frame_samples),"refresh_distribution":quantiles(refresh_samples),"baseline_nodes":baseline_nodes,"baseline_static_memory_bytes":baseline_memory,"observations":observations,"completed_physical_sessions":session_results,"final_race_time":model.total_time,"final_hash":race_fingerprint().sha256_text(),"limitations":"Native Linux Xvfb / Mesa llvmpipe, Alternating 1x/16x real frame-loop input with explicit pause inspections and a separately sampled refresh workload. Contending CI/test workloads may affect throughput. Not physical-controller, Windows, export-build or broad-hardware certification; not a deterministic fixed-delta throughput comparison."}
 	Storage.write_json("res://reports/ui-finish-soak.json",report);print("UI_FINISH_SOAK ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

@@ -28,8 +28,8 @@ func run() -> void:
 	var app = root.get_node("App")
 	game.show_weather_scenarios(); await capture("scenarios")
 	check(game.screen_name == "weather_scenarios", "Three weather scenarios are reachable in native navigation")
-	model = WeatherScenarios.build(WeatherScenarios.catalog()[1], app.library)
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	model = WeatherScenarios.build(ScenarioCatalog.read("weather")[1], app.library)
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and not view.right_panel.visible and inside(view.group_buttons["Conditions"]) and inside(view.weather_links[3]), "Weather-aware application opens on the circuit with direct Weather navigation")
 	view.open_weather(3); view.close_detail(); view.weather_links[3].pressed.emit(); await capture("briefing")
 	check(view.right_panel.visible and view.tabs.current_tab == 9, "Weather action reopens the same previously closed topic")

@@ -57,7 +57,8 @@ func command(action: String, payload: Dictionary = {}) -> bool:
 	var context = {"selected_id": selected_id, "paused": paused, "speed": speed, "accumulator": accumulator} if recording else {}
 	var accepted = TacticalDuels.command(self, action, payload) if action in TacticalDuels.ACTIONS else _practice_command(action, payload)
 	if accepted: TacticalDuels.after_command(self, action, payload)
-	if accepted and recording: input_accepted.emit(action, payload.duplicate(true), context)
+	if accepted and recording:
+		input_accepted.emit(action, RaceStateValue.read_only(payload), RaceStateValue.read_only(context))
 	return accepted
 
 func _practice_command(action: String, payload: Dictionary) -> bool:

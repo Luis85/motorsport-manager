@@ -232,7 +232,7 @@ func test_physical_execution() -> void:
 	if not visits.is_empty(): measurements.weather_pit_visit = visits[0].evidence
 
 func test_scenarios() -> void:
-	var recipes = WeatherScenarios.catalog(); var library = Storage.read_catalog().data
+	var recipes = ScenarioCatalog.read("weather"); var library = Storage.read_catalog().data
 	check(recipes.size() == 3, "Three weather-learning scenarios are installed")
 	for recipe in recipes:
 		check(WeatherScenarios.valid(recipe), "Weather recipe validates: " + recipe.id)

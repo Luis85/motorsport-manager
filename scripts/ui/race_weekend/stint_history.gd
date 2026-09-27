@@ -2,7 +2,7 @@ class_name RaceStintHistory
 extends Control
 ## Two-driver measured fitting intervals. No scheduled stop becomes a fitted stint.
 signal selection_changed(text: String)
-var model: RaceSim
+var model: Dictionary = {}
 var stamp: Array = []
 var update_count = 0
 var selected_driver = 0
@@ -15,8 +15,8 @@ func resize_chart() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED and is_node_ready(): resize_chart(); queue_redraw()
 	elif what in [NOTIFICATION_FOCUS_ENTER,NOTIFICATION_FOCUS_EXIT]: queue_redraw()
-func present(value: RaceSim) -> void:
-	model=value
+func present(value: Dictionary) -> void:
+	model=value.duplicate(true)
 	var next=[value.cars[3].stints,value.cars[6].stints,value.cars[3].distance,value.cars[6].distance,value.cars[3].pit_stops,value.cars[6].pit_stops]
 	if next==stamp:return
 	stamp=next.duplicate(true);update_count+=1
@@ -24,14 +24,14 @@ func present(value: RaceSim) -> void:
 	accessibility_name="Measured tyre stints for Mercer and Moreau"
 	accessibility_description=selected_text();selection_changed.emit(selected_text());queue_redraw()
 func selected_text() -> String:
-	if model==null:return "No measured stint data"
+	if model.is_empty():return "No measured stint data"
 	var car=model.cars[[3,6][selected_driver]]
 	if car.stints.is_empty():return car.name+" · No recorded fitted stints"
 	var stint=car.stints[clampi(selected_stint,0,car.stints.size()-1)]
 	var right=car.distance/model.track.length if stint.to<0 else stint.to
 	return "%s · %s · distance laps %.2f → %.2f · %s" % [car.name,stint.set_id,stint.from,right,"fitted at finish" if stint.to<0 and (car.finished or car.dnf) else "currently fitted" if stint.to<0 else "replaced physically"]
 func _gui_input(event: InputEvent) -> void:
-	if model==null:return
+	if model.is_empty():return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_UP:selected_driver=0;selected_stint=0
@@ -58,7 +58,7 @@ func _gui_input(event: InputEvent) -> void:
 	selected_stint=clampi(selected_stint,0,maxi(0,model.cars[[3,6][selected_driver]].stints.size()-1))
 	accessibility_description=selected_text();selection_changed.emit(selected_text());queue_redraw();accept_event()
 func _draw() -> void:
-	if model==null or panel_style==null:return
+	if model.is_empty() or panel_style==null:return
 	draw_style_box(panel_style,Rect2(Vector2.ZERO,size))
 	if has_focus():draw_rect(Rect2(Vector2(2,2),size-Vector2(4,4)),UI.PRIMARY,false,2)
 	var font=get_theme_font("font");var width=maxf(1,size.x-30)

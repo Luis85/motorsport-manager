@@ -21,11 +21,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED and is_node_ready(): _minimum(); queue_redraw()
 	elif what in [NOTIFICATION_FOCUS_ENTER, NOTIFICATION_FOCUS_EXIT]: queue_redraw()
 
-func present(model: RaceSim, id: int, forecast: Dictionary, initial_set: String = "") -> void:
-	var car = model.cars[id]
-	var data = [forecast.get("options",[]),model.laps,maxf(0,car.distance/model.track.length) if model.phase=="race" else 0.0,car.set_id if initial_set.is_empty() else initial_set]
+func present(data: Array) -> void:
 	if data == stamp: return
-	stamp = data.duplicate(true); options = data[0]; total_laps = maxi(1,data[1]); start_lap = data[2]; current_set = data[3]; update_count += 1
+	stamp = data.duplicate(true); options = stamp[0]; total_laps = maxi(1,data[1]); start_lap = data[2]; current_set = data[3]; update_count += 1
 	option_index = clampi(option_index,0,maxi(0,options.size()-1)); _describe(); queue_redraw()
 
 func selected_text() -> String:

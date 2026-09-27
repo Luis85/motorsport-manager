@@ -1,0 +1,96 @@
+{
+	"baseline_sha": "15932dd4ac1650281628ad1412e98a3df85f45c6",
+	"engine": "4.7.2-stable (official)",
+	"cases": [
+		{
+			"recipe": {
+				"track": "hillside",
+				"scenario": "dry",
+				"seed": 7314,
+				"intensity": "calm"
+			},
+			"formation_steps": 1436,
+			"commands_accepted": [
+				true,
+				true,
+				true,
+				true,
+				true,
+				true,
+				true
+			],
+			"hashes": [
+				"fcd86d44ea75a678be294852bd542a01c976c9e3b823b9ccda8114fac6d52b52",
+				"feb546c889658394884f2ed6048982f7fae8312463f5610f7d90522d40e3ba18",
+				"7e1a0ac7f27d367fb0acbc855ac16bd674c74d5d2689dbbb3a28eaac5356a790",
+				"a65c83b358882dd666a55e78d58b55922d968d90cc9c5c9b46c727797859452e",
+				"c6197496de13d6a034aa5c2524c724ec1fdc84e9edcbbb0eacde545a34a0e96c",
+				"c34a5712eb5dc944b82f0e289b2a6dd9e746afae0e96b8761f38023a29823ae9",
+				"efa5670a9756175e87797862e08cb1683a12fbcae2b7c293a0e63e8d86982941",
+				"926b1ea398bb48d32b5d30e4aeda63318376c8ed0845a634bed5e2390fe8e176"
+			],
+			"pits": 1,
+			"rng_state": 7314
+		},
+		{
+			"recipe": {
+				"track": "monaco",
+				"scenario": "wet",
+				"seed": 2026,
+				"intensity": "standard"
+			},
+			"formation_steps": 3533,
+			"commands_accepted": [
+				true,
+				true,
+				true,
+				true,
+				true,
+				true,
+				true
+			],
+			"hashes": [
+				"4e7654eaa9f4e2e62f9b4a839bd821d90da1ef8d381eb2eec4527c6fef1f91f4",
+				"cf10c41d59b562d97625b6102c85354143679681fc34dc48695301685d603ebc",
+				"e6b2a383d3f28625bd687fc130fe5400bc743642e09fb98603f5e90b6b23cf5c",
+				"ec58144c078150300b89069a865a6bbb8c538d70efede8802d1e2e9f40dfe979",
+				"eef0f2291c77190889f5253eee3ea1a8898d50c3c31581b22420cacc60e83735",
+				"6978112cf8582d98b1f6302e519637dfe15d652bdac88e0fdf6969dad097a46e",
+				"58fdd1df88636864d3f414e47a0ead53acd533306370a9b093ce712f5cd4295d",
+				"6cbca4f092fd66ed5ebd34cff920ae4b885ec6c65c19f512b05172f8eb1eb513"
+			],
+			"pits": 1,
+			"rng_state": 201325880
+		},
+		{
+			"recipe": {
+				"track": "monza",
+				"scenario": "changeable",
+				"seed": 942,
+				"intensity": "volatile"
+			},
+			"formation_steps": 4226,
+			"commands_accepted": [
+				true,
+				true,
+				true,
+				true,
+				true,
+				true,
+				true
+			],
+			"hashes": [
+				"507ffff4cf512dad874e30dfa48ef25070404df80d0e368435f74dd3f6002688",
+				"090a3a4a5f69135e472e4f25d2821929e3da8523df9f2080c149b061d03c38d9",
+				"218bb99bbf95332338bea8b27f3f71a08b884ad3e2020bbb1f1aad9f6b2fcc23",
+				"c65cede6baf4eb367c3484f4ddb358d57f266db386eaf3684745d9e94a048558",
+				"593243f52d8e733dd4754b394152c95664f7499e6da97860f4b309253332f264",
+				"0cf5a1151d08350eab3e4142b657972194c20e7e8977816f8ca1c4b463cb117e",
+				"d125d85b8c383759e249adf272d0f5ecab643832cb972b0728f730ece9dec657",
+				"5b52cdd01a2ecdae58308c6c6291ed618f8682d93e8bc1cbea4ed6818e76c350"
+			],
+			"pits": 1,
+			"rng_state": 1071387067
+		}
+	]
+}

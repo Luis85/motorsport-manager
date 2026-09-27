@@ -6,6 +6,7 @@ var workspace: ReplayWorkspace
 var suspended: Array = []
 var previous_focus: WeakRef
 var previous_header = false
+var suspended_session: Dictionary = {}
 
 func configure(main: Control) -> void: host = main
 
@@ -26,17 +27,23 @@ func open_data(data: Variant) -> String:
 	if not error.is_empty(): return error
 	var focus = host.get_viewport().gui_get_focus_owner()
 	previous_focus = weakref(focus) if focus else null
+	suspended_session = App.suspend_session()
 	previous_header = host.global_header.visible; host.global_header.hide()
 	for child in host.content.get_children():
 		if child.is_queued_for_deletion(): continue
 		suspended.append({"node": child, "visible": child.visible, "process": child.process_mode})
 		child.hide(); child.process_mode = Node.PROCESS_MODE_DISABLED
 	workspace = ReplayWorkspace.new(); workspace.configure(player); host.content.add_child(workspace)
+	App.replay_runner = workspace.playback
 	workspace.close_requested.connect(close)
 	return ""
 
 func close() -> void:
 	if workspace == null: return
+	App.stop_session()
+	App.replay_runner = null
+	App.restore_session(suspended_session)
+	suspended_session.clear()
 	workspace.process_mode = Node.PROCESS_MODE_DISABLED
 	host.content.remove_child(workspace); workspace.queue_free(); workspace = null
 	for saved in suspended:

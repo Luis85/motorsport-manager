@@ -1,3 +1,5 @@
+> **0.18.0 update:** See [the current boundary contract](architecture-refactor.md). Earlier module paths and UI-driven scheduling descriptions below are historical.
+
 # Architecture
 
 **0.14 update:** [Circuit notebook](race-weekend-notebook.md) adds opt-in historical facts and revision-checked personal notes in `user://circuit-notebook.json` (notebook v1). It does not alter native v10, the replay model, forecasts, physics, original/sandbox slots or result receipts. The inherited 0.13 frozen-scenario authoring and validation are preserved; historical integration status and test counts remain in their dated handoffs. [Notebook verification](notebook-verification.md).

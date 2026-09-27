@@ -48,7 +48,7 @@ func run():
 		c.route="track";c.distance=300+(12-c.id)*24;c.previous_distance=c.distance;c.speed=40
 	# Explicit diagnostic load, not fabricated incident or decision history.
 	for i in range(1000):RaceJournal.append(sim.strategy_state,sim,"benchmark_load",-1,{"index":i})
-	app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false);await settle()
+	app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false); view.session_runner.automatic = false;await settle()
 	var original=JSON.stringify(sim.snapshot());var start_hash=fingerprint(sim)
 	for target in [["strategy",6],["weather",9],["recovery",10],["practice",view.practice_page_index],["debrief",7]]:
 		view.open_topic(target[1]);view.refresh();await settle();measure(target[0]+" / populated paused refresh",view.refresh)
@@ -63,7 +63,7 @@ func run():
 	var simulation={"steps":1000,"simulated_seconds":50.0,"wall_seconds":duration,"achieved_sim_seconds_per_wall_second":50/duration,"outcome_hash":fingerprint(only)}
 	var active:Array=[]
 	for factor in [1,16]:
-		sim=PracticeRaceSim.restore_practice(source);app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false);view.open_topic(6);await settle()
+		sim=PracticeRaceSim.restore_practice(source);app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false); view.session_runner.automatic = false;view.open_topic(6);await settle()
 		sim.command("speed",{"value":factor});sim.paused=false
 		var shadow=PracticeRaceSim.restore_practice(sim.snapshot());var initial_time=sim.total_time;clock=Time.get_ticks_usec()
 		for frame in range(120):

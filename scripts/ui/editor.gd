@@ -79,7 +79,7 @@ func _ready() -> void:
 		var b = UI.button(action[0], func(): selection_action(action[1])); b.custom_minimum_size.y = 30; b.add_theme_font_size_override("font_size", 12); context_bar.add_child(b)
 	context_bar.visible = false
 	var content = UI.hbox(self, true)
-	canvas = TrackCanvas.new(); canvas.editing = true; canvas.show_line = true
+	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.editing = true; canvas.show_line = true
 	canvas.set_track(geometry, document); content.add_child(canvas)
 	canvas.edit_started.connect(checkpoint)
 	canvas.edit_cancelled.connect(cancel_gesture)

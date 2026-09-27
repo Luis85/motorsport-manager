@@ -37,6 +37,7 @@ func _ready() -> void:
 	show_menu()
 
 func clear_screen(name: String) -> void:
+	App.stop_session()
 	global_header.visible = name != "weekend"
 	if screen_name == "weekend" and App.weekend != null:
 		App.weekend.paused = App.weekend.phase in RaceSim.ACTIVE
@@ -82,7 +83,7 @@ func show_menu() -> void:
 	var showcase = UI.vbox(row, true)
 	showcase.add_child(UI.label("FROM CIRCUIT ATELIER TO THE PIT WALL", 12, UI.MUTED))
 	if not App.library.is_empty():
-		var canvas = TrackCanvas.new(); canvas.show_line = true; canvas.show_grid = false
+		var canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.show_line = true; canvas.show_grid = false
 		canvas.set_track(TrackGeometry.new(App.library[mini(7, App.library.size() - 1)])); showcase.add_child(canvas)
 		canvas.call_deferred("fit")
 	showcase.add_child(UI.label("01 / AUTHOR     02 / QUALIFY     03 / RACE", 16, UI.ACCENT))
@@ -132,7 +133,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	list.select(0)
 	var preview = UI.vbox(body, true)
 	var details = UI.label("", 17, UI.ACCENT); preview.add_child(details)
-	library_canvas = TrackCanvas.new(); library_canvas.show_line = true; preview.add_child(library_canvas)
+	library_canvas = TrackCanvas.new(); library_canvas.configure_presentation(App.settings); library_canvas.show_line = true; preview.add_child(library_canvas)
 	var refresh = func():
 		var geometry = TrackGeometry.new(selected_track, vehicle)
 		library_canvas.set_track(geometry); library_canvas.call_deferred("fit")
@@ -185,9 +186,13 @@ func show_weekend(layout: String = "") -> void:
 	else:
 		view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
 		if view is RaceDirectorWorkspace: view.director_enabled = chosen_layout != "engineering"
-	view.configure(App.weekend)
+	if view is MinimalRaceWorkspace:
+		view.configure(MinimalRaceSession.new(App.weekend), App.settings)
+	else:
+		view.configure(App.weekend)
 	if view is PracticeWeekendView or view is MinimalRaceWorkspace: view.recording = App.ensure_recording()
 	content.add_child(view)
+	App.activate_session(view.session_runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)
 	if view is PracticeWeekendView: view.replay_requested.connect(func():
 		var error = replay_controller.open_data(view.recording.seal())
 		if not error.is_empty(): UI.notify(self, "Replay unavailable", error))
@@ -282,7 +287,7 @@ func show_strategy_scenarios() -> void:
 	content.add_child(UI.label("Strategy, not scripted victories", 30))
 	content.add_child(UI.paragraph("Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage."))
 	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(entries)
-	for recipe in WeekendScenarios.catalog():
+	for recipe in ScenarioCatalog.read("dry"):
 		if not WeekendScenarios.valid(recipe): continue
 		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; panel.size_flags_vertical = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
@@ -303,7 +308,7 @@ func show_weather_scenarios() -> void:
 	content.add_child(UI.label("Forecast, choose, watch the road", 30))
 	content.add_child(UI.paragraph("Seeded conditions use observed-only forecasts. Training explicitly preserves the original schedule. Neither version forces results. All scenarios retain qualifying and start approvals."))
 	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL; content.add_child(entries)
-	for recipe in WeatherScenarios.catalog():
+	for recipe in ScenarioCatalog.read("weather"):
 		if not WeatherScenarios.valid(recipe): continue
 		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
@@ -324,7 +329,7 @@ func show_recovery_scenarios() -> void:
 	content.add_child(UI.paragraph("Disclosed scalar condition, ordinary physical racing and no guaranteed outcome. Both scenarios start at briefing; qualifying, preparation and start approvals remain yours."))
 	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
 	var entries = UI.vbox(scroll, true)
-	for recipe in RecoveryScenarios.catalog():
+	for recipe in ScenarioCatalog.read("recovery"):
 		if not RecoveryScenarios.valid(recipe): continue
 		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT)); body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
@@ -382,14 +387,14 @@ func show_duel_scenarios() -> void:
 	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(scroll)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var entries = UI.vbox(scroll); entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for recipe in DuelScenarios.catalog():
+	for recipe in ScenarioCatalog.read("duels"):
 		var card = UI.panel(); entries.add_child(card); var body = UI.vbox(card)
 		body.add_child(UI.label(recipe.title, 21, UI.ACCENT))
 		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
 		body.add_child(UI.paragraph("%s · %d laps · all fitted tyres %.0f%% · untimed grid · calm incidents" % [recipe.track.capitalize(), recipe.laps, recipe.life]))
 		body.add_child(UI.button("Open preparation · seed %d" % recipe.seed, func():
 			var start = func():
-				var candidate = DuelScenarios.build(recipe, App.library)
+				var candidate = ScenarioCatalog.build_duel(recipe, App.library)
 				if candidate == null: UI.notify(self, "Scenario unavailable", "The shipped recipe or circuit did not validate."); return
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
 			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:

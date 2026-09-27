@@ -15,7 +15,7 @@ func advance(sim, phase: String, budget: int) -> bool:
 	return sim.phase == phase
 func json_copy(value): return JSON.parse_string(JSON.stringify(value,"",false,true))
 func run_case(recipe: Dictionary, policy: String, legacy: bool) -> void:
-	var sim = DuelScenarios.build(recipe, Storage.read_catalog().data)
+	var sim = ScenarioCatalog.build_duel(recipe, Storage.read_catalog().data)
 	if sim == null: check(false,"Scenario construction: " + recipe.id); return
 	# Optional baseline retains exactly the declared grid/resources but uses legacy AI
 	# and explicit ordinary pit windows rather than retrofitting an old replay.
@@ -65,7 +65,7 @@ func run_case(recipe: Dictionary, policy: String, legacy: bool) -> void:
 func run() -> void:
 	var started=Time.get_ticks_msec()
 	var legacy=OS.get_cmdline_user_args().has("--legacy-baseline")
-	for recipe in DuelScenarios.catalog():
+	for recipe in ScenarioCatalog.read("duels"):
 		for policy in ["retain","early","extend"]:run_case(recipe,policy,legacy)
 	check(runs.size()==12,"Four disclosed circuits/formats each exercise three explicit policies")
 	var report={"passed":failures.is_empty(),"checks":checks,"errors":failures,"runs":runs,"fixed_steps":total_steps,

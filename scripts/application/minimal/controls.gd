@@ -174,3 +174,25 @@ func mode(id: int, channel: String, value: int) -> bool:
 	if not send_command(channel, {"id": id, "value": value}): return false
 	message = sim.cars[id].short + " · " + (["Calm", "Normal pace", "Push"][value] if channel == "pace" else ["Engine: Save", "Engine: Standard", "Engine: Power"][value])
 	return true
+
+func selected_driver() -> int:
+	return sim.selected_id if owned(sim.selected_id) else 3
+
+func select_driver(id: int) -> bool:
+	# Selection is presentation intent, not a sporting command. No RNG, time or
+	# resource changes; the compatibility checkpoint still stores selected_id.
+	if not owned(id):
+		return false
+	sim.selected_id = id
+	return true
+
+func current_phase() -> String:
+	return sim.phase
+
+func is_paused() -> bool:
+	return sim.paused
+
+func toggle_pace(id: int, requested: int) -> bool:
+	if not owned(id) or requested not in [0, 2]:
+		return false
+	return mode(id, "pace", 1 if sim.cars[id].pace == requested else requested)

@@ -1,6 +1,6 @@
 class_name TrackGeometry
 extends RefCounted
-## Immutable compiled snapshot shared by display and simulation; no scene dependencies.
+## Compiled track values; no scene dependencies. Owners take detached copies across boundaries.
 const PRESETS = {
 	"Formula": {"top": 89.0, "lat": 24.0, "accel": 9.0, "brake": 17.0, "width": 2.0},
 	"GT": {"top": 76.0, "lat": 15.0, "accel": 6.0, "brake": 12.0, "width": 2.1},
@@ -176,3 +176,12 @@ func runtime_export() -> Dictionary:
 	for i in range(points.size()):
 		samples.append({"s": i * spacing, "x": points[i].x, "y": points[i].y, "height": heights[i], "width": widths[i], "bank_deg": banks[i], "line_offset": offsets[i], "curvature": curvature[i], "speed_mps": speeds[i], "line_arc_to_next_m": line_distances[i]})
 	return {"kind": "motorsport-manager-runtime", "version": 2, "units": "metres-seconds-radians-except-bank_deg", "axis": "+X east, +Y north, +height up", "name": document.name, "length": length, "start_fraction": start, "vehicle": preset, "solver": RacingLine.REVISION, "estimate_seconds": estimate, "centreline_estimate_seconds": centre_estimate, "samples": samples, "pits": document.pits, "features": document.features, "objects": document.objects, "timing_gates": document.timingGates, "grid": document.grid, "sector_ends_m": sector_ends, "provenance": document.provenance, "visual": document.get("visual", {}).duplicate(true), "illustration_revision": "cozy-circuit-v1"}
+
+func detached_copy() -> TrackGeometry:
+	## Copy compiled values, not a second racing-line solve. The receiving owner
+	## cannot mutate another owner's document or packed geometry buffers.
+	var result = TrackGeometry.new()
+	for property in get_property_list():
+		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			result.set(property.name, RaceStateValue.copy(get(property.name)))
+	return result

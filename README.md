@@ -1,6 +1,8 @@
 # Motorsport Manager — Godot
 
-Native, local-first circuit authoring and two-car race management. **0.17.2 — Pitwall and driver instruments** refines the control rail and enriches both read-only driver cards. Stress is explicitly an estimated current-driving-demand indicator, not a new psychological simulation. No new commands or racing mechanics.
+Native, local-first circuit authoring and two-car race management. **0.18.0 — Simulation and presentation boundaries** separates application scheduling, detached visual/read-model queries and domain rules while retaining the minimal pitwall and driver instruments. No new actions, sporting rules or stress mechanics.
+
+See [architecture, extension recipes and verification boundaries](docs/architecture-refactor.md).
 
 ## One race screen
 

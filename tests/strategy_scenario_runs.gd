@@ -15,7 +15,7 @@ func advance(sim: RaceSim, target: String, budget: int) -> bool:
 	return sim.phase == target
 func run() -> void:
 	var started = Time.get_ticks_msec()
-	var recipe = WeekendScenarios.catalog()[0]
+	var recipe = ScenarioCatalog.read("dry")[0]
 	var base = WeekendScenarios.build(recipe, Storage.read_catalog().data)
 	check(base.command("qualify"), "A strategy scenario starts ordinary physical qualifying")
 	check(advance(base, "qualifying_results", 40000), "Delegated qualifying completes with the new release forecast")
