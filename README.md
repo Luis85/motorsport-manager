@@ -64,3 +64,20 @@ Reports and native screenshots go to `reports/`; CI publishes evidence. `reports
 This is not a comprehensive tyre/vehicle physics rewrite, a new campaign, a telemetry redesign or a calibrated racing simulator. Human playtesting, controller/screen-reader completeness, text beyond 130%, broader wet/endurance balance and hardware profiling remain validation work. There is no universal frame-rate guarantee.
 
 Seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. [Third-party notices](THIRD_PARTY_NOTICES.md) retain attribution. These are unofficial reconstructions with authored estimates, not laser scans or certified circuit/vehicle models. No official championship branding, car models or driver likenesses are used. Code retains the [MIT license](LICENSE), copyright Luis Mendez.
+
+
+## Refactor continuation (0.19.0)
+
+The shipping minimal flow now stages configuration and a welcome before starting
+practice, and opens a factual end screen after the physical race. New entry is
+persisted before replacing a prior weekend. The track editor owns a separate
+application session with transactional history and a reference-only preview.
+
+Architecture guides: [composed mechanics](docs/composable-mechanics.md) and
+[editor / weekend boundaries](docs/editor-and-weekend-boundaries.md).
+The larger typed-entity and legacy-controller migration remains explicitly open.
+
+All required test suites are registered in `scripts/verification_suites.json`.
+Run `python3 scripts/verify.py --godot /path/to/godot` for complete local coverage.
+CI uses six independent shards and a fail-closed aggregate `verify` gate; a
+headless-only or partial run is not accepted as complete verification.

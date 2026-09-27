@@ -3,6 +3,7 @@ extends VBoxContainer
 ## A new, small race screen. Does not construct/inherit Director or Engineering UI.
 signal menu_requested
 signal new_weekend_requested
+signal results_requested
 var session: MinimalRaceSession
 var frame: Dictionary = {}
 var session_runner: RaceSessionRunner
@@ -228,7 +229,7 @@ func driver_action(action: String) -> void:
 	remember_message(); refresh()
 
 func advance_stage() -> void:
-	if controls.current_phase() == "results": new_weekend_requested.emit(); return
+	if controls.current_phase() == "results": results_requested.emit(); return
 	if controls.advance_stage(): receipts.clear(); global_message = ""
 	else: global_message = controls.message
 	refresh()

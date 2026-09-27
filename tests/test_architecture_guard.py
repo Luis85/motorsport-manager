@@ -50,5 +50,10 @@ class ArchitectureGuardTests(unittest.TestCase):
     def test_application_no_infrastructure_dependency(self):
         self.assertIn('dependency-direction', [v.rule for v in self.scan('var storage = Store.new()', 'scripts/application/probe.gd')])
 
+    def test_editor_cannot_read_files_or_compile_authority(self):
+        for token in ['App', 'Storage', 'FileAccess', 'ReplayStorage']:
+            self.assertTrue(self.scan('var value = ' + token, 'scripts/ui/editor.gd'))
+        self.assertIn('editor-owns-compilation', [v.rule for v in self.scan('func draw():\n\tTrackGeometry.new({})', 'scripts/ui/track_canvas.gd')])
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

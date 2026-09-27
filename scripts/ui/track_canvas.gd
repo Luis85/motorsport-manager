@@ -22,6 +22,8 @@ var sketch_note = "Trace a new loop without altering the current circuit."
 var show_surface = false
 var world_layer: CircuitWorld
 var layer_state = {"road": {"visible": true, "locked": false}, "pits": {"visible": true, "locked": false}, "scenery": {"visible": true, "locked": false}, "features": {"visible": true, "locked": false}, "reference": {"visible": true, "locked": false}}
+var reference_preview: TrackReferencePreview
+var draft_compiler: Callable
 var preview_running = false
 var preview_distance = 0.0
 var preview_laps = 0
@@ -114,6 +116,7 @@ func _ready() -> void:
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
 	geometry = g if not live_document.is_empty() else g.detached_copy()
+	if reference_preview: reference_preview.stop()
 	preview_running = false
 	_rebuild_due = false
 	document = live_document if not live_document.is_empty() else geometry.document
@@ -157,15 +160,18 @@ func _load_backdrop() -> void:
 	if image.load_png_from_buffer(bytes) == OK: backdrop = ImageTexture.create_from_image(image)
 
 func _process(delta: float) -> void:
-	if preview_running and geometry and not geometry.preview_only:
-		var sample = geometry.sample(preview_distance)
-		preview_distance += sample.speed * minf(delta, 0.1) / sample.path_scale
-		preview_elapsed += minf(delta, 0.1)
-		if preview_distance >= geometry.length: preview_distance -= geometry.length; preview_laps += 1
+	if reference_preview:
+		var preview_frame = reference_preview.capture()
+		preview_running = preview_frame.running
+		preview_distance = preview_frame.distance
+		preview_elapsed = preview_frame.elapsed
+		preview_laps = preview_frame.laps
 	_rebuild_clock -= delta
 	if _rebuild_due and _rebuild_clock <= 0 and document.get("nodes", []).size() >= 4:
 		_rebuild_due = false; _rebuild_clock = 0.06
-		geometry = TrackGeometry.new(document, geometry.preset if geometry else "Formula", true)
+		if draft_compiler.is_valid():
+			var draft_geometry = draft_compiler.call(document, geometry.preset if geometry else "Formula", true)
+			if draft_geometry: geometry = draft_geometry
 		if world_layer: world_layer.configure(geometry, document, rich_scenery)
 		queue_redraw()
 
@@ -532,10 +538,10 @@ func set_layer(key: String, field: String, value: bool) -> void:
 	selection_changed.emit(); queue_redraw()
 
 func toggle_preview() -> void:
-	if geometry == null or geometry.preview_only: return
-	preview_running = not preview_running
-	if preview_running: preview_distance = 0.0; preview_laps = 0; preview_elapsed = 0.0
-	if overlay: overlay.queue_redraw()
+	if reference_preview:
+		reference_preview.toggle(geometry)
+		preview_running = reference_preview.capture().running
+	queue_redraw()
 
 func select_items(kind: String, ids: Array) -> void:
 	selection_kind = kind; selection_ids = TrackEdit.indices(document, kind, ids)

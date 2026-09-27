@@ -56,5 +56,8 @@
   {"id":"weather_ui_smoke","script":"tests/weather_ui_smoke.gd","native":true,"layout":"engineering","timeout":360,"reports":["weather-ui.json"]},
   {"id":"weekend_strategy_tests","script":"tests/weekend_strategy_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["weekend-strategy-tests.json"]},
   {"id":"workspace_performance","script":"tests/workspace_performance.gd","native":true,"layout":"engineering","timeout":360,"reports":["workspace-performance.json"]},
-  {"id":"mechanics_tests","script":"tests/mechanics_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["mechanics-tests.json"]}
+  {"id":"mechanics_tests","script":"tests/mechanics_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["mechanics-tests.json"]},
+  {"id":"editor_session_tests","script":"tests/editor_session_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["editor-session-tests.json"]},
+  {"id":"weekend_launch_tests","script":"tests/weekend_launch_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["weekend-launch-tests.json"]},
+  {"id":"weekend_flow_ui_tests","script":"tests/weekend_flow_ui_tests.gd","native":true,"layout":"minimal","timeout":600,"reports":["weekend-flow-ui.json"]}
 ]

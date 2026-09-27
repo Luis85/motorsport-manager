@@ -210,7 +210,7 @@ func test_illustrated_editor(editor) -> void:
 	canvas.set_layer("scenery", "visible", false)
 	check(not canvas.world_layer.scenery_visible and JSON.stringify(editor.document) == before, "Hiding scenery changes only the editor view")
 	canvas.set_layer("scenery", "visible", true)
-	canvas.toggle_preview(); canvas._process(0.08)
+	canvas.toggle_preview(); editor.session.advance_preview(0.08); canvas._process(0.08)
 	check(canvas.preview_running and canvas.preview_distance > 0, "Reference dot advances along the baked line")
 	check(JSON.stringify(editor.document) == before, "Reference preview does not mutate the authored track")
 	editor.inspector.current_tab = 5

@@ -26,6 +26,7 @@ ENGINE_AUTHORITY = {'Node', 'Node2D', 'Node3D', 'Control', 'SceneTree', 'Timer',
                     'Input', 'DisplayServer', 'RenderingServer', 'AudioServer',
                     'FileAccess', 'DirAccess', 'OS', 'ProjectSettings', 'ResourceLoader', 'App'}
 RENDERERS = {
+    'scripts/ui/editor.gd', 'scripts/ui/weekend_entry.gd', 'scripts/ui/weekend_end.gd',
     'scripts/ui/track_canvas.gd', 'scripts/ui/battle_overlay.gd',
     'scripts/ui/rejoin_overlay.gd', 'scripts/ui/surface_lab.gd',
     'scripts/ui/race_weekend/stint_history.gd',
@@ -85,7 +86,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                 function = functions[-1][1] if functions else ''
                 if (path, function) not in CLOCK_EXCEPTIONS:
                     fail(path, match.start(), 'domain-wall-clock', name)
-            if path in RENDERERS and (name in {'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App'}):
+            if path in RENDERERS and (name in {'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage'}):
                 fail(path, match.start(), 'detached-renderer', name)
         # Positions are preserved by mask(), so literals can be recovered without
         # matching "load(...)" inside comments or documentation strings.
@@ -97,6 +98,9 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                     fail(path, match.start(), 'literal-dependency', target)
             elif own in {'domain', 'application'} and match[1]:
                 fail(path, match.start(), 'dynamic-load', 'Inward layers require explicit dependencies')
+        if path in {'scripts/ui/editor.gd', 'scripts/ui/track_canvas.gd'}:
+            for match in re.finditer(r'\bTrackGeometry\s*\.\s*new\s*\(', text):
+                fail(path, match.start(), 'editor-owns-compilation', 'Inject an application draft compiler')
         if own == 'ui':
             for match in re.finditer(r'\.\s*(advance|step|tick)\s*\(', text):
                 fail(path, match.start(), 'ui-drives-simulation', match[1])

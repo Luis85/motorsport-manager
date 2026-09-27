@@ -31,16 +31,25 @@ var redo_stack: Array = []
 var feature_index = -1
 var vehicle = "Formula"
 var name_field: LineEdit
-var saved_signature = ""
+var session: TrackEditorSession = TrackEditorSession.new()
+var storage: TrackEditorPort = TrackEditorPort.new()
+var catalog: Array = []
+var preferences: Dictionary = {}
+var saved_signature: String:
+	get: return session.saved_signature()
+	set(value): session.restore_saved_signature(value)
 
-func configure(d: Dictionary) -> void:
-	document = TrackDocument.normalize(d)
-	saved_signature = JSON.stringify(document)
+func configure(d: Dictionary, port: TrackEditorPort = null, presentation: Dictionary = {}) -> void:
+	if port != null: storage = port
+	catalog = storage.catalog()
+	preferences = presentation.duplicate(true)
+	session = TrackEditorSession.new(d)
+	document = session.read_document()
 
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if document.is_empty(): configure(App.library[7] if App.library.size() > 7 else App.library[0])
-	geometry = TrackGeometry.new(document, vehicle)
+	if document.is_empty(): configure(catalog[mini(7, catalog.size() - 1)] if not catalog.is_empty() else TrackEditorSession.blank_document(), storage, preferences)
+	geometry = session.compile_draft(document, vehicle)
 	var title_row = UI.hbox(self)
 	title_row.add_child(UI.label("CIRCUIT ATELIER", 23))
 	dirty_label = UI.label("SAVED", 12, UI.GOOD); title_row.add_child(dirty_label)
@@ -49,9 +58,9 @@ func _ready() -> void:
 	title_row.add_child(UI.button("Editor guide", func(): guide.open_guide()))
 	var actions = HFlowContainer.new(); add_child(actions)
 	var choices: Array = ["Load a library circuit…"]
-	for track in App.library: choices.append(track.name)
+	for track in catalog: choices.append(track.name)
 	var library = UI.option(choices, func(index):
-		if index > 0: confirm_discard(func(): replace_document(App.library[index - 1])))
+		if index > 0: confirm_discard(func(): replace_document(catalog[index - 1])))
 	library.custom_minimum_size.x = 260; actions.add_child(library)
 	actions.add_child(UI.button("New circuit", new_document))
 	actions.add_child(UI.button("Save to library", save_document, true))
@@ -79,7 +88,9 @@ func _ready() -> void:
 		var b = UI.button(action[0], func(): selection_action(action[1])); b.custom_minimum_size.y = 30; b.add_theme_font_size_override("font_size", 12); context_bar.add_child(b)
 	context_bar.visible = false
 	var content = UI.hbox(self, true)
-	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.editing = true; canvas.show_line = true
+	canvas = TrackCanvas.new(); canvas.configure_presentation(preferences); canvas.editing = true; canvas.show_line = true
+	canvas.draft_compiler = session.compile_draft
+	canvas.reference_preview = session.preview
 	canvas.set_track(geometry, document); content.add_child(canvas)
 	canvas.edit_started.connect(checkpoint)
 	canvas.edit_cancelled.connect(cancel_gesture)
@@ -123,31 +134,41 @@ func fit_canvas() -> void:
 	canvas.fit()
 
 func checkpoint() -> void:
-	gesture_redo = redo_stack.duplicate(true)
-	var snapshot = document.duplicate(true)
-	if undo_stack.is_empty() or JSON.stringify(undo_stack.back()) != JSON.stringify(snapshot):
-		undo_stack.append(snapshot)
-		if undo_stack.size() > 50: undo_stack.pop_front()
-	redo_stack.clear(); dirty = true
+	session.begin()
+
+func sync_history() -> void:
+	var state = session.history()
+	undo_stack = state.past
+	redo_stack = state.future
 
 func perform(action: Callable, rebuild_inspector: bool = false) -> void:
 	checkpoint(); action.call(); recompile()
 	if rebuild_inspector: refresh_inspector()
 
 func recompile() -> void:
+	if not session.commit(document):
+		var error = session.last_error
+		document = session.cancel()
+		canvas.document = document
+		canvas.queue_redraw()
+		sync_history()
+		refresh_inspector()
+		if status: status.text = error
+		return
+	sync_history()
 	if not sketch_result.is_empty():
 		sketch_result.clear(); canvas.sketch_preview = null; canvas.sketch_note = "Document changed. Preview the trace again before replacing the road."
 		update_sketch_panel()
 	canvas.selection_ids = TrackEdit.indices(document, canvas.selection_kind, canvas.selection_ids)
 	if document.nodes.size() >= 4:
-		geometry = TrackGeometry.new(document, vehicle); findings = TrackDiagnostics.inspect(geometry); canvas.diagnostics = findings; canvas.set_track(geometry, document)
+		geometry = session.compile_draft(document, vehicle); findings = session.diagnostics(geometry); canvas.diagnostics = findings; canvas.set_track(geometry, document)
 	else: canvas.document = document; canvas.queue_redraw()
 	update_status()
 
 func undo() -> void:
 	if canvas.mode.begins_with("trace_"): canvas.sketch.undo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if undo_stack.is_empty(): return
-	redo_stack.append(document.duplicate(true)); document = undo_stack.pop_back()
+	document = session.undo()
 	canvas.selected = mini(canvas.selected, document.nodes.size() - 1)
 	canvas.selected_object = mini(canvas.selected_object, document.objects.size() - 1)
 	recompile(); refresh_inspector()
@@ -155,7 +176,7 @@ func undo() -> void:
 func redo() -> void:
 	if canvas.mode.begins_with("trace_"): canvas.sketch.redo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if redo_stack.is_empty(): return
-	undo_stack.append(document.duplicate(true)); document = redo_stack.pop_back()
+	document = session.redo()
 	recompile(); refresh_inspector()
 
 func update_status() -> void:
@@ -173,7 +194,7 @@ func update_status() -> void:
 	if not errors.is_empty():
 		status.text = "DRAFT  ·  " + " · ".join(errors); status.add_theme_color_override("font_color", UI.ACCENT)
 	else:
-		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate), geometry.compile_usec / 1000.0, findings.size()]
+		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, MinimalRaceTiming.format_time(geometry.estimate), geometry.compile_usec / 1000.0, findings.size()]
 		status.add_theme_color_override("font_color", UI.MUTED)
 	if test_button:
 		test_button.disabled = TrackDiagnostics.blocking(findings) or not errors.is_empty() or not canvas.sketch.strokes.is_empty()
@@ -254,7 +275,7 @@ func refresh_inspector() -> void:
 		track.add_child(UI.paragraph("Entry and exit are absolute fractions of the authored circuit. The pit exit may wrap across start / finish. Use Edit pit lane to move its points."))
 	track.add_child(UI.button("Generate service lane", func(): perform(func():
 		document.pits = []
-		var compiled = TrackGeometry.new(document, vehicle)
+		var compiled = session.compile_draft(document, vehicle)
 		document.pits = compiled.document.pits.duplicate(true), true)))
 	track.add_child(UI.label("VALIDATION", 16, UI.ACCENT))
 	var issues = TrackDocument.validate(document)
@@ -378,17 +399,17 @@ func delete_point() -> void:
 
 func save_document() -> void:
 	if name_field: document.name = name_field.text.strip_edges()
-	var error = App.save_track(document)
-	if error.is_empty():
-		saved_signature = JSON.stringify(document); invalidate_sketch(); update_status()
+	var result = session.save(storage, document)
+	if result.ok:
+		document = session.read_document(); recompile(); invalidate_sketch(); update_status()
 		status.text = "Committed road saved. Your unapplied trace is still temporary; apply it before leaving." if not canvas.sketch.strokes.is_empty() else "Saved to the track library. The Grand Prix selector will include this circuit."
-	else: UI.notify(self, "Could not save circuit", error)
+	else: update_status(); UI.notify(self, "Could not save circuit", result.error)
 
 func export_document() -> void:
 	var errors = TrackDocument.validate(document)
 	if not errors.is_empty(): UI.notify(self, "Track needs attention", "\n".join(errors)); return
 	var dialog = UI.file_dialog(self, true, ["*.json ; Track authoring JSON"], func(path):
-		var error = Storage.write_json(path, document)
+		var error = session.export_authoring(storage, path, document)
 		UI.notify(self, "Export circuit", "Track exported." if error.is_empty() else error))
 	dialog.current_file = document.name.validate_filename() + ".json"
 
@@ -396,13 +417,13 @@ func export_runtime() -> void:
 	var errors = race_errors()
 	if not errors.is_empty(): UI.notify(self, "Track needs attention", "\n".join(errors)); return
 	var dialog = UI.file_dialog(self, true, ["*.json ; Baked runtime JSON"], func(path):
-		var error = Storage.write_json(path, TrackGeometry.new(document, vehicle).runtime_export())
+		var error = session.export_runtime(storage, path, document, vehicle)
 		UI.notify(self, "Bake runtime", "Runtime package exported with geometry, racing line, speed profile, pit lane and authoring metadata." if error.is_empty() else error))
 	dialog.current_file = document.name.validate_filename() + "-runtime.json"
 
 func import_document() -> void:
 	UI.file_dialog(self, false, ["*.json ; Native or Circuit Atelier project"], func(path):
-		var result = Storage.read_json(path)
+		var result = storage.load_authoring(path)
 		if not result.ok: UI.notify(self, "Import failed", result.error); return
 		var errors = TrackDocument.validate(result.data)
 		if not errors.is_empty(): UI.notify(self, "Import failed", "\n".join(errors)); return
@@ -410,14 +431,9 @@ func import_document() -> void:
 
 func import_reference() -> void:
 	UI.file_dialog(self, false, ["*.png,*.jpg,*.jpeg ; Reference image"], func(path):
-		var image = Image.new()
-		if image.load(path) != OK: UI.notify(self, "Image unavailable", "Could not read this image."); return
-		if image.get_width() > 2048 or image.get_height() > 2048:
-			var ratio = 2048.0 / maxf(image.get_width(), image.get_height())
-			image.resize(int(image.get_width() * ratio), int(image.get_height() * ratio))
-		var bytes = image.save_png_to_buffer()
-		if bytes.size() > 6000000: UI.notify(self, "Image too large", "Use an image under 6 MB after PNG conversion."); return
-		perform(func(): document.reference = {"png": Marshalls.raw_to_base64(bytes), "width": geometry.bounds.size.x, "x": geometry.bounds.get_center().x, "y": geometry.bounds.get_center().y, "opacity": 0.35}, true))
+		var result = storage.read_reference(path)
+		if not result.ok: UI.notify(self, "Image unavailable", result.error); return
+		perform(func(): document.reference = {"png": result.png, "width": geometry.bounds.size.x, "x": geometry.bounds.get_center().x, "y": geometry.bounds.get_center().y, "opacity": 0.35}, true))
 
 func new_document() -> void:
 	confirm_discard(func():
@@ -428,8 +444,9 @@ func new_document() -> void:
 		replace_document(d); saved_signature = ""; update_status())
 
 func replace_document(d: Dictionary) -> void:
+	if not session.replace(d): UI.notify(self, "Could not replace circuit", session.last_error); return
 	canvas.sketch.clear(); canvas.selection_ids.clear(); canvas.sketch_preview = null; sketch_result.clear(); canvas.stroke.clear(); canvas.pen_anchor = Vector2.INF
-	document = TrackDocument.normalize(d); undo_stack.clear(); redo_stack.clear(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
+	document = session.read_document(); sync_history(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
 	saved_signature = JSON.stringify(document); recompile(); refresh_inspector(); canvas.fit()
 
 func confirm_discard(callback: Callable) -> void:
@@ -479,8 +496,7 @@ func set_tool(index: int) -> void:
 	update_status()
 
 func cancel_gesture() -> void:
-	if undo_stack.is_empty(): return
-	document = undo_stack.pop_back(); redo_stack = gesture_redo.duplicate(true)
+	document = session.cancel()
 	recompile(); refresh_inspector()
 
 func race_errors() -> Array[String]:
@@ -581,8 +597,8 @@ func preview_sketch() -> void:
 	if not canvas.layer_editable("road"): return
 	sketch_result = canvas.sketch.compile(document)
 	if sketch_result.ok:
-		canvas.sketch_preview = TrackGeometry.new(sketch_result.document, vehicle)
-		var diagnostics = TrackDiagnostics.inspect(canvas.sketch_preview)
+		canvas.sketch_preview = session.compile_draft(sketch_result.document, vehicle)
+		var diagnostics = session.diagnostics(canvas.sketch_preview)
 		if TrackDiagnostics.blocking(diagnostics):
 			sketch_result.ok = false; canvas.sketch_note = "Preview has blocking crossings. Adjust the trace before replacing the road."
 		else: canvas.sketch_note = "Teal is the generated road. Nothing has been replaced yet."

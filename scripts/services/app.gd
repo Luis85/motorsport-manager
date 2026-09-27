@@ -1,4 +1,5 @@
 extends Node
+var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
@@ -14,6 +15,7 @@ var replay_runner: ReplayPlayback
 var _session_record: RaceRecord
 
 func _process(delta: float) -> void:
+	if editor_session: editor_session.advance_preview(delta)
 	if session_runner != null:
 		if session_runner.automatic:
 			session_runner.advance(delta)
@@ -145,4 +147,21 @@ func load_weekend() -> String:
 		recording = RaceRecord.new(); recording.attach(restored, "legacy")
 	# Existing explicit Continue behavior; recorded inputs retain subsequent context.
 	weekend.paused = weekend.phase in RaceSim.ACTIVE
+	return ""
+
+func has_saved_weekend() -> bool:
+	return FileAccess.file_exists(checkpoint_path)
+
+func requires_entry_confirmation() -> bool:
+	# A disk-only continuation is still the player's weekend, even before Continue.
+	return has_saved_weekend() or (weekend != null and weekend.phase != "briefing")
+
+func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> String:
+	var result = draft.commit(expected_revision, LocalWeekendEntryStore.new(checkpoint_path), int(settings.speed))
+	if not result.ok:
+		return result.error
+	# The previous session remains installed until persistence succeeds.
+	stop_session()
+	weekend = result.simulation
+	recording = result.record
 	return ""

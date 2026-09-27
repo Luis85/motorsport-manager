@@ -52,7 +52,7 @@ func stage() -> String:
 		"formation": return "Formation lap"
 		"grid_ready": return "Start race"
 		"lights": return "Starting race"
-		"results": return "New weekend"
+		"results": return "Review weekend"
 	return ""
 
 func advance_stage() -> bool:
