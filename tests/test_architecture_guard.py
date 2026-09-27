@@ -60,5 +60,16 @@ class ArchitectureGuardTests(unittest.TestCase):
             self.assertTrue(self.scan('var value = ' + token, 'scripts/ui/editor.gd'))
         self.assertIn('editor-owns-compilation', [v.rule for v in self.scan('func draw():\n\tTrackGeometry.new({})', 'scripts/ui/track_canvas.gd')])
 
+    def test_hook_manifest_rejects_missing_extra_and_duplicate_entries(self):
+        for hooks, invalid in [('"step"', False), ('', True), ('"step", "helper"', True), ('"step", "step"', True)]:
+            with tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                domain = root / 'scripts/domain'
+                (domain / 'mechanics').mkdir(parents=True)
+                (domain / 'race_sim.gd').write_text('class_name RaceSim\nfunc step():\n\tmechanics.invoke("step", [])\n')
+                (domain / 'mechanics/race_hook_contract.gd').write_text('class_name RaceHookContract\nconst HOOKS: Array[String] = [' + hooks + ']\n')
+                rules = [v.rule for v in inspect(root)[0]]
+                self.assertEqual('mechanic-hook-contract' in rules, invalid)
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

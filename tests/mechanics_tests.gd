@@ -19,6 +19,55 @@ class Malformed:
 	func definition() -> Dictionary:
 		return record
 
+class WrongArguments:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "bad-arguments", "version": 1, "requires": [], "hooks": ["weather_advice"]}
+	func weather_advice(_sim: RaceSim) -> Dictionary:
+		return {}
+
+class WrongType:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "bad-type", "version": 1, "requires": [], "hooks": ["weather_advice"]}
+	func weather_advice(_sim: RaceSim, _id: String) -> Dictionary:
+		return {}
+
+class WrongReturn:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "bad-return", "version": 1, "requires": [], "hooks": ["weather_advice"]}
+	func weather_advice(_sim: RaceSim, _id: int) -> int:
+		return 0
+
+class UnknownHook:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "unused-hook", "version": 1, "requires": [], "hooks": ["never_dispatched"]}
+	func never_dispatched(_sim: RaceSim) -> void:
+		pass
+
+class UndispatchedHelper:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "helper", "version": 1, "requires": [], "hooks": ["random_value"]}
+	func random_value(_sim: RaceSim) -> float:
+		return 1.0
+
+class VoidReturn:
+	extends Probe
+	func definition() -> Dictionary:
+		return {"id": "void-return", "version": 1, "requires": [], "hooks": ["weather_advice"]}
+	func weather_advice(_sim: RaceSim, _id: int) -> void:
+		pass
+
+class MutatingInstall:
+	extends Probe
+	func install(_sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
+		installations += 1
+		geometry.document.name = "Provider-local geometry"
+		options.nested.value = 99
+
 func check(value: bool, label: String) -> void:
 	checks += 1
 	if not value:
@@ -58,6 +107,18 @@ func run() -> void:
 		check(not rejecting.mechanics.configure([malformed]), "Malformed hook metadata is rejected before reflection or installation")
 	check(rejecting.mechanics.configure([Probe.new()]) and rejecting.mechanics.install(track, {}), "Corrected configuration can be retried after rejected proposals")
 	check(RaceMechanicProfiles.build("unknown").is_empty(), "Unknown profile does not silently install a different rule set")
+	var contract_owner = RaceSim.new(track)
+	var before_contract = RaceStateValue.fingerprint(contract_owner.snapshot())
+	for invalid in [WrongArguments.new(), WrongType.new(), WrongReturn.new(), UnknownHook.new(), UndispatchedHelper.new(), VoidReturn.new()]:
+		check(not contract_owner.mechanics.configure([invalid]), "Incompatible extension contract is rejected before first execution")
+		check(invalid.installations == 0 and contract_owner.mechanic_catalog().is_empty(), "Rejected extension never installs partial state")
+		check(not contract_owner.mechanics.last_error.is_empty(), "Extension authors receive an actionable contract error")
+	check(before_contract == RaceStateValue.fingerprint(contract_owner.snapshot()), "Contract rejection leaves simulation and RNG intact")
+	var isolated = RaceSim.new(track)
+	var installation_options = {"nested": {"value": 1}}
+	var original_name = track.document.name
+	check(isolated.mechanics.configure([MutatingInstall.new()]) and isolated.mechanics.install(track, installation_options), "A valid extension installs using detached inputs")
+	check(installation_options.nested.value == 1 and track.document.name == original_name, "Installation cannot mutate caller options or editor geometry")
 	var profiles: Array = [StrategyRaceSim.new(track), WeatherRaceSim.new(track), RecoveryRaceSim.new(track), PracticeRaceSim.new(track)]
 	for index in range(profiles.size()):
 		var sim: RaceSim = profiles[index]

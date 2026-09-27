@@ -92,6 +92,15 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                 fail(path, match.start(), 'presentation-private-authority', match[1])
             for match in re.finditer(r'\.\s*(advance|step|tick)\s*\(', text):
                 fail(path, match.start(), 'ui-drives-simulation', match[1])
+    # Providers must declare actual dispatch hooks, never unrelated aggregate helpers.
+    aggregate_path = 'scripts/domain/race_sim.gd'
+    contract_path = 'scripts/domain/mechanics/race_hook_contract.gd'
+    if aggregate_path in sources and contract_path in sources:
+        dispatched = re.findall(r'mechanics\.invoke\("([^"\n]+)"', sources[aggregate_path])
+        block = re.search(r'const HOOKS: Array\[String\] = \[(.*?)\]', sources[contract_path], re.S)
+        declared = re.findall(r'"([^"\n]+)"', block[1]) if block else []
+        if sorted(dispatched) != sorted(declared) or len(declared) != len(set(declared)):
+            fail(contract_path, 0, 'mechanic-hook-contract', 'Declared hooks must match aggregate dispatch entry points exactly')
     return errors, len(sources)
 
 

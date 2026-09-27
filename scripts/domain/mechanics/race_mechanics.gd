@@ -59,7 +59,13 @@ func configure(providers: Array) -> bool:
 	var errors = validate(definitions)
 	if not errors.is_empty():
 		return _configuration_failed("\n".join(errors))
+	var owner: RaceSim = _source.get_ref()
+	if owner == null:
+		return _configuration_failed("The owning simulation has been released.")
 	for index in range(proposed.size()):
+		var contract_error = RaceHookContract.validate(owner, proposed[index], definitions[index].hooks)
+		if not contract_error.is_empty():
+			return _configuration_failed("%s: %s" % [definitions[index].id, contract_error])
 		for hook in definitions[index].hooks:
 			if not proposed[index].has_method(hook):
 				return _configuration_failed("%s declares missing hook: %s" % [definitions[index].id, hook])
@@ -91,7 +97,7 @@ func install(geometry: TrackGeometry, options: Dictionary) -> bool:
 		return false
 	_installed = true
 	for provider in _providers:
-		provider.install(simulation, geometry, options)
+		provider.install(simulation, geometry.detached_copy() if geometry else null, options.duplicate(true))
 	last_error = ""
 	return true
 
