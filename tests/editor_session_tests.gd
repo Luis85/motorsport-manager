@@ -18,6 +18,26 @@ class FakePort:
 		document.id = "custom-tested"
 		return {"ok": true, "error": "", "document": document}
 
+class ReentrantPort:
+	extends TrackEditorPort
+	var session: TrackEditorSession
+	var nested: Dictionary
+	var writes: int = 0
+	func save_authoring(document: Dictionary) -> Dictionary:
+		writes += 1
+		if writes == 1:
+			nested = session.save(self, document)
+			var newer = session.read_document()
+			newer.name = "Edited during persistence"
+			session.commit(newer)
+		return {"ok": true, "document": document}
+
+class ChangedPort:
+	extends TrackEditorPort
+	func save_authoring(document: Dictionary) -> Dictionary:
+		document.nodes[0].x += 1.0
+		return {"ok": true, "document": document}
+
 func check(value: bool, message: String) -> void:
 	checks += 1
 	if not value:
@@ -78,6 +98,15 @@ func run() -> void:
 	check(session.save(port, session.read_document()).ok, "Successful write returns the saved authoring identity")
 	check(session.read_document().id == "custom-tested", "Saved identity is applied after successful persistence only")
 	check(session.saved_signature() == JSON.stringify(session.read_document()), "Saved signature follows exactly the committed value")
+	var previous_signature = session.saved_signature()
+	var nested = ReentrantPort.new()
+	nested.session = session
+	var receipt = session.save(nested, session.read_document())
+	check(not receipt.ok and receipt.get("saved", false), "Saving an older revision reports that newer edits remain unsaved")
+	check(not nested.nested.ok and nested.writes == 1, "Reentrant track save cannot create a second repository write")
+	check(session.read_document().name == "Edited during persistence" and session.saved_signature() == previous_signature, "A stale save receipt never overwrites current work or marks it saved")
+	var latest = session.read_document()
+	check(not session.save(ChangedPort.new(), latest).ok and session.read_document() == latest, "Repository must not alter the authored geometry in its save receipt")
 	var geometry = session.compile_draft(session.read_document())
 	var immutable = session.read_document()
 	geometry.document.nodes[0].x = 0

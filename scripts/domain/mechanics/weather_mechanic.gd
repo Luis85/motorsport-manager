@@ -1,5 +1,5 @@
 class_name WeatherMechanic
-extends RefCounted
+extends RaceMechanic
 ## Authoritative weather rules; caller supplies state, never a view or singleton.
 const CHECKPOINT_VERSION = 7
 

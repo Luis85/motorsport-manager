@@ -1,5 +1,5 @@
 class_name StrategyMechanic
-extends RefCounted
+extends RaceMechanic
 ## Authoritative strategy rules; caller supplies state, never a view or singleton.
 const GLOBAL_COMMANDS = ["qualify", "close_qualifying", "prepare_race", "formation", "lights", "pause", "speed"]
 const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_intent", "hold_decision", "retire_car", "team_order", "cancel_team_order"]

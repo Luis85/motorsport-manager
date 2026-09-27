@@ -5,10 +5,14 @@ var _track: TrackGeometry
 var _options: Dictionary = {}
 var _revision: int = 0
 var _consumed: bool = false
+var _committing: bool = false
 var last_error: String = ""
 
 func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula") -> bool:
 	last_error = ""
+	if _committing:
+		last_error = "Finish saving the approved weekend before changing its configuration."
+		return false
 	var errors = TrackDocument.validate(document)
 	if not errors.is_empty():
 		last_error = "\n".join(errors)
@@ -54,7 +58,7 @@ func visual_track() -> TrackGeometry:
 func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) -> Dictionary:
 	if store == null:
 		return {"ok": false, "error": "No weekend repository is available."}
-	if _track == null or _consumed or expected_revision != _revision:
+	if _track == null or _consumed or _committing or expected_revision != _revision:
 		return {"ok": false, "error": "This entry is no longer current. Review the configuration again."}
 	if speed not in [1, 2, 4, 8, 16]:
 		return {"ok": false, "error": "Choose a supported playback speed."}
@@ -66,8 +70,11 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 	candidate.speed = speed
 	var record = RaceRecord.new()
 	record.attach(candidate)
+	_committing = true
 	var error = store.save_record(record)
+	_committing = false
 	if not error.is_empty():
+		record.detach()
 		return {"ok": false, "error": error}
 	_consumed = true
 	return {"ok": true, "simulation": candidate, "record": record}

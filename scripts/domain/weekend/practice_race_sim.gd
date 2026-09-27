@@ -5,7 +5,7 @@ const PRACTICE_CHECKPOINT_VERSION = 10
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
-	mechanics.configure([StrategyMechanic.new(), WeatherMechanic.new(), RecoveryMechanic.new(), PracticeMechanic.new()])
+	mechanics.configure(RaceMechanicProfiles.build("practice"))
 	mechanics.install(geometry, options)
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:

@@ -4,14 +4,20 @@ var checks: int = 0
 var failures: Array[String] = []
 
 class Probe:
-	extends RefCounted
+	extends RaceMechanic
 	var installations: int = 0
 	func definition() -> Dictionary:
 		return {"id": "probe", "version": 1, "requires": [], "hooks": ["forecast_parameters"]}
-	func install(_sim: RaceSim, _geometry: TrackGeometry, _options: Dictionary) -> void:
+	func install(_sim: RaceSim, _geometry: TrackGeometry = null, _options: Dictionary = {}) -> void:
 		installations += 1
 	func forecast_parameters(_sim: RaceSim, id: int) -> Dictionary:
 		return {"driver_id": id, "probe": true}
+
+class Malformed:
+	extends RaceMechanic
+	var record: Dictionary = {}
+	func definition() -> Dictionary:
+		return record
 
 func check(value: bool, label: String) -> void:
 	checks += 1
@@ -40,6 +46,18 @@ func run() -> void:
 		[{"id": "bad", "version": 0, "requires": [], "hooks": []}],
 		[{"id": "bad", "version": 1, "requires": [], "hooks": ["step", "step"]}]]:
 		check(not RaceMechanics.validate(bad).is_empty(), "Invalid composition is rejected before installation")
+	var rejecting = RaceSim.new(track)
+	for invalid in [null, 4, "provider", {}, [], RefCounted.new()]:
+		check(not rejecting.mechanics.configure([invalid]), "Wrong provider type is rejected without an engine exception")
+		check(not rejecting.mechanics.last_error.is_empty() and rejecting.mechanic_catalog().is_empty(), "Failed configuration explains the problem and publishes nothing")
+	var malformed = Malformed.new()
+	for definition in [{}, {"id":"invalid", "version":1, "requires":[], "hooks":[123]},
+		{"id":"invalid", "version":1, "requires":"no", "hooks":[]},
+		{"id":"invalid", "version":1, "requires":[], "hooks":["missing"]}]:
+		malformed.record = definition
+		check(not rejecting.mechanics.configure([malformed]), "Malformed hook metadata is rejected before reflection or installation")
+	check(rejecting.mechanics.configure([Probe.new()]) and rejecting.mechanics.install(track, {}), "Corrected configuration can be retried after rejected proposals")
+	check(RaceMechanicProfiles.build("unknown").is_empty(), "Unknown profile does not silently install a different rule set")
 	var profiles: Array = [StrategyRaceSim.new(track), WeatherRaceSim.new(track), RecoveryRaceSim.new(track), PracticeRaceSim.new(track)]
 	for index in range(profiles.size()):
 		var sim: RaceSim = profiles[index]

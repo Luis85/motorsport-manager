@@ -3,11 +3,13 @@ extends RefCounted
 ## Ordered, construction-time composition. No runtime code loading or mutable global registry.
 ## Providers receive the aggregate for one call; this dispatcher never owns its lifetime.
 var _source: WeakRef
-var _providers: Array = []
+var _providers: Array[RaceMechanic] = []
 var _definitions: Array = []
 var _hooks: Dictionary = {}
 var _configured: bool = false
 var _installed: bool = false
+var _configuring: bool = false
+var last_error: String = ""
 
 func _init(simulation: RaceSim) -> void:
 	_source = weakref(simulation)
@@ -26,9 +28,13 @@ static func validate(definitions: Array) -> Array[String]:
 		if not value.get("requires") is Array or not value.get("hooks") is Array:
 			errors.append("Mechanic dependencies and hooks must be arrays: " + value.id)
 			continue
+		var dependencies: Array = []
 		for dependency in value.requires:
-			if dependency not in known:
+			if not dependency is String or dependency.is_empty() or dependency in dependencies:
+				errors.append("Invalid or duplicate prerequisite in " + value.id)
+			elif dependency not in known:
 				errors.append(value.id + " requires an earlier provider: " + str(dependency))
+			dependencies.append(dependency)
 		var unique: Array = []
 		for hook in value.hooks:
 			if not hook is String or hook.is_empty() or hook in unique:
@@ -38,20 +44,27 @@ static func validate(definitions: Array) -> Array[String]:
 	return errors
 
 func configure(providers: Array) -> bool:
-	if _configured:
+	if _configured or _configuring:
+		last_error = "Mechanics are already configured or configuration is in progress."
 		return false
+	_configuring = true
 	var definitions: Array = []
-	for provider in providers:
-		if provider == null or not provider.has_method("definition") or not provider.has_method("install"):
-			return false
-		var definition: Dictionary = provider.definition()
-		for hook in definition.get("hooks", []):
-			if not provider.has_method(hook):
-				return false
-		definitions.append(definition)
-	if not validate(definitions).is_empty():
-		return false
-	_providers = providers.duplicate()
+	var proposed: Array[RaceMechanic] = []
+	for index in range(providers.size()):
+		var provider = providers[index]
+		if not provider is Object or not is_instance_valid(provider) or not provider is RaceMechanic:
+			return _configuration_failed("Provider %d must extend RaceMechanic." % index)
+		proposed.append(provider)
+		definitions.append(provider.definition())
+	var errors = validate(definitions)
+	if not errors.is_empty():
+		return _configuration_failed("\n".join(errors))
+	for index in range(proposed.size()):
+		for hook in definitions[index].hooks:
+			if not proposed[index].has_method(hook):
+				return _configuration_failed("%s declares missing hook: %s" % [definitions[index].id, hook])
+	# Publish the plan only after EVERY provider and definition is validated.
+	_providers = proposed
 	_definitions = RaceStateValue.read_only(definitions)
 	for index in range(_providers.size()):
 		for hook in _definitions[index].hooks:
@@ -59,17 +72,27 @@ func configure(providers: Array) -> bool:
 				_hooks[hook] = []
 			_hooks[hook].append(index)
 	_configured = true
+	_configuring = false
+	last_error = ""
 	return true
+
+func _configuration_failed(message: String) -> bool:
+	last_error = message
+	_configuring = false
+	return false
 
 func install(geometry: TrackGeometry, options: Dictionary) -> bool:
 	if not _configured or _installed:
+		last_error = "Configure once before installing; installation cannot be repeated."
 		return false
 	var simulation = _source.get_ref()
 	if simulation == null:
+		last_error = "The owning simulation has been released."
 		return false
 	_installed = true
 	for provider in _providers:
 		provider.install(simulation, geometry, options)
+	last_error = ""
 	return true
 
 func has_mechanic(identity: String) -> bool:

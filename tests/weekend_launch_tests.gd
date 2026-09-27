@@ -10,6 +10,21 @@ class FakeStore:
 		writes += 1
 		snapshots.append(record.source.get_ref().snapshot())
 		return "Injected storage failure" if fail_write else ""
+class ReentrantStore:
+	extends WeekendEntryStore
+	var launch: WeekendLaunch
+	var revision: int
+	var document: Dictionary
+	var writes: int = 0
+	var nested: Dictionary
+	var restaged: bool = true
+	func save_record(_record: RaceRecord) -> String:
+		writes += 1
+		if writes == 1:
+			nested = launch.commit(revision, self)
+			restaged = launch.stage(document, {"laps": 8})
+		return ""
+
 func check(value: bool, message: String) -> void:
 	checks += 1
 	if not value:
@@ -46,6 +61,15 @@ func run() -> void:
 	check(RaceRecord.equivalent(store.snapshots[0], store.snapshots[1]), "Retry after a failed write reproduces the same authoritative initial practice")
 	check(not launch.commit(revision, store).ok and store.writes == 2, "Duplicate activation cannot create or write another weekend")
 	check(PracticeRaceSim.restore_practice(result.simulation.snapshot()) != null, "Committed initial practice restores through the production validator")
+	var nested_launch = WeekendLaunch.new()
+	var nested_store = ReentrantStore.new()
+	nested_store.launch = nested_launch
+	nested_store.document = track.document
+	nested_launch.stage(track.document, valid)
+	nested_store.revision = nested_launch.capture().revision
+	var committed = nested_launch.commit(nested_store.revision, nested_store)
+	check(committed.ok and nested_store.writes == 1 and not nested_store.nested.ok, "Reentrant commit cannot create a duplicate save or second race")
+	check(not nested_store.restaged and nested_launch.capture().laps == 6 and nested_launch.capture().consumed, "Storage callbacks cannot replace an entry while its approval is being committed")
 	var simulation: RaceSim = result.simulation
 	check(WeekendSummary.capture(simulation).is_empty(), "An unfinished weekend cannot produce a final summary")
 	# Synthetic terminal fixture only; the native full-weekend suite proves physical finishing.

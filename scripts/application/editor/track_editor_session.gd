@@ -10,6 +10,7 @@ var _past: Array = []
 var _future: Array = []
 var _saved_signature: String = ""
 var _transaction_revision: int = -1
+var _saving: bool = false
 var preview: TrackReferencePreview = TrackReferencePreview.new()
 
 func _init(document: Dictionary = {}) -> void:
@@ -185,6 +186,8 @@ func mark_saved(value: Dictionary) -> void:
 	revision += 1
 
 func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:
+	if _saving:
+		return {"ok": false, "error": "A track save is already in progress."}
 	var errors = draft_errors(draft)
 	if errors.is_empty():
 		errors = TrackDocument.validate(draft)
@@ -194,12 +197,26 @@ func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "No track repository is available."}
 	if not commit(draft):
 		return {"ok": false, "error": last_error}
-	var result = port.save_authoring(read_document())
-	if result.get("ok") == true:
-		if not result.get("document") is Dictionary or not draft_errors(result.document).is_empty():
-			return {"ok": false, "error": "The track repository returned invalid saved data."}
-		mark_saved(result.document)
-	return result
+	var saving_revision = revision
+	var submitted = read_document()
+	_saving = true
+	var result = port.save_authoring(submitted.duplicate(true))
+	_saving = false
+	if result.get("ok") != true:
+		return result
+	if not result.get("document") is Dictionary or not draft_errors(result.document).is_empty():
+		return {"ok": false, "error": "The track repository returned invalid saved data."}
+	# A repository may assign local identity, not silently change the authored road.
+	var returned: Dictionary = result.document.duplicate(true)
+	for key in ["id", "builtin"]:
+		if submitted.has(key): returned[key] = submitted[key]
+		else: returned.erase(key)
+	if returned != submitted:
+		return {"ok": false, "error": "The track repository changed the submitted authoring document."}
+	if revision != saving_revision:
+		return {"ok": false, "saved": true, "error": "The earlier revision was saved. Your newer edits are still unsaved and have been retained."}
+	mark_saved(result.document)
+	return result.duplicate(true)
 
 func compile_draft(draft: Dictionary, vehicle: String = "Formula", fast: bool = false) -> TrackGeometry:
 	if vehicle not in TrackGeometry.PRESETS or not draft_errors(draft).is_empty() or draft.nodes.size() < 4:

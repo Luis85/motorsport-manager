@@ -1,5 +1,5 @@
 class_name PracticeMechanic
-extends RefCounted
+extends RaceMechanic
 ## Authoritative practice rules; caller supplies state, never a view or singleton.
 const PRACTICE_CHECKPOINT_VERSION = 10
 

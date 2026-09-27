@@ -5,7 +5,7 @@ const RECOVERY_CHECKPOINT_VERSION = 8
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
-	mechanics.configure([StrategyMechanic.new(), WeatherMechanic.new(), RecoveryMechanic.new()])
+	mechanics.configure(RaceMechanicProfiles.build("recovery"))
 	mechanics.install(geometry, options)
 
 static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:

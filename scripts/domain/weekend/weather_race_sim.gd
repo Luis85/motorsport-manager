@@ -5,7 +5,7 @@ const CHECKPOINT_VERSION = 7
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
-	mechanics.configure([StrategyMechanic.new(), WeatherMechanic.new()])
+	mechanics.configure(RaceMechanicProfiles.build("weather"))
 	mechanics.install(geometry, options)
 
 static func new_weather_state(seed: int, scenario_name: String, mode: String) -> Dictionary:

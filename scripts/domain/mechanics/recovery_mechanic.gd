@@ -1,5 +1,5 @@
 class_name RecoveryMechanic
-extends RefCounted
+extends RaceMechanic
 ## Authoritative recovery rules; caller supplies state, never a view or singleton.
 const RECOVERY_CHECKPOINT_VERSION = 8
 

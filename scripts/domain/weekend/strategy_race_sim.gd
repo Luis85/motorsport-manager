@@ -6,7 +6,7 @@ const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_i
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	super(geometry, options)
-	mechanics.configure([StrategyMechanic.new()])
+	mechanics.configure(RaceMechanicProfiles.build("strategy"))
 	mechanics.install(geometry, options)
 
 static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
