@@ -107,6 +107,7 @@ def execute(args: argparse.Namespace, records: list[dict]) -> int:
     try:
         for label, script in [("guard-tests", "tests/test_architecture_guard.py"),
                               ("registry-tests", "tests/test_verification_plan.py"),
+                              ("mechanics-tool-tests", "tests/test_mechanics_tool.py"),
                               ("runner-isolation", "tests/test_verify_runner.py"),
                               ("architecture-guard", "scripts/check_architecture.py")]:
             verify.run_phase(label, [sys.executable, str(ROOT / script)], env)
