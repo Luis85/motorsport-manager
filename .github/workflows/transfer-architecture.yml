@@ -1,0 +1,57 @@
+name: Publish verified architecture source
+on:
+  push:
+    branches: ['refactor/race-simulation-boundaries']
+    paths: ['.handoff/architecture/manifest.json']
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: >-
+      github.repository == 'Luis85/motorsport-manager' &&
+      github.ref == 'refs/heads/refactor/race-simulation-boundaries' &&
+      github.event.before == '15932dd4ac1650281628ad1412e98a3df85f45c6'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 2
+      - name: Verify and publish the exact source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = '15932dd4ac1650281628ad1412e98a3df85f45c6'
+          python3 - <<'PY'
+          import base64, hashlib, json, lzma, pathlib
+          root = pathlib.Path('.handoff/architecture')
+          manifest = json.loads((root / 'manifest.json').read_text())
+          assert manifest['base_commit'] == '15932dd4ac1650281628ad1412e98a3df85f45c6'
+          assert manifest['target_tree'] == 'f501dc0543e0ac4751f503d954a0e765e604c6fe'
+          assert len(manifest['parts']) == 8
+          encoded = b''
+          for index, part in enumerate(manifest['parts']):
+              expected = f'.handoff/architecture/part-{index:02d}.b64'
+              assert part['path'] == expected
+              data = pathlib.Path(expected).read_bytes()
+              assert len(data) == part['size']
+              blob = b'blob ' + str(len(data)).encode() + b'\0' + data
+              assert hashlib.sha1(blob).hexdigest() == part['sha']
+              encoded += data
+          patch = lzma.decompress(base64.b64decode(encoded, validate=True))
+          assert hashlib.sha256(patch).hexdigest() == 'b8cf89076d76dd25589bc5db95f44bf6d7073bf44df463ec7cee10379204f2fb'
+          pathlib.Path('/tmp/architecture.patch').write_bytes(patch)
+          PY
+          git apply --index --check /tmp/architecture.patch
+          git apply --index /tmp/architecture.patch
+          git diff --cached --check
+          cp .git/index /tmp/architecture-proof-index
+          GIT_INDEX_FILE=/tmp/architecture-proof-index git update-index --force-remove -- .handoff/architecture/manifest.json .handoff/architecture/part-*.b64 .github/workflows/transfer-architecture.yml
+          test "$(GIT_INDEX_FILE=/tmp/architecture-proof-index git write-tree)" = 'f501dc0543e0ac4751f503d954a0e765e604c6fe'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor: separate race simulation, application scheduling and visualization'
+          git push origin HEAD:refs/heads/refactor/race-simulation-boundaries
+          echo 'Verified source tree f501dc0543e0ac4751f503d954a0e765e604c6fe published; temporary transfer files await removal.' >> "$GITHUB_STEP_SUMMARY"
