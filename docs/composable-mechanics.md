@@ -8,6 +8,10 @@ A provider declares a stable `id`, positive `version`, earlier `requires` depend
 
 Existing profiles explicitly assemble strategy → weather → recovery → practice. For an overridden hook, the most specific installed provider runs; `before(id, hook, arguments)` invokes its declared predecessor and then the base rule when appropriate. This preserves the old arithmetic and RNG order while making the composition explicit. It is ordered hook composition, not a generic ECS.
 
+## Developer tooling
+
+See [Developing systems and mechanics](developing-mechanics.md) for the `list`, `hooks`, and inactive `scaffold` commands, typed hook validation, revision-bound editor operations and the exact completion boundary.
+
 ## Adding or editing a rule
 
 1. Put an authoritative operation in a focused domain module. Use caller-supplied state and simulated time; never a screen, singleton lookup, rendering callback or wall clock.

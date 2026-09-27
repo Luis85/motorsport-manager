@@ -10,7 +10,7 @@ vehicle/driver modifier and makes no physics calibration claim.
 
 `TrackEditorSession` owns the canonical authoring document, revision, saved
 signature and bounded 50-transaction undo/redo history. A canvas gesture edits a
-copy. Commit validates and copies that value; cancel returns the canonical copy
+copy. Commit validates the observed revision and copies that value; cancel returns the canonical copy
 without destroying the redo branch. Rejected edits and failed replacements leave
 existing work intact. Saving through a `TrackEditorPort` marks the document saved
 only after the adapter reports success. Failed writes retain the edited work.
@@ -59,8 +59,9 @@ cars' actual status, completed laps, stops and best lap. No inferred component
 failure, prize payment or causal attribution is fabricated. Final-track review
 returns to the existing read-only terminal race state; New weekend stages again.
 
-Legacy Engineering/Director diagnostic entry routes remain compatibility paths;
-this document does not claim their entire controller API has been migrated.
+Legacy Engineering/Director entry routes remain compatibility paths. Their
+controllers now use detached application queries and commands; direct access
+to the aggregate, application singleton and filesystem is forbidden in UI.
 
 ## Verification contracts
 
@@ -78,8 +79,8 @@ evidence. Exact results belong to the source-pinned verification report.
 
 ## Remaining larger-refactor work
 
-The original typed-car entity migration and complete legacy controller-facade
-migration are not delivered by these editor/entry changes. Authoritative records
+The original typed-car entity migration remains unfinished. The legacy
+controller-facade migration is now present and guarded across the UI layer. Authoritative records
 remain validated serialized dictionaries; their units and save schema are
 unchanged. Architecture checks are executable fitness rules, not a full GDScript
 parser or a claim that arbitrary reflection cannot bypass a boundary. Platform

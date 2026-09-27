@@ -72,9 +72,9 @@ For a new rendering backend, consume `RaceVisualPort` or supply a compatible por
 
 ## Executable architectural rules
 
-`python3 scripts/check_architecture.py` resolves both global class-name references and literal script dependencies. It rejects outward dependencies from domain/application, domain scene/input/storage authority, undocumented domain wall clocks, dynamic inward script loads, UI ticking, and live aggregate/singleton references in the guarded renderers/minimal workspace. Nine Python fixtures exercise the guard itself, including forbidden literal `extends` paths and comments that must not produce false edges.
+`python3 scripts/check_architecture.py` resolves both global class-name references and literal script dependencies. It rejects outward dependencies from domain/application, domain scene/input/storage authority, undocumented domain wall clocks, dynamic inward script loads, UI ticking, and live aggregate/singleton references in the guarded renderers/minimal workspace. Python fixtures exercise the guard itself, including forbidden literal `extends` paths and comments that must not produce false edges.
 
-Two function-scoped clock exceptions remain: editor-generated identifiers in `TrackDocument.node_at` and elapsed compilation diagnostics in `TrackGeometry.compile`. Neither supplies racing randomness or sporting time. This static guard is not a full GDScript parser or a security boundary against arbitrary reflection; Godot import, runtime tests and review remain necessary.
+The 0.19.0 continuation removes both former domain clock exceptions: track identifiers are deterministic and compilation measurements belong to the application editor service. The complete UI layer, including diagnostic controllers, now uses detached sources. This static guard is not a full GDScript parser or a security boundary against arbitrary reflection; Godot import, runtime tests and review remain necessary.
 
 The normal `scripts/verify.py` retains every previously required suite and adds boundary, native ownership and baseline-characterization gates. No failing test is removed to accommodate the refactor. Historical tests that explicitly step a simulation disable application scheduling explicitly rather than implicitly stopping it by hiding a view.
 
@@ -98,4 +98,6 @@ Godot's scene-organization and node-alternative guidance informed focused native
 
 ## Remaining work
 
-Further typed entity/value-object migration and reducing the simulation subclass chain should be separate characterized increments, not an untested rewrite. Old diagnostic controller facades can migrate gradually. Dedicated error injection for filesystem failures, physical controller/screen-reader coverage, Windows export validation and representative-device performance remain separate gates. No new physics calibration, FPS guarantee, universal architecture compliance or human-usability conclusion is claimed.
+The 0.19.0 continuation replaces behavior inheritance with explicit mechanic composition and migrates diagnostic controllers to detached facades. Broad typed-car entity/value-object migration is still unfinished; validated dictionary records remain authoritative. Dedicated error injection for filesystem failures, physical controller/screen-reader coverage, Windows export validation and representative-device performance remain separate gates. No new physics calibration, FPS guarantee, universal architecture compliance or human-usability conclusion is claimed.
+
+For current registration, scaffold commands and revision-bound editor examples, use [Developing systems and mechanics](developing-mechanics.md).

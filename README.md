@@ -81,3 +81,7 @@ All required test suites are registered in `scripts/verification_suites.json`.
 Run `python3 scripts/verify.py --godot /path/to/godot` for complete local coverage.
 CI uses six independent shards and a fail-closed aggregate `verify` gate; a
 headless-only or partial run is not accepted as complete verification.
+
+## Systems and mechanics development
+
+Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility and the remaining typed-car migration.
