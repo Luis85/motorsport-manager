@@ -1,7 +1,8 @@
 # Motorsport Manager documentation
 
-## Current default — 0.17.0 Minimal
+## Current default — 0.17.1 Minimal
 
+- [UI polish, driver cards and timing integrity](minimal-ui-polish.md)
 - [Visible contract, session flows and architecture](race-weekend-minimal.md)
 - [Executed checks and remaining validation](minimal-verification.md)
 
@@ -14,7 +15,7 @@ The documents below describe retained historical implementations. Their advanced
 - [Verification and acceptance boundaries](race-director-verification.md)
 
 
-Current native implementation: **0.17.0** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.17.1** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|

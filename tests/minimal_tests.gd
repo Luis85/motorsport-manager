@@ -90,8 +90,68 @@ func test_recorded_modes() -> void:
 	invalid=sim.snapshot();invalid.practice_state.drivers[3].active.live_modes.engine=0
 	check(PracticeRaceSim.restore_practice(invalid)==null,"Stored live mode must match the actual car")
 
+func test_readouts_and_timing() -> void:
+	# Synthetic read-model edge fixtures. No physics or classification injection
+	# in the separate full weekend journey.
+	var sim = fixture(); sim.phase = "race"; sim.paused = true
+	var car = sim.cars[3]; var fitted = TyreInventory.find(car, car.set_id)
+	for key in WheelTyres.KEYS: fitted.wheels[key].life = 80.0
+	fitted.wheels.FL.life = 24.8; WheelTyres.publish(fitted)
+	car.tyre = fitted.life; car.temperature = fitted.temperature
+	car.health = 79.6; car.damage = 10.2; car.fuel = 0.5; car.engine = 2
+	var before = JSON.stringify(sim.cars); var rng = sim.rng_state
+	var reading = MinimalDriverReadout.capture(sim, 3)
+	check(reading.tyre_life == 24.8 and reading.tyre.ends_with("24%"), "Card uses lowest wheel tread, not a reassuring average")
+	check(reading.tyre_issue and reading.tyre_detail == "Low tread · FL", "Limiting wheel is explicit when tread is low")
+	check(reading.health == "79%" and reading.car_detail == "Damage 11%", "Mechanical health and damage are separate, not a fabricated combined score")
+	check(reading.fuel == "0.5 laps" and reading.fuel_issue and reading.fuel_detail.begins_with("~-"), "Fuel units and negative estimated finish margin are explicit")
+	car.next_set_id = "3-H1"; car.next_compound = "H"
+	check(MinimalDriverReadout.capture(sim,3).set_id == fitted.id, "Planning a replacement does not publish it as fitted")
+	car.next_set_id = ""; car.next_compound = "M"
+	for j in range(30): MinimalDriverReadout.capture(sim,3); MinimalDriverReadout.capture(sim,6); MinimalRaceTiming.rows(sim)
+	check(before == JSON.stringify(sim.cars) and rng == sim.rng_state, "Cards and timing neither synchronize stock nor consume randomness")
+	check(MinimalDriverReadout.capture(sim,0).is_empty() and MinimalDriverReadout.capture(sim,-1).is_empty(), "Readout does not expose rival resources or invalid identities")
+	fitted.wheels.RR.punctured = true
+	check(MinimalDriverReadout.capture(sim,3).tyre_detail == "Puncture · RR", "Puncture takes precedence over ordinary tread detail")
+	car.set_id = "missing"
+	check(MinimalDriverReadout.capture(sim,3).tyre == "Unavailable", "Missing fitted data is unknown, never an invented full set")
+	car.set_id = fitted.id
+	check(MinimalRaceTiming.format_time(59.9996) == "1:00.000", "Lap-time millisecond rounding carries into next minute")
+	check(MinimalRaceTiming.format_time(83.456) == "1:23.456", "Measured precision remains milliseconds")
+	check(MinimalRaceTiming.format_time(0) == "—" and MinimalRaceTiming.format_time(NAN) == "—", "Absent or invalid lap times do not become zeros")
+	sim.phase = "qualifying"; car.qual_best = 83.456; car.dnf = true
+	sim.cars[6].qual_best = 83.456
+	var rows = MinimalRaceTiming.rows(sim)
+	check(rows[0].id == 3 and rows[1].id == 6, "Equal qualifying times have stable grid-based tie ordering")
+	check(rows[0].time == "1:23.456" and rows[0].tag == "RET", "Retirement retains the valid measured lap and separate retired status")
+	check(rows[2].time == "—", "Untimed qualifying car is visibly untimed")
+	sim.phase = "practice"
+	check(MinimalRaceTiming.rows(sim).all(func(row): return row.time == "—"), "Practice cannot borrow qualifying measurements")
+	sim.phase = "formation"; car.dnf = false
+	for c in sim.cars: c.distance = c.id * 100.0
+	rows = MinimalRaceTiming.rows(sim)
+	check(rows[0].id == 0 and rows[11].id == 11 and rows[11].position == 12, "Formation tower retains all grid positions rather than physical travel order")
+	sim.phase = "race"
+	for c in sim.cars: c.distance = 100.0; c.dnf = false
+	sim.cars[0].distance = sim.track.length * 2.2
+	rows = MinimalRaceTiming.rows(sim)
+	check(rows[0].time == "Leader" and rows[1].time == "+2 L", "Live timing reports whole-lap deficits separately from second estimates")
+	sim.cars[0].distance = 150.0
+	check(MinimalRaceTiming.rows(sim)[1].time.begins_with("~+"), "Distance-derived live gaps remain explicitly approximate")
+	sim.phase = "results"
+	for c in sim.cars: c.dnf = true
+	check(MinimalRaceTiming.rows(sim).all(func(row): return row.time == "DNF"), "All-retired results invent neither a winner nor live time gaps")
+	sim.cars[0].dnf = false; sim.cars[0].finished = true; sim.cars[0].completed = 3; sim.cars[0].finish_time = 250.0
+	car.dnf = false; car.finished = true; car.completed = 3; car.finish_time = 251.25
+	sim.cars[6].dnf = false; sim.cars[6].finished = true; sim.cars[6].completed = 2; sim.cars[6].finish_time = 248.0
+	rows = MinimalRaceTiming.rows(sim)
+	check(rows[0].time == "Winner" and rows[1].time == "+1.250" and rows[2].time == "+1 L", "Final classification uses actual laps and finish timestamps, never live speed")
+	check(MinimalDriverReadout.capture(sim,3).fuel_detail == "Remaining at finish", "Finished cards stop projecting a future stint")
+	car.dnf = true; car.finished = false; car.retire_reason = "Out of fuel"
+	check(MinimalDriverReadout.capture(sim,3).retire_reason == "Out of fuel", "Retirement explanation uses the recorded reason")
+
 func run() -> void:
 	var started=Time.get_ticks_msec(); geometry=TrackGeometry.new(Storage.read_catalog().data[7])
-	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes()
+	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes(); test_readouts_and_timing()
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"metrics":metrics,"elapsed_seconds":(Time.get_ticks_msec()-started)/1000.0}
 	Storage.write_json("res://reports/minimal-tests.json",report);print("MINIMAL_TESTS ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

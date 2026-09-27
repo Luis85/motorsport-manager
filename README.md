@@ -1,13 +1,14 @@
 # Motorsport Manager — Godot
 
-Native, local-first circuit authoring and two-car race management. **0.17.0 — Minimal race weekend** replaces the player-facing Race Director with a new, independent screen.
+Native, local-first circuit authoring and two-car race management. **0.17.1 — Minimal UI foundations** refines the independent race screen and adds read-only driver condition cards. No new commands or racing mechanics.
 
 ## One race screen
 
 - **Top:** Menu, session/time or race lap/flag, Pause, Play, speed, and one next-session action.
-- **Left:** a three-column timing tower. Your two drivers are marked `*`; live estimated gaps are marked `~`.
+- **Left:** a four-column timing tower: position, driver, best time/gap and running state. Your two drivers are marked `*`; live estimated gaps are marked `~`.
 - **Centre:** the actual circuit and moving cars, with pan, zoom and fit.
 - **Right:** choose MER or MOR, then **Send out**, **Box this lap**, **Push**, **Calm**, or an **engine mode**.
+- **Bottom:** both drivers’ fitted tyres (minimum wheel tread), temperature, fuel in lap-equivalent units, mechanical condition and separate damage. Cards are read only.
 
 There are no telemetry dashboards, strategy tabs, drawers, two-car decision cards, tool finders, forecast panels, race stories, or review workspaces in the normal race screen. This is a deliberately reduced foundation, not another progressive-disclosure layer.
 
@@ -44,7 +45,7 @@ godot --path . -- --pitwall-layout=engineering
 
 Existing raw saves and supported session archives still load. New histories containing live practice modes require this implementation; compatibility with older application builds is not promised. Replay/sandbox/scenario/notebook tools are retained but are not normal-menu features in this iteration. The circuit editor is unchanged.
 
-See [the minimal contract and implementation notes](docs/race-weekend-minimal.md), [verification scope](docs/minimal-verification.md), and the [historical documentation index](docs/README.md).
+See [the 0.17.1 UI pass and verification](docs/minimal-ui-polish.md), [the minimal contract and implementation notes](docs/race-weekend-minimal.md), [verification scope](docs/minimal-verification.md), and the [historical documentation index](docs/README.md).
 
 ## Verify
 

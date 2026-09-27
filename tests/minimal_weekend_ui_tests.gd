@@ -15,6 +15,11 @@ func move_until(predicate: Callable, limit: int=24000) -> bool:
 func mark(label: String) -> void:
 	view.refresh(); await settle(6)
 	milestones.append({"label":label,"phase":model.phase,"time":model.total_time})
+	for id in [3,6]:
+		var card = view.driver_cards[id]; var reading = MinimalDriverReadout.capture(model,id)
+		check(inside(card), "Driver card remains visible at actual journey milestone: " + label + "/" + str(id))
+		check(card.last_data.set_id == model.cars[id].set_id and card.metrics.tyre.value.text == reading.tyre, "Actual fitted set, not planned replacement, reaches the card: " + label + "/" + str(id))
+		check(card.metrics.fuel.value.text == reading.fuel and card.metrics.health.value.text == reading.health, "Actual fuel and health reach the card: " + label + "/" + str(id))
 	await capture("minimal-weekend-"+label,"Real full weekend; native commands and production fixed steps; no synthetic grid/result")
 	print("MINIMAL_JOURNEY ",label," ",model.phase," ",model.total_time)
 func run() -> void:

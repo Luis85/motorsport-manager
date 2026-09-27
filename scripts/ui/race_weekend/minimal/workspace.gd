@@ -12,6 +12,13 @@ var timing_panel: PanelContainer
 var pitwall: PanelContainer
 var canvas: TrackCanvas
 var tower: Tree
+var items_by_id: Dictionary = {}
+var driver_cards: Dictionary = {}
+var driver_row: HBoxContainer
+var timing_caption: Label
+var playback_label: Label
+var engine_target_id = -1
+var engine_target_phase = ""
 var rank_rows: Array[TreeItem] = []
 var rendered_rows: Dictionary = {}
 var driver_buttons: Dictionary = {}
@@ -39,6 +46,7 @@ var table_updates = 0
 var receipts: Dictionary = {}
 var global_message = ""
 var ready_to_draw = false
+var compact_profile = -1
 
 func configure(value: PracticeRaceSim) -> void:
 	sim = value; controls.configure(value)
@@ -49,8 +57,9 @@ func _ready() -> void:
 	theme = MinimalRaceStyle.theme(text_scale)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 8)
-	build_toolbar(); build_body()
+	build_toolbar(); build_body(); build_driver_row()
 	last_phase = sim.phase; ready_to_draw = true
+	get_viewport().size_changed.connect(func(): call_deferred("refresh"))
 	refresh(); canvas.call_deferred("fit")
 	play_button.call_deferred("grab_focus")
 
@@ -64,13 +73,15 @@ func button(text: String, callback: Callable, toggle: bool = false) -> Button:
 	return MinimalRaceStyle.button(text, callback, text_scale, toggle)
 
 func build_toolbar() -> void:
-	toolbar = PanelContainer.new(); add_child(toolbar)
+	toolbar = PanelContainer.new(); toolbar.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(MinimalRaceStyle.PANEL, MinimalRaceStyle.LINE, roundi(9 * text_scale))); add_child(toolbar)
 	var row = HBoxContainer.new(); toolbar.add_child(row)
 	var menu_button = button("Menu", func(): menu_requested.emit()); row.add_child(menu_button)
 	menu_button.tooltip_text = "Pause, save this weekend and return to the menu."
-	session_label = label("PRACTICE"); row.add_child(session_label)
-	clock_label = label("", 14, true); row.add_child(clock_label)
+	var identity = VBoxContainer.new(); identity.add_theme_constant_override("separation", 1); row.add_child(identity)
+	session_label = label("WEEKEND", 11, true); identity.add_child(session_label)
+	clock_label = label("Ready", 18); identity.add_child(clock_label)
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; row.add_child(spacer)
+	playback_label = label("Paused", 12, true); row.add_child(playback_label)
 	pause_button = button("Pause", func(): controls.pause(); refresh(), true); row.add_child(pause_button)
 	play_button = button("Play", func(): controls.play(); refresh(), true); row.add_child(play_button)
 	pause_button.tooltip_text = "Pause simulation · Space"; play_button.tooltip_text = "Run at the selected speed · Space"
@@ -78,44 +89,60 @@ func build_toolbar() -> void:
 	for speed in [1,2,4,8,16]: speed_control.add_item(str(speed) + "×", speed)
 	speed_control.item_selected.connect(func(index): controls.set_speed(speed_control.get_item_id(index)); refresh())
 	speed_control.accessibility_name = "Simulation speed"; row.add_child(speed_control)
-	primary_button = button("Start practice", advance_stage); row.add_child(primary_button)
+	primary_button = button("Start practice", advance_stage); MinimalRaceStyle.primary(primary_button, text_scale); row.add_child(primary_button)
 
 func build_body() -> void:
 	body = HBoxContainer.new(); body.size_flags_vertical = Control.SIZE_EXPAND_FILL; add_child(body)
-	timing_panel = PanelContainer.new(); timing_panel.custom_minimum_size.x = 224 * text_scale; body.add_child(timing_panel)
+	timing_panel = PanelContainer.new(); timing_panel.custom_minimum_size.x = 270 * text_scale; body.add_child(timing_panel)
 	var left = VBoxContainer.new(); timing_panel.add_child(left)
-	left.add_child(label("TIMING", 12, true))
-	tower = Tree.new(); tower.hide_root = true; tower.columns = 3; tower.select_mode = Tree.SELECT_ROW
+	var tower_heading = HBoxContainer.new(); left.add_child(tower_heading)
+	var tower_title = label("Timing", 16); tower_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tower_heading.add_child(tower_title)
+	timing_caption = label("", 11, true); tower_heading.add_child(timing_caption)
+	tower = Tree.new(); tower.hide_root = true; tower.columns = 4; tower.select_mode = Tree.SELECT_ROW
 	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tower.add_theme_stylebox_override("panel", UI.box(MinimalRaceStyle.PANEL, Color.TRANSPARENT, 0, 0))
-	tower.add_theme_stylebox_override("selected", UI.box(MinimalRaceStyle.RAISED, MinimalRaceStyle.ACCENT, 3, 3))
+	tower.add_theme_stylebox_override("selected", MinimalRaceStyle.surface(MinimalRaceStyle.SELECTED, MinimalRaceStyle.ACCENT, 0))
 	tower.add_theme_stylebox_override("selected_focus", tower.get_theme_stylebox("selected"))
-	tower.add_theme_constant_override("v_separation", roundi(5 * text_scale))
+	tower.add_theme_constant_override("v_separation", roundi((1 if get_viewport_rect().size.y <= 760 else 5) * text_scale))
 	tower.add_theme_constant_override("indent", 0)
 	tower.add_theme_font_size_override("font_size", roundi(13 * text_scale))
 	tower.add_theme_font_size_override("title_button_font_size", roundi(11 * text_scale))
 	tower.add_theme_color_override("title_button_color", MinimalRaceStyle.MUTED)
-	for column in range(3):
-		tower.set_column_title(column, ["P", "DRIVER", "TIME"][column])
+	for column in range(4):
+		tower.set_column_title(column, ["P", "DRIVER", "TIME", "STATE"][column])
 		tower.set_column_expand(column, column == 2)
-		tower.set_column_custom_minimum_width(column, [32, 67, 78][column] * text_scale)
+		tower.set_column_title_alignment(column, HORIZONTAL_ALIGNMENT_RIGHT if column == 2 else HORIZONTAL_ALIGNMENT_CENTER)
+		tower.set_column_custom_minimum_width(column, [32, 64, 94, 44][column] * text_scale)
 		for state in ["normal", "hover", "pressed"]: tower.add_theme_stylebox_override("title_button_" + state, UI.box(MinimalRaceStyle.PANEL, Color.TRANSPARENT, 0, 2))
 	left.add_child(tower); var root_item = tower.create_item()
-	for i in range(sim.cars.size()): rank_rows.append(tower.create_item(root_item))
+	for car in sim.cars:
+		var item = tower.create_item(root_item)
+		item.set_metadata(0, car.id); items_by_id[car.id] = item; rank_rows.append(item)
+		item.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER)
+		item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_RIGHT)
+		item.set_text_alignment(3, HORIZONTAL_ALIGNMENT_CENTER)
+		item.set_custom_font_size(3, roundi(10 * text_scale))
 	tower.item_selected.connect(func():
 		var item = tower.get_selected()
 		if item and controls.owned(int(item.get_metadata(0))): select_driver(int(item.get_metadata(0))))
 	tower.accessibility_name = "Timing tower; your drivers are marked with an asterisk"
-	left.add_child(label("* Your team   ~ Estimated gap", 10, true))
+	left.add_child(label("* Your team   ~ Estimated gap", 11, true))
 	canvas = TrackCanvas.new(); canvas.sim = sim; canvas.show_grid = false; canvas.show_line = false; canvas.show_surface = false; canvas.show_labels = App.settings.get("labels", true)
-	canvas.fit_padding = Vector2(36,36); canvas.set_track(sim.track); body.add_child(canvas)
+	canvas.fit_padding = Vector2(36,36); canvas.set_track(sim.track)
+	var circuit = VBoxContainer.new(); circuit.size_flags_horizontal = Control.SIZE_EXPAND_FILL; circuit.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	circuit.add_theme_constant_override("separation", 6); body.add_child(circuit)
+	var title = HBoxContainer.new(); circuit.add_child(title)
+	var track_name = label(sim.track.document.name, 13, true); track_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	track_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; title.add_child(track_name)
+	title.add_child(label("F · Fit view", 11, true))
+	circuit.add_child(canvas)
 	canvas.car_selected.connect(func(id):
 		if controls.owned(id): select_driver(id)
 		else: sim.selected_id = selected_id)
 	canvas.tooltip_text = sim.track.document.name + " · Wheel to zoom; drag with the middle mouse button to pan; F to fit."
-	pitwall = PanelContainer.new(); pitwall.custom_minimum_size.x = 244 * text_scale; body.add_child(pitwall)
-	var right = VBoxContainer.new(); right.add_theme_constant_override("separation", roundi(4 * text_scale)); pitwall.add_child(right)
-	right.add_child(label("PITWALL", 12, true))
+	pitwall = PanelContainer.new(); pitwall.add_theme_stylebox_override("panel", MinimalRaceStyle.surface(MinimalRaceStyle.PANEL, MinimalRaceStyle.LINE, roundi(9 * text_scale))); pitwall.custom_minimum_size.x = 244 * text_scale; body.add_child(pitwall)
+	var right = VBoxContainer.new(); right.add_theme_constant_override("separation", roundi(3 * text_scale)); pitwall.add_child(right)
+	right.add_child(label("Pitwall", 16))
 	var choices = HBoxContainer.new(); right.add_child(choices)
 	for car in sim.cars:
 		if not car.player: continue
@@ -123,8 +150,9 @@ func build_body() -> void:
 		var choice = button(car.short, func(): select_driver(id), true)
 		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL; choice.tooltip_text = car.name
 		choice.accessibility_name = "Select " + car.name; choices.add_child(choice); driver_buttons[id] = choice
-	name_label = label(""); right.add_child(name_label)
-	state_label = label("", 13, true); right.add_child(state_label)
+	var driver_heading = HBoxContainer.new(); right.add_child(driver_heading)
+	name_label = label(""); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; driver_heading.add_child(name_label)
+	state_label = label("", 11, true); driver_heading.add_child(state_label)
 	right.add_child(HSeparator.new())
 	send_button = button("Send out", func(): driver_action("send")); right.add_child(send_button)
 	box_button = button("Box this lap", func(): driver_action("box")); right.add_child(box_button)
@@ -136,15 +164,20 @@ func build_body() -> void:
 	right.add_child(label("Engine mode", 12, true))
 	engine_control = OptionButton.new(); engine_control.custom_minimum_size.y = 36 * text_scale
 	for text in ["Save", "Standard", "Power"]: engine_control.add_item(text)
-	engine_control.item_selected.connect(func(index): controls.mode(selected_id,"engine",index); remember_message(); refresh())
+	engine_control.get_popup().about_to_popup.connect(func(): engine_target_id = selected_id; engine_target_phase = sim.phase)
+	engine_control.item_selected.connect(func(index):
+		if engine_target_id == selected_id and engine_target_phase == sim.phase:
+			controls.mode(engine_target_id, "engine", index); remember_message()
+		refresh())
 	engine_control.accessibility_name = "Engine mode for selected driver"; right.add_child(engine_control)
 	right.add_child(HSeparator.new())
-	receipt_label = label("", 12); receipt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; receipt_label.size.x = 220 * text_scale; receipt_label.max_lines_visible = 3; receipt_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(receipt_label)
-	hint_label = label("", 12, true); hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; hint_label.size.x = 220 * text_scale; hint_label.max_lines_visible = 3; hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(hint_label)
+	receipt_label = label("", 12); receipt_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; receipt_label.size.x = 220 * text_scale; receipt_label.max_lines_visible = 1 if get_viewport_rect().size.y <= 760 else 2; receipt_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(receipt_label)
+	hint_label = label("", 12, true); hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; hint_label.size.x = 220 * text_scale; hint_label.max_lines_visible = 1 if get_viewport_rect().size.y <= 760 else 2; hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(hint_label)
 	var space = Control.new(); space.size_flags_vertical = Control.SIZE_EXPAND_FILL; right.add_child(space)
 
 func select_driver(id: int) -> void:
 	if not controls.owned(id): return
+	if id != selected_id and engine_control.get_popup().visible: engine_control.get_popup().hide()
 	selected_id = id; sim.selected_id = id; refresh()
 
 func remember_message() -> void:
@@ -165,13 +198,26 @@ func advance_stage() -> void:
 	refresh()
 
 func refresh() -> void:
-	if not ready_to_draw: return
+	if not ready_to_draw or not is_inside_tree(): return
+	var compact = int(get_viewport_rect().size.y <= 760)
+	if compact != compact_profile:
+		compact_profile = compact
+		tower.add_theme_constant_override("v_separation", roundi((1 if compact else 5) * text_scale))
+		receipt_label.max_lines_visible = 1 if compact else 2; hint_label.max_lines_visible = 1 if compact else 2
+		for card in driver_cards.values(): card.set_compact(compact == 1)
 	var active = sim.phase in RaceSim.ACTIVE
+	if engine_control.get_popup().visible and engine_target_phase != sim.phase: engine_control.get_popup().hide()
+	playback_label.text = ("Paused" if sim.paused else "Running") if active else "Ready"
+	if sim.phase == "results": playback_label.text = "Complete"
 	session_label.text = {"briefing":"WEEKEND", "practice_results":"PRACTICE", "qualifying_results":"QUALIFYING", "race_preparation":"RACE", "grid_ready":"GRID"}.get(sim.phase, sim.phase.to_upper())
 	var remaining = sim.practice_state.duration - sim.clock if sim.phase == "practice" else sim.qual_duration - sim.clock
-	clock_label.text = "%02d:%02d" % [int(maxf(0,remaining))/60, int(maxf(0,remaining))%60] if sim.phase in ["practice","qualifying"] else ""
+	clock_label.text = "%02d:%02d" % [int(maxf(0,remaining))/60, int(maxf(0,remaining))%60] if sim.phase in ["practice","qualifying"] else "Ready"
+	if (sim.phase == "practice" and sim.practice_state.closed) or (sim.phase == "qualifying" and sim.qual_closed): clock_label.text = "Session closed"
 	if sim.phase == "race": clock_label.text = "Lap %d/%d · %s" % [mini(sim.laps,int(maxf(0,sim.standings()[0].distance)/sim.track.length)+1),sim.laps,sim.flag.capitalize()]
 	if sim.phase == "results": clock_label.text = "Final classification"
+	elif sim.phase in ["practice_results", "qualifying_results"]: clock_label.text = "Session complete"
+	elif sim.phase == "formation": clock_label.text = "Taking the grid"
+	elif sim.phase == "lights": clock_label.text = "Race start"
 	pause_button.disabled = not active; play_button.disabled = not active
 	pause_button.set_pressed_no_signal(active and sim.paused); play_button.set_pressed_no_signal(active and not sim.paused)
 	if not speed_control.get_popup().visible: speed_control.select([1,2,4,8,16].find(sim.speed))
@@ -180,7 +226,7 @@ func refresh() -> void:
 	primary_button.tooltip_text = "Close the session; current timed laps may finish. Playback resumes to bring cars home." if sim.phase in ["practice","qualifying"] else "Advance only when you are ready."
 	var car = sim.cars[selected_id]
 	for id in driver_buttons: driver_buttons[id].set_pressed_no_signal(id == selected_id)
-	name_label.text = car.name; state_label.text = MinimalRaceTiming.state(sim,car)
+	name_label.text = car.name; state_label.text = MinimalRaceTiming.tag(MinimalRaceTiming.state(sim,car)); state_label.tooltip_text = MinimalRaceTiming.state(sim,car)
 	send_button.disabled = not controls.send_reason(selected_id).is_empty()
 	send_button.tooltip_text = controls.send_reason(selected_id) if send_button.disabled else "Release " + car.name + ". Practice: two measured laps. Qualifying: one flying lap. Automatic physical return."
 	box_button.disabled = not controls.box_reason(selected_id).is_empty()
@@ -195,39 +241,61 @@ func refresh() -> void:
 	engine_control.tooltip_text = reason if not reason.is_empty() else "Save reduces fuel use; Power spends more fuel and heat. Standard is the normal setting."
 	receipt_label.text = global_message if not global_message.is_empty() else receipts.get(selected_id, "")
 	receipt_label.visible = not receipt_label.text.is_empty(); receipt_label.tooltip_text = receipt_label.text
-	hint_label.text = instruction(); hint_label.tooltip_text = hint_label.text
+	hint_label.text = instruction(); hint_label.tooltip_text = hint_label.text; hint_label.visible = not receipt_label.visible
 	present_timing()
 
 func instruction() -> String:
 	if sim.cars[selected_id].dnf: return sim.cars[selected_id].retire_reason
 	match sim.phase:
-		"briefing": return "Start practice, then send each driver out."
-		"practice": return "Two measured laps per run. End practice when ready."
-		"practice_results": return "Practice complete. Start qualifying when ready."
-		"qualifying": return "Out lap → flying lap → in lap. Send each driver when ready."
-		"qualifying_results", "race_preparation": return "Grid set. Start formation to take both cars to the grid."
-		"formation": return "Cars are forming the grid. No orders needed."
-		"grid_ready": return "Everyone is in position. Start race when ready."
+		"briefing": return "Start practice, then send out."
+		"practice": return "Two measured laps per run."
+		"practice_results": return "Start qualifying when ready."
+		"qualifying": return "Out lap → flying lap → in lap."
+		"qualifying_results", "race_preparation": return "Start formation when ready."
+		"formation": return "Cars are forming the grid."
+		"grid_ready": return "Start race when ready."
 		"lights": return "Watch the lights."
-		"race": return "Orders stay active until changed. Select a driver before making a call."
-		"results": return "The final classification is on the left."
+		"race": return "Orders stay active until changed."
+		"results": return "Final classification on the left."
 	return ""
+
+func build_driver_row() -> void:
+	driver_row = HBoxContainer.new(); add_child(driver_row)
+	for car in sim.cars:
+		if not car.player: continue
+		var card = MinimalDriverCard.new(); card.configure(car.id, text_scale)
+		driver_row.add_child(card); driver_cards[car.id] = card
 
 func present_timing() -> void:
 	var rows = MinimalRaceTiming.rows(sim)
-	tower.set_column_title(2,"BEST" if sim.phase in ["practice","practice_results","qualifying","qualifying_results"] else "GAP")
+	var timed = sim.phase in MinimalRaceTiming.TIMED
+	var grid = sim.phase in MinimalRaceTiming.GRID
+	tower.set_column_title(2, "BEST" if timed else ("GRID" if grid else "GAP"))
+	timing_caption.text = "Best measured laps" if timed else ("Starting order" if grid else ("Final classification" if sim.phase == "results" else "Gap to leader"))
 	tower.set_block_signals(true)
-	for i in range(rows.size()):
-		var data = rows[i]; var item = rank_rows[i]; var selected = data.id == selected_id
+	var previous: TreeItem = null
+	var reorder = not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	if reorder: rank_rows.clear()
+	for data in rows:
+		var item: TreeItem = items_by_id[data.id]; var selected = data.id == selected_id
+		if reorder:
+			if previous == null:
+				var first = tower.get_root().get_first_child()
+				if item != first: item.move_before(first)
+			elif previous.get_next() != item: item.move_after(previous)
+			previous = item; rank_rows.append(item)
 		var key = [data,selected]
-		if rendered_rows.get(i) != key:
-			rendered_rows[i] = key; table_updates += 1
-			item.set_metadata(0,data.id); item.set_text(0,str(data.position)); item.set_text(1,data.name); item.set_text(2,data.time)
-			for column in range(3):
-				item.set_tooltip_text(column,data.tooltip); item.set_selectable(column,controls.owned(data.id))
-				item.set_custom_color(column,MinimalRaceStyle.ACCENT if controls.owned(data.id) else MinimalRaceStyle.TEXT)
-				item.set_custom_bg_color(column,MinimalRaceStyle.RAISED if selected else MinimalRaceStyle.PANEL)
-		if selected: item.select(0)
+		if rendered_rows.get(data.id) != key:
+			rendered_rows[data.id] = key; table_updates += 1
+			item.set_text(0,str(data.position)); item.set_text(1,data.name); item.set_text(2,data.time); item.set_text(3,data.tag)
+			for column in range(4):
+				item.set_tooltip_text(column, data.tooltip); item.set_selectable(column, data.player)
+				var color = MinimalRaceStyle.ACCENT if data.player else (MinimalRaceStyle.MUTED if column in [0,3] else MinimalRaceStyle.TEXT)
+				if column == 3 and data.tag in ["PIT","BOX","RET"]: color = MinimalRaceStyle.WARNING
+				item.set_custom_color(column, color)
+				item.set_custom_bg_color(column, MinimalRaceStyle.SELECTED if selected else (Color("1d3033") if data.player else MinimalRaceStyle.PANEL))
+			if selected and not item.is_selected(0): item.select(0)
+		if driver_cards.has(data.id): driver_cards[data.id].present(MinimalDriverReadout.capture(sim,data.id),data.position,selected)
 	tower.set_block_signals(false)
 
 func _process(delta: float) -> void:

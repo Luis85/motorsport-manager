@@ -1,4 +1,4 @@
-# Minimal race weekend — 0.17.0
+# Minimal race weekend — 0.17.1
 
 ## Product decision
 
@@ -8,11 +8,17 @@ Restart the visible race UI rather than reorganizing the 0.16 Director. The norm
 
 Toolbar: Menu, session identity, session clock or lap/flag, Pause, Play, speed (1/2/4/8/16), and a context-specific session button. In a live race the session button disappears. Finishing/formation states explain why it is disabled. Results offer New weekend.
 
-Timing: position, three-letter driver code, best time or gap. Practice times come from actual practice samples, not `qual_best`. Qualifying uses actual flying laps. Live race gaps remain the existing distance/speed estimates and are explicitly prefixed `~`; final classification uses actual completion/time. Full names and basic running state are available on hover. Only the player's two rows can select the pitwall driver.
+Timing: position, three-letter driver code, best time or gap, and compact running state. Practice times come from actual practice samples, not `qual_best`. Qualifying uses actual flying laps. Live race gaps remain the existing distance/speed estimates and are explicitly prefixed `~`; final classification uses actual completion/time. Full names and basic running state are available on hover. Only the player's two rows can select the pitwall driver.
 
 Race: existing TrackCanvas, fitted to the available rectangle, with actual car motion and start lights. Wheel zoom, middle-button pan, F to fit. Circuit labels follow the user's display preference. Engineering surface/racing-line overlays are not exposed. Rival car clicks cannot replace the selected managed driver.
 
-Pitwall: two driver selectors, selected full name and running state, Send out, Box this lap, Push/Calm, Save/Standard/Power engine mode. A small receipt reports acceptance/rejection; phase guidance is bounded rather than allowed to push controls offscreen. Full explanatory text remains in tooltips. No graphs, tyre/fuel numbers, setup editors, strategy drawers, or rival inspection.
+Pitwall: two driver selectors, selected full name and running state, Send out, Box this lap, Push/Calm, Save/Standard/Power engine mode. A small receipt reports acceptance/rejection; phase guidance is bounded rather than allowed to push controls offscreen. Full explanatory text remains in tooltips. No graphs, setup editors, strategy drawers, or rival inspection. Tyre/fuel/car information is read-only in the bottom cards, not mixed into the controls.
+
+### Read-only bottom row
+
+Both player drivers stay visible. Cards show name, position/state, fitted compound and the lowest tread across four wheels, set identity and average measured surface temperature, fuel in lap-equivalent units, mechanical condition and separate aggregate damage. A puncture or low tread replaces ordinary tyre detail with the limiting wheel. A racing fuel finish margin is labelled `~` and is only a current-engine-rate estimate, not a guarantee. Finished/retired cars show remaining fuel, not an ongoing forecast. Unknown fitted data remains unavailable.
+
+Cards cannot select a driver, pause, issue commands or open another workspace. The selected pitwall driver is indicated on their card. Thin redundant tyre/condition meters disappear in compact windows; all numeric information remains. The layout adapts on live window resize, not only on creation.
 
 ## Flow contracts
 
@@ -54,11 +60,12 @@ An optional validated `active.live_modes` pair records current values without re
 | `scripts/ui/race_weekend/minimal/workspace.gd` | Native composition, focus/input, selection, bounded feedback, phase autosave and 5 Hz text refresh |
 | `controls.gd` | Narrow recorded command adapter, availability reasons, stage actions and finite-stock defaults |
 | `timing.gd` | Pure public classification and basic state strings |
+| `readout.gd` / `driver_card.gd` | Pure player-car projection and persistent read-only condition cards |
 | `style.gd` | Isolated native theme; no editor palette migration |
 | `PracticeRaceSim` / `PracticeEvidence` | Actual running, practice mode semantics, clean-sample and persistence invariants |
 | `main.gd` / `App` | Minimal default, preference migration, simplified setup/menu, existing save/continue |
 
-The workspace directly extends VBoxContainer. It does not inherit the old multi-workspace UI. TrackCanvas observes the same simulation; there is no second simulation or animation-only car state. The 12 timing items are retained and updated only when their row data changes. Open native dropdown choices are not reset by periodic refresh. Source modules and historical UI tests remain intact for later deliberate reuse, not as hidden player-facing tabs.
+The workspace directly extends VBoxContainer. It does not inherit the old multi-workspace UI. TrackCanvas observes the same simulation; there is no second simulation or animation-only car state. The 12 timing items have stable driver identities and move on ranking changes; they are not rebound to rank slots. Reordering waits while the pointer is held. The selected driver remains pinned. Text updates only when data changes. Open native dropdown choices are not reset by periodic refresh. Engine choices are pinned to their opening driver/phase; a driver or phase change closes the stale popup. Source modules and historical UI tests remain intact for later deliberate reuse, not as hidden player-facing tabs.
 
 ## Explicit exclusions
 

@@ -1,4 +1,6 @@
-# Minimal race weekend — verification scope
+# Minimal race weekend — historical 0.17.0 verification scope
+
+For the later UI pass, use [0.17.1 UI polish verification](minimal-ui-polish.md). Counts below are the previous implementation, not the later head.
 
 Implementation: 0.17.0, based on merged main `6d20af58403ba3d208146979ee843012c760fdea` (source tree `7ea04fe4d16a56531b9ea5d408368fb9afceff65`). Native checks used Godot **4.7.2 Standard**, Linux, GL Compatibility and software rendering under Xvfb for UI. No browser mockup stands in for the game.
 
