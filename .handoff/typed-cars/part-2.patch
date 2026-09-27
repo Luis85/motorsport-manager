@@ -1,0 +1,308 @@
+diff --git a/scripts/ui/practice_panel.gd b/scripts/ui/practice_panel.gd
+index c9c2326..0a5e01e 100644
+--- a/scripts/ui/practice_panel.gd
++++ b/scripts/ui/practice_panel.gd
+@@ -117 +117 @@ func refresh() -> void:
+-	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != PracticeEvidence.state_key(state, c):
++	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != model.practice_key(state, c):
+@@ -135 +135 @@ func refresh() -> void:
+-	var applied_setup = PracticeEvidence.setup_for(c, draft.baseline)
++	var applied_setup = model.practice_setup(c, draft.baseline)
+diff --git a/scripts/ui/public_rival_inspector.gd b/scripts/ui/public_rival_inspector.gd
+index d256c5a..d016e4e 100644
+--- a/scripts/ui/public_rival_inspector.gd
++++ b/scripts/ui/public_rival_inspector.gd
+@@ -42 +42 @@ func present(view: PracticeWeekendView) -> void:
+-		label.text = RivalStyles.public_driver(sim.rival_styles, car)
++		label.text = sim.rival_description(sim.rival_styles, car)
+diff --git a/scripts/ui/race_weekend/pit_service_panel.gd b/scripts/ui/race_weekend/pit_service_panel.gd
+index 33d0436..8bd1674 100644
+--- a/scripts/ui/race_weekend/pit_service_panel.gd
++++ b/scripts/ui/race_weekend/pit_service_panel.gd
+@@ -77 +77 @@ func describe(id: int) -> Dictionary:
+-	var planned = TyreInventory.planned(c, true)
++	var planned = model.planned_set(c, true)
+diff --git a/scripts/ui/race_weekend/practice_programme_card.gd b/scripts/ui/race_weekend/practice_programme_card.gd
+index 86e3c06..44b9fc0 100644
+--- a/scripts/ui/race_weekend/practice_programme_card.gd
++++ b/scripts/ui/race_weekend/practice_programme_card.gd
+@@ -53 +53 @@ func refresh() -> void:
+-	var shown_setup=driver.runs.back().setup if historical else PracticeEvidence.setup_for(model.car(driver_id),draft.baseline)
++	var shown_setup=driver.runs.back().setup if historical else model.practice_setup(model.car(driver_id),draft.baseline)
+diff --git a/scripts/ui/race_weekend/tyre_readout.gd b/scripts/ui/race_weekend/tyre_readout.gd
+index bdd52e3..c18ca33 100644
+--- a/scripts/ui/race_weekend/tyre_readout.gd
++++ b/scripts/ui/race_weekend/tyre_readout.gd
+@@ -19 +19 @@ func present() -> void:
+-	var a=TyreInventory.find(car,car.set_id);var b=TyreInventory.planned(car,model.phase=="race")
++	var a=TyreInventory.find_in(car.tyre_sets,car.set_id);var b=model.planned_set(car,model.phase=="race")
+diff --git a/scripts/ui/racecraft_panel.gd b/scripts/ui/racecraft_panel.gd
+index 4fa8557..bdfbac3 100644
+--- a/scripts/ui/racecraft_panel.gd
++++ b/scripts/ui/racecraft_panel.gd
+@@ -86 +86 @@ func refresh() -> void:
+-	var effect = CarSetup.effects(c, sim.average(sim.water))
++	var effect = sim.setup_effects(c, sim.average(sim.water))
+@@ -106 +106 @@ func refresh_status() -> void:
+-		var effect=CarSetup.effects(c,sim.average(sim.water))
++		var effect=sim.setup_effects(c,sim.average(sim.water))
+@@ -143 +143 @@ class WheelDashboard extends VBoxContainer:
+-		var c = model.car(model.selected_id); var item = TyreInventory.find(c, c.set_id)
++		var c = model.car(model.selected_id); var item = TyreInventory.find_in(c.tyre_sets, c.set_id)
+diff --git a/scripts/ui/recovery_weekend.gd b/scripts/ui/recovery_weekend.gd
+index eff808b..5ad6bc4 100644
+--- a/scripts/ui/recovery_weekend.gd
++++ b/scripts/ui/recovery_weekend.gd
+@@ -46 +46 @@ func refresh() -> void:
+-		var observed = RaceReliability.observation(sim.car(id), sim.reliability(id)); var urgent = observed.stage in ["degraded", "critical"]
++		var observed = sim.reliability_observation(sim.car(id), sim.reliability(id)); var urgent = observed.stage in ["degraded", "critical"]
+diff --git a/scripts/ui/strategy_desk.gd b/scripts/ui/strategy_desk.gd
+index 82b701e..7dac99a 100644
+--- a/scripts/ui/strategy_desk.gd
++++ b/scripts/ui/strategy_desk.gd
+@@ -147 +147 @@ func new_draft(template: String) -> void:
+-	var draft = StrategyPlan.draft(model.car(driver_id), model.laps, template)
++	var draft = model.strategy_draft(model.car(driver_id), model.laps, template)
+@@ -156 +156 @@ func load_current(discard: bool) -> void:
+-		drafts[driver_id] = StrategyPlan.draft(model.car(driver_id), model.laps) if current.is_empty() else current
++		drafts[driver_id] = model.strategy_draft(model.car(driver_id), model.laps) if current.is_empty() else current
+@@ -211 +211 @@ func refresh(force: bool = false) -> void:
+-	var error = StrategyPlan.validate(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
++	var error = model.strategy_plan_error(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
+diff --git a/scripts/ui/weekend.gd b/scripts/ui/weekend.gd
+index 28819f8..1438678 100644
+--- a/scripts/ui/weekend.gd
++++ b/scripts/ui/weekend.gd
+@@ -552 +552 @@ func refresh_tyres(c: Dictionary, controllable: bool) -> void:
+-	var planned = TyreInventory.planned(c, sim.phase == "race")
++	var planned = sim.planned_set(c, sim.phase == "race")
+diff --git a/scripts/verification_suites.json b/scripts/verification_suites.json
+index 2baa8ef..17b10b1 100644
+--- a/scripts/verification_suites.json
++++ b/scripts/verification_suites.json
+@@ -63 +63,3 @@
+-  {"id":"presentation_boundary_tests","script":"tests/presentation_boundary_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["presentation-boundary-tests.json"]}
++  {"id":"presentation_boundary_tests","script":"tests/presentation_boundary_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["presentation-boundary-tests.json"]},
++  {"id":"car_entity_tests","script":"tests/car_entity_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["car-entity-tests.json"]},
++  {"id":"car_record_tests","script":"tests/car_record_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["car-record-tests.json"]}
+diff --git a/tests/car_entity_tests.gd b/tests/car_entity_tests.gd
+new file mode 100644
+index 0000000..8bf4018
+--- /dev/null
++++ b/tests/car_entity_tests.gd
+@@ -0,0 +1,99 @@
++extends SceneTree
++## Runtime entrants are typed domain entities; records cross save/read boundaries.
++var checks: int = 0
++var failures: Array[String] = []
++
++class TypedProbe:
++	extends RaceMechanic
++	var observed: Array[int] = []
++	func definition() -> Dictionary:
++		return {"id": "typed-probe", "version": 1, "requires": ["strategy"], "hooks": ["leave_garage"]}
++	func leave_garage(sim: RaceSim, car: RaceCar) -> void:
++		observed.append(car.id)
++		sim.mechanics.before("typed-probe", "leave_garage", [car])
++
++class RecordProbe:
++	extends RaceMechanic
++	func definition() -> Dictionary:
++		return {"id": "record-probe", "version": 1, "requires": [], "hooks": ["leave_garage"]}
++	func leave_garage(_sim: RaceSim, _car: Dictionary) -> void:
++		pass
++
++func _initialize() -> void:
++	call_deferred("run")
++
++func check(value: bool, description: String) -> void:
++	checks += 1
++	if not value:
++		failures.append(description)
++		push_error(description)
++
++func run() -> void:
++	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
++	var sim = PracticeRaceSim.new(track, {"scenario": "dry", "seed": 7314})
++	var original = RaceStateValue.fingerprint(sim.snapshot())
++	check(sim.cars.is_typed() and sim.cars.get_typed_script() == RaceCar, "The aggregate stores typed entrants rather than dictionary proxies")
++	for car in sim.cars:
++		check(car is RaceCar and car.id >= 0 and car.id < 12, "All constructed entrants have explicit typed identity")
++	var fields: Array[String] = []
++	for property in sim.cars[3].get_property_list():
++		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
++			fields.append(property.name)
++	fields.sort()
++	var declared = RaceCar.FIELDS.duplicate(); declared.sort()
++	check(fields == declared and sim.cars[3].to_record().size() == fields.size(), "Every typed field is represented once in the codec contract")
++	var record = sim.cars[3].to_record()
++	var decoded = RaceCar.from_record(JSON.parse_string(JSON.stringify(record, "", true, true)))
++	check(decoded != null and decoded.id is int and decoded.pace is int and decoded.distance is float, "JSON numbers regain their declared runtime types")
++	check(RaceStateValue.fingerprint(decoded.to_record()) == RaceStateValue.fingerprint(record), "The typed codec preserves all serialized values")
++	decoded.fuel = 0.0; decoded.tyre_sets[0].wheels.FL.life = 0.0
++	check(original == RaceStateValue.fingerprint(sim.snapshot()), "Decoded and original cars do not share nested wheel or resource state")
++	record.car_setup.wing = 9; record.tyre_sets[0].wheels.FL.life = 0.0
++	check(original == RaceStateValue.fingerprint(sim.snapshot()), "Outgoing records cannot rewrite the live entity")
++	var copy = sim.cars[6].detached_copy()
++	copy.tyre_sets[0].wheels.FR.life = 1.0; copy.history.append({"time": 9.0})
++	check(original == RaceStateValue.fingerprint(sim.snapshot()), "Entity cloning owns its entire nested allocation and history")
++	for edit in [{"id": 3.5}, {"fuel": NAN}, {"fuel": INF}, {"finished": 1}, {"tyre_sets": {}}, {"name": 5}]:
++		var invalid = sim.cars[3].to_record(); invalid.merge(edit, true)
++		check(RaceCar.from_record(invalid) == null, "Invalid scalar/collection types are rejected before constructing a car")
++	var unknown = sim.cars[3].to_record(); unknown.unversioned_rule = true
++	check(RaceCar.from_record(unknown) == null, "Unversioned unknown fields cannot silently disappear during codec round trips")
++	unknown = sim.cars[3].to_record(); unknown.erase("fuel")
++	check(RaceCar.from_record(unknown) == null, "Missing fields cannot silently acquire guessed resource values")
++	var object_value = sim.cars[3].to_record(); object_value.history.append(RefCounted.new())
++	check(RaceCar.from_record(object_value) == null, "Nested engine objects cannot enter an external car record")
++	var query = RaceViewQuery.new(sim)
++	var all = query.cars; all[3].fuel = 1.0
++	var order = query.standings(); order[0].tyre_sets.clear()
++	check(query.car(3) is Dictionary and original == RaceStateValue.fingerprint(sim.snapshot()), "Public car and classification projections serialize entities instead of copying Object references")
++	check(query.car_position({}).is_empty() and query.car_advisories({}).is_empty(), "Malformed diagnostic records fail safely without resolving live authority")
++	check(query.pit_status({}).is_empty() and query.strategy_advice({}).is_empty(), "Unavailable record feedback cannot trigger a domain call with a null entrant")
++	# Default pit-service callers without an old traffic snapshot still read only
++	# the three queue fields from each typed entrant.
++	var queue_fixture = RaceSim.new(track)
++	queue_fixture.phase = "qualifying"
++	var queue_car = queue_fixture.cars[3]
++	queue_car.route = "pit"; queue_car.pit_stage = "entry"; queue_car.pit_d = 0.0
++	queue_fixture.update_pit(queue_car)
++	check(queue_car.pit_d >= 0.0 and queue_car.route == "pit", "Physical pit service accepts typed entrants without a supplied traffic snapshot")
++	var checkpoint = sim.snapshot()
++	var restored = PracticeRaceSim.restore_practice(checkpoint)
++	check(restored != null and restored.cars[3] is RaceCar, "Production restore rebuilds typed entrants under the existing save version")
++	if restored != null:
++		check(RaceRecord.equivalent(checkpoint, restored.snapshot()), "Production restore retains the full checkpoint and RNG")
++		check(restored.cars[3] != sim.cars[3], "Restored entrants have independent identity and lifetime")
++	var invalid_owner = RaceSim.new(track)
++	check(not invalid_owner.mechanics.configure([RecordProbe.new()]), "Mechanic contracts reject a dictionary where an authoritative RaceCar is required")
++	var candidate = RaceSim.new(track)
++	var probe = TypedProbe.new()
++	var providers = RaceMechanicProfiles.build("strategy"); providers.append(probe)
++	check(candidate.mechanics.configure(providers) and candidate.mechanics.install(track, {}), "A typed mechanic installs without another simulation subclass")
++	check(candidate.command("qualify") and candidate.command("send", {"id": 3}), "Existing legal commands reach the typed dispatch boundary")
++	check(probe.observed == [3] and candidate.cars[3].route == "pit", "Typed hook receives the intended entrant and preserves physical garage release")
++	var retained = weakref(sim)
++	sim = null
++	check(retained.get_ref() == null and not query.available(), "A copied entity or read model cannot retain the discarded aggregate")
++	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
++	Storage.write_json("res://reports/car-entity-tests.json", report)
++	print("CAR_ENTITY_TESTS ", JSON.stringify(report))
++	quit(0 if failures.is_empty() else 1)
+diff --git a/tests/car_entity_tests.gd.uid b/tests/car_entity_tests.gd.uid
+new file mode 100644
+index 0000000..c492815
+--- /dev/null
++++ b/tests/car_entity_tests.gd.uid
+@@ -0,0 +1 @@
++uid://3yayv1lol10d
+diff --git a/tests/foundation_tests.gd b/tests/foundation_tests.gd
+index 8a097d7..fac366d 100644
+--- a/tests/foundation_tests.gd
++++ b/tests/foundation_tests.gd
+@@ -150 +150 @@ func test_checkpoint() -> void:
+-	check(restored != null and restored.cars[3].has("qual_history"), "v1 JSON checkpoints acquire safe native-v2 defaults")
++	check(restored != null and restored.cars[3].qual_history is Array, "v1 JSON checkpoints acquire safe native-v2 defaults")
+@@ -169,0 +170,2 @@ func equivalent(a: Variant, b: Variant) -> bool:
++	# Entity identity differs after restore; compare the full serialized state.
++	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
+diff --git a/tests/iteration4_tests.gd b/tests/iteration4_tests.gd
+index fade1ba..72943c9 100644
+--- a/tests/iteration4_tests.gd
++++ b/tests/iteration4_tests.gd
+@@ -71 +71 @@ func test_setup() -> void:
+-	check(c.setup == 9 and CarSetup.valid(c), "legacy wing alias remains synchronized")
++	check(c.setup == 9 and CarSetup.valid(c.to_record()), "legacy wing alias remains synchronized")
+@@ -213 +213 @@ func test_incident_wheel_integrity() -> void:
+-	check(TyreInventory.valid(c, race.laps), "incident leaves wheel/aggregate aliases consistent")
++	check(TyreInventory.valid(c.to_record(), race.laps), "incident leaves wheel/aggregate aliases consistent")
+diff --git a/tests/minimal_tests.gd b/tests/minimal_tests.gd
+index f5e43bb..04e5388 100644
+--- a/tests/minimal_tests.gd
++++ b/tests/minimal_tests.gd
+@@ -102 +102 @@ func test_readouts_and_timing() -> void:
+-	var before = JSON.stringify(sim.cars); var rng = sim.rng_state
++	var before = JSON.stringify(RaceCar.records(sim.cars), "", true, true); var rng = sim.rng_state
+@@ -112 +112 @@ func test_readouts_and_timing() -> void:
+-	check(before == JSON.stringify(sim.cars) and rng == sim.rng_state, "Cards and timing neither synchronize stock nor consume randomness")
++	check(before == JSON.stringify(RaceCar.records(sim.cars), "", true, true) and rng == sim.rng_state, "Cards and timing neither synchronize stock nor consume randomness")
+@@ -210,2 +210,5 @@ func test_driver_context() -> void:
+-	check(MinimalDriverContext.gap_text(sim, {"distance":200.0,"speed":0}, {"distance":100.0}) == "—", "Stationary time-gap estimation remains unknown")
+-	check(MinimalDriverContext.gap_text(sim, {"distance":sim.track.length*2.5,"speed":40}, {"distance":0}) == "2 L", "Whole-lap deficits are not expressed as precise seconds")
++	var gap_front = RaceCar.new(); var gap_back = RaceCar.new()
++	gap_front.distance = 200.0; gap_front.speed = 0.0; gap_back.distance = 100.0
++	check(MinimalDriverContext.gap_text(sim, gap_front, gap_back) == "—", "Stationary time-gap estimation remains unknown")
++	gap_front.distance = sim.track.length * 2.5; gap_front.speed = 40.0; gap_back.distance = 0.0
++	check(MinimalDriverContext.gap_text(sim, gap_front, gap_back) == "2 L", "Whole-lap deficits are not expressed as precise seconds")
+diff --git a/tests/minimal_weekend_ui_tests.gd b/tests/minimal_weekend_ui_tests.gd
+index b5af0da..ee215fc 100644
+--- a/tests/minimal_weekend_ui_tests.gd
++++ b/tests/minimal_weekend_ui_tests.gd
+@@ -78 +78 @@ func run() -> void:
+-	if error.is_empty():check(RaceRecord.equivalent(app.weekend.cars,model.cars) and app.weekend.rng_state==model.rng_state,"Restored final cars and RNG preserved")
++	if error.is_empty():check(RaceRecord.equivalent(RaceCar.records(app.weekend.cars),RaceCar.records(model.cars)) and app.weekend.rng_state==model.rng_state,"Restored final cars and RNG preserved")
+diff --git a/tests/practice_tests.gd b/tests/practice_tests.gd
+index 7064268..8721f16 100644
+--- a/tests/practice_tests.gd
++++ b/tests/practice_tests.gd
+@@ -22,0 +23 @@ func same(a: Variant, b: Variant) -> bool:
++	if a is RaceCar and b is RaceCar: return same(a.to_record(), b.to_record())
+@@ -49 +50 @@ func test_skip_and_permissions() -> void:
+-	check(sim.practice_state.status == "skipped" and sim.cars == base.cars and sim.total_time == base.total_time and sim.rng_state == base.rng_state and sim.weather_state == base.weather_state, "Skip charges no resource, time, weather or performance penalty")
++	check(sim.practice_state.status == "skipped" and RaceCar.records(sim.cars) == RaceCar.records(base.cars) and sim.total_time == base.total_time and sim.rng_state == base.rng_state and sim.weather_state == base.weather_state, "Skip charges no resource, time, weather or performance penalty")
+@@ -120 +121 @@ func test_migration() -> void:
+-		check(not migrated.command("practice_start") and migrated.cars == old.cars and migrated.weather_state == old.weather_state, "Legacy saves preserve prior behavior")
++		check(not migrated.command("practice_start") and RaceCar.records(migrated.cars) == RaceCar.records(old.cars) and migrated.weather_state == old.weather_state, "Legacy saves preserve prior behavior")
+@@ -193 +194 @@ func test_objectives_and_matching() -> void:
+-	check(sim.cars == twin.cars and sim.rng_state == twin.rng_state, "Removing learned forecasts does not confer or remove physical car performance")
++	check(RaceCar.records(sim.cars) == RaceCar.records(twin.cars) and sim.rng_state == twin.rng_state, "Removing learned forecasts does not confer or remove physical car performance")
+diff --git a/tests/recovery_tests.gd b/tests/recovery_tests.gd
+index 86cb19e..c470a40 100644
+--- a/tests/recovery_tests.gd
++++ b/tests/recovery_tests.gd
+@@ -59 +59 @@ func test_stages_and_exposure() -> void:
+-	var a = c.duplicate(true); var b = c.duplicate(true)
++	var a = c.detached_copy(); var b = c.detached_copy()
+@@ -64 +64 @@ func test_stages_and_exposure() -> void:
+-	var calm = c.duplicate(true); calm.engine_temperature = 150; calm.engine = 2
++	var calm = c.detached_copy(); calm.engine_temperature = 150; calm.engine = 2
+@@ -68 +68 @@ func test_stages_and_exposure() -> void:
+-	var critical = c.duplicate(true); critical.damage = 75; critical.health = 20; critical.engine_temperature = 130; critical.engine = 2
++	var critical = c.detached_copy(); critical.damage = 75; critical.health = 20; critical.engine_temperature = 130; critical.engine = 2
+@@ -284 +284 @@ func test_physical_restrictions() -> void:
+-	check(a.cars == b.cars and a.control_state == b.control_state and a.reliability_state == b.reliability_state, "Equivalent fixed steps ignore playback speed and observation frequency")
++	check(RaceCar.records(a.cars) == RaceCar.records(b.cars) and a.control_state == b.control_state and a.reliability_state == b.reliability_state, "Equivalent fixed steps ignore playback speed and observation frequency")
+@@ -328 +328 @@ func test_migration_and_validation() -> void:
+-		check(old.cars == migrated.cars and old.rng_state == migrated.rng_state and old.weather_state == migrated.weather_state, "Legacy migration preserves physical outcomes and random streams")
++		check(RaceCar.records(old.cars) == RaceCar.records(migrated.cars) and old.rng_state == migrated.rng_state and old.weather_state == migrated.weather_state, "Legacy migration preserves physical outcomes and random streams")
+@@ -333,0 +334 @@ func equivalent(a: Variant, b: Variant) -> bool:
++	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
+diff --git a/tests/rival_styles_tests.gd b/tests/rival_styles_tests.gd
+index 64bbee1..116b719 100644
+--- a/tests/rival_styles_tests.gd
++++ b/tests/rival_styles_tests.gd
+@@ -23,0 +24 @@ func same(a: Variant,b: Variant) -> bool:
++	if a is RaceCar and b is RaceCar: return same(a.to_record(), b.to_record())
+diff --git a/tests/weather_scenario_runs.gd b/tests/weather_scenario_runs.gd
+index 7a0cd6e..3dccab1 100644
+--- a/tests/weather_scenario_runs.gd
++++ b/tests/weather_scenario_runs.gd
+@@ -32 +32 @@ func run() -> void:
+-	check(sim.cars == observed.cars and sim.weather_state == observed.weather_state and sim.rng_state == observed.rng_state, "Equal fixed steps ignore display speed and repeated forecast queries")
++	check(RaceCar.records(sim.cars) == RaceCar.records(observed.cars) and sim.weather_state == observed.weather_state and sim.rng_state == observed.rng_state, "Equal fixed steps ignore display speed and repeated forecast queries")
+diff --git a/tests/weather_tests.gd b/tests/weather_tests.gd
+index c249aee..5b32fa8 100644
+--- a/tests/weather_tests.gd
++++ b/tests/weather_tests.gd
+@@ -208 +208 @@ func test_persistence() -> void:
+-		check(old.rain == migrated.rain and old.surface == migrated.surface and old.rng_state == migrated.rng_state and old.cars == migrated.cars, "Legacy migration cannot reroll physical weather, inventory or movement")
++		check(old.rain == migrated.rain and old.surface == migrated.surface and old.rng_state == migrated.rng_state and RaceCar.records(old.cars) == RaceCar.records(migrated.cars), "Legacy migration cannot reroll physical weather, inventory or movement")
+@@ -248,0 +249 @@ func equivalent(a: Variant, b: Variant) -> bool:
++	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
+diff --git a/tests/weekend_strategy_tests.gd b/tests/weekend_strategy_tests.gd
+index ebcd2f5..3467541 100644
+--- a/tests/weekend_strategy_tests.gd
++++ b/tests/weekend_strategy_tests.gd
+@@ -217,0 +218 @@ func equivalent(a: Variant, b: Variant) -> bool:
++	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
