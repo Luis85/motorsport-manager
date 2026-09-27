@@ -116,9 +116,9 @@ func begin() -> void:
 	if _transaction_revision < 0:
 		_transaction_revision = revision
 
-func commit(draft: Dictionary) -> bool:
+func commit(draft: Dictionary, expected_revision: int) -> bool:
 	last_error = ""
-	if _transaction_revision >= 0 and _transaction_revision != revision:
+	if expected_revision != revision or (_transaction_revision >= 0 and _transaction_revision != revision):
 		last_error = "The editing transaction is stale. Start from the current document."
 		return false
 	var errors = draft_errors(draft)
@@ -186,7 +186,7 @@ func mark_saved(value: Dictionary) -> void:
 	_transaction_revision = -1
 	revision += 1
 
-func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:
+func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> Dictionary:
 	if _saving:
 		return {"ok": false, "error": "A track save is already in progress."}
 	var errors = draft_errors(draft)
@@ -196,7 +196,7 @@ func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "\n".join(errors)}
 	if port == null:
 		return {"ok": false, "error": "No track repository is available."}
-	if not commit(draft):
+	if not commit(draft, expected_revision):
 		return {"ok": false, "error": last_error}
 	var saving_revision = revision
 	var submitted = read_document()

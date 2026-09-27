@@ -26,10 +26,10 @@ class ReentrantPort:
 	func save_authoring(document: Dictionary) -> Dictionary:
 		writes += 1
 		if writes == 1:
-			nested = session.save(self, document)
+			nested = session.save(self, document, session.revision)
 			var newer = session.read_document()
 			newer.name = "Edited during persistence"
-			session.commit(newer)
+			session.commit(newer, session.revision)
 		return {"ok": true, "document": document}
 
 class ChangedPort:
@@ -57,7 +57,7 @@ func run() -> void:
 	session.begin()
 	draft.nodes[0].x += 12
 	check(session.read_document() == original and session.history().past.is_empty(), "An in-flight gesture does not change the document or history")
-	check(session.commit(draft), "A valid gesture commits")
+	check(session.commit(draft, session.revision), "A valid gesture commits")
 	draft.nodes[0].x += 100
 	check(session.read_document().nodes[0].x == original.nodes[0].x + 12, "Committed document does not alias the gesture draft")
 	check(session.history().past.size() == 1, "One gesture creates one undo transaction")
@@ -71,42 +71,42 @@ func run() -> void:
 	check(session.redo() == after, "Redo retains the committed gesture")
 	var history = session.history(); history.past.clear()
 	check(session.history().past.size() == 1, "History queries are detached")
-	check(session.commit(session.read_document()) and session.history().past.size() == 1, "No-op commits create no history")
+	check(session.commit(session.read_document(), session.revision) and session.history().past.size() == 1, "No-op commits create no history")
 	for invalid in [NAN, INF, -INF]:
 		draft = session.read_document(); draft.nodes[0].x = invalid
-		check(not session.commit(draft) and session.read_document() == after, "Non-finite input fails before mutation")
+		check(not session.commit(draft, session.revision) and session.read_document() == after, "Non-finite input fails before mutation")
 	var bad = session.read_document(); bad.nodes = [Node.new()]
-	check(not session.commit(bad), "Engine objects cannot enter serialized authoring state")
+	check(not session.commit(bad, session.revision), "Engine objects cannot enter serialized authoring state")
 	bad.nodes[0].free()
 	check(not session.replace({"nodes": "bad"}) and session.read_document() == after, "Malformed replacement cannot destroy the current document")
 	for change in [{"features": [42]}, {"pits": ["wrong"]}, {"objects": [1]}, {"reference": {"width": -1}}, {"start": "wrong"}, {"visual": {"environment": "unsupported"}}]:
 		bad = session.read_document()
 		bad.merge(change, true)
-		check(not session.commit(bad) and session.read_document() == after, "Malformed nested draft is rejected without losing work")
+		check(not session.commit(bad, session.revision) and session.read_document() == after, "Malformed nested draft is rejected without losing work")
 		check(session.compile_draft(bad) == null, "Malformed nested data never reaches geometry compilation")
 	for index in range(55):
 		draft = session.read_document(); draft.name = "Revision %d" % index
-		check(session.commit(draft), "Valid edit is committed")
+		check(session.commit(draft, session.revision), "Valid edit is committed")
 	check(session.history().past.size() == TrackEditorSession.HISTORY_LIMIT, "History memory is bounded")
 	var port = FakePort.new()
 	var saved = session.saved_signature()
 	draft = session.read_document(); draft.name = "Unsaved edit"
-	var result = session.save(port, draft)
+	var result = session.save(port, draft, session.revision)
 	check(not result.ok and session.saved_signature() == saved, "A failed write never marks the draft saved")
 	check(session.read_document().name == "Unsaved edit", "A failed write retains the player's edited work")
 	port.fail_writes = false
-	check(session.save(port, session.read_document()).ok, "Successful write returns the saved authoring identity")
+	check(session.save(port, session.read_document(), session.revision).ok, "Successful write returns the saved authoring identity")
 	check(session.read_document().id == "custom-tested", "Saved identity is applied after successful persistence only")
 	check(session.saved_signature() == JSON.stringify(session.read_document()), "Saved signature follows exactly the committed value")
 	var previous_signature = session.saved_signature()
 	var nested = ReentrantPort.new()
 	nested.session = session
-	var receipt = session.save(nested, session.read_document())
+	var receipt = session.save(nested, session.read_document(), session.revision)
 	check(not receipt.ok and receipt.get("saved", false), "Saving an older revision reports that newer edits remain unsaved")
 	check(not nested.nested.ok and nested.writes == 1, "Reentrant track save cannot create a second repository write")
 	check(session.read_document().name == "Edited during persistence" and session.saved_signature() == previous_signature, "A stale save receipt never overwrites current work or marks it saved")
 	var latest = session.read_document()
-	check(not session.save(ChangedPort.new(), latest).ok and session.read_document() == latest, "Repository must not alter the authored geometry in its save receipt")
+	check(not session.save(ChangedPort.new(), latest, session.revision).ok and session.read_document() == latest, "Repository must not alter the authored geometry in its save receipt")
 	var geometry = session.compile_draft(session.read_document())
 	var immutable = session.read_document()
 	geometry.document.nodes[0].x = 0
@@ -119,15 +119,39 @@ func run() -> void:
 	check(session.preview.capture() == before, "Invalid preview time is rejected")
 	session.advance_preview(0.08)
 	check(session.preview.capture().distance > 0 and session.read_document() == immutable, "Application advances reference preview without editing the document")
-	session.begin(); draft = session.read_document(); draft.name = "New topology revision"; session.commit(draft)
+	session.begin(); draft = session.read_document(); draft.name = "New topology revision"; session.commit(draft, session.revision)
 	check(not session.preview.capture().running, "Document revision invalidates the running reference preview")
 	check(session.replace(original) and session.history().past.is_empty() and session.history().future.is_empty(), "Replace resets authoring history explicitly")
 	check(session.export_authoring(port, "fixture.json", original).is_empty(), "Application exports a validated detached authoring value")
 	check(session.read_document() == original and port.exports.size() == 1, "An export adapter cannot mutate canonical editor state")
 	bad = original.duplicate(true); bad.closed = false
 	check(not session.export_runtime(port, "fixture-runtime.json", bad, "Formula").is_empty() and port.exports.size() == 1, "Unfinished runtime export is rejected before writing")
-	check(session.commit(bad), "An open circuit remains a legal editing draft")
+	check(session.commit(bad, session.revision), "An open circuit remains a legal editing draft")
 	check(not session.export_authoring(port, "fixture.json", bad).is_empty(), "Export revalidates at execution, not only when the dialog opened")
+	# A draft carries the revision observed when it was created. Undo/replace/save
+	# cannot turn a delayed commit into an unguarded immediate edit.
+	var guarded = TrackEditorSession.new(original)
+	var first = guarded.read_document()
+	var first_revision = guarded.revision
+	first.name = "Committed first"
+	check(guarded.commit(first, first_revision), "Revision-bound edit commits on its observed document")
+	var delayed = guarded.read_document()
+	var delayed_revision = guarded.revision
+	delayed.name = "Delayed gesture"
+	guarded.begin()
+	guarded.undo()
+	var state_before = guarded.read_document()
+	var history_before = guarded.history()
+	check(not guarded.commit(delayed, delayed_revision), "Undo invalidates a delayed gesture even after clearing the transaction marker")
+	check(guarded.read_document() == state_before and guarded.history() == history_before, "Stale rejection preserves canonical road and redo history")
+	var writes_before = port.writes
+	check(not guarded.save(port, delayed, delayed_revision).ok and port.writes == writes_before, "Stale saves never reach the repository")
+	guarded.redo()
+	check(not guarded.commit(delayed, delayed_revision), "Redo cannot resurrect an old edit revision")
+	guarded.replace(original)
+	check(not guarded.commit(delayed, delayed_revision), "Document replacement also rejects prior revision drafts")
+	var current = guarded.read_document()
+	check(guarded.commit(current, guarded.revision), "No-op edit on the current revision remains valid")
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
 	Storage.write_json("res://reports/editor-session-tests.json", report)
 	print("EDITOR_SESSION_TESTS ", JSON.stringify(report))

@@ -21,6 +21,8 @@ var _refreshing_inspector = false
 var gesture_redo: Array = []
 var known_distance = 100.0
 var document: Dictionary = {}
+# Revision of the displayed draft, not the current session at commit time.
+var document_revision: int = 0
 var geometry: TrackGeometry
 var canvas: TrackCanvas
 var inspector: TabContainer
@@ -45,7 +47,7 @@ func configure(d: Dictionary, port: TrackEditorPort = null, presentation: Dictio
 	catalog = storage.catalog()
 	preferences = presentation.duplicate(true)
 	session = TrackEditorSession.new(d)
-	document = session.read_document()
+	document = session.read_document(); document_revision = session.revision
 
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -147,15 +149,16 @@ func perform(action: Callable, rebuild_inspector: bool = false) -> void:
 	if rebuild_inspector: refresh_inspector()
 
 func recompile() -> void:
-	if not session.commit(document):
+	if not session.commit(document, document_revision):
 		var error = session.last_error
-		document = session.cancel()
+		document = session.cancel(); document_revision = session.revision
 		canvas.document = document
 		canvas.queue_redraw()
 		sync_history()
 		refresh_inspector()
 		if status: status.text = error
 		return
+	document_revision = session.revision
 	sync_history()
 	if not sketch_result.is_empty():
 		sketch_result.clear(); canvas.sketch_preview = null; canvas.sketch_note = "Document changed. Preview the trace again before replacing the road."
@@ -169,7 +172,7 @@ func recompile() -> void:
 func undo() -> void:
 	if canvas.mode.begins_with("trace_"): canvas.sketch.undo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if undo_stack.is_empty(): return
-	document = session.undo()
+	document = session.undo(); document_revision = session.revision
 	canvas.selected = mini(canvas.selected, document.nodes.size() - 1)
 	canvas.selected_object = mini(canvas.selected_object, document.objects.size() - 1)
 	recompile(); refresh_inspector()
@@ -177,7 +180,7 @@ func undo() -> void:
 func redo() -> void:
 	if canvas.mode.begins_with("trace_"): canvas.sketch.redo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return
 	if redo_stack.is_empty(): return
-	document = session.redo()
+	document = session.redo(); document_revision = session.revision
 	recompile(); refresh_inspector()
 
 func update_status() -> void:
@@ -400,9 +403,9 @@ func delete_point() -> void:
 
 func save_document() -> void:
 	if name_field: document.name = name_field.text.strip_edges()
-	var result = session.save(storage, document)
+	var result = session.save(storage, document, document_revision)
 	if result.ok:
-		document = session.read_document(); recompile(); invalidate_sketch(); update_status()
+		document = session.read_document(); document_revision = session.revision; recompile(); invalidate_sketch(); update_status()
 		status.text = "Committed road saved. Your unapplied trace is still temporary; apply it before leaving." if not canvas.sketch.strokes.is_empty() else "Saved to the track library. The Grand Prix selector will include this circuit."
 	else: update_status(); UI.notify(self, "Could not save circuit", result.error)
 
@@ -447,7 +450,7 @@ func new_document() -> void:
 func replace_document(d: Dictionary) -> void:
 	if not session.replace(d): UI.notify(self, "Could not replace circuit", session.last_error); return
 	canvas.sketch.clear(); canvas.selection_ids.clear(); canvas.sketch_preview = null; sketch_result.clear(); canvas.stroke.clear(); canvas.pen_anchor = Vector2.INF
-	document = session.read_document(); sync_history(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
+	document = session.read_document(); document_revision = session.revision; sync_history(); canvas.selected = -1; canvas.selected_pit = -1; canvas.selected_object = -1; feature_index = -1
 	saved_signature = JSON.stringify(document); recompile(); refresh_inspector(); canvas.fit()
 
 func confirm_discard(callback: Callable) -> void:
@@ -497,7 +500,7 @@ func set_tool(index: int) -> void:
 	update_status()
 
 func cancel_gesture() -> void:
-	document = session.cancel()
+	document = session.cancel(); document_revision = session.revision
 	recompile(); refresh_inspector()
 
 func race_errors() -> Array[String]:
