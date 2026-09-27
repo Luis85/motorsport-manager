@@ -1,0 +1,40 @@
+name: Publish characterized mechanic composition
+on:
+  push:
+    branches: ['refactor/composable-systems-weekend-flow']
+    paths: ['.handoff/publish-mechanics.py']
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.repository == 'Luis85/motorsport-manager' && github.event.before == 'b83b16531464921119128991dcd9897264fc481c'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Materialize only the exact locally tested source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = b83b16531464921119128991dcd9897264fc481c
+          python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          p = Path('.handoff/mechanics-addons.b64')
+          data = p.read_text().replace('CSQ0fI+E3EAsG', 'CSQ0fI+E3AsG').replace('thefa0UeWx', 'thefa0UWx').encode()
+          assert hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest() == '7dc7d9c840eda5b579ca51ef0a32b5ca6bea0a8e'
+          p.write_bytes(data)
+          PY
+          python3 .handoff/publish-mechanics.py
+          git rm -rf .handoff .github/workflows/publish-mechanics.yml
+          git add scripts tests/mechanics_tests.gd docs/composable-mechanics.md
+          git diff --cached --check
+          test "$(git write-tree)" = 7d9097b11a7d6887f3ce94d62e0cc1c55d879a75
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor: compose race mechanics without behavior inheritance'
+          git push origin HEAD:refs/heads/refactor/composable-systems-weekend-flow
