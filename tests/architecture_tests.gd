@@ -134,6 +134,11 @@ func test_observed_progression() -> void:
 	reference.command("qualify")
 	var observed = PracticeRaceSim.restore_practice(reference.snapshot())
 	var runner = RaceSessionRunner.new(observed)
+	var initial_phases: Array = []
+	runner.phase_changed.connect(func(phase): initial_phases.append(phase))
+	runner.observe_phase()
+	runner.observe_phase()
+	check(initial_phases == [observed.phase], "A newly owned session publishes its initial phase once, including while paused")
 	var query = MinimalWeekendQuery.new(observed)
 	var visual = RaceVisualSource.new(observed)
 	for i in range(160):

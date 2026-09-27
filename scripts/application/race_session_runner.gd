@@ -10,7 +10,8 @@ var _last_phase = ""
 
 func _init(simulation: RaceSim) -> void:
 	_simulation = simulation
-	_last_phase = simulation.phase
+	# A newly owned session must publish its initial phase once so its own
+	# continuation is saved even when it starts paused (notably a sandbox).
 
 func advance(elapsed_seconds: float) -> int:
 	var count = RaceStepClock.advance(_simulation, elapsed_seconds)
