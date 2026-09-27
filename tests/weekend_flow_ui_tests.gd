@@ -59,7 +59,7 @@ func run() -> void:
 		if child is ConfirmationDialog: confirm = child
 	await click_dialog(confirm.get_ok_button()); await settle()
 	check(game.screen_name == "weekend" and app.weekend.phase == "practice", "Confirmed Start practice enters the production pitwall")
-	view = game.content.get_child(0); view.session_runner.automatic = false; view.set_process(false)
+	view = game.content.get_child(0); root.get_node("App").session_runner.automatic = false; view.set_process(false)
 	model = app.weekend; model.paused = true; view.refresh()
 	check(model.cars[3].route == "garage" and model.cars[6].route == "garage", "Start does not silently send either driver out")
 	await click(view.send_button)

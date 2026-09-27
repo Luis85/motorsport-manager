@@ -8,7 +8,10 @@ const WATCH_SPEED = 8
 const HISTORY_LIMIT = 24
 const QUIET_LAPS = 3
 var history_dropped = 0
-var model: RaceSim
+var _source: WeakRef
+var model: RaceSim:
+	get: return _source.get_ref() if _source != null else null
+	set(value): _source = weakref(value) if value != null else null
 var armed = false
 var prior_speed = 1
 var internal_command = false

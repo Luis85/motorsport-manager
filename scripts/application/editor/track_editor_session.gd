@@ -3,7 +3,9 @@ extends RefCounted
 ## Owns the committed authoring aggregate and bounded transaction history.
 ## Pointer drafts and reference previews are disposable copies, never shared authority.
 const HISTORY_LIMIT: int = 50
-var revision: int = 0
+var _revision: int = 0
+var revision: int:
+	get: return _revision
 var last_error: String = ""
 var compile_usec: int = 0
 var _document: Dictionary = {}
@@ -12,7 +14,8 @@ var _future: Array = []
 var _saved_signature: String = ""
 var _transaction_revision: int = -1
 var _saving: bool = false
-var preview: TrackReferencePreview = TrackReferencePreview.new()
+var _preview = TrackReferencePreview.new()
+var preview: TrackPreviewHandle = TrackPreviewHandle.new(_preview)
 
 func _init(document: Dictionary = {}) -> void:
 	if not document.is_empty():
@@ -114,11 +117,11 @@ func restore_saved_signature(signature: String) -> void:
 
 func begin() -> void:
 	if _transaction_revision < 0:
-		_transaction_revision = revision
+		_transaction_revision = _revision
 
 func commit(draft: Dictionary, expected_revision: int) -> bool:
 	last_error = ""
-	if expected_revision != revision or (_transaction_revision >= 0 and _transaction_revision != revision):
+	if expected_revision != _revision or (_transaction_revision >= 0 and _transaction_revision != _revision):
 		last_error = "The editing transaction is stale. Start from the current document."
 		return false
 	var errors = draft_errors(draft)
@@ -133,8 +136,8 @@ func commit(draft: Dictionary, expected_revision: int) -> bool:
 		_past.pop_front()
 	_future.clear()
 	_document = draft.duplicate(true)
-	revision += 1
-	preview.stop()
+	_revision += 1
+	_preview.stop()
 	return true
 
 func cancel() -> Dictionary:
@@ -146,8 +149,8 @@ func undo() -> Dictionary:
 	if not _past.is_empty():
 		_future.append(_document.duplicate(true))
 		_document = _past.pop_back()
-		revision += 1
-		preview.stop()
+		_revision += 1
+		_preview.stop()
 	return read_document()
 
 func redo() -> Dictionary:
@@ -155,8 +158,8 @@ func redo() -> Dictionary:
 	if not _future.is_empty():
 		_past.append(_document.duplicate(true))
 		_document = _future.pop_back()
-		revision += 1
-		preview.stop()
+		_revision += 1
+		_preview.stop()
 	return read_document()
 
 func replace(value: Dictionary, saved: bool = true) -> bool:
@@ -175,16 +178,16 @@ func replace(value: Dictionary, saved: bool = true) -> bool:
 	_past.clear()
 	_future.clear()
 	_transaction_revision = -1
-	revision += 1
+	_revision += 1
 	_saved_signature = JSON.stringify(_document) if saved else ""
-	preview.stop()
+	_preview.stop()
 	return true
 
-func mark_saved(value: Dictionary) -> void:
+func _mark_saved(value: Dictionary) -> void:
 	_document = value.duplicate(true)
 	_saved_signature = JSON.stringify(_document)
 	_transaction_revision = -1
-	revision += 1
+	_revision += 1
 
 func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> Dictionary:
 	if _saving:
@@ -198,7 +201,7 @@ func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> D
 		return {"ok": false, "error": "No track repository is available."}
 	if not commit(draft, expected_revision):
 		return {"ok": false, "error": last_error}
-	var saving_revision = revision
+	var saving_revision = _revision
 	var submitted = read_document()
 	_saving = true
 	var result = port.save_authoring(submitted.duplicate(true))
@@ -214,9 +217,9 @@ func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> D
 		else: returned.erase(key)
 	if returned != submitted:
 		return {"ok": false, "error": "The track repository changed the submitted authoring document."}
-	if revision != saving_revision:
+	if _revision != saving_revision:
 		return {"ok": false, "saved": true, "error": "The earlier revision was saved. Your newer edits are still unsaved and have been retained."}
-	mark_saved(result.document)
+	_mark_saved(result.document)
 	return result.duplicate(true)
 
 func compile_draft(draft: Dictionary, vehicle: String = "Formula", fast: bool = false) -> TrackGeometry:
@@ -231,7 +234,7 @@ func diagnostics(geometry: TrackGeometry) -> Array:
 	return TrackDiagnostics.inspect(geometry) if geometry else []
 
 func advance_preview(elapsed: float) -> void:
-	preview.advance(elapsed)
+	_preview.advance(elapsed)
 
 func export_authoring(port: TrackEditorPort, path: String, draft: Dictionary) -> String:
 	var errors = draft_errors(draft)

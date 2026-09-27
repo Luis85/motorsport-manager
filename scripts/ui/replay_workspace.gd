@@ -3,14 +3,15 @@ extends VBoxContainer
 var presentation_services: RacePresentationServices = RacePresentationServices.new()
 ## An independent viewer. It has no original RaceSim reference or tactical commands.
 signal close_requested
+signal branch_requested
+signal sandbox_closed
 var player: ReplayViewSession
-var playback = ReplayPlayback.new()
 var playing: bool:
-	get: return playback.playing
-	set(value): playback.playing = value
+	get: return player.playing if player != null else false
+	set(value): player.playing = value
 var budget: int:
-	get: return playback.budget
-	set(value): playback.budget = value
+	get: return player.budget if player != null else 16
+	set(value): player.budget = value
 var clock = 0.0
 var mode_title: Label
 var sandbox_return: Button
@@ -34,7 +35,6 @@ var scenario_details_button: Button
 
 func configure(replay: ReplayViewSession) -> void:
 	player = replay
-	playback = replay.playback
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -108,11 +108,9 @@ func refresh() -> void:
 func start_sandbox() -> void:
 	if sandbox_view != null or player.sim.phase == "results": return
 	playing = false
-	var branch = player.branch_session()
-	if branch.is_empty(): last_error = "Could not reconstruct the experiment."; refresh(); return
-	mount_sandbox(branch.session, branch.record)
+	branch_requested.emit()
 
-func mount_sandbox(session: RaceViewSession, record: RaceRecord) -> void:
+func mount_sandbox(session: RaceViewHandle, record: RaceRecord) -> void:
 	playing = false; sandbox_record = record; viewer.hide()
 	sandbox_shell = UI.vbox(self, true)
 	if record.parent.has("scenario"):
@@ -127,7 +125,6 @@ func mount_sandbox(session: RaceViewSession, record: RaceRecord) -> void:
 	PitwallDesign.scale_controls(sandbox_return, float(presentation_services.preferences.pitwall_text_scale))
 	sandbox_view = RaceDirectorWorkspace.new(); sandbox_view.director_enabled = presentation_services.preferences.get("pitwall_layout", "director") != "engineering"; sandbox_view.presentation_services = presentation_services; sandbox_view.configure(session); sandbox_view.recording = record
 	sandbox_shell.add_child(sandbox_view)
-	presentation_services.activate_session(sandbox_view.session_runner, record)
 	sandbox_view.menu_requested.connect(leave_sandbox); sandbox_view.new_weekend_requested.connect(leave_sandbox)
 	sandbox_view.replay_requested.connect(func(): sandbox_view.show_reading("Sandbox recording", "Return to replay to inspect the source. Save this experiment in its separate slot; Resume sandbox opens it from the main menu.", sandbox_view.weekend_menu))
 	sandbox_view.guide.hide()
@@ -143,7 +140,7 @@ func leave_sandbox() -> void:
 func _leave_sandbox_saved() -> void:
 	var error = save_sandbox()
 	if not error.is_empty(): UI.notify(self, "Experiment not saved", error); return
-	presentation_services.stop_session()
+	sandbox_closed.emit()
 	sandbox_shell.process_mode = Node.PROCESS_MODE_DISABLED
 	remove_child(sandbox_shell); sandbox_shell.queue_free(); sandbox_shell = null; sandbox_view = null; sandbox_record = null
 	scenario_status = null

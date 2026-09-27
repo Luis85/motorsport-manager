@@ -49,10 +49,40 @@ func run() -> void:
 	var lifetime_model = PracticeRaceSim.new(TrackGeometry.new(document))
 	var lifetime = weakref(lifetime_model)
 	var session = RaceViewSession.new(lifetime_model)
+	var handle = session.view
 	lifetime_model = null
 	check(lifetime.get_ref() != null, "The application binding owns its active simulation")
 	session = null
-	check(lifetime.get_ref() == null, "Discarding a binding disconnects the optional director and releases its simulation")
+	check(lifetime.get_ref() == null, "Discarding a binding releases the simulation even while a UI handle remains")
+	check(not handle.status.available() and not handle.query.available(), "Detached handle becomes unavailable when its scheduler is released")
+	var status_fields = handle.status.get_property_list().map(func(value): return str(value.name))
+	check("runner" not in status_fields and not handle.status.has_method("advance"), "Status has neither a public runner nor a ticking method")
+	var handle_fields = handle.get_property_list().map(func(value): return str(value.name))
+	check("runner" not in handle_fields, "Legacy UI handle has no scheduling authority")
+	var minimal_binding = MinimalRaceSession.new(PracticeRaceSim.new(TrackGeometry.new(document)))
+	var minimal_handle = minimal_binding.view
+	var before_replacement = minimal_handle.query.capture()
+	var replacement = minimal_handle.controls.replacement(3, false)
+	replacement.wheels.FL.life = 0.0
+	check(before_replacement == minimal_handle.query.capture(), "Suggested tyre values are detached from driver-owned inventory")
+	var runner_weak = weakref(minimal_binding.runner)
+	minimal_binding = null
+	check(runner_weak.get_ref() == null and minimal_handle.query.capture().is_empty(), "Minimal UI handle cannot retain a discarded live scheduler")
+	check(not minimal_handle.controls.play() and not minimal_handle.controls.pause() and not minimal_handle.controls.select_driver(3), "Expired minimal command handles reject actions safely")
+	var replay_model = PracticeRaceSim.new(TrackGeometry.new(document))
+	var replay_record = RaceRecord.new()
+	replay_record.attach(replay_model)
+	var replay_player = RaceReplay.new()
+	check(replay_player.load_record(replay_record.seal()).is_empty(), "Replay lifetime fixture uses a validated production recording")
+	var replay_binding = ReplaySessionBinding.new(replay_player)
+	var replay_handle = replay_binding.view
+	var playback_lifetime = weakref(replay_binding.playback)
+	var replay_lifetime = weakref(replay_player)
+	replay_player = null
+	replay_binding = null
+	check(playback_lifetime.get_ref() == null and replay_lifetime.get_ref() == null, "Retained replay UI handle cannot keep reconstruction or its scheduler alive")
+	check(replay_handle.sim == null and not replay_handle.playing and not replay_handle.seek(-1), "Expired replay handle exposes unavailable data and rejects seek")
+	replay_record.detach()
 	var plain = {"name":"Deterministic road", "nodes":[{"x":-100,"y":-100},{"x":100,"y":-100},{"x":100,"y":100},{"x":-100,"y":100}]}
 	var a = TrackDocument.normalize(plain)
 	var b = TrackDocument.normalize(plain)

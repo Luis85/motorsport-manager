@@ -70,7 +70,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                 fail(path, match.start(), 'domain-engine-authority', name)
             if own == 'domain' and name == 'Time':
                 fail(path, match.start(), 'domain-wall-clock', name)
-            if own == 'ui' and (name in {'RaceCar', 'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts', 'RaceMomentDirector'}):
+            if own == 'ui' and (name in {'TrackReferencePreview', 'RaceSessionRunner', 'ReplayPlayback', 'RaceViewSession', 'MinimalRaceSession', 'ReplaySessionBinding', 'RaceCar', 'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts', 'RaceMomentDirector'}):
                 fail(path, match.start(), 'detached-renderer', name)
         # Positions are preserved by mask(), so literals can be recovered without
         # matching "load(...)" inside comments or documentation strings.
@@ -88,9 +88,9 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
         if own == 'ui':
             for match in re.finditer(r'\.\s*source\s*\.\s*get_ref\s*\(', text):
                 fail(path, match.start(), 'presentation-private-authority', 'record source aggregate')
-            for match in re.finditer(r'\.\s*(_source|_simulation|_director|_player)\b', text):
+            for match in re.finditer(r'\.\s*(_source|_simulation|_director|_player|_runner|_playback)\b', text):
                 fail(path, match.start(), 'presentation-private-authority', match[1])
-            for match in re.finditer(r'\.\s*(advance|step|tick)\s*\(', text):
+            for match in re.finditer(r'\.\s*(advance|advance_preview|step|tick)\s*\(', text):
                 fail(path, match.start(), 'ui-drives-simulation', match[1])
     # Providers must declare actual dispatch hooks, never unrelated aggregate helpers.
     aggregate_path = 'scripts/domain/race_sim.gd'

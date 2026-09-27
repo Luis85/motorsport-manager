@@ -41,9 +41,3 @@ func export_value(path: String, data: Dictionary) -> String:
 	return Storage.write_json(path, data.duplicate(true))
 func notebook(path: String = NotebookPort.PATH) -> NotebookPort:
 	return LocalNotebookPort.new(path)
-func activate_session(runner: RaceSessionRunner, record: RaceRecord) -> void:
-	var owner = _owner.get_ref()
-	if owner: owner.activate_session(runner, record)
-func stop_session() -> void:
-	var owner = _owner.get_ref()
-	if owner: owner.stop_session()

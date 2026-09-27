@@ -68,6 +68,10 @@ func run() -> void:
 	check(query.car(3) is Dictionary and original == RaceStateValue.fingerprint(sim.snapshot()), "Public car and classification projections serialize entities instead of copying Object references")
 	check(query.car_position({}).is_empty() and query.car_advisories({}).is_empty(), "Malformed diagnostic records fail safely without resolving live authority")
 	check(query.pit_status({}).is_empty() and query.strategy_advice({}).is_empty(), "Unavailable record feedback cannot trigger a domain call with a null entrant")
+	var tactic = query.tactical_forecast_draft(3)
+	check(query.tactical_plan_error(tactic, 3) == TacticalForecast.validate_plan(tactic, sim.cars, 3, sim.laps), "Diagnostic tactical validation uses the typed application boundary")
+	check(not query.tactical_plan_error(tactic, -1).is_empty(), "Unknown tactical driver is rejected without dereferencing an entrant")
+	check(original == RaceStateValue.fingerprint(sim.snapshot()), "Draft validation cannot mutate the original race")
 	# Default pit-service callers without an old traffic snapshot still read only
 	# the three queue fields from each typed entrant.
 	var queue_fixture = RaceSim.new(track)

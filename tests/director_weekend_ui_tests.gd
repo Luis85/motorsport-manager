@@ -117,7 +117,7 @@ func run() -> void:
 		await click(replay.branch_button); await settle(12)
 		check(replay.sandbox_view != null and replay.sandbox_view.director_enabled,"Try another decision mounts the same default Race Director")
 		if replay.sandbox_view != null:
-			replay.sandbox_view.set_process(false); replay.sandbox_view.session_runner.automatic = false
+			replay.sandbox_view.set_process(false); root.get_node("App").session_runner.automatic = false
 			check(replay.sandbox_view.sim.paused and replay.sandbox_record.origin == "sandbox","The experiment is separate and starts paused")
 			check(original == RaceRecord.fingerprint(model.snapshot()),"Branching leaves original time, RNG, stock and result unchanged")
 			await capture("director-weekend-sandbox","Native sandbox of an actual pre-call checkpoint; no alteration to original classified result")

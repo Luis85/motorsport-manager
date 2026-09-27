@@ -111,6 +111,7 @@ func run() -> void:
 	var immutable = session.read_document()
 	geometry.document.nodes[0].x = 0
 	check(session.read_document() == immutable, "Compiled preview cannot edit authoring state")
+	check(not session.preview.has_method("advance"), "Editor canvas preview handle exposes no clock operation")
 	session.preview.toggle(geometry)
 	var before = session.preview.capture()
 	var frame = session.preview.capture(); frame.distance = 900

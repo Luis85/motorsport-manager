@@ -26,7 +26,7 @@ static func draft(sim: RaceSim, id: int, kind: String = "undercut") -> Dictionar
 		"wait_laps": 2, "authority": "recommend", "fuel_reserve": 0.35,
 		"tyre_floor": 15.0, "avoid_traffic": true, "rival_first": true}
 
-static func validate_plan(plan: Variant, cars: Array, id: int, laps: int) -> String:
+static func validate_plan(plan: Variant, cars: Array[RaceCar], id: int, laps: int) -> String:
 	if not plan is Dictionary or plan.size() != 11: return "A tactical draft needs the complete supported fields."
 	if plan.get("kind") not in KINDS or plan.get("authority") not in AUTHORITIES: return "Choose a tactic and explicit recommendation or pit authority."
 	if not RaceCheckpoint.integral(plan.get("target_id"), 0, cars.size() - 1): return "Choose a named rival."

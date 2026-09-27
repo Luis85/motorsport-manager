@@ -46,7 +46,7 @@ func run() -> void:
 	for car in model.cars:
 		car.route = "track"; car.distance = 300 + (12 - car.id) * 24; car.previous_distance = car.distance; car.speed = 40
 	app.weekend = model; app.settings.pitwall_text_scale = 1.0
-	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; await settle(10)
+	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false; await settle(10)
 	var before = JSON.stringify(model.snapshot())
 	check(view.weekend_menu == view.top_secondary_actions, "Composed header retains the original working utility menu")
 	for id in [0, 1, 2, 3]: check(view.weekend_menu.get_popup().get_item_index(id) >= 0, "Utility action preserved: " + str(id))
@@ -119,7 +119,7 @@ func run() -> void:
 	check(before == JSON.stringify(model.snapshot()), "All evidence comparisons leave live race and random state unchanged")
 	for pair in [[Vector2i(1280,800),1.15],[Vector2i(1100,720),1.3]]:
 		root.size = pair[0]; root.content_scale_size = root.size; app.settings.pitwall_text_scale = pair[1]
-		game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; await settle(10)
+		game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false; await settle(10)
 		for topic in [0,3,4,5,6,7,8,9,view.recovery_page_index,view.practice_page_index,view.results_page_index]:
 			view.open_topic(topic); await settle(3)
 			check(inside(view.pause_button) and inside(view.find_button), "Scaled header/finder remain reachable at " + str(pair) + " / " + str(topic))

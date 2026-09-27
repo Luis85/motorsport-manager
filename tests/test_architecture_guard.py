@@ -49,6 +49,12 @@ class ArchitectureGuardTests(unittest.TestCase):
             self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', f'scripts/ui/{name}.gd')])
         self.assertIn('presentation-private-authority', [v.rule for v in self.scan('func render():\n\tquery._source.get_ref()', 'scripts/ui/new_instrument.gd')])
 
+    def test_ui_cannot_retain_schedulers_or_composition_bindings(self):
+        for name in ['TrackReferencePreview', 'RaceCar', 'RaceSessionRunner', 'ReplayPlayback', 'RaceViewSession', 'MinimalRaceSession', 'ReplaySessionBinding']:
+            self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: ' + name, 'scripts/ui/probe.gd')])
+        for name in ['_runner', '_playback']:
+            self.assertIn('presentation-private-authority', [v.rule for v in self.scan('func render():\n\tquery.' + name + '.get_ref()', 'scripts/ui/probe.gd')])
+
     def test_dynamic_load_rejected_inward(self):
         self.assertIn('dynamic-load', [v.rule for v in self.scan('func build(path):\n\treturn load(path)')])
 

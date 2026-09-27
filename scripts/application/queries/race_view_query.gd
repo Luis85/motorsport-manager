@@ -432,3 +432,9 @@ func reliability_observation(record: Dictionary, reliability_record: Dictionary)
 func rival_description(state: Dictionary, record: Dictionary) -> String:
 	var car = RaceCar.from_record(record)
 	return RivalStyles.public_driver(state, car) if car != null else "Driver unavailable."
+
+func tactical_plan_error(plan: Variant, id: int) -> String:
+	var source: RaceSim = _source.get_ref()
+	if source == null or id < 0 or id >= source.cars.size():
+		return "The driver data is unavailable."
+	return TacticalForecast.validate_plan(plan, source.cars, id, source.laps)

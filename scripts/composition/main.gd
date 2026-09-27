@@ -236,14 +236,17 @@ func show_weekend(layout: String = "") -> void:
 	else:
 		view = RaceDirectorWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("practice")) else (PitwallWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("strategy")) else WeekendView.new())
 		if view is RaceDirectorWorkspace: view.director_enabled = chosen_layout != "engineering"
+	var binding
 	if view is MinimalRaceWorkspace:
-		view.configure(MinimalRaceSession.new(App.weekend), App.settings)
+		binding = MinimalRaceSession.new(App.weekend)
+		view.configure(binding.view, App.settings)
 	else:
 		view.presentation_services = presentation_services
-		view.configure(RaceViewSession.new(App.weekend))
+		binding = RaceViewSession.new(App.weekend)
+		view.configure(binding.view)
 	if view is PracticeWeekendView or view is MinimalRaceWorkspace: view.recording = App.ensure_recording()
 	content.add_child(view)
-	App.activate_session(view.session_runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)
+	App.activate_session(binding.runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)
 	if view is PracticeWeekendView: view.replay_requested.connect(func():
 		var error = replay_controller.open_data(view.recording.seal())
 		if not error.is_empty(): UI.notify(self, "Replay unavailable", error))

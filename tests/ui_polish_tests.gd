@@ -138,10 +138,10 @@ func reading_ui_tests() -> void:
 	view.open_destination(2,1); await settle()
 	check(before == JSON.stringify(model.snapshot()), "P08 Find's reading route has the same read-only contract")
 	await key(KEY_ESCAPE)
-	model.paused = false; view.set_process(true); view.session_runner.automatic = true; view.race_read_button.grab_focus(); await key(KEY_ENTER)
+	model.paused = false; view.set_process(true); root.get_node("App").session_runner.automatic = true; view.race_read_button.grab_focus(); await key(KEY_ENTER)
 	var opened_at = model.total_time; await settle(40)
 	check(model.total_time > opened_at and not model.paused, "P08 the real production frame loop continues beneath the fixed reading window")
-	await key(KEY_ESCAPE); view.set_process(false); view.session_runner.automatic = false; model.paused = true
+	await key(KEY_ESCAPE); view.set_process(false); root.get_node("App").session_runner.automatic = false; model.paused = true
 
 func noninterference_tests() -> void:
 	model = race_fixture(); await reset()

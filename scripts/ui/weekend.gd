@@ -5,9 +5,9 @@ signal new_weekend_requested
 signal menu_requested
 var sim: RaceViewQuery
 var commands: RaceCommands
-var view_session: RaceViewSession
+var view_session: RaceViewHandle
 var presentation_services: RacePresentationServices = RacePresentationServices.new()
-var session_runner: RaceSessionRunner
+var session_status: RaceSessionStatus
 var canvas: TrackCanvas
 var tower: Tree
 var rows: Dictionary = {}
@@ -143,9 +143,9 @@ class StintPlot extends Control:
 		draw_string(ThemeDB.fallback_font, Vector2(10, 77), "START                         LAP %d" % car.laps, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
 
 
-func configure(value: RaceViewSession) -> void:
+func configure(value: RaceViewHandle) -> void:
 	view_session = value
-	session_runner = value.runner
+	session_status = value.status
 	commands = value.commands
 	sim = value.query
 
@@ -482,8 +482,8 @@ func refresh() -> void:
 	if trace.is_visible_in_tree(): trace.queue_redraw()
 	if last_phase != sim.phase:
 		last_phase = sim.phase
-		if session_runner != null and not session_runner.persistence_error.is_empty():
-			feedback("Autosave failed: " + session_runner.persistence_error)
+		if session_status != null and not session_status.persistence_error.is_empty():
+			feedback("Autosave failed: " + session_status.persistence_error)
 
 func current_decision(c: Dictionary) -> Dictionary:
 	if sim.phase != "race" or not c.player or c.dnf or c.finished or c.route == "pit": return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}

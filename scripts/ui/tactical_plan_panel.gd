@@ -184,7 +184,7 @@ func show_evidence() -> void:
 	reading_requested.emit("Tactical evidence", model.tactical_debrief(), evidence_button)
 
 func compare_now() -> void:
-	var error = TacticalForecast.validate_plan(drafts[driver_id], model.cars, driver_id, model.laps)
+	var error = model.tactical_plan_error(drafts[driver_id], driver_id)
 	if not error.is_empty():
 		notice = "Latest lap must be at or after earliest lap." if drafts[driver_id].from_lap > drafts[driver_id].to_lap else error
 		stage = "plan"; refresh(); reveal_control(first_invalid_control()); return
@@ -330,7 +330,7 @@ func refresh() -> void:
 	if not r.is_empty():
 		var headings = {"approved": "Tactic approved", "preparing": "Watching for the opportunity", "ordered": "Pit order accepted", "executing": "Pit stop in progress", "evaluating": "Comparing the completed pit cycle", "review": "Your review is needed", "completed": "Tactic completed", "abandoned": "Tactic ended"}
 		status_copy.text = "%s · %s\n\n%s against %s · laps %d–%d\n\n%s\n\n%s\n\nOpen Plan evidence for the sequence of decisions and the observed outcome." % [c.name, headings.get(r.status, r.status), TacticalForecast.LABELS[r.plan.kind], model.car(int(r.plan.target_id)).name, r.plan.from_lap, r.plan.to_lap, "Approved with: " + ("pit-timing authority" if r.plan.authority == "execute" else "advice only") + ". Current pit owner: " + str(model.policy(driver_id).owners.pit) + ".", r.reason]
-	var error = TacticalForecast.validate_plan(p, model.cars, driver_id, model.laps)
+	var error = model.tactical_plan_error(p, driver_id)
 	var stale = preview.is_empty() or model.total_time - preview.get("time", -100) > RaceForecaster.MAX_AGE
 	if not preview.is_empty(): stale = stale or preview.key != model.race_forecaster_material_key(driver_id, int(model.policy(driver_id).revision)) or reviewed_revision != int(model.duel_state.drivers[driver_id].revision)
 	var ready = not stale and preview.get("available", false) and error.is_empty() and (not active or r.status == "review") and not c.finished and not c.dnf

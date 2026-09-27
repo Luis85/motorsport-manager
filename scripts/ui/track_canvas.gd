@@ -22,7 +22,7 @@ var sketch_note = "Trace a new loop without altering the current circuit."
 var show_surface = false
 var world_layer: CircuitWorld
 var layer_state = {"road": {"visible": true, "locked": false}, "pits": {"visible": true, "locked": false}, "scenery": {"visible": true, "locked": false}, "features": {"visible": true, "locked": false}, "reference": {"visible": true, "locked": false}}
-var reference_preview: TrackReferencePreview
+var reference_preview: TrackPreviewHandle
 var draft_compiler: Callable
 var preview_running = false
 var preview_distance = 0.0

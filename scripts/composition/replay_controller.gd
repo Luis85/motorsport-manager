@@ -7,6 +7,7 @@ var suspended: Array = []
 var previous_focus: WeakRef
 var previous_header = false
 var suspended_session: Dictionary = {}
+var binding: ReplaySessionBinding
 
 func configure(main: Control) -> void: host = main
 
@@ -33,8 +34,11 @@ func open_data(data: Variant) -> String:
 		if child.is_queued_for_deletion(): continue
 		suspended.append({"node": child, "visible": child.visible, "process": child.process_mode})
 		child.hide(); child.process_mode = Node.PROCESS_MODE_DISABLED
-	workspace = ReplayWorkspace.new(); workspace.presentation_services = host.presentation_services; workspace.configure(ReplayViewSession.new(player)); host.content.add_child(workspace)
-	App.replay_runner = workspace.playback
+	binding = ReplaySessionBinding.new(player)
+	workspace = ReplayWorkspace.new(); workspace.presentation_services = host.presentation_services; workspace.configure(binding.view); host.content.add_child(workspace)
+	App.replay_runner = binding.playback
+	workspace.branch_requested.connect(start_sandbox)
+	workspace.sandbox_closed.connect(func(): App.stop_session())
 	workspace.close_requested.connect(close)
 	return ""
 
@@ -42,6 +46,7 @@ func close() -> void:
 	if workspace == null: return
 	App.stop_session()
 	App.replay_runner = null
+	binding = null
 	App.restore_session(suspended_session)
 	suspended_session.clear()
 	workspace.process_mode = Node.PROCESS_MODE_DISABLED
@@ -69,4 +74,17 @@ func resume_sandbox() -> void:
 	if not loaded.ok: UI.notify(host, "Sandbox not resumed", loaded.error); return
 	var error = open_data(read.data.record)
 	if not error.is_empty(): UI.notify(host, "Sandbox not resumed", error); return
-	workspace.mount_sandbox(RaceViewSession.new(loaded.sim), loaded.record)
+	var sandbox = RaceViewSession.new(loaded.sim)
+	workspace.mount_sandbox(sandbox.view, loaded.record)
+	App.activate_session(sandbox.runner, loaded.record)
+
+func start_sandbox() -> void:
+	if workspace == null or binding == null or workspace.sandbox_view != null:
+		return
+	var branch = binding.branch_session()
+	if branch.is_empty():
+		workspace.last_error = "Could not reconstruct the experiment."
+		workspace.refresh()
+		return
+	workspace.mount_sandbox(branch.session.view, branch.record)
+	App.activate_session(branch.session.runner, branch.record)

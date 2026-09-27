@@ -38,7 +38,7 @@ func build(size: Vector2i, scale: float):
 	game = load("res://scenes/main.tscn").instantiate(); root.add_child(game); await settle()
 	sim = RivalScenarios.build(RivalScenarios.catalog()[0], Storage.read_catalog().data)
 	app.weekend = sim; game.show_weekend(); await settle()
-	view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; view.guide.hide()
+	view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false; view.guide.hide()
 	view.open_topic(7); await settle()
 	# Record actual work through the real approval before exercising playback.
 	sim.command("formation")

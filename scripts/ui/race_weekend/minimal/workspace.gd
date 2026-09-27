@@ -4,9 +4,9 @@ extends VBoxContainer
 signal menu_requested
 signal new_weekend_requested
 signal results_requested
-var session: MinimalRaceSession
+var session: MinimalRaceHandle
 var frame: Dictionary = {}
-var session_runner: RaceSessionRunner
+var session_status: RaceSessionStatus
 var recording: RaceRecord
 var controls: MinimalRaceControls
 var toolbar: PanelContainer
@@ -58,11 +58,11 @@ var global_message = ""
 var ready_to_draw = false
 var compact_profile = -1
 
-func configure(value: MinimalRaceSession, options: Dictionary = {}) -> void:
+func configure(value: MinimalRaceHandle, options: Dictionary = {}) -> void:
 	preferences = options.duplicate(true)
 	session = value
 	controls = value.controls
-	session_runner = value.runner
+	session_status = value.status
 	frame = value.query.capture()
 	selected_id = value.selected_driver()
 
@@ -350,8 +350,8 @@ func _process(delta: float) -> void:
 	var phase = controls.current_phase()
 	if phase != last_phase:
 		last_phase = phase; receipts.clear(); global_message = ""; refresh_clock = 0
-	if not session_runner.persistence_error.is_empty():
-		global_message = "Autosave failed: " + session_runner.persistence_error
+	if not session_status.persistence_error.is_empty():
+		global_message = "Autosave failed: " + session_status.persistence_error
 	refresh_clock -= delta
 	if refresh_clock <= 0: refresh_clock = 0.2; refresh()
 

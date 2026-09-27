@@ -21,7 +21,3 @@ func export_value(_path: String, _data: Dictionary) -> String:
 	return "Export storage is unavailable."
 func notebook(_path: String = NotebookPort.PATH) -> NotebookPort:
 	return NotebookPort.new()
-func activate_session(_runner: RaceSessionRunner, _record: RaceRecord) -> void:
-	pass
-func stop_session() -> void:
-	pass
