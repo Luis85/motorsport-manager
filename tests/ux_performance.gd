@@ -21,7 +21,7 @@ func run():
 	sim.phase = "race"; sim.paused = true
 	for car in sim.cars:
 		car.distance = 300 + (12 - car.id) * 24; car.previous_distance = car.distance; car.speed = 40
-	root.get_node("App").weekend = sim; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	root.get_node("App").weekend = sim; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	for i in range(10): await process_frame
 	view.tabs.current_tab = 8; view.refresh()
 	var original = JSON.stringify(sim.snapshot())

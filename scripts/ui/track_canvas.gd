@@ -36,7 +36,8 @@ var _drag_offset = Vector2.ZERO
 var surface_layer: SurfaceOverlay
 var geometry: TrackGeometry
 var document: Dictionary = {}
-var sim: RaceSim
+var visual_source: RaceVisualPort
+var visual_frame: Dictionary = {}
 var editing = false
 var show_line = false
 var show_labels = true
@@ -84,15 +85,17 @@ class SurfaceOverlay extends Control:
 		if host == null or clock > 0: return
 		clock = 0.3
 		var next = [host.show_surface, host.surface_channel, host.inspected_fraction, host.center, host.zoom, host.size, host.geometry]
-		if host.show_surface and host.sim: next.append(host.sim.total_time)
+		if host.show_surface and host.visual_source: next.append(host.visual_frame.get("total_time", 0.0))
 		if next != stamp: stamp = next; queue_redraw()
 	func _draw():
 		if host != null: host.draw_surface(self)
 
+func configure_presentation(preferences: Dictionary) -> void:
+	rich_scenery = preferences.get("scenery_detail", "rich") == "rich"
+	dot_scale = float(preferences.get("dot_scale", 1.0))
+
 func _ready() -> void:
 	clip_contents = true
-	rich_scenery = App.settings.get("scenery_detail", "rich") == "rich"
-	dot_scale = float(App.settings.get("dot_scale", 1.0))
 	world_layer = CircuitWorld.new(); world_layer.show_behind_parent = true; add_child(world_layer)
 	if geometry: world_layer.configure(geometry, document, rich_scenery)
 	world_layer.reference_texture = backdrop; world_layer.reference_visible = editing and layer_visible("reference")
@@ -110,13 +113,13 @@ func _ready() -> void:
 	navigated.connect(func(): fit_view_enabled = false)
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
-	geometry = g
+	geometry = g if not live_document.is_empty() else g.detached_copy()
 	preview_running = false
 	_rebuild_due = false
-	document = live_document if not live_document.is_empty() else g.document
+	document = live_document if not live_document.is_empty() else geometry.document
 	_load_backdrop()
 	if world_layer:
-		world_layer.configure(g, document, rich_scenery)
+		world_layer.configure(geometry, document, rich_scenery)
 		world_layer.reference_texture = backdrop; world_layer.reference_visible = editing and layer_visible("reference")
 	queue_redraw()
 	if overlay: overlay.queue_redraw()
@@ -166,12 +169,9 @@ func _process(delta: float) -> void:
 		if world_layer: world_layer.configure(geometry, document, rich_scenery)
 		queue_redraw()
 
-	# Observe only visual inputs. Paused scenes retain drawing commands until something changes.
-	var stamp: Array = [center, zoom, size, show_labels, dot_scale, preview_running, preview_distance, geometry, sim]
-	if sim:
-		stamp.append([sim.phase, sim.clock, sim.selected_id, sim.accumulator if not sim.paused and sim.phase in RaceSim.ACTIVE else 0.0])
-		for car in sim.cars:
-			stamp.append([car.distance, car.previous_distance, car.pit_d, car.previous_pit_d, car.lane, car.previous_lane, car.route, car.previous_route, car.pit_stage, car.dnf, car.blue])
+	# The query port returns detached values; drawing cannot mutate the live aggregate.
+	visual_frame = visual_source.capture() if visual_source != null else {}
+	var stamp: Array = [center, zoom, size, show_labels, dot_scale, preview_running, preview_distance, geometry, visual_frame]
 	if stamp != _visual_stamp:
 		_visual_stamp = stamp; visual_revision += 1
 		if overlay: overlay.queue_redraw()
@@ -241,11 +241,11 @@ func build_surface_geometry() -> void:
 	_surface_geometry = geometry; _surface_segments.clear(); surface_geometry_builds += 1
 	# Geometry is immutable within a weekend. Water/grip remain live, never cached here.
 	var samples: Array = []
-	for i in range(RaceSurface.STATIONS * 4 + 1): samples.append(geometry.sample(i * geometry.length / (RaceSurface.STATIONS * 4)))
-	for i in range(RaceSurface.STATIONS):
+	for i in range(RaceVisualPort.SURFACE_STATIONS * 4 + 1): samples.append(geometry.sample(i * geometry.length / (RaceVisualPort.SURFACE_STATIONS * 4)))
+	for i in range(RaceVisualPort.SURFACE_STATIONS):
 		var lanes: Array = []
-		for lane in range(RaceSurface.LANES):
-			var segments: Array = []; var lateral = (lane + 0.5) / RaceSurface.LANES - 0.5
+		for lane in range(RaceVisualPort.SURFACE_LANES):
+			var segments: Array = []; var lateral = (lane + 0.5) / RaceVisualPort.SURFACE_LANES - 0.5
 			for j in range(4):
 				var p = samples[i * 4 + j]; var q = samples[i * 4 + j + 1]
 				segments.append([p.p + p.n * p.w * lateral, q.p + q.n * q.w * lateral, p.w])
@@ -253,16 +253,17 @@ func build_surface_geometry() -> void:
 		_surface_segments.append(lanes)
 
 func draw_surface(target: Control) -> void:
-	if not show_surface or sim == null or geometry == null: return
+	if not show_surface or visual_source == null or geometry == null: return
+	var values = visual_source.surface_values(surface_channel)
+	if values.is_empty(): return
 	build_surface_geometry()
-	for i in range(RaceSurface.STATIONS):
-		for lane in range(RaceSurface.LANES):
-			var data = sim.surface[i].lanes[lane]
-			var value = RaceSurface.grip(data) / 1.14 if surface_channel == "grip" else (data.temperature / 60 if surface_channel == "temperature" else data[surface_channel])
+	for i in range(RaceVisualPort.SURFACE_STATIONS):
+		for lane in range(RaceVisualPort.SURFACE_LANES):
+			var value: float = values[i][lane]
 			var color = Color("4a97b4") if surface_channel == "water" else (Color("629162") if surface_channel == "grip" else Color("a77641"))
 			color.a = clampf(value, 0, 1) * 0.68
 			for segment in _surface_segments[i][lane]:
-				target.draw_line(screen(segment[0]), screen(segment[1]), color, maxf(0.75, segment[2] * zoom / RaceSurface.LANES), true)
+				target.draw_line(screen(segment[0]), screen(segment[1]), color, maxf(0.75, segment[2] * zoom / RaceVisualPort.SURFACE_LANES), true)
 	target.draw_style_box(_surface_legend_style, Rect2(Vector2(16, 16), Vector2(260, 46)))
 	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
 	if inspected_fraction >= 0:
@@ -309,7 +310,7 @@ func _draw_profile() -> void:
 
 func draw_cars(target: Control) -> void:
 	if geometry == null: return
-	if preview_running and sim == null:
+	if preview_running and visual_source == null:
 		var sample = geometry.sample(preview_distance)
 		var p = screen(sample.p + sample.n * sample.line)
 		target.draw_circle(p, 8, Color("fcf3d8"), true, -1, true)
@@ -318,20 +319,18 @@ func draw_cars(target: Control) -> void:
 		target.draw_string(ThemeDB.fallback_font, Vector2(28, 39), "REFERENCE LAP  ·  %d km/h" % int(sample.speed * 3.6), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
 		target.draw_string(ThemeDB.fallback_font, Vector2(28, 58), "Heuristic preview · not a race simulation", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
 		return
-	if sim == null: return
+	if visual_frame.is_empty(): return
 	var font = ThemeDB.fallback_font
 	var occupied: Array[Rect2] = []
-	var display_cars = sim.cars.duplicate()
-	display_cars.sort_custom(func(a, b): return a.id == sim.selected_id if a.id != b.id else false)
+	var display_cars = visual_frame.cars.duplicate()
+	display_cars.sort_custom(func(a, b): return a.id == visual_frame.selected_id if a.id != b.id else false)
 	for c in display_cars:
-		var alpha = clampf(sim.accumulator / RaceSim.STEP, 0, 1) if sim.phase in RaceSim.ACTIVE and not sim.paused else 1.0
-		var at = sim.car_position(c, alpha)
-		var p = screen(at.p)
+		var p = screen(c.position)
 		if not Rect2(Vector2(-30, -30), size + Vector2(60, 60)).has_point(p): continue
 		var radius = clampf(4.6 + zoom * 0.35, 4.6, 7.5) * dot_scale
 		var color = Color(c.color)
 		if c.dnf: color = Color("697278")
-		if c.id == sim.selected_id:
+		if c.id == visual_frame.selected_id:
 			target.draw_arc(p, radius + 5, 0, TAU, 24, UI.ACCENT, 1.8, true)
 			target.draw_circle(p, radius + 9, Color(0.9, 0.75, 0.45, 0.09))
 		target.draw_circle(p + Vector2(1, 2), radius + 2, Color("30493633"), true, -1, true)
@@ -351,8 +350,8 @@ func draw_cars(target: Control) -> void:
 				target.draw_string(font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("294934"))
 				break
 		if c.blue: target.draw_circle(p + Vector2(-radius - 3, -radius - 3), 3, Color("619acc"))
-	if sim.phase == "lights":
-		var count = mini(5, int(sim.clock))
+	if visual_frame.phase == "lights":
+		var count = mini(5, int(visual_frame.clock))
 		var x = size.x * 0.5 - 100
 		target.draw_style_box(UI.box(Color("091116")), Rect2(Vector2(x - 24, 32), Vector2(250, 64)))
 		for i in range(5): target.draw_circle(Vector2(x + i * 48, 64), 17, Color("d96858") if i < count else Color("392929"))
@@ -380,12 +379,13 @@ func _gui_input(event: InputEvent) -> void:
 			selected = geometry.source_segments[int(fraction * geometry.points.size())]
 			selected_object = -1; selection_changed.emit(); queue_redraw(); return
 		if not editing:
-			if sim:
+			if visual_source != null:
+				var current = visual_source.capture()
 				var best = 22.0; var id = -1
-				for c in sim.cars:
-					var distance = screen(sim.car_position(c).p).distance_to(event.position)
+				for c in current.get("cars", []):
+					var distance = screen(c.current_position).distance_to(event.position)
 					if distance < best: best = distance; id = c.id
-				if id >= 0: sim.selected_id = id; car_selected.emit(id)
+				if id >= 0: car_selected.emit(id)
 			return
 		if mode == "measure":
 			if measure_start == Vector2.INF or measure_end != Vector2.INF: measure_start = p; measure_end = Vector2.INF

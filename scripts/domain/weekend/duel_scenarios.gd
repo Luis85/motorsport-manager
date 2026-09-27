@@ -1,13 +1,8 @@
 class_name DuelScenarios
 extends RefCounted
 ## Shipped, disclosed preparation grids. No fictional qualifying times or forced outcomes.
-static func catalog() -> Array:
-	var data = Storage.read_json("res://data/scenarios/strategic-duels.json")
-	if not data.ok or not data.data is Dictionary or data.data.get("version") != 1 or not data.data.get("scenarios") is Array: return []
-	return data.data.scenarios
-
-static func build(recipe: Dictionary, library: Array) -> PracticeRaceSim:
-	if recipe not in catalog(): return null
+static func build(recipe: Dictionary, library: Array, approved_recipes: Array) -> PracticeRaceSim:
+	if recipe not in approved_recipes: return null
 	for document in library:
 		if document.id != recipe.track: continue
 		var geometry = TrackGeometry.new(document, "Formula")
@@ -26,7 +21,7 @@ static func build(recipe: Dictionary, library: Array) -> PracticeRaceSim:
 		for id in [3, 6]: sim.command("delegation", {"id": id, "channel": "pit", "owner": "player"})
 		var disclosure = "Untimed preparation grid; practice and qualifying explicitly skipped. All fitted M1 sets start at %.0f%% tread; other stock unchanged. Dry, calm incidents, manual player pits. Physical formation and lights require approval. No forced winner or rewards." % recipe.life
 		RaceJournal.append(sim.strategy_state, sim, "scenario", -1, {"id": recipe.id, "title": recipe.title, "objective": recipe.objective, "hint": recipe.hint,
-			"track_hash": RaceRecord.fingerprint(document), "ruleset": TacticalDuels.MODEL, "assists": disclosure})
+			"track_hash": RaceStateValue.fingerprint(document), "ruleset": TacticalDuels.MODEL, "assists": disclosure})
 		sim.post("weekend", recipe.title + ": " + recipe.objective + " " + disclosure)
 		return sim
 	return null

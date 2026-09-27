@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""Executable layer rules for the race runtime (not a full GDScript parser).
+
+Resolve global class names as well as literal load/preload/extends paths. Ignore
+comments and strings when checking identifiers. Explicitly reject dynamic script
+loads in inward layers so they cannot silently bypass the dependency graph.
+"""
+from __future__ import annotations
+
+import argparse
+from dataclasses import dataclass
+import json
+from pathlib import Path
+import re
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+TOKEN = re.compile(r'(?P<comment>\#[^\n]*)|(?P<string>"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\')')
+ALLOWED = {
+    'domain': {'domain'},
+    'application': {'domain', 'application'},
+    'services': {'domain', 'application', 'services'},
+    'ui': {'domain', 'application', 'services', 'ui'},
+}
+ENGINE_AUTHORITY = {'Node', 'Node2D', 'Node3D', 'Control', 'SceneTree', 'Timer',
+                    'Input', 'DisplayServer', 'RenderingServer', 'AudioServer',
+                    'FileAccess', 'DirAccess', 'OS', 'ProjectSettings', 'ResourceLoader', 'App'}
+RENDERERS = {
+    'scripts/ui/track_canvas.gd', 'scripts/ui/battle_overlay.gd',
+    'scripts/ui/rejoin_overlay.gd', 'scripts/ui/surface_lab.gd',
+    'scripts/ui/race_weekend/stint_history.gd',
+    'scripts/ui/race_weekend/team_intent_timeline.gd',
+    'scripts/ui/race_weekend/strategy_chart.gd',
+    'scripts/ui/race_weekend/minimal/workspace.gd',
+    'scripts/ui/race_weekend/minimal/driver_card.gd',
+}
+CLOCK_EXCEPTIONS = {
+    # Editor identifier generation and elapsed compile diagnostics, not racing rules.
+    ('scripts/domain/track_document.gd', 'node_at'),
+    ('scripts/domain/track_geometry.gd', 'compile'),
+}
+
+@dataclass(frozen=True)
+class Violation:
+    path: str
+    line: int
+    rule: str
+    detail: str
+
+
+def mask(source: str) -> str:
+    return TOKEN.sub(lambda m: ''.join('\n' if c == '\n' else ' ' for c in m[0]), source)
+
+
+def layer(path: str) -> str:
+    parts = path.split('/')
+    return parts[1] if len(parts) > 2 and parts[0] == 'scripts' else ''
+
+
+def inspect(root: Path) -> tuple[list[Violation], int]:
+    sources = {p.relative_to(root).as_posix(): p.read_text(encoding='utf-8')
+               for p in sorted((root / 'scripts').rglob('*.gd'))}
+    code = {path: mask(text) for path, text in sources.items()}
+    classes: dict[str, str] = {}
+    for path, text in code.items():
+        match = re.search(r'^class_name\s+(\w+)', text, re.M)
+        if match:
+            classes[match[1]] = path
+    errors: list[Violation] = []
+    def fail(path: str, pos: int, rule: str, detail: str) -> None:
+        errors.append(Violation(path, code[path][:pos].count('\n') + 1, rule, detail))
+    for path, text in code.items():
+        own = layer(path)
+        if own not in ALLOWED:
+            continue
+        for match in re.finditer(r'\b[A-Za-z_]\w*\b', text):
+            name = match[0]
+            target = classes.get(name)
+            if target and layer(target) not in ALLOWED[own]:
+                fail(path, match.start(), 'dependency-direction', f'{name} -> {target}')
+            if own == 'domain' and name in ENGINE_AUTHORITY:
+                fail(path, match.start(), 'domain-engine-authority', name)
+            if own == 'domain' and name == 'Time':
+                functions = list(re.finditer(r'^(?:static )?func (\w+)\(', text[:match.start()], re.M))
+                function = functions[-1][1] if functions else ''
+                if (path, function) not in CLOCK_EXCEPTIONS:
+                    fail(path, match.start(), 'domain-wall-clock', name)
+            if path in RENDERERS and (name in {'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App'}):
+                fail(path, match.start(), 'detached-renderer', name)
+        # Positions are preserved by mask(), so literals can be recovered without
+        # matching "load(...)" inside comments or documentation strings.
+        for match in re.finditer(r'\b(load|preload)\s*\(|\bextends\b', text):
+            literal = re.match(r'\s*([\'\"])([^\'\"]+)\1', sources[path][match.end():])
+            if literal:
+                target = literal[2].removeprefix('res://')
+                if target.endswith('.gd') and layer(target) not in ALLOWED[own]:
+                    fail(path, match.start(), 'literal-dependency', target)
+            elif own in {'domain', 'application'} and match[1]:
+                fail(path, match.start(), 'dynamic-load', 'Inward layers require explicit dependencies')
+        if own == 'ui':
+            for match in re.finditer(r'\.\s*(advance|step|tick)\s*\(', text):
+                fail(path, match.start(), 'ui-drives-simulation', match[1])
+    return errors, len(sources)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=ROOT)
+    parser.add_argument('--report', type=Path)
+    args = parser.parse_args()
+    errors, count = inspect(args.root.resolve())
+    report = {'passed': not errors, 'scripts_scanned': count,
+              'violations': [v.__dict__ for v in errors],
+              'scope': 'Static architectural fitness rules; not a GDScript typechecker or proof against arbitrary reflection'}
+    if args.report:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+    print(json.dumps(report, indent=2))
+    return int(bool(errors))
+
+if __name__ == '__main__':
+    sys.exit(main())

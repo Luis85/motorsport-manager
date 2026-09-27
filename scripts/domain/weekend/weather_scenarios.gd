@@ -1,11 +1,6 @@
 class_name WeatherScenarios
 extends RefCounted
 ## Scenario premises set initial conditions and assists, never predetermined sporting outcomes.
-static func catalog() -> Array:
-	var result = Storage.read_json("res://data/scenarios/weather-strategy.json")
-	if not result.ok or not result.data is Dictionary or result.data.get("version") != 1 or not result.data.get("scenarios") is Array: return []
-	return result.data.scenarios
-
 static func valid(recipe: Variant) -> bool:
 	if not recipe is Dictionary: return false
 	for key in ["id", "title", "track", "objective", "hint"]:

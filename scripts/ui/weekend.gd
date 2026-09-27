@@ -4,6 +4,7 @@ extends VBoxContainer
 signal new_weekend_requested
 signal menu_requested
 var sim: RaceSim
+var session_runner: RaceSessionRunner
 var canvas: TrackCanvas
 var tower: Tree
 var rows: Dictionary = {}
@@ -116,29 +117,31 @@ var top_secondary_actions: MenuButton
 var race_context_label: Label
 
 class StintPlot extends Control:
-	var sim: RaceSim
+	var source: RaceChartQuery
 	func _ready(): custom_minimum_size = Vector2(240, 94)
 	func _draw():
 		draw_style_box(UI.box(UI.CARD), Rect2(Vector2.ZERO, size))
 		draw_string(ThemeDB.fallback_font, Vector2(10, 20), "RACE STINTS · fitted sets", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
-		if sim == null: return
-		var car = sim.cars[sim.selected_id]
+		if source == null: return
+		var car = source.selected_stints()
+		if car.is_empty(): return
 		var width = size.x - 20
 		for stint in car.stints:
-			var finish = stint.to if stint.to >= 0 else maxf(stint.from, car.distance / sim.track.length)
-			var left = clampf(stint.from / sim.laps, 0, 1) * width + 10
-			var right = clampf(finish / sim.laps, 0, 1) * width + 10
-			var item = TyreInventory.find(car, stint.set_id)
+			var finish = stint.to if stint.to >= 0 else maxf(stint.from, car.distance / car.length)
+			var left = clampf(stint.from / car.laps, 0, 1) * width + 10
+			var right = clampf(finish / car.laps, 0, 1) * width + 10
+			var item = stint
 			var color = {"S": Color("c9927d"), "M": Color("c4ad70"), "H": Color("9cae94"), "I": Color("7e9b7b"), "W": Color("83a6b5")}.get(item.get("compound", "M"), UI.GOOD)
 			draw_rect(Rect2(left, 33, maxf(2, right - left - 1), 20), color)
 			if right - left > 24: draw_string(ThemeDB.fallback_font, Vector2(left + 3, 48), item.get("label", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.INK)
 		if car.scheduled_lap > 0:
-			var x = 10 + clampf(car.pit_gate / sim.track.length / sim.laps, 0, 1) * width
+			var x = 10 + clampf(car.pit_gate / car.length / car.laps, 0, 1) * width
 			draw_line(Vector2(x, 28), Vector2(x, 59), UI.ACCENT, 2, true)
-		draw_string(ThemeDB.fallback_font, Vector2(10, 77), "START                         LAP %d" % sim.laps, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
+		draw_string(ThemeDB.fallback_font, Vector2(10, 77), "START                         LAP %d" % car.laps, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
 
 
 func configure(value: RaceSim) -> void:
+	session_runner = RaceSessionRunner.new(value)
 	sim = value
 
 func _ready() -> void:
@@ -177,7 +180,7 @@ func _ready() -> void:
 		layers_menu.get_popup().set_item_checked(id, control.button_pressed))
 	layers_menu.get_popup().about_to_popup.connect(func():
 		for i in range(layer_controls.size()): layers_menu.get_popup().set_item_checked(i, layer_controls[i].button_pressed))
-	canvas = TrackCanvas.new(); canvas.sim = sim; canvas.show_line = App.settings.racing_line; canvas.show_labels = App.settings.labels; canvas.show_grid = false
+	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.visual_source = RaceVisualSource.new(sim); canvas.show_line = App.settings.racing_line; canvas.show_labels = App.settings.labels; canvas.show_grid = false
 	canvas.set_track(sim.track); visual.add_child(canvas); canvas.car_selected.connect(select_driver)
 	canvas.navigated.connect(func(): set_follow(false))
 	right_panel = UI.race_panel(false, 8); right_panel.custom_minimum_size.x = 360; body.add_child(right_panel)
@@ -273,7 +276,7 @@ func _ready() -> void:
 	schedule_button = UI.button("Schedule", func(): dispatch("schedule_pit", {"lap": int(schedule_lap.value)})); schedule_button.custom_minimum_size.x = 78; schedule_button.add_theme_font_size_override("font_size", 12); plan_row.add_child(schedule_button)
 	unschedule_button = UI.button("Cancel planned stop", func(): dispatch("cancel_schedule")); planning.add_child(unschedule_button)
 	schedule_label = UI.paragraph(""); schedule_label.add_theme_font_size_override("font_size", 11); planning.add_child(schedule_label)
-	stint_plot = StintPlot.new(); stint_plot.sim = sim; planning.add_child(stint_plot)
+	stint_plot = StintPlot.new(); stint_plot.source = RaceChartQuery.new(sim); planning.add_child(stint_plot)
 	tyre_summary = UI.paragraph(""); tyre_summary.add_theme_font_size_override("font_size", 12); planning.add_child(tyre_summary)
 	var setup_page = tab_page("Setup")
 	racecraft = RacecraftPanel.new(); racecraft.configure(sim, dispatch); setup_page.add_child(racecraft)
@@ -282,7 +285,7 @@ func _ready() -> void:
 	pin_navigation(0, drive_sections); show_drive(0)
 	pin_navigation(3, tyre_sections)
 	var lab_page = tab_page("Surface lab")
-	surface_lab = SurfaceLab.new(); surface_lab.sim = sim; surface_lab.canvas = canvas; lab_page.add_child(surface_lab)
+	surface_lab = SurfaceLab.new(); surface_lab.source = RaceChartQuery.new(sim); surface_lab.canvas = canvas; lab_page.add_child(surface_lab)
 	pit_note = UI.paragraph(""); pit_note.add_theme_font_size_override("font_size", 12); wall.add_child(pit_note)
 	var pit_row = UI.hbox(wall)
 	box_button = UI.button("Box at next entry", func(): dispatch("pit"), true); box_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; pit_row.add_child(box_button)
@@ -354,7 +357,6 @@ func primary_action() -> void:
 
 func _process(delta: float) -> void:
 	if sim == null: return
-	sim.advance(delta)
 	if follow and canvas:
 		var alpha = clampf(sim.accumulator / RaceSim.STEP, 0, 1) if not sim.paused else 1.0
 		var p = sim.car_position(sim.cars[sim.selected_id], alpha).p
@@ -475,8 +477,8 @@ func refresh() -> void:
 	if trace.is_visible_in_tree(): trace.queue_redraw()
 	if last_phase != sim.phase:
 		last_phase = sim.phase
-		var error = App.save_weekend()
-		if not error.is_empty(): feedback("Autosave failed: " + error)
+		if session_runner != null and not session_runner.persistence_error.is_empty():
+			feedback("Autosave failed: " + session_runner.persistence_error)
 
 func current_decision(c: Dictionary) -> Dictionary:
 	if sim.phase != "race" or not c.player or c.dnf or c.finished or c.route == "pit": return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}

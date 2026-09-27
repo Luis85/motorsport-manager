@@ -30,7 +30,7 @@ func key(code: Key, ctrl: bool = false) -> void:
 	Input.parse_input_event(event); await settle(2)
 func reset_view(scale_factor: float) -> void:
 	app.settings.pitwall_text_scale = scale_factor
-	game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	await settle(); view.canvas.fit(); await settle()
 func has_horizontal_scroll(node: Node) -> bool:
 	if node is HScrollBar and node.is_visible_in_tree(): return true

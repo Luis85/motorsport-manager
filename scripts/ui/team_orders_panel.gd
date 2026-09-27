@@ -98,7 +98,7 @@ func _ready() -> void:
 	for id in [3,6]:
 		var button = UI.button("Cancel " + sim.cars[id].short + " stop",func():command_requested.emit("cancel_pit",{"id":id}))
 		cancel_row.add_child(button); StrategyDesk.compact_button(button); cancel_stop_buttons[id] = button
-	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(sim); pages[3].add_child(intent_timeline)
+	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(RaceChartQuery.new(sim)); pages[3].add_child(intent_timeline)
 	intent_detail = UI.paragraph(""); pages[3].add_child(intent_detail)
 	intent_timeline.selection_changed.connect(func(value):intent_detail.text=value)
 	pages[3].add_child(UI.paragraph("Pit windows authorize existing engineer discretion; outlined pace/engine bars are already-issued bounded overrides. Current-distance lines are measured. Neither selecting nor inspecting a bar issues a command."))

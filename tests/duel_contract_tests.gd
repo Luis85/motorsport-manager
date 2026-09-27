@@ -59,7 +59,7 @@ func run() -> void:
 	TacticalDuels.after_step(sim)
 	check(sim.duel_state.drivers[3].active.status=="completed","A pending review closes when its driver finishes; no stale active tactic")
 	# A pre-race set edit supersedes a tactic but has no independent pit delegation effect.
-	sim=DuelScenarios.build(DuelScenarios.catalog()[0],Storage.read_catalog().data)
+	sim=ScenarioCatalog.build_duel(ScenarioCatalog.read("duels")[0],Storage.read_catalog().data)
 	check(approve(sim,plan(sim)),"Preparation mandate accepted")
 	check(sim.command("select_set",{"id":3,"set_id":"3-H1"}),"Native preparation set edit accepted")
 	check(sim.policy(3).owners.pit=="player" and sim.duel_state.drivers[3].active.status=="abandoned","Preparation edit restores prior pit owner rather than leaking borrowed authority")

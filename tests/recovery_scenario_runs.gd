@@ -21,7 +21,7 @@ func report_run(sim: RecoveryRaceSim, name: String) -> void:
 		"classification":sim.standings().map(func(c): return {"id":c.id,"driver":c.short,"finished":c.finished,"retired":c.dnf,"reason":c.retire_reason,"time":c.finish_time,"laps":c.completed,"stops":c.pit_stops,"health":c.health,"damage":c.damage})})
 func run() -> void:
 	var started = Time.get_ticks_msec(); var library = Storage.read_catalog().data
-	var recipes = RecoveryScenarios.catalog()
+	var recipes = ScenarioCatalog.read("recovery")
 	check(recipes.size() == 2, "Two playable, disclosed recovery premises are installed")
 	for recipe in recipes:
 		check(RecoveryScenarios.valid(recipe) and RecoveryScenarios.build(recipe,library) != null, "Scenario validates: " + recipe.id)

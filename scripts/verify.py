@@ -91,12 +91,15 @@ def main() -> int:
     if not executable:
         parser.error("Godot not found. Set GODOT_BINARY or pass --godot /path/to/godot")
     REPORTS.mkdir(exist_ok=True)
-    for name in ("minimal-tests.json", "minimal-ui.json", "minimal-weekend-ui.json", "director-tests.json", "director-ui.json", "director-weekend-ui.json", "ui-clarity.json", "tactical-duel-tests.json", "duel-contracts.json", "duel-scenarios.json", "tactical-duel-ui.json", "script-load.json", "ui-polish.json", "race-read-performance.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish-execution.json", "ui-finish-guide.json", "ui-finish-soak.json", "ui-finish-states.json", "ui-finish-populated.json", "ui-finish-details.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
+    for name in ("architecture-tests.json", "architecture-characterization.json", "architecture-ui.json", "architecture-guard.json", "minimal-tests.json", "minimal-ui.json", "minimal-weekend-ui.json", "director-tests.json", "director-ui.json", "director-weekend-ui.json", "ui-clarity.json", "tactical-duel-tests.json", "duel-contracts.json", "duel-scenarios.json", "tactical-duel-ui.json", "script-load.json", "ui-polish.json", "race-read-performance.json", "ui-finish-observation.json", "ui-finish-analysis.json", "ui-finish-execution.json", "ui-finish-guide.json", "ui-finish-soak.json", "ui-finish-states.json", "ui-finish-populated.json", "ui-finish-details.json", "ui-finish.json", "ui-completion.json", "ui-repair.json", "domain-tests.json", "ui-smoke.json", "weekend-strategy-tests.json", "strategy-scenarios.json", "strategy-ui.json", "living-racecraft-tests.json", "living-racecraft-ui.json", "weather-tests.json", "weather-scenario.json", "weather-ui.json", "recovery-tests.json", "recovery-scenarios.json", "recovery-ui.json", "compact-ui.json", "pitwall-ux.json", "ux-performance-current.json", "practice-tests.json", "practice-scenario.json", "practice-ui.json", "rival-styles-tests.json", "rival-scenarios.json", "rivals-ui.json", "workspace-performance.json", "verification.json", "replay-tests.json", "replay-scenario.json", "replay-ui.json", "replay-performance.json", "scenario-authoring-runs.json", "scenario-authoring-ui.json", "notebook-tests.json", "notebook-ui.json", "notebook-performance.json"):
         (REPORTS / name).unlink(missing_ok=True)
     executable = str(Path(executable).resolve())
     try:
         runner_env = dict(os.environ, VERIFICATION_TEST_GODOT=executable)
         runner_env.pop("MOTORSPORT_VERIFY_ROOT", None)
+        run_phase("architecture-guard-tests", [sys.executable, str(ROOT / "tests/test_architecture_guard.py")], runner_env)
+        run_phase("architecture-guard", [sys.executable, str(ROOT / "scripts/check_architecture.py"), "--report", str(REPORTS / "architecture-guard.json")], runner_env)
+        require_report("architecture-guard.json")
         run_phase("runner-isolation", [sys.executable, str(ROOT / "tests/test_verify_runner.py")], runner_env)
         with tempfile.TemporaryDirectory(prefix="motorsport-manager-verification-") as user_dir:
             # A clean copy proves fresh-import behavior; a unique app name isolates user://
@@ -125,6 +128,12 @@ def main() -> int:
             run_phase("script-load", base + ["--headless", "--script", "res://tests/script_load_tests.gd"], env)
             shutil.copy2(project / "reports" / "script-load.json", REPORTS / "script-load.json")
             script_load = require_report("script-load.json")
+            for phase, script, report in [("architecture-domain", "architecture_tests.gd", "architecture-tests.json"), ("architecture-characterization", "architecture_characterization.gd", "architecture-characterization.json")]:
+                run_phase(phase, base + ["--headless", "--script", "res://tests/" + script], env, timeout=900)
+                shutil.copy2(project / "reports" / report, REPORTS / report)
+            architecture = require_report("architecture-tests.json")
+            characterization = require_report("architecture-characterization.json")
+            architecture_ui = None
             run_phase("minimal-domain", base + ["--headless", "--script", "res://tests/minimal_tests.gd"], env)
             shutil.copy2(project / "reports" / "minimal-tests.json", REPORTS / "minimal-tests.json")
             minimal = require_report("minimal-tests.json")
@@ -226,7 +235,7 @@ def main() -> int:
                 try:
                     # Verify the minimal default first. Retained legacy workspaces remain
                     # regression-tested behind explicit developer launch overrides.
-                    for phase, script in [("minimal-ui", "minimal_ui_tests.gd"), ("minimal-weekend-ui", "minimal_weekend_ui_tests.gd"), ("director-ui", "director_ui_tests.gd"), ("director-weekend-ui", "director_weekend_ui_tests.gd")]:
+                    for phase, script in [("architecture-ui", "architecture_ui_tests.gd"), ("minimal-ui", "minimal_ui_tests.gd"), ("minimal-weekend-ui", "minimal_weekend_ui_tests.gd"), ("director-ui", "director_ui_tests.gd"), ("director-weekend-ui", "director_weekend_ui_tests.gd")]:
                         run_phase(phase, [part.replace("res://tests/ui_smoke.gd", "res://tests/" + script) for part in command], env, timeout=600)
                     command += ["--", "--pitwall-layout=engineering"]
                     run_phase("ui-clarity", [part.replace("res://tests/ui_smoke.gd", "res://tests/ui_clarity_tests.gd") for part in command], env)
@@ -260,6 +269,7 @@ def main() -> int:
                     for artifact in (project / "reports").iterdir():
                         if artifact.is_file() and not artifact.name.startswith("."):
                             shutil.copy2(artifact, REPORTS / artifact.name)
+                architecture_ui = require_report("architecture-ui.json")
                 minimal_ui = require_report("minimal-ui.json")
                 minimal_weekend_ui = require_report("minimal-weekend-ui.json")
                 director_ui = require_report("director-ui.json")
@@ -293,7 +303,11 @@ def main() -> int:
                 notebook_ui = require_report("notebook-ui.json")
                 rivals_ui = require_report("rivals-ui.json")
                 workspace_performance = require_report("workspace-performance.json")
-            summary = {"minimal_checks": minimal["checks"],
+            summary = {"architecture_guard": "passed",
+                       "architecture_checks": architecture["checks"],
+                       "characterization_checks": characterization["checks"],
+                       "architecture_ui_checks": architecture_ui["checks"] if architecture_ui else None,
+                       "minimal_checks": minimal["checks"],
                        "minimal_ui_checks": minimal_ui["checks"] if minimal_ui else None,
                        "minimal_weekend_ui_checks": minimal_weekend_ui["checks"] if minimal_weekend_ui else None,
                        "director_checks": director["checks"],
@@ -343,7 +357,7 @@ def main() -> int:
                        "rivals_ui_checks": rivals_ui["checks"] if rivals_ui else None,
                        "workspace_performance_checks": workspace_performance["checks"] if workspace_performance else None,
                        "performance_observational": performance["observational"] if performance else None,
-                       "screenshots": (minimal_ui["screenshots"] + minimal_weekend_ui["screenshots"] + director_ui["screenshots"] + director_weekend_ui["screenshots"] + clarity_ui["screenshots"] + tactical_ui["screenshots"] + polish_ui["screenshots"] + finish_details["screenshots"] + finish_observation["screenshots"] + finish_analysis["screenshots"] + finish_execution["screenshots"] + finish_guide["screenshots"] + finish_soak["screenshots"] + finish_states["screenshots"] + finish_populated["screenshots"] + finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
+                       "screenshots": (architecture_ui["screenshots"] + minimal_ui["screenshots"] + minimal_weekend_ui["screenshots"] + director_ui["screenshots"] + director_weekend_ui["screenshots"] + clarity_ui["screenshots"] + tactical_ui["screenshots"] + polish_ui["screenshots"] + finish_details["screenshots"] + finish_observation["screenshots"] + finish_analysis["screenshots"] + finish_execution["screenshots"] + finish_guide["screenshots"] + finish_soak["screenshots"] + finish_states["screenshots"] + finish_populated["screenshots"] + finish_ui["screenshots"] + completion_ui["screenshots"] + repair_ui["screenshots"] + notebook_ui["screenshots"] + authoring_ui["screenshots"] + replay_ui["screenshots"] + rivals_ui["screenshots"] + practice_ui["screenshots"] + recovery_ui["screenshots"] + pitwall_ui["screenshots"] + compact_ui["screenshots"] + ui["screenshots"] + strategy_ui["screenshots"] + living_ui["screenshots"] + weather_ui["screenshots"]) if ui else 0}
             (REPORTS / "verification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
             print(json.dumps(summary, indent=2))
             return 0

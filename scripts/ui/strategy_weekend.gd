@@ -35,7 +35,7 @@ func _ready() -> void:
 	team_panel = TeamOrdersPanel.new(); team_panel.configure(strategy_model); team_page.add_child(team_panel)
 	team_panel.command_requested.connect(targeted_command)
 	team_panel.watch_requested.connect(func(id): select_driver(id); set_follow(true))
-	battle_overlay = BattleOverlay.new(); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
+	battle_overlay = BattleOverlay.new(); battle_overlay.text_scale = float(App.settings.get("pitwall_text_scale", 1.0)); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
 	rejoin_overlay = RejoinOverlay.new(); rejoin_overlay.enabled = false; rejoin_overlay.canvas = canvas; canvas.add_child(rejoin_overlay)
 	add_layer("Pit rejoin estimate", false, func(value): rejoin_overlay.enabled = value; rejoin_overlay.queue_redraw())
 	decision_bar = HBoxContainer.new(); decision_bar.add_theme_constant_override("separation", 8); add_child(decision_bar)

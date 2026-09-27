@@ -247,7 +247,7 @@ func refresh(force: bool = false) -> void:
 	issue_text.tooltip_text = "\n\n".join(descriptions)
 	issue_text.text = "" if current_cards.is_empty() else ("Acknowledged · " if current_cards[0].acknowledged else "") + current_cards[0].title + "\nIgnored: " + current_cards[0].fallback
 	issue_text.visible = not compact_host and not descriptions.is_empty()
-	if timeline and timeline.visible: timeline.present(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set","")))
+	if timeline and timeline.visible: timeline.present(RaceChartQuery.strategy(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set",""))))
 	var pit = preview.pit
 	rejoin.text = "%s · rejoin estimate P%d–P%d
 Net pit loss %.1f–%.1fs · box wait ~%.1fs
@@ -286,4 +286,4 @@ func has_user_edits() -> bool:
 func _toggle_timeline() -> void:
 	timeline.visible=not timeline.visible
 	timeline_toggle.text="Stint timeline ▾" if timeline.visible else "Stint timeline ▸"
-	if timeline.visible: timeline.present(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set","")))
+	if timeline.visible: timeline.present(RaceChartQuery.strategy(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set",""))))

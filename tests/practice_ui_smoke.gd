@@ -28,7 +28,7 @@ func run() -> void:
 	await settle(); game.show_practice_scenarios(); await capture("scenarios")
 	check(game.screen_name == "practice_scenarios", "Practice scenarios are reachable from native menu")
 	model = PracticeScenarios.build(PracticeScenarios.catalog()[0], app.library)
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); await settle()
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; await settle()
 	check(view.get_script().resource_path.get_file() in ["practice_weekend.gd", "race_director_workspace.gd"] and inside(view.practice_button), "New normal practice workspace retains merged shell and visible opt-in")
 	var before = JSON.stringify(model.snapshot())
 	view.practice_button.pressed.emit(); await settle()
@@ -61,7 +61,7 @@ func run() -> void:
 	for dimensions in [Vector2i(1440,900),Vector2i(1100,720)]:
 		for scale_factor in [1.0,1.15,1.3]:
 			root.size = dimensions; root.content_scale_size = dimensions; app.settings.pitwall_text_scale = scale_factor
-			game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.open_practice(6)
+			game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; view.open_practice(6)
 			panel = view.practice_panel; await settle(); view.refresh(); await settle()
 			check(inside(panel.run) and inside(panel.recall) and inside(panel.finish), "Practice actions reachable at %s and %.0f%% text" % [dimensions,scale_factor*100])
 			check(inside(view.practice_links[3]) and inside(view.practice_links[6]) and inside(view.pause_button) and inside(view.speed_control), "Both cars and time controls reachable at %s and %.0f%% text" % [dimensions,scale_factor*100])

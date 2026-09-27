@@ -35,7 +35,7 @@ func run() -> void:
 		model.sync_ownership(car)
 		car.dnf = car.id not in [3, 6]; car.distance = 100 if car.id == 3 else 80; car.previous_distance = car.distance
 		car.speed = 40; car.lane = 0; car.previous_lane = 0
-	root.get_node("App").weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	root.get_node("App").weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	panel = view.team_panel
 	view.group_buttons.Team.pressed.emit(); view.refresh(); await settle()
 	check(view.tabs.current_tab == 8 and panel.is_visible_in_tree(), "Team and battles is reachable through the visible primary task navigation")

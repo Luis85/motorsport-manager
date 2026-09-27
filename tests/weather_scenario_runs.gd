@@ -14,7 +14,7 @@ func advance(sim: RaceSim, phase: String, budget: int) -> bool:
 	return sim.phase == phase
 func run() -> void:
 	var started = Time.get_ticks_msec()
-	var recipe = WeatherScenarios.catalog()[1]
+	var recipe = ScenarioCatalog.read("weather")[1]
 	var sim = WeatherScenarios.build(recipe, Storage.read_catalog().data)
 	check(sim.command("qualify") and advance(sim, "qualifying_results", 40000), "Seeded wet qualifying completes through physical out/hot/in laps")
 	check(sim.cars[3].qual_best > 0 and sim.cars[6].qual_best > 0, "Both drivers record a measured wet qualifying time")

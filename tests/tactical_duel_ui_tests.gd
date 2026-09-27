@@ -9,7 +9,7 @@ func scroll_to(control: Control) -> void:
 	await settle(8)
 
 func panel_fixture() -> PracticeRaceSim:
-	return DuelScenarios.build(DuelScenarios.catalog()[0], app.library)
+	return ScenarioCatalog.build_duel(ScenarioCatalog.read("duels")[0], app.library)
 
 func run() -> void:
 	root.size = Vector2i(1440,900); root.content_scale_size = root.size

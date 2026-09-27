@@ -177,8 +177,8 @@ func run() -> void:
 	var old = PracticeRaceSim.restore_practice(json_copy(legacy.snapshot()))
 	check(old != null and RaceRecord.equivalent(old.snapshot(), legacy.snapshot()), "Legacy continuation remains byte-meaning equivalent")
 	check(not old.command("duel_approve", {"id": 3}), "Legacy simulation cannot silently enable different rules")
-	for recipe in DuelScenarios.catalog():
-		var scenario = DuelScenarios.build(recipe, Storage.read_catalog().data)
+	for recipe in ScenarioCatalog.read("duels"):
+		var scenario = ScenarioCatalog.build_duel(recipe, Storage.read_catalog().data)
 		check(scenario != null, "Shipped tactical scenario compiles: " + recipe.id)
 		if scenario != null:
 			check(PracticeRaceSim.restore_practice(json_copy(scenario.snapshot())) != null, "Shipped preparation state validates: " + recipe.id)

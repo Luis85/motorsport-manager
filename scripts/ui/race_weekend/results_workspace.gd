@@ -81,7 +81,7 @@ func present() -> void:
 		next_button.disabled=model.phase not in ["qualifying_results","practice_results","results"]
 		next_button.tooltip_text="Complete the session before advancing." if next_button.disabled else "Advance explicitly; original result acceptance remains separate."
 	if journal and mode==3:journal.present()
-	if stint_chart:stint_chart.visible=model.phase=="results";stint_chart.present(model)
+	if stint_chart:stint_chart.visible=model.phase=="results";stint_chart.present(RaceChartQuery.stints(model))
 	refresh_pit_visits()
 	var c = model.cars[driver_id]
 	var records = lap_records(driver_id)

@@ -25,7 +25,7 @@ func run() -> void:
 	game.show_strategy_scenarios(); await capture("scenario-picker")
 	check(game.screen_name == "strategy_scenarios", "Dry scenarios are reachable through the native application")
 	model = StrategyRaceSim.new(TrackGeometry.new(app.library[7]), {"laps": 24, "scenario": "dry", "intensity": "calm", "seed": 941})
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false)
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
 	await capture("briefing")
 	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and view.tabs.current_tab == 6, "New weekends open the integrated strategy surface")
 	view.open_strategy(3)

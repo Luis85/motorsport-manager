@@ -100,16 +100,9 @@ func primary_action() -> void:
 	else: super.primary_action()
 
 func refresh() -> void:
-	# The inherited phase observer saves App.weekend. A sandbox owns a different
-	# continuation slot: acknowledge its local view phase before the base refresh.
-	var sandbox_phase_changed = recording != null and recording.origin == "sandbox" and last_phase != sim.phase
-	if sandbox_phase_changed: last_phase = sim.phase
 	if public_inspector: public_inspector.restore()
 	if debrief_text != null and not practice_debrief_prefix.is_empty(): debrief_text.text = debrief_text.text.trim_prefix(practice_debrief_prefix)
 	super.refresh()
-	if sandbox_phase_changed:
-		var error = ReplayStorage.save_session(App.sandbox_path, recording)
-		if not error.is_empty(): feedback("Sandbox autosave failed: " + error)
 	if practice_panel == null: return
 	var during = sim.phase in ["practice", "practice_results"]
 	if session_workspace_button and during: session_workspace_button.show(); session_workspace_button.text = "Practice dashboard"

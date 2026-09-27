@@ -210,7 +210,7 @@ func test_shared_repair_and_terminal_edges() -> void:
 	check(exhausted.phase == "results" and exhausted.cars.all(func(c): return c.dnf), "All-retired field settles without waiting for virtual clearance")
 	check(RecoveryRaceSim.restore_recovery(exhausted.snapshot()) != null, "All-retired classification and control state restore")
 	check(not exhausted.recovery_advice(3).repair_available, "A retired car is never advertised as a feasible repair opportunity")
-	var short = RecoveryScenarios.build(RecoveryScenarios.catalog()[1], Storage.read_catalog().data)
+	var short = RecoveryScenarios.build(ScenarioCatalog.read("recovery")[1], Storage.read_catalog().data)
 	var advice = short.recovery_advice(3)
 	check(advice.payback_laps > short.laps, "A small-damage short-race fixture makes staying out a credible choice")
 
