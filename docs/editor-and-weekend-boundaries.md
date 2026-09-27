@@ -1,87 +1,76 @@
-# Editor ownership and explicit weekend entry
-
-## Scope
+# Track editor and weekend-flow contracts — 0.19.0
 
 This continuation is stacked on PR #18. It retains the five driver actions and
-existing physical practice, qualifying, formation and race rules. It adds no
+existing physical practice, qualifying, formation and racing rules. It adds no
 vehicle/driver modifier and makes no physics calibration claim.
 
-## Track editor
+## Track editor ownership
 
-`TrackEditorSession` owns the canonical authoring document, revision, saved
-signature and bounded 50-transaction undo/redo history. A canvas gesture edits a
-copy. Commit validates the observed revision and copies that value; cancel returns the canonical copy
-without destroying the redo branch. Rejected edits and failed replacements leave
-existing work intact. Saving through a `TrackEditorPort` marks the document saved
-only after the adapter reports success. Failed writes retain the edited work.
+`TrackEditorSession` owns the canonical authoring document, read-only revision,
+saved signature and bounded 50-transaction undo/redo history. A canvas gesture
+edits a copy. Commit validates its observed revision and accepts another copy.
+Cancel returns canonical data without destroying the redo branch. Undo, redo,
+save and replacement invalidate older drafts; an old gesture cannot commit by
+substituting the current revision. Rejected changes preserve canonical state.
 
-`LocalTrackEditorPort` is the filesystem adapter. Import, reference-image loading,
-authoring export and runtime export no longer call filesystem APIs from the
-editor view. Exports validate again when executed; validation at dialog opening
-is not considered authorization for a later, changed draft.
+Saving goes through `TrackEditorPort`. The session marks a document saved only
+after the adapter reports success. A failed write retains the edited document
+for retry. `LocalTrackEditorPort` owns filesystem and reference-image operations;
+views do not call file APIs. Runtime and authoring exports revalidate on execution,
+not only when their dialogs opened. Import failures preserve existing work.
 
-Geometry compilation and diagnostics are application operations. The editor and
-canvas receive a compiler collaborator, not ownership of a live race. The
-reference-lap preview has its own `TrackReferencePreview`; it is explicitly a
-reference-speed demonstration, not a second tyre/race simulator. The Godot-facing
-application supplies preview elapsed time. Canvas refresh only reads its values.
-Running-race track snapshots remain detached from all editor changes.
+Geometry compilation and diagnostics are application operations. Views receive
+an injected compiler. The reference-lap preview is a reference-speed demonstration,
+not a second tyre/race simulation. The application owns `TrackReferencePreview`;
+canvas gets `TrackPreviewHandle` with toggle, stop and copied readouts, no clock.
+The app supplies elapsed time. Race track snapshots stay independent of edits.
 
-The native drawing UI still owns selection, pointer gestures and temporary
-trace strokes. Those are presentation drafts, not authoritative race state. The
-editor uses existing pure `TrackEdit` geometry operations while an application
-session owns accepting their final document. This is not an editor tool expansion.
+Selection, pointer positions and temporary trace strokes remain presentation
+state. Pure `TrackEdit` geometry operations may transform a draft; only the
+application session accepts it into the canonical document.
 
 ## Player journey
-
-The minimal route is:
 
 **Main menu → Grand Prix configuration → Welcome → Start practice → Practice
 results → Qualifying → Qualifying results → Formation → Grid approval → Race →
 Review weekend → Final classification → Main menu or New weekend.**
 
-Configuration and welcome stage a detached `WeekendLaunch`. Neither replaces the
-current simulation nor writes a checkpoint. Back preserves circuit/configuration
-choices. Starting a new weekend requires confirmation when a live or disk-only
-continuation exists; Cancel preserves both. A revision-bound commit prevents an
-old or double-activated welcome from creating another event.
+Configuration and welcome stage a detached `WeekendLaunch`. They neither replace
+the current simulation nor write a checkpoint. Back preserves chosen options.
+Starting a new weekend asks for confirmation when a live or disk-only continuation
+exists; Cancel preserves both. The launch revision prevents stale/double starts.
 
-`WeekendEntryStore` is the application persistence port. The local adapter writes
-the actual initial practice record before the application installs its new
-simulation. A failed write leaves the old weekend installed and the new entry
-retryable. The same staged entry reproduces the same initial practice state.
+`WeekendEntryStore` is the persistence port. Initial practice is saved before the
+application installs the new simulation. A failed write retains the old weekend
+and leaves the new entry retryable. Retrying the same entry does not reroll it.
+Welcome does not send either driver out; the player still selects a driver and
+uses the existing pitwall action. There is no new automatic command or resource.
 
-The welcome does not send a driver out. The existing pitwall commands and explicit
-session approvals still drive physical runs, returns, formation, lights and racing.
-At the finish, Review weekend opens `WeekendEndView` only after saving results.
-`WeekendSummary` supplies detached, factual classification and the two managed
-cars' actual status, completed laps, stops and best lap. No inferred component
-failure, prize payment or causal attribution is fabricated. Final-track review
-returns to the existing read-only terminal race state; New weekend stages again.
+Session approvals remain explicit. Closing practice or qualifying lets valid
+started laps finish and waits for physical returns. Formation and lights remain
+physical simulation phases. At the finish, Review weekend saves before opening
+`WeekendEndView`. `WeekendSummary` returns copied classification plus actual
+managed-car status, completed laps, stops and best lap. It does not invent prize
+payments, component diagnoses or causal credit for a result.
 
-Legacy Engineering/Director entry routes remain compatibility paths. Their
-controllers now use detached application queries and commands; direct access
-to the aggregate, application singleton and filesystem is forbidden in UI.
+Final-track review returns to the same terminal race state. New weekend stages a
+new configuration rather than silently starting another race. The main menu's
+Continue restores the actual saved event.
 
-## Verification contracts
+## Verification
 
-The normal registry retains every previous required suite and adds editor-session,
-weekend-launch and native entry/end tests. The existing complete physical-weekend
-test now follows the real finish into the new end screen and back to the menu.
+The registry includes headless editor-session and launch contracts, native entry
+and end-screen interaction, and a complete physical weekend leading into final
+classification and back to the menu. Cases include stale gestures, copy isolation,
+cancel/redo, bounded history, failed writes, invalid preview time, duplicate entry,
+disk-only replacement confirmation, independent drivers and teardown.
 
-Checks cover nested-draft rejection, copy isolation, cancellation and redo,
-bounded history, failed-save retention, detached compilation, invalid preview
-time, stale/double entry commits, failed entry persistence, disk-only replacement
-approval, native cancel/back/confirm and independent driver commands. Native
-welcome/end profiles cover 1440×900 and 1100×720 at 100%, 115% and 130% text.
-Synthetic results used for layout are explicitly separate from physical finishing
-evidence. Exact results belong to the source-pinned verification report.
+Native welcome/end layout cases cover 1440×900 and 1100×720 at 100%, 115% and 130%
+text. Synthetic result layouts are not physical finishing evidence. The complete
+weekend tests provide the latter. Exact results belong to the source-pinned run.
 
-## Remaining larger-refactor work
-
-The original typed-car entity migration remains unfinished. The legacy
-controller-facade migration is now present and guarded across the UI layer. Authoritative records
-remain validated serialized dictionaries; their units and save schema are
-unchanged. Architecture checks are executable fitness rules, not a full GDScript
-parser or a claim that arbitrary reflection cannot bypass a boundary. Platform
-exports, physical controllers and screen-reader tests remain separate acceptance.
+See [Architecture](architecture-refactor.md) and
+[Developing systems](developing-mechanics.md) for the shared rules. Typed entrants,
+detached diagnostic UI and scheduler-free view handles now apply across race,
+replay and editor paths. This is not a new editor toolset or a claim of exhaustive
+platform, controller or screen-reader acceptance.

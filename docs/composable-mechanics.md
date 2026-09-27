@@ -1,27 +1,49 @@
-# Composed race mechanics
+# Composed race mechanics — 0.19.0
 
-The runtime profiles (`StrategyRaceSim`, `WeatherRaceSim`, `RecoveryRaceSim`, and `PracticeRaceSim`) now directly extend `RaceSim`. They preserve their public construction and validated restore entry points, but no longer inherit behavior from each other. Runtime behavior lives in `scripts/domain/mechanics/`.
+`StrategyRaceSim`, `WeatherRaceSim`, `RecoveryRaceSim` and `PracticeRaceSim`
+preserve public construction/restore entry points and directly extend `RaceSim`.
+They do not inherit runtime behavior from each other. That behavior lives in
+`scripts/domain/mechanics/` as explicitly ordered `RaceMechanic` providers.
 
 ## Construction contract
 
-A provider declares a stable `id`, positive `version`, earlier `requires` dependencies, and the hooks it implements. `RaceMechanics.configure` validates the complete proposed set before installing it. Configuration and installation are each one-time operations. Changes affect newly created sessions, not an already running weekend. `describe()` returns detached metadata. No reflection-based file loading, global mutable registry or UI dependency is introduced.
+A provider declares a stable `id`, positive `version`, earlier `requires`
+dependencies and implemented hooks. `RaceMechanics.configure` validates the
+entire proposal before publishing it. `RaceHookContract` checks that hooks really
+are aggregate dispatch points and that parameter/return contracts agree.
+Configuration and installation are one-time operations. Provider installation
+receives detached options and track geometry, not caller-owned mutable input.
 
-Existing profiles explicitly assemble strategy → weather → recovery → practice. For an overridden hook, the most specific installed provider runs; `before(id, hook, arguments)` invokes its declared predecessor and then the base rule when appropriate. This preserves the old arithmetic and RNG order while making the composition explicit. It is ordered hook composition, not a generic ECS.
+Current profiles assemble strategy → weather → recovery → practice.
+The most specific installed provider handles an overridden hook;
+`before(id, hook, arguments)` invokes the predecessor, then a base rule where
+applicable. This preserves the old rule ordering without behavior inheritance.
+It is ordered composition, not an ECS or runtime plugin loader.
 
-## Developer tooling
+Runtime car parameters are `RaceCar`, not dictionaries. Use typed fields in rules.
+Use `to_record()` only at serialization/read boundaries. Small owned system
+records remain versioned data; provider metadata alone does not migrate a save.
 
-See [Developing systems and mechanics](developing-mechanics.md) for the `list`, `hooks`, and inactive `scaffold` commands, typed hook validation, revision-bound editor operations and the exact completion boundary.
+## Authoring workflow
 
-## Adding or editing a rule
+```sh
+python3 scripts/mechanics.py list
+python3 scripts/mechanics.py hooks
+python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters --dry-run
+python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters
+python3 scripts/verify.py --godot /path/to/godot --suite extension_resource_policy
+```
 
-1. Put an authoritative operation in a focused domain module. Use caller-supplied state and simulated time; never a screen, singleton lookup, rendering callback or wall clock.
-2. Implement `definition()`, `install(sim, geometry, options)`, and the declared hook functions. Do not retain the aggregate in a signal closure or provider field.
-3. Add the provider to the intended construction profile after its dependencies. Add a stable aggregate entry point only for a genuinely new operation. Use `has_mechanic(id)` instead of assuming subclass ancestry.
-4. Test registration, rejected configurations, isolated effects, disposal and validated restore. Schema changes require their own explicit migration; a provider version does not silently migrate a save.
-5. Run baseline characterization when refactoring without intended behavior changes. For a deliberate model change, document and version the new model rather than rewriting expected hashes to conceal the change.
+The scaffold preserves predecessor behavior, creates a registered regression and
+**does not enable a rule in the game**. Review it, add rule-specific tests, then
+explicitly change the intended new-session profile. Never hot-swap an active
+weekend, silently refill resources, or update baseline hashes to hide a changed
+model. A deliberate gameplay change requires explicit expectations and versioning.
 
-The existing versioned car and system records remain the authoritative serialized values; this increment does not rename their units, reset stock, calibrate psychology or introduce a new physics model. Typed entity migration remains separate pending work. Legacy presentation controllers now use detached queries, explicit commands and injected persistence services; their UI can no longer resolve the live aggregate or filesystem.
+The generated test imports the real code in Godot, installs the provider, enters
+an active session and compares fixed-step state with the unchanged profile.
+Tool tests also cover malformed identities, overwrites, symlink escape and write
+rollback. Focused evidence cannot satisfy the full CI aggregate gate.
 
-## Executed increment checks
-
-The composition matched all 24 pinned sporting-state hashes from unchanged 0.17.2 across three circuit/weather workloads. The 40 existing architectural boundary checks and 22 new mechanic contract checks passed. These are headless checks, not a claim that the complete native UI regression or hosted CI has passed on this increment.
+See [Developing systems and mechanics](developing-mechanics.md) for extension,
+save and testing recipes; [Architecture](architecture-refactor.md) for ownership.

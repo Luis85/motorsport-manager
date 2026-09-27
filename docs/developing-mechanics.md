@@ -66,11 +66,11 @@ stateful extension whose save can restore without the rule that owns its state.
 | Responsibility | Entry point |
 |---|---|
 | Domain rules and resource conservation | `scripts/domain/mechanics/`, focused domain services |
-| Accepted commands and application ownership | `RaceCommands`, `RaceViewSession`, `RaceSessionRunner` |
-| Read-only minimal screen | `MinimalWeekendQuery`, `RaceVisualSource` |
-| Retained diagnostic screens | `RaceViewQuery` and injected application services |
+| Accepted commands and application ownership | `RaceCommands`, `RaceViewSession`, `RaceSessionRunner` (application only) |
+| Minimal UI capabilities | `MinimalRaceHandle`, `MinimalWeekendQuery`, `RaceVisualSource` |
+| Retained diagnostic screens | `RaceViewHandle`, `RaceViewQuery` and injected ports |
 | Editor commit/history | `TrackEditorSession` |
-| Track compilation and preview scheduling | Application editor services |
+| Track compilation and preview scheduling | Application editor services; canvas gets `TrackPreviewHandle` without a clock |
 | Disk, image loading and archive operations | Ports implemented by `scripts/services/` |
 | Scene composition and input wiring | `scripts/composition/` |
 
@@ -105,21 +105,41 @@ change, define the new expectations and version the model explicitly rather
 than silently replacing baseline hashes. Test rejected commands, failed saves,
 empty/retired states, disposal, and repeated observations as well as success.
 
+## Typed car and save contracts
+
+Authoritative car parameters are `RaceCar`; the aggregate owns `Array[RaceCar]`.
+Use declared fields inside rules. The 91-field codec has no writable backing
+record: `to_record()` and `RaceCar.records()` produce detached external values,
+while `detached_copy()` creates an independent entity. Copying an array of
+Objects is not the same operation. Do not serialize Object identity.
+
+When adding a persisted field, update the typed field, codec field list/output,
+constructor initialization, semantic checkpoint validation and explicit migration
+together. Test missing/unknown fields and full-precision JSON round trips.
+`from_record()` checks structural types and finite values, not all domain ranges;
+external saves must still go through the production checkpoint validator.
+Nested wheels, setup and journals remain owned versioned records.
+
+## Presentation and scheduler ownership
+
+Composition creates `MinimalRaceSession` or `RaceViewSession`; pass only `.view`
+to a widget and give `.runner` to application lifecycle ownership. The view gets
+`RaceSessionStatus`, not a ticking object. Replay uses `ReplaySessionBinding`
+with the same separation. Command/query/director handles must not keep a discarded
+simulation alive; expired handles return unavailable data or reject commands.
+The editor canvas similarly receives `TrackPreviewHandle`, never its scheduler.
+
 ## Completion boundary
 
-Behavior inheritance, UI-owned ticking, direct UI aggregate access, and editor
-filesystem/committed-document ownership have been migrated in this PR. The
-shipping minimal route now includes configuration, welcome, physical sessions
-and final classification. Existing diagnostic screens use detached read models.
-
-**The broad typed-car entity migration is not complete.** Runtime car/system
-records still use the validated dictionary schemas required by existing saves
-and domain services. The new provider interface and hook checks do not convert
-those records into typed entities. Completing that migration requires updating
-all authoritative consumers and validating save/replay compatibility together;
-a typed wrapper with a writable legacy dictionary would not close the boundary.
+The planned behavior-inheritance, typed-entrant, detached-presentation,
+application-scheduler and editor-transaction migrations are implemented. This
+includes retained diagnostic controllers, not only the shipping minimal UI.
+Existing serialized names/model behavior remain compatible, including old
+selection/playback checkpoint fields. Not every nested data record is an Object,
+and GDScript conventions/static checks are not a sandbox for untrusted code.
 No new physics calibration, threaded runtime, psychological model, or universal
-performance/accessibility guarantee is part of this continuation.
+performance/accessibility guarantee is part of this continuation. Final release
+evidence must identify its source; historical counts are not current verification.
 
 ## Primary technical references
 

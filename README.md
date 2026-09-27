@@ -75,7 +75,9 @@ application session with transactional history and a reference-only preview.
 
 Architecture guides: [composed mechanics](docs/composable-mechanics.md) and
 [editor / weekend boundaries](docs/editor-and-weekend-boundaries.md).
-Legacy diagnostic controllers now use the same detached boundary as the minimal UI. Typed entity migration remains explicitly open.
+Legacy diagnostic controllers use the same detached boundary as the minimal UI.
+Authoritative entrants are typed `RaceCar` entities; saves and display queries
+receive copied records. Race, replay and editor views do not receive schedulers.
 
 All required test suites are registered in `scripts/verification_suites.json`.
 Run `python3 scripts/verify.py --godot /path/to/godot` for complete local coverage.
@@ -84,4 +86,4 @@ headless-only or partial run is not accepted as complete verification.
 
 ## Systems and mechanics development
 
-Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility and the remaining typed-car migration.
+Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility, typed-car records and scheduler-free view handles.

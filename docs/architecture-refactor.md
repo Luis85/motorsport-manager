@@ -1,103 +1,152 @@
-> **0.19.0 continuation:** The shipping and diagnostic UI now consume `RaceViewQuery` / `MinimalWeekendQuery`, commands and injected ports. Native composition roots live in `scripts/composition/`. The former selected-renderer guard applies to every `scripts/ui/` component. Historical 0.18.0 evidence below is not current-head verification.
+# Architecture — 0.19.0
 
-# Simulation and presentation boundaries — 0.18.0
+This is the current architecture map for the PR #19 continuation on PR #18.
+The earlier 0.18.0 design and its evidence remain in Git history. Test counts
+belong to the source-pinned run that produced them, not to this architecture map.
 
-## Scope and protected behavior
+## Ownership and dependency direction
 
-This increment continues the actual 0.17.2 source at `15932dd4ac1650281628ad1412e98a3df85f45c6`, tree `c4adab01b8f6d256c9f2ba2f55bfc0169faf9469`. It preserves the minimal UI, the five driver commands, physical practice/qualifying/race flow, finite tyre inventory, model version, fixed step, save schema, RNG ordering and existing coefficients. Stress remains a documented read-only current-demand estimate. This is not a new psychological or vehicle-physics model.
-
-The refactor is incremental, not a claim that every historical class is now a small typed aggregate. In particular, serialized car dictionaries and the existing simulation inheritance chain remain. Old Director/Engineering controllers remain compatibility adapters; they are not reintroduced into the normal UI.
-
-## Dependency contract
-
-| Layer | Owns | Allowed inward dependencies |
+| Layer | Owns | Does not own |
 |---|---|---|
-| `scripts/domain/` | Race state, validation, physical rules, fixed-step policy and serialized values | Domain and non-scene Godot value utilities |
-| `scripts/application/` | Session runner, command adapters, queries, recording/reconstruction and replay playback | Application and domain |
-| `scripts/services/` | Godot composition/lifecycle, storage, content catalog access and runtime metadata | Services, application and domain; not UI |
-| `scripts/ui/` | Native controls, presentation, input intent, visual interpolation and editor interaction | Inward collaborators injected at composition |
+| `scripts/domain/` | Race aggregate, typed entrants, mechanic rules, finite resources, timing, pure track operations | Widgets, filesystem access, wall clocks, scene lifecycle |
+| `scripts/application/` | Commands, queries, live/replay scheduling, editor transactions, weekend entry, recording and result use cases | Native rendering or concrete filesystem implementations |
+| `scripts/services/` | Godot lifecycle integration, supplied elapsed time, storage and content adapters | Sporting calculations or UI components |
+| `scripts/ui/` | Native controls, layout, input intent, interpolation, rendering and uncommitted gestures | Live cars, simulation objects, runners, disk operations or authoritative time |
+| `scripts/composition/` | Assemble collaborators, connect navigation and lifecycle signals | A second set of gameplay rules |
 
-`App` is the engine-facing composition/lifecycle adapter. It owns active live and replay runners, not physics calculations. Its process callback supplies elapsed seconds to the application. A screen refresh never advances the race or writes an automatic checkpoint.
+Dependencies point inward. Infrastructure implements application ports; native
+composition injects those ports into views. `App` supplies elapsed time to the
+application-owned runners. It does not calculate car movement or pit outcomes.
+The race editor and race weekend are separate contexts sharing pure track data,
+not a mutable active-race document.
 
-This is a single-process design, not a distributed system. Commands and reads use separate interfaces without adding queues, dependency-injection containers, event sourcing or speculative services. A future renderer can implement `RaceVisualPort`; it does not require a second race engine.
+## Race and replay lifetimes
 
-## Simulation ownership
+`RaceSessionRunner` owns one active `RaceSim`. `RaceStepClock` preserves the
+0.05-second step, frame-spike cap, pause boundaries and existing speed policy.
+Invalid elapsed values are rejected before mutation. A frame cap can discard
+wall time; equal wall time is not a determinism guarantee.
 
-`RaceSessionRunner` owns the active simulation lifetime. `RaceStepClock` accepts caller-supplied elapsed seconds and applies the existing 0.05-second fixed step, 0.25-second frame-spike cap, playback speed and pause/phase boundaries. Negative and non-finite elapsed values are rejected atomically. A pause raised during a fixed-step callback stops the same frame's remaining ticks.
+`MinimalRaceSession` and `RaceViewSession` are composition bindings. Only their
+`view` handles reach widgets. `MinimalRaceHandle` and `RaceViewHandle` expose
+commands, detached queries and `RaceSessionStatus`, not a runner. Save status
+is read only. Controls, visual sources and optional directors use weak source
+references: retaining an obsolete widget handle cannot retain a discarded race.
+Expired handles return unavailable data or reject actions without an engine error.
 
-The runtime does not promise to recover discarded wall time beyond the existing frame cap. Deterministic comparisons must use equal accepted commands and equal actual steps, not merely equal wall-clock duration. Cross-platform floating-point identity is not asserted.
+`ReplaySessionBinding` owns replay reconstruction and its playback runner.
+`ReplayViewSession` exposes observation, seeking and playback intent but no tick
+operation or live engine. Native composition suspends the original runner,
+creates independent sandbox runners, and restores the original runner on return.
+The editor follows the same policy: `TrackPreviewHandle` exposes toggle/stop and
+copied readouts; only the application advances the reference preview.
 
-`App.activate_session` subscribes once to phase changes; stopping or suspending disconnects that listener. Phase autosaves use the current original/sandbox recording and the appropriate storage slot. Repeated visual refreshes cannot repeat a save. Explicit save/exit operations still retain their existing application behavior.
+Phase autosaves occur through application lifecycle observation, including the
+initial paused session. They do not depend on screen refresh or visibility.
+Changing a panel, text size, camera or display cadence cannot advance the race.
 
-Opening a replay explicitly suspends the live runner, preserving its state, remainder, speed and pause flag. `ReplayPlayback` advances reconstruction independently of its widgets. A sandbox receives a separate live runner. Returning restores the exact original runner; visual visibility is no longer the authority for whether a session runs.
+## Typed entrants and serialized boundaries
 
-## Detached presentation boundary
+The aggregate stores `Array[RaceCar]`. `RaceCar` has 91 declared fields and no
+writable backing dictionary. Authoritative movement, timing, pit service,
+resource progression, strategy and mechanic hooks receive typed entrants.
 
-`MinimalRaceSession` supplies the shipping screen with three distinct collaborators: command control, detached query and visual port. The minimal workspace has no live `RaceSim` field. `MinimalWeekendQuery` produces only required phase, identity, timing and own-driver card values. Rival resource inventories do not escape through map/identity data.
+`RaceCar.to_record()` produces detached records for saves and read models.
+`from_record()` rejects unknown/missing fields, incompatible scalar types,
+non-integral IDs, non-finite values, nested Objects and excessive/cyclic nesting.
+The existing checkpoint validators still own semantic ranges, valid routes,
+set ownership and version migration. Passing the codec is not sufficient to
+accept an arbitrary imported checkpoint.
 
-`TrackCanvas`, battle/rejoin overlays and the migrated diagnostic charts render detached values. A canvas selection emits intent; it cannot mutate `selected_id`. The application control adapter validates whether that driver is controllable. Presentation preferences are supplied as copied values rather than fetched through the simulation singleton.
+Nested tyre sets, setup, histories and system journals remain explicit versioned
+records owned by their entity or subsystem. A copied `Array[RaceCar]` still holds
+the same objects; use `RaceCar.records()` for an external value projection or
+`detached_copy()` for an independent domain fixture. Never use Object identity
+as a saved-state equivalence test.
 
-`RaceVisualSource` and chart queries hold weak source references. Their returned dictionaries/arrays are independent values; destroying a session makes the source unavailable. The active runner—not a stray renderer—keeps the simulation alive. `TrackGeometry.detached_copy` copies already-compiled data without re-solving it. Running races and renderer-owned copies cannot be edited through the source document. The track editor's explicitly owned draft remains editable.
+Save/model versions, serialized names, units, arithmetic order and random-draw
+order are retained. Compatibility selection/playback fields remain in the old
+snapshot format and are excluded from sporting equivalence. This does not give
+presentation ownership of the live checkpoint.
 
-Domain event notifications are independent, recursively read-only serialized records. They cannot be changed by an earlier subscriber to corrupt a later recorder. Callers needing an editable working value must duplicate the event. Packed value arrays are detached; arbitrary mutable engine objects are outside this event contract.
+## Composed systems
 
-For save/replay compatibility, `selected_id`, pause, playback speed and frame remainder still exist in the legacy checkpoint. They are explicitly excluded from sporting equivalence; new player commands name their driver through the application adapter. Moving those compatibility fields out of the snapshot requires a separately validated migration.
+The former Strategy → Weather → Recovery → Practice behavior inheritance chain
+is replaced by ordered `RaceMechanic` providers. Compatibility construction and
+restore classes directly extend `RaceSim`. `RaceMechanicProfiles` explicitly
+assembles the supported profile for each newly created or restored session.
 
-The legacy diagnostic controllers still orchestrate allowed commands and queries using their historical model interfaces. This pass enforces read-only **renderers**, domain/application dependency direction, and no UI ticking everywhere; it does not claim that every historical controller has been migrated to the new minimal facade.
+Construction validates the complete proposal before installation: identity,
+version, prerequisite order, actual dispatch hooks, argument counts and typed
+parameters/returns. `before(id, hook, arguments)` invokes the predecessor while
+retaining the original arithmetic and RNG order. Reflection happens during
+construction, not once per car per simulation step. Installation gets detached
+geometry/options. Running sessions cannot silently hot-swap their rules.
 
-## Domain responsibilities
+See [Composed mechanics](composable-mechanics.md) and
+[Developing systems and mechanics](developing-mechanics.md) for authoring commands,
+registration, state compatibility and tests.
 
-| Module | Responsibility |
-|---|---|
-| `RaceTiming` | Measured qualifying/race crossings, finish resolution and standings |
-| `RacePitService` | Garage release, physical pit transit, queue/service/fitting and stint record |
-| `RaceVehicleCondition` | Existing wear/fuel/temperature/health progression |
-| `RaceEntrantFactory` | Initial entrant record from approved roster/track/options |
-| `RaceStepClock` | Bounded elapsed-time to fixed-step scheduling |
-| `RaceStateValue` | Detached/read-only serialized values and stable value fingerprint |
+## Track editor and weekend flow
 
-The aggregate delegates to these services while preserving overridable hooks and the original arithmetic order. Extracted code is expanded into readable statements and named `car`/`sim` collaborators; coefficients are not silently rebalanced.
+`TrackEditorSession` owns the canonical document, read-only revision, saved
+signature and bounded undo/redo history. The canvas edits a draft. Commit/save
+must carry the revision observed when that draft was created; undo, redo and
+replacement invalidate older gestures. Failed writes retain work for retry.
+Compilation and diagnostics belong to application services; filesystem and
+reference-image operations are implemented by injected infrastructure ports.
+A running race owns a detached compiled track, unaffected by subsequent editing.
 
-Catalog file loading moved to `ScenarioCatalog` in infrastructure. `DuelScenarios` receives approved recipes rather than loading a file. The scenario whitelist and validation remain. Replay, notebook-entry and result-record classes moved to application because they concern evidence, reconstruction and runtime provenance rather than vehicle movement. Their global names and UIDs are retained.
+`WeekendLaunch` stages configuration and welcome without replacing a saved race.
+It validates the circuit and options and requires the observed launch revision.
+Initial practice persistence must succeed before replacing the active weekend.
+Back/cancel preserve the previous event; stale and repeated commits are rejected.
+The physical practice, qualifying, formation, lights, racing and final results
+remain the existing simulation. `WeekendSummary` supplies factual end-screen data.
 
-## Extending the game
+See [Editor and weekend contracts](editor-and-weekend-boundaries.md).
 
-For a new authoritative rule, first name its bounded context and the existing aggregate that owns it. Add a pure domain service or method with explicit parameters, implement validation before mutation, and test the invariant through the normal command boundary. Add persistence fields only with explicit validation/versioning. Do not place a coefficient or gameplay RNG draw inside a widget or a read-model query.
+## Executable rules and verification
 
-For a new visible instrument, add a detached field to an application query with units, unknown/terminal handling and provenance. Consume that field in a read-only native component. Test that editing the returned value cannot mutate the source and that querying at different display cadences preserves outcomes. Do not expose the entire car dictionary for convenience.
+`python3 scripts/check_architecture.py` resolves global classes and literal
+script references. It checks dependency direction, forbids domain I/O and wall
+clocks, prohibits live entities/runners in every UI component, and compares the
+hook manifest to real aggregate dispatch points. Fixtures test the checker.
+Godot import and runtime tests complement this intentionally limited static scan.
+It is not a complete GDScript parser or a security sandbox against reflection.
 
-For a new action, add a driver/phase-validated application operation calling the existing recorded domain command. Let the view display acceptance/rejection. Tests must include rejected commands, stale driver/phase selection, teammate independence and save/replay continuation. This increment adds no new player action.
+The verification registry retains all previous required suites and adds mechanic,
+editor, entry, presentation, entity and codec tests: 64 registered entry points.
+CI uses six shards and a required aggregate `verify` gate. Missing, failed,
+partial, duplicate, malformed, mixed-source or stale-source evidence is rejected.
+Engine errors fail a suite even when its own JSON says `passed: true`.
 
-For a new rendering backend, consume `RaceVisualPort` or supply a compatible port implementation. Inject a detached compiled track. Visual interpolation, labels, effects, screen resolution and frame count must never affect collision, gates, classification, wear or incident exposure.
+Regression includes the 24 unchanged sporting-state checkpoints, complete
+physical weekends, replay, old-save migration, finite stock, native input,
+scaled layouts, failed persistence, stale drafts and discarded-session lifetimes.
+The populated-screen suite has a bounded 900-second budget because its own
+physical lineage and 149 native captures exceeded the previous 360-second limit
+on a hosted runner. Coverage and assertions were not removed.
 
-## Executable architectural rules
+## Completion boundary
 
-`python3 scripts/check_architecture.py` resolves both global class-name references and literal script dependencies. It rejects outward dependencies from domain/application, domain scene/input/storage authority, undocumented domain wall clocks, dynamic inward script loads, UI ticking, and live aggregate/singleton references in the guarded renderers/minimal workspace. Python fixtures exercise the guard itself, including forbidden literal `extends` paths and comments that must not produce false edges.
+This iteration completes the planned behavior-composition, typed-entrant,
+all-UI detached-presentation, scheduler-ownership and editor-transaction migration.
+It deliberately does not replace every small serialized record with an Object,
+introduce threads, recalibrate physics, add player commands or invent campaign
+systems. Public API boundaries and tests enforce architectural rules; GDScript
+private-name conventions are not a sandbox for untrusted extensions.
 
-The 0.19.0 continuation removes both former domain clock exceptions: track identifiers are deterministic and compilation measurements belong to the application editor service. The complete UI layer, including diagnostic controllers, now uses detached sources. This static guard is not a full GDScript parser or a security boundary against arbitrary reflection; Godot import, runtime tests and review remain necessary.
+Human playtesting, physical controllers/screen readers, Windows exports and
+representative-device performance remain separate validation activities. A Linux
+regression pass is not evidence of those outcomes or a universal FPS guarantee.
 
-The normal `scripts/verify.py` retains every previously required suite and adds boundary, native ownership and baseline-characterization gates. No failing test is removed to accommodate the refactor. Historical tests that explicitly step a simulation disable application scheduling explicitly rather than implicitly stopping it by hiding a view.
+## Primary technical references
 
-## Verification and compatibility
-
-`tests/fixtures/architecture-reference.json` was captured from the unchanged 0.17.2 baseline before extraction. Three cases cover Pinecrest/dry, Monaco/wet and Monza/changeable, distinct incident settings, physical formation/lights, ordinary pace/engine/pit commands and 4,000 race steps per case. Every 500 steps records a complete sporting-state hash. The 24 checkpoints include all cars, inventory, surface, journal and RNG, not just the leader. Each scenario executes a physical pit stop. They are characterization workloads, not complete-race or balance claims.
-
-The comparison script cannot regenerate its expected values. Baseline hash generation is retained only in the separately identified verification evidence. Other tests exercise nested mutation attempts, weak lifetimes, immutable notifications, invalid deltas, equivalent elapsed partitions/speeds, paused tick boundaries, actual hidden-view playback, explicit replay suspension and return, and duplicate-listener cleanup.
-
-Exact final results belong to the current run report and handoff. Previous version counts are not evidence for this source. The complete native weekend suite separately exercises measured practice and qualifying, formation, lights, fitting/service/exit, actual finishes and production archive restore.
-
-## Research basis and interpretation
-
-Godot's scene-organization and node-alternative guidance informed focused native scenes, injected dependencies and non-scene `RefCounted` services. Its GDScript style guide informs naming/readable statements. Robert Martin's dependency rule informed inward dependencies and value-only boundary data. Fowler's bounded-context description informs keeping race rules distinct from campaign, presentation and recording vocabulary. These are implementation adaptations, not certifications or evidence of improved gameplay.
+The project's implementation applies, rather than claims certification against,
+Godot's guidance on injected scene relationships, RefCounted lifetime management
+and static typing. Consulted during this continuation:
 
 - https://docs.godotengine.org/en/stable/tutorials/best_practices/scene_organization.html
-- https://docs.godotengine.org/en/stable/tutorials/best_practices/node_alternatives.html
-- https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html
-- https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
-- https://martinfowler.com/bliki/BoundedContext.html
-
-## Remaining work
-
-The 0.19.0 continuation replaces behavior inheritance with explicit mechanic composition and migrates diagnostic controllers to detached facades. Broad typed-car entity/value-object migration is still unfinished; validated dictionary records remain authoritative. Dedicated error injection for filesystem failures, physical controller/screen-reader coverage, Windows export validation and representative-device performance remain separate gates. No new physics calibration, FPS guarantee, universal architecture compliance or human-usability conclusion is claimed.
-
-For current registration, scaffold commands and revision-bound editor examples, use [Developing systems and mechanics](developing-mechanics.md).
+- https://docs.godotengine.org/en/stable/classes/class_refcounted.html
+- https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/static_typing.html

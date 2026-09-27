@@ -1,6 +1,13 @@
 # Motorsport Manager documentation
 
-## Current default — 0.17.2 Minimal
+## Current architecture — 0.19.0
+
+- [Architecture and ownership map](architecture-refactor.md)
+- [Developing and testing mechanics](developing-mechanics.md)
+- [Composed rule profiles](composable-mechanics.md)
+- [Editor transactions and complete weekend flow](editor-and-weekend-boundaries.md)
+
+## Minimal UI contracts retained from 0.17.2
 
 - [Current pitwall, driver instruments and stress estimate](driver-instruments.md)
 - [Prior UI polish, driver cards and timing integrity](minimal-ui-polish.md)
@@ -16,7 +23,7 @@ The documents below describe retained historical implementations. Their advanced
 - [Verification and acceptance boundaries](race-director-verification.md)
 
 
-Current native implementation: **0.17.2** · **Godot 4.7.2 Standard**.
+Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 
 | Document | Purpose |
 |---|---|
