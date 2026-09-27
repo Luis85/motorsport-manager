@@ -32,7 +32,7 @@ func profiles() -> void:
 			for card in view.driver_cards.values():
 				check(inside(card) and inside(card.name_label) and text_fits(card.name_label), "Named driver card fits: " + tag)
 				for metric in card.metrics.values():
-					check(inside(metric.value) and text_fits(metric.value) and inside(metric.note) and text_fits(metric.note), "Full card value and unit/note fit: " + tag + "/" + metric.value.text)
+					check(inside(metric.title) and text_fits(metric.title) and inside(metric.value) and text_fits(metric.value) and inside(metric.note) and text_fits(metric.note), "Full card value and unit/note fit: " + tag + "/" + metric.value.text)
 			var first_row = view.rank_rows.back()
 			var position_width = view.tower.get_theme_font("font").get_string_size(first_row.get_text(0), HORIZONTAL_ALIGNMENT_LEFT, -1, view.tower.get_theme_font_size("font_size")).x
 			check(position_width + 12 * scale <= view.tower.get_column_width(0), "Two-digit position has text and cell padding: " + tag)
@@ -145,9 +145,48 @@ func polish_interactions() -> void:
 	check(view.tower.get_item_area_rect(view.rank_rows.back()).end.y <= view.tower.size.y, "Full field remains visible after live resize")
 	await capture("polish-live-resize", "Same production screen resized with enlarged text, selected driver and damaged tyre retained")
 
+func instruments_interactions() -> void:
+	root.size = Vector2i(1440,900); root.content_scale_size = root.size; app.settings.pitwall_text_scale = 1.0
+	model = race_fixture(); await reset()
+	var card = view.driver_cards[3]; var other_card = view.driver_cards[6]
+	var base = card.last_data.stress.value; var other_value = other_card.last_data.stress.value
+	await click(view.push_button)
+	check(card.last_data.stress.value > base and other_card.last_data.stress.value == other_value, "Existing Push updates only the named driver's stress estimate")
+	check(card.metrics.stress.value.text.begins_with("~") and "EST." in visible_copy(card), "Stress estimate is visibly qualified, not only in a tooltip")
+	check(card.metrics.stress.note.text.contains("Push") or card.metrics.stress.note.text.contains("Traffic"), "Wide stress readout shows its leading current demand")
+	await click(view.calm_button)
+	check(card.last_data.stress.value < base and view.calm_button.button_pressed, "Existing Calm lowers the same driver estimate and retains selected state")
+	var current = MinimalDriverReadout.capture(model,3)
+	check(card.engine_label.text == current.engine_temp and card.orders_label.text == "Calm · Standard", "Driver card reflects actual engine temperature and current orders")
+	var fitted = TyreInventory.find(model.cars[3],model.cars[3].set_id)
+	for wheel in fitted.wheels.values(): wheel.punctured = true
+	model.cars[3].damage = 35; model.cars[3].engine_temperature = 125; model.cars[3].fuel = 0.2
+	model.cars[3].pace = 2; view.refresh(); await settle(8)
+	check(card.last_data.stress.band == "High" and card.metrics.stress.note.text.contains("High"), "High demand has a text band as well as a colored segmented meter")
+	check(card.metrics.tyre.note.text == "4 punctures" and card.meters.tyre.wheels.size() == 4 and card.meters.tyre.wheels.all(func(w):return w.punctured), "Four-wheel warnings remain actual per-wheel data, not average condition")
+	check(card.engine_label.text == "Engine 125°C" and card.last_data.engine_hot, "Engine heat warning uses actual measured heat independently of driver stress")
+	check(card.last_data.fuel_issue and card.metrics.health.note.text == "Damage 35%", "Fuel deficit and mechanical damage retain their own separate readouts")
+	var nodes = card.get_child_count(); var before = JSON.stringify(model.snapshot())
+	for i in range(100): view.refresh()
+	check(before == JSON.stringify(model.snapshot()) and nodes == card.get_child_count(), "Instrument updates neither mutate simulation nor accumulate child nodes")
+	await capture("instruments-stress", "Synthetic high-demand and four-puncture boundary; native UI reads the actual fixture state; not a calibrated psychological simulation")
+	root.size = Vector2i(1100,720); root.content_scale_size = root.size; app.settings.pitwall_text_scale = 1.3; await reset()
+	card = view.driver_cards[3]
+	for metric in card.metrics.values():
+		check(inside(metric.title) and text_fits(metric.title) and inside(metric.value) and text_fits(metric.value) and inside(metric.note) and text_fits(metric.note), "Compact high-demand instrument value and warning fit: " + metric.value.text)
+	for node in [card.context_label,card.orders_label,card.engine_label,card.speed_label,view.state_label,view.name_label,view.send_button,view.box_button]:
+		check(inside(node) and text_fits(node), "Compact pitwall/card context fits: " + node.text)
+	check(view.tower.get_item_area_rect(view.rank_rows.back()).end.y <= view.tower.size.y, "All timing rows still fit alongside enriched compact cards")
+	await capture("instruments-compact", "Synthetic combined warning fixture at 1100x720 and 130% text")
+	model.cars[3].dnf = true; model.cars[3].retire_reason = "Out of fuel"; view.refresh(); await settle()
+	check(card.metrics.stress.value.text == "—" and card.metrics.stress.note.text == "Not driving", "Retirement clears active stress rather than leaving an alarming stale value")
+	check("Out of fuel" in card.context_label.text and view.push_button.disabled and view.box_button.disabled, "Retirement retains its real cause and disables actions")
+	await click(view.driver_buttons[6]); await click(view.push_button)
+	check(model.cars[6].pace == 2 and model.cars[3].pace == 2 and card.metrics.stress.value.text == "—", "Switching away from a retired driver cannot transfer their stale state")
+
 func run() -> void:
 	game=load("res://scenes/main.tscn").instantiate(); root.add_child(game); app=root.get_node("App"); await settle()
 	check(app.settings.pitwall_layout=="minimal","Clean launch uses minimal layout")
-	await profiles(); await phase_layouts(); await interactions(); await polish_interactions()
+	await profiles(); await phase_layouts(); await interactions(); await polish_interactions(); await instruments_interactions()
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"screenshots":captures.size(),"captures":captures}
 	Storage.write_json("res://reports/minimal-ui.json",report); print("MINIMAL_UI ",JSON.stringify(report)); quit(0 if failures.is_empty() else 1)
