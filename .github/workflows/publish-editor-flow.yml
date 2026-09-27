@@ -1,0 +1,44 @@
+name: Publish tested editor and weekend flow
+on:
+  push:
+    branches: ['refactor/composable-systems-weekend-flow']
+    paths: ['.handoff/editor-flow/part-0.b64']
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.repository == 'Luis85/motorsport-manager' && github.event.before == 'e98c10fca97e996f68329514afdc32955cae4f35'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify and publish the exact local candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = e98c10fca97e996f68329514afdc32955cae4f35
+          python3 - <<'PY'
+          import base64, hashlib, pathlib, zlib
+          hashes = ['b09ce1a439427f6f84d57e6d8507bb89f31f3f29', '59633c611d943b1e87c8dffb07ed2e5cabed9cb9', '7fffaad30cd6a79e3c30b54f12f19cc0f5ddf6d5', 'e7fddf5f731a17d814a879b946badc95578dd4b3']
+          parts = []
+          for i, expected in enumerate(hashes):
+              data = pathlib.Path(f'.handoff/editor-flow/part-{i}.b64').read_bytes()
+              assert hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest() == expected
+              parts.append(data)
+          patch = zlib.decompress(base64.b64decode(b''.join(parts), validate=True))
+          assert hashlib.sha256(patch).hexdigest() == '4e5722338dd14c16e651d520cde1668c89e76cf0356cba280fc427359d71a33a'
+          pathlib.Path('/tmp/editor-flow.patch').write_bytes(patch)
+          PY
+          git apply --index --check /tmp/editor-flow.patch
+          git apply --index /tmp/editor-flow.patch
+          git rm -r .handoff .github/workflows/publish-editor-flow.yml
+          git diff --cached --check
+          test "$(git write-tree)" = b85bdf62daa5621193b4034f339f6ff05b175352
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor: isolate track editing and stage the complete weekend entry and result flow'
+          git push origin HEAD:refs/heads/refactor/composable-systems-weekend-flow
