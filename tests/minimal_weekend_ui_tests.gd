@@ -75,7 +75,7 @@ func run() -> void:
 	check(PracticeRaceSim.restore_practice(model.snapshot())!=null,"Completed full journey validates as checkpoint")
 	var error=app.save_weekend();check(error.is_empty(),"Actual production recording saves: "+error)
 	var original=model.snapshot();error=app.load_weekend();check(error.is_empty(),"Actual production recording restores: "+error)
-	if error.is_empty():check(RaceRecord.equivalent(app.weekend.cars,model.cars) and app.weekend.rng_state==model.rng_state,"Restored final cars and RNG preserved")
+	if error.is_empty():check(RaceRecord.equivalent(RaceCar.records(app.weekend.cars),RaceCar.records(model.cars)) and app.weekend.rng_state==model.rng_state,"Restored final cars and RNG preserved")
 	await click(view.primary_button); await settle(8)
 	check(game.screen_name == "weekend_complete", "Real finished race opens the dedicated weekend end screen")
 	var end_view = game.content.get_child(0)

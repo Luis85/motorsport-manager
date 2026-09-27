@@ -21,6 +21,7 @@ func fixture(life: float = 37) -> PracticeRaceSim:
 func decision(s: Dictionary, f: Dictionary, style: String, stops: Array = []) -> Dictionary:
 	return RivalStyles.decide(s, stops, {"style":style,"weights":RivalStyles.profile(style)},f)
 func same(a: Variant,b: Variant) -> bool:
+	if a is RaceCar and b is RaceCar: return same(a.to_record(), b.to_record())
 	if a is Dictionary and b is Dictionary:
 		if a.size()!=b.size(): return false
 		for key in a:

@@ -84,7 +84,7 @@ func log_recovery_command(sim: RaceSim, action: String, payload: Dictionary, rea
 	RaceJournal.append(sim.strategy_state, sim, "recovery_decision", id, {"action": action, "reason": reason, "observed": RaceReliability.observation(sim.cars[id], sim.reliability(id))}, sim.policy(id).last_order_id)
 	sim.post("radio", sim.cars[id].short + " · " + reason)
 
-func issue_repair(sim: RaceSim, c: Dictionary, manual: bool, reason: String) -> void:
+func issue_repair(sim: RaceSim, c: RaceCar, manual: bool, reason: String) -> void:
 	var r = sim.reliability(int(c.id)); var p = sim.policy(int(c.id))
 	r.repair_only = true; r.revision += 1; c.repair = true; c.next_set_id = ""; c.next_compound = c.compound; c.scheduled_lap = -1
 	var source = RaceForecaster.capture(sim, int(c.id), sim.active_plan(int(c.id)), int(p.revision))
@@ -97,13 +97,13 @@ func issue_repair(sim: RaceSim, c: Dictionary, manual: bool, reason: String) -> 
 	p.last_order_id = RaceJournal.append(sim.strategy_state, sim, "strategy_order", int(c.id), {"reason": reason, "set_id": "", "gate": c.pit_gate, "prediction": p.order_forecast, "scope": "Own observed aggregate condition; repair-only, retained fitted set."}, p.plan_intent_id)
 	sim.post("pit", c.short + " · " + reason + (" Entry deferred to the next safely reachable gate." if c.pit_deferred else ""))
 
-func manage_resources(sim: RaceSim, c: Dictionary, only_channel: String = "") -> void:
+func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> void:
 	sim.mechanics.before("recovery", "manage_resources", [c, only_channel])
 	if not sim.enhanced(): return
 	var stage = RaceReliability.stage(c, sim.reliability(int(c.id)))
 	if stage in ["degraded", "critical"] and only_channel in ["", "engine"] and StrategyPlan.owns(sim.policy(int(c.id)), "engine"): c.engine = 0
 
-func engineer(sim: RaceSim, c: Dictionary) -> void:
+func engineer(sim: RaceSim, c: RaceCar) -> void:
 	if not sim.enhanced(): sim.mechanics.before("recovery", "engineer", [c]); return
 	var r = sim.reliability(int(c.id)); var p = sim.policy(int(c.id))
 	var critical = RaceReliability.stage(c, r) == "critical"
@@ -120,7 +120,7 @@ func engineer(sim: RaceSim, c: Dictionary) -> void:
 		sim.manage_resources(c); return
 	sim.mechanics.before("recovery", "engineer", [c])
 
-func wear_car(sim: RaceSim, c: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+func wear_car(sim: RaceSim, c: RaceCar, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	sim.mechanics.before("recovery", "wear_car", [c, distance, cell, effects, local])
 	if not sim.enhanced() or sim.phase != "race" or c.route != "track" or c.dnf or c.finished: return
 	var r = sim.reliability(int(c.id))
@@ -131,7 +131,7 @@ func wear_car(sim: RaceSim, c: Dictionary, distance: float, cell: int, effects: 
 		if result.get("retire", false): sim.retire(c, result.reason)
 	sim.observe_reliability(c)
 
-func observe_reliability(sim: RaceSim, c: Dictionary) -> void:
+func observe_reliability(sim: RaceSim, c: RaceCar) -> void:
 	var r = sim.reliability(int(c.id)); var stage = RaceReliability.stage(c, r)
 	if stage == r.stage: return
 	var before = r.stage; r.stage = stage; r.stage_since = sim.total_time; r.revision += 1
@@ -142,7 +142,7 @@ func observe_reliability(sim: RaceSim, c: Dictionary) -> void:
 func service_random_value(sim: RaceSim) -> float:
 	return RaceReliability.draw(sim.reliability_state.service_stream) if sim.enhanced() else sim.mechanics.before("recovery", "service_random_value", [])
 
-func begin_service(sim: RaceSim, c: Dictionary) -> void:
+func begin_service(sim: RaceSim, c: RaceCar) -> void:
 	if not sim.enhanced(): sim.mechanics.before("recovery", "begin_service", [c]); return
 	var r = sim.reliability(int(c.id))
 	if r.repair_only:
@@ -155,7 +155,7 @@ func begin_service(sim: RaceSim, c: Dictionary) -> void:
 	job.event_id = RaceJournal.append(sim.strategy_state, sim, "recovery_service", int(c.id), {"reason": "Physical shared-box service started; repair plan frozen.", "stage": "started", "job": job.duplicate(true)}, sim.policy(int(c.id)).last_order_id)
 	r.service = job
 
-func complete_service(sim: RaceSim, c: Dictionary) -> void:
+func complete_service(sim: RaceSim, c: RaceCar) -> void:
 	if not sim.enhanced(): sim.mechanics.before("recovery", "complete_service", [c]); return
 	var r = sim.reliability(int(c.id)); var job = r.service
 	if job.repair_only:
@@ -170,7 +170,7 @@ func complete_service(sim: RaceSim, c: Dictionary) -> void:
 		"health_before": job.health_before, "health_after": c.health, "set_before": job.set_before, "set_after": c.set_id}, job.event_id)
 	sim.observe_reliability(c)
 
-func update_pit(sim: RaceSim, c: Dictionary, old: Array = []) -> void:
+func update_pit(sim: RaceSim, c: RaceCar, old: Array = []) -> void:
 	var before = c.route
 	sim.mechanics.before("recovery", "update_pit", [c, old])
 	if not sim.enhanced(): return
@@ -178,11 +178,11 @@ func update_pit(sim: RaceSim, c: Dictionary, old: Array = []) -> void:
 	if c.pit_stage == "service" and r.repair_only: c.intent = "Repairing scalar damage · retaining fitted tyres"
 	if before == "pit" and c.route == "track": r.repair_only = false; r.service = {}; r.revision += 1
 
-func pit_exit_message(sim: RaceSim, c: Dictionary) -> String:
+func pit_exit_message(sim: RaceSim, c: RaceCar) -> String:
 	if sim.enhanced() and sim.reliability(int(c.id)).repair_only: return c.short + " rejoins with the same retained tyre set and its actual wear."
 	return sim.mechanics.before("recovery", "pit_exit_message", [c])
 
-func pit_status(sim: RaceSim, c: Dictionary) -> String:
+func pit_status(sim: RaceSim, c: RaceCar) -> String:
 	if sim.enhanced() and sim.reliability(int(c.id)).repair_only and c.route == "pit" and c.pit_stage == "service":
 		return "Repairing scalar damage · %.1fs remaining\nFitted %s retained; no tyre change" % [maxf(0, c.pit_timer), c.set_id]
 	return sim.mechanics.before("recovery", "pit_status", [c])
@@ -197,28 +197,28 @@ func update_flags(sim: RaceSim) -> void:
 		RaceJournal.append(sim.strategy_state, sim, "race_control", -1, change)
 		sim.post("flag", "Virtual neutralization ending: eight seconds, still no passing." if sim.control_state.state == "ending" else sim.flag + " · " + sim.control_state.reason)
 
-func neutral(sim: RaceSim, c: Dictionary) -> bool:
+func neutral(sim: RaceSim, c: RaceCar) -> bool:
 	if not sim.enhanced(): return sim.mechanics.before("recovery", "neutral", [c])
 	return sim.phase == "formation" or WeekendRaceControl.restricted(sim.control_state, sim.track.length, c.distance, c.distance + maxf(0, c.speed) * RaceSim.STEP / sim.track.sample(c.distance).path_scale)
 
-func neutral_speed_limit(sim: RaceSim, c: Dictionary, sample: Dictionary) -> float:
+func neutral_speed_limit(sim: RaceSim, c: RaceCar, sample: Dictionary) -> float:
 	if not sim.enhanced() or sim.phase == "formation": return sim.mechanics.before("recovery", "neutral_speed_limit", [c, sample])
 	return sample.speed * WeekendRaceControl.PACE_FACTOR if sim.control_state.state != "green" else 25.0
 
-func constrain_progress(sim: RaceSim, c: Dictionary, next: float, old: Array, nearest: int) -> float:
+func constrain_progress(sim: RaceSim, c: RaceCar, next: float, old: Array, nearest: int) -> float:
 	if not sim.enhanced() or nearest < 0 or not WeekendRaceControl.restricted(sim.control_state, sim.track.length, c.distance, next): return next
 	# Conservative pre-step bound, independent of roster iteration and the leader's braking.
 	# It can stop a follower but never rewinds or pulls a distant car toward the field.
 	var gap = fposmod(old[nearest].distance - old[int(c.id)].distance, sim.track.length)
 	return minf(next, maxf(c.distance, c.distance + gap - 0.05))
 
-func update_yield(sim: RaceSim, c: Dictionary, old: Array) -> float:
+func update_yield(sim: RaceSim, c: RaceCar, old: Array) -> float:
 	if sim.enhanced() and sim.neutral(c):
 		c.yield_to = -1; c.yield_side = 0.0; c.yield_clock = 0.0
 		return sim.track.sample(c.distance).line
 	return sim.mechanics.before("recovery", "update_yield", [c, old])
 
-func incident(sim: RaceSim, c: Dictionary) -> void:
+func incident(sim: RaceSim, c: RaceCar) -> void:
 	if not sim.enhanced(): sim.mechanics.before("recovery", "incident", [c]); return
 	if c.dnf or c.finished: return
 	var observed = RaceReliability.observation(c, sim.reliability(int(c.id)))
@@ -236,7 +236,7 @@ func incident(sim: RaceSim, c: Dictionary) -> void:
 	sim.post("incident", c.short + " · " + reason)
 	sim.observe_reliability(c)
 
-func retire(sim: RaceSim, c: Dictionary, reason: String) -> void:
+func retire(sim: RaceSim, c: RaceCar, reason: String) -> void:
 	if c.dnf or c.finished: return
 	sim.mechanics.before("recovery", "retire", [c, reason])
 	if not sim.enhanced(): return

@@ -16,7 +16,7 @@ func present() -> void:
 	if fitted==null:return
 	var car=model.car(model.selected_id)
 	if not car.player:fitted.text="Private condition";planned.text="Private plan";return
-	var a=TyreInventory.find(car,car.set_id);var b=TyreInventory.planned(car,model.phase=="race")
+	var a=TyreInventory.find_in(car.tyre_sets,car.set_id);var b=model.planned_set(car,model.phase=="race")
 	var minimum = 100.0; var limiting = "—"; var punctures: Array[String] = []
 	for wheel_id in a.get("wheels", {}):
 		var wheel = a.wheels[wheel_id]

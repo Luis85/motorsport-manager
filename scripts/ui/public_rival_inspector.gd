@@ -39,5 +39,5 @@ func present(view: PracticeWeekendView) -> void:
 		var label = masks[index]
 		for child in label.get_parent().get_children():
 			if child != label and child is Control: conceal(child)
-		label.text = RivalStyles.public_driver(sim.rival_styles, car)
+		label.text = sim.rival_description(sim.rival_styles, car)
 		label.visible = true

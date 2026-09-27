@@ -83,7 +83,7 @@ func refresh() -> void:
 	bias_button.disabled = not bias.editable
 	live_heading.visible = sim.phase == "race"; live_row.visible = sim.phase == "race"
 	garage_form.visible = garage_allowed() or sim.phase in ["briefing", "race_preparation", "qualifying_results"]
-	var effect = CarSetup.effects(c, sim.average(sim.water))
+	var effect = sim.setup_effects(c, sim.average(sim.water))
 	effects_label.text = "FITTED SETUP · %d%% front bias\nCorner support %+.1f%% · Straight pace %+.1f%%\nBalance %s" % [c.car_setup.bias, (effect.corner - 1) * 100, (effect.straight - 1) * 100, "understeer tendency" if effect.balance > 0.015 else ("oversteer tendency" if effect.balance < -0.015 else "neutral")]
 	effects_label.add_theme_font_size_override("font_size", 12)
 	heat_label.text = "Engine %.0f°C · Brakes %.0f°C\nThese are management-model estimates." % [c.engine_temperature, c.brake_temperature]
@@ -103,7 +103,7 @@ func refresh_status() -> void:
 	if not garage_allowed(): note.text += "\nMechanical changes unlock in the garage or race preparation."
 	if draft_effects:
 		var c=sim.car(loaded_driver).duplicate();c.car_setup=drafts[loaded_driver]
-		var effect=CarSetup.effects(c,sim.average(sim.water))
+		var effect=sim.setup_effects(c,sim.average(sim.water))
 		draft_effects.text="DRAFT EFFECTS · CURRENT TYRE/SURFACE HELD CONSTANT\nCorner %+.1f%% · straight %+.1f%% · traction %+.1f%%\nChanges have no effect until Apply." % [(effect.corner-1)*100,(effect.straight-1)*100,(effect.traction-1)*100]
 		for key in sliders:sliders[key].set_value_no_signal(fields[key].value)
 
@@ -140,7 +140,7 @@ class WheelDashboard extends VBoxContainer:
 		refresh()
 	func refresh():
 		if not model or cards.is_empty(): return
-		var c = model.car(model.selected_id); var item = TyreInventory.find(c, c.set_id)
+		var c = model.car(model.selected_id); var item = TyreInventory.find_in(c.tyre_sets, c.set_id)
 		heading.text = "FITTED %s · %d HEAT CYCLES" % [item.label, item.heat_cycles]
 		for key in cards:
 			var w = item.wheels[key]

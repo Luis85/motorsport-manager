@@ -65,7 +65,7 @@ static func evolve(grid: Array, rain: float, dt: float, time: float) -> void:
 			s.debris = maxf(0, s.debris - dt * 0.00022)
 			s.temperature = lerpf(s.temperature, 19.0 if local_rain > 0.1 else 32.0, minf(1, dt * 0.006))
 
-static func deposit(grid: Array, length_m: float, c: Dictionary, from: float, to: float, curve: float) -> Array[int]:
+static func deposit(grid: Array, length_m: float, c: RaceCar, from: float, to: float, curve: float) -> Array[int]:
 	var touched: Array[int] = []
 	var distance = maxf(0, to - from)
 	if distance == 0: return touched

@@ -10,7 +10,7 @@ const OBJECTIVES = {
 const BASELINES = {
 	"current": "Current setup", "balanced": "Balanced", "low_drag": "Low drag", "stable_wet": "Stable wet"}
 
-static func setup_for(car: Dictionary, baseline: String) -> Dictionary:
+static func setup_for(car: RaceCar, baseline: String) -> Dictionary:
 	var result = car.car_setup.duplicate()
 	if baseline == "balanced": result = CarSetup.DEFAULTS.duplicate()
 	elif baseline == "low_drag": result.wing = 2; result.cooling = 4
@@ -22,17 +22,17 @@ static func create(cars: Array, duration: float, status: String = "available") -
 	for car in cars: drivers.append({"id": int(car.id), "revision": 0, "runs": [], "active": {}, "next_release": 4.0 + car.id * 9.0})
 	return {"version": VERSION, "status": status, "duration": duration, "closed": false, "drivers": drivers}
 
-static func state_key(state: Dictionary, car: Dictionary) -> String:
+static func state_key(state: Dictionary, car: RaceCar) -> String:
 	return JSON.stringify([state.status, state.closed, state.drivers[int(car.id)].revision, car.route,
 		car.set_id, car.next_set_id, car.car_setup, car.pace, car.engine]).sha256_text()
 
-static func observation(sim: RaceSim, car: Dictionary) -> Dictionary:
+static func observation(sim: RaceSim, car: RaceCar) -> Dictionary:
 	return {"time": sim.total_time, "distance": car.distance, "life": car.tyre,
 		"fuel": car.fuel, "health": car.health, "temperature": car.engine_temperature,
 		"water": sim.average(sim.water), "damage": car.damage,
 		"wheels": WheelTyres.KEYS.map(func(key): return TyreInventory.find(car, car.set_id).wheels[key].life)}
 
-static func prior(state: Dictionary, car: Dictionary, water: float) -> Dictionary:
+static func prior(state: Dictionary, car: RaceCar, water: float) -> Dictionary:
 	# Never pool a rival's private measurements, nor transfer a teammate's skill/setup residual.
 	var result: Dictionary = {}
 	for compound in RaceSim.TYRES:

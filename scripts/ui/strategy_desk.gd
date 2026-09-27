@@ -144,7 +144,7 @@ func populate_sets(control: OptionButton, selected: String) -> void:
 
 func new_draft(template: String) -> void:
 	edited[driver_id] = true
-	var draft = StrategyPlan.draft(model.car(driver_id), model.laps, template)
+	var draft = model.strategy_draft(model.car(driver_id), model.laps, template)
 	if model.phase == "race": draft.starting_set = model.car(driver_id).set_id
 	drafts[driver_id] = draft; revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = true
 	show_draft()
@@ -153,7 +153,7 @@ func load_current(discard: bool) -> void:
 	if discard or not drafts.has(driver_id):
 		edited[driver_id] = false
 		var current = model.active_plan(driver_id)
-		drafts[driver_id] = StrategyPlan.draft(model.car(driver_id), model.laps) if current.is_empty() else current
+		drafts[driver_id] = model.strategy_draft(model.car(driver_id), model.laps) if current.is_empty() else current
 		if model.phase == "race": drafts[driver_id].starting_set = model.car(driver_id).set_id
 		revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = current.is_empty()
 	show_draft()
@@ -208,7 +208,7 @@ func refresh(force: bool = false) -> void:
 	if model == null or draft_status == null or not drafts.has(driver_id): return
 	var c = model.car(driver_id); var policy = model.policy(driver_id)
 	var draft = drafts[driver_id]
-	var error = StrategyPlan.validate(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
+	var error = model.strategy_plan_error(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
 	if int(revisions[driver_id]) != int(policy.revision): error = "A newer plan is active. Discard/reload before applying."
 	var legal = model.phase in ["briefing", "race_preparation", "race"] and c.route != "pit" and not c.pit_order and not c.dnf and not c.finished
 	apply_button.disabled = not legal or not error.is_empty() or not dirty[driver_id]

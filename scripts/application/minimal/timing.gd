@@ -55,7 +55,7 @@ static func rows(sim: RaceSim) -> Array:
 static func tag(status: String) -> String:
 	return {"Retired":"RET", "Finished":"FIN", "Garage":"GAR", "Pit stop":"PIT", "Pit exit":"OUT", "Pit entry":"IN", "Out lap":"OUT", "Flying lap":"FLY", "In lap":"IN", "Ready":"—", "Formation":"FORM", "On grid":"GRID", "Box this lap":"BOX", "Racing":"RUN"}.get(status, "—")
 
-static func state(sim: RaceSim, car: Dictionary) -> String:
+static func state(sim: RaceSim, car: RaceCar) -> String:
 	if car.dnf: return "Retired"
 	if car.finished: return "Finished"
 	if sim.phase in ["briefing", "race_preparation", "grid_ready"]: return "Ready"

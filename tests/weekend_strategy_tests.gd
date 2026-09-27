@@ -215,6 +215,7 @@ func before_rejected_forecast(sim: StrategyRaceSim, f: Dictionary) -> void:
 	check(before == JSON.stringify(sim.snapshot()), "Stale advice rejection neither cancels nor replaces the current plan")
 
 func equivalent(a: Variant, b: Variant) -> bool:
+	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
 	if typeof(a) in [TYPE_FLOAT, TYPE_INT] and typeof(b) in [TYPE_FLOAT, TYPE_INT]: return absf(float(a) - float(b)) < 0.00000001
 	if typeof(a) != typeof(b): return false
 	if a is Dictionary:

@@ -50,7 +50,7 @@ func refresh() -> void:
 		PitwallDesign.navigation(b,highlighted==key)
 	lap_count.set_value_no_signal(draft.laps)
 	forecast_text.text=run_estimate_text()
-	var shown_setup=driver.runs.back().setup if historical else PracticeEvidence.setup_for(model.car(driver_id),draft.baseline)
+	var shown_setup=driver.runs.back().setup if historical else model.practice_setup(model.car(driver_id),draft.baseline)
 	setup_summary.text=("Recorded run %s · %s\nApplied for that run" % [driver.runs.back().id,driver.runs.back().set_id] if historical else "Draft on release")+" · wing %d / balance %d / suspension %d / cooling %d / bias %d%%" % [shown_setup.wing,shown_setup.balance,shown_setup.suspension,shown_setup.cooling,shown_setup.bias]
 	if driver.runs.is_empty():evidence.text="No measured runs yet. Baseline forecasts remain available; skipping practice is viable."
 	else:

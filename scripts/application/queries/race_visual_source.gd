@@ -62,7 +62,7 @@ func rejoin(forecast: Dictionary) -> Dictionary:
 	var id = int(forecast.get("driver_id", -1))
 	if id < 0 or id >= simulation.cars.size():
 		return {}
-	var car: Dictionary = simulation.cars[id]
+	var car: RaceCar = simulation.cars[id]
 	if car.route != "track" or car.finished or car.dnf:
 		return {}
 	if RaceForecaster.stale(simulation, forecast, int(simulation.policy(id).revision)):

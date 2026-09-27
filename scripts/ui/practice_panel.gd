@@ -114,7 +114,7 @@ func refresh() -> void:
 	if summary == null: return
 	var c = model.car(driver_id); var d = model.practice_driver(driver_id); var state = model.practice_state
 	# Retain a displayed release snapshot between modest revisions. Activation submits it unchanged.
-	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != PracticeEvidence.state_key(state, c):
+	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != model.practice_key(state, c):
 		preview = model.run_preview(driver_id, drafts[driver_id]); preview.draft = drafts[driver_id].duplicate(true)
 	for i in range(2): UI.set_active(driver_buttons[i], driver_id == [3, 6][i])
 	start.visible = not dashboard_host and model.phase == "briefing" and state.status == "available"
@@ -132,7 +132,7 @@ func refresh() -> void:
 		sets.set_item_text(i, "%s · %.0f%% tread · %s" % [item.id, item.life, "used" if item.used else "fresh"])
 		sets.set_item_disabled(i, not WheelTyres.usable(item))
 	var draft = drafts[driver_id]
-	var applied_setup = PracticeEvidence.setup_for(c, draft.baseline)
+	var applied_setup = model.practice_setup(c, draft.baseline)
 	summary.text = "%s · %d/3 runs · draft %s / %d laps" % [c.short, d.runs.size(), draft.set_id, draft.laps]
 	setup_summary.text = "Setup on release: wing %d / balance %d / suspension %d / cooling %d / bias %d%%" % [applied_setup.wing, applied_setup.balance, applied_setup.suspension, applied_setup.cooling, applied_setup.bias]
 	if not d.active.is_empty(): summary.text = "%s · %s · %d/%d measured laps · %s" % [c.short, c.qual_state.to_upper(), d.runs.back().samples.size(), d.runs.back().target, d.runs.back().set_id]

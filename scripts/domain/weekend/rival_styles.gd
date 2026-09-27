@@ -102,7 +102,7 @@ static func record(state: Dictionary, decision: Dictionary) -> void:
 	state.history.append(decision.duplicate(true))
 	if state.history.size() > HISTORY_LIMIT: state.history.pop_front()
 
-static func public_driver(state: Dictionary, car: Dictionary) -> String:
+static func public_driver(state: Dictionary, car: RaceCar) -> String:
 	if car.player or not state.enabled: return "No expanded public rival profile for this driver."
 	var style = PROFILES[state.drivers[int(car.id)].style]
 	return "%s · %s\n%s\n\n%s\n\nObserved compound: %s · completed pit stops: %d\nBest measured lap: %s\nLast measured lap: %s\n\nTyre condition, fuel, setup, intended stop and team diagnostics are private. Profiles bias feasible choices; they do not guarantee a response." % [car.name, car.team, style.label, style.summary, car.compound, car.pit_stops, RaceSim.format_time(car.best_lap), RaceSim.format_time(car.last_lap)]

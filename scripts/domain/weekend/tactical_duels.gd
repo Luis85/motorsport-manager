@@ -103,7 +103,7 @@ static func after_command(sim, action: String, payload: Dictionary) -> void:
 	var restore_owner = action in ["select_set", "compound"] and sim.phase != "race"
 	finish(sim, id, "abandoned", "Superseded by the accepted %s command. Its ownership and any physical pit transaction are retained." % action.replace("_", " "), restore_owner)
 
-static func resource_targets(sim, c: Dictionary, channel: String = "") -> void:
+static func resource_targets(sim, c: RaceCar, channel: String = "") -> void:
 	var r = current(sim, int(c.id))
 	if not owns(r) or not r.order_id.is_empty() or sim.phase != "race": return
 	var p = sim.policy(int(c.id)); var plan = r.plan
@@ -114,7 +114,7 @@ static func resource_targets(sim, c: Dictionary, channel: String = "") -> void:
 	if channel in ["", "engine"] and StrategyPlan.owns(p, "engine") and RaceForecaster.fuel_margin(sim, c) < plan.fuel_reserve:
 		c.engine = 0
 
-static func review(sim, c: Dictionary) -> bool:
+static func review(sim, c: RaceCar) -> bool:
 	var id = int(c.id); var r = current(sim, id)
 	if not owns(r): return false
 	if not r.order_id.is_empty(): return true

@@ -147,7 +147,7 @@ func test_checkpoint() -> void:
 	for car in old.cars:
 		for key in RaceSim.CAR_V2: car.erase(key)
 	var restored = RaceSim.restore(JSON.parse_string(JSON.stringify(old)))
-	check(restored != null and restored.cars[3].has("qual_history"), "v1 JSON checkpoints acquire safe native-v2 defaults")
+	check(restored != null and restored.cars[3].qual_history is Array, "v1 JSON checkpoints acquire safe native-v2 defaults")
 	var bad: Array = [func(d): d.selected_id = 1.5, func(d): d.cars[0].telemetry = [[1]], func(d): d.cars[0].qual_sectors = [0, "bad", 0], func(d): d.cars[0].player = true, func(d): d.cars[0].name = "Unknown", func(d): d.stats.pits = "bad", func(d): d.pit_boxes.Obsidian = 3, func(d): d.cars[1].grid = d.cars[0].grid, func(d): d.commands.append({"action": 1}), func(d): d.cars[0].history = [{"time": 1, "sectors": []}]]
 	for mutate in bad:
 		var data = sim.snapshot(); mutate.call(data)
@@ -167,6 +167,8 @@ func test_checkpoint() -> void:
 		check(equivalent(sim.cars, restored.cars) and sim.rng_state == restored.rng_state, "JSON service continuation preserves discrete state and numerics within 1e-7")
 
 func equivalent(a: Variant, b: Variant) -> bool:
+	# Entity identity differs after restore; compare the full serialized state.
+	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
 	if typeof(a) in [TYPE_FLOAT, TYPE_INT] and typeof(b) in [TYPE_FLOAT, TYPE_INT]: return absf(float(a) - float(b)) <= 0.0000001
 	if typeof(a) != typeof(b): return false
 	if a is Array:

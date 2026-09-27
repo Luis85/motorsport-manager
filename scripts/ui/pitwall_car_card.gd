@@ -67,7 +67,7 @@ func refresh(model: RaceViewQuery, id: int) -> void:
 		status.text = ["Save fuel", "Standard engine", "Engine attack"][car.engine] + " · You"
 	status.tooltip_text = status.text + ". " + StrategyPlan.ownership_text(policy)
 	facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
-	var fitted = TyreInventory.find(car, car.set_id)
+	var fitted = TyreInventory.find_in(car.tyre_sets, car.set_id)
 	var minimum = 100.0
 	var punctures: Array[String] = []
 	for wheel_id in fitted.get("wheels", {}):

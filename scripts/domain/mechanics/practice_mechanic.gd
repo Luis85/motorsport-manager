@@ -162,7 +162,7 @@ func reset_run_counters(sim: RaceSim) -> void:
 		c.yield_to = -1; c.yield_side = 0.0; c.yield_clock = 0.0
 	sim.qual_closed = false
 
-func qualifying_crossings(sim: RaceSim, c: Dictionary, before: float, after: float) -> void:
+func qualifying_crossings(sim: RaceSim, c: RaceCar, before: float, after: float) -> void:
 	if sim.phase != "practice": sim.mechanics.before("practice", "qualifying_crossings", [c, before, after]); return
 	var d = sim.practice_driver(int(c.id))
 	if d.active.is_empty() or floor(before / sim.track.length) == floor(after / sim.track.length): return
@@ -236,7 +236,7 @@ func _practice_step(sim: RaceSim) -> void:
 		sim.practice_state.status = "complete"; sim.transition("practice_results")
 		sim.post("practice", "Practice complete. Review what was actually measured; the next session needs your approval.")
 
-func car_advisories(sim: RaceSim, c: Dictionary) -> Array[String]:
+func car_advisories(sim: RaceSim, c: RaceCar) -> Array[String]:
 	if sim.phase not in ["practice", "practice_results"]: return sim.mechanics.before("practice", "car_advisories", [c])
 	var messages: Array[String] = []
 	for key in WheelTyres.KEYS:
@@ -247,10 +247,10 @@ func car_advisories(sim: RaceSim, c: Dictionary) -> Array[String]:
 	if c.route != "garage" and c.fuel < 1.1: messages.append("Run fuel reserve low; physical return requested.")
 	return messages
 
-func contextual_rival(sim: RaceSim, car: Dictionary) -> bool:
+func contextual_rival(sim: RaceSim, car: RaceCar) -> bool:
 	return not sim.rival_styles.is_empty() and sim.rival_styles.enabled and not car.player
 
-func review_rival_style(sim: RaceSim, car: Dictionary, source: Dictionary, comparison: Dictionary) -> bool:
+func review_rival_style(sim: RaceSim, car: RaceCar, source: Dictionary, comparison: Dictionary) -> bool:
 	if not sim.contextual_rival(car): return false
 	var driver = sim.rival_styles.drivers[int(car.id)]
 	if sim.flag != "GREEN": return true # No discretionary style order under a restriction.
@@ -262,7 +262,7 @@ func review_rival_style(sim: RaceSim, car: Dictionary, source: Dictionary, compa
 		sim.order_stop(car, TyreInventory.find(car, decision.set_id), decision.reason)
 	return true
 
-func plan_pit_gate(sim: RaceSim, car: Dictionary) -> void:
+func plan_pit_gate(sim: RaceSim, car: RaceCar) -> void:
 	if not sim.contextual_rival(car):
 		sim.mechanics.before("practice", "plan_pit_gate", [car]); return
 	# Same physical gate calculation as RaceSim. Suppress only the private rival
@@ -279,11 +279,11 @@ func snapshot(sim: RaceSim) -> Dictionary:
 		data.duel_state = sim.duel_state.duplicate(true)
 	return data
 
-func manage_resources(sim: RaceSim, c: Dictionary, only_channel: String = "") -> void:
+func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> void:
 	sim.mechanics.before("practice", "manage_resources", [c, only_channel])
 	if not sim.duel_state.is_empty(): TacticalDuels.resource_targets(sim, c, only_channel)
 
-func engineer(sim: RaceSim, c: Dictionary) -> void:
+func engineer(sim: RaceSim, c: RaceCar) -> void:
 	var record = TacticalDuels.current(sim, int(c.id))
 	if TacticalDuels.owns(record) and sim.phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order:
 		var sound = WheelTyres.usable(TyreInventory.find(c, c.set_id))

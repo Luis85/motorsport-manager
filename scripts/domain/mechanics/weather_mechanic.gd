@@ -100,7 +100,7 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 		"cases": advice.outlook.cases, "model_version": WeatherStrategy.VERSION}, sim.policy(id).last_order_id)
 	return true
 
-func engineer(sim: RaceSim, c: Dictionary) -> void:
+func engineer(sim: RaceSim, c: RaceCar) -> void:
 	# Binding plans, manual ownership, tyre emergencies and damage recovery still use Stage A's transaction rules.
 	var p = sim.policy(int(c.id))
 	if sim.weather_state.is_empty() or sim.weather_state.model.mode == "scripted_training" or sim.phase != "race" or c.route != "track" or c.dnf or c.finished or not p.plan.is_empty() or not StrategyPlan.owns(p, "pit") or c.pit_order or c.tyre < 18 or c.damage > 24 or not WheelTyres.usable(TyreInventory.find(c, c.set_id)):

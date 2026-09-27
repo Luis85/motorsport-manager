@@ -56,16 +56,16 @@ func test_stages_and_exposure() -> void:
 	check(r.stage == "warning", "Thermal warning hysteresis avoids threshold flicker")
 	c.engine_temperature = 107; sim.observe_reliability(c)
 	check(r.stage == "normal", "Cooling genuinely resolves a thermal-only warning")
-	var a = c.duplicate(true); var b = c.duplicate(true)
+	var a = c.detached_copy(); var b = c.detached_copy()
 	a.engine_temperature = 123; b.engine_temperature = 123; a.engine = 2; b.engine = 0
 	var ra = r.duplicate(true); var rb = r.duplicate(true)
 	for i in range(1200): RaceReliability.advance(ra, a, RaceSim.STEP, true); RaceReliability.advance(rb, b, RaceSim.STEP, true)
 	check(ra.faults > rb.faults and a.damage > b.damage, "Sustained engine attack spends more exposure than saving under the same thermal fixture")
-	var calm = c.duplicate(true); calm.engine_temperature = 150; calm.engine = 2
+	var calm = c.detached_copy(); calm.engine_temperature = 150; calm.engine = 2
 	var quiet = r.duplicate(true)
 	for i in range(600): RaceReliability.advance(quiet, calm, RaceSim.STEP, false)
 	check(quiet.faults == 0 and calm.damage == 0, "Disclosed calm mode suppresses random scalar faults")
-	var critical = c.duplicate(true); critical.damage = 75; critical.health = 20; critical.engine_temperature = 130; critical.engine = 2
+	var critical = c.detached_copy(); critical.damage = 75; critical.health = 20; critical.engine_temperature = 130; critical.engine = 2
 	var rc = r.duplicate(true); var premature = false; var terminal = false
 	for i in range(2000):
 		var result = RaceReliability.advance(rc, critical, RaceSim.STEP, true)
@@ -281,7 +281,7 @@ func test_physical_restrictions() -> void:
 	for i in range(200):
 		a.step(); b.step()
 		if i % 30 == 0: b.recovery_advice(3); b.weather_advice(6)
-	check(a.cars == b.cars and a.control_state == b.control_state and a.reliability_state == b.reliability_state, "Equivalent fixed steps ignore playback speed and observation frequency")
+	check(RaceCar.records(a.cars) == RaceCar.records(b.cars) and a.control_state == b.control_state and a.reliability_state == b.reliability_state, "Equivalent fixed steps ignore playback speed and observation frequency")
 	check(a.cars[6].distance - a.cars[3].distance > geometry.length * 0.25, "Virtual running does not collapse a spread field into a safety-car train")
 	var entry = fixture(); var c = entry.cars[3]; c.damage = 40; synchronize(entry)
 	entry.command("recovery_repair", request(entry.recovery_advice(3)))
@@ -325,12 +325,13 @@ func test_migration_and_validation() -> void:
 	check(migrated != null and not migrated.enhanced() and migrated.weather_state == old.weather_state, "Version-seven migration preserves old model semantics rather than silently adding faults")
 	if migrated != null:
 		for i in range(200): old.step(); migrated.step()
-		check(old.cars == migrated.cars and old.rng_state == migrated.rng_state and old.weather_state == migrated.weather_state, "Legacy migration preserves physical outcomes and random streams")
+		check(RaceCar.records(old.cars) == RaceCar.records(migrated.cars) and old.rng_state == migrated.rng_state and old.weather_state == migrated.weather_state, "Legacy migration preserves physical outcomes and random streams")
 		check(RecoveryRaceSim.restore_recovery(migrated.snapshot()) != null, "A migrated legacy-mode version-eight checkpoint remains valid")
 	for previous in [RaceSim.new(geometry), StrategyRaceSim.new(geometry)]:
 		check(RecoveryRaceSim.restore_recovery(previous.snapshot()) != null, "Supported prior native schema still loads: %d" % previous.snapshot().version)
 
 func equivalent(a: Variant, b: Variant) -> bool:
+	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
 	if a is Dictionary and b is Dictionary:
 		if a.size() != b.size(): return false
 		for key in a:

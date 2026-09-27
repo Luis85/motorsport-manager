@@ -9,7 +9,7 @@ const SPECS = {
 	"cooling": [1, 9, "Cooling aperture", "More airflow reduces engine heat at a drag cost."],
 	"bias": [52, 62, "Front brake bias %", "Moves braking load between axles. Adjustable during the race."]}
 
-static func initialize(car: Dictionary) -> void:
+static func initialize_record(car: Dictionary) -> void:
 	car.car_setup = DEFAULTS.duplicate(); car.car_setup.wing = int(car.get("setup", 5))
 	car.battle_mode = "balanced"; car.engine_temperature = 85.0; car.brake_temperature = 140.0
 	car.tyre_event_clock = 0.0
@@ -22,7 +22,7 @@ static func valid(car: Dictionary) -> bool:
 	if not TrackDocument.valid_number(car.get("engine_temperature"), 0, 200) or not TrackDocument.valid_number(car.get("brake_temperature"), 0, 1500): return false
 	return TrackDocument.valid_number(car.get("tyre_event_clock"), 0, 100000000) and car.car_setup.wing == car.setup
 
-static func effects(car: Dictionary, wetness: float = 0.0) -> Dictionary:
+static func effects(car: RaceCar, wetness: float = 0.0) -> Dictionary:
 	var s = car.car_setup
 	var item = TyreInventory.find(car, car.set_id)
 	var front = (WheelTyres.grip_wheel(item.wheels.FL, car.compound) + WheelTyres.grip_wheel(item.wheels.FR, car.compound)) * 0.5

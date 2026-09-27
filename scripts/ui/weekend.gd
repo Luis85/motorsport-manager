@@ -549,7 +549,7 @@ func show_tyres(index: int) -> void:
 func refresh_tyres(c: Dictionary, controllable: bool) -> void:
 	if tyre_readout:tyre_readout.present()
 	if tyre_buttons.is_empty(): return
-	var planned = TyreInventory.planned(c, sim.phase == "race")
+	var planned = sim.planned_set(c, sim.phase == "race")
 	for i in range(12):
 		var item = c.tyre_sets[i]; var button = tyre_buttons[i]
 		var mounted = item.id == c.set_id

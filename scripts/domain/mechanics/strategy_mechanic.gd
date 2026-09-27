@@ -27,7 +27,7 @@ func forecast(sim: RaceSim, id: int, draft: Dictionary = {}) -> Dictionary:
 	if id < 0 or id >= sim.cars.size(): return {}
 	return RaceForecaster.evaluate(RaceForecaster.capture(sim, id, sim.active_plan(id) if draft.is_empty() else draft, int(sim.policy(id).revision)))
 
-func sync_ownership(sim: RaceSim, c: Dictionary) -> void:
+func sync_ownership(sim: RaceSim, c: RaceCar) -> void:
 	var p = sim.policy(c.id)
 	c.auto = p.overrides.is_empty()
 	for channel in StrategyPlan.CHANNELS:
@@ -148,7 +148,7 @@ func policy_command(sim: RaceSim, action: String, payload: Dictionary) -> bool:
 	sim.post("radio", "%s · %s accepted. Unrelated ownership is unchanged." % [c.short, action.replace("_", " ")])
 	return true
 
-func manage_resources(sim: RaceSim, c: Dictionary, only_channel: String = "") -> void:
+func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> void:
 	var p = sim.policy(c.id)
 	var remaining = maxf(0, sim.laps - c.distance / sim.track.length)
 	var emergency = not WheelTyres.usable(TyreInventory.find(c, c.set_id))
@@ -166,7 +166,7 @@ func manage_resources(sim: RaceSim, c: Dictionary, only_channel: String = "") ->
 		c.battle_mode = "patient" if plan.get("objective") == "protect_finish" or c.damage > 24 else "balanced"
 		if plan.get("objective") == "chase_position" and c.tyre > 35 and c.damage < 12 and sim.flag == "GREEN" and RaceForecaster.fuel_margin(sim, c) > 0: c.battle_mode = "assertive"
 
-func engineer(sim: RaceSim, c: Dictionary) -> void:
+func engineer(sim: RaceSim, c: RaceCar) -> void:
 	if sim.phase != "race" or c.route != "track" or c.dnf or c.finished: return
 	sim.manage_resources(c)
 	var p = sim.policy(c.id)
@@ -221,13 +221,13 @@ func engineer(sim: RaceSim, c: Dictionary) -> void:
 	var worthwhile = candidate.gain > maxf(3.0, comparison.pit.loss * 0.12) and candidate.risk != "high"
 	if urgent or worthwhile and not TeamOrders.defer_stop(sim, c): sim.order_stop(c, item, "Observed-resource recovery" if urgent else "Public timing / tyre-offset comparison favors a stop; estimated gain %.1fs" % candidate.gain)
 
-func contextual_rival(sim: RaceSim, _car: Dictionary) -> bool:
+func contextual_rival(sim: RaceSim, _car: RaceCar) -> bool:
 	return false
 
-func review_rival_style(sim: RaceSim, _car: Dictionary, _snapshot: Dictionary, _comparison: Dictionary) -> bool:
+func review_rival_style(sim: RaceSim, _car: RaceCar, _snapshot: Dictionary, _comparison: Dictionary) -> bool:
 	return false
 
-func order_stop(sim: RaceSim, c: Dictionary, item: Dictionary, reason: String) -> void:
+func order_stop(sim: RaceSim, c: RaceCar, item: Dictionary, reason: String) -> void:
 	var p = sim.policy(c.id)
 	var source = RaceForecaster.capture(sim, c.id, sim.active_plan(c.id), int(p.revision))
 	c.next_compound = item.compound; c.next_set_id = item.id; c.scheduled_lap = -1
@@ -236,18 +236,18 @@ func order_stop(sim: RaceSim, c: Dictionary, item: Dictionary, reason: String) -
 	p.last_order_id = RaceJournal.append(sim.strategy_state, sim, "strategy_order", c.id, {"reason": reason, "set_id": item.id, "gate": c.pit_gate, "prediction": p.order_forecast, "scope": source.scope}, p.plan_intent_id)
 	if not sim.contextual_rival(c): sim.post("pit", "%s · %s. Physical pit entry remains authoritative." % [c.short, reason])
 
-func block_plan(sim: RaceSim, c: Dictionary, reason: String) -> void:
+func block_plan(sim: RaceSim, c: RaceCar, reason: String) -> void:
 	var p = sim.policy(c.id)
 	if p.blocked_reason == reason: return
 	p.blocked_reason = reason; p.plan_status = "blocked"
 	RaceJournal.append(sim.strategy_state, sim, "plan_blocked", c.id, {"reason": reason}, p.plan_intent_id)
 	sim.post("radio", c.short + " · " + reason)
 
-func leave_garage(sim: RaceSim, c: Dictionary) -> void:
+func leave_garage(sim: RaceSim, c: RaceCar) -> void:
 	if not RaceForecaster.qualifying_release(sim, c).can_start_hotlap: return
 	sim.mechanics.before("strategy", "leave_garage", [c])
 
-func record_stint(sim: RaceSim, c: Dictionary) -> void:
+func record_stint(sim: RaceSim, c: RaceCar) -> void:
 	sim.mechanics.before("strategy", "record_stint", [c])
 	if not c.stints.is_empty(): c.stints.back().start_life = c.tyre
 
@@ -298,7 +298,7 @@ func snapshot(sim: RaceSim) -> Dictionary:
 	data.battle_state = sim.battle_state.duplicate(true); data.team_state = sim.team_state.duplicate(true); data.rival_state = sim.rival_state.duplicate(true)
 	return data
 
-func traffic_instruction(sim: RaceSim, c: Dictionary, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
+func traffic_instruction(sim: RaceSim, c: RaceCar, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
 	var base = sim.mechanics.before("strategy", "traffic_instruction", [c, old, nearest, gap, desired, lane, sample, local])
 	if sim.phase != "race": return base
 	var blocked = TeamOrders.track_blocks(sim, c, nearest)
@@ -309,11 +309,11 @@ func traffic_instruction(sim: RaceSim, c: Dictionary, old: Array, nearest: int, 
 		if nearest >= 0 and old[nearest].distance > old[int(c.id)].distance: result.block_pass = true
 	return TeamOrders.traffic(sim, c, old, nearest, result, sample, local)
 
-func record_track_pass(sim: RaceSim, _c: Dictionary, _other: Dictionary) -> void:
+func record_track_pass(sim: RaceSim, _c: RaceCar, _other: RaceCar) -> void:
 	# A centre-line crossing is not a resolved contest. after_step records clearance once.
 	pass
 
-func move_car(sim: RaceSim, c: Dictionary, old: Array) -> void:
+func move_car(sim: RaceSim, c: RaceCar, old: Array) -> void:
 	sim.mechanics.before("strategy", "move_car", [c, old])
 	if sim.phase != "race" or c.pit_order or c.blue or c.route != "track": return
 	c.intent = RacecraftController.describe(sim.battle_state, int(c.id), sim.cars)
@@ -321,7 +321,7 @@ func move_car(sim: RaceSim, c: Dictionary, old: Array) -> void:
 	if TeamOrders.active(order) and int(c.id) in [int(order.actor_id), int(order.teammate_id)]:
 		c.intent = "Team %s · %s" % [order.kind, order.reason]
 
-func observe_warnings(sim: RaceSim, c: Dictionary) -> void:
+func observe_warnings(sim: RaceSim, c: RaceCar) -> void:
 	var p = sim.policy(c.id)
 	var active: Array = []
 	for card in DecisionFeed.for_driver(sim, c.id, p, {}):

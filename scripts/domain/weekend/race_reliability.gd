@@ -25,7 +25,7 @@ static func create(cars: Array, seed: int, mode: String = "staged") -> Dictionar
 	return {"version": VERSION, "mode": mode, "drivers": drivers,
 		"service_stream": {"rng": (seed ^ 0xd1b54a35) & 0xffffffff}}
 
-static func stage(c: Dictionary, r: Dictionary) -> String:
+static func stage(c: RaceCar, r: Dictionary) -> String:
 	if c.dnf: return "retired"
 	if c.damage >= 55 or c.health <= 25: return "critical"
 	if c.damage >= 20 or c.health <= 60: return "degraded"
@@ -33,13 +33,13 @@ static func stage(c: Dictionary, r: Dictionary) -> String:
 	if r.stage == "warning" and c.engine_temperature >= 110: return "warning"
 	return "normal"
 
-static func rate(c: Dictionary) -> float:
+static func rate(c: RaceCar) -> float:
 	var thermal = maxf(0, c.engine_temperature - 108) * 0.08
 	var condition = maxf(0, 80 - c.health) * 0.007
 	var damage = maxf(0, c.damage - 15) * 0.013
 	return minf(6, (thermal + condition + damage) * [0.40, 1.0, 1.50][c.engine])
 
-static func advance(r: Dictionary, c: Dictionary, dt: float, stochastic: bool) -> Dictionary:
+static func advance(r: Dictionary, c: RaceCar, dt: float, stochastic: bool) -> Dictionary:
 	var result: Dictionary = {}
 	var load = rate(c)
 	r.stress = clampf(r.stress + dt * (load if load > 0 else -0.20), 0, 10000)
@@ -62,7 +62,7 @@ static func advance(r: Dictionary, c: Dictionary, dt: float, stochastic: bool) -
 		result.reason = "Aggregate condition exhausted" if c.health <= 0 else "Critical aggregate condition could no longer sustain running"
 	return result
 
-static func observation(c: Dictionary, r: Dictionary) -> Dictionary:
+static func observation(c: RaceCar, r: Dictionary) -> Dictionary:
 	return {"driver_id": int(c.id), "stage": stage(c, r), "health": c.health, "damage": c.damage,
 		"temperature": c.engine_temperature, "engine": c.engine, "pace": c.pace,
 		"distance": c.distance, "route": c.route, "set_id": c.set_id,

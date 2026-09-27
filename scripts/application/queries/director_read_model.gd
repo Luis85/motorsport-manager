@@ -35,7 +35,7 @@ static func car(model: RaceSim, id: int, forecast: Dictionary = {}) -> Dictionar
 	plan += " · " + ("engineer" if policy.owners.get("pit") == "engineer" else "you")
 	var rival = "No car ahead"
 	if pos > 1 and pos <= order.size():
-		var ahead: Dictionary = order[pos - 2]
+		var ahead: RaceCar = order[pos - 2]
 		var gap = maxf(0, ahead.distance - c.distance) / maxf(10, c.speed)
 		rival = "%s ahead · ~%.1fs" % [ahead.short, gap]
 	if model.phase in ["briefing", "race_preparation", "formation", "grid_ready", "lights"]: rival = "Starting P%d" % c.grid

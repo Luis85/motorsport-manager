@@ -4,14 +4,14 @@ extends RefCounted
 const CHANNELS = ["pace", "engine", "pit", "racecraft", "qualifying"]
 const OBJECTIVES = ["balanced", "protect_finish", "chase_position"]
 
-static func policy(car: Dictionary) -> Dictionary:
+static func policy(car: RaceCar) -> Dictionary:
 	var owners = {}
 	for channel in CHANNELS: owners[channel] = "engineer" if car.auto else "player"
 	return {"driver_id": int(car.id), "owners": owners, "overrides": {}, "revision": 0,
 		"plan": {}, "next_stop": 0, "plan_status": "unplanned", "next_review": 0.0,
 		"last_order_id": "", "plan_intent_id": "", "order_forecast": {}, "visit": {}, "held": {}, "notices": {}, "blocked_reason": ""}
 
-static func draft(car: Dictionary, laps: int, template: String = "balanced") -> Dictionary:
+static func draft(car: RaceCar, laps: int, template: String = "balanced") -> Dictionary:
 	var starting = TyreInventory.planned(car)
 	if starting.is_empty(): starting = TyreInventory.find(car, car.set_id)
 	var stops: Array = []
@@ -23,7 +23,7 @@ static func draft(car: Dictionary, laps: int, template: String = "balanced") -> 
 	return {"version": 1, "driver_id": int(car.id), "objective": "balanced", "starting_set": starting.id,
 		"stops": stops, "branches": ["avoid_traffic"], "tyre_reserve": 22.0, "fuel_reserve": 0.35, "allow_emergency": true}
 
-static func validate(plan: Variant, car: Dictionary, laps: int, current_lap: int = 0, live: bool = true) -> String:
+static func validate(plan: Variant, car: RaceCar, laps: int, current_lap: int = 0, live: bool = true) -> String:
 	if not plan is Dictionary: return "A strategy must be a record."
 	if plan.get("version") != 1 or plan.get("driver_id") != car.id: return "Strategy version or driver does not match."
 	if plan.get("objective") not in OBJECTIVES: return "Choose a supported strategy objective."

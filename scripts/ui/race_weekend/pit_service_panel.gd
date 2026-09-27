@@ -74,7 +74,7 @@ func describe(id: int) -> Dictionary:
 	elif not visit.is_empty(): stage = "COMPLETE"
 	if (c.dnf or c.finished or model.phase != "race") and stage in ["APPROACH","ENTRY","QUEUE","SERVICE","EXIT"]: stage = "INTERRUPTED"
 	var detail: Array[String] = []
-	var planned = TyreInventory.planned(c, true)
+	var planned = model.planned_set(c, true)
 	detail.append("Fitted %s · Pit owner %s" % [c.set_id, policy.owners.pit])
 	if stage == "APPROACH":
 		detail.append("Accepted for gate %.2f distance laps%s. Cancel is still available." % [c.pit_gate / model.track.length, " · deferred" if c.pit_deferred else ""])

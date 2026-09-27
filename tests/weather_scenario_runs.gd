@@ -29,7 +29,7 @@ func run() -> void:
 	for i in range(250):
 		sim.step(); observed.step()
 		if i % 50 == 0: observed.weather_advice(3); observed.weather_advice(6)
-	check(sim.cars == observed.cars and sim.weather_state == observed.weather_state and sim.rng_state == observed.rng_state, "Equal fixed steps ignore display speed and repeated forecast queries")
+	check(RaceCar.records(sim.cars) == RaceCar.records(observed.cars) and sim.weather_state == observed.weather_state and sim.rng_state == observed.rng_state, "Equal fixed steps ignore display speed and repeated forecast queries")
 	check(advance(sim, "results", 80000), "The full 24-lap seeded weather race reaches stable classification")
 	check(sim.cars.all(func(c): return c.finished or c.dnf), "Every entrant finishes or is classified retired without deadlock")
 	check(WeatherRaceSim.restore_weather(sim.snapshot()) != null, "Completed wet race including decision evidence is a valid checkpoint")

@@ -4,14 +4,14 @@ extends RefCounted
 const MODEL_VERSION = 1
 const MAX_AGE = 5.0
 
-static func fuel_margin(sim: RaceSim, car: Dictionary) -> float:
+static func fuel_margin(sim: RaceSim, car: RaceCar) -> float:
 	var remaining = maxf(0, sim.laps - maxf(0, car.distance) / sim.track.length) if sim.phase in ["race", "results"] else float(sim.laps)
 	var formation = 0.6 if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else (0.6 * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
 	# Qualifying has a separate four-lap fuel load. Do not call it a race shortfall.
 	var available = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(car.fuel)
 	return available - remaining * [0.84, 1.0, 1.14][car.engine] - formation
 
-static func reachable_gate(sim: RaceSim, car: Dictionary) -> Dictionary:
+static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
 	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[sim.track.preset].brake * 0.5) + 8
 	var deferred = gate - car.distance < stopping
@@ -252,7 +252,7 @@ static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool
 	if forecast.is_empty(): return true
 	return sim.total_time - forecast.time > MAX_AGE or forecast.key != material_key(sim, int(forecast.driver_id), revision)
 
-static func qualifying_release(sim: RaceSim, car: Dictionary) -> Dictionary:
+static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var transit = maxf(0, sim.track.pit_length - car.box_d) / sim.track.pit_limit + 3
 	var outlap = sim.track.estimate / 0.76
 	var needed = transit + outlap + 5
