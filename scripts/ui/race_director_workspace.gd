@@ -4,7 +4,7 @@ extends PracticeWeekendView
 ## Reading is observational. Only explicitly labelled pause/watch actions alter time.
 var director_enabled = true
 var director_ready = false
-var director: RaceMomentDirector
+var director: RaceMomentControl
 var director_navigation: HBoxContainer
 var director_strip: PanelContainer
 var director_cards: HBoxContainer
@@ -26,7 +26,7 @@ var director_guide: Array = []
 
 func _ready() -> void:
 	super._ready()
-	director = RaceMomentDirector.new(); director.configure(sim)
+	director = view_session.director
 	director.moment_reached.connect(func(_moment): refresh())
 	director_navigation = UI.hbox(self); move_child(director_navigation,navigation.get_index()+1)
 	live_button = DirectorStyle.button("Pit wall", close_detail, true); director_navigation.add_child(live_button)
@@ -66,8 +66,7 @@ func _ready() -> void:
 	weekend_menu.get_popup().id_pressed.connect(func(id):
 		if id == 30:
 			set_director_enabled(not director_enabled)
-			App.settings.pitwall_layout = "director" if director_enabled else "engineering"
-			var error = App.save_settings()
+			var error = presentation_services.set_layout("director" if director_enabled else "engineering")
 			if not error.is_empty(): feedback("Layout changed for this view; preference not saved: " + error))
 	for node in [director_navigation,director_strip,director_cards,call_room,director_footer,director_feed]: PitwallDesign.scale_controls(node,text_scale)
 	# Separate saved tutorial progress: the original engineering walkthrough stays intact.
@@ -155,9 +154,9 @@ func open_destination(index: int, subtopic: int) -> void:
 	if director_ready and director_enabled:
 		# These readers need a visible return target, not the hidden engineering Find.
 		if duel_workspace != null and index == duel_workspace.index and subtopic == 1:
-			show_reading("Tactical evidence", TacticalDuels.debrief(sim), tools_button); return
+			show_reading("Tactical evidence", sim.tactical_debrief(), tools_button); return
 		if index == 7 and subtopic == 21:
-			NotebookWindow.open(self, recording, CircuitNotebook.PATH, tools_button); return
+			NotebookWindow.open(self, recording, NotebookPort.PATH, tools_button); return
 		if index == practice_page_index:
 			open_practice(own_selection()); return
 	super.open_destination(index, subtopic)
@@ -189,26 +188,26 @@ func director_plan(id: int) -> void:
 
 func open_call(id: int) -> void:
 	if id not in [3,6]: return
-	if sim.phase in ["results","qualifying_results"] or sim.cars[id].dnf or sim.cars[id].finished:
+	if sim.phase in ["results","qualifying_results"] or sim.car(id).dnf or sim.car(id).finished:
 		open_results_workspace(); return
 	if sim.phase in ["practice","practice_results"]: open_practice(id); return
 	if sim.phase not in ["race","qualifying"]: director_plan(id); return
 	# This is the explicitly labelled Pause & decide action, never ordinary navigation.
-	if director.armed or not sim.paused: director.stop("Decision time", "Paused explicitly to review " + sim.cars[id].name + ".",id)
+	if director.armed or not sim.paused: director.stop("Decision time", "Paused explicitly to review " + sim.car(id).name + ".",id)
 	var invoker = driver_cards[id].call_button
 	close_session_workspace(); full_invoker = invoker
 	select_driver(id)
 	full_workspace = call_room
 	call_room.show()
-	var value = RaceDecisionViewModel.capture(strategy_model,id,strategy_model.forecast(id))
+	var value = strategy_model.race_decision_view_model_capture(id, strategy_model.forecast(id))
 	call_room.present(value,call_receipts.get(id,{}))
 	adapt_layout(); refresh()
 
 func _call_command(action: String, payload: Dictionary) -> void:
-	var accepted = strategy_model.command(action,payload)
+	var accepted = commands.execute(action,payload)
 	call_room.command_result(accepted,strategy_model.last_error,action,payload)
 	if accepted: call_receipts[int(payload.id)] = call_room.receipt
-	feedback(("Accepted · " if accepted else "Not sent · ") + sim.cars[int(payload.id)].short + " · " + (action.replace("_"," ") if accepted else strategy_model.last_error))
+	feedback(("Accepted · " if accepted else "Not sent · ") + sim.car(int(payload.id)).short + " · " + (action.replace("_"," ") if accepted else strategy_model.last_error))
 	forecast_cache.clear(); refresh()
 
 func watch_call() -> void:
@@ -234,14 +233,14 @@ func refresh() -> void:
 		var progress: Dictionary = {}
 		if call_receipts.has(id):
 			var receipt: Dictionary = call_receipts[id]
-			progress = RaceDecisionViewModel.receipt_progress(strategy_model,receipt)
+			progress = strategy_model.race_decision_view_model_receipt_progress(receipt)
 			if progress.terminal: receipt.outcome = progress
 			else:
 				receipt.record_offset = strategy_model.strategy_state.records.size()
 				if progress.has("entry_id"): receipt.entry_id = progress.entry_id
 				if progress.has("recalled"): receipt.recalled = progress.recalled
-		driver_cards[id].present(DirectorReadModel.car(strategy_model,id,forecast_cache.get(id,{})),sim.phase,sim.paused,progress)
-	var story = DirectorReadModel.spotlight(strategy_model,forecast_cache)
+		driver_cards[id].present(strategy_model.director_read_model_car(id, forecast_cache.get(id,{})),sim.phase,sim.paused,progress)
+	var story = strategy_model.director_read_model_spotlight(forecast_cache)
 	chapter_label.text = story.eyebrow
 	moment_title.text = story.title
 	moment_detail.text = story.detail
@@ -256,7 +255,7 @@ func refresh() -> void:
 	moment_title.tooltip_text = moment_title.text
 	moment_detail.tooltip_text = moment_detail.text
 	run_button.text = "Stop & pause" if director.armed else "Next moment · 8×"
-	run_button.disabled = sim.phase not in RaceSim.ACTIVE
+	run_button.disabled = sim.phase not in RaceViewQuery.ACTIVE
 	history_button.text = "Check-ins" if director.history.is_empty() else "Check-ins (%d)" % director.history.size()
 	director_footer.text = "SPACE pause / resume   ·   1–5 speed   ·   F fit   ·   Ctrl+K all tools   |   %s" % ("SANDBOX · not the original result" if recording != null and recording.origin == "sandbox" else "Race Director · Weekend menu switches layout")
 	if Time.get_ticks_msec() / 1000.0 < feedback_until: director_footer.text = radio_label.text

@@ -1,7 +1,7 @@
 class_name RacecraftPanel
 extends VBoxContainer
 ## Staged setup values never get overwritten by a live telemetry refresh.
-var sim: RaceSim
+var sim: RaceViewQuery
 var dispatch: Callable
 var fields: Dictionary = {}
 var sliders: Dictionary = {}
@@ -22,7 +22,7 @@ var garage_form: VBoxContainer
 var live_heading: Label
 var live_row: HBoxContainer
 
-func configure(model: RaceSim, command: Callable) -> void:
+func configure(model: RaceViewQuery, command: Callable) -> void:
 	sim = model; dispatch = command
 
 func _ready() -> void:
@@ -63,12 +63,12 @@ func _ready() -> void:
 	refresh()
 
 func garage_allowed() -> bool:
-	var c = sim.cars[sim.selected_id]
+	var c = sim.car(sim.selected_id)
 	return c.player and not c.finished and not c.dnf and (sim.phase in ["briefing", "race_preparation"] or sim.phase == "qualifying" and c.route == "garage")
 
 func refresh() -> void:
 	if fields.is_empty(): return
-	var c = sim.cars[sim.selected_id]
+	var c = sim.car(sim.selected_id)
 	if loaded_driver != c.id:
 		loaded_driver = c.id
 		if not drafts.has(c.id): drafts[c.id] = c.car_setup.duplicate()
@@ -92,17 +92,17 @@ func refresh() -> void:
 
 func refresh_status() -> void:
 	if not note or loaded_driver < 0: return
-	var changed = drafts[loaded_driver] != sim.cars[loaded_driver].car_setup
+	var changed = drafts[loaded_driver] != sim.car(loaded_driver).car_setup
 	if not changed: edited[loaded_driver] = false
 	for key in delta_labels:
-		delta_labels[key].text = "%d → %d" % [sim.cars[loaded_driver].car_setup[key], drafts[loaded_driver][key]]
+		delta_labels[key].text = "%d → %d" % [sim.car(loaded_driver).car_setup[key], drafts[loaded_driver][key]]
 		delta_labels[key].tooltip_text = "Fitted → unapplied draft. " + CarSetup.SPECS[key][3]
 	apply_button.disabled = not changed or not garage_allowed(); reset_button.disabled = not changed
-	note.text = sim.cars[loaded_driver].name + (" · Unapplied adjustments · no effect yet." if changed else " · Setup is applied.")
-	apply_button.tooltip_text = "Apply only to " + sim.cars[loaded_driver].name + "." if garage_allowed() else "Mechanical changes unlock in the garage or race preparation."
+	note.text = sim.car(loaded_driver).name + (" · Unapplied adjustments · no effect yet." if changed else " · Setup is applied.")
+	apply_button.tooltip_text = "Apply only to " + sim.car(loaded_driver).name + "." if garage_allowed() else "Mechanical changes unlock in the garage or race preparation."
 	if not garage_allowed(): note.text += "\nMechanical changes unlock in the garage or race preparation."
 	if draft_effects:
-		var c=sim.cars[loaded_driver].duplicate();c.car_setup=drafts[loaded_driver]
+		var c=sim.car(loaded_driver).duplicate();c.car_setup=drafts[loaded_driver]
 		var effect=CarSetup.effects(c,sim.average(sim.water))
 		draft_effects.text="DRAFT EFFECTS · CURRENT TYRE/SURFACE HELD CONSTANT\nCorner %+.1f%% · straight %+.1f%% · traction %+.1f%%\nChanges have no effect until Apply." % [(effect.corner-1)*100,(effect.straight-1)*100,(effect.traction-1)*100]
 		for key in sliders:sliders[key].set_value_no_signal(fields[key].value)
@@ -114,17 +114,17 @@ func apply_draft() -> void:
 
 func has_user_edits() -> bool:
 	for id in drafts:
-		if edited.get(id, false) and drafts[id] != sim.cars[id].car_setup: return true
+		if edited.get(id, false) and drafts[id] != sim.car(id).car_setup: return true
 	return false
 
 func revert() -> void:
 	edited[loaded_driver] = false
-	drafts[loaded_driver] = sim.cars[loaded_driver].car_setup.duplicate()
+	drafts[loaded_driver] = sim.car(loaded_driver).car_setup.duplicate()
 	for key in fields: fields[key].set_value_no_signal(drafts[loaded_driver][key])
 	refresh_status()
 
 class WheelDashboard extends VBoxContainer:
-	var model: RaceSim
+	var model: RaceViewQuery
 	var cards: Dictionary = {}
 	var heading: Label
 	var details: Label
@@ -140,7 +140,7 @@ class WheelDashboard extends VBoxContainer:
 		refresh()
 	func refresh():
 		if not model or cards.is_empty(): return
-		var c = model.cars[model.selected_id]; var item = TyreInventory.find(c, c.set_id)
+		var c = model.car(model.selected_id); var item = TyreInventory.find(c, c.set_id)
 		heading.text = "FITTED %s · %d HEAT CYCLES" % [item.label, item.heat_cycles]
 		for key in cards:
 			var w = item.wheels[key]

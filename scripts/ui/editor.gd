@@ -1,5 +1,6 @@
 class_name TrackEditor
 extends VBoxContainer
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
 signal test_requested(document: Dictionary)
 var section_picker: OptionButton
 var sketch_result: Dictionary = {}
@@ -120,7 +121,7 @@ func _ready() -> void:
 	call_deferred("fit_canvas")
 
 func setup_guide() -> void:
-	guide = ContextGuide.new()
+	guide = ContextGuide.new(); guide.presentation_services = presentation_services
 	guide.configure("editor", [
 		{"title": "Select, then shape", "body": "Click road points to expose their handles. Shift-click extends a selection; drag empty space for a marquee. A drag is one undo step; Escape cancels it.", "target": func(): return canvas, "reveal": func(): set_tool(0)},
 		{"title": "Arrange scenery together", "body": "Select scenery with S. Shift-click adds objects. Group, duplicate, rotate, scale, align and distribute from the contextual selection controls. Locks protect content.", "target": func(): return inspector, "reveal": func(): set_tool(10); inspector.current_tab = 0},
@@ -194,7 +195,7 @@ func update_status() -> void:
 	if not errors.is_empty():
 		status.text = "DRAFT  ·  " + " · ".join(errors); status.add_theme_color_override("font_color", UI.ACCENT)
 	else:
-		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, MinimalRaceTiming.format_time(geometry.estimate), geometry.compile_usec / 1000.0, findings.size()]
+		status.text = "%d control points  ·  %.3f km  ·  %s reference lap %s  ·  Bake %.0f ms · %d findings" % [document.nodes.size(), geometry.length / 1000, vehicle, MinimalRaceTiming.format_time(geometry.estimate), session.compile_usec / 1000.0, findings.size()]
 		status.add_theme_color_override("font_color", UI.MUTED)
 	if test_button:
 		test_button.disabled = TrackDiagnostics.blocking(findings) or not errors.is_empty() or not canvas.sketch.strokes.is_empty()

@@ -16,7 +16,7 @@ Existing profiles explicitly assemble strategy → weather → recovery → prac
 4. Test registration, rejected configurations, isolated effects, disposal and validated restore. Schema changes require their own explicit migration; a provider version does not silently migrate a save.
 5. Run baseline characterization when refactoring without intended behavior changes. For a deliberate model change, document and version the new model rather than rewriting expected hashes to conceal the change.
 
-The existing versioned car and system records remain the authoritative serialized values; this increment does not rename their units, reset stock, calibrate psychology or introduce a new physics model. Typed entity migration and legacy presentation controllers remain separate pending work in the larger refactor.
+The existing versioned car and system records remain the authoritative serialized values; this increment does not rename their units, reset stock, calibrate psychology or introduce a new physics model. Typed entity migration remains separate pending work. Legacy presentation controllers now use detached queries, explicit commands and injected persistence services; their UI can no longer resolve the live aggregate or filesystem.
 
 ## Executed increment checks
 

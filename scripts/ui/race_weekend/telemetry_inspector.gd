@@ -1,7 +1,7 @@
 class_name RaceTelemetryInspector
 extends VBoxContainer
 ## Shared inspection of recorded speed/tyre/fuel/acceleration and current model state.
-var model: RaceSim
+var model: RaceViewQuery
 var metric_label: Label
 var chart: RaceMetricChart
 var sectors: RaceSectorTable
@@ -13,7 +13,7 @@ var range_selector: OptionButton
 var range_seconds = 120.0
 var compare: CheckButton
 var range_note: Label
-func configure(value: RaceSim) -> void: model = value
+func configure(value: RaceViewQuery) -> void: model = value
 func _ready() -> void:
 	add_theme_constant_override("separation",8)
 	metric_label = UI.paragraph("",UI.INK); add_child(metric_label)
@@ -31,21 +31,21 @@ func _ready() -> void:
 func _choose(index: int) -> void: current_metric=index; present()
 func present() -> void:
 	if chart==null: return
-	var car = model.cars[model.selected_id]
+	var car = model.car(model.selected_id)
 	if not car.player:
 		metric_label.text="Rival inspection · public timing only"; powertrain.text="Private car telemetry is unavailable."; chart.present("No private telemetry","",[],0,1); sectors.present([]); history.text = ""; range_note.text = "Public timing only; no rival private samples."; return
 	var primary = recording(car)
 	var values: Array = primary.values; var timestamps: Array = primary.times
 	var secondary: Array = []; var secondary_name = ""
 	var other_id = 6 if car.id == 3 else 3
-	compare.text = "Compare " + model.cars[other_id].name + " · dashed trace"
+	compare.text = "Compare " + model.car(other_id).name + " · dashed trace"
 	var note = "%d / %d retained %s samples" % [values.size(), car.telemetry.size(), car.short]
 	if compare.button_pressed:
-		var other = recording(model.cars[other_id])
+		var other = recording(model.car(other_id))
 		var pair = RaceMetricChart.align_recordings(timestamps, values, other.times, other.values)
 		if pair.is_empty(): note += "\nComparison unavailable: missing or duplicate timestamps. No alignment is invented."
 		else:
-			timestamps = pair.x; values = pair.first; secondary = pair.second; secondary_name = model.cars[other_id].short + " dashed"
+			timestamps = pair.x; values = pair.first; secondary = pair.second; secondary_name = model.car(other_id).short + " dashed"
 			note += "\nExact elapsed-time alignment; unmatched samples remain gaps."
 	var bounds = RaceMetricChart.padded_range(values + secondary)
 	var low = minf([0.0,0.0,0.0,-20.0][current_metric], bounds.x)

@@ -80,6 +80,17 @@ func run() -> void:
 	app.activate_session(original_runner, view.recording)
 	view.refresh()
 	await capture("architecture-isolation", "Actual native practice release; visibility/replay isolation; no fabricated racing result")
+	check(app.save_weekend().is_empty(), "Live checkpoint is saved before replacement")
+	check(app.load_weekend().is_empty(), "A valid replacement checkpoint loads")
+	check(app.session_runner == null and original_runner.phase_changed.get_connections().is_empty(), "Replacing a checkpoint stops the discarded model before the next screen mounts")
+	app.activate_session(RaceSessionRunner.new(app.weekend), app.recording)
+	var retained = app.weekend
+	var retained_runner = app.session_runner
+	var original_path = app.checkpoint_path
+	app.checkpoint_path = "user://invalid-load-architecture.json"
+	Storage.write_json(app.checkpoint_path, {"invalid": true})
+	check(not app.load_weekend().is_empty() and app.weekend == retained and app.session_runner == retained_runner, "Rejected checkpoint leaves the active session and scheduler intact")
+	app.checkpoint_path = original_path
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures,
 		"independent_ticks": ticks, "screenshots": captures.size(), "captures": captures}
 	Storage.write_json("res://reports/architecture-ui.json", report)

@@ -33,9 +33,9 @@ class ArchitectureGuardTests(unittest.TestCase):
         self.assertIn('domain-engine-authority', [v.rule for v in self.scan('func run():\n\tFileAccess.open("a",1)')])
         self.assertIn('domain-wall-clock', [v.rule for v in self.scan('func run():\n\tTime.get_ticks_usec()')])
 
-    def test_clock_exception_is_function_scoped(self):
+    def test_domain_compilers_have_no_wall_clock_exception(self):
         path = 'scripts/domain/track_geometry.gd'
-        self.assertEqual([], self.scan('func compile():\n\tTime.get_ticks_usec()', path))
+        self.assertIn('domain-wall-clock', [v.rule for v in self.scan('func compile():\n\tTime.get_ticks_usec()', path)])
         self.assertIn('domain-wall-clock', [v.rule for v in self.scan('func step():\n\tTime.get_ticks_usec()', path)])
 
     def test_ui_cannot_advance(self):
@@ -43,6 +43,11 @@ class ArchitectureGuardTests(unittest.TestCase):
 
     def test_renderer_cannot_retain_aggregate(self):
         self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', 'scripts/ui/track_canvas.gd')])
+
+    def test_every_presentation_component_has_the_detached_boundary(self):
+        for name in ["editor", "weekend", "scenario_author", "new_instrument"]:
+            self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', f'scripts/ui/{name}.gd')])
+        self.assertIn('presentation-private-authority', [v.rule for v in self.scan('func render():\n\tquery._source.get_ref()', 'scripts/ui/new_instrument.gd')])
 
     def test_dynamic_load_rejected_inward(self):
         self.assertIn('dynamic-load', [v.rule for v in self.scan('func build(path):\n\treturn load(path)')])

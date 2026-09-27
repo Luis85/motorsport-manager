@@ -5,6 +5,7 @@ extends RefCounted
 const HISTORY_LIMIT: int = 50
 var revision: int = 0
 var last_error: String = ""
+var compile_usec: int = 0
 var _document: Dictionary = {}
 var _past: Array = []
 var _future: Array = []
@@ -221,7 +222,10 @@ func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:
 func compile_draft(draft: Dictionary, vehicle: String = "Formula", fast: bool = false) -> TrackGeometry:
 	if vehicle not in TrackGeometry.PRESETS or not draft_errors(draft).is_empty() or draft.nodes.size() < 4:
 		return null
-	return TrackGeometry.new(draft.duplicate(true), vehicle, fast)
+	var started = Time.get_ticks_usec()
+	var geometry = TrackGeometry.new(draft.duplicate(true), vehicle, fast)
+	compile_usec = Time.get_ticks_usec() - started
+	return geometry
 
 func diagnostics(geometry: TrackGeometry) -> Array:
 	return TrackDiagnostics.inspect(geometry) if geometry else []

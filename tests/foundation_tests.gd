@@ -18,12 +18,18 @@ func test_geometry() -> void:
 	var timings: Array = []
 	for i in range(h.tracks.size()):
 		var g = h.geometries[i]
+		var started = Time.get_ticks_usec()
+		var measured = TrackGeometry.new(h.tracks[i], "Formula")
+		var full_usec = Time.get_ticks_usec() - started
+		started = Time.get_ticks_usec()
 		var preview = TrackGeometry.new(h.tracks[i], "Formula", true)
+		var preview_usec = Time.get_ticks_usec() - started
+		check(measured.document == g.document, g.document.name + ": diagnostics observe a separate equivalent compile")
 		check(preview.preview_only and preview.estimate == 0, g.document.name + ": drag preview never advertises a solved line")
 		check(preview.points.size() <= g.points.size(), g.document.name + ": drag preview uses a bounded cheaper mesh")
 		check(g.estimate <= g.centre_estimate + 0.00001, g.document.name + ": selected candidate is no slower than centreline reference")
 		check(not TrackDiagnostics.blocking(TrackDiagnostics.inspect(g)), g.document.name + ": circuit passes sampled crossing validation")
-		timings.append({"track": g.document.name, "full_ms": g.compile_usec / 1000.0, "preview_ms": preview.compile_usec / 1000.0})
+		timings.append({"track": g.document.name, "full_ms": full_usec / 1000.0, "preview_ms": preview_usec / 1000.0})
 		var sample = g.sample(g.length * 0.123456, true)
 		var projected = g.nearest(sample.p)
 		check(projected.distance < 0.002, g.document.name + ": nearest point projects onto segments without station snapping")

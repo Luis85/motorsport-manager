@@ -5,8 +5,10 @@ const FORMAT = "motorsport-manager-track"
 const VERSION = 1
 const MAX_NODES = 2000
 
-static func node_at(p: Vector2, width: float = 14.0) -> Dictionary:
-	return {"id": "n-%s" % Time.get_ticks_usec(), "x": p.x, "y": p.y, "h": 0.0, "w": width, "bank": 0.0, "mode": "aligned", "in": {"x": 0.0, "y": 0.0}, "out": {"x": 0.0, "y": 0.0}}
+static func node_at(p: Vector2, width: float = 14.0, identity: String = "") -> Dictionary:
+	# Content-derived fallback is deterministic. Editing commands supply a document-local ID.
+	var node_id = identity if not identity.is_empty() else "point-" + JSON.stringify([p.x, p.y, width]).sha256_text().left(16)
+	return {"id": node_id, "x": p.x, "y": p.y, "h": 0.0, "w": width, "bank": 0.0, "mode": "aligned", "in": {"x": 0.0, "y": 0.0}, "out": {"x": 0.0, "y": 0.0}}
 
 static func point(n: Dictionary) -> Vector2:
 	return Vector2(float(n.x), float(n.y))
@@ -45,7 +47,7 @@ static func normalize(raw: Dictionary) -> Dictionary:
 			n = {"id": "n-%d" % i, "x": n[0], "y": n[1], "h": n[2], "w": n[3], "bank": n[4], "in": {"x": n[5], "y": n[6]}, "out": {"x": n[7], "y": n[8]}, "mode": "free"}
 		elif n is Dictionary:
 			n = n.duplicate(true)
-			var base = node_at(point(n))
+			var base = node_at(point(n), 14.0, "n-%d" % i)
 			for k in base:
 				if not n.has(k): n[k] = base[k]
 		else: continue
@@ -181,7 +183,7 @@ static func split_segment(d: Dictionary, i: int, t: float = 0.5) -> int:
 	var r0 = q0.lerp(q1, t)
 	var r1 = q1.lerp(q2, t)
 	var p = r0.lerp(r1, t)
-	var n = node_at(p, lerpf(a.w, b.w, t))
+	var n = node_at(p, lerpf(a.w, b.w, t), next_node_id(d.nodes))
 	n.h = lerpf(a.h, b.h, t)
 	n.bank = lerpf(a.bank, b.bank, t)
 	n.mode = "free"
@@ -203,3 +205,12 @@ static func smooth_node(d: Dictionary, i: int) -> void:
 	set_handle(n, "in", -direction * point(n).distance_to(prev) * 0.25)
 	set_handle(n, "out", direction * point(n).distance_to(next) * 0.25)
 	n.mode = "aligned"
+
+static func next_node_id(nodes: Array) -> String:
+	var used: Dictionary = {}
+	for node in nodes:
+		if node is Dictionary: used[str(node.get("id", ""))] = true
+	for index in range(nodes.size() + 1):
+		var candidate = "n-edit-%d" % index
+		if not used.has(candidate): return candidate
+	return "" # The pigeonhole bound above always supplies an unused ID.

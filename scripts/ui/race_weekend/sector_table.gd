@@ -40,6 +40,6 @@ func present(records: Array, limit: int = 8) -> void:
 		for column in range(3):
 			values[column + 1].text = "%.3f" % float(sectors[column]) if column < sectors.size() and float(sectors[column]) > 0 else "—"
 		var total = float(record.get("time", record.get("seconds", 0.0)))
-		values[4].text = RaceSim.format_time(total) + (" !" if not record.get("valid", true) else "")
+		values[4].text = RaceViewQuery.format_time(total) + (" !" if not record.get("valid", true) else "")
 		var description = "Invalid lap: " + str(record.get("reason", "not classified")) if not record.get("valid", true) else ("Measured pit lap" if record.get("pit_lap", false) else "Measured lap")
 		for value in values: value.tooltip_text = description + ". Unavailable sector data is shown as —."

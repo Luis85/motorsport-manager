@@ -8,7 +8,7 @@ var service_view: RacePitServicePanel
 var intent_timeline: RaceTeamIntentTimeline
 var intent_detail: Label
 var cancel_stop_buttons: Dictionary = {}
-var sim: RaceSim
+var sim: RaceViewQuery
 var topics: OptionButton
 var topic_bar: HBoxContainer
 var commit_bar: VBoxContainer
@@ -33,7 +33,7 @@ var rendered_orders: Dictionary = {}
 var driver_summaries: Dictionary = {}
 var people_summary: HBoxContainer
 
-func configure(value: RaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	sim = value
 
 func text(value: String, color: Color = UI.MUTED) -> Label:
@@ -57,7 +57,7 @@ func _ready() -> void:
 	for id in [3,6]:
 		var panel=PitwallDesign.race_panel(false,8);panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;people.add_child(panel)
 		var body=UI.vbox(panel)
-		body.add_child(UI.label(sim.cars[id].short+" / "+sim.cars[id].name.get_slice(" ",1),14,UI.INK))
+		body.add_child(UI.label(sim.car(id).short+" / "+sim.car(id).name.get_slice(" ",1),14,UI.INK))
 		var value=UI.paragraph("");body.add_child(value);driver_summaries[id]=value
 	var page = pages[0]
 	actor = UI.option(["MER ahead · MOR following", "MOR ahead · MER following"], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
@@ -75,9 +75,9 @@ func _ready() -> void:
 	page = pages[1]
 	var watch_row = UI.hbox(commit_pages[1])
 	for id in [3, 6]:
-		page.add_child(UI.label(sim.cars[id].short + " / CURRENT CONTEST", 11, UI.ACCENT))
+		page.add_child(UI.label(sim.car(id).short + " / CURRENT CONTEST", 11, UI.ACCENT))
 		battle_labels[id] = text("", UI.INK); page.add_child(battle_labels[id])
-		var button = UI.button("Watch " + sim.cars[id].short, func(): watch_requested.emit(id))
+		var button = UI.button("Watch " + sim.car(id).short, func(): watch_requested.emit(id))
 		watch_row.add_child(button); StrategyDesk.compact_button(button); watch_buttons[id] = button
 	
 	public_stops = text(""); page.add_child(public_stops)
@@ -85,7 +85,7 @@ func _ready() -> void:
 	page.add_child(text("Two-lap priority · accepted stops are never reordered."))
 	var priorities = UI.hbox(commit_pages[2])
 	for id in [3, 6]:
-		var button = UI.button(sim.cars[id].short + " first", func():
+		var button = UI.button(sim.car(id).short + " first", func():
 			command_requested.emit("team_order", {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "pit_priority", "laps": 2, "revision": revision}))
 		priorities.add_child(button); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; StrategyDesk.compact_button(button); priority_buttons[id] = button
 	preview_text = text("", UI.INK); page.add_child(preview_text)
@@ -96,14 +96,14 @@ func _ready() -> void:
 	pages[2].move_child(service_view,0)
 	var cancel_row = UI.hbox(commit_pages[2]); commit_pages[2].move_child(cancel_row,0)
 	for id in [3,6]:
-		var button = UI.button("Cancel " + sim.cars[id].short + " stop",func():command_requested.emit("cancel_pit",{"id":id}))
+		var button = UI.button("Cancel " + sim.car(id).short + " stop",func():command_requested.emit("cancel_pit",{"id":id}))
 		cancel_row.add_child(button); StrategyDesk.compact_button(button); cancel_stop_buttons[id] = button
-	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(RaceChartQuery.new(sim)); pages[3].add_child(intent_timeline)
+	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(sim.charts); pages[3].add_child(intent_timeline)
 	intent_detail = UI.paragraph(""); pages[3].add_child(intent_detail)
 	intent_timeline.selection_changed.connect(func(value):intent_detail.text=value)
 	pages[3].add_child(UI.paragraph("Pit windows authorize existing engineer discretion; outlined pace/engine bars are already-issued bounded overrides. Current-distance lines are measured. Neither selecting nor inspecting a bar issues a command."))
 	var edit_row = UI.hbox(commit_pages[3])
-	for id in [3,6]: edit_row.add_child(UI.button("Review " + sim.cars[id].short + " plan",func():plan_requested.emit(id)))
+	for id in [3,6]: edit_row.add_child(UI.button("Review " + sim.car(id).short + " plan",func():plan_requested.emit(id)))
 	show_topic(0); refresh()
 
 func show_topic(index: int) -> void:
@@ -125,26 +125,26 @@ func cancel(key: String) -> void:
 
 func status_text(record: Dictionary, empty: String) -> String:
 	if record.is_empty(): return empty
-	var result = "%s / %s → %s\n%s" % [str(record.status).capitalize(), sim.cars[int(record.actor_id)].short, sim.cars[int(record.teammate_id)].short, record.reason]
-	if TeamOrders.active(record): result += "\nExpires in ~%.1f laps of %s." % [maxf(0, record.until_distance - sim.cars[int(record.actor_id)].distance) / sim.track.length, sim.cars[int(record.actor_id)].short]
+	var result = "%s / %s → %s\n%s" % [str(record.status).capitalize(), sim.car(int(record.actor_id)).short, sim.car(int(record.teammate_id)).short, record.reason]
+	if TeamOrders.active(record): result += "\nExpires in ~%.1f laps of %s." % [maxf(0, record.until_distance - sim.car(int(record.actor_id)).distance) / sim.track.length, sim.car(int(record.actor_id)).short]
 	return result
 
 func refresh() -> void:
 	if not is_node_ready() or sim == null or apply_button == null: return
 	for id in driver_summaries:
-		var c=sim.cars[id];var policy=sim.policy(id)
+		var c=sim.car(id);var policy=sim.policy(id)
 		driver_summaries[id].text="%s\nPit owner: %s\n%s" % [c.intent,policy.owners.pit,"In pit lane" if c.route=="pit" else "Pit order accepted" if c.pit_order else "No pit order"]
 	if service_view: service_view.present()
 	for id in cancel_stop_buttons:
-		var c = sim.cars[id]
+		var c = sim.car(id)
 		cancel_stop_buttons[id].disabled = sim.phase != "race" or c.dnf or c.finished or not c.pit_order or c.route != "track"
 		cancel_stop_buttons[id].tooltip_text = "Cancel %s's accepted stop before entry only. After entry, routing and service stay physically committed." % c.name
 	if intent_timeline:
 		intent_timeline.present(); intent_detail.text = intent_timeline.selected_text()
 	revision = int(sim.team_state.revision)
 	rendered_orders = {"track_order": sim.team_state.track_order.duplicate(true), "pit_priority": sim.team_state.pit_priority.duplicate(true)}
-	var proposed = draft(); var error = TeamOrders.validate(sim, proposed)
-	apply_button.text = ("Hold %s ahead of %s" if proposed.kind == "hold" else "Let %s yield to %s") % [sim.cars[proposed.id].short, sim.cars[proposed.teammate_id].short]
+	var proposed = draft(); var error = sim.team_orders_validate(proposed)
+	apply_button.text = ("Hold %s ahead of %s" if proposed.kind == "hold" else "Let %s yield to %s") % [sim.car(proposed.id).short, sim.car(proposed.teammate_id).short]
 	apply_button.disabled = not error.is_empty(); apply_button.tooltip_text = error
 	validation.text = error if not error.is_empty() else ("Only the following teammate holds back; rivals remain free to race." if proposed.kind == "hold" else "Waits for clear, wide road. Moving aside and slowing have a real cost; a swap is not guaranteed.")
 	track_status.text = status_text(sim.team_state.track_order, "No cooperation instruction. Both drivers follow their normal racecraft policies.")
@@ -155,11 +155,11 @@ func refresh() -> void:
 		cancel_buttons[key].tooltip_text = "Cancel only an active instruction. Completed or canceled outcomes remain in the debrief."
 	for id in [3, 6]:
 		battle_labels[id].text = RacecraftController.describe(sim.battle_state, id, sim.cars)
-		watch_buttons[id].disabled = sim.cars[id].dnf or sim.cars[id].finished or sim.battle_state.drivers[id].target_id < 0
+		watch_buttons[id].disabled = sim.car(id).dnf or sim.car(id).finished or sim.battle_state.drivers[id].target_id < 0
 		var priority = {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "pit_priority", "laps": 2, "revision": revision}
-		var reason = TeamOrders.validate(sim, priority)
+		var reason = sim.team_orders_validate(priority)
 		priority_buttons[id].disabled = not reason.is_empty(); priority_buttons[id].tooltip_text = reason
-	var preview = TeamOrders.preview(sim)
+	var preview = sim.team_orders_preview()
 	preview_text.text = "SHARED BOX / ESTIMATE\n%s: ~%.1fs to box · %s\n%s: ~%.1fs to box · %s\nPossible queue for %s: ~%.1fs\n%s" % [preview.first.short, preview.first.arrival, preview.first.origin, preview.second.short, preview.second.arrival, preview.second.origin, preview.second.short, preview.queue, preview.note]
 	var lines: Array[String] = ["OBSERVED STOPS / PUBLIC"]
 	for event in sim.rival_state.stops.slice(maxi(0, sim.rival_state.stops.size() - 3)):

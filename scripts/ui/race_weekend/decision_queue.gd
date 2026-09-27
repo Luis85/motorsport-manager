@@ -22,13 +22,13 @@ func _ready() -> void:
 		hold.tooltip_text = "Acknowledge this driver's current issue without changing the plan or time controls."
 		slots[id] = {"review":review,"hold":hold,"badge":badge,"stamp":[]}
 
-func present(model: RaceSim, forecasts: Dictionary) -> void:
+func present(model: RaceViewQuery, forecasts: Dictionary) -> void:
 	if count == null: return
 	var total = 0
 	for id in slots:
 		# Forecast availability is not a prerequisite for fuel, tyre or terminal-state checks.
 		var forecast: Dictionary = forecasts.get(id, {})
-		var list = DecisionFeed.for_driver(model,id,model.policy(id),forecast)
+		var list = model.decision_feed_for_driver(id, model.policy(id), forecast)
 		var card = DecisionFeed.primary(list); entries[id] = card
 		var driver_count = 0
 		for item in list:
@@ -36,10 +36,10 @@ func present(model: RaceSim, forecasts: Dictionary) -> void:
 		total += driver_count
 		var slot = slots[id]
 		var severity = "CRITICAL" if card.get("priority",0) >= 90 else ("REVIEW" if driver_count > 0 else "CLEAR")
-		var quiet = "Retired" if model.cars[id].dnf else ("Finished" if model.cars[id].finished else ("Check strategy" if forecast.is_empty() and model.phase == "race" else "No open issue"))
-		var text = "%s · %d %s" % [model.cars[id].short, driver_count, "decisions" if driver_count != 1 else "decision"] if driver_count > 0 else model.cars[id].short + " · " + quiet
+		var quiet = "Retired" if model.car(id).dnf else ("Finished" if model.car(id).finished else ("Check strategy" if forecast.is_empty() and model.phase == "race" else "No open issue"))
+		var text = "%s · %d %s" % [model.car(id).short, driver_count, "decisions" if driver_count != 1 else "decision"] if driver_count > 0 else model.car(id).short + " · " + quiet
 		var explanation = card.get("evidence", "No unacknowledged issue. This does not certify or approve a strategy.")
-		if forecast.is_empty() and model.phase == "race" and not model.cars[id].dnf and not model.cars[id].finished:
+		if forecast.is_empty() and model.phase == "race" and not model.car(id).dnf and not model.car(id).finished:
 			explanation += " Pit forecast unavailable; fuel and tyre checks remain active."
 		var tooltip = severity + " · " + card.get("title", quiet) + " · " + explanation
 		var stamp = [text,card.get("key",""),card.is_empty(),severity,tooltip]
@@ -51,6 +51,6 @@ func present(model: RaceSim, forecasts: Dictionary) -> void:
 			slot.review.tooltip_text = tooltip
 			slot.review.accessibility_name = text
 			slot.hold.disabled = card.is_empty()
-			slot.hold.accessibility_name = "Keep " + model.cars[id].short + " plan"
+			slot.hold.accessibility_name = "Keep " + model.car(id).short + " plan"
 	pending_count = total
 	count.text = "DECISIONS  %d" % total

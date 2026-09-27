@@ -1,7 +1,7 @@
 class_name StrategyWeekendView
 extends WeekendView
 ## A playable strategy surface around the existing native pit wall, not another simulation.
-var strategy_model: RaceSim
+var strategy_model: RaceViewQuery
 var strategy_desk: StrategyDesk
 var rejoin_overlay: RejoinOverlay
 var forecast_cache: Dictionary = {}
@@ -15,7 +15,7 @@ var team_summary_label: Label
 
 func _ready() -> void:
 	super._ready()
-	strategy_model = sim as RaceSim
+	strategy_model = sim as RaceViewQuery
 	if strategy_model == null: return
 	decision_strip.hide()
 	canvas.custom_minimum_size.y = 170
@@ -35,7 +35,7 @@ func _ready() -> void:
 	team_panel = TeamOrdersPanel.new(); team_panel.configure(strategy_model); team_page.add_child(team_panel)
 	team_panel.command_requested.connect(targeted_command)
 	team_panel.watch_requested.connect(func(id): select_driver(id); set_follow(true))
-	battle_overlay = BattleOverlay.new(); battle_overlay.text_scale = float(App.settings.get("pitwall_text_scale", 1.0)); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
+	battle_overlay = BattleOverlay.new(); battle_overlay.text_scale = float(presentation_services.preferences.get("pitwall_text_scale", 1.0)); battle_overlay.canvas = canvas; canvas.add_child(battle_overlay)
 	rejoin_overlay = RejoinOverlay.new(); rejoin_overlay.enabled = false; rejoin_overlay.canvas = canvas; canvas.add_child(rejoin_overlay)
 	add_layer("Pit rejoin estimate", false, func(value): rejoin_overlay.enabled = value; rejoin_overlay.queue_redraw())
 	decision_bar = HBoxContainer.new(); decision_bar.add_theme_constant_override("separation", 8); add_child(decision_bar)
@@ -80,7 +80,7 @@ func _ready() -> void:
 
 func update_more_actions(id: int) -> void:
 	if not decision_controls.has(id): return
-	var c = sim.cars[id]
+	var c = sim.car(id)
 	var live = sim.phase == "race" and not c.dnf and not c.finished
 	var popup = decision_controls[id].more.get_popup()
 	popup.set_item_disabled(popup.get_item_index(0), not live)
@@ -90,10 +90,10 @@ func open_strategy(id: int) -> void:
 	select_driver(id); open_topic(6); strategy_desk.select_driver(id); strategy_desk.show_topic(0)
 
 func targeted_command(action: String, payload: Dictionary) -> void:
-	if not strategy_model.command(action, payload): feedback(strategy_model.last_error)
+	if not commands.execute(action, payload): feedback(strategy_model.last_error)
 	else:
 		var id = int(payload.get("id", 3))
-		feedback("%s · %s accepted%s" % [sim.cars[id].short, action.replace("_", " "), " · deferred to the next safe entry" if action == "pit" and sim.cars[id].pit_deferred else ""])
+		feedback("%s · %s accepted%s" % [sim.car(id).short, action.replace("_", " "), " · deferred to the next safe entry" if action == "pit" and sim.car(id).pit_deferred else ""])
 	forecast_cache.clear(); refresh()
 
 func box_from_card(id: int) -> void:
@@ -114,18 +114,18 @@ func refresh() -> void:
 	super.refresh()
 	if strategy_model == null or strategy_desk == null or decision_bar == null: return
 	for id in [3, 6]:
-		var c = sim.cars[id]; var p = strategy_model.policy(id)
-		if not forecast_cache.has(id) or RaceForecaster.stale(sim, forecast_cache[id], int(p.revision)) or sim.total_time - forecast_cache[id].time >= 3:
+		var c = sim.car(id); var p = strategy_model.policy(id)
+		if not forecast_cache.has(id) or sim.race_forecaster_stale(forecast_cache[id], int(p.revision)) or sim.total_time - forecast_cache[id].time >= 3:
 			forecast_cache[id] = strategy_model.forecast(id)
 		var f = forecast_cache[id]
-		var cards = DecisionFeed.for_driver(sim, id, p, f)
+		var cards = sim.decision_feed_for_driver(id, p, f)
 		var card = DecisionFeed.primary(cards)
 		var controls = decision_controls[id]; controls.card = card
 		UI.race_card_state(controls.panel, "warning" if card.get("priority", 0) >= 90 else ("selected" if sim.selected_id == id else "normal"))
 		var status = "Finished" if c.finished else ("Retired" if c.dnf else ("Pit order executing" if c.pit_order else "On plan · " + p.plan.get("objective", "balanced").replace("_", " ")))
 		controls.heading.text = "%s · %s" % [c.short, ("! " if card.get("priority", 0) >= 90 else "") + card.get("title", status)]
-		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [c.set_id.get_slice("-", 1), c.tyre, RaceForecaster.fuel_margin(sim, c), StrategyPlan.ownership_text(p)]
-		controls.detail.text = DecisionFeed.deadline_text(card, sim) if not card.is_empty() else "Rejoin ~P%d–%d · pit loss %.0f–%.0fs · %s" % [f.pit.position_low, f.pit.position_high, f.pit.loss_low, f.pit.loss_high, "manual pits" if p.owners.pit == "player" else "engineer pits"]
+		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [c.set_id.get_slice("-", 1), c.tyre, sim.race_forecaster_fuel_margin(c), StrategyPlan.ownership_text(p)]
+		controls.detail.text = sim.decision_feed_deadline_text(card) if not card.is_empty() else "Rejoin ~P%d–%d · pit loss %.0f–%.0fs · %s" % [f.pit.position_low, f.pit.position_high, f.pit.loss_low, f.pit.loss_high, "manual pits" if p.owners.pit == "player" else "engineer pits"]
 		if c.route == "pit": controls.detail.text = "Pit visit in progress · physical queue / frozen service plan"
 		var explanation = card.get("evidence", "The current strategy and ownership remain active.") + "
 " + card.get("fallback", "No new command is implied.")
@@ -137,7 +137,7 @@ func refresh() -> void:
 		var qualifying = sim.phase in ["qualifying", "qualifying_results"]
 		controls.box.visible = not qualifying; controls.hold.visible = not qualifying
 		controls.send.visible = qualifying; controls.recall.visible = qualifying
-		var release = RaceForecaster.qualifying_release(sim, c) if qualifying else {}
+		var release = sim.race_forecaster_qualifying_release(c) if qualifying else {}
 		controls.send.disabled = not qualifying or c.dnf or c.finished or c.route != "garage" or not release.get("can_start_hotlap", false)
 		controls.send.tooltip_text = "Release %s on the planned set. The estimate checks whether a legal flying lap can begin." % c.short
 		if qualifying and not release.get("can_start_hotlap", false): controls.send.tooltip_text = "Not enough qualifying time to begin a flying lap. Already-started flying laps may finish."
@@ -146,14 +146,14 @@ func refresh() -> void:
 		controls.cancel.visible = false; controls.cancel.disabled = c.route != "track" or c.dnf or c.finished
 		controls.cancel.tooltip_text = "Cancel %s's accepted pit order before physical commitment. Committed entries cannot be canceled." % c.short
 		# A critical fuel shortfall promotes its recovery action out of More.
-		controls.save.visible = sim.phase == "race" and not c.dnf and not c.finished and RaceForecaster.fuel_margin(sim, c) < 0
+		controls.save.visible = sim.phase == "race" and not c.dnf and not c.finished and sim.race_forecaster_fuel_margin(c) < 0
 		controls.more.visible = not qualifying
 		controls.more.disabled = c.dnf or c.finished
 		update_more_actions(id)
 		controls.hold.disabled = card.is_empty(); controls.hold.tooltip_text = "Acknowledge this issue without changing the plan or time controls."
 		controls.save.disabled = sim.phase != "race" or c.dnf or c.finished
 		var battle = strategy_model.battle_state.drivers[id]
-		controls.battle.text = "Team & battles: " + (RacecraftController.LABELS[battle.phase] + (" " + sim.cars[int(battle.target_id)].short if battle.target_id >= 0 else ""))
+		controls.battle.text = "Team & battles: " + (RacecraftController.LABELS[battle.phase] + (" " + sim.car(int(battle.target_id)).short if battle.target_id >= 0 else ""))
 		controls.battle.tooltip_text = RacecraftController.describe(strategy_model.battle_state, id, sim.cars)
 		if TeamOrders.active(strategy_model.team_state.track_order):
 			controls.battle.text = "Team " + strategy_model.team_state.track_order.kind + " · " + strategy_model.team_state.track_order.reason
@@ -163,11 +163,11 @@ func refresh() -> void:
 			controls.battle.text = "Qualifying owner: " + p.owners.qualifying
 		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
 	if team_summary_label:
-		var occupant = int(sim.pit_boxes.get(sim.cars[3].team, -1))
+		var occupant = int(sim.pit_boxes.get(sim.car(3).team, -1))
 		var arrivals: Array[String] = []
 		for id in [3, 6]:
-			if sim.cars[id].route == "pit" and sim.cars[id].pit_stage == "entry": arrivals.append(sim.cars[id].short)
-		team_summary_label.text = "SHARED PIT BOX · " + (sim.cars[occupant].short + " in service" if occupant >= 0 else "No car in service")
+			if sim.car(id).route == "pit" and sim.car(id).pit_stage == "entry": arrivals.append(sim.car(id).short)
+		team_summary_label.text = "SHARED PIT BOX · " + (sim.car(occupant).short + " in service" if occupant >= 0 else "No car in service")
 		if not arrivals.is_empty(): team_summary_label.text += " · Approaching: " + ", ".join(arrivals)
 	if sim.selected_id in [3, 6]: rejoin_overlay.forecast = forecast_cache[sim.selected_id]
 	else: rejoin_overlay.forecast = {}
@@ -190,7 +190,7 @@ func refresh() -> void:
 		debrief_sequence = int(strategy_model.strategy_state.sequence)
 		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
 		var view = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}
-		debrief_text.text = WeekendScenarios.team_result(strategy_model) + "\n\n" + "\n\n".join(RaceJournal.debrief(view))
+		debrief_text.text = strategy_model.weekend_scenarios_team_result() + "\n\n" + "\n\n".join(RaceJournal.debrief(view))
 		if subset.size() > 100: debrief_text.text += "
 
 Showing the latest 100 team records. Export retains the full journal."
@@ -198,7 +198,7 @@ Showing the latest 100 team records. Export retains the full journal."
 
 func export_evidence() -> void:
 	UI.file_dialog(self, true, PackedStringArray(["*.json ; Race decision evidence"]), func(path):
-		var error = Storage.write_json(path, {"kind": "motorsport-manager-decision-evidence", "version": 1, "track": sim.track.document.name, "seed": sim.seed_value, "phase": sim.phase, "journal": strategy_model.strategy_state.duplicate(true)})
+		var error = presentation_services.export_value(path, {"kind": "motorsport-manager-decision-evidence", "version": 1, "track": sim.track.document.name, "seed": sim.seed_value, "phase": sim.phase, "journal": strategy_model.strategy_state.duplicate(true)})
 		feedback("Decision evidence exported." if error.is_empty() else error))
 
 func setup_guide() -> void:

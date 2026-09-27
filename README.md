@@ -1,6 +1,6 @@
 # Motorsport Manager — Godot
 
-Native, local-first circuit authoring and two-car race management. **0.18.0 — Simulation and presentation boundaries** separates application scheduling, detached visual/read-model queries and domain rules while retaining the minimal pitwall and driver instruments. No new actions, sporting rules or stress mechanics.
+Native, local-first circuit authoring and two-car race management. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services while retaining the minimal pitwall and driver instruments. No new actions, sporting rules or stress mechanics.
 
 See [architecture, extension recipes and verification boundaries](docs/architecture-refactor.md).
 
@@ -18,13 +18,13 @@ There are no telemetry dashboards, strategy tabs, drawers, two-car decision card
 
 Import the root `project.godot` in **Godot 4.7.2 Standard**, allow script import, then press **F5**. No npm, .NET, browser or external Godot plugin is required.
 
-Choose **Grand Prix Weekend**, a circuit, weather and race distance. The minimal setup leaves vehicle and advanced simulation parameters at their existing defaults.
+Choose **Grand Prix Weekend**, a circuit, weather and race distance, then **Review weekend**. The welcome previews the circuit and session flow. **Start practice** durably commits the new entry; Back or Cancel preserves the previous weekend. The minimal setup leaves vehicle and advanced simulation parameters at their existing defaults.
 
 | Session | Player flow |
 |---|---|
 | Practice | Start practice → select each driver and Send out → two measured laps and an automatic physical return → End practice |
 | Qualifying | Start qualifying → send each driver for an out lap, flying lap and in lap → End qualifying |
-| Race | Start formation → cars physically take the grid → Start race → actual lights and racing → final timing tower |
+| Race | Start formation → cars physically take the grid → Start race → actual lights and racing → final timing tower → Weekend complete |
 
 Closing practice or qualifying lets an already-started measured lap finish, waits for physical returns, and resumes playback if paused. The next session still requires your approval. Individual **Box this lap** calls in practice/qualifying abandon an unfinished timed lap; completed times remain.
 
@@ -45,7 +45,7 @@ godot --path . -- --pitwall-layout=director
 godot --path . -- --pitwall-layout=engineering
 ```
 
-Existing raw saves and supported session archives still load. New histories containing live practice modes require this implementation; compatibility with older application builds is not promised. Replay/sandbox/scenario/notebook tools are retained but are not normal-menu features in this iteration. The circuit editor is unchanged.
+Existing raw saves and supported session archives still load. New histories containing live practice modes require this implementation; compatibility with older application builds is not promised. Replay/sandbox/scenario/notebook tools are retained but are not normal-menu features in this iteration. The circuit editor now uses an application-owned document, transactional history and a detached reference preview.
 
 See [the current instrument contracts and stress estimate](docs/driver-instruments.md), [the historical 0.17.1 UI pass and verification](docs/minimal-ui-polish.md), [the minimal contract and implementation notes](docs/race-weekend-minimal.md), [verification scope](docs/minimal-verification.md), and the [historical documentation index](docs/README.md).
 
@@ -75,7 +75,7 @@ application session with transactional history and a reference-only preview.
 
 Architecture guides: [composed mechanics](docs/composable-mechanics.md) and
 [editor / weekend boundaries](docs/editor-and-weekend-boundaries.md).
-The larger typed-entity and legacy-controller migration remains explicitly open.
+Legacy diagnostic controllers now use the same detached boundary as the minimal UI. Typed entity migration remains explicitly open.
 
 All required test suites are registered in `scripts/verification_suites.json`.
 Run `python3 scripts/verify.py --godot /path/to/godot` for complete local coverage.

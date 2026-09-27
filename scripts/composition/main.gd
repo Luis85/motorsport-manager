@@ -1,4 +1,5 @@
 extends Control
+var presentation_services: RacePresentationServices
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
 var launch_draft: WeekendLaunch = WeekendLaunch.new()
 var replay_controller: ReplayController
@@ -17,6 +18,7 @@ var draft_signature = ""
 var return_editor_button: Button
 
 func _ready() -> void:
+	presentation_services = LocalRacePresentationServices.new(App)
 	theme = UI.theme()
 	get_tree().auto_accept_quit = false
 	var margin = MarginContainer.new(); add_child(margin); margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -59,7 +61,7 @@ func show_menu() -> void:
 	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Practice · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
-	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
+	continue_button.disabled = App.weekend == null and not App.has_saved_weekend(); menu.add_child(continue_button)
 	var scenarios = MenuButton.new(); scenarios.text = "SCENARIO CHALLENGES"; scenarios.focus_mode = Control.FOCUS_ALL; scenarios.flat = false; scenarios.custom_minimum_size.y = 36
 	menu.add_child(scenarios)
 	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"]: scenarios.get_popup().add_item(title)
@@ -72,7 +74,7 @@ func show_menu() -> void:
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
 	replay_menu.get_popup().add_item("Circuit notebook", 2)
-	replay_menu.get_popup().set_item_disabled(1, not FileAccess.file_exists(App.sandbox_path))
+	replay_menu.get_popup().set_item_disabled(1, not App.has_saved_sandbox())
 	replay_menu.get_popup().id_pressed.connect(func(id):
 		if id == 0: replay_controller.import_record()
 		elif id == 1: replay_controller.resume_sandbox()
@@ -107,7 +109,7 @@ func _go_home_saved() -> void:
 
 func show_editor(d: Dictionary = {}) -> void:
 	clear_screen("track_editor")
-	editor = TrackEditor.new()
+	editor = TrackEditor.new(); editor.presentation_services = presentation_services
 	var editor_port = LocalTrackEditorPort.new(func(): return App.library, App.save_track)
 	if not d.is_empty(): editor.configure(d, editor_port, App.settings)
 	elif not editor_draft.is_empty():
@@ -237,7 +239,8 @@ func show_weekend(layout: String = "") -> void:
 	if view is MinimalRaceWorkspace:
 		view.configure(MinimalRaceSession.new(App.weekend), App.settings)
 	else:
-		view.configure(App.weekend)
+		view.presentation_services = presentation_services
+		view.configure(RaceViewSession.new(App.weekend))
 	if view is PracticeWeekendView or view is MinimalRaceWorkspace: view.recording = App.ensure_recording()
 	content.add_child(view)
 	App.activate_session(view.session_runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)

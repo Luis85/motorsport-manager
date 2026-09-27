@@ -5,7 +5,7 @@ extends VBoxContainer
 signal command_requested(action: String, payload: Dictionary)
 signal refresh_requested(id: int)
 signal detail_requested(id: int)
-var model: RaceSim
+var model: RaceViewQuery
 var snapshot: Dictionary = {}
 var stage = "REVIEW"
 var pending_action = ""
@@ -34,7 +34,7 @@ var receipts: Dictionary = {}
 var receipt: Dictionary = {}
 var submit_sequence = -1
 
-func configure(value: RaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	if model != value: receipts.clear(); receipt.clear()
 	model = value
 
@@ -102,8 +102,8 @@ ESTIMATE · finish margin %+.1f laps
 
 func refresh_state() -> void:
 	if snapshot.is_empty() or message == null: return
-	var car = model.cars[int(snapshot.driver_id)]
-	stale = RaceForecaster.stale(model,snapshot.forecast,int(model.policy(snapshot.driver_id).revision)) or snapshot.phase != model.phase
+	var car = model.car(int(snapshot.driver_id))
+	stale = model.race_forecaster_stale(snapshot.forecast, int(model.policy(snapshot.driver_id).revision)) or snapshot.phase != model.phase
 	var race = model.phase == "race"; var live = not car.dnf and not car.finished
 	var locked = stage not in ["REVIEW", "CONFIRM"]
 	var f = snapshot.forecast
@@ -111,14 +111,14 @@ func refresh_state() -> void:
 	box.visible = race; fuel.visible = race and snapshot.primary.get("issue","")=="fuel"; release.visible = model.phase == "qualifying"
 	box.disabled = locked or stale or not live or car.route != "track" or car.pit_order or f.replacement_id.is_empty() or f.gate.distance >= model.laps * model.track.length
 	fuel.disabled = locked or stale or not live or not race
-	release.disabled = locked or stale or not live or not RaceForecaster.qualifying_release(model,car).can_start_hotlap
+	release.disabled = locked or stale or not live or not model.race_forecaster_qualifying_release(car).can_start_hotlap
 	hold.disabled = locked or stale or snapshot.primary.is_empty()
 	cancel.visible = stage == "CONFIRM"
 	box.text = "Confirm %s pit call" % snapshot.name if stage == "CONFIRM" and pending_action == "pit" else "Box %s · lap %d" % [snapshot.short,f.gate.lap]
 	fuel.text = "Confirm %s saving 2 laps" % snapshot.name if stage == "CONFIRM" and pending_action == "resource_intent" else "Save fuel 2 laps"
 	release.text = "Confirm %s release" % snapshot.name if stage == "CONFIRM" and pending_action == "send" else "Release now"
 	if stage == "EXECUTING" and not receipt.is_empty():
-		var progress = RaceDecisionViewModel.receipt_progress(model, receipt)
+		var progress = model.race_decision_view_model_receipt_progress(receipt)
 		if progress.terminal:
 			receipt.outcome = progress; stage = "OUTCOME"
 		else:
@@ -165,7 +165,7 @@ func command_result(accepted: bool, reason: String, action: String) -> void:
 	if accepted:
 		stage = "ACKNOWLEDGED" if action == "hold_decision" else "EXECUTING"
 		if action != "hold_decision":
-			receipt = RaceDecisionViewModel.accepted_receipt(model, snapshot, action, pending_payload, submit_sequence)
+			receipt = model.race_decision_view_model_accepted_receipt(snapshot, action, pending_payload, submit_sequence)
 			receipts[int(snapshot.driver_id)] = receipt
 		message.text = "Plan retained. No pit order, pause or speed change." if action == "hold_decision" else "Command accepted. Execution remains physical."
 	else:

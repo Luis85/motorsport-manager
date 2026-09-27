@@ -33,7 +33,7 @@ func open_data(data: Variant) -> String:
 		if child.is_queued_for_deletion(): continue
 		suspended.append({"node": child, "visible": child.visible, "process": child.process_mode})
 		child.hide(); child.process_mode = Node.PROCESS_MODE_DISABLED
-	workspace = ReplayWorkspace.new(); workspace.configure(player); host.content.add_child(workspace)
+	workspace = ReplayWorkspace.new(); workspace.presentation_services = host.presentation_services; workspace.configure(ReplayViewSession.new(player)); host.content.add_child(workspace)
 	App.replay_runner = workspace.playback
 	workspace.close_requested.connect(close)
 	return ""
@@ -69,4 +69,4 @@ func resume_sandbox() -> void:
 	if not loaded.ok: UI.notify(host, "Sandbox not resumed", loaded.error); return
 	var error = open_data(read.data.record)
 	if not error.is_empty(): UI.notify(host, "Sandbox not resumed", error); return
-	workspace.mount_sandbox(loaded.sim, loaded.record)
+	workspace.mount_sandbox(RaceViewSession.new(loaded.sim), loaded.record)

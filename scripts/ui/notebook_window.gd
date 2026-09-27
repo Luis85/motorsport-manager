@@ -1,9 +1,11 @@
 class_name NotebookWindow
 extends Window
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
 ## Historical facts and personal interpretation remain separate from race authority.
 var record: RaceRecord
-var storage_path = CircuitNotebook.PATH
-var ledger: Dictionary = CircuitNotebook.empty()
+var repository: NotebookPort
+var storage_path = NotebookPort.PATH
+var ledger: Dictionary = NotebookPort.empty()
 var selected: Dictionary = {}
 var source_hash = ""
 var invoker: WeakRef
@@ -23,9 +25,12 @@ var data_valid = true
 var status_clock = 0.0
 var activity: Label
 
-static func open(parent: Node, source: RaceRecord = null, path: String = CircuitNotebook.PATH, return_focus: Control = null) -> NotebookWindow:
+static func open(parent: Node, source: RaceRecord = null, path: String = NotebookPort.PATH, return_focus: Control = null) -> NotebookWindow:
 	var window = NotebookWindow.new()
 	window.record = source; window.storage_path = path
+	var services = parent.get("presentation_services")
+	if services is RacePresentationServices: window.presentation_services = services
+	window.repository = window.presentation_services.notebook(path)
 	var focused = return_focus if return_focus else parent.get_viewport().gui_get_focus_owner()
 	if focused: window.invoker = weakref(focused)
 	parent.add_child(window)
@@ -68,25 +73,26 @@ func _ready() -> void:
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; footer.add_child(spacer)
 	close_button = UI.button("Close notebook", request_close); footer.add_child(close_button)
 	close_requested.connect(request_close)
-	if record != null and record.source != null and record.source.get_ref() != null:
-		source_hash = RaceRecord.fingerprint(record.source.get_ref().track.document)
+	var source = RaceViewQuery.from_record(record)
+	if source != null:
+		source_hash = RaceRecord.fingerprint(source.track.document)
 	filter.set_item_disabled(1, source_hash.is_empty())
-	PitwallDesign.scale_controls(self, float(App.settings.pitwall_text_scale))
+	PitwallDesign.scale_controls(self, float(presentation_services.preferences.pitwall_text_scale))
 	reload()
 
 func dirty() -> bool:
 	return not selected.is_empty() and note.text != selected.note
 
 func reload(prefer: String = "") -> void:
-	var loaded = CircuitNotebook.read(storage_path)
+	var loaded = repository.read()
 	data_valid = loaded.ok
 	if not loaded.ok:
 		notice.text = loaded.error; export_button.disabled = true; remember_button.disabled = true
-		ledger = CircuitNotebook.empty(); refill(); return
+		ledger = NotebookPort.empty(); refill(); return
 	ledger = loaded.data; export_button.disabled = false
-	var sim = record.source.get_ref() if record != null and record.source != null else null
+	var sim = RaceViewQuery.from_record(record)
 	remember_button.disabled = sim == null or sim.phase != "results"
-	notice.text = "%d / %d runs retained. Remember is available after a completed original or sandbox weekend." % [ledger.entries.size(), CircuitNotebook.MAX_ENTRIES]
+	notice.text = "%d / %d runs retained. Remember is available after a completed original or sandbox weekend." % [ledger.entries.size(), NotebookPort.MAX_ENTRIES]
 	refill(prefer)
 
 func refill(prefer: String = "") -> void:
@@ -136,14 +142,14 @@ func edit_changed() -> void:
 
 func remember() -> void:
 	confirm_discard(func():
-		var saved = CircuitNotebook.remember(record, storage_path)
+		var saved = repository.remember(record)
 		if not saved.ok: notice.text = saved.error; return
 		reload(saved.entry.facts.event_id)
 		notice.text = "Already remembered; existing note kept." if saved.already_recorded else "Observed result remembered. No race state or reward changed.")
 
 func save_note() -> void:
 	if selected.is_empty(): return
-	var saved = CircuitNotebook.save_note(selected.facts.event_id, note.text, int(selected.revision), storage_path)
+	var saved = repository.save_note(selected.facts.event_id, note.text, int(selected.revision))
 	if not saved.ok: notice.text = saved.error; return
 	selected = saved.entry; reload(selected.facts.event_id)
 	notice.text = "Personal note saved separately from the observed facts."
@@ -156,7 +162,7 @@ func confirm_action(heading: String, message: String, accept: String, action: Ca
 	if is_instance_valid(guard): return
 	guard = ConfirmationDialog.new(); guard.title = heading; guard.dialog_text = message
 	guard.ok_button_text = accept; guard.cancel_button_text = "Stay and review"
-	add_child(guard); PitwallDesign.scale_controls(guard, float(App.settings.pitwall_text_scale))
+	add_child(guard); PitwallDesign.scale_controls(guard, float(presentation_services.preferences.pitwall_text_scale))
 	guard.confirmed.connect(func(): guard.queue_free(); action.call())
 	guard.canceled.connect(func(): guard.queue_free(); PitwallDesign.focus_later(note))
 	guard.popup_centered(Vector2i(620, 180)); PitwallDesign.focus_later(guard.get_cancel_button())
@@ -165,23 +171,23 @@ func request_forget() -> void:
 	if selected.is_empty(): return
 	var id = selected.facts.event_id; var revision = int(selected.revision)
 	confirm_action("Forget this notebook entry?", "Only this observation and personal note will be removed. Original saves, recordings and accepted results remain untouched.", "Forget entry", func():
-		var result = CircuitNotebook.forget(id, revision, storage_path)
+		var result = repository.forget(id, revision)
 		if not result.ok: notice.text = result.error; return
 		reload(); notice.text = "Notebook entry forgotten. Original saves and results are unchanged.")
 
 func export_notebook() -> void:
-	var loaded = CircuitNotebook.read(storage_path)
+	var loaded = repository.read()
 	if not loaded.ok: notice.text = loaded.error; return
 	var data = loaded.data
 	var dialog = FileDialog.new(); dialog.title = "Export saved notebook · unsaved draft excluded"
 	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE; dialog.access = FileDialog.ACCESS_FILESYSTEM
 	dialog.filters = PackedStringArray(["*.json ; Circuit notebook"]); dialog.current_file = "circuit-notebook.json"; add_child(dialog)
 	dialog.file_selected.connect(func(path):
-		var error = Storage.write_json(path, data)
+		var error = presentation_services.export_value(path, data)
 		notice.text = "Saved notebook exported; any unsaved note draft is still separate." if error.is_empty() else error
 		dialog.queue_free(); PitwallDesign.focus_later(export_button))
 	dialog.canceled.connect(func(): dialog.queue_free(); PitwallDesign.focus_later(export_button))
-	PitwallDesign.scale_controls(dialog, float(App.settings.pitwall_text_scale)); dialog.popup_centered(Vector2i(800, 520))
+	PitwallDesign.scale_controls(dialog, float(presentation_services.preferences.pitwall_text_scale)); dialog.popup_centered(Vector2i(800, 520))
 
 func request_close() -> void:
 	confirm_discard(func():
@@ -198,6 +204,6 @@ func _process(delta: float) -> void:
 	status_clock += delta
 	if status_clock < 0.25: return
 	status_clock = 0.0
-	var sim = record.source.get_ref() if record != null and record.source != null else null
+	var sim = RaceViewQuery.from_record(record)
 	remember_button.disabled = not data_valid or sim == null or sim.phase != "results"
-	activity.text = "Local history never changes performance. " + ("Live weekend keeps running." if sim != null and sim.phase in RaceSim.ACTIVE and not sim.paused else "Originals and experiments stay labeled; no rewards.")
+	activity.text = "Local history never changes performance. " + ("Live weekend keeps running." if sim != null and sim.phase in RaceViewQuery.ACTIVE and not sim.paused else "Originals and experiments stay labeled; no rewards.")

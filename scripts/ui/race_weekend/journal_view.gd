@@ -1,13 +1,13 @@
 class_name RaceJournalView
 extends VBoxContainer
 ## Structured accepted-command and observed-outcome evidence, never counterfactual results.
-var model: RaceSim
+var model: RaceViewQuery
 var table: Tree
 var rows: Array[TreeItem]=[]
 var caption: Label
 var rendered_sequence=-1
 var update_count=0
-func configure(value: RaceSim) -> void:model=value
+func configure(value: RaceViewQuery) -> void:model=value
 func _ready() -> void:
 	caption=UI.paragraph("Commands and observations are different evidence. Pit duration is not net race-time loss.");add_child(caption)
 	table=Tree.new();table.columns=5;table.hide_root=true;table.column_titles_visible=true;table.size_flags_vertical=Control.SIZE_EXPAND_FILL;table.custom_minimum_size.y=250;add_child(table)
@@ -30,7 +30,7 @@ func present() -> void:
 		var r=entries[i];var e=r.evidence
 		rows[i].set_metadata(0,r.id)
 		rows[i].set_text(0,"%.1fs" % r.time)
-		rows[i].set_text(1,"TEAM" if r.driver_id<0 else model.cars[int(r.driver_id)].short)
+		rows[i].set_text(1,"TEAM" if r.driver_id<0 else model.car(int(r.driver_id)).short)
 		rows[i].set_text(2,"OBSERVED" if r.provenance=="observed" else "COMMAND / MODEL")
 		rows[i].set_text(3,("Pit visit %.1fs" % e.get("visit_seconds",0)) if r.kind=="pit_exit" else e.get("action",e.get("reason",r.kind.replace("_"," "))))
 		rows[i].set_text(4,("%.1f–%.1fs; residual %+.1f" % [e.predicted_low,e.predicted_high,e.residual]) if e.has("predicted_low") else "—")

@@ -1,8 +1,9 @@
 class_name ReplayWorkspace
 extends VBoxContainer
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
 ## An independent viewer. It has no original RaceSim reference or tactical commands.
 signal close_requested
-var player: RaceReplay
+var player: ReplayViewSession
 var playback = ReplayPlayback.new()
 var playing: bool:
 	get: return playback.playing
@@ -31,9 +32,9 @@ var scenario_status: Label
 var scenario_draft: Dictionary = {}
 var scenario_details_button: Button
 
-func configure(replay: RaceReplay) -> void:
+func configure(replay: ReplayViewSession) -> void:
 	player = replay
-	playback.player = replay
+	playback = replay.playback
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -49,13 +50,13 @@ func _ready() -> void:
 	actions.add_child(UI.option(["Steady replay", "Fast replay", "Fastest replay"], func(index): budget = [16,32,64][index]))
 	branch_button = UI.button("Try another decision", start_sandbox, true); actions.add_child(branch_button)
 	status = UI.paragraph(""); viewer.add_child(status)
-	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.show_grid = false; viewer.add_child(canvas); canvas.custom_minimum_size = Vector2(300, 160)
+	canvas = TrackCanvas.new(); canvas.configure_presentation(presentation_services.preferences); canvas.show_grid = false; viewer.add_child(canvas); canvas.custom_minimum_size = Vector2(300, 160)
 	var card = UI.panel(); viewer.add_child(card); summary = UI.paragraph(""); card.add_child(summary)
 	var footer = UI.hbox(viewer)
 	footer.add_child(UI.button("Export recording", func(): export_data(player.record, "weekend.replay.json")))
 	export_scenario_button = UI.button("Author scenario…", export_scenario); footer.add_child(export_scenario_button)
 	footer.add_child(UI.paragraph("Sandbox = model experiment, not a guaranteed alternative result. No campaign rewards."))
-	PitwallDesign.scale_controls(self, float(App.settings.pitwall_text_scale))
+	PitwallDesign.scale_controls(self, float(presentation_services.preferences.pitwall_text_scale))
 	seek(-1)
 	PitwallDesign.focus_later(return_button)
 
@@ -63,7 +64,7 @@ func seek(index: int) -> void:
 	playing = false
 	if not player.seek(index): last_error = "That checkpoint is unavailable."
 	else:
-		last_error = ""; canvas.set_track(player.sim.track); canvas.visual_source = RaceVisualSource.new(player.sim); canvas.call_deferred("fit")
+		last_error = ""; canvas.set_track(player.sim.track); canvas.visual_source = player.sim.visuals; canvas.call_deferred("fit")
 	refresh()
 
 func toggle_play() -> void:
@@ -74,7 +75,7 @@ func _process(delta: float) -> void:
 	if sandbox_view != null:
 		clock += delta
 		if clock >= 0.2 and scenario_status != null:
-			clock = 0; scenario_status.text = ScenarioBrief.assessment(sandbox_record.parent.scenario, sandbox_view.sim)
+			clock = 0; scenario_status.text = sandbox_view.sim.scenario_assessment(sandbox_record.parent.scenario)
 		return
 	clock += delta
 	if clock >= 0.2: clock = 0; refresh()
@@ -107,14 +108,11 @@ func refresh() -> void:
 func start_sandbox() -> void:
 	if sandbox_view != null or player.sim.phase == "results": return
 	playing = false
-	var sim = player.branch()
-	if sim == null: last_error = "Could not reconstruct the experiment."; refresh(); return
-	var parent = player.lineage()
-	if player.record.parent.has("scenario"): parent.scenario = player.record.parent.scenario.duplicate(true)
-	var record = RaceRecord.new(); record.attach(sim, "sandbox", parent)
-	mount_sandbox(sim, record)
+	var branch = player.branch_session()
+	if branch.is_empty(): last_error = "Could not reconstruct the experiment."; refresh(); return
+	mount_sandbox(branch.session, branch.record)
 
-func mount_sandbox(sim: RaceSim, record: RaceRecord) -> void:
+func mount_sandbox(session: RaceViewSession, record: RaceRecord) -> void:
 	playing = false; sandbox_record = record; viewer.hide()
 	sandbox_shell = UI.vbox(self, true)
 	if record.parent.has("scenario"):
@@ -122,21 +120,21 @@ func mount_sandbox(sim: RaceSim, record: RaceRecord) -> void:
 		var row = UI.hbox(sandbox_shell)
 		scenario_details_button = UI.button("Scenario brief", func(): sandbox_view.show_reading("Authored scenario · no forced result", ScenarioBrief.describe(brief), scenario_details_button))
 		row.add_child(scenario_details_button)
-		scenario_status = UI.paragraph(ScenarioBrief.assessment(brief, sim)); row.add_child(scenario_status)
-		PitwallDesign.scale_controls(row, float(App.settings.pitwall_text_scale))
+		scenario_status = UI.paragraph(session.query.scenario_assessment(brief)); row.add_child(scenario_status)
+		PitwallDesign.scale_controls(row, float(presentation_services.preferences.pitwall_text_scale))
 	mode_title.text = "SANDBOX · SEPARATE SAVE"
 	sandbox_return = UI.button("Return to replay", leave_sandbox); return_button.get_parent().add_child(sandbox_return)
-	PitwallDesign.scale_controls(sandbox_return, float(App.settings.pitwall_text_scale))
-	sandbox_view = RaceDirectorWorkspace.new(); sandbox_view.director_enabled = App.settings.get("pitwall_layout", "director") != "engineering"; sandbox_view.configure(sim); sandbox_view.recording = record
+	PitwallDesign.scale_controls(sandbox_return, float(presentation_services.preferences.pitwall_text_scale))
+	sandbox_view = RaceDirectorWorkspace.new(); sandbox_view.director_enabled = presentation_services.preferences.get("pitwall_layout", "director") != "engineering"; sandbox_view.presentation_services = presentation_services; sandbox_view.configure(session); sandbox_view.recording = record
 	sandbox_shell.add_child(sandbox_view)
-	App.activate_session(sandbox_view.session_runner, record)
+	presentation_services.activate_session(sandbox_view.session_runner, record)
 	sandbox_view.menu_requested.connect(leave_sandbox); sandbox_view.new_weekend_requested.connect(leave_sandbox)
 	sandbox_view.replay_requested.connect(func(): sandbox_view.show_reading("Sandbox recording", "Return to replay to inspect the source. Save this experiment in its separate slot; Resume sandbox opens it from the main menu.", sandbox_view.weekend_menu))
 	sandbox_view.guide.hide()
 	sandbox_view.set_meta("sandbox_view", true)
 
 func save_sandbox() -> String:
-	return "" if sandbox_record == null else ReplayStorage.save_session(App.sandbox_path, sandbox_record)
+	return "" if sandbox_record == null else presentation_services.save_record(sandbox_record)
 
 func leave_sandbox() -> void:
 	if sandbox_view == null: return
@@ -145,7 +143,7 @@ func leave_sandbox() -> void:
 func _leave_sandbox_saved() -> void:
 	var error = save_sandbox()
 	if not error.is_empty(): UI.notify(self, "Experiment not saved", error); return
-	App.stop_session()
+	presentation_services.stop_session()
 	sandbox_shell.process_mode = Node.PROCESS_MODE_DISABLED
 	remove_child(sandbox_shell); sandbox_shell.queue_free(); sandbox_shell = null; sandbox_view = null; sandbox_record = null
 	scenario_status = null
@@ -164,24 +162,24 @@ func _close_saved() -> void:
 func export_scenario() -> void:
 	if is_instance_valid(author) or player.sim.phase == "results": return
 	playing = false; refresh()
-	var sim = player.branch()
-	if sim == null: return
-	author = ScenarioAuthor.new(); add_child(author)
+	var draft = player.authoring()
+	if draft == null: return
+	author = ScenarioAuthor.new(); author.presentation_services = presentation_services; add_child(author)
 	author.scenario_ready.connect(func(data):
 		scenario_draft = data.brief.duplicate(true)
 		export_data(data, "decision.scenario.json"))
 	author.canceled.connect(func(): PitwallDesign.focus_later(export_scenario_button))
-	author.configure(sim, player.lineage(), scenario_draft if not scenario_draft.is_empty() else player.record.parent.get("scenario", {}))
+	author.configure(draft, scenario_draft if not scenario_draft.is_empty() else player.record.parent.get("scenario", {}))
 
 func export_data(data: Dictionary, filename: String) -> void:
 	var dialog = FileDialog.new(); dialog.title = "Export local race evidence"; dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	dialog.access = FileDialog.ACCESS_FILESYSTEM; dialog.filters = PackedStringArray(["*.json ; Race recording / scenario"]); dialog.current_file = filename
 	add_child(dialog)
 	dialog.file_selected.connect(func(path):
-		var error = Storage.write_json(path, data)
+		var error = presentation_services.export_value(path, data)
 		UI.notify(self, "Export recording", "Saved independent evidence. No result was accepted." if error.is_empty() else error)
 		dialog.queue_free())
-	dialog.canceled.connect(dialog.queue_free); PitwallDesign.scale_controls(dialog, float(App.settings.pitwall_text_scale)); dialog.popup_centered(Vector2i(800,520))
+	dialog.canceled.connect(dialog.queue_free); PitwallDesign.scale_controls(dialog, float(presentation_services.preferences.pitwall_text_scale)); dialog.popup_centered(Vector2i(800,520))
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo or sandbox_view != null: return

@@ -59,5 +59,6 @@
   {"id":"mechanics_tests","script":"tests/mechanics_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["mechanics-tests.json"]},
   {"id":"editor_session_tests","script":"tests/editor_session_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["editor-session-tests.json"]},
   {"id":"weekend_launch_tests","script":"tests/weekend_launch_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["weekend-launch-tests.json"]},
-  {"id":"weekend_flow_ui_tests","script":"tests/weekend_flow_ui_tests.gd","native":true,"layout":"minimal","timeout":600,"reports":["weekend-flow-ui.json"]}
+  {"id":"weekend_flow_ui_tests","script":"tests/weekend_flow_ui_tests.gd","native":true,"layout":"minimal","timeout":600,"reports":["weekend-flow-ui.json"]},
+  {"id":"presentation_boundary_tests","script":"tests/presentation_boundary_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["presentation-boundary-tests.json"]}
 ]

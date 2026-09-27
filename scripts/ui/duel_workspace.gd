@@ -20,7 +20,7 @@ func configure(view) -> void:
 		host.show_reading(title, origin + "captured at %.1fs. No automatic pause.\n\n" % host.sim.total_time + text, invoker))
 	for id in [3, 6]:
 		var menu = host.decision_controls[id].more.get_popup()
-		menu.add_item("Tactical plan for " + host.sim.cars[id].short, 60)
+		menu.add_item("Tactical plan for " + host.sim.car(id).short, 60)
 		menu.id_pressed.connect(func(action):
 			if action == 60: open_for(id))
 	host.navigator.catalog.append([index, 0, "Strategy / Tactics", "duel undercut extend target rival conditional mandate"])
@@ -46,12 +46,12 @@ func refresh() -> void:
 	host.topic_buttons[host.practice_page_index].visible = host.strategy_navigation.visible and host.sim.phase in ["briefing", "practice", "practice_results"]
 	for id in [3, 6]:
 		var r = TacticalDuels.current(host.sim, id)
-		if not TacticalDuels.live(r) or host.sim.cars[id].finished or host.sim.cars[id].dnf: continue
+		if not TacticalDuels.live(r) or host.sim.car(id).finished or host.sim.car(id).dnf: continue
 		if r.borrowed_pits and r.order_id.is_empty():
 			host.car_cards[id].facts[2].text = "Tactic L%d–%d" % [r.plan.from_lap, r.plan.to_lap]
 			host.car_cards[id].facts[2].tooltip_text = "Approved tactical window, not a physical pit order. " + r.reason
 		var issue = host.decision_controls[id].get("card", {})
-		if int(issue.get("priority", 0)) >= 90 or host.sim.cars[id].route == "pit": continue
+		if int(issue.get("priority", 0)) >= 90 or host.sim.car(id).route == "pit": continue
 		var label = host.car_cards[id].issue
-		label.text = "%s · %s / %s" % [r.plan.kind.capitalize(), host.sim.cars[int(r.plan.target_id)].short, r.status]
+		label.text = "%s · %s / %s" % [r.plan.kind.capitalize(), host.sim.car(int(r.plan.target_id)).short, r.status]
 		label.tooltip_text = r.reason + " Open More / Tactical plan for explicit authority and evidence."

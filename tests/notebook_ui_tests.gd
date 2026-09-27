@@ -134,7 +134,7 @@ func run():
 		await click(book.close_button)
 	# Existing native scenario authoring is now exercised rather than only described.
 	var source = sim.snapshot(); var author = load("res://scripts/ui/scenario_author.gd").new(); game.add_child(author)
-	author.configure(PracticeRaceSim.restore_practice(source), {"event_id":app.recording.event_id})
+	author.configure(ScenarioDraft.new(PracticeRaceSim.restore_practice(source), {"event_id":app.recording.event_id}))
 	await settle()
 	check(inside(author.get_ok_button()) and inside(author.get_cancel_button()), "Authoring fixed actions fit at enlarged compact size")
 	author.fields.title.text = ""; await click(author.get_ok_button())

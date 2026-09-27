@@ -29,7 +29,7 @@ func _input(event: InputEvent) -> void:
 		if window.visible: return
 	match event.button_index:
 		JOY_BUTTON_START:
-			if host.sim.phase in RaceSim.ACTIVE: host.dispatch("pause")
+			if host.sim.phase in RaceViewQuery.ACTIVE: host.dispatch("pause")
 		JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER:
 			host.select_driver(6 if host.sim.selected_id == 3 else 3)
 		JOY_BUTTON_Y:

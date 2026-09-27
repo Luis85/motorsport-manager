@@ -3,23 +3,23 @@ extends PanelContainer
 ## Session-specific run/traffic context composed with the shared circuit workspace.
 signal inspect_requested(id: int)
 var labels: Dictionary = {}
-var model: RaceSim
-func configure(value: RaceSim) -> void: model = value
+var model: RaceViewQuery
+func configure(value: RaceViewQuery) -> void: model = value
 func _ready() -> void:
 	add_theme_stylebox_override("panel",UI.box(PitwallDesign.RACE_CREAM,UI.LINE,5,6))
 	var row = UI.hbox(self)
 	for id in [3,6]:
 		var cell = UI.vbox(row); cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var button = UI.button(model.cars[id].name + " · Run plan",func(): inspect_requested.emit(id)); cell.add_child(button)
+		var button = UI.button(model.car(id).name + " · Run plan",func(): inspect_requested.emit(id)); cell.add_child(button)
 		var info = UI.label("",11); info.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; cell.add_child(info); labels[id] = info
 func present() -> void:
 	if labels.is_empty(): return
 	for id in labels:
-		var c = model.cars[id]; var release = RaceForecaster.qualifying_release(model,c)
+		var c = model.car(id); var release = model.race_forecaster_qualifying_release(c)
 		var benchmark = INF
 		for other in model.cars:
 			if other.qual_best > 0: benchmark = minf(benchmark,other.qual_best)
-		var lap = "Untimed" if c.qual_best <= 0 else RaceSim.format_time(c.qual_best)
+		var lap = "Untimed" if c.qual_best <= 0 else RaceViewQuery.format_time(c.qual_best)
 		if c.qual_best > 0 and is_finite(benchmark): lap += " (%+.3fs)" % (c.qual_best - benchmark)
 		# This is the cost/last start of a NEW release, not time remaining on the
 		# current out/hot/in lap. Keep its elapsed-session basis visible at 130%.

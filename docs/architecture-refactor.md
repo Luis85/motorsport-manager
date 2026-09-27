@@ -1,3 +1,5 @@
+> **0.19.0 continuation:** The shipping and diagnostic UI now consume `RaceViewQuery` / `MinimalWeekendQuery`, commands and injected ports. Native composition roots live in `scripts/composition/`. The former selected-renderer guard applies to every `scripts/ui/` component. Historical 0.18.0 evidence below is not current-head verification.
+
 # Simulation and presentation boundaries — 0.18.0
 
 ## Scope and protected behavior

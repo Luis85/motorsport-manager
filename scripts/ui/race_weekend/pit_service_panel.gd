@@ -2,7 +2,7 @@ class_name RacePitServicePanel
 extends VBoxContainer
 ## Read-only presentation of accepted orders and recorded physical pit visits.
 ## No queue forecast, progress tween, wheel timer, or command executor lives here.
-var model: RaceSim
+var model: RaceViewQuery
 var cards: Dictionary = {}
 var record_index = 0
 var last_record_id = ""
@@ -10,7 +10,7 @@ var entries: Dictionary = {}
 var visits: Dictionary = {}
 var commands: Dictionary = {}
 
-func configure(value: RaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	model = value
 	record_index = 0; last_record_id = ""
 	entries.clear(); visits.clear(); commands.clear()
@@ -21,7 +21,7 @@ func _ready() -> void:
 		var surface = PitwallDesign.race_panel(false, 8); add_child(surface)
 		var body = UI.vbox(surface)
 		var heading = UI.hbox(body)
-		var name_label = UI.label(model.cars[id].name, 14, UI.INK)
+		var name_label = UI.label(model.car(id).name, 14, UI.INK)
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; heading.add_child(name_label)
 		var state = RaceStatusBadge.new(); heading.add_child(state)
 		var route = UI.label("", 11, UI.MUTED); route.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; body.add_child(route)
@@ -57,10 +57,10 @@ func update_records() -> void:
 
 func describe(id: int) -> Dictionary:
 	update_records()
-	var c = model.cars[id]; var policy = model.policy(id)
+	var c = model.car(id); var policy = model.policy(id)
 	if model.phase not in ["race", "results"]:
 		return {"stage":"NOT APPLICABLE", "text":"Race pit service is not active in this session. Garage fitting and qualifying/practice pit transit are not race pit visits.", "remaining":-1.0,"duration":0.0,"exit_id":"","visit_seconds":-1.0}
-	var job: Dictionary = model.reliability(id).service if (model is RaceSim and model.has_mechanic("recovery")) else {}
+	var job: Dictionary = model.reliability(id).service if (model is RaceViewQuery and model.has_mechanic("recovery")) else {}
 	var visit = visits.get(id, {})
 	var recent_command = commands.get(id, {})
 	var stage = "NO STOP"

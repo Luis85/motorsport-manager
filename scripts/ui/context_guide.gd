@@ -1,5 +1,6 @@
 class_name ContextGuide
 extends Control
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
 ## Resumable, non-modal walkthrough. Steps navigate UI only; never issue simulation commands.
 var flow = ""
 var steps: Array = []
@@ -41,7 +42,7 @@ func _ready() -> void:
 
 func open_guide() -> void:
 	done = false
-	var saved = App.settings.get("guides", {}).get(flow, 0)
+	var saved = presentation_services.preferences.get("guides", {}).get(flow, 0)
 	step_index = clampi(int(saved), 0, maxi(0, steps.size() - 1))
 	visible = true; show_step(step_index)
 
@@ -64,10 +65,7 @@ func next_step() -> void:
 	else: show_step(step_index + 1)
 
 func store_progress() -> void:
-	if not App.settings.has("guides"): App.settings.guides = {}
-	App.settings.guides[flow] = 0 if done else step_index
-	# No display setting changes and no race state changes while persisting help progress.
-	var error = Storage.write_json("user://settings.json", App.settings)
+	var error = presentation_services.save_guide(flow, 0 if done else step_index)
 	if not error.is_empty(): counter.text += " · progress not saved"
 
 func dismiss() -> void:

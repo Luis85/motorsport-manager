@@ -139,10 +139,12 @@ func load_weekend() -> String:
 	if result.data.get("kind") == ReplayStorage.SESSION_KIND:
 		var loaded = ReplayStorage.restore_session(result.data)
 		if not loaded.ok: return loaded.error
+		stop_session()
 		weekend = loaded.sim; recording = loaded.record
 	else:
 		var restored = PracticeRaceSim.restore_practice(result.data)
 		if restored == null: return "Checkpoint is invalid or incompatible. The current session was not replaced."
+		stop_session()
 		weekend = restored
 		recording = RaceRecord.new(); recording.attach(restored, "legacy")
 	# Existing explicit Continue behavior; recorded inputs retain subsequent context.
@@ -165,3 +167,6 @@ func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> Strin
 	weekend = result.simulation
 	recording = result.record
 	return ""
+
+func has_saved_sandbox() -> bool:
+	return FileAccess.file_exists(sandbox_path)

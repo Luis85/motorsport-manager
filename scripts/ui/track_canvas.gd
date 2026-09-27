@@ -410,7 +410,7 @@ func _gui_input(event: InputEvent) -> void:
 				if screen(TrackDocument.point(document.pits[0].nodes[i])).distance_to(event.position) < 12: selected_pit = i; break
 			if selected_pit >= 0: _begin_drag("pit", p - TrackDocument.point(document.pits[0].nodes[selected_pit]))
 			elif event.shift_pressed:
-				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5)); _rebuild_due = true; edited.emit()
+				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5, TrackDocument.next_node_id(document.pits[0].nodes))); _rebuild_due = true; edited.emit()
 			selection_changed.emit(); queue_redraw(); return
 		if layer_editable("road") and selection_ids.size() <= 1 and selected >= 0 and selected < document.nodes.size():
 			for key in ["in", "out"]:
@@ -420,7 +420,7 @@ func _gui_input(event: InputEvent) -> void:
 		if mode == "start" and geometry:
 			edit_started.emit(); document.start = geometry.nearest(p).fraction; _rebuild_due = true; edited.emit(); return
 		if mode == "draw":
-			edit_started.emit(); document.nodes.append(TrackDocument.node_at(p)); selected = document.nodes.size() - 1
+			edit_started.emit(); document.nodes.append(TrackDocument.node_at(p, 14.0, TrackDocument.next_node_id(document.nodes))); selected = document.nodes.size() - 1
 			_rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
 		if (mode == "insert" or event.double_click) and geometry and layer_editable("road"):
 			var nearest = geometry.nearest(p)

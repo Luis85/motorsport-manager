@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal preview_changed(forecast: Dictionary)
 var timeline: RaceStrategyChart
 var timeline_toggle: Button
-var model: RaceSim
+var model: RaceViewQuery
 var driver_id = 3
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
@@ -47,7 +47,7 @@ var details_toggle: Button
 var topic_panels: Array[VBoxContainer] = []
 var topic_buttons: Array[Button] = []
 
-func configure(sim: RaceSim) -> void:
+func configure(sim: RaceViewQuery) -> void:
 	model = sim
 
 func _ready() -> void:
@@ -108,7 +108,7 @@ func _ready() -> void:
 	extend_draft = UI.button("Draft extension", draft_extension); compare_actions.add_child(extend_draft); compact_button(extend_draft)
 	extend_draft.tooltip_text = "Put an available extension into an unapplied draft. Nothing is ordered until approval."
 	var caveat = UI.paragraph("Estimates, not promises. Current conditions held constant; future stops and weather unknown."); caveat.add_theme_font_size_override("font_size", 11); compare_panel.add_child(caveat)
-	compare_panel.add_child(UI.button("Why / assumptions", func(): UI.notify(self, "Strategy context · " + model.cars[driver_id].short, issue_text.tooltip_text + "\n\n" + "\n".join(preview.get("assumptions", [])) + "\n\n" + WeekendScenarios.briefing(model))))
+	compare_panel.add_child(UI.button("Why / assumptions", func(): UI.notify(self, "Strategy context · " + model.car(driver_id).short, issue_text.tooltip_text + "\n\n" + "\n".join(preview.get("assumptions", [])) + "\n\n" + model.weekend_scenarios_briefing())))
 	timeline_toggle=UI.button("Stint timeline ▸",_toggle_timeline);compare_panel.add_child(timeline_toggle)
 	timeline=RaceStrategyChart.new();compare_panel.add_child(timeline);timeline.hide()
 	load_current(true); show_topic(0)
@@ -136,7 +136,7 @@ func select_driver(id: int) -> void:
 
 func populate_sets(control: OptionButton, selected: String) -> void:
 	control.clear()
-	for item in model.cars[driver_id].tyre_sets:
+	for item in model.car(driver_id).tyre_sets:
 		control.add_item("%s · %.0f%% %s" % [item.label, item.life, "used" if item.used else "fresh"])
 		var i = control.item_count - 1; control.set_item_metadata(i, item.id)
 		control.set_item_disabled(i, not WheelTyres.usable(item))
@@ -144,8 +144,8 @@ func populate_sets(control: OptionButton, selected: String) -> void:
 
 func new_draft(template: String) -> void:
 	edited[driver_id] = true
-	var draft = StrategyPlan.draft(model.cars[driver_id], model.laps, template)
-	if model.phase == "race": draft.starting_set = model.cars[driver_id].set_id
+	var draft = StrategyPlan.draft(model.car(driver_id), model.laps, template)
+	if model.phase == "race": draft.starting_set = model.car(driver_id).set_id
 	drafts[driver_id] = draft; revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = true
 	show_draft()
 
@@ -153,8 +153,8 @@ func load_current(discard: bool) -> void:
 	if discard or not drafts.has(driver_id):
 		edited[driver_id] = false
 		var current = model.active_plan(driver_id)
-		drafts[driver_id] = StrategyPlan.draft(model.cars[driver_id], model.laps) if current.is_empty() else current
-		if model.phase == "race": drafts[driver_id].starting_set = model.cars[driver_id].set_id
+		drafts[driver_id] = StrategyPlan.draft(model.car(driver_id), model.laps) if current.is_empty() else current
+		if model.phase == "race": drafts[driver_id].starting_set = model.car(driver_id).set_id
 		revisions[driver_id] = model.policy(driver_id).revision; dirty[driver_id] = current.is_empty()
 	show_draft()
 
@@ -201,12 +201,12 @@ func draft_extension() -> void:
 			var lap = roundi(stop.at - model.track.pit_entry / model.track.length) + 1
 			stops.append({"from_lap": lap, "to_lap": lap, "set_id": stop.set_id})
 		drafts[driver_id].stops = stops
-		drafts[driver_id].starting_set = model.cars[driver_id].set_id
+		drafts[driver_id].starting_set = model.car(driver_id).set_id
 		dirty[driver_id] = true; edited[driver_id] = true; show_draft(); show_topic(1); return
 
 func refresh(force: bool = false) -> void:
 	if model == null or draft_status == null or not drafts.has(driver_id): return
-	var c = model.cars[driver_id]; var policy = model.policy(driver_id)
+	var c = model.car(driver_id); var policy = model.policy(driver_id)
 	var draft = drafts[driver_id]
 	var error = StrategyPlan.validate(draft, c, model.laps, maxi(1, int(floor(c.distance / model.track.length)) + 1) if model.phase == "race" else 0)
 	if int(revisions[driver_id]) != int(policy.revision): error = "A newer plan is active. Discard/reload before applying."
@@ -233,21 +233,21 @@ func refresh(force: bool = false) -> void:
 	override_label.text = "No temporary override. Direct modes remain manual until returned." if active.is_empty() else "
 ".join(active)
 	for button in action_buttons: button.disabled = model.phase != "race" or c.dnf or c.finished
-	if force or preview.is_empty() or RaceForecaster.stale(model, preview, int(policy.revision)) or model.total_time - last_refresh >= 3:
-		preview = model.forecast(driver_id, draft) if dirty[driver_id] else (live_preview if not live_preview.is_empty() and not RaceForecaster.stale(model, live_preview, int(policy.revision)) else model.forecast(driver_id)); last_refresh = model.total_time
+	if force or preview.is_empty() or model.race_forecaster_stale(preview, int(policy.revision)) or model.total_time - last_refresh >= 3:
+		preview = model.forecast(driver_id, draft) if dirty[driver_id] else (live_preview if not live_preview.is_empty() and not model.race_forecaster_stale(live_preview, int(policy.revision)) else model.forecast(driver_id)); last_refresh = model.total_time
 		preview_changed.emit(preview)
 	briefing_text.visible = model.phase in ["briefing", "race_preparation", "qualifying_results"]
-	if briefing_text.visible: briefing_text.tooltip_text = WeekendScenarios.briefing(model); briefing_text.text = "Plan both cars before formation. Starting sets and fuel have real weekend costs."
-	if live_preview.is_empty() or RaceForecaster.stale(model, live_preview, int(policy.revision)) or model.total_time - live_preview.time >= 3:
+	if briefing_text.visible: briefing_text.tooltip_text = model.weekend_scenarios_briefing(); briefing_text.text = "Plan both cars before formation. Starting sets and fuel have real weekend costs."
+	if live_preview.is_empty() or model.race_forecaster_stale(live_preview, int(policy.revision)) or model.total_time - live_preview.time >= 3:
 		live_preview = model.forecast(driver_id)
-	var current_cards = DecisionFeed.for_driver(model, driver_id, policy, live_preview)
+	var current_cards = model.decision_feed_for_driver(driver_id, policy, live_preview)
 	var descriptions: Array[String] = []
 	for card in current_cards:
 		descriptions.append(("Acknowledged · " if card.acknowledged else "") + card.title + "\n" + card.evidence + "\n" + card.fallback)
 	issue_text.tooltip_text = "\n\n".join(descriptions)
 	issue_text.text = "" if current_cards.is_empty() else ("Acknowledged · " if current_cards[0].acknowledged else "") + current_cards[0].title + "\nIgnored: " + current_cards[0].fallback
 	issue_text.visible = not compact_host and not descriptions.is_empty()
-	if timeline and timeline.visible: timeline.present(RaceChartQuery.strategy(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set",""))))
+	if timeline and timeline.visible: timeline.present(model.race_chart_query_strategy(driver_id, preview, str(drafts.get(driver_id,{}).get("starting_set",""))))
 	var pit = preview.pit
 	rejoin.text = "%s · rejoin estimate P%d–P%d
 Net pit loss %.1f–%.1fs · box wait ~%.1fs
@@ -286,4 +286,4 @@ func has_user_edits() -> bool:
 func _toggle_timeline() -> void:
 	timeline.visible=not timeline.visible
 	timeline_toggle.text="Stint timeline ▾" if timeline.visible else "Stint timeline ▸"
-	if timeline.visible: timeline.present(RaceChartQuery.strategy(model,driver_id,preview,str(drafts.get(driver_id,{}).get("starting_set",""))))
+	if timeline.visible: timeline.present(model.race_chart_query_strategy(driver_id, preview, str(drafts.get(driver_id,{}).get("starting_set",""))))

@@ -20,26 +20,13 @@ ALLOWED = {
     'domain': {'domain'},
     'application': {'domain', 'application'},
     'services': {'domain', 'application', 'services'},
-    'ui': {'domain', 'application', 'services', 'ui'},
+    'ui': {'domain', 'application', 'ui'},
+    'composition': {'domain', 'application', 'services', 'ui', 'composition'},
 }
 ENGINE_AUTHORITY = {'Node', 'Node2D', 'Node3D', 'Control', 'SceneTree', 'Timer',
                     'Input', 'DisplayServer', 'RenderingServer', 'AudioServer',
                     'FileAccess', 'DirAccess', 'OS', 'ProjectSettings', 'ResourceLoader', 'App'}
-RENDERERS = {
-    'scripts/ui/editor.gd', 'scripts/ui/weekend_entry.gd', 'scripts/ui/weekend_end.gd',
-    'scripts/ui/track_canvas.gd', 'scripts/ui/battle_overlay.gd',
-    'scripts/ui/rejoin_overlay.gd', 'scripts/ui/surface_lab.gd',
-    'scripts/ui/race_weekend/stint_history.gd',
-    'scripts/ui/race_weekend/team_intent_timeline.gd',
-    'scripts/ui/race_weekend/strategy_chart.gd',
-    'scripts/ui/race_weekend/minimal/workspace.gd',
-    'scripts/ui/race_weekend/minimal/driver_card.gd',
-}
-CLOCK_EXCEPTIONS = {
-    # Editor identifier generation and elapsed compile diagnostics, not racing rules.
-    ('scripts/domain/track_document.gd', 'node_at'),
-    ('scripts/domain/track_geometry.gd', 'compile'),
-}
+
 
 @dataclass(frozen=True)
 class Violation:
@@ -82,11 +69,8 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
             if own == 'domain' and name in ENGINE_AUTHORITY:
                 fail(path, match.start(), 'domain-engine-authority', name)
             if own == 'domain' and name == 'Time':
-                functions = list(re.finditer(r'^(?:static )?func (\w+)\(', text[:match.start()], re.M))
-                function = functions[-1][1] if functions else ''
-                if (path, function) not in CLOCK_EXCEPTIONS:
-                    fail(path, match.start(), 'domain-wall-clock', name)
-            if path in RENDERERS and (name in {'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage'}):
+                fail(path, match.start(), 'domain-wall-clock', name)
+            if own == 'ui' and (name in {'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts', 'RaceMomentDirector'}):
                 fail(path, match.start(), 'detached-renderer', name)
         # Positions are preserved by mask(), so literals can be recovered without
         # matching "load(...)" inside comments or documentation strings.
@@ -102,6 +86,10 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
             for match in re.finditer(r'\bTrackGeometry\s*\.\s*new\s*\(', text):
                 fail(path, match.start(), 'editor-owns-compilation', 'Inject an application draft compiler')
         if own == 'ui':
+            for match in re.finditer(r'\.\s*source\s*\.\s*get_ref\s*\(', text):
+                fail(path, match.start(), 'presentation-private-authority', 'record source aggregate')
+            for match in re.finditer(r'\.\s*(_source|_simulation|_director|_player)\b', text):
+                fail(path, match.start(), 'presentation-private-authority', match[1])
             for match in re.finditer(r'\.\s*(advance|step|tick)\s*\(', text):
                 fail(path, match.start(), 'ui-drives-simulation', match[1])
     return errors, len(sources)
