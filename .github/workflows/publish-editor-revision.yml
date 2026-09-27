@@ -1,0 +1,68 @@
+name: Publish tested editor revision guard
+on:
+  push:
+    branches: ['refactor/composable-systems-weekend-flow']
+    paths: ['.github/workflows/publish-editor-revision.yml']
+permissions:
+  contents: read
+jobs:
+  publish:
+    if: github.repository == 'Luis85/motorsport-manager' && github.event.before == '8af65efc293dda21742681b53c41cbc1e64672a4'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 2
+      - name: Apply exact tested edits and remove the transfer workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = 8af65efc293dda21742681b53c41cbc1e64672a4
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/application/editor/track_editor_session.gd');s=p.read_text();s=s.replace('func commit(draft: Dictionary) -> bool:', 'func commit(draft: Dictionary, expected_revision: int) -> bool:');s=s.replace('if _transaction_revision >= 0 and _transaction_revision != revision:', 'if expected_revision != revision or (_transaction_revision >= 0 and _transaction_revision != revision):');s=s.replace('func save(port: TrackEditorPort, draft: Dictionary) -> Dictionary:', 'func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> Dictionary:');s=s.replace('if not commit(draft):','if not commit(draft, expected_revision):');p.write_text(s)
+          p=Path('scripts/ui/editor.gd');s=p.read_text();s=s.replace('var document: Dictionary = {}', 'var document: Dictionary = {}\n# Revision of the displayed draft, not the current session at commit time.\nvar document_revision: int = 0');s=s.replace('session.commit(document)', 'session.commit(document, document_revision)');s=s.replace('session.save(storage, document)', 'session.save(storage, document, document_revision)');s=s.replace('document = session.read_document()', 'document = session.read_document(); document_revision = session.revision');s=s.replace('document = session.cancel()', 'document = session.cancel(); document_revision = session.revision');s=s.replace('document = session.undo()', 'document = session.undo(); document_revision = session.revision');s=s.replace('document = session.redo()', 'document = session.redo(); document_revision = session.revision');s=s.replace('\t\tif status: status.text = error\n\t\treturn\n\tsync_history()', '\t\tif status: status.text = error\n\t\treturn\n\tdocument_revision = session.revision\n\tsync_history()');p.write_text(s)
+          p=Path('tests/editor_session_tests.gd');s=p.read_text()
+          for arg in ['newer','draft','bad','session.read_document()']:
+           s=s.replace('session.commit('+arg+')', 'session.commit('+arg+', session.revision)')
+          for args in ['self, document','port, draft','port, session.read_document()','nested, session.read_document()','ChangedPort.new(), latest']:
+           s=s.replace('session.save('+args+')','session.save('+args+', session.revision)')
+          needle='\tvar report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}'
+          extra='''\t# A draft carries the revision observed when it was created. Undo/replace/save
+          \t# cannot turn a delayed commit into an unguarded immediate edit.
+          \tvar guarded = TrackEditorSession.new(original)
+          \tvar first = guarded.read_document()
+          \tvar first_revision = guarded.revision
+          \tfirst.name = "Committed first"
+          \tcheck(guarded.commit(first, first_revision), "Revision-bound edit commits on its observed document")
+          \tvar delayed = guarded.read_document()
+          \tvar delayed_revision = guarded.revision
+          \tdelayed.name = "Delayed gesture"
+          \tguarded.begin()
+          \tguarded.undo()
+          \tvar state_before = guarded.read_document()
+          \tvar history_before = guarded.history()
+          \tcheck(not guarded.commit(delayed, delayed_revision), "Undo invalidates a delayed gesture even after clearing the transaction marker")
+          \tcheck(guarded.read_document() == state_before and guarded.history() == history_before, "Stale rejection preserves canonical road and redo history")
+          \tvar writes_before = port.writes
+          \tcheck(not guarded.save(port, delayed, delayed_revision).ok and port.writes == writes_before, "Stale saves never reach the repository")
+          \tguarded.redo()
+          \tcheck(not guarded.commit(delayed, delayed_revision), "Redo cannot resurrect an old edit revision")
+          \tguarded.replace(original)
+          \tcheck(not guarded.commit(delayed, delayed_revision), "Document replacement also rejects prior revision drafts")
+          \tvar current = guarded.read_document()
+          \tcheck(guarded.commit(current, guarded.revision), "No-op edit on the current revision remains valid")
+          '''
+          assert needle in s;s=s.replace(needle,extra+needle);p.write_text(s)
+          PY
+          git rm .github/workflows/publish-editor-revision.yml
+          git add scripts/application/editor/track_editor_session.gd scripts/ui/editor.gd tests/editor_session_tests.gd
+          git diff --cached --check
+          test "$(git write-tree)" = 30445cb43cea90cb54a68b72ca4a05201ffa2e5c
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: bind editor commits and saves to the observed document revision'
+          git push origin HEAD:refs/heads/refactor/composable-systems-weekend-flow
