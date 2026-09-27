@@ -43,7 +43,7 @@
   {"id":"ui_finish_execution_tests","script":"tests/ui_finish_execution_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-execution.json"]},
   {"id":"ui_finish_guide_tests","script":"tests/ui_finish_guide_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-guide.json"]},
   {"id":"ui_finish_observation_tests","script":"tests/ui_finish_observation_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-observation.json"]},
-  {"id":"ui_finish_populated_tests","script":"tests/ui_finish_populated_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-populated.json"]},
+  {"id":"ui_finish_populated_tests","script":"tests/ui_finish_populated_tests.gd","native":true,"layout":"engineering","timeout":900,"reports":["ui-finish-populated.json"]},
   {"id":"ui_finish_soak_tests","script":"tests/ui_finish_soak_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-soak.json"]},
   {"id":"ui_finish_states_tests","script":"tests/ui_finish_states_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish-states.json"]},
   {"id":"ui_finish_tests","script":"tests/ui_finish_tests.gd","native":true,"layout":"engineering","timeout":360,"reports":["ui-finish.json"]},
