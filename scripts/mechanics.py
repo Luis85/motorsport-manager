@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Inspect rule contracts or scaffold a no-op mechanic and its registered regression.
 
-Generated providers are NOT enabled in any production profile. No GDScript is
-executed by this tool: it reads explicit JSON definitions and typed hook headers.
+Generated providers are NOT enabled in any production profile. Inspection and
+scaffolding read explicit source contracts; validate delegates actual execution
+to the existing isolated verification runner and its single suite registry.
 """
 from __future__ import annotations
 
@@ -46,13 +47,58 @@ def catalog(root: Path) -> list[dict]:
     for path in sorted((root / MECHANICS).glob('*_mechanic.gd')):
         text = path.read_text(encoding='utf-8')
         match = re.search(r'^func definition\(\) -> Dictionary:\n\treturn (\{[^\n]+\})', text, re.M)
-        if not match:
+        if path.name == 'race_mechanic.gd':
             continue  # The interface intentionally returns no definition.
-        item = json.loads(match[1])
+        if not match:
+            raise ValueError(f'{path.relative_to(root)}: expected a literal definition() record; cannot silently omit a provider')
+        try:
+            item = json.loads(match[1])
+        except ValueError as error:
+            raise ValueError(f'{path.relative_to(root)}: invalid definition JSON: {error}') from error
+        if not isinstance(item, dict) or not isinstance(item.get('id'), str) or not item['id']:
+            raise ValueError(f'{path.relative_to(root)}: definition requires a non-empty identity')
+        if any(existing['id'] == item['id'] for existing in result):
+            raise ValueError(f'{path.relative_to(root)}: duplicate mechanic identity {item["id"]}')
         item['source'] = path.relative_to(root).as_posix()
         item['profiles'] = order[order.index(item['id']):] if item['id'] in order else []
         result.append(item)
     return result
+
+
+def validation_suites(root: Path, identities: list[str] | None = None) -> list[str]:
+    """Select registered runtime contracts, never discover or enable runtime scripts."""
+    providers = catalog(root)
+    known = {item['id']: item for item in providers}
+    selected = list(known) if not identities else list(dict.fromkeys(identities))
+    unknown = set(selected) - set(known)
+    if unknown:
+        raise ValueError('Unknown mechanics: ' + ', '.join(sorted(unknown)) + '; run the list command')
+    registered = json.loads((root / REGISTRY).read_text(encoding='utf-8'))
+    available = {item['id'] for item in registered}
+    suites = ['mechanics_tests']
+    for identity in selected:
+        if not known[identity]['profiles']:
+            suites.append('extension_' + identity)
+    missing = set(suites) - available
+    if missing:
+        raise ValueError('Register behavior tests before validating: ' + ', '.join(sorted(missing)))
+    return suites
+
+
+def run_validation(suites: list[str], godot: str | None) -> int:
+    """Use the normal import, preflight, timeout, error and evidence policy in-process."""
+    from verification_run import main as verify_main
+    arguments = ['verify.py']
+    if godot:
+        arguments += ['--godot', godot]
+    for suite in suites:
+        arguments += ['--suite', suite]
+    previous = sys.argv
+    try:
+        sys.argv = arguments
+        return verify_main()
+    finally:
+        sys.argv = previous
 
 
 def scaffold(root: Path, identity: str, hooks: list[str], profile: str) -> dict[Path, str]:
@@ -83,6 +129,16 @@ def scaffold(root: Path, identity: str, hooks: list[str], profile: str) -> dict[
                    '\t# Preserve the predecessor until a separately tested rule is implemented.\n\t'
                    + ('return ' if returns != 'void' else '')
                    + f'sim.mechanics.before("{identity}", "{hook}", [' + ', '.join(names) + '])\n')
+    probes = ''
+    # Explicit safe observations exercise both scalar and typed-car signatures.
+    # Other hooks still require author-written behavior tests, not guessed inputs.
+    for hook, arguments in [('forecast_parameters', '3'), ('weather_advice', '3'),
+                            ('neutral', '{owner}.cars[3]')]:
+        if hook in hooks:
+            candidate = arguments.format(owner='candidate')
+            reference = arguments.format(owner='reference')
+            probes += (f'\tcheck(candidate.{hook}({candidate}) == reference.{hook}({reference}), '
+                       f'"Generated {hook} dispatch preserves its predecessor observation")\n')
     profile_class = profile.capitalize() + 'RaceSim'
     test_path = Path(f'tests/extensions/{identity}_tests.gd')
     report_name = f'extension-{identity}.json'
@@ -106,13 +162,13 @@ func run() -> void:
 	var candidate = RaceSim.new(track)
 	var providers = RaceMechanicProfiles.build("{profile}")
 	providers.append({class_name}.new())
-	check(candidate.mechanics.configure(providers), "Generated provider satisfies its construction contract")
-	check(candidate.mechanics.install(track, {{}}), "Generated profile installs once")
+	check(candidate.mechanics.configure(providers), "Generated provider satisfies its construction contract: " + candidate.mechanics.last_error)
+	check(candidate.mechanics.install(track, {{}}), "Generated profile installs once: " + candidate.mechanics.last_error)
 	check(candidate.has_mechanic("{identity}"), "The explicit composition contains the extension")
 	check(RaceStateValue.fingerprint(reference.snapshot()) == RaceStateValue.fingerprint(candidate.snapshot()), "No-op installation preserves full state and RNG")
 	var action = "practice_start" if reference.has_mechanic("practice") else "qualify"
 	check(candidate.command(action) and reference.command(action), "Both profiles enter an actual active session")
-	for index in range(40):
+{probes}	for index in range(40):
 		reference.step()
 		candidate.step()
 	check(RaceStateValue.fingerprint(reference.snapshot()) == RaceStateValue.fingerprint(candidate.snapshot()), "Pass-through hooks preserve authoritative progression")
@@ -169,6 +225,10 @@ def main() -> int:
     sub = parser.add_subparsers(dest='command', required=True)
     sub.add_parser('list', help='Print declared providers and production profiles as JSON')
     sub.add_parser('hooks', help='Print authoritative extension signatures as JSON')
+    validate = sub.add_parser('validate', help='Run registered construction and extension tests in isolated Godot')
+    validate.add_argument('--mechanic', action='append', dest='identities', help='Limit inactive extension tests; production construction tests always run')
+    validate.add_argument('--godot', help='Pinned Godot executable; otherwise use GODOT_BINARY or PATH')
+    validate.add_argument('--dry-run', action='store_true', help='Show selection without claiming validation or executing Godot')
     create = sub.add_parser('scaffold', help='Create an inactive no-op provider and registered test')
     create.add_argument('identity')
     create.add_argument('--hook', action='append', dest='hooks')
@@ -180,6 +240,12 @@ def main() -> int:
             result = catalog(ROOT)
         elif args.command == 'hooks':
             result = {name: f'({params}) -> {returns}' for name, (params, returns) in hook_contracts(ROOT).items()}
+        elif args.command == 'validate':
+            selected = validation_suites(ROOT, args.identities)
+            if not args.dry_run:
+                return run_validation(selected, args.godot)
+            result = {'status': 'planned', 'suites': selected, 'engine_executed': False,
+                      'scope': 'Registered construction and behavior tests; not proof of arbitrary new rules'}
         else:
             files = scaffold(ROOT, args.identity, args.hooks or ['forecast_parameters'], args.profile)
             if not args.dry_run:
