@@ -71,7 +71,8 @@ explicit sequence reaches practice results, qualifying, qualifying results and
 formation; short random recipes alone are not evidence of a completed weekend.
 
 Base commands now delegate session progression, driver-mode changes and pit
-operations to named aggregate-owned methods. `command_responsibility_tests` is
+operations to the aggregate-coordinated `RaceSessionOrders`, `RaceDriverOrders`
+and `RacePitOrders` services. `command_responsibility_tests` is
 registered alongside the unchanged complete suite, not merely present on disk.
 Command legality, recording, validation order and mechanic predecessor behavior
 remain under the aggregate; there is no second command dispatcher.
@@ -95,11 +96,75 @@ as a document revision or resurrect stale gestures after restoring history. The
 remaining large rendering/orchestration modules are not arbitrarily partitioned
 just to satisfy the advisory line count.
 
-## Completion boundary
+## Repeated application lifecycle
 
-The iteration remains open until the two selected responsibility reductions,
-repeated weekend lifecycle coverage, paired shipping runtime measurements and
-standalone export/recovery journeys have evidence. The full registered regression
-gate, 24 unchanged sporting checkpoints and native layout/physical journeys remain
-mandatory. Focused reproduction/sequence/gesture passes do not substitute for that
-acceptance. Windows build success must be distinguished from execution on Windows.
+`weekend_lifecycle_tests` runs three complete two-lap weekends through the actual
+application and minimal controls: practice, menu, resume, physical qualifying,
+formation, lights, race finish, results, menu, and a new entry. It does not assign
+phases, finishing positions, lap times or results to make the scenario pass.
+The separate pre-existing six-lap physical journey remains registered.
+
+Weak references establish disposal of replaced views, runners, aggregates and
+recordings. Retained old presentation handles return empty observations and
+cannot target the next weekend. Warmed node/resource/orphan counts are compared
+at the same menu boundary; OS resident-memory equality is deliberately not used.
+The native editor gesture suite separately reopens, previews and cancels editors.
+
+## Runtime measurement and bounded optimization
+
+`shipping_runtime_tests` prepares an actual populated practice/qualifying/formation
+fixture before measuring the shipping minimal workspace. It separates query,
+native timing updates, full refresh, simulation steps, serialization, filesystem
+writes, editor compilation and inspector work. Native wall-time runs report
+requested speed, actual delivered simulation time, frame intervals, scheduler
+and query calls, draw calls, and the time actually supplied to the clock.
+Controlled-frame equivalence and real-time throughput are separate experiments.
+
+The `paired_runtime.py` wrapper uses the existing verification importer and runner
+with frozen baseline/candidate source directories and identical harness bytes.
+It alternates execution order, keeps raw samples, verifies source identities
+before and after each run, and rejects mismatched hardware, fixtures or controlled
+sporting outcomes. Timings are evidence, not a new hardware-dependent CI gate.
+See [measurement protocol and results](runtime-performance.md).
+
+The measured candidate replaces repeated temporary path/result arrays in
+`RaceRecord.integer_paths` with one traversal stack and detached retained paths.
+`record_traversal_tests` compares it against the former implementation over seeded
+nested values, then verifies the ordinary JSON/replay validation and restoration
+contract. Save/replay schemas, insertion order, numeric meaning, supplied prefixes,
+caller ownership and gameplay randomness remain unchanged. There is no cache.
+
+## Advisory findings and review priorities
+
+The quality workflow retains full base and candidate inventories and adds exact
+new/resolved/unchanged matching in `reports/quality/comparison/`. Line movement is
+not new debt. Renames and changed diagnostic messages are disclosed as new/resolved,
+not guessed to be equivalent. Missing tools, changed policies or different analyzer
+versions make the comparison explicitly unavailable, never falsely resolved.
+
+Correctness and ownership in the selected command/gesture responsibilities take
+priority over formatting. The complete inventory is not a bug count. Four legacy
+source exceptions remain visible: `race_sim.gd` (movement and phase orchestration),
+`weekend.gd` and `pitwall_workspace.gd` (retained diagnostic UI), and `track_canvas.gd`
+(rendering and editor presentation). They are not split into forwarding files to
+make the advisory 400-line source limit appear satisfied. New modules and tests
+fit the 400/450 code-line budgets. No quality policy or enforcement ratchet changed.
+
+## Packaged execution and completion boundary
+
+The standalone workflow builds and executes Linux and Windows debug/release
+applications, including restart, Unicode/reference-image round trips and real
+interrupted-replacement recovery. See [the build and recovery contract](standalone-validation.md).
+It tests the same permission-preserving archive delivered to players. A Windows
+cross-build is not accepted as a Windows runtime test.
+
+The registry and monotonic regression floor contain all 74 suites, including the
+seven runtime-confidence additions to the original 67. The full six-shard gate,
+24 unchanged sporting checkpoints and native layout/physical journeys remain
+mandatory. Python developer-tool contracts also run with the pinned engine in
+the Runtime confidence workflow, separately from advisory style analysis.
+
+Completion requires the exact published candidate's full regression, isolated
+reproduction and all four target-OS packaged smoke journeys to pass. Focused local
+measurements and earlier-source green jobs do not substitute for those results.
+The PR must remain draft while any of those acceptance steps is missing or failed.

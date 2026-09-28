@@ -32,6 +32,10 @@ jobs:
           godot --version > reports/toolchain/engine.txt
           curl --fail --location --retry 3 "https://raw.githubusercontent.com/godotengine/godot/${GODOT_VERSION}-stable/LICENSE.txt" -o reports/toolchain/LICENSE.txt
           git rev-parse HEAD > reports/toolchain/source.txt
+      - name: Verify developer tooling contracts with the pinned native engine
+        env:
+          VERIFICATION_TEST_GODOT: /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+        run: python3 -m unittest discover -s tests -p 'test_*.py' > reports/tooling-contracts.log 2>&1
       - name: Exercise recorded boundary diagnostics
         run: python3 scripts/verify.py --suite reproduction_tests
       - name: Reproduce the deliberate test defect in a second isolated process

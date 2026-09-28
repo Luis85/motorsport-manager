@@ -8,7 +8,8 @@ migration or sporting save migration is involved.
 ## Build and play
 
 Download a `standalone-linux-release` or `standalone-windows-release` artifact
-from the **Standalone application** workflow. Extract it into a writable folder.
+from the **Standalone application** workflow. Extract the downloaded artifact ZIP,
+then extract its inner `standalone-<platform>-<mode>.tar.gz` into a writable folder.
 Keep `Motorsport Manager.pck` beside the executable; start the executable, not
 `project.godot`. The engine and source editor are not needed to play. Debug and
 release builds are separate artifacts, with separate acceptance reports.
@@ -108,3 +109,23 @@ https://docs.godotengine.org/en/4.6/tutorials/editor/command_line_tutorial.html
 
 Export filters and configuration are described in the engine's export guide:
 https://docs.godotengine.org/en/4.6/tutorials/export/exporting_projects.html
+
+## Artifact transport regression
+
+The first hosted Linux runs reached `create` but could not start the executable:
+`Permission denied`. The source export had executable permissions; GitHub's
+artifact ZIP transport normalized files to 0644. The workflow now uploads a tar
+archive and extracts that exact distributed archive before the native smoke.
+It does not silently repair the runtime copy with chmod and call the broken
+player download verified. `test_standalone_archive.py` checks executable mode,
+actual launch, manifest hashes, and Unicode/space paths across the ZIP/tar journey.
+
+GitHub documents artifact permission loss and tar-based preservation:
+https://github.com/actions/upload-artifact#permission-loss
+
+Windows extraction also uses GNU tar's `--force-local`: the native hosted job
+exposed `Cannot connect to D: resolve failed` when its drive colon was interpreted
+as a remote archive host. The transport regression includes a colon-bearing
+archive name and launches the extracted executable after validating its hashes.
+This fixture explains the wrapper fix; actual Windows execution is still checked
+by each Windows native-smoke job.
