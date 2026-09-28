@@ -305,7 +305,7 @@ static func from_record(record: Dictionary) -> RaceCar:
 			if expected == TYPE_INT and float(value) != floorf(float(value)):
 				return null
 			car.set(field, int(value) if expected == TYPE_INT else float(value))
-		elif typeof(value) == expected and _record_value(value):
+		elif typeof(value) == expected and RaceStateValue.serializable(value):
 			car.set(field, RaceStateValue.copy(value))
 		else:
 			return null
@@ -316,24 +316,3 @@ static func records(cars: Array[RaceCar]) -> Array:
 	for car in cars:
 		result.append(car.to_record())
 	return result
-
-static func _record_value(value: Variant, depth: int = 0) -> bool:
-	# A record may not retain engine Objects or cyclic caller collections.
-	if depth > 24:
-		return false
-	match typeof(value):
-		TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_STRING, TYPE_STRING_NAME:
-			return true
-		TYPE_FLOAT:
-			return is_finite(value)
-		TYPE_ARRAY:
-			if value.size() > 20000: return false
-			for item in value:
-				if not _record_value(item, depth + 1): return false
-			return true
-		TYPE_DICTIONARY:
-			if value.size() > 20000: return false
-			for key in value:
-				if typeof(key) not in [TYPE_STRING, TYPE_STRING_NAME] or not _record_value(value[key], depth + 1): return false
-			return true
-	return false

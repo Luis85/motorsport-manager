@@ -270,24 +270,8 @@ static func draft_errors(value: Dictionary) -> Array[String]:
 	return errors
 
 static func serializable(value: Variant, depth: int = 0) -> bool:
-	if depth > 24:
-		return false
-	match typeof(value):
-		TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_STRING, TYPE_STRING_NAME:
-			return true
-		TYPE_FLOAT:
-			return is_finite(value)
-		TYPE_ARRAY:
-			if value.size() > 20000: return false
-			for item in value:
-				if not serializable(item, depth + 1): return false
-			return true
-		TYPE_DICTIONARY:
-			if value.size() > 20000: return false
-			for key in value:
-				if typeof(key) not in [TYPE_STRING, TYPE_STRING_NAME] or not serializable(value[key], depth + 1): return false
-			return true
-	return false
+	# Public authoring compatibility; shape policy is shared, domain rules are not.
+	return RaceStateValue.serializable(value, depth)
 
 ## Publishing requires the same safe draft plus the complete track contract.
 static func publication_errors(value: Dictionary) -> Array[String]:
