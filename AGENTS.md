@@ -58,3 +58,5 @@ unrelated feature change.
 Include exact source identity, executed checks, skipped/unavailable checks and
 native visual evidence in the handoff. Screenshots of synthetic fixture states
 are not evidence of a completed physical race or human usability validation.
+
+Advisory rollout, report interpretation and the initial debt inventory: `docs/code-quality.md`.

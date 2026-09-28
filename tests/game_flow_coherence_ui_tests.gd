@@ -84,6 +84,27 @@ func shell_profiles() -> void:
 			check(not editor.dirty, "Viewing inspector and changing typography does not edit the document")
 			await capture("coherence-editor-" + tag, "Actual editor document; no geometry modification")
 
+func window_key(window: Window, code: Key) -> void:
+	# Popups own a viewport; root injection does not target an embedded popup.
+	for down in [true, false]:
+		var event = InputEventKey.new()
+		event.keycode = code; event.pressed = down
+		event.window_id = window.get_window_id()
+		Input.parse_input_event(event)
+		await settle(3)
+
+func live_settings_resize() -> void:
+	root.size = Vector2i(1440, 900); root.content_scale_size = root.size
+	app.settings.pitwall_text_scale = 1.3
+	game.show_settings(); await settle(8)
+	var settings = game.content.get_child(0)
+	for viewport in [Vector2i(1100, 720), Vector2i(1440, 900)]:
+		root.size = viewport; root.content_scale_size = viewport; await settle(8)
+		check(settings == game.content.get_child(0), "Resize preserves the same settings draft and controls")
+		check(settings.columns.columns == (1 if viewport.x == 1100 else 2), "Live settings resize reflows columns")
+		complete_button(settings.save_button, "Live-resized settings save")
+		check(inside(settings.scroll), "Live-resized settings content stays in the viewport")
+
 func settings_journey() -> void:
 	root.size = Vector2i(1100, 720); root.content_scale_size = root.size
 	app.settings.pitwall_text_scale = 1.0
@@ -91,8 +112,14 @@ func settings_journey() -> void:
 	var settings = game.content.get_child(0)
 	var before = app.settings.duplicate(true)
 	settings.text_choice.grab_focus()
-	await key(KEY_ENTER); await key(KEY_END); await key(KEY_ENTER)
+	await key(KEY_ENTER)
+	var text_popup = settings.text_choice.get_popup()
+	check(text_popup.visible, "Keyboard opens the native text-size popup")
+	await window_key(text_popup, KEY_DOWN); await window_key(text_popup, KEY_DOWN)
+	check(text_popup.get_focused_item() == 2, "Native arrow keys focus the enlarged-text option")
+	await window_key(text_popup, KEY_ENTER)
 	check(settings.draft.pitwall_text_scale == 1.3 and settings.has_changes(), "Native choice stages enlarged text")
+	if not settings.has_changes(): return # Preserve the primary failure; later draft tests need this precondition.
 	check(app.settings == before, "Preview does not mutate saved/application settings")
 	complete_button(settings.save_button, "Enlarged settings save")
 	await click(settings.back_button)
@@ -137,6 +164,7 @@ func run() -> void:
 	model.paused = true
 	theme_contracts()
 	await shell_profiles()
+	await live_settings_resize()
 	await settings_journey()
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures, "screenshots": captures.size(), "captures": captures}
 	Storage.write_json("res://reports/game-flow-coherence-ui.json", report)

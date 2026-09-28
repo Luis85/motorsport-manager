@@ -183,3 +183,47 @@ understands replacement/cancel/save, and can find saved/unsaved editor state.
 Record confusion, wrong turns and failures; do not infer success from test counts.
 Windows/export, actual DPI, controller, screen-reader, localization, >130% text
 and representative-device performance require separate evidence.
+
+## Native follow-through and regression repairs
+
+The first full hosted run on `d2a7a841b027e6432ad8f4392c66f7c1657757d7`
+reproduced welcome-footer clipping at 1100×720 / 130%, an overflowing retained
+Engineering comparison/form, and guide overlap. These were not waived. The
+shared theme now has explicit regular and compact densities. Engineering keeps
+its established 13-point base and 32-pixel targets; the player-facing Minimal
+pitwall keeps its 14-point base and 36-pixel targets. Both honor the selected
+100/115/130% scale. Density is contextual, not an automatic text reduction.
+Welcome instructions group each heading with its copy rather than interleaving
+extra spacer controls. The original fit and overlap assertions remain.
+
+The former public-profile contrast assertion assumed a light background. It now
+uses `(max(luminance(foreground), luminance(background)) + 0.05) /
+(min(luminance(foreground), luminance(background)) + 0.05)` with the unchanged
+4.5:1 threshold. Native chart labels choose contrasting black/white ink against
+their actual opaque tyre color; the underlying compound colors are unchanged.
+The actual map and its labels retain their own light-surface palette.
+
+Native internal controls participate in scaling, including file-dialog fields.
+Base sizes are captured once; repeated scaling is idempotent. Popup themes are
+cached by base size and scale, so the compact and regular contexts cannot borrow
+an incorrectly sized popup. This follows Godot's distinction between cascading
+theme resources and non-cascading local overrides. Focus styles remain transparent
+outlines so they do not conceal normal/selected backgrounds.
+
+The new full-shell regression additionally resizes an already open Settings view
+both ways, preserving its draft and fixed footer. Keyboard popup events carry
+the popup's real window ID, matching the existing native engine-selector tests;
+root-window injection did not exercise the embedded popup. Native dialog
+activation uses the dialog's viewport. Tests never emit item-selected or save
+signals to pretend a user successfully operated the controls.
+
+An interrupted publication typo was repaired before the recovery checkpoint
+reached the PR. A separate temporary tooling branch recovered the exact source
+and pinned engine through Actions because direct container networking was
+unavailable. That workflow and its branch history are not part of the shipping
+PR. Runtime engine files, Python wheels and local saves are not source artifacts.
+
+Verification evidence is recorded against exact source trees in the PR and the
+accompanying reports, rather than declaring an earlier failed or partial run a
+full pass. New quality findings stay advisory; all retained native/domain checks,
+the exact-source aggregate, and the 24 pinned sporting hashes remain required.
