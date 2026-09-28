@@ -26,6 +26,13 @@ ALLOWED = {
 ENGINE_AUTHORITY = {'Node', 'Node2D', 'Node3D', 'Control', 'SceneTree', 'Timer',
                     'Input', 'DisplayServer', 'RenderingServer', 'AudioServer',
                     'FileAccess', 'DirAccess', 'OS', 'ProjectSettings', 'ResourceLoader', 'App'}
+PRESENTATION_AUTHORITY = {
+    'TrackReferencePreview', 'RaceSessionRunner', 'ReplayPlayback', 'RaceViewSession',
+    'MinimalRaceSession', 'ReplaySessionBinding', 'RaceCar', 'RaceSim', 'PracticeRaceSim',
+    'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess',
+    'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts',
+    'RaceMomentDirector',
+}
 
 
 @dataclass(frozen=True)
@@ -54,6 +61,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
         match = re.search(r'^class_name\s+(\w+)', text, re.M)
         if match:
             classes[match[1]] = path
+    authority_paths = {path for name, path in classes.items() if name in PRESENTATION_AUTHORITY}
     errors: list[Violation] = []
     def fail(path: str, pos: int, rule: str, detail: str) -> None:
         errors.append(Violation(path, code[path][:pos].count('\n') + 1, rule, detail))
@@ -70,7 +78,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                 fail(path, match.start(), 'domain-engine-authority', name)
             if own == 'domain' and name == 'Time':
                 fail(path, match.start(), 'domain-wall-clock', name)
-            if own == 'ui' and (name in {'TrackReferencePreview', 'RaceSessionRunner', 'ReplayPlayback', 'RaceViewSession', 'MinimalRaceSession', 'ReplaySessionBinding', 'RaceCar', 'RaceSim', 'PracticeRaceSim', 'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess', 'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts', 'RaceMomentDirector'}):
+            if own == 'ui' and name in PRESENTATION_AUTHORITY:
                 fail(path, match.start(), 'detached-renderer', name)
         # Positions are preserved by mask(), so literals can be recovered without
         # matching "load(...)" inside comments or documentation strings.
@@ -80,6 +88,8 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
                 target = literal[2].removeprefix('res://')
                 if target.endswith('.gd') and layer(target) not in ALLOWED[own]:
                     fail(path, match.start(), 'literal-dependency', target)
+                if own == 'ui' and target in authority_paths:
+                    fail(path, match.start(), 'detached-renderer', f'Literal authority reference: {target}')
             elif own in {'domain', 'application'} and match[1]:
                 fail(path, match.start(), 'dynamic-load', 'Inward layers require explicit dependencies')
         if path in {'scripts/ui/editor.gd', 'scripts/ui/track_canvas.gd'}:
