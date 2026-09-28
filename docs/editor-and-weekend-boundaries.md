@@ -1,6 +1,6 @@
 # Track editor and weekend-flow contracts — 0.19.0
 
-This continuation is stacked on PR #18. It retains the five driver actions and
+The foundation completed in merged PR #19 retains the five driver actions and
 existing physical practice, qualifying, formation and racing rules. It adds no
 vehicle/driver modifier and makes no physics calibration claim.
 
@@ -12,6 +12,14 @@ edits a copy. Commit validates its observed revision and accepts another copy.
 Cancel returns canonical data without destroying the redo branch. Undo, redo,
 save and replacement invalidate older drafts; an old gesture cannot commit by
 substituting the current revision. Rejected changes preserve canonical state.
+
+The pure `TrackDocument` contract owns `draft_errors` and the bounded serialized
+value traversal. `publication_errors` checks a safe editable draft before the
+complete circuit rules used for save/export. The application session owns when
+those policies run and when state can commit; it no longer embeds a parallel
+copy of document rules. An open/short/unnamed draft is legal editing state, not a
+publishable circuit. Legacy positional-node imports keep their validated
+normalization path. Validation never mutates the caller's draft.
 
 Saving goes through `TrackEditorPort`. The session marks a document saved only
 after the adapter reports success. A failed write retains the edited document

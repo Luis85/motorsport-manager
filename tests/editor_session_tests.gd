@@ -51,6 +51,7 @@ func run() -> void:
 	var source = Storage.read_json("res://data/tracks/hillside.json").data
 	var session = TrackEditorSession.new(source)
 	var original = session.read_document()
+	draft_contract_tests(original)
 	source.nodes[0][0] += 500
 	check(session.read_document() == original, "Editor owns its input rather than a library alias")
 	var draft = session.read_document()
@@ -153,7 +154,71 @@ func run() -> void:
 	check(not guarded.commit(delayed, delayed_revision), "Document replacement also rejects prior revision drafts")
 	var current = guarded.read_document()
 	check(guarded.commit(current, guarded.revision), "No-op edit on the current revision remains valid")
-	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
+	running_track_isolation(original)
+	var compilation = compilation_measurements(original)
+	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures, "compilation": compilation}
 	Storage.write_json("res://reports/editor-session-tests.json", report)
 	print("EDITOR_SESSION_TESTS ", JSON.stringify(report))
 	quit(0 if failures.is_empty() else 1)
+
+func draft_contract_tests(document: Dictionary) -> void:
+	var before = RaceStateValue.fingerprint(document)
+	check(TrackDocument.draft_errors(document).is_empty() and TrackDocument.publication_errors(document).is_empty(), "The pure document owner accepts a complete normalized circuit")
+	var unfinished = document.duplicate(true)
+	unfinished.nodes = [unfinished.nodes[0]]
+	unfinished.closed = false; unfinished.name = ""
+	check(TrackDocument.draft_errors(unfinished).is_empty(), "An unnamed open one-point road is a safe editable draft")
+	check(not TrackDocument.publication_errors(unfinished).is_empty(), "Publishing does not confuse a safe draft with a complete circuit")
+	var invalid = unfinished.duplicate(true); invalid.visual = []
+	check(TrackDocument.draft_errors(invalid) == ["Invalid draft metadata: visual"], "Draft validation preserves actionable first-stage metadata errors")
+	check(TrackDocument.publication_errors(invalid) == TrackDocument.draft_errors(invalid), "Publishing returns draft errors before complete-road errors")
+	invalid = document.duplicate(true); invalid.nodes[0].w = 4
+	check(TrackDocument.draft_errors(invalid) == ["Road width must remain between 5 and 40 metres."], "Editable road-width policy is owned by the pure document contract")
+	for value in [NAN, INF, -INF, RefCounted.new(), Vector2.ZERO, {1: "non-string key"}]:
+		check(not TrackDocument.serializable(value), "Only finite serialized values can enter a draft")
+	var cycle: Array = []; cycle.append(cycle)
+	check(not TrackDocument.serializable(cycle), "A cyclic draft is rejected by the bounded traversal before duplication")
+	cycle.clear()
+	var oversized: Array = []; oversized.resize(20001)
+	check(not TrackDocument.serializable(oversized), "Serialized collections retain their existing size limit")
+	check(before == RaceStateValue.fingerprint(document), "Draft and publication validation never normalize or mutate the caller's document")
+
+func running_track_isolation(document: Dictionary) -> void:
+	var editor = TrackEditorSession.new(document)
+	var geometry = editor.compile_draft(editor.read_document())
+	check(geometry != null, "A valid editor draft compiles for the running-weekend isolation fixture")
+	if geometry == null: return
+	var running = PracticeRaceSim.new(geometry, {"scenario": "dry", "intensity": "calm"})
+	check(running.command("practice_start"), "The editor isolation fixture enters an actual practice session")
+	var controls = MinimalRaceControls.new(); controls.configure(running)
+	check(controls.send_out(3), "The running-weekend fixture explicitly releases a managed driver")
+	for index in range(40): running.step()
+	var expected = RaceStateValue.fingerprint(running.snapshot())
+	var road = RaceStateValue.fingerprint(running.track.runtime_export())
+	var draft = editor.read_document(); draft.nodes[0].x += 20
+	check(editor.commit(draft, editor.revision), "Editing the source circuit remains possible while a weekend owns its snapshot")
+	editor.undo(); editor.redo()
+	check(editor.replace(document), "Replacing the source resets only its editor session")
+	geometry.document.nodes[0].x += 200
+	geometry.points.clear()
+	check(expected == RaceStateValue.fingerprint(running.snapshot()) and road == RaceStateValue.fingerprint(running.track.runtime_export()), "Source edits, undo, redo, replacement and compiled aliases cannot change an already running weekend")
+
+func compilation_measurements(document: Dictionary) -> Dictionary:
+	var editor = TrackEditorSession.new(document)
+	var before = RaceStateValue.fingerprint(editor.read_document())
+	var workloads: Array = []
+	for fast in [true, false]:
+		var total_samples: Array[int] = []
+		var geometry_samples: Array[int] = []
+		for index in range(6):
+			var started = Time.get_ticks_usec()
+			var geometry = editor.compile_draft(document, "Formula", fast)
+			var elapsed = Time.get_ticks_usec() - started
+			check(geometry != null and geometry.preview_only == fast, "Compilation measurement performs the requested real preview/full bake")
+			if index > 0:
+				total_samples.append(elapsed)
+				geometry_samples.append(editor.compile_usec)
+		total_samples.sort(); geometry_samples.sort()
+		workloads.append({"preview": fast, "samples": 5, "application_median_us": total_samples[2], "application_max_us": total_samples[4], "geometry_median_us": geometry_samples[2], "geometry_max_us": geometry_samples[4]})
+	check(before == RaceStateValue.fingerprint(editor.read_document()), "Repeated measured compilation does not edit the canonical authoring document")
+	return {"engine": Engine.get_version_info().string, "cpu": OS.get_processor_name(), "track": document.name, "nodes": document.nodes.size(), "vehicle": "Formula", "workloads": workloads, "scope": "One warmup plus five serial samples per mode on the populated built-in circuit. Application time includes draft validation and copying; geometry time is the existing compile_usec observation. No simulation or rendering time, threshold, baseline speedup or player-device claim. Source identity belongs to the parent verification report."}

@@ -66,6 +66,25 @@ class ArchitectureGuardTests(unittest.TestCase):
             self.assertTrue(self.scan('var value = ' + token, 'scripts/ui/editor.gd'))
         self.assertIn('editor-owns-compilation', [v.rule for v in self.scan('func draw():\n\tTrackGeometry.new({})', 'scripts/ui/track_canvas.gd')])
 
+    def test_literal_alias_cannot_bypass_presentation_authority(self):
+        for authority, target in [('RaceSim', 'scripts/domain/race_sim.gd'),
+                                  ('RaceCar', 'scripts/domain/race_car.gd'),
+                                  ('RaceSessionRunner', 'scripts/application/runner.gd')]:
+            for expression in [f'const Alias = preload("res://{target}")',
+                               f'extends "res://{target}"']:
+                with tempfile.TemporaryDirectory() as folder:
+                    root = Path(folder)
+                    for name, text in {target: f'class_name {authority}\nextends RefCounted\n',
+                                       'scripts/ui/probe.gd': expression}.items():
+                        path = root / name
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text(text)
+                    self.assertIn('detached-renderer', [v.rule for v in inspect(root)[0]])
+
+    def test_literal_pure_value_dependency_still_allowed(self):
+        self.assertEqual([], self.scan('const Value = preload("res://scripts/domain/value.gd")',
+                                       'scripts/ui/probe.gd'))
+
     def test_hook_manifest_rejects_missing_extra_and_duplicate_entries(self):
         for hooks, invalid in [('"step"', False), ('', True), ('"step", "helper"', True), ('"step", "step"', True)]:
             with tempfile.TemporaryDirectory() as folder:

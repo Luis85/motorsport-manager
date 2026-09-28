@@ -62,3 +62,44 @@ static func numbers(value: Variant, count: int, signed: bool = false) -> bool:
 	for item in value:
 		if not number(item, -100000000 if signed else 0, 100000000): return false
 	return true
+
+## Prepare detached legacy base records only; this is not complete restore acceptance.
+## Profile readers retain their own version/state validation before entering this path.
+## Defaults and supported compounds are values, not access to a running aggregate.
+static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compounds: Dictionary) -> Dictionary:
+	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 4): return {}
+	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return {}
+	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
+	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
+	data = data.duplicate(true)
+	if data.version == 1:
+		for c in data.cars:
+			if not c is Dictionary: return {}
+			c.merge(entrant_defaults.duplicate(true))
+			# Legacy service had no frozen plan: retain its accepted next compound/repair choice.
+			c.service_compound = c.get("next_compound", "M"); c.service_repair = c.get("repair", true)
+			c.pit_lap = c.get("route") == "pit"
+	if data.version < 3:
+		for c in data.cars:
+			if not c is Dictionary or not c.get("compound") in compounds: return {}
+			if not RaceCheckpoint.integral(c.get("id"), 0, 11) or not TrackDocument.valid_number(c.get("tyre"), 0, 100) or not TrackDocument.valid_number(c.get("temperature"), 0, 200): return {}
+			if not c.has("tyre_sets"): TyreInventory.initialize_record(c)
+			if not c.get("service_set_id", "") is String: return {}
+			if c.get("pit_stage") == "service" and c.get("service_set_id", "").is_empty():
+				if not c.get("service_compound") in compounds: return {}
+				var item = TyreInventory.choose_from(c.tyre_sets, c.set_id, c.service_compound, true)
+				c.service_set_id = item.get("id", "")
+	if data.version < 4:
+		for car in data.cars:
+			if not car is Dictionary or not car.get("tyre_sets") is Array: return {}
+			for item in car.tyre_sets:
+				if not item is Dictionary or not TrackDocument.valid_number(item.get("life"), 0, 100) or not TrackDocument.valid_number(item.get("temperature"), 0, 200): return {}
+				WheelTyres.initialize(item)
+			CarSetup.initialize_record(car)
+	if data.version < 4:
+		var legacy_geometry = TrackGeometry.new(data.track, data.get("vehicle", "Formula"))
+		for values in [data.water, data.rubber]:
+			for value in values:
+				if not TrackDocument.valid_number(value, 0, 1): return {}
+		data.surface = RaceSurface.create(legacy_geometry, data.water, data.rubber); data.surface_accumulator = 0.0
+	return data

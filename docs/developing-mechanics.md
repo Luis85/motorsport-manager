@@ -7,14 +7,30 @@ Run from the repository root with Python 3.10 or newer:
 ```sh
 python3 scripts/mechanics.py list
 python3 scripts/mechanics.py hooks
+python3 scripts/mechanics.py validate --dry-run
 python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters --dry-run
 python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters
-python3 scripts/verify.py --godot /path/to/godot --suite extension_resource_policy
+python3 scripts/mechanics.py validate --godot /path/to/godot --mechanic resource_policy
 ```
 
 `list` reports the declared providers, prerequisites, versions and production
 profiles. `hooks` reports the existing typed aggregate signatures. These are
 source contracts, not a claim about a currently running save.
+
+`validate` selects registered construction/behavior suites and delegates to the
+normal isolated verifier, including import, fail-closed engine-log checks and
+owned-process cleanup. It always runs `mechanics_tests`; inactive providers add
+their registered `extension_<id>` suite. Repeat `--mechanic` to narrow inactive
+extension tests, or omit it to check every catalogued extension. No runtime
+provider is discovered or enabled. A missing test registration, malformed literal
+definition, duplicate ID or unknown selection is an actionable error.
+`--dry-run` reports `engine_executed: false`: selection is not validation.
+
+The generated-code development fixture exercises a typed `RaceCar` observation
+(`neutral`), a typed-car mutation signature (`wear_car`), a scalar observation
+(`weather_advice`) and no-argument hooks (`step`, `snapshot`). Its pass-through
+state comparison is only scaffolding evidence. New rules still need focused
+behavior, rejected-input, predecessor-order and restore tests before activation.
 
 `scaffold` creates a `RaceMechanic` provider and a headless regression test, then
 registers that test in the single verification registry. The generated provider
@@ -69,6 +85,8 @@ stateful extension whose save can restore without the rule that owns its state.
 | Accepted commands and application ownership | `RaceCommands`, `RaceViewSession`, `RaceSessionRunner` (application only) |
 | Minimal UI capabilities | `MinimalRaceHandle`, `MinimalWeekendQuery`, `RaceVisualSource` |
 | Retained diagnostic screens | `RaceViewHandle`, `RaceViewQuery` and injected ports |
+| Legacy base checkpoint preparation | `RaceCheckpoint.prepare_base`; complete acceptance remains in `RaceSim.restore` and profile readers |
+| Editable/publishable track policy | `TrackDocument.draft_errors`, `publication_errors`, `validate` |
 | Editor commit/history | `TrackEditorSession` |
 | Track compilation and preview scheduling | Application editor services; canvas gets `TrackPreviewHandle` without a clock |
 | Disk, image loading and archive operations | Ports implemented by `scripts/services/` |
@@ -86,11 +104,20 @@ when an older gesture completes. Undo, redo and document replacement invalidate
 older revisions. Cancel returns the canonical document without deleting redo.
 A repository failure keeps the user's edited work available for retry.
 
+Keep pure authoring constraints in `TrackDocument`, not in a view or storage
+adapter. `draft_errors` permits a short/open road but validates nested metadata,
+finite values and bounds. `publication_errors` first applies that safe-draft
+contract and only then the complete circuit contract. Commit, save and export use
+those shared policies; the session still owns revisions, history and mutation.
+A new operation should transform a detached draft (using `TrackEdit` where useful),
+commit with its observed revision, and test cancel/stale/failure cases through the
+session. Compilation results and running-weekend tracks are independent copies.
+
 ## Verification sequence
 
 ```sh
 python3 scripts/check_architecture.py
-python3 scripts/verify.py --godot /path/to/godot --suite mechanics_tests --suite editor_session_tests
+python3 scripts/verify.py --godot /path/to/godot --suite mechanics_tests --suite editor_session_tests --suite car_record_tests
 python3 scripts/verify.py --godot /path/to/godot
 ```
 
@@ -119,6 +146,22 @@ together. Test missing/unknown fields and full-precision JSON round trips.
 `from_record()` checks structural types and finite values, not all domain ranges;
 external saves must still go through the production checkpoint validator.
 Nested wheels, setup and journals remain owned versioned records.
+
+Edit legacy base-data preparation in `RaceCheckpoint.prepare_base`. It preserves
+v1 service choices, v2 finite set initialization and v3 wheel/setup/surface defaults
+in the original order. Its default-record and compound parameters are narrow
+values, not a simulation context. It returns detached prepared data or an empty
+record on rejection, never an installed session. Do not treat successful preparation
+as semantic acceptance: `RaceSim.restore` still validates state/identity before
+hydration; profile readers retain their own versioned state and composition checks.
+The input version is not silently rewritten. Add regression fixtures to
+`car_record_tests` and retain legacy, replay and sporting characterization suites.
+
+Domain command rejection still uses the existing Boolean outcome plus `last_error`;
+application command handles copy inputs, route intent and expose error feedback.
+Accepted input is recorded through the established path. Validation precedes
+mutation; errors may change feedback, not sporting state, resources or RNG. No
+parallel command API or new replay format is introduced by this pass.
 
 ## Presentation and scheduler ownership
 

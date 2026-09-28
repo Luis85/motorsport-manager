@@ -1,6 +1,7 @@
 # Architecture — 0.19.0
 
-This is the current architecture map for the PR #19 continuation on PR #18.
+This map includes the completed PR #19 foundation and the PR #20 maintainability
+pass built from current main, not a continuation of the former PR #18 branch.
 The earlier 0.18.0 design and its evidence remain in Git history. Test counts
 belong to the source-pinned run that produced them, not to this architecture map.
 
@@ -58,6 +59,16 @@ The existing checkpoint validators still own semantic ranges, valid routes,
 set ownership and version migration. Passing the codec is not sufficient to
 accept an arbitrary imported checkpoint.
 
+`RaceCheckpoint.prepare_base` owns detached base-envelope checks and the existing
+v1-v3 data preparation for native v4 reconstruction. It receives default records
+and supported compounds, not a running aggregate. Empty output means rejected
+preparation; non-empty output is **not** complete acceptance. `RaceSim.restore`
+still validates surface/semantic state, stable entrant identities, field types
+and ranges before constructing typed entrants. Profile-specific readers retain
+their own version/state checks and install the matching mechanic composition.
+Preparation does not rewrite the source version, consume gameplay randomness,
+mutate input records or change migration defaults.
+
 Nested tyre sets, setup, histories and system journals remain explicit versioned
 records owned by their entity or subsystem. A copied `Array[RaceCar]` still holds
 the same objects; use `RaceCar.records()` for an external value projection or
@@ -97,6 +108,14 @@ Compilation and diagnostics belong to application services; filesystem and
 reference-image operations are implemented by injected infrastructure ports.
 A running race owns a detached compiled track, unaffected by subsequent editing.
 
+Pure editable-document validation belongs to `TrackDocument.draft_errors` and
+its bounded serialized-value traversal; `publication_errors` adds complete-track
+validation for saving and exporting. The session invokes these shared policies
+but remains the single revision/mutation owner. Open, short and unnamed drafts
+remain editable; malformed nested data does not. Legacy positional-node imports
+retain their validated normalization path. Native rejection and running-track
+isolation cases exercise this boundary.
+
 `WeekendLaunch` stages configuration and welcome without replacing a saved race.
 It validates the circuit and options and requires the observed launch revision.
 Initial practice persistence must succeed before replacing the active weekend.
@@ -112,11 +131,14 @@ See [Editor and weekend contracts](editor-and-weekend-boundaries.md).
 script references. It checks dependency direction, forbids domain I/O and wall
 clocks, prohibits live entities/runners in every UI component, and compares the
 hook manifest to real aggregate dispatch points. Fixtures test the checker.
+Literal aliases to the same prohibited authority classes are rejected too;
+preloading an aggregate under another name cannot bypass its global-class rule.
 Godot import and runtime tests complement this intentionally limited static scan.
 It is not a complete GDScript parser or a security sandbox against reflection.
 
-The verification registry retains all previous required suites and adds mechanic,
-editor, entry, presentation, entity and codec tests: 64 registered entry points.
+The completed foundation registered 64 entry points, including mechanic, editor,
+entry, presentation, entity and codec suites. This pass extends assertions within
+those suites without changing registry membership.
 CI uses six shards and a required aggregate `verify` gate. Missing, failed,
 partial, duplicate, malformed, mixed-source or stale-source evidence is rejected.
 Engine errors fail a suite even when its own JSON says `passed: true`.
@@ -130,8 +152,12 @@ on a hosted runner. Coverage and assertions were not removed.
 
 ## Completion boundary
 
-This iteration completes the planned behavior-composition, typed-entrant,
+PR #19 completed the planned behavior-composition, typed-entrant,
 all-UI detached-presentation, scheduler-ownership and editor-transaction migration.
+PR #20 builds upon it with shared authoring verification, literal authority guards,
+pure track policy ownership and detached legacy checkpoint preparation. See
+[Maintainability assessment and handoff](maintainability-pass.md) for its concrete
+scope, measured baseline, verification status and deliberately deferred work.
 It deliberately does not replace every small serialized record with an Object,
 introduce threads, recalibrate physics, add player commands or invent campaign
 systems. Public API boundaries and tests enforce architectural rules; GDScript
@@ -145,7 +171,7 @@ regression pass is not evidence of those outcomes or a universal FPS guarantee.
 
 The project's implementation applies, rather than claims certification against,
 Godot's guidance on injected scene relationships, RefCounted lifetime management
-and static typing. Consulted during this continuation:
+and static typing. Reference documentation for these established foundations:
 
 - https://docs.godotengine.org/en/stable/tutorials/best_practices/scene_organization.html
 - https://docs.godotengine.org/en/stable/classes/class_refcounted.html

@@ -579,41 +579,8 @@ func _base_snapshot() -> Dictionary:
 	return {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
 
 static func restore(data: Dictionary) -> RaceSim:
-	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 4): return null
-	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return null
-	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return null
-	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return null
-	data = data.duplicate(true)
-	if data.version == 1:
-		for c in data.cars:
-			if not c is Dictionary: return null
-			c.merge(CAR_V2.duplicate(true))
-			# Legacy service had no frozen plan: retain its accepted next compound/repair choice.
-			c.service_compound = c.get("next_compound", "M"); c.service_repair = c.get("repair", true)
-			c.pit_lap = c.get("route") == "pit"
-	if data.version < 3:
-		for c in data.cars:
-			if not c is Dictionary or not c.get("compound") in TYRES: return null
-			if not RaceCheckpoint.integral(c.get("id"), 0, 11) or not TrackDocument.valid_number(c.get("tyre"), 0, 100) or not TrackDocument.valid_number(c.get("temperature"), 0, 200): return null
-			if not c.has("tyre_sets"): TyreInventory.initialize_record(c)
-			if not c.get("service_set_id", "") is String: return null
-			if c.get("pit_stage") == "service" and c.get("service_set_id", "").is_empty():
-				if not c.get("service_compound") in TYRES: return null
-				var item = TyreInventory.choose_from(c.tyre_sets, c.set_id, c.service_compound, true)
-				c.service_set_id = item.get("id", "")
-	if data.version < 4:
-		for car in data.cars:
-			if not car is Dictionary or not car.get("tyre_sets") is Array: return null
-			for item in car.tyre_sets:
-				if not item is Dictionary or not TrackDocument.valid_number(item.get("life"), 0, 100) or not TrackDocument.valid_number(item.get("temperature"), 0, 200): return null
-				WheelTyres.initialize(item)
-			CarSetup.initialize_record(car)
-	if data.version < 4:
-		var legacy_geometry = TrackGeometry.new(data.track, data.get("vehicle", "Formula"))
-		for values in [data.water, data.rubber]:
-			for value in values:
-				if not TrackDocument.valid_number(value, 0, 1): return null
-		data.surface = RaceSurface.create(legacy_geometry, data.water, data.rubber); data.surface_accumulator = 0.0
+	data = RaceCheckpoint.prepare_base(data, CAR_V2, TYRES)
+	if data.is_empty(): return null
 	if not RaceSurface.valid(data.get("surface"), data.water, data.rubber): return null
 	if not TrackDocument.valid_number(data.get("surface_accumulator"), 0, RaceSurface.INTERVAL): return null
 	if not RaceCheckpoint.valid(data): return null
