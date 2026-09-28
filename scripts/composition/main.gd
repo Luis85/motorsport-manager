@@ -31,15 +31,18 @@ func _ready() -> void:
 	var spacer = Control.new(); spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(spacer)
 	version_label = UI.label("NATIVE GODOT  ·  " + str(ProjectSettings.get_setting("application/config/version", "development")), 12, UI.MUTED)
 	header.add_child(version_label)
-	return_editor_button = UI.button("Return to editor", func(): show_editor())
+	return_editor_button = UI.button("Return to editor", func():
+		if not _leave_settings(show_editor): show_editor())
 	header.add_child(return_editor_button)
 	header.add_child(UI.button("How to play", show_help))
 	header.add_child(UI.button("Main menu", go_home))
 	content = UI.vbox(shell, true)
 	replay_controller = ReplayController.new(); replay_controller.configure(self); add_child(replay_controller)
+	get_viewport().size_changed.connect(_scale_header)
 	show_menu()
 
 func clear_screen(name: String) -> void:
+	_scale_header()
 	App.stop_session()
 	App.editor_session = null
 	global_header.visible = name != "weekend"
@@ -52,46 +55,18 @@ func clear_screen(name: String) -> void:
 
 func show_menu() -> void:
 	clear_screen("main_menu")
-	var row = UI.hbox(content, true)
-	var menu_panel = UI.panel(); menu_panel.custom_minimum_size.x = 440; row.add_child(menu_panel)
-	var menu = UI.vbox(menu_panel, true)
-	menu.add_child(UI.label("THE RACE STARTS WITH YOU", 12, UI.ACCENT))
-	menu.add_child(UI.label("Your circuit.\nYour decisions.", 35))
-	menu.add_child(UI.paragraph("Design a circuit. Practice and qualify your drivers. Settle into the pit wall and make the calls. A complete race weekend, rebuilt natively in Godot."))
-	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Practice · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
-	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
-	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
-	continue_button.disabled = App.weekend == null and not App.has_saved_weekend(); menu.add_child(continue_button)
-	var scenarios = MenuButton.new(); scenarios.text = "SCENARIO CHALLENGES"; scenarios.focus_mode = Control.FOCUS_ALL; scenarios.flat = false; scenarios.custom_minimum_size.y = 36
-	menu.add_child(scenarios)
-	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"]: scenarios.get_popup().add_item(title)
-	scenarios.get_popup().id_pressed.connect(func(index):
+	var menu = MainMenuView.new()
+	var geometry = TrackGeometry.new(App.library[mini(7, App.library.size() - 1)]) if not App.library.is_empty() else null
+	menu.configure({"can_continue": App.weekend != null or App.has_saved_weekend(), "can_resume_sandbox": App.has_saved_sandbox(), "warnings": "; ".join(App.load_errors)}, App.settings, geometry)
+	var actions = {"weekend": show_library, "continue": continue_weekend, "editor": show_editor, "settings": show_settings, "quit": request_quit}
+	menu.action_requested.connect(func(action): actions[action].call())
+	menu.scenario_requested.connect(func(index):
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios, show_duel_scenarios][index].call())
-	var replay_menu = MenuButton.new(); replay_menu.focus_mode = Control.FOCUS_ALL; replay_menu.text = "REPLAYS & EXPERIMENTS"; replay_menu.flat = false; replay_menu.custom_minimum_size.y = 32
-	menu.add_child(replay_menu)
-	# Advanced tools are retained for development, not surfaced in the minimal game.
-	if App.settings.get("pitwall_layout", "minimal") == "minimal": scenarios.hide(); replay_menu.hide()
-	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
-	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
-	replay_menu.get_popup().add_item("Circuit notebook", 2)
-	replay_menu.get_popup().set_item_disabled(1, not App.has_saved_sandbox())
-	replay_menu.get_popup().id_pressed.connect(func(id):
-		if id == 0: replay_controller.import_record()
-		elif id == 1: replay_controller.resume_sandbox()
-		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, replay_menu))
-	menu.add_child(UI.button("SETTINGS", show_settings))
-	menu.add_child(UI.button("QUIT", request_quit))
-	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; menu.add_child(spacer)
-	menu.add_child(UI.paragraph("LOCAL-FIRST · NO ACCOUNT · NO WEB RUNTIME\nTracks and checkpoints are stored on this device.", UI.MUTED))
-	if not App.load_errors.is_empty(): menu.add_child(UI.paragraph("Library warnings: " + "; ".join(App.load_errors), UI.DANGER))
-	var showcase = UI.vbox(row, true)
-	showcase.add_child(UI.label("FROM CIRCUIT ATELIER TO THE PIT WALL", 12, UI.MUTED))
-	if not App.library.is_empty():
-		var canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.show_line = true; canvas.show_grid = false
-		canvas.set_track(TrackGeometry.new(App.library[mini(7, App.library.size() - 1)])); showcase.add_child(canvas)
-		canvas.call_deferred("fit")
-	showcase.add_child(UI.label("01 / AUTHOR     02 / QUALIFY     03 / RACE", 16, UI.ACCENT))
-	showcase.add_child(UI.paragraph("Seven geographic layouts plus Pinecrest Motor Park. Every library track is editable and immediately usable for a weekend."))
+	menu.replay_requested.connect(func(index):
+		if index == 0: replay_controller.import_record()
+		elif index == 1: replay_controller.resume_sandbox()
+		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, menu))
+	content.add_child(menu)
 
 func go_home() -> void:
 	if screen_name == "weekend" and content.get_child_count() > 0 and content.get_child(0).has_method("confirm_leave"):
@@ -99,12 +74,13 @@ func go_home() -> void:
 	_go_home_saved()
 
 func _go_home_saved() -> void:
+	if _leave_settings(show_menu): return
 	if editor:
 		editor.confirm_discard(func(): editor_draft.clear(); draft_signature = ""; show_menu()); return
 	if App.weekend != null and screen_name == "weekend":
 		App.weekend.paused = App.weekend.phase in RaceSim.ACTIVE
 		var error = App.save_weekend()
-		if not error.is_empty(): UI.notify(self, "Checkpoint warning", error)
+		if not error.is_empty(): UI.notify(self, "Could not save weekend", error + " You are still at the pitwall."); return
 	show_menu()
 
 func show_editor(d: Dictionary = {}) -> void:
@@ -128,7 +104,12 @@ func show_library(test_track: Dictionary = {}) -> void:
 	App.load_library()
 	var candidates = App.library.duplicate()
 	if not test_track.is_empty(): candidates.push_front(test_track)
-	if candidates.is_empty(): content.add_child(UI.paragraph("No valid circuits are available. Open the track editor to create one.")); return
+	if candidates.is_empty():
+		content.add_child(UI.label("No circuits available", 28))
+		content.add_child(UI.paragraph("Create a circuit in the editor, save it to your library, then return here."))
+		var create = UI.button("Create a circuit", func(): show_editor(), true)
+		content.add_child(create); PitwallDesign.focus_later(create)
+		return
 	var selected_index = 0
 	if test_track.is_empty() and selected_track != null:
 		for index in range(candidates.size()):
@@ -143,7 +124,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	for track in candidates: list.add_item(track.name + (" [custom]" if not track.get("builtin", false) else ""))
 	list.select(selected_index)
 	var preview = UI.vbox(body, true)
-	var details = UI.label("", 17, UI.ACCENT); preview.add_child(details)
+	var details = UI.label("", 17, UI.ACCENT); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; preview.add_child(details)
 	library_canvas = TrackCanvas.new(); library_canvas.configure_presentation(App.settings); library_canvas.show_line = true; preview.add_child(library_canvas)
 	var refresh = func():
 		var geometry = TrackGeometry.new(selected_track, vehicle)
@@ -173,7 +154,8 @@ func show_library(test_track: Dictionary = {}) -> void:
 		controls.add_child(UI.option(["Standard incidents", "Calm / testing", "Volatile"], func(index): config.intensity = ["standard", "calm", "volatile"][index], ["standard", "calm", "volatile"].find(config.intensity)))
 		controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))
 	var launch = UI.hbox(content)
-	launch.add_child(UI.paragraph("Qualifying is automatically extended when necessary to allow complete out/hot/in laps. Presets are game estimates, not licensed vehicle models."))
+	launch.add_child(UI.button("Back", go_home))
+	launch.add_child(UI.paragraph("Review your choices before practice starts. Your existing weekend is not replaced here."))
 	if App.settings.get("pitwall_layout", "minimal") == "minimal":
 		launch.add_child(UI.button("Review weekend", func():
 			if not launch_draft.stage(selected_track, config, vehicle):
@@ -194,6 +176,8 @@ func show_library(test_track: Dictionary = {}) -> void:
 				add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); start.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))
 			else: start.call(), true))
 	refresh.call()
+	PitwallDesign.scale_controls(content, UI.text_scale(self))
+	PitwallDesign.focus_later(list)
 
 func show_welcome() -> void:
 	clear_screen("weekend_welcome")
@@ -206,12 +190,7 @@ func show_welcome() -> void:
 			if not error.is_empty(): welcome.show_error("Practice could not start: " + error); return
 			show_weekend()
 		if App.requires_entry_confirmation():
-			var dialog = ConfirmationDialog.new(); dialog.title = "Start a new weekend?"
-			dialog.dialog_text = "Starting practice replaces your previous saved weekend. Back or Cancel keeps it unchanged."
-			dialog.ok_button_text = "Start practice"; welcome.add_child(dialog)
-			dialog.confirmed.connect(func(): dialog.queue_free(); commit.call())
-			dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(540, 190))
-			dialog.get_cancel_button().grab_focus()
+			UI.confirm(welcome, "Start a new weekend?", "Starting practice replaces your previous saved weekend. Back or Cancel keeps it unchanged.", "Start practice", commit)
 		else: commit.call())
 	content.add_child(welcome)
 
@@ -263,49 +242,38 @@ func continue_weekend() -> void:
 
 func show_settings() -> void:
 	clear_screen("settings")
-	content.add_child(UI.label("Settings", 28))
-	content.add_child(UI.paragraph("Changes are staged until Apply. Visual preferences do not change the race model."))
-	var draft = App.settings.duplicate(true)
-	var columns = UI.hbox(content)
-	var left = UI.panel(); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(left)
-	var list = UI.vbox(left)
-	list.add_child(UI.label("DISPLAY & DEFAULTS", 14, UI.ACCENT))
-	var text_sample = UI.label("MER · Box this lap", 13)
-	var text_choice = UI.option(["100%", "115%", "130%"], func(index): draft.pitwall_text_scale = PitwallDesign.TEXT_SCALES[index]; text_sample.add_theme_font_size_override("font_size", roundi(13 * draft.pitwall_text_scale)), PitwallDesign.TEXT_SCALES.find(draft.get("pitwall_text_scale", 1.0)))
-	text_choice.tooltip_text = "Native pit-wall text. Circuit labels and track-editor text are unchanged. Applied when reopening the weekend."
-	UI.field(list, "Pit-wall text", text_choice); list.add_child(text_sample)
-	text_sample.add_theme_font_size_override("font_size", roundi(13 * draft.get("pitwall_text_scale", 1.0)))
-	list.add_child(UI.check("Fullscreen", draft.fullscreen, func(value): draft.fullscreen = value))
-	list.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): draft.vsync = value))
-	list.add_child(UI.check("Show driver labels by default", draft.labels, func(value): draft.labels = value))
-	if App.settings.get("pitwall_layout", "minimal") != "minimal": list.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): draft.racing_line = value))
-	list.add_child(UI.paragraph("Race weekend: timing on the left, race in the centre, driver controls on the right."))
-	UI.field(list, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"], func(index): draft.speed = [1, 2, 4, 8, 16][index], [1, 2, 4, 8, 16].find(draft.speed)))
-	var right = UI.panel(); right.size_flags_horizontal = Control.SIZE_EXPAND_FILL; columns.add_child(right)
-	list = UI.vbox(right)
-	list.add_child(UI.label("CIRCUIT PRESENTATION", 14, UI.ACCENT))
-	UI.field(list, "Scenery detail", UI.option(["Rich illustration", "Simple / fewer trees"], func(index): draft.scenery_detail = ["rich", "simple"][index], 0 if draft.scenery_detail == "rich" else 1))
-	UI.field(list, "Car dot size", UI.option(["Standard", "Large", "Extra large"], func(index): draft.dot_scale = [1.0, 1.3, 1.6][index], [1.0, 1.3, 1.6].find(draft.dot_scale)))
-	list.add_child(UI.check("Reduced motion / direct follow camera", draft.reduced_motion, func(value): draft.reduced_motion = value))
-	list.add_child(UI.paragraph("Presentation choices apply when a view opens. Simple scenery reduces decorative trees; it never changes grip, weather or driving."))
-	var data_panel = UI.panel(); content.add_child(data_panel); list = UI.vbox(data_panel)
-	list.add_child(UI.label("LOCAL DATA", 14, UI.ACCENT))
-	list.add_child(UI.paragraph("Tracks, settings and the active weekend are stored on this device. Atomic saves retain the previous file as .bak. Bundled circuits are never overwritten."))
-	var path = ProjectSettings.globalize_path("user://")
-	var path_label = UI.paragraph(path); path_label.add_theme_font_size_override("font_size", 12); list.add_child(path_label)
-	var data_actions = UI.hbox(list)
-	data_actions.add_child(UI.button("Copy data path", func(): DisplayServer.clipboard_set(path)))
-	data_actions.add_child(UI.button("Open data folder", func(): OS.shell_open(path)))
-	content.add_child(UI.paragraph("Godot 4.7.2 · Native GDScript · Compatibility renderer · No browser or external plugin required."))
-	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(spacer)
-	var note = UI.paragraph("Space pauses a live weekend. Enter activates a focused button. Text fields keep normal editing behavior."); content.add_child(note)
-	var actions = UI.hbox(content)
-	actions.add_child(UI.button("Apply and save settings", func():
-		var previous = App.settings.duplicate(true); App.settings = draft.duplicate(true)
+	var settings = SettingsView.new()
+	settings.configure(App.settings, ProjectSettings.globalize_path("user://"))
+	settings.back_requested.connect(show_menu)
+	settings.save_requested.connect(func(draft):
+		var previous = App.settings.duplicate(true)
+		App.settings = draft.duplicate(true)
 		var error = App.save_settings()
 		if not error.is_empty(): App.settings = previous; App.apply_settings()
-		note.text = "Settings saved. Display defaults apply when you reopen a view." if error.is_empty() else "Settings were not saved: " + error, true))
-	actions.add_child(UI.button("Back without applying", show_menu))
+		settings.save_result(error)
+		_scale_header())
+	content.add_child(settings)
+
+func _scale_header() -> void:
+	var factor = float(App.settings.get("pitwall_text_scale", 1.0))
+	set_meta("pitwall_text_scale", factor)
+	PitwallDesign.scale_controls(global_header, factor)
+	version_label.visible = get_viewport_rect().size.x >= 1280 and factor <= 1.15
+
+func _leave_settings(callback: Callable) -> bool:
+	if screen_name != "settings" or content.get_child_count() == 0: return false
+	var settings = content.get_child(0)
+	if settings is SettingsView and settings.has_changes():
+		settings.confirm_discard(callback)
+		return true
+	return false
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel") or event.is_echo(): return
+	if screen_name == "weekend_welcome": show_library()
+	elif screen_name in ["settings", "grand_prix_setup", "weekend_complete"]: go_home()
+	else: return
+	get_viewport().set_input_as_handled()
 
 func show_help() -> void:
 	if App.settings.get("pitwall_layout", "minimal") == "minimal":
@@ -314,6 +282,7 @@ func show_help() -> void:
 	UI.notify(self, "Your first Grand Prix", "1. Grand Prix Weekend: choose a track, vehicle, weather and race length.\n\n2. Start qualifying. Delegated engineers run feasible out/hot/in-lap attempts. Switch delegation off to send cars yourself. Only hot laps set grid times.\n\n3. Prepare the race, select starting tyres, then start the formation lap. Once all cars are on the grid, release the start lights.\n\n4. Manage MER and MOR: pace, engine mode, tyre sets and pit calls. The Tyres tab plans a fresh or used set without fitting it; Send, formation or actual service performs the fit. Schedule a stop on a reachable racing lap. Rain changes the surface gradually. A pit call takes only pit ownership. Use Strategy → Plan for approved windows, Control for domain ownership and temporary overrides, and Debrief for measured consequences.\n\n5. Space pauses. 1–5 change simulation speed. F fits the circuit. Save weekend records an exact checkpoint; Main menu pauses and saves.\n\nTrack editor: select and drag points/handles; double-click inserts a point. World provides illustration presets and layer locks. Preview lap runs a reference dot, not a full tyre simulation. Save to library makes the circuit available for weekends.")
 
 func request_quit() -> void:
+	if _leave_settings(_quit_saved): return
 	if replay_controller and replay_controller.workspace:
 		var active = replay_controller.workspace
 		if active.sandbox_view:
@@ -339,121 +308,19 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST: request_quit()
 
 func show_strategy_scenarios() -> void:
-	clear_screen("strategy_scenarios")
-	content.add_child(UI.label("Strategy, not scripted victories", 30))
-	content.add_child(UI.paragraph("Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage."))
-	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(entries)
-	for recipe in ScenarioCatalog.read("dry"):
-		if not WeekendScenarios.valid(recipe): continue
-		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; panel.size_flags_vertical = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
-		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
-		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(spacer)
-		body.add_child(UI.button("Open %d-lap scenario · seed %d" % [recipe.laps, recipe.seed], func():
-			var start = func():
-				var candidate = WeekendScenarios.build(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The scenario, track or initial plan is invalid."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.requires_entry_confirmation():
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace the active weekend?"; confirm.dialog_text = "A scenario starts a new weekend. Export the current evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_strategy_scenarios(self)
 
 func show_weather_scenarios() -> void:
-	clear_screen("weather_scenarios")
-	content.add_child(UI.label("Forecast, choose, watch the road", 30))
-	content.add_child(UI.paragraph("Seeded conditions use observed-only forecasts. Training explicitly preserves the original schedule. Neither version forces results. All scenarios retain qualifying and start approvals."))
-	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL; content.add_child(entries)
-	for recipe in ScenarioCatalog.read("weather"):
-		if not WeatherScenarios.valid(recipe): continue
-		var panel = UI.panel(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; entries.add_child(panel); var body = UI.vbox(panel)
-		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
-		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		body.add_child(UI.button("Open %d laps · %s · seed %d" % [recipe.laps, recipe.weather_mode, recipe.seed], func():
-			var start = func():
-				var candidate = WeatherScenarios.build(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The weather scenario or track is invalid."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This creates a new weekend. Export existing evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_weather_scenarios(self)
 
 func show_recovery_scenarios() -> void:
-	clear_screen("recovery_scenarios")
-	content.add_child(UI.label("Protect the result, or pay for a repair", 30))
-	content.add_child(UI.paragraph("Disclosed scalar condition, ordinary physical racing and no guaranteed outcome. Both scenarios start at briefing; qualifying, preparation and start approvals remain yours."))
-	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; content.add_child(scroll)
-	var entries = UI.vbox(scroll, true)
-	for recipe in ScenarioCatalog.read("recovery"):
-		if not RecoveryScenarios.valid(recipe): continue
-		var panel = UI.panel(); entries.add_child(panel); var body = UI.vbox(panel)
-		body.add_child(UI.label(recipe.title, 20, UI.ACCENT)); body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		body.add_child(UI.button("Open %d laps · seed %d" % [recipe.laps, recipe.seed], func():
-			var start = func():
-				var candidate = RecoveryScenarios.build(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The recovery scenario or track is invalid."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_recovery_scenarios(self)
 
 func show_practice_scenarios() -> void:
-	clear_screen("practice_scenarios")
-	content.add_child(UI.label("Learn the circuit, keep the choice", 30))
-	content.add_child(UI.paragraph("Practice spends real resources for useful information. Every scenario permits skipping; no race performance bonus is awarded for participation."))
-	for recipe in PracticeScenarios.catalog():
-		var panel = UI.panel(); content.add_child(panel); var body = UI.vbox(panel)
-		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
-		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		body.add_child(UI.button("Open briefing · seed %d" % recipe.seed, func():
-			var start = func():
-				var candidate = PracticeScenarios.build(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The practice recipe or track is invalid."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_practice_scenarios(self)
 
 func show_rival_scenarios() -> void:
-	clear_screen("rival_scenarios")
-	content.add_child(UI.label("Read the field, choose your response", 30))
-	content.add_child(UI.paragraph("Curated, untimed grids start at race preparation. Formation and start remain physical and require approval. No winner or incident is forced."))
-	for recipe in RivalScenarios.catalog():
-		var panel = UI.panel(); content.add_child(panel); var body = UI.vbox(panel)
-		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
-		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		body.add_child(UI.paragraph("All fitted M1 tyres start at %.0f%% tread; other stock unchanged. Dry · calm incidents · manual player pits · %d laps." % [recipe.life, recipe.laps]))
-		body.add_child(UI.button("Open preparation · seed %d" % recipe.seed, func():
-			var start = func():
-				var candidate = RivalScenarios.build(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The rival recipe or track is invalid."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This starts a new weekend. Export current evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_rival_scenarios(self)
 
 func show_duel_scenarios() -> void:
-	clear_screen("duel_scenarios")
-	content.add_child(UI.label("Strategic duels · two cars, competing plans", 27))
-	content.add_child(UI.paragraph("Four disclosed dry exercises. Compare, approve or deliberately wait, then inspect the actual outcome. No scripted victories or campaign rewards."))
-	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; content.add_child(scroll)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var entries = UI.vbox(scroll); entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for recipe in ScenarioCatalog.read("duels"):
-		var card = UI.panel(); entries.add_child(card); var body = UI.vbox(card)
-		body.add_child(UI.label(recipe.title, 21, UI.ACCENT))
-		body.add_child(UI.paragraph(recipe.objective + "\n" + recipe.hint))
-		body.add_child(UI.paragraph("%s · %d laps · all fitted tyres %.0f%% · untimed grid · calm incidents" % [recipe.track.capitalize(), recipe.laps, recipe.life]))
-		body.add_child(UI.button("Open preparation · seed %d" % recipe.seed, func():
-			var start = func():
-				var candidate = ScenarioCatalog.build_duel(recipe, App.library)
-				if candidate == null: UI.notify(self, "Scenario unavailable", "The shipped recipe or circuit did not validate."); return
-				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["briefing", "results"]:
-				var confirm = ConfirmationDialog.new(); confirm.title = "Replace active weekend?"; confirm.dialog_text = "This opens a new exercise. Save or export current evidence before replacing it."
-				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
-			else: start.call(), true))
+	ScenarioScreens.show_duel_scenarios(self)

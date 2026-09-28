@@ -17,13 +17,18 @@ func configure(summary: Dictionary, scale: float = 1.0) -> void:
 
 func _ready() -> void:
 	theme = MinimalRaceStyle.theme(scale_factor)
+	set_meta("pitwall_text_scale", scale_factor)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 12)
 	var header = PanelContainer.new(); add_child(header)
 	var intro = VBoxContainer.new(); header.add_child(intro)
 	intro.add_child(MinimalRaceStyle.label("WEEKEND COMPLETE", 12, scale_factor, true))
-	intro.add_child(MinimalRaceStyle.label(data.name + " / Final classification", 27, scale_factor))
-	intro.add_child(MinimalRaceStyle.label("%d race laps · Your calls and both drivers' results are saved with this weekend." % data.laps, 13, scale_factor, true))
+	var title = MinimalRaceStyle.label(data.name + " / Final classification", 25, scale_factor)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.add_child(title)
+	var subtitle = MinimalRaceStyle.label("%d race laps · Your calls and both drivers' results are saved with this weekend." % data.laps, 13, scale_factor, true)
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.add_child(subtitle)
 	var drivers = HBoxContainer.new(); add_child(drivers)
 	for driver in data.managed:
 		var panel = PanelContainer.new(); panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL; drivers.add_child(panel)

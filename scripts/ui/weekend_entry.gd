@@ -18,14 +18,19 @@ func configure(value: Dictionary, geometry: TrackGeometry, scale: float = 1.0) -
 
 func _ready() -> void:
 	theme = MinimalRaceStyle.theme(scale_factor)
+	set_meta("pitwall_text_scale", scale_factor)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 14)
 	var header = PanelContainer.new(); add_child(header)
 	var heading = VBoxContainer.new(); header.add_child(heading)
 	heading.add_child(MinimalRaceStyle.label("RACE WEEKEND / WELCOME", 12, scale_factor, true))
-	heading.add_child(MinimalRaceStyle.label(data.name, 29, scale_factor))
-	heading.add_child(MinimalRaceStyle.label("%.2f km  ·  %d race laps  ·  %s  ·  %s reference lap %s" % [data.length / 1000, data.laps, data.weather.capitalize(), data.vehicle, data.reference_lap], 14, scale_factor, true))
+	var title = MinimalRaceStyle.label(data.name, 27, scale_factor)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	heading.add_child(title)
+	var metadata = MinimalRaceStyle.label("%.2f km  ·  %d race laps  ·  %s  ·  %s reference lap %s" % [data.length / 1000, data.laps, data.weather.capitalize(), data.vehicle, data.reference_lap], 14, scale_factor, true)
+	metadata.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	heading.add_child(metadata)
 	var body = HBoxContainer.new(); body.size_flags_vertical = Control.SIZE_EXPAND_FILL; add_child(body)
 	preview = TrackCanvas.new(); preview.show_grid = false; preview.set_track(track); body.add_child(preview)
 	var panel = PanelContainer.new(); panel.custom_minimum_size.x = 330; body.add_child(panel)
@@ -42,7 +47,8 @@ func _ready() -> void:
 	back_button = MinimalRaceStyle.button("Back to configuration", func(): back_requested.emit(), scale_factor); actions.add_child(back_button)
 	start_button = MinimalRaceStyle.button("Start practice", func(): start_requested.emit(data.revision), scale_factor)
 	MinimalRaceStyle.primary(start_button, scale_factor); actions.add_child(start_button)
-	start_button.call_deferred("grab_focus"); preview.call_deferred("fit")
+	actions.move_child(back_button, 0)
+	PitwallDesign.focus_later(start_button); preview.call_deferred("fit")
 
 func show_error(message: String) -> void:
 	notice.text = message
