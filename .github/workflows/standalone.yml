@@ -78,12 +78,25 @@ jobs:
           --target ${{ matrix.target }} --mode ${{ matrix.mode }}
           --revision "${{ github.sha }}"
           --output "builds/${{ matrix.target }}-${{ matrix.mode }}"
+      # The artifact service normalizes raw files to 0644. Transport a tar archive
+      # so users and the smoke job receive the exported executable's actual mode.
+      - name: Preserve executable permissions in the distributed archive
+        shell: bash
+        run: >-
+          tar -czf "${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz"
+          -C "builds/${{ matrix.target }}-${{ matrix.mode }}" .
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: standalone-${{ matrix.target }}-${{ matrix.mode }}
-          path: builds/${{ matrix.target }}-${{ matrix.mode }}/
+          path: ${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz
           if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: standalone-build-failure-${{ matrix.target }}-${{ matrix.mode }}
+          path: builds/${{ matrix.target }}-${{ matrix.mode }}/
+          if-no-files-found: warn
           retention-days: 14
   native-smoke:
     needs: build
@@ -113,7 +126,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: standalone-${{ matrix.target }}-${{ matrix.mode }}
-          path: ${{ runner.temp }}/package
+          path: ${{ runner.temp }}/transport
+      - name: Extract the same permission-preserving archive distributed to players
+        shell: bash
+        run: |
+          mkdir -p "${{ runner.temp }}/package"
+          tar -xzf "${{ runner.temp }}/transport/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz" -C "${{ runner.temp }}/package"
       - name: Execute relocated build and restart/recovery journeys on target OS
         run: >-
           python scripts/smoke_standalone.py
