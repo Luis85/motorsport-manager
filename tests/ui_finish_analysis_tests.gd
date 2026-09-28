@@ -20,7 +20,11 @@ func run() -> void:
 	var area = chart.plot_area()
 	var at = chart.global_position + Vector2(area.position.x, area.end.y - (chart.series[0] - chart.minimum) / (chart.maximum - chart.minimum) * area.size.y)
 	var pixel = root.get_texture().get_image().get_pixelv(Vector2i(at))
-	check(pixel.r < 0.4 and pixel.g < 0.5, "G09 an isolated non-cursor measurement is actually drawn beside a missing sample")
+	# Test the semantic series ink, not the former dark-on-paper palette.
+	# An empty dark chart must not satisfy the visibility assertion.
+	var ink = UI.PRIMARY
+	var difference = maxf(absf(pixel.r - ink.r), maxf(absf(pixel.g - ink.g), absf(pixel.b - ink.b)))
+	check(chart.cursor != 0 and difference <= 2.0 / 255.0, "G09 an isolated non-cursor measurement is actually drawn beside a missing sample")
 	await click(view.results_workspace.compare)
 	check(not chart.comparison.is_empty() and chart.series[1] == null and chart.comparison[1] == 112.71, "G14 native comparison keeps an unmatched own-driver lap unavailable")
 	chart.grab_focus(); await key(KEY_HOME); await key(KEY_RIGHT)

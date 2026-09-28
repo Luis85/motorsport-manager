@@ -16,7 +16,7 @@ func check(value: bool, message: String) -> void:
 func settle(frames: int = 8) -> void:
 	for i in range(frames): await process_frame
 func inside(control: Control) -> bool:
-	if not control.is_visible_in_tree() or not root.get_visible_rect().encloses(control.get_global_rect()): return false
+	if control == null or not control.is_visible_in_tree() or not root.get_visible_rect().encloses(control.get_global_rect()): return false
 	var parent = control.get_parent()
 	while parent:
 		if parent is Control and parent.clip_contents and not parent.get_global_rect().encloses(control.get_global_rect()): return false
@@ -51,14 +51,36 @@ func run() -> void:
 	await settle()
 	var preferences = app.settings.duplicate(true)
 	game.show_settings(); await settle()
-	check(collect(game.content, "ScrollContainer").is_empty(), "Settings use visible groups, not a scrolling action menu")
-	for text in ["Apply and save settings", "Back without applying", "Copy data path", "Open data folder"]:
-		check(inside(button(text)), "Settings action reachable without scrolling: " + text)
-	button("Show racing line by default").button_pressed = not preferences.racing_line
-	check(app.settings == preferences, "Editing a settings draft does not silently apply it")
+	var settings = game.content.get_child(0)
+	check(settings is SettingsView, "Settings use the production staged preference view")
+	if not settings is SettingsView:
+		finish(); return
+	check(settings.scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "Long settings have one reading axis, never a scrolling action menu")
+	for action in [settings.save_button, settings.back_button]:
+		check(inside(action) and not settings.scroll.is_ancestor_of(action), "Settings primary action stays outside reading scroll: " + action.text)
+	settings.scroll.scroll_vertical = 10000; await settle()
+	for text in ["Copy data path", "Open data folder"]:
+		check(inside(button(text)), "Secondary local-data action is reachable by vertical reading scroll: " + text)
+	check(inside(settings.save_button) and inside(settings.back_button), "Settings Apply and Back stay visible after scrolling to local data")
+	settings.scroll.scroll_vertical = 0; await settle()
+	var racing_line = button("Show racing line by default")
+	check(racing_line != null, "Retained Engineering settings expose the racing-line preference")
+	if racing_line == null:
+		finish(); return
+	racing_line.button_pressed = not preferences.racing_line
+	check(app.settings == preferences and settings.has_changes(), "Editing a settings draft does not silently apply it")
 	await capture("settings")
-	button("Back without applying").pressed.emit(); game.show_settings(); await settle()
-	check(button("Show racing line by default").button_pressed == preferences.racing_line, "Leaving an unapplied settings draft discards it")
+	settings.back_button.pressed.emit(); await settle()
+	var dialogs = settings.get_children().filter(func(node): return node is ConfirmationDialog and node.visible)
+	check(dialogs.size() == 1 and game.screen_name == "settings", "Leaving a changed draft asks before discarding it")
+	if dialogs.size() != 1:
+		finish(); return
+	var confirmation = dialogs[0]
+	check(confirmation.get_cancel_button().has_focus(), "Discarding settings is not the default focused action")
+	confirmation.confirmed.emit(); await settle()
+	check(game.screen_name == "main_menu" and app.settings == preferences, "Confirmed discard returns to the menu without applying the draft")
+	game.show_settings(); await settle()
+	check(button("Show racing line by default").button_pressed == preferences.racing_line, "Reopened settings use the saved value after explicit discard")
 	button("Show racing line by default").button_pressed = not preferences.racing_line
 	button("Apply and save settings").pressed.emit()
 	check(app.settings.racing_line != preferences.racing_line, "Settings change only through the explicit Apply action")
@@ -187,6 +209,9 @@ func run() -> void:
 	model.clock = model.qual_duration - 1; view.refresh()
 	check(view.decision_controls[3].send.disabled, "The fixed release action rejects an infeasible last attempt")
 	await capture("qualifying")
+	finish()
+
+func finish() -> void:
 	Storage.write_json("res://reports/compact-ui.json", {"passed":failures.is_empty(),"checks":checks,"errors":failures,"screenshots":screenshots})
 	print("COMPACT_UI ", JSON.stringify({"passed":failures.is_empty(),"checks":checks,"errors":failures,"screenshots":screenshots}))
 	quit(0 if failures.is_empty() else 1)

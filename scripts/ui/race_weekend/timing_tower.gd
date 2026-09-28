@@ -12,7 +12,7 @@ var update_count = 0
 func configure(value: RaceViewQuery) -> void: model = value
 
 func _ready() -> void:
-	add_theme_stylebox_override("panel", UI.box(PitwallDesign.RACE_DARK_2, Color("426558"), 5, 6))
+	add_theme_stylebox_override("panel", UI.box(PitwallDesign.RACE_DARK_2, GameTheme.LINE, 5, 6))
 	custom_minimum_size.x = PitwallDesign.TIMING_WIDTH
 	var timing = UI.vbox(self, true)
 	timing.add_child(UI.race_label("LIVE CLASSIFICATION", 12, true))
@@ -20,13 +20,13 @@ func _ready() -> void:
 	tower.column_titles_visible = true; tower.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tower.add_theme_font_size_override("font_size", 12); tower.add_theme_font_size_override("title_button_font_size", 10)
 	tower.add_theme_constant_override("v_separation", 4); tower.add_theme_constant_override("indent", 0)
-	tower.add_theme_stylebox_override("panel", UI.box(UI.RACE_DARK, Color("426558"), 4, 2))
-	tower.add_theme_color_override("font_color", Color("edf0df"))
-	tower.add_theme_color_override("font_selected_color", UI.RACE_INK)
+	tower.add_theme_stylebox_override("panel", UI.box(UI.RACE_DARK, GameTheme.LINE, 4, 2))
+	tower.add_theme_color_override("font_color", GameTheme.TEXT)
+	tower.add_theme_color_override("font_selected_color", GameTheme.TEXT)
 	tower.add_theme_color_override("title_button_color", UI.GOLD)
-	tower.add_theme_stylebox_override("title_button_normal", UI.box(UI.RACE_DARK_3, Color("426558"), 2, 3))
-	tower.add_theme_stylebox_override("title_button_hover", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
-	tower.add_theme_stylebox_override("title_button_pressed", UI.box(Color("315c4d"), UI.GOLD, 2, 3))
+	tower.add_theme_stylebox_override("title_button_normal", UI.box(UI.RACE_DARK_3, GameTheme.LINE, 2, 3))
+	tower.add_theme_stylebox_override("title_button_hover", UI.box(GameTheme.RAISED, UI.GOLD, 2, 3))
+	tower.add_theme_stylebox_override("title_button_pressed", UI.box(GameTheme.RAISED, UI.GOLD, 2, 3))
 	for i in range(5):
 		tower.set_column_title(i, ["P", "CAR", "GAP / LAP", "TYRE", "STATE"][i]); tower.set_column_expand(i, false)
 		tower.set_column_custom_minimum_width(i, [26, 42, 67, 28, 37][i])
@@ -59,13 +59,13 @@ func present() -> Array:
 		var appearance = [car.id, text, car.compound, state, tooltip, car.id == model.selected_id]
 		if rendered_rows.get(i) != appearance:
 			rendered_rows[i] = appearance; update_count += 1
-			row.set_text(0, str(i + 1)); row.set_text(1, car.short + ("*" if car.player else "")); row.set_custom_color(1, Color(car.color).darkened(0.32)); row.set_metadata(0, car.id)
+			row.set_text(0, str(i + 1)); row.set_text(1, car.short + ("*" if car.player else "")); row.set_metadata(0, car.id)
 			row.set_text(2, text); row.set_text(3, car.compound); row.set_text(4, state)
 			row.set_custom_color(4, UI.ACCENT if state == "HOT" else (UI.DANGER if car.dnf else UI.MUTED))
 			for column in range(5):
 				row.set_tooltip_text(column, tooltip)
-				row.set_custom_bg_color(column, UI.GOLD.lightened(0.18) if car.id == model.selected_id else (Color("315c4d") if car.player else UI.RACE_DARK))
-				row.set_custom_color(column, UI.RACE_INK if car.id == model.selected_id else (Color("edf0df") if column != 4 else (UI.GOLD if state == "HOT" else (Color("e58b78") if car.dnf else Color("b8c6bc")))))
+				row.set_custom_bg_color(column, GameTheme.SELECTED if car.id == model.selected_id else (GameTheme.RAISED if car.player else UI.RACE_DARK))
+				row.set_custom_color(column, GameTheme.TEXT if car.id == model.selected_id else (GameTheme.TEXT if column != 4 else (UI.GOLD if state == "HOT" else (GameTheme.DANGER if car.dnf else GameTheme.MUTED))))
 		if car.id == model.selected_id and not row.is_selected(0): row.select(0)
 	tower.set_block_signals(false)
 	return order

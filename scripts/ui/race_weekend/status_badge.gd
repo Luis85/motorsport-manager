@@ -15,7 +15,7 @@ func present(text: String, tone: String = "neutral") -> void:
 	accessibility_name=label.text
 	if tone==last_tone:return
 	last_tone=tone
-	var fill = {"good": Color("dce9dc"), "warning": Color("f2e5bd"), "danger": Color("f3d9d2"), "info": UI.SELECTED}.get(tone, UI.CARD)
+	var fill = {"good": GameTheme.SELECTED, "warning": GameTheme.RAISED, "danger": GameTheme.RAISED, "info": UI.SELECTED}.get(tone, UI.CARD)
 	var border = {"good": UI.GOOD, "warning": UI.ACCENT, "danger": UI.DANGER, "info": UI.PRIMARY}.get(tone, UI.LINE)
 	if not styles.has(tone):styles[tone]=UI.box(fill,border,3,5)
 	add_theme_stylebox_override("panel",styles[tone])

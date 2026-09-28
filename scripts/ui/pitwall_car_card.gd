@@ -18,7 +18,7 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
 	var header = UI.hbox(body); body.move_child(header, 0)
 	var emblem=RaceDriverEmblem.new();emblem.number=car.number;emblem.tint=Color(car.color);header.add_child(emblem)
-	position = UI.label("P—", PitwallDesign.TYPE.position, UI.RACE_INK); position.custom_minimum_size.x = 50; header.add_child(position)
+	position = UI.label("P—", PitwallDesign.TYPE.position, UI.INK); position.custom_minimum_size.x = 50; header.add_child(position)
 	name_label = UI.button(car.name, details); name_label.add_theme_font_size_override("font_size", PitwallDesign.TYPE.driver); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.clip_text = true; name_label.custom_minimum_size.x = 80; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
 	status = UI.label("", 12, PitwallDesign.MUTED); status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(status); body.move_child(status, 1)
 	var metrics = UI.hbox(body); body.move_child(metrics, 2)

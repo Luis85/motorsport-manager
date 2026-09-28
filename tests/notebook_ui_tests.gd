@@ -50,13 +50,33 @@ func current_book():
 func open_find():
 	await key(KEY_K, true); view.navigator.search.text = "Circuit notebook"; view.navigator.filter_views("Circuit notebook"); await key(KEY_ENTER); await settle()
 	book = current_book()
+func popup_key(popup: PopupMenu, code: Key):
+	for pressed in [true, false]:
+		var event = InputEventKey.new()
+		event.keycode = code; event.pressed = pressed; event.window_id = popup.get_window_id()
+		Input.parse_input_event(event); await settle(2)
+
 func run():
 	app = root.get_node("App"); app.checkpoint_path = "user://notebook-ui-original.json"
 	game = load("res://scenes/main.tscn").instantiate(); root.add_child(game); await settle()
 	var replay_menu
 	for button in game.find_children("*", "MenuButton", true, false):
-		if button.text == "REPLAYS & EXPERIMENTS": replay_menu = button
+		if button.text.to_upper() == "REPLAYS & EXPERIMENTS": replay_menu = button
 	check(replay_menu != null and replay_menu.focus_mode == Control.FOCUS_ALL, "Main-menu notebook invoker accepts ordinary keyboard focus")
+	if replay_menu != null:
+		replay_menu.grab_focus(); await key(KEY_ENTER)
+		var popup = replay_menu.get_popup()
+		check(popup.visible, "Keyboard opens the real main-menu replay picker")
+		for attempt in range(popup.item_count + 1):
+			if popup.get_focused_item() == 2: break
+			await popup_key(popup, KEY_DOWN)
+		check(popup.get_focused_item() == 2, "Keyboard reaches Circuit notebook without invoking a disabled sandbox")
+		await popup_key(popup, KEY_ENTER); await settle()
+		book = current_book()
+		check(book != null, "Native main-menu choice opens the notebook")
+		if book:
+			await click(book.close_button); await settle()
+			check(current_book() == null and replay_menu.has_focus(), "Notebook close restores its actual originating menu button")
 	for size in [Vector2i(1440, 900), Vector2i(1100, 720), Vector2i(1920, 1080)]:
 		for scale in ([1.3] if size.x == 1920 else [1.0, 1.15, 1.3]):
 			root.size = size; root.content_scale_size = size; DisplayServer.window_set_size(size); app.settings.pitwall_text_scale = scale

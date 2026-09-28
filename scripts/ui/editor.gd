@@ -50,46 +50,12 @@ func configure(d: Dictionary, port: TrackEditorPort = null, presentation: Dictio
 	document = session.read_document(); document_revision = session.revision
 
 func _ready() -> void:
+	set_meta("pitwall_text_scale", float(preferences.get("pitwall_text_scale", 1.0)))
+	theme = UI.theme()
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if document.is_empty(): configure(catalog[mini(7, catalog.size() - 1)] if not catalog.is_empty() else TrackEditorSession.blank_document(), storage, preferences)
 	geometry = session.compile_draft(document, vehicle)
-	var title_row = UI.hbox(self)
-	title_row.add_child(UI.label("CIRCUIT ATELIER", 23))
-	dirty_label = UI.label("SAVED", 12, UI.GOOD); title_row.add_child(dirty_label)
-	var space = Control.new(); space.size_flags_horizontal = Control.SIZE_EXPAND_FILL; title_row.add_child(space)
-	title_row.add_child(UI.label("AUTHOR → VALIDATE → DRIVE", 12, UI.MUTED))
-	title_row.add_child(UI.button("Editor guide", func(): guide.open_guide()))
-	var actions = HFlowContainer.new(); add_child(actions)
-	var choices: Array = ["Load a library circuit…"]
-	for track in catalog: choices.append(track.name)
-	var library = UI.option(choices, func(index):
-		if index > 0: confirm_discard(func(): replace_document(catalog[index - 1])))
-	library.custom_minimum_size.x = 260; actions.add_child(library)
-	actions.add_child(UI.button("New circuit", new_document))
-	actions.add_child(UI.button("Save to library", save_document, true))
-	actions.add_child(UI.button("Import JSON", import_document))
-	actions.add_child(UI.button("Export JSON", export_document))
-	actions.add_child(UI.button("Bake runtime", export_runtime))
-	test_button = UI.button("Test weekend", func():
-		var errors = race_errors()
-		if errors.is_empty(): test_requested.emit(document.duplicate(true))
-		else: UI.notify(self, "Track needs attention", "\n".join(errors)), true)
-	actions.add_child(test_button)
-	var tools = HFlowContainer.new(); add_child(tools)
-	tool_picker = UI.option(["Select / move [V]", "Insert point [I]", "Draw points", "Edit pit lane [P]", "Set start / finish", "Place scenery", "Measure [M]", "Move reference", "Freehand trace [D]", "Pen trace", "Select scenery [S]"], set_tool)
-	tools.add_child(tool_picker)
-	undo_button = UI.button("Undo", undo); tools.add_child(undo_button)
-	redo_button = UI.button("Redo", redo); tools.add_child(redo_button)
-	tools.add_child(UI.button("Fit circuit", func(): canvas.fit()))
-	tools.add_child(UI.button("Preview lap", func(): canvas.toggle_preview()))
-	tools.add_child(UI.check("Racing line", true, func(value): canvas.show_line = value; canvas.queue_redraw()))
-	tools.add_child(UI.check("Elevation profile", false, func(value): canvas.show_profile = value; canvas.queue_redraw()))
-	tools.add_child(UI.label("Wheel: zoom · Right-drag: pan · Ctrl: snap · Esc: cancel drag", 12, UI.MUTED))
-	context_bar = HFlowContainer.new(); add_child(context_bar)
-	selection_summary = UI.label("", 12, UI.ACCENT); context_bar.add_child(selection_summary)
-	for action in [["Duplicate", "duplicate"], ["Group", "group"], ["Ungroup", "ungroup"], ["Align X", "align_x"], ["Align Y", "align_y"], ["Delete", "delete"]]:
-		var b = UI.button(action[0], func(): selection_action(action[1])); b.custom_minimum_size.y = 30; b.add_theme_font_size_override("font_size", 12); context_bar.add_child(b)
-	context_bar.visible = false
+	TrackEditorToolbar.build(self)
 	var content = UI.hbox(self, true)
 	canvas = TrackCanvas.new(); canvas.configure_presentation(preferences); canvas.editing = true; canvas.show_line = true
 	canvas.draft_compiler = session.compile_draft
@@ -117,9 +83,11 @@ func _ready() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sketch_action_row.add_child(button)
 	var sketch_hint = UI.paragraph("Preview changes nothing. Replace asks for confirmation.")
 	sketch_hint.add_theme_font_size_override("font_size", 12); sketch_actions.add_child(sketch_hint)
-	status = UI.label("", 12, UI.MUTED); add_child(status)
+	status = UI.label("", 12, UI.MUTED); status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(status)
 	recompile(); refresh_inspector(); update_status()
 	setup_guide()
+	PitwallDesign.scale_controls(self, UI.text_scale(self))
+	PitwallDesign.focus_later(tool_picker)
 	call_deferred("fit_canvas")
 
 func setup_guide() -> void:
@@ -211,175 +179,8 @@ func inspector_page(title: String) -> VBoxContainer:
 	return UI.vbox(margin, true)
 
 func refresh_inspector() -> void:
-	if inspector == null: return
-	_refreshing_inspector = true
-	var tab = inspector.current_tab
-	UI.clear(inspector)
-	var point = inspector_page("Point")
-	if canvas.selection_ids.size() > 1:
-		point.add_child(UI.label("%d %s ITEMS" % [canvas.selection_ids.size(), canvas.selection_kind.to_upper()], 16, UI.ACCENT))
-		point.add_child(UI.paragraph("Drag any selected item to move the selection. Shift-click toggles membership. Road handles move with their points; widths and elevations stay unchanged."))
-		var turn = UI.spin(15, -180, 180, 1, func(_value): pass); UI.field(point, "Rotation °", turn)
-		point.add_child(UI.button("Rotate selection", func(): apply_selection_result(TrackEdit.transform(document, canvas.selection_kind, canvas.selection_ids, Vector2.ZERO, turn.value))))
-		var factor = UI.spin(1.1, 0.1, 4, 0.1, func(_value): pass); UI.field(point, "Scale factor", factor)
-		point.add_child(UI.button("Scale selection", func(): apply_selection_result(TrackEdit.transform(document, canvas.selection_kind, canvas.selection_ids, Vector2.ZERO, 0, factor.value))))
-		point.add_child(UI.button("Distribute horizontally", func(): selection_action("distribute_x")))
-		point.add_child(UI.button("Distribute vertically", func(): selection_action("distribute_y")))
-		point.add_child(UI.paragraph("Transforms are one undo step. Alignment uses item centres; grouping is flat and applies to scenery only."))
-	elif canvas.selected_object >= 0 and canvas.selected_object < document.objects.size():
-		var object = document.objects[canvas.selected_object]
-		point.add_child(UI.label("SCENERY / " + str(object.type).to_upper(), 16, UI.ACCENT))
-		coordinate_fields(point, object, false)
-		UI.field(point, "Rotation °", UI.spin(object.get("rotation", 0), -360, 360, 1, func(value): perform(func(): object.rotation = value)))
-		UI.field(point, "Scale", UI.spin(object.get("scale", 1), 0.2, 8, 0.1, func(value): perform(func(): object.scale = value)))
-		point.add_child(UI.button("Delete scenery", delete_point))
-		point.add_child(UI.paragraph("Drag this object in Select / move. Rotation and scale affect its drawn footprint; this is scenery, not a collision body."))
-	elif canvas.mode == "pit" and canvas.selected_pit >= 0 and not document.pits.is_empty() and canvas.selected_pit < document.pits[0].nodes.size():
-		var node = document.pits[0].nodes[canvas.selected_pit]
-		point.add_child(UI.label("PIT POINT %d" % (canvas.selected_pit + 1), 16, UI.ACCENT))
-		coordinate_fields(point, node, false)
-		point.add_child(UI.button("Delete pit point", func(): perform(func(): document.pits[0].nodes.remove_at(canvas.selected_pit); canvas.selected_pit = -1, true)))
-		point.add_child(UI.paragraph("Drag the gold pit handles. Shift-click empty space to append a point. Entry and exit gates are edited in Track."))
-	elif canvas.selected >= 0 and canvas.selected < document.nodes.size():
-		var node = document.nodes[canvas.selected]
-		point.add_child(UI.label("CONTROL POINT %d" % (canvas.selected + 1), 16, UI.ACCENT))
-		coordinate_fields(point, node, true)
-		point.add_child(UI.check("Aligned handles", node.get("mode", "aligned") == "aligned", func(value): perform(func(): node.mode = "aligned" if value else "free")))
-		point.add_child(UI.button("Smooth this corner", func(): perform(func(): TrackDocument.smooth_node(document, canvas.selected), true)))
-		point.add_child(UI.button("Make a sharp corner", func(): perform(func(): node.mode = "free"; TrackDocument.set_handle(node, "in", Vector2.ZERO); TrackDocument.set_handle(node, "out", Vector2.ZERO), true)))
-		point.add_child(UI.button("Split next segment", func(): perform(func(): canvas.selected = TrackDocument.split_segment(document, canvas.selected), true)))
-		point.add_child(UI.button("Delete control point", delete_point))
-		point.add_child(UI.paragraph("The square handles shape the exact Bézier curve. Insertion splits that curve without changing its shape. Banking and height are interpolated along the circuit."))
-	else:
-		point.add_child(UI.label("DIRECT MANIPULATION", 16, UI.ACCENT))
-		point.add_child(UI.paragraph("Click a control point to inspect it. Drag the point or its square handles. Double-click the road to insert a shape-preserving point."))
-		point.add_child(UI.paragraph("New circuits begin as a four-corner starter. Draw points appends new corners; the circuit stays closed. Use Smooth all only on a new rough outline—not on a surveyed template."))
-		point.add_child(UI.button("Smooth all points", func(): perform(func():
-			for i in range(document.nodes.size()): TrackDocument.smooth_node(document, i))))
-		point.add_child(UI.paragraph("Navigation\nWheel: zoom at cursor\nRight or middle drag: pan\nCtrl while dragging: snap to 5 m\nF: fit\nCtrl+Z / Ctrl+Y: undo / redo\nCtrl+S: save\nDelete: delete selected point"))
-	var track = inspector_page("Track")
-	track.add_child(UI.label("CIRCUIT", 16, UI.ACCENT))
-	name_field = LineEdit.new(); name_field.text = document.name; name_field.placeholder_text = "Circuit name"; track.add_child(name_field)
-	name_field.text_submitted.connect(func(value): perform(func(): document.name = value.strip_edges()))
-	name_field.focus_exited.connect(func():
-		if not _refreshing_inspector and is_instance_valid(name_field) and document.name != name_field.text: perform(func(): document.name = name_field.text.strip_edges()))
-	track.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; recompile(), TrackGeometry.PRESETS.keys().find(vehicle)))
-	UI.field(track, "Start / finish %", UI.spin(document.start * 100, 0, 99.99, 0.01, func(value): perform(func(): document.start = value / 100)))
-	track.add_child(UI.paragraph("Set start / finish lets you click the road. Race distance zero and the grid follow this gate, not control point one."))
-	track.add_child(UI.label("TIMING SECTORS", 14, UI.ACCENT))
-	for index in range(2):
-		var button = UI.button("Set S%d at selected point" % (index + 1), func(): set_sector(index))
-		button.disabled = canvas.selected < 0; track.add_child(button)
-	track.add_child(UI.label("PIT LANE", 16, UI.ACCENT))
-	if not document.pits.is_empty():
-		var pit = document.pits[0]
-		UI.field(track, "Entry %", UI.spin(pit.entry * 100, 0, 99.99, 0.01, func(value): perform(func(): pit.entry = value / 100)))
-		UI.field(track, "Exit %", UI.spin(pit.exit * 100, 0, 99.99, 0.01, func(value): perform(func(): pit.exit = value / 100)))
-		UI.field(track, "Limit km/h", UI.spin(pit.get("speed", 80), 30, 100, 5, func(value): perform(func(): pit.speed = value)))
-		track.add_child(UI.paragraph("Entry and exit are absolute fractions of the authored circuit. The pit exit may wrap across start / finish. Use Edit pit lane to move its points."))
-	track.add_child(UI.button("Generate service lane", func(): perform(func():
-		document.pits = []
-		var compiled = session.compile_draft(document, vehicle)
-		document.pits = compiled.document.pits.duplicate(true), true)))
-	track.add_child(UI.label("VALIDATION", 16, UI.ACCENT))
-	var issues = TrackDocument.validate(document)
-	if geometry: issues.append_array(geometry.warnings)
-	track.add_child(UI.paragraph("Authoring data is valid." if issues.is_empty() else "\n".join(issues), UI.GOOD if issues.is_empty() else UI.ACCENT))
-	track.add_child(UI.paragraph("Lap estimates are a heuristic reference, not a guaranteed fastest lap. Geographic layouts are unofficial reconstructions. Clearance metadata does not certify safety."))
-	if not document.provenance.is_empty(): track.add_child(UI.paragraph(str(document.provenance.get("notice", document.provenance.get("planSource", "")))))
-	var features = inspector_page("Features")
-	features.add_child(UI.label("ROAD FEATURES", 16, UI.ACCENT))
-	var feature_names: Array = ["Select a feature…"]
-	for f in document.features: feature_names.append("%s  %.1f–%.1f%%" % [str(f.type).capitalize(), f.a * 100, f.b * 100])
-	features.add_child(UI.option(feature_names, func(index): feature_index = index - 1; refresh_inspector(), mini(feature_index + 1, feature_names.size() - 1)))
-	if feature_index >= 0 and feature_index < document.features.size():
-		var f = document.features[feature_index]
-		UI.field(features, "From %", UI.spin(f.a * 100, 0, 99.99, 0.1, func(value): perform(func(): f.a = value / 100)))
-		UI.field(features, "To %", UI.spin(f.b * 100, 0, 99.99, 0.1, func(value): perform(func(): f.b = value / 100)))
-		UI.field(features, "Width m", UI.spin(f.get("width", 1), 0.2, 20, 0.1, func(value): perform(func(): f.width = value)))
-		UI.field(features, "Clearance m", UI.spin(f.get("clearance", 5), 1, 20, 0.1, func(value): perform(func(): f.clearance = value)))
-		features.add_child(UI.option(["Both sides", "Left side", "Right side"], func(index): perform(func(): f.side = ["both", "left", "right"][index]), ["both", "left", "right"].find(f.get("side", "both"))))
-		features.add_child(UI.button("Remove this feature", func(): perform(func(): document.features.remove_at(feature_index); feature_index = -1, true)))
-	features.add_child(UI.label("ADD A FEATURE", 14, UI.MUTED))
-	for type in ["curb", "runoff", "barrier", "tunnel", "bridge"]:
-		features.add_child(UI.button("+ " + type.capitalize(), func(): perform(func():
-			var a = geometry.nearest(TrackDocument.point(document.nodes[canvas.selected])).fraction if canvas.selected >= 0 else 0.0
-			document.features.append({"type": type, "a": a, "b": fposmod(a + 0.04, 1), "side": "both", "width": 1, "clearance": 5, "thickness": 1})
-			feature_index = document.features.size() - 1, true)))
-	features.add_child(UI.paragraph("Feature ranges wrap around the lap. Bridges and tunnels are top-down annotations; the road height controls the elevation profile and runtime data."))
-	features.add_child(UI.label("SCENERY", 16, UI.ACCENT))
-	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water", "Tent", "Cafe"], func(index): canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"][index]; set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"].find(canvas.scenery_type)))
-	features.add_child(UI.paragraph("Choose a prop, then click the canvas to place it. Return to Select / move to select and drag existing objects; Point exposes rotation, size and position."))
-	features.add_child(UI.button("Remove last scenery object", func():
-		if not document.objects.is_empty(): perform(func(): document.objects.pop_back())))
-	var reference = inspector_page("Reference")
-	reference.add_child(UI.label("TRACE AN IMAGE", 16, UI.ACCENT))
-	reference.add_child(UI.button("Import PNG / JPG", import_reference))
-	reference.add_child(UI.paragraph("The image is embedded in track exports, so it travels with the circuit. Use an image you have rights to share. Move reference drags it without changing the road."))
-	if document.has("reference"):
-		var ref = document.reference
-		UI.field(reference, "Image width m", UI.spin(ref.width, 10, 20000, 1, func(value): perform(func(): ref.width = value)))
-		UI.field(reference, "Center X", UI.spin(ref.x, -100000, 100000, 1, func(value): perform(func(): ref.x = value)))
-		UI.field(reference, "Center Y", UI.spin(ref.y, -100000, 100000, 1, func(value): perform(func(): ref.y = value)))
-		UI.field(reference, "Opacity", UI.spin(ref.opacity, 0.05, 0.9, 0.05, func(value): perform(func(): ref.opacity = value)))
-		reference.add_child(UI.paragraph("Measure two points on the image, enter their real-world separation, then calibrate. The first measured point stays anchored."))
-		UI.field(reference, "Known distance m", UI.spin(known_distance, 0.1, 20000, 0.1, func(value): known_distance = value))
-		var calibrate = UI.button("Calibrate from ruler", calibrate_reference)
-		calibrate.disabled = canvas.measure_start == Vector2.INF or canvas.measure_end == Vector2.INF
-		reference.add_child(calibrate)
-		reference.add_child(UI.button("Remove reference", func(): perform(func(): document.erase("reference"), true)))
-	var checks = inspector_page("Checks")
-	checks.add_child(UI.label("TRACK READINESS", 16, UI.ACCENT))
-	checks.add_child(UI.paragraph("%d blocking · %d advisory" % [findings.filter(func(f): return f.severity == "error").size(), findings.filter(func(f): return f.severity != "error").size()], UI.DANGER if TrackDiagnostics.blocking(findings) else UI.GOOD))
-	if findings.is_empty(): checks.add_child(UI.paragraph("No sampled centreline problems detected. Always test a lap and inspect the pit route."))
-	for index in range(findings.size()):
-		var finding = findings[index]
-		var button = UI.button("%s · %s" % [str(finding.severity).to_upper(), str(finding.code).capitalize()], func(): focus_finding(index))
-		button.tooltip_text = finding.message; checks.add_child(button); checks.add_child(UI.paragraph(finding.message))
-	checks.add_child(UI.paragraph("Checks cover sampled road crossings, vertical separation, pit angles and very tight radii. They do not certify full road-edge, vehicle-envelope or structural clearance."))
-	# Locks apply to pointer gestures, inspector input and destructive keyboard actions.
-	var point_layer = "scenery" if canvas.selected_object >= 0 else ("pits" if canvas.mode == "pit" else "road")
-	if not canvas.layer_editable(point_layer): disable_inputs(point)
-	if not canvas.layer_editable("road") or not canvas.layer_editable("pits"): disable_inputs(track)
-	if not canvas.layer_editable("features") or not canvas.layer_editable("scenery"): disable_inputs(features)
-	if not canvas.layer_editable("reference"): disable_inputs(reference)
-	var look = inspector_page("World")
-	look.add_child(UI.label("A QUIETER PLACE TO RACE", 15, UI.ACCENT))
-	look.add_child(UI.paragraph("The same illustration is used in the editor and race. Surrounds are stylized, not geographic terrain surveys."))
-	look.add_child(UI.option(["Meadow circuit", "Woodland circuit", "Coastal surround"], func(index): perform(func(): document.visual.environment = ["meadow", "woodland", "coastal"][index]), ["meadow", "woodland", "coastal"].find(document.visual.get("environment", "meadow"))))
-	look.add_child(UI.option(["Summer greens", "Autumn warmth"], func(index): perform(func(): document.visual.season = ["summer", "autumn"][index]), ["summer", "autumn"].find(document.visual.get("season", "summer"))))
-	look.add_child(UI.label("EDITOR LAYERS", 15, UI.ACCENT))
-	look.add_child(UI.paragraph("Hidden or locked layers cannot be edited. These workspace toggles do not delete content, change exports, or hide roads in the race."))
-	for key in canvas.layer_state:
-		look.add_child(UI.label(str(key).capitalize(), 13))
-		var row = UI.hbox(look)
-		row.add_child(UI.check("Visible", canvas.layer_state[key].visible, func(value): canvas.set_layer(key, "visible", value)))
-		row.add_child(UI.check("Locked", canvas.layer_state[key].locked, func(value): canvas.set_layer(key, "locked", value)))
-	look.add_child(UI.check("Construction grid", canvas.show_grid, func(value): canvas.show_grid = value; canvas.queue_redraw()))
-	look.add_child(UI.paragraph("Preview lap shows a reference dot on the baked line; it is not a second physics simulation. Editing automatically stops the preview."))
-	var sketch_page = inspector_page("Draw")
-	sketch_page.add_child(UI.label("TRACE → PREVIEW → APPLY", 16, UI.ACCENT))
-	sketch_page.add_child(UI.paragraph("The existing road remains intact while you draw. Start with freehand or click straight segments with Pen. Right-drag pans between strokes."))
-	var trace_tools = UI.hbox(sketch_page)
-	trace_tools.add_child(UI.button("Freehand [D]", func(): set_tool(8)))
-	trace_tools.add_child(UI.button("Pen", func(): set_tool(9)))
-	sketch_summary = UI.paragraph(""); sketch_page.add_child(sketch_summary)
-	sketch_close_button = UI.button("Close loop", func():
-		if canvas.sketch.close_loop(): canvas.pen_anchor = Vector2.INF; invalidate_sketch()
-		else: status.text = "Add at least four trace points before closing.")
-	sketch_page.add_child(sketch_close_button)
-	UI.field(sketch_page, "Simplify metres", UI.spin(canvas.sketch.tolerance, 0.2, 50, 0.2, func(value): canvas.sketch.tolerance = value; invalidate_sketch()))
-	UI.field(sketch_page, "Smoothing", UI.spin(canvas.sketch.smoothing, 0, 1, 0.05, func(value): canvas.sketch.smoothing = value; invalidate_sketch()))
-	UI.field(sketch_page, "Road width m", UI.spin(canvas.sketch.width, 5, 40, 0.5, func(value): canvas.sketch.width = value; invalidate_sketch()))
-	sketch_page.add_child(UI.button("Clear trace", confirm_clear_trace))
-	sketch_page.add_child(UI.paragraph("Replacement clears old pits, features and timing markers because they reference the old layout. Scenery and the reference image remain. Undo restores the complete old document."))
-	inspector.current_tab = clampi(tab, 0, inspector.get_tab_count() - 1)
-	section_picker.select(inspector.current_tab)
-	sketch_actions.visible = inspector.current_tab == 6
-	context_bar.visible = canvas.selection_ids.size() > 1
-	selection_summary.text = "%d selected · %s" % [canvas.selection_ids.size(), canvas.selection_kind]
-	update_sketch_panel()
-	_refreshing_inspector = false
+	TrackEditorInspector.render(self)
+	PitwallDesign.scale_controls(inspector, UI.text_scale(self))
 
 func coordinate_fields(parent: Node, node: Dictionary, road: bool) -> void:
 	for field in [["X metres", "x", -100000, 100000, 0.1], ["Y metres", "y", -100000, 100000, 0.1], ["Height metres", "h", -1000, 10000, 0.1]]:
@@ -455,8 +256,7 @@ func replace_document(d: Dictionary) -> void:
 
 func confirm_discard(callback: Callable) -> void:
 	if not dirty: callback.call(); return
-	var dialog = ConfirmationDialog.new(); dialog.title = "Unsaved circuit changes"; dialog.dialog_text = "Discard unsaved circuit changes and any unapplied trace? Saved library files will not be deleted."
-	dialog.ok_button_text = "Discard changes"; add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); callback.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(500, 180))
+	UI.confirm(self, "Unsaved circuit changes", "Discard unsaved circuit changes and any unapplied trace? Saved library files will not be deleted.", "Discard changes", callback)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo: return
@@ -611,11 +411,7 @@ func preview_sketch() -> void:
 
 func apply_sketch() -> void:
 	if not sketch_result.get("ok", false) or not canvas.layer_editable("road"): return
-	var dialog = ConfirmationDialog.new(); dialog.title = "Replace this road?"
-	dialog.dialog_text = "Apply the preview and clear the old pit route, track features and timing markers? Scenery and reference remain. Undo restores the original circuit."
-	dialog.ok_button_text = "Replace road"; add_child(dialog)
-	dialog.confirmed.connect(func(): dialog.queue_free(); commit_sketch())
-	dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(540, 185))
+	UI.confirm(self, "Replace this road?", "Apply the preview and clear the old pit route, track features and timing markers? Scenery and reference remain. Undo restores the original circuit.", "Replace road", commit_sketch)
 
 func commit_sketch() -> void:
 	if not sketch_result.get("ok", false) or not canvas.layer_editable("road"): return
@@ -627,9 +423,5 @@ func commit_sketch() -> void:
 
 func confirm_clear_trace() -> void:
 	if canvas.sketch.strokes.is_empty(): return
-	var dialog = ConfirmationDialog.new(); dialog.title = "Clear the unapplied trace?"
-	dialog.dialog_text = "Discard these drawing strokes and their preview? The existing road and saved library files stay unchanged. This clears trace history."
-	dialog.ok_button_text = "Clear trace"; add_child(dialog)
-	dialog.confirmed.connect(func():
-		dialog.queue_free(); canvas.sketch.clear(); canvas.pen_anchor = Vector2.INF; invalidate_sketch())
-	dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))
+	UI.confirm(self, "Clear the unapplied trace?", "Discard these drawing strokes and their preview? The existing road and saved library files stay unchanged. This clears trace history.", "Clear trace", func():
+		canvas.sketch.clear(); canvas.pen_anchor = Vector2.INF; invalidate_sketch())

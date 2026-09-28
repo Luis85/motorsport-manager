@@ -87,3 +87,22 @@ headless-only or partial run is not accepted as complete verification.
 ## Systems and mechanics development
 
 Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility, typed-car records and scheduler-free view handles.
+
+## Coherent interface and advisory quality
+
+Menus, configuration, Settings, the editor, weekend entry, pitwall and final
+classification share `GameTheme`. The illustrated circuit keeps its own readable
+map palette. Settings preview changes before Apply, protect unsaved departures,
+and preserve edits on save failure. Interface text scaling also reaches the editor
+and native dialogs; the minimal five driver actions are unchanged.
+
+The separate quality workflow produces warnings and downloadable reports without
+blocking CI. Budgets are 400 source / 450 test **code** lines, excluding blank and
+comment lines. Existing functional and architectural checks stay required.
+See the [quality guide](docs/code-quality.md), [flow audit and research](docs/design/game-flow-coherence.md),
+and [contributor rules](AGENTS.md). Run locally with:
+
+```sh
+python3 -m pip install -r requirements-quality.txt
+python3 scripts/quality.py
+```
