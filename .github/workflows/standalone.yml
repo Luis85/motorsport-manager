@@ -1,0 +1,44 @@
+name: Standalone application
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  toolchain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify matching desktop templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p toolchain
+          url="https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz"
+          curl --fail --location --retry 3 "$url" -o "$RUNNER_TEMP/templates.tpz"
+          echo "f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011  $RUNNER_TEMP/templates.tpz" | sha256sum --check
+          python3 - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+          output = Path('toolchain')
+          names = ['linux_debug.x86_64', 'linux_release.x86_64', 'windows_debug_x86_64.exe', 'windows_release_x86_64.exe']
+          with zipfile.ZipFile(Path(os.environ['RUNNER_TEMP']) / 'templates.tpz') as archive:
+              version = archive.read('templates/version.txt').decode().strip()
+              assert version == '4.7.2.stable', version
+              digests = {}
+              for name in names:
+                  data = archive.read('templates/' + name)
+                  assert data, name
+                  (output / name).write_bytes(data)
+                  digests[name] = hashlib.sha256(data).hexdigest()
+          (output / 'manifest.json').write_text(json.dumps({'version': version, 'archive_sha256': 'f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011', 'files': digests}, indent=2) + '\n')
+          PY
+          printf '%s\n' "$url" > toolchain/origin.txt
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/godotengine/godot/4.7.2-stable/LICENSE.txt -o toolchain/LICENSE.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pinned-desktop-export-templates
+          path: toolchain/
+          if-no-files-found: error
+          retention-days: 7
