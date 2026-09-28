@@ -161,6 +161,13 @@ func test_editor_transactions(editor) -> void:
 	editor.undo(); await settle()
 	var original = editor.document.duplicate(true)
 	var redo_count = editor.redo_stack.size(); var undo_count = editor.undo_stack.size()
+	var canonical = editor.session.read_document()
+	var observed_revision = editor.session.revision
+	editor.perform(func(): editor.document.nodes[0].w = 4)
+	check(editor.session.read_document() == canonical and editor.session.revision == observed_revision, "Native rejected authoring edit cannot change the canonical document or revision")
+	check(editor.document == canonical and editor.undo_stack.size() == undo_count and editor.redo_stack.size() == redo_count, "Native validation rejection restores the canvas draft without destroying redo")
+	check(editor.status.text.contains("Road width"), "Native editor reports the domain-owned draft failure")
+	await capture("17-editor-draft-rejection")
 	var canvas = editor.canvas
 	canvas.selected = -1; canvas.mode = "select"
 	var at = canvas.screen(TrackDocument.point(editor.document.nodes[0]))

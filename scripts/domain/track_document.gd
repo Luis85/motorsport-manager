@@ -214,3 +214,84 @@ static func next_node_id(nodes: Array) -> String:
 		var candidate = "n-edit-%d" % index
 		if not used.has(candidate): return candidate
 	return "" # The pigeonhole bound above always supplies an unused ID.
+
+## Editable drafts may have an unfinished road, but never malformed nested data.
+static func draft_errors(value: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	if not serializable(value, 0):
+		errors.append("Track drafts require finite, bounded serialized values.")
+		return errors
+	if not value.get("nodes") is Array or value.nodes.size() > TrackDocument.MAX_NODES:
+		errors.append("The track requires a bounded road-point collection.")
+		return errors
+	for key in ["visual", "grid", "provenance"]:
+		if not value.get(key, {}) is Dictionary:
+			errors.append("Invalid draft metadata: " + key)
+	for key in ["features", "pits", "objects", "timingGates", "cornerMarkers"]:
+		if not value.get(key, []) is Array:
+			errors.append("Invalid draft collection: " + key)
+	for node in value.nodes:
+		if not node is Dictionary:
+			errors.append("Every draft road point requires named coordinates.")
+			break
+		for axis in ["x", "y"]:
+			if not TrackDocument.valid_number(node.get(axis), -100000, 100000):
+				errors.append("Road coordinates must be finite numbers within the authoring bounds.")
+		for handle in ["in", "out"]:
+			if not node.get(handle, {}) is Dictionary:
+				errors.append("Invalid control handle.")
+				continue
+			for axis in ["x", "y"]:
+				if not TrackDocument.valid_number(node.get(handle, {}).get(axis, 0), -10000, 10000):
+					errors.append("Invalid control handle coordinate.")
+	if not errors.is_empty():
+		return errors
+	# Reuse the track contract for nested metadata. Replace only the unfinished
+	# road in this validation copy: an open/short draft is legal editing state,
+	# but malformed pits, scenery, dimensions or references are not.
+	var structural = value.duplicate(true)
+	structural.nodes = [
+		{"x": -100.0, "y": -100.0}, {"x": 100.0, "y": -100.0},
+		{"x": 100.0, "y": 100.0}, {"x": -100.0, "y": 100.0}]
+	structural.closed = true
+	structural.name = "Draft validation"
+	errors.append_array(TrackDocument.validate(structural))
+	for node in value.nodes:
+		if not TrackDocument.valid_number(node.get("h", 0), -1000, 10000):
+			errors.append("Road height must remain within the authoring bounds.")
+		if not TrackDocument.valid_number(node.get("w", 14), 5, 40):
+			errors.append("Road width must remain between 5 and 40 metres.")
+		if not TrackDocument.valid_number(node.get("bank", 0), -45, 45):
+			errors.append("Road banking must remain within ±45 degrees.")
+	if not value.get("closed", true) is bool or not value.get("name", "") is String:
+		errors.append("Track name and closed state have invalid types.")
+	if JSON.stringify(value).length() > 12000000:
+		errors.append("The authoring document is too large.")
+	return errors
+
+static func serializable(value: Variant, depth: int = 0) -> bool:
+	if depth > 24:
+		return false
+	match typeof(value):
+		TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_STRING, TYPE_STRING_NAME:
+			return true
+		TYPE_FLOAT:
+			return is_finite(value)
+		TYPE_ARRAY:
+			if value.size() > 20000: return false
+			for item in value:
+				if not serializable(item, depth + 1): return false
+			return true
+		TYPE_DICTIONARY:
+			if value.size() > 20000: return false
+			for key in value:
+				if typeof(key) not in [TYPE_STRING, TYPE_STRING_NAME] or not serializable(value[key], depth + 1): return false
+			return true
+	return false
+
+## Publishing requires the same safe draft plus the complete track contract.
+static func publication_errors(value: Dictionary) -> Array[String]:
+	var errors = draft_errors(value)
+	if errors.is_empty():
+		errors = validate(value)
+	return errors
