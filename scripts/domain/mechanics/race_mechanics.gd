@@ -17,10 +17,17 @@ func _init(simulation: RaceSim) -> void:
 static func validate(definitions: Array) -> Array[String]:
 	var errors: Array[String] = []
 	var known: Array[String] = []
+	var whitespace = RegEx.create_from_string("(*UCP)[\\s\\x{1c}-\\x{1f}]")
 	for value in definitions:
 		if not value is Dictionary or not value.get("id") is String or value.id.is_empty():
 			errors.append("A mechanic requires a non-empty stable identity.")
 			continue
+		# Validate before recursively detaching metadata: extra fields are values too.
+		if not RaceStateValue.serializable(value):
+			errors.append("Mechanic definition must contain finite serialized values within the record bounds: " + value.id)
+			continue
+		if whitespace.search(value.id) != null:
+			errors.append("Mechanic identity must not contain whitespace: " + value.id)
 		if value.id in known:
 			errors.append("Duplicate mechanic: " + value.id)
 		if not value.get("version") is int or value.version < 1:
@@ -95,6 +102,10 @@ func install(geometry: TrackGeometry, options: Dictionary) -> bool:
 	if simulation == null:
 		last_error = "The owning simulation has been released."
 		return false
+	# Reject before copying or installing ANY provider; a corrected attempt is retryable.
+	if not RaceStateValue.serializable(options):
+		last_error = "Mechanic options must contain finite serialized values within the record bounds."
+		return false
 	_installed = true
 	for provider in _providers:
 		provider.install(simulation, geometry.detached_copy() if geometry else null, options.duplicate(true))
@@ -113,8 +124,12 @@ func invoke(hook: String, arguments: Array) -> Variant:
 func before(identity: String, hook: String, arguments: Array) -> Variant:
 	for index in range(_definitions.size()):
 		if _definitions[index].id == identity:
+			if hook not in _definitions[index].hooks:
+				last_error = "%s cannot call an undeclared predecessor hook: %s" % [identity, hook]
+				return null
+			last_error = ""
 			return _invoke_before(index, hook, arguments)
-	assert(false, "Unknown mechanic predecessor: " + identity)
+	last_error = "Unknown mechanic predecessor: " + identity
 	return null
 
 func _invoke_before(limit: int, hook: String, arguments: Array) -> Variant:

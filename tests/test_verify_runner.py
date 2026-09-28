@@ -114,13 +114,15 @@ class ProcessOwnershipTests(unittest.TestCase):
             )
             parent_code = (
                 "import subprocess,sys,time; from pathlib import Path; "
-                f"subprocess.Popen([sys.executable,'-c',{child_code!r}]); "
+                f"subprocess.Popen([sys.executable,'-I','-S','-c',{child_code!r}]); "
                 f"p=Path({str(pid_file)!r}); "
                 "\nfor _ in range(400):\n if p.exists(): break\n time.sleep(.01)\n"
                 "print('owned child ready',flush=True); "
                 + ("time.sleep(120)" if timeout else "sys.exit(0)")
             )
-            command = [sys.executable, "-c", parent_code]
+            # This stdlib-only fixture must not measure installed site hooks twice.
+            # Keep the real process tree, output and timeout assertions unchanged.
+            command = [sys.executable, "-I", "-S", "-c", parent_code]
             started = time.monotonic()
             if timeout:
                 with self.assertRaises(subprocess.TimeoutExpired) as caught:

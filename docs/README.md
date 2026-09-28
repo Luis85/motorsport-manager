@@ -77,4 +77,12 @@ The 0.14 notebook handoff governs opt-in run history, guarded personal interpret
 
 ## Current architecture increment
 
-[0.18.0 simulation/presentation boundaries](architecture-refactor.md) supersedes older descriptions of UI-owned simulation scheduling and domain-owned recording/catalog I/O.
+[0.19.0 simulation/presentation boundaries](architecture-refactor.md) supersedes older descriptions of UI-owned simulation scheduling and domain-owned recording/catalog I/O.
+
+## System contract hardening
+
+[System contract completion](system-contract-completion.md) records the bounded
+post-PR-20 implementation: shared serialized-value preflight, detached command
+dispatch, extension diagnostics, injectable atomic-write failure tests and
+source-bound acceptance. Use [Developing mechanics](developing-mechanics.md) for
+ownership, safe extension, focused validation and error/recovery recipes.

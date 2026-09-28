@@ -101,8 +101,9 @@ func transition(next: String) -> void:
 
 func _base_command(action: String, payload: Dictionary = {}) -> bool:
 	last_error = ""
-	var id = int(payload.get("id", selected_id))
-	if id < 0 or id >= cars.size(): return fail("Unknown driver.")
+	var target = payload.get("id", selected_id)
+	if not RaceCheckpoint.integral(target, 0, cars.size() - 1): return fail("Unknown driver.")
+	var id = int(target)
 	var c = cars[id]
 	match action:
 		"qualify":
@@ -139,6 +140,7 @@ func _base_command(action: String, payload: Dictionary = {}) -> bool:
 			if phase not in ACTIVE: return fail("No live session to pause.")
 			paused = not paused
 		"speed":
+			if not RaceCheckpoint.integral(payload.get("value", 1), 1, 16): return fail("Invalid simulation speed.")
 			var value = int(payload.get("value", 1))
 			if value not in [1, 2, 4, 8, 16]: return fail("Invalid simulation speed.")
 			speed = value
@@ -147,8 +149,8 @@ func _base_command(action: String, payload: Dictionary = {}) -> bool:
 			if c.dnf or c.finished: return fail("This car is no longer running.")
 			match action:
 				"pace", "engine":
+					if not RaceCheckpoint.integral(payload.get("value", 1), 0, 2): return fail("Invalid driving mode.")
 					var value = int(payload.get("value", 1))
-					if value < 0 or value > 2: return fail("Invalid driving mode.")
 					c[action] = value; c.auto = false
 				"select_set":
 					if c.route == "pit": return fail("The tyre plan is locked until pit exit.")
@@ -168,8 +170,12 @@ func _base_command(action: String, payload: Dictionary = {}) -> bool:
 				"cancel_schedule":
 					if c.scheduled_lap < 1 or c.route != "track": return fail("There is no cancellable scheduled stop.")
 					c.scheduled_lap = -1; c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false
-				"repair": c.repair = bool(payload.get("value", true))
-				"auto": c.auto = bool(payload.get("value", not c.auto))
+				"repair":
+					if not payload.get("value", true) is bool: return fail("Choose an explicit repair state.")
+					c.repair = payload.get("value", true)
+				"auto":
+					if not payload.get("value", not c.auto) is bool: return fail("Choose an explicit delegation state.")
+					c.auto = payload.get("value", not c.auto)
 				"compound":
 					var value = str(payload.get("value", "M"))
 					if not TYRES.has(value): return fail("Unknown tyre compound.")
@@ -702,7 +708,11 @@ func sync_ownership(c: RaceCar) -> void:
 	mechanics.invoke("sync_ownership", [c])
 
 func command(action: String, payload: Dictionary = {}) -> bool:
-	return mechanics.invoke("command", [action, payload])
+	# Validate before copying, provider execution or accepted-input recording.
+	# Cyclic collections and engine Objects are not command/replay values.
+	if not RaceStateValue.serializable(payload):
+		return fail("Command payload must contain finite serialized values within the record bounds.")
+	return mechanics.invoke("command", [action, payload.duplicate(true)])
 
 func policy_command(action: String, payload: Dictionary) -> bool:
 	return mechanics.invoke("policy_command", [action, payload])

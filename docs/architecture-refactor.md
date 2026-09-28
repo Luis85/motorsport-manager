@@ -1,7 +1,8 @@
 # Architecture — 0.19.0
 
-This map includes the completed PR #19 foundation and the PR #20 maintainability
-pass built from current main, not a continuation of the former PR #18 branch.
+This map includes the completed PR #19 foundation, merged PR #20 maintainability
+pass and the subsequent system-contract hardening. It is not a continuation of
+the former PR #18 branch.
 The earlier 0.18.0 design and its evidence remain in Git history. Test counts
 belong to the source-pinned run that produced them, not to this architecture map.
 
@@ -80,6 +81,27 @@ order are retained. Compatibility selection/playback fields remain in the old
 snapshot format and are excluded from sporting equivalence. This does not give
 presentation ownership of the live checkpoint.
 
+## Command and infrastructure preflight
+
+`RaceSim.command` owns whole-payload structural validation before its detached
+provider dispatch. `RaceCommands` owns weak application routing and feedback;
+it no longer deep-copies unchecked input. Scalar/target/Boolean semantics remain
+in `_base_command` or the mechanic that owns the rule, before mutation. Rejection
+can change feedback but not sporting state, resources, RNG or accepted journals.
+The public Boolean/error and accepted replay-record contracts remain unchanged.
+
+`RaceStateValue.serializable` supplies the existing shared finite-value, key-type,
+depth and collection limits to car codecs, commands, mechanic construction and
+track validation. It is not schema acceptance and does not replace domain ranges,
+identity, tyre ownership or profile/migration checks.
+
+`Storage` owns bounded JSON decoding and recoverable temporary/backup replacement.
+Its nested `FileOperations` adapter exposes only the filesystem steps needed by
+that policy. Domain/application ports still own save semantics. Fault tests cover
+each stage, including failed rollback and preserving the previous saved state.
+Rollback is attempted only for an original preserved by the current attempt;
+failed recovery names the surviving backup. No schema or save version is added.
+
 ## Composed systems
 
 The former Strategy → Weather → Recovery → Practice behavior inheritance chain
@@ -92,7 +114,10 @@ version, prerequisite order, actual dispatch hooks, argument counts and typed
 parameters/returns. `before(id, hook, arguments)` invokes the predecessor while
 retaining the original arithmetic and RNG order. Reflection happens during
 construction, not once per car per simulation step. Installation gets detached
-geometry/options. Running sessions cannot silently hot-swap their rules.
+geometry/options after structural preflight. Invalid metadata/options are
+retryable without a partial installation; identities cannot contain whitespace.
+Invalid predecessor identity/declaration gets an explicit dispatcher error and no
+fallback execution. Running sessions cannot silently hot-swap their rules.
 
 See [Composed mechanics](composable-mechanics.md) and
 [Developing systems and mechanics](developing-mechanics.md) for authoring commands,
@@ -136,12 +161,20 @@ preloading an aggregate under another name cannot bypass its global-class rule.
 Godot import and runtime tests complement this intentionally limited static scan.
 It is not a complete GDScript parser or a security sandbox against reflection.
 
-The completed foundation registered 64 entry points, including mechanic, editor,
-entry, presentation, entity and codec suites. This pass extends assertions within
-those suites without changing registry membership.
+The completed foundation's 64 entry points remain registered. The contract pass
+adds `command_contract_tests` and `storage_contract_tests`; current main adds
+`game_flow_coherence_ui_tests`. The integrated registry retains all 67 entry points
+and extends construction assertions in `mechanics_tests`. Python authoring and
+architecture adversaries complement, but do not substitute for, real Godot tests.
 CI uses six shards and a required aggregate `verify` gate. Missing, failed,
 partial, duplicate, malformed, mixed-source or stale-source evidence is rejected.
 Engine errors fail a suite even when its own JSON says `passed: true`.
+
+The runner validates registry structure, native/layout/timeout types, bounded
+existing test-script paths and unique JSON report filenames before import,
+execution or aggregation. `tests/fixtures/required_verification_suites.json` is
+the monotonic regression floor for all 67 established suites, not an alternate
+execution registry. Missing required suites fail before launching Godot.
 
 Regression includes the 24 unchanged sporting-state checkpoints, complete
 physical weekends, replay, old-save migration, finite stock, native input,
@@ -158,6 +191,9 @@ PR #20 builds upon it with shared authoring verification, literal authority guar
 pure track policy ownership and detached legacy checkpoint preparation. See
 [Maintainability assessment and handoff](maintainability-pass.md) for its concrete
 scope, measured baseline, verification status and deliberately deferred work.
+[System contract completion](system-contract-completion.md) records the subsequent
+command/structural-value, authoring, construction and filesystem failure work,
+including exact-source acceptance and the decision not to add a speculative cache.
 It deliberately does not replace every small serialized record with an Object,
 introduce threads, recalibrate physics, add player commands or invent campaign
 systems. Public API boundaries and tests enforce architectural rules; GDScript
