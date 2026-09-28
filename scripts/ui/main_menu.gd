@@ -3,7 +3,7 @@ extends HBoxContainer
 ## Pure navigation surface; never opens storage or starts a session itself.
 signal action_requested(action: String)
 signal scenario_requested(index: int)
-signal replay_requested(index: int)
+signal replay_requested(index: int, invoker: Control)
 var data: Dictionary = {}
 var preferences: Dictionary = {}
 var geometry: TrackGeometry
@@ -90,4 +90,4 @@ func _build_development_menu(parent: Node) -> void:
 	for title in ["Open recording or scenario…", "Resume saved sandbox", "Circuit notebook"]:
 		replays.get_popup().add_item(title)
 	replays.get_popup().set_item_disabled(1, not data.get("can_resume_sandbox", false))
-	replays.get_popup().id_pressed.connect(func(index): replay_requested.emit(index))
+	replays.get_popup().id_pressed.connect(func(index): replay_requested.emit(index, replays))

@@ -227,3 +227,10 @@ Verification evidence is recorded against exact source trees in the PR and the
 accompanying reports, rather than declaring an earlier failed or partial run a
 full pass. New quality findings stay advisory; all retained native/domain checks,
 the exact-source aggregate, and the 24 pinned sporting hashes remain required.
+
+The retained developer-menu notebook now carries its actual invoking MenuButton
+through the navigation signal. Closing the notebook restores that control,
+not the surrounding non-focusable menu container. Its regression opens the
+native popup, navigates past the disabled sandbox action, opens the notebook,
+and closes it. The old selector follows the intentional sentence-case label
+without removing the existing presence or keyboard-focus requirement.

@@ -62,10 +62,10 @@ func show_menu() -> void:
 	menu.action_requested.connect(func(action): actions[action].call())
 	menu.scenario_requested.connect(func(index):
 		[show_strategy_scenarios, show_weather_scenarios, show_recovery_scenarios, show_practice_scenarios, show_rival_scenarios, show_duel_scenarios][index].call())
-	menu.replay_requested.connect(func(index):
+	menu.replay_requested.connect(func(index, invoker):
 		if index == 0: replay_controller.import_record()
 		elif index == 1: replay_controller.resume_sandbox()
-		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, menu))
+		else: NotebookWindow.open(self, null, CircuitNotebook.PATH, invoker))
 	content.add_child(menu)
 
 func go_home() -> void:
