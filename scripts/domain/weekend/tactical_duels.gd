@@ -103,7 +103,7 @@ static func after_command(sim, action: String, payload: Dictionary) -> void:
 	var restore_owner = action in ["select_set", "compound"] and sim.phase != "race"
 	finish(sim, id, "abandoned", "Superseded by the accepted %s command. Its ownership and any physical pit transaction are retained." % action.replace("_", " "), restore_owner)
 
-static func resource_targets(sim, c: Dictionary, channel: String = "") -> void:
+static func resource_targets(sim, c: RaceCar, channel: String = "") -> void:
 	var r = current(sim, int(c.id))
 	if not owns(r) or not r.order_id.is_empty() or sim.phase != "race": return
 	var p = sim.policy(int(c.id)); var plan = r.plan
@@ -114,7 +114,7 @@ static func resource_targets(sim, c: Dictionary, channel: String = "") -> void:
 	if channel in ["", "engine"] and StrategyPlan.owns(p, "engine") and RaceForecaster.fuel_margin(sim, c) < plan.fuel_reserve:
 		c.engine = 0
 
-static func review(sim, c: Dictionary) -> bool:
+static func review(sim, c: RaceCar) -> bool:
 	var id = int(c.id); var r = current(sim, id)
 	if not owns(r): return false
 	if not r.order_id.is_empty(): return true
@@ -224,7 +224,7 @@ static func debrief(sim) -> String:
 			lines.append("Previous %s · %s · %s" % [r.id, r.status, r.reason])
 	return "\n\n".join(lines)
 
-static func valid(state: Variant, sim: StrategyRaceSim) -> bool:
+static func valid(state: Variant, sim: RaceSim) -> bool:
 	if not state is Dictionary or state.size() != 4 or state.get("version") != VERSION or (not state.get("enabled") is bool or not state.enabled): return false
 	if not RaceCheckpoint.integral(state.get("sequence"), 0, 1000000) or not state.get("drivers") is Array or state.drivers.size() != 12: return false
 	var ids: Array = []
@@ -246,7 +246,7 @@ static func valid(state: Variant, sim: StrategyRaceSim) -> bool:
 		if not valid_active(d.active, sim, id): return false
 	return true
 
-static func valid_active(r: Dictionary, sim: StrategyRaceSim, id: int) -> bool:
+static func valid_active(r: Dictionary, sim: RaceSim, id: int) -> bool:
 	if r.is_empty() or r.status in TERMINAL + ["review"]: return true
 	if r.status in ["approved", "preparing"]: return r.order_id.is_empty() and r.own_entry < 0 and r.own_exit < 0
 	if sim.phase != "race": return false
@@ -260,7 +260,7 @@ static func valid_active(r: Dictionary, sim: StrategyRaceSim, id: int) -> bool:
 	if r.status == "ordered": return car.route == "track" and r.own_entry < 0
 	return r.status == "executing" and car.route == "pit" and r.own_entry >= 0 and r.own_exit < 0
 
-static func valid_record(r: Variant, sim: StrategyRaceSim, id: int) -> bool:
+static func valid_record(r: Variant, sim: RaceSim, id: int) -> bool:
 	if not r is Dictionary or r.size() != 23 or r.get("driver_id") != id: return false
 	if not r.get("id") is String or not r.id.begins_with("duel-") or r.id != "duel-%d" % int(r.id.trim_prefix("duel-")) or int(r.id.trim_prefix("duel-")) < 1: return false
 	if not TacticalForecast.validate_plan(r.get("plan"), sim.cars, id, sim.laps).is_empty() or r.get("status") not in STATES: return false

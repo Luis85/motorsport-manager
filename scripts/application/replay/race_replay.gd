@@ -2,7 +2,7 @@ class_name RaceReplay
 extends RefCounted
 ## Independent fixed-step reconstruction. Playback controls never call the original.
 var record: Dictionary = {}
-var sim: PracticeRaceSim
+var sim: RaceSim
 var step_index = 0
 var start_step = 0
 var cursor = 0

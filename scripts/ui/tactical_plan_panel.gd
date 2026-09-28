@@ -4,7 +4,7 @@ extends VBoxContainer
 signal command_requested(action: String, payload: Dictionary)
 signal driver_selected(id: int)
 signal reading_requested(title: String, text: String, invoker: Control)
-var model: PracticeRaceSim
+var model: RaceViewQuery
 var driver_id = 3
 var text_scale = 1.0
 var drafts: Dictionary = {}
@@ -56,7 +56,7 @@ var pending: Dictionary = {}
 var notice = ""
 var reveal_serial = 0
 
-func configure(sim: PracticeRaceSim) -> void: model = sim
+func configure(sim: RaceViewQuery) -> void: model = sim
 
 func field(title: String, control: Control, parent: Node = null) -> void:
 	var container = parent if parent != null else plan_body
@@ -119,7 +119,7 @@ func _ready() -> void:
 	reading_focus(status_copy)
 	var tools = UI.hbox(self)
 	evidence_button = UI.button("Plan evidence", show_evidence); tools.add_child(evidence_button)
-	team_button = UI.button("Both cars", func(): reading_requested.emit("Two-car comparison", TacticalForecast.team_compare(model), team_button)); tools.add_child(team_button)
+	team_button = UI.button("Both cars", func(): reading_requested.emit("Two-car comparison", model.tactical_forecast_team_compare(), team_button)); tools.add_child(team_button)
 	commit_bar = UI.vbox(self)
 	draft_label = UI.paragraph(""); draft_label.add_theme_font_size_override("font_size", 11); commit_bar.add_child(draft_label)
 	var actions = UI.hbox(commit_bar)
@@ -135,7 +135,7 @@ func _ready() -> void:
 func choose_driver(id: int) -> void:
 	if id not in [3, 6]: return
 	driver_id = id
-	if not drafts.has(id): drafts[id] = TacticalForecast.draft(model, id); edited[id] = false
+	if not drafts.has(id): drafts[id] = model.tactical_forecast_draft(id); edited[id] = false
 	var p = drafts[id]
 	loading = true
 	picker.select([3, 6].find(id)); kind.select(TacticalForecast.KINDS.find(p.kind))
@@ -143,8 +143,8 @@ func choose_driver(id: int) -> void:
 	for i in range(rival.item_count):
 		if rival.get_item_metadata(i) == int(p.target_id): rival.select(i)
 	replacement.clear()
-	for item in model.cars[id].tyre_sets:
-		var why = " · fitted" if item.id == model.cars[id].set_id else (" · unusable" if not WheelTyres.usable(item) else (" · wet-weather" if item.compound in ["I", "W"] else ""))
+	for item in model.car(id).tyre_sets:
+		var why = " · fitted" if item.id == model.car(id).set_id else (" · unusable" if not WheelTyres.usable(item) else (" · wet-weather" if item.compound in ["I", "W"] else ""))
 		replacement.add_item("%s · %.0f%%%s" % [item.id.get_slice("-", 1), item.life, why])
 		replacement.set_item_metadata(replacement.item_count - 1, item.id)
 		if item.id == p.set_id: replacement.select(replacement.item_count - 1)
@@ -152,7 +152,7 @@ func choose_driver(id: int) -> void:
 	authority.select(TacticalForecast.AUTHORITIES.find(p.authority)); fuel.value = p.fuel_reserve; floor_life.value = p.tyre_floor
 	traffic.button_pressed = p.avoid_traffic; rival_first.button_pressed = p.rival_first
 	loading = false; preview = {}; reviewed_plan = {}; notice = ""
-	stage = "status" if not TacticalDuels.current(model, id).is_empty() and not edited.get(id, false) else "plan"
+	stage = "status" if not model.tactical_current(id).is_empty() and not edited.get(id, false) else "plan"
 	refresh()
 
 func changed() -> void:
@@ -177,23 +177,23 @@ func edit_draft() -> void:
 	stage = "plan"; notice = ""; refresh(); reveal_control(kind)
 
 func reset_draft() -> void:
-	request_confirmation("reset", "Reset %s's draft?" % model.cars[driver_id].short,
+	request_confirmation("reset", "Reset %s's draft?" % model.car(driver_id).short,
 		"Replace this driver's unapplied choices with current defaults?\n\nThe active tactic, race orders and the other driver's draft stay unchanged.", "Reset draft", reset_button)
 
 func show_evidence() -> void:
-	reading_requested.emit("Tactical evidence", TacticalDuels.debrief(model), evidence_button)
+	reading_requested.emit("Tactical evidence", model.tactical_debrief(), evidence_button)
 
 func compare_now() -> void:
-	var error = TacticalForecast.validate_plan(drafts[driver_id], model.cars, driver_id, model.laps)
+	var error = model.tactical_plan_error(drafts[driver_id], driver_id)
 	if not error.is_empty():
 		notice = "Latest lap must be at or after earliest lap." if drafts[driver_id].from_lap > drafts[driver_id].to_lap else error
 		stage = "plan"; refresh(); reveal_control(first_invalid_control()); return
 	reviewed_plan = drafts[driver_id].duplicate(true)
-	preview = TacticalForecast.preview(model, driver_id, reviewed_plan)
+	preview = model.tactical_forecast_preview(driver_id, reviewed_plan)
 	reviewed_revision = int(model.duel_state.drivers[driver_id].revision)
 	reviewed_policy_revision = int(model.policy(driver_id).revision)
-	var lines: Array[String] = ["%s · %s" % [model.cars[driver_id].name, TacticalForecast.LABELS[reviewed_plan.kind]],
-		"Against %s · laps %d–%d · %s" % [model.cars[int(reviewed_plan.target_id)].name, reviewed_plan.from_lap, reviewed_plan.to_lap, str(reviewed_plan.set_id).get_slice("-", 1)],
+	var lines: Array[String] = ["%s · %s" % [model.car(driver_id).name, TacticalForecast.LABELS[reviewed_plan.kind]],
+		"Against %s · laps %d–%d · %s" % [model.car(int(reviewed_plan.target_id)).name, reviewed_plan.from_lap, reviewed_plan.to_lap, str(reviewed_plan.set_id).get_slice("-", 1)],
 		authority_copy(reviewed_plan), "FIXED COMPARISON · %.1fs simulated time" % preview.time]
 	if not preview.available: lines.append("Cannot approve: " + preview.reason)
 	else:
@@ -270,19 +270,19 @@ func approve() -> void:
 	if stage != "review" or approve_button.disabled or preview.is_empty() or reviewed_plan.is_empty(): return
 	command_requested.emit("duel_approve", {"id": driver_id, "plan": reviewed_plan.duplicate(true), "revision": reviewed_revision,
 		"policy_revision": reviewed_policy_revision, "key": preview.key, "time": preview.time})
-	var record = TacticalDuels.current(model, driver_id)
+	var record = model.tactical_current(driver_id)
 	if not record.is_empty() and record.plan == reviewed_plan and int(model.duel_state.drivers[driver_id].revision) != reviewed_revision:
 		edited[driver_id] = false; stage = "status"; notice = ""; refresh(); reveal_control(status_copy)
 	else: refresh()
 
 func end_plan() -> void:
-	if not TacticalDuels.live(TacticalDuels.current(model, driver_id)): return
-	request_confirmation("end", "End %s's tactic?" % model.cars[driver_id].short,
+	if not TacticalDuels.live(model.tactical_current(driver_id)): return
+	request_confirmation("end", "End %s's tactic?" % model.car(driver_id).short,
 		"Stop following this tactical plan and release its remaining pit authority.\n\nAny accepted pit stop STAYS VALID. To cancel that stop, use Pit service before entry.\n\nThe other driver is unaffected. The session keeps its current time controls.", "End tactic", end_button)
 
 func request_confirmation(action: String, title: String, text: String, accept: String, invoker: Control) -> void:
 	if is_instance_valid(confirm_dialog): return
-	var record = TacticalDuels.current(model, driver_id)
+	var record = model.tactical_current(driver_id)
 	pending = {"action": action, "id": driver_id, "revision": int(model.duel_state.drivers[driver_id].revision), "plan_id": record.get("id", ""), "draft": drafts[driver_id].duplicate(true)}
 	confirm_dialog = ConfirmationDialog.new(); confirm_dialog.title = title
 	confirm_dialog.dialog_text = text; confirm_dialog.ok_button_text = accept; confirm_dialog.cancel_button_text = "Keep current choices"
@@ -302,10 +302,10 @@ func finish_confirmation(accept: bool, invoker: Control) -> void:
 		if id != driver_id or int(model.duel_state.drivers[id].revision) != int(request.revision) or drafts[id] != request.draft:
 			notice = "The driver, tactic or draft changed. Review the current choices before trying again."
 		elif request.action == "reset":
-			drafts[id] = TacticalForecast.draft(model, id); edited[id] = false; choose_driver(id); stage = "plan"
+			drafts[id] = model.tactical_forecast_draft(id); edited[id] = false; choose_driver(id); stage = "plan"
 		else:
 			command_requested.emit("duel_cancel", {"id": id, "revision": request.revision, "plan_id": request.plan_id})
-			if not TacticalDuels.live(TacticalDuels.current(model, id)): stage = "plan"; preview = {}; reviewed_plan = {}; notice = "Tactic ended. Any accepted pit stop stays valid."
+			if not TacticalDuels.live(model.tactical_current(id)): stage = "plan"; preview = {}; reviewed_plan = {}; notice = "Tactic ended. Any accepted pit stop stays valid."
 	refresh()
 	if is_instance_valid(invoker) and invoker.is_visible_in_tree() and not invoker.disabled: PitwallDesign.focus_later(invoker)
 	else: reveal_control(kind if stage == "plan" else status_copy)
@@ -315,7 +315,7 @@ func authority_copy(plan: Dictionary) -> String:
 
 func refresh() -> void:
 	if live_label == null or not drafts.has(driver_id): return
-	var c = model.cars[driver_id]; var r = TacticalDuels.current(model, driver_id); var p = drafts[driver_id]
+	var c = model.car(driver_id); var r = model.tactical_current(driver_id); var p = drafts[driver_id]
 	var active = TacticalDuels.live(r)
 	plan_body.visible = stage == "plan"; review_body.visible = stage == "review"; status_body.visible = stage == "status"
 	stage_label.text = {"plan": "1 · Plan your next stop", "review": "2 · Review before approval", "status": "3 · Follow the outcome"}[stage]
@@ -329,10 +329,10 @@ func refresh() -> void:
 	wait.editable = p.kind == "extend"; rival_first.visible = p.kind == "undercut"
 	if not r.is_empty():
 		var headings = {"approved": "Tactic approved", "preparing": "Watching for the opportunity", "ordered": "Pit order accepted", "executing": "Pit stop in progress", "evaluating": "Comparing the completed pit cycle", "review": "Your review is needed", "completed": "Tactic completed", "abandoned": "Tactic ended"}
-		status_copy.text = "%s · %s\n\n%s against %s · laps %d–%d\n\n%s\n\n%s\n\nOpen Plan evidence for the sequence of decisions and the observed outcome." % [c.name, headings.get(r.status, r.status), TacticalForecast.LABELS[r.plan.kind], model.cars[int(r.plan.target_id)].name, r.plan.from_lap, r.plan.to_lap, "Approved with: " + ("pit-timing authority" if r.plan.authority == "execute" else "advice only") + ". Current pit owner: " + str(model.policy(driver_id).owners.pit) + ".", r.reason]
-	var error = TacticalForecast.validate_plan(p, model.cars, driver_id, model.laps)
+		status_copy.text = "%s · %s\n\n%s against %s · laps %d–%d\n\n%s\n\n%s\n\nOpen Plan evidence for the sequence of decisions and the observed outcome." % [c.name, headings.get(r.status, r.status), TacticalForecast.LABELS[r.plan.kind], model.car(int(r.plan.target_id)).name, r.plan.from_lap, r.plan.to_lap, "Approved with: " + ("pit-timing authority" if r.plan.authority == "execute" else "advice only") + ". Current pit owner: " + str(model.policy(driver_id).owners.pit) + ".", r.reason]
+	var error = model.tactical_plan_error(p, driver_id)
 	var stale = preview.is_empty() or model.total_time - preview.get("time", -100) > RaceForecaster.MAX_AGE
-	if not preview.is_empty(): stale = stale or preview.key != RaceForecaster.material_key(model, driver_id, int(model.policy(driver_id).revision)) or reviewed_revision != int(model.duel_state.drivers[driver_id].revision)
+	if not preview.is_empty(): stale = stale or preview.key != model.race_forecaster_material_key(driver_id, int(model.policy(driver_id).revision)) or reviewed_revision != int(model.duel_state.drivers[driver_id].revision)
 	var ready = not stale and preview.get("available", false) and error.is_empty() and (not active or r.status == "review") and not c.finished and not c.dnf
 	approve_button.visible = stage == "review"; approve_button.disabled = not ready
 	approve_button.text = "Approve %s · %s" % [c.short, "pit tactic" if p.authority == "execute" else "advice only"]

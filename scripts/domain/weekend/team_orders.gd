@@ -48,12 +48,12 @@ static func finish(sim, key: String, status: String, reason: String) -> void:
 		{"kind": record.kind, "teammate_id": int(record.teammate_id), "status": status, "reason": reason}, record.intent_id)
 	sim.post("radio", "Team instruction · " + reason)
 
-static func track_blocks(sim, car: Dictionary, nearest: int) -> bool:
+static func track_blocks(sim, car: RaceCar, nearest: int) -> bool:
 	var record = sim.team_state.track_order
 	if not active(record): return false
 	return record.kind == "hold" and car.id == record.teammate_id and nearest == record.actor_id or record.kind == "yield" and car.id == record.actor_id
 
-static func traffic(sim, car: Dictionary, old: Array, nearest: int, result: Dictionary, sample: Dictionary, local: Dictionary) -> Dictionary:
+static func traffic(sim, car: RaceCar, old: Array, nearest: int, result: Dictionary, sample: Dictionary, local: Dictionary) -> Dictionary:
 	var record = sim.team_state.track_order
 	if not active(record): return result
 	if record.kind == "hold" and car.id == record.teammate_id and nearest == record.actor_id:
@@ -85,7 +85,7 @@ static func traffic(sim, car: Dictionary, old: Array, nearest: int, result: Dict
 		record.status = "waiting"; record.reason = "Moving aside before reducing speed; no position has been awarded."
 	return result
 
-static func planned_gate(sim, car: Dictionary) -> float:
+static func planned_gate(sim, car: RaceCar) -> float:
 	if car.pit_order: return car.pit_gate
 	var plan = sim.active_plan(car.id)
 	if not StrategyPlan.owns(sim.policy(car.id), "pit") or plan.get("stops", []).is_empty(): return -1.0
@@ -117,7 +117,7 @@ static func preview(sim) -> Dictionary:
 	return {"first": rows[0], "second": rows[1], "queue": maxf(0, rows[0].arrival + rows[0].service - rows[1].arrival) if rows[0].eligible and rows[1].eligible else 0.0,
 		"note": "Estimate, not a reserved slot. Actual arrival and the physical box decide order."}
 
-static func defer_stop(sim, car: Dictionary, window: Dictionary = {}) -> bool:
+static func defer_stop(sim, car: RaceCar, window: Dictionary = {}) -> bool:
 	var record = sim.team_state.pit_priority
 	if not active(record) or car.id != record.teammate_id or not StrategyPlan.owns(sim.policy(car.id), "pit"): return false
 	var primary = sim.cars[int(record.actor_id)]

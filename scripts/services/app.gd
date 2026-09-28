@@ -1,4 +1,5 @@
 extends Node
+var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
@@ -14,6 +15,7 @@ var replay_runner: ReplayPlayback
 var _session_record: RaceRecord
 
 func _process(delta: float) -> void:
+	if editor_session: editor_session.advance_preview(delta)
 	if session_runner != null:
 		if session_runner.automatic:
 			session_runner.advance(delta)
@@ -120,14 +122,14 @@ func save_track(document: Dictionary) -> String:
 	return error
 
 func ensure_recording() -> RaceRecord:
-	if not weekend is PracticeRaceSim: return null
+	if not (weekend is RaceSim and weekend.has_mechanic("practice")): return null
 	if recording == null or recording.source == null or recording.source.get_ref() != weekend:
 		recording = RaceRecord.new(); recording.attach(weekend)
 	return recording
 
 func save_weekend() -> String:
 	if weekend == null: return "There is no weekend to save."
-	if weekend is PracticeRaceSim: return ReplayStorage.save_session(checkpoint_path, ensure_recording())
+	if (weekend is RaceSim and weekend.has_mechanic("practice")): return ReplayStorage.save_session(checkpoint_path, ensure_recording())
 	return Storage.write_json(checkpoint_path, weekend.snapshot())
 
 func load_weekend() -> String:
@@ -137,12 +139,34 @@ func load_weekend() -> String:
 	if result.data.get("kind") == ReplayStorage.SESSION_KIND:
 		var loaded = ReplayStorage.restore_session(result.data)
 		if not loaded.ok: return loaded.error
+		stop_session()
 		weekend = loaded.sim; recording = loaded.record
 	else:
 		var restored = PracticeRaceSim.restore_practice(result.data)
 		if restored == null: return "Checkpoint is invalid or incompatible. The current session was not replaced."
+		stop_session()
 		weekend = restored
 		recording = RaceRecord.new(); recording.attach(restored, "legacy")
 	# Existing explicit Continue behavior; recorded inputs retain subsequent context.
 	weekend.paused = weekend.phase in RaceSim.ACTIVE
 	return ""
+
+func has_saved_weekend() -> bool:
+	return FileAccess.file_exists(checkpoint_path)
+
+func requires_entry_confirmation() -> bool:
+	# A disk-only continuation is still the player's weekend, even before Continue.
+	return has_saved_weekend() or (weekend != null and weekend.phase != "briefing")
+
+func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> String:
+	var result = draft.commit(expected_revision, LocalWeekendEntryStore.new(checkpoint_path), int(settings.speed))
+	if not result.ok:
+		return result.error
+	# The previous session remains installed until persistence succeeds.
+	stop_session()
+	weekend = result.simulation
+	recording = result.record
+	return ""
+
+func has_saved_sandbox() -> bool:
+	return FileAccess.file_exists(sandbox_path)

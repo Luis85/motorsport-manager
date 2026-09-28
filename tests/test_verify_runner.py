@@ -8,11 +8,15 @@ import contextlib
 import io
 import importlib.util
 import os
+import sys
+import time
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 
 SPEC = importlib.util.spec_from_file_location('verification_runner', Path(__file__).resolve().parents[1] / 'scripts/verify.py')
 verify = importlib.util.module_from_spec(SPEC)
@@ -39,7 +43,7 @@ class RunnerIsolationTests(unittest.TestCase):
             (folder / 'settings.json').write_text('{"pitwall_text_scale":1.3}')
             seen.append((folder, self.config.read_text(), env['APPDATA']))
             return subprocess.CompletedProcess(command, 0, 'pass\n')
-        with patch.object(verify.subprocess, 'run', side_effect=engine):
+        with patch.object(verify, 'execute_process', side_effect=engine):
             verify.run_phase('guide', self.command, self.env)
             verify.run_phase('compact', self.command, self.env)
         self.assertNotEqual(seen[0][0], seen[1][0])
@@ -52,7 +56,7 @@ class RunnerIsolationTests(unittest.TestCase):
         names = []
         def engine(command, **_kwargs):
             names.append(self.config.read_text()); return subprocess.CompletedProcess(command, 0, '')
-        with patch.object(verify.subprocess, 'run', side_effect=engine):
+        with patch.object(verify, 'execute_process', side_effect=engine):
             verify.run_phase('probe', self.command, self.env)
             verify.run_phase('probe', self.command, self.env)
         self.assertNotEqual(names[0], names[1])
@@ -60,14 +64,14 @@ class RunnerIsolationTests(unittest.TestCase):
     def test_refuses_to_rename_a_production_project(self):
         self.config.write_text('config_version=5\n[application]\nconfig/name="Motorsport Manager"\n')
         before = self.config.read_bytes()
-        with patch.object(verify.subprocess, 'run', return_value=subprocess.CompletedProcess(self.command, 0, '')) as engine:
+        with patch.object(verify, 'execute_process', return_value=subprocess.CompletedProcess(self.command, 0, '')) as engine:
             with self.assertRaises(RuntimeError): verify.run_phase('probe', self.command, self.env)
             engine.assert_not_called()
         self.assertEqual(before, self.config.read_bytes())
 
     def test_zero_exit_with_runtime_error_is_not_a_pass(self):
         result = subprocess.CompletedProcess(self.command, 0, 'SCRIPT ERROR: deliberately failing test\n')
-        with patch.object(verify.subprocess, 'run', return_value=result), contextlib.redirect_stdout(io.StringIO()):
+        with patch.object(verify, 'execute_process', return_value=result), contextlib.redirect_stdout(io.StringIO()):
             with self.assertRaises(RuntimeError): verify.run_phase('broken', self.command, self.env)
         self.assertIn('SCRIPT ERROR:', (self.reports / 'broken.log').read_text())
 
@@ -88,5 +92,56 @@ func _initialize() -> void:
         cmd = [os.environ['VERIFICATION_TEST_GODOT'], '--path', str(self.project), '--headless', '--script', 'res://probe.gd']
         verify.run_phase('native-write', cmd + ['--', 'write'], self.env)
         verify.run_phase('native-read', cmd, self.env)
+
+class ProcessOwnershipTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux process-family fixture")
+    def test_timeout_stops_child_and_grandchild_and_keeps_output(self):
+        self.check_family(timeout=True)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux process-family fixture")
+    def test_successful_wrapper_exit_cannot_leave_a_background_child(self):
+        self.check_family(timeout=False)
+
+    def check_family(self, timeout: bool):
+        from verification_process import execute_process
+        with tempfile.TemporaryDirectory(prefix="owned-process-test-") as folder:
+            root = Path(folder)
+            pid_file = root / "child.pid"
+            child_code = (
+                "import os,signal,time; from pathlib import Path; "
+                "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+                f"Path({str(pid_file)!r}).write_text(str(os.getpid())); time.sleep(120)"
+            )
+            parent_code = (
+                "import subprocess,sys,time; from pathlib import Path; "
+                f"subprocess.Popen([sys.executable,'-c',{child_code!r}]); "
+                f"p=Path({str(pid_file)!r}); "
+                "\nfor _ in range(400):\n if p.exists(): break\n time.sleep(.01)\n"
+                "print('owned child ready',flush=True); "
+                + ("time.sleep(120)" if timeout else "sys.exit(0)")
+            )
+            command = [sys.executable, "-c", parent_code]
+            started = time.monotonic()
+            if timeout:
+                with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                    execute_process(command, cwd=root, env=dict(os.environ), timeout=3)
+                self.assertIn("owned child ready", caught.exception.output)
+            else:
+                result = execute_process(command, cwd=root, env=dict(os.environ), timeout=8)
+                self.assertEqual(result.returncode, 0)
+                self.assertIn("owned child ready", result.stdout)
+            self.assertLess(time.monotonic() - started, 9)
+            self.assertTrue(pid_file.is_file(), "The real child was started before cleanup")
+            pid = int(pid_file.read_text())
+            for _ in range(100):
+                stat = Path(f"/proc/{pid}/stat")
+                if not stat.exists() or stat.read_text().split(") ", 1)[1][0] == "Z":
+                    break
+                time.sleep(.01)
+            else:
+                # Test cleanup is restricted to the exact child this fixture owns.
+                os.kill(pid, 9)
+                self.fail("The verification child was still executing after its wrapper ended")
+
 
 if __name__ == '__main__': unittest.main(verbosity=2)

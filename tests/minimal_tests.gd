@@ -99,7 +99,7 @@ func test_readouts_and_timing() -> void:
 	fitted.wheels.FL.life = 24.8; WheelTyres.publish(fitted)
 	car.tyre = fitted.life; car.temperature = fitted.temperature
 	car.health = 79.6; car.damage = 10.2; car.fuel = 0.5; car.engine = 2
-	var before = JSON.stringify(sim.cars); var rng = sim.rng_state
+	var before = JSON.stringify(RaceCar.records(sim.cars), "", true, true); var rng = sim.rng_state
 	var reading = MinimalDriverReadout.capture(sim, 3)
 	check(reading.tyre_life == 24.8 and reading.tyre.ends_with("24%"), "Card uses lowest wheel tread, not a reassuring average")
 	check(reading.tyre_issue and reading.tyre_detail == "Low tread · FL", "Limiting wheel is explicit when tread is low")
@@ -109,7 +109,7 @@ func test_readouts_and_timing() -> void:
 	check(MinimalDriverReadout.capture(sim,3).set_id == fitted.id, "Planning a replacement does not publish it as fitted")
 	car.next_set_id = ""; car.next_compound = "M"
 	for j in range(30): MinimalDriverReadout.capture(sim,3); MinimalDriverReadout.capture(sim,6); MinimalRaceTiming.rows(sim)
-	check(before == JSON.stringify(sim.cars) and rng == sim.rng_state, "Cards and timing neither synchronize stock nor consume randomness")
+	check(before == JSON.stringify(RaceCar.records(sim.cars), "", true, true) and rng == sim.rng_state, "Cards and timing neither synchronize stock nor consume randomness")
 	check(MinimalDriverReadout.capture(sim,0).is_empty() and MinimalDriverReadout.capture(sim,-1).is_empty(), "Readout does not expose rival resources or invalid identities")
 	fitted.wheels.RR.punctured = true
 	check(MinimalDriverReadout.capture(sim,3).tyre_detail == "Puncture · RR", "Puncture takes precedence over ordinary tread detail")
@@ -207,8 +207,11 @@ func test_driver_context() -> void:
 	check("Ahead" in reading.context and "~2.0s" in reading.context and "Behind" in reading.context and "~1.0s" in reading.context, "Neighbor gaps are signed by explicit Ahead/Behind and marked as estimates")
 	sim.cars[0].finished = true; sim.cars[0].finish_position = 1; sim.cars[0].completed = sim.laps
 	check("finished" in MinimalDriverReadout.capture(sim,3).context and not "Leading" in MinimalDriverReadout.capture(sim,3).context, "A finished leader cannot make the next running car falsely appear to lead")
-	check(MinimalDriverContext.gap_text(sim, {"distance":200.0,"speed":0}, {"distance":100.0}) == "—", "Stationary time-gap estimation remains unknown")
-	check(MinimalDriverContext.gap_text(sim, {"distance":sim.track.length*2.5,"speed":40}, {"distance":0}) == "2 L", "Whole-lap deficits are not expressed as precise seconds")
+	var gap_front = RaceCar.new(); var gap_back = RaceCar.new()
+	gap_front.distance = 200.0; gap_front.speed = 0.0; gap_back.distance = 100.0
+	check(MinimalDriverContext.gap_text(sim, gap_front, gap_back) == "—", "Stationary time-gap estimation remains unknown")
+	gap_front.distance = sim.track.length * 2.5; gap_front.speed = 40.0; gap_back.distance = 0.0
+	check(MinimalDriverContext.gap_text(sim, gap_front, gap_back) == "2 L", "Whole-lap deficits are not expressed as precise seconds")
 	check(MinimalDriverReadout.capture(sim,0).is_empty() and MinimalDriverReadout.capture(sim,-1).is_empty(), "Private card information is only exposed for managed drivers")
 	# Real supported continuation, no synthetic pressure state added to the archive.
 	sim = fixture(); var control = controller(sim); control.advance_stage(); control.send_out(3); control.play()

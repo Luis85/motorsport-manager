@@ -9,14 +9,14 @@ func _init(simulation: RaceSim) -> void:
 static func stints(simulation: RaceSim) -> Dictionary:
 	var cars: Dictionary = {}
 	for id in [3, 6]:
-		var car: Dictionary = simulation.cars[id]
+		var car: RaceCar = simulation.cars[id]
 		cars[id] = {}
 		for key in ["name", "short", "stints", "distance", "pit_stops", "finished", "dnf"]:
 			cars[id][key] = RaceStateValue.copy(car[key])
 	return {"cars": cars, "laps": simulation.laps, "track": {"length": simulation.track.length}}
 
 static func strategy(simulation: RaceSim, id: int, forecast: Dictionary, initial_set: String = "") -> Array:
-	var car: Dictionary = simulation.cars[id]
+	var car: RaceCar = simulation.cars[id]
 	return [forecast.get("options", []).duplicate(true), simulation.laps,
 		maxf(0, car.distance / simulation.track.length) if simulation.phase == "race" else 0.0,
 		car.set_id if initial_set.is_empty() else initial_set]
@@ -25,7 +25,7 @@ func selected_stints() -> Dictionary:
 	var simulation: RaceSim = _source.get_ref()
 	if simulation == null:
 		return {}
-	var car: Dictionary = simulation.cars[simulation.selected_id]
+	var car: RaceCar = simulation.cars[simulation.selected_id]
 	var items: Array = []
 	for stint in car.stints:
 		var fitted = TyreInventory.find(car, stint.set_id)
@@ -35,7 +35,7 @@ func selected_stints() -> Dictionary:
 		"pit_gate": car.pit_gate, "laps": simulation.laps, "length": simulation.track.length}
 
 func intentions() -> Dictionary:
-	var simulation: StrategyRaceSim = _source.get_ref()
+	var simulation: RaceSim = _source.get_ref()
 	if simulation == null:
 		return {}
 	var reading = stints(simulation)

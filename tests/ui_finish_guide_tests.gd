@@ -32,6 +32,7 @@ func run() -> void:
 		app.settings.guides={}; var signature=JSON.stringify(model.snapshot())
 		await menu_item(view.weekend_menu,2)
 		check(view.guide.visible,"G15 native Weekend menu opens the existing guide at "+str(profile))
+		check(view.guide.presentation_services == view.presentation_services, "G15 inherited guide uses the injected persistence service")
 		for step in range(view.guide.steps.size()):
 			await settle(5)
 			var title=view.guide.steps[step].title

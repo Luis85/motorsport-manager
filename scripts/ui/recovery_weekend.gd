@@ -9,7 +9,7 @@ var recovery_report_sequence = -1
 
 func _ready() -> void:
 	super._ready()
-	if not sim is RecoveryRaceSim: return
+	if not (sim is RaceViewQuery and sim.has_mechanic("recovery")): return
 	detail_picker.add_item("Recovery & race control")
 	recovery_panel = RecoveryPanel.new(); recovery_panel.configure(sim); tabs.add_child(recovery_panel)
 	recovery_page_index = tabs.get_tab_count() - 1
@@ -34,7 +34,7 @@ func refresh() -> void:
 		recovery_panel.refresh(); pit_note.visible = false; box_button.get_parent().visible = false
 		driver_label.visible = false; resource_row.visible = false; compact_resources.visible = false; intent_label.visible = false
 		teammate_buttons[0].get_parent().visible = false
-	var c = sim.cars[sim.selected_id]
+	var c = sim.car(sim.selected_id)
 	if sim.enhanced():
 		repair.disabled = not c.player or c.dnf or c.finished or c.route == "pit" or sim.reliability(int(c.id)).repair_only
 		if repair.disabled: repair.tooltip_text = "A committed repair plan is locked; it cannot be changed by this checkbox."
@@ -43,9 +43,9 @@ func refresh() -> void:
 			flag_label.text = ("PAUSED · " if sim.paused else "") + ("VIRTUAL ENDING" if control.state == "ending" else control.flag)
 			flag_label.tooltip_text = control.rules + " Open Recovery & race control for persistent details."
 	for id in [3, 6]:
-		var observed = RaceReliability.observation(sim.cars[id], sim.reliability(id)); var urgent = observed.stage in ["degraded", "critical"]
+		var observed = sim.reliability_observation(sim.car(id), sim.reliability(id)); var urgent = observed.stage in ["degraded", "critical"]
 		recovery_links[id].text = "Recovery !" if urgent else "Recovery"
-		recovery_links[id].tooltip_text = "%s · %s · observed damage %.0f, lifetime health %.0f%%. Compare protect/repair/retire without changing the other car's orders." % [sim.cars[id].short, observed.stage, observed.damage, observed.health]
+		recovery_links[id].tooltip_text = "%s · %s · observed damage %.0f, lifetime health %.0f%%. Compare protect/repair/retire without changing the other car's orders." % [sim.car(id).short, observed.stage, observed.damage, observed.health]
 		if urgent:
 			var weather = sim.weather_issue(id)
 			decision_controls[id].battle.text = "%s · damage %.0f · health %.0f%%%s" % [observed.stage.to_upper(), observed.damage, observed.health, " · Weather !" if not weather.is_empty() else ""]

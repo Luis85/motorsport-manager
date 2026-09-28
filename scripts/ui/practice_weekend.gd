@@ -23,9 +23,9 @@ var duel_workspace: DuelWorkspace
 
 func _ready() -> void:
 	super._ready()
-	if not sim is PracticeRaceSim: return
+	if not (sim is RaceViewQuery and sim.has_mechanic("practice")): return
 	detail_picker.add_item("Practice")
-	practice_panel = PracticePanel.new(); practice_panel.configure(sim); tabs.add_child(practice_panel)
+	practice_panel = PracticePanel.new(); practice_panel.presentation_services = presentation_services; practice_panel.configure(sim); tabs.add_child(practice_panel)
 	practice_page_index = tabs.get_tab_count() - 1
 	register_topic("Practice", practice_page_index)
 	strategy_navigation = strategy_desk.topic_buttons[0].get_parent()
@@ -120,7 +120,7 @@ func refresh() -> void:
 			for recorded_run in sim.practice_driver(int(c.id)).runs:
 				for lap in recorded_run.samples: times.append(lap.seconds)
 			rows[c.id].set_text(0,"—")
-			rows[c.id].set_text(2,"—" if times.is_empty() else RaceSim.format_time(times.min()))
+			rows[c.id].set_text(2,"—" if times.is_empty() else RaceViewQuery.format_time(times.min()))
 			rows[c.id].set_tooltip_text(2,"Measured practice lap only; it cannot set the qualifying grid.")
 	if right_panel.visible and tabs.current_tab == practice_page_index:
 		practice_panel.refresh()
@@ -129,7 +129,7 @@ func refresh() -> void:
 	for id in [3, 6]:
 		practice_links[id].visible = during
 		if not during: continue
-		var c = sim.cars[id]; var d = sim.practice_driver(id); var controls = decision_controls[id]; var card = car_cards[id]
+		var c = sim.car(id); var d = sim.practice_driver(id); var controls = decision_controls[id]; var card = car_cards[id]
 		for key in ["box", "hold", "save", "send", "recall", "cancel"]: controls[key].visible = false
 		card.position.text = "—"; card.status.text = c.qual_state.to_upper()
 		card.facts[1].get_parent().get_child(0).text = "RUN FUEL · LAP UNITS"
@@ -146,7 +146,7 @@ func refresh() -> void:
 		var inherited = debrief_text.text.trim_prefix(practice_debrief_prefix)
 		if practice_report_stamp != int(sim.strategy_state.sequence):
 			practice_report_stamp = int(sim.strategy_state.sequence)
-			practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join([3, 6].map(func(id): return sim.cars[id].short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n" + RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops) + "\n\n"
+			practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join([3, 6].map(func(id): return sim.car(id).short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n" + RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops) + "\n\n"
 		debrief_text.text = practice_debrief_prefix + inherited
 
 	if public_inspector: public_inspector.present(self)
@@ -163,7 +163,7 @@ func build_replay_actions() -> void:
 	weekend_menu.get_popup().add_item("Circuit notebook…", 21)
 	weekend_menu.get_popup().id_pressed.connect(func(id):
 		if id == 20: replay_requested.emit()
-		elif id == 21: NotebookWindow.open(self, recording, CircuitNotebook.PATH, weekend_menu))
+		elif id == 21: NotebookWindow.open(self, recording, NotebookPort.PATH, weekend_menu))
 	navigator.catalog.append([7, 20, "Review / Replay and sandbox", "recording checkpoint try another decision original result"])
 	navigator.catalog.append([7, 21, "Review / Circuit notebook", "history observations personal notes remembered challenges"])
 	navigator.filter_views("")
@@ -177,9 +177,9 @@ func build_replay_actions() -> void:
 
 func open_destination(index: int, subtopic: int) -> void:
 	if duel_workspace != null and index == duel_workspace.index and subtopic == 1:
-		duel_workspace.panel.reading_requested.emit("Tactical evidence", TacticalDuels.debrief(sim), find_button); return
+		duel_workspace.panel.reading_requested.emit("Tactical evidence", sim.tactical_debrief(), find_button); return
 	if index == 7 and subtopic == 20: replay_requested.emit(); return
-	if index == 7 and subtopic == 21: NotebookWindow.open(self, recording, CircuitNotebook.PATH, find_button); return
+	if index == 7 and subtopic == 21: NotebookWindow.open(self, recording, NotebookPort.PATH, find_button); return
 	super.open_destination(index, subtopic)
 
 func keep_checkpoint() -> void:
@@ -190,14 +190,12 @@ func keep_checkpoint() -> void:
 
 func accept_result() -> void:
 	if recording == null: return
-	# Keep the same event ID durable before accepting its immutable factual result.
-	var error = ReplayStorage.save_session(App.checkpoint_path, recording) if recording.origin != "sandbox" else "Sandbox results cannot be accepted as an original."
-	if not error.is_empty(): result_notice.text = error; return
-	var result = ResultReceipts.accept(recording); result_notice.text = result.message
+	var result = presentation_services.accept_record(recording)
+	result_notice.text = result.message
 
 func save_checkpoint() -> void:
 	if recording != null and recording.origin == "sandbox":
-		var error = ReplayStorage.save_session(App.sandbox_path, recording)
+		var error = presentation_services.save_record(recording)
 		show_reading("Save sandbox", "Experiment saved in a separate slot. The original weekend is unchanged." if error.is_empty() else error, weekend_menu)
 	else: super.save_checkpoint()
 

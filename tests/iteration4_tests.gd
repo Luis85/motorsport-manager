@@ -68,7 +68,7 @@ func test_setup() -> void:
 	check(sim.command("setup_all", {"id": 3, "values": {"wing": 9, "balance": 2, "suspension": 7, "cooling": 7, "bias": 58}}), "five setup values commit in the garage")
 	var after = CarSetup.effects(c)
 	check(after.corner > before.corner and after.straight < before.straight, "high wing has a support-versus-straight trade-off")
-	check(c.setup == 9 and CarSetup.valid(c), "legacy wing alias remains synchronized")
+	check(c.setup == 9 and CarSetup.valid(c.to_record()), "legacy wing alias remains synchronized")
 	var applied = c.car_setup.duplicate()
 	check(not sim.command("setup_all", {"id": 3, "values": {"wing": 2, "bias": 99}}) and c.car_setup == applied, "invalid setup rejects the entire batch, not just the last field")
 	check(not sim.command("setup_all", {"id": 3, "values": {"turbo": 9}}), "unknown setup fields rejected")
@@ -210,7 +210,7 @@ func test_incident_wheel_integrity() -> void:
 	race.rng_state = 0; race.incident(c)
 	check(not c.dnf and c.loss > 0, "recoverable incident fixture actually spins")
 	check(item.wheels.FL.life == 65 and item.wheels.FR.life == 85 and item.wheels.FL.flat == 11, "incident tread loss preserves existing four-wheel asymmetry and damage")
-	check(TyreInventory.valid(c, race.laps), "incident leaves wheel/aggregate aliases consistent")
+	check(TyreInventory.valid(c.to_record(), race.laps), "incident leaves wheel/aggregate aliases consistent")
 
 func test_emergency_strategy() -> void:
 	var sim = h.blank_race(h.geometries[7], {"laps": 6, "intensity": "calm"})

@@ -1,5 +1,7 @@
 extends Control
+var presentation_services: RacePresentationServices
 ## Native scene shell. Screen changes never reset a live weekend implicitly.
+var launch_draft: WeekendLaunch = WeekendLaunch.new()
 var replay_controller: ReplayController
 var content: VBoxContainer
 var global_header: HBoxContainer
@@ -16,6 +18,7 @@ var draft_signature = ""
 var return_editor_button: Button
 
 func _ready() -> void:
+	presentation_services = LocalRacePresentationServices.new(App)
 	theme = UI.theme()
 	get_tree().auto_accept_quit = false
 	var margin = MarginContainer.new(); add_child(margin); margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -38,6 +41,7 @@ func _ready() -> void:
 
 func clear_screen(name: String) -> void:
 	App.stop_session()
+	App.editor_session = null
 	global_header.visible = name != "weekend"
 	if screen_name == "weekend" and App.weekend != null:
 		App.weekend.paused = App.weekend.phase in RaceSim.ACTIVE
@@ -57,7 +61,7 @@ func show_menu() -> void:
 	var gp = UI.button("GRAND PRIX WEEKEND\nChoose a circuit · Practice · Qualify · Race", show_library, true); gp.custom_minimum_size.y = 58; menu.add_child(gp)
 	var track_editor_button = UI.button("TRACK EDITOR\nShape the road · Build your track library", func(): show_editor()); track_editor_button.custom_minimum_size.y = 54; menu.add_child(track_editor_button)
 	var continue_button = UI.button("CONTINUE WEEKEND\nResume your saved pit wall", continue_weekend); continue_button.custom_minimum_size.y = 52
-	continue_button.disabled = App.weekend == null and not FileAccess.file_exists(App.checkpoint_path); menu.add_child(continue_button)
+	continue_button.disabled = App.weekend == null and not App.has_saved_weekend(); menu.add_child(continue_button)
 	var scenarios = MenuButton.new(); scenarios.text = "SCENARIO CHALLENGES"; scenarios.focus_mode = Control.FOCUS_ALL; scenarios.flat = false; scenarios.custom_minimum_size.y = 36
 	menu.add_child(scenarios)
 	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"]: scenarios.get_popup().add_item(title)
@@ -70,7 +74,7 @@ func show_menu() -> void:
 	replay_menu.get_popup().add_item("Open recording or scenario…", 0)
 	replay_menu.get_popup().add_item("Resume saved sandbox", 1)
 	replay_menu.get_popup().add_item("Circuit notebook", 2)
-	replay_menu.get_popup().set_item_disabled(1, not FileAccess.file_exists(App.sandbox_path))
+	replay_menu.get_popup().set_item_disabled(1, not App.has_saved_sandbox())
 	replay_menu.get_popup().id_pressed.connect(func(id):
 		if id == 0: replay_controller.import_record()
 		elif id == 1: replay_controller.resume_sandbox()
@@ -105,12 +109,15 @@ func _go_home_saved() -> void:
 
 func show_editor(d: Dictionary = {}) -> void:
 	clear_screen("track_editor")
-	editor = TrackEditor.new()
-	if not d.is_empty(): editor.configure(d)
+	editor = TrackEditor.new(); editor.presentation_services = presentation_services
+	var editor_port = LocalTrackEditorPort.new(func(): return App.library, App.save_track)
+	if not d.is_empty(): editor.configure(d, editor_port, App.settings)
 	elif not editor_draft.is_empty():
-		editor.configure(editor_draft)
+		editor.configure(editor_draft, editor_port, App.settings)
 		editor.saved_signature = draft_signature
+	else: editor.configure(App.library[mini(7, App.library.size() - 1)] if not App.library.is_empty() else TrackEditorSession.blank_document(), editor_port, App.settings)
 	content.add_child(editor)
+	App.editor_session = editor.session
 	editor.test_requested.connect(func(track):
 		# Keep the unsaved editor draft while its separate snapshot is test-driven.
 		editor_draft = track.duplicate(true); draft_signature = editor.saved_signature; vehicle = editor.vehicle
@@ -122,7 +129,11 @@ func show_library(test_track: Dictionary = {}) -> void:
 	var candidates = App.library.duplicate()
 	if not test_track.is_empty(): candidates.push_front(test_track)
 	if candidates.is_empty(): content.add_child(UI.paragraph("No valid circuits are available. Open the track editor to create one.")); return
-	selected_track = candidates[0]
+	var selected_index = 0
+	if test_track.is_empty() and selected_track != null:
+		for index in range(candidates.size()):
+			if candidates[index].id == selected_track.get("id", ""): selected_index = index
+	selected_track = candidates[selected_index]
 	content.add_child(UI.label("Choose your Grand Prix", 30))
 	content.add_child(UI.paragraph("Practice → Qualifying → Race. Keep the same screen and controls throughout; start the next session when ready."))
 	var body = UI.hbox(content, true)
@@ -130,7 +141,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	var left = UI.vbox(side, true); left.add_child(UI.label("TRACK LIBRARY", 14, UI.ACCENT))
 	var list = ItemList.new(); list.size_flags_vertical = Control.SIZE_EXPAND_FILL; list.add_theme_constant_override("v_separation", 13); left.add_child(list)
 	for track in candidates: list.add_item(track.name + (" [custom]" if not track.get("builtin", false) else ""))
-	list.select(0)
+	list.select(selected_index)
 	var preview = UI.vbox(body, true)
 	var details = UI.label("", 17, UI.ACCENT); preview.add_child(details)
 	library_canvas = TrackCanvas.new(); library_canvas.configure_presentation(App.settings); library_canvas.show_line = true; preview.add_child(library_canvas)
@@ -163,39 +174,83 @@ func show_library(test_track: Dictionary = {}) -> void:
 		controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))
 	var launch = UI.hbox(content)
 	launch.add_child(UI.paragraph("Qualifying is automatically extended when necessary to allow complete out/hot/in laps. Presets are game estimates, not licensed vehicle models."))
-	launch.add_child(UI.button("Open weekend briefing", func():
-		var start = func():
-			var geometry = TrackGeometry.new(selected_track, vehicle)
-			var findings = TrackDiagnostics.inspect(geometry)
-			if TrackDiagnostics.blocking(findings):
-				UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-			App.weekend = PracticeRaceSim.new(geometry, config)
-			App.weekend.speed = App.settings.speed
-			show_weekend()
-		if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
-			var dialog = ConfirmationDialog.new(); dialog.title = "Replace current weekend?"; dialog.dialog_text = "This starts a new weekend and replaces the active checkpoint. Cancel to keep the current weekend."
-			add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); start.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))
-		else: start.call(), true))
+	if App.settings.get("pitwall_layout", "minimal") == "minimal":
+		launch.add_child(UI.button("Review weekend", func():
+			if not launch_draft.stage(selected_track, config, vehicle):
+				UI.notify(self, "Weekend needs attention", launch_draft.last_error); return
+			show_welcome(), true))
+	else:
+		launch.add_child(UI.button("Open weekend briefing", func():
+			var start = func():
+				var geometry = TrackGeometry.new(selected_track, vehicle)
+				var findings = TrackDiagnostics.inspect(geometry)
+				if TrackDiagnostics.blocking(findings):
+					UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
+				App.weekend = PracticeRaceSim.new(geometry, config)
+				App.weekend.speed = App.settings.speed
+				show_weekend()
+			if App.requires_entry_confirmation():
+				var dialog = ConfirmationDialog.new(); dialog.title = "Replace current weekend?"; dialog.dialog_text = "This starts a new weekend and replaces the active checkpoint. Cancel to keep the current weekend."
+				add_child(dialog); dialog.confirmed.connect(func(): dialog.queue_free(); start.call()); dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(510, 180))
+			else: start.call(), true))
 	refresh.call()
+
+func show_welcome() -> void:
+	clear_screen("weekend_welcome")
+	var welcome = WeekendEntryView.new()
+	welcome.configure(launch_draft.capture(), launch_draft.visual_track(), float(App.settings.get("pitwall_text_scale", 1.0)))
+	welcome.back_requested.connect(func(): show_library())
+	welcome.start_requested.connect(func(revision):
+		var commit = func():
+			var error = App.commit_weekend_entry(launch_draft, revision)
+			if not error.is_empty(): welcome.show_error("Practice could not start: " + error); return
+			show_weekend()
+		if App.requires_entry_confirmation():
+			var dialog = ConfirmationDialog.new(); dialog.title = "Start a new weekend?"
+			dialog.dialog_text = "Starting practice replaces your previous saved weekend. Back or Cancel keeps it unchanged."
+			dialog.ok_button_text = "Start practice"; welcome.add_child(dialog)
+			dialog.confirmed.connect(func(): dialog.queue_free(); commit.call())
+			dialog.canceled.connect(dialog.queue_free); dialog.popup_centered(Vector2i(540, 190))
+			dialog.get_cancel_button().grab_focus()
+		else: commit.call())
+	content.add_child(welcome)
+
+func show_weekend_end() -> void:
+	var summary = WeekendSummary.capture(App.weekend)
+	if summary.is_empty(): return
+	var error = App.save_weekend()
+	if not error.is_empty(): UI.notify(self, "Could not save final results", error); return
+	clear_screen("weekend_complete")
+	var review = WeekendEndView.new()
+	review.configure(summary, float(App.settings.get("pitwall_text_scale", 1.0)))
+	review.menu_requested.connect(show_menu)
+	review.new_weekend_requested.connect(func(): show_library())
+	review.track_requested.connect(func(): show_weekend())
+	content.add_child(review)
 
 func show_weekend(layout: String = "") -> void:
 	clear_screen("weekend")
 	var chosen_layout = layout if not layout.is_empty() else App.settings.get("pitwall_layout", "minimal")
 	var view
-	if App.weekend is PracticeRaceSim and chosen_layout == "minimal": view = MinimalRaceWorkspace.new()
+	if (App.weekend is RaceSim and App.weekend.has_mechanic("practice")) and chosen_layout == "minimal": view = MinimalRaceWorkspace.new()
 	else:
-		view = RaceDirectorWorkspace.new() if App.weekend is PracticeRaceSim else (PitwallWorkspace.new() if App.weekend is StrategyRaceSim else WeekendView.new())
+		view = RaceDirectorWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("practice")) else (PitwallWorkspace.new() if (App.weekend is RaceSim and App.weekend.has_mechanic("strategy")) else WeekendView.new())
 		if view is RaceDirectorWorkspace: view.director_enabled = chosen_layout != "engineering"
+	var binding
 	if view is MinimalRaceWorkspace:
-		view.configure(MinimalRaceSession.new(App.weekend), App.settings)
+		binding = MinimalRaceSession.new(App.weekend)
+		view.configure(binding.view, App.settings)
 	else:
-		view.configure(App.weekend)
+		view.presentation_services = presentation_services
+		binding = RaceViewSession.new(App.weekend)
+		view.configure(binding.view)
 	if view is PracticeWeekendView or view is MinimalRaceWorkspace: view.recording = App.ensure_recording()
 	content.add_child(view)
-	App.activate_session(view.session_runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)
+	App.activate_session(binding.runner, view.recording if view is PracticeWeekendView or view is MinimalRaceWorkspace else null)
 	if view is PracticeWeekendView: view.replay_requested.connect(func():
 		var error = replay_controller.open_data(view.recording.seal())
 		if not error.is_empty(): UI.notify(self, "Replay unavailable", error))
+	if view is MinimalRaceWorkspace: view.results_requested.connect(show_weekend_end)
 	view.new_weekend_requested.connect(show_library)
 	view.menu_requested.connect(go_home)
 
@@ -203,7 +258,8 @@ func continue_weekend() -> void:
 	if App.weekend == null:
 		var error = App.load_weekend()
 		if not error.is_empty(): UI.notify(self, "Could not resume", error); return
-	show_weekend()
+	if App.weekend.phase == "results" and App.settings.get("pitwall_layout", "minimal") == "minimal": show_weekend_end()
+	else: show_weekend()
 
 func show_settings() -> void:
 	clear_screen("settings")
@@ -298,7 +354,7 @@ func show_strategy_scenarios() -> void:
 				var candidate = WeekendScenarios.build(recipe, App.library)
 				if candidate == null: UI.notify(self, "Scenario unavailable", "The scenario, track or initial plan is invalid."); return
 				App.weekend = candidate; App.weekend.speed = App.settings.speed; show_weekend()
-			if App.weekend != null and App.weekend.phase not in ["results", "briefing"]:
+			if App.requires_entry_confirmation():
 				var confirm = ConfirmationDialog.new(); confirm.title = "Replace the active weekend?"; confirm.dialog_text = "A scenario starts a new weekend. Export the current evidence before replacing it."
 				add_child(confirm); confirm.confirmed.connect(func(): confirm.queue_free(); start.call()); confirm.canceled.connect(confirm.queue_free); confirm.popup_centered()
 			else: start.call(), true))

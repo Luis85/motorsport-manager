@@ -2,7 +2,7 @@ extends "res://tests/ui_finish_observation_tests.gd"
 ## Default-layout native input; engineering tests separately exercise the retained layout.
 func reset() -> void:
 	app.weekend = model; game.show_weekend()
-	view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	await settle(8)
 func dialog_key(window: Window, code: Key) -> void:
 	for down in [true,false]:

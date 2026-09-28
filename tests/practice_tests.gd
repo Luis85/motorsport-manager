@@ -20,6 +20,7 @@ func advance_until(sim: PracticeRaceSim, condition: Callable, budget: int = 1600
 		sim.step()
 	return condition.call()
 func same(a: Variant, b: Variant) -> bool:
+	if a is RaceCar and b is RaceCar: return same(a.to_record(), b.to_record())
 	if a is Dictionary and b is Dictionary:
 		if a.size() != b.size(): return false
 		for key in a:
@@ -46,7 +47,7 @@ func run() -> void:
 func test_skip_and_permissions() -> void:
 	var sim = fixture(); var base = RecoveryRaceSim.new(geometry, {"laps":12,"scenario":"dry","intensity":"calm","seed":2026})
 	check(sim.command("qualify") and base.command("qualify"), "Skipping practice can start normal qualifying")
-	check(sim.practice_state.status == "skipped" and sim.cars == base.cars and sim.total_time == base.total_time and sim.rng_state == base.rng_state and sim.weather_state == base.weather_state, "Skip charges no resource, time, weather or performance penalty")
+	check(sim.practice_state.status == "skipped" and RaceCar.records(sim.cars) == RaceCar.records(base.cars) and sim.total_time == base.total_time and sim.rng_state == base.rng_state and sim.weather_state == base.weather_state, "Skip charges no resource, time, weather or performance penalty")
 	var before = JSON.stringify(sim.snapshot())
 	check(not sim.command("practice_start") and before == JSON.stringify(sim.snapshot()), "Practice cannot be started after qualifying begins")
 	sim = fixture(); check(sim.command("practice_start"), "Practice starts explicitly from briefing")
@@ -117,7 +118,7 @@ func test_migration() -> void:
 	var migrated = PracticeRaceSim.restore_practice(old.snapshot())
 	check(migrated != null and migrated.practice_state.status == "legacy", "v8 saves gain no fabricated practice data or automatic session")
 	if migrated != null:
-		check(not migrated.command("practice_start") and migrated.cars == old.cars and migrated.weather_state == old.weather_state, "Legacy saves preserve prior behavior")
+		check(not migrated.command("practice_start") and RaceCar.records(migrated.cars) == RaceCar.records(old.cars) and migrated.weather_state == old.weather_state, "Legacy saves preserve prior behavior")
 	var sim = fixture(); sim.command("practice_start"); sim.command("practice_run",request(sim,3,plan()))
 	check(advance_until(sim,func(): return sim.cars[3].qual_state == "hotlap"), "Live hotlap reached for persistence fixture")
 	var saved = JSON.parse_string(JSON.stringify(sim.snapshot(),"",false,true))
@@ -190,7 +191,7 @@ func test_objectives_and_matching() -> void:
 	# Rendering/forecast evidence is never read by movement in practice; suppress later AI
 	# decisions by keeping this comparison at the garage before race preparation.
 	for i in range(100): sim.step(); twin.step()
-	check(sim.cars == twin.cars and sim.rng_state == twin.rng_state, "Removing learned forecasts does not confer or remove physical car performance")
+	check(RaceCar.records(sim.cars) == RaceCar.records(twin.cars) and sim.rng_state == twin.rng_state, "Removing learned forecasts does not confer or remove physical car performance")
 	var wet_plan = plan(3,"wet",1)
 	check(sim.command("practice_run",request(sim,3,wet_plan)), "Wet-learning objective can honestly discover that present conditions are dry")
 	check(advance_until(sim,func(): return sim.practice_driver(3).active.is_empty()), "Third bounded run returns with retained evidence")

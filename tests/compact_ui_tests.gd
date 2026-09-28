@@ -76,7 +76,7 @@ func run() -> void:
 	model.phase = "race"; model.paused = true
 	for car in model.cars:
 		car.distance = 300 + (12 - car.id) * 24; car.previous_distance = car.distance; car.speed = 40
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	await settle(); view.canvas.fit(); await settle()
 	check(not view.right_panel.visible and inside(view.watch_button), "A weekend opens circuit-first with a visible Watch action")
 	check(not game.global_header.visible, "The race has one session header rather than a duplicated application banner")

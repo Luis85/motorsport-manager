@@ -17,9 +17,9 @@ var weekend_menu: MenuButton
 var phase_actions: VBoxContainer
 var header_context: VBoxContainer
 var steps: Array[Label] = []
-var model: RaceSim
+var model: RaceViewQuery
 
-func configure(value: RaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	model = value
 
 func _ready() -> void:

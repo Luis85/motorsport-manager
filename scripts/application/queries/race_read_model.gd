@@ -5,7 +5,7 @@ extends RefCounted
 const RECENT_SCAN_LIMIT = 128
 const RECENT_LIMIT = 4
 
-static func capture(model: StrategyRaceSim, forecasts: Dictionary = {}) -> Dictionary:
+static func capture(model: RaceSim, forecasts: Dictionary = {}) -> Dictionary:
 	var drivers: Array = []
 	for id in [3, 6]: drivers.append(driver_story(model, id, forecasts.get(id, {})))
 	var focus: Dictionary = drivers[0]
@@ -19,7 +19,7 @@ static func story(id: int, priority: int, title: String, evidence: String, choic
 	return {"driver_id":id, "priority":priority, "title":title, "evidence":evidence,
 		"choice":choice, "next":next}
 
-static func driver_story(model: StrategyRaceSim, id: int, forecast: Dictionary) -> Dictionary:
+static func driver_story(model: RaceSim, id: int, forecast: Dictionary) -> Dictionary:
 	var car = model.cars[id]
 	var policy = model.policy(id)
 	var result: Dictionary
@@ -44,7 +44,7 @@ static func driver_story(model: StrategyRaceSim, id: int, forecast: Dictionary) 
 	result.name = car.name; result.short = car.short
 	return result
 
-static func race_story(model: StrategyRaceSim, id: int, policy: Dictionary, forecast: Dictionary) -> Dictionary:
+static func race_story(model: RaceSim, id: int, policy: Dictionary, forecast: Dictionary) -> Dictionary:
 	var car = model.cars[id]
 	var issue = DecisionFeed.primary(DecisionFeed.for_driver(model, id, policy, forecast))
 	if not issue.is_empty() and int(issue.priority) >= 90:
@@ -53,7 +53,7 @@ static func race_story(model: StrategyRaceSim, id: int, policy: Dictionary, fore
 		return story(id, 80, "The stop is unfolding", model.pit_status(car), "The accepted visit is now physical; cancellation is closed after pit entry.", "Watch Team / Pit service. Service completion is not yet a measured pit exit.")
 	if car.pit_order:
 		return story(id, 75, "Approaching the accepted stop", "A physical pit order is active, not just a draft window.", "Retain the call or explicitly cancel before pit entry; the current order does not change by reading this.", "Watch the named driver's approach, then the shared box and actual rejoin.")
-	if model is PracticeRaceSim and model.duel_state.get("enabled", false):
+	if (model is RaceSim and model.has_mechanic("practice")) and model.duel_state.get("enabled", false):
 		var tactic = TacticalDuels.current(model, id)
 		if TacticalDuels.live(tactic):
 			return story(id, 65, TacticalForecast.LABELS[tactic.plan.kind] + " / " + model.cars[int(tactic.plan.target_id)].short,
@@ -74,7 +74,7 @@ static func race_story(model: StrategyRaceSim, id: int, policy: Dictionary, fore
 		"Staying out is a decision: preserve tyre life and options rather than reacting to every tick.",
 		"Review again at the next pit window, material weather change, fuel warning or genuine contest.")
 
-static func recent_evidence(model: StrategyRaceSim) -> Array:
+static func recent_evidence(model: RaceSim) -> Array:
 	var result: Array = []
 	var records: Array = model.strategy_state.records
 	# Bounded recent window, not a scan or clone of a 50,000-row journal each refresh.

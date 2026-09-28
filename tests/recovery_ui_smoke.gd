@@ -29,7 +29,7 @@ func run() -> void:
 	game.show_recovery_scenarios(); await capture("scenarios")
 	check(game.screen_name == "recovery_scenarios", "Recovery scenarios are reachable in native main navigation")
 	model = RecoveryScenarios.build(ScenarioCatalog.read("recovery")[0], app.library)
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and view.tabs.current_tab == 6, "New model uses the unified pit-wall workspace with recovery and strategy")
 	view.open_recovery(3); view.close_detail(); view.recovery_links[3].pressed.emit(); await capture("briefing")
 	check(view.right_panel.visible and view.tabs.current_tab == view.recovery_page_index and inside(view.topic_buttons[view.recovery_page_index]), "Recovery shortcut reopens its closed topic within Conditions")
@@ -93,7 +93,7 @@ func run() -> void:
 	check(not model.paused and model.speed == 8, "Recovery guide never pauses or slows the race")
 	view.guide.dismiss()
 	check(app.save_weekend().is_empty() and app.load_weekend().is_empty(), "Application saves and reloads a live v8 recovery weekend")
-	check(app.weekend is RecoveryRaceSim and app.weekend.reliability(6).repair_only and app.weekend.control_state.state == "ending", "Application restores recovery transaction and exact sporting phase")
+	check(app.weekend is RaceSim and app.weekend.has_mechanic("recovery") and app.weekend.reliability(6).repair_only and app.weekend.control_state.state == "ending", "Application restores recovery transaction and exact sporting phase")
 	view.tabs.current_tab = 7; view.refresh(); await capture("debrief")
 	var text = view.debrief_text.text
 	for i in range(25): view.refresh()
@@ -102,7 +102,7 @@ func run() -> void:
 	var preferences = app.settings.duplicate(true)
 	app.settings.pitwall_text_scale = 1.3
 	root.size = Vector2i(1100,720); root.content_scale_size = root.size
-	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	view.open_recovery(3); await settle()
 	for id in [3,6]:
 		check(inside(view.recovery_links[id]) and inside(view.weather_links[id]) and inside(view.decision_controls[id].box), "Scaled merged shell retains three direct actions for driver " + str(id))

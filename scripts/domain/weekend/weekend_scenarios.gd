@@ -35,7 +35,7 @@ static func build(recipe: Dictionary, library: Array) -> StrategyRaceSim:
 		if not sim.command("approve_plan", {"id": id, "revision": 0, "plan": plan, "issuer": "scenario_initialization"}): return null
 	return sim
 
-static func briefing(sim: StrategyRaceSim) -> String:
+static func briefing(sim: RaceSim) -> String:
 	var p = RaceForecaster.pit_prediction(RaceForecaster.capture(sim, 3))
 	var low = INF; var high = 0.0
 	for width in sim.track.widths: low = minf(low, width); high = maxf(high, width)
@@ -46,7 +46,7 @@ static func briefing(sim: StrategyRaceSim) -> String:
 			break
 	return text
 
-static func team_result(sim: StrategyRaceSim) -> String:
+static func team_result(sim: RaceSim) -> String:
 	if sim.phase != "results": return "TEAM OBJECTIVE · Bring both cars home. Result is pending."
 	var both = sim.cars[3].finished and sim.cars[6].finished and not sim.cars[3].dnf and not sim.cars[6].dnf
 	var lines: Array[String] = ["TEAM OBJECTIVE · " + ("Both cars brought home." if both else "Both-car finish not achieved. No result is fabricated or awarded for commands alone.")]

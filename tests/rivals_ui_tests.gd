@@ -36,7 +36,7 @@ func build(size:Vector2i,scale:float):
 	sim=RivalScenarios.build(RivalScenarios.catalog()[0],app.library)
 	sim.phase="race";sim.paused=true
 	for c in sim.cars: c.distance=300+(12-c.id)*24;c.previous_distance=c.distance;c.speed=40.0
-	app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false); view.session_runner.automatic = false
+	app.weekend=sim;game.show_weekend();view=game.content.get_child(0);view.set_process(false); root.get_node("App").session_runner.automatic = false
 	await settle();view.canvas.fit();await settle()
 func run():
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game);app=root.get_node("App");await settle()

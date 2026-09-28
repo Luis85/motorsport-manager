@@ -2,7 +2,7 @@ class_name RecoveryPanel
 extends VBoxContainer
 ## Actions are siblings of the scrolling evidence. Refresh never replaces a focused control.
 signal command_requested(action: String, payload: Dictionary)
-var model: RecoveryRaceSim
+var model: RaceViewQuery
 var driver_id = 3
 var advice: Dictionary = {}
 var selectors: Array[Button] = []
@@ -25,13 +25,13 @@ var authority_drafts: Dictionary = {}
 var retirement_dialog: ConfirmationDialog
 var retirement_payload: Dictionary = {}
 
-func configure(value: RecoveryRaceSim) -> void: model = value
+func configure(value: RaceViewQuery) -> void: model = value
 
 func _ready() -> void:
 	name = "Recovery"; add_theme_constant_override("separation", 7)
 	var row = HBoxContainer.new(); add_child(row)
 	for id in [3, 6]:
-		var button = UI.button(model.cars[id].short + " recovery", func(): choose_driver(id)); row.add_child(button)
+		var button = UI.button(model.car(id).short + " recovery", func(): choose_driver(id)); row.add_child(button)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; compact(button); selectors.append(button)
 	status = paragraph(); add_child(status)
 	var actions = HBoxContainer.new(); add_child(actions)
@@ -91,8 +91,8 @@ func submit_repair() -> void:
 func confirm_retirement() -> void:
 	if advice.is_empty() or retire_button.disabled: return
 	retirement_payload = payload(); retirement_payload.confirm = true
-	retirement_dialog.title = "Retire " + model.cars[driver_id].short + "?"
-	retirement_dialog.dialog_text = "Retire %s from this race. This is irreversible and retains a classified retirement.\n\nThe race continues at your selected speed. If the source conditions change while this confirmation is open, the command will be rejected." % model.cars[driver_id].short
+	retirement_dialog.title = "Retire " + model.car(driver_id).short + "?"
+	retirement_dialog.dialog_text = "Retire %s from this race. This is irreversible and retains a classified retirement.\n\nThe race continues at your selected speed. If the source conditions change while this confirmation is open, the command will be rejected." % model.car(driver_id).short
 	retirement_dialog.popup_centered(Vector2i(460, 205))
 
 func submit_authority() -> void:
@@ -102,7 +102,7 @@ func submit_authority() -> void:
 func refresh() -> void:
 	if model == null or status == null: return
 	if advice.is_empty() or model.recovery_stale(advice) or model.total_time - advice.time >= 2: advice = model.recovery_advice(driver_id)
-	var c = model.cars[driver_id]; var r = model.reliability(driver_id); var p = model.policy(driver_id)
+	var c = model.car(driver_id); var r = model.reliability(driver_id); var p = model.policy(driver_id)
 	var observed = advice.observed
 	for i in range(2): selectors[i].disabled = driver_id == [3, 6][i]
 	var legal = model.enhanced() and model.phase == "race" and c.route == "track" and not c.dnf and not c.finished

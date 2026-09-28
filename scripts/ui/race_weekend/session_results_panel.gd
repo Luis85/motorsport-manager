@@ -1,7 +1,7 @@
 class_name SessionResultsPanel
 extends VBoxContainer
 ## Observational, stable results with distinct qualifying, practice and race semantics.
-var model: RaceSim
+var model: RaceViewQuery
 var classification: Tree
 var summary: Label
 var heading: Label
@@ -9,7 +9,7 @@ var rows: Array[TreeItem] = []
 var rendered: Array = []
 var rebuild_count = 0
 
-func configure(value: RaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	model = value
 
 func _ready() -> void:
@@ -24,7 +24,7 @@ func _ready() -> void:
 	resized.connect(_layout_columns)
 	refresh()
 
-static func presentation(sim: RaceSim) -> Dictionary:
+static func presentation(sim: RaceViewQuery) -> Dictionary:
 	var mode = "race" if sim.phase == "results" else ("qualifying" if sim.phase == "qualifying_results" else ("practice" if sim.phase == "practice_results" else "pending"))
 	var data: Array = []
 	var titles = ["POS", "DRIVER", "RESULT", "LAPS", "PITS", "BEST"]
@@ -38,17 +38,17 @@ static func presentation(sim: RaceSim) -> Dictionary:
 		if mode == "qualifying":
 			var valid = car.qual_best > 0
 			var gap = ("POLE" if i == 0 else "+%.3f" % (car.qual_best - order[0].qual_best)) if valid else "—"
-			text = [str(i + 1) if valid else "—", car.short, RaceSim.format_time(car.qual_best), gap, str(car.qual_laps), "TIMED" if valid else "NO TIME"]
+			text = [str(i + 1) if valid else "—", car.short, RaceViewQuery.format_time(car.qual_best), gap, str(car.qual_laps), "TIMED" if valid else "NO TIME"]
 		elif mode == "practice":
 			var samples: Array = []; var runs: Array = []
-			if sim is PracticeRaceSim: runs = sim.practice_driver(int(car.id)).runs
+			if (sim is RaceViewQuery and sim.has_mechanic("practice")): runs = sim.practice_driver(int(car.id)).runs
 			for run in runs:
 				for sample in run.samples:
 					if float(sample.get("seconds", 0)) > 0: samples.append(float(sample.seconds))
-			text = ["—", car.short, RaceSim.format_time(samples.min()) if not samples.is_empty() else "—", str(samples.size()), str(runs.size()), "MEASURED" if not samples.is_empty() else "NO DATA"]
+			text = ["—", car.short, RaceViewQuery.format_time(samples.min()) if not samples.is_empty() else "—", str(samples.size()), str(runs.size()), "MEASURED" if not samples.is_empty() else "NO DATA"]
 		else:
-			var result = "DNF" if car.dnf else ("UNCLASSIFIED" if not car.finished else (RaceSim.format_time(car.finish_time) if i == 0 else ("+%d L" % (order[0].completed - car.completed) if car.completed < order[0].completed else "+%.3f" % maxf(0, car.finish_time - order[0].finish_time))))
-			text = [str(i + 1), car.short, result, str(car.completed), str(car.pit_stops), RaceSim.format_time(car.best_lap)]
+			var result = "DNF" if car.dnf else ("UNCLASSIFIED" if not car.finished else (RaceViewQuery.format_time(car.finish_time) if i == 0 else ("+%d L" % (order[0].completed - car.completed) if car.completed < order[0].completed else "+%.3f" % maxf(0, car.finish_time - order[0].finish_time))))
+			text = [str(i + 1), car.short, result, str(car.completed), str(car.pit_stops), RaceViewQuery.format_time(car.best_lap)]
 		data.append({"id": int(car.id), "player": bool(car.player), "text": text})
 	var explanation = {"race": "Final classification · completed laps first, then measured finish time. Lapped finishes and retirements remain explicit.", "qualifying": "Best valid timed lap · untimed attempts do not become pole positions. Race best laps are not qualifying evidence.", "practice": "Practice observations only · not a race classification or qualifying grid. Missing measurements are shown as —."}[mode]
 	return {"mode": mode, "titles": titles, "rows": data, "summary": explanation}
@@ -86,5 +86,5 @@ func _layout_columns() -> void:
 		else:classification.set_column_custom_minimum_width(column,ceili([28,48,80,38,32,80][column]*classification.get_theme_font_size("font_size")/13.0))
 	for row in rows:
 		if row.visible and row.get_metadata(0)!=null:
-			var c=model.cars[int(row.get_metadata(0))]
+			var c=model.car(int(row.get_metadata(0)))
 			row.set_text(1,c.name if wide else c.short)

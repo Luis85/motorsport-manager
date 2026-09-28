@@ -48,7 +48,7 @@ func race_fixture() -> PracticeRaceSim:
 
 func reset() -> void:
 	app.weekend = model; game.show_weekend()
-	view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	await settle(8)
 
 func advance_until(condition: Callable, seconds: float = 700) -> bool:

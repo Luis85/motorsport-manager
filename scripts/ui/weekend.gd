@@ -3,8 +3,11 @@ extends VBoxContainer
 ## Persistent native controls: live telemetry never rebuilds the timing tree or pit wall.
 signal new_weekend_requested
 signal menu_requested
-var sim: RaceSim
-var session_runner: RaceSessionRunner
+var sim: RaceViewQuery
+var commands: RaceCommands
+var view_session: RaceViewHandle
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
+var session_status: RaceSessionStatus
 var canvas: TrackCanvas
 var tower: Tree
 var rows: Dictionary = {}
@@ -140,9 +143,11 @@ class StintPlot extends Control:
 		draw_string(ThemeDB.fallback_font, Vector2(10, 77), "START                         LAP %d" % car.laps, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
 
 
-func configure(value: RaceSim) -> void:
-	session_runner = RaceSessionRunner.new(value)
-	sim = value
+func configure(value: RaceViewHandle) -> void:
+	view_session = value
+	session_status = value.status
+	commands = value.commands
+	sim = value.query
 
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -171,8 +176,8 @@ func _ready() -> void:
 	layers_menu = MenuButton.new(); layers_menu.text = "Layers"; layers_menu.flat = false; layers_menu.custom_minimum_size.y = 32
 	layers_menu.tooltip_text = "Optional racing line, driver labels and surface overlays. These never change race conditions."
 	view_row.add_child(layers_menu)
-	add_layer("Racing line", App.settings.racing_line, func(value): canvas.show_line = value; canvas.queue_redraw())
-	add_layer("Driver labels", App.settings.labels, func(value): canvas.show_labels = value; canvas.queue_redraw())
+	add_layer("Racing line", presentation_services.preferences.racing_line, func(value): canvas.show_line = value; canvas.queue_redraw())
+	add_layer("Driver labels", presentation_services.preferences.labels, func(value): canvas.show_labels = value; canvas.queue_redraw())
 	surface_control = add_layer("Track surface", false, func(value): canvas.show_surface = value; canvas.queue_redraw())
 	layers_menu.get_popup().hide_on_checkable_item_selection = false
 	layers_menu.get_popup().id_pressed.connect(func(id):
@@ -180,7 +185,7 @@ func _ready() -> void:
 		layers_menu.get_popup().set_item_checked(id, control.button_pressed))
 	layers_menu.get_popup().about_to_popup.connect(func():
 		for i in range(layer_controls.size()): layers_menu.get_popup().set_item_checked(i, layer_controls[i].button_pressed))
-	canvas = TrackCanvas.new(); canvas.configure_presentation(App.settings); canvas.visual_source = RaceVisualSource.new(sim); canvas.show_line = App.settings.racing_line; canvas.show_labels = App.settings.labels; canvas.show_grid = false
+	canvas = TrackCanvas.new(); canvas.configure_presentation(presentation_services.preferences); canvas.visual_source = sim.visuals; canvas.show_line = presentation_services.preferences.racing_line; canvas.show_labels = presentation_services.preferences.labels; canvas.show_grid = false
 	canvas.set_track(sim.track); visual.add_child(canvas); canvas.car_selected.connect(select_driver)
 	canvas.navigated.connect(func(): set_follow(false))
 	right_panel = UI.race_panel(false, 8); right_panel.custom_minimum_size.x = 360; body.add_child(right_panel)
@@ -261,7 +266,7 @@ func _ready() -> void:
 	stock.add_child(UI.label("PLAN A SET · THEN BOX / SEND", 12, UI.ACCENT))
 	var sets = GridContainer.new(); sets.columns = 3; stock.add_child(sets)
 	for index in range(12):
-		var button = UI.button("", func(): dispatch("select_set", {"set_id": sim.cars[sim.selected_id].tyre_sets[index].id}))
+		var button = UI.button("", func(): dispatch("select_set", {"set_id": sim.car(sim.selected_id).tyre_sets[index].id}))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; button.custom_minimum_size = Vector2(74, 47); button.add_theme_font_size_override("font_size", 10)
 		sets.add_child(button); tyre_buttons.append(button)
 	stock.add_child(UI.paragraph("Planned is not fitted. Used sets keep their four-wheel damage; no new stock is created."))
@@ -276,7 +281,7 @@ func _ready() -> void:
 	schedule_button = UI.button("Schedule", func(): dispatch("schedule_pit", {"lap": int(schedule_lap.value)})); schedule_button.custom_minimum_size.x = 78; schedule_button.add_theme_font_size_override("font_size", 12); plan_row.add_child(schedule_button)
 	unschedule_button = UI.button("Cancel planned stop", func(): dispatch("cancel_schedule")); planning.add_child(unschedule_button)
 	schedule_label = UI.paragraph(""); schedule_label.add_theme_font_size_override("font_size", 11); planning.add_child(schedule_label)
-	stint_plot = StintPlot.new(); stint_plot.source = RaceChartQuery.new(sim); planning.add_child(stint_plot)
+	stint_plot = StintPlot.new(); stint_plot.source = sim.charts; planning.add_child(stint_plot)
 	tyre_summary = UI.paragraph(""); tyre_summary.add_theme_font_size_override("font_size", 12); planning.add_child(tyre_summary)
 	var setup_page = tab_page("Setup")
 	racecraft = RacecraftPanel.new(); racecraft.configure(sim, dispatch); setup_page.add_child(racecraft)
@@ -285,7 +290,7 @@ func _ready() -> void:
 	pin_navigation(0, drive_sections); show_drive(0)
 	pin_navigation(3, tyre_sections)
 	var lab_page = tab_page("Surface lab")
-	surface_lab = SurfaceLab.new(); surface_lab.source = RaceChartQuery.new(sim); surface_lab.canvas = canvas; lab_page.add_child(surface_lab)
+	surface_lab = SurfaceLab.new(); surface_lab.source = sim.charts; surface_lab.canvas = canvas; lab_page.add_child(surface_lab)
 	pit_note = UI.paragraph(""); pit_note.add_theme_font_size_override("font_size", 12); wall.add_child(pit_note)
 	var pit_row = UI.hbox(wall)
 	box_button = UI.button("Box at next entry", func(): dispatch("pit"), true); box_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; pit_row.add_child(box_button)
@@ -308,7 +313,7 @@ func _ready() -> void:
 	call_deferred("fit_canvas")
 
 func setup_guide() -> void:
-	guide = ContextGuide.new()
+	guide = ContextGuide.new(); guide.presentation_services = presentation_services
 	guide.configure("pit wall", [
 		{"title": "Your two drivers", "body": "MER and MOR are your cars. Select either teammate or click a dot. Rivals can be inspected but cannot receive your commands. Reading this guide does not pause a live session.", "target": func(): return teammate_buttons[0].get_parent()},
 		{"title": "A clear next action", "body": "Qualifying, preparation, formation, lights and racing are separate phases. Approve the highlighted session action when ready. Space pauses; 1–5 changes speed.", "target": func(): return primary_button},
@@ -332,16 +337,16 @@ func set_follow(value: bool) -> void:
 	if follow_control: follow_control.set_pressed_no_signal(value)
 
 func select_driver(id: int) -> void:
-	if id < 0 or id >= sim.cars.size(): return
-	sim.selected_id = id; refresh()
+	if id < 0 or id >= sim.car_count: return
+	commands.select_driver(id); refresh()
 
 func feedback(text: String) -> void:
 	radio_label.text = text; feedback_until = Time.get_ticks_msec() / 1000.0 + 5
 
 func dispatch(action: String, payload: Dictionary = {}) -> void:
 	payload.id = sim.selected_id
-	if not sim.command(action, payload): feedback(sim.last_error)
-	elif action not in ["pause", "speed"]: feedback("%s · %s acknowledged" % [sim.cars[sim.selected_id].short, action.replace("_", " ")])
+	if not commands.execute(action, payload): feedback(sim.last_error)
+	elif action not in ["pause", "speed"]: feedback("%s · %s acknowledged" % [sim.car(sim.selected_id).short, action.replace("_", " ")])
 	refresh()
 
 func primary_action() -> void:
@@ -358,9 +363,9 @@ func primary_action() -> void:
 func _process(delta: float) -> void:
 	if sim == null: return
 	if follow and canvas:
-		var alpha = clampf(sim.accumulator / RaceSim.STEP, 0, 1) if not sim.paused else 1.0
-		var p = sim.car_position(sim.cars[sim.selected_id], alpha).p
-		var next = canvas.center.lerp(p, 1.0 if App.settings.reduced_motion or canvas.center.distance_squared_to(p) < 0.0001 else 1.0 - exp(-delta * 7))
+		var alpha = clampf(sim.accumulator / RaceViewQuery.STEP, 0, 1) if not sim.paused else 1.0
+		var p = sim.car_position(sim.car(sim.selected_id), alpha).p
+		var next = canvas.center.lerp(p, 1.0 if presentation_services.preferences.reduced_motion or canvas.center.distance_squared_to(p) < 0.0001 else 1.0 - exp(-delta * 7))
 		if canvas.center != next: canvas.center = next; canvas.queue_redraw()
 	refresh_time -= delta
 	if refresh_time <= 0: refresh_time = 0.2; refresh()
@@ -368,7 +373,7 @@ func _process(delta: float) -> void:
 func refresh() -> void:
 	ui_refresh_count += 1
 	if tower == null: return
-	var c = sim.cars[sim.selected_id]
+	var c = sim.car(sim.selected_id)
 	if decision_text and decision_strip.visible:
 		var issue = current_decision(c)
 		decision_signature = issue.signature
@@ -388,19 +393,19 @@ func refresh() -> void:
 	var captions = {"practice": "End practice…", "practice_results": "Return to briefing", "briefing": "Start qualifying", "qualifying": "Close qualifying…", "qualifying_results": "Prepare the race", "race_preparation": "Start formation lap", "formation": "Formation in progress", "grid_ready": "Release start lights", "lights": "Start lights", "race": "Race in progress", "results": "Another weekend"}
 	primary_button.text = captions[sim.phase]; primary_button.disabled = sim.phase in ["formation", "lights", "race"] or sim.phase == "qualifying" and sim.qual_closed
 	primary_button.tooltip_text = "Finish the active session before advancing." if primary_button.disabled else "Advance to the next weekend stage."
-	pause_button.text = "Resume" if sim.paused else "Pause"; pause_button.disabled = sim.phase not in RaceSim.ACTIVE
+	pause_button.text = "Resume" if sim.paused else "Pause"; pause_button.disabled = sim.phase not in RaceViewQuery.ACTIVE
 	speed_control.select([1, 2, 4, 8, 16].find(sim.speed))
 	flag_label.text = ("PAUSED · " if sim.paused else "") + ("CHEQUERED" if sim.chequered or q and sim.qual_closed else sim.flag)
 	flag_label.add_theme_color_override("font_color", UI.GOLD if sim.paused or sim.flag != "GREEN" else Color("c9e8cb"))
 	var running_lap = clampi(int(floor(maxf(0, leader.distance) / sim.track.length)) + 1, 1, sim.laps)
-	clock_label.text = "QUAL %s" % RaceSim.format_time(maxf(0.001, sim.qual_duration - sim.clock)) if q and sim.phase != "qualifying_results" else ("LAP %d / %d · %s" % [running_lap, sim.laps, RaceSim.format_time(sim.race_time)] if sim.phase in ["race", "results"] else sim.phase.replace("_", " ").to_upper())
+	clock_label.text = "QUAL %s" % RaceViewQuery.format_time(maxf(0.001, sim.qual_duration - sim.clock)) if q and sim.phase != "qualifying_results" else ("LAP %d / %d · %s" % [running_lap, sim.laps, RaceViewQuery.format_time(sim.race_time)] if sim.phase in ["race", "results"] else sim.phase.replace("_", " ").to_upper())
 	weather_label.text = "%s · Water %d%%" % [sim.weather_name, int(sim.average(sim.water) * 100)]
 	weather_label.tooltip_text = "Rubber %d%%. Rain and surface water are separate: the road wets and dries gradually." % int(sim.average(sim.rubber) * 100)
 	if race_context_label:
 		race_context_label.text = "SURFACE %d%% WATER   ·   RUBBER %d%%" % [int(sim.average(sim.water) * 100), int(sim.average(sim.rubber) * 100)]
 	session_label.text = "%s   /   %s   /   SEED %d" % [sim.phase.replace("_", " ").to_upper(), sim.track.preset.to_upper(), sim.seed_value]
 	var step_index = {"practice": 0, "practice_results": 0, "briefing": 0, "qualifying": 0, "qualifying_results": 0, "race_preparation": 1, "formation": 2, "grid_ready": 3, "lights": 3, "race": 4, "results": 5}[sim.phase]
-	steps[0].get_parent().visible = sim.phase not in RaceSim.ACTIVE
+	steps[0].get_parent().visible = sim.phase not in RaceViewQuery.ACTIVE
 	for i in range(steps.size()): steps[i].add_theme_color_override("font_color", UI.ACCENT if i == step_index else (UI.GOOD if i < step_index else UI.MUTED))
 	for i in range(2):
 		var teammate = sim.cars[[3, 6][i]]
@@ -412,20 +417,20 @@ func refresh() -> void:
 	var nearest = order[selected_position - 2] if selected_position > 1 else null
 	driver_rival_label.text = ("Car ahead · %s" % nearest.short) if nearest != null else "Leading the classification"
 	intent_label.text = "Finished P%d" % c.finish_position if c.finished else ("Retired: " + c.retire_reason if c.dnf else c.intent); intent_label.tooltip_text = intent_label.text
-	driver_plan_label.text = "%s %d%%   ·   Finish fuel ~%+.1f laps   ·   %s" % [c.compound, c.tyre, RaceForecaster.fuel_margin(sim, c), ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
+	driver_plan_label.text = "%s %d%%   ·   Finish fuel ~%+.1f laps   ·   %s" % [c.compound, c.tyre, sim.race_forecaster_fuel_margin(c), ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
 	var values = [c.tyre, c.fuel, c.health]
 	for i in range(3):
 		resource_labels[i].text = "%.1f laps" % values[i] if i == 1 else "%d%%" % values[i]
 		resource_bars[i].value = clampf(values[i] / maxf(1, sim.laps) * 100, 0, 100) if i == 1 else values[i]
-		var risk = (i == 0 and c.tyre < 28) or (i == 1 and sim.phase == "race" and RaceForecaster.fuel_margin(sim, c) < 0.35) or (i == 2 and c.health < 55)
+		var risk = (i == 0 and c.tyre < 28) or (i == 1 and sim.phase == "race" and sim.race_forecaster_fuel_margin(c) < 0.35) or (i == 2 and c.health < 55)
 		UI.resource_state(resource_bars[i], resource_labels[i], risk)
 	if right_panel.visible and tabs.current_tab == 1:
-		telemetry_label.text = "CURRENT MODEL · %d km/h · %d°C tyre · throttle %d%% / brake %d%%\nBest %s · Last %s\nS1 %s · S2 %s · S3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, RaceSim.format_time(c.qual_best if q else c.best_lap), RaceSim.format_time(c.last_lap), RaceSim.format_time(c.sectors[0]), RaceSim.format_time(c.sectors[1]), RaceSim.format_time(c.sectors[2])]
+		telemetry_label.text = "CURRENT MODEL · %d km/h · %d°C tyre · throttle %d%% / brake %d%%\nBest %s · Last %s\nS1 %s · S2 %s · S3 %s" % [c.speed * 3.6, c.temperature, c.throttle * 100, c.braking * 100, RaceViewQuery.format_time(c.qual_best if q else c.best_lap), RaceViewQuery.format_time(c.last_lap), RaceViewQuery.format_time(c.sectors[0]), RaceViewQuery.format_time(c.sectors[1]), RaceViewQuery.format_time(c.sectors[2])]
 		var records: Array = c.qual_history if q else c.history
 		var history: Array[String] = ["MEASURED FLYING LAPS" if q else "RACE LAP HISTORY"]
 		for i in range(maxi(0, records.size() - 8), records.size()):
 			var lap = records[i]
-			history.append("%s %d   %s%s" % ["Run" if q else "Lap", lap.get("run", lap.get("lap", 0)), RaceSim.format_time(lap.time), " · INVALID" if not lap.get("valid", true) else (" · PIT" if lap.get("pit_lap", false) else "")])
+			history.append("%s %d   %s%s" % ["Run" if q else "Lap", lap.get("run", lap.get("lap", 0)), RaceViewQuery.format_time(lap.time), " · INVALID" if not lap.get("valid", true) else (" · PIT" if lap.get("pit_lap", false) else "")])
 			if q and lap.has("sectors"): history.append("%.2f / %.2f / %.2f" % [lap.sectors[0], lap.sectors[1], lap.sectors[2]])
 		history_label.text = "\n\n".join(history)
 		telemetry_inspector.present()
@@ -477,8 +482,8 @@ func refresh() -> void:
 	if trace.is_visible_in_tree(): trace.queue_redraw()
 	if last_phase != sim.phase:
 		last_phase = sim.phase
-		if session_runner != null and not session_runner.persistence_error.is_empty():
-			feedback("Autosave failed: " + session_runner.persistence_error)
+		if session_status != null and not session_status.persistence_error.is_empty():
+			feedback("Autosave failed: " + session_status.persistence_error)
 
 func current_decision(c: Dictionary) -> Dictionary:
 	if sim.phase != "race" or not c.player or c.dnf or c.finished or c.route == "pit": return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
@@ -486,14 +491,14 @@ func current_decision(c: Dictionary) -> Dictionary:
 		return {"signature": "%s:health:%d" % [c.id, int(c.health / 10)], "text": "%s · Car condition %d%% · review recovery or pit service" % [c.short, c.health], "badge": "CAR", "color": UI.DANGER, "topic": 0}
 	if c.tyre < 28:
 		return {"signature": "%s:tyre:%d" % [c.id, int(c.tyre / 5)], "text": "%s · Tyre life %d%% · current set is becoming the limiting factor" % [c.short, c.tyre], "badge": "TYRE", "color": UI.ACCENT, "topic": 3}
-	if RaceForecaster.fuel_margin(sim, c) < 0.35:
-		return {"signature": "%s:fuel:%d" % [c.id, int(floor(RaceForecaster.fuel_margin(sim, c) * 4))], "text": "%s · Estimated finish fuel %+.1f laps · review engine policy" % [c.short, RaceForecaster.fuel_margin(sim, c)], "badge": "FUEL", "color": UI.ACCENT, "topic": 0}
+	if sim.race_forecaster_fuel_margin(c) < 0.35:
+		return {"signature": "%s:fuel:%d" % [c.id, int(floor(sim.race_forecaster_fuel_margin(c) * 4))], "text": "%s · Estimated finish fuel %+.1f laps · review engine policy" % [c.short, sim.race_forecaster_fuel_margin(c)], "badge": "FUEL", "color": UI.ACCENT, "topic": 0}
 	if c.scheduled_lap > 0 and c.scheduled_lap <= int(maxf(0, c.distance) / sim.track.length) + 2:
 		return {"signature": "%s:pit:%d" % [c.id, c.scheduled_lap], "text": "%s · Pit plan active for lap %d · review stop plan before commitment" % [c.short, c.scheduled_lap], "badge": "PIT", "color": UI.ACCENT, "topic": 3}
 	return {"signature": "", "text": "", "badge": "CLEAR", "color": UI.GOOD, "topic": 0}
 
 func review_decision() -> void:
-	var issue = current_decision(sim.cars[sim.selected_id])
+	var issue = current_decision(sim.car(sim.selected_id))
 	if issue.signature.is_empty(): return
 	open_topic(issue.topic)
 
@@ -511,13 +516,13 @@ func weekend_action(id: int) -> void:
 		3: menu_requested.emit()
 
 func save_checkpoint() -> void:
-	var error = App.save_weekend()
+	var error = presentation_services.save_live()
 	feedback("Weekend saved. Continue resumes this checkpoint." if error.is_empty() else error)
 
 func export_log() -> void:
 	var dialog = UI.file_dialog(self, true, ["*.json ; Weekend analysis log"], func(path):
 		var data = {"kind": "motorsport-manager-race-log", "version": 2, "track": sim.track.document.name, "seed": sim.seed_value, "events": sim.events, "commands": sim.commands, "classification": sim.standings(), "phase": sim.phase, "stats": sim.stats}
-		var error = Storage.write_json(path, data); feedback("Race log exported." if error.is_empty() else error))
+		var error = presentation_services.export_value(path, data); feedback("Race log exported." if error.is_empty() else error))
 	dialog.current_file = "weekend-log.json"
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -527,7 +532,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		UI.notify(self, "Control help", help_target.tooltip_text); get_viewport().set_input_as_handled(); return
 	if focus is LineEdit or focus is TextEdit: return
 	if event.keycode == KEY_ESCAPE and right_panel.visible: close_detail(); get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_SPACE and sim.phase in RaceSim.ACTIVE: dispatch("pause"); get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_SPACE and sim.phase in RaceViewQuery.ACTIVE: dispatch("pause"); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_B and not box_button.disabled: dispatch("pit"); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_TAB and event.ctrl_pressed: select_driver(6 if sim.selected_id == 3 else 3); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_F: set_follow(false); canvas.fit(); get_viewport().set_input_as_handled()
@@ -544,7 +549,7 @@ func show_tyres(index: int) -> void:
 func refresh_tyres(c: Dictionary, controllable: bool) -> void:
 	if tyre_readout:tyre_readout.present()
 	if tyre_buttons.is_empty(): return
-	var planned = TyreInventory.planned(c, sim.phase == "race")
+	var planned = sim.planned_set(c, sim.phase == "race")
 	for i in range(12):
 		var item = c.tyre_sets[i]; var button = tyre_buttons[i]
 		var mounted = item.id == c.set_id
@@ -645,7 +650,7 @@ func _input(event: InputEvent) -> void:
 		if is_instance_valid(target) and not target.tooltip_text.is_empty():
 			UI.notify(self, "Control help", target.tooltip_text); get_viewport().set_input_as_handled()
 		return
-	if event.keycode != KEY_SPACE or sim == null or sim.phase not in RaceSim.ACTIVE: return
+	if event.keycode != KEY_SPACE or sim == null or sim.phase not in RaceViewQuery.ACTIVE: return
 	if focus is LineEdit or focus is TextEdit: return
 	dispatch("pause"); get_viewport().set_input_as_handled()
 

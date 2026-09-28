@@ -28,7 +28,7 @@ static func fingerprint(data: Variant) -> String:
 	# Normalize JSON's number/key representation before computing an integrity digest.
 	return RaceStateValue.fingerprint(data)
 
-func attach(sim: PracticeRaceSim, mode: String = "standalone", lineage: Dictionary = {}) -> void:
+func attach(sim: RaceSim, mode: String = "standalone", lineage: Dictionary = {}) -> void:
 	detach()
 	inputs.clear(); marks.clear(); steps = 0; incomplete = ""
 	source = weakref(sim); origin = mode; parent = lineage.duplicate(true)
@@ -42,7 +42,7 @@ func detach() -> void:
 		if sim.fixed_step_completed.is_connected(_stepped): sim.fixed_step_completed.disconnect(_stepped)
 	source = null
 
-func _connect(sim: PracticeRaceSim) -> void:
+func _connect(sim: RaceSim) -> void:
 	source = weakref(sim)
 	sim.input_accepted.connect(_accepted)
 	sim.fixed_step_completed.connect(_stepped)
@@ -128,7 +128,7 @@ static func validate(data: Variant) -> String:
 		if not equivalent(static_identity(mark.snapshot), static_identity(data.initial)) or absf(mark.snapshot.total_time - data.initial.total_time - mark.step * RaceSim.STEP) > 0.00001: return "Checkpoint differs from recording chronology or track."
 	return ""
 
-static func resume(data: Dictionary, sim: PracticeRaceSim) -> RaceRecord:
+static func resume(data: Dictionary, sim: RaceSim) -> RaceRecord:
 	# Caller validates the complete envelope before replacing any application state.
 	var record = RaceRecord.new()
 	record.event_id = data.event_id; record.origin = data.origin; record.parent = data.parent.duplicate(true)

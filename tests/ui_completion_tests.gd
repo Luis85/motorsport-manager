@@ -36,7 +36,7 @@ func fixture() -> PracticeRaceSim:
 		c.route="track";c.distance=300+(12-c.id)*24;c.previous_distance=c.distance;c.speed=40
 	return m
 func reset(scale_factor: float=1.0) -> void:
-	app.settings.pitwall_text_scale=scale_factor;app.weekend=model;game.show_weekend();view=game.content.get_child(0);view.set_process(false); view.session_runner.automatic = false;await settle(10)
+	app.settings.pitwall_text_scale=scale_factor;app.weekend=model;game.show_weekend();view=game.content.get_child(0);view.set_process(false); root.get_node("App").session_runner.automatic = false;await settle(10)
 func run() -> void:
 	root.size=Vector2i(1440,900);root.content_scale_size=root.size
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game);app=root.get_node("App");await settle()

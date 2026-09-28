@@ -3,7 +3,14 @@ extends RefCounted
 ## Builds one independent entrant record from the immutable roster and event setup.
 ## Serialized field names and defaults deliberately match pre-refactor checkpoints.
 
-static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> Dictionary:
+static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> RaceCar:
+	var record = initial_record(r, i, track, laps, scenario)
+	record.merge(RaceSim.CAR_V2.duplicate(true))
+	TyreInventory.initialize_record(record)
+	CarSetup.initialize_record(record)
+	return RaceCar.from_record(record)
+
+static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> Dictionary:
 	return {
 		"id": i,
 		"short": r[0],

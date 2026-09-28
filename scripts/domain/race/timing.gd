@@ -3,7 +3,7 @@ extends RefCounted
 ## Timing and classification rules. Pure domain service; no renderer or file access.
 ## Invoke cross-system work through the aggregate so inherited rule-set hooks remain active.
 
-static func qualifying_crossings(sim: RaceSim, car: Dictionary, before: float, after: float) -> void:
+static func qualifying_crossings(sim: RaceSim, car: RaceCar, before: float, after: float) -> void:
 	if car.qual_state == "hotlap":
 		var base_lap = int(floor(before / sim.track.length))
 		for i in range(3):
@@ -49,7 +49,7 @@ static func finish_qualifying(sim: RaceSim) -> void:
 		order[i].grid = i + 1
 	sim.transition("qualifying_results")
 
-static func race_crossings(sim: RaceSim, car: Dictionary, before: float, after: float) -> void:
+static func race_crossings(sim: RaceSim, car: RaceCar, before: float, after: float) -> void:
 	if car.finished or car.dnf:
 		return
 	var base_lap = int(floor(maxf(0, before) / sim.track.length))

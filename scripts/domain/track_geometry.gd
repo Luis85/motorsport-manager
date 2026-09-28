@@ -7,7 +7,6 @@ const PRESETS = {
 	"Touring": {"top": 66.0, "lat": 12.0, "accel": 5.2, "brake": 10.0, "width": 1.9},
 	"Kart": {"top": 38.0, "lat": 11.0, "accel": 5.0, "brake": 8.0, "width": 1.4}}
 var preview_only = false
-var compile_usec = 0
 var centre_estimate = 0.0
 var line_distances = PackedFloat64Array()
 var document: Dictionary
@@ -41,7 +40,6 @@ func _init(d: Dictionary = {}, vehicle: String = "Formula", preview: bool = fals
 	if not d.is_empty(): compile(d, vehicle, preview)
 
 func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false) -> void:
-	var started = Time.get_ticks_usec()
 	preview_only = preview
 	document = TrackDocument.normalize(d)
 	preset = vehicle if PRESETS.has(vehicle) else "Formula"
@@ -112,7 +110,6 @@ func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false) 
 	if sector_ends.size() != 2 or sector_ends[1] - sector_ends[0] < 1.0: sector_ends = [length / 3.0, length * 2.0 / 3.0]
 	sector_ends.append(length)
 	_compile_pit()
-	compile_usec = Time.get_ticks_usec() - started
 
 func line_point(i: int) -> Vector2:
 	return points[i] + normals[i] * offsets[i]

@@ -16,7 +16,7 @@ static func target_for(sim: RaceSim, id: int) -> int:
 		if distance < gap: best = int(c.id); gap = distance
 	return best
 
-static func draft(sim: StrategyRaceSim, id: int, kind: String = "undercut") -> Dictionary:
+static func draft(sim: RaceSim, id: int, kind: String = "undercut") -> Dictionary:
 	var c = sim.cars[id]
 	var first = RaceForecaster.reachable_gate(sim, c).lap if sim.phase == "race" else maxi(2, int(sim.laps * 0.4))
 	var source = RaceForecaster.capture(sim, id)
@@ -26,7 +26,7 @@ static func draft(sim: StrategyRaceSim, id: int, kind: String = "undercut") -> D
 		"wait_laps": 2, "authority": "recommend", "fuel_reserve": 0.35,
 		"tyre_floor": 15.0, "avoid_traffic": true, "rival_first": true}
 
-static func validate_plan(plan: Variant, cars: Array, id: int, laps: int) -> String:
+static func validate_plan(plan: Variant, cars: Array[RaceCar], id: int, laps: int) -> String:
 	if not plan is Dictionary or plan.size() != 11: return "A tactical draft needs the complete supported fields."
 	if plan.get("kind") not in KINDS or plan.get("authority") not in AUTHORITIES: return "Choose a tactic and explicit recommendation or pit authority."
 	if not RaceCheckpoint.integral(plan.get("target_id"), 0, cars.size() - 1): return "Choose a named rival."
@@ -40,7 +40,7 @@ static func validate_plan(plan: Variant, cars: Array, id: int, laps: int) -> Str
 		if not plan.get(key) is bool: return "Declare each contingency explicitly."
 	return ""
 
-static func preview(sim: StrategyRaceSim, id: int, plan: Dictionary) -> Dictionary:
+static func preview(sim: RaceSim, id: int, plan: Dictionary) -> Dictionary:
 	var result = {"available": false, "reason": "", "time": sim.total_time, "key": "", "driver_id": id,
 		"options": [], "pit": {}, "candidate": {}, "target": {}, "gap": 0.0}
 	if not RaceCheckpoint.integral(id, 0, sim.cars.size() - 1): result.reason = "Unknown driver."; return result
@@ -98,7 +98,7 @@ static func preview(sim: StrategyRaceSim, id: int, plan: Dictionary) -> Dictiona
 	result.assumptions = "Remaining-time estimates, not a winning prediction. Current modes and water held constant; rival pace is observed, future stops unknown. Warm-up and traffic remain coarse."
 	return result
 
-static func team_compare(sim: StrategyRaceSim) -> String:
+static func team_compare(sim: RaceSim) -> String:
 	var sources: Array = [RaceForecaster.capture(sim, 3, sim.active_plan(3)), RaceForecaster.capture(sim, 6, sim.active_plan(6))]
 	var forecasts: Array = sources.map(func(s): return RaceForecaster.evaluate(s))
 	var baseline_total = 0.0
@@ -123,7 +123,7 @@ static func team_compare(sim: StrategyRaceSim) -> String:
 	lines.append("Negative summed time is faster in this coarse model, not more team points or a promised classification. Arrival uncertainty, future rival responses and late window choices can change the result.")
 	return "\n\n".join(lines)
 
-static func rival_cases(sim: StrategyRaceSim, source: Dictionary, plan: Dictionary, item: Dictionary, pit: Dictionary, target: Dictionary, gap: float) -> String:
+static func rival_cases(sim: RaceSim, source: Dictionary, plan: Dictionary, item: Dictionary, pit: Dictionary, target: Dictionary, gap: float) -> String:
 	if plan.kind == "extend":
 		return "RIVAL RESPONSE CASES · not predicted intentions\nRival stops first: observe its new pace before spending more tyre life. Its fresh-set condition is unknown.\nRival also waits: track position is retained, but both tyres continue ageing. The agreed extension and resource limits still apply."
 	if source.phase != "race" or target.is_empty() or target.route == "pit":

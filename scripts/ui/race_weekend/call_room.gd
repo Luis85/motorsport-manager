@@ -5,7 +5,7 @@ signal close_requested
 signal command_requested(action: String, payload: Dictionary)
 signal watch_requested
 signal details_requested(id: int)
-var model: PracticeRaceSim
+var model: RaceViewQuery
 var snapshot: Dictionary = {}
 var selected = ""
 var submitted = false
@@ -32,7 +32,7 @@ var outcome_title: Label
 var outcome_metrics: Label
 var outcome_detail: Label
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	model = value
 
 func _ready() -> void:
@@ -95,7 +95,7 @@ func present(value: Dictionary = {}, accepted: Dictionary = {}) -> void:
 	option_buttons.send.text = "Bank a timed lap\nRelease on the planned tyre set\nOut-lap, flying lap, then in-lap"
 	if snapshot.phase == "qualifying":
 		context.text = "P%d   ·   %s / %.0f%% tread   ·   fuel on board %.1f laps" % [snapshot.position,snapshot.set_id,snapshot.tyre,snapshot.fuel]
-		evidence.text = "Current run: %s. A new release needs approximately %.0fs to start a legal flying lap; latest release at session %.0fs." % [model.cars[int(snapshot.driver_id)].qual_state.replace("_"," "),snapshot.release.required_seconds,snapshot.release.latest_release]
+		evidence.text = "Current run: %s. A new release needs approximately %.0fs to start a legal flying lap; latest release at session %.0fs." % [model.car(int(snapshot.driver_id)).qual_state.replace("_"," "),snapshot.release.required_seconds,snapshot.release.latest_release]
 	message.text = "Choose a call. Keeping orders retains the engineer and any queued pit stop; it does not cancel them."
 	for button in option_buttons.values(): DirectorStyle.style_button(button)
 	refresh_state()
@@ -105,10 +105,10 @@ func present(value: Dictionary = {}, accepted: Dictionary = {}) -> void:
 func refresh_snapshot() -> void:
 	if snapshot.is_empty(): return
 	var id = int(snapshot.driver_id)
-	present(RaceDecisionViewModel.capture(model,id,model.forecast(id)))
+	present(model.race_decision_view_model_capture(id, model.forecast(id)))
 
 func is_stale() -> bool:
-	return snapshot.is_empty() or model.phase != snapshot.phase or RaceForecaster.stale(model,snapshot.forecast,int(model.policy(snapshot.driver_id).revision))
+	return snapshot.is_empty() or model.phase != snapshot.phase or model.race_forecaster_stale(snapshot.forecast, int(model.policy(snapshot.driver_id).revision))
 
 func choose(key: String) -> void:
 	refresh_state()
@@ -142,7 +142,7 @@ func commit() -> void:
 func command_result(accepted: bool, error: String, action: String, value: Dictionary) -> void:
 	submitted = false
 	if accepted:
-		receipt = RaceDecisionViewModel.accepted_receipt(model,snapshot,action,value,submit_sequence)
+		receipt = model.race_decision_view_model_accepted_receipt(snapshot, action, value, submit_sequence)
 	else: message.text = "Not sent: " + error + " Refresh this situation before trying again."
 	refresh_state()
 	PitwallDesign.focus_later(watch_button if accepted else refresh_button)
@@ -150,7 +150,7 @@ func command_result(accepted: bool, error: String, action: String, value: Dictio
 func refresh_state() -> void:
 	if snapshot.is_empty() or confirm_button == null: return
 	var stale = is_stale()
-	var c = model.cars[int(snapshot.driver_id)]
+	var c = model.car(int(snapshot.driver_id))
 	var locked = not receipt.is_empty() or submitted
 	for key in option_buttons:
 		var button: Button = option_buttons[key]
@@ -158,7 +158,7 @@ func refresh_state() -> void:
 		button.disabled = stale or locked or c.dnf or c.finished
 		if key == "pit": button.disabled = button.disabled or c.route != "track" or c.pit_order or snapshot.forecast.replacement_id.is_empty() or snapshot.forecast.gate.distance >= model.laps * model.track.length
 		if key == "recall": button.disabled = button.disabled or c.route != "track" or c.qual_state == "inlap"
-		if key == "send": button.disabled = button.disabled or not RaceForecaster.qualifying_release(model,c).can_start_hotlap
+		if key == "send": button.disabled = button.disabled or not model.race_forecaster_qualifying_release(c).can_start_hotlap
 		button.tooltip_text = "Refresh stale evidence before committing." if stale else ("Not available in the current car/session state." if button.disabled else "Choose for " + snapshot.name + "; confirmation is separate.")
 	stage_label.text = "STALE / REFRESH" if stale and not locked else ("FOLLOW OUTCOME" if locked else "PAUSED / REVIEW" if model.paused else "LIVE / SNAPSHOT")
 	confirm_button.visible = not locked
@@ -167,16 +167,16 @@ func refresh_state() -> void:
 	keep_button.visible = not locked
 	outcome_panel.visible = locked
 	watch_button.visible = locked
-	watch_button.disabled = model.phase not in RaceSim.ACTIVE
+	watch_button.disabled = model.phase not in RaceViewQuery.ACTIVE
 	refresh_button.text = "Review a new call" if locked else "Refresh situation"
 	if locked and not receipt.is_empty():
-		var progress = RaceDecisionViewModel.receipt_progress(model,receipt)
+		var progress = model.race_decision_view_model_receipt_progress(receipt)
 		if progress.terminal: receipt.outcome = progress
 		else:
 			receipt.record_offset = model.strategy_state.records.size()
 			if progress.has("entry_id"): receipt.entry_id = progress.entry_id
 			if progress.has("recalled"): receipt.recalled = progress.recalled
-		var current = DirectorReadModel.car(model,int(snapshot.driver_id))
+		var current = model.director_read_model_car(int(snapshot.driver_id))
 		outcome_title.text = "Call accepted → " + ("observed outcome" if progress.terminal else "executing")
 		outcome_metrics.text = "Position P%d → P%d   |   Tread %.0f%% → %.0f%%   |   Fuel on board %.1f → %.1f laps\nElapsed since acceptance: %.1fs · %s" % [snapshot.position,current.position,snapshot.tyre,current.tyre,snapshot.fuel,c.fuel,maxf(0,model.total_time-float(receipt.accepted_at)),current.status]
 		outcome_detail.text = progress.detail

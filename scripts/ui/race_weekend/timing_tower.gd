@@ -2,14 +2,14 @@ class_name RaceTimingTower
 extends PanelContainer
 ## Persistent classification rows. This component only emits selection intent.
 signal driver_selected(id: int)
-var model: RaceSim
+var model: RaceViewQuery
 var tower: Tree
 var rows: Dictionary = {}
 var rank_rows: Array[TreeItem] = []
 var rendered_rows: Dictionary = {}
 var update_count = 0
 
-func configure(value: RaceSim) -> void: model = value
+func configure(value: RaceViewQuery) -> void: model = value
 
 func _ready() -> void:
 	add_theme_stylebox_override("panel", UI.box(PitwallDesign.RACE_DARK_2, Color("426558"), 5, 6))
@@ -35,7 +35,7 @@ func _ready() -> void:
 		if item: driver_selected.emit(int(item.get_metadata(0))))
 	timing.add_child(tower)
 	var root_item = tower.create_item()
-	for i in range(model.cars.size()): rank_rows.append(tower.create_item(root_item))
+	for i in range(model.car_count): rank_rows.append(tower.create_item(root_item))
 	var legend = UI.race_label("* Your team   |   ~ Estimated gap", 11); legend.tooltip_text = "Qualifying: OUT → HOT → IN → BOX. Only timed hot laps set the grid."; timing.add_child(legend)
 	tower.accessibility_name = "Live classification; select a driver to inspect"
 
@@ -48,14 +48,14 @@ func present() -> Array:
 	for i in range(order.size()):
 		var car = order[i]; var row = rank_rows[i]; rows[car.id] = row
 		var text = "LEADER" if i == 0 else "~+%.1fs" % [maxf(0, leader.distance - car.distance) / maxf(15, car.speed)]
-		if q: text = RaceSim.format_time(car.qual_best)
+		if q: text = RaceViewQuery.format_time(car.qual_best)
 		elif car.dnf: text = "DNF"
 		elif model.phase in ["briefing", "race_preparation", "formation", "grid_ready", "lights"]: text = "GRID %d" % car.grid
 		elif car.finished:
 			text = "WINNER" if i == 0 else ("+%d L" % (leader.completed - car.completed) if car.completed < leader.completed else "+%.3f" % (car.finish_time - leader.finish_time))
 		elif leader.distance - car.distance >= model.track.length: text = "+%d L" % int((leader.distance - car.distance) / model.track.length)
 		var state = "DNF" if car.dnf else ("FIN" if car.finished else ("PIT" if car.route == "pit" else ({"garage": "BOX", "outlap": "OUT", "hotlap": "HOT", "inlap": "IN"}.get(car.qual_state, "") if q else ("BLUE" if car.blue else "%d%%" % car.tyre))))
-		var tooltip = "%s · %s\n%s\nTyres %.0f%% · %s\nBest %s" % [car.name, car.team, car.intent, car.tyre, car.compound, RaceSim.format_time(car.qual_best if q else car.best_lap)]
+		var tooltip = "%s · %s\n%s\nTyres %.0f%% · %s\nBest %s" % [car.name, car.team, car.intent, car.tyre, car.compound, RaceViewQuery.format_time(car.qual_best if q else car.best_lap)]
 		var appearance = [car.id, text, car.compound, state, tooltip, car.id == model.selected_id]
 		if rendered_rows.get(i) != appearance:
 			rendered_rows[i] = appearance; update_count += 1

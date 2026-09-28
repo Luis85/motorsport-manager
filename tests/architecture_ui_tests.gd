@@ -15,7 +15,7 @@ func run() -> void:
 	await click(view.send_button)
 	await click(view.pause_button)
 	check(model.phase == "practice" and not model.practice_driver(3).active.is_empty(), "Real native practice approval and release remain connected")
-	check(app.session_runner == view.session_runner, "Application owns the same session runner exposed at composition")
+	check(app.session_runner != null and view.session_status.available(), "Application owns the runner while the view receives only read-only status")
 	var saved = Storage.read_json(app.checkpoint_path)
 	check(saved.ok, "Phase autosave is produced by application scheduling, not view refresh")
 	var before = RaceRecord.sporting(model.snapshot())
@@ -29,11 +29,11 @@ func run() -> void:
 	check(reference != null, "Current native session is independently restorable")
 	view.hide()
 	view.process_mode = Node.PROCESS_MODE_DISABLED
-	view.session_runner.automatic = true
+	root.get_node("App").session_runner.automatic = true
 	view.controls.play()
 	await create_timer(0.45).timeout
 	view.controls.pause()
-	view.session_runner.automatic = false
+	root.get_node("App").session_runner.automatic = false
 	var ticks = roundi((model.total_time - float(live.total_time)) / RaceSim.STEP)
 	check(ticks > 0, "Hiding and disabling the entire visual tree does not stop the application simulation")
 	if reference != null:
@@ -52,7 +52,7 @@ func run() -> void:
 	check(error.is_empty(), "Actual native recording opens through the production replay controller: " + error)
 	if error.is_empty():
 		var replay = game.replay_controller.workspace
-		check(app.session_runner == null and app.replay_runner == replay.playback, "Replay explicitly suspends live scheduling instead of relying on hidden views")
+		check(app.session_runner == null and app.replay_runner == game.replay_controller.binding.playback, "Replay explicitly suspends live scheduling instead of relying on hidden views")
 		replay.set_process(false)
 		replay.playing = true
 		await settle(8)
@@ -62,8 +62,8 @@ func run() -> void:
 		replay.seek(-1)
 		replay.start_sandbox()
 		await settle()
-		check(app.session_runner == replay.sandbox_view.session_runner and app.session_runner != original_runner, "Sandbox is assigned a separate authoritative session runner")
-		replay.sandbox_view.session_runner.automatic = false
+		check(app.session_runner != null and replay.sandbox_view.session_status.available() and app.session_runner != original_runner, "Sandbox is assigned a separate authoritative session runner")
+		root.get_node("App").session_runner.automatic = false
 		check(RaceRecord.equivalent(source, model.snapshot()), "Sandbox creation cannot mutate original state")
 		replay._leave_sandbox_saved()
 		await settle()
@@ -80,6 +80,17 @@ func run() -> void:
 	app.activate_session(original_runner, view.recording)
 	view.refresh()
 	await capture("architecture-isolation", "Actual native practice release; visibility/replay isolation; no fabricated racing result")
+	check(app.save_weekend().is_empty(), "Live checkpoint is saved before replacement")
+	check(app.load_weekend().is_empty(), "A valid replacement checkpoint loads")
+	check(app.session_runner == null and original_runner.phase_changed.get_connections().is_empty(), "Replacing a checkpoint stops the discarded model before the next screen mounts")
+	app.activate_session(RaceSessionRunner.new(app.weekend), app.recording)
+	var retained = app.weekend
+	var retained_runner = app.session_runner
+	var original_path = app.checkpoint_path
+	app.checkpoint_path = "user://invalid-load-architecture.json"
+	Storage.write_json(app.checkpoint_path, {"invalid": true})
+	check(not app.load_weekend().is_empty() and app.weekend == retained and app.session_runner == retained_runner, "Rejected checkpoint leaves the active session and scheduler intact")
+	app.checkpoint_path = original_path
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures,
 		"independent_ticks": ticks, "screenshots": captures.size(), "captures": captures}
 	Storage.write_json("res://reports/architecture-ui.json", report)

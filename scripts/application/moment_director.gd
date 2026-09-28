@@ -8,7 +8,10 @@ const WATCH_SPEED = 8
 const HISTORY_LIMIT = 24
 const QUIET_LAPS = 3
 var history_dropped = 0
-var model: PracticeRaceSim
+var _source: WeakRef
+var model: RaceSim:
+	get: return _source.get_ref() if _source != null else null
+	set(value): _source = weakref(value) if value != null else null
 var armed = false
 var prior_speed = 1
 var internal_command = false
@@ -21,7 +24,7 @@ var history: Array[Dictionary] = []
 var last_moment: Dictionary = {}
 var observed_steps = 0
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceSim) -> void:
 	detach()
 	model = value
 	model.fixed_step_completed.connect(_after_step)

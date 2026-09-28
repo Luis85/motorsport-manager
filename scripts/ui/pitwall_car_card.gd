@@ -45,12 +45,12 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 			style.content_margin_left = 4; style.content_margin_right = 4
 			button.add_theme_stylebox_override(state, style)
 
-func refresh(model: StrategyRaceSim, id: int) -> void:
-	var car = model.cars[id]; var policy = model.policy(id); var decision = controls.card
+func refresh(model: RaceViewQuery, id: int) -> void:
+	var car = model.car(id); var policy = model.policy(id); var decision = controls.card
 	var order = model.standings(model.phase in ["qualifying", "qualifying_results"])
 	var rank = order.find(car)
 	if model.phase in ["qualifying", "qualifying_results"]:
-		rival.text = "Best valid lap · " + RaceSim.format_time(car.qual_best)
+		rival.text = "Best valid lap · " + RaceViewQuery.format_time(car.qual_best)
 	elif model.phase in ["practice", "practice_results"]:
 		rival.text = "Measured practice · no classified position"
 	elif rank > 0 and not car.finished and not car.dnf:
@@ -67,7 +67,7 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 		status.text = ["Save fuel", "Standard engine", "Engine attack"][car.engine] + " · You"
 	status.tooltip_text = status.text + ". " + StrategyPlan.ownership_text(policy)
 	facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
-	var fitted = TyreInventory.find(car, car.set_id)
+	var fitted = TyreInventory.find_in(car.tyre_sets, car.set_id)
 	var minimum = 100.0
 	var punctures: Array[String] = []
 	for wheel_id in fitted.get("wheels", {}):
@@ -77,7 +77,7 @@ func refresh(model: StrategyRaceSim, id: int) -> void:
 	facts[0].text = "%s · %.0f%% min" % [car.set_id.get_slice("-", 1), minimum]
 	if not punctures.is_empty(): facts[0].text = "%s · %s puncture" % [car.set_id.get_slice("-", 1), "/".join(punctures)]
 	facts[0].tooltip_text = controls.summary.tooltip_text + "\nInspect Car / Wheels for individual limiting conditions."
-	facts[1].text = "%+.1f laps" % RaceForecaster.fuel_margin(model, car)
+	facts[1].text = "%+.1f laps" % model.race_forecaster_fuel_margin(car)
 	facts[1].tooltip_text = "Estimated finish margin in lap-equivalent units under the current engine policy. Not litres or a guaranteed result."
 	var next = int(policy.next_stop)
 	var stops = policy.plan.get("stops", [])

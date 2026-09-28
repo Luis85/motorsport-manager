@@ -21,7 +21,7 @@ static func change(sim, record: Dictionary, phase: String, reason: String) -> vo
 		RaceJournal.append(sim.strategy_state, sim, "battle_phase", int(record.driver_id),
 			{"battle_id": record.id, "target_id": record.target_id, "phase": phase, "reason": reason})
 
-static func instruction(sim, car: Dictionary, old: Array, nearest: int, fallback: Dictionary, sample: Dictionary, local: Dictionary, blocked: bool) -> Dictionary:
+static func instruction(sim, car: RaceCar, old: Array, nearest: int, fallback: Dictionary, sample: Dictionary, local: Dictionary, blocked: bool) -> Dictionary:
 	var record = sim.battle_state.drivers[int(car.id)]
 	var result = fallback.duplicate()
 	if sim.phase != "race": return result

@@ -3,13 +3,13 @@ extends VBoxContainer
 ## Both drivers' independent real programme drafts, in one engineering workspace.
 signal command_requested(action: String,payload: Dictionary)
 signal close_requested
-var model: PracticeRaceSim
+var model: RaceViewQuery
 var panels: Dictionary = {}
 var badges: Dictionary = {}
 var session_action: Button
 var finish: Button
 var summary: Label
-func configure(value: PracticeRaceSim) -> void: model = value
+func configure(value: RaceViewQuery) -> void: model = value
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var top = UI.hbox(self)
@@ -20,7 +20,7 @@ func _ready() -> void:
 	for id in [3,6]:
 		var surface = PitwallDesign.race_panel(false,10); surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL; surface.size_flags_vertical = Control.SIZE_EXPAND_FILL; row.add_child(surface)
 		var body = UI.vbox(surface,true)
-		body.add_child(UI.label(model.cars[id].name.to_upper(),PitwallDesign.TYPE.heading,UI.INK))
+		body.add_child(UI.label(model.car(id).name.to_upper(),PitwallDesign.TYPE.heading,UI.INK))
 		var badge = RaceStatusBadge.new(); body.add_child(badge); badges[id] = badge
 		var panel = RacePracticeProgrammeCard.new(); panel.configure(model); body.add_child(panel); panels[id] = panel
 		panel.choose_driver(id); panel.driver_buttons[0].get_parent().hide()

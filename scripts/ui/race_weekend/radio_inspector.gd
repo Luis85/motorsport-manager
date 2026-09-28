@@ -2,7 +2,7 @@ class_name RaceRadioInspector
 extends VBoxContainer
 ## Bounded native message cards. History is explicitly a fixed reading snapshot.
 signal filter_changed(index: int)
-var model: RaceSim
+var model: RaceViewQuery
 var source: RichTextLabel
 var rows: Array = []
 var caption: Label
@@ -15,7 +15,7 @@ var frozen: Array = []
 var history_mode = false
 var last_stamp: Array=[]
 var update_count=0
-func configure(value: RaceSim) -> void: model=value
+func configure(value: RaceViewQuery) -> void: model=value
 func _ready() -> void:
 	var nav = UI.hbox(self)
 	live = UI.button("Live",func(): history_mode=false;page=0;present()); nav.add_child(live)

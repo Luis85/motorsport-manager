@@ -1,8 +1,9 @@
 class_name PracticePanel
 extends VBoxContainer
+var presentation_services: RacePresentationServices = RacePresentationServices.new()
 ## Per-driver unapplied run drafts. Commands remain fixed above scrolling evidence.
 signal command_requested(action: String, payload: Dictionary)
-var model: PracticeRaceSim
+var model: RaceViewQuery
 var driver_id = 3
 var drafts: Dictionary = {}
 # Shared by both routes; only real user edits count, not constructed defaults.
@@ -26,10 +27,10 @@ var binding = false
 var confirmation: ConfirmationDialog
 var dashboard_host = false
 
-func configure(value: PracticeRaceSim) -> void:
+func configure(value: RaceViewQuery) -> void:
 	model = value
 	for id in [3, 6]:
-		drafts[id] = {"objective": "tyre_life", "set_id": model.cars[id].set_id, "laps": 2, "baseline": "current"}
+		drafts[id] = {"objective": "tyre_life", "set_id": model.car(id).set_id, "laps": 2, "baseline": "current"}
 		var driver=model.practice_driver(id)
 		if not driver.active.is_empty() and not driver.runs.is_empty():
 			var run_record=driver.runs.back()
@@ -40,7 +41,7 @@ func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var targets = UI.hbox(self)
 	for id in [3, 6]:
-		var button = UI.button(model.cars[id].short + " practice", func(): choose_driver(id))
+		var button = UI.button(model.car(id).short + " practice", func(): choose_driver(id))
 		targets.add_child(button); driver_buttons.append(button)
 	var actions = HFlowContainer.new(); add_child(actions)
 	start = UI.button("Start practice", func(): command_requested.emit("practice_start", {})); actions.add_child(start)
@@ -56,7 +57,7 @@ func _ready() -> void:
 	purpose = UI.option(PracticeEvidence.OBJECTIVES.values(), func(index): update_draft("objective", PracticeEvidence.OBJECTIVES.keys()[index]))
 	UI.field(body, "RUN OBJECTIVE · unapplied", purpose)
 	sets = OptionButton.new(); sets.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sets.item_selected.connect(func(index): update_draft("set_id", model.cars[driver_id].tyre_sets[index].id))
+	sets.item_selected.connect(func(index): update_draft("set_id", model.car(driver_id).tyre_sets[index].id))
 	UI.field(body, "DRIVER-OWNED TYRE SET", sets)
 	lap_count = UI.spin(2, 1, PracticeEvidence.MAX_LAPS, 1, func(value): update_draft("laps", int(value)))
 	UI.field(body, "MEASURED LAPS · plus out/in lap", lap_count)
@@ -79,7 +80,7 @@ func choose_driver(id: int) -> void:
 	baseline.select(PracticeEvidence.BASELINES.keys().find(draft.baseline))
 	lap_count.set_value_no_signal(draft.laps)
 	sets.clear()
-	for item in model.cars[id].tyre_sets:
+	for item in model.car(id).tyre_sets:
 		sets.add_item("%s · %.0f%% tread · %s" % [item.id, item.life, "used" if item.used else "fresh"])
 		sets.set_item_disabled(sets.item_count - 1, not WheelTyres.usable(item))
 		if item.id == draft.set_id: sets.select(sets.item_count - 1)
@@ -104,16 +105,16 @@ func finish_session() -> void:
 	confirmation = ConfirmationDialog.new(); confirmation.title = "End practice for both drivers?"
 	confirmation.dialog_text = "No further runs start. Existing measured laps can finish, then cars return physically. Complete and partial observations stay in the report. Race time controls are unchanged."
 	add_child(confirmation)
-	PitwallDesign.scale_controls(confirmation, float(App.settings.get("pitwall_text_scale", 1.0)))
+	PitwallDesign.scale_controls(confirmation, float(presentation_services.preferences.get("pitwall_text_scale", 1.0)))
 	confirmation.confirmed.connect(func(): confirmation.queue_free(); command_requested.emit("practice_end", {}))
 	confirmation.canceled.connect(func(): confirmation.queue_free(); PitwallDesign.focus_later(finish))
 	confirmation.popup_centered(Vector2i(520, 200))
 
 func refresh() -> void:
 	if summary == null: return
-	var c = model.cars[driver_id]; var d = model.practice_driver(driver_id); var state = model.practice_state
+	var c = model.car(driver_id); var d = model.practice_driver(driver_id); var state = model.practice_state
 	# Retain a displayed release snapshot between modest revisions. Activation submits it unchanged.
-	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != PracticeEvidence.state_key(state, c):
+	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != model.practice_key(state, c):
 		preview = model.run_preview(driver_id, drafts[driver_id]); preview.draft = drafts[driver_id].duplicate(true)
 	for i in range(2): UI.set_active(driver_buttons[i], driver_id == [3, 6][i])
 	start.visible = not dashboard_host and model.phase == "briefing" and state.status == "available"
@@ -131,7 +132,7 @@ func refresh() -> void:
 		sets.set_item_text(i, "%s · %.0f%% tread · %s" % [item.id, item.life, "used" if item.used else "fresh"])
 		sets.set_item_disabled(i, not WheelTyres.usable(item))
 	var draft = drafts[driver_id]
-	var applied_setup = PracticeEvidence.setup_for(c, draft.baseline)
+	var applied_setup = model.practice_setup(c, draft.baseline)
 	summary.text = "%s · %d/3 runs · draft %s / %d laps" % [c.short, d.runs.size(), draft.set_id, draft.laps]
 	setup_summary.text = "Setup on release: wing %d / balance %d / suspension %d / cooling %d / bias %d%%" % [applied_setup.wing, applied_setup.balance, applied_setup.suspension, applied_setup.cooling, applied_setup.bias]
 	if not d.active.is_empty(): summary.text = "%s · %s · %d/%d measured laps · %s" % [c.short, c.qual_state.to_upper(), d.runs.back().samples.size(), d.runs.back().target, d.runs.back().set_id]

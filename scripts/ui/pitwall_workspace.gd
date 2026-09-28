@@ -43,7 +43,7 @@ var full_invoker: Control
 
 func _ready() -> void:
 	super._ready()
-	text_scale = float(App.settings.get("pitwall_text_scale", 1.0))
+	text_scale = float(presentation_services.preferences.get("pitwall_text_scale", 1.0))
 	set_meta("pitwall_text_scale", text_scale)
 	detail_picker.add_item("Session results")
 	var results_page = tab_page("Session results")
@@ -66,7 +66,7 @@ func _ready() -> void:
 	strategy_desk.compact_host = true
 	for id in [3, 6]:
 		var card = PitwallCarCard.new()
-		card.build(decision_controls[id].compare.get_parent().get_parent().get_parent(), decision_controls[id], sim.cars[id], func(): show_driver_details(id))
+		card.build(decision_controls[id].compare.get_parent().get_parent().get_parent(), decision_controls[id], sim.car(id), func(): show_driver_details(id))
 		car_cards[id] = card
 	team_panel.plan_requested.connect(open_strategy)
 	for button in team_panel.topic_buttons: button.pressed.connect(refresh_navigation)
@@ -108,7 +108,7 @@ func _ready() -> void:
 	navigation.move_child(messages_button, find_button.get_index())
 	PitwallDesign.linear_focus([watch_button] + group_buttons.values() + [messages_button, find_button])
 	messages_button.tooltip_text = "Read this view's last 50 command acknowledgements and errors. Race radio remains in Review / Radio."
-	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure(sim is WeatherRaceSim, text_scale, sim is RecoveryRaceSim)
+	navigator = PitwallNavigator.new(); add_child(navigator); navigator.configure((sim is RaceViewQuery and sim.has_mechanic("weather")), text_scale, (sim is RaceViewQuery and sim.has_mechanic("recovery")))
 	navigator.destination_requested.connect(open_destination)
 	navigator.catalog.append([8, 2, "Team / Pit service", "accepted approach entry queue frozen service actual exit cancel stop"])
 	navigator.catalog.append([8, 3, "Team / Accepted plans", "shared windows bounded pace fuel engine override timeline"])
@@ -262,7 +262,7 @@ func refresh() -> void:
 	strategy_desk.rejoin.visible = false
 	for id in car_cards: car_cards[id].refresh(strategy_model, id)
 	if decision_queue: decision_queue.present(strategy_model,forecast_cache)
-	if race_read_panel and race_read_panel.is_visible_in_tree(): race_read_panel.present(RaceReadModel.capture(strategy_model, forecast_cache))
+	if race_read_panel and race_read_panel.is_visible_in_tree(): race_read_panel.present(strategy_model.race_read_model_capture(forecast_cache))
 	if decision_drawer:
 		decision_drawer.commit_bar.visible = right_panel.visible and tabs.current_tab == decision_page_index
 		if decision_drawer.commit_bar.visible: decision_drawer.refresh_state()
@@ -299,7 +299,7 @@ func open_decision(id: int, new_review: bool = false) -> void:
 	if id not in [3,6] or decision_drawer == null: return
 	select_driver(id)
 	forecast_cache[id] = strategy_model.forecast(id)
-	var evidence = RaceDecisionViewModel.capture(strategy_model,id,forecast_cache[id])
+	var evidence = strategy_model.race_decision_view_model_capture(id, forecast_cache[id])
 	evidence.battle = decision_controls[id].battle.text
 	evidence.battle_detail = decision_controls[id].battle.tooltip_text
 	decision_drawer.present(evidence, new_review)
@@ -307,9 +307,9 @@ func open_decision(id: int, new_review: bool = false) -> void:
 	PitwallDesign.focus_later(decision_drawer.refresh_button)
 
 func _decision_command(action: String, payload: Dictionary) -> void:
-	var accepted = strategy_model.command(action,payload)
+	var accepted = commands.execute(action,payload)
 	decision_drawer.command_result(accepted,strategy_model.last_error,action)
-	feedback(("Accepted · " if accepted else "Rejected · ") + sim.cars[int(payload.id)].short + " · " + (action.replace("_"," ") if accepted else strategy_model.last_error))
+	feedback(("Accepted · " if accepted else "Rejected · ") + sim.car(int(payload.id)).short + " · " + (action.replace("_"," ") if accepted else strategy_model.last_error))
 	forecast_cache.clear(); refresh()
 	PitwallDesign.focus_later(decision_drawer.refresh_button)
 
@@ -332,7 +332,7 @@ func show_race_read() -> void:
 	var origin = "SESSION OBSERVATION · not a race result\n\n"
 	if get("recording") is RaceRecord and get("recording").origin == "sandbox":
 		origin = "SANDBOX OBSERVATION · not the original race result\n\n"
-	show_reading("Read the race", origin + RaceReadModel.reading(RaceReadModel.capture(strategy_model, forecast_cache)), invoker)
+	show_reading("Read the race", origin + RaceReadModel.reading(strategy_model.race_read_model_capture(forecast_cache)), invoker)
 
 func show_messages() -> void:
 	var lines = messages.duplicate(); lines.reverse()

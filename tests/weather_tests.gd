@@ -205,7 +205,7 @@ func test_persistence() -> void:
 	if migrated != null:
 		old.command("prepare_race"); migrated.command("prepare_race"); old.command("formation"); migrated.command("formation")
 		for i in range(400): old.step(); migrated.step()
-		check(old.rain == migrated.rain and old.surface == migrated.surface and old.rng_state == migrated.rng_state and old.cars == migrated.cars, "Legacy migration cannot reroll physical weather, inventory or movement")
+		check(old.rain == migrated.rain and old.surface == migrated.surface and old.rng_state == migrated.rng_state and RaceCar.records(old.cars) == RaceCar.records(migrated.cars), "Legacy migration cannot reroll physical weather, inventory or movement")
 		check(WeatherRaceSim.restore_weather(migrated.snapshot()) != null, "Migrated v7 checkpoint is valid")
 	var native = RaceSim.new(geometry, {"scenario":"dry"})
 	check(WeatherRaceSim.restore_weather(native.snapshot()) != null, "Native v4 saves remain loadable through the application weather loader")
@@ -246,6 +246,7 @@ func test_scenarios() -> void:
 	check(WeatherScenarios.build(invalid, library) == null, "Unknown or undisclosed weather modes cannot enter a scenario")
 
 func equivalent(a: Variant, b: Variant) -> bool:
+	if a is RaceCar and b is RaceCar: return equivalent(a.to_record(), b.to_record())
 	# JSON floating-point parsing is compared at the native suite's numerical contract,
 	# not falsely described as cross-platform binary identity. Discrete fields remain exact.
 	if a is Dictionary and b is Dictionary:

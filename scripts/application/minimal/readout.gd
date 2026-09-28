@@ -3,9 +3,9 @@ extends RefCounted
 ## Observational player-car data only. Never synchronizes, mounts or repairs a set.
 const COMPOUNDS = {"S":"Soft", "M":"Medium", "H":"Hard", "I":"Inter", "W":"Wet"}
 
-static func capture(sim: PracticeRaceSim, id: int) -> Dictionary:
+static func capture(sim: RaceSim, id: int) -> Dictionary:
 	if id < 0 or id >= sim.cars.size() or not sim.cars[id].player: return {}
-	var car = sim.cars[id]; var fitted = TyreInventory.find(car, car.get("set_id", ""))
+	var car = sim.cars[id]; var fitted = TyreInventory.find(car, car.set_id)
 	var punctured = false
 	var wheels: Array = []
 	var puncture_count = 0
@@ -38,7 +38,7 @@ static func capture(sim: PracticeRaceSim, id: int) -> Dictionary:
 	var tyre_title = str(COMPOUNDS.get(fitted.get("compound", ""), "Tyres")).to_upper() + " · MIN"
 	var fuel_note = fuel_detail.replace("Lap-equivalent units", "Lap equiv.").replace("Remaining at finish", "At finish").replace("Remaining at retirement", "At retirement")
 	return {"id":id, "name":car.name, "short":car.short, "number":car.number, "state":MinimalRaceTiming.state(sim, car),
-		"tyre":tyre, "tyre_detail":detail, "tyre_life":life, "tyre_issue":issue, "set_id":car.get("set_id", ""),
+		"tyre":tyre, "tyre_detail":detail, "tyre_life":life, "tyre_issue":issue, "set_id":car.set_id,
 		"fuel":"%.1f laps" % fuel, "fuel_detail":fuel_detail, "fuel_issue":fuel_issue,
 		"health":"%.0f%%" % floorf(health), "health_value":health,
 		"car_detail":"Damage %.0f%%" % ceilf(damage) if damage > 0 else "No damage", "car_issue":health < 65 or damage > 0,

@@ -3,7 +3,7 @@ extends RefCounted
 ## Four-wheel wear, fuel consumption and aggregate thermal/condition integration in fixed simulation steps.
 ## Invoke cross-system work through the aggregate so inherited rule-set hooks remain active.
 
-static func wear_car(sim: RaceSim, car: Dictionary, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+static func wear_car(sim: RaceSim, car: RaceCar, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	if local.is_empty():
 		local = sim.surface_at(car)
 	var fraction = distance / sim.track.length

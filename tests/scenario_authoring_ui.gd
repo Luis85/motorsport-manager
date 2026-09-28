@@ -38,7 +38,7 @@ func capture(name:String):
 func build(size:Vector2i,scale:float):
 	root.size=size;root.content_scale_size=size;app.settings.pitwall_text_scale=scale
 	app.weekend=RivalScenarios.build(RivalScenarios.catalog()[0],app.library)
-	game.show_weekend();view=game.content.get_child(0);view.set_process(false); view.session_runner.automatic = false;view.guide.hide()
+	game.show_weekend();view=game.content.get_child(0);view.set_process(false); root.get_node("App").session_runner.automatic = false;view.guide.hide()
 	await settle();view.open_topic(7);view.refresh();await settle()
 func run():
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game);app=root.get_node("App");await settle()
@@ -66,7 +66,7 @@ func run():
 			await click(replay.branch_button)
 			check(replay.sandbox_view!=null and replay.sandbox_record.origin=="sandbox","Native branch action opens a labeled sandbox")
 			if replay.sandbox_view==null:continue
-			replay.sandbox_view.set_process(false); replay.sandbox_view.session_runner.automatic = false
+			replay.sandbox_view.set_process(false); root.get_node("App").session_runner.automatic = false
 			check(inside(replay.return_button) and inside(replay.sandbox_return) and inside(replay.sandbox_view.pause_button),"Sandbox and original return controls remain reachable "+str(size)+" / "+str(scale))
 			check(FileAccess.get_file_as_bytes(app.checkpoint_path)==disk,"Sandbox initial phase autosave does not rewrite original slot")
 			var branch=replay.sandbox_view.sim
@@ -119,7 +119,7 @@ func run():
 		var bad=exported[0].duplicate(true);bad.brief.title="tampered"
 		check(not game.replay_controller.open_data(bad).is_empty() and game.replay_controller.workspace==null,"Invalid scenario import leaves the original view active")
 		check(game.replay_controller.open_data(exported[0]).is_empty(),"Authored scenario imports through replay-only entry")
-		replay=game.replay_controller.workspace;await settle();await click(replay.branch_button);replay.sandbox_view.set_process(false); replay.sandbox_view.session_runner.automatic = false
+		replay=game.replay_controller.workspace;await settle();await click(replay.branch_button);replay.sandbox_view.set_process(false); root.get_node("App").session_runner.automatic = false
 		check(replay.sandbox_record.parent.scenario.goal=="finish_both" and replay.scenario_status.text.contains("pending"),"Authored instructions and observed goal follow the sandbox")
 		await click(replay.scenario_details_button);await settle()
 		var readers=replay.sandbox_view.get_children().filter(func(n):return n is AcceptDialog and n.visible)

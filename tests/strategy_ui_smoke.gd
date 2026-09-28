@@ -25,7 +25,7 @@ func run() -> void:
 	game.show_strategy_scenarios(); await capture("scenario-picker")
 	check(game.screen_name == "strategy_scenarios", "Dry scenarios are reachable through the native application")
 	model = StrategyRaceSim.new(TrackGeometry.new(app.library[7]), {"laps": 24, "scenario": "dry", "intensity": "calm", "seed": 941})
-	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false
+	app.weekend = model; game.show_weekend(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false
 	await capture("briefing")
 	check(view.get_script().resource_path.ends_with("pitwall_workspace.gd") and view.tabs.current_tab == 6, "New weekends open the integrated strategy surface")
 	view.open_strategy(3)
@@ -105,7 +105,7 @@ func run() -> void:
 	check(model.last_error.contains("stale"), "Stale native Box activation explains why it was rejected")
 	model.paused = true
 	check(app.save_weekend().is_empty(), "Integrated version-five weekend saves through App")
-	check(app.load_weekend().is_empty() and app.weekend is StrategyRaceSim, "App restores the strategy-aware simulation, not only the legacy car state")
+	check(app.load_weekend().is_empty() and app.weekend is RaceSim and app.weekend.has_mechanic("strategy"), "App restores the strategy-aware simulation, not only the legacy car state")
 	check(app.weekend.strategy_state.records.any(func(record): return record.driver_id in [3,6]), "JSON-restored team journal remains visible to native driver filters")
 	for car in model.cars: model.retire(car, "UI result fixture")
 	model.paused = false; model.step(); view.tabs.current_tab = 7; view.refresh()

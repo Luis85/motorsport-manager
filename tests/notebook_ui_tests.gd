@@ -62,7 +62,7 @@ func run():
 			root.size = size; root.content_scale_size = size; DisplayServer.window_set_size(size); app.settings.pitwall_text_scale = scale
 			if FileAccess.file_exists(CircuitNotebook.PATH): DirAccess.remove_absolute(ProjectSettings.globalize_path(CircuitNotebook.PATH))
 			sim = PracticeRaceSim.new(TrackGeometry.new(app.library[7]), {"laps":4, "intensity":"calm"}); app.weekend = sim
-			game.show_weekend(); await settle(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; view.guide.hide()
+			game.show_weekend(); await settle(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false; view.guide.hide()
 			for car in sim.cars: car.dnf = true
 			sim.phase = "results"; view.refresh(); await settle()
 			var original = sim.snapshot(); var original_bytes = FileAccess.get_file_as_string(app.checkpoint_path)
@@ -123,7 +123,7 @@ func run():
 		check(current_book() == null, "Escape closes clean notebook")
 	# Running source is not suspended by notebook; manual fixed steps remain allowed.
 	sim = RivalScenarios.build(RivalScenarios.catalog()[0], app.library); app.weekend = sim
-	game.show_weekend(); await settle(); view = game.content.get_child(0); view.set_process(false); view.session_runner.automatic = false; view.guide.hide()
+	game.show_weekend(); await settle(); view = game.content.get_child(0); view.set_process(false); root.get_node("App").session_runner.automatic = false; view.guide.hide()
 	sim.command("formation"); sim.speed = 8; sim.paused = false
 	var before = sim.snapshot(); await open_find()
 	if book:
@@ -134,7 +134,7 @@ func run():
 		await click(book.close_button)
 	# Existing native scenario authoring is now exercised rather than only described.
 	var source = sim.snapshot(); var author = load("res://scripts/ui/scenario_author.gd").new(); game.add_child(author)
-	author.configure(PracticeRaceSim.restore_practice(source), {"event_id":app.recording.event_id})
+	author.configure(ScenarioDraft.new(PracticeRaceSim.restore_practice(source), {"event_id":app.recording.event_id}))
 	await settle()
 	check(inside(author.get_ok_button()) and inside(author.get_cancel_button()), "Authoring fixed actions fit at enlarged compact size")
 	author.fields.title.text = ""; await click(author.get_ok_button())
