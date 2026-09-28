@@ -702,7 +702,11 @@ func sync_ownership(c: RaceCar) -> void:
 	mechanics.invoke("sync_ownership", [c])
 
 func command(action: String, payload: Dictionary = {}) -> bool:
-	return mechanics.invoke("command", [action, payload])
+	# Validate before copying, provider execution or accepted-input recording.
+	# Cyclic collections and engine Objects are not command/replay values.
+	if not RaceStateValue.serializable(payload):
+		return fail("Command payload must contain finite serialized values within the record bounds.")
+	return mechanics.invoke("command", [action, payload.duplicate(true)])
 
 func policy_command(action: String, payload: Dictionary) -> bool:
 	return mechanics.invoke("policy_command", [action, payload])

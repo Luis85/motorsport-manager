@@ -113,8 +113,12 @@ func invoke(hook: String, arguments: Array) -> Variant:
 func before(identity: String, hook: String, arguments: Array) -> Variant:
 	for index in range(_definitions.size()):
 		if _definitions[index].id == identity:
+			if hook not in _definitions[index].hooks:
+				last_error = "%s cannot call an undeclared predecessor hook: %s" % [identity, hook]
+				return null
+			last_error = ""
 			return _invoke_before(index, hook, arguments)
-	assert(false, "Unknown mechanic predecessor: " + identity)
+	last_error = "Unknown mechanic predecessor: " + identity
 	return null
 
 func _invoke_before(limit: int, hook: String, arguments: Array) -> Variant:

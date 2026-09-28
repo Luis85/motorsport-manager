@@ -15,6 +15,8 @@ import re
 import sys
 import tempfile
 
+from check_architecture import mask
+
 ROOT = Path(__file__).resolve().parents[1]
 MECHANICS = Path('scripts/domain/mechanics')
 REGISTRY = Path('scripts/verification_suites.json')
@@ -31,14 +33,84 @@ def profiles(root: Path) -> list[str]:
 
 def hook_contracts(root: Path) -> dict[str, tuple[str, str]]:
     text = (root / 'scripts/domain/race_sim.gd').read_text(encoding='utf-8')
+    code = mask(text)
+    headers = list(re.finditer(r'^func (\w+)\([^\n]*\) -> [^:\n]+:', code, re.M))
     result = {}
-    for match in re.finditer(r'^func (\w+)\(([^\n]*)\) -> ([^:\n]+):\n\t(?:return )?mechanics\.invoke\("([^"]+)"', text, re.M):
-        if match[1] != match[4]:
+    for index, header in enumerate(headers):
+        end = headers[index + 1].start() if index + 1 < len(headers) else len(code)
+        calls = list(re.finditer(r'\bmechanics\s*\.\s*invoke\s*\(', code[header.end():end]))
+        if not calls:
+            continue
+        if len(calls) != 1:
+            raise ValueError(f'{header[1]}: expected one explicit aggregate dispatch')
+        position = header.end() + calls[0].end()
+        literal = re.match(r'\s*([\'"])([^\'"\n]+)\1', text[position:])
+        if not literal or header[1] != literal[2]:
             raise ValueError('Aggregate dispatch identity differs from its method name')
-        result[match[1]] = (match[2], match[3])
+        signature = re.match(r'func \w+\(([^\n]*)\) -> ([^:\n]+):', text[header.start():])
+        result[header[1]] = (signature[1], signature[2])
     if not result:
         raise ValueError('No typed aggregate hook contracts found')
     return result
+
+
+def validate_definitions(providers: list[dict], order: list[str], contracts: dict) -> None:
+    """Early author feedback; runtime reflection and behavior suites remain authoritative."""
+    known = {item['id'] for item in providers}
+    if len(order) != len(set(order)) or set(order) - known:
+        raise ValueError('Production profile order must name unique, declared providers')
+    for item in providers:
+        where = item['source'] + ': '
+        if item['id'].strip() != item['id'] or any(c.isspace() for c in item['id']):
+            raise ValueError(where + 'identity must not contain whitespace')
+        if type(item.get('version')) is not int or item['version'] < 1:
+            raise ValueError(where + 'version must be a positive integer')
+        for field in ['requires', 'hooks']:
+            values = item.get(field)
+            if not isinstance(values, list) or any(not isinstance(x, str) or not x for x in values):
+                raise ValueError(where + field + ' must contain non-empty string names')
+            if len(values) != len(set(values)):
+                raise ValueError(where + 'duplicate ' + field)
+        for dependency in item['requires']:
+            if dependency not in known or dependency == item['id']:
+                raise ValueError(where + 'unknown or self prerequisite: ' + dependency)
+            if item['id'] in order and dependency not in order[:order.index(item['id'])]:
+                raise ValueError(where + 'requires an earlier production provider: ' + dependency)
+        for hook in item['hooks']:
+            if hook not in contracts:
+                raise ValueError(where + 'unsupported hook: ' + hook)
+    visiting, visited = set(), set()
+    by_id = {item['id']: item for item in providers}
+    def visit(identity: str) -> None:
+        if identity in visiting:
+            raise ValueError(by_id[identity]['source'] + ': cyclic mechanic prerequisites')
+        if identity in visited:
+            return
+        visiting.add(identity)
+        for dependency in by_id[identity]['requires']:
+            visit(dependency)
+        visiting.remove(identity)
+        visited.add(identity)
+    for identity in by_id:
+        visit(identity)
+
+
+def validate_predecessors(text: str, item: dict) -> None:
+    """Check literal predecessor assumptions, including calls from owned helpers.
+
+    Dynamic aliases/arguments cannot establish correctness and need real runtime
+    behavior tests. Comments and string examples must not masquerade as calls.
+    """
+    code = mask(text)
+    for call in re.finditer(r'\b\w+\s*\.\s*mechanics\s*\.\s*before\s*\(', code):
+        literals = re.match(r'\s*([\'"])([^\'"\n]+)\1\s*,\s*([\'"])([^\'"\n]+)\3', text[call.end():])
+        if not literals:
+            continue
+        where = f"{item['source']}:{text[:call.start()].count(chr(10)) + 1}: "
+        if literals[2] != item['id']:
+            raise ValueError(where + 'predecessor identity must be ' + item['id'])
+        if literals[4] not in item['hooks']:
+            raise ValueError(where + 'undeclared predecessor hook: ' + literals[4])
 
 
 def catalog(root: Path) -> list[dict]:
@@ -62,6 +134,9 @@ def catalog(root: Path) -> list[dict]:
         item['source'] = path.relative_to(root).as_posix()
         item['profiles'] = order[order.index(item['id']):] if item['id'] in order else []
         result.append(item)
+    validate_definitions(result, order, hook_contracts(root))
+    for item in result:
+        validate_predecessors((root / item['source']).read_text(encoding='utf-8'), item)
     return result
 
 

@@ -12,7 +12,7 @@ func execute(action: String, payload: Dictionary = {}) -> bool:
 	if source == null:
 		last_error = "This weekend is no longer available."
 		return false
-	var accepted = source.command(action, payload.duplicate(true))
+	var accepted = source.command(action, payload)
 	last_error = source.last_error
 	return accepted
 

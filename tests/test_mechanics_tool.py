@@ -143,6 +143,64 @@ class MechanicsToolTests(unittest.TestCase):
                 mechanics.run_validation(['mechanics_tests'], None)
         self.assertIs(sys.argv, original)
 
+    def test_guarded_dispatch_and_documentation_preserve_all_contracts(self):
+        path = self.root / 'scripts/domain/race_sim.gd'
+        original = path.read_text()
+        expected = mechanics.hook_contracts(self.root)
+        comment = '\t# mechanics.invoke("not_a_hook", [])\n'
+        path.write_text(original.replace('\treturn mechanics.invoke("command",',
+                                        comment + '\treturn mechanics.invoke("command",'))
+        self.assertEqual(mechanics.hook_contracts(self.root), expected)
+        self.assertIn('command', expected)
+        path.write_text(original.replace('mechanics.invoke("command",', 'mechanics.invoke("step",'))
+        with self.assertRaisesRegex(ValueError, 'identity differs'):
+            mechanics.hook_contracts(self.root)
+        path.write_text(original.replace('\treturn mechanics.invoke("command",',
+                                        '\tmechanics.invoke("command", [])\n\treturn mechanics.invoke("command",'))
+        with self.assertRaisesRegex(ValueError, 'one explicit'):
+            mechanics.hook_contracts(self.root)
+
+    def test_validation_rejects_definition_contract_errors_before_execution(self):
+        path = self.root / mechanics.MECHANICS / 'extension_probe_mechanic.gd'
+        good = {'id': 'extension_probe', 'version': 1, 'requires': ['practice'], 'hooks': ['step']}
+        for change in [{'version': True}, {'version': 0}, {'requires': ['missing']},
+                       {'requires': ['extension_probe']}, {'requires': ['practice', 'practice']},
+                       {'hooks': ['step', 'step']}, {'hooks': ['unknown']}, {'hooks': [4]},
+                       {'id': 'bad identity'}, {'requires': 'practice'}]:
+            with self.subTest(change=change):
+                path.write_text('func definition() -> Dictionary:\n\treturn ' + json.dumps(good | change) + '\n')
+                with self.assertRaises(ValueError):
+                    mechanics.validation_suites(self.root)
+
+    def test_literal_predecessor_errors_include_source_and_do_not_parse_comments(self):
+        files = self.plan(hooks=['step', 'neutral'])
+        mechanics.publish(self.root, files)
+        path = self.root / mechanics.MECHANICS / 'extension_probe_mechanic.gd'
+        original = path.read_text()
+        path.write_text(original + '\n# sim.mechanics.before("wrong", "unknown", [])\n')
+        self.assertIn('extension_extension_probe', mechanics.validation_suites(self.root))
+        path.write_text(original.replace('before("extension_probe", "step"', 'before("practice", "step"'))
+        with self.assertRaisesRegex(ValueError, r'extension_probe_mechanic.gd:\d+: predecessor identity'):
+            mechanics.validation_suites(self.root)
+        path.write_text(original.replace('before("extension_probe", "step"', 'before("extension_probe", "command"'))
+        with self.assertRaisesRegex(ValueError, 'undeclared predecessor hook: command'):
+            mechanics.validation_suites(self.root)
+
+    def test_production_order_and_extension_cycles_fail_early(self):
+        path = self.root / mechanics.MECHANICS / 'race_mechanic_profiles.gd'
+        original = path.read_text()
+        path.write_text(original.replace('["strategy", "weather", "recovery", "practice"]',
+                                         '["weather", "strategy", "recovery", "practice"]'))
+        with self.assertRaisesRegex(ValueError, 'earlier production provider'):
+            mechanics.validation_suites(self.root)
+        path.write_text(original)
+        for identity, dependency in [('first', 'second'), ('second', 'first')]:
+            item = {'id': identity, 'version': 1, 'requires': [dependency], 'hooks': []}
+            (self.root / mechanics.MECHANICS / (identity + '_mechanic.gd')).write_text(
+                'func definition() -> Dictionary:\n\treturn ' + json.dumps(item) + '\n')
+        with self.assertRaisesRegex(ValueError, 'cyclic mechanic prerequisites'):
+            mechanics.validation_suites(self.root)
+
     def test_generated_execution_policy_rejects_zero_exit_engine_errors(self):
         reports = self.root / 'reports'
         reports.mkdir()
