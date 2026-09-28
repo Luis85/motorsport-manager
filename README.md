@@ -106,3 +106,12 @@ and [contributor rules](AGENTS.md). Run locally with:
 python3 -m pip install -r requirements-quality.txt
 python3 scripts/quality.py
 ```
+
+## Standalone desktop builds
+
+The **Standalone application** workflow publishes separate Linux and Windows
+debug/release artifacts. Extract the matching archive, keep the executable and
+`Motorsport Manager.pck` together, and launch the executable without the source
+editor. A successful export is not runtime acceptance: inspect the corresponding
+`standalone-evidence-<platform>-<mode>` artifact for executed native smoke and
+restart/recovery results. [Build contract and verification scope](docs/standalone-validation.md).

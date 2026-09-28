@@ -42,3 +42,87 @@ jobs:
           path: toolchain/
           if-no-files-found: error
           retention-days: 7
+  build:
+    needs: toolchain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [linux, windows]
+        mode: [debug, release]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pinned-desktop-export-templates
+          path: ${{ runner.temp }}/templates
+      - name: Install pinned export editor
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/engine"
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  $RUNNER_TEMP/engine/Godot_v4.7.2-stable_linux.x86_64" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/engine/Godot_v4.7.2-stable_linux.x86_64"
+      - name: Export from a clean import
+        env:
+          LP_NUM_THREADS: '2'
+        run: >-
+          python scripts/build_standalone.py
+          --godot "${{ runner.temp }}/engine/Godot_v4.7.2-stable_linux.x86_64"
+          --templates "${{ runner.temp }}/templates"
+          --target ${{ matrix.target }} --mode ${{ matrix.mode }}
+          --revision "${{ github.sha }}"
+          --output "builds/${{ matrix.target }}-${{ matrix.mode }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-${{ matrix.target }}-${{ matrix.mode }}
+          path: builds/${{ matrix.target }}-${{ matrix.mode }}/
+          if-no-files-found: error
+          retention-days: 14
+  native-smoke:
+    needs: build
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux
+            mode: debug
+            runner: ubuntu-24.04
+          - target: linux
+            mode: release
+            runner: ubuntu-24.04
+          - target: windows
+            mode: debug
+            runner: windows-2022
+          - target: windows
+            mode: release
+            runner: windows-2022
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: standalone-${{ matrix.target }}-${{ matrix.mode }}
+          path: ${{ runner.temp }}/package
+      - name: Execute relocated build and restart/recovery journeys on target OS
+        run: >-
+          python scripts/smoke_standalone.py
+          --package "${{ runner.temp }}/package"
+          --output "reports/standalone-${{ matrix.target }}-${{ matrix.mode }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-evidence-${{ matrix.target }}-${{ matrix.mode }}
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14
