@@ -219,6 +219,28 @@ with the same separation. Command/query/director handles must not keep a discard
 simulation alive; expired handles return unavailable data or reject commands.
 The editor canvas similarly receives `TrackPreviewHandle`, never its scheduler.
 
+## Verification registration contract
+
+`scripts/verification_suites.json` remains the only execution registry. An entry
+requires a unique lowercase snake_case `id`, an existing relative `.gd` script
+under `tests/`, a Boolean `native`, a supported `layout` (`minimal`, `engineering`,
+`director`), a positive integer `timeout` in seconds, and a non-empty list of
+unique JSON report filenames. Report paths and script traversal/escape are
+rejected. Errors name the source file, suite and invalid field before Godot starts.
+
+Run `python3 scripts/verify.py --list-suites` to validate registration without an
+engine. `python3 tests/test_verification_plan.py` exercises malformed plans, CLI
+nonexecution, source-bound evidence and sharding. `mechanics.py validate` continues
+to invoke the same verifier for real import and registered behavior checks;
+its `--dry-run` only plans authoring validation and does not execute Godot.
+
+The retained-suite fixture under `tests/fixtures/required_verification_suites.json`
+is a regression floor, not another place to dispatch tests. Keep established IDs
+when integrating branches. Add newly established suites to that floor; generated
+development-only suites are already executed by their registry entries without
+having to become permanent shipping fixtures. Never remove an established suite
+or lower its coverage to finish a refactor.
+
 ## Completion boundary
 
 The planned behavior-inheritance, typed-entrant, detached-presentation,

@@ -1,6 +1,6 @@
 # System contract completion
 
-## Baseline and scope
+## Original baseline and scope
 
 Continue after merged PR #20 from main `cfe351b0054f72c3e504c5e9c8c00f3ada82d5b7`,
 tree `5c561c906f6620bc5fade1ff9782159b47f2c64f`. Its source-identical PR run
@@ -87,7 +87,12 @@ These changes are hardening of existing boundaries, not additional mechanics.
 - [x] Injectable atomic persistence with deterministic failure/recovery coverage.
 - [x] Close construction/scalar preflight gaps with focused regressions.
 - [x] Updated ownership/developer guides and source-bound measurement decision.
-- [ ] Exact final-head hosted aggregate, reports, native screenshots and diff review.
+- [x] Integrate current main without dropping either branch's regression suites.
+- [x] Validate executable suite contracts and protect all 67 established suites.
+
+Acceptance is a separate source-bound gate: the final-head aggregate, reports,
+native screenshots and diff review are recorded in the PR verification comment.
+An implementation checkbox is not a substitute for that evidence.
 
 ## Measurement decision
 
@@ -136,12 +141,69 @@ sporting baseline. Final-head runtime evidence must rerun the entire registry.
 
 Reference: https://docs.godotengine.org/en/stable/classes/class_json.html
 
+## Current-main integration and final verification hardening
+
+Main advanced to `23df49772f32ec7df71f3f79157e61b7f9e21a23` (PR #21), source tree
+`2a26de10d0f51c7c32acb5ad9cfb0e9278e4ab4f`. Read its new `AGENTS.md`, quality policy
+and changed UI sources before integrating. The original-baseline statement above
+about absent instructions is historical; current instructions apply to this work.
+
+PR #22 head `d89a56aaecad65603faaad8242beb2ca2a439bc1` passed its full hosted
+#393 / `36422294689` gate before main moved. That result does not verify the
+integration. Ordinary two-parent commit `999fc439526d99172eeb7141bda62862e2e1251a`
+incorporates exact current main and the existing contract implementation, without
+rebase/force push or merging the PR. Its tree is
+`b902a8f474e73ec91bc77465ede14fc49e788564`.
+
+The sole overlapping file was the execution registry. Both new contract suites
+and main's `game_flow_coherence_ui_tests` remain registered: 67 suites in total.
+Main's UI, theme, settings, scene, quality workflow and gameplay changes are kept;
+the refactor does not replace them with the older presentation. Local merged
+preflight discovered 60 Python tests, passing 58 with two explicit engine skips;
+the architecture guard scanned 182 scripts without violations.
+
+**Verified gap:** the retained-suite fixture covered only 57 of these 67 suites.
+`verification_run.suites` also assumed valid records and did not check Boolean
+native flags, timeout types, supported layouts or bounded script/report paths.
+For example a string `"false"` could choose native execution, and malformed fields
+could fail late with an unhelpful exception. These are tooling defects, not new
+simulation responsibilities or justification for changing sporting data.
+
+**Implemented:** the existing runner owns structural registration validation and
+checks the monotonic 67-suite floor before listing, import, execution or aggregate
+acceptance. Per-entry field validation and filesystem/path validation are focused
+helpers in that same module. No new execution registry, timeout, shard count or
+workflow is introduced. Errors identify the source file, suite/entry and field.
+Tests cover malformed JSON/envelopes, duplicate IDs, missing fields, uncoerced
+execution types, traversal/symlink escapes, invalid report names, a missing
+required suite and an invalid plan that must never call execution. Valid
+registrations, order, explicit development extensions and all prior aggregate
+adversaries remain intact.
+
+Local preflight for this last code increment: 69 Python tests, 67 passed and two
+explicit Godot-dependent skips; 18 registry/aggregate test methods pass, and the
+architecture guard passes all 182 production scripts. Code-line-only quality
+analysis remains explicitly partial because pinned lint tools are unavailable
+locally. The four pre-existing advisory source-budget warnings are `RaceSim`
+(760 code lines), `weekend.gd` (619), `track_canvas.gd` (593) and
+`pitwall_workspace.gd` (419). They are not hidden or made blocking; this increment
+stays within the source/test budgets. Full advisory tool output belongs to its
+hosted artifact and must not be confused with the mandatory Godot gate.
+
+Final runtime evidence is obtained from the existing hosted workflow because the
+pinned 4.7.2 editor is absent locally and the container cannot download it. Use
+only the exact published source digest, all six shard reports and actual native
+captures. Preserve the 24 checkpoint hashes and inspect complete physical
+weekend/editor results, not only synthetic screenshots. The source-pinned PR
+comment is the acceptance ledger, so recording results does not require changing
+the very source identity that those results verified.
+
 ## Explicit deferrals
 
 No broad movement/phase rewrite merely to shorten `RaceSim`; no runtime discovery,
 hot swapping, ECS, threaded simulation, speculative read cache or typed conversion
-of valid nested records. Campaign work and any parallel game-flow branch are out
-of scope. Windows/export, physical controllers, screen readers, cross-platform
+of valid nested records. Campaign work and redesigning the integrated game-flow
+feature are out of scope. Windows/export, physical controllers, screen readers, cross-platform
 determinism and human usability require separate environments/acceptance and must
 not be claimed from Linux CI.
 

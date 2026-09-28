@@ -6,25 +6,90 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sys
 import tempfile
 import time
 import uuid
+from typing import Any
 
 import verify
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def suites() -> list[dict]:
-    records = json.loads((ROOT / "scripts/verification_suites.json").read_text())
-    ids = [item["id"] for item in records]
-    if len(ids) != len(set(ids)):
-        raise ValueError("Duplicate verification suite identity")
-    for item in records:
-        if not (ROOT / item["script"]).is_file() or not item["reports"]:
-            raise ValueError(f"Incomplete suite contract: {item['id']}")
+SUITE_ID = re.compile(r"[a-z][a-z0-9_]*")
+REPORT_FILE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*\.json")
+
+
+def _read_registry_json(path: Path) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        raise ValueError(f"{path}: invalid JSON: {error}") from error
+
+
+def _validate_suite_paths(item: dict, where: str, root: Path) -> None:
+    script = item.get("script")
+    if (not isinstance(script, str) or not script.startswith("tests/")
+            or not script.endswith(".gd") or "\\" in script
+            or any(part in ("", ".", "..") for part in script.split("/"))):
+        raise ValueError(f"{where}: script must be a relative .gd path under tests/")
+    try:
+        path = (root / script).resolve()
+        valid = path.is_relative_to(root) and path.is_file()
+    except (OSError, RuntimeError, ValueError) as error:
+        raise ValueError(f"{where}: script cannot be resolved: {error}") from error
+    if not valid:
+        raise ValueError(f"{where}: script is missing or escapes the source checkout: {script}")
+    reports = item.get("reports")
+    if (not isinstance(reports, list) or not reports
+            or any(not isinstance(report, str) or not REPORT_FILE.fullmatch(report) for report in reports)):
+        raise ValueError(f"{where}: reports must be a non-empty array of JSON filenames")
+    if len(set(reports)) != len(reports):
+        raise ValueError(f"{where}: reports must not contain duplicate filenames")
+
+
+def _validate_suite(item: object, where: str, root: Path) -> str:
+    if not isinstance(item, dict):
+        raise ValueError(f"{where}: expected a suite object")
+    name = item.get("id")
+    if not isinstance(name, str) or not SUITE_ID.fullmatch(name):
+        raise ValueError(f"{where}: id must be a non-empty lowercase snake_case name")
+    where += f" ({name})"
+    if type(item.get("native")) is not bool:
+        raise ValueError(f"{where}: native must be a Boolean")
+    if type(item.get("timeout")) is not int or item["timeout"] <= 0:
+        raise ValueError(f"{where}: timeout must be a positive integer in seconds")
+    if item.get("layout") not in ("minimal", "engineering", "director"):
+        raise ValueError(f"{where}: layout must be minimal, engineering, or director")
+    _validate_suite_paths(item, where, root)
+    return name
+
+
+def suites(root: Path | None = None) -> list[dict]:
+    """Validate the execution registry and its monotonic regression floor before running."""
+    root = (ROOT if root is None else root).resolve()
+    registry = root / "scripts/verification_suites.json"
+    floor = root / "tests/fixtures/required_verification_suites.json"
+    records = _read_registry_json(registry)
+    if not isinstance(records, list) or not records:
+        raise ValueError(f"{registry}: expected a non-empty array of suite contracts")
+    ids = set()
+    for index, item in enumerate(records):
+        name = _validate_suite(item, f"{registry}: entry {index + 1}", root)
+        if name in ids:
+            raise ValueError(f"{registry}: Duplicate suite identity {name}")
+        ids.add(name)
+    required = _read_registry_json(floor)
+    if (not isinstance(required, list) or not required
+            or any(not isinstance(name, str) or not SUITE_ID.fullmatch(name) for name in required)
+            or len(set(required)) != len(required)):
+        raise ValueError(f"{floor}: expected a non-empty array of unique suite identities")
+    missing = set(required) - ids
+    if missing:
+        raise ValueError(f"{registry}: Missing required suites: " + ", ".join(sorted(missing)))
     return records
 
 
