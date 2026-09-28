@@ -114,6 +114,28 @@ suite separately reports preview/full compilation; its geometry algorithm is
 unchanged. Candidate measurements and their exact-source/engine/CPU association
 belong in the final PR evidence comment, without mixing revisions into a pass.
 
+## Runtime verification correction
+
+Exact-head PR run #389 (`36421197345`, source `ac7852b70e44060ab5cad5aef6a35c30074a191a2b6466823eaa35da9fe9a342`)
+passed fresh import, all 175 script loads and all 49 Python preflight tests in the
+first retrieved shard, but six new storage round-trip assertions failed. Their
+byte-retention, rollback, editor-revision and decoding checks passed. The failing
+checks compared native integer-valued dictionaries directly with parsed JSON
+records. Godot documents JSON numeric parsing through `String.to_float`; strict
+collection equality does not identify those two native representations.
+
+The storage fixture now states the JSON-native expected types explicitly; the
+editor round trip compares the full decoded JSON value plus exact full-precision
+serialized bytes. A separate independently authored JSON fixture verifies number,
+Boolean and null types, every expected key and array order, and rejects missing,
+extra, mistyped and changed data. It also records the native/decoded numeric types
+and strict-equality result as executable diagnosis. The production storage format,
+writer, reader, domain validators and all recovery assertions are unchanged.
+This corrects a test's cross-representation expectation, not the saved data or a
+sporting baseline. Final-head runtime evidence must rerun the entire registry.
+
+Reference: https://docs.godotengine.org/en/stable/classes/class_json.html
+
 ## Explicit deferrals
 
 No broad movement/phase rewrite merely to shorten `RaceSim`; no runtime discovery,

@@ -64,6 +64,7 @@ func check(value: bool, label: String) -> void:
 		push_error(label)
 
 func run() -> void:
+	json_value_contract()
 	memory_round_trip()
 	failure_stages()
 	read_failures()
@@ -74,10 +75,36 @@ func run() -> void:
 	print("STORAGE_CONTRACT_TESTS ", JSON.stringify(report))
 	quit(0 if failures.is_empty() else 1)
 
+func json_value_contract() -> void:
+	# Independently authored JSON establishes the decode contract, not a writer echo.
+	# https://docs.godotengine.org/en/stable/classes/class_json.html
+	var files = MemoryFiles.new()
+	var path = ProjectSettings.globalize_path("user://storage-contract-json.json")
+	files.entries[path] = '{"number":1,"fraction":1.125,"enabled":true,"unset":null,"array":[1,2],"name":"track"}'
+	var expected = {"number": 1.0, "fraction": 1.125, "enabled": true, "unset": null, "array": [1.0, 2.0], "name": "track"}
+	var decoded = Storage.read_json(path, files)
+	check(decoded.ok and decoded.data == expected, "Independent JSON decodes into the exact expected keys, values, types and array order")
+	check(typeof(decoded.data.number) == TYPE_FLOAT and typeof(decoded.data.array[0]) == TYPE_FLOAT, "Decoded JSON numbers have their documented floating-point representation")
+	check(typeof(decoded.data.enabled) == TYPE_BOOL and decoded.data.unset == null, "JSON Boolean and null values are not coerced into numbers")
+	var integer_record = {"number": 1}
+	var parsed_record = JSON.parse_string('{"number":1}')
+	check(integer_record != parsed_record and parsed_record == {"number": 1.0}, "Strict dictionary equality distinguishes native integer records from decoded JSON records")
+	for key in expected:
+		var missing = expected.duplicate(true); missing.erase(key)
+		check(decoded.data != missing, "Round-trip comparison cannot conceal a missing JSON field: " + key)
+	var extra = expected.duplicate(true); extra.extra = "unexpected"
+	check(decoded.data != extra, "Round-trip comparison cannot conceal an extra field")
+	for values in [[2.0, 1.0], [1.0, 3.0], ["1", 2.0]]:
+		var changed = expected.duplicate(true); changed.array = values
+		check(decoded.data != changed, "JSON comparison detects reordered, changed or mistyped nested values")
+	print("STORAGE_JSON_TYPES ", JSON.stringify({"native_number_type": typeof(integer_record.number), "decoded_number_type": typeof(parsed_record.number), "strict_equal": integer_record == parsed_record}))
+
 func memory_round_trip() -> void:
 	var files = MemoryFiles.new()
 	var path = ProjectSettings.globalize_path("user://storage-contract-memory.json")
 	var first = {"version": 1, "nested": {"values": [1, "unchanged"]}}
+	# JSON numbers decode as floats; strict collection equality preserves that type.
+	var expected = {"version": 1.0, "nested": {"values": [1.0, "unchanged"]}}
 	check(Storage.write_json(path, first, files).is_empty(), "First publication succeeds without a previous file")
 	check(files.exists(path) and not files.exists(path + ".bak"), "A first save does not invent a backup")
 	var saved: String = files.entries[path]
@@ -85,10 +112,10 @@ func memory_round_trip() -> void:
 	check(files.entries[path + ".bak"] == saved, "Successful replacement retains the exact previous bytes")
 	check(not files.exists(path + ".tmp"), "Successful replacement consumes the staged file")
 	var previous = Storage.read_json(path + ".bak", files)
-	check(previous.ok and previous.data == first, "The previous saved JSON remains readable")
+	check(previous.ok and previous.data == expected, "The previous saved JSON remains readable")
 	previous.data.nested.values[0] = 99
-	check(Storage.read_json(path + ".bak", files).data == first, "Read results cannot mutate persisted values")
-	check(Storage.read_json(path, files).data == {"version": 2}, "Current and backup state remain distinct")
+	check(Storage.read_json(path + ".bak", files).data == expected, "Read results cannot mutate persisted values")
+	check(Storage.read_json(path, files).data == {"version": 2.0}, "Current and backup state remain distinct")
 
 func failure_stages() -> void:
 	var path = ProjectSettings.globalize_path("user://storage-contract-memory.json")
@@ -171,7 +198,9 @@ func editor_failure_retention() -> void:
 	check(session.cancel() == draft and session.history() == history, "Cancel after a failed save retains the redo branch")
 	port.files.faults.clear()
 	check(session.save(port, draft, observed_revision).ok, "Retry uses retained work after the filesystem recovers")
-	check(Storage.read_json(port.path, port.files).data == draft, "Successful retry writes exactly the retained authoring document")
+	var expected_json = JSON.parse_string(JSON.stringify(draft, "", false, true))
+	check(Storage.read_json(port.path, port.files).data == expected_json, "Successful retry writes exactly the retained authoring document")
+	check(port.files.entries[port.path] == JSON.stringify(draft, "\t", false, true), "Successful retry retains every submitted field in the full-precision serialized bytes")
 	check(session.saved_signature() == JSON.stringify(draft), "Only successful retry updates the saved signature")
 	var writes = port.writes
 	check(not session.save(port, draft, observed_revision).ok and port.writes == writes, "Successful publication invalidates the prior observed save revision")
@@ -181,8 +210,8 @@ func native_round_trip() -> void:
 	var path = ProjectSettings.globalize_path("user://storage-contract-native/value.json")
 	check(Storage.write_json(path, {"revision": 1}).is_empty(), "Native filesystem creates the first saved file")
 	check(Storage.write_json(path, {"revision": 2}).is_empty(), "Native filesystem replaces the saved file")
-	check(Storage.read_json(path).data == {"revision": 2}, "Native current-file JSON round trip")
-	check(Storage.read_json(path + ".bak").data == {"revision": 1}, "Native backup preserves prior JSON")
+	check(Storage.read_json(path).data == {"revision": 2.0}, "Native current-file JSON round trip")
+	check(Storage.read_json(path + ".bak").data == {"revision": 1.0}, "Native backup preserves prior JSON")
 	check(not Storage.read_json(path + ".missing").ok, "Native missing-file error is returned without replacing any state")
 	var oversized_path = path + ".oversized"
 	var file = FileAccess.open(oversized_path, FileAccess.WRITE)
