@@ -69,6 +69,7 @@ func _ready() -> void:
 
 func _action(parent: Node, text: String, action: String, primary: bool = false) -> Button:
 	var button = UI.button(text, func(): action_requested.emit(action), primary)
+	button.custom_minimum_size.y = GameTheme.ACTION_HEIGHT
 	parent.add_child(button)
 	return button
 

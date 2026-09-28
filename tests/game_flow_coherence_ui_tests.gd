@@ -12,6 +12,12 @@ func theme_contracts() -> void:
 			var contrast = (luminance(foreground) + 0.05) / (luminance(background) + 0.05)
 			check(contrast >= 4.5, "Ordinary semantic text token contrast is at least 4.5:1")
 	check((luminance(GameTheme.ACCENT) + 0.05) / (luminance(GameTheme.ON_ACCENT) + 0.05) >= 4.5, "Primary action has contrasting ink")
+	for compound in ["S", "M", "H", "I", "W"]:
+		var fill = RaceStrategyChart.compound_color("car-" + compound + "1")
+		var ink = GameTheme.ink_on(fill)
+		var light = maxf(luminance(fill), luminance(ink))
+		var dark = minf(luminance(fill), luminance(ink))
+		check((light + 0.05) / (dark + 0.05) >= 4.5, "Tyre chart labels contrast with their real semantic fill")
 	for scale in PitwallDesign.TEXT_SCALES:
 		var theme = MinimalRaceStyle.theme(scale)
 		check(theme.get_color("font_color", "Button") == UI.INK, "Shared default and race button text")
@@ -30,6 +36,13 @@ func find_confirmation(parent: Node) -> ConfirmationDialog:
 	for child in parent.get_children():
 		if child is ConfirmationDialog and child.visible: return child
 	return null
+
+func internal_inputs(parent: Node) -> Array:
+	var result: Array = []
+	for child in parent.get_children(true):
+		if child is LineEdit: result.append(child)
+		result.append_array(internal_inputs(child))
+	return result
 
 func shell_profiles() -> void:
 	for scale in PitwallDesign.TEXT_SCALES:
@@ -98,6 +111,18 @@ func settings_journey() -> void:
 	await click(settings.save_button)
 	check(not settings.has_changes() and app.settings.pitwall_text_scale == 1.3, "Actual Apply persists the chosen setting")
 	check(Storage.read_json("user://settings.json").data.pitwall_text_scale == 1.3, "Settings are read back from real storage")
+	settings.back_button.grab_focus()
+	var picker = UI.file_dialog(settings, false, ["*.json ; Circuit file"], func(_path): pass)
+	await settle(6)
+	var fields = internal_inputs(picker)
+	check(not fields.is_empty(), "Native file picker exposes its internal text inputs")
+	for field in fields:
+		check(field.has_meta("pitwall_base_font_size"), "Internal native input participates in scaling")
+		var expected = roundi(float(field.get_meta("pitwall_base_font_size", 14)) * 1.3)
+		check(field.get_theme_font_size("font_size") == expected, "Internal native input scales exactly once")
+	check(picker.size.x <= root.size.x and picker.size.y <= root.size.y, "Scaled native picker fits the window")
+	await click_dialog(picker.get_cancel_button())
+	check(settings.back_button.has_focus(), "File picker cancellation restores its invoker")
 	await key(KEY_ESCAPE)
 	check(game.screen_name == "main_menu", "Escape returns from clean settings")
 	game.show_library(); await settle(); await key(KEY_ESCAPE)

@@ -89,8 +89,9 @@ func _draw() -> void:
 		for j in range(segments.size()):
 			var stop = segments[j];var finish=clampf(float(stop.at),left,total_laps)
 			var a=12+width*left/total_laps;var b=12+width*finish/total_laps
-			draw_rect(Rect2(a,y+6*scale_factor,maxf(1,b-a-1),18*scale_factor),compound_color(set_id))
-			if b-a>30: draw_string(font,Vector2(a+4,y+20*scale_factor),set_id.get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,caption_size,UI.RACE_INK)
+			var segment_color = compound_color(set_id)
+			draw_rect(Rect2(a,y+6*scale_factor,maxf(1,b-a-1),18*scale_factor),segment_color)
+			if b-a>30: draw_string(font,Vector2(a+4,y+20*scale_factor),set_id.get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,caption_size,GameTheme.ink_on(segment_color))
 			if j<segments.size()-1:
 				draw_line(Vector2(b,y+3*scale_factor),Vector2(b,y+27*scale_factor),UI.INK,2)
 				if i==option_index and j==stop_index: draw_circle(Vector2(b,y+5*scale_factor),4,UI.INK)

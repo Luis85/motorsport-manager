@@ -136,7 +136,7 @@ class StintPlot extends Control:
 			var item = stint
 			var color = {"S": Color("c9927d"), "M": Color("c4ad70"), "H": Color("9cae94"), "I": Color("7e9b7b"), "W": Color("83a6b5")}.get(item.get("compound", "M"), UI.GOOD)
 			draw_rect(Rect2(left, 33, maxf(2, right - left - 1), 20), color)
-			if right - left > 24: draw_string(ThemeDB.fallback_font, Vector2(left + 3, 48), item.get("label", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.INK)
+			if right - left > 24: draw_string(ThemeDB.fallback_font, Vector2(left + 3, 48), item.get("label", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, GameTheme.ink_on(color))
 		if car.scheduled_lap > 0:
 			var x = 10 + clampf(car.pit_gate / car.length / car.laps, 0, 1) * width
 			draw_line(Vector2(x, 28), Vector2(x, 59), UI.ACCENT, 2, true)
@@ -150,6 +150,9 @@ func configure(value: RaceViewHandle) -> void:
 	sim = value.query
 
 func _ready() -> void:
+	# Retained Engineering tools keep their established compact type and spacing.
+	# Player-facing menus and the Minimal pitwall use regular density.
+	theme = GameTheme.build(1.0, true)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL; size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 5)
 	session_header = RaceSessionHeader.new(); session_header.configure(sim); add_child(session_header)
@@ -396,7 +399,7 @@ func refresh() -> void:
 	pause_button.text = "Resume" if sim.paused else "Pause"; pause_button.disabled = sim.phase not in RaceViewQuery.ACTIVE
 	speed_control.select([1, 2, 4, 8, 16].find(sim.speed))
 	flag_label.text = ("PAUSED · " if sim.paused else "") + ("CHEQUERED" if sim.chequered or q and sim.qual_closed else sim.flag)
-	flag_label.add_theme_color_override("font_color", UI.GOLD if sim.paused or sim.flag != "GREEN" else Color("c9e8cb"))
+	flag_label.add_theme_color_override("font_color", UI.GOLD if sim.paused or sim.flag != "GREEN" else GameTheme.ACCENT)
 	var running_lap = clampi(int(floor(maxf(0, leader.distance) / sim.track.length)) + 1, 1, sim.laps)
 	clock_label.text = "QUAL %s" % RaceViewQuery.format_time(maxf(0.001, sim.qual_duration - sim.clock)) if q and sim.phase != "qualifying_results" else ("LAP %d / %d · %s" % [running_lap, sim.laps, RaceViewQuery.format_time(sim.race_time)] if sim.phase in ["race", "results"] else sim.phase.replace("_", " ").to_upper())
 	weather_label.text = "%s · Water %d%%" % [sim.weather_name, int(sim.average(sim.water) * 100)]
@@ -411,7 +414,7 @@ func refresh() -> void:
 		var teammate = sim.cars[[3, 6][i]]
 		teammate_buttons[i].text = "%s · P%d" % [teammate.short, order.find(teammate) + 1]
 		UI.set_active(teammate_buttons[i], teammate.id == c.id)
-	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", Color(c.color).darkened(0.35))
+	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", UI.INK)
 	var selected_position = order.find(c) + 1
 	driver_position_label.text = "P%d" % selected_position
 	var nearest = order[selected_position - 2] if selected_position > 1 else null

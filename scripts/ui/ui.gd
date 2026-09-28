@@ -68,7 +68,7 @@ static func paragraph(text: String, color: Color = MUTED) -> Label:
 	return l
 
 static func button(text: String, callback: Callable, primary: bool = false) -> Button:
-	var b = Button.new(); b.text = text; b.custom_minimum_size.y = GameTheme.ACTION_HEIGHT; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND; b.pressed.connect(callback)
+	var b = Button.new(); b.text = text; b.custom_minimum_size.y = GameTheme.COMPACT_ACTION_HEIGHT; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND; b.pressed.connect(callback)
 	if primary: GameTheme.primary(b)
 	return b
 

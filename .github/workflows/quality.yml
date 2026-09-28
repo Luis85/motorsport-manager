@@ -23,6 +23,13 @@ jobs:
         id: tools
         continue-on-error: true
         run: python -m pip install -r requirements-quality.txt
+      - name: Test advisory checker
+        id: self_tests
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p reports/quality
+          python -m unittest discover -s tests -p 'test_quality.py' > reports/quality/self-tests.log 2>&1
       - name: Run advisory checks
         id: report
         if: always()
@@ -33,7 +40,13 @@ jobs:
         env:
           TOOLS_OUTCOME: ${{ steps.tools.outcome }}
           REPORT_OUTCOME: ${{ steps.report.outcome }}
+          SELF_TEST_OUTCOME: ${{ steps.self_tests.outcome }}
         run: |
+          if [ "$SELF_TEST_OUTCOME" != success ]; then
+            echo '::warning title=Quality checker tests failed::Checker regression tests did not pass. Inspect self-tests.log; a successful advisory job is not proof of a working checker.'
+            echo '## Quality checker regression tests failed' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Inspect self-tests.log in the quality-report artifact.' >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [ "$TOOLS_OUTCOME" != success ]; then
             echo '::warning title=Quality tools unavailable::Tool installation did not complete. Analysis may be incomplete; this is not a clean result.'
           fi

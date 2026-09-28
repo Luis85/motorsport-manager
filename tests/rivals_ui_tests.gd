@@ -85,8 +85,9 @@ func run():
 	if not dialogs.is_empty():
 		var rich=dialogs[0].get_children().filter(func(n):return n is RichTextLabel)[0]
 		var fg=rich.get_theme_color("default_color").srgb_to_linear();var bg=dialogs[0].get_theme_stylebox("panel").bg_color.srgb_to_linear()
-		var dark=fg.r*0.2126+fg.g*0.7152+fg.b*0.0722;var light=bg.r*0.2126+bg.g*0.7152+bg.b*0.0722
-		check((light+0.05)/(dark+0.05)>=4.5,"Actual rich-text foreground contrasts against the rendered dialog paper")
+		var foreground=fg.r*0.2126+fg.g*0.7152+fg.b*0.0722;var background=bg.r*0.2126+bg.g*0.7152+bg.b*0.0722
+		# The same threshold applies to dark and light surfaces.
+		check((maxf(foreground,background)+0.05)/(minf(foreground,background)+0.05)>=4.5,"Actual rich-text foreground contrasts against the rendered dialog paper")
 	await capture("public-field");await key(KEY_ESCAPE);await settle()
 	view.select_driver(0);view.open_topic(3);await settle()
 	check(view.public_inspector.masks[3].is_visible_in_tree() and not view.wheel_dashboard.is_visible_in_tree() and not view.tyre_buttons[0].is_visible_in_tree(),"Rival inspection does not reveal exact private wheel condition or stock")

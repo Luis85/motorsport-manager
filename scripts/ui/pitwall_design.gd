@@ -53,15 +53,18 @@ static func scale_controls(root: Node, factor: float) -> void:
 			if not root.has_meta("pitwall_base_height"): root.set_meta("pitwall_base_height", maxf(32, root.custom_minimum_size.y))
 			root.custom_minimum_size.y = ceilf(float(root.get_meta("pitwall_base_height")) * factor)
 	if root is OptionButton or root is MenuButton:
-		if not popup_themes.has(factor):
-			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(GameTheme.BODY_SIZE * factor))
-			popup_themes[factor] = popup_theme
-		root.get_popup().theme = popup_themes[factor]
+		var base_size = float(root.get_meta("pitwall_base_font_size", GameTheme.BODY_SIZE))
+		var popup_key = str(base_size) + ":" + str(factor)
+		if not popup_themes.has(popup_key):
+			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(base_size * factor))
+			popup_themes[popup_key] = popup_theme
+		root.get_popup().theme = popup_themes[popup_key]
 	if root is SpinBox: scale_controls(root.get_line_edit(), factor)
 	if root is AcceptDialog:
 		scale_controls(root.get_ok_button(), factor); scale_controls(root.get_label(), factor)
 		if root is ConfirmationDialog: scale_controls(root.get_cancel_button(), factor)
-	for child in root.get_children(): scale_controls(child, factor)
+	# Internal native fields (including FileDialog) need the same scale.
+	for child in root.get_children(true): scale_controls(child, factor)
 
 static func linear_focus(controls: Array) -> void:
 	if controls.is_empty(): return

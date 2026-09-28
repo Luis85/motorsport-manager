@@ -16,6 +16,8 @@ const DISABLED = Color("8fa3aa")
 const ON_ACCENT = BG
 const BODY_SIZE = 14
 const ACTION_HEIGHT = 36
+const COMPACT_BODY_SIZE = 13
+const COMPACT_ACTION_HEIGHT = 32
 
 static func surface(color: Color = PANEL, border: Color = LINE, radius: int = 6, padding: int = 12) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -34,12 +36,13 @@ static func action(color: Color, border: Color = LINE, scale: float = 1.0) -> St
 	style.content_margin_bottom = 5 * scale
 	return style
 
-static func build(scale: float = 1.0) -> Theme:
+static func build(scale: float = 1.0, compact: bool = false) -> Theme:
 	var result = Theme.new()
-	result.default_font_size = roundi(BODY_SIZE * scale)
+	var body_size = COMPACT_BODY_SIZE if compact else BODY_SIZE
+	result.default_font_size = roundi(body_size * scale)
 	var types = ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "TextEdit", "SpinBox", "Tree", "ItemList", "TabBar", "RichTextLabel", "PopupMenu", "TooltipLabel"]
 	for type in types:
-		result.set_font_size("font_size", type, roundi(BODY_SIZE * scale))
+		result.set_font_size("font_size", type, roundi(body_size * scale))
 		for key in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color", "font_selected_color"]:
 			result.set_color(key, type, TEXT)
 		result.set_color("font_disabled_color", type, DISABLED)
@@ -64,7 +67,7 @@ static func build(scale: float = 1.0) -> Theme:
 		result.set_stylebox("read_only", type, action(PANEL, LINE, scale))
 	result.set_color("default_color", "RichTextLabel", TEXT)
 	result.set_color("selection_color", "RichTextLabel", SELECTED)
-	result.set_stylebox("panel", "PanelContainer", surface(PANEL, LINE, 6, roundi(12 * scale)))
+	result.set_stylebox("panel", "PanelContainer", surface(PANEL, LINE, 6, roundi((8 if compact else 12) * scale)))
 	result.set_stylebox("panel", "AcceptDialog", surface(PANEL))
 	result.set_stylebox("panel", "PopupMenu", surface(PANEL, LINE, 6, 8))
 	result.set_stylebox("hover", "PopupMenu", action(HOVER, ACCENT, scale))
@@ -99,9 +102,9 @@ static func build(scale: float = 1.0) -> Theme:
 		for state in ["grabber", "grabber_highlight", "grabber_pressed"]:
 			result.set_stylebox(state, type, surface(LINE if state == "grabber" else ACCENT, Color.TRANSPARENT, 4, 6))
 	for type in ["HBoxContainer", "VBoxContainer", "HFlowContainer", "VFlowContainer"]:
-		result.set_constant("separation", type, roundi(8 * scale))
+		result.set_constant("separation", type, roundi((6 if compact else 8) * scale))
 	for key in ["h_separation", "v_separation"]:
-		result.set_constant(key, "GridContainer", roundi(8 * scale))
+		result.set_constant(key, "GridContainer", roundi((6 if compact else 8) * scale))
 	var rule = StyleBoxLine.new()
 	rule.color = LINE
 	rule.thickness = 1
@@ -115,3 +118,10 @@ static func primary(button: Button, scale: float = 1.0) -> void:
 	button.add_theme_color_override("font_focus_color", ON_ACCENT)
 	button.add_theme_color_override("font_disabled_color", DISABLED)
 	button.add_theme_stylebox_override("disabled", action(PANEL, LINE, scale))
+
+static func ink_on(color: Color) -> Color:
+	# Opaque semantic/chart fills are not necessarily theme surfaces. Choose
+	# contrasting ink without changing the actual tyre/team identity color.
+	var linear = color.srgb_to_linear()
+	var light = linear.r * 0.2126 + linear.g * 0.7152 + linear.b * 0.0722
+	return Color.BLACK if light >= 0.175 else Color.WHITE

@@ -45,6 +45,7 @@ func _ready() -> void:
 	actions.add_child(notice)
 	save_button = UI.button("Apply and save settings", func(): save_requested.emit(draft.duplicate(true)), true)
 	actions.add_child(save_button)
+	for button in [back_button, save_button]: button.custom_minimum_size.y = GameTheme.ACTION_HEIGHT
 	resized.connect(_layout)
 	_layout()
 	_scale()

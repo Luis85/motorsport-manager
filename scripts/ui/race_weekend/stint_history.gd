@@ -77,8 +77,9 @@ func _draw() -> void:
 			var left=clampf(stint.from,0,model.laps);var right=clampf(car.distance/model.track.length if stint.to<0 else stint.to,left,model.laps)
 			var a=12+width*left/model.laps;var b=12+width*right/model.laps
 			var rect=Rect2(a,y+7*scale_factor,maxf(2,b-a-1),20*scale_factor)
-			draw_rect(rect,RaceStrategyChart.compound_color(stint.set_id))
+			var segment_color = RaceStrategyChart.compound_color(stint.set_id)
+			draw_rect(rect,segment_color)
 			if index==selected_driver and i==selected_stint:draw_rect(rect.grow(2),UI.INK,false,1)
-			if b-a>34:draw_string(font,Vector2(a+4,y+22*scale_factor),str(stint.set_id).get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,text_size,UI.INK)
+			if b-a>34:draw_string(font,Vector2(a+4,y+22*scale_factor),str(stint.set_id).get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,text_size,GameTheme.ink_on(segment_color))
 	draw_string(font,Vector2(12,190*scale_factor),selected_text(),HORIZONTAL_ALIGNMENT_LEFT,width,text_size,UI.INK)
 	draw_string(font,Vector2(12,212*scale_factor),"↑/↓ driver · ←/→ stint · no future extrapolation",HORIZONTAL_ALIGNMENT_LEFT,width,caption,UI.MUTED)
