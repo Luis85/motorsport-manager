@@ -29,9 +29,10 @@ records remain versioned data; provider metadata alone does not migrate a save.
 ```sh
 python3 scripts/mechanics.py list
 python3 scripts/mechanics.py hooks
+python3 scripts/mechanics.py validate --dry-run
 python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters --dry-run
 python3 scripts/mechanics.py scaffold resource_policy --hook forecast_parameters
-python3 scripts/verify.py --godot /path/to/godot --suite extension_resource_policy
+python3 scripts/mechanics.py validate --godot /path/to/godot --mechanic resource_policy
 ```
 
 The scaffold preserves predecessor behavior, creates a registered regression and
@@ -42,8 +43,13 @@ model. A deliberate gameplay change requires explicit expectations and versionin
 
 The generated test imports the real code in Godot, installs the provider, enters
 an active session and compares fixed-step state with the unchanged profile.
-Tool tests also cover malformed identities, overwrites, symlink escape and write
-rollback. Focused evidence cannot satisfy the full CI aggregate gate.
+`validate` uses the single existing suite registry and isolated verifier; it always
+runs the production construction contracts plus selected registered inactive
+extension tests. Missing registrations and malformed/duplicate catalog definitions
+fail explicitly. A dry run selects tests but does not execute the engine.
+Tool tests also cover malformed identities, overwrites, symlink escape, write
+rollback and false-success engine logs. The development fixture exercises scalar,
+no-argument and typed-car hooks; it is not proof of an arbitrary new rule. Focused evidence cannot satisfy the full CI aggregate gate.
 
 See [Developing systems and mechanics](developing-mechanics.md) for extension,
 save and testing recipes; [Architecture](architecture-refactor.md) for ownership.

@@ -155,7 +155,8 @@ func run() -> void:
 	var current = guarded.read_document()
 	check(guarded.commit(current, guarded.revision), "No-op edit on the current revision remains valid")
 	running_track_isolation(original)
-	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
+	var compilation = compilation_measurements(original)
+	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures, "compilation": compilation}
 	Storage.write_json("res://reports/editor-session-tests.json", report)
 	print("EDITOR_SESSION_TESTS ", JSON.stringify(report))
 	quit(0 if failures.is_empty() else 1)
@@ -201,3 +202,23 @@ func running_track_isolation(document: Dictionary) -> void:
 	geometry.document.nodes[0].x += 200
 	geometry.points.clear()
 	check(expected == RaceStateValue.fingerprint(running.snapshot()) and road == RaceStateValue.fingerprint(running.track.runtime_export()), "Source edits, undo, redo, replacement and compiled aliases cannot change an already running weekend")
+
+func compilation_measurements(document: Dictionary) -> Dictionary:
+	var editor = TrackEditorSession.new(document)
+	var before = RaceStateValue.fingerprint(editor.read_document())
+	var workloads: Array = []
+	for fast in [true, false]:
+		var total_samples: Array[int] = []
+		var geometry_samples: Array[int] = []
+		for index in range(6):
+			var started = Time.get_ticks_usec()
+			var geometry = editor.compile_draft(document, "Formula", fast)
+			var elapsed = Time.get_ticks_usec() - started
+			check(geometry != null and geometry.preview_only == fast, "Compilation measurement performs the requested real preview/full bake")
+			if index > 0:
+				total_samples.append(elapsed)
+				geometry_samples.append(editor.compile_usec)
+		total_samples.sort(); geometry_samples.sort()
+		workloads.append({"preview": fast, "samples": 5, "application_median_us": total_samples[2], "application_max_us": total_samples[4], "geometry_median_us": geometry_samples[2], "geometry_max_us": geometry_samples[4]})
+	check(before == RaceStateValue.fingerprint(editor.read_document()), "Repeated measured compilation does not edit the canonical authoring document")
+	return {"engine": Engine.get_version_info().string, "cpu": OS.get_processor_name(), "track": document.name, "nodes": document.nodes.size(), "vehicle": "Formula", "workloads": workloads, "scope": "One warmup plus five serial samples per mode on the populated built-in circuit. Application time includes draft validation and copying; geometry time is the existing compile_usec observation. No simulation or rendering time, threshold, baseline speedup or player-device claim. Source identity belongs to the parent verification report."}
