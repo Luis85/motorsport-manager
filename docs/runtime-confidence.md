@@ -60,11 +60,46 @@ shipping game, and this fixture does not replace any pinned sporting checkpoint.
 The workflow retains the exact engine archive, origin, SHA-256, license and source
 revision so the developer's reproduction toolchain is identifiable.
 
+## Interaction sequences and focused responsibilities
+
+The registered `operation_sequence_tests` uses its own deterministic generator,
+never the race RNG. Its saved recipes can be replayed with `--sequence=<path>`.
+The three default seeds compare different observation and restoration schedules,
+exercise deliberately rejected input and editor save failures/retries, and retain
+failure recipes without changing the pinned regression fixtures. A separate
+explicit sequence reaches practice results, qualifying, qualifying results and
+formation; short random recipes alone are not evidence of a completed weekend.
+
+Base commands now delegate session progression, driver-mode changes and pit
+operations to named aggregate-owned methods. `command_responsibility_tests` is
+registered alongside the unchanged complete suite, not merely present on disk.
+Command legality, recording, validation order and mechanic predecessor behavior
+remain under the aggregate; there is no second command dispatcher.
+
+`TrackCanvasInput` interprets pointer events; `TrackCanvasGesture` owns the
+current disposable draft identity, frozen selection and revision captured at
+pointer-down. Exact position/handle/reference transformations are pure `TrackEdit`
+operations. Only `TrackEditorSession` commits canonical history. The native
+`editor_gesture_tests` checks:
+
+- One transaction for many motion events; no transaction for a selection click.
+- Escape or target change cancels without deleting redo. Undo/redo and replacement
+  invalidate outstanding pointer input, including replacement before first motion.
+- Window focus loss retains the established commit-once behavior; a later release
+  cannot commit again. A stale session revision rejects even without a UI refresh.
+- Closing and reopening the editor releases its session despite retained weak
+  preview handles; node/resource/orphan counts stabilize after warm-up.
+
+Rendering and temporary input remain in presentation. Do not use simulated tick
+as a document revision or resurrect stale gestures after restoring history. The
+remaining large rendering/orchestration modules are not arbitrarily partitioned
+just to satisfy the advisory line count.
+
 ## Completion boundary
 
-The iteration remains open until sequence/lifecycle coverage, the two selected
-responsibility reductions, paired shipping runtime measurements and standalone
-export/recovery journeys have evidence. The full registered regression gate,
-24 unchanged sporting checkpoints and native layout/physical journeys remain
-mandatory. A focused reproduction pass does not substitute for that acceptance.
-Windows build success must be distinguished from execution on Windows.
+The iteration remains open until the two selected responsibility reductions,
+repeated weekend lifecycle coverage, paired shipping runtime measurements and
+standalone export/recovery journeys have evidence. The full registered regression
+gate, 24 unchanged sporting checkpoints and native layout/physical journeys remain
+mandatory. Focused reproduction/sequence/gesture passes do not substitute for that
+acceptance. Windows build success must be distinguished from execution on Windows.
