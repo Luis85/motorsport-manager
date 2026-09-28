@@ -65,5 +65,6 @@
   {"id":"car_record_tests","script":"tests/car_record_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["car-record-tests.json"]},
   {"id":"game_flow_coherence_ui_tests","script":"tests/game_flow_coherence_ui_tests.gd","native":true,"layout":"minimal","timeout":600,"reports":["game-flow-coherence-ui.json"]},
   {"id":"command_contract_tests","script":"tests/command_contract_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["command-contract-tests.json"]},
-  {"id":"storage_contract_tests","script":"tests/storage_contract_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["storage-contract-tests.json"]}
+  {"id":"storage_contract_tests","script":"tests/storage_contract_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["storage-contract-tests.json"]},
+  {"id":"reproduction_tests","script":"tests/reproduction_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["reproduction-tests.json"]}
 ]
