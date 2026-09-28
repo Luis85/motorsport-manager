@@ -201,7 +201,7 @@ func _draw() -> void:
 		while y < hi.y:
 			draw_line(screen(Vector2(lo.x, y)), screen(Vector2(hi.x, y)), Color("6d875421"), 1); y += grid
 	if geometry == null or geometry.points.is_empty():
-		draw_string(font, Vector2(36, 70), "Click to lay out your circuit. Add at least four points.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UI.MUTED)
+		draw_string(font, Vector2(36, 70), "Click to lay out your circuit. Add at least four points.", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, CircuitPalette.MUTED)
 	else:
 		var n = geometry.points.size()
 		if show_line and layer_visible("road") and not geometry.preview_only:
@@ -219,28 +219,28 @@ func _draw() -> void:
 		for marker in document.get("cornerMarkers", []):
 			if not marker.has("x") or not marker.has("y"): continue
 			var p = screen(Vector2(marker.x, marker.y))
-			draw_circle(p, 2, UI.MUTED)
-			if zoom > 0.3: draw_string(font, p + Vector2(6, -4), str(marker.get("number", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, UI.MUTED)
+			draw_circle(p, 2, CircuitPalette.MUTED)
+			if zoom > 0.3: draw_string(font, p + Vector2(6, -4), str(marker.get("number", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CircuitPalette.MUTED)
 		if editing and not geometry.preview_only:
 			for finding in diagnostics:
 				if finding.severity != "error": continue
 				var p = screen(geometry.sample(finding.fraction * geometry.length, true).p)
-				draw_circle(p, 10, UI.DANGER); draw_string(font, p + Vector2(-2, 5), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, UI.BG)
+				draw_circle(p, 10, CircuitPalette.DANGER); draw_string(font, p + Vector2(-2, 5), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 15, CircuitPalette.BG)
 		if show_profile: _draw_profile()
 	if editing: _draw_editor(); draw_selection(); draw_sketch()
 	if measure_start != Vector2.INF:
 		var end = measure_end if measure_end != Vector2.INF else world(last_mouse)
-		draw_line(screen(measure_start), screen(end), UI.ACCENT, 2, true)
-		draw_circle(screen(measure_start), 5, UI.ACCENT); draw_circle(screen(end), 5, UI.ACCENT)
-		draw_string(font, (screen(measure_start) + screen(end)) * 0.5 + Vector2(5, -9), "%.1f m" % measure_start.distance_to(end), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UI.ACCENT)
-	draw_rect(Rect2(Vector2.ZERO, size), UI.LINE, false, 1)
+		draw_line(screen(measure_start), screen(end), CircuitPalette.ACCENT, 2, true)
+		draw_circle(screen(measure_start), 5, CircuitPalette.ACCENT); draw_circle(screen(end), 5, CircuitPalette.ACCENT)
+		draw_string(font, (screen(measure_start) + screen(end)) * 0.5 + Vector2(5, -9), "%.1f m" % measure_start.distance_to(end), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, CircuitPalette.ACCENT)
+	draw_rect(Rect2(Vector2.ZERO, size), CircuitPalette.LINE, false, 1)
 	var scale_metres = pow(10, floor(log(100 / zoom) / log(10)))
 	if scale_metres * zoom < 50: scale_metres *= 5
 	var at = Vector2(24, size.y - 27)
-	draw_line(at, at + Vector2(scale_metres * zoom, 0), UI.MUTED, 2)
-	draw_string(font, at + Vector2(0, -9), "%d m" % int(scale_metres), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
-	draw_string(font, Vector2(size.x - 36, 36), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.MUTED)
-	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), UI.MUTED, 1.5)
+	draw_line(at, at + Vector2(scale_metres * zoom, 0), CircuitPalette.MUTED, 2)
+	draw_string(font, at + Vector2(0, -9), "%d m" % int(scale_metres), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
+	draw_string(font, Vector2(size.x - 36, 36), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.MUTED)
+	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), CircuitPalette.MUTED, 1.5)
 
 func build_surface_geometry() -> void:
 	if _surface_geometry == geometry: return
@@ -271,10 +271,10 @@ func draw_surface(target: Control) -> void:
 			for segment in _surface_segments[i][lane]:
 				target.draw_line(screen(segment[0]), screen(segment[1]), color, maxf(0.75, segment[2] * zoom / RaceVisualPort.SURFACE_LANES), true)
 	target.draw_style_box(_surface_legend_style, Rect2(Vector2(16, 16), Vector2(260, 46)))
-	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
 	if inspected_fraction >= 0:
 		var sample = geometry.sample(inspected_fraction * geometry.length)
-		target.draw_circle(screen(sample.p), 13, UI.ACCENT, false, 2, true)
+		target.draw_circle(screen(sample.p), 13, CircuitPalette.ACCENT, false, 2, true)
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
@@ -284,24 +284,24 @@ func _draw_editor() -> void:
 		var p = screen(TrackDocument.point(node))
 		if not Rect2(Vector2(-15, -15), size + Vector2(30, 30)).has_point(p): continue
 		var chosen = i == selected or selection_kind == "road" and i in selection_ids
-		draw_circle(p, 6 if chosen else 3.5, UI.ACCENT if chosen else Color("9eb8bd"))
-		draw_circle(p, 2, UI.BG)
+		draw_circle(p, 6 if chosen else 3.5, CircuitPalette.ACCENT if chosen else Color("9eb8bd"))
+		draw_circle(p, 2, CircuitPalette.BG)
 		if chosen and (selection_ids.size() <= 1 or i == selected):
-			draw_string(font, p + Vector2(8, -12), "POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
+			draw_string(font, p + Vector2(8, -12), "POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.ACCENT)
 			for key in ["in", "out"]:
 				var h = screen(TrackDocument.point(node) + TrackDocument.handle(node, key))
-				draw_line(p, h, UI.ACCENT, 1, true)
-				draw_rect(Rect2(h - Vector2(4, 4), Vector2(8, 8)), UI.ACCENT, false, 1.5)
+				draw_line(p, h, CircuitPalette.ACCENT, 1, true)
+				draw_rect(Rect2(h - Vector2(4, 4), Vector2(8, 8)), CircuitPalette.ACCENT, false, 1.5)
 	if selected_object >= 0 and selected_object < document.objects.size():
 		var obj = document.objects[selected_object]
 		var p = screen(Vector2(obj.x, obj.y))
-		draw_rect(Rect2(p - Vector2(15, 15), Vector2(30, 30)), UI.ACCENT, false, 1.5)
-		draw_string(font, p + Vector2(18, -12), str(obj.type).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
+		draw_rect(Rect2(p - Vector2(15, 15), Vector2(30, 30)), CircuitPalette.ACCENT, false, 1.5)
+		draw_string(font, p + Vector2(18, -12), str(obj.type).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.ACCENT)
 	if mode == "pit" and layer_visible("pits") and not document.get("pits", []).is_empty():
 		for i in range(document.pits[0].nodes.size()):
 			var p = screen(TrackDocument.point(document.pits[0].nodes[i]))
-			draw_circle(p, 5 if i == selected_pit else 3, UI.ACCENT)
-			if i == selected_pit: draw_string(font, p + Vector2(8, -8), "PIT POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
+			draw_circle(p, 5 if i == selected_pit else 3, CircuitPalette.ACCENT)
+			if i == selected_pit: draw_string(font, p + Vector2(8, -8), "PIT POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.ACCENT)
 
 func _draw_profile() -> void:
 	var r = Rect2(Vector2(20, size.y - 126), Vector2(size.x - 40, 75))
@@ -311,8 +311,8 @@ func _draw_profile() -> void:
 	var line = PackedVector2Array()
 	for i in range(geometry.heights.size()):
 		line.append(Vector2(r.position.x + 8 + (r.size.x - 16) * i / geometry.heights.size(), r.end.y - 8 - (r.size.y - 30) * (geometry.heights[i] - low) / maxf(1, high - low)))
-	draw_polyline(line, UI.GOOD, 2, true)
-	draw_string(ThemeDB.fallback_font, r.position + Vector2(10, 18), "ELEVATION   %.1f–%.1f m" % [low, high], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
+	draw_polyline(line, CircuitPalette.GOOD, 2, true)
+	draw_string(ThemeDB.fallback_font, r.position + Vector2(10, 18), "ELEVATION   %.1f–%.1f m" % [low, high], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
 
 func draw_cars(target: Control) -> void:
 	if geometry == null: return
@@ -321,9 +321,9 @@ func draw_cars(target: Control) -> void:
 		var p = screen(sample.p + sample.n * sample.line)
 		target.draw_circle(p, 8, Color("fcf3d8"), true, -1, true)
 		target.draw_circle(p, 5, Color("466d52"), true, -1, true)
-		target.draw_style_box(UI.box(UI.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55)))
-		target.draw_string(ThemeDB.fallback_font, Vector2(28, 39), "REFERENCE LAP  ·  %d km/h" % int(sample.speed * 3.6), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
-		target.draw_string(ThemeDB.fallback_font, Vector2(28, 58), "Heuristic preview · not a race simulation", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, UI.MUTED)
+		target.draw_style_box(UI.box(CircuitPalette.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55)))
+		target.draw_string(ThemeDB.fallback_font, Vector2(28, 39), "REFERENCE LAP  ·  %d km/h" % int(sample.speed * 3.6), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
+		target.draw_string(ThemeDB.fallback_font, Vector2(28, 58), "Heuristic preview · not a race simulation", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
 		return
 	if visual_frame.is_empty(): return
 	var font = ThemeDB.fallback_font
@@ -337,7 +337,7 @@ func draw_cars(target: Control) -> void:
 		var color = Color(c.color)
 		if c.dnf: color = Color("697278")
 		if c.id == visual_frame.selected_id:
-			target.draw_arc(p, radius + 5, 0, TAU, 24, UI.ACCENT, 1.8, true)
+			target.draw_arc(p, radius + 5, 0, TAU, 24, CircuitPalette.ACCENT, 1.8, true)
 			target.draw_circle(p, radius + 9, Color(0.9, 0.75, 0.45, 0.09))
 		target.draw_circle(p + Vector2(1, 2), radius + 2, Color("30493633"), true, -1, true)
 		target.draw_circle(p, radius + 2.2, Color("4e6454"), true, -1, true)
@@ -577,15 +577,15 @@ func draw_selection() -> void:
 		for index in selection_ids:
 			if index < 0 or index >= items.size(): continue
 			var p = screen(TrackDocument.point(items[index]))
-			draw_rect(Rect2(p - Vector2(8, 8), Vector2(16, 16)), UI.ACCENT, false, 1.5)
+			draw_rect(Rect2(p - Vector2(8, 8), Vector2(16, 16)), CircuitPalette.ACCENT, false, 1.5)
 			if first: rect = Rect2(p, Vector2.ZERO); first = false
 			else: rect = rect.expand(p)
 		if not first:
-			draw_rect(rect.grow(16), UI.ACCENT, false, 1.5)
-			draw_string(ThemeDB.fallback_font, rect.position + Vector2(0, -23), "%d selected · Shift-click to add/remove" % selection_ids.size(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.INK)
+			draw_rect(rect.grow(16), CircuitPalette.ACCENT, false, 1.5)
+			draw_string(ThemeDB.fallback_font, rect.position + Vector2(0, -23), "%d selected · Shift-click to add/remove" % selection_ids.size(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
 	if marquee_start != Vector2.INF:
 		var rectangle = Rect2(screen(marquee_start), screen(marquee_end) - screen(marquee_start)).abs()
-		draw_rect(rectangle, Color("ac965329")); draw_rect(rectangle, UI.ACCENT, false, 1.5)
+		draw_rect(rectangle, Color("ac965329")); draw_rect(rectangle, CircuitPalette.ACCENT, false, 1.5)
 
 func sketch_input(event: InputEventMouseButton) -> void:
 	if not layer_editable("road") or sketch.closed: return
@@ -615,15 +615,15 @@ func draw_sketch() -> void:
 	var trace = PackedVector2Array()
 	for point in points: trace.append(screen(point))
 	if trace.size() >= 2:
-		draw_polyline(trace, UI.ACCENT, 2.5, true)
-		if sketch.closed: draw_dashed_line(trace[-1], trace[0], UI.ACCENT, 2, 7)
+		draw_polyline(trace, CircuitPalette.ACCENT, 2.5, true)
+		if sketch.closed: draw_dashed_line(trace[-1], trace[0], CircuitPalette.ACCENT, 2, 7)
 		for label in [["START", trace[0]], ["END", trace[-1]]]:
-			draw_circle(label[1], 7, UI.PANEL)
-			draw_string(ThemeDB.fallback_font, label[1] + Vector2(9, -9), label[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UI.ACCENT)
+			draw_circle(label[1], 7, CircuitPalette.PANEL)
+			draw_string(ThemeDB.fallback_font, label[1] + Vector2(9, -9), label[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.ACCENT)
 	var current = PackedVector2Array()
 	for point in stroke: current.append(screen(point))
-	if current.size() >= 2: draw_polyline(current, UI.GOOD, 2, true)
-	if pen_anchor != Vector2.INF: draw_line(screen(pen_anchor), last_mouse, UI.GOOD, 1.5, true)
+	if current.size() >= 2: draw_polyline(current, CircuitPalette.GOOD, 2, true)
+	if pen_anchor != Vector2.INF: draw_line(screen(pen_anchor), last_mouse, CircuitPalette.GOOD, 1.5, true)
 	if sketch_preview:
 		var preview = PackedVector2Array()
 		for point in sketch_preview.points: preview.append(screen(point))

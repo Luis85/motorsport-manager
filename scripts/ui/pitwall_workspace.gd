@@ -253,7 +253,6 @@ func refresh() -> void:
 	steps[0].get_parent().hide() # Phase and next approval are already in the status strip.
 	session_label.text = "%s · %s" % [sim.track.preset, sim.phase.replace("_", " ").capitalize()]
 	session_label.tooltip_text = "Seed %d · %s" % [sim.seed_value, sim.track.document.name]
-	flag_label.add_theme_color_override("font_color", UI.ON_PRIMARY)
 	compact_resources.visible = false
 	teammate_buttons[0].get_parent().visible = full_workspace != analysis_workspace
 	for button in teammate_buttons: button.visible = tabs.current_tab != recovery_page_index

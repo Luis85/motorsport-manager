@@ -2,8 +2,8 @@ class_name PitwallDesign
 extends RefCounted
 ## Native presentation tokens. Never read by the race domain.
 const TEXT_SCALES = [1.0, 1.15, 1.3]
-const MUTED = Color("536650")
-const FOCUS = Color("775220")
+const MUTED = GameTheme.MUTED
+const FOCUS = GameTheme.ACCENT
 # Race-weekend layout contract (1440x900 reference, scales down through host adaptation).
 const TIMING_WIDTH = 236
 const DRIVER_RAIL_WIDTH = 400
@@ -16,12 +16,12 @@ const SPACE_5 = 24
 const RADIUS_SM = 3
 const RADIUS_MD = 5
 const RADIUS_LG = 8
-const RACE_DARK = Color("102d28")
-const RACE_DARK_2 = Color("173e35")
-const RACE_DARK_3 = Color("234b3f")
-const GOLD = Color("d4ad58")
-const RACE_CREAM = Color("f6f0df")
-const RACE_INK = Color("17332b")
+const RACE_DARK = GameTheme.BG
+const RACE_DARK_2 = GameTheme.PANEL
+const RACE_DARK_3 = GameTheme.RAISED
+const GOLD = GameTheme.ACCENT
+const RACE_CREAM = GameTheme.PANEL
+const RACE_INK = GameTheme.BG
 const TYPE = {"display": 22, "heading": 18, "driver": 14, "position": 22, "metric": 15, "body": 13, "caption": 11}
 static var race_styles: Dictionary = {}
 static var nav_styles: Dictionary = {}
@@ -53,15 +53,18 @@ static func scale_controls(root: Node, factor: float) -> void:
 			if not root.has_meta("pitwall_base_height"): root.set_meta("pitwall_base_height", maxf(32, root.custom_minimum_size.y))
 			root.custom_minimum_size.y = ceilf(float(root.get_meta("pitwall_base_height")) * factor)
 	if root is OptionButton or root is MenuButton:
-		if not popup_themes.has(factor):
-			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(13 * factor))
-			popup_themes[factor] = popup_theme
-		root.get_popup().theme = popup_themes[factor]
+		var base_size = float(root.get_meta("pitwall_base_font_size", GameTheme.BODY_SIZE))
+		var popup_key = str(base_size) + ":" + str(factor)
+		if not popup_themes.has(popup_key):
+			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(base_size * factor))
+			popup_themes[popup_key] = popup_theme
+		root.get_popup().theme = popup_themes[popup_key]
 	if root is SpinBox: scale_controls(root.get_line_edit(), factor)
 	if root is AcceptDialog:
 		scale_controls(root.get_ok_button(), factor); scale_controls(root.get_label(), factor)
 		if root is ConfirmationDialog: scale_controls(root.get_cancel_button(), factor)
-	for child in root.get_children(): scale_controls(child, factor)
+	# Internal native fields (including FileDialog) need the same scale.
+	for child in root.get_children(true): scale_controls(child, factor)
 
 static func linear_focus(controls: Array) -> void:
 	if controls.is_empty(): return
@@ -82,23 +85,23 @@ static func _restore_focus(reference: WeakRef) -> void:
 
 static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
 	var panel = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UI.box(RACE_DARK_2 if dark else RACE_CREAM, Color("426558") if dark else UI.LINE, 5, padding))
+	panel.add_theme_stylebox_override("panel", UI.box(RACE_DARK_2 if dark else RACE_CREAM, GameTheme.LINE if dark else UI.LINE, 5, padding))
 	return panel
 
 static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
-	var l = UI.label(text, size, GOLD if accent else Color("edf0df"))
+	var l = UI.label(text, size, GOLD if accent else GameTheme.TEXT)
 	return l
 
 static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
 	var b = UI.button(text, callback)
-	b.add_theme_stylebox_override("normal", UI.action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else Color("4e6b61")))
-	b.add_theme_stylebox_override("hover", UI.action_box(GOLD.lightened(0.15) if selected else Color("315c4d"), GOLD))
+	b.add_theme_stylebox_override("normal", UI.action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else GameTheme.LINE))
+	b.add_theme_stylebox_override("hover", UI.action_box(GOLD.lightened(0.15) if selected else GameTheme.HOVER, GOLD))
 	for state in ["pressed", "hover_pressed"]: b.add_theme_stylebox_override(state, UI.action_box(GOLD, GOLD))
-	b.add_theme_stylebox_override("disabled", UI.action_box(RACE_DARK_2, Color("4e6b61")))
-	b.add_theme_color_override("font_disabled_color", Color("b8c6bc"))
+	b.add_theme_stylebox_override("disabled", UI.action_box(RACE_DARK_2, GameTheme.LINE))
+	b.add_theme_color_override("font_disabled_color", GameTheme.MUTED)
 	var focus = UI.box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
 	for state in ["font_color", "font_hover_color", "font_focus_color"]:
-		b.add_theme_color_override(state, RACE_INK if selected else Color("f3edd9"))
+		b.add_theme_color_override(state, RACE_INK if selected else GameTheme.TEXT)
 	for state in ["font_pressed_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, RACE_INK)
 	return b
 
@@ -106,7 +109,7 @@ static func race_card_state(panel: PanelContainer, state: String) -> void:
 	if panel.get_meta("race_card_state", "") == state: return
 	var key = "race_card_" + state
 	if not race_styles.has(key):
-		var style = UI.box(Color("fff2dc") if state == "warning" else RACE_CREAM, UI.DANGER if state == "warning" else (GOLD if state == "selected" else UI.LINE), 5, 8)
+		var style = UI.box(GameTheme.SELECTED if state == "warning" else RACE_CREAM, UI.DANGER if state == "warning" else (GOLD if state == "selected" else UI.LINE), 5, 8)
 		style.border_width_left = 3 if state in ["warning", "selected"] else 1
 		race_styles[key] = style
 	panel.add_theme_stylebox_override("panel", race_styles[key])

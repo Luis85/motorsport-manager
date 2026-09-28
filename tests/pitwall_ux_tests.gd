@@ -40,6 +40,22 @@ func has_horizontal_scroll(node: Node) -> bool:
 func dialog_inside(dialog: Window) -> bool:
 	return root.get_visible_rect().encloses(Rect2(Vector2(dialog.position), Vector2(dialog.size)))
 
+func check_status_contrast() -> void:
+	# Synthetic display states, not new flag rules or a completed physical session.
+	var old_flag = model.flag
+	var old_pause = model.paused
+	for state in [[true, "GREEN"], [false, "GREEN"], [false, "YELLOW"]]:
+		model.paused = state[0]; model.flag = state[1]; view.refresh()
+		var foreground = view.flag_label.get_theme_color("font_color").srgb_to_linear()
+		var background = view.session_header.get_theme_stylebox("panel").bg_color.srgb_to_linear()
+		var light = foreground.r * 0.2126 + foreground.g * 0.7152 + foreground.b * 0.0722
+		var dark = background.r * 0.2126 + background.g * 0.7152 + background.b * 0.0722
+		check((maxf(light, dark) + 0.05) / (minf(light, dark) + 0.05) >= 4.5,
+			"Actual flag text contrasts with its header surface: " + str(state))
+		check(view.flag_label.text.contains(state[1]) and view.flag_label.text.contains("PAUSED") == state[0],
+			"Pause and flag remain explicit text, not color alone: " + str(state))
+	model.flag = old_flag; model.paused = old_pause; view.refresh()
+
 func run() -> void:
 	root.size = Vector2i(1100,720); root.content_scale_size = root.size
 	game = load("res://scenes/main.tscn").instantiate(); root.add_child(game); app = root.get_node("App")
@@ -126,6 +142,7 @@ func run() -> void:
 	fitted.wheels = saved_wheels
 	for scale_factor in PitwallDesign.TEXT_SCALES:
 		await reset_view(scale_factor)
+		check_status_contrast()
 		for topic in [0,3,4,5,6,7,8,9]:
 			view.open_topic(topic); await settle()
 			check(inside(view.decision_controls[3].box) and inside(view.decision_controls[6].box), "Two-car actions fit at %s / topic %d" % [scale_factor,topic])

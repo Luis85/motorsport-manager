@@ -23,7 +23,7 @@ window/stretch/mode="canvas_items"
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.914, 0.902, 0.847, 1)
+environment/defaults/default_clear_color=Color(0.063, 0.098, 0.114, 1)
 textures/default_filters/use_nearest_mipmap_filter=false
 
 [physics]

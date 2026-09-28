@@ -1,14 +1,14 @@
 class_name DirectorStyle
 extends RefCounted
 ## Race Director presentation only. Cached styles never enter sporting state.
-const BACKGROUND = Color("151e22")
-const SURFACE = Color("202d32")
-const RAISED = Color("2b3d43")
-const LINE = Color("52686d")
-const TEXT = Color("f4f1e7")
-const MUTED = Color("becbc9")
-const ACCENT = Color("ecc379")
-const WARNING = Color("ffb29f")
+const BACKGROUND = GameTheme.BG
+const SURFACE = GameTheme.PANEL
+const RAISED = GameTheme.RAISED
+const LINE = GameTheme.LINE
+const TEXT = GameTheme.TEXT
+const MUTED = GameTheme.MUTED
+const ACCENT = GameTheme.ACCENT
+const WARNING = GameTheme.DANGER
 static var styles: Dictionary = {}
 
 static func panel(padding: int = 12) -> PanelContainer:
@@ -37,8 +37,8 @@ static func style_button(b: Button, primary: bool = false) -> void:
 		if not styles.has(key):
 			var bg = ACCENT if primary else RAISED
 			var border = ACCENT if primary else LINE
-			if state in ["hover", "hover_pressed"]: bg = ACCENT.lightened(0.15) if primary else Color("405b63"); border = ACCENT
-			if state == "pressed": bg = Color("536b6c") if not primary else ACCENT.darkened(0.1)
+			if state in ["hover", "hover_pressed"]: bg = ACCENT.lightened(0.15) if primary else GameTheme.HOVER; border = ACCENT
+			if state == "pressed": bg = GameTheme.SELECTED if not primary else ACCENT.darkened(0.1)
 			if state == "disabled": bg = SURFACE; border = LINE
 			if state == "focus": bg = Color.TRANSPARENT; border = ACCENT
 			var style = UI.action_box(bg, border)

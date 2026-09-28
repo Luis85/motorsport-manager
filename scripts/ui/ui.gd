@@ -1,18 +1,18 @@
 class_name UI
 extends RefCounted
-const BG = Color("e9e6d8")
-const PANEL = Color("f7f3e7")
-const CARD = Color("efeedf")
-const INK = Color("2c473a")
-const MUTED = Color("536650")
-const ACCENT = Color("7d5b2c")
-const LINE = Color("c5cdb7")
-const GOOD = Color("4f795c")
-const DANGER = Color("943f32")
-const HOVER = Color("e0e7d4")
-const SELECTED = Color("d5e1c6")
-const PRIMARY = Color("173e35")
-const ON_PRIMARY = Color("fff3d8")
+const BG = GameTheme.BG
+const PANEL = GameTheme.PANEL
+const CARD = GameTheme.RAISED
+const INK = GameTheme.TEXT
+const MUTED = GameTheme.MUTED
+const ACCENT = GameTheme.ACCENT
+const LINE = GameTheme.LINE
+const GOOD = GameTheme.ACCENT
+const DANGER = GameTheme.DANGER
+const HOVER = GameTheme.HOVER
+const SELECTED = GameTheme.SELECTED
+const PRIMARY = GameTheme.ACCENT
+const ON_PRIMARY = GameTheme.ON_ACCENT
 const RACE_DARK = PitwallDesign.RACE_DARK
 const RACE_DARK_2 = PitwallDesign.RACE_DARK_2
 const RACE_DARK_3 = PitwallDesign.RACE_DARK_3
@@ -51,76 +51,16 @@ static func resource_state(bar: ProgressBar, value: Label, risk: bool) -> void:
 	bar.set_meta("resource_risk", risk); style_assignments += 1
 
 static func action_box(color: Color, border: Color = LINE) -> StyleBoxFlat:
-	var style = box(color, border, 4, 8)
-	style.content_margin_top = 5; style.content_margin_bottom = 5
-	return style
+	return GameTheme.action(color, border)
 
 static func box(color: Color, border: Color = LINE, radius: int = 6, padding: int = 12) -> StyleBoxFlat:
-	var s = StyleBoxFlat.new(); s.bg_color = color; s.border_color = border
-	s.set_border_width_all(1); s.set_corner_radius_all(radius)
-	s.content_margin_left = padding; s.content_margin_right = padding; s.content_margin_top = padding; s.content_margin_bottom = padding
-	return s
+	return GameTheme.surface(color, border, radius, padding)
 
 static func theme() -> Theme:
-	var t = Theme.new(); t.default_font_size = 13
-	for type in ["Label", "Button", "CheckButton", "CheckBox", "OptionButton", "LineEdit", "TextEdit", "SpinBox", "Tree", "ItemList", "TabBar", "RichTextLabel", "PopupMenu", "TooltipLabel"]:
-		for state in ["font_color", "font_focus_color", "font_pressed_color", "font_selected_color", "font_hover_color", "font_hover_pressed_color"]: t.set_color(state, type, INK)
-		t.set_color("font_disabled_color", type, MUTED)
-		t.set_color("font_outline_color", type, Color.TRANSPARENT)
-	for type in ["Button", "OptionButton", "LineEdit", "TextEdit"]:
-		t.set_stylebox("normal", type, action_box(CARD))
-		t.set_stylebox("hover", type, action_box(HOVER, MUTED))
-		t.set_stylebox("pressed", type, action_box(SELECTED, ACCENT))
-		t.set_stylebox("hover_pressed", type, action_box(SELECTED, ACCENT))
-		var focus = box(Color.TRANSPARENT, ACCENT, 4, 0); focus.set_border_width_all(2)
-		t.set_stylebox("focus", type, focus)
-		t.set_stylebox("disabled", type, action_box(PANEL))
-	for type in ["CheckButton", "CheckBox"]:
-		for state in ["normal", "pressed", "disabled"]: t.set_stylebox(state, type, action_box(Color.TRANSPARENT, Color.TRANSPARENT))
-		for state in ["hover", "hover_pressed"]: t.set_stylebox(state, type, action_box(HOVER, MUTED))
-		t.set_stylebox("focus", type, t.get_stylebox("focus", "Button"))
-	t.set_color("font_placeholder_color", "LineEdit", MUTED)
-	t.set_color("caret_color", "LineEdit", INK)
-	t.set_color("selection_color", "LineEdit", SELECTED)
-	t.set_stylebox("panel", "PanelContainer", box(PANEL, LINE, 4, 8))
-	# PopupMenu and TooltipLabel do not inherit the Button text palette.
-	t.set_stylebox("panel", "PopupMenu", box(PANEL, LINE, 4, 6))
-	t.set_stylebox("hover", "PopupMenu", action_box(PRIMARY, PRIMARY))
-	t.set_color("font_hover_color", "PopupMenu", ON_PRIMARY)
-	t.set_color("font_accelerator_color", "PopupMenu", MUTED)
-	t.set_color("font_separator_color", "PopupMenu", MUTED)
-	t.set_constant("v_separation", "PopupMenu", 8)
-	t.set_stylebox("panel", "TooltipPanel", box(INK, ACCENT, 4, 9))
-	t.set_color("font_color", "TooltipLabel", ON_PRIMARY)
-	t.set_font_size("font_size", "TooltipLabel", 13)
-	t.set_stylebox("panel", "AcceptDialog", box(PANEL))
-	# RichTextLabel uses default_color, not Control/Label's font_color.
-	t.set_color("default_color", "RichTextLabel", INK)
-	t.set_color("font_selected_color", "RichTextLabel", INK)
-	t.set_color("selection_color", "RichTextLabel", SELECTED)
-	for type in ["Tree", "ItemList"]:
-		t.set_stylebox("panel", type, box(PANEL, LINE, 4, 3))
-		for state in ["selected", "selected_focus"]: t.set_stylebox(state, type, box(SELECTED, ACCENT, 2, 3))
-		t.set_stylebox("hover", type, box(HOVER, MUTED, 2, 3))
-		t.set_color("font_selected_color", type, INK)
-	for state in ["normal", "hover", "pressed"]: t.set_stylebox("title_button_" + state, "Tree", box(SELECTED, LINE, 2, 3))
-	t.set_color("title_button_color", "Tree", INK)
-	t.set_constant("v_separation", "Tree", 4)
-	for type in ["VBoxContainer", "HBoxContainer", "HFlowContainer", "VFlowContainer"]: t.set_constant("separation", type, 6)
-	for key in ["h_separation", "v_separation"]: t.set_constant(key, "GridContainer", 6)
-	for type in ["TabContainer", "TabBar"]:
-		t.set_stylebox("tab_selected", type, action_box(SELECTED, ACCENT))
-		t.set_stylebox("tab_unselected", type, action_box(PANEL))
-		t.set_stylebox("tab_hovered", type, action_box(HOVER, MUTED))
-		t.set_color("font_selected_color", type, INK); t.set_color("font_unselected_color", type, MUTED)
-		t.set_font_size("font_size", type, 12)
-	t.set_stylebox("panel", "TabContainer", box(PANEL, LINE, 4, 0))
-	return t
+	return GameTheme.build()
 
-static func label(text: String, size: int = 13, color: Color = INK) -> Label:
+static func label(text: String, size: int = 14, color: Color = INK) -> Label:
 	var l = Label.new(); l.text = text; l.add_theme_font_size_override("font_size", size); l.add_theme_color_override("font_color", color)
-	if size >= 23:
-		var heading_font = SystemFont.new(); heading_font.font_names = PackedStringArray(["Georgia", "Noto Serif", "DejaVu Serif"]); l.add_theme_font_override("font", heading_font)
 	return l
 
 static func paragraph(text: String, color: Color = MUTED) -> Label:
@@ -128,13 +68,8 @@ static func paragraph(text: String, color: Color = MUTED) -> Label:
 	return l
 
 static func button(text: String, callback: Callable, primary: bool = false) -> Button:
-	var b = Button.new(); b.text = text; b.custom_minimum_size.y = 32; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND; b.pressed.connect(callback)
-	if primary:
-		b.add_theme_stylebox_override("normal", action_box(PRIMARY, PRIMARY))
-		b.add_theme_stylebox_override("hover", action_box(Color("446b50"), ACCENT))
-		b.add_theme_stylebox_override("pressed", action_box(Color("294b38"), ACCENT))
-		b.add_theme_stylebox_override("hover_pressed", action_box(Color("294b38"), ACCENT))
-		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, ON_PRIMARY)
+	var b = Button.new(); b.text = text; b.custom_minimum_size.y = GameTheme.COMPACT_ACTION_HEIGHT; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND; b.pressed.connect(callback)
+	if primary: GameTheme.primary(b)
 	return b
 
 static func option(items: Array, callback: Callable, selected: int = 0) -> OptionButton:
@@ -170,28 +105,67 @@ static func clear(parent: Node) -> void:
 
 static func field(parent: Node, text: String, control: Control) -> void:
 	var row = HBoxContainer.new(); parent.add_child(row)
-	var name_label = label(text, 13, MUTED); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var name_label = label(text, 13, MUTED); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; name_label.custom_minimum_size.x = 100
 	row.add_child(name_label); row.add_child(control)
 
-static func notify(parent: Node, title: String, text: String) -> void:
-	var dialog = AcceptDialog.new(); dialog.title = title; dialog.dialog_text = text; dialog.min_size = Vector2i(440, 180)
-	parent.add_child(dialog)
-	var ancestor = parent; var factor = 1.0
+static func text_scale(parent: Node) -> float:
+	var ancestor = parent
 	while ancestor:
-		if ancestor.has_meta("pitwall_text_scale"): factor = float(ancestor.get_meta("pitwall_text_scale")); break
+		if ancestor.has_meta("pitwall_text_scale"):
+			return float(ancestor.get_meta("pitwall_text_scale"))
 		ancestor = ancestor.get_parent()
-	PitwallDesign.scale_controls(dialog, factor)
-	var invoker = parent.get_viewport().gui_get_focus_owner() if parent is CanvasItem else null
+	return 1.0
+
+static func prepare_dialog(dialog: AcceptDialog, parent: Node) -> void:
+	parent.add_child(dialog)
+	dialog.theme = theme()
+	PitwallDesign.scale_controls(dialog, text_scale(parent))
+	var width = mini(roundi(560 * text_scale(parent)), parent.get_viewport().get_visible_rect().size.x - 48)
+	dialog.get_label().autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dialog.get_label().custom_minimum_size.x = maxi(280, width - 48)
+	dialog.popup_centered(Vector2i(width, 180))
+
+static func notify(parent: Node, title: String, text: String) -> void:
+	var dialog = AcceptDialog.new()
+	dialog.title = title; dialog.dialog_text = text
+	var invoker = parent.get_viewport().gui_get_focus_owner()
 	var dismiss = func():
 		dialog.hide(); dialog.queue_free()
 		if is_instance_valid(invoker): PitwallDesign.focus_later(invoker)
-	dialog.confirmed.connect(dismiss); dialog.canceled.connect(dismiss); dialog.popup_centered()
+	dialog.confirmed.connect(dismiss); dialog.canceled.connect(dismiss)
+	prepare_dialog(dialog, parent)
 	PitwallDesign.focus_later(dialog.get_ok_button())
 
+static func confirm(parent: Node, title: String, text: String, action: String, callback: Callable) -> ConfirmationDialog:
+	# Repeated activation cannot stack confirmations or commit the same draft twice.
+	for child in parent.get_children():
+		if child is ConfirmationDialog and child.visible:
+			PitwallDesign.focus_later(child.get_cancel_button())
+			return child
+	var dialog = ConfirmationDialog.new()
+	dialog.title = title; dialog.dialog_text = text; dialog.ok_button_text = action
+	var invoker = parent.get_viewport().gui_get_focus_owner()
+	dialog.confirmed.connect(func(): dialog.hide(); dialog.queue_free(); callback.call())
+	dialog.canceled.connect(func():
+		dialog.hide(); dialog.queue_free()
+		if is_instance_valid(invoker): PitwallDesign.focus_later(invoker))
+	prepare_dialog(dialog, parent)
+	PitwallDesign.focus_later(dialog.get_cancel_button())
+	return dialog
+
 static func file_dialog(parent: Node, save: bool, filters: PackedStringArray, callback: Callable) -> FileDialog:
-	var d = FileDialog.new(); d.file_mode = FileDialog.FILE_MODE_SAVE_FILE if save else FileDialog.FILE_MODE_OPEN_FILE
-	d.access = FileDialog.ACCESS_FILESYSTEM; d.filters = filters; d.size = Vector2i(900, 600)
-	parent.add_child(d)
-	d.file_selected.connect(func(path): callback.call(path); d.queue_free())
-	d.canceled.connect(d.queue_free); d.popup_centered()
-	return d
+	var dialog = FileDialog.new()
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE if save else FileDialog.FILE_MODE_OPEN_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM; dialog.filters = filters
+	var invoker = parent.get_viewport().gui_get_focus_owner()
+	parent.add_child(dialog)
+	dialog.theme = theme()
+	PitwallDesign.scale_controls(dialog, text_scale(parent))
+	var dismiss = func():
+		dialog.hide(); dialog.queue_free()
+		if is_instance_valid(invoker): PitwallDesign.focus_later(invoker)
+	dialog.file_selected.connect(func(path): dismiss.call(); callback.call(path))
+	dialog.canceled.connect(dismiss)
+	var available = parent.get_viewport().get_visible_rect().size - Vector2(48, 48)
+	dialog.popup_centered(Vector2i(minf(900, available.x), minf(600, available.y)))
+	return dialog
