@@ -32,7 +32,7 @@ class StandaloneArchiveTests(unittest.TestCase):
                 "engine": ENGINE, "artifacts": {p.name: digest(p) for p in (binary, pack)},
             }
             (source / "build-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-            archive = root / "standalone-linux-release.tar.gz"
+            archive = root / "D:standalone-linux-release.tar.gz"
             subprocess.run(["tar", "-czf", str(archive), "-C", str(source), "."], check=True)
             transport = root / "transport.zip"
             # Model the artifact service losing modes, not a tar-library shortcut.
@@ -44,7 +44,9 @@ class StandaloneArchiveTests(unittest.TestCase):
             (download / archive.name).chmod(0o644)
             clean = root / "Clean application – Ω"
             clean.mkdir()
-            subprocess.run(["tar", "-xzf", str(download / archive.name), "-C", str(clean)], check=True)
+            # GNU tar otherwise interprets a Windows drive colon as a remote host.
+            subprocess.run(["tar", "--force-local", "-xzf", archive.name, "-C", str(clean)],
+                           cwd=download, check=True)
             self.assertEqual(validate_package(clean), manifest)
             executable = clean / binary.name
             self.assertTrue(executable.stat().st_mode & 0o100)
