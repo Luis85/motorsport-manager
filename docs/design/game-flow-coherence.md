@@ -250,3 +250,13 @@ checks the actual semantic series ink within two 8-bit color levels, while
 asserting that this first measurement is not the cursor. An empty dark plot
 therefore cannot satisfy the visibility assertion. Missing-sample alignment,
 comparison inspection and all other analysis assertions remain required.
+
+Native screenshot review found a further header defect that the earlier broad
+layout assertions did not detect: the retained Engineering controller overrode
+flag text with `ON_PRIMARY` (dark ink), although that label sits directly on the
+dark header surface, not a filled primary button. The obsolete override is
+removed so the base semantic flag presentation remains authoritative. The native
+pitwall suite now checks actual foreground/background contrast and explicit
+pause/flag wording for paused-green, running-green and running-yellow display
+fixtures at all three text scales. These synthetic states test presentation,
+not new sporting flag behavior. Existing layout assertions remain unchanged.
