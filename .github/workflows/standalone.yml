@@ -129,9 +129,12 @@ jobs:
           path: ${{ runner.temp }}/transport
       - name: Extract the same permission-preserving archive distributed to players
         shell: bash
+        working-directory: ${{ runner.temp }}
+        # The runner sets native cwd. GNU tar receives relative paths only, not
+        # Windows drive prefixes or mixed backslash/forward-slash destinations.
         run: |
-          mkdir -p "${{ runner.temp }}/package"
-          tar --force-local -xzf "${{ runner.temp }}/transport/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz" -C "${{ runner.temp }}/package"
+          mkdir -p package
+          tar -xzf "transport/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz" -C package
       - name: Execute relocated build and restart/recovery journeys on target OS
         run: >-
           python scripts/smoke_standalone.py

@@ -123,9 +123,11 @@ actual launch, manifest hashes, and Unicode/space paths across the ZIP/tar journ
 GitHub documents artifact permission loss and tar-based preservation:
 https://github.com/actions/upload-artifact#permission-loss
 
-Windows extraction also uses GNU tar's `--force-local`: the native hosted job
-exposed `Cannot connect to D: resolve failed` when its drive colon was interpreted
-as a remote archive host. The transport regression includes a colon-bearing
-archive name and launches the extracted executable after validating its hashes.
-This fixture explains the wrapper fix; actual Windows execution is still checked
-by each Windows native-smoke job.
+Windows hosted extraction exposed two separate path errors: a drive colon was
+interpreted as a remote archive host, then `--force-local` still left a mixed
+backslash/forward-slash `-C` destination which GNU tar could not open. The workflow
+now sets the working directory through the runner and passes only relative archive
+and destination paths to tar. The transport regression uses that same process-cwd
+and relative-path pattern, including Unicode/spaces and a colon-bearing archive
+basename, then validates hashes and actually launches the extracted executable.
+Actual Windows application execution remains a separate native-smoke requirement.

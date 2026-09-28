@@ -44,9 +44,11 @@ class StandaloneArchiveTests(unittest.TestCase):
             (download / archive.name).chmod(0o644)
             clean = root / "Clean application – Ω"
             clean.mkdir()
-            # GNU tar otherwise interprets a Windows drive colon as a remote host.
-            subprocess.run(["tar", "--force-local", "-xzf", archive.name, "-C", str(clean)],
-                           cwd=download, check=True)
+            # As in CI, set the working directory through the process API and
+            # give tar relative paths. This avoids both drive-colon remote-host
+            # parsing and mixed-separator interpretation of its -C destination.
+            subprocess.run(["tar", "-xzf", str((download / archive.name).relative_to(root)),
+                            "-C", clean.name], cwd=root, check=True)
             self.assertEqual(validate_package(clean), manifest)
             executable = clean / binary.name
             self.assertTrue(executable.stat().st_mode & 0o100)
