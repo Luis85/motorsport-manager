@@ -13,9 +13,10 @@ Cancel returns canonical data without destroying the redo branch. Undo, redo,
 save and replacement invalidate older drafts; an old gesture cannot commit by
 substituting the current revision. Rejected changes preserve canonical state.
 
-The pure `TrackDocument` contract owns `draft_errors` and the bounded serialized
-value traversal. `publication_errors` checks a safe editable draft before the
-complete circuit rules used for save/export. The application session owns when
+The pure `TrackDocument` contract owns `draft_errors` and delegates its bounded
+serialized-value traversal to the shared `RaceStateValue.serializable` policy.
+`publication_errors` checks a safe editable draft before the complete circuit
+rules used for save/export. The application session owns when
 those policies run and when state can commit; it no longer embeds a parallel
 copy of document rules. An open/short/unnamed draft is legal editing state, not a
 publishable circuit. Legacy positional-node imports keep their validated
@@ -26,6 +27,15 @@ after the adapter reports success. A failed write retains the edited document
 for retry. `LocalTrackEditorPort` owns filesystem and reference-image operations;
 views do not call file APIs. Runtime and authoring exports revalidate on execution,
 not only when their dialogs opened. Import failures preserve existing work.
+
+Beneath the application port, `Storage.FileOperations` permits deterministic
+read/write/replace/rollback failures without adding filesystem calls to views.
+`Storage.read_json` decodes structure; `TrackDocument` still accepts domain data.
+The replacement policy restores only an original moved by that write attempt.
+Failed rollback reports the preserved backup path; it never silently substitutes
+a stale backup for a destination that did not exist. The storage contract suite
+checks editor work, saved signature, revision and redo retention through these
+actual policy failures, then retries using the retained draft.
 
 Geometry compilation and diagnostics are application operations. Views receive
 an injected compiler. The reference-lap preview is a reference-speed demonstration,

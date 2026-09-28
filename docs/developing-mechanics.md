@@ -23,7 +23,10 @@ owned-process cleanup. It always runs `mechanics_tests`; inactive providers add
 their registered `extension_<id>` suite. Repeat `--mechanic` to narrow inactive
 extension tests, or omit it to check every catalogued extension. No runtime
 provider is discovered or enabled. A missing test registration, malformed literal
-definition, duplicate ID or unknown selection is an actionable error.
+definition, duplicate ID or unknown selection is an actionable error. Literal
+predecessor calls are checked against their owning provider and declared hooks;
+guards before an explicit aggregate dispatch do not hide its hook. Dynamic
+predecessor calls and behavioral correctness still require real runtime tests.
 `--dry-run` reports `engine_executed: false`: selection is not validation.
 
 The generated-code development fixture exercises a typed `RaceCar` observation
@@ -70,6 +73,14 @@ should run. Calling `sim.<same_hook>()` would dispatch back to your provider.
 Do not change order casually: arithmetic and random draws are order-dependent.
 Installation receives detached geometry and options, preventing accidental
 modification of caller-owned track data or another provider's setup input.
+Definitions (including extra metadata) and install options must first pass
+`RaceStateValue.serializable`. A definition ID must not contain whitespace.
+Rejected configuration publishes nothing; rejected options execute no providers
+and remain retryable. Successful configuration/installation cannot be repeated.
+Unknown predecessor identities or undeclared hooks return `null` with
+`RaceMechanics.last_error`; they do not run a fallback or mutate sporting state.
+This is diagnostic rejection, not a valid return value for a broken typed rule.
+Fix the caller and test it; never treat a bad predecessor call as normal gameplay.
 
 A no-op extension needs no saved state. A stateful extension does: identify its
 owned fields, initialize them deterministically, include them in a versioned
@@ -82,7 +93,9 @@ stateful extension whose save can restore without the rule that owns its state.
 | Responsibility | Entry point |
 |---|---|
 | Domain rules and resource conservation | `scripts/domain/mechanics/`, focused domain services |
-| Accepted commands and application ownership | `RaceCommands`, `RaceViewSession`, `RaceSessionRunner` (application only) |
+| Command input preflight and accepted mutation | `RaceSim.command`, `_base_command`, and the owning mechanic |
+| Command feedback and application ownership | `RaceCommands`, `RaceViewSession`, `RaceSessionRunner` (application only) |
+| Shared finite serialized-value shape | `RaceStateValue.serializable`; semantic validation remains with each domain |
 | Minimal UI capabilities | `MinimalRaceHandle`, `MinimalWeekendQuery`, `RaceVisualSource` |
 | Retained diagnostic screens | `RaceViewHandle`, `RaceViewQuery` and injected ports |
 | Legacy base checkpoint preparation | `RaceCheckpoint.prepare_base`; complete acceptance remains in `RaceSim.restore` and profile readers |
@@ -117,7 +130,8 @@ session. Compilation results and running-weekend tracks are independent copies.
 
 ```sh
 python3 scripts/check_architecture.py
-python3 scripts/verify.py --godot /path/to/godot --suite mechanics_tests --suite editor_session_tests --suite car_record_tests
+python3 scripts/verify.py --godot /path/to/godot --suite mechanics_tests --suite command_contract_tests --suite storage_contract_tests
+python3 scripts/verify.py --godot /path/to/godot --suite editor_session_tests --suite car_record_tests
 python3 scripts/verify.py --godot /path/to/godot
 ```
 
@@ -157,11 +171,44 @@ hydration; profile readers retain their own versioned state and composition chec
 The input version is not silently rewritten. Add regression fixtures to
 `car_record_tests` and retain legacy, replay and sporting characterization suites.
 
-Domain command rejection still uses the existing Boolean outcome plus `last_error`;
-application command handles copy inputs, route intent and expose error feedback.
-Accepted input is recorded through the established path. Validation precedes
-mutation; errors may change feedback, not sporting state, resources or RNG. No
-parallel command API or new replay format is introduced by this pass.
+## Commands, errors and persistence
+
+`RaceCommands.execute` resolves its weak source, routes intent and exposes the
+same rejection feedback. `RaceSim.command` first checks the entire payload with
+`RaceStateValue.serializable`, **then** copies it before ordered dispatch. Do not
+copy an unchecked recursive payload in a view or application adapter. Each rule
+still validates semantic types, target, permissions, phase, revisions and
+resources before mutation; structural validity is not permission to act.
+Base target/mode fields use the existing integral-number check before conversion,
+so integral JSON floats remain valid but arrays, strings and Booleans are not
+silently treated as IDs or modes. Repair/delegation choices require Booleans.
+Existing absent-value defaults on the base-only API remain supported.
+
+Domain command rejection uses the existing Boolean outcome plus `last_error`.
+It may update feedback, not sporting state, resources, ownership, RNG, accepted
+history or replay input signals. Accepted input is recorded through the established
+path with detached payload values. A provider receives a call-local working
+payload, not authority over the caller's draft. `DraftProbe` in
+`command_contract_tests` demonstrates that boundary without enabling a rule in
+the game. No parallel command API or new replay format is introduced.
+
+`Storage.read_json` owns bounded reading and structural JSON decoding; a successful
+parse is not domain acceptance. Checkpoint/profile or track validators must accept
+it before replacing a running session or editable document. `Storage.write_json`
+keeps the existing temporary-file/backup replacement policy and serializes before
+filesystem mutation. `Storage.FileOperations` is a narrow injectable filesystem
+seam, not a second storage registry. Default calls use Godot; tests provide
+`MemoryFiles` to fail read, directory creation, temporary write, backup removal,
+original preservation, replacement and rollback independently.
+
+Only an original moved by the current write attempt is rolled back. A stale `.bak`
+cannot become a missing destination after a failed first save. If replacement
+and rollback both fail, the error names the recovery backup; preserve that file
+and the staged data. This is recoverable replacement, not a claim of crash-durable
+fsync, concurrent-writer coordination or identical filesystem semantics on every
+platform. `storage_contract_tests` combines fault injection, a real isolated
+`user://` round trip and failed-editor-save/redo/retry coverage. Public storage
+results and file schemas are unchanged.
 
 ## Presentation and scheduler ownership
 

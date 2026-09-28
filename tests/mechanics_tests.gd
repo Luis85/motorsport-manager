@@ -79,6 +79,7 @@ func _initialize() -> void:
 
 func run() -> void:
 	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	construction_value_contracts(track)
 	var raw = RaceSim.new(track)
 	var probe = Probe.new()
 	check(raw.mechanics.configure([probe]), "A mechanic can be installed without adding a simulation subclass")
@@ -147,3 +148,30 @@ func run() -> void:
 	Storage.write_json("res://reports/mechanics-tests.json", report)
 	print("MECHANICS_TESTS ", JSON.stringify(report))
 	quit(0 if failures.is_empty() else 1)
+
+func construction_value_contracts(track: TrackGeometry) -> void:
+	var owner = RaceSim.new(track)
+	var before = RaceStateValue.fingerprint(owner.snapshot())
+	var malformed = Malformed.new()
+	var cycle: Array = []; cycle.append(cycle)
+	for invalid in [RefCounted.new(), NAN, INF, {1: "non-string key"}, cycle]:
+		malformed.record = {"id": "metadata_probe", "version": 1, "requires": [], "hooks": [], "metadata": invalid}
+		check(not owner.mechanics.configure([malformed]), "Invalid extra metadata is rejected before recursive copying")
+		check(owner.mechanics.last_error.contains("serialized values"), "Metadata errors explain the structural contract")
+		check(owner.mechanic_catalog().is_empty(), "Invalid metadata cannot publish a partial composition")
+		check(RaceStateValue.fingerprint(owner.snapshot()) == before, "Rejected metadata leaves the aggregate and RNG intact")
+	for identity in [" leading", "trailing ", "bad identity", "bad\tidentity", "bad\nidentity", "bad\u00a0identity"]:
+		malformed.record = {"id": identity, "version": 1, "requires": [], "hooks": []}
+		check(not owner.mechanics.configure([malformed]), "Runtime rejects whitespace identities just like the authoring tool")
+		check(owner.mechanics.last_error.contains("whitespace"), "Identity rejection has an actionable diagnosis")
+	var first = Probe.new()
+	check(owner.mechanics.configure([first]), "A correct configuration is retryable after invalid metadata")
+	for invalid in [RefCounted.new(), NAN, cycle]:
+		check(not owner.mechanics.install(track, {"metadata": invalid}), "Invalid installation options fail before provider execution")
+		check(first.installations == 0, "Rejected options cannot run even the first provider")
+		check(owner.mechanics.last_error.contains("options") and owner.mechanics.last_error.contains("serialized values"), "Installation error identifies invalid options")
+		check(RaceStateValue.fingerprint(owner.snapshot()) == before, "Rejected installation preserves sporting state and RNG")
+	check(owner.mechanics.install(track, {}), "A corrected install can retry without reconfiguring providers")
+	check(first.installations == 1 and owner.mechanics.last_error.is_empty(), "Corrected installation runs once and clears diagnostics")
+	check(not owner.mechanics.install(track, {}) and first.installations == 1, "Retry protection still prevents installing twice")
+	cycle.clear()

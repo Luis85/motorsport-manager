@@ -11,13 +11,20 @@ A provider declares a stable `id`, positive `version`, earlier `requires`
 dependencies and implemented hooks. `RaceMechanics.configure` validates the
 entire proposal before publishing it. `RaceHookContract` checks that hooks really
 are aggregate dispatch points and that parameter/return contracts agree.
-Configuration and installation are one-time operations. Provider installation
+Definitions and options pass the shared finite serialized-value policy before
+recursive copying. IDs cannot contain whitespace. Rejected configuration/options
+publish nothing or run no providers and are retryable; successful configuration
+and installation are one-time operations. Provider installation
 receives detached options and track geometry, not caller-owned mutable input.
 
 Current profiles assemble strategy → weather → recovery → practice.
 The most specific installed provider handles an overridden hook;
 `before(id, hook, arguments)` invokes the predecessor, then a base rule where
 applicable. This preserves the old rule ordering without behavior inheritance.
+Unknown IDs and undeclared predecessor hooks return `null` with a named
+`RaceMechanics.last_error`, rather than running unrelated fallback code. Literal
+predecessor mistakes are also caught by the authoring tool. Dynamic misuse and
+semantic rule correctness remain runtime-test responsibilities.
 It is ordered composition, not an ECS or runtime plugin loader.
 
 Runtime car parameters are `RaceCar`, not dictionaries. Use typed fields in rules.

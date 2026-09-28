@@ -19,7 +19,10 @@ application scheduling, editor transactions and minimal weekend journey remain
 the foundation. No new player action, UI surface, save version, simulation
 coefficient, geometry algorithm or mechanic is authorized by this pass.
 
-## Ownership and concrete findings
+## Initial ownership and concrete findings
+
+These are the inspected starting gaps, not claims that completed increments remain
+unimplemented. The checklist below records the current implementation state.
 
 | Boundary | Current owner | Finding and evidence | Disposition |
 | --- | --- | --- | --- |
@@ -51,13 +54,65 @@ complete physical weekend, editor interactions and actual native screenshots.
 The six minimal desktop size/text combinations remain acceptance requirements.
 No timeouts, assertions, pinned sporting hashes or suites will be relaxed.
 
+## Resumed inspection: remaining boundary gaps
+
+At `4d25515b34c638282eb25d93b4270b4af034e6ba`, the first three increments below
+were already published. Current main verification #371 (`36411038105`) has now
+succeeded. The recovered source archive exactly matched tree
+`240aea054765a255df798e3ff0fe90f9bf287e67`; local preflight passed 47 of 49
+Python tests with two explicit engine-dependent skips. No local Godot was found.
+
+Two concrete follow-up gaps were found before closing this pass:
+
+- `RaceMechanics.configure` recursively freezes arbitrary extra definition fields;
+  cyclic metadata can reach `RaceStateValue.read_only` without its structural
+  preflight. `install` similarly copies unchecked options before providers run.
+  Use the existing shared value policy before either operation, retain retry after
+  rejected proposals, and reject whitespace identities consistently with tooling.
+  Metadata remains developer-only, never a schema migration or snapshot field.
+- `RaceSim._base_command` coerces scalar targets/modes and Boolean service choices
+  before checking their types. Serializability alone does not make an array a
+  driver ID or a string a Boolean. Use existing integral validation before casts
+  and explicit Boolean validation before mutation. Preserve absent base defaults,
+  integral JSON floats, command-record contents and all valid gameplay inputs.
+  Previously coerced malformed typed inputs are intentionally rejected; no valid
+  command or save format is changed. Every profile gets noninterference fixtures.
+
+These changes are hardening of existing boundaries, not additional mechanics.
+
 ## Implementation checklist
 
-- [ ] Shared structural validation and command input ownership, with regressions.
-- [ ] Guard-aware authoring inspection and actionable predecessor diagnostics.
-- [ ] Injectable atomic persistence with deterministic failure/recovery coverage.
-- [ ] Updated ownership/developer guides and source-bound measurement decision.
+- [x] Shared structural validation and command input ownership, with regressions.
+- [x] Guard-aware authoring inspection and actionable predecessor diagnostics.
+- [x] Injectable atomic persistence with deterministic failure/recovery coverage.
+- [x] Close construction/scalar preflight gaps with focused regressions.
+- [x] Updated ownership/developer guides and source-bound measurement decision.
 - [ ] Exact final-head hosted aggregate, reports, native screenshots and diff review.
+
+## Measurement decision
+
+Baseline main #371 (`36411038105`) is source tree
+`5c561c906f6620bc5fade1ff9782159b47f2c64f`, verification SHA-256
+`ef061accc6fba8a736de4d9d9cfc89941e46c0ea1416569e3e32425848cdbf14`.
+Retained artifacts from that run, not an empty menu, supply these observations:
+
+| Separate workload | Baseline observation | Environment and limitation |
+| --- | --- | --- |
+| Two-own-driver bounded `RaceReadModel.capture` | 200 samples; median 0.249 ms, p95 0.280 ms | `ui_polish_tests/race-read-performance.json`, shard 0; not a full diagnostic-screen refresh or forecast |
+| Populated diagnostic refresh | Strategy median 51.515 ms; debrief 60.091 ms (40 samples each) | `workspace_performance/workspace-performance.json`, shard 2; Godot 4.7.2, EPYC 7763, llvmpipe LLVM 20.1.2, 1440x900/100%; Pinecrest, seed 2026, three real practice runs per driver plus disclosed 1,000-event synthetic journal |
+| Simulation only | 1,000 actual fixed steps / 50 simulated seconds in 6.179807 wall seconds | Same workspace fixture; no UI work in the timed loop, not an achieved interactive speed multiplier |
+| Monaco diagnostic observations | Watch median 27.479 ms; uncached forecast 3.212 ms | `ux_performance/ux-performance-current.json`, shard 3; EPYC 9V74, same engine/software renderer, 1100x720, 12 cars, seed 7314; 100 refresh / 30 forecast samples |
+| Native rendering observation | 45 paused camera frames; median 67.985 ms, p95 93.507 ms; zero static rebuilds/reissues | `ui_smoke/render-performance.json`, shard 2; software-rendered frames, not domain or query cost |
+
+The bounded driver projection is already separate from whole-screen observations.
+Expensive populated diagnostic refresh is an opportunity for dedicated attribution,
+not evidence that copying alone causes its cost. Those routines include distinct
+queries, controls and forecasts. This pass keeps detached projections and adds no
+cache, numerical shortcut, skipped tick or thread. No speedup or universal FPS
+claim follows from measurements on variable hosted machines. The existing editor
+suite separately reports preview/full compilation; its geometry algorithm is
+unchanged. Candidate measurements and their exact-source/engine/CPU association
+belong in the final PR evidence comment, without mixing revisions into a pass.
 
 ## Explicit deferrals
 
@@ -75,6 +130,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/check_architecture.py
 python3 scripts/mechanics.py validate --dry-run
 LP_NUM_THREADS=2 python3 scripts/mechanics.py validate --godot /path/to/pinned/godot
+LP_NUM_THREADS=2 python3 scripts/verify.py --godot /path/to/pinned/godot --suite mechanics_tests --suite command_contract_tests --suite storage_contract_tests
 LP_NUM_THREADS=2 python3 scripts/verify.py --godot /path/to/pinned/godot
 ```
 
