@@ -244,3 +244,9 @@ race-control, comparison, resource, contrast and paused-rendering assertions are
 retained. Missing required controls produce a failed report rather than a
 null-target script error followed by a timeout. This is an intentional screen
 contract migration, not a waiver of action reachability or draft isolation.
+
+The isolated-sample pixel regression also assumed dark ink on paper. It now
+checks the actual semantic series ink within two 8-bit color levels, while
+asserting that this first measurement is not the cursor. An empty dark plot
+therefore cannot satisfy the visibility assertion. Missing-sample alignment,
+comparison inspection and all other analysis assertions remain required.
