@@ -234,3 +234,13 @@ not the surrounding non-focusable menu container. Its regression opens the
 native popup, navigates past the disabled sandbox action, opens the notebook,
 and closes it. The old selector follows the intentional sentence-case label
 without removing the existing presence or keyboard-focus requirement.
+
+The retained compact suite also encoded the old `Back without applying` label
+and a prohibition on every Settings `ScrollContainer`. It now exercises the
+approved staged Settings design: one vertical reading axis, Apply/Back outside
+that scroller, reachable local-data actions, cancel-first confirmation, explicit
+discard with no application mutation, and subsequent Apply. All remaining
+race-control, comparison, resource, contrast and paused-rendering assertions are
+retained. Missing required controls produce a failed report rather than a
+null-target script error followed by a timeout. This is an intentional screen
+contract migration, not a waiver of action reachability or draft isolation.
