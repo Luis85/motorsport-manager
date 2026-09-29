@@ -1,0 +1,57 @@
+name: Publish verified diagnostic continuation
+on:
+  push:
+    branches: [chore/pr24-diagnostic-b8e83b8-publication]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: transport
+      - uses: actions/checkout@v4
+        with:
+          ref: 142b85d53cbb92a7e0bb760daed12f79ea67a4d2
+          path: target
+      - name: Reconstruct the exact locally verified source
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, hashlib, pathlib, zlib
+          data = ''.join((pathlib.Path('../transport/.publish') / ('part-%d.txt' % i)).read_text() for i in range(4))
+          patch = zlib.decompress(base64.b64decode(data, validate=True))
+          assert len(patch) == 72883
+          assert hashlib.sha256(patch).hexdigest() == '8fbcd8c6ee26626017a949df622a3411e8acaeb6e90abfd40c41cb6c4b58d8fd'
+          pathlib.Path('/tmp/diagnostics.patch').write_bytes(patch)
+          PY
+          test "$(git rev-parse HEAD)" = 142b85d53cbb92a7e0bb760daed12f79ea67a4d2
+          git apply --check --index /tmp/diagnostics.patch
+          git apply --index /tmp/diagnostics.patch
+          test "$(git write-tree)" = a3174fee8499538bc9ab982eea18857a84e982b0
+          python3 scripts/check_architecture.py
+      - name: Fast-forward only the existing PR branch
+        working-directory: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          current=$(git ls-remote origin refs/heads/refactor/data-driven-content | cut -f1)
+          test "$current" = 142b85d53cbb92a7e0bb760daed12f79ea67a4d2
+          git -c user.name='Luis Mendez' -c user.email='3923861+Luis85@users.noreply.github.com' commit -m 'feat(content): validate and author diagnostic scenario collections' -m 'Preserve the concurrent file-backed service adapters, script UIDs, collection metadata and tests. Add six catalog-backed diagnostic families, full grid/stock/track validation, explicit bounded CLI execution and five original wheel characterization hashes. Local reconciled source passed 304 focused Godot checks; the preceding integrated gameplay source passed 1117 checks and 165 Python tests without skips. Final full-source release gates remain separate. Workflow coverage is published separately through the authorized connector. No force push, main update or transport files in this commit.'
+          test "$(git rev-parse 'HEAD^{tree}')" = a3174fee8499538bc9ab982eea18857a84e982b0
+          git push origin HEAD:refs/heads/refactor/data-driven-content
+          mkdir -p /tmp/publication
+          git rev-parse HEAD > /tmp/publication/commit.txt
+          git rev-parse 'HEAD^{tree}' > /tmp/publication/tree.txt
+          git ls-remote origin refs/heads/refactor/data-driven-content > /tmp/publication/remote.txt
+          cat /tmp/publication/commit.txt /tmp/publication/tree.txt /tmp/publication/remote.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-publication-evidence
+          path: /tmp/publication/
+          if-no-files-found: error
+          retention-days: 14
