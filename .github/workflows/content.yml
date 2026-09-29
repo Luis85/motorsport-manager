@@ -38,7 +38,7 @@ jobs:
       - name: Check generated authoring schemas
         run: python3 scripts/content.py schemas --check --godot /usr/local/bin/godot
       - name: Verify content and serialized boundaries
-        run: python3 scripts/verify.py --godot /usr/local/bin/godot --suite mechanics_tests --suite car_record_tests --suite content_tests --suite content_pack_tests --suite content_tyre_tests --suite content_tuning_tests
+        run: python3 scripts/verify.py --godot /usr/local/bin/godot --suite mechanics_tests --suite car_record_tests --suite content_tests --suite content_pack_tests --suite content_tyre_tests --suite content_tuning_tests --suite content_environment_tests
       - name: Execute debug and release exports with file-only expansions
         run: python3 scripts/verify_content_export.py --godot /usr/local/bin/godot --output reports/content-export
       - name: Retain exact toolchain for offline reproduction
