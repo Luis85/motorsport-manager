@@ -62,3 +62,5 @@ loads fourteen drivers, six compounds and ten sets per driver; edits vehicle,
 tyre wear, setup, fuel/service tuning and weekend lap counts without rebuilding; rejects a malformed edit; deletes
 the source pack; and compares the exact restored session. This is Linux headless
 acceptance, not Windows execution or human usability evidence.
+
+Weather/surface coefficients and their compatibility rules: [authoring guide](weather-and-surface.md).

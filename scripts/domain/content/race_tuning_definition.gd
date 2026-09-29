@@ -3,6 +3,9 @@ extends RefCounted
 ## Validated, frozen parameter tables. No parsing, I/O or schema work in fixed steps.
 var _record: Dictionary = {}
 var _values: Dictionary = {}
+var _environment: Dictionary = RaceStateValue.read_only(LegacyEnvironment.VALUES)
+var environment: Dictionary:
+	get: return _environment
 var _fingerprint: String = "legacy-path-race-v1"
 var fuel: Dictionary:
 	get: return _values.fuel
@@ -25,6 +28,7 @@ static func legacy() -> RaceTuningDefinition:
 static func from_record(record: Variant) -> RaceTuningDefinition:
 	if not record is Dictionary: return null
 	if not ContentValidation.check(record, ContentSchema.definition("race_tuning")).is_empty(): return null
+	if record.has("environment") and not EnvironmentTuningSchema.semantic_errors(record.environment).is_empty(): return null
 	# A legal maximum-length race must still fit the existing serialized fuel bound.
 	if record.fuel.race_load_per_lap * 100 + record.fuel.race_reserve_laps > 200: return null
 	var service = record.service
@@ -43,6 +47,8 @@ static func from_record(record: Variant) -> RaceTuningDefinition:
 	for group in LegacyRaceTuning.VALUES:
 		tables[group] = record[group]
 	value._values = RaceStateValue.read_only(tables)
+	if record.has("environment"):
+		value._environment = RaceStateValue.read_only(record.environment)
 	value._fingerprint = RaceStateValue.fingerprint(record)
 	return value
 
@@ -53,7 +59,10 @@ func to_record() -> Dictionary:
 	return _record.duplicate(true)
 
 func view() -> Dictionary:
-	return _values.duplicate(true)
+	var result = _values.duplicate(true)
+	if _record.has("environment"):
+		result.environment = _environment.duplicate(true)
+	return result
 
 func race_fuel(lap_count: int) -> float:
 	return float(lap_count) * fuel.race_load_per_lap + fuel.race_reserve_laps
@@ -70,3 +79,6 @@ static func forecast_values(snapshot: Dictionary) -> Dictionary:
 
 static func mean_service(values: Dictionary, repair_only: bool) -> float:
 	return values.repair_base_seconds + values.repair_jitter_seconds * 0.5 if repair_only else values.tyre_base_seconds + values.tyre_jitter_seconds * 0.5
+
+static func environment_values(snapshot: Dictionary) -> Dictionary:
+	return forecast_values(snapshot).get("environment", LegacyEnvironment.VALUES)

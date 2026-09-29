@@ -73,7 +73,10 @@ static func definition(kind: String) -> Dictionary:
 		"weekend":
 			properties.merge(WeekendDefinition.fields())
 		_: return {}
-	return object(properties)
+	var required = properties.keys()
+	if kind == "race_tuning":
+		properties.environment = EnvironmentTuningSchema.definition()
+	return object(properties, required)
 
 static func document(kind: String) -> Dictionary:
 	var result = manifest() if kind == "pack" else definition(kind)

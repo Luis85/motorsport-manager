@@ -64,6 +64,11 @@ static func restore() -> Dictionary:
 	var car: RaceCar = sim.cars[sim.player_ids()[0]]
 	result.tuning_id = sim.tuning.to_record().get("id", "legacy")
 	result.tuning_hash = sim.tuning.fingerprint
+	result.environment_hash = RaceStateValue.fingerprint(sim.tuning.environment)
+	result.cloud_response_per_second = sim.tuning.environment.weather.cloud_response_per_second
+	result.water_drainage = sim.tuning.environment.surface.evolution.water_drainage
+	result.surface_water = sim.average(sim.water)
+	result.surface_hash = RaceStateValue.fingerprint(sim.surface)
 	result.service_base_seconds = sim.tuning.service.tyre_base_seconds
 	result.race_fuel = sim.tuning.race_fuel(sim.laps)
 	result.weekend_id = sim.weekend_definition.id if sim.weekend_definition != null else "custom"

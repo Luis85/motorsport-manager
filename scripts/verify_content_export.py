@@ -94,6 +94,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                     or first["player_ids"] != [12, 13] or first["sets_per_driver"] != 10
                     or first["compound_count"] != 6 or first["compound_wear"] != 2.7
                     or first["wing"] != 3 or first["laps"] != 8
+                    or first["cloud_response_per_second"] != 0.005 or first["water_drainage"] != 0.0015
                     or first["service_base_seconds"] != 6 or abs(first["race_fuel"] - 12.6) > 1e-8
                     or first["weekend_id"] != "local.club.weekend.sprint"
                     or first["weather_mode"] != "scripted_training" or first["starting_compound"] != "local.club.tyre.endurance"):
@@ -114,17 +115,32 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             tuning = json.loads(tuning_path.read_text(encoding="utf-8"))
             tuning["service"]["tyre_base_seconds"] = 7
             tuning["fuel"]["race_reserve_laps"] = 4
+            tuning["environment"]["weather"]["cloud_response_per_second"] = 0.01
+            tuning["environment"]["surface"]["evolution"]["water_drainage"] = 0.002
+            tuning["environment"]["surface"]["initial"]["dry_water"] = 0.2
             tuning_path.write_text(json.dumps(tuning), encoding="utf-8")
             weekend_path = pack / "weekends/sprint.json"
             weekend = json.loads(weekend_path.read_text(encoding="utf-8"))
             weekend["settings"]["laps"] = 9
+            weekend["settings"]["weather_mode"] = "seeded"
             weekend_path.write_text(json.dumps(weekend), encoding="utf-8")
             edited = probe(installed, args, isolated, env, runtime_uid=runtime_uid)
             if (edited["top_speed_mps"] != 56 or edited["compound_wear"] != 2.8 or edited["wing"] != 4
+                    or edited["weather_mode"] != "seeded" or edited["cloud_response_per_second"] != 0.01
+                    or edited["water_drainage"] != 0.002 or edited["surface_water"] <= first["surface_water"]
                     or edited["service_base_seconds"] != 7 or edited["laps"] != 9
                     or abs(edited["race_fuel"] - 14.8) > 1e-8
-                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash"])):
+                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash", "environment_hash", "surface_hash"])):
                 raise RuntimeError("The unchanged executable did not observe the external edit.")
+            # Reject a cross-field environmental defect before trying a separate vehicle defect.
+            valid_tuning = json.dumps(tuning)
+            tuning["environment"]["weather"]["target_wet_base"] = 1.0
+            tuning_path.write_text(json.dumps(tuning), encoding="utf-8")
+            environment_rejection = probe(installed, ["--content-pack=" + str(pack), "--content-validate"], isolated, env, False, runtime_uid)
+            diagnostic = environment_rejection["diagnostics"][0]
+            if diagnostic["field"] != "/environment/weather/target_wet_span":
+                raise RuntimeError("Environmental rejection did not identify its conflicting field.")
+            tuning_path.write_text(valid_tuning, encoding="utf-8")
             data["top_speed_mps"] = -1
             definition.write_text(json.dumps(data), encoding="utf-8")
             rejected = probe(installed, ["--content-pack=" + str(pack), "--content-validate"], isolated, env, False, runtime_uid)
@@ -139,6 +155,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                             "runtime_uid": runtime_uid if runtime_uid is not None else os.geteuid(),
                             "unicode_and_space_path": True, "first": first, "edited": edited,
                             "restored_without_pack": restored, "rejection": rejected,
+                            "environment_rejection": environment_rejection,
                             "seconds": round(time.monotonic() - started, 3)})
             install.chmod(0o755)
     return {"passed": True, "source": source_digest(ROOT), "engine": version, "platform": platform.platform(),

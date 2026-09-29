@@ -108,3 +108,9 @@ process coefficients, most rival/racecraft policies, incident and neutralization
 thresholds, wheel-model coefficients, track-object/presentation catalogs and
 provider-composition authoring still need their planned migrations. New executable
 mechanics, command permissions and simulation algorithms remain code by design.
+
+## Weather and surface extension
+
+The optional frozen `environment` object is now supported. Its complete field
+reference, compatibility policy and unchanged safety boundaries are described in
+[Weather and surface authoring](weather-and-surface.md).

@@ -8,12 +8,13 @@ static func decision_key(advice: Dictionary) -> String:
 	return (str(advice.key) + str(advice.weather_key)).sha256_text()
 
 static func prefer_set(s: Dictionary, candidate_set: Dictionary, existing: Dictionary) -> bool:
+	var policy: Dictionary = RaceTuningDefinition.environment_values(s).weather_policy
 	if existing.is_empty(): return true
 	var remaining = minf(MAX_LAPS, maxf(0, s.laps - s.gate.distance / s.length))
 	var candidate_wear = RaceForecaster.tyre_spec(s, candidate_set.compound).wear * RaceTuningDefinition.forecast_values(s).pace.wear_modes[s.own.pace] * RaceTuningDefinition.forecast_values(s).pace.forecast_wear_factor * remaining
 	var existing_wear = RaceForecaster.tyre_spec(s, existing.compound).wear * RaceTuningDefinition.forecast_values(s).pace.wear_modes[s.own.pace] * RaceTuningDefinition.forecast_values(s).pace.forecast_wear_factor * remaining
-	var candidate_safe = RaceForecaster.limiting_life(candidate_set, candidate_set.life - candidate_wear) >= 10
-	var existing_safe = RaceForecaster.limiting_life(existing, existing.life - existing_wear) >= 10
+	var candidate_safe = RaceForecaster.limiting_life(candidate_set, candidate_set.life - candidate_wear) >= policy.safe_tread
+	var existing_safe = RaceForecaster.limiting_life(existing, existing.life - existing_wear) >= policy.safe_tread
 	if candidate_safe != existing_safe: return candidate_safe
 	return RaceForecaster.lap_time(s, candidate_set, candidate_set.life - candidate_wear * 0.5) < RaceForecaster.lap_time(s, existing, existing.life - existing_wear * 0.5)
 
@@ -25,6 +26,7 @@ static func planned_stops(s: Dictionary) -> Array:
 	return stops
 
 static func score(source: Dictionary, outlook: Dictionary, stops: Array, target_water: float) -> Dictionary:
+	var policy: Dictionary = RaceTuningDefinition.environment_values(source).weather_policy
 	var s = source.duplicate(true)
 	var item = RaceForecaster.set_by_id(s, s.own.starting_set)
 	if item.is_empty(): return {"available": false, "reason": "Starting set unavailable."}
@@ -43,20 +45,21 @@ static func score(source: Dictionary, outlook: Dictionary, stops: Array, target_
 		if index < stops.size() and progress >= stops[index].at - 0.00001:
 			item = RaceForecaster.set_by_id(s, stops[index].set_id); life = item.life
 			var pit = RaceForecaster.pit_prediction(s, stops[index].at * s.length)
-			pit_cost += pit.loss + pit.warmup; traffic_cost += pit.traffic.size() * 0.8; index += 1
+			pit_cost += pit.loss + pit.warmup; traffic_cost += pit.traffic.size() * policy.traffic_seconds_per_car; index += 1
 		var step = minf(0.5, end - progress)
 		if index < stops.size(): step = minf(step, maxf(0.00001, stops[index].at - progress))
 		var fraction = minf(1, (progress - start + step * 0.5) * s.reference_lap / outlook.horizon_seconds)
 		# Retain part of the observed wettest-sector offset; never assume the line is uniformly dry.
-		var contrast = maxf(0, outlook.observed.sectors[outlook.worst_sector] - outlook.observed.mean) * 0.5
+		var contrast = maxf(0, outlook.observed.sectors[outlook.worst_sector] - outlook.observed.mean) * policy.wettest_sector_factor
 		s.water = clampf(lerpf(outlook.observed.mean, target_water, fraction) + contrast, 0, 1)
 		var wear = RaceForecaster.wear_rate(s, item)
 		time += RaceForecaster.lap_time(s, item, life - wear * step * 0.5) * step
 		life = maxf(0, life - wear * step); minimum = minf(minimum, RaceForecaster.limiting_life(item, life)); progress += step
 	return {"available": true, "seconds": time + pit_cost + traffic_cost, "minimum_life": minimum,
-		"pit_cost": pit_cost, "traffic_cost": traffic_cost, "risk": "high" if minimum < 10 or s.fuel_margin < 0 else ("moderate" if minimum < 25 else "lower")}
+		"pit_cost": pit_cost, "traffic_cost": traffic_cost, "risk": "high" if minimum < policy.safe_tread or s.fuel_margin < 0 else ("moderate" if minimum < policy.moderate_tread else "lower")}
 
 static func candidate(s: Dictionary, outlook: Dictionary, id: String, title: String, stops: Array) -> Dictionary:
+	var allowance: float = RaceTuningDefinition.environment_values(s).weather_policy.model_allowance_seconds
 	var cases: Array = []
 	for weather_case in outlook.cases:
 		var result = score(s, outlook, stops, weather_case.water)
@@ -68,7 +71,7 @@ static func candidate(s: Dictionary, outlook: Dictionary, id: String, title: Str
 		if result.risk == "high": risk = "high"
 		elif result.risk == "moderate" and risk != "high": risk = "moderate"
 	return {"id": id, "title": title, "available": true, "cases": cases, "seconds": cases[1].seconds,
-		"low": maxf(0, low - 3), "high": high + 3, "risk": risk, "stops": stops.duplicate(true)}
+		"low": maxf(0, low - allowance), "high": high + allowance, "risk": risk, "stops": stops.duplicate(true)}
 
 static func revised(stops: Array, at: float, set_id: String) -> Array:
 	var result: Array = [{"at": at, "set_id": set_id}]
@@ -78,6 +81,7 @@ static func revised(stops: Array, at: float, set_id: String) -> Array:
 	return result
 
 static func evaluate(s: Dictionary, outlook: Dictionary) -> Dictionary:
+	var allowance: float = RaceTuningDefinition.environment_values(s).weather_policy.model_allowance_seconds
 	var planned = planned_stops(s)
 	var current = candidate(s, outlook, "current", "Keep approved plan" if not planned.is_empty() else "Stay on fitted set", planned)
 	var options: Array = [current]
@@ -106,7 +110,7 @@ static func evaluate(s: Dictionary, outlook: Dictionary) -> Dictionary:
 		option.gain_low = INF; option.gain_high = -INF
 		for i in range(3):
 			var gain = current.cases[i].seconds - option.cases[i].seconds
-			option.gain_low = minf(option.gain_low, gain - 3); option.gain_high = maxf(option.gain_high, gain + 3)
+			option.gain_low = minf(option.gain_low, gain - allowance); option.gain_high = maxf(option.gain_high, gain + allowance)
 	var progress = maxf(0, s.own.distance / s.length) if s.phase == "race" else 0.0
 	return {"version": VERSION, "driver_id": int(s.own.id), "time": s.time, "key": s.key, "weather_key": outlook.key,
 		"outlook": outlook, "options": options, "replacement_id": chosen.get("id", ""), "gate": s.gate,

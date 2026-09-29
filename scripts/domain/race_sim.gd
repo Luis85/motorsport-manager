@@ -85,8 +85,10 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 	intensity = options.get("intensity", "standard")
 	seed_value = int(options.get("seed", 7314)) & 0xffffffff
 	rng_state = seed_value
-	for i in range(96): water.append(0.6 if scenario == "wet" else 0.0); rubber.append(0.12)
-	surface = RaceSurface.create(track, water, rubber)
+	for i in range(RaceSurface.STATIONS):
+		water.append(tuning.environment.surface.initial.wet_water if scenario == "wet" else tuning.environment.surface.initial.dry_water)
+		rubber.append(tuning.environment.surface.initial.rubber)
+	surface = RaceSurface.create(track, water, rubber, tuning.environment.surface)
 	if options.has("setup_definition"):
 		setup_definition = SetupDefinition.from_record(options.setup_definition)
 		if setup_definition == null:
@@ -231,25 +233,18 @@ func average(values: Array) -> float:
 	return sum / maxf(1, values.size())
 
 func _base_update_surface() -> void:
-	var target = 0.0; var label = "Clear skies"
-	if scenario == "wet":
-		target = 0.65 if phase != "race" or clock < 170 else (0.18 if clock < 280 else 0.0)
-		label = "Steady rain" if target > 0.4 else ("Rain easing" if target > 0 else "Drying line")
-	elif scenario == "changeable" and phase == "race":
-		var expected = track.estimate * laps
-		var fraction = clock / maxf(120, expected)
-		target = 0.8 if fraction > 0.32 and fraction < 0.61 else (0.2 if fraction > 0.25 and fraction < 0.7 else 0.0)
-		label = "Heavy shower" if target > 0.5 else ("Light rain" if target > 0 else "Clear skies")
-	rain = target
+	var training = WeekendWeather.training(scenario, phase, clock, track.estimate * laps, tuning.environment.training)
+	var label: String = training.label
+	rain = training.rain
 	if label != weather_name: weather_name = label; post("weather", label + ". Surface water changes gradually.")
 	surface_accumulator += STEP
 	if surface_accumulator + 0.0000001 >= RaceSurface.INTERVAL:
 		surface_accumulator = maxf(0, surface_accumulator - RaceSurface.INTERVAL)
-		RaceSurface.evolve(surface, rain, RaceSurface.INTERVAL, total_time)
+		RaceSurface.evolve(surface, rain, RaceSurface.INTERVAL, total_time, tuning.environment.surface)
 		RaceSurface.profiles(surface, water, rubber)
 
 func surface_at(c: RaceCar) -> Dictionary:
-	return RaceSurface.sample(surface, c.distance / track.length, c.lane)
+	return RaceSurface.sample(surface, c.distance / track.length, c.lane, tuning.environment.surface)
 
 func recommended_compound() -> String:
 	var wet = average(water)
@@ -394,7 +389,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	c.distance = next
 	wear_car(c, moved * s.path_scale, cell, effects, local)
 	if c.previous_route == "track":
-		var touched = RaceSurface.deposit(surface, track.length, c, old_distance, next, s.curvature)
+		var touched = RaceSurface.deposit(surface, track.length, c, old_distance, next, s.curvature, tuning.environment.surface)
 		if not touched.is_empty(): RaceSurface.profiles(surface, water, rubber, touched)
 	if phase == "race": race_crossings(c, old_distance, next)
 	elif is_run_session(): qualifying_crossings(c, old_distance, next)
@@ -475,7 +470,7 @@ func _base_plan_pit_gate(c: RaceCar) -> void:
 	RacePitService.plan_pit_gate(self, c)
 
 func _base_incident(c: RaceCar) -> void:
-	RaceSurface.contaminate(surface, c.distance / track.length, c.lane, 0.20, c.health < 50)
+	RaceSurface.contaminate(surface, c.distance / track.length, c.lane, tuning.environment.surface.incident.debris, c.health < tuning.environment.surface.incident.oil_health_threshold, tuning.environment.surface.incident)
 	stats.incidents += 1
 	var outcome = random_value()
 	if outcome < 0.08:

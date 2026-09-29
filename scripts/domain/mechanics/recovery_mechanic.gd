@@ -223,7 +223,7 @@ func incident(sim: RaceSim, c: RaceCar) -> void:
 	if c.dnf or c.finished: return
 	var observed = RaceReliability.observation(c, sim.reliability(int(c.id)))
 	sim.stats.incidents += 1
-	RaceSurface.contaminate(sim.surface, c.distance / sim.track.length, c.lane, 0.20, c.health < 50)
+	RaceSurface.contaminate(sim.surface, c.distance / sim.track.length, c.lane, sim.tuning.environment.surface.incident.debris, c.health < sim.tuning.environment.surface.incident.oil_health_threshold, sim.tuning.environment.surface.incident)
 	if sim.random_value() < 0.08:
 		sim.retire(c, "Barrier impact"); return
 	c.loss = 3.0 + sim.random_value() * 7.0; c.damage = minf(1000, c.damage + 4.0 + sim.random_value() * 10.0)
