@@ -6,12 +6,12 @@ signal navigated
 signal edit_cancelled
 signal edit_started
 signal edited
+signal gesture_committed(observed_revision: int)
 signal selection_changed
 signal car_selected(id: int)
 signal measured(metres: float)
 var selection_kind = "road"
 var selection_ids: Array[int] = []
-var drag_origins: Dictionary = {}
 var marquee_start = Vector2.INF
 var marquee_end = Vector2.INF
 var sketch = TrackSketch.new()
@@ -33,8 +33,8 @@ var rich_scenery = true
 var selected_object = -1
 var scenery_type = "tree"
 var diagnostics: Array = []
-var _gesture_changed = false
-var _drag_offset = Vector2.ZERO
+var gesture = TrackCanvasGesture.new()
+var document_revision: int = 0
 var surface_layer: SurfaceOverlay
 var geometry: TrackGeometry
 var document: Dictionary = {}
@@ -56,7 +56,8 @@ var fit_view_enabled = true
 var fit_padding = Vector2(90, 110)
 var center = Vector2.ZERO
 var panning = false
-var dragging = ""
+var dragging: String:
+	get: return gesture.kind
 var last_mouse = Vector2.ZERO
 var measure_start = Vector2.INF
 var measure_end = Vector2.INF
@@ -115,6 +116,10 @@ func _ready() -> void:
 	navigated.connect(func(): fit_view_enabled = false)
 
 func set_track(g: TrackGeometry, live_document: Dictionary = {}) -> void:
+	# Replacement/undo/redo never retarget an in-flight pointer operation.
+	gesture.reset()
+	marquee_start = Vector2.INF
+	marquee_end = Vector2.INF
 	geometry = g if not live_document.is_empty() else g.detached_copy()
 	if reference_preview: reference_preview.stop()
 	preview_running = false
@@ -363,156 +368,33 @@ func draw_cars(target: Control) -> void:
 		for i in range(5): target.draw_circle(Vector2(x + i * 48, 64), 17, Color("d96858") if i < count else Color("392929"))
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		last_mouse = event.position
-		if event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.pressed:
-			var before = world(event.position)
-			zoom = clampf(zoom * (1.15 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1 / 1.15), 0.025, 20)
-			center += before - world(event.position); navigated.emit(); queue_redraw(); accept_event(); return
-		if event.button_index in [MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]: panning = event.pressed; navigated.emit(); accept_event(); return
-		if event.button_index != MOUSE_BUTTON_LEFT: return
-		grab_focus()
-		if editing and mode in ["trace_freehand", "trace_pen"]:
-			sketch_input(event); accept_event(); return
-		if not event.pressed:
-			if marquee_start != Vector2.INF:
-				finish_marquee(); accept_event(); return
-			_commit_drag()
-			accept_event(); return
-		var p = world(event.position)
-		if editing and show_profile and geometry and Rect2(Vector2(20, size.y - 126), Vector2(size.x - 40, 75)).has_point(event.position):
-			var fraction = clampf((event.position.x - 28) / maxf(1, size.x - 56), 0, 0.9999)
-			selected = geometry.source_segments[int(fraction * geometry.points.size())]
-			selected_object = -1; selection_changed.emit(); queue_redraw(); return
-		if not editing:
-			if visual_source != null:
-				var current = visual_source.capture()
-				var best = 22.0; var id = -1
-				for c in current.get("cars", []):
-					var distance = screen(c.current_position).distance_to(event.position)
-					if distance < best: best = distance; id = c.id
-				if id >= 0: car_selected.emit(id)
-			return
-		if mode == "measure":
-			if measure_start == Vector2.INF or measure_end != Vector2.INF: measure_start = p; measure_end = Vector2.INF
-			else: measure_end = p; measured.emit(measure_start.distance_to(p))
-			queue_redraw(); return
-		if mode not in ["measure", "select"] and not layer_editable(tool_layer()): accept_event(); return
-		if mode == "reference":
-			if document.has("reference"): _begin_drag("reference", p)
-			return
-		if mode == "scenery":
-			edit_started.emit(); document.objects.append({"type": scenery_type, "x": p.x, "y": p.y, "h": 0, "scale": 1, "rotation": 0}); selected_object = document.objects.size() - 1; selected = -1; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		if mode == "pit":
-			if document.pits.is_empty(): return
-			selected_pit = -1
-			for i in range(document.pits[0].nodes.size()):
-				if screen(TrackDocument.point(document.pits[0].nodes[i])).distance_to(event.position) < 12: selected_pit = i; break
-			if selected_pit >= 0: _begin_drag("pit", p - TrackDocument.point(document.pits[0].nodes[selected_pit]))
-			elif event.shift_pressed:
-				edit_started.emit(); document.pits[0].nodes.append(TrackDocument.node_at(p, 5, TrackDocument.next_node_id(document.pits[0].nodes))); _rebuild_due = true; edited.emit()
-			selection_changed.emit(); queue_redraw(); return
-		if layer_editable("road") and selection_ids.size() <= 1 and selected >= 0 and selected < document.nodes.size():
-			for key in ["in", "out"]:
-				var n = document.nodes[selected]
-				if screen(TrackDocument.point(n) + TrackDocument.handle(n, key)).distance_to(event.position) < 11:
-					_begin_drag(key, p - TrackDocument.point(n) - TrackDocument.handle(n, key)); return
-		if mode == "start" and geometry:
-			edit_started.emit(); document.start = geometry.nearest(p).fraction; _rebuild_due = true; edited.emit(); return
-		if mode == "draw":
-			edit_started.emit(); document.nodes.append(TrackDocument.node_at(p, 14.0, TrackDocument.next_node_id(document.nodes))); selected = document.nodes.size() - 1
-			_rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		if (mode == "insert" or event.double_click) and geometry and layer_editable("road"):
-			var nearest = geometry.nearest(p)
-			if nearest.distance * zoom < 50:
-				edit_started.emit(); selected = TrackDocument.split_segment(document, nearest.segment, clampf(nearest.t, 0.03, 0.97)); _rebuild_due = true; edited.emit(); selection_changed.emit(); queue_redraw(); return
-		var kind = "road"; var hit = -1
-		if mode != "select_objects":
-			for i in range(document.nodes.size()):
-				if layer_editable("road") and screen(TrackDocument.point(document.nodes[i])).distance_to(event.position) < 11: hit = i; break
-		if hit < 0:
-			kind = "scenery"
-			for i in range(document.objects.size() - 1, -1, -1):
-				if layer_editable("scenery") and screen(TrackDocument.point(document.objects[i])).distance_to(event.position) < 14: hit = i; break
-		if hit >= 0:
-			var ids: Array = selection_ids.duplicate() if selection_kind == kind else []
-			var linked = group_members(hit) if kind == "scenery" else [hit]
-			if event.shift_pressed:
-				var remove = hit in ids
-				for index in linked:
-					if remove: ids.erase(index)
-					elif index not in ids: ids.append(index)
-			elif hit not in ids: ids = linked
-			select_items(kind, ids)
-			if not event.shift_pressed and not selection_ids.is_empty():
-				drag_origins.clear()
-				var items: Array = document.nodes if kind == "road" else document.objects
-				for index in selection_ids: drag_origins[index] = TrackDocument.point(items[index])
-				_begin_drag("multi", p)
-		else:
-			if not event.shift_pressed: select_items("scenery" if mode == "select_objects" else selection_kind, [])
-			marquee_start = p; marquee_end = p
-		queue_redraw()
-	elif event is InputEventMouseMotion:
-		last_mouse = event.position
-		if panning:
-			center -= Vector2(event.relative.x, -event.relative.y) / zoom; queue_redraw(); return
-		if editing and mode == "trace_freehand" and not stroke.is_empty():
-			var point = world(event.position)
-			if stroke[-1].distance_to(point) * zoom > 3 and stroke.size() < 12000: stroke.append(point)
-			queue_redraw(); return
-		if marquee_start != Vector2.INF:
-			marquee_end = world(event.position); queue_redraw(); return
-		if not dragging.is_empty():
-			var p = world(event.position) - _drag_offset
-			if not _gesture_changed:
-				if event.relative.length_squared() < 0.25: return
-				edit_started.emit(); _gesture_changed = true
-			if event.ctrl_pressed: p = p.snapped(Vector2(5, 5))
-			if dragging == "multi":
-				var items: Array = document.nodes if selection_kind == "road" else document.objects
-				for index in drag_origins:
-					var target: Vector2 = drag_origins[index] + p
-					if absf(target.x) > 100000 or absf(target.y) > 100000: return
-				for index in drag_origins:
-					var target: Vector2 = drag_origins[index] + p
-					items[index].x = target.x; items[index].y = target.y
-			elif dragging == "reference":
-				document.reference.x += event.relative.x / zoom; document.reference.y -= event.relative.y / zoom
-			elif dragging == "object":
-				document.objects[selected_object].x = p.x; document.objects[selected_object].y = p.y
-			elif dragging == "pit":
-				document.pits[0].nodes[selected_pit].x = p.x; document.pits[0].nodes[selected_pit].y = p.y
-			elif selected >= 0:
-				var n = document.nodes[selected]
-				if dragging == "node": n.x = p.x; n.y = p.y
-				else: TrackDocument.set_handle(n, dragging, p - TrackDocument.point(n))
-			_rebuild_due = dragging not in ["reference", "object"] and not (dragging == "multi" and selection_kind == "scenery"); queue_redraw()
-			if (dragging in ["object", "reference"] or dragging == "multi" and selection_kind == "scenery") and world_layer: world_layer.queue_redraw()
-		elif mode == "measure" and measure_start != Vector2.INF: queue_redraw()
+	TrackCanvasInput.dispatch(self, event)
 
 func _begin_drag(kind: String, offset: Vector2) -> void:
-	preview_running = false
-	dragging = kind; _drag_offset = offset; _gesture_changed = false
+	gesture.begin(self, kind, offset)
 
 func _commit_drag() -> void:
-	if dragging.is_empty(): return
-	dragging = ""; _rebuild_due = false
-	if _gesture_changed:
-		_gesture_changed = false; edited.emit(); selection_changed.emit()
-	queue_redraw()
+	gesture.commit(self)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		if not stroke.is_empty() or pen_anchor != Vector2.INF or marquee_start != Vector2.INF:
-			stroke.clear(); pen_anchor = Vector2.INF; marquee_start = Vector2.INF; queue_redraw(); get_viewport().set_input_as_handled(); return
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and not dragging.is_empty():
-		dragging = ""; _rebuild_due = false
-		if _gesture_changed: _gesture_changed = false; edit_cancelled.emit()
-		queue_redraw(); get_viewport().set_input_as_handled()
+	if not event is InputEventKey or not event.pressed or event.keycode != KEY_ESCAPE:
+		return
+	if not stroke.is_empty() or pen_anchor != Vector2.INF or marquee_start != Vector2.INF:
+		stroke.clear()
+		pen_anchor = Vector2.INF
+		marquee_start = Vector2.INF
+		queue_redraw()
+		get_viewport().set_input_as_handled()
+	elif not dragging.is_empty():
+		gesture.cancel(self)
+		get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT: panning = false; _commit_drag()
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		panning = false
+		_commit_drag()
+	elif what == NOTIFICATION_EXIT_TREE:
+		gesture.reset()
 
 func layer_visible(key: String) -> bool:
 	return not editing or layer_state.get(key, {}).get("visible", true)
@@ -544,6 +426,7 @@ func toggle_preview() -> void:
 	queue_redraw()
 
 func select_items(kind: String, ids: Array) -> void:
+	gesture.cancel(self)
 	selection_kind = kind; selection_ids = TrackEdit.indices(document, kind, ids)
 	selected = selection_ids[0] if kind == "road" and not selection_ids.is_empty() else -1
 	selected_object = selection_ids[0] if kind == "scenery" and not selection_ids.is_empty() else -1

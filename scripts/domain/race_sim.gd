@@ -115,121 +115,27 @@ func transition(next: String) -> void:
 
 func _base_command(action: String, payload: Dictionary = {}) -> bool:
 	last_error = ""
+	# Target validation precedes every base command, including clock/unknown input.
 	var target = payload.get("id", selected_id)
 	if not RaceCheckpoint.integral(target, 0, cars.size() - 1): return fail("Unknown driver.")
-	var id = int(target)
-	var c = cars[id]
-	match action:
-		"qualify":
-			if phase != "briefing": return fail("Qualifying is only available at the briefing.")
-			transition("qualifying")
-			for car in cars:
-				car.route = "garage"
-				if car.auto: car.next_compound = tyre_rules.qualifying_start(average(water)); car.next_set_id = ""
-		"close_qualifying":
-			if phase != "qualifying" or qual_closed: return fail("Qualifying is not open.")
-			qual_closed = true; post("flag", "Qualifying chequered: active flying laps may finish; no new runs.")
-		"prepare_race":
-			if phase not in ["briefing", "qualifying_results"]: return fail("Finish the current session first.")
-			transition("race_preparation")
-			for car in cars:
-				car.route = "track"; car.distance = -(car.grid - 1) * track.grid_spacing; car.previous_distance = car.distance
-				car.lane = (-1 if car.grid % 2 else 1) * 2.0
-				car.next_compound = recommended_compound(); car.next_set_id = ""
-				car.fuel = laps * 1.13 + 1.5; car.stints.clear(); car.scheduled_lap = -1
-				car.last_lap = 0.0; car.best_lap = 0.0; car.lap_start = 0.0; car.pit_lap = false
-				car.sectors = [0.0, 0.0, 0.0]; car.sector_start = 0.0; car.yield_to = -1; car.yield_side = 0.0; car.blue = false
-		"formation":
-			if phase != "race_preparation": return fail("Prepare the race before formation.")
-			for car in cars:
-				if TyreInventory.planned(car).is_empty(): return fail(car.short + ": select a usable starting set before formation.")
-			for car in cars:
-				var item = TyreInventory.planned(car); TyreInventory.mount(car, item.id)
-				car.next_set_id = ""; car.formation_done = false; car.speed = 0.0; car.pit_order = false
-			transition("formation")
-		"lights":
-			if phase != "grid_ready": return fail("All cars must complete formation first.")
-			transition("lights")
-		"pause":
-			if phase not in ACTIVE: return fail("No live session to pause.")
-			paused = not paused
-		"speed":
-			if not RaceCheckpoint.integral(payload.get("value", 1), 1, 16): return fail("Invalid simulation speed.")
-			var value = int(payload.get("value", 1))
-			if value not in [1, 2, 4, 8, 16]: return fail("Invalid simulation speed.")
-			speed = value
-		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup", "repair", "select_set", "schedule_pit", "cancel_schedule", "setup_all", "brake_bias", "battle_mode":
-			if not c.player: return fail("You manage your two entered drivers only.")
-			if c.dnf or c.finished: return fail("This car is no longer running.")
-			match action:
-				"pace", "engine":
-					if not RaceCheckpoint.integral(payload.get("value", 1), 0, 2): return fail("Invalid driving mode.")
-					var value = int(payload.get("value", 1))
-					c[action] = value; c.auto = false
-				"select_set":
-					if c.route == "pit": return fail("The tyre plan is locked until pit exit.")
-					var item = TyreInventory.find(c, str(payload.get("set_id", "")))
-					if not WheelTyres.usable(item): return fail("That set is exhausted or does not belong to this driver.")
-					if phase == "race" and item.id == c.set_id: return fail("Choose a different set for the next stop.")
-					c.next_compound = item.compound; c.next_set_id = item.id
-				"schedule_pit":
-					if phase != "race" or c.route != "track" or c.pit_order: return fail("Schedule an on-track car with no existing pit order.")
-					var lap = payload.get("lap", -1)
-					if not RaceCheckpoint.integral(lap, 1, laps - 1): return fail("Choose a racing lap before the final lap.")
-					var gate = (int(lap) - 1) * track.length + track.pit_entry
-					var stopping = maxf(0, c.speed ** 2 - track.pit_limit ** 2) / (2 * track.vehicle_definition.braking_mps2 * 0.5) + 12
-					if gate - c.distance <= stopping: return fail("Too late for that lap's pit entry; choose a later lap.")
-					if TyreInventory.planned(c, true).is_empty(): return fail("No usable replacement set. Select another compound or set.")
-					c.scheduled_lap = int(lap); c.pit_gate = gate; c.pit_order = true; c.pit_deferred = false; c.auto = false
-				"cancel_schedule":
-					if c.scheduled_lap < 1 or c.route != "track": return fail("There is no cancellable scheduled stop.")
-					c.scheduled_lap = -1; c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false
-				"repair":
-					if not payload.get("value", true) is bool: return fail("Choose an explicit repair state.")
-					c.repair = payload.get("value", true)
-				"auto":
-					if not payload.get("value", not c.auto) is bool: return fail("Choose an explicit delegation state.")
-					c.auto = payload.get("value", not c.auto)
-				"compound":
-					var value = str(payload.get("value", tyre_rules.initial("dry")))
-					if tyre_rules.spec(value).is_empty(): return fail("Unknown tyre compound.")
-					if c.route == "pit": return fail("The tyre plan is locked until pit exit.")
-					if TyreInventory.choose(c, value, phase == "race").is_empty(): return fail("No usable set of that compound remains.")
-					c.next_compound = value; c.next_set_id = ""
-				"pit":
-					if phase != "race" or c.route != "track": return fail("Pit calls require a car racing on track.")
-					if TyreInventory.planned(c, true).is_empty(): return fail("No usable replacement set. Select another compound or set.")
-					c.scheduled_lap = -1; queue_pit(c); c.auto = false
-				"cancel_pit":
-					if c.route != "track": return fail("Already committed to the pit lane.")
-					c.pit_order = false; c.pit_gate = -1.0; c.pit_deferred = false; c.scheduled_lap = -1
-				"send":
-					if phase != "qualifying" or qual_closed or c.route != "garage": return fail("Garage release unavailable.")
-					if TyreInventory.planned(c).is_empty(): return fail("No usable set selected for this run.")
-					leave_garage(c)
-				"recall":
-					if phase != "qualifying" or c.route != "track": return fail("Only an on-track qualifying car can be recalled.")
-					c.qual_state = "inlap"; c.hot_valid = false; c.invalid_reason = "Recalled by the pit wall"
-				"setup", "setup_all":
-					if phase not in ["briefing", "race_preparation"] and not (is_run_session() and c.route == "garage"): return fail("Mechanical setup changes require the garage or race preparation.")
-					var changes = {"wing": payload.get("value", setup_definition.defaults().wing)} if action == "setup" else payload.get("values", {})
-					if not changes is Dictionary or changes.is_empty(): return fail("Choose at least one setup adjustment.")
-					for key in changes:
-						if not setup_definition.specs().has(key) or not RaceCheckpoint.integral(changes[key], setup_definition.specs()[key][0], setup_definition.specs()[key][1]): return fail("Setup value is outside the available range.")
-					for key in changes: c.car_setup[key] = int(changes[key])
-					c.setup = c.car_setup.wing
-				"brake_bias":
-					if phase != "race" or c.route != "track": return fail("Live brake bias is available on the racing track.")
-					if not RaceCheckpoint.integral(payload.get("value"), setup_definition.specs().bias[0], setup_definition.specs().bias[1]): return fail("Brake bias is outside the selected setup profile.")
-					c.car_setup.bias = int(payload.value)
-				"battle_mode":
-					if payload.get("value") not in ["patient", "balanced", "assertive"]: return fail("Choose patient, balanced or assertive racecraft.")
-					c.battle_mode = payload.value
-			post("radio", "%s · %s %s" % [c.short, action.replace("_", " "), str(payload.get("value", ""))])
-		_: return fail("Unknown command: " + action)
+	var car = cars[int(target)]
+	var error = ""
+	if action in RaceSessionOrders.ACTIONS:
+		error = RaceSessionOrders.apply(self, action, payload)
+	elif action in RaceDriverOrders.ACTIONS or action in RacePitOrders.ACTIONS:
+		if not car.player: return fail("You manage the two %s drivers only." % player_team_label())
+		if car.dnf or car.finished: return fail("This car is no longer running.")
+		if action in RacePitOrders.ACTIONS:
+			error = RacePitOrders.apply(self, car, action, payload)
+		else:
+			error = RaceDriverOrders.apply(self, car, action, payload)
+		if not error.is_empty(): return fail(error)
+		post("radio", "%s · %s %s" % [car.short, action.replace("_", " "), str(payload.get("value", ""))])
+	else:
+		return fail("Unknown command: " + action)
+	if not error.is_empty(): return fail(error)
 	commands.append({"tick": snappedf(total_time, STEP), "action": action, "payload": payload.duplicate(true)})
 	return true
-
 func fail(message: String) -> bool:
 	last_error = message
 	return false
@@ -915,6 +821,12 @@ func has_mechanic(identity: String) -> bool:
 
 func mechanic_catalog() -> Array:
 	return mechanics.describe()
+
+func player_team_label() -> String:
+	for car in cars:
+		if car.player:
+			return str(car.entry_definition.values().team) if car.entry_definition != null else car.team
+	return "player-team"
 
 func player_ids() -> Array:
 	return cars.filter(func(car): return car.player).map(func(car): return car.id)

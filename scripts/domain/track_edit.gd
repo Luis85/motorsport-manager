@@ -79,3 +79,45 @@ static func group(d: Dictionary, selected: Array, remove: bool = false) -> Dicti
 
 static func failure(message: String) -> Dictionary:
 	return {"ok": false, "error": message}
+
+## Exact position-only moves preserve handles, rotation and unrelated records.
+## Validate all targets before returning a detached changed document.
+static func move_positions(d: Dictionary, kind: String, positions: Dictionary) -> Dictionary:
+	if kind not in ["road", "scenery", "pits"] or positions.is_empty():
+		return failure("Select at least one movable item.")
+	if kind == "pits" and d.pits.is_empty():
+		return failure("No pit lane is available.")
+	var source: Array = d.nodes if kind == "road" else (d.objects if kind == "scenery" else d.pits[0].nodes)
+	for index in positions:
+		if not index is int or index < 0 or index >= source.size():
+			return failure("A move target no longer exists.")
+		var p = positions[index]
+		if not p is Vector2 or not p.is_finite() or absf(p.x) > 100000 or absf(p.y) > 100000:
+			return failure("Move would exceed the authoring bounds.")
+	var copy = d.duplicate(true)
+	var items: Array = copy.nodes if kind == "road" else (copy.objects if kind == "scenery" else copy.pits[0].nodes)
+	for index in positions:
+		items[index].x = positions[index].x
+		items[index].y = positions[index].y
+	return {"ok": true, "document": copy}
+
+static func move_handle(d: Dictionary, index: int, key: String, position: Vector2) -> Dictionary:
+	if index < 0 or index >= d.nodes.size() or key not in ["in", "out"] or not position.is_finite():
+		return failure("A handle target is invalid.")
+	var relative = position - TrackDocument.point(d.nodes[index])
+	if absf(relative.x) > 10000 or absf(relative.y) > 10000:
+		return failure("Move would exceed handle bounds.")
+	var copy = d.duplicate(true)
+	TrackDocument.set_handle(copy.nodes[index], key, relative)
+	return {"ok": true, "document": copy}
+
+static func move_reference(d: Dictionary, delta: Vector2) -> Dictionary:
+	if not d.has("reference") or not delta.is_finite():
+		return failure("No movable reference is available.")
+	var position = TrackDocument.point(d.reference) + delta
+	if absf(position.x) > 100000 or absf(position.y) > 100000:
+		return failure("Move would exceed the authoring bounds.")
+	var copy = d.duplicate(true)
+	copy.reference.x = position.x
+	copy.reference.y = position.y
+	return {"ok": true, "document": copy}

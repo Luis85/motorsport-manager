@@ -41,6 +41,11 @@ func _ready() -> void:
 	replay_controller = ReplayController.new(); replay_controller.configure(self); add_child(replay_controller)
 	get_viewport().size_changed.connect(_scale_header)
 	show_menu()
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--standalone-smoke="):
+			var probe = load("res://scripts/composition/standalone_smoke.gd").new()
+			add_child(probe)
+			probe.start(self, arg.get_slice("=", 1))
 
 func clear_screen(name: String) -> void:
 	_scale_header()

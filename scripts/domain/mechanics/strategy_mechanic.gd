@@ -40,7 +40,7 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	var id = int(sim.player_ids()[0]) if global else int(payload.id)
 	var c = sim.cars[id]; var p = sim.policy(id)
 	var accepted_payload = payload.duplicate(true); accepted_payload.id = id
-	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running player-team driver can receive this command.")
+	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running %s driver can receive this command." % sim.player_team_label())
 	if action in ["pace", "engine"] and not RaceCheckpoint.integral(payload.get("value"), 0, 2): return sim.fail("Choose a valid driving mode.")
 	if action == "speed" and not RaceCheckpoint.integral(payload.get("value"), 1, 16): return sim.fail("Choose a valid playback speed.")
 	if action == "auto" and not payload.get("value") is bool: return sim.fail("Choose an explicit delegation state.")

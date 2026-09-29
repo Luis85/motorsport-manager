@@ -60,10 +60,12 @@ func _ready() -> void:
 	canvas = TrackCanvas.new(); canvas.configure_presentation(preferences); canvas.editing = true; canvas.show_line = true
 	canvas.draft_compiler = session.compile_draft
 	canvas.reference_preview = session.preview
+	canvas.document_revision = document_revision
 	canvas.set_track(geometry, document); content.add_child(canvas)
 	canvas.edit_started.connect(checkpoint)
 	canvas.edit_cancelled.connect(cancel_gesture)
 	canvas.edited.connect(recompile)
+	canvas.gesture_committed.connect(recompile)
 	canvas.selection_changed.connect(refresh_inspector)
 	canvas.sketch_changed.connect(func(): sketch_result.clear(); update_sketch_panel(); update_status())
 	canvas.measured.connect(func(distance): status.text = "Measured %.2f metres. Image calibration is available in Reference." % distance; refresh_inspector())
@@ -116,17 +118,16 @@ func perform(action: Callable, rebuild_inspector: bool = false) -> void:
 	checkpoint(); action.call(); recompile()
 	if rebuild_inspector: refresh_inspector()
 
-func recompile() -> void:
-	if not session.commit(document, document_revision):
-		var error = session.last_error
-		document = session.cancel(); document_revision = session.revision
-		canvas.document = document
-		canvas.queue_redraw()
-		sync_history()
-		refresh_inspector()
-		if status: status.text = error
-		return
+func recompile(observed_revision: int = -1) -> void:
+	var expected = document_revision if observed_revision < 0 else observed_revision
+	var error = ""
+	if not session.commit(document, expected):
+		error = session.last_error
+		document = session.cancel()
+
 	document_revision = session.revision
+	canvas.document_revision = document_revision
+	canvas.gesture.reset()
 	sync_history()
 	if not sketch_result.is_empty():
 		sketch_result.clear(); canvas.sketch_preview = null; canvas.sketch_note = "Document changed. Preview the trace again before replacing the road."
@@ -136,6 +137,9 @@ func recompile() -> void:
 		geometry = session.compile_draft(document, vehicle); findings = session.diagnostics(geometry); canvas.diagnostics = findings; canvas.set_track(geometry, document)
 	else: canvas.document = document; canvas.queue_redraw()
 	update_status()
+	if not error.is_empty():
+		refresh_inspector()
+		if status: status.text = error
 
 func undo() -> void:
 	if canvas.mode.begins_with("trace_"): canvas.sketch.undo(); canvas.pen_anchor = Vector2.INF; invalidate_sketch(); return

@@ -73,5 +73,12 @@
   {"id":"roster_content_tests","script":"tests/roster_content_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["roster-content-tests.json"]},
   {"id":"roster_content_ui_tests","script":"tests/roster_content_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["roster-content-ui-tests.json"]},
   {"id":"content_tyre_tests","script":"tests/content_tyre_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-tyre-tests.json"]},
-  {"id":"content_tyre_ui_tests","script":"tests/content_tyre_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-tyre-ui-tests.json"]}
+  {"id":"content_tyre_ui_tests","script":"tests/content_tyre_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-tyre-ui-tests.json"]},
+  {"id":"reproduction_tests","script":"tests/reproduction_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["reproduction-tests.json"]},
+  {"id":"operation_sequence_tests","script":"tests/operation_sequence_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["operation-sequence-tests.json"]},
+  {"id":"command_responsibility_tests","script":"tests/command_responsibility_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["command-responsibility-tests.json"]},
+  {"id":"editor_gesture_tests","script":"tests/editor_gesture_tests.gd","native":true,"layout":"minimal","timeout":600,"reports":["editor-gesture-tests.json"]},
+  {"id":"weekend_lifecycle_tests","script":"tests/weekend_lifecycle_tests.gd","native":true,"layout":"minimal","timeout":900,"reports":["weekend-lifecycle-tests.json"]},
+  {"id":"shipping_runtime_tests","script":"tests/shipping_runtime_tests.gd","native":true,"layout":"minimal","timeout":900,"reports":["shipping-runtime-tests.json"]},
+  {"id":"record_traversal_tests","script":"tests/record_traversal_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["record-traversal-tests.json"]}
 ]
