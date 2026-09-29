@@ -12,7 +12,7 @@ jobs:
       GODOT_SILENCE_ROOT_WARNING: '1'
       LP_NUM_THREADS: '2'
       BASE_COMMIT: 4234c71be310585aedbdda53fa786a48a581cce1
-      EXPECTED_TREE: 40ca7e1b107b046f38561af5cb83f3750801e467
+      EXPECTED_TREE: 3d6b7510fc2b2a422e78983da49d4b4db05e298a
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,12 +22,16 @@ jobs:
         run: |
           set -euo pipefail
           cat payload.part0.xz payload.part1.xz payload.part2.xz > /tmp/catalog.patch.xz
+          cp notebook-exact.patch /tmp/notebook-exact.patch
           echo '69a02999879573f5f666ca9aa9182546f0a9d1635d3f6d7a18b67e0e326baa26  /tmp/catalog.patch.xz' | sha256sum --check
           xz -dc /tmp/catalog.patch.xz > /tmp/catalog.patch
           echo 'd150c00043d17f109aa18d2ba4ccae89029cf081f23e3b2bb2b5b124affff3fc  /tmp/catalog.patch' | sha256sum --check
           git checkout --detach "$BASE_COMMIT"
           git apply --check /tmp/catalog.patch
           git apply --index /tmp/catalog.patch
+          test "$(git write-tree)" = 40ca7e1b107b046f38561af5cb83f3750801e467
+          git apply --check /tmp/notebook-exact.patch
+          git apply --index /tmp/notebook-exact.patch
           test "$(git write-tree)" = "$EXPECTED_TREE"
           test -z "$(git diff --cached --name-only -- .github/workflows)"
           python3 scripts/check_architecture.py
@@ -48,7 +52,7 @@ jobs:
           set -euo pipefail
           godot=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
           python3 scripts/content.py schemas --check --godot "$godot"
-          python3 scripts/verify.py --godot "$godot" --suite content_catalog_tests --suite exact_json_tests --suite content_catalog_ui_tests --suite weekend_launch_tests --suite content_weekend_ui_tests
+          python3 scripts/verify.py --godot "$godot" --suite content_catalog_tests --suite exact_json_tests --suite content_catalog_ui_tests --suite weekend_launch_tests --suite content_weekend_ui_tests --suite notebook_tests
           python3 scripts/content.py test content/examples/club-racing --scenario local.club.scenario.first_weekend --steps 1500 --godot "$godot" --format json
       - name: Publish only the verified ordinary source tree
         shell: bash
@@ -58,7 +62,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           commit=$(printf '%s\n' 'feat(content): integrate data-only circuits and scenarios with lossless saved-session transport' | git commit-tree "$EXPECTED_TREE" -p "$BASE_COMMIT")
-          git push origin "$commit:refs/heads/chore/content-catalog-40ca7e1b-result"
+          git push origin "$commit:refs/heads/chore/content-catalog-3d6b7510-result"
           printf 'Published commit: %s\nVerified tree: %s\n' "$commit" "$EXPECTED_TREE" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()

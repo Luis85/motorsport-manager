@@ -1,0 +1,14 @@
+diff --git a/tests/notebook_tests.gd b/tests/notebook_tests.gd
+index 46da5d1..fb0aeb1 100644
+--- a/tests/notebook_tests.gd
++++ b/tests/notebook_tests.gd
+@@ -40,7 +40,8 @@ func run():
+ 	var personal = "The early stop looked expensive; compare traffic next time."
+ 	check(CircuitNotebook.save_note(record.event_id, personal, 0, path).ok, "Personal interpretation is saved independently")
+ 	var noted = CircuitNotebook.read(path).data.entries[0]
+-	check(noted.facts == copy(entry.facts) and noted.digest == entry.digest and int(noted.revision) == 1, "Notes never alter immutable facts or their digest")
++	check(noted.facts == entry.facts and noted.digest == entry.digest and int(noted.revision) == 1, "Notes never alter immutable facts or their digest")
++	check(ExactJsonValue.encode(noted.facts).data.digest == ExactJsonValue.encode(entry.facts).data.digest, "Personal note edits preserve every original fact bit and key type")
+ 	first = FileAccess.get_file_as_string(path)
+ 	check(CircuitNotebook.save_note(record.event_id, personal, 1, path).ok and FileAccess.get_file_as_string(path) == first, "Unchanged note avoids another write")
+ 	check(not CircuitNotebook.save_note(record.event_id, "stale", 0, path).ok and FileAccess.get_file_as_string(path) == first, "Stale note revision is rejected without overwriting")
