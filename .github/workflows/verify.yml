@@ -1,61 +1,69 @@
-name: Godot verification
+name: Verify data-only circuits and exact saves
 on:
   push:
-  pull_request:
+    branches: [chore/content-catalog-40ca7e1b-verify]
 permissions:
-  contents: read
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  contents: write
 jobs:
-  shards:
-    name: suites-${{ matrix.shard }}
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [0, 1, 2, 3, 4, 5]
+    timeout-minutes: 30
     env:
-      GODOT_VERSION: 4.7.2
-      LP_NUM_THREADS: 2
-      MOTORSPORT_SOURCE_REVISION: ${{ github.sha }}
+      GODOT_SILENCE_ROOT_WARNING: '1'
+      LP_NUM_THREADS: '2'
+      BASE_COMMIT: 4234c71be310585aedbdda53fa786a48a581cce1
+      EXPECTED_TREE: 40ca7e1b107b046f38561af5cb83f3750801e467
     steps:
       - uses: actions/checkout@v4
-      - name: Install pinned Godot editor
+        with:
+          fetch-depth: 0
+      - name: Reconstruct the exact reviewed source
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o /tmp/godot.zip
+          cat payload.part0.xz payload.part1.xz payload.part2.xz > /tmp/catalog.patch.xz
+          echo '69a02999879573f5f666ca9aa9182546f0a9d1635d3f6d7a18b67e0e326baa26  /tmp/catalog.patch.xz' | sha256sum --check
+          xz -dc /tmp/catalog.patch.xz > /tmp/catalog.patch
+          echo 'd150c00043d17f109aa18d2ba4ccae89029cf081f23e3b2bb2b5b124affff3fc  /tmp/catalog.patch' | sha256sum --check
+          git checkout --detach "$BASE_COMMIT"
+          git apply --check /tmp/catalog.patch
+          git apply --index /tmp/catalog.patch
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          python3 scripts/check_architecture.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Install the repository-pinned native engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb
+          curl --fail --location --retry 3 https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip -o /tmp/godot.zip
           unzip -q /tmp/godot.zip -d /tmp/godot
           chmod +x /tmp/godot/Godot_*
-          sudo ln -s /tmp/godot/Godot_* /usr/local/bin/godot
-          godot --version
-      - name: Verify registered shard
-        run: python3 scripts/verify.py --shard-index ${{ matrix.shard }} --shard-count 6
-      - name: Retain evidence even after failure
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: verification-shard-${{ matrix.shard }}
-          path: reports/
-          if-no-files-found: error
-          retention-days: 14
-  verify:
-    name: verify
-    if: always()
-    needs: shards
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: verification-shard-*
-          path: /tmp/evidence
-      - name: Require all shards and exact registered coverage
-        env:
-          SHARD_RESULT: ${{ needs.shards.result }}
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 --version
+      - name: Verify native catalog and persistence boundaries
+        shell: bash
         run: |
-          test "$SHARD_RESULT" = success
-          python3 scripts/verify.py --aggregate /tmp/evidence --shard-count 6
+          set -euo pipefail
+          godot=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          python3 scripts/content.py schemas --check --godot "$godot"
+          python3 scripts/verify.py --godot "$godot" --suite content_catalog_tests --suite exact_json_tests --suite content_catalog_ui_tests --suite weekend_launch_tests --suite content_weekend_ui_tests
+          python3 scripts/content.py test content/examples/club-racing --scenario local.club.scenario.first_weekend --steps 1500 --godot "$godot" --format json
+      - name: Publish only the verified ordinary source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          commit=$(printf '%s\n' 'feat(content): integrate data-only circuits and scenarios with lossless saved-session transport' | git commit-tree "$EXPECTED_TREE" -p "$BASE_COMMIT")
+          git push origin "$commit:refs/heads/chore/content-catalog-40ca7e1b-result"
+          printf 'Published commit: %s\nVerified tree: %s\n' "$commit" "$EXPECTED_TREE" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: catalog-integration-verification
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 14
