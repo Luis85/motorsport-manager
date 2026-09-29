@@ -1,0 +1,4521 @@
+{
+  "source": "User-provided Littlewild v3 source archive",
+  "sha256": {
+    "engine.js": "ab23be550b59a1dee14ddd7f514a4bd8e9dbf9535c7979cfc03e2ae89154d3b0",
+    "systems.js": "052d0eb167069eedbaeb5d49ca17c0498f877f91e8dd65e6cd84c576ac75d402"
+  },
+  "tables": {
+    "RES": {
+      "wood": {
+        "name": "Wood",
+        "icon": "wood",
+        "price": 3
+      },
+      "stone": {
+        "name": "Stone",
+        "icon": "stone",
+        "price": 3
+      },
+      "fiber": {
+        "name": "Fiber",
+        "icon": "fiber",
+        "price": 2
+      },
+      "berries": {
+        "name": "Berries",
+        "icon": "berries",
+        "price": 3
+      },
+      "water": {
+        "name": "Water",
+        "icon": "water",
+        "price": 2
+      },
+      "planks": {
+        "name": "Planks",
+        "icon": "planks",
+        "price": 8
+      },
+      "meat": {
+        "name": "Wild meat",
+        "icon": "meat",
+        "price": 6
+      },
+      "meals": {
+        "name": "Hearty meals",
+        "icon": "meal",
+        "price": 12
+      },
+      "clay": {
+        "name": "Clay",
+        "icon": "stone",
+        "price": 3
+      },
+      "ore": {
+        "name": "Iron ore",
+        "icon": "stone",
+        "price": 5
+      },
+      "herbs": {
+        "name": "Herbs",
+        "icon": "leaf",
+        "price": 4
+      },
+      "grain": {
+        "name": "Grain",
+        "icon": "sprout",
+        "price": 3
+      },
+      "rope": {
+        "name": "Rope",
+        "icon": "fiber",
+        "price": 6
+      },
+      "cloth": {
+        "name": "Cloth",
+        "icon": "fiber",
+        "price": 12
+      },
+      "charcoal": {
+        "name": "Charcoal",
+        "icon": "fire",
+        "price": 5
+      },
+      "bricks": {
+        "name": "Bricks",
+        "icon": "stone",
+        "price": 8
+      },
+      "pots": {
+        "name": "Clay pots",
+        "icon": "water",
+        "price": 8
+      },
+      "beams": {
+        "name": "Timber beams",
+        "icon": "planks",
+        "price": 22
+      },
+      "iron": {
+        "name": "Iron",
+        "icon": "stone",
+        "price": 18
+      },
+      "tools": {
+        "name": "Tools",
+        "icon": "bench",
+        "price": 28
+      },
+      "flour": {
+        "name": "Flour",
+        "icon": "sprout",
+        "price": 6
+      },
+      "bread": {
+        "name": "Fresh bread",
+        "icon": "meal",
+        "price": 13
+      },
+      "balm": {
+        "name": "Soothing balm",
+        "icon": "heart",
+        "price": 15
+      },
+      "glass": {
+        "name": "Glass",
+        "icon": "research",
+        "price": 16
+      }
+    },
+    "RECIPES": {
+      "planks": {
+        "skill": "woodwork",
+        "station": "bench",
+        "cost": {
+          "wood": 2
+        },
+        "amount": 1,
+        "time": 4
+      },
+      "meals": {
+        "skill": "cooking",
+        "station": "fire",
+        "cost": {
+          "berries": 2,
+          "water": 1,
+          "meat": 1
+        },
+        "amount": 2,
+        "time": 5
+      },
+      "rope": {
+        "skill": "fiberwork",
+        "station": "bench",
+        "cost": {
+          "fiber": 3
+        },
+        "amount": 2,
+        "time": 5
+      },
+      "cloth": {
+        "skill": "weaving",
+        "station": "loom",
+        "cost": {
+          "fiber": 4,
+          "rope": 1
+        },
+        "amount": 1,
+        "time": 7
+      },
+      "charcoal": {
+        "skill": "firekeeping",
+        "station": "fire",
+        "cost": {
+          "wood": 3
+        },
+        "amount": 2,
+        "time": 5
+      },
+      "bricks": {
+        "skill": "pottery",
+        "station": "kiln",
+        "cost": {
+          "clay": 3,
+          "charcoal": 1
+        },
+        "amount": 2,
+        "time": 7
+      },
+      "pots": {
+        "skill": "pottery",
+        "station": "kiln",
+        "cost": {
+          "clay": 2,
+          "charcoal": 1
+        },
+        "amount": 1,
+        "time": 6
+      },
+      "beams": {
+        "skill": "joinery",
+        "station": "bench",
+        "cost": {
+          "planks": 3,
+          "rope": 1
+        },
+        "amount": 1,
+        "time": 8
+      },
+      "iron": {
+        "skill": "metalwork",
+        "station": "smelter",
+        "cost": {
+          "ore": 3,
+          "charcoal": 2
+        },
+        "amount": 1,
+        "time": 9
+      },
+      "tools": {
+        "skill": "metalwork",
+        "station": "workshop",
+        "cost": {
+          "iron": 1,
+          "planks": 1
+        },
+        "amount": 1,
+        "time": 8
+      },
+      "flour": {
+        "skill": "milling",
+        "station": "mill",
+        "cost": {
+          "grain": 3
+        },
+        "amount": 2,
+        "time": 5
+      },
+      "bread": {
+        "skill": "baking",
+        "station": "bakery",
+        "cost": {
+          "flour": 2,
+          "water": 1
+        },
+        "amount": 2,
+        "time": 6
+      },
+      "balm": {
+        "skill": "herbalism",
+        "station": "herbarium",
+        "cost": {
+          "herbs": 3,
+          "water": 1,
+          "pots": 1
+        },
+        "amount": 2,
+        "time": 6
+      },
+      "glass": {
+        "skill": "glassmaking",
+        "station": "kiln",
+        "cost": {
+          "stone": 3,
+          "charcoal": 2
+        },
+        "amount": 1,
+        "time": 8
+      }
+    },
+    "SKILLS": {
+      "woodcraft": {
+        "name": "Woodland hands",
+        "short": "Wood gathering",
+        "tier": 1,
+        "rp": 2,
+        "coins": 10,
+        "time": 8,
+        "desc": "Learn to collect fallen branches and harvest wood. The beginning of something bigger.",
+        "unlocks": "Gather wood · Build a workbench",
+        "requires": [],
+        "icon": "wood",
+        "discipline": "woodland"
+      },
+      "shelter": {
+        "name": "A place of our own",
+        "short": "Sheltercraft",
+        "tier": 1,
+        "rp": 2,
+        "coins": 12,
+        "time": 9,
+        "desc": "Turn branches and woven leaves into a safe, dry place to sleep.",
+        "unlocks": "Build a leaf shelter · Build a learning circle",
+        "requires": [
+          "woodcraft"
+        ],
+        "icon": "home",
+        "discipline": "homestead"
+      },
+      "stonework": {
+        "name": "Stone sense",
+        "short": "Stone gathering",
+        "tier": 1,
+        "rp": 2,
+        "coins": 10,
+        "time": 8,
+        "desc": "Spot useful stones and carefully work them free of the hillside.",
+        "unlocks": "Gather stone",
+        "requires": [],
+        "icon": "stone",
+        "discipline": "woodland"
+      },
+      "firekeeping": {
+        "name": "A little spark",
+        "short": "Firekeeping",
+        "tier": 1,
+        "rp": 3,
+        "coins": 12,
+        "time": 10,
+        "desc": "Build and tend a cozy campfire. Warm paws, brighter evenings.",
+        "unlocks": "Build a campfire · Warm up",
+        "requires": [
+          "woodcraft"
+        ],
+        "icon": "fire",
+        "discipline": "homestead"
+      },
+      "gardening": {
+        "name": "Green paws",
+        "short": "Gardening",
+        "tier": 1,
+        "rp": 2,
+        "coins": 14,
+        "time": 10,
+        "desc": "Grow a renewable patch of berries. A little planning makes tomorrow gentler.",
+        "unlocks": "Build a berry garden · Build a grain patch · Gather wild grain",
+        "requires": [],
+        "icon": "sprout",
+        "discipline": "homestead"
+      },
+      "woodwork": {
+        "name": "Grain & patience",
+        "short": "Plank crafting",
+        "tier": 2,
+        "rp": 4,
+        "coins": 20,
+        "time": 12,
+        "desc": "Shape two pieces of wood into a plank at a workbench.",
+        "unlocks": "Craft planks · More ambitious buildings",
+        "requires": [
+          "woodcraft"
+        ],
+        "icon": "planks",
+        "discipline": "making"
+      },
+      "cooking": {
+        "name": "Something delicious",
+        "short": "Cooking",
+        "tier": 2,
+        "rp": 3,
+        "coins": 18,
+        "time": 12,
+        "desc": "Cook two berries, one water and one wild meat into two hearty meals at a campfire.",
+        "unlocks": "Cook hearty meals",
+        "requires": [
+          "firekeeping"
+        ],
+        "icon": "meal",
+        "discipline": "homestead"
+      },
+      "tracking": {
+        "name": "Reading the wild",
+        "short": "Tracking",
+        "tier": 2,
+        "rp": 3,
+        "coins": 18,
+        "time": 12,
+        "desc": "Follow trails into the meadow and return with provisions. Hunting is shown as a gentle, off-screen expedition.",
+        "unlocks": "Hunt for provisions",
+        "requires": [],
+        "icon": "paw",
+        "discipline": "woodland"
+      },
+      "commerce": {
+        "name": "Hello, neighbor",
+        "short": "Trading",
+        "tier": 2,
+        "rp": 4,
+        "coins": 22,
+        "time": 12,
+        "desc": "Build a place to meet travelers. Buy necessities with an allowance and fill neighborhood requests.",
+        "unlocks": "Build a market · Buy supplies · Deliveries",
+        "requires": [
+          "woodwork"
+        ],
+        "icon": "market",
+        "discipline": "community"
+      },
+      "masonry": {
+        "name": "Well made",
+        "short": "Masonry",
+        "tier": 2,
+        "rp": 4,
+        "coins": 22,
+        "time": 12,
+        "desc": "Build a well for fresh water close to home. Less walking, more living.",
+        "unlocks": "Build a well",
+        "requires": [
+          "stonework",
+          "woodwork"
+        ],
+        "icon": "water",
+        "discipline": "craft"
+      },
+      "architecture": {
+        "name": "Dream a little bigger",
+        "short": "Architecture",
+        "tier": 3,
+        "rp": 7,
+        "coins": 38,
+        "time": 16,
+        "desc": "Build a proper cottage from planks and stone. A warm new chapter for two old friends.",
+        "unlocks": "Build a woodland cottage",
+        "requires": [
+          "shelter",
+          "masonry"
+        ],
+        "icon": "cottage",
+        "discipline": "making"
+      },
+      "invention": {
+        "name": "Bright little ideas",
+        "short": "Invention",
+        "tier": 3,
+        "rp": 6,
+        "coins": 32,
+        "time": 16,
+        "desc": "Build a study nook. Curious afternoon experiments earn shared research points.",
+        "unlocks": "Build a study nook · Research autonomously",
+        "requires": [
+          "woodwork"
+        ],
+        "icon": "research",
+        "discipline": "discovery"
+      },
+      "fiberwork": {
+        "name": "A thread to follow",
+        "short": "Cordage",
+        "tier": 1,
+        "discipline": "making",
+        "requires": [
+          "woodcraft"
+        ],
+        "rp": 2,
+        "coins": 12,
+        "time": 12,
+        "unlocks": "Twist rope at a workbench · More useful structures",
+        "desc": "Turn loose plant fibers into a dependable length of rope.",
+        "icon": "planks"
+      },
+      "claywork": {
+        "name": "Earth between our paws",
+        "short": "Clay gathering",
+        "tier": 1,
+        "discipline": "woodland",
+        "requires": [],
+        "rp": 2,
+        "coins": 12,
+        "time": 10,
+        "unlocks": "Gather clay · Prepare for pottery",
+        "desc": "Recognize the soft clay deposits beside the spring.",
+        "icon": "leaf"
+      },
+      "weaving": {
+        "name": "Something soft, something strong",
+        "short": "Weaving",
+        "tier": 2,
+        "discipline": "making",
+        "requires": [
+          "fiberwork"
+        ],
+        "rp": 4,
+        "coins": 22,
+        "time": 16,
+        "unlocks": "Build a loom · Weave cloth",
+        "desc": "A little thread becomes a blanket, an awning or a greenhouse shade.",
+        "icon": "planks"
+      },
+      "pottery": {
+        "name": "A shape that stays",
+        "short": "Pottery",
+        "tier": 2,
+        "discipline": "craft",
+        "requires": [
+          "claywork",
+          "firekeeping"
+        ],
+        "rp": 4,
+        "coins": 24,
+        "time": 16,
+        "unlocks": "Build a kiln · Fire bricks and pots",
+        "desc": "Clay becomes something lasting with a careful amount of heat.",
+        "icon": "fire"
+      },
+      "herbalism": {
+        "name": "The helpful little leaves",
+        "short": "Herbalism",
+        "tier": 2,
+        "discipline": "woodland",
+        "requires": [
+          "gardening"
+        ],
+        "rp": 3,
+        "coins": 20,
+        "time": 14,
+        "unlocks": "Gather herbs · Build an herbarium · Make soothing balm",
+        "desc": "Recognize helpful plants and prepare a comforting balm.",
+        "icon": "leaf"
+      },
+      "joinery": {
+        "name": "Stronger at the seams",
+        "short": "Joinery",
+        "tier": 3,
+        "discipline": "making",
+        "requires": [
+          "woodwork",
+          "fiberwork"
+        ],
+        "rp": 6,
+        "coins": 32,
+        "time": 20,
+        "unlocks": "Make timber beams · Build a workshop",
+        "desc": "Join planks and cordage into a frame that can carry bigger dreams.",
+        "icon": "planks",
+        "practical": {
+          "skill": "woodwork",
+          "points": 8
+        }
+      },
+      "metalwork": {
+        "name": "A patient kind of fire",
+        "short": "Metalworking",
+        "tier": 3,
+        "discipline": "craft",
+        "requires": [
+          "pottery",
+          "stonework"
+        ],
+        "rp": 6,
+        "coins": 36,
+        "time": 22,
+        "unlocks": "Gather ore · Build a smelter · Smelt iron · Make tools",
+        "desc": "Transform ore and charcoal into iron, then put it to useful work.",
+        "icon": "fire",
+        "practical": {
+          "skill": "pottery",
+          "points": 8
+        }
+      },
+      "horticulture": {
+        "name": "A greener tomorrow",
+        "short": "Horticulture",
+        "tier": 3,
+        "discipline": "homestead",
+        "requires": [
+          "gardening",
+          "masonry"
+        ],
+        "rp": 5,
+        "coins": 30,
+        "time": 18,
+        "unlocks": "Build a greenhouse · Improve garden yields",
+        "desc": "Combine a dependable water supply and a protected growing space.",
+        "icon": "home",
+        "practical": {
+          "skill": "gardening",
+          "points": 8
+        }
+      },
+      "milling": {
+        "name": "When the wind helps",
+        "short": "Milling",
+        "tier": 3,
+        "discipline": "homestead",
+        "requires": [
+          "gardening",
+          "woodwork"
+        ],
+        "rp": 5,
+        "coins": 28,
+        "time": 18,
+        "unlocks": "Build a windmill · Mill grain into flour",
+        "desc": "The glade grows grain. A turning sail makes it useful.",
+        "icon": "home"
+      },
+      "baking": {
+        "name": "The smell of coming home",
+        "short": "Baking",
+        "tier": 3,
+        "discipline": "homestead",
+        "requires": [
+          "cooking",
+          "milling"
+        ],
+        "rp": 5,
+        "coins": 30,
+        "time": 18,
+        "unlocks": "Build a bakery · Bake nourishing bread",
+        "desc": "Mix flour and water, then let a good oven do its part.",
+        "icon": "home"
+      },
+      "logistics": {
+        "name": "A place for every possibility",
+        "short": "Provisioning",
+        "tier": 3,
+        "discipline": "community",
+        "requires": [
+          "commerce",
+          "woodwork"
+        ],
+        "rp": 5,
+        "coins": 30,
+        "time": 18,
+        "unlocks": "Build a storehouse · Nearby crafting works faster",
+        "desc": "An orderly storehouse saves steps around the workshops.",
+        "icon": "market"
+      },
+      "mentorship": {
+        "name": "Learning how to learn",
+        "short": "Mentorship",
+        "tier": 3,
+        "discipline": "discovery",
+        "requires": [
+          "invention"
+        ],
+        "rp": 5,
+        "coins": 28,
+        "time": 18,
+        "unlocks": "Improve the learning circle · Better coached practice",
+        "desc": "Patient teaching and a comfortable place make new ideas stick.",
+        "icon": "research"
+      },
+      "engineering": {
+        "name": "A little world in motion",
+        "short": "Engineering",
+        "tier": 4,
+        "discipline": "craft",
+        "requires": [
+          "joinery",
+          "metalwork",
+          "masonry"
+        ],
+        "rp": 8,
+        "coins": 48,
+        "time": 26,
+        "unlocks": "Build a waterwheel · Upgrade advanced workshops",
+        "desc": "Let a turning wheel do some of the work. Nearby stations benefit.",
+        "icon": "fire",
+        "practical": {
+          "skill": "joinery",
+          "points": 8
+        }
+      },
+      "glassmaking": {
+        "name": "A window into wonder",
+        "short": "Glassmaking",
+        "tier": 4,
+        "discipline": "craft",
+        "requires": [
+          "metalwork",
+          "pottery"
+        ],
+        "rp": 7,
+        "coins": 42,
+        "time": 24,
+        "unlocks": "Fuse mineral stone into glass at the kiln · Observatory parts",
+        "desc": "A game-world recipe: mineral-rich stone and charcoal become clear glass.",
+        "icon": "fire"
+      },
+      "stewardship": {
+        "name": "Roots for the future",
+        "short": "Stewardship",
+        "tier": 4,
+        "discipline": "homestead",
+        "requires": [
+          "horticulture",
+          "logistics"
+        ],
+        "rp": 7,
+        "coins": 42,
+        "time": 24,
+        "unlocks": "Build an orchard · Improve food-growing places",
+        "desc": "Plant a generous orchard and build for a home that can sustain itself.",
+        "icon": "home"
+      },
+      "scholarship": {
+        "name": "A sky full of questions",
+        "short": "Scholarship",
+        "tier": 4,
+        "discipline": "discovery",
+        "requires": [
+          "mentorship",
+          "glassmaking"
+        ],
+        "rp": 8,
+        "coins": 46,
+        "time": 26,
+        "unlocks": "Build an observatory · More shared research",
+        "desc": "Put observation, good instruments and careful records together.",
+        "icon": "research",
+        "practical": {
+          "skill": "invention",
+          "points": 8
+        }
+      }
+    },
+    "BUILDINGS": {
+      "shelter": {
+        "name": "Leaf shelter",
+        "desc": "A safe little nest. Better sleep and comfort.",
+        "skill": "shelter",
+        "cost": {
+          "wood": 6,
+          "fiber": 4
+        },
+        "time": 12,
+        "icon": "home",
+        "effect": "Rest restores 60 energy and 24 comfort.",
+        "unique": true,
+        "category": "home"
+      },
+      "bench": {
+        "name": "Workbench",
+        "desc": "A place to turn resources into possibilities.",
+        "skill": "woodcraft",
+        "cost": {
+          "wood": 6,
+          "stone": 2
+        },
+        "time": 12,
+        "icon": "bench",
+        "effect": "Make planks, rope and timber beams with the matching learned skills.",
+        "unique": true,
+        "category": "workshops"
+      },
+      "fire": {
+        "name": "Campfire",
+        "desc": "Warm paws. Stories. A light to come home to.",
+        "skill": "firekeeping",
+        "cost": {
+          "wood": 4,
+          "stone": 3
+        },
+        "time": 10,
+        "icon": "fire",
+        "effect": "A warming place, a cooking station and a way to make charcoal.",
+        "unique": true,
+        "category": "home"
+      },
+      "garden": {
+        "name": "Berry garden",
+        "desc": "A little care today. A little food tomorrow.",
+        "skill": "gardening",
+        "cost": {
+          "wood": 4,
+          "fiber": 4
+        },
+        "time": 12,
+        "icon": "sprout",
+        "effect": "Grows 4 berries every 80 simulation seconds.",
+        "unique": true,
+        "category": "growing"
+      },
+      "market": {
+        "name": "Market stall",
+        "desc": "Open your clearing to a world of neighbors.",
+        "skill": "commerce",
+        "cost": {
+          "wood": 5,
+          "planks": 4,
+          "stone": 2
+        },
+        "time": 16,
+        "icon": "market",
+        "effect": "Pip can shop. You can trade and delegate deliveries.",
+        "unique": true,
+        "category": "community"
+      },
+      "well": {
+        "name": "Stone well",
+        "desc": "Bring fresh water closer to home.",
+        "skill": "masonry",
+        "cost": {
+          "stone": 8,
+          "planks": 2
+        },
+        "time": 14,
+        "icon": "water",
+        "effect": "Water gathering is faster and close to home.",
+        "unique": true,
+        "category": "growing"
+      },
+      "cottage": {
+        "name": "Woodland cottage",
+        "desc": "From a little clearing to a proper home.",
+        "skill": "architecture",
+        "cost": {
+          "planks": 10,
+          "stone": 12,
+          "fiber": 5
+        },
+        "time": 22,
+        "icon": "cottage",
+        "effect": "The best sleep. A permanent comfort bonus.",
+        "unique": true,
+        "category": "home"
+      },
+      "study": {
+        "name": "Study nook",
+        "desc": "A quiet corner for bright little ideas.",
+        "skill": "invention",
+        "cost": {
+          "planks": 6,
+          "stone": 6,
+          "fiber": 3
+        },
+        "time": 17,
+        "icon": "research",
+        "effect": "Pip can independently earn shared research.",
+        "unique": true,
+        "category": "learning"
+      },
+      "circle": {
+        "name": "Learning circle",
+        "skill": "shelter",
+        "cost": {
+          "wood": 4,
+          "fiber": 4,
+          "stone": 2
+        },
+        "time": 15,
+        "category": "learning",
+        "effect": "Lessons are 12% faster. Coached practice gains +1 mastery point.",
+        "desc": "A ring of cushions, an open notebook, and permission to get it wrong.",
+        "icon": "book",
+        "unique": true
+      },
+      "grainplot": {
+        "name": "Grain patch",
+        "skill": "gardening",
+        "cost": {
+          "wood": 3,
+          "fiber": 3,
+          "water": 2
+        },
+        "time": 13,
+        "category": "growing",
+        "effect": "Grows grain; Pip can harvest it when a recipe or reserve needs it.",
+        "desc": "A small patch of golden stalks. Tomorrow starts here.",
+        "icon": "sprout",
+        "unique": true
+      },
+      "loom": {
+        "name": "Weaving loom",
+        "skill": "weaving",
+        "cost": {
+          "planks": 3,
+          "rope": 3,
+          "wood": 2
+        },
+        "time": 19,
+        "category": "workshops",
+        "effect": "Turns fibers and rope into cloth.",
+        "desc": "Soft comforts and sturdy cloth begin with a patient shuttle.",
+        "icon": "fiber",
+        "unique": true
+      },
+      "kiln": {
+        "name": "Clay kiln",
+        "skill": "pottery",
+        "cost": {
+          "clay": 6,
+          "stone": 5,
+          "wood": 3
+        },
+        "time": 20,
+        "category": "workshops",
+        "effect": "Fires bricks and pots; later, fuses glass.",
+        "desc": "An earthy little oven for making things that last.",
+        "icon": "fire",
+        "unique": true
+      },
+      "herbarium": {
+        "name": "Herbarium",
+        "skill": "herbalism",
+        "cost": {
+          "wood": 5,
+          "rope": 2,
+          "stone": 2
+        },
+        "time": 18,
+        "category": "workshops",
+        "effect": "Turns herbs, water and a pot into soothing balm.",
+        "desc": "Hang a few leaves. Label a few jars. Care can be crafted.",
+        "icon": "leaf",
+        "unique": true
+      },
+      "workshop": {
+        "name": "Timber workshop",
+        "skill": "joinery",
+        "cost": {
+          "beams": 3,
+          "planks": 4,
+          "cloth": 2,
+          "stone": 4
+        },
+        "time": 28,
+        "category": "workshops",
+        "effect": "Makes tools. Nearby construction within 3 tiles is 10% faster.",
+        "desc": "A sheltered place for the ambitious, slightly crooked first attempt.",
+        "icon": "bench",
+        "unique": true
+      },
+      "smelter": {
+        "name": "Little smelter",
+        "skill": "metalwork",
+        "cost": {
+          "bricks": 6,
+          "stone": 6,
+          "planks": 3
+        },
+        "time": 27,
+        "category": "workshops",
+        "effect": "Smelts ore and charcoal into iron.",
+        "desc": "A contained, careful fire for big new possibilities.",
+        "icon": "fire",
+        "unique": true
+      },
+      "mill": {
+        "name": "Windmill",
+        "skill": "milling",
+        "cost": {
+          "planks": 6,
+          "rope": 3,
+          "cloth": 2,
+          "stone": 4
+        },
+        "time": 27,
+        "category": "growing",
+        "effect": "Mills grain into flour. Its sails turn while the world runs.",
+        "desc": "The breeze lends a hand. Pip still decides when to make flour.",
+        "icon": "sprout",
+        "unique": true
+      },
+      "bakery": {
+        "name": "Glade bakery",
+        "skill": "baking",
+        "cost": {
+          "bricks": 6,
+          "planks": 4,
+          "cloth": 1
+        },
+        "time": 25,
+        "category": "home",
+        "effect": "Bakes fresh bread. One loaf restores 40 food.",
+        "desc": "A warm doorway and something good cooling on the sill.",
+        "icon": "meal",
+        "unique": true
+      },
+      "greenhouse": {
+        "name": "Growing house",
+        "skill": "horticulture",
+        "cost": {
+          "planks": 5,
+          "cloth": 3,
+          "rope": 2,
+          "stone": 3
+        },
+        "time": 25,
+        "category": "growing",
+        "effect": "A productive herb bed. Garden and grain-patch regrowth is 20% faster.",
+        "desc": "A woven shade-house before the glade learns to make glass.",
+        "icon": "sprout",
+        "unique": true
+      },
+      "storehouse": {
+        "name": "Storehouse",
+        "skill": "logistics",
+        "cost": {
+          "planks": 6,
+          "rope": 3,
+          "bricks": 4
+        },
+        "time": 24,
+        "category": "community",
+        "effect": "Crafting stations within 4 tiles work 12% faster.",
+        "desc": "Every useful thing has a place; every trip can be a little shorter.",
+        "icon": "market",
+        "unique": true
+      },
+      "waterwheel": {
+        "name": "Waterwheel",
+        "skill": "engineering",
+        "cost": {
+          "beams": 4,
+          "iron": 3,
+          "tools": 2,
+          "bricks": 6
+        },
+        "time": 36,
+        "category": "workshops",
+        "effect": "Must be near the spring. Stations within 4 tiles work 18% faster.",
+        "desc": "Quiet power from the spring, shared with nearby workshops.",
+        "icon": "water",
+        "unique": true,
+        "placement": "water"
+      },
+      "orchard": {
+        "name": "Bramble orchard",
+        "skill": "stewardship",
+        "cost": {
+          "beams": 2,
+          "rope": 3,
+          "water": 5,
+          "pots": 3
+        },
+        "time": 30,
+        "category": "growing",
+        "effect": "Grows berries generously. A peaceful place adds +8 joy to play.",
+        "desc": "A promise of shade, fruit and many unhurried afternoons.",
+        "icon": "sprout",
+        "unique": true
+      },
+      "observatory": {
+        "name": "Stargazer’s nook",
+        "skill": "scholarship",
+        "cost": {
+          "beams": 4,
+          "glass": 4,
+          "iron": 2,
+          "cloth": 3
+        },
+        "time": 38,
+        "category": "learning",
+        "effect": "Autonomous research yields +2 shared points. Lessons are 10% faster.",
+        "desc": "A little lens, a wide sky, and someone to share the question with.",
+        "icon": "research",
+        "unique": true
+      }
+    },
+    "DRILLS": {
+      "woodcraft": {
+        "cost": {
+          "wood": 1
+        },
+        "station": "bench"
+      },
+      "stonework": {
+        "cost": {
+          "stone": 1
+        }
+      },
+      "tracking": {
+        "cost": {
+          "fiber": 1
+        }
+      },
+      "shelter": {
+        "cost": {
+          "fiber": 2
+        }
+      },
+      "firekeeping": {
+        "cost": {
+          "wood": 1
+        },
+        "station": "fire"
+      },
+      "gardening": {
+        "cost": {
+          "water": 1
+        },
+        "station": "garden"
+      },
+      "cooking": {
+        "cost": {
+          "berries": 2
+        },
+        "station": "fire"
+      },
+      "woodwork": {
+        "cost": {
+          "wood": 2
+        },
+        "station": "bench"
+      },
+      "commerce": {
+        "cost": {
+          "fiber": 1
+        },
+        "station": "market"
+      },
+      "masonry": {
+        "cost": {
+          "stone": 2
+        }
+      },
+      "architecture": {
+        "cost": {
+          "planks": 1
+        },
+        "station": "bench"
+      },
+      "invention": {
+        "cost": {
+          "fiber": 1
+        },
+        "station": "study"
+      },
+      "fiberwork": {
+        "cost": {
+          "fiber": 2
+        },
+        "station": "bench"
+      },
+      "claywork": {
+        "cost": {
+          "clay": 1
+        }
+      },
+      "weaving": {
+        "cost": {
+          "fiber": 2
+        },
+        "station": "loom"
+      },
+      "pottery": {
+        "cost": {
+          "clay": 2
+        },
+        "station": "kiln"
+      },
+      "herbalism": {
+        "cost": {
+          "herbs": 1
+        }
+      },
+      "joinery": {
+        "cost": {
+          "planks": 1
+        },
+        "station": "bench"
+      },
+      "metalwork": {
+        "cost": {
+          "ore": 1
+        },
+        "station": "smelter"
+      },
+      "horticulture": {
+        "cost": {
+          "water": 2
+        },
+        "station": "garden"
+      },
+      "milling": {
+        "cost": {
+          "grain": 2
+        },
+        "station": "mill"
+      },
+      "baking": {
+        "cost": {
+          "flour": 1
+        },
+        "station": "bakery"
+      },
+      "logistics": {
+        "cost": {
+          "rope": 1
+        },
+        "station": "market"
+      },
+      "mentorship": {
+        "cost": {
+          "fiber": 1
+        },
+        "station": "circle"
+      },
+      "engineering": {
+        "cost": {
+          "iron": 1
+        },
+        "station": "workshop"
+      },
+      "glassmaking": {
+        "cost": {
+          "stone": 2
+        },
+        "station": "kiln"
+      },
+      "stewardship": {
+        "cost": {
+          "water": 2
+        },
+        "station": "garden"
+      },
+      "scholarship": {
+        "cost": {
+          "glass": 1
+        },
+        "station": "study"
+      }
+    },
+    "DISCIPLINES": {
+      "woodland": {
+        "name": "Woodland ways",
+        "icon": "leaf",
+        "description": "Read the land. Bring home what it offers."
+      },
+      "making": {
+        "name": "Timber & thread",
+        "icon": "planks",
+        "description": "From a fallen branch to a carefully joined frame."
+      },
+      "homestead": {
+        "name": "A living home",
+        "icon": "home",
+        "description": "Food, warmth, gardens and a place to belong."
+      },
+      "craft": {
+        "name": "Earth & fire",
+        "icon": "fire",
+        "description": "Clay, charcoal, metal and bright little inventions."
+      },
+      "community": {
+        "name": "Life together",
+        "icon": "market",
+        "description": "Useful places, generous work and shared independence."
+      },
+      "discovery": {
+        "name": "Curious minds",
+        "icon": "research",
+        "description": "Practice, observation and the next good question."
+      }
+    },
+    "STYLES": {
+      "together": {
+        "name": "Side by side",
+        "rate": 1,
+        "practice": 3,
+        "bond": 3,
+        "joy": 5,
+        "desc": "A patient lesson: +3 starting practice and +3 friendship."
+      },
+      "playful": {
+        "name": "Learn through play",
+        "rate": 0.85,
+        "practice": 2,
+        "bond": 2,
+        "joy": 14,
+        "desc": "A gentler pace: +14 joy, +2 friendship and less mental effort."
+      },
+      "independent": {
+        "name": "Room to try",
+        "rate": 1.2,
+        "practice": 1,
+        "bond": 1,
+        "joy": 4,
+        "desc": "20% faster lessons; +1 starting practice, with more mental effort."
+      }
+    },
+    "APPROACHES": {
+      "balanced": {
+        "name": "Steady paws",
+        "time": 1,
+        "quality": 0,
+        "desc": "Standard work time. A dependable finish."
+      },
+      "careful": {
+        "name": "Made with care",
+        "time": 1.35,
+        "quality": 18,
+        "desc": "35% more work time; +18 finish quality; +1 practice per stage."
+      },
+      "quick": {
+        "name": "Simple & useful",
+        "time": 0.78,
+        "quality": -12,
+        "desc": "22% less work time; −12 finish quality. Still fully usable."
+      }
+    },
+    "SPECIALIZATIONS": {
+      "woodland": [
+        {
+          "id": "gatherer",
+          "name": "Gentle forager",
+          "desc": "+1 item per natural harvest, limited by the node’s remaining stock."
+        },
+        {
+          "id": "explorer",
+          "name": "Field observer",
+          "desc": "Exploration is 20% faster and earns +1 shared research."
+        }
+      ],
+      "making": [
+        {
+          "id": "maker",
+          "name": "Patient craftspaw",
+          "desc": "Timber and thread recipes work 15% faster."
+        },
+        {
+          "id": "builder",
+          "name": "Thoughtful builder",
+          "desc": "Completed buildings and upgrades gain +12 finish quality."
+        }
+      ],
+      "homestead": [
+        {
+          "id": "comfort",
+          "name": "Keeper of home",
+          "desc": "Rest and warming restore +12 comfort."
+        },
+        {
+          "id": "cook",
+          "name": "Generous cook",
+          "desc": "Every completed food recipe yields one extra meal or loaf."
+        }
+      ],
+      "craft": [
+        {
+          "id": "efficient",
+          "name": "Workshop rhythm",
+          "desc": "Earth & fire recipes work 18% faster."
+        },
+        {
+          "id": "finisher",
+          "name": "Fine finisher",
+          "desc": "Completed buildings and upgrades gain +10 finish quality."
+        }
+      ],
+      "community": [
+        {
+          "id": "merchant",
+          "name": "Neighborly trader",
+          "desc": "Shared income from sales and deliveries increases 15%."
+        },
+        {
+          "id": "steward",
+          "name": "Prepared provider",
+          "desc": "Crafting and gathering for pantry reserves is 20% faster."
+        }
+      ],
+      "discovery": [
+        {
+          "id": "mentor",
+          "name": "Patient mentor",
+          "desc": "Lessons work 15% faster; coached practice earns +2 mastery."
+        },
+        {
+          "id": "thinker",
+          "name": "Bright spark",
+          "desc": "Autonomous experiments and completed field studies earn +1 research."
+        }
+      ]
+    },
+    "STUDIES": {
+      "branches": {
+        "name": "From branch to belonging",
+        "discipline": "woodland",
+        "desc": "Notice what changes when raw materials become part of a home.",
+        "requires": null,
+        "goals": [
+          {
+            "event": "gather:wood",
+            "amount": 12,
+            "label": "Gather 12 wood"
+          },
+          {
+            "event": "stage",
+            "amount": 3,
+            "label": "Complete 3 construction stages"
+          }
+        ],
+        "reward": {
+          "rp": 5,
+          "coins": 18
+        }
+      },
+      "threads": {
+        "name": "The strength of small things",
+        "discipline": "making",
+        "desc": "Test how fibers can become useful structure.",
+        "requires": "fiberwork",
+        "goals": [
+          {
+            "event": "craft:rope",
+            "amount": 6,
+            "label": "Make 6 rope"
+          },
+          {
+            "event": "practice:woodwork",
+            "amount": 2,
+            "label": "Complete 2 plank-crafting drills"
+          }
+        ],
+        "reward": {
+          "rp": 6,
+          "coins": 24
+        }
+      },
+      "earth": {
+        "name": "What the fire changes",
+        "discipline": "craft",
+        "desc": "Compare the earth before and after a careful firing.",
+        "requires": "pottery",
+        "goals": [
+          {
+            "event": "gather:clay",
+            "amount": 9,
+            "label": "Gather 9 clay"
+          },
+          {
+            "event": "craft:bricks",
+            "amount": 6,
+            "label": "Fire 6 bricks"
+          },
+          {
+            "event": "craft:pots",
+            "amount": 2,
+            "label": "Fire 2 pots"
+          }
+        ],
+        "reward": {
+          "rp": 8,
+          "coins": 30
+        }
+      },
+      "harvest": {
+        "name": "Tomorrow in a seed",
+        "discipline": "homestead",
+        "desc": "Follow the grain from the patch to a shared table.",
+        "requires": "milling",
+        "goals": [
+          {
+            "event": "gather:grain",
+            "amount": 9,
+            "label": "Harvest 9 grain"
+          },
+          {
+            "event": "craft:flour",
+            "amount": 6,
+            "label": "Mill 6 flour"
+          },
+          {
+            "event": "craft:bread",
+            "amount": 4,
+            "label": "Bake 4 bread"
+          }
+        ],
+        "reward": {
+          "rp": 10,
+          "coins": 40
+        }
+      },
+      "neighbors": {
+        "name": "Better, together",
+        "discipline": "community",
+        "desc": "Learn from useful work that reaches beyond our clearing.",
+        "requires": "commerce",
+        "goals": [
+          {
+            "event": "deliver",
+            "amount": 2,
+            "label": "Complete 2 neighborhood deliveries"
+          },
+          {
+            "event": "upgrade",
+            "amount": 1,
+            "label": "Complete 1 building upgrade"
+          }
+        ],
+        "reward": {
+          "rp": 8,
+          "coins": 40
+        }
+      },
+      "stars": {
+        "name": "A question worth keeping",
+        "discipline": "discovery",
+        "desc": "Connect practice, experiments and a place to watch the sky.",
+        "requires": "invention",
+        "goals": [
+          {
+            "event": "research",
+            "amount": 4,
+            "label": "Complete 4 autonomous experiments"
+          },
+          {
+            "event": "practice:invention",
+            "amount": 2,
+            "label": "Complete 2 invention drills"
+          },
+          {
+            "event": "build:observatory",
+            "amount": 1,
+            "label": "Build a stargazer’s nook"
+          }
+        ],
+        "reward": {
+          "rp": 16,
+          "coins": 65
+        }
+      }
+    },
+    "PATHS": {
+      "home": {
+        "name": "A warm first home",
+        "desc": "The gentle first loop: learn, gather, build, care.",
+        "skills": [
+          "woodcraft",
+          "shelter",
+          "stonework",
+          "firekeeping"
+        ],
+        "buildings": [
+          "shelter",
+          "bench",
+          "fire",
+          "circle"
+        ]
+      },
+      "threads": {
+        "name": "Timber, thread & tools",
+        "desc": "A making path from loose fibers to a real workshop.",
+        "skills": [
+          "fiberwork",
+          "woodwork",
+          "weaving",
+          "joinery"
+        ],
+        "buildings": [
+          "loom",
+          "workshop"
+        ]
+      },
+      "earth": {
+        "name": "Earth into possibility",
+        "desc": "A chain of clay, charcoal, bricks, ore and iron.",
+        "skills": [
+          "claywork",
+          "pottery",
+          "metalwork",
+          "engineering"
+        ],
+        "buildings": [
+          "kiln",
+          "smelter",
+          "waterwheel"
+        ]
+      },
+      "harvest": {
+        "name": "From garden to table",
+        "desc": "Grow grain, mill flour, bake bread, plant for tomorrow.",
+        "skills": [
+          "gardening",
+          "milling",
+          "cooking",
+          "baking",
+          "horticulture",
+          "stewardship"
+        ],
+        "buildings": [
+          "grainplot",
+          "mill",
+          "bakery",
+          "greenhouse",
+          "orchard"
+        ]
+      },
+      "wonder": {
+        "name": "A life of little discoveries",
+        "desc": "A place for learning and a window onto the stars.",
+        "skills": [
+          "invention",
+          "mentorship",
+          "glassmaking",
+          "scholarship"
+        ],
+        "buildings": [
+          "study",
+          "circle",
+          "observatory"
+        ]
+      }
+    },
+    "CONTRACTS": [
+      {
+        "name": "A neighbor’s new fence",
+        "desc": "Rowan needs a few straight planks.",
+        "cost": {
+          "planks": 3
+        },
+        "coins": 36,
+        "rp": 2
+      },
+      {
+        "name": "A basket for the road",
+        "desc": "Travelers are packing for a long walk.",
+        "cost": {
+          "berries": 6,
+          "water": 3
+        },
+        "coins": 28,
+        "rp": 2
+      },
+      {
+        "name": "A hearth before winter",
+        "desc": "Help Fern stock up for a cozy evening.",
+        "cost": {
+          "wood": 6,
+          "stone": 3
+        },
+        "coins": 38,
+        "rp": 3
+      },
+      {
+        "name": "Supper for the village",
+        "desc": "Two warm meals would make someone’s day.",
+        "cost": {
+          "meals": 2
+        },
+        "coins": 42,
+        "rp": 3
+      }
+    ]
+  },
+  "scenarios": {
+    "idle600": {
+      "version": 3,
+      "name": "Pip",
+      "seed": 2718,
+      "simTime": 599.9999999999993,
+      "day": 2,
+      "hour": 14.000000000000822,
+      "started": true,
+      "speed": 1,
+      "paused": false,
+      "focus": "balanced",
+      "player": {
+        "level": 1,
+        "xp": 2,
+        "coins": 76
+      },
+      "creature": {
+        "level": 1,
+        "xp": 6,
+        "coins": 16,
+        "x": 11,
+        "y": 9,
+        "dir": 1
+      },
+      "rp": 10,
+      "bond": 22,
+      "needs": {
+        "food": 68.56199999999828,
+        "water": 80.48899999999726,
+        "energy": 46.05100000000292,
+        "comfort": 52.000000000003496,
+        "joy": 71.99999999999257
+      },
+      "inventory": {
+        "wood": 2,
+        "stone": 0,
+        "fiber": 2,
+        "berries": 6,
+        "water": 5,
+        "planks": 0,
+        "meat": 0,
+        "meals": 0,
+        "clay": 0,
+        "ore": 0,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 0,
+        "bricks": 0,
+        "pots": 0,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "allowance": {
+        "limit": 10,
+        "given": 10,
+        "auto": true,
+        "reserve": 4,
+        "sourcing": "balanced"
+      },
+      "skills": {},
+      "researched": {},
+      "training": null,
+      "buildings": [],
+      "orders": [],
+      "nodes": [
+        {
+          "id": "n0",
+          "kind": "wood",
+          "x": 2,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n1",
+          "kind": "wood",
+          "x": 3,
+          "y": 6,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n2",
+          "kind": "wood",
+          "x": 1,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n3",
+          "kind": "wood",
+          "x": 3,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n4",
+          "kind": "wood",
+          "x": 5,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n5",
+          "kind": "wood",
+          "x": 7,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n6",
+          "kind": "wood",
+          "x": 12,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n7",
+          "kind": "wood",
+          "x": 16,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n8",
+          "kind": "wood",
+          "x": 17,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n9",
+          "kind": "wood",
+          "x": 10,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n10",
+          "kind": "wood",
+          "x": 6,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n11",
+          "kind": "wood",
+          "x": 2,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n12",
+          "kind": "wood",
+          "x": 15,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n13",
+          "kind": "wood",
+          "x": 16,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n14",
+          "kind": "wood",
+          "x": 8,
+          "y": 4,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n15",
+          "kind": "wood",
+          "x": 11,
+          "y": 14,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n16",
+          "kind": "berries",
+          "x": 4,
+          "y": 5,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n17",
+          "kind": "berries",
+          "x": 5,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n18",
+          "kind": "berries",
+          "x": 12,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n19",
+          "kind": "berries",
+          "x": 10,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n20",
+          "kind": "berries",
+          "x": 7,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n21",
+          "kind": "berries",
+          "x": 16,
+          "y": 9,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n22",
+          "kind": "fiber",
+          "x": 5,
+          "y": 4,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n23",
+          "kind": "fiber",
+          "x": 2,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n24",
+          "kind": "fiber",
+          "x": 6,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n25",
+          "kind": "fiber",
+          "x": 14,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n26",
+          "kind": "fiber",
+          "x": 11,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n27",
+          "kind": "fiber",
+          "x": 15,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n28",
+          "kind": "stone",
+          "x": 9,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n29",
+          "kind": "stone",
+          "x": 11,
+          "y": 5,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n30",
+          "kind": "stone",
+          "x": 15,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n31",
+          "kind": "stone",
+          "x": 3,
+          "y": 15,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n32",
+          "kind": "stone",
+          "x": 16,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n33",
+          "kind": "water",
+          "x": 13,
+          "y": 5,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "n34",
+          "kind": "hunt",
+          "x": 17,
+          "y": 15,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-0",
+          "kind": "clay",
+          "x": 12,
+          "y": 5,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-1",
+          "kind": "clay",
+          "x": 12,
+          "y": 6,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-0",
+          "kind": "ore",
+          "x": 17,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-1",
+          "kind": "ore",
+          "x": 14,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-0",
+          "kind": "herbs",
+          "x": 4,
+          "y": 14,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-1",
+          "kind": "herbs",
+          "x": 6,
+          "y": 12,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-0",
+          "kind": "grain",
+          "x": 4,
+          "y": 3,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-1",
+          "kind": "grain",
+          "x": 10,
+          "y": 4,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        }
+      ],
+      "task": null,
+      "log": [
+        {
+          "text": "Pip gathered 3 berries.",
+          "icon": "berries",
+          "time": 485.599999999981,
+          "day": 2,
+          "hour": 8.280000000000948
+        },
+        {
+          "text": "Pip chose to stop for a snack.",
+          "icon": "berries",
+          "time": 480.79999999998125,
+          "day": 2,
+          "hour": 8.040000000000953
+        },
+        {
+          "text": "Pip gathered 3 water.",
+          "icon": "water",
+          "time": 451.19999999998294,
+          "day": 2,
+          "hour": 6.560000000000985
+        },
+        {
+          "text": "A new day in Aster Glade. Day 2.",
+          "icon": "sun",
+          "time": 319.9999999999904,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "New-day allowance: 10 coins with Pip.",
+          "icon": "coin",
+          "time": 319.9999999999904,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "Pip chose to stop for a snack.",
+          "icon": "berries",
+          "time": 181.19999999999825,
+          "day": 1,
+          "hour": 17.059999999999995
+        }
+      ],
+      "completedQuests": [],
+      "stats": {
+        "fed": 0,
+        "watered": 0,
+        "bonded": 0,
+        "gathered": 6,
+        "built": 0,
+        "trained": 0,
+        "planksMade": 0,
+        "deliveries": 0,
+        "explored": 0,
+        "earned": 0,
+        "researchEarned": 0
+      },
+      "cooldowns": {
+        "feed": 0,
+        "water": 0,
+        "bond": 0,
+        "praise": 0,
+        "explore": 0,
+        "research": 0
+      },
+      "memory": {
+        "lastAchievement": 485.599999999981,
+        "lastPraise": -100,
+        "lastGentleWarning": -100,
+        "lastPlan": "",
+        "lastDecline": -100
+      },
+      "contractIndex": 0,
+      "settings": {
+        "sound": false,
+        "follow": false,
+        "reducedMotion": false,
+        "highContrast": false
+      },
+      "stockTargets": {
+        "wood": 0,
+        "stone": 0,
+        "fiber": 0,
+        "berries": 4,
+        "water": 3,
+        "planks": 0,
+        "meat": 0,
+        "meals": 0,
+        "clay": 0,
+        "ore": 0,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 0,
+        "bricks": 0,
+        "pots": 0,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "practice": {},
+      "memories": [],
+      "ledger": [
+        {
+          "label": "Daily allowance",
+          "guide": -10,
+          "pocket": 10,
+          "research": 0,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        }
+      ],
+      "wish": {
+        "stat": "explored",
+        "amount": 1,
+        "title": "Something we haven’t seen",
+        "thought": "I wonder what is hiding along the trail.",
+        "action": "explore",
+        "day": 2,
+        "start": 0,
+        "complete": false
+      },
+      "daily": {
+        "day": 2,
+        "bonded": 0
+      },
+      "nextId": 1,
+      "learning": {
+        "queue": [],
+        "style": "together",
+        "fatigue": 0,
+        "recovering": false,
+        "paused": false,
+        "practiceDay": 2,
+        "practicedToday": {},
+        "path": "home"
+      },
+      "specializations": {},
+      "fieldStudies": {
+        "active": null,
+        "progress": {},
+        "completed": []
+      },
+      "buildPolicy": {
+        "approach": "balanced"
+      },
+      "metrics": {
+        "crafts": {},
+        "gathered": {
+          "water": 3,
+          "berries": 3
+        },
+        "practices": {},
+        "stages": 0,
+        "upgrades": 0,
+        "lessons": 0
+      }
+    },
+    "firstHome": {
+      "version": 3,
+      "name": "Pip",
+      "seed": 2718,
+      "simTime": 379.9999999999869,
+      "day": 2,
+      "hour": 3.0000000000010596,
+      "started": true,
+      "speed": 1,
+      "paused": false,
+      "focus": "balanced",
+      "player": {
+        "level": 2,
+        "xp": 26,
+        "coins": 99
+      },
+      "creature": {
+        "level": 2,
+        "xp": 18,
+        "coins": 16,
+        "x": 8,
+        "y": 11,
+        "dir": -1
+      },
+      "rp": 18,
+      "bond": 42,
+      "needs": {
+        "food": 62.12599999999887,
+        "water": 91.49699999999734,
+        "energy": 58.12300000000393,
+        "comfort": 71.88800000000656,
+        "joy": 87.01999999999336
+      },
+      "inventory": {
+        "wood": 2,
+        "stone": 0,
+        "fiber": 1,
+        "berries": 4,
+        "water": 5,
+        "planks": 0,
+        "meat": 0,
+        "meals": 0,
+        "clay": 0,
+        "ore": 0,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 0,
+        "bricks": 0,
+        "pots": 0,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "allowance": {
+        "limit": 10,
+        "given": 10,
+        "auto": true,
+        "reserve": 4,
+        "sourcing": "balanced"
+      },
+      "skills": {
+        "woodcraft": true,
+        "shelter": true
+      },
+      "researched": {
+        "woodcraft": true,
+        "shelter": true
+      },
+      "training": null,
+      "buildings": [
+        {
+          "id": "b2",
+          "kind": "shelter",
+          "x": 8,
+          "y": 8,
+          "stock": 0,
+          "regen": 0,
+          "level": 1,
+          "quality": 60
+        }
+      ],
+      "orders": [],
+      "nodes": [
+        {
+          "id": "n0",
+          "kind": "wood",
+          "x": 2,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n1",
+          "kind": "wood",
+          "x": 3,
+          "y": 6,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n2",
+          "kind": "wood",
+          "x": 1,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n3",
+          "kind": "wood",
+          "x": 3,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n4",
+          "kind": "wood",
+          "x": 5,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n5",
+          "kind": "wood",
+          "x": 7,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n6",
+          "kind": "wood",
+          "x": 12,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n7",
+          "kind": "wood",
+          "x": 16,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n8",
+          "kind": "wood",
+          "x": 17,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n9",
+          "kind": "wood",
+          "x": 10,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n10",
+          "kind": "wood",
+          "x": 6,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n11",
+          "kind": "wood",
+          "x": 2,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n12",
+          "kind": "wood",
+          "x": 15,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n13",
+          "kind": "wood",
+          "x": 16,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n14",
+          "kind": "wood",
+          "x": 8,
+          "y": 4,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n15",
+          "kind": "wood",
+          "x": 11,
+          "y": 14,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n16",
+          "kind": "berries",
+          "x": 4,
+          "y": 5,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n17",
+          "kind": "berries",
+          "x": 5,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n18",
+          "kind": "berries",
+          "x": 12,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n19",
+          "kind": "berries",
+          "x": 10,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n20",
+          "kind": "berries",
+          "x": 7,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n21",
+          "kind": "berries",
+          "x": 16,
+          "y": 9,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n22",
+          "kind": "fiber",
+          "x": 5,
+          "y": 4,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n23",
+          "kind": "fiber",
+          "x": 2,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n24",
+          "kind": "fiber",
+          "x": 6,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n25",
+          "kind": "fiber",
+          "x": 14,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n26",
+          "kind": "fiber",
+          "x": 11,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n27",
+          "kind": "fiber",
+          "x": 15,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n28",
+          "kind": "stone",
+          "x": 9,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n29",
+          "kind": "stone",
+          "x": 11,
+          "y": 5,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n30",
+          "kind": "stone",
+          "x": 15,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n31",
+          "kind": "stone",
+          "x": 3,
+          "y": 15,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n32",
+          "kind": "stone",
+          "x": 16,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n33",
+          "kind": "water",
+          "x": 13,
+          "y": 5,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "n34",
+          "kind": "hunt",
+          "x": 17,
+          "y": 15,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-0",
+          "kind": "clay",
+          "x": 12,
+          "y": 5,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-1",
+          "kind": "clay",
+          "x": 12,
+          "y": 6,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-0",
+          "kind": "ore",
+          "x": 17,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-1",
+          "kind": "ore",
+          "x": 14,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-0",
+          "kind": "herbs",
+          "x": 4,
+          "y": 14,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-1",
+          "kind": "herbs",
+          "x": 6,
+          "y": 12,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-0",
+          "kind": "grain",
+          "x": 4,
+          "y": 3,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-1",
+          "kind": "grain",
+          "x": 10,
+          "y": 4,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        }
+      ],
+      "task": null,
+      "log": [
+        {
+          "text": "Pip gathered 3 water.",
+          "icon": "water",
+          "time": 332.9999999999896,
+          "day": 2,
+          "hour": 0.6500000000010805
+        },
+        {
+          "text": "A new day in Aster Glade. Day 2.",
+          "icon": "sun",
+          "time": 319.99999999999034,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "New-day allowance: 10 coins with Pip.",
+          "icon": "coin",
+          "time": 319.99999999999034,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "Leaf shelter completed. Dependable · 60 quality.",
+          "icon": "home",
+          "time": 120.40000000000114,
+          "day": 1,
+          "hour": 14.019999999999872
+        },
+        {
+          "text": "Pip reached level 2!",
+          "icon": "star",
+          "time": 120.40000000000114,
+          "day": 1,
+          "hour": 14.019999999999872
+        },
+        {
+          "text": "Pip gathered 3 fiber.",
+          "icon": "fiber",
+          "time": 112.60000000000103,
+          "day": 1,
+          "hour": 13.62999999999988
+        },
+        {
+          "text": "Leaf shelter: raise the structure complete. Next: make it a place.",
+          "icon": "plan",
+          "time": 105.40000000000093,
+          "day": 1,
+          "hour": 13.269999999999888
+        },
+        {
+          "text": "Pip gathered 3 wood.",
+          "icon": "wood",
+          "time": 98.20000000000083,
+          "day": 1,
+          "hour": 12.909999999999895
+        },
+        {
+          "text": "Pip gathered 3 wood.",
+          "icon": "wood",
+          "time": 94.00000000000077,
+          "day": 1,
+          "hour": 12.6999999999999
+        },
+        {
+          "text": "Leaf shelter: lay the groundwork complete. Next: raise the structure.",
+          "icon": "plan",
+          "time": 86.60000000000066,
+          "day": 1,
+          "hour": 12.329999999999908
+        },
+        {
+          "text": "You imagined a leaf shelter. Pip will work out how to make it happen.",
+          "icon": "plan",
+          "time": 80.00000000000057,
+          "day": 1,
+          "hour": 11.999999999999915
+        },
+        {
+          "text": "A shared milestone: From paws to possibilities. +25 coins, +4 research.",
+          "icon": "star",
+          "time": 80.00000000000057,
+          "day": 1,
+          "hour": 11.999999999999915
+        },
+        {
+          "text": "Pip learned Sheltercraft. A new possibility unlocked.",
+          "icon": "book",
+          "time": 46.80000000000012,
+          "day": 1,
+          "hour": 10.33999999999995
+        },
+        {
+          "text": "You reached level 2!",
+          "icon": "star",
+          "time": 46.80000000000012,
+          "day": 1,
+          "hour": 10.33999999999995
+        },
+        {
+          "text": "A Sheltercraft lesson joins our plan: side by side.",
+          "icon": "book",
+          "time": 34.99999999999995,
+          "day": 1,
+          "hour": 9.749999999999963
+        },
+        {
+          "text": "You researched “A place of our own”. The lesson is ready to teach.",
+          "icon": "research",
+          "time": 34.99999999999995,
+          "day": 1,
+          "hour": 9.749999999999963
+        },
+        {
+          "text": "Pip learned Wood gathering. A new possibility unlocked.",
+          "icon": "book",
+          "time": 8.200000000000003,
+          "day": 1,
+          "hour": 8.409999999999991
+        },
+        {
+          "text": "A Wood gathering lesson joins our plan: side by side.",
+          "icon": "book",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "You researched “Woodland hands”. The lesson is ready to teach.",
+          "icon": "research",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "A shared milestone: A friendship starts small. +20 coins, +3 research.",
+          "icon": "star",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "A small wish fulfilled: A moment, just us. +2 friendship, +1 shared research.",
+          "icon": "heart",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "You watched the clouds together. Some moments are worth slowing down for.",
+          "icon": "heart",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "A cool drink and a little kindness.",
+          "icon": "water",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "You shared a berry snack with Pip.",
+          "icon": "berries",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "completedQuests": [
+        "hello",
+        "learn"
+      ],
+      "stats": {
+        "fed": 1,
+        "watered": 1,
+        "bonded": 1,
+        "gathered": 12,
+        "built": 1,
+        "trained": 2,
+        "planksMade": 0,
+        "deliveries": 0,
+        "explored": 0,
+        "earned": 0,
+        "researchEarned": 12
+      },
+      "cooldowns": {
+        "feed": 8,
+        "water": 8,
+        "bond": 28,
+        "praise": 0,
+        "explore": 0,
+        "research": 0
+      },
+      "memory": {
+        "lastAchievement": 332.9999999999896,
+        "lastPraise": -100,
+        "lastGentleWarning": -100,
+        "lastPlan": "",
+        "lastDecline": -100
+      },
+      "contractIndex": 0,
+      "settings": {
+        "sound": false,
+        "follow": false,
+        "reducedMotion": false,
+        "highContrast": false
+      },
+      "stockTargets": {
+        "wood": 0,
+        "stone": 0,
+        "fiber": 0,
+        "berries": 4,
+        "water": 3,
+        "planks": 0,
+        "meat": 0,
+        "meals": 0,
+        "clay": 0,
+        "ore": 0,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 0,
+        "bricks": 0,
+        "pots": 0,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "practice": {
+        "woodcraft": 5,
+        "shelter": 6
+      },
+      "memories": [
+        {
+          "key": "build-shelter",
+          "title": "Our leaf shelter",
+          "description": "A dependable place, made together.",
+          "icon": "home",
+          "day": 1,
+          "hour": 14.019999999999872
+        },
+        {
+          "key": "chapter-learn",
+          "title": "From paws to possibilities",
+          "description": "A chapter of our shared story.",
+          "icon": "star",
+          "day": 1,
+          "hour": 11.999999999999915
+        },
+        {
+          "key": "learn-shelter",
+          "title": "I learned Sheltercraft",
+          "description": "You believed I could. Now I can.",
+          "icon": "book",
+          "day": 1,
+          "hour": 10.33999999999995
+        },
+        {
+          "key": "learn-woodcraft",
+          "title": "I learned Wood gathering",
+          "description": "You believed I could. Now I can.",
+          "icon": "book",
+          "day": 1,
+          "hour": 8.409999999999991
+        },
+        {
+          "key": "chapter-hello",
+          "title": "A friendship starts small",
+          "description": "A chapter of our shared story.",
+          "icon": "star",
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "key": "wish-1",
+          "title": "A moment, just us",
+          "description": "We made room for a small wish. No grand plans needed.",
+          "icon": "heart",
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "ledger": [
+        {
+          "label": "Daily allowance",
+          "guide": -10,
+          "pocket": 10,
+          "research": 0,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 14.019999999999872
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 4,
+          "day": 1,
+          "hour": 11.999999999999915
+        },
+        {
+          "label": "Chapter: From paws to possibilities",
+          "guide": 25,
+          "pocket": 0,
+          "research": 0,
+          "day": 1,
+          "hour": 11.999999999999915
+        },
+        {
+          "label": "Guide level 2",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 10.33999999999995
+        },
+        {
+          "label": "Lesson: Sheltercraft",
+          "guide": -12,
+          "pocket": 0,
+          "research": 0,
+          "day": 1,
+          "hour": 9.749999999999963
+        },
+        {
+          "label": "Research: Sheltercraft",
+          "guide": 0,
+          "pocket": 0,
+          "research": -2,
+          "day": 1,
+          "hour": 9.749999999999963
+        },
+        {
+          "label": "Lesson: Wood gathering",
+          "guide": -10,
+          "pocket": 0,
+          "research": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "label": "Research: Wood gathering",
+          "guide": 0,
+          "pocket": 0,
+          "research": -2,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 3,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "label": "Chapter: A friendship starts small",
+          "guide": 20,
+          "pocket": 0,
+          "research": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "label": "A small wish",
+          "guide": 0,
+          "pocket": 0,
+          "research": 1,
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "wish": {
+        "stat": "explored",
+        "amount": 1,
+        "title": "Something we haven’t seen",
+        "thought": "I wonder what is hiding along the trail.",
+        "action": "explore",
+        "day": 2,
+        "start": 0,
+        "complete": false
+      },
+      "daily": {
+        "day": 2,
+        "bonded": 0
+      },
+      "nextId": 3,
+      "learning": {
+        "queue": [],
+        "style": "together",
+        "fatigue": 0,
+        "recovering": false,
+        "paused": false,
+        "practiceDay": 2,
+        "practicedToday": {},
+        "path": "home"
+      },
+      "specializations": {},
+      "fieldStudies": {
+        "active": null,
+        "progress": {},
+        "completed": []
+      },
+      "buildPolicy": {
+        "approach": "balanced"
+      },
+      "metrics": {
+        "crafts": {},
+        "gathered": {
+          "wood": 6,
+          "fiber": 3,
+          "water": 3
+        },
+        "practices": {},
+        "stages": 3,
+        "upgrades": 0,
+        "lessons": 2
+      }
+    },
+    "workshop1200": {
+      "version": 3,
+      "name": "Pip",
+      "seed": 2718,
+      "simTime": 1200.0000000001357,
+      "day": 3,
+      "hour": 20.000000000002366,
+      "started": true,
+      "speed": 1,
+      "paused": false,
+      "focus": "balanced",
+      "player": {
+        "level": 6,
+        "xp": 30,
+        "coins": 244
+      },
+      "creature": {
+        "level": 7,
+        "xp": 59,
+        "coins": 44,
+        "x": 8,
+        "y": 11,
+        "dir": -1
+      },
+      "rp": 84,
+      "bond": 82,
+      "needs": {
+        "food": 81.23499999999929,
+        "water": 78.28999999999316,
+        "energy": 59.016000000012085,
+        "comfort": 94.32960000001322,
+        "joy": 68.99999999997621
+      },
+      "inventory": {
+        "wood": 0,
+        "stone": 8,
+        "fiber": 9,
+        "berries": 7,
+        "water": 4,
+        "planks": 0,
+        "meat": 2,
+        "meals": 0,
+        "clay": 6,
+        "ore": 2,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 2,
+        "bricks": 2,
+        "pots": 1,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "allowance": {
+        "limit": 8,
+        "given": 8,
+        "auto": true,
+        "reserve": 6,
+        "sourcing": "balanced"
+      },
+      "skills": {
+        "woodcraft": true,
+        "stonework": true,
+        "shelter": true,
+        "firekeeping": true,
+        "woodwork": true,
+        "gardening": true,
+        "commerce": true,
+        "tracking": true,
+        "cooking": true,
+        "masonry": true,
+        "architecture": true,
+        "invention": true,
+        "fiberwork": true,
+        "claywork": true,
+        "weaving": true,
+        "pottery": true,
+        "joinery": true,
+        "herbalism": true,
+        "metalwork": true
+      },
+      "researched": {
+        "woodcraft": true,
+        "stonework": true,
+        "shelter": true,
+        "firekeeping": true,
+        "woodwork": true,
+        "gardening": true,
+        "commerce": true,
+        "tracking": true,
+        "cooking": true,
+        "masonry": true,
+        "architecture": true,
+        "invention": true,
+        "fiberwork": true,
+        "claywork": true,
+        "weaving": true,
+        "pottery": true,
+        "joinery": true,
+        "herbalism": true,
+        "metalwork": true
+      },
+      "training": null,
+      "buildings": [
+        {
+          "id": "b1",
+          "kind": "shelter",
+          "x": 7,
+          "y": 8,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b2",
+          "kind": "bench",
+          "x": 10,
+          "y": 8,
+          "level": 2,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b3",
+          "kind": "fire",
+          "x": 9,
+          "y": 11,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b4",
+          "kind": "garden",
+          "x": 6,
+          "y": 10,
+          "level": 1,
+          "quality": 72,
+          "stock": 12,
+          "regen": 0
+        },
+        {
+          "id": "b5",
+          "kind": "market",
+          "x": 12,
+          "y": 9,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b6",
+          "kind": "circle",
+          "x": 7,
+          "y": 12,
+          "level": 2,
+          "quality": 84,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b7",
+          "kind": "loom",
+          "x": 10,
+          "y": 11,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b8",
+          "kind": "kiln",
+          "x": 11,
+          "y": 7,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b9",
+          "kind": "study",
+          "x": 8,
+          "y": 13,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b10",
+          "kind": "well",
+          "x": 11,
+          "y": 12,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b11",
+          "kind": "grainplot",
+          "x": 8,
+          "y": 6,
+          "level": 1,
+          "quality": 72,
+          "stock": 12,
+          "regen": 8.952838470577262e-12
+        },
+        {
+          "id": "b12",
+          "kind": "cottage",
+          "x": 6,
+          "y": 8,
+          "level": 1,
+          "quality": 72,
+          "stock": 0,
+          "regen": 0
+        },
+        {
+          "id": "b14",
+          "kind": "workshop",
+          "x": 10,
+          "y": 6,
+          "stock": 0,
+          "regen": 0,
+          "level": 1,
+          "quality": 85
+        }
+      ],
+      "orders": [],
+      "nodes": [
+        {
+          "id": "n0",
+          "kind": "wood",
+          "x": 2,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n1",
+          "kind": "wood",
+          "x": 3,
+          "y": 6,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n2",
+          "kind": "wood",
+          "x": 1,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n3",
+          "kind": "wood",
+          "x": 3,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n4",
+          "kind": "wood",
+          "x": 5,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n5",
+          "kind": "wood",
+          "x": 7,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n6",
+          "kind": "wood",
+          "x": 12,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n7",
+          "kind": "wood",
+          "x": 16,
+          "y": 13,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n8",
+          "kind": "wood",
+          "x": 17,
+          "y": 10,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n9",
+          "kind": "wood",
+          "x": 10,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n10",
+          "kind": "wood",
+          "x": 6,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n11",
+          "kind": "wood",
+          "x": 2,
+          "y": 16,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n12",
+          "kind": "wood",
+          "x": 15,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n13",
+          "kind": "wood",
+          "x": 16,
+          "y": 2,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n14",
+          "kind": "wood",
+          "x": 8,
+          "y": 4,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n15",
+          "kind": "wood",
+          "x": 11,
+          "y": 14,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n16",
+          "kind": "berries",
+          "x": 4,
+          "y": 5,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n17",
+          "kind": "berries",
+          "x": 5,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n18",
+          "kind": "berries",
+          "x": 12,
+          "y": 11,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n19",
+          "kind": "berries",
+          "x": 10,
+          "y": 15,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n20",
+          "kind": "berries",
+          "x": 7,
+          "y": 3,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n21",
+          "kind": "berries",
+          "x": 16,
+          "y": 9,
+          "stock": 6,
+          "max": 6,
+          "regen": 0
+        },
+        {
+          "id": "n22",
+          "kind": "fiber",
+          "x": 5,
+          "y": 4,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n23",
+          "kind": "fiber",
+          "x": 2,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n24",
+          "kind": "fiber",
+          "x": 6,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n25",
+          "kind": "fiber",
+          "x": 14,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n26",
+          "kind": "fiber",
+          "x": 11,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n27",
+          "kind": "fiber",
+          "x": 15,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n28",
+          "kind": "stone",
+          "x": 9,
+          "y": 3,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n29",
+          "kind": "stone",
+          "x": 11,
+          "y": 5,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n30",
+          "kind": "stone",
+          "x": 15,
+          "y": 14,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n31",
+          "kind": "stone",
+          "x": 3,
+          "y": 15,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n32",
+          "kind": "stone",
+          "x": 16,
+          "y": 12,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "n33",
+          "kind": "water",
+          "x": 13,
+          "y": 5,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "n34",
+          "kind": "hunt",
+          "x": 17,
+          "y": 15,
+          "stock": 999,
+          "max": 999,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-0",
+          "kind": "clay",
+          "x": 12,
+          "y": 5,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-clay-1",
+          "kind": "clay",
+          "x": 12,
+          "y": 6,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-0",
+          "kind": "ore",
+          "x": 17,
+          "y": 8,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-ore-1",
+          "kind": "ore",
+          "x": 14,
+          "y": 10,
+          "stock": 8,
+          "max": 8,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-0",
+          "kind": "herbs",
+          "x": 4,
+          "y": 14,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-herbs-1",
+          "kind": "herbs",
+          "x": 6,
+          "y": 12,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-0",
+          "kind": "grain",
+          "x": 4,
+          "y": 3,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        },
+        {
+          "id": "v3-grain-1",
+          "kind": "grain",
+          "x": 10,
+          "y": 4,
+          "stock": 10,
+          "max": 10,
+          "regen": 0
+        }
+      ],
+      "task": null,
+      "log": [
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 1174.80000000013,
+          "day": 3,
+          "hour": 18.74000000000217
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 1112.800000000116,
+          "day": 3,
+          "hour": 15.640000000001747
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 1050.8000000001018,
+          "day": 3,
+          "hour": 12.540000000001813
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 987.6000000000876,
+          "day": 3,
+          "hour": 9.38000000000188
+        },
+        {
+          "text": "Pip chose to stop for a snack.",
+          "icon": "berries",
+          "time": 949.800000000079,
+          "day": 3,
+          "hour": 7.4900000000019205
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 925.2000000000734,
+          "day": 3,
+          "hour": 6.260000000001947
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 863.2000000000593,
+          "day": 3,
+          "hour": 3.1600000000020123
+        },
+        {
+          "text": "A new day in Aster Glade. Day 3.",
+          "icon": "sun",
+          "time": 800.0000000000449,
+          "day": 3,
+          "hour": 2.035704937952687e-12
+        },
+        {
+          "text": "New-day allowance: 8 coins with Pip.",
+          "icon": "coin",
+          "time": 800.0000000000449,
+          "day": 3,
+          "hour": 2.035704937952687e-12
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 791.400000000043,
+          "day": 2,
+          "hour": 23.57000000000197
+        },
+        {
+          "text": "Pip feels confident with Invention. +12% work speed.",
+          "icon": "star",
+          "time": 723.0000000000274,
+          "day": 2,
+          "hour": 20.150000000001434
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 723.0000000000274,
+          "day": 2,
+          "hour": 20.150000000001434
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 660.4000000000132,
+          "day": 2,
+          "hour": 17.020000000000945
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 596.5999999999987,
+          "day": 2,
+          "hour": 13.83000000000083
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 529.9999999999835,
+          "day": 2,
+          "hour": 10.5000000000009
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 464.99999999998215,
+          "day": 2,
+          "hour": 7.25000000000097
+        },
+        {
+          "text": "Pip reached level 7!",
+          "icon": "star",
+          "time": 464.99999999998215,
+          "day": 2,
+          "hour": 7.25000000000097
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 398.7999999999859,
+          "day": 2,
+          "hour": 3.94000000000104
+        },
+        {
+          "text": "Pip chose to stop for a snack.",
+          "icon": "berries",
+          "time": 341.3999999999892,
+          "day": 2,
+          "hour": 1.0700000000010808
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 338.19999999998936,
+          "day": 2,
+          "hour": 0.9100000000010807
+        },
+        {
+          "text": "A new day in Aster Glade. Day 2.",
+          "icon": "sun",
+          "time": 319.9999999999904,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "New-day allowance: 8 coins with Pip.",
+          "icon": "coin",
+          "time": 319.9999999999904,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 273.19999999999305,
+          "day": 1,
+          "hour": 21.660000000000714
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 210.59999999999658,
+          "day": 1,
+          "hour": 18.530000000000225
+        },
+        {
+          "text": "You reached level 6!",
+          "icon": "star",
+          "time": 210.59999999999658,
+          "day": 1,
+          "hour": 18.530000000000225
+        },
+        {
+          "text": "Pip’s little experiment earned 2 shared research.",
+          "icon": "research",
+          "time": 143.20000000000041,
+          "day": 1,
+          "hour": 15.159999999999847
+        },
+        {
+          "text": "Timber workshop completed. Beautifully made · 85 quality.",
+          "icon": "home",
+          "time": 129.2000000000012,
+          "day": 1,
+          "hour": 14.459999999999862
+        },
+        {
+          "text": "Timber workshop: raise the structure complete. Next: make it a place.",
+          "icon": "plan",
+          "time": 118.20000000000114,
+          "day": 1,
+          "hour": 13.909999999999874
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 101.8000000000009,
+          "day": 1,
+          "hour": 13.089999999999892
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 98.40000000000086,
+          "day": 1,
+          "hour": 12.919999999999895
+        },
+        {
+          "text": "Pip gathered 3 wood.",
+          "icon": "wood",
+          "time": 92.60000000000078,
+          "day": 1,
+          "hour": 12.629999999999901
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 86.20000000000068,
+          "day": 1,
+          "hour": 12.309999999999908
+        },
+        {
+          "text": "Pip gathered 3 wood.",
+          "icon": "wood",
+          "time": 80.4000000000006,
+          "day": 1,
+          "hour": 12.019999999999914
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 74.00000000000051,
+          "day": 1,
+          "hour": 11.699999999999921
+        },
+        {
+          "text": "Pip made 1 timber beams.",
+          "icon": "planks",
+          "time": 70.60000000000046,
+          "day": 1,
+          "hour": 11.529999999999925
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 63.80000000000037,
+          "day": 1,
+          "hour": 11.189999999999932
+        },
+        {
+          "text": "Pip reached level 6!",
+          "icon": "star",
+          "time": 63.80000000000037,
+          "day": 1,
+          "hour": 11.189999999999932
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 60.40000000000032,
+          "day": 1,
+          "hour": 11.019999999999936
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 57.00000000000027,
+          "day": 1,
+          "hour": 10.84999999999994
+        },
+        {
+          "text": "Pip made 1 timber beams.",
+          "icon": "planks",
+          "time": 53.60000000000022,
+          "day": 1,
+          "hour": 10.679999999999943
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 46.800000000000125,
+          "day": 1,
+          "hour": 10.33999999999995
+        },
+        {
+          "text": "Pip made 1 planks.",
+          "icon": "planks",
+          "time": 43.40000000000008,
+          "day": 1,
+          "hour": 10.169999999999954
+        },
+        {
+          "text": "Pip made 1 timber beams.",
+          "icon": "planks",
+          "time": 40.00000000000003,
+          "day": 1,
+          "hour": 9.999999999999957
+        },
+        {
+          "text": "Timber workshop: lay the groundwork complete. Next: raise the structure.",
+          "icon": "plan",
+          "time": 33.19999999999993,
+          "day": 1,
+          "hour": 9.659999999999965
+        },
+        {
+          "text": "Pip learned Metalworking. A new possibility unlocked.",
+          "icon": "book",
+          "time": 19.79999999999996,
+          "day": 1,
+          "hour": 8.989999999999979
+        },
+        {
+          "text": "A growing-workshop example: metalworking is in our learning plan, a careful workshop is on the board, and a field study is active.",
+          "icon": "book",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "You imagined a timber workshop. Pip will work out how to make it happen.",
+          "icon": "plan",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "A Metalworking lesson joins our plan: side by side.",
+          "icon": "book",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "You researched “A patient kind of fire”. The lesson is ready to teach.",
+          "icon": "research",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "text": "A new shared question: What the fire changes.",
+          "icon": "research",
+          "time": 0,
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "completedQuests": [
+        "hello",
+        "learn",
+        "home",
+        "spark",
+        "market",
+        "neighbors",
+        "dream"
+      ],
+      "stats": {
+        "fed": 10,
+        "watered": 9,
+        "bonded": 12,
+        "gathered": 162,
+        "built": 13,
+        "trained": 19,
+        "planksMade": 39,
+        "deliveries": 3,
+        "explored": 0,
+        "earned": 0,
+        "researchEarned": 38
+      },
+      "cooldowns": {
+        "feed": 0,
+        "water": 0,
+        "bond": 0,
+        "praise": 0,
+        "explore": 0,
+        "research": 1224.80000000013
+      },
+      "memory": {
+        "lastAchievement": 1174.80000000013,
+        "lastPraise": -100,
+        "lastGentleWarning": -100,
+        "lastPlan": "",
+        "lastDecline": -100
+      },
+      "contractIndex": 0,
+      "settings": {
+        "sound": false,
+        "follow": false,
+        "reducedMotion": false,
+        "highContrast": false
+      },
+      "stockTargets": {
+        "wood": 0,
+        "stone": 0,
+        "fiber": 0,
+        "berries": 4,
+        "water": 3,
+        "planks": 0,
+        "meat": 0,
+        "meals": 0,
+        "clay": 0,
+        "ore": 0,
+        "herbs": 0,
+        "grain": 0,
+        "rope": 0,
+        "cloth": 0,
+        "charcoal": 0,
+        "bricks": 0,
+        "pots": 0,
+        "beams": 0,
+        "iron": 0,
+        "tools": 0,
+        "flour": 0,
+        "bread": 0,
+        "balm": 0,
+        "glass": 0
+      },
+      "practice": {
+        "woodcraft": 12,
+        "stonework": 10,
+        "shelter": 20,
+        "firekeeping": 10,
+        "woodwork": 29,
+        "gardening": 10,
+        "commerce": 10,
+        "tracking": 10,
+        "cooking": 10,
+        "masonry": 10,
+        "architecture": 10,
+        "invention": 27,
+        "fiberwork": 10,
+        "claywork": 10,
+        "weaving": 10,
+        "pottery": 20,
+        "joinery": 19,
+        "herbalism": 10,
+        "metalwork": 3
+      },
+      "memories": [
+        {
+          "key": "build-workshop",
+          "title": "Our timber workshop",
+          "description": "A beautifully made place, made together.",
+          "icon": "bench",
+          "day": 1,
+          "hour": 14.459999999999862
+        },
+        {
+          "key": "learn-metalwork",
+          "title": "I learned Metalworking",
+          "description": "You believed I could. Now I can.",
+          "icon": "book",
+          "day": 1,
+          "hour": 8.989999999999979
+        },
+        {
+          "key": "demo-home",
+          "title": "A clearing became a home",
+          "description": "Each useful place began as a possibility we imagined together.",
+          "icon": "home",
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "key": "demo-craft",
+          "title": "Earth, fire, and patience",
+          "description": "The first pot came out a little crooked. It still held water.",
+          "icon": "fire",
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "ledger": [
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 18.74000000000217
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 15.640000000001747
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 12.540000000001813
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 9.38000000000188
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 6.260000000001947
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 3,
+          "hour": 3.1600000000020123
+        },
+        {
+          "label": "Daily allowance",
+          "guide": -8,
+          "pocket": 8,
+          "research": 0,
+          "day": 3,
+          "hour": 2.035704937952687e-12
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 23.57000000000197
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 20.150000000001434
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 17.020000000000945
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 13.83000000000083
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 10.5000000000009
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 7.25000000000097
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 3.94000000000104
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 2,
+          "hour": 0.9100000000010807
+        },
+        {
+          "label": "Daily allowance",
+          "guide": -8,
+          "pocket": 8,
+          "research": 0,
+          "day": 2,
+          "hour": 1.0800249583553523e-12
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 21.660000000000714
+        },
+        {
+          "label": "Guide level 6",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 18.530000000000225
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 18.530000000000225
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 15.159999999999847
+        },
+        {
+          "label": "Shared discovery",
+          "guide": 0,
+          "pocket": 0,
+          "research": 2,
+          "day": 1,
+          "hour": 14.459999999999862
+        },
+        {
+          "label": "Lesson: Metalworking",
+          "guide": -36,
+          "pocket": 0,
+          "research": 0,
+          "day": 1,
+          "hour": 8
+        },
+        {
+          "label": "Research: Metalworking",
+          "guide": 0,
+          "pocket": 0,
+          "research": -6,
+          "day": 1,
+          "hour": 8
+        }
+      ],
+      "wish": {
+        "stat": "gathered",
+        "amount": 9,
+        "title": "A little for tomorrow",
+        "thought": "I’d like to bring something home for us.",
+        "action": "gather",
+        "day": 3,
+        "start": 162,
+        "complete": false
+      },
+      "daily": {
+        "day": 3,
+        "bonded": 0
+      },
+      "nextId": 15,
+      "learning": {
+        "queue": [],
+        "style": "together",
+        "fatigue": 0,
+        "recovering": false,
+        "paused": false,
+        "practiceDay": 3,
+        "practicedToday": {},
+        "path": "earth"
+      },
+      "specializations": {},
+      "fieldStudies": {
+        "active": "earth",
+        "progress": {
+          "earth": {}
+        },
+        "completed": []
+      },
+      "buildPolicy": {
+        "approach": "careful"
+      },
+      "metrics": {
+        "crafts": {
+          "beams": 3,
+          "planks": 9
+        },
+        "gathered": {
+          "wood": 6
+        },
+        "practices": {},
+        "stages": 45,
+        "upgrades": 2,
+        "lessons": 19
+      }
+    }
+  }
+}

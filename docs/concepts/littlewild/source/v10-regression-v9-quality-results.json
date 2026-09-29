@@ -1,0 +1,131 @@
+{
+  "suite": "Littlewild v9 quality regressions",
+  "passed": 31,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Stale harvest completion cannot generate a second yield or roll",
+      "passed": true
+    },
+    {
+      "name": "A stale transfer cannot cancel the replacement task or consume later output",
+      "passed": true
+    },
+    {
+      "name": "An old paid-work task cannot reserve a new batch",
+      "passed": true
+    },
+    {
+      "name": "Interrupted work credits the original personal order when another creature finishes",
+      "passed": true
+    },
+    {
+      "name": "Canceling an originating order preserves the paid batch but detaches its credit",
+      "passed": true
+    },
+    {
+      "name": "Another creature cannot settle a reserved batch belonging to its active worker",
+      "passed": true
+    },
+    {
+      "name": "Underfilled finite substrate is blocked consistently before dispatch",
+      "passed": true
+    },
+    {
+      "name": "Construction cannot seal the spring’s only approach",
+      "passed": true
+    },
+    {
+      "name": "A replanned node topology invalidates cached routes",
+      "passed": true
+    },
+    {
+      "name": "Path consumers never share mutable route arrays or points",
+      "passed": true
+    },
+    {
+      "name": "Reordered ingredient object keys are a valid exact story",
+      "passed": true
+    },
+    {
+      "name": "Duplicate paid-batch identifiers are rejected before loading",
+      "passed": true
+    },
+    {
+      "name": "Used work identifiers cannot be reissued by a stale sequence",
+      "passed": true
+    },
+    {
+      "name": "The next entity counter cannot collide with existing IDs",
+      "passed": true
+    },
+    {
+      "name": "Overlapping building plans in different satchels are rejected",
+      "passed": true
+    },
+    {
+      "name": "Duplicate order IDs across creatures are rejected",
+      "passed": true
+    },
+    {
+      "name": "Invalid time input NaN has no effects",
+      "passed": true
+    },
+    {
+      "name": "Invalid time input Infinity has no effects",
+      "passed": true
+    },
+    {
+      "name": "Invalid time input -Infinity has no effects",
+      "passed": true
+    },
+    {
+      "name": "Invalid time input 0.1 has no effects",
+      "passed": true
+    },
+    {
+      "name": "Invalid time input null has no effects",
+      "passed": true
+    },
+    {
+      "name": "Pausing the original craft order also pauses its shared paid work",
+      "passed": true
+    },
+    {
+      "name": "Resource blocker details retain the presentation contract",
+      "passed": true
+    },
+    {
+      "name": "Paid-batch origin survives exact save/restore before a worker handoff",
+      "passed": true
+    },
+    {
+      "name": "Fresh worlds retain access to all harvestable sources after every legal candidate",
+      "passed": true
+    },
+    {
+      "name": "An unavailable closest output does not shadow a reachable source",
+      "passed": true
+    },
+    {
+      "name": "An unreachable deposit does not shadow another reachable deposit",
+      "passed": true
+    },
+    {
+      "name": "Quantity-map comparison ignores ordering but rejects extra zero fields",
+      "passed": true
+    },
+    {
+      "name": "Invalid import leaves every active content library untouched",
+      "passed": true
+    },
+    {
+      "name": "Authentic v8 paid work recovers recorded originating order identity",
+      "passed": true
+    },
+    {
+      "name": "An old interrupted batch does not fabricate missing order evidence",
+      "passed": true
+    }
+  ]
+}

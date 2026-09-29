@@ -1,0 +1,36 @@
+        findPath(target, adjacent = false) {
+            const s = this.s;
+            let start = { x: Math.round(s.creature.x), y: Math.round(s.creature.y) };
+            const key = (x, y) => x + ',' + y;
+            const goals = [];
+            if (!adjacent && this.walkable(target.x, target.y))
+                goals.push(target);
+            for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]])
+                if (this.walkable(target.x + dx, target.y + dy))
+                    goals.push({ x: target.x + dx, y: target.y + dy });
+            const goalset = new Set(goals.map(g => key(g.x, g.y)));
+            let queue = [start], head = 0, prev = new Map([[key(start.x, start.y), null]]), end = null;
+            while (head < queue.length) {
+                const p = queue[head++], pk = key(p.x, p.y);
+                if (goalset.has(pk)) {
+                    end = pk;
+                    break;
+                }
+                for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+                    const x = p.x + dx, y = p.y + dy, k = key(x, y);
+                    if (!prev.has(k) && this.walkable(x, y)) {
+                        prev.set(k, pk);
+                        queue.push({ x, y });
+                    }
+                }
+            }
+            if (end === null)
+                return null;
+            const path = [];
+            while (prev.get(end) !== null) {
+                const [x, y] = end.split(',').map(Number);
+                path.unshift({ x, y });
+                end = prev.get(end);
+            }
+            return path;
+        }

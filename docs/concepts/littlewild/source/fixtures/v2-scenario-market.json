@@ -1,0 +1,1413 @@
+{
+  "app": "littlewild",
+  "version": 2,
+  "savedAt": "2026-09-27T16:59:36.148Z",
+  "state": {
+    "version": 2,
+    "name": "Pip",
+    "seed": 2718,
+    "simTime": 370.9999999999875,
+    "day": 2,
+    "hour": 2.5500000000010696,
+    "started": true,
+    "speed": 1,
+    "paused": false,
+    "focus": "balanced",
+    "player": {
+      "level": 5,
+      "xp": 19,
+      "coins": 186
+    },
+    "creature": {
+      "level": 5,
+      "xp": 45,
+      "coins": 26,
+      "x": 12,
+      "y": 7,
+      "dir": 1
+    },
+    "rp": 41,
+    "bond": 65,
+    "needs": {
+      "food": 56.72299999999866,
+      "water": 85.35099999999572,
+      "energy": 45.44899999999996,
+      "comfort": 73.81100000000592,
+      "joy": 97.55999999999875
+    },
+    "inventory": {
+      "wood": 0,
+      "stone": 1,
+      "fiber": 1,
+      "berries": 4,
+      "water": 2,
+      "planks": 0,
+      "meat": 0,
+      "meals": 0
+    },
+    "allowance": {
+      "limit": 10,
+      "given": 10,
+      "auto": true,
+      "reserve": 4,
+      "sourcing": "balanced"
+    },
+    "skills": {
+      "woodcraft": true,
+      "shelter": true,
+      "stonework": true,
+      "firekeeping": true,
+      "woodwork": true,
+      "commerce": true
+    },
+    "researched": {
+      "woodcraft": true,
+      "shelter": true,
+      "stonework": true,
+      "firekeeping": true,
+      "woodwork": true,
+      "commerce": true
+    },
+    "training": null,
+    "buildings": [
+      {
+        "id": "b2",
+        "kind": "shelter",
+        "x": 7,
+        "y": 8,
+        "stock": 0,
+        "regen": 0
+      },
+      {
+        "id": "b4",
+        "kind": "bench",
+        "x": 10,
+        "y": 8,
+        "stock": 0,
+        "regen": 0
+      },
+      {
+        "id": "b6",
+        "kind": "fire",
+        "x": 9,
+        "y": 11,
+        "stock": 0,
+        "regen": 0
+      },
+      {
+        "id": "b8",
+        "kind": "market",
+        "x": 12,
+        "y": 9,
+        "stock": 0,
+        "regen": 0
+      }
+    ],
+    "orders": [],
+    "nodes": [
+      {
+        "id": "n0",
+        "kind": "wood",
+        "x": 2,
+        "y": 3,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n1",
+        "kind": "wood",
+        "x": 3,
+        "y": 6,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n2",
+        "kind": "wood",
+        "x": 1,
+        "y": 10,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n3",
+        "kind": "wood",
+        "x": 3,
+        "y": 13,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n4",
+        "kind": "wood",
+        "x": 5,
+        "y": 15,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n5",
+        "kind": "wood",
+        "x": 7,
+        "y": 16,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n6",
+        "kind": "wood",
+        "x": 12,
+        "y": 16,
+        "stock": 4,
+        "max": 6,
+        "regen": 18.599999999999966
+      },
+      {
+        "id": "n7",
+        "kind": "wood",
+        "x": 16,
+        "y": 13,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n8",
+        "kind": "wood",
+        "x": 17,
+        "y": 10,
+        "stock": 4,
+        "max": 6,
+        "regen": 13.399999999999984
+      },
+      {
+        "id": "n9",
+        "kind": "wood",
+        "x": 10,
+        "y": 2,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n10",
+        "kind": "wood",
+        "x": 6,
+        "y": 2,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n11",
+        "kind": "wood",
+        "x": 2,
+        "y": 16,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n12",
+        "kind": "wood",
+        "x": 15,
+        "y": 15,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n13",
+        "kind": "wood",
+        "x": 16,
+        "y": 2,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n14",
+        "kind": "wood",
+        "x": 8,
+        "y": 4,
+        "stock": 3,
+        "max": 6,
+        "regen": 18.999999999999964
+      },
+      {
+        "id": "n15",
+        "kind": "wood",
+        "x": 11,
+        "y": 14,
+        "stock": 4,
+        "max": 6,
+        "regen": 18.799999999999965
+      },
+      {
+        "id": "n16",
+        "kind": "berries",
+        "x": 4,
+        "y": 5,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n17",
+        "kind": "berries",
+        "x": 5,
+        "y": 11,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n18",
+        "kind": "berries",
+        "x": 12,
+        "y": 11,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n19",
+        "kind": "berries",
+        "x": 10,
+        "y": 15,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n20",
+        "kind": "berries",
+        "x": 7,
+        "y": 3,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n21",
+        "kind": "berries",
+        "x": 16,
+        "y": 9,
+        "stock": 6,
+        "max": 6,
+        "regen": 0
+      },
+      {
+        "id": "n22",
+        "kind": "fiber",
+        "x": 5,
+        "y": 4,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n23",
+        "kind": "fiber",
+        "x": 2,
+        "y": 8,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n24",
+        "kind": "fiber",
+        "x": 6,
+        "y": 14,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n25",
+        "kind": "fiber",
+        "x": 14,
+        "y": 12,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n26",
+        "kind": "fiber",
+        "x": 11,
+        "y": 3,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n27",
+        "kind": "fiber",
+        "x": 15,
+        "y": 10,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n28",
+        "kind": "stone",
+        "x": 9,
+        "y": 3,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n29",
+        "kind": "stone",
+        "x": 11,
+        "y": 5,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n30",
+        "kind": "stone",
+        "x": 15,
+        "y": 14,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n31",
+        "kind": "stone",
+        "x": 3,
+        "y": 15,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n32",
+        "kind": "stone",
+        "x": 16,
+        "y": 12,
+        "stock": 8,
+        "max": 8,
+        "regen": 0
+      },
+      {
+        "id": "n33",
+        "kind": "water",
+        "x": 13,
+        "y": 5,
+        "stock": 999,
+        "max": 999,
+        "regen": 0
+      },
+      {
+        "id": "n34",
+        "kind": "hunt",
+        "x": 17,
+        "y": 15,
+        "stock": 999,
+        "max": 999,
+        "regen": 0
+      }
+    ],
+    "task": null,
+    "log": [
+      {
+        "text": "A grateful neighbor paid 36 coins, shared between you and Pip.",
+        "icon": "coin",
+        "time": 370.19999999998754,
+        "day": 2,
+        "hour": 2.5100000000010705
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 363.5999999999879,
+        "day": 2,
+        "hour": 2.1800000000010775
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 359.39999999998815,
+        "day": 2,
+        "hour": 1.9700000000010816
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 351.9999999999886,
+        "day": 2,
+        "hour": 1.6000000000010812
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 343.1999999999891,
+        "day": 2,
+        "hour": 1.1600000000010808
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 333.39999999998963,
+        "day": 2,
+        "hour": 0.6700000000010805
+      },
+      {
+        "text": "You suggested: a neighbor’s new fence.",
+        "icon": "plan",
+        "time": 322.9999999999902,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "text": "A shared milestone: A world beyond our clearing. +50 coins, +8 research.",
+        "icon": "star",
+        "time": 322.9999999999902,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "text": "You reached level 5!",
+        "icon": "star",
+        "time": 322.9999999999902,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "text": "Our market stall is finished. Look what we made together.",
+        "icon": "home",
+        "time": 322.19999999999027,
+        "day": 2,
+        "hour": 0.11000000000108004
+      },
+      {
+        "text": "Pip reached level 5!",
+        "icon": "star",
+        "time": 322.19999999999027,
+        "day": 2,
+        "hour": 0.11000000000108004
+      },
+      {
+        "text": "A new day in Aster Glade. Day 2.",
+        "icon": "sun",
+        "time": 319.9999999999904,
+        "day": 2,
+        "hour": 1.0800249583553523e-12
+      },
+      {
+        "text": "New-day allowance: 10 coins with Pip.",
+        "icon": "coin",
+        "time": 319.9999999999904,
+        "day": 2,
+        "hour": 1.0800249583553523e-12
+      },
+      {
+        "text": "Pip gathered 2 stone.",
+        "icon": "stone",
+        "time": 303.39999999999134,
+        "day": 1,
+        "hour": 23.17000000000095
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 295.3999999999918,
+        "day": 1,
+        "hour": 22.770000000000888
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 284.7999999999924,
+        "day": 1,
+        "hour": 22.240000000000805
+      },
+      {
+        "text": "Pip gathered 1 wood.",
+        "icon": "wood",
+        "time": 278.39999999999276,
+        "day": 1,
+        "hour": 21.920000000000755
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 270.3999999999932,
+        "day": 1,
+        "hour": 21.520000000000692
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 266.19999999999345,
+        "day": 1,
+        "hour": 21.31000000000066
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 255.59999999999403,
+        "day": 1,
+        "hour": 20.780000000000577
+      },
+      {
+        "text": "Pip gathered 1 wood.",
+        "icon": "wood",
+        "time": 249.1999999999944,
+        "day": 1,
+        "hour": 20.460000000000527
+      },
+      {
+        "text": "Pip made 1 planks.",
+        "icon": "planks",
+        "time": 241.19999999999484,
+        "day": 1,
+        "hour": 20.060000000000464
+      },
+      {
+        "text": "Pip feels practiced with Wood gathering. +6% work speed.",
+        "icon": "star",
+        "time": 232.9999999999953,
+        "day": 1,
+        "hour": 19.6500000000004
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 232.9999999999953,
+        "day": 1,
+        "hour": 19.6500000000004
+      },
+      {
+        "text": "You imagined a market stall. Pip will work out how to make it happen.",
+        "icon": "plan",
+        "time": 223.99999999999582,
+        "day": 1,
+        "hour": 19.20000000000033
+      },
+      {
+        "text": "Pip learned Trading. A new possibility unlocked.",
+        "icon": "book",
+        "time": 223.99999999999582,
+        "day": 1,
+        "hour": 19.20000000000033
+      },
+      {
+        "text": "You bought a Trading lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 205.99999999999685,
+        "day": 1,
+        "hour": 18.30000000000019
+      },
+      {
+        "text": "You researched “Hello, neighbor”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 205.99999999999685,
+        "day": 1,
+        "hour": 18.30000000000019
+      },
+      {
+        "text": "Pip learned Plank crafting. A new possibility unlocked.",
+        "icon": "book",
+        "time": 205.59999999999687,
+        "day": 1,
+        "hour": 18.280000000000186
+      },
+      {
+        "text": "Pip reached level 4!",
+        "icon": "star",
+        "time": 205.59999999999687,
+        "day": 1,
+        "hour": 18.280000000000186
+      },
+      {
+        "text": "You bought a Plank crafting lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 184.99999999999804,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "text": "You researched “Grain & patience”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 184.99999999999804,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "text": "A shared milestone: An evening by the fire. +45 coins, +7 research.",
+        "icon": "star",
+        "time": 184.99999999999804,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "text": "You reached level 4!",
+        "icon": "star",
+        "time": 184.99999999999804,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "text": "Our campfire is finished. Look what we made together.",
+        "icon": "home",
+        "time": 184.79999999999805,
+        "day": 1,
+        "hour": 17.240000000000023
+      },
+      {
+        "text": "Pip gathered 2 stone.",
+        "icon": "stone",
+        "time": 168.79999999999896,
+        "day": 1,
+        "hour": 16.4399999999999
+      },
+      {
+        "text": "Pip gathered 2 stone.",
+        "icon": "stone",
+        "time": 163.99999999999923,
+        "day": 1,
+        "hour": 16.19999999999986
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 156.79999999999964,
+        "day": 1,
+        "hour": 15.839999999999833
+      },
+      {
+        "text": "Pip gathered 1 wood.",
+        "icon": "wood",
+        "time": 150.20000000000002,
+        "day": 1,
+        "hour": 15.50999999999984
+      },
+      {
+        "text": "You imagined a campfire. Pip will work out how to make it happen.",
+        "icon": "plan",
+        "time": 142.00000000000048,
+        "day": 1,
+        "hour": 15.099999999999849
+      },
+      {
+        "text": "Our workbench is finished. Look what we made together.",
+        "icon": "home",
+        "time": 142.00000000000048,
+        "day": 1,
+        "hour": 15.099999999999849
+      },
+      {
+        "text": "Pip gathered 2 stone.",
+        "icon": "stone",
+        "time": 122.4000000000012,
+        "day": 1,
+        "hour": 14.11999999999987
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 114.40000000000109,
+        "day": 1,
+        "hour": 13.719999999999878
+      },
+      {
+        "text": "Pip reached level 3!",
+        "icon": "star",
+        "time": 114.40000000000109,
+        "day": 1,
+        "hour": 13.719999999999878
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 110.20000000000103,
+        "day": 1,
+        "hour": 13.509999999999883
+      },
+      {
+        "text": "You imagined a workbench. Pip will work out how to make it happen.",
+        "icon": "plan",
+        "time": 96.00000000000082,
+        "day": 1,
+        "hour": 12.799999999999898
+      },
+      {
+        "text": "Pip learned Firekeeping. A new possibility unlocked.",
+        "icon": "book",
+        "time": 95.20000000000081,
+        "day": 1,
+        "hour": 12.759999999999899
+      },
+      {
+        "text": "You bought a Firekeeping lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 80.0000000000006,
+        "day": 1,
+        "hour": 11.999999999999915
+      },
+      {
+        "text": "You researched “A little spark”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 80.0000000000006,
+        "day": 1,
+        "hour": 11.999999999999915
+      },
+      {
+        "text": "Pip learned Stone gathering. A new possibility unlocked.",
+        "icon": "book",
+        "time": 79.60000000000059,
+        "day": 1,
+        "hour": 11.979999999999915
+      },
+      {
+        "text": "You reached level 3!",
+        "icon": "star",
+        "time": 79.60000000000059,
+        "day": 1,
+        "hour": 11.979999999999915
+      },
+      {
+        "text": "You bought a Stone gathering lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 64.00000000000037,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "text": "You researched “Stone sense”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 64.00000000000037,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "text": "A shared milestone: Somewhere to belong. +30 coins, +5 research.",
+        "icon": "star",
+        "time": 64.00000000000037,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "text": "Our leaf shelter is finished. Look what we made together.",
+        "icon": "home",
+        "time": 63.80000000000037,
+        "day": 1,
+        "hour": 11.189999999999932
+      },
+      {
+        "text": "Pip reached level 2!",
+        "icon": "star",
+        "time": 63.80000000000037,
+        "day": 1,
+        "hour": 11.189999999999932
+      },
+      {
+        "text": "Pip gathered 3 fiber.",
+        "icon": "fiber",
+        "time": 48.200000000000145,
+        "day": 1,
+        "hour": 10.409999999999949
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 42.600000000000065,
+        "day": 1,
+        "hour": 10.129999999999955
+      },
+      {
+        "text": "Pip gathered 3 wood.",
+        "icon": "wood",
+        "time": 38.400000000000006,
+        "day": 1,
+        "hour": 9.919999999999959
+      },
+      {
+        "text": "You imagined a leaf shelter. Pip will work out how to make it happen.",
+        "icon": "plan",
+        "time": 24.999999999999943,
+        "day": 1,
+        "hour": 9.249999999999973
+      },
+      {
+        "text": "A shared milestone: From paws to possibilities. +25 coins, +4 research.",
+        "icon": "star",
+        "time": 24.999999999999943,
+        "day": 1,
+        "hour": 9.249999999999973
+      },
+      {
+        "text": "Pip learned Sheltercraft. A new possibility unlocked.",
+        "icon": "book",
+        "time": 24.199999999999946,
+        "day": 1,
+        "hour": 9.209999999999974
+      },
+      {
+        "text": "You reached level 2!",
+        "icon": "star",
+        "time": 24.199999999999946,
+        "day": 1,
+        "hour": 9.209999999999974
+      },
+      {
+        "text": "You bought a Sheltercraft lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 9,
+        "day": 1,
+        "hour": 8.44999999999999
+      },
+      {
+        "text": "You researched “A place of our own”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 9,
+        "day": 1,
+        "hour": 8.44999999999999
+      },
+      {
+        "text": "Pip learned Wood gathering. A new possibility unlocked.",
+        "icon": "book",
+        "time": 8.200000000000003,
+        "day": 1,
+        "hour": 8.409999999999991
+      },
+      {
+        "text": "You bought a Wood gathering lesson. Pip will study when ready.",
+        "icon": "book",
+        "time": 0,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "text": "You researched “Woodland hands”. The lesson is ready to teach.",
+        "icon": "research",
+        "time": 0,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "text": "A shared milestone: A friendship starts small. +20 coins, +3 research.",
+        "icon": "star",
+        "time": 0,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "text": "A small wish fulfilled: A moment, just us. +2 friendship, +1 shared research.",
+        "icon": "heart",
+        "time": 0,
+        "day": 1,
+        "hour": 8
+      }
+    ],
+    "completedQuests": [
+      "hello",
+      "learn",
+      "home",
+      "spark",
+      "market"
+    ],
+    "stats": {
+      "fed": 1,
+      "watered": 1,
+      "bonded": 1,
+      "gathered": 44,
+      "built": 4,
+      "trained": 6,
+      "planksMade": 7,
+      "deliveries": 1,
+      "explored": 0,
+      "earned": 36,
+      "researchEarned": 48
+    },
+    "cooldowns": {
+      "feed": 8,
+      "water": 8,
+      "bond": 28,
+      "praise": 0,
+      "explore": 0,
+      "research": 0
+    },
+    "memory": {
+      "lastAchievement": 370.19999999998754,
+      "lastPraise": -100,
+      "lastGentleWarning": -100,
+      "lastPlan": "",
+      "lastDecline": -100
+    },
+    "contractIndex": 1,
+    "settings": {
+      "sound": false,
+      "follow": false,
+      "reducedMotion": false,
+      "highContrast": false
+    },
+    "stockTargets": {
+      "wood": 0,
+      "stone": 0,
+      "fiber": 0,
+      "berries": 4,
+      "water": 3,
+      "planks": 0,
+      "meat": 0,
+      "meals": 0
+    },
+    "practice": {
+      "woodcraft": 14,
+      "shelter": 1,
+      "stonework": 4,
+      "firekeeping": 1,
+      "woodwork": 7,
+      "commerce": 2
+    },
+    "memories": [
+      {
+        "key": "chapter-market",
+        "title": "A world beyond our clearing",
+        "description": "A chapter of our shared story.",
+        "icon": "star",
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "key": "build-market",
+        "title": "Our market stall",
+        "description": "An idea became somewhere to belong.",
+        "icon": "market",
+        "day": 2,
+        "hour": 0.11000000000108004
+      },
+      {
+        "key": "learn-commerce",
+        "title": "I learned Trading",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 19.20000000000033
+      },
+      {
+        "key": "learn-woodwork",
+        "title": "I learned Plank crafting",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 18.280000000000186
+      },
+      {
+        "key": "chapter-spark",
+        "title": "An evening by the fire",
+        "description": "A chapter of our shared story.",
+        "icon": "star",
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "key": "build-fire",
+        "title": "Our campfire",
+        "description": "An idea became somewhere to belong.",
+        "icon": "fire",
+        "day": 1,
+        "hour": 17.240000000000023
+      },
+      {
+        "key": "build-bench",
+        "title": "Our workbench",
+        "description": "An idea became somewhere to belong.",
+        "icon": "bench",
+        "day": 1,
+        "hour": 15.099999999999849
+      },
+      {
+        "key": "learn-firekeeping",
+        "title": "I learned Firekeeping",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 12.759999999999899
+      },
+      {
+        "key": "learn-stonework",
+        "title": "I learned Stone gathering",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 11.979999999999915
+      },
+      {
+        "key": "chapter-home",
+        "title": "Somewhere to belong",
+        "description": "A chapter of our shared story.",
+        "icon": "star",
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "key": "build-shelter",
+        "title": "Our leaf shelter",
+        "description": "An idea became somewhere to belong.",
+        "icon": "home",
+        "day": 1,
+        "hour": 11.189999999999932
+      },
+      {
+        "key": "chapter-learn",
+        "title": "From paws to possibilities",
+        "description": "A chapter of our shared story.",
+        "icon": "star",
+        "day": 1,
+        "hour": 9.249999999999973
+      },
+      {
+        "key": "learn-shelter",
+        "title": "I learned Sheltercraft",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 9.209999999999974
+      },
+      {
+        "key": "learn-woodcraft",
+        "title": "I learned Wood gathering",
+        "description": "You believed I could. Now I can.",
+        "icon": "book",
+        "day": 1,
+        "hour": 8.409999999999991
+      },
+      {
+        "key": "chapter-hello",
+        "title": "A friendship starts small",
+        "description": "A chapter of our shared story.",
+        "icon": "star",
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "key": "wish-1",
+        "title": "A moment, just us",
+        "description": "We made room for a small wish. No grand plans needed.",
+        "icon": "heart",
+        "day": 1,
+        "hour": 8
+      }
+    ],
+    "ledger": [
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 2,
+        "hour": 2.5100000000010705
+      },
+      {
+        "label": "Shared trade income",
+        "guide": 26,
+        "pocket": 10,
+        "research": 0,
+        "day": 2,
+        "hour": 2.5100000000010705
+      },
+      {
+        "label": "Guide level 5",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 8,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "label": "Chapter: A world beyond our clearing",
+        "guide": 50,
+        "pocket": 0,
+        "research": 0,
+        "day": 2,
+        "hour": 0.15000000000108007
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 2,
+        "hour": 0.11000000000108004
+      },
+      {
+        "label": "Daily allowance",
+        "guide": -10,
+        "pocket": 10,
+        "research": 0,
+        "day": 2,
+        "hour": 1.0800249583553523e-12
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 1,
+        "day": 1,
+        "hour": 20.780000000000577
+      },
+      {
+        "label": "Lesson: Trading",
+        "guide": -22,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 18.30000000000019
+      },
+      {
+        "label": "Research: Trading",
+        "guide": 0,
+        "pocket": 0,
+        "research": -4,
+        "day": 1,
+        "hour": 18.30000000000019
+      },
+      {
+        "label": "Lesson: Plank crafting",
+        "guide": -20,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "label": "Research: Plank crafting",
+        "guide": 0,
+        "pocket": 0,
+        "research": -4,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "label": "Guide level 4",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 7,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "label": "Chapter: An evening by the fire",
+        "guide": 45,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 17.250000000000025
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 17.240000000000023
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 15.099999999999849
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 1,
+        "day": 1,
+        "hour": 13.719999999999878
+      },
+      {
+        "label": "Lesson: Firekeeping",
+        "guide": -12,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 11.999999999999915
+      },
+      {
+        "label": "Research: Firekeeping",
+        "guide": 0,
+        "pocket": 0,
+        "research": -3,
+        "day": 1,
+        "hour": 11.999999999999915
+      },
+      {
+        "label": "Guide level 3",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 11.979999999999915
+      },
+      {
+        "label": "Lesson: Stone gathering",
+        "guide": -10,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "label": "Research: Stone gathering",
+        "guide": 0,
+        "pocket": 0,
+        "research": -2,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 5,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "label": "Chapter: Somewhere to belong",
+        "guide": 30,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 11.199999999999932
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 11.189999999999932
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 4,
+        "day": 1,
+        "hour": 9.249999999999973
+      },
+      {
+        "label": "Chapter: From paws to possibilities",
+        "guide": 25,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 9.249999999999973
+      },
+      {
+        "label": "Guide level 2",
+        "guide": 0,
+        "pocket": 0,
+        "research": 2,
+        "day": 1,
+        "hour": 9.209999999999974
+      },
+      {
+        "label": "Lesson: Sheltercraft",
+        "guide": -12,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 8.44999999999999
+      },
+      {
+        "label": "Research: Sheltercraft",
+        "guide": 0,
+        "pocket": 0,
+        "research": -2,
+        "day": 1,
+        "hour": 8.44999999999999
+      },
+      {
+        "label": "Lesson: Wood gathering",
+        "guide": -10,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "label": "Research: Wood gathering",
+        "guide": 0,
+        "pocket": 0,
+        "research": -2,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "label": "Shared discovery",
+        "guide": 0,
+        "pocket": 0,
+        "research": 3,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "label": "Chapter: A friendship starts small",
+        "guide": 20,
+        "pocket": 0,
+        "research": 0,
+        "day": 1,
+        "hour": 8
+      },
+      {
+        "label": "A small wish",
+        "guide": 0,
+        "pocket": 0,
+        "research": 1,
+        "day": 1,
+        "hour": 8
+      }
+    ],
+    "wish": {
+      "stat": "explored",
+      "amount": 1,
+      "title": "Something we haven’t seen",
+      "thought": "I wonder what is hiding along the trail.",
+      "action": "explore",
+      "day": 2,
+      "start": 0,
+      "complete": false
+    },
+    "daily": {
+      "day": 2,
+      "bonded": 0
+    },
+    "nextId": 10
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "baselineSha256": "3ee1c7f043f2c0e8a1fff3720ede5cf63950793857f89ea9fb141a7619824b0d",
+  "captures": [
+    {
+      "route": "construction",
+      "file": "01-build.png",
+      "rect": {
+        "x": 295,
+        "y": 124.546875,
+        "width": 850,
+        "height": 650.890625
+      },
+      "backgroundInert": true
+    },
+    {
+      "route": "v10-guide",
+      "file": "02-guide.png",
+      "rect": {
+        "x": 210,
+        "y": 27.15625,
+        "width": 1020,
+        "height": 845.671875
+      },
+      "backgroundInert": true
+    }
+  ]
+}

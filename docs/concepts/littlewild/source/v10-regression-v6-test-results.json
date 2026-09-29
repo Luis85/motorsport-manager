@@ -1,0 +1,388 @@
+{
+  "suite": "Littlewild v6 product-review regressions",
+  "passed": 52,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Requested but blocked equipment prevents departure without consuming provisions",
+      "passed": true
+    },
+    {
+      "name": "Canceling blocked outfit allows an otherwise-ready departure",
+      "passed": true
+    },
+    {
+      "name": "Quest readiness names outstanding equipment rather than implying ready",
+      "passed": true
+    },
+    {
+      "name": "Canceling an active equip task never equips the canceled item later",
+      "passed": true
+    },
+    {
+      "name": "Canceling unknown equipment is a rejected no-op",
+      "passed": true
+    },
+    {
+      "name": "Canceling crafting preserves unused material ownership",
+      "passed": true
+    },
+    {
+      "name": "Space for the initiator releases the waiting companion",
+      "passed": true
+    },
+    {
+      "name": "Space for the recipient releases the approaching companion",
+      "passed": true
+    },
+    {
+      "name": "Interrupted social activity cannot award phantom relationships",
+      "passed": true
+    },
+    {
+      "name": "Social timeout clears the corresponding invitation on both sides",
+      "passed": true
+    },
+    {
+      "name": "Unrelated social tasks are not accidentally canceled",
+      "passed": true
+    },
+    {
+      "name": "Urgent needs interrupt friendship and free the other companion",
+      "passed": true
+    },
+    {
+      "name": "A returned quest is settled exactly once",
+      "passed": true
+    },
+    {
+      "name": "Outfit inspection is a pure read across all companions and pieces",
+      "passed": true
+    },
+    {
+      "name": "Quest readiness and ownership forecasts consume no RNG",
+      "passed": true
+    },
+    {
+      "name": "Stored outfit readiness does not grant it to a creature",
+      "passed": true
+    },
+    {
+      "name": "Absent station gives actionable equipment preparation reason",
+      "passed": true
+    },
+    {
+      "name": "Missing skill gives actionable equipment preparation reason",
+      "passed": true
+    },
+    {
+      "name": "Warehouse inspection lists ownership and correct sale value",
+      "passed": true
+    },
+    {
+      "name": "Attention makes an urgent need visible ahead of mood",
+      "passed": true
+    },
+    {
+      "name": "Attention distinguishes returning from being in the glade",
+      "passed": true
+    },
+    {
+      "name": "Planned gear keeps its ingredients out of surplus",
+      "passed": true
+    },
+    {
+      "name": "Worn equipment survives unloading without double-counted ownership",
+      "passed": true
+    },
+    {
+      "name": "Quest provisions and a basic care spare remain carried",
+      "passed": true
+    },
+    {
+      "name": "Build-stage ingredients are preserved before assembly",
+      "passed": true
+    },
+    {
+      "name": "Fixed-step clock: 10 seconds at 20 display frames/s gives 100 steps",
+      "passed": true
+    },
+    {
+      "name": "Fixed-step clock: 10 seconds at 30 display frames/s gives 100 steps",
+      "passed": true
+    },
+    {
+      "name": "Fixed-step clock: 10 seconds at 60 display frames/s gives 100 steps",
+      "passed": true
+    },
+    {
+      "name": "Fixed-step clock: 10 seconds at 120 display frames/s gives 100 steps",
+      "passed": true
+    },
+    {
+      "name": "Clock speed 1 scales game steps only",
+      "passed": true
+    },
+    {
+      "name": "Clock speed 2 scales game steps only",
+      "passed": true
+    },
+    {
+      "name": "Clock speed 4 scales game steps only",
+      "passed": true
+    },
+    {
+      "name": "Clock speed 16 scales game steps only",
+      "passed": true
+    },
+    {
+      "name": "Clock validates invalid inputs before simulation callback",
+      "passed": true
+    },
+    {
+      "name": "Clock pause resets only fractional presentation time",
+      "passed": true
+    },
+    {
+      "name": "Suspension cannot trigger unbounded offline catch-up",
+      "passed": true
+    },
+    {
+      "name": "Identical commands and fixed ticks match at 30 and 60 display frames/s",
+      "passed": true
+    },
+    {
+      "name": "Unknown inherited behavior function is rejected",
+      "passed": true
+    },
+    {
+      "name": "Behavior cooldown persists when caller did not provide a memory object",
+      "passed": true
+    },
+    {
+      "name": "A missing chest is rejected consistently with the schema",
+      "passed": true
+    },
+    {
+      "name": "Adventure diff uses stable definition IDs and exact field values",
+      "passed": true
+    },
+    {
+      "name": "Unchanged content produces no changes",
+      "passed": true
+    },
+    {
+      "name": "External metadata round trips without executable interpretation",
+      "passed": true
+    },
+    {
+      "name": "Content diff limits rendered entries while keeping exact count",
+      "passed": true
+    },
+    {
+      "name": "Imported malformed world node is rejected without committing content",
+      "passed": true
+    },
+    {
+      "name": "In-progress canceled social scene still saves and restores",
+      "passed": true
+    },
+    {
+      "name": "Prepared quest with blocked gear survives save and reload without spending",
+      "passed": true
+    },
+    {
+      "name": "Behavior branch reordering remains a material diff",
+      "passed": true
+    },
+    {
+      "name": "Pure equipment collection reorder is visible without inventing value changes",
+      "passed": true
+    },
+    {
+      "name": "Six-creature 30-minute regression soak, seed 13",
+      "passed": true
+    },
+    {
+      "name": "Six-creature 30-minute regression soak, seed 29",
+      "passed": true
+    },
+    {
+      "name": "Six-creature 30-minute regression soak, seed 47",
+      "passed": true
+    }
+  ],
+  "soak": [
+    {
+      "seed": 13,
+      "creatures": 6,
+      "seconds": 1810,
+      "wallMs": 3531,
+      "needs": [
+        {
+          "name": "Pip",
+          "food": 34.01399999999966,
+          "water": 42.05199999999221,
+          "energy": 53.198000000025594,
+          "comfort": 82.01000000004193,
+          "joy": 50.64999999995473
+        },
+        {
+          "name": "Fern",
+          "food": 37.299999999996665,
+          "water": 67.09999999999383,
+          "energy": 62.23500000003184,
+          "comfort": 55.79999999998223,
+          "joy": 39.64999999995473
+        },
+        {
+          "name": "Mochi",
+          "food": 61.0300000000037,
+          "water": 66.73999999999403,
+          "energy": 61.660000000031545,
+          "comfort": 55.79999999998264,
+          "joy": 39.64999999995473
+        },
+        {
+          "name": "Clover",
+          "food": 37.29999999999671,
+          "water": 67.09999999999383,
+          "energy": 62.29000000003005,
+          "comfort": 55.79999999998078,
+          "joy": 41.64999999995473
+        },
+        {
+          "name": "Bramble",
+          "food": 37.11999999999673,
+          "water": 66.85999999999396,
+          "energy": 61.92500000003168,
+          "comfort": 55.799999999982454,
+          "joy": 35.64999999995473
+        },
+        {
+          "name": "Wren",
+          "food": 37.2369999999965,
+          "water": 67.01599999999387,
+          "energy": 60.26000000002901,
+          "comfort": 55.79999999998221,
+          "joy": 59.64999999995473
+        }
+      ],
+      "transfers": 33
+    },
+    {
+      "seed": 29,
+      "creatures": 6,
+      "seconds": 1810,
+      "wallMs": 3154,
+      "needs": [
+        {
+          "name": "Pip",
+          "food": 56.842999999998995,
+          "water": 41.82399999999195,
+          "energy": 50.48000000002529,
+          "comfort": 81.70600000004264,
+          "joy": 60.64999999995473
+        },
+        {
+          "name": "Fern",
+          "food": 37.06599999999747,
+          "water": 66.787999999994,
+          "energy": 61.82500000003163,
+          "comfort": 55.799999999982525,
+          "joy": 41.64999999995473
+        },
+        {
+          "name": "Mochi",
+          "food": 37.13799999999695,
+          "water": 66.88399999999395,
+          "energy": 59.89000000003166,
+          "comfort": 55.79999999998248,
+          "joy": 65.64999999995473
+        },
+        {
+          "name": "Clover",
+          "food": 37.18299999999678,
+          "water": 66.94399999999392,
+          "energy": 59.98000000003171,
+          "comfort": 55.79999999998241,
+          "joy": 65.64999999995473
+        },
+        {
+          "name": "Bramble",
+          "food": 61.012000000003475,
+          "water": 66.71599999999404,
+          "energy": 61.69500000003156,
+          "comfort": 55.799999999982624,
+          "joy": 46.64999999995473
+        },
+        {
+          "name": "Wren",
+          "food": 37.12899999999703,
+          "water": 66.87199999999396,
+          "energy": 61.400000000031696,
+          "comfort": 55.7999999999814,
+          "joy": 65.64999999995473
+        }
+      ],
+      "transfers": 33
+    },
+    {
+      "seed": 47,
+      "creatures": 6,
+      "seconds": 1810,
+      "wallMs": 3099,
+      "needs": [
+        {
+          "name": "Pip",
+          "food": 33.7349999999997,
+          "water": 41.679999999992,
+          "energy": 52.24900000002521,
+          "comfort": 81.58000000004293,
+          "joy": 38.64999999995473
+        },
+        {
+          "name": "Fern",
+          "food": 37.083999999997346,
+          "water": 66.81199999999399,
+          "energy": 61.700000000029746,
+          "comfort": 55.79999999998119,
+          "joy": 50.64999999995473
+        },
+        {
+          "name": "Mochi",
+          "food": 61.14700000000306,
+          "water": 66.89599999999393,
+          "energy": 62.01500000002991,
+          "comfort": 55.799999999980976,
+          "joy": 49.64999999995473
+        },
+        {
+          "name": "Clover",
+          "food": 37.14699999999707,
+          "water": 66.89599999999393,
+          "energy": 61.83000000002981,
+          "comfort": 55.799999999981104,
+          "joy": 39.64999999995473
+        },
+        {
+          "name": "Bramble",
+          "food": 37.101999999996885,
+          "water": 66.83599999999397,
+          "energy": 59.745000000028746,
+          "comfort": 55.79999999998258,
+          "joy": 59.64999999995473
+        },
+        {
+          "name": "Wren",
+          "food": 37.06599999999666,
+          "water": 66.787999999994,
+          "energy": 61.19000000003182,
+          "comfort": 55.79999999998156,
+          "joy": 65.64999999995473
+        }
+      ],
+      "transfers": 32
+    }
+  ]
+}

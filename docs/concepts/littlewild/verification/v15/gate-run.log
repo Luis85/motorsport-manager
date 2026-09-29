@@ -1,0 +1,36 @@
+Built /mnt/data/lw15-work/Littlewild-v15/littlewild.html (3,695,818 bytes)
+RUN scenario-domain
+PASS scenario-domain 77 / 77
+RUN presentation
+PASS presentation 47 / 47
+RUN pause-policy
+PASS pause-policy 54 / 54
+RUN cartography
+PASS cartography 73 / 73
+RUN domain
+PASS domain 76 / 76
+RUN growth-stress
+PASS growth-stress 3 / 3
+RUN earned-progression
+PASS earned-progression 8 / 8
+RUN legacy-v5
+PASS legacy-v5 133 / 133
+RUN legacy-v6
+PASS legacy-v6 52 / 52
+RUN legacy-v8
+PASS legacy-v8 88 / 88
+RUN quality-v9
+PASS quality-v9 31 / 31
+RUN foundation-v9
+PASS foundation-v9 31 / 31
+RUN legacy-schemas
+PASS legacy-schemas 19 / 19
+RUN scenario-schema-cli
+PASS scenario-schema-cli 21 / 21
+RUN release
+PASS release 53 / 53
+RUN browser
+PASS browser 89 / 89
+RUN browser-contracts
+PASS browser-contracts 16 / 16
+passed 871/871

@@ -1,0 +1,273 @@
+{
+  "passed": 8,
+  "total": 8,
+  "seconds": 4910.100000000331,
+  "milestones": [
+    {
+      "id": "lesson-woodcraft",
+      "seconds": 0,
+      "level": 1,
+      "coins": 76,
+      "rp": 8,
+      "prestige": 0
+    },
+    {
+      "id": "discovery-1",
+      "seconds": 0,
+      "level": 1,
+      "coins": 76,
+      "rp": 4,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-shelter",
+      "seconds": 10,
+      "level": 1,
+      "coins": 64,
+      "rp": 2,
+      "prestige": 0
+    },
+    {
+      "id": "planned-bench",
+      "seconds": 10,
+      "level": 1,
+      "coins": 64,
+      "rp": 2,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-stonework",
+      "seconds": 50,
+      "level": 1,
+      "coins": 54,
+      "rp": 0,
+      "prestige": 0
+    },
+    {
+      "id": "planned-shelter",
+      "seconds": 50,
+      "level": 1,
+      "coins": 54,
+      "rp": 0,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-fiberwork",
+      "seconds": 80,
+      "level": 1,
+      "coins": 48,
+      "rp": 0,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-woodwork",
+      "seconds": 160,
+      "level": 2,
+      "coins": 28,
+      "rp": 0,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-tracking",
+      "seconds": 260,
+      "level": 2,
+      "coins": 10,
+      "rp": 0,
+      "prestige": 0
+    },
+    {
+      "id": "feature-quests",
+      "seconds": 360,
+      "level": 3,
+      "coins": 12,
+      "rp": 1,
+      "prestige": 0
+    },
+    {
+      "id": "quest-accepted",
+      "seconds": 380,
+      "level": 3,
+      "coins": 12,
+      "rp": 2,
+      "prestige": 0
+    },
+    {
+      "id": "lesson-commerce",
+      "seconds": 450,
+      "level": 3,
+      "coins": 4,
+      "rp": 5,
+      "prestige": 7
+    },
+    {
+      "id": "community-1",
+      "seconds": 450,
+      "level": 3,
+      "coins": 4,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "earned-prestige",
+      "seconds": 450,
+      "level": 3,
+      "coins": 4,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "feature-recruitment",
+      "seconds": 630,
+      "level": 4,
+      "coins": 10,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "feature-trade",
+      "seconds": 710,
+      "level": 4,
+      "coins": 22,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "community-2",
+      "seconds": 960,
+      "level": 4,
+      "coins": 30,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "blueprint-market",
+      "seconds": 1140,
+      "level": 5,
+      "coins": 48,
+      "rp": 3,
+      "prestige": 7
+    },
+    {
+      "id": "planned-market",
+      "seconds": 1140,
+      "level": 5,
+      "coins": 48,
+      "rp": 3,
+      "prestige": 7
+    },
+    {
+      "id": "discovery-2",
+      "seconds": 1320,
+      "level": 5,
+      "coins": 38,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "blueprint-map-table",
+      "seconds": 1430,
+      "level": 5,
+      "coins": 50,
+      "rp": 0,
+      "prestige": 7
+    },
+    {
+      "id": "planned-map_table",
+      "seconds": 1430,
+      "level": 5,
+      "coins": 50,
+      "rp": 0,
+      "prestige": 7
+    },
+    {
+      "id": "built-map-table",
+      "seconds": 1590,
+      "level": 5,
+      "coins": 50,
+      "rp": 2,
+      "prestige": 7
+    },
+    {
+      "id": "feature-land",
+      "seconds": 1690,
+      "level": 6,
+      "coins": 62,
+      "rp": 1,
+      "prestige": 7
+    },
+    {
+      "id": "unlocked-slot-2",
+      "seconds": 2490,
+      "level": 7,
+      "coins": 152,
+      "rp": 39,
+      "prestige": 2
+    },
+    {
+      "id": "second-shelter",
+      "seconds": 2490,
+      "level": 7,
+      "coins": 152,
+      "rp": 39,
+      "prestige": 2
+    },
+    {
+      "id": "recruited-second",
+      "seconds": 2550,
+      "level": 7,
+      "coins": 32,
+      "rp": 41,
+      "prestige": 2
+    },
+    {
+      "id": "bought-island",
+      "seconds": 4880,
+      "level": 11,
+      "coins": 146,
+      "rp": 184,
+      "prestige": 4
+    },
+    {
+      "id": "physical-market-sale",
+      "seconds": 4910,
+      "level": 11,
+      "coins": 150,
+      "rp": 184,
+      "prestige": 4
+    }
+  ],
+  "results": [
+    {
+      "name": "planned-shelter",
+      "passed": true
+    },
+    {
+      "name": "planned-bench",
+      "passed": true
+    },
+    {
+      "name": "earned-prestige",
+      "passed": true
+    },
+    {
+      "name": "unlocked-slot-2",
+      "passed": true
+    },
+    {
+      "name": "recruited-second",
+      "passed": true
+    },
+    {
+      "name": "physical-market-sale",
+      "passed": true
+    },
+    {
+      "name": "built-map-table",
+      "passed": true
+    },
+    {
+      "name": "bought-island",
+      "passed": true
+    }
+  ]
+}

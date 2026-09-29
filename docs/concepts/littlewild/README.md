@@ -1,34 +1,34 @@
-# Littlewild — configurable autonomous-world showcase
+# Littlewild v15 — Worlds of Possibility
 
-## Publication state
+An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
 
-**This branch is a publication staging area, not yet a runnable checkout.**
-The full v15 game and source archive have been rebuilt and tested in the attached
-ChatGPT delivery. They have not yet been transferred to this branch. Keep the PR
-in draft until `littlewild.html`, `source/` and `vendor/` are present.
+## Play
 
-The implementation includes compact, world-facing Build and Tutorial panels,
-shared spacing, validated world/scene packs, and two independently runnable
-settings: Littlewild and Emberworks. See `CONFIGURATION.md` for supported
-configuration and the remaining compiled-engine boundaries.
+Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
 
-## Finish the transfer
+**Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 
-Download `littlewild-v15-source.zip` from the conversation. In an authenticated
-checkout of `Luis85/motorsport-manager`, run:
+The existing **Pause when opening panels** device preference also covers these panels. Manual pause wins. Replacement reviews remain safety pauses even with automatic pausing disabled.
+
+## Build and verify
 
 ```sh
-python docs/concepts/littlewild/publication/publish_v15.py \
-  /absolute/path/to/motorsport-manager \
-  /absolute/path/to/littlewild-v15-source.zip --publish
+python source/build.py
+# A separate, single-pack HTML using the very same runtime:
+python source/build.py --pack source/content/emberworks.pack.json --output emberworks.html
+
+python -m pip install -r requirements-test.txt
+python verify-v15.py
 ```
 
-Without `--publish`, this command performs read-only local validation. Publishing
-uses a detached worktree; it does not switch your current branch, force-push,
-merge a PR, or change native game files. It accepts only the pinned delivery ZIP,
-rebuilds the HTML, and refuses conflicting files. The known staging README may
-be replaced by the real product README; arbitrary existing files may not.
+The normal build uses Python's standard library. External-pack builds additionally use Node.js for semantic validation. Verification uses Node.js, Python/jsonschema, and Playwright with `/usr/bin/chromium`; adjust that executable path for another development environment. `--no-browser` produces an explicitly partial result, not a full release pass.
 
-See `publication/VERIFICATION.md` for the checks executed during this resumption.
-A local or historical passing result is not a GitHub CI result. The native Godot
-gate, hardware WebGL and human usability were not verified here.
+## Documentation
+
+- `CONFIGURATION.md`: supported world/scene authoring and current engine boundaries.
+- `UI-RESEARCH.md` and `UI-REVIEW.html`: research, observed baseline and actual captures.
+- `VERIFICATION.md`: this build's executed checks and limitations.
+- `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
+- `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
+
+This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, creature rigs and some legacy wording remain code. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.

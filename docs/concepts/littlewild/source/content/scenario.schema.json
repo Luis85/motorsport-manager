@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:living-worlds:pack:1",
+  "title": "Living Worlds scenario pack",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "living-worlds-pack"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "presentation": {
+      "$ref": "#/$defs/presentation"
+    },
+    "worlds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/world"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scene"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "tutorial": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/step"
+      },
+      "minItems": 1,
+      "maxItems": 31
+    },
+    "libraries": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "object"
+        },
+        "adventure": {
+          "type": "object"
+        },
+        "world": {
+          "type": "object"
+        },
+        "growth": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "base",
+        "adventure",
+        "world",
+        "growth"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "id",
+    "version",
+    "name",
+    "description",
+    "presentation",
+    "worlds",
+    "scenes",
+    "tutorial",
+    "libraries"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "world": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "terrain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[.~]{19}$"
+          },
+          "minItems": 19,
+          "maxItems": 19
+        },
+        "biomeNames": {
+          "type": "object",
+          "properties": {
+            "Meadow": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Pinewood": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Amber grove": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Stonegarden": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            }
+          },
+          "required": [
+            "Meadow",
+            "Pinewood",
+            "Amber grove",
+            "Stonegarden"
+          ],
+          "additionalProperties": false
+        },
+        "resourceCounts": {
+          "type": "object",
+          "properties": {
+            "wood": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "berries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "fiber": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "stone": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "clay": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "ore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "herbs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "grain": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "wood",
+            "berries",
+            "fiber",
+            "stone",
+            "clay",
+            "ore",
+            "herbs",
+            "grain"
+          ],
+          "additionalProperties": false
+        },
+        "fixedSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 18
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 18
+              }
+            },
+            "required": [
+              "kind",
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "groundColors": {
+          "type": "object",
+          "properties": {
+            "Meadow": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Pinewood": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Amber grove": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Stonegarden": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "Meadow",
+            "Pinewood",
+            "Amber grove",
+            "Stonegarden"
+          ],
+          "additionalProperties": false
+        },
+        "materialColors": {
+          "type": "object",
+          "maxProperties": 128,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        },
+        "placementPolicy": {
+          "enum": [
+            "legacy",
+            "reserved-sites"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "terrain",
+        "biomeNames",
+        "resourceCounts",
+        "fixedSites",
+        "groundColors",
+        "materialColors",
+        "placementPolicy"
+      ],
+      "additionalProperties": false
+    },
+    "presentation": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "tagline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "worldSubtitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "paper": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "ink": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      },
+      "required": [
+        "title",
+        "tagline",
+        "worldSubtitle",
+        "accent",
+        "paper",
+        "ink"
+      ],
+      "additionalProperties": false
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "worldId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "initialState": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "worldId",
+        "initialState"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 700,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "action": {
+          "enum": [
+            "select",
+            "care",
+            "learn",
+            "home",
+            "planner",
+            "research",
+            "quests",
+            "growth",
+            "market",
+            "save",
+            "map"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "body",
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

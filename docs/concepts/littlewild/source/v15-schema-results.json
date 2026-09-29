@@ -1,0 +1,90 @@
+{
+  "passed": 21,
+  "total": 21,
+  "results": [
+    {
+      "name": "Scenario schema validates its own structure",
+      "passed": true
+    },
+    {
+      "name": "littlewild validates with independent JSON Schema",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects schemaVersion",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects script",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects worlds",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects scenes",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects tutorial",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects unsupported site policy",
+      "passed": true
+    },
+    {
+      "name": "littlewild CLI validates",
+      "passed": true
+    },
+    {
+      "name": "littlewild CLI leaves input unchanged",
+      "passed": true
+    },
+    {
+      "name": "emberworks validates with independent JSON Schema",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects schemaVersion",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects script",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects worlds",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects scenes",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects tutorial",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects unsupported site policy",
+      "passed": true
+    },
+    {
+      "name": "emberworks CLI validates",
+      "passed": true
+    },
+    {
+      "name": "emberworks CLI leaves input unchanged",
+      "passed": true
+    },
+    {
+      "name": "Export CLI creates a complete pack",
+      "passed": true
+    },
+    {
+      "name": "Capture CLI creates a valid template from an authentic legacy save",
+      "passed": true
+    }
+  ]
+}

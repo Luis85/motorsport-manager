@@ -1,0 +1,220 @@
+{
+  "passed": 53,
+  "total": 53,
+  "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
+  "bytes": 3695818,
+  "results": [
+    {
+      "name": "Title and entry point are v15, with no unresolved build markers",
+      "passed": true
+    },
+    {
+      "name": "No external executable or visual dependencies",
+      "passed": true
+    },
+    {
+      "name": "Vendor license is retained in the actual HTML",
+      "passed": true
+    },
+    {
+      "name": "Source parses without executing the browser",
+      "passed": true
+    },
+    {
+      "name": "Authentic v9 fresh migration and exact continuation",
+      "passed": true
+    },
+    {
+      "name": "Authentic v9 community migration and exact continuation",
+      "passed": true
+    },
+    {
+      "name": "Authentic v9 workplace migration and exact continuation",
+      "passed": true
+    },
+    {
+      "name": "Mechanical Growth change cannot replace committed work",
+      "passed": true
+    },
+    {
+      "name": "Presentation-only Growth change is safe during committed work",
+      "passed": true
+    },
+    {
+      "name": "Growth fingerprints include rules, requirements, events and presentation metadata",
+      "passed": true
+    },
+    {
+      "name": "Growth hash is key-order invariant but mechanical hash ignores only presentation",
+      "passed": true
+    },
+    {
+      "name": "Tampered Growth snapshot cannot be loaded under an old fingerprint",
+      "passed": true
+    },
+    {
+      "name": "Native care rejects extra configurable costs instead of silently ignoring them",
+      "passed": true
+    },
+    {
+      "name": "Raw item requirements guard requests, autonomous sourcing and planner choices",
+      "passed": true
+    },
+    {
+      "name": "Recipe output also respects its item-level requirement",
+      "passed": true
+    },
+    {
+      "name": "Item feature-rank requirements remain separate from player level",
+      "passed": true
+    },
+    {
+      "name": "Prestige offers cannot bypass item-level requirements",
+      "passed": true
+    },
+    {
+      "name": "Example event library validates with carried-item costs",
+      "passed": true
+    },
+    {
+      "name": "Growth CLI export emits valid JSON and never writes inputs",
+      "passed": true
+    },
+    {
+      "name": "Growth CLI schema emits valid JSON and never writes inputs",
+      "passed": true
+    },
+    {
+      "name": "Growth CLI validate emits valid JSON and never writes inputs",
+      "passed": true
+    },
+    {
+      "name": "Growth CLI diff emits valid JSON and never writes inputs",
+      "passed": true
+    },
+    {
+      "name": "Authoring CLI rejects invalid usage with structured error",
+      "passed": true
+    },
+    {
+      "name": "All four shipped content libraries validate through runtime CLIs",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: engine.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: systems.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: rpg.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: behavior-tree.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: colony.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: colony-policies.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: world-simulation.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: world-integrity.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: village-systems.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: validation-village.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: planner.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: cartography.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: story-codec.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: story-storage.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: simulation-clock.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: world-presentation.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: software-3d.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: world-fidelity.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: world-input.js",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/default-library.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/library.schema.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/adventure-library.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/adventure.schema.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/world-library.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/world.schema.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/growth-library.json",
+      "passed": true
+    },
+    {
+      "name": "v14 retained contract: content/growth.schema.json",
+      "passed": true
+    },
+    {
+      "name": "Every bundled script parses as JavaScript",
+      "passed": true
+    },
+    {
+      "name": "Scenario code is bundled without runtime network dependencies",
+      "passed": true
+    }
+  ]
+}

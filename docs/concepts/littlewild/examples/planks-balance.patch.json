@@ -1,0 +1,31 @@
+{
+  "$schema": "urn:littlewild:content-schema:1",
+  "format": "littlewild-content",
+  "schemaVersion": 1,
+  "kind": "patch",
+  "library": {
+    "id": "littlewild.core",
+    "name": "Littlewild core library",
+    "version": "4.0.1",
+    "description": "Core items, recipes, lessons and buildings. The World library defines resource supply, workplace inventories and tending in v8. Data-only definitions for external authoring."
+  },
+  "base": {
+    "libraryId": "littlewild.core",
+    "fingerprint": "3dd74bb0799d95f4"
+  },
+  "components": {
+    "recipes": [
+      {
+        "id": "planks",
+        "skill": "woodwork",
+        "station": "bench",
+        "cost": {
+          "wood": 4
+        },
+        "amount": 3,
+        "time": 4,
+        "output": "planks"
+      }
+    ]
+  }
+}

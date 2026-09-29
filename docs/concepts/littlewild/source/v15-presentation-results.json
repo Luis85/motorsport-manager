@@ -1,0 +1,194 @@
+{
+  "passed": 47,
+  "total": 47,
+  "results": [
+    {
+      "name": "Observed sample interpolation at 0",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 0.1",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 0.25",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 0.5",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 0.75",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 0.9",
+      "passed": true
+    },
+    {
+      "name": "Observed sample interpolation at 1",
+      "passed": true
+    },
+    {
+      "name": "Interpolation is bounded for -10",
+      "passed": true
+    },
+    {
+      "name": "Interpolation is bounded for 8",
+      "passed": true
+    },
+    {
+      "name": "Interpolation is bounded for NaN",
+      "passed": true
+    },
+    {
+      "name": "Interpolation is bounded for Infinity",
+      "passed": true
+    },
+    {
+      "name": "Sampling never mutates a creature",
+      "passed": true
+    },
+    {
+      "name": "Unobserved creature uses current position",
+      "passed": true
+    },
+    {
+      "name": "Pause settles at the latest observed position, then stays still",
+      "passed": true
+    },
+    {
+      "name": "External advance cannot reuse an earlier movement pair",
+      "passed": true
+    },
+    {
+      "name": "Import/restart clears every movement sample",
+      "passed": true
+    },
+    {
+      "name": "New assignment snaps instead of traversing old work",
+      "passed": true
+    },
+    {
+      "name": "Teleport does not animate through unowned terrain",
+      "passed": true
+    },
+    {
+      "name": "Quest departure cannot show a departing creature as present",
+      "passed": true
+    },
+    {
+      "name": "Multiple accelerated ticks keep the last two observed samples",
+      "passed": true
+    },
+    {
+      "name": "Removing a creature also removes its interpolation state",
+      "passed": true
+    },
+    {
+      "name": "30 Hz pacing is independent of 30 Hz requestAnimationFrame delivery",
+      "passed": true
+    },
+    {
+      "name": "30 Hz pacing is independent of 60 Hz requestAnimationFrame delivery",
+      "passed": true
+    },
+    {
+      "name": "30 Hz pacing is independent of 90 Hz requestAnimationFrame delivery",
+      "passed": true
+    },
+    {
+      "name": "30 Hz pacing is independent of 120 Hz requestAnimationFrame delivery",
+      "passed": true
+    },
+    {
+      "name": "30 Hz pacing is independent of 144 Hz requestAnimationFrame delivery",
+      "passed": true
+    },
+    {
+      "name": "Pacer rejects invalid cadence",
+      "passed": true
+    },
+    {
+      "name": "Pacer ignores invalid timestamps",
+      "passed": true
+    },
+    {
+      "name": "Forced input paints immediately without an extra timer",
+      "passed": true
+    },
+    {
+      "name": "A long suspension paints once, not a backlog of frames",
+      "passed": true
+    },
+    {
+      "name": "Pacer reset handles a new document/story lifecycle",
+      "passed": true
+    },
+    {
+      "name": "Selected label has first choice in a crowded location",
+      "passed": true
+    },
+    {
+      "name": "Six overlapping names use distinct non-overlapping lanes",
+      "passed": true
+    },
+    {
+      "name": "Stable ids keep layout stable when simulation order changes",
+      "passed": true
+    },
+    {
+      "name": "Existing lanes are kept when no conflict exists",
+      "passed": true
+    },
+    {
+      "name": "Selected label remains available when nearby labels do not fit",
+      "passed": true
+    },
+    {
+      "name": "Keyboard focus receives priority over ordinary labels",
+      "passed": true
+    },
+    {
+      "name": "Long labels remain horizontally within viewport",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: null",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: {\"x\":null,\"y\":300}",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: {\"x\":-100,\"y\":300}",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: {\"x\":2000,\"y\":300}",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: {\"x\":300,\"y\":5}",
+      "passed": true
+    },
+    {
+      "name": "Off-screen/invalid anchor cannot leave a misplaced floating name: {\"x\":300,\"y\":900}",
+      "passed": true
+    },
+    {
+      "name": "Layout and sampling consume no simulation randomness or resources",
+      "passed": true
+    },
+    {
+      "name": "Authentic v13 snapshot preserves exact colony state",
+      "passed": true
+    },
+    {
+      "name": "Authentic v13 game continues deterministically after restore",
+      "passed": true
+    }
+  ]
+}

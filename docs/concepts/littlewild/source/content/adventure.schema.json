@@ -1,0 +1,1695 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:adventure-content:1",
+  "title": "Littlewild adventure definitions",
+  "description": "Structural validation. Run the companion runtime validator for cross-references, unique IDs, required survival-first tree and safe input limits. Item weights are integer grams; durations are simulation seconds.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "littlewild-adventure-content"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "weights": {
+      "type": "object",
+      "properties": {
+        "wood": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "stone": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "fiber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "berries": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "water": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "planks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "meat": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "meals": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "clay": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "ore": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "herbs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "grain": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "rope": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "cloth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "charcoal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "bricks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "pots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "beams": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "iron": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "tools": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "glass": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "flour": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "bread": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "balm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        }
+      },
+      "required": [
+        "wood",
+        "stone",
+        "fiber",
+        "berries",
+        "water",
+        "planks",
+        "meat",
+        "meals",
+        "clay",
+        "ore",
+        "herbs",
+        "grain",
+        "rope",
+        "cloth",
+        "charcoal",
+        "bricks",
+        "pots",
+        "beams",
+        "iron",
+        "tools",
+        "glass",
+        "flour",
+        "bread",
+        "balm"
+      ],
+      "additionalProperties": false
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/equipment"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "traits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/trait"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "personalities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/personality"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "quests": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/quest"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "skillRules": {
+      "type": "object",
+      "properties": {
+        "woodcraft": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "shelter": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "stonework": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "firekeeping": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "gardening": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "woodwork": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "cooking": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "tracking": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "commerce": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "masonry": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "architecture": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "invention": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "fiberwork": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "claywork": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "weaving": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "pottery": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "herbalism": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "joinery": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "metalwork": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "horticulture": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "milling": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "baking": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "logistics": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "mentorship": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "engineering": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "glassmaking": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "stewardship": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        },
+        "scholarship": {
+          "type": "object",
+          "properties": {
+            "attribute": {
+              "enum": [
+                "ST",
+                "DX",
+                "IQ",
+                "HT"
+              ]
+            },
+            "difficulty": {
+              "enum": [
+                "E",
+                "A",
+                "H",
+                "VH"
+              ]
+            }
+          },
+          "required": [
+            "attribute",
+            "difficulty"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "woodcraft",
+        "shelter",
+        "stonework",
+        "firekeeping",
+        "gardening",
+        "woodwork",
+        "cooking",
+        "tracking",
+        "commerce",
+        "masonry",
+        "architecture",
+        "invention",
+        "fiberwork",
+        "claywork",
+        "weaving",
+        "pottery",
+        "herbalism",
+        "joinery",
+        "metalwork",
+        "horticulture",
+        "milling",
+        "baking",
+        "logistics",
+        "mentorship",
+        "engineering",
+        "glassmaking",
+        "stewardship",
+        "scholarship"
+      ],
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "purchaseBase": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 1000
+        },
+        "purchaseGrowth": {
+          "type": "number",
+          "minimum": 1.1,
+          "maximum": 3
+        },
+        "maxCreatures": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 8
+        },
+        "questCooldown": {
+          "type": "number",
+          "minimum": 30,
+          "maximum": 900
+        },
+        "eventChance": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1
+        },
+        "questOfferLife": {
+          "type": "number",
+          "minimum": 90,
+          "maximum": 3600
+        },
+        "abortEnergy": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "abortReturnSeconds": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "returnSeconds": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "cpPerLevel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "practicePerPoint": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 40
+        }
+      },
+      "required": [
+        "purchaseBase",
+        "purchaseGrowth",
+        "maxCreatures",
+        "questCooldown",
+        "eventChance",
+        "questOfferLife",
+        "abortEnergy",
+        "abortReturnSeconds",
+        "returnSeconds",
+        "cpPerLevel",
+        "practicePerPoint"
+      ],
+      "additionalProperties": true
+    },
+    "behaviorTree": {
+      "$ref": "#/$defs/behaviorNode"
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "chest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "wooden_chest"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "price": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "icon": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "equipmentPool": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "supplies": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "weight",
+        "price",
+        "icon",
+        "equipmentPool",
+        "supplies"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "revision",
+    "weights",
+    "equipment",
+    "traits",
+    "personalities",
+    "quests",
+    "skillRules",
+    "rules",
+    "behaviorTree"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "equipment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "slot": {
+          "enum": [
+            "head",
+            "body",
+            "tool",
+            "feet",
+            "back",
+            "charm"
+          ]
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "price": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "visual": {
+          "enum": [
+            "cap",
+            "cape",
+            "boots",
+            "axe",
+            "hammer",
+            "staff",
+            "pack",
+            "charm",
+            "wizard",
+            "vest",
+            "lantern"
+          ]
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "bonuses": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,60}$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": -3,
+            "maximum": 3
+          }
+        },
+        "travel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.3
+        },
+        "recipe": {
+          "type": "object",
+          "properties": {
+            "skill": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "station": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "time": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 180
+            },
+            "cost": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              },
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            }
+          },
+          "required": [
+            "skill",
+            "station",
+            "time",
+            "cost"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "slot",
+        "weight",
+        "price",
+        "visual",
+        "color",
+        "bonuses",
+        "travel",
+        "recipe"
+      ],
+      "additionalProperties": true
+    },
+    "trait": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "bonuses": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,60}$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": -3,
+            "maximum": 3
+          }
+        },
+        "angerRate": {
+          "type": "number",
+          "minimum": 0.25,
+          "maximum": 2
+        },
+        "soothing": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "social": {
+          "type": "integer",
+          "minimum": -30,
+          "maximum": 30
+        },
+        "travel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "bonuses",
+        "angerRate",
+        "soothing",
+        "social",
+        "travel"
+      ],
+      "additionalProperties": true
+    },
+    "personality": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "minItems": 0,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {
+            "ST": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 14
+            },
+            "DX": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 14
+            },
+            "IQ": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 14
+            },
+            "HT": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 14
+            }
+          },
+          "required": [
+            "ST",
+            "DX",
+            "IQ",
+            "HT"
+          ],
+          "additionalProperties": true
+        },
+        "selfControl": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 18
+        },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "explore": {
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 2
+            },
+            "train": {
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 2
+            },
+            "build": {
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 2
+            },
+            "social": {
+              "type": "number",
+              "minimum": 0.25,
+              "maximum": 2
+            }
+          },
+          "required": [
+            "explore",
+            "train",
+            "build",
+            "social"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "traits",
+        "color",
+        "accent",
+        "attributes",
+        "selfControl",
+        "preferences"
+      ],
+      "additionalProperties": true
+    },
+    "quest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 700
+        },
+        "biome": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 900
+        },
+        "energy": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 55
+        },
+        "cost": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "skill": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 61
+              },
+              "modifier": {
+                "type": "integer",
+                "minimum": -6,
+                "maximum": 6
+              }
+            },
+            "required": [
+              "name",
+              "skill",
+              "modifier"
+            ],
+            "additionalProperties": true
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "chance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "item",
+              "min",
+              "max",
+              "chance"
+            ],
+            "additionalProperties": true
+          },
+          "minItems": 0,
+          "maxItems": 15
+        },
+        "coins": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "research": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "biome",
+        "tier",
+        "duration",
+        "energy",
+        "cost",
+        "steps",
+        "loot",
+        "coins",
+        "research"
+      ],
+      "additionalProperties": true
+    },
+    "behaviorNode": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "type": {
+              "const": "action"
+            },
+            "action": {
+              "enum": [
+                "essential",
+                "homecoming",
+                "overburdened",
+                "feelings",
+                "comfort",
+                "outfit",
+                "quest",
+                "learning",
+                "plans",
+                "companionship",
+                "supplies",
+                "deposit",
+                "curiosity",
+                "restful"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "type",
+            "action"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "type": {
+              "enum": [
+                "selector",
+                "sequence"
+              ]
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/behaviorNode"
+              },
+              "minItems": 1,
+              "maxItems": 100
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "type",
+            "children"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "type": {
+              "const": "cooldown"
+            },
+            "seconds": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 600
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/behaviorNode"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "type",
+            "seconds",
+            "children"
+          ],
+          "additionalProperties": true
+        }
+      ]
+    }
+  }
+}

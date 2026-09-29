@@ -1,0 +1,35 @@
+/* Local world actions share Littlewild's paper, sage and brass palette. */
+#tile-context{position:fixed;z-index:80;border:1px solid #9baa8c;border-radius:13px;background:#fbf8eefb;color:#304f42;box-shadow:0 16px 45px #234b3d35;overflow:hidden;display:flex;flex-direction:column;font:13px/1.45 Arial,sans-serif;max-width:calc(100vw - 20px)}
+#tile-context[hidden]{display:none}
+#tile-context header{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 12px;border-bottom:1px solid #d8dccb;background:#edf0e2;flex:none}
+#tile-context h2{font:24px/1.15 Georgia,serif;margin:4px 0 0;font-weight:400}
+#tile-context header small{font-size:9px;letter-spacing:1.6px;color:#64775b}
+#tile-context header>span{font-size:23px;color:#8b9976}
+#tile-context [role=menu]{overflow-y:auto;overscroll-behavior:contain;padding:5px;min-height:0;scroll-padding:8px}
+#tile-context [role=menuitem]{appearance:none;background:transparent;border:1px solid transparent;color:inherit;width:100%;min-height:54px;display:block;text-align:left;border-radius:7px;padding:10px 12px;font:13px/1.4 Arial,sans-serif;cursor:pointer;touch-action:manipulation}
+#tile-context [role=menuitem] strong{font-weight:600;display:block}
+#tile-context [role=menuitem] small{display:block;font-size:11px;color:#586c51;line-height:1.45;margin-top:3px}
+#tile-context [role=menuitem]:hover,#tile-context [role=menuitem]:focus{background:#e7edda;border-color:#c2cba9;outline:none}
+#tile-context [role=menuitem]:focus-visible{outline:2px solid #587451;outline-offset:-2px}
+#tile-context [aria-disabled=true]{cursor:not-allowed;color:#6b7467}
+#tile-context [aria-disabled=true] small{color:#85664d}
+#tile-context footer{font-size:10px;color:#607354;padding:10px 17px;border-top:1px solid #dbe0d0;flex:none;background:#f2f2e7}
+#tile-context kbd{font:10px Arial;border:1px solid #d0d4c4;border-radius:3px;padding:1px 4px;background:#fdfbf3}
+.tile-menu-feedback{margin:0;padding:10px 17px;color:#845340;font-size:12px;border-top:1px solid #dbc7ad;background:#f5ead8;flex:none}
+#tile-menu-button{font:bold 19px Arial}
+#world{image-rendering:auto;outline-offset:-5px}
+.v12-quality-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}
+.v12-quality-options .btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:14px;white-space:normal;text-align:left;min-height:106px}
+.v12-quality-options small{font-size:11px;line-height:1.6;color:inherit;opacity:.88}
+.v12-visuals p,.v12-visuals dd{font-size:13px;line-height:1.7;color:#53694d}
+.v12-visuals h3{font:24px Georgia,serif;margin:18px 0 12px;color:#345743}
+.v12-visuals dl{display:grid;grid-template-columns:135px 1fr;gap:12px;margin:18px 0}
+.v12-visuals dt{font-size:13px;font-weight:600}.v12-visuals dd{margin:0}
+.v10-creature-label{font-size:11px!important;line-height:1.35;box-shadow:0 2px 5px #264b3a17;border-color:#8eaa89!important;background:#fbf8eaef!important;color:#2e5846!important}
+.v10-creature-label.selected{background:#345f4ceF!important;color:#fff5d9!important;border-color:#d6bf7b!important}
+@media(max-width:560px){#tile-context [role=menuitem]{min-height:58px;padding:11px 12px}.v12-quality-options{grid-template-columns:1fr}.v12-quality-options .btn{min-height:72px}.v12-visuals dl{grid-template-columns:1fr;gap:5px}.v12-visuals dd{margin-bottom:12px}}
+
+.v12-response{position:absolute;display:block;pointer-events:none;font:29px/1 Georgia,serif;color:#bd846b;text-shadow:0 1px 0 #fff5df;transform:translate(-50%,-100%);animation:v12-response-rise 2.1s ease-out both}
+.v12-response.reduced{animation:none;font-size:23px}
+@keyframes v12-response-rise{0%{opacity:0;translate:0 8px;scale:.7}15%,65%{opacity:1;scale:1}100%{opacity:0;translate:0 -27px}}
+@media(prefers-reduced-motion:reduce){.v12-response{animation:none}}

@@ -1,0 +1,388 @@
+{
+  "suite": "Littlewild v8 world, production and logistics",
+  "passed": 88,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Default world library validates",
+      "passed": true
+    },
+    {
+      "name": "World library validation is pure",
+      "passed": true
+    },
+    {
+      "name": "An authored site on water is rejected before application",
+      "passed": true
+    },
+    {
+      "name": "An authored site cannot overwrite a built-in resource",
+      "passed": true
+    },
+    {
+      "name": "Authored IDs cannot duplicate built-in resource IDs",
+      "passed": true
+    },
+    {
+      "name": "Fresh world contains every configured site exactly once",
+      "passed": true
+    },
+    {
+      "name": "All thirteen node kinds exist in a fresh world",
+      "passed": true
+    },
+    {
+      "name": "Infinite nodes do not change their stored stock over time",
+      "passed": true
+    },
+    {
+      "name": "Finite depleted nodes never regenerate",
+      "passed": true
+    },
+    {
+      "name": "Infinite nodes remain available even when legacy stock is zero",
+      "passed": true
+    },
+    {
+      "name": "Finite gathering is limited by the node and conserves resources",
+      "passed": true
+    },
+    {
+      "name": "A failed harvest consumes no finite resource",
+      "passed": true
+    },
+    {
+      "name": "Successful gathering cannot remotely harvest a node",
+      "passed": true
+    },
+    {
+      "name": "Required resource on an adjacent tile is insufficient",
+      "passed": true
+    },
+    {
+      "name": "Wrong node kind rejects a special blueprint",
+      "passed": true
+    },
+    {
+      "name": "A depleted finite substrate rejects new construction",
+      "passed": true
+    },
+    {
+      "name": "Matching site accepts construction without spending or spawning a building",
+      "passed": true
+    },
+    {
+      "name": "General buildings cannot cover a resource node",
+      "passed": true
+    },
+    {
+      "name": "Placement checks never mutate node order or RNG",
+      "passed": true
+    },
+    {
+      "name": "The same site cannot host two plans",
+      "passed": true
+    },
+    {
+      "name": "New productive buildings have empty physical trays",
+      "passed": true
+    },
+    {
+      "name": "Recipe job cannot start using remote warehouse materials",
+      "passed": true
+    },
+    {
+      "name": "Planning an input delivery does not move goods",
+      "passed": true
+    },
+    {
+      "name": "Input transfer settles only after the carrier arrives",
+      "passed": true
+    },
+    {
+      "name": "Concurrent ingredient trips cannot overfill a single recipe",
+      "passed": true
+    },
+    {
+      "name": "Paid batch reserves input once",
+      "passed": true
+    },
+    {
+      "name": "Two workers cannot claim the same paid batch",
+      "passed": true
+    },
+    {
+      "name": "Success puts the product in the building, not satchel or warehouse",
+      "passed": true
+    },
+    {
+      "name": "Failed work retains reserved ingredients for another attempt",
+      "passed": true
+    },
+    {
+      "name": "Failed batch cannot reroll immediately without doing remaining work",
+      "passed": true
+    },
+    {
+      "name": "Pausing a workplace releases the worker without refunding or losing materials",
+      "passed": true
+    },
+    {
+      "name": "A resumed paid batch is not charged twice",
+      "passed": true
+    },
+    {
+      "name": "Give space safely interrupts a paid batch and saves immediately",
+      "passed": true
+    },
+    {
+      "name": "Removing an equipment request safely releases its buffered job",
+      "passed": true
+    },
+    {
+      "name": "A second trained creature can resume interrupted paid work",
+      "passed": true
+    },
+    {
+      "name": "Completed outputs are unavailable to a remote sale",
+      "passed": true
+    },
+    {
+      "name": "Collecting output changes only building and satchel ownership",
+      "passed": true
+    },
+    {
+      "name": "Two collectors cannot duplicate the same output",
+      "passed": true
+    },
+    {
+      "name": "Output capacity blocks a new batch until collection",
+      "passed": true
+    },
+    {
+      "name": "A full carrier cannot exceed its weight limit with output",
+      "passed": true
+    },
+    {
+      "name": "Reclaiming input pauses work but still requires a carrier",
+      "passed": true
+    },
+    {
+      "name": "A returned input remains owned, never deleted",
+      "passed": true
+    },
+    {
+      "name": "Stock targets count output at all physical locations",
+      "passed": true
+    },
+    {
+      "name": "Paid output counts against scheduling without pretending to be physical stock",
+      "passed": true
+    },
+    {
+      "name": "Completed work decrements a requested batch once",
+      "passed": true
+    },
+    {
+      "name": "Clearing future work leaves a paid batch and its supplies intact",
+      "passed": true
+    },
+    {
+      "name": "Finite site charge is committed once, not per failed attempt",
+      "passed": true
+    },
+    {
+      "name": "A paid batch can finish after its finite site was exhausted by reservation",
+      "passed": true
+    },
+    {
+      "name": "Buffer capacities grow with building upgrades",
+      "passed": true
+    },
+    {
+      "name": "Production plans do not require a selected creature",
+      "passed": true
+    },
+    {
+      "name": "Building inspection and resource forecasts consume no random state",
+      "passed": true
+    },
+    {
+      "name": "Reject negative target without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject non-integer batch without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject unknown recipe without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject too many batches without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject unknown command without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject invalid priority without mutation",
+      "passed": true
+    },
+    {
+      "name": "Reject unknown world fields",
+      "passed": true
+    },
+    {
+      "name": "Reject negative node stock",
+      "passed": true
+    },
+    {
+      "name": "Reject duplicate node identifiers",
+      "passed": true
+    },
+    {
+      "name": "Reject missing supported node kinds",
+      "passed": true
+    },
+    {
+      "name": "Reject unknown production ingredients",
+      "passed": true
+    },
+    {
+      "name": "Reject recipes that cannot fit the input buffer",
+      "passed": true
+    },
+    {
+      "name": "Reject recipes that cannot fit the output buffer",
+      "passed": true
+    },
+    {
+      "name": "Reject circular production dependencies",
+      "passed": true
+    },
+    {
+      "name": "Reject unknown required-node references",
+      "passed": true
+    },
+    {
+      "name": "Reject duplicate authored tiles",
+      "passed": true
+    },
+    {
+      "name": "Reject out-of-world site coordinates",
+      "passed": true
+    },
+    {
+      "name": "World changes preserve extension metadata through round trip",
+      "passed": true
+    },
+    {
+      "name": "World diff identifies a stable field path",
+      "passed": true
+    },
+    {
+      "name": "Identical world library has no changes",
+      "passed": true
+    },
+    {
+      "name": "Reordered sites have an explicit ordering diff",
+      "passed": true
+    },
+    {
+      "name": "World import rejects mechanics changes during a paid batch",
+      "passed": true
+    },
+    {
+      "name": "Label-only world import is permitted during committed work",
+      "passed": true
+    },
+    {
+      "name": "Editing site coordinates requires a new story",
+      "passed": true
+    },
+    {
+      "name": "New-story world imports apply initial finite quantities",
+      "passed": true
+    },
+    {
+      "name": "A portable story embeds all four exact content libraries",
+      "passed": true
+    },
+    {
+      "name": "World-fingerprint tampering is rejected",
+      "passed": true
+    },
+    {
+      "name": "Inspecting a story does not change active world definitions",
+      "passed": true
+    },
+    {
+      "name": "Paid batches and inventory locations survive exact save continuation",
+      "passed": true
+    },
+    {
+      "name": "Save import rejects overfilled output",
+      "passed": true
+    },
+    {
+      "name": "Save import rejects unknown inventory item",
+      "passed": true
+    },
+    {
+      "name": "Save import rejects duplicate node tile",
+      "passed": true
+    },
+    {
+      "name": "Save import rejects invalid quantity",
+      "passed": true
+    },
+    {
+      "name": "Save import rejects missing substrate",
+      "passed": true
+    },
+    {
+      "name": "Six-creature world logistics, 30 simulated minutes, seed 13",
+      "passed": true
+    },
+    {
+      "name": "Six-creature world logistics, 30 simulated minutes, seed 29",
+      "passed": true
+    },
+    {
+      "name": "Six-creature world logistics, 30 simulated minutes, seed 47",
+      "passed": true
+    }
+  ],
+  "soaks": [
+    {
+      "seed": 13,
+      "creatures": 6,
+      "simulatedSeconds": 1815,
+      "wallMs": 4100,
+      "batches": 11,
+      "transfers": 28,
+      "minimumNeed": 36.47599999999676
+    },
+    {
+      "seed": 29,
+      "creatures": 6,
+      "simulatedSeconds": 1815,
+      "wallMs": 3535,
+      "batches": 12,
+      "transfers": 30,
+      "minimumNeed": 36.70399999999654
+    },
+    {
+      "seed": 47,
+      "creatures": 6,
+      "simulatedSeconds": 1815,
+      "wallMs": 4118,
+      "batches": 11,
+      "transfers": 29,
+      "minimumNeed": 36.313999999996426
+    }
+  ]
+}

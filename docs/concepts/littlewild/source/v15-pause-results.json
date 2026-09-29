@@ -1,0 +1,222 @@
+{
+  "passed": 54,
+  "total": 54,
+  "results": [
+    {
+      "name": "modal auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "modal auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "modal manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "tile auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "tile auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "tile manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "creature auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "creature auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "creature manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "more auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "more auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "more manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "world auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "world auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "world manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "planner auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "planner auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "planner manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "placement auto-pause on suspends without changing the explicit pause",
+      "passed": true
+    },
+    {
+      "name": "placement auto-pause off leaves time running",
+      "passed": true
+    },
+    {
+      "name": "placement manual pause wins with setting off",
+      "passed": true
+    },
+    {
+      "name": "Hidden tab stops time regardless of true",
+      "passed": true
+    },
+    {
+      "name": "Save safety review stops time regardless of true",
+      "passed": true
+    },
+    {
+      "name": "No open view restores time on true",
+      "passed": true
+    },
+    {
+      "name": "Closing views preserves explicit pause on true",
+      "passed": true
+    },
+    {
+      "name": "Hidden tab stops time regardless of false",
+      "passed": true
+    },
+    {
+      "name": "Save safety review stops time regardless of false",
+      "passed": true
+    },
+    {
+      "name": "No open view restores time on false",
+      "passed": true
+    },
+    {
+      "name": "Closing views preserves explicit pause on false",
+      "passed": true
+    },
+    {
+      "name": "Nested views do not release another view hold",
+      "passed": true
+    },
+    {
+      "name": "Not-started story never advances",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes import-preview",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes content-preview",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes adventure-review",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes world-import",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes v10-growth-preview",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes reset",
+      "passed": true
+    },
+    {
+      "name": "Safety policy recognizes recover",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: settings",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: world-visuals",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: v10-land",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: training",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: warehouse",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: v10-confirm",
+      "passed": true
+    },
+    {
+      "name": "Ordinary view obeys preference: v10-research",
+      "passed": true
+    },
+    {
+      "name": "Preference defaults on without existing record",
+      "passed": true
+    },
+    {
+      "name": "Preference persists independently of story",
+      "passed": true
+    },
+    {
+      "name": "Unsupported preference versions and nonbooleans use safe default",
+      "passed": true
+    },
+    {
+      "name": "Unavailable storage does not disable a session preference",
+      "passed": true
+    },
+    {
+      "name": "Corrupted preferences are nonfatal",
+      "passed": true
+    },
+    {
+      "name": "Invalid setter does not partially mutate the setting",
+      "passed": true
+    },
+    {
+      "name": "Authentic v12 story retains all resources, claims and unlocks",
+      "passed": true
+    },
+    {
+      "name": "Authentic v12 save continues deterministically in v13",
+      "passed": true
+    },
+    {
+      "name": "Pause preference is not authored content or portable game state",
+      "passed": true
+    }
+  ]
+}
