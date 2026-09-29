@@ -16,6 +16,22 @@ jobs:
       LP_NUM_THREADS: 2
     steps:
       - uses: actions/checkout@v4
+      - name: Capture the exact tested source for offline reproduction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/content-verification-source
+          git rev-parse HEAD > /tmp/content-verification-source/commit.txt
+          git rev-parse 'HEAD^{tree}' > /tmp/content-verification-source/tree.txt
+          git archive --format=tar.gz --output=/tmp/content-verification-source/source.tar.gz HEAD
+          (cd /tmp/content-verification-source && sha256sum source.tar.gz > source.sha256)
+      - name: Retain source snapshot independently of test success
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-verification-source
+          path: /tmp/content-verification-source/
+          if-no-files-found: error
+          retention-days: 2
       - name: Install the repository-pinned engine
         shell: bash
         run: |
