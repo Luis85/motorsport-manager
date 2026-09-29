@@ -1,8 +1,0 @@
-{
-  "limits": {"source": 400, "tests": 450},
-  "extensions": [".gd", ".py"],
-  "test_roots": ["tests"],
-  "excluded_directories": [".git", ".godot", ".venv", "venv", "__pycache__", "reports", "vendor", "third_party"],
-  "complexity_limit": 15,
-  "tool_timeout_seconds": 180
-}

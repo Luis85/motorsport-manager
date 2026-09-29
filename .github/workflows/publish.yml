@@ -1,0 +1,70 @@
+name: Verify reconciled tyre and roster content
+on:
+  push:
+    branches: [chore/data-driven-tyres-reconciled-publish]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      BASE_COMMIT: 7d15e6becb0b2378759db686f7f09bec759d4fa8
+      SECOND_PARENT: bbef02767c735dbc73117de32bf1bd17491cb9b0
+      EXPECTED_TREE: 48ca257552cf0170a78dc9711d12c12d7dc7d84a
+      GODOT_SILENCE_ROOT_WARNING: '1'
+      LP_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct exact reconciled source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat content.part0.xz content.part1.xz content.part2.xz content.part3.xz content.part4.xz content.part5.xz > /tmp/content.patch.xz
+          echo '9e82098e5d76342f1c9145a2f358d63cd7787fc90407bd90ad9aee5c2614ee12  /tmp/content.patch.xz' | sha256sum --check
+          xz -dc /tmp/content.patch.xz > /tmp/content.patch
+          git checkout --detach "$BASE_COMMIT"
+          git apply --unidiff-zero --check /tmp/content.patch
+          git apply --unidiff-zero --index /tmp/content.patch
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          python3 scripts/check_architecture.py
+          python3 -m unittest discover -s tests -p test_content_authoring.py
+      - name: Install pinned engine and Linux templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb
+          curl --fail --location --retry 3 https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_*
+          curl --fail --location --retry 3 https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz -o /tmp/templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+          unzip -j /tmp/templates.tpz templates/linux_debug.x86_64 templates/linux_release.x86_64 -d "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+      - name: Verify production content and retained contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          python3 scripts/content.py schemas --check --godot "$godot"
+          python3 scripts/verify.py --godot "$godot" --suite architecture_characterization --suite editor_session_tests --suite weekend_launch_tests --suite car_record_tests --suite command_contract_tests --suite storage_contract_tests --suite content_tests --suite content_pack_tests --suite content_roster_tests --suite content_roster_ui_tests --suite roster_content_tests --suite roster_content_ui_tests --suite content_tyre_tests --suite content_tyre_ui_tests --suite presentation_boundary_tests
+          python3 scripts/verify_content_export.py --godot "$godot"
+      - name: Publish verified tree preserving both roster histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          commit=$(printf '%s\n' 'feat(content): reconcile roster extensions and externalize tyre allocation and setup profiles' | git commit-tree "$EXPECTED_TREE" -p "$BASE_COMMIT" -p "$SECOND_PARENT")
+          git push origin "$commit:refs/heads/chore/data-driven-tyres-reconciled-result"
+          printf 'Published commit: %s\nVerified tree: %s\n' "$commit" "$EXPECTED_TREE" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tyres-reconciled-verification
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 14
