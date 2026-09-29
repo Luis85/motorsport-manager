@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.bel",
+  "name": "Julien Bellamy",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "BEL",
+  "skill": 88,
+  "consistency": 90,
+  "wet_skill": 92,
+  "reliability": 88
+}

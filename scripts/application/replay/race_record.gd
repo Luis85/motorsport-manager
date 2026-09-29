@@ -116,7 +116,7 @@ static func validate(data: Variant) -> String:
 		if not valid_types(entry.payload, entry.get("integers")): return "Invalid input numeric types."
 		var context = entry.get("context")
 		if not context is Dictionary or context.size() != 4: return "Invalid input context."
-		if not RaceCheckpoint.integral(context.get("selected_id"), 0, 11) or not context.get("paused") is bool or (not RaceCheckpoint.integral(context.get("speed"), 1, 16) or int(context.speed) not in [1,2,4,8,16]) or not RaceCheckpoint.number(context.get("accumulator"), 0, 100): return "Invalid input context."
+		if not RaceCheckpoint.integral(context.get("selected_id"), 0, data.initial.cars.size() - 1) or not context.get("paused") is bool or (not RaceCheckpoint.integral(context.get("speed"), 1, 16) or int(context.speed) not in [1,2,4,8,16]) or not RaceCheckpoint.number(context.get("accumulator"), 0, 100): return "Invalid input context."
 	previous = 0
 	var cursor = 0
 	for mark in data.marks:
@@ -195,6 +195,8 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
 	if int(snapshot.version) == 11: rules.tactical_duels = true
+	if snapshot.has("roster_definition"):
+		rules.roster_definition = snapshot.roster_definition.duplicate(true)
 	if snapshot.has("vehicle_definition"):
 		rules.vehicle_definition = snapshot.vehicle_definition.duplicate(true)
 	var scenarios: Array = []

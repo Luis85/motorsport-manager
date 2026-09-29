@@ -5,20 +5,9 @@ signal event_posted(entry: Dictionary)
 const STEP = 0.05
 const ACTIVE = ["practice", "qualifying", "formation", "lights", "race"]
 const TYRES = {"S": {"grip": 1.035, "wear": 5.5}, "M": {"grip": 1.0, "wear": 3.6}, "H": {"grip": 0.98, "wear": 2.4}, "I": {"grip": 0.95, "wear": 4.0}, "W": {"grip": 0.91, "wear": 4.5}}
-const ROSTER = [
-	["VAL", "Nico Valenti", "Volpe", "c46356", 91, 87, 82, 85, 3],
-	["REI", "Felix Reinhardt", "Aster", "d5d6c8", 88, 95, 81, 91, 4],
-	["BEL", "Julien Bellamy", "Veridian", "69a283", 88, 90, 92, 88, 5],
-	["MER", "Daniel Mercer", "Obsidian", "e2bb69", 88, 96, 85, 91, 8],
-	["SOR", "Erik Soren", "Nordstar", "79a9c4", 86, 89, 83, 87, 11],
-	["ROS", "Matteo Rossi", "Volpe", "c46356", 84, 78, 78, 83, 6],
-	["MOR", "Lucas Moreau", "Obsidian", "79b4a3", 85, 85, 96, 90, 9],
-	["TAN", "Kenji Tanaka", "Nordstar", "79a9c4", 82, 91, 87, 89, 12],
-	["DAR", "Alex Darcy", "Kestrel", "ac98c0", 83, 80, 81, 82, 14],
-	["KIE", "Jonas Kiefer", "Aster", "d5d6c8", 81, 92, 79, 92, 7],
-	["COS", "Rafael Costa", "Veridian", "69a283", 82, 85, 89, 86, 15],
-	["HAR", "Theo Hart", "Kestrel", "ac98c0", 79, 74, 76, 81, 16]]
+const ROSTER = LegacyRaceRoster.ROWS
 const CAR_V2 = {"yield_to": -1, "yield_side": 0.0, "yield_clock": 0.0, "qual_history": [], "qual_sectors": [0.0, 0.0, 0.0], "qual_sector_start": 0.0, "invalid_reason": "", "throttle": 0.0, "braking": 0.0, "pit_deferred": false, "pit_lap": false, "service_compound": "M", "service_repair": true}
+var roster_definition: RaceRosterDefinition
 var track: TrackGeometry
 var cars: Array[RaceCar] = []
 var phase = "briefing"
@@ -81,8 +70,18 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	rng_state = seed_value
 	for i in range(96): water.append(0.6 if scenario == "wet" else 0.0); rubber.append(0.12)
 	surface = RaceSurface.create(track, water, rubber)
-	for i in range(ROSTER.size()):
-		cars.append(RaceEntrantFactory.create(ROSTER[i], i, track, laps, scenario))
+	if options.has("roster_definition"):
+		roster_definition = RaceRosterDefinition.from_snapshot(options.roster_definition)
+		if roster_definition == null:
+			last_error = "Invalid frozen roster definition."
+			return
+		for i in range(roster_definition.count):
+			cars.append(RaceEntrantFactory.from_definition(roster_definition.entrant(i), i, track, laps, scenario))
+		selected_id = int(player_ids()[0])
+		track.pit_box_markers = roster_definition.pit_markers()
+	else:
+		for i in range(ROSTER.size()):
+			cars.append(RaceEntrantFactory.create(ROSTER[i], i, track, laps, scenario))
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
 
 func random_value() -> float:
@@ -145,7 +144,7 @@ func _base_command(action: String, payload: Dictionary = {}) -> bool:
 			if value not in [1, 2, 4, 8, 16]: return fail("Invalid simulation speed.")
 			speed = value
 		"pace", "engine", "auto", "compound", "pit", "cancel_pit", "send", "recall", "setup", "repair", "select_set", "schedule_pit", "cancel_schedule", "setup_all", "brake_bias", "battle_mode":
-			if not c.player: return fail("You manage the two Obsidian drivers only.")
+			if not c.player: return fail("You manage your two entered drivers only.")
 			if c.dnf or c.finished: return fail("This car is no longer running.")
 			match action:
 				"pace", "engine":
@@ -563,7 +562,7 @@ func _base_incident(c: RaceCar) -> void:
 
 func _base_retire(c: RaceCar, reason: String) -> void:
 	c.dnf = true; c.speed = 0.0; c.retire_reason = reason; c.completed = int(maxf(0, floor(c.distance / track.length)))
-	if pit_boxes.get(c.team, -1) == c.id: pit_boxes.erase(c.team)
+	if pit_boxes.get(c.team_identity(), -1) == c.id: pit_boxes.erase(c.team_identity())
 	post("retirement", "%s retires: %s." % [c.short, reason])
 
 func standings(qualifying: bool = false) -> Array:
@@ -585,6 +584,8 @@ func _base_snapshot() -> Dictionary:
 	var result = {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
 	if not track.authored_vehicle().is_empty():
 		result.vehicle_definition = track.authored_vehicle()
+	if roster_definition != null:
+		result.roster_definition = roster_definition.to_snapshot()
 	return result
 
 static func restore(data: Dictionary) -> RaceSim:
@@ -596,12 +597,12 @@ static func restore(data: Dictionary) -> RaceSim:
 	var definition: VehicleDefinition
 	if data.has("vehicle_definition"):
 		definition = VehicleDefinition.from_record(data.vehicle_definition)
-	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula"), false, definition))
+	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula"), false, definition), {"roster_definition": data.roster_definition} if data.has("roster_definition") else {})
 	var baseline = RaceCar.records(sim.cars)
-	for i in range(12):
+	for i in range(sim.cars.size()):
 		var c = data.cars[i]
 		if not c is Dictionary or c.get("id") != i: return null
-		for identity in ["short", "name", "team", "color", "number", "player"]:
+		for identity in (["short", "name", "team", "color", "number", "player"] + (["skill", "consistency", "wet_skill", "reliability", "box_d"] if sim.roster_definition != null else [])):
 			if c.get(identity) != baseline[i][identity]: return null
 		for key in baseline[i]:
 			if not c.has(key): return null
@@ -612,7 +613,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		if not TYRES.has(c.compound) or not TYRES.has(c.next_compound) or c.pace < 0 or c.pace > 2 or c.engine < 0 or c.engine > 2: return null
 		if c.route not in ["track", "pit", "garage"] or c.qual_state not in ["garage", "outlap", "hotlap", "inlap"]: return null
 	for key in sim.snapshot():
-		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition"]: continue
+		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition"]: continue
 		if not data.has(key): return null
 		var expected = sim.get(key)
 		if typeof(expected) in [TYPE_FLOAT, TYPE_INT]:
@@ -628,6 +629,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		var car = RaceCar.from_record(record)
 		if car == null:
 			return null
+		if sim.roster_definition != null: car.entry_definition = sim.roster_definition.entrant(car.id)
 		sim.cars.append(car)
 	return sim
 
@@ -896,3 +898,9 @@ func has_mechanic(identity: String) -> bool:
 
 func mechanic_catalog() -> Array:
 	return mechanics.describe()
+
+func player_ids() -> Array:
+	return cars.filter(func(car): return car.player).map(func(car): return car.id)
+
+func content_options() -> Dictionary:
+	return {"roster_definition": roster_definition.to_snapshot()} if roster_definition != null else {}

@@ -1,0 +1,8 @@
+{
+  "kind": "team",
+  "schema_version": 1,
+  "id": "core.team.aster",
+  "name": "Aster",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "color": "d5d6c8"
+}

@@ -31,6 +31,15 @@ func add(record: Dictionary, source: Dictionary, override_hash: String = "") -> 
 func seal() -> Array:
 	if _records.is_empty():
 		return [ContentValidation.diagnostic("CONTENT_EMPTY", "", "The selected content set is empty.")]
+	for id in _records:
+		if _records[id].kind != "roster": continue
+		var resolved = RaceRosterDefinition.resolve(_records[id], _records)
+		if not resolved.ok:
+			for diagnostic in resolved.diagnostics:
+				diagnostic.file = _sources[id].file
+				diagnostic.root = _sources[id].root
+				diagnostic.entity = id
+			return resolved.diagnostics
 	_sealed = true
 	return []
 
@@ -49,3 +58,8 @@ func explain(id: String) -> Dictionary:
 func vehicle(id: String) -> VehicleDefinition:
 	var data = record(id)
 	return VehicleDefinition.from_record(data) if not data.is_empty() else null
+
+func roster(id: String) -> RaceRosterDefinition:
+	if not _sealed or not _records.has(id): return null
+	var resolved = RaceRosterDefinition.resolve(_records[id], _records)
+	return RaceRosterDefinition.from_snapshot(resolved.snapshot) if resolved.ok else null

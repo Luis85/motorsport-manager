@@ -2,7 +2,13 @@ class_name RaceCheckpoint
 extends RefCounted
 ## Reject malformed indexes and nested telemetry before a checkpoint reaches a view.
 static func valid(data: Dictionary) -> bool:
-	if not integral(data.get("selected_id"), 0, 11): return false
+	var roster: RaceRosterDefinition
+	if data.has("roster_definition"):
+		roster = RaceRosterDefinition.from_snapshot(data.roster_definition)
+		if roster == null: return false
+	var count = roster.count if roster != null else 12
+	if not data.get("cars") is Array or data.cars.size() != count: return false
+	if not integral(data.get("selected_id"), 0, count - 1): return false
 	if data.has("vehicle_definition"):
 		if not data.vehicle_definition is Dictionary: return false
 		var definition = VehicleDefinition.from_record(data.vehicle_definition)
@@ -26,7 +32,7 @@ static func valid(data: Dictionary) -> bool:
 	var grids: Array = []
 	for c in data.cars:
 		if not c is Dictionary: return false
-		for entry in [["grid", 1, 12], ["id", 0, 11], ["pace", 0, 2], ["engine", 0, 2], ["yield_to", -1, 11], ["setup", 1, 9], ["completed", 0, 101]]:
+		for entry in [["grid", 1, count], ["id", 0, count - 1], ["pace", 0, 2], ["engine", 0, 2], ["yield_to", -1, count - 1], ["setup", 1, 9], ["completed", 0, 101]]:
 			if not integral(c.get(entry[0]), entry[1], entry[2]): return false
 		if c.get("grid") in grids: return false
 		grids.append(c.get("grid"))
@@ -47,12 +53,12 @@ static func valid(data: Dictionary) -> bool:
 				if not lap is Dictionary or not number(lap.get("time"), 0, 10000000): return false
 				if lap.has("sectors") and not numbers(lap.sectors, 3): return false
 	for team in data.pit_boxes:
-		if not team is String or not integral(data.pit_boxes[team], 0, 11): return false
+		if not team is String or not integral(data.pit_boxes[team], 0, count - 1): return false
 		var owner = data.cars[int(data.pit_boxes[team])]
-		if owner.get("team") != team or owner.get("route") != "pit" or owner.get("pit_stage") != "service" or owner.get("dnf") == true: return false
+		if team_key(owner, roster) != team or owner.get("route") != "pit" or owner.get("pit_stage") != "service" or owner.get("dnf") == true: return false
 	for c in data.cars:
 		if c.get("pit_stage") == "service" and not c.get("dnf", false):
-			if data.pit_boxes.get(c.get("team"), -1) != c.get("id"): return false
+			if data.pit_boxes.get(team_key(c, roster), -1) != c.get("id"): return false
 	return true
 
 static func number(value: Variant, low: float, high: float) -> bool:
@@ -72,7 +78,14 @@ static func numbers(value: Variant, count: int, signed: bool = false) -> bool:
 ## Defaults and supported compounds are values, not access to a running aggregate.
 static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compounds: Dictionary) -> Dictionary:
 	if data.get("kind") != "motorsport-manager-weekend" or not RaceCheckpoint.integral(data.get("version"), 1, 4): return {}
-	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return {}
+	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array: return {}
+	var count = 12
+	if data.has("roster_definition"):
+		if data.version < 4: return {}
+		var roster = RaceRosterDefinition.from_snapshot(data.roster_definition)
+		if roster == null: return {}
+		count = roster.count
+	if data.cars.size() != count: return {}
 	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
 	if data.has("vehicle_definition") and data.version < 4: return {}
@@ -108,3 +121,8 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 				if not TrackDocument.valid_number(value, 0, 1): return {}
 		data.surface = RaceSurface.create(legacy_geometry, data.water, data.rubber); data.surface_accumulator = 0.0
 	return data
+
+static func team_key(car: Dictionary, roster: RaceRosterDefinition) -> String:
+	if roster == null: return str(car.get("team", ""))
+	if not integral(car.get("id"), 0, roster.count - 1): return ""
+	return roster.entrant(int(car.id)).team_id

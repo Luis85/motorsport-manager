@@ -438,3 +438,25 @@ func tactical_plan_error(plan: Variant, id: int) -> String:
 	if source == null or id < 0 or id >= source.cars.size():
 		return "The driver data is unavailable."
 	return TacticalForecast.validate_plan(plan, source.cars, id, source.laps)
+
+func player_ids() -> Array:
+	var source: RaceSim = _source.get_ref()
+	return source.player_ids() if source != null else []
+
+func teammate_id(id: int) -> int:
+	var players = player_ids()
+	return players[1] if not players.is_empty() and players[0] == id else (players[0] if not players.is_empty() else -1)
+
+func player_labels() -> Array:
+	return player_ids().map(func(id): return car(id).short + " · " + car(id).name)
+
+func pit_box_occupant(id: int) -> int:
+	var simulation = _source.get_ref() if _source != null else null
+	if simulation == null or id < 0 or id >= simulation.cars.size(): return -1
+	return int(simulation.pit_boxes.get(simulation.cars[id].team_identity(), -1))
+
+func public_rival_field() -> String:
+	var source: RaceSim = _source.get_ref()
+	if source == null: return "Rival field unavailable."
+	return RivalStyles.public_field(source.rival_styles, source.cars, source.rival_state.stops,
+		source.cars.map(func(c): return c.team_identity()))

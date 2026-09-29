@@ -14,6 +14,9 @@ func _init(catalog: ContentCatalog = null) -> void:
 
 func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula") -> bool:
 	last_error = ""
+	if not RaceStateValue.serializable(options):
+		last_error = "Weekend settings exceed structural limits."
+		return false
 	if _committing:
 		last_error = "Finish saving the approved weekend before changing its configuration."
 		return false
@@ -36,10 +39,26 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	if not RaceCheckpoint.number(options.get("qual_duration", 480), 120, 1800):
 		last_error = "Qualifying duration must be between 2 and 30 minutes."
 		return false
+	var roster: RaceRosterDefinition
+	if _catalog != null:
+		if not options.get("roster_id", "core.roster.default") is String:
+			last_error = "Choose a roster by its stable ID."
+			return false
+		roster = _catalog.roster(options.get("roster_id", "core.roster.default"))
+		if roster == null:
+			last_error = "Unknown or invalid roster."
+			return false
+	elif options.has("roster_id"):
+		last_error = "A content catalog is required for an authored roster."
+		return false
 	var geometry = TrackGeometry.new(document.duplicate(true), vehicle, false, definition)
+	if roster != null and not roster.track_errors(geometry).is_empty():
+		last_error = "\n".join(roster.track_errors(geometry))
+		return false
 	if TrackDiagnostics.blocking(TrackDiagnostics.inspect(geometry)):
 		last_error = "The circuit has blocking checks. Resolve them in the track editor before driving."
 		return false
+	if roster != null: geometry.pit_box_markers = roster.pit_markers()
 	_track = geometry
 	_options = {
 		"laps": int(options.laps), "seed": int(options.get("seed", 7314)),
@@ -47,6 +66,7 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 		"scenario": str(options.get("scenario", "dry")),
 		"intensity": str(options.get("intensity", "standard")),
 		"tactical_duels": options.get("tactical_duels", true) == true}
+	if roster != null: _options.roster_definition = roster.to_snapshot()
 	_revision += 1
 	_consumed = false
 	return true
@@ -85,3 +105,6 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 		return {"ok": false, "error": error}
 	_consumed = true
 	return {"ok": true, "simulation": candidate, "record": record}
+
+func session_options() -> Dictionary:
+	return _options.duplicate(true)

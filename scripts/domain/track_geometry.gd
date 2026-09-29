@@ -4,6 +4,7 @@ extends RefCounted
 const PRESETS = VehicleDefinition.LEGACY
 var vehicle_definition: VehicleDefinition
 var _authored_vehicle: bool = false
+var pit_box_markers: Array = [] # Detached presentation values supplied by the event entry.
 var preview_only = false
 var centre_estimate = 0.0
 var line_distances = PackedFloat64Array()
@@ -189,3 +190,11 @@ func detached_copy() -> TrackGeometry:
 
 func authored_vehicle() -> Dictionary:
 	return vehicle_definition.to_record() if _authored_vehicle else {}
+
+func pit_markers() -> Array:
+	if not pit_box_markers.is_empty(): return pit_box_markers.duplicate(true)
+	# Compatibility display for editor drafts/old standalone tracks without an entry.
+	var result: Array = []
+	for index in range(LegacyRaceRoster.TEAMS.size()):
+		result.append({"fraction": 0.30 + index * 0.055, "player": index == 3})
+	return result

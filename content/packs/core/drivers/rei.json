@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.rei",
+  "name": "Felix Reinhardt",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "REI",
+  "skill": 88,
+  "consistency": 95,
+  "wet_skill": 81,
+  "reliability": 91
+}

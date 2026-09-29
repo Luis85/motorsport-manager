@@ -60,8 +60,8 @@ func _ready() -> void:
 	release = UI.button("Release now", func(): prepare("send"), true); actions.add_child(release)
 	hold = UI.button("Keep plan", keep_plan); actions.add_child(hold)
 	cancel = UI.button("Back to review", reset_review); actions.add_child(cancel)
-	refresh_button = UI.button("Refresh evidence", func(): refresh_requested.emit(snapshot.get("driver_id",3))); actions.add_child(refresh_button)
-	var details = UI.button("Open full strategy", func(): detail_requested.emit(snapshot.get("driver_id",3))); actions.add_child(details)
+	refresh_button = UI.button("Refresh evidence", func(): refresh_requested.emit(snapshot.get("driver_id",model.player_ids()[0]))); actions.add_child(refresh_button)
+	var details = UI.button("Open full strategy", func(): detail_requested.emit(snapshot.get("driver_id",model.player_ids()[0]))); actions.add_child(details)
 
 func present(value: Dictionary, new_review: bool = false) -> void:
 	# Reopening is observational. A fresh review requires the explicit review action.

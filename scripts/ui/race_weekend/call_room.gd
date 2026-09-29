@@ -67,7 +67,7 @@ func _ready() -> void:
 	body.add_child(limits)
 	var utilities = UI.hbox(body)
 	refresh_button = DirectorStyle.button("Refresh situation", refresh_snapshot); utilities.add_child(refresh_button)
-	details_button = DirectorStyle.button("Full strategy & ownership", func(): details_requested.emit(int(snapshot.get("driver_id",3)))); utilities.add_child(details_button)
+	details_button = DirectorStyle.button("Full strategy & ownership", func(): details_requested.emit(int(snapshot.get("driver_id",model.player_ids()[0])))); utilities.add_child(details_button)
 	var spacer = Control.new(); spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL; body.add_child(spacer)
 	var footer_panel = DirectorStyle.panel(); add_child(footer_panel); footer = UI.vbox(footer_panel)
 	message = DirectorStyle.paragraph("Choose an option, then confirm the named driver.", DirectorStyle.TEXT); footer.add_child(message)

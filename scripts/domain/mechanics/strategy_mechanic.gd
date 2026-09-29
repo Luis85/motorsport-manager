@@ -37,10 +37,10 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	sim.last_error = ""
 	var global = action in GLOBAL_COMMANDS
 	if not global and not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the intended driver explicitly.")
-	var id = 3 if global else int(payload.id)
+	var id = int(sim.player_ids()[0]) if global else int(payload.id)
 	var c = sim.cars[id]; var p = sim.policy(id)
 	var accepted_payload = payload.duplicate(true); accepted_payload.id = id
-	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running Obsidian driver can receive this command.")
+	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running player-team driver can receive this command.")
 	if action in ["pace", "engine"] and not RaceCheckpoint.integral(payload.get("value"), 0, 2): return sim.fail("Choose a valid driving mode.")
 	if action == "speed" and not RaceCheckpoint.integral(payload.get("value"), 1, 16): return sim.fail("Choose a valid playback speed.")
 	if action == "auto" and not payload.get("value") is bool: return sim.fail("Choose an explicit delegation state.")
@@ -286,7 +286,7 @@ func step(sim: RaceSim) -> void:
 	RacecraftController.after_step(sim)
 	TeamOrders.after_step(sim)
 	if sim.phase == "race" and roundi(sim.total_time / RaceSim.STEP) % 20 == 0:
-		for id in [3, 6]: sim.observe_warnings(sim.cars[id])
+		for id in sim.player_ids(): sim.observe_warnings(sim.cars[id])
 	if previous_phase != "results" and sim.phase == "results":
 		var classification: Array = []
 		for car in sim.standings(): classification.append({"id": car.id, "position": classification.size() + 1, "laps": car.completed, "time": car.finish_time, "retired": car.dnf})

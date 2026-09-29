@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.val",
+  "name": "Nico Valenti",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "VAL",
+  "skill": 91,
+  "consistency": 87,
+  "wet_skill": 82,
+  "reliability": 85
+}

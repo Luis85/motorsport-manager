@@ -81,7 +81,7 @@ func _practice_command(sim: RaceSim, action: String, payload: Dictionary) -> boo
 	if action in ["practice_run", "practice_recall"]:
 		if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the practice driver explicitly.")
 		var id = int(payload.id); var c = sim.cars[id]; var d = sim.practice_driver(id)
-		if not c.player or c.dnf or c.finished: return sim.fail("Only your running Obsidian drivers can receive a practice order.")
+		if not c.player or c.dnf or c.finished: return sim.fail("Only your running player-team drivers can receive a practice order.")
 		if sim.phase != "practice": return sim.fail("Practice run commands are available only during practice.")
 		if action == "practice_recall":
 			if d.active.is_empty() or c.route not in ["track", "pit"] or c.pit_stage == "entry" or d.active.returning: return sim.fail("There is no run available to recall before return commitment.")
@@ -112,7 +112,7 @@ func _practice_command(sim: RaceSim, action: String, payload: Dictionary) -> boo
 	if sim.phase == "practice" and action not in ["pause", "speed", "setup", "setup_all", "select_set", "compound"]:
 		return sim.fail("During practice use Run, Recall or End practice. Race orders and ownership remain unchanged.")
 	if sim.phase == "practice" and action in ["setup", "setup_all", "select_set", "compound"]:
-		if not RaceCheckpoint.integral(payload.get("id"), 0, 11) or sim.cars[int(payload.id)].route != "garage": return sim.fail("Return to the garage before changing a practice setup or tyre plan.")
+		if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1) or sim.cars[int(payload.id)].route != "garage": return sim.fail("Return to the garage before changing a practice setup or tyre plan.")
 	if action in ["qualify", "prepare_race"] and sim.phase == "briefing":
 		# Skipping adds only provenance; do not advance time, consume stock or change policies.
 		if sim.practice_state.status == "available":

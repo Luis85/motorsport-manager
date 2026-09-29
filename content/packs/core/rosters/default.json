@@ -1,0 +1,108 @@
+{
+  "kind": "roster",
+  "schema_version": 1,
+  "id": "core.roster.default",
+  "name": "Reference field",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "player_team_id": "core.team.obsidian",
+  "entries": [
+    {
+      "driver_id": "core.driver.val",
+      "team_id": "core.team.volpe",
+      "number": 3,
+      "color": "c46356"
+    },
+    {
+      "driver_id": "core.driver.rei",
+      "team_id": "core.team.aster",
+      "number": 4,
+      "color": "d5d6c8"
+    },
+    {
+      "driver_id": "core.driver.bel",
+      "team_id": "core.team.veridian",
+      "number": 5,
+      "color": "69a283"
+    },
+    {
+      "driver_id": "core.driver.mer",
+      "team_id": "core.team.obsidian",
+      "number": 8,
+      "color": "e2bb69"
+    },
+    {
+      "driver_id": "core.driver.sor",
+      "team_id": "core.team.nordstar",
+      "number": 11,
+      "color": "79a9c4"
+    },
+    {
+      "driver_id": "core.driver.ros",
+      "team_id": "core.team.volpe",
+      "number": 6,
+      "color": "c46356"
+    },
+    {
+      "driver_id": "core.driver.mor",
+      "team_id": "core.team.obsidian",
+      "number": 9,
+      "color": "79b4a3"
+    },
+    {
+      "driver_id": "core.driver.tan",
+      "team_id": "core.team.nordstar",
+      "number": 12,
+      "color": "79a9c4"
+    },
+    {
+      "driver_id": "core.driver.dar",
+      "team_id": "core.team.kestrel",
+      "number": 14,
+      "color": "ac98c0"
+    },
+    {
+      "driver_id": "core.driver.kie",
+      "team_id": "core.team.aster",
+      "number": 7,
+      "color": "d5d6c8"
+    },
+    {
+      "driver_id": "core.driver.cos",
+      "team_id": "core.team.veridian",
+      "number": 15,
+      "color": "69a283"
+    },
+    {
+      "driver_id": "core.driver.har",
+      "team_id": "core.team.kestrel",
+      "number": 16,
+      "color": "ac98c0"
+    }
+  ],
+  "pit_boxes": [
+    {
+      "team_id": "core.team.volpe",
+      "fraction": 0.3
+    },
+    {
+      "team_id": "core.team.aster",
+      "fraction": 0.355
+    },
+    {
+      "team_id": "core.team.veridian",
+      "fraction": 0.41
+    },
+    {
+      "team_id": "core.team.obsidian",
+      "fraction": 0.46499999999999997
+    },
+    {
+      "team_id": "core.team.nordstar",
+      "fraction": 0.52
+    },
+    {
+      "team_id": "core.team.kestrel",
+      "fraction": 0.575
+    }
+  ]
+}

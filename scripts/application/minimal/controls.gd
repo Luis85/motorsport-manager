@@ -195,7 +195,7 @@ func mode(id: int, channel: String, value: int) -> bool:
 	return true
 
 func selected_driver() -> int:
-	return _simulation.selected_id if _simulation != null and owned(_simulation.selected_id) else 3
+	return _simulation.selected_id if _simulation != null and owned(_simulation.selected_id) else (_simulation.player_ids()[0] if _simulation != null and not _simulation.player_ids().is_empty() else -1)
 
 func select_driver(id: int) -> bool:
 	# Selection is presentation intent, not a sporting command. No RNG, time or

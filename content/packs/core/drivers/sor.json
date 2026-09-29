@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.sor",
+  "name": "Erik Soren",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "SOR",
+  "skill": 86,
+  "consistency": 89,
+  "wet_skill": 83,
+  "reliability": 87
+}

@@ -49,8 +49,8 @@ static func car(model: RaceSim, id: int, forecast: Dictionary = {}) -> Dictionar
 
 static func spotlight(model: RaceSim, forecasts: Dictionary) -> Dictionary:
 	var headline = chapter(model.phase)
-	var value = {"eyebrow":headline[0],"title":headline[1],"detail":headline[2],"id":3,"priority":0}
-	for id in [3, 6]:
+	var value = {"eyebrow":headline[0],"title":headline[1],"detail":headline[2],"id":model.player_ids()[0],"priority":0}
+	for id in model.player_ids():
 		var reading = car(model,id,forecasts.get(id,{}))
 		var issue: Dictionary = reading.issue
 		if not issue.is_empty() and int(issue.priority) > int(value.priority):

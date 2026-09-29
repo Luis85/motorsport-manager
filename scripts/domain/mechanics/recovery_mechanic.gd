@@ -24,7 +24,7 @@ func recovery_advice(sim: RaceSim, id: int) -> Dictionary:
 	return RecoveryForecast.evaluate(RaceForecaster.capture(sim, id, sim.active_plan(id), int(sim.policy(id).revision)), RaceReliability.observation(sim.cars[id], sim.reliability(id)))
 
 func recovery_stale(sim: RaceSim, advice: Dictionary) -> bool:
-	if not RaceCheckpoint.integral(advice.get("driver_id"), 0, 11) or not RaceCheckpoint.number(advice.get("time"), 0, sim.total_time): return true
+	if not RaceCheckpoint.integral(advice.get("driver_id"), 0, sim.cars.size() - 1) or not RaceCheckpoint.number(advice.get("time"), 0, sim.total_time): return true
 	var id = int(advice.driver_id)
 	return sim.total_time - advice.time > RaceForecaster.MAX_AGE or advice.get("key") != RaceForecaster.material_key(sim, id, int(sim.policy(id).revision))
 
@@ -33,7 +33,7 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 	var c = sim.cars[id]; var r = sim.reliability(id)
 	var mate_only = false
 	for other in sim.cars:
-		if other.id != id and other.team == c.team: mate_only = sim.reliability(int(other.id)).repair_only
+		if other.id != id and other.team_identity() == c.team_identity(): mate_only = sim.reliability(int(other.id)).repair_only
 	return {"key": [sim.control_state.revision, r.revision, int(c.health / 5), int(c.engine_temperature / 5), r.repair_only, mate_only],
 		"health_factor": 1.0 - maxf(0, 65 - c.health) * 0.002,
 		"thermal_factor": 1.0 - maxf(0, c.engine_temperature - 115) * 0.003,
@@ -44,7 +44,7 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	if not sim.enhanced(): return sim.mechanics.before("recovery", "command", [action, payload])
 	if action not in ["recovery_protect", "recovery_repair", "recovery_retire", "recovery_authority"]:
-		if action in ["repair", "select_set", "compound", "pit", "schedule_pit", "weather_box"] and RaceCheckpoint.integral(payload.get("id"), 0, 11):
+		if action in ["repair", "select_set", "compound", "pit", "schedule_pit", "weather_box"] and RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1):
 			var c = sim.cars[int(payload.id)]
 			if action == "repair" and c.route == "pit": return sim.fail("The repair choice is locked after pit entry. The current service plan remains unchanged.")
 			if sim.reliability(int(c.id)).repair_only and c.pit_order: return sim.fail("Cancel the uncommitted repair-only order before changing its service or tyre plan.")
@@ -52,7 +52,7 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 		if accepted and action in ["cancel_pit", "cancel_schedule"]: sim.reliability(int(payload.id)).repair_only = false
 		return accepted
 	sim.last_error = ""
-	if not RaceCheckpoint.integral(payload.get("id"), 0, 11): return sim.fail("Name the intended recovery driver.")
+	if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the intended recovery driver.")
 	var id = int(payload.id); var c = sim.cars[id]; var r = sim.reliability(id)
 	if not c.player or c.dnf or c.finished: return sim.fail("Recovery commands require a running Obsidian driver.")
 	if action == "recovery_authority":

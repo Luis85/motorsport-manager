@@ -3,7 +3,8 @@ extends RefCounted
 ## Executable schema contract. Published JSON Schemas are generated from this source.
 ## Adding a new behavior/field is an engine change; adding an instance is content.
 const VERSION = 1
-const KINDS: Array[String] = ["vehicle"]
+const KINDS: Array[String] = ["vehicle", "team", "driver", "roster"]
+const MAX_ENTRANTS = 24
 const ID_PATTERN = "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$"
 
 static func text(limit: int = 160, minimum: int = 1) -> Dictionary:
@@ -51,6 +52,17 @@ static func definition(kind: String) -> Dictionary:
 				"lateral_acceleration_mps2": number(1, 60),
 				"acceleration_mps2": number(0.1, 30), "braking_mps2": number(0.1, 40),
 				"width_m": number(0.5, 4)})
+		"team":
+			properties.merge({"color": {"type": "string", "pattern": "^[0-9a-fA-F]{6}$"}})
+		"driver":
+			properties.merge({"short": text(8), "skill": integer(0, 100),
+				"consistency": integer(0, 100), "wet_skill": integer(0, 100),
+				"reliability": integer(0, 100)})
+		"roster":
+			properties.merge({"player_team_id": identity(),
+				"entries": array(object({"driver_id": identity(), "team_id": identity(),
+					"number": integer(1, 999), "color": {"type": "string", "pattern": "^[0-9a-fA-F]{6}$"}}), MAX_ENTRANTS, 2),
+				"pit_boxes": array(object({"team_id": identity(), "fraction": number(0.1, 0.9)}), MAX_ENTRANTS, 1)})
 		_: return {}
 	return object(properties)
 
@@ -60,3 +72,9 @@ static func document(kind: String) -> Dictionary:
 		result["$schema"] = "https://json-schema.org/draft/2020-12/schema"
 		result["title"] = "Motorsport Manager " + kind + " v1"
 	return result
+
+static func roster_snapshot() -> Dictionary:
+	return object({"kind": {"enum": ["motorsport-manager-roster-snapshot"]},
+		"version": {"enum": [1]}, "roster": definition("roster"),
+		"drivers": array(definition("driver"), MAX_ENTRANTS, 2),
+		"teams": array(definition("team"), MAX_ENTRANTS, 1)})

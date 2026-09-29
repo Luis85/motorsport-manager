@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.ros",
+  "name": "Matteo Rossi",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "ROS",
+  "skill": 84,
+  "consistency": 78,
+  "wet_skill": 78,
+  "reliability": 83
+}

@@ -4,6 +4,11 @@ extends RefCounted
 ## Rules receive this type; saves and read models receive detached records instead.
 ## Numerical units and serialized names remain compatible with checkpoint versions 4–11.
 
+var entry_definition: RaceEntrantDefinition
+
+func team_identity() -> String:
+	return entry_definition.team_id if entry_definition != null else team
+
 var id: int = 0
 var short: String = ""
 var name: String = ""
@@ -286,7 +291,9 @@ func to_record() -> Dictionary:
 	}
 
 func detached_copy() -> RaceCar:
-	return from_record(to_record())
+	var result = from_record(to_record())
+	result.entry_definition = entry_definition
+	return result
 
 static func from_record(record: Dictionary) -> RaceCar:
 	# The enclosing checkpoint validates domain ranges, route invariants and stock.

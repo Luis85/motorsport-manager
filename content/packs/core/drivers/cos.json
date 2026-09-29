@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.cos",
+  "name": "Rafael Costa",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "COS",
+  "skill": 82,
+  "consistency": 85,
+  "wet_skill": 89,
+  "reliability": 86
+}

@@ -141,6 +141,11 @@ func show_library(test_track: Dictionary = {}) -> void:
 	left.add_child(UI.paragraph("Edited tracks saved in Circuit Atelier appear here. Race sessions use their own compiled copy, so editing cannot change a running weekend."))
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
+	var roster_rows = App.content_catalog.entries("roster")
+	if roster_rows.size() > 1:
+		var roster_ids = roster_rows.map(func(row): return row.id)
+		controls.add_child(UI.label("FIELD", 12, UI.MUTED))
+		controls.add_child(UI.option(roster_rows.map(func(row): return row.name), func(index): config.roster_id = roster_ids[index]; refresh.call(), maxi(0, roster_ids.find(config.get("roster_id", "core.roster.default")))))
 	var vehicle_rows = App.content_catalog.entries("vehicle")
 	var vehicle_ids = vehicle_rows.map(func(v): return v.id)
 	var vehicle_index = vehicle_ids.find(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower())
@@ -173,11 +178,9 @@ func show_library(test_track: Dictionary = {}) -> void:
 	else:
 		launch.add_child(UI.button("Open weekend briefing", func():
 			var start = func():
-				var geometry = TrackGeometry.new(selected_track, vehicle, false, App.content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()))
-				var findings = TrackDiagnostics.inspect(geometry)
-				if TrackDiagnostics.blocking(findings):
-					UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-				App.weekend = PracticeRaceSim.new(geometry, config)
+				if not launch_draft.stage(selected_track, config, vehicle):
+					UI.notify(self, "Weekend needs attention", launch_draft.last_error); return
+				App.weekend = PracticeRaceSim.new(launch_draft.visual_track(), launch_draft.session_options())
 				App.weekend.speed = App.settings.speed
 				show_weekend()
 			if App.requires_entry_confirmation():

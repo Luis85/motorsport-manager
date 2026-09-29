@@ -7,7 +7,7 @@ const RECENT_LIMIT = 4
 
 static func capture(model: RaceSim, forecasts: Dictionary = {}) -> Dictionary:
 	var drivers: Array = []
-	for id in [3, 6]: drivers.append(driver_story(model, id, forecasts.get(id, {})))
+	for id in model.player_ids(): drivers.append(driver_story(model, id, forecasts.get(id, {})))
 	var focus: Dictionary = drivers[0]
 	for driver in drivers:
 		if driver.priority > focus.priority: focus = driver
@@ -80,7 +80,7 @@ static func recent_evidence(model: RaceSim) -> Array:
 	# Bounded recent window, not a scan or clone of a 50,000-row journal each refresh.
 	for i in range(records.size() - 1, maxi(-1, records.size() - RECENT_SCAN_LIMIT - 1), -1):
 		var record: Dictionary = records[i]
-		if int(record.driver_id) not in [3, 6] or record.provenance != "observed": continue
+		if int(record.driver_id) not in model.player_ids() or record.provenance != "observed": continue
 		var evidence: Dictionary = record.evidence
 		var text = ""
 		match record.kind:

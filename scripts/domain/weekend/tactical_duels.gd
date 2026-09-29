@@ -92,7 +92,7 @@ static func finish(sim, id: int, status: String, reason: String, restore_owner: 
 	record_event(sim, id, status, reason)
 
 static func after_command(sim, action: String, payload: Dictionary) -> void:
-	if not sim.duel_state.enabled or action in ACTIONS or not RaceCheckpoint.integral(payload.get("id"), 0, 11): return
+	if not sim.duel_state.enabled or action in ACTIONS or not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return
 	var id = int(payload.id); var r = current(sim, id)
 	if not live(r): return
 	var supersedes = action in ["approve_plan", "clear_plan", "pit", "schedule_pit", "cancel_pit", "cancel_schedule", "select_set", "compound", "weather_box", "recovery_repair", "auto", "retire_car", "recovery_retire"]
@@ -154,7 +154,7 @@ static func review(sim, c: RaceCar) -> bool:
 
 static func after_step(sim) -> void:
 	if not sim.duel_state.enabled: return
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var r = current(sim, id)
 		if not live(r): continue
 		var c = sim.cars[id]; var rival = sim.cars[int(r.plan.target_id)]
@@ -218,7 +218,7 @@ static func describe(sim, id: int) -> String:
 static func debrief(sim) -> String:
 	if sim.duel_state.is_empty() or not sim.duel_state.enabled: return ""
 	var lines: Array[String] = ["STRATEGIC DUELS · APPROVAL, EXECUTION, OBSERVATION"]
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		lines.append(describe(sim, id))
 		for r in sim.duel_state.drivers[id].history:
 			lines.append("Previous %s · %s · %s" % [r.id, r.status, r.reason])
@@ -226,9 +226,9 @@ static func debrief(sim) -> String:
 
 static func valid(state: Variant, sim: RaceSim) -> bool:
 	if not state is Dictionary or state.size() != 4 or state.get("version") != VERSION or (not state.get("enabled") is bool or not state.enabled): return false
-	if not RaceCheckpoint.integral(state.get("sequence"), 0, 1000000) or not state.get("drivers") is Array or state.drivers.size() != 12: return false
+	if not RaceCheckpoint.integral(state.get("sequence"), 0, 1000000) or not state.get("drivers") is Array or state.drivers.size() != sim.cars.size(): return false
 	var ids: Array = []
-	for id in range(12):
+	for id in range(sim.cars.size()):
 		var d = state.drivers[id]
 		if not d is Dictionary or d.size() != 5 or d.get("driver_id") != id or not RaceCheckpoint.integral(d.get("revision"), 0, 1000000): return false
 		if not d.get("active") is Dictionary or not d.get("history") is Array or d.history.size() > HISTORY_LIMIT or not d.get("truncated") is bool: return false

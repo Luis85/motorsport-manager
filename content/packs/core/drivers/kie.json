@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.kie",
+  "name": "Jonas Kiefer",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "KIE",
+  "skill": 81,
+  "consistency": 92,
+  "wet_skill": 79,
+  "reliability": 92
+}

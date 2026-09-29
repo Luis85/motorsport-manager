@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.tan",
+  "name": "Kenji Tanaka",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "TAN",
+  "skill": 82,
+  "consistency": 91,
+  "wet_skill": 87,
+  "reliability": 89
+}

@@ -3,7 +3,7 @@ extends RefCounted
 ## One presentation snapshot, sourced only from the existing public forecaster/feed.
 ## A rendered option remains bound to its driver, set, safe gate and source revision.
 static func capture(model: RaceSim, id: int, forecast: Dictionary) -> Dictionary:
-	if id not in [3, 6] or forecast.is_empty(): return {}
+	if id not in model.player_ids() or forecast.is_empty(): return {}
 	var car = model.cars[id]; var policy = model.policy(id)
 	var entries = DecisionFeed.for_driver(model, id, policy, forecast)
 	var primary = DecisionFeed.primary(entries)

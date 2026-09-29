@@ -1,0 +1,8 @@
+{
+  "kind": "team",
+  "schema_version": 1,
+  "id": "core.team.nordstar",
+  "name": "Nordstar",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "color": "79a9c4"
+}

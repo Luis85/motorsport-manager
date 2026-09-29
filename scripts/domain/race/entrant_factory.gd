@@ -11,18 +11,36 @@ static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: 
 	return RaceCar.from_record(record)
 
 static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> Dictionary:
+	var entry = {"short": r[0], "name": r[1], "team": r[2], "color": r[3],
+		"skill": r[4], "consistency": r[5], "wet_skill": r[6], "reliability": r[7],
+		"number": r[8], "player": r[2] == "Obsidian",
+		"box_fraction": 0.30 + LegacyRaceRoster.TEAMS.find(r[2]) * 0.055}
+	return named_record(entry, i, track, laps, scenario)
+
+static func from_definition(definition: RaceEntrantDefinition, i: int,
+		track: TrackGeometry, laps: int, scenario: String) -> RaceCar:
+	var record = named_record(definition.values(), i, track, laps, scenario)
+	record.merge(RaceSim.CAR_V2.duplicate(true))
+	TyreInventory.initialize_record(record)
+	CarSetup.initialize_record(record)
+	var car = RaceCar.from_record(record)
+	car.entry_definition = definition
+	return car
+
+static func named_record(entry: Dictionary, i: int, track: TrackGeometry,
+		laps: int, scenario: String) -> Dictionary:
 	return {
 		"id": i,
-		"short": r[0],
-		"name": r[1],
-		"team": r[2],
-		"color": r[3],
-		"skill": r[4],
-		"consistency": r[5],
-		"wet_skill": r[6],
-		"reliability": r[7],
-		"number": r[8],
-		"player": r[2] == "Obsidian",
+		"short": entry.short,
+		"name": entry.name,
+		"team": entry.team,
+		"color": entry.color,
+		"skill": entry.skill,
+		"consistency": entry.consistency,
+		"wet_skill": entry.wet_skill,
+		"reliability": entry.reliability,
+		"number": entry.number,
+		"player": entry.player,
 		"grid": i + 1,
 		"distance": -i * track.grid_spacing,
 		"previous_distance": -i * track.grid_spacing,
@@ -59,7 +77,7 @@ static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, sc
 		"pit_stage": "",
 		"pit_timer": 0.0,
 		"pit_stops": 0,
-		"box_d": track.pit_length * (0.30 + ["Volpe", "Aster", "Veridian", "Obsidian", "Nordstar", "Kestrel"].find(r[2]) * 0.055),
+		"box_d": track.pit_length * entry.box_fraction,
 		"loss": 0.0,
 		"dnf": false,
 		"retire_reason": "",

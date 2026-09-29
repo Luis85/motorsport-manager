@@ -14,7 +14,7 @@ func _ready() -> void:
 	heading=UI.label("ANALYSIS",PitwallDesign.TYPE.display,UI.ACCENT);heading.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(heading)
 	row.add_child(UI.button("Back to pit wall",func():close_requested.emit()))
 	var team=UI.hbox(self)
-	for id in [3,6]:
+	for id in model.player_ids():
 		var b=UI.button("",func():driver_requested.emit(id));b.clip_text=true;b.size_flags_horizontal=Control.SIZE_EXPAND_FILL;team.add_child(b);drivers[id]=b
 	content=UI.vbox(self,true)
 func attach(panel: Control) -> void:

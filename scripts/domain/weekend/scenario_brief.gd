@@ -30,11 +30,20 @@ static func assessment(data: Dictionary, sim: RaceSim) -> String:
 	if not validate(data).is_empty(): return "Scenario goal unavailable."
 	if data.goal == "observe": return "Observation only · compare the actual outcomes; no score or reward."
 	if sim.phase != "results": return "Goal pending · assessed only at final classification."
-	var achieved = sim.cars[3].finished and sim.cars[6].finished
+	var achieved = sim.player_ids().all(func(id): return sim.cars[id].finished)
 	if data.goal in ["mer_top_six", "mor_top_six"]:
-		var car = sim.cars[3 if data.goal == "mer_top_six" else 6]
+		var target = named_target(data.goal, sim.roster_definition)
+		if target < 0: return "Goal unavailable · the named driver is not entered for the player team."
+		var car = sim.cars[target]
 		achieved = car.finished and sim.standings().find(car) < 6
 	return ("Goal met" if achieved else "Goal not met") + " · observed sandbox result; no campaign reward."
 
 static func describe(data: Dictionary) -> String:
 	return "%s\n%s\nA: %s\nB: %s\nGoal: %s\nHint: %s" % [data.title, data.briefing, data.approaches[0], data.approaches[1], GOALS[data.goal], data.hint]
+
+static func named_target(goal: String, roster: RaceRosterDefinition = null) -> int:
+	var target = "core.driver.mer" if goal == "mer_top_six" else "core.driver.mor"
+	if roster == null: return 3 if goal == "mer_top_six" else 6
+	for id in roster.player_ids():
+		if roster.entrant(id).driver_id == target: return id
+	return -1

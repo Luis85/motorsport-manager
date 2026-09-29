@@ -1,7 +1,8 @@
 # External content
 
-Status: the vehicle vertical slice is executable; roster, tyre, setup and wider
+Status: vehicle and roster vertical slices are implemented. Tyre, setup and wider
 mechanic extraction remain separate, unfinished increments of the requested plan.
+See [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
 
 ## Author a vehicle without rebuilding
@@ -46,10 +47,10 @@ entries cannot escape the selected root or traverse symlinks. Limits are 32 pack
 be changed by a content pack. The numeric parser bounds token length/exponents;
 individual schemas impose tighter game-specific ranges.
 
-Vehicle definitions are typed/frozen at compilation. The session checkpoint and
+Vehicle and entrant definitions are typed/frozen at compilation. The session checkpoint and
 replay identity retain their exact definition. Editing/removing a source pack
 cannot change that continuation. Old saves/direct APIs still use the frozen
-legacy four-preset adapter. A new preset is not a new sporting format.
+legacy four-preset and twelve-driver adapters. A new preset is not a new sporting format.
 
 `python3 scripts/verify_content_export.py --godot /path/to/godot` exports Linux
 debug and release, runs each from an isolated directory with no source tree,

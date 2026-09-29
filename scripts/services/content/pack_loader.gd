@@ -98,8 +98,8 @@ func _read(root: String, relative: String) -> Dictionary:
 
 static func _context(errors: Array, root: String, file: String) -> Dictionary:
 	for error in errors:
-		error.root = root
-		error.file = file
+		if not error.has("root"): error.root = root
+		if not error.has("file"): error.file = file
 	return {"ok": false, "diagnostics": errors}
 
 static func _failure(root: String, file: String, code: String, message: String) -> Dictionary:

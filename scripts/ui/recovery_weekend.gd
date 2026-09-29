@@ -15,16 +15,16 @@ func _ready() -> void:
 	recovery_page_index = tabs.get_tab_count() - 1
 	register_topic("Recovery", recovery_page_index)
 	recovery_panel.command_requested.connect(targeted_command)
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var controls = decision_controls[id]
 		controls.compare.text = "Strategy"; controls.hold.text = "Keep plan"; controls.save.text = "Fuel"
 		var link = UI.button("Recovery", func(): open_recovery(id)); RecoveryPanel.compact(link)
 		controls.compare.get_parent().add_child(link); recovery_links[id] = link
-	guide.steps.insert(7, {"title": "Protect the finish", "body": "Recovery compares continuing, saving engine resources and a real repair-only stop. Repair removes aggregate damage, not lifetime health; the fitted tyres retain their wear. Additional emergency stops require explicit authority and engineer pit ownership. Read the published virtual-neutralization rules below. Actions stay above the scrolling evidence.", "target": func(): return recovery_panel, "reveal": func(): open_recovery(3)})
+	guide.steps.insert(7, {"title": "Protect the finish", "body": "Recovery compares continuing, saving engine resources and a real repair-only stop. Repair removes aggregate damage, not lifetime health; the fitted tyres retain their wear. Additional emergency stops require explicit authority and engineer pit ownership. Read the published virtual-neutralization rules below. Actions stay above the scrolling evidence.", "target": func(): return recovery_panel, "reveal": func(): open_recovery(sim.player_ids()[0])})
 	refresh()
 
 func open_recovery(id: int) -> void:
-	if recovery_panel == null or id not in [3, 6]: return
+	if recovery_panel == null or id not in sim.player_ids(): return
 	select_driver(id); recovery_panel.choose_driver(id); open_topic(recovery_page_index); refresh()
 
 func refresh() -> void:
@@ -42,7 +42,7 @@ func refresh() -> void:
 			var control = WeekendRaceControl.public_view(sim.control_state, sim.total_time)
 			flag_label.text = ("PAUSED · " if sim.paused else "") + ("VIRTUAL ENDING" if control.state == "ending" else control.flag)
 			flag_label.tooltip_text = control.rules + " Open Recovery & race control for persistent details."
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var observed = sim.reliability_observation(sim.car(id), sim.reliability(id)); var urgent = observed.stage in ["degraded", "critical"]
 		recovery_links[id].text = "Recovery !" if urgent else "Recovery"
 		recovery_links[id].tooltip_text = "%s · %s · observed damage %.0f, lifetime health %.0f%%. Compare protect/repair/retire without changing the other car's orders." % [sim.car(id).short, observed.stage, observed.damage, observed.health]
