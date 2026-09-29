@@ -28,7 +28,7 @@ static func validate_collection(data: Dictionary) -> Dictionary:
 	if data.scenarios.is_empty() or data.scenarios.size() > MAX_SCENARIOS:
 		return {}
 	for key in ["title", "description"]:
-		if data.has(key) and (not data[key] is String or data[key].strip_edges().is_empty() or data[key].length() > (100 if key == "title" else 1200)):
+		if not data.get(key) is String or data[key].strip_edges().is_empty() or data[key].length() > (100 if key == "title" else 1200):
 			return {}
 	var seen: Dictionary = {}
 	for recipe in data.scenarios:

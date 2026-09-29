@@ -11,7 +11,7 @@ complete final-source release gate.
 | DD-02 Field | Separate teams/drivers/rosters, stable ownership, fourteen-car example | Existing targeted tests retained |
 | DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Complete-source sporting and performance acceptance |
 | DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; authored registered-provider profiles frozen into weekends/replay | Exhaustive remaining consumer audit; new stateful provider implementations still require versioned code readers |
-| DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed developer diagnostic collections, and bounded editor placement/guide profiles | Retain editor interaction regressions as authoring profiles evolve |
+| DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed diagnostic collections with gallery metadata, and bounded editor placement/guide profiles | Retain editor/content interaction regressions as authoring profiles evolve |
 | DD-06 Continuation | Frozen supported definitions, circuit/style snapshots and scenario context; exact persisted number decoding | Extend the same contract to any subsequently migrated families |
 | DD-07 Authoring | All authoring operations; ordered multi-pack selection, cross-pack cloning, side-specific diff dependencies, safe failed-write cleanup and explicit version incompatibility diagnostics | Real converters when an actual subsequent format is defined; none is fabricated for hypothetical versions |
 | DD-08 Acceptance | Registered domain/native tests and Linux debug/release exported-runtime acceptance | Complete final-source six-shard regression, performance comparison, and remote CI |
@@ -56,8 +56,8 @@ Known scope is deliberately still visible: the exhaustive repository-wide
 literal/consumer inventory is not implemented by this review increment. Editor
 placement presets and contextual guide copy now use an authoring-only profile;
 code retains every target/reveal action and the renderer type allow-list. The
-developer diagnostic collections remain bundled verification resources rather
-than a new executable external-pack format. The completed-wheel classification is not represented
+developer diagnostic collections remain bundled verification resources with their
+own validated presentation metadata, rather than a new executable external-pack format. The completed-wheel classification is not represented
 as an audit of every other subsystem. Windows runtime execution and human
 playtesting are separate acceptance gates.
 

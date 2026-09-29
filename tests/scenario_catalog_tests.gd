@@ -15,13 +15,14 @@ func run() -> void:
 		check(ScenarioCatalog.read(family).size() == expected[family], family + " collection exposes the expected bounded recipes")
 	check(ScenarioCatalog.collection("unknown").is_empty() and ScenarioCatalog.read("unknown").is_empty(), "Unknown collections fail closed")
 	for invalid in [
-		{}, {"version":2,"scenarios":[]}, {"version":1,"scenarios":[]},
-		{"version":1,"scenarios":[{"id":"a","title":"A","objective":"O","hint":"H"},{"id":"a","title":"B","objective":"O","hint":"H"}]},
-		{"version":1,"scenarios":[{"id":"a","title":"A","objective":"O"}]},
+		{}, {"version":2,"title":"T","description":"D","scenarios":[]}, {"version":1,"title":"T","description":"D","scenarios":[]},
+		{"version":1,"scenarios":[{"id":"a","title":"A","objective":"O","hint":"H"}]},
+		{"version":1,"title":"T","description":"D","scenarios":[{"id":"a","title":"A","objective":"O","hint":"H"},{"id":"a","title":"B","objective":"O","hint":"H"}]},
+		{"version":1,"title":"T","description":"D","scenarios":[{"id":"a","title":"A","objective":"O"}]},
 	]: check(ScenarioCatalog.validate_collection(invalid).is_empty(), "Malformed/duplicate collection rejects atomically")
-	for family in ["practice", "rivals"]:
+	for family in expected:
 		var collection = ScenarioCatalog.collection(family)
-		check(not str(collection.get("title", "")).is_empty() and not str(collection.get("description", "")).is_empty(), family + " migrated collection carries presentation metadata")
+		check(not str(collection.get("title", "")).is_empty() and not str(collection.get("description", "")).is_empty(), family + " collection owns its gallery presentation metadata")
 	var practice = PracticeScenarios.catalog()
 	check(practice.size() == 2 and practice.all(func(r): return PracticeScenarios.valid(r)), "Practice recipes moved from code into validated shipped data")
 	var rivals = RivalScenarios.catalog()
