@@ -8,6 +8,7 @@ const TYRES = LegacyTyreContent.PERFORMANCE
 const ROSTER = LegacyRoster.ROWS
 const CAR_V2 = {"yield_to": -1, "yield_side": 0.0, "yield_clock": 0.0, "qual_history": [], "qual_sectors": [0.0, 0.0, 0.0], "qual_sector_start": 0.0, "invalid_reason": "", "throttle": 0.0, "braking": 0.0, "pit_deferred": false, "pit_lap": false, "service_compound": "M", "service_repair": true}
 var tuning: RaceTuningDefinition = RaceTuningDefinition.legacy()
+var mechanic_definition: MechanicProfileDefinition
 var weekend_definition: WeekendDefinition
 var setup_definition: SetupDefinition = SetupDefinition.legacy()
 var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
@@ -68,6 +69,11 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 	mechanics = RaceMechanics.new(self)
 	if geometry == null: return
 	track = TrackGeometry.new(geometry.document, geometry.preset, false, geometry.vehicle_definition if not geometry.authored_vehicle().is_empty() else null) if geometry.preview_only else geometry.detached_copy()
+	if options.has("mechanic_definition"):
+		mechanic_definition = MechanicProfileDefinition.from_record(options.mechanic_definition)
+		if mechanic_definition == null:
+			last_error = "Invalid frozen mechanic profile."
+			return
 	if options.has("tuning_definition"):
 		tuning = RaceTuningDefinition.from_record(options.tuning_definition)
 		if tuning == null:
@@ -519,6 +525,7 @@ func _base_snapshot() -> Dictionary:
 	if setup_definition.authored(): result.setup_definition = setup_definition.to_record()
 	if tuning.authored(): result.tuning_definition = tuning.to_record()
 	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
+	if mechanic_definition != null: result.mechanic_definition = mechanic_definition.to_record()
 	return result
 
 static func restore(data: Dictionary) -> RaceSim:
@@ -546,7 +553,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		if sim.tyre_rules.spec(c.compound).is_empty() or sim.tyre_rules.spec(c.next_compound).is_empty() or c.pace < 0 or c.pace > 2 or c.engine < 0 or c.engine > 2: return null
 		if c.route not in ["track", "pit", "garage"] or c.qual_state not in ["garage", "outlap", "hotlap", "inlap"]: return null
 	for key in sim.snapshot():
-		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: continue
+		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: continue
 		if not data.has(key): return null
 		var expected = sim.get(key)
 		if typeof(expected) in [TYPE_FLOAT, TYPE_INT]:
@@ -850,4 +857,5 @@ func content_options() -> Dictionary:
 	if setup_definition.authored(): result.setup_definition = setup_definition.to_record()
 	if tuning.authored(): result.tuning_definition = tuning.to_record()
 	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
+	if mechanic_definition != null: result.mechanic_definition = mechanic_definition.to_record()
 	return RaceContentSnapshot.options(result)

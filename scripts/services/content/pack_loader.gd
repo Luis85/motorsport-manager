@@ -23,11 +23,17 @@ func load_packs(roots: Array) -> Dictionary:
 		var read = _read(root, "pack.json")
 		if not read.ok: return read
 		var manifest: Variant = read.data
+		errors = ContentVersions.errors(manifest, true)
+		if not errors.is_empty(): return _context(errors, root, "pack.json")
 		errors = ContentValidation.check(manifest, ContentSchema.manifest())
 		if not errors.is_empty(): return _context(errors, root, "pack.json")
 		if versions.has(manifest.id):
 			return _failure(root, "pack.json", "CONTENT_DUPLICATE_PACK", "Pack ID is already selected.")
+		var dependencies: Dictionary = {}
 		for dependency in manifest.dependencies:
+			if dependency.id == manifest.id or dependencies.has(dependency.id):
+				return _failure(root, "pack.json", "CONTENT_DEPENDENCY", "A dependency must be unique and cannot name its own pack: " + dependency.id)
+			dependencies[dependency.id] = true
 			if versions.get(dependency.id, "") != dependency.version:
 				return _failure(root, "pack.json", "CONTENT_DEPENDENCY", "Load dependency " + dependency.id + " @ " + dependency.version + " first.")
 		var overrides: Dictionary = {}

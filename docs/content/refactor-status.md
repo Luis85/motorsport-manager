@@ -1,7 +1,7 @@
 # Data-driven refactor: implementation status
 
-This continuation builds on PR #24 source commit
-`4234c71be310585aedbdda53fa786a48a581cce1`. It is an incremental implementation,
+This review continuation builds on PR #24 source commit
+`52c860eb5bc027abd554e813aa8c9a59a4ebe1b3`. It is an incremental implementation,
 not a declaration that the complete original plan is done.
 
 | Work package | Delivered foundation | Remaining gate |
@@ -9,11 +9,11 @@ not a declaration that the complete original plan is done.
 | DD-00 Inventory | Per-family content guides and explicit runtime contracts | Exhaustive literal/consumer coverage inventory and classifications |
 | DD-01 Content boundary | Strict bounded packs, schemas, provenance, typed vehicles and external discovery | Retain regression gates as families expand |
 | DD-02 Field | Separate teams/drivers/rosters, stable ownership, fourteen-car example | Existing targeted tests retained |
-| DD-03 Tyres/setup | Arbitrary compound IDs, allocations, thermal profiles and setups | Audit the remaining wheel operating coefficients versus hard safety limits |
-| DD-04 Mechanics/weekends | Shared fuel, service, weather/surface, operations, competition/rival tuning and weekend presets | General registered-provider profile selection, remaining consumer audit |
+| DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Complete-source sporting and performance acceptance |
+| DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; authored registered-provider profiles frozen into weekends/replay | Exhaustive remaining consumer audit; new stateful provider implementations still require versioned code readers |
 | DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions and complete-weekend scenario briefs | Legacy diagnostic scenario collections, placement presets and guide/presentation text |
 | DD-06 Continuation | Frozen supported definitions, circuit/style snapshots and scenario context; exact persisted number decoding | Extend the same contract to any subsequently migrated families |
-| DD-07 Authoring | Init, clone, validate, inspect, schemas, list, resolved export, diff and bounded scenario test | General multi-pack CLI selection and explicit future-version migrations |
+| DD-07 Authoring | All authoring operations; ordered multi-pack selection, cross-pack cloning, side-specific diff dependencies, safe failed-write cleanup and explicit version incompatibility diagnostics | Real converters when an actual subsequent format is defined; none is fabricated for hypothetical versions |
 | DD-08 Acceptance | Registered domain/native tests and Linux debug/release exported-runtime acceptance | Complete final-source six-shard regression, performance comparison, and remote CI |
 
 ## Scope of this continuation
@@ -34,3 +34,31 @@ A local source/patch handover is not evidence that GitHub was updated. Check the
 actual PR head before publishing, and do not force-push over concurrent work.
 This increment must remain a draft until its remaining work and complete-source
 release gates are satisfied. No merge is authorized by this document.
+
+## Review and hardening changes
+
+The authoring bridge validates engine-result type/status, distinguishes authored
+text from engine diagnostics, and rejects non-finite protocol numbers. Resolved
+diffs distinguish booleans from numbers. New-file writes pre-serialize, exclusively
+create, flush and synchronize; failures clean up only the file they created.
+Schema check-only no longer creates output directories. The decimal regression
+corpus uses `decimal_literal` instead of a misleading credential-like field name;
+all 544 numerical inputs and expected bit patterns are unchanged. No secret-scan
+ignore or history rewrite is introduced. A historical scanner incident must be
+triaged in the scanner, not silently declared resolved by a source edit.
+
+The content workflow also runs the Python authoring tests with its real pinned
+engine and retains source/tree identity independently of later test success.
+Focused local results are not a substitute for the final six-shard aggregate.
+The PR comment/check runs record exact final-source evidence after execution.
+
+Known scope is deliberately still visible: generic editor placement presets,
+legacy diagnostic collection authoring, guide/presentation text extraction, and
+the exhaustive repository-wide literal/consumer inventory are not implemented
+by this review increment. The completed-wheel classification is not represented
+as an audit of every other subsystem. Windows runtime execution and human
+playtesting are separate acceptance gates.
+
+New source/test files remain within the code-line budgets. Existing oversized
+files remain visible (including RaceSim, which receives frozen-profile plumbing);
+no blanket quality exclusions or adjusted sporting checkpoints are added.

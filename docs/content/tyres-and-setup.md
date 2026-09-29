@@ -103,3 +103,39 @@ rebuilding, rejects malformed content, removes the pack and restores the same
 session. It sizes an acceptance-only hillside grid for the authored roster;
 normal user tracks are still rejected when their grid is too small. This proves
 Linux headless execution, not Windows, human usability or a performance budget.
+
+## Four-wheel operating limits
+
+A `tyre_thermal` may additionally specify the complete `operating` object. The
+core four-wheel profile now exposes these original values in JSON:
+
+| Field | Original value | Runtime consumer |
+|---|---:|---|
+| moving_threshold_mps | 1.0 | Moving versus stopped heat model |
+| reference_brake_bias | 0.56 | Front/rear load response |
+| corner_saturation | 1.5 | Corner-load input saturation |
+| slide_saturation | 1.5 | Sliding input saturation |
+| minimum_load / maximum_load | 0.55 / 1.7 | Operating wheel-load clamps |
+| minimum_pressure / maximum_pressure | 0.8 / 1.32 | Running and spare-set pressure |
+| surface_limit_c / core_limit_c | 160 / 155 | Operating temperature ceilings |
+| lockup_front_bias | 0.56 | Front/rear lockup selection |
+
+These are game-model coefficients, not measured tyre physics. The block compiles
+once into the immutable tyre closure shared by actual operation and forecasts;
+there is no file parsing inside the wheel update. All eleven fields have a
+consumer-effect test. The original defaults are checked against the legacy API
+with exact wheel-state equality, not a loosened tolerance or new race baseline.
+
+The remaining literals in `WheelTyres` have different responsibilities: four
+named wheel positions are topology; 0–100 life/damage values are percentage-state
+invariants; 0–200 Celsius, normalized pressure 0.5–2 and load 0–4 are checkpoint
+safety bounds; the 0.00001 aggregate comparison is serialization consistency
+rather than a tunable handling coefficient. Arithmetic identities, exponentials
+and interpolation order remain algorithm code. Authorable operating limits must
+stay inside the unchanged checkpoint bounds, with ordered load limits and a core
+temperature ceiling no higher than the surface ceiling.
+
+Omitting `operating` in a legacy frozen profile uses the original values and does
+not inject a new field into the saved record. This is important for historical
+replay identity. The block is all-or-nothing when present; partial or foreign keys
+are rejected rather than guessed.

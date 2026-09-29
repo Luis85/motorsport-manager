@@ -28,6 +28,80 @@
       "minLength": 1,
       "type": "string"
     },
+    "operating": {
+      "additionalProperties": false,
+      "properties": {
+        "core_limit_c": {
+          "maximum": 200.0,
+          "minimum": 100.0,
+          "type": "number"
+        },
+        "corner_saturation": {
+          "maximum": 4.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "lockup_front_bias": {
+          "maximum": 0.75,
+          "minimum": 0.25,
+          "type": "number"
+        },
+        "maximum_load": {
+          "maximum": 4.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "maximum_pressure": {
+          "maximum": 2.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "minimum_load": {
+          "maximum": 4.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "minimum_pressure": {
+          "maximum": 1.0,
+          "minimum": 0.5,
+          "type": "number"
+        },
+        "moving_threshold_mps": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "reference_brake_bias": {
+          "maximum": 0.75,
+          "minimum": 0.25,
+          "type": "number"
+        },
+        "slide_saturation": {
+          "maximum": 4.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "surface_limit_c": {
+          "maximum": 200.0,
+          "minimum": 100.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "moving_threshold_mps",
+        "reference_brake_bias",
+        "corner_saturation",
+        "slide_saturation",
+        "minimum_load",
+        "maximum_load",
+        "minimum_pressure",
+        "maximum_pressure",
+        "surface_limit_c",
+        "core_limit_c",
+        "lockup_front_bias"
+      ],
+      "type": "object"
+    },
     "parameters": {
       "additionalProperties": false,
       "properties": {

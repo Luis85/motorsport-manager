@@ -66,7 +66,11 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
 	if not rules is Dictionary: return false
-	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0) + (1 if rules.has("tyre_definition") else 0) + (1 if rules.has("setup_definition") else 0) + (1 if rules.has("tuning_definition") else 0) + (1 if rules.has("weekend_definition") else 0): return false
+	var expected_keys = 6 if rules.get("checkpoint_schema") == 11 else 5
+	for key in RaceContentSnapshot.RULE_KEYS:
+		if rules.has(key): expected_keys += 1
+	if rules.size() != expected_keys: return false
+	if not RaceContentSnapshot.valid_mechanics(rules): return false
 	if rules.has("vehicle_definition"):
 		if not rules.vehicle_definition is Dictionary: return false
 		var definition = VehicleDefinition.from_record(rules.vehicle_definition)

@@ -6,8 +6,8 @@ const CHECKPOINT_VERSION = 7
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
 	if not last_error.is_empty(): return
-	mechanics.configure(RaceMechanicProfiles.build("weather"))
-	mechanics.install(geometry, options)
+	if not mechanics.configure(RaceMechanicProfiles.build("weather", mechanic_definition)) or not mechanics.install(geometry, options):
+		last_error = mechanics.last_error
 
 static func new_weather_state(seed: int, scenario_name: String, mode: String, count: int = 12, rules: Dictionary = LegacyEnvironment.VALUES.weather) -> Dictionary:
 	var notices: Array = []; var held: Array = []; var reviews: Array = []
@@ -70,7 +70,7 @@ static func restore_weather(data: Dictionary) -> WeatherRaceSim:
 		state.model.rain = base.rain; state.next_sample = base.total_time + WeekendWeather.SAMPLE_INTERVAL
 	var restored = WeatherRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: restored.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: restored.set(key, base.get(key))
 	restored.weather_state = state
 	restored.weather_state.model.rng = int(state.model.rng)
 	return restored

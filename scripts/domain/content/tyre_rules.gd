@@ -11,7 +11,9 @@ static func legacy() -> RaceTyreRules:
 	if _legacy != null: return _legacy
 	var result = RaceTyreRules.new()
 	result._specs = LegacyTyreContent.PROFILES.duplicate(true)
-	for key in result._specs: result._specs[key].thermal = TyreThermalDefaults.PARAMETERS
+	for key in result._specs:
+		result._specs[key].thermal = TyreThermalDefaults.PARAMETERS
+		result._specs[key].operating = TyreOperatingSchema.LEGACY
 	for key in LegacyTyreContent.ALLOCATION:
 		result._sets.append({"compound_id": key, "count": LegacyTyreContent.ALLOCATION[key]})
 	result._selection = LegacyTyreContent.SELECTION

@@ -62,5 +62,18 @@
     "lockup_heat_c": 8.0,
     "wet_dry_water_threshold": 0.15,
     "wet_dry_wear_multiplier": 2.2
+  },
+  "operating": {
+    "moving_threshold_mps": 1.0,
+    "reference_brake_bias": 0.56,
+    "corner_saturation": 1.5,
+    "slide_saturation": 1.5,
+    "minimum_load": 0.55,
+    "maximum_load": 1.7,
+    "minimum_pressure": 0.8,
+    "maximum_pressure": 1.32,
+    "surface_limit_c": 160.0,
+    "core_limit_c": 155.0,
+    "lockup_front_bias": 0.56
   }
 }

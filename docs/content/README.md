@@ -81,3 +81,11 @@ Circuits, illustration styles, briefs, native review and authoring commands:
 
 Exact saved-state number decoding and retained replay integrity:
 [persistence contract](persistence-numbers.md).
+
+## Multiple packs and authoring safety
+
+See [Multi-pack authoring](multi-pack-authoring.md) for ordered selections, dependency-aware cloning, comparing resolved sets, and write-failure behavior.
+
+Additional authoring contracts: [Mechanic profiles](mechanic-profiles.md),
+[version compatibility](version-compatibility.md), and the wheel operating-limit
+section of [tyres and setup](tyres-and-setup.md).
