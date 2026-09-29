@@ -2,6 +2,7 @@ class_name WeekendDefinition
 extends RefCounted
 ## Named configurations of the supported practice-to-results journey; not executable phases.
 const REFERENCES = {"vehicle_id": "vehicle", "roster_id": "roster", "tyre_allocation_id": "tyre_allocation", "setup_id": "setup", "race_tuning_id": "race_tuning"}
+const OPTIONAL_REFERENCES = {"mechanic_profile_id": "mechanic_profile"}
 var _record: Dictionary = {}
 var id: String:
 	get: return _record.id
@@ -34,6 +35,8 @@ func launch_options() -> Dictionary:
 	var result: Dictionary = _record.settings.duplicate(true)
 	for key in REFERENCES:
 		if key != "vehicle_id": result[key] = _record[key]
+	for key in OPTIONAL_REFERENCES:
+		if _record.has(key): result[key] = _record[key]
 	return result
 
 static func agrees_with_snapshot(data: Dictionary) -> bool:
@@ -41,6 +44,10 @@ static func agrees_with_snapshot(data: Dictionary) -> bool:
 	var definition = from_record(data.weekend_definition)
 	if definition == null: return false
 	var record = definition.to_record()
+	if record.has("mechanic_profile_id"):
+		if not data.get("mechanic_definition") is Dictionary: return false
+		var selected = MechanicProfileDefinition.from_record(data.mechanic_definition)
+		if selected == null or selected.id != record.mechanic_profile_id: return false
 	for key in ["roster_definition", "tyre_definition", "setup_definition", "tuning_definition"]:
 		if not data.get(key) is Dictionary: return false
 	if not data.roster_definition.get("roster") is Dictionary: return false

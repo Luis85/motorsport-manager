@@ -20,7 +20,7 @@ func stage_preset(id: String, document: Dictionary, overrides: Dictionary = {}) 
 		return false
 	var settings = preset.launch_options()
 	for key in overrides:
-		if not settings.has(key):
+		if not settings.has(key) and not WeekendDefinition.OPTIONAL_REFERENCES.has(key):
 			last_error = "Unknown weekend override: " + str(key)
 			return false
 	settings.merge(overrides, true)
@@ -82,6 +82,18 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	elif options.has("race_tuning_id") or options.has("weekend_id"):
 		last_error = "A content catalog is required for authored race settings."
 		return false
+	var selected_mechanics: MechanicProfileDefinition
+	if _catalog != null:
+		if not options.get("mechanic_profile_id", "core.mechanic_profile.default") is String:
+			last_error = "Choose a mechanic profile by its stable ID."
+			return false
+		selected_mechanics = _catalog.mechanic_profile(options.get("mechanic_profile_id", "core.mechanic_profile.default"))
+		if selected_mechanics == null:
+			last_error = "Unknown or invalid mechanic profile."
+			return false
+	elif options.has("mechanic_profile_id"):
+		last_error = "A content catalog is required for an authored mechanic profile."
+		return false
 	var roster: RosterDefinition
 	if _catalog != null:
 		if not options.get("roster_id", "core.roster.default") is String:
@@ -140,6 +152,7 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	if tyres != null: _options.tyre_definition = tyres.to_snapshot()
 	if setup_profile != null: _options.setup_definition = setup_profile.to_record()
 	if tuning != null: _options.tuning_definition = tuning.to_record()
+	if selected_mechanics != null: _options.mechanic_definition = selected_mechanics.to_record()
 	if preset != null:
 		# Freeze the effective selection, including explicit user edits to a preset.
 		var effective = preset.to_record()
@@ -148,6 +161,8 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 		effective.tyre_allocation_id = options.get("tyre_allocation_id", "core.tyre_allocation.default")
 		effective.setup_id = options.get("setup_id", "core.setup.balanced")
 		effective.race_tuning_id = options.get("race_tuning_id", "core.race_tuning.default")
+		# Missing optional JSON keys must be inserted as Strings, not StringNames.
+		effective["mechanic_profile_id"] = selected_mechanics.id
 		for key in effective.settings: effective.settings[key] = _options[key]
 		_options.weekend_definition = effective
 	_revision += 1
@@ -162,6 +177,8 @@ func capture() -> Dictionary:
 		"vehicle_name": _track.vehicle_definition.display_name,
 		"laps": int(_options.laps), "weather": str(_options.get("scenario", "dry")),
 		"seed": int(_options.get("seed", 7314)), "consumed": _consumed}
+	if _options.has("mechanic_definition"):
+		result.mechanic_profile = _options.mechanic_definition.name
 	if _scenario != null:
 		result.scenario_brief = _scenario.brief()
 	return result

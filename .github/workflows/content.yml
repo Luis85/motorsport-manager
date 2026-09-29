@@ -51,10 +51,17 @@ jobs:
           unzip -j /tmp/templates.tpz templates/linux_debug.x86_64 templates/linux_release.x86_64 templates/version.txt -d /tmp/linux-export-templates
           sha256sum /tmp/templates.tpz > /tmp/linux-export-templates/archive-sha256.txt
           cp /tmp/linux-export-templates/linux_* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+      - name: Test authoring commands against the production compiler
+        env:
+          GODOT_BINARY: /usr/local/bin/godot
+          VERIFICATION_TEST_GODOT: /usr/local/bin/godot
+        run: |
+          python3 -m unittest discover -s tests -p 'test_content*.py' -v
+          python3 -m unittest discover -s tests -p 'test_json_number_fixtures.py' -v
       - name: Check generated authoring schemas
         run: python3 scripts/content.py schemas --check --godot /usr/local/bin/godot
       - name: Verify content and serialized boundaries
-        run: python3 scripts/verify.py --godot /usr/local/bin/godot --suite mechanics_tests --suite car_record_tests --suite content_tests --suite content_pack_tests --suite content_tyre_tests --suite content_tuning_tests --suite content_environment_tests --suite content_operations_tests --suite content_competition_tests --suite content_persistence_tests --suite content_catalog_tests
+        run: python3 scripts/verify.py --godot /usr/local/bin/godot --suite mechanics_tests --suite car_record_tests --suite content_tests --suite content_pack_tests --suite content_tyre_tests --suite content_tuning_tests --suite content_environment_tests --suite content_operations_tests --suite content_competition_tests --suite content_persistence_tests --suite content_catalog_tests --suite content_mechanic_profile_tests --suite content_wheel_operating_tests
       - name: Execute debug and release exports with file-only expansions
         run: python3 scripts/verify_content_export.py --godot /usr/local/bin/godot --output reports/content-export
       - name: Retain exact toolchain for offline reproduction

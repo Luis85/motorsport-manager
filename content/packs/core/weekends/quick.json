@@ -18,5 +18,6 @@
     "weather_mode": "seeded",
     "rival_styles": true,
     "tactical_duels": true
-  }
+  },
+  "mechanic_profile_id": "core.mechanic_profile.default"
 }

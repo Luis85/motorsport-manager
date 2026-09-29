@@ -6,8 +6,8 @@ const RECOVERY_CHECKPOINT_VERSION = 8
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
 	if not last_error.is_empty(): return
-	mechanics.configure(RaceMechanicProfiles.build("recovery"))
-	mechanics.install(geometry, options)
+	if not mechanics.configure(RaceMechanicProfiles.build("recovery", mechanic_definition)) or not mechanics.install(geometry, options):
+		last_error = mechanics.last_error
 
 static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if not WeekendDefinition.agrees_with_snapshot(data): return null
@@ -28,7 +28,7 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if not valid_recovery_records(base.strategy_state.records, base.tuning): return null
 	var sim = RecoveryRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: sim.set(key, base.get(key))
 	sim.reliability_state = reliability.duplicate(true); sim.control_state = control.duplicate(true)
 	if native: sim.flag = data.flag
 	return sim

@@ -53,21 +53,22 @@ static func grip(item: Dictionary, parameters: Dictionary = {}) -> float:
 static func update(item: Dictionary, input: Dictionary, dt: float, parameters: Dictionary = {}) -> void:
 	var p = parameters if not parameters.is_empty() else RaceTyreRules.legacy().spec(item.compound)
 	var t: Dictionary = p.thermal
+	var operating: Dictionary = p.get("operating", TyreOperatingSchema.LEGACY)
 	var optimum: float = p.optimum
-	var corner = clampf(input.speed * input.speed * absf(input.curve) / t.corner_acceleration_scale_mps2, 0, 1.5)
-	var moving: bool = input.speed > 1
+	var corner = clampf(input.speed * input.speed * absf(input.curve) / t.corner_acceleration_scale_mps2, 0, operating.corner_saturation)
+	var moving: bool = input.speed > operating.moving_threshold_mps
 	for key in KEYS:
 		var w = item.wheels[key]; var front: bool = key[0] == "F"
 		var outside = 1.0 if (key[1] == "L") == (input.curve < 0) else -1.0
-		var axle = 1 + (input.bias - 0.56) * (t.brake_bias_load_gain if front else -t.brake_bias_load_gain) + (input.brake * t.brake_load_gain if front else input.throttle * t.throttle_load_gain)
-		w.load = clampf(axle * (1 + outside * corner * t.lateral_load_gain), 0.55, 1.7)
-		var slide = clampf(input.slip + (input.brake * t.brake_slide_gain if front else input.throttle * t.throttle_slide_gain) + maxf(0, optimum - t.cold_slide_offset_c - w.core) * t.cold_slide_gain, 0, 1.5)
+		var axle = 1 + (input.bias - operating.reference_brake_bias) * (t.brake_bias_load_gain if front else -t.brake_bias_load_gain) + (input.brake * t.brake_load_gain if front else input.throttle * t.throttle_load_gain)
+		w.load = clampf(axle * (1 + outside * corner * t.lateral_load_gain), operating.minimum_load, operating.maximum_load)
+		var slide = clampf(input.slip + (input.brake * t.brake_slide_gain if front else input.throttle * t.throttle_slide_gain) + maxf(0, optimum - t.cold_slide_offset_c - w.core) * t.cold_slide_gain, 0, operating.slide_saturation)
 		var target: float = t.ambient_c
 		if moving:
 			target = (t.neutral_target_c if input.neutral else t.moving_target_c + corner * t.corner_heat_gain + t.pace_heat_gain * (input.push - 1) + slide * t.slide_heat_gain + (input.brake * t.brake_heat_gain if front else input.throttle * t.throttle_heat_gain)) - input.water * t.water_cooling_gain
-		w.surface = clampf(lerpf(w.surface, target, 1 - exp(-dt * (t.moving_surface_rate_per_s if moving else t.stopped_surface_rate_per_s))), 0, 160)
-		w.core = clampf(lerpf(w.core, w.surface, 1 - exp(-dt * t.core_rate_per_s)), 0, 155)
-		w.pressure = clampf(1 + (w.core - t.cold_c) * t.pressure_gain_per_c, 0.8, 1.32)
+		w.surface = clampf(lerpf(w.surface, target, 1 - exp(-dt * (t.moving_surface_rate_per_s if moving else t.stopped_surface_rate_per_s))), 0, operating.surface_limit_c)
+		w.core = clampf(lerpf(w.core, w.surface, 1 - exp(-dt * t.core_rate_per_s)), 0, operating.core_limit_c)
+		w.pressure = clampf(1 + (w.core - t.cold_c) * t.pressure_gain_per_c, operating.minimum_pressure, operating.maximum_pressure)
 		var grain = maxf(0, optimum - t.grain_offset_c - w.core) * slide * t.grain_rate * (1 + (100 - input.care) * t.care_grain_gain) if moving else 0.0
 		var cleaning = dt * t.clean_rate_per_s if moving and w.core > optimum - t.clean_lower_offset_c and w.core < optimum + t.clean_upper_offset_c else 0.0
 		w.grain = clampf(w.grain + grain * dt - cleaning, 0, 100)
@@ -84,19 +85,21 @@ static func cool(item: Dictionary, dt: float, parameters: Dictionary = {}) -> vo
 	adopt_aggregate(item)
 	var p = parameters if not parameters.is_empty() else RaceTyreRules.legacy().spec(item.compound)
 	var t: Dictionary = p.thermal
+	var operating: Dictionary = p.get("operating", TyreOperatingSchema.LEGACY)
 	for key in KEYS:
 		var w = item.wheels[key]
 		w.surface = lerpf(w.surface, t.ambient_c, 1 - exp(-dt * t.spare_surface_rate_per_s))
 		w.core = lerpf(w.core, w.surface, 1 - exp(-dt * t.spare_core_rate_per_s))
-		w.pressure = clampf(1 + (w.core - t.cold_c) * t.pressure_gain_per_c, 0.8, 1.32)
+		w.pressure = clampf(1 + (w.core - t.cold_c) * t.pressure_gain_per_c, operating.minimum_pressure, operating.maximum_pressure)
 	if average(item, "core") < t.heat_cycle_reset_c: item.heated = false
 	publish(item)
 
 static func lockup(item: Dictionary, bias: float, severity: float, parameters: Dictionary = {}) -> String:
 	var p = parameters if not parameters.is_empty() else RaceTyreRules.legacy().spec(item.compound)
-	var key = "FL" if bias >= 0.56 else "RL"
+	var operating: Dictionary = p.get("operating", TyreOperatingSchema.LEGACY)
+	var key = "FL" if bias >= operating.lockup_front_bias else "RL"
 	item.wheels[key].flat = clampf(item.wheels[key].flat + severity, 0, 100)
-	item.wheels[key].surface = minf(160, item.wheels[key].surface + p.thermal.lockup_heat_c)
+	item.wheels[key].surface = minf(operating.surface_limit_c, item.wheels[key].surface + p.thermal.lockup_heat_c)
 	publish(item)
 	return key
 

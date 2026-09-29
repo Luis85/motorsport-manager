@@ -5,6 +5,7 @@ const MAX_SPEED_MPS = 200.0
 static func valid(data: Dictionary) -> bool:
 	if data.has("tuning_definition") and RaceTuningDefinition.from_record(data.tuning_definition) == null: return false
 	if not WeekendDefinition.agrees_with_snapshot(data): return false
+	if data.has("mechanic_definition") and MechanicProfileDefinition.from_record(data.mechanic_definition) == null: return false
 	var setup_profile = SetupDefinition.legacy()
 	if data.has("setup_definition"):
 		setup_profile = SetupDefinition.from_record(data.setup_definition)
@@ -100,6 +101,7 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
 	if (data.has("tuning_definition") or data.has("weekend_definition")) and data.version < 4: return {}
+	if data.has("mechanic_definition") and data.version < 4: return {}
 	if data.has("setup_definition") and data.version < 4: return {}
 	if data.has("tyre_definition") and data.version < 4: return {}
 	if data.has("vehicle_definition") and data.version < 4: return {}

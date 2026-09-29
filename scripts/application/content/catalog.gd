@@ -11,7 +11,9 @@ func add(record: Dictionary, source: Dictionary, override_hash: String = "") -> 
 	var kind = str(record.get("kind", ""))
 	if kind not in ContentSchema.KINDS:
 		return [ContentValidation.diagnostic("CONTENT_KIND", "/kind", "Unsupported content kind: " + kind)]
-	var errors = ContentValidation.check(record, ContentSchema.definition(kind))
+	var errors = ContentVersions.errors(record)
+	if not errors.is_empty(): return errors
+	errors = ContentValidation.check(record, ContentSchema.definition(kind))
 	if not errors.is_empty(): return errors
 	var id: String = record.id
 	if _records.has(id):
@@ -42,6 +44,8 @@ func seal() -> Array:
 			return resolved.diagnostics
 	for id in _records:
 		var entry: Dictionary = _records[id]
+		if entry.kind == "tyre_thermal" and entry.has("operating") and not TyreOperatingSchema.valid(entry.operating):
+			return _definition_error(id, "CONTENT_TYRE_OPERATING", "/operating", "Keep wheel operating limits inside checkpoint bounds, minimum load no higher than maximum, and core temperature limit no higher than surface limit.")
 		if entry.kind == "tyre":
 			var thermal = record(entry.thermal_profile_id)
 			if thermal.get("kind") != "tyre_thermal":
@@ -68,10 +72,15 @@ func seal() -> Array:
 				return _definition_error(id, problems[0].code, problems[0].field, problems[0].message)
 		if _records[id].kind == "race_tuning" and tuning(id) == null:
 			return _definition_error(id, "CONTENT_TUNING", "", "Use ordered mode multipliers and supported physical ranges.")
+		if _records[id].kind == "mechanic_profile" and mechanic_profile(id) == null:
+			return _definition_error(id, "CONTENT_MECHANIC_PROFILE", "/profiles", "Use installed provider versions, preserve each save-reader prefix and satisfy ordered dependencies.")
 		if _records[id].kind == "weekend":
 			for key in WeekendDefinition.REFERENCES:
 				if record(_records[id][key]).get("kind") != WeekendDefinition.REFERENCES[key]:
 					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.REFERENCES[key] + " definition.")
+			for key in WeekendDefinition.OPTIONAL_REFERENCES:
+				if _records[id].has(key) and record(_records[id][key]).get("kind") != WeekendDefinition.OPTIONAL_REFERENCES[key]:
+					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.OPTIONAL_REFERENCES[key] + " definition.")
 	var documents: Dictionary = {}
 	for id in _records:
 		var entry: Dictionary = _records[id]
@@ -183,3 +192,6 @@ func circuit_documents() -> Array:
 			document.builtin = true
 			result.append(document)
 	return result
+
+func mechanic_profile(id: String) -> MechanicProfileDefinition:
+	return MechanicProfileDefinition.from_record(record(id))

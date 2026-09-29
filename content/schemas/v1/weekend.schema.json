@@ -18,6 +18,12 @@
         "weekend"
       ]
     },
+    "mechanic_profile_id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
     "name": {
       "maxLength": 100,
       "minLength": 1,

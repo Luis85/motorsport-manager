@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Any
+from typing import Any, Iterable
 
 import content_operations
 
@@ -25,27 +25,14 @@ def encode(value: Any) -> str:
 
 
 def write_new(path: Path, value: Any) -> None:
-    # Encode before creating anything; an invalid value must not leave an empty file.
-    text = encode(value)
-    with path.open("x", encoding="utf-8") as file:
-        try:
-            file.write(text)
-            file.flush()
-        except OSError:
-            path.unlink(missing_ok=True)
-            raise
+    content_operations.write_new_json(path, value)
 
 
 def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
     executable = godot or os.environ.get("GODOT_BINARY") or shutil.which("godot")
     if not executable:
         raise ValueError("Pass --godot /path/to/Godot or set GODOT_BINARY. No validation was executed.")
-    # A bare --godot/GODOT_BINARY value is a command name, not a cwd-relative path.
-    if not Path(executable).is_absolute() and not any(sep in executable for sep in ("/", "\\")):
-        executable = shutil.which(executable)
-        if not executable:
-            raise ValueError("Godot command was not found on PATH. No validation was executed.")
-    executable = str(Path(executable).resolve())
+    executable = shutil.which(executable) or str(Path(executable).expanduser().resolve())
     environment = {**os.environ, "GODOT_SILENCE_ROOT_WARNING": "1", "LP_NUM_THREADS": "2"}
     commands = [
         [executable, "--headless", "--editor", "--path", str(ROOT), "--import", "--quit"],
@@ -56,7 +43,11 @@ def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
     for index, command in enumerate(commands):
         run = subprocess.run(command, text=True, capture_output=True, timeout=120, env=environment)
         log = run.stdout + "\n" + run.stderr
-        fatal = any(marker in log for marker in ["SCRIPT ERROR:", "Parse Error:", "ERROR:"])
+        # Valid author text may itself contain "ERROR:". Only diagnostic output
+        # is an engine failure; never interpret fields in CONTENT_RESULT as logs.
+        diagnostic_log = "\n".join(line for line in run.stdout.splitlines()
+                                   if not line.startswith("CONTENT_RESULT ")) + "\n" + run.stderr
+        fatal = any(marker in diagnostic_log for marker in ["SCRIPT ERROR:", "Parse Error:", "ERROR:"])
         if index == 0:
             if run.returncode or fatal:
                 raise ValueError("Godot import failed; validation was not executed.\n" + log[-6000:])
@@ -65,10 +56,11 @@ def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
                     if line.startswith("CONTENT_RESULT ")]
         if len(payloads) != 1 or fatal:
             raise ValueError("Validator failed to produce one clean result.\n" + log[-6000:])
-        result = json.loads(payloads[0])
-        if not isinstance(result, dict) or type(result.get("ok")) is not bool:
+        result = json.loads(payloads[0], parse_constant=content_operations.reject_constant,
+                            parse_float=content_operations.finite_float)
+        if not isinstance(result, dict) or not isinstance(result.get("ok"), bool):
             raise ValueError("Validator result must be an object with an explicit Boolean ok field.")
-        if run.returncode != (0 if result.get("ok") else 1):
+        if run.returncode != (0 if result["ok"] else 1):
             raise ValueError("Validator exit status disagrees with its result.")
     if result is None:
         raise ValueError("No validator result was produced.")
@@ -76,14 +68,13 @@ def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
     return result
 
 
-def pack_arguments(path: Path | None, dependencies: list[Path] | None = None) -> list[str]:
-    """Keep explicit dependency order; the production loader alone resolves definitions."""
-    roots = list(dependencies or []) + ([path] if path is not None else [])
-    result: list[str] = []
-    seen: set[str] = set()
+def pack_arguments(path: Path | None, dependencies: Iterable[Path] = ()) -> list[str]:
+    """Keep dependency order and load the positional root last; reject duplicate paths."""
     core = (ROOT / "content/packs/core").resolve()
-    for root in roots:
-        resolved = root.resolve()
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in list(dependencies or []) + ([path] if path is not None else []):
+        resolved = value.expanduser().resolve()
         key = os.path.normcase(str(resolved))
         if key in seen:
             raise ValueError("Pack directory selected more than once: " + str(resolved))
@@ -96,21 +87,30 @@ def pack_arguments(path: Path | None, dependencies: list[Path] | None = None) ->
 def initialize(path: Path, identity: str) -> dict[str, Any]:
     if len(identity) > 96 or not PACK_ID.fullmatch(identity):
         raise ValueError("Use a lowercase pack ID, for example local.club.")
+    path = path.expanduser()
     path.mkdir(parents=True, exist_ok=False)
-    write_new(path / "pack.json", {
-        "kind": "motorsport-manager-content-pack", "schema_version": 1,
-        "id": identity, "version": "1.0.0", "runtime_contract": 1,
-        "dependencies": [{"id": "core", "version": "1.0.0"}],
-        "files": [], "overrides": [],
-    })
+    try:
+        write_new(path / "pack.json", {
+            "kind": "motorsport-manager-content-pack", "schema_version": 1,
+            "id": identity, "version": "1.0.0", "runtime_contract": 1,
+            "dependencies": [{"id": "core", "version": "1.0.0"}],
+            "files": [], "overrides": [],
+        })
+    except BaseException:
+        try:
+            path.rmdir()  # Only our newly created empty directory, never parents.
+        except OSError:
+            pass
+        raise
+
     return {"ok": True, "created": str(path / "pack.json"), "engine_executed": False}
 
 
 def clone_definition(path: Path, source: str, identity: str, godot: str | None,
-                     dependencies: list[Path] | None = None) -> dict[str, Any]:
+                     dependencies: Iterable[Path] = ()) -> dict[str, Any]:
     if len(identity) > 96 or not IDENTITY.fullmatch(identity):
         raise ValueError("Use a namespaced definition ID of at most 96 characters, for example local.club.vehicle.sport.")
-    path = path.resolve(strict=True)
+    path = path.expanduser().resolve(strict=True)
     manifest_path = path / "pack.json"
     if manifest_path.is_symlink():
         raise ValueError("The pack manifest cannot be a symbolic link.")
@@ -120,8 +120,8 @@ def clone_definition(path: Path, source: str, identity: str, godot: str | None,
     created: Path | None = None
     temporary: str | None = None
     try:
-        # Snapshot BEFORE validation, under the cooperative lock. Never splice an
-        # inspected definition into a different, subsequently read manifest.
+        # Snapshot before validation under the cooperative writer lock. Never
+        # splice a definition inspected from a different manifest revision.
         with manifest_path.open("rb") as stream:
             before = stream.read(1048577)
         if len(before) > 1048576:
@@ -153,6 +153,8 @@ def clone_definition(path: Path, source: str, identity: str, godot: str | None,
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path, delete=False) as file:
             temporary = file.name
             file.write(encode(manifest))
+            file.flush()
+            os.fsync(file.fileno())
         if manifest_path.is_symlink() or manifest_path.read_bytes() != before:
             raise ValueError("Pack changed before publication; retry against the new manifest.")
         os.replace(temporary, manifest_path)
@@ -198,23 +200,23 @@ def parser() -> argparse.ArgumentParser:
     clone.add_argument("--as", dest="identity", required=True)
     clone.add_argument("--pack", type=Path, required=True)
     clone.add_argument("--godot")
-    clone.add_argument("--dependency", type=Path, action="append", default=[],
-                       help="Load a dependency pack before the destination; repeat in dependency order.")
+    clone.add_argument("--dependency", "--include-pack", dest="dependencies", type=Path, action="append", default=[],
+                       help="Load a dependency/source pack before the destination; repeat in dependency order.")
     for action in ["validate", "inspect"]:
         command = commands.add_parser(action)
         command.add_argument("path", nargs="?", type=Path)
-        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                             help="Load this pack before the positional pack; repeat in dependency order.")
         command.add_argument("--godot")
+        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
+                             help="Dependency pack; repeat in dependency order before the optional positional pack.")
         command.add_argument("--format", choices=["json", "text"], default="text")
         if action == "inspect":
             command.add_argument("--id", required=True)
     for action in ["list", "export", "test"]:
         command = commands.add_parser(action)
         command.add_argument("path", nargs="?", type=Path)
-        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                             help="Load this pack before the positional pack; repeat in dependency order.")
         command.add_argument("--godot")
+        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
+                             help="Dependency pack; repeat in dependency order before the optional positional pack.")
         command.add_argument("--format", choices=["json", "text"], default="json")
         if action == "list":
             command.add_argument("--kind")
@@ -228,10 +230,11 @@ def parser() -> argparse.ArgumentParser:
     comparison.add_argument("after", type=Path)
     comparison.add_argument("--godot")
     comparison.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                            help="Common dependency pack; repeat in dependency order.")
-    for side in ("before", "after"):
-        comparison.add_argument("--" + side + "-pack", type=Path, action="append", default=[],
-                                help="Additional dependency pack for this side, after common dependencies.")
+                            help="Shared dependency pack loaded before each compared pack; repeat in order.")
+    comparison.add_argument("--before-pack", type=Path, action="append", default=[],
+                            help="Before-side dependency loaded before BEFORE, after shared dependencies; repeat in order.")
+    comparison.add_argument("--after-pack", type=Path, action="append", default=[],
+                            help="After-side dependency loaded before AFTER, after shared dependencies; repeat in order.")
     schema = commands.add_parser("schemas", help="Publish or check the generated JSON Schemas.")
     schema.add_argument("--godot")
     schema.add_argument("--check", action="store_true")
@@ -246,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.action == "init":
             result = initialize(args.path, args.id)
         elif args.action == "clone":
-            result = clone_definition(args.pack, args.source, args.identity, args.godot, args.dependency)
+            result = clone_definition(args.pack, args.source, args.identity, args.godot, args.dependencies)
         elif args.action == "schemas":
             result = schemas(args.godot, args.check)
         else:

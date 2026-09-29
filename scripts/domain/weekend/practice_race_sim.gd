@@ -6,8 +6,8 @@ const PRACTICE_CHECKPOINT_VERSION = 10
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
 	if not last_error.is_empty(): return
-	mechanics.configure(RaceMechanicProfiles.build("practice"))
-	mechanics.install(geometry, options)
+	if not mechanics.configure(RaceMechanicProfiles.build("practice", mechanic_definition)) or not mechanics.install(geometry, options):
+		last_error = mechanics.last_error
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if not WeekendDefinition.agrees_with_snapshot(data): return null
@@ -30,7 +30,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	options.rival_styles = false
 	var sim = PracticeRaceSim.new(base.track, options)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
 	if native_duels: sim.duel_state = data.duel_state.duplicate(true)

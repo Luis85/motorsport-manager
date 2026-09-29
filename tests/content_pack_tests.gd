@@ -33,6 +33,28 @@ func run() -> void:
 	var app = root.get_node("App")
 	reset()
 	check(load_pack().ok, "Folder pack accepted")
+	for field in ["schema_version", "runtime_contract"]:
+		manifest[field] = 2
+		Storage.write_json(ROOT + "/pack.json", manifest)
+		var preserved = FileAccess.get_file_as_bytes(ROOT + "/pack.json")
+		invalid("CONTENT_FUTURE_VERSION", "Newer " + field + " requires a compatible runtime")
+		check(FileAccess.get_file_as_bytes(ROOT + "/pack.json") == preserved, "Version rejection never edits the source")
+		manifest[field] = 0
+		Storage.write_json(ROOT + "/pack.json", manifest)
+		invalid("CONTENT_MIGRATION_REQUIRED", "No invented converter for older " + field)
+		reset()
+	definition.schema_version = 2
+	Storage.write_json(ROOT + "/vehicle.json", definition)
+	invalid("CONTENT_FUTURE_VERSION", "Newer definition version is diagnosed before activation")
+	reset()
+	manifest.dependencies.append(manifest.dependencies[0].duplicate())
+	Storage.write_json(ROOT + "/pack.json", manifest)
+	invalid("CONTENT_DEPENDENCY", "Duplicate dependencies rejected")
+	reset()
+	manifest.dependencies.append({"id": manifest.id, "version": manifest.version})
+	Storage.write_json(ROOT + "/pack.json", manifest)
+	invalid("CONTENT_DEPENDENCY", "Self dependency rejected")
+	reset()
 	var original: ContentCatalog = app.content_catalog
 	check(app.reload_content([ROOT]), "Application swaps complete validated catalog")
 	var valid: ContentCatalog = app.content_catalog

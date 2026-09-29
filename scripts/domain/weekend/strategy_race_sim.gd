@@ -7,8 +7,8 @@ const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_i
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
 	if not last_error.is_empty(): return
-	mechanics.configure(RaceMechanicProfiles.build("strategy"))
-	mechanics.install(geometry, options)
+	if not mechanics.configure(RaceMechanicProfiles.build("strategy", mechanic_definition)) or not mechanics.install(geometry, options):
+		last_error = mechanics.last_error
 
 static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 	if not WeekendDefinition.agrees_with_snapshot(data): return null
@@ -28,7 +28,7 @@ static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 	if not RacecraftController.valid(battles, base.cars, base.total_time) or not TeamOrders.valid(team, base.cars, base.total_time) or not RivalStrategy.valid(rivals, base.cars, base.total_time): return null
 	var sim = StrategyRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: sim.set(key, base.get(key))
 	sim.battle_state = battles.duplicate(true); sim.team_state = team.duplicate(true); sim.rival_state = rivals.duplicate(true)
 	sim.strategy_state = state.duplicate(true)
 	sim.strategy_state.sequence = int(sim.strategy_state.sequence)
