@@ -109,7 +109,7 @@ static func queue_pit(sim: RaceSim, car: RaceCar) -> void:
 static func plan_pit_gate(sim: RaceSim, car: RaceCar) -> void:
 	car.pit_deferred = false
 	car.pit_gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
-	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[sim.track.preset].brake * 0.5) + 8
+	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * sim.track.vehicle_definition.braking_mps2 * 0.5) + 8
 	if car.pit_gate - car.distance < stopping:
 		car.pit_gate += sim.track.length
 		car.pit_deferred = true

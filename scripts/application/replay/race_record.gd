@@ -195,6 +195,8 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
 	if int(snapshot.version) == 11: rules.tactical_duels = true
+	if snapshot.has("vehicle_definition"):
+		rules.vehicle_definition = snapshot.vehicle_definition.duplicate(true)
 	var scenarios: Array = []
 	for entry in snapshot.strategy_state.records:
 		if entry.kind == "scenario" and scenarios.size() < 3: scenarios.append(entry.evidence.duplicate(true))

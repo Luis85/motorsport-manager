@@ -26,7 +26,7 @@ static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 	if not RacecraftController.valid(battles, base.cars, base.total_time) or not TeamOrders.valid(team, base.cars, base.total_time) or not RivalStrategy.valid(rivals, base.cars, base.total_time): return null
 	var sim = StrategyRaceSim.new(base.track)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: sim.set(key, base.get(key))
 	sim.battle_state = battles.duplicate(true); sim.team_state = team.duplicate(true); sim.rival_state = rivals.duplicate(true)
 	sim.strategy_state = state.duplicate(true)
 	sim.strategy_state.sequence = int(sim.strategy_state.sequence)

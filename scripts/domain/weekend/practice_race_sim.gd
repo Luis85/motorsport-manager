@@ -26,7 +26,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if native_duels and not TacticalDuels.valid(data.get("duel_state"), base): return null
 	var sim = PracticeRaceSim.new(base.track, {"rival_styles": false})
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
 	if native_duels: sim.duel_state = data.duel_state.duplicate(true)

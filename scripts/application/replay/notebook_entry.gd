@@ -56,12 +56,17 @@ static func validate(entry: Variant) -> bool:
 	var context = f.get("context")
 	if not context is Dictionary or context.size() != 8: return false
 	if not hash_valid(context.get("track_hash")) or context.track_hash != f.track_hash or not hash_valid(context.get("roster_hash")): return false
-	if context.get("vehicle") not in TrackGeometry.PRESETS or context.get("weather") not in ["dry", "wet", "changeable"]: return false
+	if context.get("weather") not in ["dry", "wet", "changeable"]: return false
 	if context.get("incident_exposure") not in ["calm", "standard", "volatile"]: return false
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
 	if not rules is Dictionary: return false
-	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5): return false
+	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0): return false
+	if rules.has("vehicle_definition"):
+		if not rules.vehicle_definition is Dictionary: return false
+		var definition = VehicleDefinition.from_record(rules.vehicle_definition)
+		if definition == null or definition.id != context.get("vehicle"): return false
+	elif context.get("vehicle") not in VehicleDefinition.LEGACY: return false
 	if rules.get("checkpoint_schema") == 11 and (not rules.get("tactical_duels") is bool or not rules.tactical_duels): return false
 	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 11) or rules.get("weather") not in WeekendWeather.MODES: return false
 	if rules.get("reliability") not in ["legacy", "staged"] or not rules.get("rival_styles") is bool: return false

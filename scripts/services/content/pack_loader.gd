@@ -38,9 +38,9 @@ func load_packs(roots: Array) -> Dictionary:
 		var seen_paths: Dictionary = {}
 		var seen_ids: Dictionary = {}
 		for path in manifest.files:
-			if seen_paths.has(path):
+			if seen_paths.has(path.to_lower()):
 				return _failure(root, path, "CONTENT_DUPLICATE_FILE", "A manifest cannot list a file twice.")
-			seen_paths[path] = true
+			seen_paths[path.to_lower()] = true
 			read = _read(root, path)
 			if not read.ok: return read
 			if not read.data is Dictionary:
@@ -87,10 +87,9 @@ func _read(root: String, relative: String) -> Dictionary:
 	var bytes = file.get_buffer(length)
 	if bytes.size() != length:
 		return _failure(root, relative, "CONTENT_READ", "The complete file could not be read.")
-	var text = bytes.get_string_from_utf8()
-	if text.to_utf8_buffer() != bytes:
+	if not ContentJson.valid_utf8(bytes):
 		return _failure(root, relative, "CONTENT_ENCODING", "Content must be valid UTF-8.")
-	var parsed = ContentJson.parse(text)
+	var parsed = ContentJson.parse(bytes.get_string_from_utf8())
 	if not parsed.ok:
 		var result = _failure(root, relative, "CONTENT_JSON", parsed.error)
 		result.diagnostics[0].line = parsed.line

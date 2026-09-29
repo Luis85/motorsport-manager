@@ -1,12 +1,16 @@
 class_name WeekendLaunch
 extends RefCounted
 ## Staged weekend entry. Inspecting or abandoning this draft cannot replace a save.
+var _catalog: ContentCatalog
 var _track: TrackGeometry
 var _options: Dictionary = {}
 var _revision: int = 0
 var _consumed: bool = false
 var _committing: bool = false
 var last_error: String = ""
+
+func _init(catalog: ContentCatalog = null) -> void:
+	_catalog = catalog
 
 func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula") -> bool:
 	last_error = ""
@@ -17,7 +21,10 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	if not errors.is_empty():
 		last_error = "\n".join(errors)
 		return false
-	if vehicle not in TrackGeometry.PRESETS:
+	var definition: VehicleDefinition
+	if _catalog != null:
+		definition = _catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower())
+	if (_catalog != null and definition == null) or (_catalog == null and vehicle not in VehicleDefinition.LEGACY):
 		last_error = "Choose a supported vehicle profile."
 		return false
 	if not RaceCheckpoint.integral(options.get("laps"), 1, 100) or not RaceCheckpoint.integral(options.get("seed", 7314), 0, 4294967295):
@@ -29,7 +36,7 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	if not RaceCheckpoint.number(options.get("qual_duration", 480), 120, 1800):
 		last_error = "Qualifying duration must be between 2 and 30 minutes."
 		return false
-	var geometry = TrackGeometry.new(document.duplicate(true), vehicle)
+	var geometry = TrackGeometry.new(document.duplicate(true), vehicle, false, definition)
 	if TrackDiagnostics.blocking(TrackDiagnostics.inspect(geometry)):
 		last_error = "The circuit has blocking checks. Resolve them in the track editor before driving."
 		return false

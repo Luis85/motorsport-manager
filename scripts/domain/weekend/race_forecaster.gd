@@ -13,7 +13,7 @@ static func fuel_margin(sim: RaceSim, car: RaceCar) -> float:
 
 static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
-	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[sim.track.preset].brake * 0.5) + 8
+	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * sim.track.vehicle_definition.braking_mps2 * 0.5) + 8
 	var deferred = gate - car.distance < stopping
 	if deferred: gate += sim.track.length
 	return {"distance": gate, "lap": int(round((gate - sim.track.pit_entry) / sim.track.length)) + 1,

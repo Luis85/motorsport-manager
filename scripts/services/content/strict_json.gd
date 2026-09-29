@@ -137,3 +137,29 @@ func _string() -> Variant:
 		if point < 0xdc00 or point > 0xdfff:
 			return _fail("Invalid Unicode surrogate pair.")
 	return _fail("Unterminated string.")
+
+static func valid_utf8(bytes: PackedByteArray) -> bool:
+	## Check before Godot's decoder, which otherwise emits engine errors for bad bytes.
+	var index = 0
+	while index < bytes.size():
+		var first = bytes[index]
+		index += 1
+		if first <= 0x7f: continue
+		var count = 0
+		var point = 0
+		var minimum = 0
+		if first >= 0xc2 and first <= 0xdf:
+			count = 1; point = first & 0x1f; minimum = 0x80
+		elif first >= 0xe0 and first <= 0xef:
+			count = 2; point = first & 0x0f; minimum = 0x800
+		elif first >= 0xf0 and first <= 0xf4:
+			count = 3; point = first & 0x07; minimum = 0x10000
+		else: return false
+		if index + count > bytes.size(): return false
+		for offset in range(count):
+			var continuation = bytes[index]
+			index += 1
+			if continuation < 0x80 or continuation > 0xbf: return false
+			point = (point << 6) | (continuation & 0x3f)
+		if point < minimum or point > 0x10ffff or (point >= 0xd800 and point <= 0xdfff): return false
+	return true

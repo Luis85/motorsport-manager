@@ -27,6 +27,9 @@ func run() -> void:
 		return
 	var loaded = ContentPackLoader.new().load_packs(roots)
 	if loaded.ok:
+		loaded.definitions = []
+		for kind in ContentSchema.KINDS:
+			for entry in loaded.catalog.entries(kind): loaded.definitions.append({"id": entry.id, "kind": kind, "name": entry.name})
 		if action == "inspect":
 			loaded.inspection = loaded.catalog.explain(identity)
 			if loaded.inspection.definition.is_empty():

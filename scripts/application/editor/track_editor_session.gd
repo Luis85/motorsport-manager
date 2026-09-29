@@ -3,6 +3,7 @@ extends RefCounted
 ## Owns the committed authoring aggregate and bounded transaction history.
 ## Pointer drafts and reference previews are disposable copies, never shared authority.
 const HISTORY_LIMIT: int = 50
+var content_catalog: ContentCatalog
 var _revision: int = 0
 var revision: int:
 	get: return _revision
@@ -148,10 +149,15 @@ func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> D
 	return result.duplicate(true)
 
 func compile_draft(draft: Dictionary, vehicle: String = "Formula", fast: bool = false) -> TrackGeometry:
-	if vehicle not in TrackGeometry.PRESETS or not TrackDocument.draft_errors(draft).is_empty() or draft.nodes.size() < 4:
+	var definition: VehicleDefinition
+	if content_catalog != null:
+		definition = content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower())
+	if (content_catalog != null and definition == null) or (content_catalog == null and vehicle not in VehicleDefinition.LEGACY):
+		return null
+	if not TrackDocument.draft_errors(draft).is_empty() or draft.nodes.size() < 4:
 		return null
 	var started = Time.get_ticks_usec()
-	var geometry = TrackGeometry.new(draft.duplicate(true), vehicle, fast)
+	var geometry = TrackGeometry.new(draft.duplicate(true), vehicle, fast, definition)
 	compile_usec = Time.get_ticks_usec() - started
 	return geometry
 
@@ -175,3 +181,8 @@ func export_runtime(port: TrackEditorPort, path: String, draft: Dictionary, vehi
 	if geometry == null or TrackDiagnostics.blocking(diagnostics(geometry)):
 		return "Resolve the circuit's blocking checks before exporting runtime data."
 	return port.export_value(path, geometry.runtime_export()) if port else "No track repository is available."
+
+func vehicle_choices() -> Array:
+	if content_catalog != null:
+		return content_catalog.entries("vehicle").map(func(v): return {"id": v.id, "name": v.name})
+	return VehicleDefinition.LEGACY.keys().map(func(id): return {"id": id, "name": id})

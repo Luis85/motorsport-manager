@@ -3,7 +3,11 @@ extends RefCounted
 ## Reject malformed indexes and nested telemetry before a checkpoint reaches a view.
 static func valid(data: Dictionary) -> bool:
 	if not integral(data.get("selected_id"), 0, 11): return false
-	if data.get("vehicle") not in ["Formula", "GT", "Touring", "Kart"]: return false
+	if data.has("vehicle_definition"):
+		if not data.vehicle_definition is Dictionary: return false
+		var definition = VehicleDefinition.from_record(data.vehicle_definition)
+		if definition == null or definition.id != data.get("vehicle"): return false
+	elif data.get("vehicle") not in VehicleDefinition.LEGACY: return false
 	if data.get("scenario") not in ["dry", "wet", "changeable"] or data.get("intensity") not in ["calm", "standard", "volatile"]: return false
 	if data.get("flag") not in ["GREEN", "YELLOW", "SAFETY CAR", "RESTART"]: return false
 	if not integral(data.get("yellow_sector"), -1, 2): return false
@@ -71,6 +75,7 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 	if not TrackDocument.validate(data.get("track")).is_empty() or not data.get("cars") is Array or data.cars.size() != 12: return {}
 	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
+	if data.has("vehicle_definition") and data.version < 4: return {}
 	data = data.duplicate(true)
 	if data.version == 1:
 		for c in data.cars:

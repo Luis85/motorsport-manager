@@ -71,7 +71,7 @@ var mechanics: RaceMechanics
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	mechanics = RaceMechanics.new(self)
 	if geometry == null: return
-	track = TrackGeometry.new(geometry.document, geometry.preset) if geometry.preview_only else geometry.detached_copy()
+	track = TrackGeometry.new(geometry.document, geometry.preset, false, geometry.vehicle_definition if not geometry.authored_vehicle().is_empty() else null) if geometry.preview_only else geometry.detached_copy()
 	laps = clampi(int(options.get("laps", 12)), 1, 100)
 	qual_duration = maxf(float(options.get("qual_duration", 480)), track.estimate * 3.5)
 	scenario = options.get("scenario", "changeable")
@@ -163,7 +163,7 @@ func _base_command(action: String, payload: Dictionary = {}) -> bool:
 					var lap = payload.get("lap", -1)
 					if not RaceCheckpoint.integral(lap, 1, laps - 1): return fail("Choose a racing lap before the final lap.")
 					var gate = (int(lap) - 1) * track.length + track.pit_entry
-					var stopping = maxf(0, c.speed ** 2 - track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[track.preset].brake * 0.5) + 12
+					var stopping = maxf(0, c.speed ** 2 - track.pit_limit ** 2) / (2 * track.vehicle_definition.braking_mps2 * 0.5) + 12
 					if gate - c.distance <= stopping: return fail("Too late for that lap's pit entry; choose a later lap.")
 					if TyreInventory.planned(c, true).is_empty(): return fail("No usable replacement set. Select another compound or set.")
 					c.scheduled_lap = int(lap); c.pit_gate = gate; c.pit_order = true; c.pit_deferred = false; c.auto = false
@@ -414,12 +414,12 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 		var longitudinal = fposmod(old[other.id].distance - old[c.id].distance + track.length * 0.5, track.length) - track.length * 0.5
 		if absf(longitudinal) < 7:
 			var separation: float = c.lane - old[other.id].lane
-			var clearance = TrackGeometry.PRESETS[track.preset].width + 0.25
+			var clearance = track.vehicle_definition.width_m + 0.25
 			# Keep occupied lanes separated without ever displacing an already overlapping car.
 			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
 			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * 1.8)
-	var limits = TrackGeometry.PRESETS[track.preset]
+	var limits = track.vehicle_definition.parameters()
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
 	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
 	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
@@ -582,7 +582,10 @@ func car_position(c: RaceCar, alpha: float = 1.0) -> Dictionary:
 func _base_snapshot() -> Dictionary:
 	var saved_cars = RaceCar.records(cars)
 	for car in saved_cars: TyreInventory.sync_record(car)
-	return {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
+	var result = {"kind": "motorsport-manager-weekend", "version": 4, "track": track.document.duplicate(true), "vehicle": track.preset, "cars": saved_cars, "phase": phase, "clock": clock, "total_time": total_time, "race_time": race_time, "accumulator": accumulator, "speed": speed, "paused": paused, "laps": laps, "qual_duration": qual_duration, "qual_closed": qual_closed, "scenario": scenario, "intensity": intensity, "rng_state": rng_state, "seed_value": seed_value, "flag": flag, "flag_until": flag_until, "yellow_sector": yellow_sector, "rain": rain, "surface": surface.duplicate(true), "surface_accumulator": surface_accumulator, "water": water.duplicate(), "rubber": rubber.duplicate(), "weather_name": weather_name, "events": events.duplicate(true), "commands": commands.duplicate(true), "pit_boxes": pit_boxes.duplicate(), "chequered": chequered, "finish_count": finish_count, "fastest": fastest, "selected_id": selected_id, "stats": stats.duplicate()}
+	if not track.authored_vehicle().is_empty():
+		result.vehicle_definition = track.authored_vehicle()
+	return result
 
 static func restore(data: Dictionary) -> RaceSim:
 	data = RaceCheckpoint.prepare_base(data, CAR_V2, TYRES)
@@ -590,7 +593,10 @@ static func restore(data: Dictionary) -> RaceSim:
 	if not RaceSurface.valid(data.get("surface"), data.water, data.rubber): return null
 	if not TrackDocument.valid_number(data.get("surface_accumulator"), 0, RaceSurface.INTERVAL): return null
 	if not RaceCheckpoint.valid(data): return null
-	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula")))
+	var definition: VehicleDefinition
+	if data.has("vehicle_definition"):
+		definition = VehicleDefinition.from_record(data.vehicle_definition)
+	var sim = RaceSim.new(TrackGeometry.new(data.track, data.get("vehicle", "Formula"), false, definition))
 	var baseline = RaceCar.records(sim.cars)
 	for i in range(12):
 		var c = data.cars[i]
@@ -606,7 +612,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		if not TYRES.has(c.compound) or not TYRES.has(c.next_compound) or c.pace < 0 or c.pace > 2 or c.engine < 0 or c.engine > 2: return null
 		if c.route not in ["track", "pit", "garage"] or c.qual_state not in ["garage", "outlap", "hotlap", "inlap"]: return null
 	for key in sim.snapshot():
-		if key in ["kind", "version", "track", "vehicle", "cars"]: continue
+		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition"]: continue
 		if not data.has(key): return null
 		var expected = sim.get(key)
 		if typeof(expected) in [TYPE_FLOAT, TYPE_INT]:

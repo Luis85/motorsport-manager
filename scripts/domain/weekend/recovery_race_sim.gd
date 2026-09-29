@@ -26,7 +26,7 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if not valid_recovery_records(base.strategy_state.records): return null
 	var sim = RecoveryRaceSim.new(base.track)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: sim.set(key, base.get(key))
 	sim.reliability_state = reliability.duplicate(true); sim.control_state = control.duplicate(true)
 	if native: sim.flag = data.flag
 	return sim

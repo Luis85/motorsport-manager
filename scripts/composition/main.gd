@@ -18,6 +18,7 @@ var draft_signature = ""
 var return_editor_button: Button
 
 func _ready() -> void:
+	launch_draft = WeekendLaunch.new(App.content_catalog)
 	presentation_services = LocalRacePresentationServices.new(App)
 	theme = UI.theme()
 	get_tree().auto_accept_quit = false
@@ -57,7 +58,7 @@ func show_menu() -> void:
 	clear_screen("main_menu")
 	var menu = MainMenuView.new()
 	var geometry = TrackGeometry.new(App.library[mini(7, App.library.size() - 1)]) if not App.library.is_empty() else null
-	menu.configure({"can_continue": App.weekend != null or App.has_saved_weekend(), "can_resume_sandbox": App.has_saved_sandbox(), "warnings": "; ".join(App.load_errors)}, App.settings, geometry)
+	menu.configure({"can_continue": App.weekend != null or App.has_saved_weekend(), "can_resume_sandbox": App.has_saved_sandbox(), "warnings": "; ".join(App.load_errors) + App.content_warnings()}, App.settings, geometry)
 	var actions = {"weekend": show_library, "continue": continue_weekend, "editor": show_editor, "settings": show_settings, "quit": request_quit}
 	menu.action_requested.connect(func(action): actions[action].call())
 	menu.scenario_requested.connect(func(index):
@@ -92,6 +93,7 @@ func show_editor(d: Dictionary = {}) -> void:
 		editor.configure(editor_draft, editor_port, App.settings)
 		editor.saved_signature = draft_signature
 	else: editor.configure(App.library[mini(7, App.library.size() - 1)] if not App.library.is_empty() else TrackEditorSession.blank_document(), editor_port, App.settings)
+	editor.session.content_catalog = App.content_catalog
 	content.add_child(editor)
 	App.editor_session = editor.session
 	editor.test_requested.connect(func(track):
@@ -101,6 +103,10 @@ func show_editor(d: Dictionary = {}) -> void:
 
 func show_library(test_track: Dictionary = {}) -> void:
 	clear_screen("grand_prix_setup")
+	launch_draft = WeekendLaunch.new(App.content_catalog)
+	if App.content_catalog == null:
+		content.add_child(UI.paragraph("New weekends are unavailable until the content errors are fixed. " + App.content_warnings()))
+		return
 	App.load_library()
 	var candidates = App.library.duplicate()
 	if not test_track.is_empty(): candidates.push_front(test_track)
@@ -127,7 +133,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	var details = UI.label("", 17, UI.ACCENT); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; preview.add_child(details)
 	library_canvas = TrackCanvas.new(); library_canvas.configure_presentation(App.settings); library_canvas.show_line = true; preview.add_child(library_canvas)
 	var refresh = func():
-		var geometry = TrackGeometry.new(selected_track, vehicle)
+		var geometry = TrackGeometry.new(selected_track, vehicle, false, App.content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()))
 		library_canvas.set_track(geometry); library_canvas.call_deferred("fit")
 		details.text = "%s  ·  %.3f km  ·  %s reference %s" % [selected_track.name, geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate)]
 	list.item_selected.connect(func(index): selected_track = candidates[index]; refresh.call())
@@ -135,14 +141,17 @@ func show_library(test_track: Dictionary = {}) -> void:
 	left.add_child(UI.paragraph("Edited tracks saved in Circuit Atelier appear here. Race sessions use their own compiled copy, so editing cannot change a running weekend."))
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
+	var vehicle_rows = App.content_catalog.entries("vehicle")
+	var vehicle_ids = vehicle_rows.map(func(v): return v.id)
+	var vehicle_index = vehicle_ids.find(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower())
+	controls.add_child(UI.label("CAR", 12, UI.MUTED))
+	controls.add_child(UI.option(vehicle_rows.map(func(v): return v.name), func(index): vehicle = vehicle_ids[index]; refresh.call(), maxi(0, vehicle_index)))
 	if App.settings.get("pitwall_layout", "minimal") == "minimal":
 		controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
 		controls.add_child(UI.option(["Dry", "Changing skies", "Rain-prone"], func(index): config.scenario = ["dry", "changeable", "wet"][index], ["dry", "changeable", "wet"].find(config.scenario)))
 		controls.add_child(UI.label("RACE LAPS", 12, UI.MUTED))
 		controls.add_child(UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)))
 	else:
-		controls.add_child(UI.label("CAR", 12, UI.MUTED))
-		controls.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): vehicle = TrackGeometry.PRESETS.keys()[index]; refresh.call(), TrackGeometry.PRESETS.keys().find(vehicle)))
 		controls.add_child(UI.label("WEATHER", 12, UI.MUTED))
 		controls.add_child(UI.option(["Changing skies", "Dry", "Rain-prone"], func(index): config.scenario = ["changeable", "dry", "wet"][index], ["changeable", "dry", "wet"].find(config.scenario)))
 		controls.add_child(UI.option(["Seeded weather", "Scripted training / legacy"], func(index): config.weather_mode = WeekendWeather.MODES[index], 0 if config.get("weather_mode", "seeded") == "seeded" else 1))
@@ -164,7 +173,7 @@ func show_library(test_track: Dictionary = {}) -> void:
 	else:
 		launch.add_child(UI.button("Open weekend briefing", func():
 			var start = func():
-				var geometry = TrackGeometry.new(selected_track, vehicle)
+				var geometry = TrackGeometry.new(selected_track, vehicle, false, App.content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()))
 				var findings = TrackDiagnostics.inspect(geometry)
 				if TrackDiagnostics.blocking(findings):
 					UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return

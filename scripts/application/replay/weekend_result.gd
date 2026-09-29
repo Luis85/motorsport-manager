@@ -27,6 +27,8 @@ static func validate(data: Variant) -> String:
 		if not data.get(key) is String or data[key].length() != 64 or not data[key].is_valid_hex_number(false): return "Invalid result manifest hash."
 	if not RaceCheckpoint.integral(data.get("checkpoint_version"), 10, 11) or not data.get("model") is String or not data.get("engine") is String: return "Missing result model metadata."
 	if not data.get("parent") is Dictionary or not data.get("ruleset") is Dictionary or not data.get("achievements") is Array or not data.achievements.is_empty(): return "Unsupported result provenance or achievements."
+	if data.ruleset.has("vehicle_definition"):
+		if not data.ruleset.vehicle_definition is Dictionary or VehicleDefinition.from_record(data.ruleset.vehicle_definition) == null: return "Invalid frozen vehicle definition."
 	if data.checkpoint_version == 11:
 		if data.model != TacticalDuels.MODEL or data.ruleset.get("checkpoint_schema") != 11 or not data.ruleset.get("tactical_duels") is bool or not data.ruleset.tactical_duels: return "Tactical result model and ruleset disagree."
 	if data.origin == "sandbox" and not RaceRecord.valid_id(data.parent.get("event_id")): return "Missing sandbox lineage."

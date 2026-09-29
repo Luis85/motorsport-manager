@@ -6,6 +6,8 @@
   "car_record_tests",
   "command_contract_tests",
   "compact_ui_tests",
+  "content_pack_tests",
+  "content_tests",
   "director_tests",
   "director_ui_tests",
   "director_weekend_ui_tests",

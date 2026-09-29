@@ -68,7 +68,7 @@ static func restore_weather(data: Dictionary) -> WeatherRaceSim:
 		state.model.rain = base.rain; state.next_sample = base.total_time + WeekendWeather.SAMPLE_INTERVAL
 	var restored = WeatherRaceSim.new(base.track)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle"]: restored.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: restored.set(key, base.get(key))
 	restored.weather_state = state
 	restored.weather_state.model.rng = int(state.model.rng)
 	return restored
