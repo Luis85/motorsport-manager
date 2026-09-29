@@ -77,6 +77,7 @@ static func definition(kind: String) -> Dictionary:
 	if kind == "race_tuning":
 		properties.environment = EnvironmentTuningSchema.definition()
 		properties.operations = OperationsTuningSchema.definition()
+		properties.competition = CompetitionTuningSchema.definition()
 	return object(properties, required)
 
 static func document(kind: String) -> Dictionary:

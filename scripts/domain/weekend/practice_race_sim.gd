@@ -24,7 +24,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, base.tuning.practice_duration(base.track.estimate), "legacy")
 	if not PracticeEvidence.valid(state, base) or not PracticeEvidence.valid_records(base.strategy_state.records, state): return null
 	var styles = data.get("rival_styles") if native_styles else RivalStyles.create(base.cars, false)
-	if not RivalStyles.valid(styles, base.cars, base.total_time): return null
+	if not RivalStyles.valid(styles, base.cars, base.total_time, base.tuning.competition, base.tuning.to_record().has("competition")): return null
 	if native_duels and not TacticalDuels.valid(data.get("duel_state"), base): return null
 	var options = base.content_options()
 	options.rival_styles = false

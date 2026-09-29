@@ -43,7 +43,7 @@ func run() -> void:
 	document.grid.count = 14
 	game.show_library(document); await settle()
 	var selector: OptionButton = game.find_child("WeekendPreset", true, false)
-	check(selector != null and selector.item_count == 4, "Setup discovers both bundled presets and the external weekend")
+	check(selector != null and selector.item_count == app.content_catalog.entries("weekend").size() + 1, "Setup discovers every catalog preset and retains the custom-selection option")
 	if selector == null: finish(); return
 	selector.grab_focus(); await key(KEY_ENTER)
 	var popup = selector.get_popup()

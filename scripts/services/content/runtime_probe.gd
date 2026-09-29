@@ -62,6 +62,10 @@ static func restore() -> Dictionary:
 		"setup_id": sim.setup_definition.to_record().id if sim.setup_definition.authored() else "legacy",
 		"setup_content_hash": RaceStateValue.fingerprint(sim.setup_definition.to_record())}
 	var car: RaceCar = sim.cars[sim.player_ids()[0]]
+	result.competition_hash = RaceStateValue.fingerprint(sim.tuning.competition)
+	result.review_seconds = sim.tuning.competition.policy.review_seconds
+	result.rival_style = sim.rival_styles.drivers[0].style
+	result.rival_label = RaceViewQuery.new(sim).rival_profile_label(0)
 	result.tuning_id = sim.tuning.to_record().get("id", "legacy")
 	result.tuning_hash = sim.tuning.fingerprint
 	result.operations_hash = RaceStateValue.fingerprint(sim.tuning.operations)

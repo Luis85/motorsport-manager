@@ -432,7 +432,8 @@ func reliability_observation(record: Dictionary, reliability_record: Dictionary)
 
 func rival_description(state: Dictionary, record: Dictionary) -> String:
 	var car = _draft_entrant(record)
-	return RivalStyles.public_driver(state, car) if car != null else "Driver unavailable."
+	var source: RaceSim = _source.get_ref()
+	return RivalStyles.public_driver(state, car, source.tuning.competition) if car != null and source != null else "Driver unavailable."
 
 func tactical_plan_error(plan: Variant, id: int) -> String:
 	var source: RaceSim = _source.get_ref()
@@ -460,7 +461,7 @@ func public_rival_field() -> String:
 	var source: RaceSim = _source.get_ref()
 	if source == null: return "Rival field unavailable."
 	return RivalStyles.public_field(source.rival_styles, source.cars, source.rival_state.stops,
-		source.cars.map(func(c): return c.team_identity()))
+		source.cars.map(func(c): return c.team_identity()), source.tuning.competition)
 
 func tyre_info(compound: String) -> Dictionary:
 	var source: RaceSim = _source.get_ref()
@@ -495,3 +496,9 @@ func _draft_entrant(record: Dictionary) -> RaceCar:
 func control_observation() -> Dictionary:
 	var source: RaceSim = _source.get_ref()
 	return WeekendRaceControl.public_view(source.control_state, source.total_time, source.tuning.operations.control) if source != null and source.enhanced() else {}
+
+func rival_profile_label(id: int) -> String:
+	var source: RaceSim = _source.get_ref()
+	if source == null or id < 0 or id >= source.cars.size() or source.rival_styles.is_empty(): return "Rival profile unavailable"
+	var style: String = source.rival_styles.drivers[id].style
+	return str(RivalStyles.definitions(source.tuning.competition).get(style, {}).get("label", "Classic rival"))

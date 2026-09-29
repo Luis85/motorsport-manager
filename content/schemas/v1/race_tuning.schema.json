@@ -2,6 +2,697 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "competition": {
+      "additionalProperties": false,
+      "properties": {
+        "battle": {
+          "additionalProperties": false,
+          "properties": {
+            "acquire_distance_m": {
+              "description": "metres: Maximum absolute distance to acquire a battle target.",
+              "maximum": 500.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            "assertive_preparation_seconds": {
+              "description": "seconds: Preparation delay under assertive racecraft.",
+              "maximum": 30.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "assertive_speed_advantage_mps": {
+              "description": "metres/second: Required closing speed in assertive mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "balanced_preparation_seconds": {
+              "description": "seconds: Preparation delay under balanced racecraft.",
+              "maximum": 30.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "balanced_speed_advantage_mps": {
+              "description": "metres/second: Required closing speed in balanced mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "maximum_curvature_per_m": {
+              "description": "inverse metres: Maximum curvature supporting an attempt.",
+              "maximum": 0.05,
+              "minimum": 0.001,
+              "type": "number"
+            },
+            "minimum_grip": {
+              "description": "multiplier: Minimum modeled local grip for a passing attempt.",
+              "maximum": 1.1,
+              "minimum": 0.3,
+              "type": "number"
+            },
+            "minimum_road_width_m": {
+              "description": "metres: Required road width, never less than the corridor safety floor.",
+              "maximum": 30.0,
+              "minimum": 7.5,
+              "type": "number"
+            },
+            "overlap_timeout_seconds": {
+              "description": "seconds: Abandon an attempt that fails to make timely overlap.",
+              "maximum": 60.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "patient_maximum_water": {
+              "description": "fraction: Patient drivers decline a discretionary pass above this local water level.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "patient_preparation_seconds": {
+              "description": "seconds: Preparation delay under patient racecraft.",
+              "maximum": 30.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "patient_speed_advantage_mps": {
+              "description": "metres/second: Required closing speed in patient mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "prepare_distance_m": {
+              "description": "metres: Start preparing once the target closes to this gap.",
+              "maximum": 500.0,
+              "minimum": 5.0,
+              "type": "number"
+            },
+            "probe_seconds": {
+              "description": "seconds: Minimum probe duration before committing.",
+              "maximum": 10.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "recovery_cooldown_seconds": {
+              "description": "seconds: Cooldown after an aborted contest.",
+              "maximum": 60.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "release_distance_m": {
+              "description": "metres: Maximum distance before a battle target is released.",
+              "maximum": 1000.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            "resolved_cooldown_seconds": {
+              "description": "seconds: Cooldown after a completed pass.",
+              "maximum": 60.0,
+              "minimum": 0.05,
+              "type": "number"
+            }
+          },
+          "required": [
+            "resolved_cooldown_seconds",
+            "recovery_cooldown_seconds",
+            "acquire_distance_m",
+            "release_distance_m",
+            "prepare_distance_m",
+            "minimum_road_width_m",
+            "maximum_curvature_per_m",
+            "minimum_grip",
+            "patient_preparation_seconds",
+            "balanced_preparation_seconds",
+            "assertive_preparation_seconds",
+            "probe_seconds",
+            "overlap_timeout_seconds",
+            "patient_speed_advantage_mps",
+            "balanced_speed_advantage_mps",
+            "assertive_speed_advantage_mps",
+            "patient_maximum_water"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "enum": [
+            "race-competition-v1"
+          ]
+        },
+        "movement": {
+          "additionalProperties": false,
+          "properties": {
+            "damaged_tyre_speed_mps": {
+              "description": "metres/second: Target speed cap on an unusable fitted set.",
+              "maximum": 60.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "dirty_air_factor": {
+              "description": "multiplier: Speed-envelope dirty-air factor.",
+              "maximum": 1.0,
+              "minimum": 0.8,
+              "type": "number"
+            },
+            "following_headway_seconds": {
+              "description": "seconds: Desired following headway before longitudinal constraints.",
+              "maximum": 3.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "following_response_per_second": {
+              "description": "per second: Response to distance from the safe following reference.",
+              "maximum": 3.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "formation_release_seconds": {
+              "description": "seconds/grid place: Formation release spacing.",
+              "maximum": 2.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "formation_speed_factor": {
+              "description": "multiplier: Formation speed envelope.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "formation_speed_mps": {
+              "description": "metres/second: Formation target speed cap.",
+              "maximum": 60.0,
+              "minimum": 5.0,
+              "type": "number"
+            },
+            "lateral_speed_mps": {
+              "description": "metres/second: Maximum requested lane-change rate; occupied-lane checks remain authoritative.",
+              "maximum": 4.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "run_transit_factor": {
+              "description": "multiplier: Speed envelope on non-flying session laps.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "run_transit_speed_mps": {
+              "description": "metres/second: Non-flying lap target speed cap.",
+              "maximum": 100.0,
+              "minimum": 5.0,
+              "type": "number"
+            },
+            "slipstream_curvature_per_m": {
+              "description": "inverse metres: Straight-line threshold for the slipstream effect.",
+              "maximum": 0.02,
+              "minimum": 0.0001,
+              "type": "number"
+            },
+            "slipstream_factor": {
+              "description": "multiplier: Speed-envelope slipstream factor.",
+              "maximum": 1.1,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "start_reaction_seconds": {
+              "description": "seconds: Base standing-start response delay.",
+              "maximum": 2.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "start_skill_seconds": {
+              "description": "seconds/skill deficit: Standing-start response increment.",
+              "maximum": 0.1,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "straight_curvature_per_m": {
+              "description": "inverse metres: Threshold for applying setup straight-line effects.",
+              "maximum": 0.02,
+              "minimum": 0.0001,
+              "type": "number"
+            },
+            "wake_distance_m": {
+              "description": "metres: Following range used by the existing slipstream/dirty-air model.",
+              "maximum": 200.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            "wet_skill_factor": {
+              "description": "multiplier/skill point: Wet-skill handling contribution.",
+              "maximum": 0.009,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "wet_skill_reference": {
+              "description": "skill points: Reference wet-driving rating.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "yield_speed_mps": {
+              "description": "metres/second: Courtesy speed cap after lateral clearance.",
+              "maximum": 80.0,
+              "minimum": 5.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "wet_skill_reference",
+            "wet_skill_factor",
+            "straight_curvature_per_m",
+            "damaged_tyre_speed_mps",
+            "run_transit_factor",
+            "run_transit_speed_mps",
+            "formation_speed_factor",
+            "formation_speed_mps",
+            "formation_release_seconds",
+            "start_reaction_seconds",
+            "start_skill_seconds",
+            "yield_speed_mps",
+            "wake_distance_m",
+            "slipstream_curvature_per_m",
+            "slipstream_factor",
+            "dirty_air_factor",
+            "following_headway_seconds",
+            "following_response_per_second",
+            "lateral_speed_mps"
+          ],
+          "type": "object"
+        },
+        "policy": {
+          "additionalProperties": false,
+          "properties": {
+            "attack_damage": {
+              "description": "damage units: Maximum damage for delegated assertive mode.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "attack_tread": {
+              "description": "tread percent: Minimum usable life for delegated assertive mode.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "conserve_tread": {
+              "description": "tread percent: Classic engineer begins conserving below this value.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fuel_reserve_factor": {
+              "description": "multiplier: Classic engineer fuel target relative to remaining laps.",
+              "maximum": 2.0,
+              "minimum": 0.5,
+              "type": "number"
+            },
+            "healthy_tread": {
+              "description": "tread percent: Classic strategy can skip a discretionary review above this value.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "minimum_gain_seconds": {
+              "description": "seconds: Minimum estimated gain for an ordinary delegated stop.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "pace_temperature_c": {
+              "description": "Celsius: Delegated pace protection threshold.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "pit_loss_gain_factor": {
+              "description": "multiplier: Required gain relative to estimated pit loss.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "repair_damage": {
+              "description": "damage units: Delegated recovery threshold.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "review_seconds": {
+              "description": "seconds: Interval between discretionary strategy reviews.",
+              "maximum": 120.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "review_stagger_seconds": {
+              "description": "seconds: Per-driver modulo-three review staggering.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "stop_remaining_laps": {
+              "description": "laps: Minimum remaining distance for a discretionary stop.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "stop_start_laps": {
+              "description": "laps: Minimum completed distance for a classic discretionary stop.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "stop_tread": {
+              "description": "tread percent: Classic routine tyre-stop threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "traffic_queue_seconds": {
+              "description": "seconds: Queue at which an approved avoid-traffic branch may wait.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "urgent_tread": {
+              "description": "tread percent: Urgent resource recovery threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "conserve_tread",
+            "fuel_reserve_factor",
+            "stop_remaining_laps",
+            "stop_start_laps",
+            "stop_tread",
+            "repair_damage",
+            "pace_temperature_c",
+            "attack_tread",
+            "attack_damage",
+            "review_seconds",
+            "review_stagger_seconds",
+            "healthy_tread",
+            "urgent_tread",
+            "minimum_gain_seconds",
+            "pit_loss_gain_factor",
+            "traffic_queue_seconds"
+          ],
+          "type": "object"
+        },
+        "profiles": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "maxLength": 96,
+                "minLength": 1,
+                "pattern": "^[a-z][a-z0-9_.-]*$",
+                "type": "string"
+              },
+              "label": {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              "summary": {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              "weights": {
+                "items": {
+                  "maximum": 4.0,
+                  "minimum": -4.0,
+                  "type": "number"
+                },
+                "maxItems": 6,
+                "minItems": 6,
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "summary",
+              "weights"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "type": "array"
+        },
+        "rivals": {
+          "additionalProperties": false,
+          "properties": {
+            "behind_gap_seconds": {
+              "description": "seconds: How far behind an observed stop the classic response considers.",
+              "maximum": 20.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "cover_gap_seconds": {
+              "description": "seconds: Maximum estimated ahead gap considered for covering.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "cover_margin_seconds": {
+              "description": "seconds: Classic response minimum cover margin.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "cover_minimum_gain": {
+              "description": "seconds: Lowest ordinary-stop gain accepted for a classic cover.",
+              "maximum": 30.0,
+              "minimum": -30.0,
+              "type": "number"
+            },
+            "cover_scale_seconds": {
+              "description": "seconds: Cover utility normalization; not a probability.",
+              "maximum": 30.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "duel_cover_score": {
+              "description": "score units: Highest shortlisted cover score acceptable to the tactical policy.",
+              "maximum": 8.0,
+              "minimum": -4.0,
+              "type": "number"
+            },
+            "duel_queue_seconds": {
+              "description": "seconds: Maximum predicted queue before tactical cover is declined.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_credit_seconds": {
+              "description": "seconds: Maximum extension preference credit for avoiding traffic.",
+              "maximum": 4.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_fresh_gain_seconds": {
+              "description": "seconds/lap: Classic extension threshold for fresh-tyre advantage.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_remaining_laps": {
+              "description": "laps: Required remaining distance for discretionary extension.",
+              "maximum": 20.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "extend_traffic_factor": {
+              "description": "multiplier: Extension credit relative to traffic cost.",
+              "maximum": 2.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_traffic_seconds": {
+              "description": "seconds: Classic extension traffic-cost threshold.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_tread": {
+              "description": "tread percent: Required life for discretionary extension.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "nearby_gap_seconds": {
+              "description": "seconds: Observed gap qualifying as nearby race-position traffic.",
+              "maximum": 10.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "observation_age_seconds": {
+              "description": "seconds: Maximum age of a public stop used in a response.",
+              "maximum": 120.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "offset_laps": {
+              "description": "laps: Hypothetical early-stop tyre advantage horizon.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "offset_scale_seconds": {
+              "description": "seconds/lap: Fresh-tyre utility normalization.",
+              "maximum": 30.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "position_scale": {
+              "description": "places: Position-loss utility normalization.",
+              "maximum": 24.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "shortlist_seconds": {
+              "description": "seconds: Maximum regret allowed in the near-best shortlist; hard diagnostic ceiling remains four.",
+              "maximum": 4.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "threat_position_factor": {
+              "description": "multiplier: Track-position preference when a car is close behind.",
+              "maximum": 2.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "traffic_seconds_per_car": {
+              "description": "seconds/car: Coarse cost of predicted rejoin traffic.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "uncertainty_weight": {
+              "description": "multiplier: Moderate-risk preference penalty.",
+              "maximum": 4.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "nearby_gap_seconds",
+            "traffic_seconds_per_car",
+            "observation_age_seconds",
+            "behind_gap_seconds",
+            "cover_gap_seconds",
+            "offset_laps",
+            "cover_scale_seconds",
+            "cover_margin_seconds",
+            "cover_minimum_gain",
+            "extend_remaining_laps",
+            "extend_tread",
+            "extend_traffic_seconds",
+            "extend_fresh_gain_seconds",
+            "shortlist_seconds",
+            "position_scale",
+            "offset_scale_seconds",
+            "uncertainty_weight",
+            "extend_credit_seconds",
+            "extend_traffic_factor",
+            "threat_position_factor",
+            "duel_queue_seconds",
+            "duel_cover_score"
+          ],
+          "type": "object"
+        },
+        "team": {
+          "additionalProperties": false,
+          "properties": {
+            "priority_queue_margin_seconds": {
+              "description": "seconds: Additional shared-service overlap margin.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "priority_tread": {
+              "description": "tread percent: Minimum projected remaining life when deferring a priority stop.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "priority_wear_factor": {
+              "description": "multiplier: One-entry tyre-wear reserve for deferring the second car.",
+              "maximum": 5.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "yield_curvature_per_m": {
+              "description": "inverse metres: Maximum curvature for executing a team yield.",
+              "maximum": 0.03,
+              "minimum": 0.001,
+              "type": "number"
+            },
+            "yield_execution_gap_m": {
+              "description": "metres: Maximum gap for executing a safe team yield.",
+              "maximum": 500.0,
+              "minimum": 5.0,
+              "type": "number"
+            },
+            "yield_grip": {
+              "description": "multiplier: Minimum grip for team cooperation.",
+              "maximum": 1.1,
+              "minimum": 0.45,
+              "type": "number"
+            },
+            "yield_maximum_gap_m": {
+              "description": "metres: Maximum gap at which a team yield may be requested.",
+              "maximum": 500.0,
+              "minimum": 10.0,
+              "type": "number"
+            },
+            "yield_speed_delta_mps": {
+              "description": "metres/second: Requested speed difference to the passing teammate.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "yield_speed_factor": {
+              "description": "multiplier: Bounded team-yield speed reduction after physical clearance.",
+              "maximum": 1.0,
+              "minimum": 0.5,
+              "type": "number"
+            },
+            "yield_width_m": {
+              "description": "metres: Required width for yielding; no lower than the safety floor.",
+              "maximum": 30.0,
+              "minimum": 8.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "yield_maximum_gap_m",
+            "yield_execution_gap_m",
+            "yield_width_m",
+            "yield_curvature_per_m",
+            "yield_grip",
+            "yield_speed_factor",
+            "yield_speed_delta_mps",
+            "priority_wear_factor",
+            "priority_tread",
+            "priority_queue_margin_seconds"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "model",
+        "policy",
+        "rivals",
+        "battle",
+        "movement",
+        "team",
+        "profiles"
+      ],
+      "type": "object"
+    },
     "condition": {
       "additionalProperties": false,
       "properties": {

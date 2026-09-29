@@ -254,10 +254,10 @@ func _base_engineer(c: RaceCar) -> void:
 	if not c.auto or phase != "race" or c.route != "track" or c.dnf or c.finished: return
 	var remaining = maxf(0, laps - c.distance / track.length)
 	var emergency = not WheelTyres.usable(TyreInventory.find(c, c.set_id))
-	c.pace = 0 if emergency or c.tyre < 30 or flag != "GREEN" else 1
-	c.engine = 0 if emergency or c.fuel < remaining * 1.03 else 1
+	c.pace = 0 if emergency or c.tyre < tuning.competition.policy.conserve_tread or flag != "GREEN" else 1
+	c.engine = 0 if emergency or c.fuel < remaining * tuning.competition.policy.fuel_reserve_factor else 1
 	var recommended = recommended_compound()
-	var ordinary_stop = remaining > 0.8 and c.distance > track.length * 0.25 and (c.tyre < 25 or c.compound != recommended and (tyre_rules.wet(recommended) or tyre_rules.wet(c.compound)) or c.damage > 24)
+	var ordinary_stop = remaining > tuning.competition.policy.stop_remaining_laps and c.distance > track.length * tuning.competition.policy.stop_start_laps and (c.tyre < tuning.competition.policy.stop_tread or c.compound != recommended and (tyre_rules.wet(recommended) or tyre_rules.wet(c.compound)) or c.damage > tuning.competition.policy.repair_damage)
 	if not emergency and not ordinary_stop: return
 	# A failed tyre is not a routine strategy stop: first-lap and late-lap gates
 	# must not suppress recovery. Only delegated control may revise a future stop.
@@ -293,24 +293,24 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	var g = grip(c, cell, local)
 	var effects = CarSetup.effects(c, local.water)
 	var handling = (1.0 + (c.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
-	handling *= 1.0 + (c.wet_skill - 85) * 0.004 * local.water
+	handling *= 1.0 + (c.wet_skill - tuning.competition.movement.wet_skill_reference) * tuning.competition.movement.wet_skill_factor * local.water
 	var desired = s.speed * sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
 	desired *= tuning.pace.engine_modes[c.engine]
 	desired *= (1.0 - maxf(0, tuning.condition.health_reference - c.health) * tuning.condition.health_speed_loss) / (1.0 + c.fuel * tuning.fuel.runtime_mass_factor)
-	if absf(s.curvature) < 0.005: desired *= effects.straight
+	if absf(s.curvature) < tuning.competition.movement.straight_curvature_per_m: desired *= effects.straight
 	desired *= 1.0 - maxf(0, c.engine_temperature - tuning.condition.heat_reference_c) * tuning.condition.heat_speed_loss
-	if not WheelTyres.usable(TyreInventory.find(c, c.set_id)): desired = minf(desired, 27.0)
+	if not WheelTyres.usable(TyreInventory.find(c, c.set_id)): desired = minf(desired, tuning.competition.movement.damaged_tyre_speed_mps)
 	var target_lane = s.line
-	if is_run_session() and c.qual_state != "hotlap": desired = minf(desired * 0.76, 48)
+	if is_run_session() and c.qual_state != "hotlap": desired = minf(desired * tuning.competition.movement.run_transit_factor, tuning.competition.movement.run_transit_speed_mps)
 	if phase == "formation":
-		desired = minf(desired * 0.65, 30)
+		desired = minf(desired * tuning.competition.movement.formation_speed_factor, tuning.competition.movement.formation_speed_mps)
 		var goal = track.length - (c.grid - 1) * track.grid_spacing
 		var remaining = maxf(0, goal - c.distance)
 		desired = minf(desired, sqrt(2 * 6 * remaining))
 		if remaining < 100: target_lane = (-1 if c.grid % 2 else 1) * 2.0
-		if clock < (c.grid - 1) * 0.22: desired = 0.0
+		if clock < (c.grid - 1) * tuning.competition.movement.formation_release_seconds: desired = 0.0
 	if neutral(c): desired = minf(desired, neutral_speed_limit(c, s))
-	if phase == "race" and clock < 0.15 + (100 - c.skill) * 0.008: desired = 0.0
+	if phase == "race" and clock < tuning.competition.movement.start_reaction_seconds + (100 - c.skill) * tuning.competition.movement.start_skill_seconds: desired = 0.0
 	if phase == "race" and clock < 3.0: target_lane = (-1 if c.grid % 2 else 1) * 2.0
 	var nearest_id = -1; var ahead_distance = INF
 	var was_blue = c.blue
@@ -318,7 +318,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	c.blue = c.yield_to >= 0 and phase == "race"
 	if c.yield_to >= 0:
 		target_lane = courtesy_target
-		if absf(c.lane - old[c.yield_to].lane) > 2.6: desired = minf(desired, 43)
+		if absf(c.lane - old[c.yield_to].lane) > 2.6: desired = minf(desired, tuning.competition.movement.yield_speed_mps)
 	for other in cars:
 		if other.id == c.id or other.dnf or other.finished or old[other.id].route != "track": continue
 		var delta = fposmod(old[other.id].distance - old[c.id].distance, track.length)
@@ -326,13 +326,13 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	if c.blue and not was_blue:
 		stats.blue_flags += 1; post("flag", c.short + " yields under blue flags.")
 	var passing = false
-	if nearest_id >= 0 and ahead_distance < 75:
-		if phase == "race" and not neutral(c): desired *= 1.022 if absf(s.curvature) < 0.004 else 0.991
+	if nearest_id >= 0 and ahead_distance < tuning.competition.movement.wake_distance_m:
+		if phase == "race" and not neutral(c): desired *= tuning.competition.movement.slipstream_factor if absf(s.curvature) < tuning.competition.movement.slipstream_curvature_per_m else tuning.competition.movement.dirty_air_factor
 	var traffic = traffic_instruction(c, old, nearest_id, ahead_distance, desired, target_lane, s, local)
 	desired = traffic.desired; target_lane = traffic.lane
 	if traffic.attempt and nearest_id >= 0: passing = absf(c.lane - old[nearest_id].lane) >= 2.6
-	if nearest_id >= 0 and ahead_distance < 75 and not passing and ahead_distance < maxf(12, c.speed * 0.8):
-		desired = minf(desired, maxf(0, old[nearest_id].speed + (ahead_distance - 7) * 0.7))
+	if nearest_id >= 0 and ahead_distance < tuning.competition.movement.wake_distance_m and not passing and ahead_distance < maxf(12, c.speed * tuning.competition.movement.following_headway_seconds):
+		desired = minf(desired, maxf(0, old[nearest_id].speed + (ahead_distance - 7) * tuning.competition.movement.following_response_per_second))
 	# Do not sweep across an occupied lateral lane.
 	for other in cars:
 		if other.id == c.id or other.dnf or old[other.id].route != "track": continue
@@ -343,7 +343,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 			# Keep occupied lanes separated without ever displacing an already overlapping car.
 			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
 			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
-	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * 1.8)
+	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * tuning.competition.movement.lateral_speed_mps)
 	var limits = track.vehicle_definition.parameters()
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
 	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
@@ -408,8 +408,9 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 
 func _base_traffic_instruction(c: RaceCar, old: Array, nearest: int, gap: float, desired: float, lane: float, sample: Dictionary, local: Dictionary) -> Dictionary:
 	var result = {"desired": desired, "lane": lane, "attempt": false, "block_pass": false}
-	if nearest < 0 or gap >= 75: return result
-	if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(sample.curvature) < 0.035 and sample.w > 7.5 and desired > old[nearest].speed + ({"patient": 2.0, "balanced": 0.4, "assertive": 0.1}[c.battle_mode]) and not (c.battle_mode == "patient" and local.water > 0.5):
+	var battle: Dictionary = tuning.competition.battle
+	if nearest < 0 or gap >= battle.prepare_distance_m: return result
+	if c.yield_to < 0 and not neutral(c) and phase != "formation" and absf(sample.curvature) < battle.maximum_curvature_per_m and sample.w > battle.minimum_road_width_m and desired > old[nearest].speed + battle[c.battle_mode + "_speed_advantage_mps"] and not (c.battle_mode == "patient" and local.water > battle.patient_maximum_water):
 		var side = -1 if old[nearest].lane >= 0 else 1
 		result.lane = clampf(old[nearest].lane + side * 3.0, -sample.w * 0.5 + 1.4, sample.w * 0.5 - 1.4)
 		result.attempt = true

@@ -26,14 +26,15 @@ static func instruction(sim, car: RaceCar, old: Array, nearest: int, fallback: D
 	var result = fallback.duplicate()
 	if sim.phase != "race": return result
 	var now = sim.total_time
+	var tuning: Dictionary = sim.tuning.competition.battle
 	if record.phase in ["resolve", "recover"]:
 		result.attempt = false
-		if now - record.since < (2.0 if record.phase == "resolve" else 3.0): return result
+		if now - record.since < (tuning.resolved_cooldown_seconds if record.phase == "resolve" else tuning.recovery_cooldown_seconds): return result
 		record.phase = "idle"; record.target_id = -1; record.id = ""; record.overlap = false
 	# Absolute race distance rejects bridge crossings and lapped-car proximity.
 	var candidate_gap = old[nearest].distance - old[int(car.id)].distance if nearest >= 0 else INF
 	if record.target_id < 0:
-		if nearest < 0 or candidate_gap <= 0 or candidate_gap > 120 or car.blue: return result
+		if nearest < 0 or candidate_gap <= 0 or candidate_gap > tuning.acquire_distance_m or car.blue: return result
 		if blocked or sim.neutral(car) or car.pit_order:
 			result.attempt = false
 			return result
@@ -45,7 +46,7 @@ static func instruction(sim, car: RaceCar, old: Array, nearest: int, fallback: D
 	var target = sim.cars[target_id]
 	var gap = old[target_id].distance - old[int(car.id)].distance
 	result.attempt = false
-	if blocked or sim.neutral(car) or sim.neutral(target) or car.blue or car.pit_order or target.dnf or target.finished or old[target_id].route != "track" or absf(gap) > 180:
+	if blocked or sim.neutral(car) or sim.neutral(target) or car.blue or car.pit_order or target.dnf or target.finished or old[target_id].route != "track" or absf(gap) > tuning.release_distance_m:
 		change(sim, record, "recover", "Attempt ended: team instruction, traffic priority, pit commitment or sporting restriction.")
 		return result
 	if nearest != target_id and gap > CLEARANCE:
@@ -54,18 +55,18 @@ static func instruction(sim, car: RaceCar, old: Array, nearest: int, fallback: D
 	if gap < -CLEARANCE and not record.overlap:
 		change(sim, record, "recover", "The target moved behind without a recorded side-by-side pass.")
 		return result
-	var room = sample.w > 7.5 and absf(sample.curvature) < 0.035 and local.grip > 0.45
+	var room = sample.w > tuning.minimum_road_width_m and absf(sample.curvature) < tuning.maximum_curvature_per_m and local.grip > tuning.minimum_grip
 	room = room and WheelTyres.usable(TyreInventory.find(car, car.set_id))
-	if record.phase == "approach" and gap <= 75:
+	if record.phase == "approach" and gap <= tuning.prepare_distance_m:
 		change(sim, record, "prepare", "Prepare tyres and identify a usable corridor.")
 	elif record.phase == "prepare":
-		var preparation = {"patient": 1.5, "balanced": 0.8, "assertive": 0.4}[car.battle_mode]
+		var preparation = tuning[car.battle_mode + "_preparation_seconds"]
 		if fallback.attempt and room and now - record.since >= preparation:
 			change(sim, record, "probe", "A speed advantage and usable road width support a probe.")
 	elif record.phase == "probe":
 		if not room or not fallback.attempt:
 			change(sim, record, "recover", "No sustainable overlap before the next opportunity.")
-		elif now - record.since >= 0.25:
+		elif now - record.since >= tuning.probe_seconds:
 			change(sim, record, "commit", "Commit to one corridor; occupied lanes still take priority.")
 	if record.phase in ["commit", "alongside"]:
 		if not room:
@@ -76,7 +77,7 @@ static func instruction(sim, car: RaceCar, old: Array, nearest: int, fallback: D
 		if absf(gap) <= CLEARANCE and absf(old[int(car.id)].lane - old[target_id].lane) >= 2.6:
 			record.overlap = true
 			change(sim, record, "alongside", "Measured longitudinal overlap in separate physical corridors.")
-		elif now - record.since > 15.0:
+		elif now - record.since > tuning.overlap_timeout_seconds:
 			change(sim, record, "recover", "The attack did not create a timely overlap; regroup rather than force it.")
 			result.attempt = false
 	return result

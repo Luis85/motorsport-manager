@@ -10,7 +10,7 @@ func install(sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary =
 
 	sim.practice_state = PracticeEvidence.create(sim.cars, sim.tuning.practice_duration(sim.track.estimate if geometry != null else 0))
 
-	sim.rival_styles = RivalStyles.create(sim.cars, options.get("rival_styles", true) == true)
+	sim.rival_styles = RivalStyles.create(sim.cars, options.get("rival_styles", true) == true, sim.tuning.competition)
 	# Explicit new-weekend opt-in preserves historical saves, recipes and recordings.
 	sim.duel_state = TacticalDuels.create(sim.cars, options.get("tactical_duels", false) == true)
 

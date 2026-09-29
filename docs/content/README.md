@@ -2,8 +2,8 @@
 
 Status: vehicles, rosters, tyres/allocations, setup, shared race tuning, named
 weekends, weather/surface calibration, scalar reliability, incidents and supported
-virtual race-control settings are implemented. AI/racecraft and remaining wheel
-coefficients, general provider selection, common track/scenario/presentation
+virtual race-control settings, shared AI/racecraft tuning and externally named rival
+profiles are implemented. Remaining wheel coefficients, general provider selection, common track/scenario/presentation
 authoring, and final full-plan acceptance remain unfinished.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
@@ -59,10 +59,12 @@ legacy four-preset and twelve-driver adapters. A new preset is not a new sportin
 `python3 scripts/verify_content_export.py --godot /path/to/godot` exports Linux
 debug and release, runs each from an isolated directory with no source tree,
 loads fourteen drivers, six compounds and ten sets per driver; edits vehicle,
-tyre wear, setup, fuel/service tuning, weather/surface, operations and weekend lap counts without rebuilding; rejects malformed and conflicting edits; deletes
+tyre wear, setup, fuel/service tuning, weather/surface, operations, AI profiles and weekend lap counts without rebuilding; rejects malformed and conflicting edits; deletes
 the source pack; and compares the exact restored session. This is Linux headless
 acceptance, not Windows execution or human usability evidence.
 
 Weather/surface coefficients and their compatibility rules: [authoring guide](weather-and-surface.md).
 
 Scalar condition, driving incidents and virtual control: [authoring guide](reliability-and-control.md).
+
+AI, passing opportunities and coordinated pit forecasts: [competition authoring guide](competition-and-ai.md).
