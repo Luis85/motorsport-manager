@@ -41,7 +41,7 @@ func run() -> void:
 
 func validation(catalog: ContentCatalog) -> void:
 	var standard = catalog.tuning("core.race_tuning.default")
-	var original_tables = standard.view(); original_tables.erase("environment")
+	var original_tables = standard.view(); original_tables.erase("environment"); original_tables.erase("operations")
 	check(standard != null and original_tables == LegacyRaceTuning.VALUES, "External defaults exactly preserve the compatibility coefficient tables")
 	check(catalog.entries("weekend").size() == 3, "New weekend appears solely through manifest content")
 	var source = standard.to_record()

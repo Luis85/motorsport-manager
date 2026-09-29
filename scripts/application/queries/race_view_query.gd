@@ -427,7 +427,8 @@ func practice_key(state: Dictionary, record: Dictionary) -> String:
 
 func reliability_observation(record: Dictionary, reliability_record: Dictionary) -> Dictionary:
 	var car = _draft_entrant(record)
-	return RaceReliability.observation(car, reliability_record) if car != null else {}
+	var source: RaceSim = _source.get_ref()
+	return RaceReliability.observation(car, reliability_record, source.tuning.operations.reliability) if car != null and source != null else {}
 
 func rival_description(state: Dictionary, record: Dictionary) -> String:
 	var car = _draft_entrant(record)
@@ -490,3 +491,7 @@ func _draft_entrant(record: Dictionary) -> RaceCar:
 	if source.roster_definition != null and car.id >= 0 and car.id < source.cars.size():
 		car.entry_definition = source.roster_definition.entrant(car.id)
 	return car
+
+func control_observation() -> Dictionary:
+	var source: RaceSim = _source.get_ref()
+	return WeekendRaceControl.public_view(source.control_state, source.total_time, source.tuning.operations.control) if source != null and source.enhanced() else {}

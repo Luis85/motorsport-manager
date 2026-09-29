@@ -39,7 +39,7 @@ func refresh() -> void:
 		repair.disabled = not c.player or c.dnf or c.finished or c.route == "pit" or sim.reliability(int(c.id)).repair_only
 		if repair.disabled: repair.tooltip_text = "A committed repair plan is locked; it cannot be changed by this checkbox."
 		if not sim.chequered:
-			var control = WeekendRaceControl.public_view(sim.control_state, sim.total_time)
+			var control = sim.control_observation()
 			flag_label.text = ("PAUSED · " if sim.paused else "") + ("VIRTUAL ENDING" if control.state == "ending" else control.flag)
 			flag_label.tooltip_text = control.rules + " Open Recovery & race control for persistent details."
 	for id in sim.player_ids():

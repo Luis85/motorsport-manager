@@ -287,7 +287,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	var record = TacticalDuels.current(sim, int(c.id))
 	if TacticalDuels.owns(record) and sim.phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order:
 		var sound = WheelTyres.usable(TyreInventory.find(c, c.set_id))
-		var dry_safe = c.tyre >= 18 and c.damage <= 24 and sound and sim.average(sim.water) <= 0.10 and sim.rain < 0.08 and not c.tyre_rules.wet(c.compound) and RaceReliability.stage(c, sim.reliability(int(c.id))) not in ["degraded", "critical"]
+		var dry_safe = c.tyre >= sim.tuning.environment.weather_policy.fallback_tread and c.damage <= sim.tuning.environment.weather_policy.fallback_damage and sound and sim.average(sim.water) <= sim.tuning.environment.weather_policy.dry_fallback_water and sim.rain < 0.08 and not c.tyre_rules.wet(c.compound) and RaceReliability.stage(c, sim.reliability(int(c.id)), sim.tuning.operations.reliability) not in ["degraded", "critical"]
 		if not dry_safe:
 			# A narrow dry mandate cannot create previously absent emergency consent.
 			# Restore the real previous owner before the existing recovery/weather logic.

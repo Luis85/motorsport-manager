@@ -58,6 +58,10 @@ func seal() -> Array:
 			var problems = EnvironmentTuningSchema.semantic_errors(_records[id].environment)
 			if not problems.is_empty():
 				return _definition_error(id, problems[0].code, problems[0].field, problems[0].message)
+		if _records[id].kind == "race_tuning" and _records[id].has("operations"):
+			var problems = OperationsTuningSchema.semantic_errors(_records[id].operations)
+			if not problems.is_empty():
+				return _definition_error(id, problems[0].code, problems[0].field, problems[0].message)
 		if _records[id].kind == "race_tuning" and tuning(id) == null:
 			return _definition_error(id, "CONTENT_TUNING", "", "Use ordered mode multipliers and supported physical ranges.")
 		if _records[id].kind == "weekend":

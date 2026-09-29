@@ -20,7 +20,7 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 		if legacy.get("flag") == "VIRTUAL": legacy.flag = "SAFETY CAR"
 	var base = WeatherRaceSim.restore_weather(legacy)
 	if base == null: return null
-	var reliability = data.get("reliability_state") if native else RaceReliability.create(base.cars, base.seed_value, "legacy")
+	var reliability = data.get("reliability_state") if native else RaceReliability.create(base.cars, base.seed_value, "legacy", base.tuning.operations.reliability)
 	var control = data.get("control_state") if native else WeekendRaceControl.create()
 	if not RaceReliability.valid(reliability, base.cars, base.total_time, base.tuning) or not WeekendRaceControl.valid(control, base.total_time, base.cars.size()): return null
 	if native and reliability.mode == "staged" and data.get("flag") != WeekendRaceControl.flag_value(control): return null

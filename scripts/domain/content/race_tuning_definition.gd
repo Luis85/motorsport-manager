@@ -6,6 +6,9 @@ var _values: Dictionary = {}
 var _environment: Dictionary = RaceStateValue.read_only(LegacyEnvironment.VALUES)
 var environment: Dictionary:
 	get: return _environment
+var _operations: Dictionary = RaceStateValue.read_only(LegacyOperations.VALUES)
+var operations: Dictionary:
+	get: return _operations
 var _fingerprint: String = "legacy-path-race-v1"
 var fuel: Dictionary:
 	get: return _values.fuel
@@ -29,6 +32,7 @@ static func from_record(record: Variant) -> RaceTuningDefinition:
 	if not record is Dictionary: return null
 	if not ContentValidation.check(record, ContentSchema.definition("race_tuning")).is_empty(): return null
 	if record.has("environment") and not EnvironmentTuningSchema.semantic_errors(record.environment).is_empty(): return null
+	if record.has("operations") and not OperationsTuningSchema.semantic_errors(record.operations).is_empty(): return null
 	# A legal maximum-length race must still fit the existing serialized fuel bound.
 	if record.fuel.race_load_per_lap * 100 + record.fuel.race_reserve_laps > 200: return null
 	var service = record.service
@@ -49,6 +53,8 @@ static func from_record(record: Variant) -> RaceTuningDefinition:
 	value._values = RaceStateValue.read_only(tables)
 	if record.has("environment"):
 		value._environment = RaceStateValue.read_only(record.environment)
+	if record.has("operations"):
+		value._operations = RaceStateValue.read_only(record.operations)
 	value._fingerprint = RaceStateValue.fingerprint(record)
 	return value
 
@@ -62,6 +68,8 @@ func view() -> Dictionary:
 	var result = _values.duplicate(true)
 	if _record.has("environment"):
 		result.environment = _environment.duplicate(true)
+	if _record.has("operations"):
+		result.operations = _operations.duplicate(true)
 	return result
 
 func race_fuel(lap_count: int) -> float:
@@ -82,3 +90,6 @@ static func mean_service(values: Dictionary, repair_only: bool) -> float:
 
 static func environment_values(snapshot: Dictionary) -> Dictionary:
 	return forecast_values(snapshot).get("environment", LegacyEnvironment.VALUES)
+
+static func operations_values(snapshot: Dictionary) -> Dictionary:
+	return forecast_values(snapshot).get("operations", LegacyOperations.VALUES)

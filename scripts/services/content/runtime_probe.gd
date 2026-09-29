@@ -64,6 +64,12 @@ static func restore() -> Dictionary:
 	var car: RaceCar = sim.cars[sim.player_ids()[0]]
 	result.tuning_id = sim.tuning.to_record().get("id", "legacy")
 	result.tuning_hash = sim.tuning.fingerprint
+	result.operations_hash = RaceStateValue.fingerprint(sim.tuning.operations)
+	result.virtual_pace_factor = sim.tuning.operations.control.virtual_pace_factor
+	result.control_ending_seconds = sim.tuning.operations.control.ending_seconds
+	result.fault_threshold_base = sim.tuning.operations.reliability.fault_threshold_base
+	result.fault_threshold = sim.reliability(sim.player_ids()[0]).fault_threshold
+	result.repair_seconds_per_damage = sim.tuning.service.repair_seconds_per_damage
 	result.environment_hash = RaceStateValue.fingerprint(sim.tuning.environment)
 	result.cloud_response_per_second = sim.tuning.environment.weather.cloud_response_per_second
 	result.water_drainage = sim.tuning.environment.surface.evolution.water_drainage

@@ -1288,6 +1288,467 @@
       "minLength": 1,
       "type": "string"
     },
+    "operations": {
+      "additionalProperties": false,
+      "properties": {
+        "control": {
+          "additionalProperties": false,
+          "properties": {
+            "ending_seconds": {
+              "description": "seconds: Published no-passing interval after virtual clearance.",
+              "maximum": 120.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "legacy_mechanical_seconds": {
+              "description": "seconds: Legacy mechanical-retirement local-yellow interval.",
+              "maximum": 120.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "legacy_neutral_speed_mps": {
+              "description": "metres/second: Legacy neutral/formation target cap; not a physical safety car.",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "local_incident_seconds": {
+              "description": "seconds: Local clearance for a non-terminal driving incident.",
+              "maximum": 120.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "local_yellow_speed_mps": {
+              "description": "metres/second: Local-yellow target speed cap; ordinary braking still applies.",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "retired_car_seconds": {
+              "description": "seconds: Global virtual clearance for an actual on-track retirement.",
+              "maximum": 120.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "virtual_pace_factor": {
+              "description": "multiplier: Virtual/ending target relative to the compiled speed envelope; no catch-up.",
+              "maximum": 1.0,
+              "minimum": 0.05,
+              "type": "number"
+            }
+          },
+          "required": [
+            "virtual_pace_factor",
+            "ending_seconds",
+            "local_yellow_speed_mps",
+            "legacy_neutral_speed_mps",
+            "local_incident_seconds",
+            "retired_car_seconds",
+            "legacy_mechanical_seconds"
+          ],
+          "type": "object"
+        },
+        "incidents": {
+          "additionalProperties": false,
+          "properties": {
+            "assertive_factor": {
+              "description": "multiplier: Driving-error exposure under assertive racecraft.",
+              "maximum": 5.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "balanced_factor": {
+              "description": "multiplier: Driving-error exposure under balanced racecraft.",
+              "maximum": 5.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "barrier_probability": {
+              "description": "conditional probability: Barrier retirement after a driving error has occurred.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "base_exposure_per_second": {
+              "description": "per simulated second: Base driving-error exposure before driver, tyre and mode factors.",
+              "maximum": 0.001,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "consistency_factor": {
+              "description": "multiplier/consistency deficit point: Driving-error exposure below consistency 100.",
+              "maximum": 0.2,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_base": {
+              "description": "damage units: Base damage after a non-terminal driving error.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_span": {
+              "description": "damage units: Uniform additional driving-error damage.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "legacy_mechanical_health": {
+              "description": "health percent: Legacy mechanical branch only below this remaining health.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "legacy_retirement_threshold": {
+              "description": "cumulative conditional probability: Legacy mechanical branch follows barrier outcomes.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lost_seconds_base": {
+              "description": "seconds: Base time loss after a non-terminal driving error.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lost_seconds_span": {
+              "description": "seconds: Uniform additional driving-error time loss.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "low_tread_factor": {
+              "description": "multiplier/tread point: Exposure below the low-tread reference.",
+              "maximum": 0.2,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "low_tread_reference": {
+              "description": "tread percent: Reference below which driving-error exposure rises.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "patient_factor": {
+              "description": "multiplier: Driving-error exposure under patient racecraft.",
+              "maximum": 5.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "push_factor": {
+              "description": "multiplier: Driving-error exposure at push pace.",
+              "maximum": 5.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "reliability_factor": {
+              "description": "multiplier/reliability deficit point: Driving-error exposure below reliability 100.",
+              "maximum": 0.2,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "tread_loss": {
+              "description": "tread points: Per-wheel retained-life loss from a driving error.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "volatile_factor": {
+              "description": "multiplier: Disclosed volatile mode; calm still suppresses stochastic incidents.",
+              "maximum": 5.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "water_factor": {
+              "description": "multiplier/water fraction: Exposure on the actual local strip.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "base_exposure_per_second",
+            "consistency_factor",
+            "reliability_factor",
+            "push_factor",
+            "water_factor",
+            "low_tread_reference",
+            "low_tread_factor",
+            "patient_factor",
+            "balanced_factor",
+            "assertive_factor",
+            "volatile_factor",
+            "barrier_probability",
+            "legacy_retirement_threshold",
+            "legacy_mechanical_health",
+            "lost_seconds_base",
+            "lost_seconds_span",
+            "damage_base",
+            "damage_span",
+            "tread_loss"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "enum": [
+            "race-operations-v1"
+          ]
+        },
+        "reliability": {
+          "additionalProperties": false,
+          "properties": {
+            "critical_recovery_per_second": {
+              "description": "exposure/second: Critical-load recovery outside the critical stage.",
+              "maximum": 50.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_critical": {
+              "description": "damage units: Inclusive critical threshold, not below degraded.",
+              "maximum": 1000.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "damage_degraded": {
+              "description": "damage units: Inclusive degraded threshold, not below warning.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_exposure": {
+              "description": "exposure/second/damage unit: Exposure above the reference.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_reference": {
+              "description": "damage units: No damage exposure below this value.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_warning": {
+              "description": "damage units: Inclusive warning threshold.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "default_repair_budget_seconds": {
+              "description": "seconds of additional repair work: Initial per-driver cap; does not grant player repair authority.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "engine_attack": {
+              "description": "multiplier: Exposure in attack engine mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "engine_normal": {
+              "description": "multiplier: Exposure in normal engine mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "engine_save": {
+              "description": "multiplier: Exposure in saving engine mode.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fault_damage_base": {
+              "description": "damage units: Base scalar damage added by a fault.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fault_damage_span": {
+              "description": "damage units: Uniform additional scalar-fault damage.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fault_health_base": {
+              "description": "health points: Base lifetime health lost to a fault; never repaired in pits.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fault_health_span": {
+              "description": "health points: Uniform additional lifetime health loss.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fault_threshold_base": {
+              "description": "exposure units: Minimum sampled fault threshold.",
+              "maximum": 10000.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "fault_threshold_span": {
+              "description": "exposure units: Uniform threshold jitter; the random draw remains when zero.",
+              "maximum": 10000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "health_critical": {
+              "description": "health percent: Inclusive critical threshold, not above degraded.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "health_degraded": {
+              "description": "health percent: Inclusive degraded threshold, not above warning.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "health_exposure": {
+              "description": "exposure/second/health point: Condition exposure below the reference.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "health_reference": {
+              "description": "health percent: No condition exposure above this health.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "health_warning": {
+              "description": "health percent: Inclusive warning threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "maximum_exposure": {
+              "description": "exposure/second: Clamp after engine-mode scaling.",
+              "maximum": 50.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "minimum_critical_exposure": {
+              "description": "exposure/second: Minimum accumulation while critically damaged.",
+              "maximum": 50.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "minimum_critical_seconds": {
+              "description": "seconds: Minimum critical interval before progressive terminal failure; zero health is separate.",
+              "maximum": 600.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "observed_rising_exposure": {
+              "description": "exposure/second: Public rising-exposure label threshold; not a failure prediction.",
+              "maximum": 50.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "repair_minimum_tread": {
+              "description": "tread percent: Minimum limiting-wheel life for repair-only service; punctures remain disallowed.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "stress_recovery_per_second": {
+              "description": "exposure/second: Stress recovery when instantaneous exposure is zero.",
+              "maximum": 50.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "stress_warning": {
+              "description": "exposure units: Warning threshold for accumulated repairable stress.",
+              "maximum": 10000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "temperature_warning_c": {
+              "description": "Celsius: Start a thermal warning.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "temperature_warning_reset_c": {
+              "description": "Celsius: Retain an existing thermal warning down to this temperature.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "terminal_threshold_base": {
+              "description": "critical exposure units: Minimum sampled terminal threshold.",
+              "maximum": 10000.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "terminal_threshold_span": {
+              "description": "critical exposure units: Uniform terminal-threshold jitter.",
+              "maximum": 10000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "thermal_exposure": {
+              "description": "exposure/second/Celsius: Thermal exposure above the reference.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "thermal_reference_c": {
+              "description": "Celsius: No thermal exposure below this temperature.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "damage_warning",
+            "damage_degraded",
+            "damage_critical",
+            "health_warning",
+            "health_degraded",
+            "health_critical",
+            "temperature_warning_c",
+            "temperature_warning_reset_c",
+            "stress_warning",
+            "thermal_reference_c",
+            "thermal_exposure",
+            "health_reference",
+            "health_exposure",
+            "damage_reference",
+            "damage_exposure",
+            "maximum_exposure",
+            "engine_save",
+            "engine_normal",
+            "engine_attack",
+            "stress_recovery_per_second",
+            "fault_threshold_base",
+            "fault_threshold_span",
+            "terminal_threshold_base",
+            "terminal_threshold_span",
+            "fault_damage_base",
+            "fault_damage_span",
+            "fault_health_base",
+            "fault_health_span",
+            "minimum_critical_exposure",
+            "critical_recovery_per_second",
+            "minimum_critical_seconds",
+            "observed_rising_exposure",
+            "default_repair_budget_seconds",
+            "repair_minimum_tread"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "model",
+        "reliability",
+        "control",
+        "incidents"
+      ],
+      "type": "object"
+    },
     "pace": {
       "additionalProperties": false,
       "properties": {

@@ -213,7 +213,7 @@ func _base_step() -> void:
 func _base_update_flags() -> void:
 	# Legacy procedure remains unchanged; newer rulesets override this tick-boundary seam.
 	if flag != "GREEN" and clock >= flag_until:
-		if flag == "SAFETY CAR": flag = "RESTART"; flag_until = clock + 8.0
+		if flag == "SAFETY CAR": flag = "RESTART"; flag_until = clock + tuning.operations.control.ending_seconds
 		else: flag = "GREEN"; yellow_sector = -1
 		post("flag", flag)
 
@@ -222,7 +222,7 @@ func _base_forecast_parameters(_driver_id: int) -> Dictionary:
 	return {}
 
 func _base_neutral_speed_limit(_c: RaceCar, _sample: Dictionary) -> float:
-	return 25.0 if flag == "YELLOW" else 30.0
+	return tuning.operations.control.local_yellow_speed_mps if flag == "YELLOW" else tuning.operations.control.legacy_neutral_speed_mps
 
 func _base_constrain_progress(_c: RaceCar, next: float, _old: Array, _nearest: int) -> float:
 	return next
@@ -397,9 +397,10 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 		record_track_pass(c, cars[nearest_id])
 	c.intent = "Blue flag · yielding" if c.blue else (pit_status(c) if c.pit_order else ("Formation · hold order" if phase == "formation" else (c.qual_state.capitalize() if is_run_session() else "Racing")))
 	if phase == "race" and intensity != "calm" and not neutral(c) and c.route == "track":
-		var risk = 0.000018 * (1 + (100 - c.consistency) * 0.055) * (1 + (100 - c.reliability) * 0.015) * (1.5 if c.pace == 2 else 1.0) * (1 + local.water * 3.5 + maxf(0, 25 - c.tyre) * 0.06)
-		risk *= {"patient": 0.9, "balanced": 1.0, "assertive": 1.12}[c.battle_mode]
-		if random_value() < risk * STEP * (2.2 if intensity == "volatile" else 1): incident(c)
+		var incidents: Dictionary = tuning.operations.incidents
+		var risk = incidents.base_exposure_per_second * (1 + (100 - c.consistency) * incidents.consistency_factor) * (1 + (100 - c.reliability) * incidents.reliability_factor) * (incidents.push_factor if c.pace == 2 else 1.0) * (1 + local.water * incidents.water_factor + maxf(0, incidents.low_tread_reference - c.tyre) * incidents.low_tread_factor)
+		risk *= {"patient": incidents.patient_factor, "balanced": incidents.balanced_factor, "assertive": incidents.assertive_factor}[c.battle_mode]
+		if random_value() < risk * STEP * (incidents.volatile_factor if intensity == "volatile" else 1): incident(c)
 	if total_time - c.last_trace >= 1:
 		c.last_trace = total_time
 		c.telemetry.append([total_time, c.speed * 3.6, c.tyre, c.fuel, (c.speed - old_speed) / STEP])
@@ -473,16 +474,17 @@ func _base_incident(c: RaceCar) -> void:
 	RaceSurface.contaminate(surface, c.distance / track.length, c.lane, tuning.environment.surface.incident.debris, c.health < tuning.environment.surface.incident.oil_health_threshold, tuning.environment.surface.incident)
 	stats.incidents += 1
 	var outcome = random_value()
-	if outcome < 0.08:
-		retire(c, "Barrier impact"); flag = "SAFETY CAR"; flag_until = clock + 38; post("flag", "Safety car deployed for a stranded car.")
-	elif outcome < 0.18 and c.health < 95:
-		retire(c, "Mechanical failure"); flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 22
+	if outcome < tuning.operations.incidents.barrier_probability:
+		retire(c, "Barrier impact"); flag = "SAFETY CAR"; flag_until = clock + tuning.operations.control.retired_car_seconds; post("flag", "Safety car deployed for a stranded car.")
+	elif outcome < tuning.operations.incidents.legacy_retirement_threshold and c.health < tuning.operations.incidents.legacy_mechanical_health:
+		retire(c, "Mechanical failure"); flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + tuning.operations.control.legacy_mechanical_seconds
 	else:
-		c.loss = 3 + random_value() * 7; c.damage += 4 + random_value() * 10
+		c.loss = tuning.operations.incidents.lost_seconds_base + random_value() * tuning.operations.incidents.lost_seconds_span
+		c.damage = minf(1000, c.damage + tuning.operations.incidents.damage_base + random_value() * tuning.operations.incidents.damage_span)
 		var fitted = TyreInventory.find(c, c.set_id)
-		for wheel in WheelTyres.KEYS: fitted.wheels[wheel].life = maxf(0, fitted.wheels[wheel].life - 5)
+		for wheel in WheelTyres.KEYS: fitted.wheels[wheel].life = maxf(0, fitted.wheels[wheel].life - tuning.operations.incidents.tread_loss)
 		WheelTyres.publish(fitted); c.tyre = fitted.life; c.temperature = fitted.temperature
-		flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + 18
+		flag = "YELLOW"; yellow_sector = track.sector_at(c.distance); flag_until = clock + tuning.operations.control.local_incident_seconds
 		TyreInventory.sync(c)
 		post("incident", c.short + " spins. Local yellow; car recovering.")
 

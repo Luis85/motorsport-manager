@@ -114,3 +114,7 @@ mechanics, command permissions and simulation algorithms remain code by design.
 The optional frozen `environment` object is now supported. Its complete field
 reference, compatibility policy and unchanged safety boundaries are described in
 [Weather and surface authoring](weather-and-surface.md).
+
+Supported reliability, incident and virtual-control coefficients are documented in
+[reliability and control](reliability-and-control.md). General mechanic-provider
+selection and the remaining AI/racecraft tuning are still separate unfinished work.

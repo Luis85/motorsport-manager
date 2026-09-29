@@ -20,7 +20,7 @@ static func enqueue(state: Dictionary, driver: int, sector: int, global: bool, d
 	state.pending.append({"serial": state.serial, "driver_id": driver, "sector": sector, "global": global,
 		"duration": duration, "requested": now, "source": source, "reason": reason})
 
-static func tick(state: Dictionary, now: float) -> Dictionary:
+static func tick(state: Dictionary, now: float, rules: Dictionary = LegacyOperations.VALUES.control) -> Dictionary:
 	var before = {"state": state.state, "until": state.until, "zones": state.zones.duplicate(true)}
 	var causes: Array = []
 	state.zones = state.zones.filter(func(zone): return zone.until > now)
@@ -39,7 +39,7 @@ static func tick(state: Dictionary, now: float) -> Dictionary:
 	state.pending.clear()
 	state.zones.sort_custom(func(a, b): return a.sector < b.sector)
 	if state.state == "virtual" and now + 0.0000001 >= state.until:
-		state.state = "ending"; state.until = now + ENDING_SECONDS
+		state.state = "ending"; state.until = now + rules.ending_seconds
 		state.reason = "Clearance interval complete; no passing until the published release."
 	elif state.state == "ending" and now + 0.0000001 >= state.until:
 		state.state = "green"; state.until = 0.0; state.reason = "Virtual restriction released; any local yellows still apply."
@@ -65,13 +65,13 @@ static func restricted(state: Dictionary, length: float, start: float, end: floa
 			if end >= (cycle + offset) * length + lo and start < (cycle + offset) * length + hi: return true
 	return false
 
-static func public_view(state: Dictionary, now: float) -> Dictionary:
+static func public_view(state: Dictionary, now: float, rules: Dictionary = LegacyOperations.VALUES.control) -> Dictionary:
 	var zones: Array = []
 	for zone in state.zones: zones.append({"sector": int(zone.sector), "remaining": maxf(0, zone.until - now)})
 	return {"state": state.state, "revision": state.revision, "flag": flag_value(state), "zones": zones,
 		"remaining": maxf(0, state.until - now), "reason": state.reason,
-		"pace_factor": PACE_FACTOR if state.state != "green" else 1.0,
-		"rules": "Virtual: target at most 60% of the reference speed envelope; slower cars remain slower. No overtaking, catch-up or field reset. Brake normally on deployment. Pit entry, queues and release remain physical. Ending lasts eight simulated seconds; a new global hazard cancels it. Local yellow: 25 m/s target and no passing in the marked sector."}
+		"pace_factor": rules.virtual_pace_factor if state.state != "green" else 1.0,
+		"rules": rule_summary(rules)}
 
 static func valid(state: Variant, now: float, count: int = 12) -> bool:
 	if not state is Dictionary or state.get("version") != VERSION or state.get("state") not in ["green", "virtual", "ending"]: return false
@@ -101,3 +101,8 @@ static func valid(state: Variant, now: float, count: int = 12) -> bool:
 		if item.source in sources: return false
 		serials.append(item.serial); sources.append(item.source)
 	return true
+
+static func rule_summary(rules: Dictionary = LegacyOperations.VALUES.control) -> String:
+	# Preserve historical wording for the historical model; custom text reflects real caps.
+	var ending = "eight" if rules.ending_seconds == 8.0 else String.num(rules.ending_seconds, 2).trim_suffix(".0")
+	return "Virtual: target at most %s%% of the reference speed envelope; slower cars remain slower. No overtaking, catch-up or field reset. Brake normally on deployment. Pit entry, queues and release remain physical. Ending lasts %s simulated seconds; a new global hazard cancels it. Local yellow: %s m/s target and no passing in the marked sector." % [String.num(rules.virtual_pace_factor * 100, 2).trim_suffix(".0"), ending, String.num(rules.local_yellow_speed_mps, 2).trim_suffix(".0")]

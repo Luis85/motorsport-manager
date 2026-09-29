@@ -95,6 +95,8 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                     or first["compound_count"] != 6 or first["compound_wear"] != 2.7
                     or first["wing"] != 3 or first["laps"] != 8
                     or first["cloud_response_per_second"] != 0.005 or first["water_drainage"] != 0.0015
+                    or first["virtual_pace_factor"] != 0.6 or first["control_ending_seconds"] != 8
+                    or first["fault_threshold_base"] != 25 or not 25 <= first["fault_threshold"] <= 50
                     or first["service_base_seconds"] != 6 or abs(first["race_fuel"] - 12.6) > 1e-8
                     or first["weekend_id"] != "local.club.weekend.sprint"
                     or first["weather_mode"] != "scripted_training" or first["starting_compound"] != "local.club.tyre.endurance"):
@@ -114,6 +116,11 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             tuning_path = pack / "race_tuning/sprint.json"
             tuning = json.loads(tuning_path.read_text(encoding="utf-8"))
             tuning["service"]["tyre_base_seconds"] = 7
+            tuning["service"]["repair_seconds_per_damage"] = 0.05
+            tuning["operations"]["control"]["virtual_pace_factor"] = 0.45
+            tuning["operations"]["control"]["ending_seconds"] = 11
+            tuning["operations"]["reliability"]["fault_threshold_base"] = 200
+            tuning["operations"]["reliability"]["fault_threshold_span"] = 0
             tuning["fuel"]["race_reserve_laps"] = 4
             tuning["environment"]["weather"]["cloud_response_per_second"] = 0.01
             tuning["environment"]["surface"]["evolution"]["water_drainage"] = 0.002
@@ -128,9 +135,12 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             if (edited["top_speed_mps"] != 56 or edited["compound_wear"] != 2.8 or edited["wing"] != 4
                     or edited["weather_mode"] != "seeded" or edited["cloud_response_per_second"] != 0.01
                     or edited["water_drainage"] != 0.002 or edited["surface_water"] <= first["surface_water"]
+                    or edited["virtual_pace_factor"] != 0.45 or edited["control_ending_seconds"] != 11
+                    or edited["fault_threshold_base"] != 200 or edited["fault_threshold"] != 200
+                    or edited["repair_seconds_per_damage"] != 0.05
                     or edited["service_base_seconds"] != 7 or edited["laps"] != 9
                     or abs(edited["race_fuel"] - 14.8) > 1e-8
-                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash", "environment_hash", "surface_hash"])):
+                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash", "environment_hash", "surface_hash", "operations_hash"])):
                 raise RuntimeError("The unchanged executable did not observe the external edit.")
             # Reject a cross-field environmental defect before trying a separate vehicle defect.
             valid_tuning = json.dumps(tuning)
@@ -140,6 +150,12 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             diagnostic = environment_rejection["diagnostics"][0]
             if diagnostic["field"] != "/environment/weather/target_wet_span":
                 raise RuntimeError("Environmental rejection did not identify its conflicting field.")
+            tuning = json.loads(valid_tuning)
+            tuning["operations"]["reliability"]["damage_warning"] = 80
+            tuning_path.write_text(json.dumps(tuning), encoding="utf-8")
+            operations_rejection = probe(installed, ["--content-pack=" + str(pack), "--content-validate"], isolated, env, False, runtime_uid)
+            if operations_rejection["diagnostics"][0]["field"] != "/operations/reliability/damage_degraded":
+                raise RuntimeError("Operations rejection did not identify its conflicting field.")
             tuning_path.write_text(valid_tuning, encoding="utf-8")
             data["top_speed_mps"] = -1
             definition.write_text(json.dumps(data), encoding="utf-8")
@@ -155,7 +171,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                             "runtime_uid": runtime_uid if runtime_uid is not None else os.geteuid(),
                             "unicode_and_space_path": True, "first": first, "edited": edited,
                             "restored_without_pack": restored, "rejection": rejected,
-                            "environment_rejection": environment_rejection,
+                            "environment_rejection": environment_rejection, "operations_rejection": operations_rejection,
                             "seconds": round(time.monotonic() - started, 3)})
             install.chmod(0o755)
     return {"passed": True, "source": source_digest(ROOT), "engine": version, "platform": platform.platform(),

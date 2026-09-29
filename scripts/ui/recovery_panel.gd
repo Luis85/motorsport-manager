@@ -130,7 +130,7 @@ func refresh() -> void:
 	if authority_dirty: authority_note.text = "UNAPPLIED AUTHORITY DRAFT\n" + authority_note.text
 	if not r.service.is_empty(): authority_note.text += "\nService plan frozen; elapsed ~%.1fs of planned %.1fs." % [maxf(0, model.total_time - r.service.started), r.service.duration]
 	if model.enhanced():
-		var control = WeekendRaceControl.public_view(model.control_state, model.total_time)
+		var control = model.control_observation()
 		rules.text = control.flag + " · " + control.reason
 		if control.state != "green": rules.text += "\nPhase transition in %.1fs simulated (~%.1fs at %d×); a new hazard can extend it." % [control.remaining, control.remaining / model.speed, model.speed]
 		for zone in control.zones: rules.text += "\nLocal yellow S%d · %.1fs remaining." % [zone.sector + 1, zone.remaining]
