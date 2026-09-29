@@ -2,9 +2,12 @@
 
 Status: vehicles, rosters, tyres/allocations, setup, shared race tuning and named
 weekend presets are implemented. Shared tuning covers fuel, pace, pit service,
-condition response and session timing; it does not yet cover every coefficient
-in weather generation, incidents, AI, race control or wheel dynamics. Common
+condition response, session timing, seeded/scripted weather, surface processes
+and public weather/crossover forecasts. Incident/reliability and broader AI/race-control
+policy extraction is not yet complete. Common
 track/scenario/presentation authoring and final full-plan acceptance remain unfinished.
+See [environment fields](environment-tuning-fields.md) for the 135 weather/surface/forecast
+parameters and their compatibility contract.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.

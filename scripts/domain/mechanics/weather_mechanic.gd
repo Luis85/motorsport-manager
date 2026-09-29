@@ -11,11 +11,11 @@ func install(sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary =
 	if geometry == null: return
 	var mode = options.get("weather_mode", "seeded")
 	if mode not in WeekendWeather.MODES: mode = "seeded"
-	sim.weather_state = WeatherRaceSim.new_weather_state(sim.seed_value, sim.scenario, mode, sim.cars.size())
+	sim.weather_state = WeatherRaceSim.new_weather_state(sim.seed_value, sim.scenario, mode, sim.cars.size(), sim.tuning.weather)
 	if mode == "seeded": sim.rain = sim.weather_state.model.rain
 	else: sim.weather_state.model.rain = sim.rain
 	sim.weather_state.history.append(sim.weather_observation())
-	sim.weather_state.next_sample = sim.total_time + WeekendWeather.SAMPLE_INTERVAL
+	sim.weather_state.next_sample = sim.total_time + sim.tuning.weather.observation_interval_seconds
 	RaceJournal.append(sim.strategy_state, sim, "weather_model", -1, {"mode": mode, "version": WeekendWeather.VERSION,
 		"reason": "Seeded weather; public forecasts cannot read future targets." if mode == "seeded" else "Explicit scripted training weather; original schedule preserved."})
 
@@ -24,7 +24,7 @@ func weather_observation(sim: RaceSim) -> Dictionary:
 	return WeekendWeather.observe(sim.surface, sim.rain, cloud, sim.total_time)
 
 func weather_outlook(sim: RaceSim) -> Dictionary:
-	return WeatherOutlook.evaluate(sim.weather_state.history, sim.weather_observation(), sim.track.estimate, sim.weather_state.model.mode)
+	return WeatherOutlook.evaluate(sim.weather_state.history, sim.weather_observation(), sim.track.estimate, sim.weather_state.model.mode, sim.tuning.weather_forecast)
 
 func weather_advice(sim: RaceSim, id: int) -> Dictionary:
 	if id < 0 or id >= sim.cars.size(): return {}
@@ -41,26 +41,26 @@ func update_surface(sim: RaceSim) -> void:
 		sim.mechanics.before("weather", "update_surface", [])
 		sim.weather_state.model.rain = sim.rain
 	else:
-		WeekendWeather.advance(sim.weather_state.model, sim.scenario, RaceSim.STEP)
+		WeekendWeather.advance(sim.weather_state.model, sim.scenario, RaceSim.STEP, sim.tuning.weather)
 		sim.rain = sim.weather_state.model.rain
 		var description = "Heavy rain" if sim.rain >= 0.60 else ("Rain" if sim.rain >= 0.08 else "No rain observed")
 		if description != sim.weather_name:
 			sim.weather_name = description; sim.post("weather", description + ". Surface water changes gradually.")
 		sim.surface_accumulator += RaceSim.STEP
 		if sim.surface_accumulator >= RaceSurface.INTERVAL:
-			RaceSurface.evolve(sim.surface, sim.rain, sim.surface_accumulator, sim.total_time)
+			RaceSurface.evolve(sim.surface, sim.rain, sim.surface_accumulator, sim.total_time, sim.tuning.surface)
 			RaceSurface.profiles(sim.surface, sim.water, sim.rubber); sim.surface_accumulator = 0.0
 	if sim.total_time + 0.000001 >= sim.weather_state.next_sample:
 		var observed = sim.weather_observation()
 		sim.weather_state.history.append(observed)
 		if sim.weather_state.history.size() > WeekendWeather.HISTORY_LIMIT: sim.weather_state.history.pop_front()
-		sim.weather_state.next_sample = sim.total_time + WeekendWeather.SAMPLE_INTERVAL
+		sim.weather_state.next_sample = sim.total_time + sim.tuning.weather.observation_interval_seconds
 		for id in sim.player_ids():
 			var car = sim.cars[id]
 			var issue = sim.weather_issue(id)
 			if issue.is_empty(): sim.weather_state.notices[id] = ""; continue
 			# Deduplicate by condition family, not every tiny forecast revision.
-			var notice = issue + ":" + WeatherOutlook.condition(observed.mean)
+			var notice = issue + ":" + WeatherOutlook.condition(observed.mean, sim.tuning.weather_forecast)
 			if notice == sim.weather_state.notices[id] or car.dnf or car.finished: continue
 			sim.weather_state.notices[id] = notice
 			RaceJournal.append(sim.strategy_state, sim, "weather_warning", id, {"reason": issue,
@@ -71,9 +71,9 @@ func weather_issue(sim: RaceSim, id: int) -> String:
 	var c = sim.cars[id]
 	if sim.phase != "race" or c.route != "track" or c.dnf or c.finished: return ""
 	var observed = sim.weather_observation()
-	if not c.tyre_rules.wet(c.compound) and observed.peak > 0.30: return "Wet sections on slick tyres"
-	if c.tyre_rules.wet(c.compound) and observed.mean < 0.15: return "Wet tyres on a drying line"
-	if sim.rain >= 0.08 and observed.mean < 0.24: return "Rain arriving; surface crossover uncertain"
+	if not c.tyre_rules.wet(c.compound) and observed.peak > sim.tuning.weather_forecast.slick_warning_water: return "Wet sections on slick tyres"
+	if c.tyre_rules.wet(c.compound) and observed.mean < sim.tuning.weather_forecast.wet_tyre_warning_water: return "Wet tyres on a drying line"
+	if sim.rain >= sim.tuning.weather_forecast.rain_observed_threshold and observed.mean < sim.tuning.weather_forecast.arrival_warning_water: return "Rain arriving; surface crossover uncertain"
 	return ""
 
 func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
@@ -103,20 +103,20 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 func engineer(sim: RaceSim, c: RaceCar) -> void:
 	# Binding plans, manual ownership, tyre emergencies and damage recovery still use Stage A's transaction rules.
 	var p = sim.policy(int(c.id))
-	if sim.weather_state.is_empty() or sim.weather_state.model.mode == "scripted_training" or sim.phase != "race" or c.route != "track" or c.dnf or c.finished or not p.plan.is_empty() or not StrategyPlan.owns(p, "pit") or c.pit_order or c.tyre < 18 or c.damage > 24 or not WheelTyres.usable(TyreInventory.find(c, c.set_id)):
+	if sim.weather_state.is_empty() or sim.weather_state.model.mode == "scripted_training" or sim.phase != "race" or c.route != "track" or c.dnf or c.finished or not p.plan.is_empty() or not StrategyPlan.owns(p, "pit") or c.pit_order or c.tyre < sim.tuning.weather_forecast.delegate_tyre_floor or c.damage > sim.tuning.weather_forecast.delegate_damage_ceiling or not WheelTyres.usable(TyreInventory.find(c, c.set_id)):
 		sim.mechanics.before("weather", "engineer", [c]); return
-	if sim.rain < 0.08 and sim.average(sim.water) < 0.10 and not c.tyre_rules.wet(c.compound):
+	if sim.rain < sim.tuning.weather_forecast.rain_observed_threshold and sim.average(sim.water) < sim.tuning.weather_forecast.delegate_dry_water and not c.tyre_rules.wet(c.compound):
 		sim.mechanics.before("weather", "engineer", [c]); return
 	sim.manage_resources(c)
 	if sim.total_time < sim.weather_state.reviews[int(c.id)]: return
-	sim.weather_state.reviews[int(c.id)] = sim.total_time + 15.0 + float(c.id % 4)
+	sim.weather_state.reviews[int(c.id)] = sim.total_time + sim.tuning.weather_forecast.review_interval_seconds + float(c.id % 4)
 	var advice = sim.weather_advice(int(c.id))
 	if sim.weather_state.held[int(c.id)] == WeatherStrategy.decision_key(advice): return
 	if advice.options.size() < 2: return
 	var option = advice.options[1]
 	if not option.available or not option.has("gain_low") or option.risk == "high": return
 	var nominal = advice.options[0].seconds - option.seconds
-	var worthwhile = option.gain_low > 2 or nominal > maxf(4, advice.pit.loss * 0.25) and option.gain_low > -advice.pit.loss * 0.5
+	var worthwhile = option.gain_low > sim.tuning.weather_forecast.minimum_robust_gain_seconds or nominal > maxf(sim.tuning.weather_forecast.minimum_nominal_gain_seconds, advice.pit.loss * sim.tuning.weather_forecast.nominal_pit_gain_ratio) and option.gain_low > -advice.pit.loss * sim.tuning.weather_forecast.maximum_downside_pit_ratio
 	if not worthwhile or TeamOrders.defer_stop(sim, c): return
 	var item = TyreInventory.find(c, advice.replacement_id)
 	if not WheelTyres.usable(item): return

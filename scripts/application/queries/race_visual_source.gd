@@ -48,7 +48,7 @@ func surface_values(channel: String) -> Array:
 		for cell in station.lanes:
 			var value: float = cell.get(channel, 0.0)
 			if channel == "grip":
-				value = RaceSurface.grip(cell) / 1.14
+				value = RaceSurface.grip(cell, simulation.tuning.surface) / simulation.tuning.surface.maximum_grip
 			elif channel == "temperature":
 				value /= 60.0
 			lanes.append(value)

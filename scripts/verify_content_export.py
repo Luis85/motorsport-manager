@@ -125,12 +125,28 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                     or abs(edited["race_fuel"] - 14.8) > 1e-8
                     or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash"])):
                 raise RuntimeError("The unchanged executable did not observe the external edit.")
+            # A third file-only configuration exercises a real seeded weather interval
+            # longer than the former 145-second validation limit, while practice runs.
+            weekend["settings"]["weather_mode"] = "seeded"
+            weekend["settings"]["scenario"] = "wet"
+            weekend_path.write_text(json.dumps(weekend), encoding="utf-8")
+            tuning["weather"]["target_base_seconds"] = 300
+            tuning["weather"]["target_jitter_seconds"] = 0
+            tuning["weather"]["observation_interval_seconds"] = 2
+            tuning["surface"]["base_grip"] = 0.9
+            tuning_path.write_text(json.dumps(tuning), encoding="utf-8")
+            climate = probe(installed, args, isolated, env, runtime_uid=runtime_uid)
+            if (climate["weather_mode"] != "seeded" or climate["weather_remaining"] <= 145
+                    or climate["weather_history_count"] < 3 or climate["time"] <= 0
+                    or climate["surface_hash"] == edited["surface_hash"]
+                    or climate["tuning_hash"] == edited["tuning_hash"]):
+                raise RuntimeError("The exported active weekend did not use its authored weather and surface.")
             data["top_speed_mps"] = -1
             definition.write_text(json.dumps(data), encoding="utf-8")
             rejected = probe(installed, ["--content-pack=" + str(pack), "--content-validate"], isolated, env, False, runtime_uid)
             shutil.rmtree(pack)
             restored = probe(installed, ["--content-probe-restore"], isolated, env, runtime_uid=runtime_uid)
-            if restored != edited:
+            if restored != climate:
                 raise RuntimeError("A removed/invalid pack changed the saved session.")
             if digest(executable) != original_hash or digest(installed) != original_hash:
                 raise RuntimeError("Acceptance modified the executable.")
@@ -138,7 +154,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                             "source_directory_present_in_cwd": False, "installation_writable": False,
                             "runtime_uid": runtime_uid if runtime_uid is not None else os.geteuid(),
                             "unicode_and_space_path": True, "first": first, "edited": edited,
-                            "restored_without_pack": restored, "rejection": rejected,
+                            "environment": climate, "restored_without_pack": restored, "rejection": rejected,
                             "seconds": round(time.monotonic() - started, 3)})
             install.chmod(0o755)
     return {"passed": True, "source": source_digest(ROOT), "engine": version, "platform": platform.platform(),

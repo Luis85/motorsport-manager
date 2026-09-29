@@ -82,5 +82,7 @@
   {"id":"shipping_runtime_tests","script":"tests/shipping_runtime_tests.gd","native":true,"layout":"minimal","timeout":900,"reports":["shipping-runtime-tests.json"]},
   {"id":"record_traversal_tests","script":"tests/record_traversal_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["record-traversal-tests.json"]},
   {"id":"content_tuning_tests","script":"tests/content_tuning_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-tuning-tests.json"]},
-  {"id":"content_weekend_ui_tests","script":"tests/content_weekend_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-weekend-ui-tests.json"]}
+  {"id":"content_weekend_ui_tests","script":"tests/content_weekend_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-weekend-ui-tests.json"]},
+  {"id":"content_environment_tests","script":"tests/content_environment_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-environment-tests.json"]},
+  {"id":"content_performance_tests","script":"tests/content_performance_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-performance-tests.json"]}
 ]

@@ -2,7 +2,8 @@ class_name RaceTuningSchema
 extends RefCounted
 ## Explicit units and supported ranges for implemented model coefficients only.
 static func fields() -> Dictionary:
-	return {"model": {"enum": ["path-race-v1"]},
+	return {"weather": WeatherTuning.schema(), "surface": SurfaceTuning.schema(),
+		"weather_forecast": WeatherForecastTuning.schema(), "model": {"enum": ["path-race-v1"]},
 		"fuel": ContentSchema.object({
 			"race_load_per_lap": ContentSchema.number(0.5, 1.8),
 			"race_reserve_laps": ContentSchema.number(0, 10),

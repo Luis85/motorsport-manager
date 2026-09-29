@@ -73,7 +73,7 @@ func surface(channel: String, station: int, lane: int) -> Dictionary:
 	station = clampi(station, 0, RaceSurface.STATIONS - 1)
 	lane = clampi(lane, 0, RaceSurface.LANES - 1)
 	var cell: Dictionary = simulation.surface[station].lanes[lane].duplicate(true)
-	cell.grip = RaceSurface.grip(cell)
+	cell.grip = RaceSurface.grip(cell, simulation.tuning.surface)
 	cell.metres = (station + 0.5) * simulation.track.length / RaceSurface.STATIONS
 	return {"cell": cell, "values": RaceVisualSource.new(simulation).surface_values(channel)}
 

@@ -36,6 +36,12 @@ static func start(catalog: ContentCatalog, vehicle: String, selection: Dictionar
 	var committed = launch.commit(int(launch.capture().revision), ProbeStore.new())
 	if not committed.ok: return committed
 	var sim: RaceSim = committed.simulation
+	if sim.phase == "briefing" and not sim.command("practice_start"):
+		committed.record.detach()
+		return {"ok": false, "error": "The acceptance weekend could not enter practice: " + sim.last_error}
+	if sim.phase != "practice":
+		committed.record.detach()
+		return {"ok": false, "error": "The acceptance weekend did not enter practice."}
 	if sim.paused: sim.command("pause")
 	for index in range(200): sim.step()
 	var error = ReplayStorage.save_session(PATH, committed.record)
@@ -69,6 +75,9 @@ static func restore() -> Dictionary:
 	result.weekend_id = sim.weekend_definition.id if sim.weekend_definition != null else "custom"
 	result.laps = sim.laps
 	result.weather_mode = sim.weather_state.model.mode
+	result.weather_remaining = sim.weather_state.model.remaining
+	result.weather_history_count = sim.weather_state.history.size()
+	result.surface_hash = RaceStateValue.fingerprint(sim.surface)
 	result.starting_compound = car.compound
 	result.compound_wear = sim.tyre_rules.spec(car.compound).wear
 	result.sets_per_driver = car.tyre_sets.size()

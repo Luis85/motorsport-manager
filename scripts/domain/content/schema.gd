@@ -73,6 +73,9 @@ static func definition(kind: String) -> Dictionary:
 		"weekend":
 			properties.merge(WeekendDefinition.fields())
 		_: return {}
+	if kind == "race_tuning":
+		var required = properties.keys().filter(func(key): return key not in ["weather", "surface", "weather_forecast"])
+		return object(properties, required)
 	return object(properties)
 
 static func document(kind: String) -> Dictionary:

@@ -398,6 +398,840 @@
         "release_spacing_seconds"
       ],
       "type": "object"
+    },
+    "surface": {
+      "additionalProperties": false,
+      "properties": {
+        "base_grip": {
+          "maximum": 1.5,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "braking_heating_c": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "camber_drainage_gain": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "camber_flow_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "contact_heating_c": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "contact_width_lanes": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "debris_decay": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "debris_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "debris_spread_multiplier": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "drainage_base": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "drainage_rate": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_target_c": {
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_tyre_displacement": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dust_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dust_rain_wash": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dust_sweep": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "edge_dust_per_lane": {
+          "maximum": 0.3,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "evaporation_base": {
+          "maximum": 0.01,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "evaporation_heat_gain": {
+          "maximum": 0.001,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "evaporation_reference_c": {
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "incident_oil_deposit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_dry_c": {
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_dust": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_marbles": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_wet_c": {
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_wet_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "lateral_exchange_rate": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "local_rain_amplitude": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "local_rain_base": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "marbles_deposit": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "marbles_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "marbles_rain_wash": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "marbles_sweep": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "maximum_grip": {
+          "maximum": 1.5,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "maximum_local_rain": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "maximum_temperature_c": {
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "minimum_contact_weight": {
+          "maximum": 0.5,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "minimum_drainage": {
+          "maximum": 2.0,
+          "minimum": 0.01,
+          "type": "number"
+        },
+        "minimum_grip": {
+          "maximum": 1.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "minimum_local_rain": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "oil_decay": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "oil_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "oil_rain_wash": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "push_marbles_multiplier": {
+          "maximum": 5.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "rain_collection_rate": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rain_station_phase": {
+          "maximum": 6.3,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rain_time_phase": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rain_wet_threshold": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rubber_deposit": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rubber_grip_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rubber_rain_wash": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rubber_water_wash": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "temperature_response_per_second": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "water_flow_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "water_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "water_squared_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_evaporation_multiplier": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_rubber_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_rubber_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_target_c": {
+          "maximum": 80.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_tyre_displacement": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "initial_dust",
+        "edge_dust_per_lane",
+        "initial_marbles",
+        "initial_wet_threshold",
+        "initial_wet_c",
+        "initial_dry_c",
+        "rubber_grip_gain",
+        "wet_rubber_threshold",
+        "wet_rubber_grip_loss",
+        "dust_grip_loss",
+        "marbles_grip_loss",
+        "debris_grip_loss",
+        "oil_grip_loss",
+        "base_grip",
+        "water_grip_loss",
+        "water_squared_grip_loss",
+        "minimum_grip",
+        "maximum_grip",
+        "lateral_exchange_rate",
+        "camber_flow_gain",
+        "water_flow_gain",
+        "local_rain_base",
+        "local_rain_amplitude",
+        "rain_station_phase",
+        "rain_time_phase",
+        "minimum_local_rain",
+        "maximum_local_rain",
+        "minimum_drainage",
+        "camber_drainage_gain",
+        "evaporation_base",
+        "evaporation_reference_c",
+        "evaporation_heat_gain",
+        "rain_collection_rate",
+        "drainage_rate",
+        "drainage_base",
+        "rain_wet_threshold",
+        "wet_evaporation_multiplier",
+        "rubber_rain_wash",
+        "rubber_water_wash",
+        "dust_rain_wash",
+        "marbles_rain_wash",
+        "oil_rain_wash",
+        "oil_decay",
+        "debris_decay",
+        "wet_target_c",
+        "dry_target_c",
+        "temperature_response_per_second",
+        "contact_width_lanes",
+        "minimum_contact_weight",
+        "rubber_deposit",
+        "wet_tyre_displacement",
+        "dry_tyre_displacement",
+        "dust_sweep",
+        "marbles_sweep",
+        "maximum_temperature_c",
+        "contact_heating_c",
+        "braking_heating_c",
+        "marbles_deposit",
+        "push_marbles_multiplier",
+        "debris_spread_multiplier",
+        "incident_oil_deposit"
+      ],
+      "type": "object"
+    },
+    "weather": {
+      "additionalProperties": false,
+      "properties": {
+        "changeable_initial_cloud": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "changeable_initial_span": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "changeable_target_base": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "changeable_target_span": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cloud_response_per_second": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_initial_cloud": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_initial_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_target_base": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_target_span": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "initial_rubber": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "observation_interval_seconds": {
+          "maximum": 60.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "rain_cloud_gain": {
+          "maximum": 10.0,
+          "minimum": 0.01,
+          "type": "number"
+        },
+        "rain_cloud_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rain_response_per_second": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "target_base_seconds": {
+          "maximum": 500.0,
+          "minimum": 5.0,
+          "type": "number"
+        },
+        "target_jitter_seconds": {
+          "maximum": 500.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_dry_at_seconds": {
+          "maximum": 7200.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_ease_at_seconds": {
+          "maximum": 3600.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_easing_rain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_heavy_from": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_heavy_rain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_heavy_to": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_light_from": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_light_rain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_light_to": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "training_minimum_race_seconds": {
+          "maximum": 3600.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "training_wet_rain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_initial_cloud": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_initial_rain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_initial_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_target_base": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_target_span": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "wet_initial_cloud",
+        "changeable_initial_cloud",
+        "changeable_initial_span",
+        "dry_initial_cloud",
+        "wet_initial_rain",
+        "dry_target_base",
+        "dry_target_span",
+        "wet_target_base",
+        "wet_target_span",
+        "changeable_target_base",
+        "changeable_target_span",
+        "target_base_seconds",
+        "target_jitter_seconds",
+        "cloud_response_per_second",
+        "rain_cloud_threshold",
+        "rain_cloud_gain",
+        "rain_response_per_second",
+        "observation_interval_seconds",
+        "wet_initial_water",
+        "dry_initial_water",
+        "initial_rubber",
+        "training_wet_rain",
+        "training_easing_rain",
+        "training_ease_at_seconds",
+        "training_dry_at_seconds",
+        "training_minimum_race_seconds",
+        "training_light_rain",
+        "training_heavy_rain",
+        "training_light_from",
+        "training_heavy_from",
+        "training_heavy_to",
+        "training_light_to"
+      ],
+      "type": "object"
+    },
+    "weather_forecast": {
+      "additionalProperties": false,
+      "properties": {
+        "arrival_estimate_floor_seconds": {
+          "maximum": 120.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "arrival_high_buffer_seconds": {
+          "maximum": 300.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "arrival_high_cap_seconds": {
+          "maximum": 3600.0,
+          "minimum": 120.0,
+          "type": "number"
+        },
+        "arrival_high_floor_seconds": {
+          "maximum": 600.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "arrival_high_multiplier": {
+          "maximum": 5.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "arrival_low_floor_seconds": {
+          "maximum": 120.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "arrival_low_multiplier": {
+          "maximum": 1.0,
+          "minimum": 0.01,
+          "type": "number"
+        },
+        "arrival_warning_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "base_case_spread": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "case_spread_per_second": {
+          "maximum": 0.02,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cloud_arrival_reference": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cloud_arrival_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cloud_trend_threshold": {
+          "maximum": 0.1,
+          "minimum": 1e-05,
+          "type": "number"
+        },
+        "comparison_uncertainty_seconds": {
+          "maximum": 60.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "critical_life_percent": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "damp_water_limit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "delegate_damage_ceiling": {
+          "maximum": 1000.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "delegate_dry_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "delegate_tyre_floor": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "dry_water_limit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "history_window_seconds": {
+          "maximum": 600.0,
+          "minimum": 2.0,
+          "type": "number"
+        },
+        "horizon_laps": {
+          "maximum": 10.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "maximum_case_spread": {
+          "maximum": 1.0,
+          "minimum": 0.01,
+          "type": "number"
+        },
+        "maximum_downside_pit_ratio": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "maximum_horizon_seconds": {
+          "maximum": 1200.0,
+          "minimum": 2.0,
+          "type": "number"
+        },
+        "maximum_water_slope": {
+          "maximum": 0.1,
+          "minimum": 1e-05,
+          "type": "number"
+        },
+        "minimum_horizon_seconds": {
+          "maximum": 600.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "minimum_nominal_gain_seconds": {
+          "maximum": 60.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "minimum_robust_gain_seconds": {
+          "maximum": 60.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "minimum_trend_seconds": {
+          "maximum": 300.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "missing_trend_spread": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "moderate_life_percent": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "nominal_pit_gain_ratio": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "rain_observed_threshold": {
+          "maximum": 0.5,
+          "minimum": 0.001,
+          "type": "number"
+        },
+        "review_interval_seconds": {
+          "maximum": 120.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "sector_contrast_factor": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "slick_warning_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "traffic_cost_seconds": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "trend_projection_factor": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "trend_threshold": {
+          "maximum": 0.1,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_tyre_warning_water": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_water_limit": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "history_window_seconds",
+        "minimum_trend_seconds",
+        "maximum_water_slope",
+        "horizon_laps",
+        "minimum_horizon_seconds",
+        "maximum_horizon_seconds",
+        "trend_projection_factor",
+        "maximum_case_spread",
+        "base_case_spread",
+        "case_spread_per_second",
+        "missing_trend_spread",
+        "trend_threshold",
+        "rain_observed_threshold",
+        "cloud_trend_threshold",
+        "cloud_arrival_threshold",
+        "cloud_arrival_reference",
+        "arrival_estimate_floor_seconds",
+        "arrival_low_floor_seconds",
+        "arrival_low_multiplier",
+        "arrival_high_cap_seconds",
+        "arrival_high_floor_seconds",
+        "arrival_high_multiplier",
+        "arrival_high_buffer_seconds",
+        "dry_water_limit",
+        "damp_water_limit",
+        "wet_water_limit",
+        "slick_warning_water",
+        "wet_tyre_warning_water",
+        "arrival_warning_water",
+        "delegate_tyre_floor",
+        "delegate_damage_ceiling",
+        "delegate_dry_water",
+        "review_interval_seconds",
+        "minimum_robust_gain_seconds",
+        "minimum_nominal_gain_seconds",
+        "nominal_pit_gain_ratio",
+        "maximum_downside_pit_ratio",
+        "traffic_cost_seconds",
+        "sector_contrast_factor",
+        "comparison_uncertainty_seconds",
+        "critical_life_percent",
+        "moderate_life_percent"
+      ],
+      "type": "object"
     }
   },
   "required": [

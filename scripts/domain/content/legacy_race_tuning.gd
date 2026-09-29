@@ -3,6 +3,9 @@ extends RefCounted
 ## Immutable pre-externalization values for old saves and direct compatibility APIs.
 ## New authored sessions resolve content/packs/core/race_tuning/default.json instead.
 const VALUES = {
+	"weather": WeatherTuning.DEFAULTS,
+	"surface": SurfaceTuning.DEFAULTS,
+	"weather_forecast": WeatherForecastTuning.DEFAULTS,
 	"fuel": {
 		"race_load_per_lap": 1.13,
 		"race_reserve_laps": 1.5,

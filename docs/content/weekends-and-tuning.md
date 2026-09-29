@@ -103,8 +103,14 @@ vehicle, compound, setup, tuning and weekend values without rebuilding, rejects
 invalid content, removes the pack, and requires exact saved-session restoration.
 Other platforms require separate execution evidence.
 
-This increment does **not** claim that every game parameter is external. Weather
-process coefficients, most rival/racecraft policies, incident and neutralization
-thresholds, wheel-model coefficients, track-object/presentation catalogs and
-provider-composition authoring still need their planned migrations. New executable
+The additional `weather`, `surface` and `weather_forecast` groups now cover the
+seeded/scripted process, authoritative surface and limited-information crossover
+policy. See [all environment fields](environment-tuning-fields.md). Missing groups
+in earlier v1 records resolve immutable historical defaults without changing the
+record hash; a present group must contain every declared field.
+
+This increment does **not** claim that every game parameter is external. Most
+rival/racecraft policies, incident and neutralization thresholds, remaining model
+parameters, track-object/presentation catalogs and provider-composition authoring
+still need their planned migrations. New executable
 mechanics, command permissions and simulation algorithms remain code by design.
