@@ -12,33 +12,16 @@ class ProbeStore:
 static func start(catalog: ContentCatalog, vehicle: String, selection: Dictionary = {}) -> Dictionary:
 	if catalog == null:
 		return {"ok": false, "error": "No valid content catalog."}
-	var read = Storage.read_json("res://data/tracks/hillside.json")
-	if not read.ok: return read
-	var options = {"laps": 2, "scenario": "dry", "intensity": "calm"}
-	if selection.has("weekend_id"):
-		var preset = catalog.weekend(str(selection.weekend_id))
-		if preset == null: return {"ok": false, "error": "Unknown probe weekend."}
-		options = preset.launch_options()
-		vehicle = preset.vehicle_id
-	for key in selection:
-		if key not in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id"]:
-			return {"ok": false, "error": "Unknown probe selection: " + str(key)}
-		options[key] = selection[key]
-	# This is an explicitly sized acceptance circuit, not an automatic fix applied
-	# to user tracks. Normal launch still rejects a circuit with insufficient slots.
-	if options.has("roster_id"):
-		var roster = catalog.roster(str(options.roster_id))
-		if roster == null: return {"ok": false, "error": "Unknown probe roster."}
-		read.data.grid.count = roster.count
 	var launch = WeekendLaunch.new(catalog)
-	if not launch.stage(read.data, options, vehicle):
-		return {"ok": false, "error": launch.last_error}
+	var error = _stage(launch, catalog, vehicle, selection)
+	if not error.is_empty():
+		return {"ok": false, "error": error}
 	var committed = launch.commit(int(launch.capture().revision), ProbeStore.new())
 	if not committed.ok: return committed
 	var sim: RaceSim = committed.simulation
 	if sim.paused: sim.command("pause")
-	for index in range(200): sim.step()
-	var error = ReplayStorage.save_session(PATH, committed.record)
+	for index in range(1600 if selection.has("scenario_id") else 200): sim.step()
+	error = ReplayStorage.save_session(PATH, committed.record)
 	committed.record.detach()
 	if not error.is_empty(): return {"ok": false, "error": error}
 	return restore()
@@ -61,6 +44,11 @@ static func restore() -> Dictionary:
 		"tyre_content_hash": RaceStateValue.fingerprint(sim.tyre_rules.to_snapshot()),
 		"setup_id": sim.setup_definition.to_record().id if sim.setup_definition.authored() else "legacy",
 		"setup_content_hash": RaceStateValue.fingerprint(sim.setup_definition.to_record())}
+	result.track_id = sim.track.document.id
+	result.track_name = sim.track.document.name
+	result.track_hash = RaceStateValue.fingerprint(sim.track.document)
+	result.track_visual = sim.track.document.visual.duplicate(true)
+	result.scenario_context = restored.record.parent.duplicate(true)
 	var car: RaceCar = sim.cars[sim.player_ids()[0]]
 	result.competition_hash = RaceStateValue.fingerprint(sim.tuning.competition)
 	result.review_seconds = sim.tuning.competition.policy.review_seconds
@@ -90,3 +78,33 @@ static func restore() -> Dictionary:
 	result.wing = car.car_setup.wing
 	restored.record.detach()
 	return result
+
+static func _stage(launch: WeekendLaunch, catalog: ContentCatalog, vehicle: String, selection: Dictionary) -> String:
+	if selection.has("scenario_id"):
+		if selection.size() != 1 or not selection.scenario_id is String:
+			return "A scenario probe selects its own preset and circuit; do not mix overrides."
+		return "" if launch.stage_scenario(selection.scenario_id) else launch.last_error
+	var options = {"laps": 2, "scenario": "dry", "intensity": "calm"}
+	if selection.has("weekend_id"):
+		var preset = catalog.weekend(str(selection.weekend_id))
+		if preset == null:
+			return "Unknown probe weekend."
+		options = preset.launch_options()
+		vehicle = preset.vehicle_id
+	for key in selection:
+		if key not in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id", "circuit_id"]:
+			return "Unknown probe selection: " + str(key)
+		if key != "circuit_id":
+			options[key] = selection[key]
+	if selection.has("circuit_id"):
+		return "" if launch.stage_circuit(str(selection.circuit_id), options, vehicle) else launch.last_error
+	var read = Storage.read_json("res://data/tracks/hillside.json")
+	if not read.ok:
+		return read.error
+	# Retained legacy probe only. File-authored circuits never receive auto-repairs.
+	if options.has("roster_id"):
+		var roster = catalog.roster(str(options.roster_id))
+		if roster == null:
+			return "Unknown probe roster."
+		read.data.grid.count = roster.count
+	return "" if launch.stage(read.data, options, vehicle) else launch.last_error

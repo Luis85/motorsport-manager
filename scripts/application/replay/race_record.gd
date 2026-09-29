@@ -93,6 +93,7 @@ static func validate(data: Variant) -> String:
 	if not valid_id(data.get("event_id")) or data.get("origin") not in ["standalone", "legacy", "sandbox"]: return "Invalid recording identity or provenance."
 	if not data.get("parent") is Dictionary or not data.get("manifest") is Dictionary: return "Missing recording provenance."
 	if data.origin == "sandbox" and not valid_id(data.parent.get("event_id")): return "Sandbox parent identity is missing."
+	if not ContentScenarioDefinition.valid_record_context(data): return "Saved scenario context does not match its weekend or circuit."
 	if data.parent.has("scenario") and not ScenarioBrief.validate(data.parent.scenario).is_empty(): return "Invalid saved scenario brief."
 	if not data.get("model") is String or data.model.length() > 100: return "Missing simulation model version."
 	if not data.get("engine") is String or data.engine.length() > 100: return "Missing engine version."

@@ -72,6 +72,35 @@ func seal() -> Array:
 			for key in WeekendDefinition.REFERENCES:
 				if record(_records[id][key]).get("kind") != WeekendDefinition.REFERENCES[key]:
 					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.REFERENCES[key] + " definition.")
+	var documents: Dictionary = {}
+	for id in _records:
+		var entry: Dictionary = _records[id]
+		if entry.kind == "circuit":
+			if entry.has("style_id") and record(entry.style_id).get("kind") != "circuit_style":
+				return _definition_error(id, "CONTENT_REFERENCE", "/style_id", "Choose an existing circuit style.")
+			var resolved = circuit(id)
+			if resolved == null:
+				var problems = CircuitDefinition.document_errors(entry.document)
+				return _definition_error(id, "CONTENT_CIRCUIT", "/document", "\n".join(problems) if not problems.is_empty() else "Supply a valid circuit style and track document.")
+			var document_id: String = resolved.document().id
+			if documents.has(document_id):
+				return _definition_error(id, "CONTENT_DOCUMENT_ID", "/document/id", "Circuit document IDs must be unique across selected packs: " + document_id)
+			documents[document_id] = id
+	for id in _records:
+		var entry: Dictionary = _records[id]
+		if entry.kind == "scenario":
+			if scenario(id) == null:
+				return _definition_error(id, "CONTENT_SCENARIO", "/brief", "Supply two different approaches and a supported observed goal.")
+			if record(entry.circuit_id).get("kind") != "circuit" or record(entry.weekend_id).get("kind") != "weekend":
+				return _definition_error(id, "CONTENT_REFERENCE", "", "Choose an existing circuit and weekend.")
+			var preset = weekend(entry.weekend_id).to_record()
+			var field = RosterDefinition.resolve(record(preset.roster_id), _records)
+			var roster = RosterDefinition.decode_snapshot(field.snapshot) if field.ok else null
+			var track = TrackGeometry.new(circuit(entry.circuit_id).document(), preset.vehicle_id, true, vehicle(preset.vehicle_id))
+			if roster == null or not roster.track_errors(track).is_empty():
+				return _definition_error(id, "CONTENT_SCENARIO_CAPACITY", "/circuit_id", "The scenario circuit must accommodate its preset's grid and pit boxes.")
+			if entry.brief.goal in ["mer_top_six", "mor_top_six"] and ScenarioBrief.named_target(entry.brief.goal, roster) < 0:
+				return _definition_error(id, "CONTENT_SCENARIO_GOAL", "/brief/goal", "The named goal driver is not entered for the selected player team.")
 	_sealed = true
 	return []
 
@@ -135,3 +164,22 @@ func _definition_error(id: String, code: String, field: String, message: String)
 	diagnostic.pack = source.get("pack", "")
 	diagnostic.entity = id
 	return [diagnostic]
+
+func circuit(id: String) -> CircuitDefinition:
+	var entry = record(id)
+	if entry.is_empty():
+		return null
+	return CircuitDefinition.from_record(entry, record(entry.style_id) if entry.has("style_id") else {})
+
+func scenario(id: String) -> ContentScenarioDefinition:
+	return ContentScenarioDefinition.from_record(record(id))
+
+func circuit_documents() -> Array:
+	var result: Array = []
+	for entry in entries("circuit"):
+		var definition = circuit(entry.id)
+		if definition != null:
+			var document = definition.document()
+			document.builtin = true
+			result.append(document)
+	return result

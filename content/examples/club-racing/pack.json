@@ -26,7 +26,10 @@
     "rosters/obsidian-expanded.json",
     "race_tuning/sprint.json",
     "weekends/sprint.json",
-    "weekends/strategy-sprint.json"
+    "weekends/strategy-sprint.json",
+    "circuits/training.json",
+    "styles/autumn.json",
+    "scenarios/first-weekend.json"
   ],
   "overrides": []
 }

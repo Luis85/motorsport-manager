@@ -3,8 +3,14 @@
 Status: vehicles, rosters, tyres/allocations, setup, shared race tuning, named
 weekends, weather/surface calibration, scalar reliability, incidents and supported
 virtual race-control settings, shared AI/racecraft tuning and externally named rival
-profiles are implemented. Remaining wheel coefficients, general provider selection, common track/scenario/presentation
-authoring, and final full-plan acceptance remain unfinished.
+profiles are implemented. The catalog also accepts file-authored circuits, supported
+illustration styles and complete-weekend scenario briefs. Built-in tracks use their
+original files, not a duplicated track format. The authoring CLI provides listing,
+resolved inspection export, comparison and bounded scenario execution.
+
+Remaining wheel coefficients, general provider selection, legacy diagnostic scenario
+collections, editor placement presets/guide text and final full-plan acceptance remain
+unfinished. This is not a claim that every work package is complete.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
@@ -68,3 +74,10 @@ Weather/surface coefficients and their compatibility rules: [authoring guide](we
 Scalar condition, driving incidents and virtual control: [authoring guide](reliability-and-control.md).
 
 AI, passing opportunities and coordinated pit forecasts: [competition authoring guide](competition-and-ai.md).
+
+
+Circuits, illustration styles, briefs, native review and authoring commands:
+[circuit/scenario guide](circuits-and-scenarios.md).
+
+Exact saved-state number decoding and retained replay integrity:
+[persistence contract](persistence-numbers.md).

@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import subprocess
 import tempfile
+import sys
+sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
 import unittest
 from unittest.mock import patch
 
@@ -78,6 +80,18 @@ class ContentAuthoringTests(unittest.TestCase):
             self.assertFalse((pack / "vehicles/local.club.vehicle.new.json").exists())
             self.assertFalse((pack / ".content-author.lock").exists())
             self.assertEqual(sorted(x.name for x in pack.iterdir()), ["pack.json", "vehicles"])
+
+    def test_clone_circuit_assigns_a_new_document_identity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            pack = Path(temporary) / "pack"
+            content.initialize(pack, "local.club")
+            result = {"ok": True, "definitions": [], "inspection": {"definition": {
+                "id": "core.circuit.hillside", "kind": "circuit", "document": {"id": "hillside"}}}}
+            with patch.object(content, "invoke_engine", return_value=result):
+                content.clone_definition(pack, "core.circuit.hillside", "local.club.circuit.new", None)
+            value = json.loads((pack / "circuits/local.club.circuit.new.json").read_text())
+            self.assertEqual(value["document"]["id"], "local.club.circuit.new")
+            self.assertEqual(result["inspection"]["definition"]["document"]["id"], "hillside")
 
     def test_schema_check_does_not_rewrite(self):
         with tempfile.TemporaryDirectory() as temporary, patch.object(content, "ROOT", Path(temporary)), patch.object(content, "invoke_engine", return_value={"ok": True, "schemas": {"vehicle": {"type": "object"}}}):

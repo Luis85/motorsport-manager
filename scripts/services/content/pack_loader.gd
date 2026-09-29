@@ -54,6 +54,10 @@ func load_packs(roots: Array) -> Dictionary:
 			errors = candidate.add(read.data, {"pack": manifest.id, "version": manifest.version,
 				"root": root, "file": path}, overrides.get(id, ""))
 			if not errors.is_empty(): return _context(errors, root, path)
+		if root == "res://content/packs/core":
+			errors = BundledContentDocuments.load_into(self, candidate, manifest.version)
+			if not errors.is_empty():
+				return _context(errors, root, "pack.json")
 		for id in overrides:
 			if not seen_ids.has(id):
 				return _failure(root, "pack.json", "CONTENT_OVERRIDE", "Declared override has no definition file: " + id)

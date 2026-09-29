@@ -8,6 +8,7 @@ var _revision: int = 0
 var _consumed: bool = false
 var _committing: bool = false
 var last_error: String = ""
+var _scenario: ContentScenarioDefinition
 
 func _init(catalog: ContentCatalog = null) -> void:
 	_catalog = catalog
@@ -125,6 +126,7 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 		last_error = "The circuit has blocking checks. Resolve them in the track editor before driving."
 		return false
 	if roster != null: geometry.pit_box_markers = roster.pit_markers()
+	_scenario = null
 	_track = geometry
 	_options = {
 		"laps": int(options.laps), "seed": int(options.get("seed", 7314)),
@@ -155,10 +157,14 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 func capture() -> Dictionary:
 	if _track == null:
 		return {}
-	return {"revision": _revision, "name": _track.document.name, "length": _track.length,
+	var result = {"revision": _revision, "name": _track.document.name, "length": _track.length,
 		"reference_lap": RaceSim.format_time(_track.estimate), "vehicle": _track.preset,
+		"vehicle_name": _track.vehicle_definition.display_name,
 		"laps": int(_options.laps), "weather": str(_options.get("scenario", "dry")),
 		"seed": int(_options.get("seed", 7314)), "consumed": _consumed}
+	if _scenario != null:
+		result.scenario_brief = _scenario.brief()
+	return result
 
 func visual_track() -> TrackGeometry:
 	return _track.detached_copy() if _track else null
@@ -179,7 +185,16 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 		return {"ok": false, "error": controls.message}
 	candidate.speed = speed
 	var record = RaceRecord.new()
-	record.attach(candidate)
+	var lineage: Dictionary = {}
+	if _scenario != null:
+		lineage = {"scenario": _scenario.brief(), "content_scenario": {
+			"definition": _scenario.to_record(), "track_id": candidate.track.document.id}}
+		var brief = _scenario.brief()
+		RaceJournal.append(candidate.strategy_state, candidate, "scenario", -1, {
+			"id": _scenario.id, "title": brief.title, "objective": ScenarioBrief.GOALS[brief.goal],
+			"hint": brief.hint, "track_hash": RaceStateValue.fingerprint(candidate.track.document),
+			"ruleset": "file-authored-weekend-v1", "assists": "Explicit weekend preset; ordinary simulation; no forced outcome."})
+	record.attach(candidate, "standalone", lineage)
 	_committing = true
 	var error = store.save_record(record)
 	_committing = false
@@ -191,3 +206,35 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 
 func session_options() -> Dictionary:
 	return _options.duplicate(true)
+
+func stage_circuit(circuit_id: String, options: Dictionary, vehicle: String = "Formula") -> bool:
+	var circuit = _catalog.circuit(circuit_id) if _catalog != null else null
+	if circuit == null:
+		last_error = "Choose an existing circuit definition."
+		return false
+	return stage(circuit.document(), options, vehicle)
+
+func stage_scenario(id: String) -> bool:
+	var scenario = _catalog.scenario(id) if _catalog != null else null
+	if scenario == null:
+		last_error = "Choose an existing scenario definition."
+		return false
+	var definition = scenario.to_record()
+	var circuit = _catalog.circuit(definition.circuit_id)
+	if circuit == null:
+		last_error = "The scenario circuit is unavailable."
+		return false
+	var preset = _catalog.weekend(definition.weekend_id)
+	if preset == null:
+		last_error = "The scenario weekend is unavailable."
+		return false
+	var goal = scenario.brief().goal
+	if goal in ["mer_top_six", "mor_top_six"]:
+		var roster = _catalog.roster(preset.to_record().roster_id)
+		if roster == null or ScenarioBrief.named_target(goal, roster) < 0:
+			last_error = "The scenario goal names a driver outside the selected player team."
+			return false
+	if not stage_preset(definition.weekend_id, circuit.document()):
+		return false
+	_scenario = scenario
+	return true

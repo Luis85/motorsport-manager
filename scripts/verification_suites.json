@@ -85,5 +85,8 @@
   {"id":"content_weekend_ui_tests","script":"tests/content_weekend_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-weekend-ui-tests.json"]},
   {"id":"content_environment_tests","script":"tests/content_environment_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-environment-tests.json"]},
   {"id":"content_operations_tests","script":"tests/content_operations_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-operations-tests.json"]},
-  {"id":"content_competition_tests","script":"tests/content_competition_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-competition-tests.json"]}
+  {"id":"content_competition_tests","script":"tests/content_competition_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-competition-tests.json"]},
+  {"id":"content_persistence_tests","script":"tests/content_persistence_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-persistence-tests.json"]},
+  {"id":"content_catalog_tests","script":"tests/content_catalog_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-catalog-tests.json"]},
+  {"id":"content_scenario_ui_tests","script":"tests/content_scenario_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-scenario-ui-tests.json"]}
 ]

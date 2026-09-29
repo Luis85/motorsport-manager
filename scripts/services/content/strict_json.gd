@@ -8,10 +8,20 @@ var _position: int = 0
 var _values: int = 0
 var _error: String = ""
 var _number = RegEx.new()
+var _maximum_values = MAX_VALUES
+var _maximum_depth = MAX_DEPTH
+var _exact_numbers = false
+var _number_cache: Dictionary = {}
 
-static func parse(text: String) -> Dictionary:
+static func parse(text: String, saved_session: bool = false) -> Dictionary:
 	var reader = ContentJson.new()
 	reader._text = text
+	if saved_session:
+		# Session envelopes include several checkpoints and integer-path tables.
+		# These limits are engine-owned; content manifests cannot opt into them.
+		reader._maximum_values = 1000000
+		reader._maximum_depth = 48
+		reader._exact_numbers = true
 	reader._number.compile("-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?")
 	var value = reader._value(0)
 	reader._space()
@@ -40,7 +50,7 @@ func _fail(message: String) -> Variant:
 
 func _value(depth: int) -> Variant:
 	_values += 1
-	if depth > MAX_DEPTH or _values > MAX_VALUES:
+	if depth > _maximum_depth or _values > _maximum_values:
 		return _fail("JSON exceeds the nesting or value-count limit.")
 	_space()
 	if _position >= _text.length():
@@ -65,8 +75,17 @@ func _value(depth: int) -> Variant:
 	if token.length() > 100:
 		return _fail("JSON numeric token exceeds 100 characters.")
 	var exponent = token.to_lower().split("e")
-	if exponent.size() == 2 and (exponent[1].length() > 4 or absf(exponent[1].to_float()) > 100):
-		return _fail("JSON exponent must be between -100 and 100.")
+	if exponent.size() == 2 and (exponent[1].length() > 4 or absf(exponent[1].to_float()) > (500 if _exact_numbers else 100)):
+		return _fail("JSON exponent is outside the supported range.")
+	if _exact_numbers:
+		if _number_cache.has(token):
+			return _number_cache[token]
+		var converted = JsonNumber.parse(token)
+		if not converted.ok:
+			return _fail(converted.error)
+		if _number_cache.size() < 4096:
+			_number_cache[token] = converted.value
+		return converted.value
 	var result = token.to_float()
 	if not is_finite(result):
 		return _fail("JSON numbers must be finite.")

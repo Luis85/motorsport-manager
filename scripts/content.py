@@ -13,6 +13,8 @@ import sys
 import tempfile
 from typing import Any
 
+import content_operations
+
 ROOT = Path(__file__).resolve().parents[1]
 IDENTITY = re.compile(r"[a-z][a-z0-9_-]*(?:\.[a-z0-9_-]+)+\Z")
 PACK_ID = re.compile(r"[a-z][a-z0-9_-]*(?:\.[a-z0-9_-]+)*\Z")
@@ -97,6 +99,9 @@ def clone_definition(path: Path, source: str, identity: str, godot: str | None) 
         raise ValueError("The new ID must use the destination pack's namespace.")
     value = dict(result["inspection"]["definition"])
     value["id"] = identity
+    if value["kind"] == "circuit":
+        # A new library circuit also needs a unique document identity.
+        value["document"] = {**value["document"], "id": identity}
     target = path / (value["kind"] + "s")
     if target.is_symlink():
         raise ValueError("The destination directory cannot be a symbolic link.")
@@ -166,6 +171,22 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--format", choices=["json", "text"], default="text")
         if action == "inspect":
             command.add_argument("--id", required=True)
+    for action in ["list", "export", "test"]:
+        command = commands.add_parser(action)
+        command.add_argument("path", nargs="?", type=Path)
+        command.add_argument("--godot")
+        command.add_argument("--format", choices=["json", "text"], default="json")
+        if action == "list":
+            command.add_argument("--kind")
+        elif action == "export":
+            command.add_argument("--output", type=Path, required=True)
+        else:
+            command.add_argument("--scenario", required=True)
+            command.add_argument("--steps", type=int, default=1600)
+    comparison = commands.add_parser("diff")
+    comparison.add_argument("before", type=Path)
+    comparison.add_argument("after", type=Path)
+    comparison.add_argument("--godot")
     schema = commands.add_parser("schemas", help="Publish or check the generated JSON Schemas.")
     schema.add_argument("--godot")
     schema.add_argument("--check", action="store_true")
@@ -175,7 +196,9 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        if args.action == "init":
+        if args.action in {"list", "export", "diff", "test"}:
+            result = content_operations.execute(args, invoke_engine, pack_arguments)
+        elif args.action == "init":
             result = initialize(args.path, args.id)
         elif args.action == "clone":
             result = clone_definition(args.pack, args.source, args.identity, args.godot)
@@ -194,6 +217,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{diagnostic['code']} {diagnostic.get('file', '')}{diagnostic['field']}: {diagnostic['message']}")
         if "inspection" in result:
             print(encode(result["inspection"]), end="")
+        if args.action == "list":
+            for item in result.get("definitions", []):
+                print(f"{item['kind']}  {item['id']}  {item['name']}")
+        if args.action == "test":
+            print(encode({key: value for key, value in result.items() if key not in {"definitions", "kinds", "diagnostics"}}), end="")
     else:
         print(encode(result), end="")
     return 0 if result.get("ok") else 1

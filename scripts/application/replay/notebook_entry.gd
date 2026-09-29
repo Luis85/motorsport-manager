@@ -40,6 +40,8 @@ static func build(record: RaceRecord) -> Dictionary:
 		"context": RaceRecord.static_identity(record.initial), "engine": result.engine, "model": result.model,
 		"start_time": record.initial.total_time, "end_time": sim.total_time,
 		"players": players, "challenge": challenge}
+	if record.parent.has("content_scenario"):
+		facts.content_scenario = record.parent.content_scenario.duplicate(true)
 	return {"facts": facts, "digest": RaceRecord.fingerprint(facts), "note": "", "revision": 0}
 
 static func hash_valid(value: Variant) -> bool:
@@ -52,7 +54,7 @@ static func validate(entry: Variant) -> bool:
 	if not entry is Dictionary or entry.size() != 4 or not entry.get("facts") is Dictionary: return false
 	if not text_valid(entry.get("note"), MAX_NOTE, true) or not RaceCheckpoint.integral(entry.get("revision"), 0, 1000000): return false
 	var f = entry.facts
-	if f.size() != 12 or not RaceRecord.valid_id(f.get("event_id")) or f.get("origin") not in ["standalone", "legacy", "sandbox"]: return false
+	if f.size() != 12 + (1 if f.has("content_scenario") else 0) or not RaceRecord.valid_id(f.get("event_id")) or f.get("origin") not in ["standalone", "legacy", "sandbox"]: return false
 	if not hash_valid(f.get("result_digest")) or not hash_valid(f.get("track_hash")): return false
 	if not text_valid(f.get("track_name"), 200) or not text_valid(f.get("engine"), 100) or not text_valid(f.get("model"), 100): return false
 	if not RaceCheckpoint.number(f.get("start_time"), 0, 10000000) or not RaceCheckpoint.number(f.get("end_time"), f.start_time, 10000000): return false
@@ -76,6 +78,7 @@ static func validate(entry: Variant) -> bool:
 	if rules.get("race_control") not in ["virtual-neutralization-v1", "legacy-speed-cap"]: return false
 	if rules.has("tuning_definition") and RaceTuningDefinition.from_record(rules.tuning_definition) == null: return false
 	if rules.has("weekend_definition") and WeekendDefinition.from_record(rules.weekend_definition) == null: return false
+	if not ContentScenarioDefinition.valid_notebook_context(f): return false
 	var roster: RosterDefinition
 	if rules.has("setup_definition") and SetupDefinition.from_record(rules.setup_definition) == null: return false
 	if rules.has("tyre_definition") and RaceTyreRules.from_snapshot(rules.tyre_definition) == null: return false
@@ -100,7 +103,7 @@ static func validate(entry: Variant) -> bool:
 		for key in ["key", "title", "goal"]:
 			if not challenge.get(key) is String or not challenge[key].is_empty(): return false
 	else:
-		if f.origin != "sandbox" or not hash_valid(challenge.get("key")) or not text_valid(challenge.get("title"), 80) or challenge.get("goal") not in ScenarioBrief.GOALS: return false
+		if (f.origin != "sandbox" and not f.has("content_scenario")) or not hash_valid(challenge.get("key")) or not text_valid(challenge.get("title"), 80) or challenge.get("goal") not in ScenarioBrief.GOALS: return false
 		var expected = "observation"
 		if challenge.goal != "observe":
 			var met = f.players.all(func(c): return c.status == "finished")

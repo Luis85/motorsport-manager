@@ -55,7 +55,6 @@ func _autosave_session(_phase: String) -> void:
 	session_runner.persistence_error = ReplayStorage.save_session(path, _session_record)
 
 func _ready() -> void:
-	load_library()
 	if FileAccess.file_exists("user://settings.json"):
 		var result = Storage.read_json("user://settings.json")
 		if result.ok and result.data is Dictionary: restore_settings(result.data)
@@ -69,7 +68,7 @@ func _ready() -> void:
 		return
 	var probe_selection: Dictionary = {}
 	for argument in OS.get_cmdline_user_args():
-		for key in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id"]:
+		for key in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id", "circuit_id", "scenario_id"]:
 			var prefix = "--content-probe-" + key + "="
 			if argument.begins_with(prefix): probe_selection[key] = argument.trim_prefix(prefix)
 	for argument in OS.get_cmdline_user_args():
@@ -113,7 +112,7 @@ func save_settings() -> String:
 
 func load_library() -> void:
 	library.clear(); load_errors.clear()
-	var bundled = Storage.read_catalog()
+	var bundled = {"ok": true, "data": content_catalog.circuit_documents()} if content_catalog != null else Storage.read_catalog()
 	if bundled.ok and bundled.data is Array:
 		for raw in bundled.data:
 			var errors = TrackDocument.validate(raw)
@@ -203,6 +202,7 @@ func reload_content(roots: Array) -> bool:
 		return false
 	content_catalog = result.catalog
 	content_roots = roots.duplicate()
+	load_library()
 	return true
 
 func content_warnings() -> String:

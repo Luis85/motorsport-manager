@@ -128,22 +128,24 @@ func show_library(test_track: Dictionary = {}) -> void:
 	selected_track = candidates[selected_index]
 	content.add_child(UI.label("Choose your Grand Prix", 30))
 	content.add_child(UI.paragraph("Practice → Qualifying → Race. Keep the same screen and controls throughout; start the next session when ready."))
+	ContentScenarioControls.append(self, content)
 	var body = UI.hbox(content, true)
 	var side = UI.panel(); side.custom_minimum_size.x = 295; body.add_child(side)
 	var left = UI.vbox(side, true); left.add_child(UI.label("TRACK LIBRARY", 14, UI.ACCENT))
-	var list = ItemList.new(); list.size_flags_vertical = Control.SIZE_EXPAND_FILL; list.add_theme_constant_override("v_separation", 13); left.add_child(list)
+	var list = ItemList.new(); list.custom_minimum_size.y = 80; list.size_flags_vertical = Control.SIZE_EXPAND_FILL; list.add_theme_constant_override("v_separation", 13); left.add_child(list)
 	for track in candidates: list.add_item(track.name + (" [custom]" if not track.get("builtin", false) else ""))
 	list.select(selected_index)
 	var preview = UI.vbox(body, true)
 	var details = UI.label("", 17, UI.ACCENT); details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; preview.add_child(details)
 	library_canvas = TrackCanvas.new(); library_canvas.configure_presentation(App.settings); library_canvas.show_line = true; preview.add_child(library_canvas)
+	library_canvas.custom_minimum_size.y = 180
 	var refresh = func():
 		var geometry = TrackGeometry.new(selected_track, vehicle, false, App.content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()))
 		library_canvas.set_track(geometry); library_canvas.call_deferred("fit")
 		details.text = "%s  ·  %.3f km  ·  %s reference %s" % [selected_track.name, geometry.length / 1000, vehicle, RaceSim.format_time(geometry.estimate)]
 	list.item_selected.connect(func(index): selected_track = candidates[index]; refresh.call())
 	left.add_child(UI.button("Edit selected circuit", func(): show_editor(selected_track)))
-	left.add_child(UI.paragraph("Edited tracks saved in Circuit Atelier appear here. Race sessions use their own compiled copy, so editing cannot change a running weekend."))
+	left.add_child(UI.paragraph("Edits create a local copy. Active races stay unchanged."))
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
 	var preset_rows = App.content_catalog.entries("weekend")

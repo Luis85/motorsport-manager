@@ -15,6 +15,7 @@ import time
 from typing import Any
 
 from verification_run import source_digest
+from content_export_scenarios import exercise_scenario
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -176,6 +177,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             restored = probe(installed, ["--content-probe-restore"], isolated, env, runtime_uid=runtime_uid)
             if restored != edited:
                 raise RuntimeError("A removed/invalid pack changed the saved session.")
+            scenario_evidence = exercise_scenario(ROOT, installed, pack, isolated, env, runtime_uid, probe)
             if digest(executable) != original_hash or digest(installed) != original_hash:
                 raise RuntimeError("Acceptance modified the executable.")
             results.append({"mode": mode, "passed": True, "executable_sha256": original_hash,
@@ -184,7 +186,7 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
                             "unicode_and_space_path": True, "first": first, "edited": edited,
                             "restored_without_pack": restored, "rejection": rejected,
                             "environment_rejection": environment_rejection, "operations_rejection": operations_rejection,
-                            "competition_rejection": competition_rejection,
+                            "competition_rejection": competition_rejection, "authored_scenario": scenario_evidence,
                             "seconds": round(time.monotonic() - started, 3)})
             install.chmod(0o755)
     return {"passed": True, "source": source_digest(ROOT), "engine": version, "platform": platform.platform(),
