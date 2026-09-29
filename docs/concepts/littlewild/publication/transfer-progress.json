@@ -1,9 +1,9 @@
 {
   "status": "upload-in-progress; not runnable yet",
-  "verifiedChunks": 44,
+  "verifiedChunks": 48,
   "requiredChunks": 72,
   "transportSha256": "cba1683fbbeefbd471d7d4b8016d6d69c068f9efc6ac92b7e15ea1a72146c484",
   "sourceArchiveSha256": "8793552fbf1776823018e61913d2b6641856480d0f4c4c4c343c8145f8b82b77",
   "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
-  "nextChunk": "part-044.bin"
+  "nextChunk": "part-048.bin"
 }
