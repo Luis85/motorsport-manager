@@ -1,0 +1,12 @@
+{
+  "kind": "vehicle",
+  "schema_version": 1,
+  "id": "core.vehicle.gt",
+  "name": "GT",
+  "description": "Reference vehicle for the existing path-following simulation.",
+  "top_speed_mps": 76.0,
+  "lateral_acceleration_mps2": 15.0,
+  "acceleration_mps2": 6.0,
+  "braking_mps2": 12.0,
+  "width_m": 2.1
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "motorsport-manager-content-pack",
+  "schema_version": 1,
+  "id": "core",
+  "version": "1.0.0",
+  "runtime_contract": 1,
+  "dependencies": [],
+  "files": [
+    "vehicles/formula.json",
+    "vehicles/gt.json",
+    "vehicles/touring.json",
+    "vehicles/kart.json"
+  ],
+  "overrides": []
+}

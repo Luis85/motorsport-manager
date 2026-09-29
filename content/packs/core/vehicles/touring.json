@@ -1,0 +1,12 @@
+{
+  "kind": "vehicle",
+  "schema_version": 1,
+  "id": "core.vehicle.touring",
+  "name": "Touring",
+  "description": "Reference vehicle for the existing path-following simulation.",
+  "top_speed_mps": 66.0,
+  "lateral_acceleration_mps2": 12.0,
+  "acceleration_mps2": 5.2,
+  "braking_mps2": 10.0,
+  "width_m": 1.9
+}
