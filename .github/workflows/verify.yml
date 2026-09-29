@@ -19,6 +19,7 @@ jobs:
     env:
       GODOT_VERSION: 4.7.2
       LP_NUM_THREADS: 2
+      MOTORSPORT_SOURCE_REVISION: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pinned Godot editor

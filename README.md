@@ -16,7 +16,15 @@ There are no telemetry dashboards, strategy tabs, drawers, two-car decision card
 
 ## Open and play
 
-Import the root `project.godot` in **Godot 4.7.2 Standard**, allow script import, then press **F5**. No npm, .NET, browser or external Godot plugin is required.
+For a standalone build, download the matching Linux or Windows artifact from the
+**Standalone application** workflow. Extract the artifact ZIP and its inner
+`.tar.gz`, keep `Motorsport Manager.pck` beside the executable, and launch the
+executable. No Godot editor or source checkout is required. Check the matching
+native-smoke evidence before treating a PR build as validated.
+
+For source development, import the root `project.godot` in **Godot 4.7.2 Standard**,
+allow script import, then press **F5**. No npm, .NET, browser or external Godot
+plugin is required.
 
 Choose **Grand Prix Weekend**, a circuit, weather and race distance, then **Review weekend**. The welcome previews the circuit and session flow. **Start practice** durably commits the new entry; Back or Cancel preserves the previous weekend. The minimal setup leaves vehicle and advanced simulation parameters at their existing defaults.
 
@@ -106,3 +114,14 @@ and [contributor rules](AGENTS.md). Run locally with:
 python3 -m pip install -r requirements-quality.txt
 python3 scripts/quality.py
 ```
+
+## Standalone desktop builds
+
+The **Standalone application** workflow publishes separate Linux and Windows
+debug/release artifacts. Extract the matching artifact ZIP, then its inner
+`standalone-<platform>-<mode>.tar.gz` (which preserves Linux executable permissions).
+Keep the executable and
+`Motorsport Manager.pck` together, and launch the executable without the source
+editor. A successful export is not runtime acceptance: inspect the corresponding
+`standalone-evidence-<platform>-<mode>` artifact for executed native smoke and
+restart/recovery results. [Build contract and verification scope](docs/standalone-validation.md).

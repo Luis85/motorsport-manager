@@ -160,11 +160,19 @@ static func sporting(snapshot: Dictionary) -> Dictionary:
 
 static func integer_paths(value: Variant, path: Array = []) -> Array:
 	var result: Array = []
-	if value is int: result.append(path.duplicate())
+	_append_integer_paths(value, path.duplicate(), result)
+	return result
+
+static func _append_integer_paths(value: Variant, path: Array, result: Array) -> void:
+	# One traversal stack; only retained integer paths receive their own copy.
+	# Preserve insertion/index order and never modify the supplied prefix or value.
+	if value is int:
+		result.append(path.duplicate())
 	elif value is Dictionary or value is Array:
 		for key in (value.keys() if value is Dictionary else range(value.size())):
-			result.append_array(integer_paths(value[key], path + [key]))
-	return result
+			path.append(key)
+			_append_integer_paths(value[key], path, result)
+			path.pop_back()
 
 static func valid_types(payload: Dictionary, paths: Variant) -> bool:
 	if not paths is Array or paths.size() > 20000: return false

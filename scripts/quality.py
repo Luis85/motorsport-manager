@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from importlib import metadata
 import json
 import re
 import subprocess
@@ -80,10 +81,23 @@ def tool_findings(tool: dict, text: str, root: Path, complexity: int) -> list[di
     return records
 
 
+def provenance() -> dict:
+    analyzer = hashlib.sha256()
+    for name in ("quality.py", "quality_loc.py", "quality_report.py"):
+        analyzer.update(name.encode() + b"\0" + (ROOT / "scripts" / name).read_bytes() + b"\0")
+    versions = {}
+    for package in ("ruff", "gdtoolkit"):
+        try:
+            versions[package] = metadata.version(package)
+        except metadata.PackageNotFoundError:
+            versions[package] = "unavailable"
+    return {"analyzer_sha256": analyzer.hexdigest(), "tool_versions": versions}
+
+
 def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
     policy = json.loads((root / "quality-policy.json").read_text(encoding="utf-8"))
     report = {"schema_version": 1, "mode": "advisory", "analysis_complete": True,
-              "policy": policy, "files": [], "findings": [], "tools": []}
+              "policy": policy, "files": [], "findings": [], "tools": [], **provenance()}
     paths = inventory(root, policy)
     if not paths:
         raise ValueError("No source files found; refusing an empty quality report")
@@ -128,13 +142,14 @@ def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=ROOT, help="Read-only checkout to scan using this analyzer")
     parser.add_argument("--output", type=Path, default=ROOT / "reports" / "quality")
     parser.add_argument("--loc-only", action="store_true", help="Explicit partial report without external tools")
     parser.add_argument("--annotations", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Opt-in local failure on warnings/incomplete analysis")
     args = parser.parse_args(argv)
     try:
-        report = collect(ROOT, args.output.resolve(), not args.loc_only)
+        report = collect(args.root.resolve(), args.output.resolve(), not args.loc_only)
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         report = {"schema_version": 1, "mode": "advisory", "analysis_complete": False,
                   "files": [], "tools": [], "findings": [finding("quality-runner", str(error))]}

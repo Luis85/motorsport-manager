@@ -16,6 +16,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -29,12 +31,25 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p reports/quality
-          python -m unittest discover -s tests -p 'test_quality.py' > reports/quality/self-tests.log 2>&1
+          python -m unittest discover -s tests -p 'test_quality*.py' > reports/quality/self-tests.log 2>&1
       - name: Run advisory checks
         id: report
         if: always()
         continue-on-error: true
         run: python scripts/quality.py --annotations
+      - name: Compare full inventory with base revision
+        if: always()
+        continue-on-error: true
+        env:
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          base="$BASE_REVISION"
+          if [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then base="$(git rev-parse HEAD^)"; fi
+          git worktree add --detach "$RUNNER_TEMP/quality-base" "$base"
+          python scripts/quality.py --root "$RUNNER_TEMP/quality-base" --output reports/quality/base
+          python scripts/quality_delta.py --base-report reports/quality/base/quality.json --candidate-report reports/quality/quality.json --output reports/quality/comparison
+          cat reports/quality/comparison/delta.md >> "$GITHUB_STEP_SUMMARY"
       - name: Report infrastructure problems
         if: always()
         env:

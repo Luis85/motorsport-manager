@@ -1,6 +1,7 @@
 class_name RaceReplay
 extends RefCounted
 ## Independent fixed-step reconstruction. Playback controls never call the original.
+signal boundary_reached(step: int, cursor: int)
 var record: Dictionary = {}
 var sim: RaceSim
 var step_index = 0
@@ -47,6 +48,7 @@ func tick(budget: int = 32) -> int:
 			if not sim.command(entry.action, RaceRecord.typed_payload(entry)):
 				error = "Replay stopped at input %d: %s. No live state was changed." % [cursor + 1, sim.last_error]; return advanced
 			cursor += 1; commands_applied += 1
+			boundary_reached.emit(step_index, cursor)
 			if commands_applied >= 32: return advanced
 		if step_index == int(record.steps):
 			verified = RaceRecord.equivalent(RaceRecord.sporting(sim.snapshot()), RaceRecord.sporting(record.endpoint))
@@ -56,6 +58,7 @@ func tick(budget: int = 32) -> int:
 			error = "Missing recorded approval before the next step. No approval was invented."; return advanced
 		sim.paused = false
 		sim.step(); step_index += 1; advanced += 1
+		boundary_reached.emit(step_index, cursor)
 	return advanced
 
 func branch() -> PracticeRaceSim:
