@@ -2,15 +2,46 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
 MAX_DIFFS = 256
 
 
+def json_equal(before: Any, after: Any) -> bool:
+    """JSON numbers may compare equally; Booleans are not numbers, even when nested."""
+    if isinstance(before, bool) or isinstance(after, bool):
+        return type(before) is type(after) and before == after
+    if isinstance(before, dict) and isinstance(after, dict):
+        return before.keys() == after.keys() and all(json_equal(before[key], after[key]) for key in before)
+    if isinstance(before, list) and isinstance(after, list):
+        return len(before) == len(after) and all(json_equal(a, b) for a, b in zip(before, after))
+    return before == after
+
+
+def export_snapshot(path: Path, snapshot: dict[str, Any]) -> None:
+    """Publish a complete UTF-8 snapshot without replacing an existing destination."""
+    text = json.dumps(snapshot, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n"
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # Same-directory hard linking is exclusive and atomic. Do not fall back to
+        # replace(), which would destroy a file created while the engine validated.
+        os.link(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def difference(before: Any, after: Any, path: str = "") -> list[dict[str, Any]]:
     """Bounded JSON-pointer differences. Array order remains meaningful."""
-    if before == after:
+    if json_equal(before, after):
         return []
     if isinstance(before, dict) and isinstance(after, dict):
         changes: list[dict[str, Any]] = []
@@ -31,10 +62,15 @@ def difference(before: Any, after: Any, path: str = "") -> list[dict[str, Any]]:
 def execute(args: Any, invoke: Callable[..., dict[str, Any]], packs: Callable[..., list[str]]) -> dict[str, Any]:
     """Never validate definitions in Python or report a simulated step that did not execute."""
     path = getattr(args, "path", None)
+    common = getattr(args, "packs", [])
+
+    def selection(root: Path | None, side: str = "") -> list[str]:
+        dependencies = common + (getattr(args, side + "_pack", []) if side else [])
+        return packs(root, dependencies) if dependencies else packs(root)
     if args.action == "test":
-        return invoke(["--action=test", "--id=" + args.scenario, "--steps=" + str(args.steps), *packs(path)], args.godot)
+        return invoke(["--action=test", "--id=" + args.scenario, "--steps=" + str(args.steps), *selection(path)], args.godot)
     if args.action == "list":
-        result = invoke(["--action=validate", *packs(path)], args.godot)
+        result = invoke(["--action=validate", *selection(path)], args.godot)
         if result.get("ok") and args.kind:
             if args.kind not in result.get("kinds", []):
                 raise ValueError("Unsupported content kind: " + args.kind)
@@ -43,20 +79,17 @@ def execute(args: Any, invoke: Callable[..., dict[str, Any]], packs: Callable[..
     if args.action == "export":
         if args.output.exists():
             raise ValueError("Export destination already exists; choose a new file.")
-        result = invoke(["--action=export", *packs(path)], args.godot)
+        result = invoke(["--action=export", *selection(path)], args.godot)
         if not result.get("ok"):
             return result
-        # Exclusive creation also protects against a destination appearing during validation.
-        with args.output.open("x", encoding="utf-8") as stream:
-            json.dump(result["snapshot"], stream, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False)
-            stream.write("\n")
+        export_snapshot(args.output, result["snapshot"])
         return {"ok": True, "engine_executed": True, "output": str(args.output),
                 "definitions": len(result["snapshot"]["records"]),
                 "scope": "Resolved inspection snapshot, not a directly loadable folder pack."}
-    before = invoke(["--action=export", *packs(args.before)], args.godot)
+    before = invoke(["--action=export", *selection(args.before, "before")], args.godot)
     if not before.get("ok"):
         return before
-    after = invoke(["--action=export", *packs(args.after)], args.godot)
+    after = invoke(["--action=export", *selection(args.after, "after")], args.godot)
     if not after.get("ok"):
         return after
     changes = difference(before["snapshot"]["records"], after["snapshot"]["records"])
