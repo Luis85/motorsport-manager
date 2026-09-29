@@ -37,16 +37,16 @@ func _ready() -> void:
 		for connection in button.pressed.get_connections(): button.pressed.disconnect(connection.callable)
 		button.pressed.connect(func(): open_topic(6); strategy_desk.show_topic(i); refresh_navigation())
 	practice_panel.command_requested.connect(targeted_command)
-	practice_button = UI.button("Optional practice", func(): open_practice(3))
+	practice_button = UI.button("Optional practice", func(): open_practice(int(sim.player_ids()[0])))
 	primary_button.get_parent().add_child(practice_button)
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var link = UI.button("Practice", func(): open_practice(id))
 		car_cards[id].actions.add_child(link); practice_links[id] = link
 		PitwallDesign.scale_controls(link, text_scale)
 	navigator.catalog.append([practice_page_index, 0, "Strategy / Practice", "optional learning tyre life qualifying setup comparison measured run recall"])
 	navigator.filter_views("")
 	group_buttons.Strategy.tooltip_text += ", optional Practice"
-	guide.steps.append({"title": "Learn before spending your best set", "body": "Practice is optional. Choose a run objective, a real tyre set and a setup trade-off. Run spends tyre condition, fuel, health and time. Interrupted runs retain partial evidence. Only comparable clean laps inform forecast estimates; no hidden setup score or performance bonus exists. End and review before qualifying.", "target": func(): return practice_panel, "reveal": func(): open_practice(3)})
+	guide.steps.append({"title": "Learn before spending your best set", "body": "Practice is optional. Choose a run objective, a real tyre set and a setup trade-off. Run spends tyre condition, fuel, health and time. Interrupted runs retain partial evidence. Only comparable clean laps inform forecast estimates; no hidden setup score or performance bonus exists. End and review before qualifying.", "target": func(): return practice_panel, "reveal": func(): open_practice(int(sim.player_ids()[0]))})
 	PitwallDesign.scale_controls(practice_panel, text_scale); PitwallDesign.scale_controls(practice_button, text_scale)
 	public_inspector = PublicRivalInspector.new(); public_inspector.configure(self)
 	for label in public_inspector.masks.values(): PitwallDesign.scale_controls(label, text_scale)
@@ -62,7 +62,7 @@ func _ready() -> void:
 		practice_workspace.panels[id].choose_driver(id)
 	for step in guide.steps:
 		if step.title == "Learn before spending your best set":
-			step.target = func(): return practice_workspace.panels[3]
+			step.target = func(): return practice_workspace.panels[int(sim.player_ids()[0])]
 			step.reveal = open_practice_workspace
 	practice_workspace.command_requested.connect(targeted_command)
 	practice_workspace.close_requested.connect(close_session_workspace)
@@ -73,7 +73,7 @@ func _ready() -> void:
 		duel_workspace = DuelWorkspace.new(); duel_workspace.configure(self)
 	RaceAccessibility.describe(self)
 	wire_control_help(practice_panel); wire_control_help(rivals_button); refresh()
-	if sim.phase in ["practice", "practice_results"]: open_practice(3)
+	if sim.phase in ["practice", "practice_results"]: open_practice(int(sim.player_ids()[0]))
 
 func group_for(index: int) -> String:
 	if duel_workspace != null and index == duel_workspace.index: return "Strategy"
@@ -126,7 +126,7 @@ func refresh() -> void:
 		practice_panel.refresh()
 		for button in teammate_buttons: button.visible = false
 		team_panel.commit_bar.visible = false; strategy_desk.commit_bar.visible = false
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		practice_links[id].visible = during
 		if not during: continue
 		var c = sim.car(id); var d = sim.practice_driver(id); var controls = decision_controls[id]; var card = car_cards[id]
@@ -139,14 +139,14 @@ func refresh() -> void:
 		card.issue.text = "Choose a purpose or keep this set for qualifying" if d.active.is_empty() else "%s · %d/%d measured laps" % [PracticeEvidence.OBJECTIVES[d.runs.back().objective], d.runs.back().samples.size(), d.runs.back().target]
 		card.issue.tooltip_text = PracticeEvidence.report(sim.practice_state, id)
 	if not during:
-		for id in [3, 6]:
+		for id in sim.player_ids():
 			car_cards[id].facts[1].get_parent().get_child(0).text = "FINISH FUEL · EST."
 			car_cards[id].facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if strategy_model.policy(id).owners.pit == "player" else "ENGINEER")
 	if right_panel.visible and tabs.current_tab == 7:
 		var inherited = debrief_text.text.trim_prefix(practice_debrief_prefix)
 		if practice_report_stamp != int(sim.strategy_state.sequence):
 			practice_report_stamp = int(sim.strategy_state.sequence)
-			practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join([3, 6].map(func(id): return sim.car(id).short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n" + RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops) + "\n\n"
+			practice_debrief_prefix = "PRACTICE NOTEBOOK\n\n" + "\n\n".join(sim.player_ids().map(func(id): return sim.car(id).short + "\n" + PracticeEvidence.report(sim.practice_state,id))) + "\n\n" + RivalStyles.public_field(sim.rival_styles, sim.cars, sim.rival_state.stops) + "\n\n"
 		debrief_text.text = practice_debrief_prefix + inherited
 
 	if public_inspector: public_inspector.present(self)
@@ -208,7 +208,7 @@ func open_practice_workspace() -> void:
 	var invoker=get_viewport().gui_get_focus_owner()
 	close_session_workspace();full_invoker=invoker; full_workspace = practice_workspace
 	practice_workspace.show(); practice_workspace.present(); adapt_layout()
-	PitwallDesign.focus_later(practice_workspace.panels[3].objective_buttons.tyre_life)
+	PitwallDesign.focus_later(practice_workspace.panels[int(sim.player_ids()[0])].objective_buttons.tyre_life)
 
 func unapplied_draft_kinds() -> Array[String]:
 	var kinds = super.unapplied_draft_kinds()

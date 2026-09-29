@@ -3,8 +3,8 @@ extends RaceSim
 ## Compatibility construction/restore profile. Runtime rules live in composed mechanics.
 const PRACTICE_CHECKPOINT_VERSION = 10
 
-func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
-	super(geometry, options)
+func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
+	super(geometry, options, roster)
 	mechanics.configure(RaceMechanicProfiles.build("practice"))
 	mechanics.install(geometry, options)
 
@@ -24,9 +24,9 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	var styles = data.get("rival_styles") if native_styles else RivalStyles.create(base.cars, false)
 	if not RivalStyles.valid(styles, base.cars, base.total_time): return null
 	if native_duels and not TacticalDuels.valid(data.get("duel_state"), base): return null
-	var sim = PracticeRaceSim.new(base.track, {"rival_styles": false})
+	var sim = PracticeRaceSim.new(base.track, {"rival_styles": false}, base.roster_definition)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
 	if native_duels: sim.duel_state = data.duel_state.duplicate(true)

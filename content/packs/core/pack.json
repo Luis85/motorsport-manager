@@ -9,7 +9,26 @@
     "vehicles/formula.json",
     "vehicles/gt.json",
     "vehicles/touring.json",
-    "vehicles/kart.json"
+    "vehicles/kart.json",
+    "teams/volpe.json",
+    "drivers/valenti.json",
+    "teams/aster.json",
+    "drivers/reinhardt.json",
+    "teams/veridian.json",
+    "drivers/bellamy.json",
+    "teams/obsidian.json",
+    "drivers/mercer.json",
+    "teams/nordstar.json",
+    "drivers/soren.json",
+    "drivers/rossi.json",
+    "drivers/moreau.json",
+    "drivers/tanaka.json",
+    "teams/kestrel.json",
+    "drivers/darcy.json",
+    "drivers/kiefer.json",
+    "drivers/costa.json",
+    "drivers/hart.json",
+    "rosters/default.json"
   ],
   "overrides": []
 }

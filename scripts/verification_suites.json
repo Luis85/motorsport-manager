@@ -67,5 +67,7 @@
   {"id":"command_contract_tests","script":"tests/command_contract_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["command-contract-tests.json"]},
   {"id":"storage_contract_tests","script":"tests/storage_contract_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["storage-contract-tests.json"]},
   {"id":"content_tests","script":"tests/content_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-tests.json"]},
-  {"id":"content_pack_tests","script":"tests/content_pack_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-pack-tests.json"]}
+  {"id":"content_pack_tests","script":"tests/content_pack_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-pack-tests.json"]},
+  {"id":"roster_content_tests","script":"tests/roster_content_tests.gd","native":false,"layout":"minimal","timeout":600,"reports":["roster-content-tests.json"]},
+  {"id":"roster_content_ui_tests","script":"tests/roster_content_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["roster-content-ui-tests.json"]}
 ]

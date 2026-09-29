@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal driver_selected(id: int)
 signal reading_requested(title: String, text: String, invoker: Control)
 var model: RaceViewQuery
-var driver_id = 3
+var driver_id = -1
 var text_scale = 1.0
 var drafts: Dictionary = {}
 var edited: Dictionary = {}
@@ -66,8 +66,9 @@ func field(title: String, control: Control, parent: Node = null) -> void:
 	if control is SpinBox: control.get_line_edit().accessibility_name = title
 
 func _ready() -> void:
+	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 7)
-	picker = UI.option(["MER · Daniel Mercer", "MOR · Lucas Moreau"], func(index): choose_driver([3, 6][index]); driver_selected.emit(driver_id))
+	picker = UI.option(model.player_labels(), func(index): choose_driver(model.player_ids()[index]); driver_selected.emit(driver_id))
 	field("Tactical driver", picker, self)
 	stage_label = UI.label("", 14, UI.INK); add_child(stage_label)
 	live_label = UI.paragraph(""); add_child(live_label)
@@ -130,15 +131,15 @@ func _ready() -> void:
 	refresh_button.tooltip_text = "Compare this driver's draft. Reading estimates never issues a race command."
 	end_button.tooltip_text = "Review ending this tactic. An accepted physical pit stop is not cancelled."
 	approve_button = UI.button("Approve tactical plan", approve, true); commit_bar.add_child(approve_button)
-	choose_driver(3)
+	choose_driver(int(model.player_ids()[0]))
 
 func choose_driver(id: int) -> void:
-	if id not in [3, 6]: return
+	if id not in model.player_ids(): return
 	driver_id = id
 	if not drafts.has(id): drafts[id] = model.tactical_forecast_draft(id); edited[id] = false
 	var p = drafts[id]
 	loading = true
-	picker.select([3, 6].find(id)); kind.select(TacticalForecast.KINDS.find(p.kind))
+	picker.select(model.player_ids().find(id)); kind.select(TacticalForecast.KINDS.find(p.kind))
 	rival.select(-1)
 	for i in range(rival.item_count):
 		if rival.get_item_metadata(i) == int(p.target_id): rival.select(i)

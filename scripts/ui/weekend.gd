@@ -195,7 +195,7 @@ func _ready() -> void:
 	var wall = UI.vbox(right_panel, true); wall.add_theme_constant_override("separation", 5)
 	
 	var teammates = UI.hbox(wall)
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var b = UI.button("", func(): select_driver(id)); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; b.add_theme_font_size_override("font_size", 12)
 		teammates.add_child(b); teammate_buttons.append(b)
 	driver_status_card = UI.race_panel(false, 6); wall.add_child(driver_status_card)
@@ -411,7 +411,7 @@ func refresh() -> void:
 	steps[0].get_parent().visible = sim.phase not in RaceViewQuery.ACTIVE
 	for i in range(steps.size()): steps[i].add_theme_color_override("font_color", UI.ACCENT if i == step_index else (UI.GOOD if i < step_index else UI.MUTED))
 	for i in range(2):
-		var teammate = sim.cars[[3, 6][i]]
+		var teammate = sim.cars[sim.player_ids()[i]]
 		teammate_buttons[i].text = "%s · P%d" % [teammate.short, order.find(teammate) + 1]
 		UI.set_active(teammate_buttons[i], teammate.id == c.id)
 	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", UI.INK)
@@ -537,7 +537,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.keycode == KEY_ESCAPE and right_panel.visible: close_detail(); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_SPACE and sim.phase in RaceViewQuery.ACTIVE: dispatch("pause"); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_B and not box_button.disabled: dispatch("pit"); get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_TAB and event.ctrl_pressed: select_driver(6 if sim.selected_id == 3 else 3); get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_TAB and event.ctrl_pressed: select_driver(sim.teammate_id(sim.selected_id)); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_F: set_follow(false); canvas.fit(); get_viewport().set_input_as_handled()
 	elif event.keycode >= KEY_1 and event.keycode <= KEY_5: dispatch("speed", {"value": [1, 2, 4, 8, 16][event.keycode - KEY_1]}); get_viewport().set_input_as_handled()
 

@@ -8,12 +8,12 @@ func _init(simulation: RaceSim) -> void:
 
 static func stints(simulation: RaceSim) -> Dictionary:
 	var cars: Dictionary = {}
-	for id in [3, 6]:
+	for id in simulation.player_ids():
 		var car: RaceCar = simulation.cars[id]
 		cars[id] = {}
 		for key in ["name", "short", "stints", "distance", "pit_stops", "finished", "dnf"]:
 			cars[id][key] = RaceStateValue.copy(car[key])
-	return {"cars": cars, "laps": simulation.laps, "track": {"length": simulation.track.length}}
+	return {"cars": cars, "player_ids": simulation.player_ids(), "laps": simulation.laps, "track": {"length": simulation.track.length}}
 
 static func strategy(simulation: RaceSim, id: int, forecast: Dictionary, initial_set: String = "") -> Array:
 	var car: RaceCar = simulation.cars[id]
@@ -40,7 +40,7 @@ func intentions() -> Dictionary:
 		return {}
 	var reading = stints(simulation)
 	var lanes: Array = []
-	for id in [3, 6]:
+	for id in simulation.player_ids():
 		var policy = simulation.policy(id)
 		var items: Array = []
 		for index in range(policy.plan.get("stops", []).size()):

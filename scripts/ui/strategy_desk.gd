@@ -6,7 +6,7 @@ signal preview_changed(forecast: Dictionary)
 var timeline: RaceStrategyChart
 var timeline_toggle: Button
 var model: RaceViewQuery
-var driver_id = 3
+var driver_id = -1
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
 var dirty: Dictionary = {}
@@ -51,9 +51,10 @@ func configure(sim: RaceViewQuery) -> void:
 	model = sim
 
 func _ready() -> void:
+	driver_id = int(model.player_ids()[0])
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 5)
-	target_picker = UI.option(["MER · Daniel Mercer", "MOR · Lucas Moreau"], func(index): select_driver([3, 6][index])); add_child(target_picker); target_picker.visible = false
+	target_picker = UI.option(model.player_labels(), func(index): select_driver(model.player_ids()[index])); add_child(target_picker); target_picker.visible = false
 	var topics = UI.hbox(self)
 	for title in ["Compare", "Plan", "Control"]:
 		var index = topic_buttons.size()
@@ -129,9 +130,9 @@ func show_topic(index: int) -> void:
 	refresh()
 
 func select_driver(id: int) -> void:
-	if id not in [3, 6] or driver_id == id: return
+	if id not in model.player_ids() or driver_id == id: return
 	live_preview = {}
-	driver_id = id; target_picker.select(0 if id == 3 else 1)
+	driver_id = id; target_picker.select(model.player_ids().find(id))
 	load_current(false)
 
 func populate_sets(control: OptionButton, selected: String) -> void:
@@ -217,7 +218,7 @@ func refresh(force: bool = false) -> void:
 	apply_button.tooltip_text = error if not error.is_empty() else "Approve only when no physical stop is already ordered."
 	draft_status.text = ("UNAPPLIED · " if dirty[driver_id] else "APPROVED · ") + (error if not error.is_empty() else ("Only approval changes the active plan." if dirty[driver_id] else "No unapplied changes."))
 	plan_status.text = "%s · %s · revision %d" % [c.short, policy.plan_status.replace("_", " "), policy.revision]
-	var other_plan = model.active_plan(6 if driver_id == 3 else 3)
+	var other_plan = model.active_plan(model.teammate_id(driver_id))
 	var overlaps: Array[String] = []
 	for own_stop in draft.stops:
 		for other_stop in other_plan.get("stops", []):

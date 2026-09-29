@@ -4,7 +4,7 @@ var presentation_services: RacePresentationServices = RacePresentationServices.n
 ## Per-driver unapplied run drafts. Commands remain fixed above scrolling evidence.
 signal command_requested(action: String, payload: Dictionary)
 var model: RaceViewQuery
-var driver_id = 3
+var driver_id = -1
 var drafts: Dictionary = {}
 # Shared by both routes; only real user edits count, not constructed defaults.
 var edited: Dictionary = {}
@@ -29,7 +29,7 @@ var dashboard_host = false
 
 func configure(value: RaceViewQuery) -> void:
 	model = value
-	for id in [3, 6]:
+	for id in model.player_ids():
 		drafts[id] = {"objective": "tyre_life", "set_id": model.car(id).set_id, "laps": 2, "baseline": "current"}
 		var driver=model.practice_driver(id)
 		if not driver.active.is_empty() and not driver.runs.is_empty():
@@ -37,10 +37,11 @@ func configure(value: RaceViewQuery) -> void:
 			drafts[id].merge({"objective":run_record.objective,"set_id":run_record.set_id,"laps":run_record.target},true)
 
 func _ready() -> void:
+	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 6)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var targets = UI.hbox(self)
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var button = UI.button(model.car(id).short + " practice", func(): choose_driver(id))
 		targets.add_child(button); driver_buttons.append(button)
 	var actions = HFlowContainer.new(); add_child(actions)
@@ -71,7 +72,7 @@ func _ready() -> void:
 	choose_driver(driver_id)
 
 func choose_driver(id: int) -> void:
-	if id not in [3, 6]: return
+	if id not in model.player_ids(): return
 	driver_id = id
 	if purpose == null: return
 	binding = true
@@ -116,7 +117,7 @@ func refresh() -> void:
 	# Retain a displayed release snapshot between modest revisions. Activation submits it unchanged.
 	if preview.is_empty() or preview.driver_id != driver_id or preview.get("draft", {}) != drafts[driver_id] or model.total_time - preview.time >= 3 or preview.key != model.practice_key(state, c):
 		preview = model.run_preview(driver_id, drafts[driver_id]); preview.draft = drafts[driver_id].duplicate(true)
-	for i in range(2): UI.set_active(driver_buttons[i], driver_id == [3, 6][i])
+	for i in range(2): UI.set_active(driver_buttons[i], driver_id == model.player_ids()[i])
 	start.visible = not dashboard_host and model.phase == "briefing" and state.status == "available"
 	run.visible = model.phase == "practice"; recall.visible = run.visible
 	run.disabled = not preview.available; run.text = "Run " + c.short

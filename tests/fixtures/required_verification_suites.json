@@ -38,6 +38,8 @@
   "rival_scenario_runs",
   "rival_styles_tests",
   "rivals_ui_tests",
+  "roster_content_tests",
+  "roster_content_ui_tests",
   "run_tests",
   "scenario_authoring_runs",
   "scenario_authoring_ui",

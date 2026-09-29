@@ -1,0 +1,124 @@
+{
+  "kind": "roster",
+  "schema_version": 1,
+  "id": "local.club.roster.expanded",
+  "name": "Club field \u00b7 fourteen cars",
+  "description": "Seven teams; the player controls the new Workshop entries.",
+  "player_team_id": "local.club.team.workshop",
+  "entries": [
+    {
+      "driver_id": "core.driver.valenti",
+      "team_id": "core.team.volpe",
+      "number": 3,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.reinhardt",
+      "team_id": "core.team.aster",
+      "number": 4,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.bellamy",
+      "team_id": "core.team.veridian",
+      "number": 5,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.mercer",
+      "team_id": "core.team.obsidian",
+      "number": 8,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.soren",
+      "team_id": "core.team.nordstar",
+      "number": 11,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.rossi",
+      "team_id": "core.team.volpe",
+      "number": 6,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.moreau",
+      "team_id": "core.team.obsidian",
+      "number": 9,
+      "color": "79b4a3"
+    },
+    {
+      "driver_id": "core.driver.tanaka",
+      "team_id": "core.team.nordstar",
+      "number": 12,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.darcy",
+      "team_id": "core.team.kestrel",
+      "number": 14,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.kiefer",
+      "team_id": "core.team.aster",
+      "number": 7,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.costa",
+      "team_id": "core.team.veridian",
+      "number": 15,
+      "color": ""
+    },
+    {
+      "driver_id": "core.driver.hart",
+      "team_id": "core.team.kestrel",
+      "number": 16,
+      "color": ""
+    },
+    {
+      "driver_id": "local.club.driver.ash",
+      "team_id": "local.club.team.workshop",
+      "number": 27,
+      "color": ""
+    },
+    {
+      "driver_id": "local.club.driver.riv",
+      "team_id": "local.club.team.workshop",
+      "number": 28,
+      "color": ""
+    }
+  ],
+  "pit_assignments": [
+    {
+      "team_id": "core.team.volpe",
+      "fraction": 0.3
+    },
+    {
+      "team_id": "core.team.aster",
+      "fraction": 0.355
+    },
+    {
+      "team_id": "core.team.veridian",
+      "fraction": 0.41
+    },
+    {
+      "team_id": "core.team.obsidian",
+      "fraction": 0.46499999999999997
+    },
+    {
+      "team_id": "core.team.nordstar",
+      "fraction": 0.52
+    },
+    {
+      "team_id": "core.team.kestrel",
+      "fraction": 0.575
+    },
+    {
+      "team_id": "local.club.team.workshop",
+      "fraction": 0.63
+    }
+  ]
+}

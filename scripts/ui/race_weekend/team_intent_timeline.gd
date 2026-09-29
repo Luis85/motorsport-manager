@@ -31,7 +31,7 @@ func present() -> void:
 
 func selected_text() -> String:
 	if lanes.is_empty(): return "No recorded intentions"
-	return model.cars[[3,6][selected_driver]].name + " · " + lanes[selected_driver][selected_item].text
+	return model.cars[model.player_ids[selected_driver]].name + " · " + lanes[selected_driver][selected_item].text
 
 func _gui_input(event: InputEvent) -> void:
 	if lanes.is_empty(): return
@@ -73,7 +73,7 @@ func _draw() -> void:
 		draw_line(Vector2(x,45*scale_factor),Vector2(x,170*scale_factor),UI.LINE,1)
 		draw_string(font,Vector2(x-16,39*scale_factor),"%.0f" % (model.laps*i/4.0),HORIZONTAL_ALIGNMENT_CENTER,32,caption,UI.MUTED)
 	for index in range(2):
-		var c=model.cars[[3,6][index]];var y=(56+index*62)*scale_factor
+		var c=model.cars[model.player_ids[index]];var y=(56+index*62)*scale_factor
 		draw_string(font,Vector2(8,y),c.short,HORIZONTAL_ALIGNMENT_LEFT,38,font_size,UI.INK)
 		for item_index in range(lanes[index].size()):
 			var item=lanes[index][item_index]

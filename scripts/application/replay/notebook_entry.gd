@@ -12,8 +12,11 @@ static func build(record: RaceRecord) -> Dictionary:
 	if not RaceRecord.equivalent(RaceRecord.static_identity(record.initial), RaceRecord.static_identity(endpoint)): return {}
 	var brief = record.parent.get("scenario", {})
 	if not brief.is_empty() and not ScenarioBrief.validate(brief).is_empty(): return {}
+	if not brief.is_empty() and brief.goal in ["mer_top_six", "mor_top_six"] and sim.roster_definition != null:
+		var ids = sim.player_ids()
+		if sim.roster_definition.entry(ids[0]).driver_id != "core.driver.mercer" or sim.roster_definition.entry(ids[1]).driver_id != "core.driver.moreau": return {}
 	var players: Array = []
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var car = sim.cars[id]
 		var row = result.classification.filter(func(c): return int(c.driver_id) == id)[0]
 		var practice_laps = 0
@@ -61,7 +64,7 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
 	if not rules is Dictionary: return false
-	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0): return false
+	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0): return false
 	if rules.has("vehicle_definition"):
 		if not rules.vehicle_definition is Dictionary: return false
 		var definition = VehicleDefinition.from_record(rules.vehicle_definition)
@@ -71,12 +74,19 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 11) or rules.get("weather") not in WeekendWeather.MODES: return false
 	if rules.get("reliability") not in ["legacy", "staged"] or not rules.get("rival_styles") is bool: return false
 	if rules.get("race_control") not in ["virtual-neutralization-v1", "legacy-speed-cap"]: return false
+	var player_ids = LegacyRoster.PLAYER_IDS
+	var count = 12
+	if rules.has("roster_definition"):
+		var compiled = RosterDefinition.from_snapshot(rules.roster_definition)
+		if not compiled.ok: return false
+		player_ids = compiled.definition.players()
+		count = compiled.definition.size
 	if not f.get("players") is Array or f.players.size() != 2: return false
 	for index in range(2):
 		var c = f.players[index]
-		if not c is Dictionary or c.size() != 8 or not RaceCheckpoint.integral(c.get("id"), [3, 6][index], [3, 6][index]): return false
+		if not c is Dictionary or c.size() != 8 or not RaceCheckpoint.integral(c.get("id"), player_ids[index], player_ids[index]): return false
 		if not text_valid(c.get("name"), 100) or c.get("status") not in ["finished", "retired"]: return false
-		if not RaceCheckpoint.integral(c.get("position"), 1, 12) or not RaceCheckpoint.integral(c.get("laps"), 0, context.laps): return false
+		if not RaceCheckpoint.integral(c.get("position"), 1, count) or not RaceCheckpoint.integral(c.get("laps"), 0, context.laps): return false
 		if not RaceCheckpoint.integral(c.get("stops"), 0, 10000) or not RaceCheckpoint.integral(c.get("practice_laps"), 0, 12): return false
 		if not RaceCheckpoint.number(c.get("qualifying_best"), 0, 10000000): return false
 	if f.players[0].position == f.players[1].position: return false

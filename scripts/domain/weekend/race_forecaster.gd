@@ -28,7 +28,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
 		facts.append([other.id, other.route, other.pit_stops, other.dnf, other.finished])
-		if other.team == c.team: facts.append([other.pit_order, other.pit_gate, other.pit_stage, int(other.pit_timer)])
+		if EntrantIdentity.same_team(other, c): facts.append([other.pit_order, other.pit_gate, other.pit_stage, int(other.pit_timer)])
 	return JSON.stringify(facts).sha256_text()
 
 static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revision: int = 0) -> Dictionary:
@@ -61,7 +61,7 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 			"compound": other.compound, "stops": other.pit_stops, "dnf": other.dnf, "finished": other.finished,
 			"lap_seconds": maxf(10, lap_seconds)})
 		# A team's own accepted orders are known to its strategist. Rival plans are never copied.
-		if other.team == c.team:
+		if EntrantIdentity.same_team(other, c):
 			teammate = {"id": int(other.id), "distance": other.distance, "speed": other.speed, "pit_order": other.pit_order,
 				"pit_gate": other.pit_gate, "route": other.route, "pit_d": other.pit_d, "box_d": other.box_d,
 				"pit_stage": other.pit_stage, "pit_timer": other.pit_timer, "damage": other.damage, "repair": other.repair}

@@ -32,7 +32,7 @@ static func valid(state: Variant, cars: Array, laps: int) -> bool:
 		if record.id != "rw-%d" % sequence or sequence <= previous or sequence > state.sequence: return false
 		previous = sequence
 		if not RaceCheckpoint.integral(record.get("tick"), 0, 2000000000) or not RaceCheckpoint.number(record.get("time"), 0, 100000000): return false
-		if not RaceCheckpoint.integral(record.get("driver_id"), -1, 11): return false
+		if not RaceCheckpoint.integral(record.get("driver_id"), -1, cars.size() - 1): return false
 		for key in ["kind", "phase", "related_id", "provenance"]:
 			if not record.get(key) is String: return false
 		if not record.get("evidence") is Dictionary: return false
@@ -66,7 +66,7 @@ static func valid(state: Variant, cars: Array, laps: int) -> bool:
 		for key in ["last_order_id", "plan_intent_id", "blocked_reason"]:
 			if not p.get(key) is String: return false
 		if not p.get("order_forecast") is Dictionary: return false
-		if not valid_prediction(p.order_forecast): return false
+		if not valid_prediction(p.order_forecast, cars.size()): return false
 		if not p.get("held") is Dictionary or p.held.size() > 8 or not p.get("visit") is Dictionary: return false
 		if not p.get("notices", {}) is Dictionary or p.get("notices", {}).size() > 8: return false
 		for key in p.get("notices", {}):
@@ -74,26 +74,26 @@ static func valid(state: Variant, cars: Array, laps: int) -> bool:
 		for key in p.held:
 			if not key is String or not p.held[key] is String: return false
 		if not p.visit.is_empty():
-			if not RaceCheckpoint.number(p.visit.get("entered_at"), 0, 100000000) or not p.visit.get("prediction") is Dictionary or not p.visit.get("entry_id") is String or not valid_prediction(p.visit.prediction): return false
+			if not RaceCheckpoint.number(p.visit.get("entered_at"), 0, 100000000) or not p.visit.get("prediction") is Dictionary or not p.visit.get("entry_id") is String or not valid_prediction(p.visit.prediction, cars.size()): return false
 	return true
 
-static func valid_prediction(prediction: Dictionary) -> bool:
+static func valid_prediction(prediction: Dictionary, count: int = 12) -> bool:
 	if prediction.is_empty(): return true
 	for key in ["visit", "visit_low", "visit_high", "loss", "loss_low", "loss_high", "queue", "gate", "entry_eta", "warmup", "exit_station"]:
 		if not RaceCheckpoint.number(prediction.get(key), 0, 100000000): return false
 	for key in ["position", "position_low", "position_high"]:
-		if not RaceCheckpoint.integral(prediction.get(key), 1, 12): return false
+		if not RaceCheckpoint.integral(prediction.get(key), 1, count): return false
 	if prediction.visit_low > prediction.visit_high or prediction.position_low > prediction.position_high: return false
-	if not prediction.get("traffic") is Array or prediction.traffic.size() > 11: return false
+	if not prediction.get("traffic") is Array or prediction.traffic.size() > count - 1: return false
 	for name in prediction.traffic:
 		if not name is String: return false
 	return true
 
-static func debrief(state: Dictionary) -> Array[String]:
+static func debrief(state: Dictionary, cars: Array = []) -> Array[String]:
 	var lines: Array[String] = ["DECISION DEBRIEF", "Measured outcomes are observations. Strategy alternatives are uncalibrated model estimates, not alternate race results."]
 	if state.truncated: lines.append("Journal capacity reached. Later decisions are not available in this record.")
 	for record in state.records:
-		var who = RaceSim.ROSTER[int(record.driver_id)][0] if record.driver_id >= 0 else "TEAM"
+		var who = (str(cars[int(record.driver_id)].short) if not cars.is_empty() else LegacyRoster.ROWS[int(record.driver_id)][0]) if record.driver_id >= 0 else "TEAM"
 		var e = record.evidence
 		if record.kind == "command":
 			lines.append("%.1fs · %s · %s accepted" % [record.time, who, str(e.get("action", "intent")).replace("_", " ")])

@@ -3,8 +3,8 @@ extends RaceSim
 ## Compatibility construction/restore profile. Runtime rules live in composed mechanics.
 const RECOVERY_CHECKPOINT_VERSION = 8
 
-func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
-	super(geometry, options)
+func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
+	super(geometry, options, roster)
 	mechanics.configure(RaceMechanicProfiles.build("recovery"))
 	mechanics.install(geometry, options)
 
@@ -20,13 +20,13 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if base == null: return null
 	var reliability = data.get("reliability_state") if native else RaceReliability.create(base.cars, base.seed_value, "legacy")
 	var control = data.get("control_state") if native else WeekendRaceControl.create()
-	if not RaceReliability.valid(reliability, base.cars, base.total_time) or not WeekendRaceControl.valid(control, base.total_time): return null
+	if not RaceReliability.valid(reliability, base.cars, base.total_time) or not WeekendRaceControl.valid(control, base.total_time, base.cars.size()): return null
 	if native and reliability.mode == "staged" and data.get("flag") != WeekendRaceControl.flag_value(control): return null
 	if reliability.mode == "legacy" and (data.get("flag") == "VIRTUAL" or control != WeekendRaceControl.create()): return null
 	if not valid_recovery_records(base.strategy_state.records): return null
-	var sim = RecoveryRaceSim.new(base.track)
+	var sim = RecoveryRaceSim.new(base.track, {}, base.roster_definition)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition"]: sim.set(key, base.get(key))
 	sim.reliability_state = reliability.duplicate(true); sim.control_state = control.duplicate(true)
 	if native: sim.flag = data.flag
 	return sim

@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.darcy",
+  "name": "Alex Darcy",
+  "description": "Default fictional driver.",
+  "short": "DAR",
+  "skill": 83,
+  "consistency": 80,
+  "wet_skill": 81,
+  "reliability": 82
+}

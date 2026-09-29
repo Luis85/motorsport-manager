@@ -11,7 +11,11 @@
     }
   ],
   "files": [
-    "vehicles/sport.json"
+    "vehicles/sport.json",
+    "teams/workshop.json",
+    "drivers/ash.json",
+    "drivers/riv.json",
+    "rosters/expanded.json"
   ],
   "overrides": []
 }

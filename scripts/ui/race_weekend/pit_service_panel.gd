@@ -17,7 +17,7 @@ func configure(value: RaceViewQuery) -> void:
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 8)
-	for id in [3,6]:
+	for id in model.player_ids():
 		var surface = PitwallDesign.race_panel(false, 8); add_child(surface)
 		var body = UI.vbox(surface)
 		var heading = UI.hbox(body)
@@ -43,7 +43,7 @@ func update_records() -> void:
 		record_index = 0; entries.clear(); visits.clear(); commands.clear()
 	for index in range(record_index, records.size()):
 		var event = records[index]; var id = int(event.driver_id)
-		if id not in [3,6]: continue
+		if id not in model.player_ids(): continue
 		if event.kind == "pit_entry": entries[id] = event.duplicate(true)
 		elif event.kind == "pit_exit":
 			var entry = entries.get(id, {})

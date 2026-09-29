@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal surface_requested
 signal sector_requested(index: int)
 var model: RaceViewQuery
-var driver_id = 3
+var driver_id = -1
 var advice: Dictionary = {}
 var summary: Label
 var outlook_label: Label
@@ -25,9 +25,10 @@ var outlook_chart: RaceMetricChart
 func configure(value: RaceViewQuery) -> void: model = value
 
 func _ready() -> void:
+	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 8)
 	var drivers = HBoxContainer.new(); navigation_bar = drivers; add_child(drivers)
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var button = UI.button(model.car(id).short + " weather", func(): choose_driver(id))
 		StrategyDesk.compact_button(button); drivers.add_child(button); selectors.append(button)
 	var actions = HBoxContainer.new(); commit_bar = actions; add_child(actions)
@@ -57,7 +58,7 @@ func _ready() -> void:
 	refresh()
 
 func choose_driver(id: int) -> void:
-	if id not in [3, 6]: return
+	if id not in model.player_ids(): return
 	driver_id = id; advice = {}; refresh()
 
 func payload() -> Dictionary:
@@ -81,7 +82,7 @@ func refresh() -> void:
 	if advice.is_empty() or model.weather_stale(advice) or model.total_time - advice.time >= 3: advice = model.weather_advice(driver_id)
 	var c = model.car(driver_id); var p = model.policy(driver_id)
 	var outlook = advice.outlook; var observed = outlook.observed
-	for i in range(2): selectors[i].disabled = driver_id == [3, 6][i]
+	for i in range(2): selectors[i].disabled = driver_id == model.player_ids()[i]
 	box.text = "Box " + c.short
 	var legal = model.phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order
 	box.disabled = not legal or advice.replacement_id.is_empty() or advice.gate.distance >= model.laps * model.track.length

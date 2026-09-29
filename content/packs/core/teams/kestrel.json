@@ -1,0 +1,8 @@
+{
+  "kind": "team",
+  "schema_version": 1,
+  "id": "core.team.kestrel",
+  "name": "Kestrel",
+  "description": "Default fictional team.",
+  "color": "ac98c0"
+}

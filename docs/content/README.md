@@ -1,6 +1,6 @@
 # External content
 
-Status: the vehicle vertical slice is executable; roster, tyre, setup and wider
+Status: vehicle and roster vertical slices are executable. Tyre, setup and wider
 mechanic extraction remain separate, unfinished increments of the requested plan.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
 
@@ -56,3 +56,29 @@ debug and release, runs each from an isolated directory with no source tree,
 edits the fifth vehicle without rebuilding, rejects a malformed edit, deletes
 the source pack, and compares the restored session. This is Linux headless
 acceptance, not Windows execution or human usability evidence.
+
+## Teams, drivers and event rosters
+
+Team and driver definitions are separate from the ordered event roster. A roster
+references drivers and teams by stable ID, assigns unique car numbers and a pit
+fraction to each team, and selects its player team. This rule family supports
+two cars per team and 2–24 entrants. A circuit must have enough authored grid
+places and six metres between team service positions. Launch and restore share
+that geometry policy; a larger catalog does not silently enlarge a circuit.
+
+The example pack includes `local.club.roster.expanded`: fourteen cars, with Avery
+Shaw and Robin Vale as the managed pair in slots 12 and 13. Choose it in FIELD.
+In the circuit editor, set a suitable circuit's grid count to fourteen or more
+before launching that field. Names and per-entry livery overrides are cosmetic;
+an empty entry color inherits its team's color. Names do not grant permissions
+or determine a pit box.
+
+A new session stores the roster and exactly its referenced driver/team definitions.
+For authored sessions the existing car `team` field stores a stable team ID;
+application read models add the display label. The 91-field car codec remains
+unchanged, including its exhaustive regression assertion. Old checkpoints still
+use the explicit frozen legacy roster; they do not read today's editable packs.
+Results, recordings, public timing, strategy and native views use actual entrant
+counts and managed IDs rather than slots 3 and 6. Named old MER/MOR training goals
+remain restricted to the corresponding named participants; they are not relabeled
+as achievements for a different driver.

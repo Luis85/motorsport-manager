@@ -95,7 +95,7 @@ func refresh() -> void:
 	export_scenario_button.disabled = player.sim.phase == "results"
 	var lines: Array[String] = ["%s · %s · seed %d · %d laps · %s incidents" % [c.track.document.name, c.track.preset, c.seed_value, c.laps, c.intensity], "Origin: %s · event %s" % [player.record.origin, player.record.event_id.left(12)]]
 	var order = c.standings()
-	for id in [3, 6]:
+	for id in c.player_ids():
 		var car = c.cars[id]
 		lines.append("%s · P%d · %d laps · %s · %d pit stops · %s" % [car.short, order.find(car)+1, car.completed, car.set_id, car.pit_stops, car.route])
 	if c.phase == "results": lines.append("Saved finish. Choose an earlier checkpoint to experiment.")

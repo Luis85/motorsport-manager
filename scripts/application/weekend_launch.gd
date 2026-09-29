@@ -2,6 +2,7 @@ class_name WeekendLaunch
 extends RefCounted
 ## Staged weekend entry. Inspecting or abandoning this draft cannot replace a save.
 var _catalog: ContentCatalog
+var _roster: RosterDefinition
 var _track: TrackGeometry
 var _options: Dictionary = {}
 var _revision: int = 0
@@ -36,10 +37,27 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 	if not RaceCheckpoint.number(options.get("qual_duration", 480), 120, 1800):
 		last_error = "Qualifying duration must be between 2 and 30 minutes."
 		return false
+	var roster: RosterDefinition
+	if _catalog != null:
+		var roster_id = options.get("roster_id", "core.roster.default")
+		if not roster_id is String:
+			last_error = "Choose a roster by its stable ID."
+			return false
+		roster = _catalog.roster(roster_id)
+		if roster == null:
+			last_error = "The selected roster is unavailable or invalid."
+			return false
+		if int(document.grid.get("count", 12)) < roster.size:
+			last_error = "This circuit's authored grid is too small for the selected field."
+			return false
 	var geometry = TrackGeometry.new(document.duplicate(true), vehicle, false, definition)
 	if TrackDiagnostics.blocking(TrackDiagnostics.inspect(geometry)):
 		last_error = "The circuit has blocking checks. Resolve them in the track editor before driving."
 		return false
+	if roster != null:
+		last_error = roster.geometry_error(geometry)
+		if not last_error.is_empty(): return false
+	_roster = roster
 	_track = geometry
 	_options = {
 		"laps": int(options.laps), "seed": int(options.get("seed", 7314)),
@@ -69,7 +87,7 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 		return {"ok": false, "error": "This entry is no longer current. Review the configuration again."}
 	if speed not in [1, 2, 4, 8, 16]:
 		return {"ok": false, "error": "Choose a supported playback speed."}
-	var candidate: RaceSim = PracticeRaceSim.new(_track, _options)
+	var candidate: RaceSim = PracticeRaceSim.new(_track, _options, _roster)
 	var controls = MinimalRaceControls.new()
 	controls.configure(candidate)
 	if not controls.advance_stage():

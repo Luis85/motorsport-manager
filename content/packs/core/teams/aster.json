@@ -1,0 +1,8 @@
+{
+  "kind": "team",
+  "schema_version": 1,
+  "id": "core.team.aster",
+  "name": "Aster",
+  "description": "Default fictional team.",
+  "color": "d5d6c8"
+}

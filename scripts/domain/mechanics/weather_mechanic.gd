@@ -11,7 +11,7 @@ func install(sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary =
 	if geometry == null: return
 	var mode = options.get("weather_mode", "seeded")
 	if mode not in WeekendWeather.MODES: mode = "seeded"
-	sim.weather_state = WeatherRaceSim.new_weather_state(sim.seed_value, sim.scenario, mode)
+	sim.weather_state = WeatherRaceSim.new_weather_state(sim.seed_value, sim.scenario, mode, sim.cars.size())
 	if mode == "seeded": sim.rain = sim.weather_state.model.rain
 	else: sim.weather_state.model.rain = sim.rain
 	sim.weather_state.history.append(sim.weather_observation())
@@ -31,7 +31,7 @@ func weather_advice(sim: RaceSim, id: int) -> Dictionary:
 	return WeatherStrategy.evaluate(RaceForecaster.capture(sim, id, sim.active_plan(id), int(sim.policy(id).revision)), sim.weather_outlook())
 
 func weather_stale(sim: RaceSim, advice: Dictionary) -> bool:
-	if advice.is_empty() or not RaceCheckpoint.integral(advice.get("driver_id"), 0, 11): return true
+	if advice.is_empty() or not RaceCheckpoint.integral(advice.get("driver_id"), 0, sim.cars.size() - 1): return true
 	var id = int(advice.driver_id)
 	return not RaceCheckpoint.number(advice.get("time"), 0, sim.total_time) or sim.total_time - advice.time > RaceForecaster.MAX_AGE or advice.get("key") != RaceForecaster.material_key(sim, id, int(sim.policy(id).revision)) or advice.get("weather_key") != sim.weather_outlook().key
 
@@ -55,7 +55,7 @@ func update_surface(sim: RaceSim) -> void:
 		sim.weather_state.history.append(observed)
 		if sim.weather_state.history.size() > WeekendWeather.HISTORY_LIMIT: sim.weather_state.history.pop_front()
 		sim.weather_state.next_sample = sim.total_time + WeekendWeather.SAMPLE_INTERVAL
-		for id in [3, 6]:
+		for id in sim.player_ids():
 			var car = sim.cars[id]
 			var issue = sim.weather_issue(id)
 			if issue.is_empty(): sim.weather_state.notices[id] = ""; continue
@@ -79,9 +79,9 @@ func weather_issue(sim: RaceSim, id: int) -> String:
 func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	if action not in ["weather_box", "weather_hold"]: return sim.mechanics.before("weather", "command", [action, payload])
 	sim.last_error = ""
-	if not RaceCheckpoint.integral(payload.get("id"), 0, 11): return sim.fail("Name the weather decision's driver explicitly.")
+	if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the weather decision's driver explicitly.")
 	var id = int(payload.id); var c = sim.cars[id]
-	if not c.player or c.dnf or c.finished or sim.phase != "race" or c.route != "track" or c.pit_order: return sim.fail("Weather decisions require a running Obsidian car without a committed stop.")
+	if not c.player or c.dnf or c.finished or sim.phase != "race" or c.route != "track" or c.pit_order: return sim.fail("Weather decisions require a running team car without a committed stop.")
 	if sim.weather_stale({"driver_id": id, "time": payload.get("time"), "key": payload.get("key"), "weather_key": payload.get("weather_key")}): return sim.fail("Weather or rejoin assumptions changed. Refresh the comparison before committing.")
 	var advice = sim.weather_advice(id)
 	if action == "weather_hold":
@@ -134,7 +134,7 @@ func snapshot(sim: RaceSim) -> Dictionary:
 func weather_debrief(sim: RaceSim) -> String:
 	var lines: Array[String] = []
 	for record in sim.strategy_state.records:
-		if record.kind != "weather_decision" or record.driver_id not in [3, 6]: continue
+		if record.kind != "weather_decision" or record.driver_id not in sim.player_ids(): continue
 		var evidence = record.evidence
 		var line = "%s · %.0fs · %s\nObserved rain %.0f%%; measured line water %.0f%%. %s" % [sim.cars[int(record.driver_id)].short, record.time, evidence.action.replace("_", " "), evidence.observed.rain * 100, evidence.observed.mean * 100, evidence.reason]
 		if evidence.has("gain_low"): line += "\nAt-call estimated gain %.0f to %.0fs across stress cases, not a measured alternative result. See the measured pit visit below." % [evidence.gain_low, evidence.gain_high]

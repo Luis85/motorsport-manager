@@ -48,7 +48,7 @@ func _ready() -> void:
 	run_button.tooltip_text = "Explicitly run at 8x until a watched change or three lap-distances (at most 180 simulated seconds). Then pause and restore your speed. No jump, pit call or future knowledge. Manual speed cancels the watch."
 	var caption = DirectorStyle.label("Real racing. Bounded check-in.",11,DirectorStyle.MUTED); pace_box.add_child(caption)
 	director_cards = UI.hbox(self); move_child(director_cards,decision_bar.get_index()+1)
-	for id in [3,6]:
+	for id in sim.player_ids():
 		var card = DirectorCarCard.new(); card.driver_id = id; director_cards.add_child(card); driver_cards[id] = card
 		card.call_requested.connect(open_call)
 		card.plan_requested.connect(director_plan)
@@ -84,7 +84,7 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO,size), DirectorStyle.BACKGROUND if full_workspace == null or full_workspace == call_room else UI.BG)
 
 func own_selection() -> int:
-	return sim.selected_id if sim.selected_id in [3,6] else 3
+	return sim.selected_id if sim.selected_id in sim.player_ids() else int(sim.player_ids()[0])
 
 func set_director_enabled(value: bool) -> void:
 	director_enabled = value
@@ -138,7 +138,7 @@ func open_topic(index: int) -> void:
 func open_practice(id: int) -> void:
 	if not director_ready or not director_enabled:
 		super.open_practice(id); return
-	if id not in [3,6]: return
+	if id not in sim.player_ids(): return
 	select_driver(id); practice_panel.choose_driver(id)
 	open_practice_workspace()
 	PitwallDesign.focus_later(practice_workspace.panels[id].objective_buttons.tyre_life)
@@ -165,7 +165,7 @@ func open_destination(index: int, subtopic: int) -> void:
 
 func close_session_workspace() -> void:
 	var closing_call = full_workspace == call_room and call_room != null
-	var id = int(call_room.snapshot.get("driver_id",3)) if closing_call else own_selection()
+	var id = int(call_room.snapshot.get("driver_id",own_selection())) if closing_call else own_selection()
 	var was_open = is_instance_valid(full_workspace) and full_workspace.visible
 	super.close_session_workspace()
 	if director_ready and director_enabled:
@@ -176,18 +176,18 @@ func close_session_workspace() -> void:
 
 func close_detail() -> void:
 	var closing_call = full_workspace == call_room and call_room != null
-	var id = int(call_room.snapshot.get("driver_id",3)) if closing_call else own_selection()
+	var id = int(call_room.snapshot.get("driver_id",own_selection())) if closing_call else own_selection()
 	super.close_detail()
 	if director_ready and director_enabled:
 		adapt_layout()
 		PitwallDesign.focus_later(driver_cards[id].call_button if closing_call else live_button)
 
 func director_plan(id: int) -> void:
-	if id not in [3,6]: return
+	if id not in sim.player_ids(): return
 	select_driver(id); open_topic(6); strategy_desk.show_topic(1); refresh_navigation()
 
 func open_call(id: int) -> void:
-	if id not in [3,6]: return
+	if id not in sim.player_ids(): return
 	if sim.phase in ["results","qualifying_results"] or sim.car(id).dnf or sim.car(id).finished:
 		open_results_workspace(); return
 	if sim.phase in ["practice","practice_results"]: open_practice(id); return
@@ -225,7 +225,7 @@ func toggle_watch() -> void:
 func refresh() -> void:
 	super.refresh()
 	if not director_ready or not director_enabled: return
-	for id in [3,6]:
+	for id in sim.player_ids():
 		# A qualifying receipt must not replace the new race's command surface.
 		# The historical command remains in the authoritative journal and replay.
 		if call_receipts.has(id) and call_receipts[id].snapshot.phase != sim.phase:

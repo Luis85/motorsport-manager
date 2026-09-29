@@ -21,8 +21,8 @@ static func profile(style: String) -> Dictionary:
 static func create(cars: Array, enabled: bool) -> Dictionary:
 	var teams: Array = []; var drivers: Array = []
 	for c in cars:
-		if not c.player and c.team not in teams: teams.append(c.team)
-		var style = KEYS[teams.find(c.team) % KEYS.size()] if enabled and not c.player else "legacy"
+		if not c.player and EntrantIdentity.team(c) not in teams: teams.append(EntrantIdentity.team(c))
+		var style = KEYS[teams.find(EntrantIdentity.team(c)) % KEYS.size()] if enabled and not c.player else "legacy"
 		drivers.append({"driver_id": int(c.id), "style": style, "weights": profile(style) if style != "legacy" else {}, "hold_gate": -1.0, "reviews": 0})
 	return {"version": VERSION, "enabled": enabled, "drivers": drivers, "history": []}
 
@@ -112,10 +112,10 @@ static func public_field(state: Dictionary, cars: Array, stops: Array) -> String
 	var lines: Array[String] = ["RIVAL FIELD · PUBLIC PROFILES", "Tendencies, not promises. Exact plans, own-car estimates and decision scores remain private."]
 	var teams: Array = []
 	for c in cars:
-		if c.player or c.team in teams: continue
-		teams.append(c.team)
+		if c.player or EntrantIdentity.team(c) in teams: continue
+		teams.append(EntrantIdentity.team(c))
 		var style = PROFILES[state.drivers[c.id].style]
-		var pair = cars.filter(func(car): return car.team == c.team).map(func(car): return car.short)
+		var pair = cars.filter(func(car): return EntrantIdentity.same_team(car, c)).map(func(car): return car.short)
 		lines.append("%s / %s · %s\n%s" % [c.team, " + ".join(pair), style.label, style.summary])
 	lines.append("OBSERVED PIT ENTRIES · not secret future plans")
 	for event in stops.slice(maxi(0, stops.size() - 6)):

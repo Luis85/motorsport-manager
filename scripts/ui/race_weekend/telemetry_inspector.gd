@@ -37,7 +37,7 @@ func present() -> void:
 	var primary = recording(car)
 	var values: Array = primary.values; var timestamps: Array = primary.times
 	var secondary: Array = []; var secondary_name = ""
-	var other_id = 6 if car.id == 3 else 3
+	var other_id = model.teammate_id(car.id)
 	compare.text = "Compare " + model.car(other_id).name + " · dashed trace"
 	var note = "%d / %d retained %s samples" % [values.size(), car.telemetry.size(), car.short]
 	if compare.button_pressed:

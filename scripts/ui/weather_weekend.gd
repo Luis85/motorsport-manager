@@ -20,7 +20,7 @@ func _ready() -> void:
 	call_deferred("wire_control_help", self)
 	weather_panel.sector_requested.connect(inspect_weather_sector)
 	weather_panel.surface_requested.connect(func(): canvas.show_surface = true; canvas.queue_redraw())
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var link = UI.button("Weather", func(): open_weather(id))
 		StrategyDesk.compact_button(link); decision_controls[id].compare.get_parent().add_child(link)
 		weather_links[id] = link
@@ -28,7 +28,7 @@ func _ready() -> void:
 	refresh()
 
 func open_weather(id: int) -> void:
-	if weather_panel == null or id not in [3, 6]: return
+	if weather_panel == null or id not in sim.player_ids(): return
 	select_driver(id); weather_panel.choose_driver(id); open_topic(9); refresh()
 
 func refresh() -> void:
@@ -43,7 +43,7 @@ func refresh() -> void:
 		pit_note.visible = false; box_button.get_parent().visible = false
 		if not detail_expanded:
 			driver_label.visible = false; resource_row.visible = false; compact_resources.visible = true; intent_label.visible = false
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var issue = sim.weather_issue(id)
 		var link = weather_links[id]
 		link.text = "Weather !" if not issue.is_empty() else "Weather"
@@ -59,7 +59,7 @@ func refresh() -> void:
 		# Rebuild from evidence rather than appending repeatedly during presentation refreshes.
 		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
 		var state = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}
-		debrief_text.text = strategy_model.weekend_scenarios_team_result() + "\n\n" + sim.weather_debrief() + "\n\n" + "\n\n".join(RaceJournal.debrief(state))
+		debrief_text.text = strategy_model.weekend_scenarios_team_result() + "\n\n" + sim.weather_debrief() + "\n\n" + "\n\n".join(RaceJournal.debrief(state, sim.cars))
 		if subset.size() > 100: debrief_text.text += "\n\nLatest 100 team records. Export retains the full journal."
 
 func inspect_weather_sector(index: int) -> void:

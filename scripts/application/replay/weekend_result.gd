@@ -29,24 +29,34 @@ static func validate(data: Variant) -> String:
 	if not data.get("parent") is Dictionary or not data.get("ruleset") is Dictionary or not data.get("achievements") is Array or not data.achievements.is_empty(): return "Unsupported result provenance or achievements."
 	if data.ruleset.has("vehicle_definition"):
 		if not data.ruleset.vehicle_definition is Dictionary or VehicleDefinition.from_record(data.ruleset.vehicle_definition) == null: return "Invalid frozen vehicle definition."
+	var count = 12
+	var roster: RosterDefinition
+	if data.ruleset.has("roster_definition"):
+		var compiled = RosterDefinition.from_snapshot(data.ruleset.roster_definition)
+		if not compiled.ok: return "Invalid frozen roster definition."
+		roster = compiled.definition
+		count = roster.size
 	if data.checkpoint_version == 11:
 		if data.model != TacticalDuels.MODEL or data.ruleset.get("checkpoint_schema") != 11 or not data.ruleset.get("tactical_duels") is bool or not data.ruleset.tactical_duels: return "Tactical result model and ruleset disagree."
 	if data.origin == "sandbox" and not RaceRecord.valid_id(data.parent.get("event_id")): return "Missing sandbox lineage."
-	if not data.get("classification") is Array or data.classification.size() != 12: return "Result must account for all twelve entrants."
+	if not data.get("classification") is Array or data.classification.size() != count: return "Result must account for every entrant."
 	var identities = {}
-	for index in range(12):
+	for index in range(count):
 		var row = data.classification[index]
-		if not row is Dictionary or not RaceCheckpoint.integral(row.get("driver_id"), 0, 11) or not RaceCheckpoint.integral(row.get("position"), index + 1, index + 1): return "Invalid classified identity or ordering."
+		if not row is Dictionary or not RaceCheckpoint.integral(row.get("driver_id"), 0, count - 1) or not RaceCheckpoint.integral(row.get("position"), index + 1, index + 1): return "Invalid classified identity or ordering."
 		var id = int(row.driver_id)
 		if identities.has(id): return "Duplicate classified entrant."
 		identities[id] = true
+		if roster != null:
+			var identity = roster.entry(id).legacy_row()
+			if row.get("name") != identity[1] or row.get("team") != roster.entry(id).team_id: return "Classified identity differs from the frozen roster."
 		if row.get("status") not in ["finished", "retired"] or not RaceCheckpoint.integral(row.get("laps"), 0, 100): return "Invalid finishing status or distance."
 		if not RaceCheckpoint.number(row.get("finish_time"), -1, 10000000) or (not row.get("points_eligibility") is String or row.points_eligibility != "not_defined_by_standalone_rules"): return "Invalid timing or invented points eligibility."
 		if not row.get("name") is String or not row.get("team") is String: return "Missing entrant names."
-	if not data.get("returned_resources") is Array or data.returned_resources.size() != 12: return "Missing returned inventory."
+	if not data.get("returned_resources") is Array or data.returned_resources.size() != count: return "Missing returned inventory."
 	identities.clear()
 	for row in data.returned_resources:
-		if not row is Dictionary or not RaceCheckpoint.integral(row.get("driver_id"), 0, 11): return "Invalid inventory owner."
+		if not row is Dictionary or not RaceCheckpoint.integral(row.get("driver_id"), 0, count - 1): return "Invalid inventory owner."
 		var id = int(row.driver_id)
 		if identities.has(id) or not RaceCheckpoint.number(row.get("health"), 0, 100) or not RaceCheckpoint.number(row.get("damage"), 0, 100): return "Duplicate inventory owner or invalid condition."
 		identities[id] = true

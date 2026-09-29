@@ -17,7 +17,7 @@ func _ready() -> void:
 	top.add_child(UI.button("Back to pit wall",func(): close_requested.emit()))
 	summary = UI.paragraph("Optional measured learning. Two drivers, independent tyre sets and run drafts. No hidden setup score."); add_child(summary)
 	var row = UI.hbox(self,true)
-	for id in [3,6]:
+	for id in model.player_ids():
 		var surface = PitwallDesign.race_panel(false,10); surface.size_flags_horizontal = Control.SIZE_EXPAND_FILL; surface.size_flags_vertical = Control.SIZE_EXPAND_FILL; row.add_child(surface)
 		var body = UI.vbox(surface,true)
 		body.add_child(UI.label(model.car(id).name.to_upper(),PitwallDesign.TYPE.heading,UI.INK))

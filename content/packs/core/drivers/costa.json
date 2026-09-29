@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.costa",
+  "name": "Rafael Costa",
+  "description": "Default fictional driver.",
+  "short": "COS",
+  "skill": 82,
+  "consistency": 85,
+  "wet_skill": 89,
+  "reliability": 86
+}

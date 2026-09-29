@@ -38,10 +38,10 @@ func detach() -> void:
 	model = null
 
 func start(id: int = 3) -> bool:
-	if model == null or id not in [3, 6] or model.phase not in RaceSim.ACTIVE: return false
+	if model == null or id not in model.player_ids() or model.phase not in RaceSim.ACTIVE: return false
 	if armed: return false
 	watched_id = id
-	if model.cars[id].dnf or model.cars[id].finished: watched_id = 6 if id == 3 else 3
+	if model.cars[id].dnf or model.cars[id].finished: watched_id = int(model.player_ids()[1] if id == model.player_ids()[0] else model.player_ids()[0])
 	prior_speed = model.speed
 	initial = facts()
 	started_at = model.total_time
@@ -88,7 +88,7 @@ func _input_accepted(action: String, _payload: Dictionary, _context: Dictionary)
 func facts() -> Dictionary:
 	var result = {"phase": model.phase, "flag": model.flag,
 		"water": water_band(model.average(model.water)), "drivers":{}}
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var c = model.cars[id]
 		var policy = model.policy(id)
 		var window = ""
@@ -117,7 +117,7 @@ func _after_step() -> void:
 	var current = facts()
 	if current.phase != initial.phase:
 		stop("Session changed", model.phase.replace("_", " ").capitalize() + ". Approve the next stage when ready."); return
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var was: Dictionary = initial.drivers[id]
 		var now: Dictionary = current.drivers[id]
 		var name: String = model.cars[id].short
@@ -135,7 +135,7 @@ func _after_step() -> void:
 		stop("Race control: " + str(current.flag).to_upper(), "The observed flag changed. Reconsider your timing; no pit order was issued."); return
 	if current.water != initial.water:
 		stop("Track conditions changed", "Observed average water crossed a 15% or 45% band. These are check-in thresholds, not a tyre recommendation or forecast."); return
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var was: Dictionary = initial.drivers[id]
 		var now: Dictionary = current.drivers[id]
 		var name: String = model.cars[id].short
