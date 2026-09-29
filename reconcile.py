@@ -39,6 +39,9 @@ for name in sorted(set(base) | set(ours) | set(main)):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(git('cat-file', 'blob', t[1]))
         continue
+    if name == 'export_presets.cfg' and b is None and o and t:
+        # Both branches introduced this file; the explicit union below retains all presets.
+        continue
     if None in [b, o, t]:
         raise ValueError('Unexpected add/delete conflict: ' + name)
     with tempfile.TemporaryDirectory() as directory:
