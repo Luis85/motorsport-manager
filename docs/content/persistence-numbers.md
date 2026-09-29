@@ -28,3 +28,25 @@ Godot, using Python binary64 packing and high-precision Decimal halfway cases,
 with deterministic seed 7314. The original sporting characterization is retained.
 
 No cross-engine or cross-platform deterministic simulation guarantee is added.
+
+## Numerical fixture field names
+
+The 544 independent reference cases use `decimal_literal` for the input text and
+`bits` for the expected little-endian IEEE-754 binary64 bytes. Every input is a
+JSON decimal number, including boundary and halfway values; none is a credential.
+Keep the input as text so the production decoder, not the fixture reader, performs
+the conversion under test.
+
+The original input-field name was `token`, in the lexical-analysis sense. It
+triggered GitGuardian incident 37735342 at line 51 of this fixture because the
+generic high-entropy detector interprets that assignment name as sensitive. The
+flagged number is the largest finite binary64 value. The rename changes no input
+digits, expected bytes, ordering, simulation values, or digest algorithms.
+
+`test_json_number_fixtures.py` enforces the descriptive field names and numerical
+grammar, independently checks all expected bytes with Python, and pins the ordered
+reference pairs to their pre-rename digest. Neither this change nor the test adds
+scanner exclusions. The historical incident should be reviewed as **False positive
+(not a secret)**, not as a revoked credential. A source-only follow-up commit does
+not itself close the historical incident; no history rewrite is needed for this
+confirmed numerical fixture.

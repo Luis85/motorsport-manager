@@ -27,8 +27,8 @@ func bits(value: float) -> String:
 func numbers() -> void:
 	var cases = Storage.read_json("res://tests/fixtures/json_number_cases.json").data
 	for example in cases:
-		var parsed = ContentJson.parse(example.token, true)
-		check(parsed.ok and bits(parsed.data) == example.bits, "Correct rounding: " + example.token)
+		var parsed = ContentJson.parse(example.decimal_literal, true)
+		check(parsed.ok and bits(parsed.data) == example.bits, "Correct rounding: " + example.decimal_literal)
 	for text in ["1e999", "NaN", "1e309", "1e-999", "01", "1e", "[1,]", "{\"value\":1,\"value\":2}"]:
 		check(not ContentJson.parse(text, true).ok, "Strict saved JSON rejects " + text)
 	var tiny = JsonNumber.parse("1.0797002911567688e-09").value
