@@ -81,8 +81,11 @@ selected pack fails.
 
 This pre-weekend definition is intentionally distinct from a shareable mid-race
 `ReplayScenario`: the latter contains an exact independent sandbox starting
-state. Legacy developer scenario collections continue using their existing
-adapter; this increment does not claim to migrate every diagnostic fixture.
+state. The six shipped developer diagnostic collections remain separate
+verification resources, but all are now file-backed through the bounded
+`ScenarioCatalog` adapter. Practice and rival recipes no longer live as
+GDScript literal tables. This does not make diagnostic fixtures executable
+external-pack content or campaign rewards.
 
 ## Authoring CLI
 
@@ -112,9 +115,12 @@ executed steps and explicitly reports whether a whole weekend completed. A passi
 80-second practice segment is not full-race, balance or visual acceptance. Scenario
 seed and settings come from its file-defined weekend preset.
 
-The Python wrapper accepts the bundled core plus one selected expansion folder;
-the native application also supports ordered multiple `content_roots` in settings.
-General multi-pack CLI selection and future schema migrations are separate work.
+The Python wrapper and native application both support ordered multiple packs.
+Repeat `--pack` in dependency order for validation/list/inspect/export/test; clone
+uses repeated `--dependency` / `--include-pack`, and diff supports common plus
+side-specific dependency selections. See [multi-pack authoring](multi-pack-authoring.md).
+Future format migrations remain explicit versioned work rather than fabricated
+converters for versions that do not yet exist.
 
 ## Persistence and verification
 

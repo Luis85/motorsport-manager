@@ -1,21 +1,28 @@
 class_name RivalScenarios
 extends RefCounted
-## Disclosed preparation starts; no generated qualifying times, incidents or winners.
+
 static func catalog() -> Array:
-	return [
-		{"id":"faster-car-behind", "title":"Faster car behind", "seed":7314, "laps":12, "life":40.0,
-		"grid":[1,2,3,0,4,5,6,7,8,9,10,11],
-		"objective":"Bring both cars home; protect Mercer's P3 or trade it for a later tyre offset.",
-		"hint":"Valenti starts immediately behind Mercer with his existing higher skill. Defend within limits, conserve the fitted set, or spend a stop for fresh tyres. No stat boost or forced pass is applied."},
-		{"id":"both-cars-in-contention", "title":"Both cars in contention", "seed":2026, "laps":16, "life":50.0,
-		"grid":[0,3,1,6,2,4,5,7,8,9,10,11],
-		"objective":"Finish with both cars; compare splitting stop timing against managing the shared box together.",
-		"hint":"MER starts P2 and MOR P4. Early fresh tyres and a longer stint are alternatives, not guaranteed gains. Read public rival styles; keep the other car's decision in view."}
-	]
+	return ScenarioCatalog.read("rivals")
+## Disclosed preparation starts; no generated qualifying times, incidents or winners.
+static func valid(recipe: Variant) -> bool:
+	if not recipe is Dictionary or recipe.size() != 9:
+		return false
+	for key in ["id", "title", "track", "objective", "hint"]:
+		if not recipe.get(key) is String or recipe[key].is_empty(): return false
+	if not RaceCheckpoint.integral(recipe.get("seed"), 0, 4294967295): return false
+	if not RaceCheckpoint.integral(recipe.get("laps"), 4, 100): return false
+	if typeof(recipe.get("life")) not in [TYPE_FLOAT, TYPE_INT] or not is_finite(float(recipe.life)) or recipe.life < 1 or recipe.life > 100: return false
+	if not recipe.get("grid") is Array or recipe.grid.size() != 12: return false
+	var ids: Dictionary = {}
+	for id in recipe.grid:
+		if not RaceCheckpoint.integral(id, 0, 11) or ids.has(int(id)): return false
+		ids[int(id)] = true
+	return ids.size() == 12
+
 static func build(recipe: Dictionary, library: Array) -> PracticeRaceSim:
-	if recipe not in catalog(): return null
+	if not valid(recipe) or recipe not in catalog(): return null
 	for document in library:
-		if document.id != "hillside": continue
+		if document.id != recipe.track: continue
 		var geometry = TrackGeometry.new(document, "Formula")
 		if TrackDiagnostics.blocking(TrackDiagnostics.inspect(geometry)): return null
 		var sim = PracticeRaceSim.new(geometry, {"laps":recipe.laps, "seed":recipe.seed, "scenario":"dry", "intensity":"calm"})

@@ -8,8 +8,10 @@ illustration styles and complete-weekend scenario briefs. Built-in tracks use th
 original files, not a duplicated track format. The authoring CLI provides listing,
 resolved inspection export, comparison and bounded scenario execution.
 
-Remaining wheel coefficients, general provider selection, legacy diagnostic scenario
-collections, editor placement presets/guide text and final full-plan acceptance remain
+Wheel operating coefficients and registered provider selection are now authored.
+The six shipped developer diagnostic collections are also bounded file-backed resources;
+practice and rival recipes no longer live as executable GDScript tables. Editor placement
+presets/guide text, exhaustive consumer inventory and final full-plan acceptance remain
 unfinished. This is not a claim that every work package is complete.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.

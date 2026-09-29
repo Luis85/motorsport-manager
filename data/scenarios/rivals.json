@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Read the field, choose your response",
+  "description": "Curated, untimed grids start at race preparation. Formation and start remain physical and require approval. No winner or incident is forced.",
+  "scenarios": [
+    {
+      "id": "faster-car-behind",
+      "title": "Faster car behind",
+      "track": "hillside",
+      "seed": 7314,
+      "laps": 12,
+      "life": 40.0,
+      "grid": [1, 2, 3, 0, 4, 5, 6, 7, 8, 9, 10, 11],
+      "objective": "Bring both cars home; protect Mercer's P3 or trade it for a later tyre offset.",
+      "hint": "Valenti starts immediately behind Mercer with his existing higher skill. Defend within limits, conserve the fitted set, or spend a stop for fresh tyres. No stat boost or forced pass is applied."
+    },
+    {
+      "id": "both-cars-in-contention",
+      "title": "Both cars in contention",
+      "track": "hillside",
+      "seed": 2026,
+      "laps": 16,
+      "life": 50.0,
+      "grid": [0, 3, 1, 6, 2, 4, 5, 7, 8, 9, 10, 11],
+      "objective": "Finish with both cars; compare splitting stop timing against managing the shared box together.",
+      "hint": "MER starts P2 and MOR P4. Early fresh tyres and a longer stint are alternatives, not guaranteed gains. Read public rival styles; keep the other car's decision in view."
+    }
+  ]
+}
