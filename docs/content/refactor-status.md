@@ -6,11 +6,11 @@ complete final-source release gate.
 
 | Work package | Delivered foundation | Remaining gate |
 |---|---|---|
-| DD-00 Inventory | Per-family content guides and explicit runtime contracts | Exhaustive literal/consumer coverage inventory and classifications |
+| DD-00 Inventory | Per-family guides plus machine-checked ownership/classification for every published schema leaf and retained content-related literal table/bound | Keep the inventory gate current as contracts expand |
 | DD-01 Content boundary | Strict bounded packs, schemas, provenance, typed vehicles and external discovery | Retain regression gates as families expand |
 | DD-02 Field | Separate teams/drivers/rosters, stable ownership, fourteen-car example | Existing targeted tests retained |
 | DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Complete-source sporting and performance acceptance |
-| DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; authored registered-provider profiles frozen into weekends/replay | Exhaustive remaining consumer audit; new stateful provider implementations still require versioned code readers |
+| DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; registered-provider profiles frozen into weekends/replay; current published fields mapped to production consumers | New stateful provider implementations still require versioned code readers and inventory entries |
 | DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed diagnostic collections with gallery metadata, and bounded editor placement/guide profiles | Retain editor/content interaction regressions as authoring profiles evolve |
 | DD-06 Continuation | Frozen supported definitions, circuit/style snapshots and scenario context; exact persisted number decoding | Extend the same contract to any subsequently migrated families |
 | DD-07 Authoring | All authoring operations; ordered multi-pack selection, cross-pack cloning, side-specific diff dependencies, safe failed-write cleanup and explicit version incompatibility diagnostics | Real converters when an actual subsequent format is defined; none is fabricated for hypothetical versions |
@@ -52,8 +52,10 @@ engine and retains source/tree identity independently of later test success.
 Focused local results are not a substitute for the final six-shard aggregate.
 The PR comment/check runs record exact final-source evidence after execution.
 
-Known scope is deliberately still visible: the exhaustive repository-wide
-literal/consumer inventory is not implemented by this review increment. Editor
+Known scope is deliberately still visible: the machine-checked consumer inventory
+covers every published content-schema leaf plus deliberately retained content-related
+compatibility/safety literal tables and bounds; it is an ownership audit, not a claim
+that every numeric literal elsewhere in unrelated simulation/UI code should become content. Editor
 placement presets and contextual guide copy now use an authoring-only profile;
 code retains every target/reveal action and the renderer type allow-list. The
 developer diagnostic collections remain bundled verification resources with their

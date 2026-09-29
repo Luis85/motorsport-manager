@@ -84,6 +84,9 @@ Circuits, illustration styles, briefs, native review and authoring commands:
 Circuit Atelier placement presets and text-only guide customization:
 [editor profile guide](editor-profiles.md).
 
+Published field ownership and retained compatibility/safety literals:
+[consumer inventory](consumer-inventory.md).
+
 Exact saved-state number decoding and retained replay integrity:
 [persistence contract](persistence-numbers.md).
 
