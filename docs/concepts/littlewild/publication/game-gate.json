@@ -1,0 +1,215 @@
+{
+  "status": "passed",
+  "passed": 871,
+  "total": 871,
+  "suites": [
+    {
+      "name": "scenario-domain",
+      "command": [
+        "node",
+        "source/test-v15.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 5.42,
+      "result": "source/v15-domain-results.json",
+      "passed": 77,
+      "total": 77
+    },
+    {
+      "name": "presentation",
+      "command": [
+        "node",
+        "source/test-v15-presentation.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.43,
+      "result": "source/v15-presentation-results.json",
+      "passed": 47,
+      "total": 47
+    },
+    {
+      "name": "pause-policy",
+      "command": [
+        "node",
+        "source/test-v15-pause.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.53,
+      "result": "source/v15-pause-results.json",
+      "passed": 54,
+      "total": 54
+    },
+    {
+      "name": "cartography",
+      "command": [
+        "node",
+        "source/test-v11.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 2.58,
+      "result": "source/v11-domain-results.json",
+      "passed": 73,
+      "total": 73
+    },
+    {
+      "name": "domain",
+      "command": [
+        "node",
+        "source/test-v10.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 1.81,
+      "result": "source/v10-domain-results.json",
+      "passed": 76,
+      "total": 76
+    },
+    {
+      "name": "growth-stress",
+      "command": [
+        "node",
+        "source/test-growth-stress.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 6.57,
+      "result": "source/v10-stress-results.json",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "name": "earned-progression",
+      "command": [
+        "node",
+        "source/test-fresh-v10.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 2.32,
+      "result": "source/v10-fresh-results.json",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "legacy-v5",
+      "command": [
+        "node",
+        "source/test-v10-regression-v5.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 3.12,
+      "result": "source/v10-regression-v5-test-results.json",
+      "passed": 133,
+      "total": 133
+    },
+    {
+      "name": "legacy-v6",
+      "command": [
+        "node",
+        "source/test-v10-regression-v6.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 5.67,
+      "result": "source/v10-regression-v6-test-results.json",
+      "passed": 52,
+      "total": 52
+    },
+    {
+      "name": "legacy-v8",
+      "command": [
+        "node",
+        "source/test-v10-regression-v8.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 6.94,
+      "result": "source/v10-regression-v8-test-results.json",
+      "passed": 88,
+      "total": 88
+    },
+    {
+      "name": "quality-v9",
+      "command": [
+        "node",
+        "source/test-v10-regression-quality-v9.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 1.02,
+      "result": "source/v10-regression-v9-quality-results.json",
+      "passed": 31,
+      "total": 31
+    },
+    {
+      "name": "foundation-v9",
+      "command": [
+        "node",
+        "source/test-v10-regression-foundation-v9.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 7.46,
+      "result": "source/v10-regression-v9-foundation-results.json",
+      "passed": 31,
+      "total": 31
+    },
+    {
+      "name": "legacy-schemas",
+      "command": [
+        "python",
+        "schema-checks-v10.py"
+      ],
+      "exitCode": 0,
+      "seconds": 1.87,
+      "result": "source/v10-schema-results.json",
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "scenario-schema-cli",
+      "command": [
+        "python",
+        "schema-checks-v15.py"
+      ],
+      "exitCode": 0,
+      "seconds": 2.59,
+      "result": "source/v15-schema-results.json",
+      "passed": 21,
+      "total": 21
+    },
+    {
+      "name": "release",
+      "command": [
+        "node",
+        "source/test-v15-release.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 3.41,
+      "result": "source/v15-release-results.json",
+      "passed": 53,
+      "total": 53
+    },
+    {
+      "name": "browser",
+      "command": [
+        "python",
+        "browser-v15.py"
+      ],
+      "exitCode": 0,
+      "seconds": 14.43,
+      "result": "verification/v15/browser-results.json",
+      "passed": 89,
+      "total": 89
+    },
+    {
+      "name": "browser-contracts",
+      "command": [
+        "python",
+        "browser-contracts-v15.py"
+      ],
+      "exitCode": 0,
+      "seconds": 5.75,
+      "result": "verification/v15/browser-contract-results.json",
+      "passed": 16,
+      "total": 16
+    }
+  ],
+  "browserIncluded": true,
+  "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
+  "htmlBytes": 3695818,
+  "runPurpose": "Resumption verification on 2026-09-29; local execution, not GitHub CI."
+}
