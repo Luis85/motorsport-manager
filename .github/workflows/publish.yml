@@ -4,6 +4,9 @@ on:
     branches: [chore/data-driven-tyres-reconciled-publish]
 permissions:
   contents: write
+concurrency:
+  group: publish-reconciled-tyres
+  cancel-in-progress: true
 jobs:
   publish:
     runs-on: ubuntu-24.04
@@ -11,7 +14,7 @@ jobs:
     env:
       BASE_COMMIT: 7d15e6becb0b2378759db686f7f09bec759d4fa8
       SECOND_PARENT: bbef02767c735dbc73117de32bf1bd17491cb9b0
-      EXPECTED_TREE: 48ca257552cf0170a78dc9711d12c12d7dc7d84a
+      EXPECTED_TREE: 5c65d1e617094a2bb430d4099b88401a2c7cd14d
       GODOT_SILENCE_ROOT_WARNING: '1'
       LP_NUM_THREADS: '2'
     steps:
@@ -23,11 +26,16 @@ jobs:
         run: |
           set -euo pipefail
           cat content.part0.xz content.part1.xz content.part2.xz content.part3.xz content.part4.xz content.part5.xz > /tmp/content.patch.xz
+          cp codec-contract.patch /tmp/codec-contract.patch
           echo '9e82098e5d76342f1c9145a2f358d63cd7787fc90407bd90ad9aee5c2614ee12  /tmp/content.patch.xz' | sha256sum --check
+          echo '68c2542ff487f843e63623d40fcb1ad0697cb124938258dbcd46f1c74ebd4996  /tmp/codec-contract.patch' | sha256sum --check
           xz -dc /tmp/content.patch.xz > /tmp/content.patch
           git checkout --detach "$BASE_COMMIT"
           git apply --unidiff-zero --check /tmp/content.patch
           git apply --unidiff-zero --index /tmp/content.patch
+          test "$(git write-tree)" = '48ca257552cf0170a78dc9711d12c12d7dc7d84a'
+          git apply --unidiff-zero --check /tmp/codec-contract.patch
+          git apply --unidiff-zero --index /tmp/codec-contract.patch
           test "$(git write-tree)" = "$EXPECTED_TREE"
           python3 scripts/check_architecture.py
           python3 -m unittest discover -s tests -p test_content_authoring.py

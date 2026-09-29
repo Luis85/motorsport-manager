@@ -1,0 +1,50 @@
+diff --git a/scripts/domain/race/car.gd b/scripts/domain/race/car.gd
+index 825bd71d06a2f4de3e55d495072f5b852305468e..8a7a56098e32c402bb514d9707adaeaa68f3aa87 100644
+--- a/scripts/domain/race/car.gd
++++ b/scripts/domain/race/car.gd
+@@ -6,0 +7,2 @@ extends RefCounted
++## Frozen session inputs are not part of the per-car 91-field serialized codec.
++## The enclosing checkpoint validates and rebinds them; detached copies share them.
+diff --git a/tests/car_record_tests.gd b/tests/car_record_tests.gd
+index 2e3383784bd8f472feadc3bd1337684b092882fb..738f3bf6918c83fc20438aab09f085ab419ac974 100644
+--- a/tests/car_record_tests.gd
++++ b/tests/car_record_tests.gd
+@@ -51,6 +51 @@ func run() -> void:
+-	var fields: Array[String] = []
+-	for property in car.get_property_list():
+-		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE: fields.append(property.name)
+-	fields.sort()
+-	var serialized = RaceCar.FIELDS.duplicate(); serialized.sort()
+-	check(fields == serialized, "The declared codec covers every entity field exactly once")
++	codec_partition_tests(car, cloned)
+@@ -115,0 +111,30 @@ func checkpoint_preparation_tests(geometry: TrackGeometry) -> void:
++
++func codec_partition_tests(car: RaceCar, cloned: RaceCar) -> void:
++	# Content dependencies are frozen in the enclosing session, not in each car's
++	# 91-field stock/state record. Every script variable must have exactly one owner.
++	var bindings = ["entry_definition", "tyre_rules", "setup_definition"]
++	var fields: Array[String] = []
++	var dependency_fields: Array[String] = []
++	for property in car.get_property_list():
++		if not property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE: continue
++		if property.name in bindings:
++			dependency_fields.append(property.name)
++			check(property.type == TYPE_OBJECT, "Only typed Object references are session-bound dependencies")
++		else: fields.append(property.name)
++	fields.sort(); dependency_fields.sort(); bindings.sort()
++	var serialized = RaceCar.FIELDS.duplicate(); serialized.sort()
++	check(fields == serialized, "The codec covers every persisted entity field exactly once")
++	check(dependency_fields == bindings, "Only the three explicit frozen content bindings are outside the car codec")
++	check(serialized.size() == 91 and car.to_record().size() == 91, "The established 91-field state/stock record remains unchanged")
++	var seen: Dictionary = {}
++	for field in serialized: seen[field] = true
++	check(seen.size() == serialized.size(), "No serialized field is listed twice")
++	for binding in bindings:
++		check(binding not in serialized and not car.to_record().has(binding), "Content binding is not silently serialized: " + binding)
++		var injected = car.to_record(); injected[binding] = null
++		check(RaceCar.from_record(injected) == null, "Even a null content-binding injection is rejected: " + binding)
++	check(car.tyre_rules is RaceTyreRules and car.setup_definition is SetupDefinition, "Bare legacy decode binds typed immutable compatibility inputs")
++	check(car.entry_definition == null, "A bare record cannot invent an authored entrant definition")
++	check(cloned.tyre_rules == car.tyre_rules and cloned.setup_definition == car.setup_definition,
++		"A detached car shares only its frozen rule inputs, not mutable stock")
++	check(cloned.entry_definition == car.entry_definition, "Detachment retains the explicit entrant binding")
