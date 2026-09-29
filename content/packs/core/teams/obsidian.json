@@ -1,8 +1,0 @@
-{
-  "kind": "team",
-  "schema_version": 1,
-  "id": "core.team.obsidian",
-  "name": "Obsidian",
-  "description": "Default fictional team.",
-  "color": "e2bb69"
-}

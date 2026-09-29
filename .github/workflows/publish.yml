@@ -1,0 +1,61 @@
+name: Verify frozen operations content
+on:
+  push:
+    branches: [chore/content-operations-f522b442-publish]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GODOT_SILENCE_ROOT_WARNING: '1'
+      LP_NUM_THREADS: '2'
+      BASE_COMMIT: abe12389d28ac2d865ad7c180fb5d2dfb2884f76
+      EXPECTED_TREE: f522b442f3c21aa29eb91981def7d6f0ac97601c
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct source-bound operations implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat payload.part0.xz payload.part1.xz payload.part2.xz payload.part3.xz payload.part4.xz > /tmp/content.patch.xz
+          echo 'bf6698d351d277b30edefb1f3d9e73fca3f2d2a1e7faad8710841cd111b819cd  /tmp/content.patch.xz' | sha256sum --check
+          xz -dc /tmp/content.patch.xz > /tmp/content.patch
+          echo '354eb956d5bca2e8413108a7ea8c15bf1c975247ad499bc49d1ba5be35a0e450  /tmp/content.patch' | sha256sum --check
+          git checkout --detach "$BASE_COMMIT"
+          git apply --check /tmp/content.patch
+          git apply --index /tmp/content.patch
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          test -z "$(git diff --cached --name-only -- .github/workflows)"
+          python3 scripts/check_architecture.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Verify legacy trajectories and authored operations
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_*
+          godot=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          python3 scripts/content.py schemas --check --godot "$godot"
+          python3 scripts/verify.py --godot "$godot" --suite architecture_characterization --suite recovery_tests --suite content_tuning_tests --suite content_environment_tests --suite content_operations_tests
+      - name: Publish verified source without rewriting history
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = "$EXPECTED_TREE"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          commit=$(printf '%s\n' 'feat(content): freeze scalar reliability, incidents and virtual control' | git commit-tree "$EXPECTED_TREE" -p "$BASE_COMMIT")
+          git push origin "$commit:refs/heads/chore/content-operations-f522b442-result"
+          printf 'Published commit: %s\nVerified tree: %s\n' "$commit" "$EXPECTED_TREE" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: operations-content-verification
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 14
