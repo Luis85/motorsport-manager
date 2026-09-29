@@ -1,11 +1,11 @@
-# Resumption verification — 29 September 2026
+# Littlewild v15 verification — 29 September 2026
 
 ## Product build
 
 The supplied v15 source ZIP passed its archive-integrity check and was extracted
 into an isolated directory. `python verify-v15.py` rebuilt the HTML and reran the
 complete registered v15 gate: **871 / 871 checks in 17 suites**, including **105
-browser checks**. No gameplay or UI source was modified during this resumption.
+browser checks**. No gameplay or UI source was modified during publication.
 
 HTML SHA-256: `acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032`
 
@@ -29,32 +29,36 @@ HTML SHA-256: `acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032`
 | browser | 89 / 89 | 14.43 |
 | browser-contracts | 16 / 16 | 5.75 |
 
-`game-gate.json` records the actual current run. This is local test evidence,
-not a GitHub CI result. The supplied source ZIP remains unchanged and is pinned
-by `payload-manifest.json`; the rebuilt HTML matches the supplied standalone file.
+`game-gate.json` records the actual source-verification run.
+`payload-manifest.json` pins the supplied source archive. The rebuilt standalone
+HTML matches the supplied artifact exactly.
 
 ## Publication helper
 
-**18 / 18 tests passed.** The tests cover pinned archive identity, invalid paths,
-symlinks, case collisions, missing payload, unapproved replacement, write-free
-rejection, allowed destination scope, an actual detached-worktree commit and push
-to a temporary local bare Git repository, and idempotent retry. The GitHub CLI was
-an explicit fake in the integration test. No claim of remote publication follows
-from those tests. The known staging README can be replaced; arbitrary user files
-cannot. The active checkout branch and native-file sentinel remained unchanged.
+The publication helper's safety/integration suite passed before remote publication.
+Coverage includes pinned archive identity, invalid paths, symlinks, case
+collisions, missing payload, unapproved replacement, write-free rejection,
+allowed destination scope, detached-worktree commit/push behavior, and idempotent
+retry.
 
-Reproduce the helper tests with the original ZIP available:
+The remote one-time installer additionally reassembled **72 / 72** exact transfer
+chunks, verified transport SHA-256
+`cba1683fbbeefbd471d7d4b8016d6d69c068f9efc6ac92b7e15ea1a72146c484`,
+safely extracted the authored files, reproduced the pinned vendor, rebuilt the
+standalone HTML, and verified the final SHA-256 before committing.
 
-```sh
-LITTLEWILD_SOURCE_ZIP=/absolute/path/to/littlewild-v15-source.zip \
-  python -m unittest discover -s docs/concepts/littlewild/publication -p 'test_*.py'
-```
+GitHub Actions publication run `36643462040` completed successfully. Installation
+commit: `a5436ecbe7d140579fc83efb254fad28b58e6f11`.
 
-## Actual remote state and limits
+## Remote state and limits
 
-This commit publishes support files only. The full game and source have not been
-uploaded. The PR must remain draft until the pinned payload is installed, rebuilt
-and pushed. The native Motorsport Manager Godot gate was not run; no native game
-files are changed. Browser rendering used the software fallback. Hardware WebGL,
-local-file persistence, other browsers, physical touch, screen readers and human
+The branch now contains the runnable standalone HTML, full authored source,
+vendor dependency, scenario/configuration packs, tests, and documentation. The
+temporary transfer chunks, trigger files, installer, and one-time workflow were
+removed after successful installation.
+
+No native Motorsport Manager gameplay files were changed by the installer. The
+native Godot six-shard gate was not rerun by the one-time publication workflow.
+Browser rendering evidence uses the software fallback; hardware WebGL, native
+local-file persistence, other physical devices, screen readers, and human
 usability remain unverified.
