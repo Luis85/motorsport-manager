@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "dependencies": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*$",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "minItems": 0,
+      "type": "array"
+    },
+    "files": {
+      "items": {
+        "maxLength": 200,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 2048,
+      "minItems": 0,
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "motorsport-manager-content-pack"
+      ]
+    },
+    "overrides": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_sha256": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "expected_sha256"
+        ],
+        "type": "object"
+      },
+      "maxItems": 2048,
+      "minItems": 0,
+      "type": "array"
+    },
+    "runtime_contract": {
+      "enum": [
+        1
+      ]
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    },
+    "version": {
+      "maxLength": 40,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "version",
+    "runtime_contract",
+    "dependencies",
+    "files",
+    "overrides"
+  ],
+  "title": "Motorsport Manager pack v1",
+  "type": "object"
+}
