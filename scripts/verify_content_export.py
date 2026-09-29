@@ -87,12 +87,16 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             args = ["--content-pack=" + str(pack), "--content-probe=local.club.vehicle.sport",
                     "--content-probe-roster_id=local.club.roster.expanded",
                     "--content-probe-tyre_allocation_id=local.club.tyre_allocation.endurance",
-                    "--content-probe-setup_id=local.club.setup.club"]
+                    "--content-probe-setup_id=local.club.setup.club",
+                    "--content-probe-weekend_id=local.club.weekend.sprint"]
             first = probe(installed, args, isolated, env, runtime_uid=runtime_uid)
             if (first["top_speed_mps"] != 55 or first["field_size"] != 14
                     or first["player_ids"] != [12, 13] or first["sets_per_driver"] != 10
                     or first["compound_count"] != 6 or first["compound_wear"] != 2.7
-                    or first["wing"] != 3 or first["starting_compound"] != "local.club.tyre.endurance"):
+                    or first["wing"] != 3 or first["laps"] != 8
+                    or first["service_base_seconds"] != 6 or abs(first["race_fuel"] - 12.6) > 1e-8
+                    or first["weekend_id"] != "local.club.weekend.sprint"
+                    or first["weather_mode"] != "scripted_training" or first["starting_compound"] != "local.club.tyre.endurance"):
                 raise RuntimeError("The first run did not use the authored vehicle, roster, allocation and setup.")
             definition = pack / "vehicles/sport.json"
             data = json.loads(definition.read_text(encoding="utf-8"))
@@ -106,9 +110,20 @@ def verify(godot: Path, output: Path) -> dict[str, Any]:
             setup = json.loads(setup_path.read_text(encoding="utf-8"))
             setup["controls"]["wing"]["default"] = 4
             setup_path.write_text(json.dumps(setup), encoding="utf-8")
+            tuning_path = pack / "race_tuning/sprint.json"
+            tuning = json.loads(tuning_path.read_text(encoding="utf-8"))
+            tuning["service"]["tyre_base_seconds"] = 7
+            tuning["fuel"]["race_reserve_laps"] = 4
+            tuning_path.write_text(json.dumps(tuning), encoding="utf-8")
+            weekend_path = pack / "weekends/sprint.json"
+            weekend = json.loads(weekend_path.read_text(encoding="utf-8"))
+            weekend["settings"]["laps"] = 9
+            weekend_path.write_text(json.dumps(weekend), encoding="utf-8")
             edited = probe(installed, args, isolated, env, runtime_uid=runtime_uid)
             if (edited["top_speed_mps"] != 56 or edited["compound_wear"] != 2.8 or edited["wing"] != 4
-                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash"])):
+                    or edited["service_base_seconds"] != 7 or edited["laps"] != 9
+                    or abs(edited["race_fuel"] - 14.8) > 1e-8
+                    or any(first[key] == edited[key] for key in ["definition_hash", "tyre_content_hash", "setup_content_hash", "tuning_hash"])):
                 raise RuntimeError("The unchanged executable did not observe the external edit.")
             data["top_speed_mps"] = -1
             definition.write_text(json.dumps(data), encoding="utf-8")

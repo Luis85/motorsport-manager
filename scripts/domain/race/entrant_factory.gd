@@ -3,8 +3,8 @@ extends RefCounted
 ## Builds one independent entrant record from the immutable roster and event setup.
 ## Serialized field names and defaults deliberately match pre-refactor checkpoints.
 
-static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null) -> RaceCar:
-	var record = initial_record(r, i, track, laps, scenario)
+static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null, tuning: RaceTuningDefinition = null) -> RaceCar:
+	var record = initial_record(r, i, track, laps, scenario, tuning)
 	record.merge(RaceSim.CAR_V2.duplicate(true))
 	if tyres == null: tyres = RaceTyreRules.legacy()
 	record.compound = tyres.initial(scenario)
@@ -19,16 +19,16 @@ static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: 
 	car.setup_definition = setup_profile
 	return car
 
-static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> Dictionary:
+static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, tuning: RaceTuningDefinition = null) -> Dictionary:
 	var entry = {"short": r[0], "name": r[1], "team": r[2], "color": r[3],
 		"skill": r[4], "consistency": r[5], "wet_skill": r[6], "reliability": r[7],
 		"number": r[8], "player": r[2] == "Obsidian",
 		"box_fraction": 0.30 + LegacyRoster.TEAMS.find(r[2]) * 0.055}
-	return named_record(entry, i, track, laps, scenario)
+	return named_record(entry, i, track, laps, scenario, tuning)
 
 static func from_definition(definition: EntrantDefinition, i: int,
-		track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null) -> RaceCar:
-	var record = named_record(definition.values(), i, track, laps, scenario)
+		track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null, tuning: RaceTuningDefinition = null) -> RaceCar:
+	var record = named_record(definition.values(), i, track, laps, scenario, tuning)
 	record.team = definition.team_id
 	record.merge(RaceSim.CAR_V2.duplicate(true))
 	if tyres == null: tyres = RaceTyreRules.legacy()
@@ -46,7 +46,8 @@ static func from_definition(definition: EntrantDefinition, i: int,
 	return car
 
 static func named_record(entry: Dictionary, i: int, track: TrackGeometry,
-		laps: int, scenario: String) -> Dictionary:
+		laps: int, scenario: String, tuning: RaceTuningDefinition = null) -> Dictionary:
+	if tuning == null: tuning = RaceTuningDefinition.legacy()
 	return {
 		"id": i,
 		"short": entry.short,
@@ -71,12 +72,12 @@ static func named_record(entry: Dictionary, i: int, track: TrackGeometry,
 		"compound": "I" if scenario == "wet" else "M",
 		"tyre": 100.0,
 		"temperature": 65.0,
-		"fuel": float(laps) * 1.13 + 1.5,
+		"fuel": tuning.race_fuel(laps),
 		"health": 100.0,
 		"damage": 0.0,
 		"qual_state": "garage",
 		"qual_runs": 0,
-		"next_qual": 2.0 + i * 3.8,
+		"next_qual": tuning.sessions.release_offset_seconds + i * tuning.sessions.release_spacing_seconds,
 		"qual_best": 0.0,
 		"qual_laps": 0,
 		"hot_start": 0.0,

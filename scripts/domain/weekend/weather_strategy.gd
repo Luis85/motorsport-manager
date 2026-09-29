@@ -10,8 +10,8 @@ static func decision_key(advice: Dictionary) -> String:
 static func prefer_set(s: Dictionary, candidate_set: Dictionary, existing: Dictionary) -> bool:
 	if existing.is_empty(): return true
 	var remaining = minf(MAX_LAPS, maxf(0, s.laps - s.gate.distance / s.length))
-	var candidate_wear = RaceForecaster.tyre_spec(s, candidate_set.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
-	var existing_wear = RaceForecaster.tyre_spec(s, existing.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
+	var candidate_wear = RaceForecaster.tyre_spec(s, candidate_set.compound).wear * RaceTuningDefinition.forecast_values(s).pace.wear_modes[s.own.pace] * RaceTuningDefinition.forecast_values(s).pace.forecast_wear_factor * remaining
+	var existing_wear = RaceForecaster.tyre_spec(s, existing.compound).wear * RaceTuningDefinition.forecast_values(s).pace.wear_modes[s.own.pace] * RaceTuningDefinition.forecast_values(s).pace.forecast_wear_factor * remaining
 	var candidate_safe = RaceForecaster.limiting_life(candidate_set, candidate_set.life - candidate_wear) >= 10
 	var existing_safe = RaceForecaster.limiting_life(existing, existing.life - existing_wear) >= 10
 	if candidate_safe != existing_safe: return candidate_safe

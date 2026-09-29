@@ -4,7 +4,7 @@ extends RefCounted
 ## Adding a new behavior/field is an engine change; adding an instance is content.
 const VERSION = 1
 const MAX_ENTRANTS = 24
-const KINDS: Array[String] = ["vehicle", "team", "driver", "roster", "tyre", "tyre_thermal", "tyre_allocation", "setup"]
+const KINDS: Array[String] = ["vehicle", "team", "driver", "roster", "tyre", "tyre_thermal", "tyre_allocation", "setup", "race_tuning", "weekend"]
 const ID_PATTERN = "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$"
 
 static func text(limit: int = 160, minimum: int = 1) -> Dictionary:
@@ -68,6 +68,10 @@ static func definition(kind: String) -> Dictionary:
 			properties.merge(TyreSchema.fields(kind))
 		"setup":
 			properties.merge(SetupDefinition.fields())
+		"race_tuning":
+			properties.merge(RaceTuningSchema.fields())
+		"weekend":
+			properties.merge(WeekendDefinition.fields())
 		_: return {}
 	return object(properties)
 

@@ -64,7 +64,7 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
 	if not rules is Dictionary: return false
-	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0) + (1 if rules.has("tyre_definition") else 0) + (1 if rules.has("setup_definition") else 0): return false
+	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0) + (1 if rules.has("tyre_definition") else 0) + (1 if rules.has("setup_definition") else 0) + (1 if rules.has("tuning_definition") else 0) + (1 if rules.has("weekend_definition") else 0): return false
 	if rules.has("vehicle_definition"):
 		if not rules.vehicle_definition is Dictionary: return false
 		var definition = VehicleDefinition.from_record(rules.vehicle_definition)
@@ -74,6 +74,8 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 11) or rules.get("weather") not in WeekendWeather.MODES: return false
 	if rules.get("reliability") not in ["legacy", "staged"] or not rules.get("rival_styles") is bool: return false
 	if rules.get("race_control") not in ["virtual-neutralization-v1", "legacy-speed-cap"]: return false
+	if rules.has("tuning_definition") and RaceTuningDefinition.from_record(rules.tuning_definition) == null: return false
+	if rules.has("weekend_definition") and WeekendDefinition.from_record(rules.weekend_definition) == null: return false
 	var roster: RosterDefinition
 	if rules.has("setup_definition") and SetupDefinition.from_record(rules.setup_definition) == null: return false
 	if rules.has("tyre_definition") and RaceTyreRules.from_snapshot(rules.tyre_definition) == null: return false

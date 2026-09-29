@@ -5,10 +5,12 @@ const RECOVERY_CHECKPOINT_VERSION = 8
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
+	if not last_error.is_empty(): return
 	mechanics.configure(RaceMechanicProfiles.build("recovery"))
 	mechanics.install(geometry, options)
 
 static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
+	if not WeekendDefinition.agrees_with_snapshot(data): return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, RECOVERY_CHECKPOINT_VERSION): return null
 	var native = int(data.version) == RECOVERY_CHECKPOINT_VERSION
 	var legacy = data.duplicate(true)
@@ -20,18 +22,19 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if base == null: return null
 	var reliability = data.get("reliability_state") if native else RaceReliability.create(base.cars, base.seed_value, "legacy")
 	var control = data.get("control_state") if native else WeekendRaceControl.create()
-	if not RaceReliability.valid(reliability, base.cars, base.total_time) or not WeekendRaceControl.valid(control, base.total_time, base.cars.size()): return null
+	if not RaceReliability.valid(reliability, base.cars, base.total_time, base.tuning) or not WeekendRaceControl.valid(control, base.total_time, base.cars.size()): return null
 	if native and reliability.mode == "staged" and data.get("flag") != WeekendRaceControl.flag_value(control): return null
 	if reliability.mode == "legacy" and (data.get("flag") == "VIRTUAL" or control != WeekendRaceControl.create()): return null
-	if not valid_recovery_records(base.strategy_state.records): return null
+	if not valid_recovery_records(base.strategy_state.records, base.tuning): return null
 	var sim = RecoveryRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: sim.set(key, base.get(key))
 	sim.reliability_state = reliability.duplicate(true); sim.control_state = control.duplicate(true)
 	if native: sim.flag = data.flag
 	return sim
 
-static func valid_recovery_records(records: Array) -> bool:
+static func valid_recovery_records(records: Array, tuning: RaceTuningDefinition = null) -> bool:
+	var max_repair = tuning.service.repair_seconds_per_damage * 1000 if tuning != null else 140.0
 	for record in records:
 		if record.kind not in ["recovery_rules", "recovery_stage", "recovery_fault", "recovery_decision", "recovery_retirement", "recovery_service", "race_control", "driving_incident"]: continue
 		var e = record.evidence
@@ -49,9 +52,12 @@ static func valid_recovery_records(records: Array) -> bool:
 			if e.get("stage") not in ["started", "completed"]: return false
 			if e.stage == "started":
 				if not e.get("job") is Dictionary: return false
-				for field in [["started", 0, record.time], ["duration", 0, 200], ["damage_before", 0, 1000], ["health_before", 0, 100], ["repair_seconds", 0, 140]]:
+				for field in [["started", 0, record.time], ["duration", 0, 200], ["damage_before", 0, 1000], ["health_before", 0, 100], ["repair_seconds", 0, max_repair]]:
 					if not RaceCheckpoint.number(e.job.get(field[0]), field[1], field[2]): return false
 				if not e.job.get("repair") is bool or not e.job.get("repair_only") is bool or not e.job.get("set_before") is String: return false
+				if tuning != null and tuning.authored():
+					var expected_repair = e.job.damage_before * tuning.service.repair_seconds_per_damage if e.job.repair else 0.0
+					if absf(e.job.repair_seconds - expected_repair) > 0.000001: return false
 			else:
 				for field in [["elapsed", 0, 200], ["damage_before", 0, 1000], ["damage_after", 0, 1000], ["health_before", 0, 100], ["health_after", 0, 100]]:
 					if not RaceCheckpoint.number(e.get(field[0]), field[1], field[2]): return false

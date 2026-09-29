@@ -36,7 +36,10 @@
     "tyres/i.json",
     "tyres/w.json",
     "tyre_allocations/default.json",
-    "setups/balanced.json"
+    "setups/balanced.json",
+    "race_tuning/default.json",
+    "weekends/standard.json",
+    "weekends/quick.json"
   ],
   "overrides": []
 }

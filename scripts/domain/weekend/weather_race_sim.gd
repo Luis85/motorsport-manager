@@ -5,6 +5,7 @@ const CHECKPOINT_VERSION = 7
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
+	if not last_error.is_empty(): return
 	mechanics.configure(RaceMechanicProfiles.build("weather"))
 	mechanics.install(geometry, options)
 
@@ -52,6 +53,7 @@ static func valid_weather_records(records: Array, entrants: Array) -> bool:
 	return true
 
 static func restore_weather(data: Dictionary) -> WeatherRaceSim:
+	if not WeekendDefinition.agrees_with_snapshot(data): return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, CHECKPOINT_VERSION): return null
 	var native = int(data.version) == CHECKPOINT_VERSION
 	var legacy = data.duplicate(true)
@@ -68,7 +70,7 @@ static func restore_weather(data: Dictionary) -> WeatherRaceSim:
 		state.model.rain = base.rain; state.next_sample = base.total_time + WeekendWeather.SAMPLE_INTERVAL
 	var restored = WeatherRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: restored.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: restored.set(key, base.get(key))
 	restored.weather_state = state
 	restored.weather_state.model.rng = int(state.model.rng)
 	return restored

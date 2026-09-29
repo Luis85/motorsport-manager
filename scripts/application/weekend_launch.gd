@@ -12,6 +12,20 @@ var last_error: String = ""
 func _init(catalog: ContentCatalog = null) -> void:
 	_catalog = catalog
 
+func stage_preset(id: String, document: Dictionary, overrides: Dictionary = {}) -> bool:
+	var preset = _catalog.weekend(id) if _catalog != null else null
+	if preset == null:
+		last_error = "Choose an existing weekend preset."
+		return false
+	var settings = preset.launch_options()
+	for key in overrides:
+		if not settings.has(key):
+			last_error = "Unknown weekend override: " + str(key)
+			return false
+	settings.merge(overrides, true)
+	settings.weekend_id = id
+	return stage(document, settings, preset.vehicle_id)
+
 func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula") -> bool:
 	last_error = ""
 	if not RaceStateValue.serializable(options):
@@ -38,6 +52,34 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 		return false
 	if not RaceCheckpoint.number(options.get("qual_duration", 480), 120, 1800):
 		last_error = "Qualifying duration must be between 2 and 30 minutes."
+		return false
+	if options.get("weather_mode", "seeded") not in WeekendWeather.MODES:
+		last_error = "Choose seeded or explicitly scripted training weather."
+		return false
+	for key in ["tactical_duels", "rival_styles"]:
+		if options.has(key) and not options[key] is bool:
+			last_error = "Use an explicit boolean for " + key + "."
+			return false
+	var tuning: RaceTuningDefinition
+	var preset: WeekendDefinition
+	if _catalog != null:
+		if not options.get("race_tuning_id", "core.race_tuning.default") is String:
+			last_error = "Choose race tuning by its stable ID."
+			return false
+		tuning = _catalog.tuning(options.get("race_tuning_id", "core.race_tuning.default"))
+		if tuning == null:
+			last_error = "Unknown or invalid race tuning."
+			return false
+		if options.has("weekend_id"):
+			if not options.weekend_id is String:
+				last_error = "Choose a weekend preset by its stable ID."
+				return false
+			preset = _catalog.weekend(options.weekend_id)
+			if preset == null:
+				last_error = "Unknown weekend preset."
+				return false
+	elif options.has("race_tuning_id") or options.has("weekend_id"):
+		last_error = "A content catalog is required for authored race settings."
 		return false
 	var roster: RosterDefinition
 	if _catalog != null:
@@ -89,10 +131,23 @@ func stage(document: Dictionary, options: Dictionary, vehicle: String = "Formula
 		"qual_duration": float(options.get("qual_duration", 480)),
 		"scenario": str(options.get("scenario", "dry")),
 		"intensity": str(options.get("intensity", "standard")),
-		"tactical_duels": options.get("tactical_duels", true) == true}
+		"tactical_duels": options.get("tactical_duels", true),
+		"rival_styles": options.get("rival_styles", true),
+		"weather_mode": str(options.get("weather_mode", "seeded"))}
 	if roster != null: _options.roster_definition = roster.to_snapshot()
 	if tyres != null: _options.tyre_definition = tyres.to_snapshot()
 	if setup_profile != null: _options.setup_definition = setup_profile.to_record()
+	if tuning != null: _options.tuning_definition = tuning.to_record()
+	if preset != null:
+		# Freeze the effective selection, including explicit user edits to a preset.
+		var effective = preset.to_record()
+		effective.vehicle_id = definition.id
+		effective.roster_id = options.get("roster_id", "core.roster.default")
+		effective.tyre_allocation_id = options.get("tyre_allocation_id", "core.tyre_allocation.default")
+		effective.setup_id = options.get("setup_id", "core.setup.balanced")
+		effective.race_tuning_id = options.get("race_tuning_id", "core.race_tuning.default")
+		for key in effective.settings: effective.settings[key] = _options[key]
+		_options.weekend_definition = effective
 	_revision += 1
 	_consumed = false
 	return true
@@ -116,6 +171,8 @@ func commit(expected_revision: int, store: WeekendEntryStore, speed: int = 1) ->
 	if speed not in [1, 2, 4, 8, 16]:
 		return {"ok": false, "error": "Choose a supported playback speed."}
 	var candidate: RaceSim = PracticeRaceSim.new(_track, _options)
+	if not candidate.last_error.is_empty():
+		return {"ok": false, "error": candidate.last_error}
 	var controls = MinimalRaceControls.new()
 	controls.configure(candidate)
 	if not controls.advance_stage():

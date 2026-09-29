@@ -35,7 +35,7 @@ static func _prepare_race(simulation: RaceSim) -> String:
 		car.route = "track"; car.distance = -(car.grid - 1) * simulation.track.grid_spacing; car.previous_distance = car.distance
 		car.lane = (-1 if car.grid % 2 else 1) * 2.0
 		car.next_compound = simulation.recommended_compound(); car.next_set_id = ""
-		car.fuel = simulation.laps * 1.13 + 1.5; car.stints.clear(); car.scheduled_lap = -1
+		car.fuel = simulation.tuning.race_fuel(simulation.laps); car.stints.clear(); car.scheduled_lap = -1
 		car.last_lap = 0.0; car.best_lap = 0.0; car.lap_start = 0.0; car.pit_lap = false
 		car.sectors = [0.0, 0.0, 0.0]; car.sector_start = 0.0; car.yield_to = -1; car.yield_side = 0.0; car.blue = false
 	return ""

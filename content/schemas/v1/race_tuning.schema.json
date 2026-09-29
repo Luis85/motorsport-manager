@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "condition": {
+      "additionalProperties": false,
+      "properties": {
+        "brake_base_c": {
+          "maximum": 200.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_response_per_second": {
+          "maximum": 1.0,
+          "minimum": 0.001,
+          "type": "number"
+        },
+        "brake_speed_c_per_mps": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "braking_c": {
+          "maximum": 900.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cooling_c": {
+          "maximum": 5.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cooling_reference": {
+          "maximum": 9.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "damage_speed_loss": {
+          "maximum": 0.005,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "engine_base_c": {
+          "maximum": 120.0,
+          "minimum": 60.0,
+          "type": "number"
+        },
+        "engine_mode_c": {
+          "maximum": 15.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "engine_response_per_second": {
+          "maximum": 1.0,
+          "minimum": 0.001,
+          "type": "number"
+        },
+        "health_reference": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "health_speed_loss": {
+          "maximum": 0.009,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "health_wear_attack": {
+          "maximum": 3.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "health_wear_normal": {
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "heat_reference_c": {
+          "maximum": 160.0,
+          "minimum": 80.0,
+          "type": "number"
+        },
+        "heat_speed_loss": {
+          "maximum": 0.005,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "throttle_c": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "water_c": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wear_heat_factor": {
+          "maximum": 0.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wear_heat_reference_c": {
+          "maximum": 160.0,
+          "minimum": 80.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "damage_speed_loss",
+        "health_reference",
+        "health_speed_loss",
+        "heat_reference_c",
+        "heat_speed_loss",
+        "health_wear_normal",
+        "health_wear_attack",
+        "wear_heat_reference_c",
+        "wear_heat_factor",
+        "engine_base_c",
+        "engine_mode_c",
+        "cooling_reference",
+        "cooling_c",
+        "throttle_c",
+        "water_c",
+        "engine_response_per_second",
+        "brake_base_c",
+        "braking_c",
+        "brake_speed_c_per_mps",
+        "brake_response_per_second"
+      ],
+      "type": "object"
+    },
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "fuel": {
+      "additionalProperties": false,
+      "properties": {
+        "engine_rates": {
+          "items": {
+            "maximum": 3.0,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "forecast_mass_factor": {
+          "maximum": 0.01,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "practice_load_per_lap": {
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "type": "number"
+        },
+        "practice_reserve_laps": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "qualifying_load_laps": {
+          "maximum": 20.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "race_load_per_lap": {
+          "maximum": 1.8,
+          "minimum": 0.5,
+          "type": "number"
+        },
+        "race_reserve_laps": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "reduced_rate": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "runtime_mass_factor": {
+          "maximum": 0.01,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "race_load_per_lap",
+        "race_reserve_laps",
+        "qualifying_load_laps",
+        "practice_load_per_lap",
+        "practice_reserve_laps",
+        "reduced_rate",
+        "engine_rates",
+        "runtime_mass_factor",
+        "forecast_mass_factor"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "race_tuning"
+      ]
+    },
+    "model": {
+      "enum": [
+        "path-race-v1"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "pace": {
+      "additionalProperties": false,
+      "properties": {
+        "engine_modes": {
+          "items": {
+            "maximum": 1.5,
+            "minimum": 0.5,
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "forecast_wear_factor": {
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "type": "number"
+        },
+        "formation_wear": {
+          "maximum": 3.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "skill_factor": {
+          "maximum": 0.009,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "skill_reference": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "speed_modes": {
+          "items": {
+            "maximum": 1.5,
+            "minimum": 0.5,
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        },
+        "wear_modes": {
+          "items": {
+            "maximum": 3.0,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "skill_reference",
+        "skill_factor",
+        "speed_modes",
+        "engine_modes",
+        "wear_modes",
+        "formation_wear",
+        "forecast_wear_factor"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    },
+    "service": {
+      "additionalProperties": false,
+      "properties": {
+        "arrival_allowance_seconds": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "queue_uncertainty_seconds": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "repair_base_seconds": {
+          "maximum": 30.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "repair_jitter_seconds": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "repair_seconds_per_damage": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "transit_allowance_seconds": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "tyre_base_seconds": {
+          "maximum": 30.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "tyre_jitter_seconds": {
+          "maximum": 10.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "uncertainty_seconds": {
+          "maximum": 20.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "warmup_seconds": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "tyre_base_seconds",
+        "tyre_jitter_seconds",
+        "repair_base_seconds",
+        "repair_jitter_seconds",
+        "repair_seconds_per_damage",
+        "arrival_allowance_seconds",
+        "transit_allowance_seconds",
+        "uncertainty_seconds",
+        "queue_uncertainty_seconds",
+        "warmup_seconds"
+      ],
+      "type": "object"
+    },
+    "sessions": {
+      "additionalProperties": false,
+      "properties": {
+        "practice_minimum_seconds": {
+          "maximum": 1800.0,
+          "minimum": 120.0,
+          "type": "number"
+        },
+        "practice_reference_laps": {
+          "maximum": 20.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "qualifying_reference_laps": {
+          "maximum": 10.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "release_offset_seconds": {
+          "maximum": 30.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "release_spacing_seconds": {
+          "maximum": 20.0,
+          "minimum": 0.1,
+          "type": "number"
+        }
+      },
+      "required": [
+        "qualifying_reference_laps",
+        "practice_minimum_seconds",
+        "practice_reference_laps",
+        "release_offset_seconds",
+        "release_spacing_seconds"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "model",
+    "fuel",
+    "pace",
+    "service",
+    "condition",
+    "sessions"
+  ],
+  "title": "Motorsport Manager race_tuning v1",
+  "type": "object"
+}

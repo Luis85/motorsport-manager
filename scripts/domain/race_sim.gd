@@ -7,6 +7,8 @@ const ACTIVE = ["practice", "qualifying", "formation", "lights", "race"]
 const TYRES = LegacyTyreContent.PERFORMANCE
 const ROSTER = LegacyRoster.ROWS
 const CAR_V2 = {"yield_to": -1, "yield_side": 0.0, "yield_clock": 0.0, "qual_history": [], "qual_sectors": [0.0, 0.0, 0.0], "qual_sector_start": 0.0, "invalid_reason": "", "throttle": 0.0, "braking": 0.0, "pit_deferred": false, "pit_lap": false, "service_compound": "M", "service_repair": true}
+var tuning: RaceTuningDefinition = RaceTuningDefinition.legacy()
+var weekend_definition: WeekendDefinition
 var setup_definition: SetupDefinition = SetupDefinition.legacy()
 var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
 var roster_definition: RosterDefinition
@@ -66,8 +68,18 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 	mechanics = RaceMechanics.new(self)
 	if geometry == null: return
 	track = TrackGeometry.new(geometry.document, geometry.preset, false, geometry.vehicle_definition if not geometry.authored_vehicle().is_empty() else null) if geometry.preview_only else geometry.detached_copy()
+	if options.has("tuning_definition"):
+		tuning = RaceTuningDefinition.from_record(options.tuning_definition)
+		if tuning == null:
+			last_error = "Invalid frozen race tuning."
+			return
+	if options.has("weekend_definition"):
+		weekend_definition = WeekendDefinition.from_record(options.weekend_definition)
+		if weekend_definition == null:
+			last_error = "Invalid frozen weekend definition."
+			return
 	laps = clampi(int(options.get("laps", 12)), 1, 100)
-	qual_duration = maxf(float(options.get("qual_duration", 480)), track.estimate * 3.5)
+	qual_duration = maxf(float(options.get("qual_duration", 480)), track.estimate * tuning.sessions.qualifying_reference_laps)
 	scenario = options.get("scenario", "changeable")
 	weather_name = "Steady rain" if scenario == "wet" else "Clear skies"
 	intensity = options.get("intensity", "standard")
@@ -91,12 +103,12 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 			last_error = "Invalid frozen roster definition."
 			return
 		for i in range(roster_definition.count):
-			cars.append(RaceEntrantFactory.from_definition(roster_definition.entrant(i), i, track, laps, scenario, tyre_rules, setup_definition))
+			cars.append(RaceEntrantFactory.from_definition(roster_definition.entrant(i), i, track, laps, scenario, tyre_rules, setup_definition, tuning))
 		selected_id = int(player_ids()[0])
 		track.pit_box_markers = roster_definition.pit_markers()
 	else:
 		for i in range(ROSTER.size()):
-			cars.append(RaceEntrantFactory.create(ROSTER[i], i, track, laps, scenario, tyre_rules, setup_definition))
+			cars.append(RaceEntrantFactory.create(ROSTER[i], i, track, laps, scenario, tyre_rules, setup_definition, tuning))
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
 
 func random_value() -> float:
@@ -285,13 +297,13 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	var local = surface_at(c)
 	var g = grip(c, cell, local)
 	var effects = CarSetup.effects(c, local.water)
-	var handling = (1.0 + (c.skill - 85) * 0.002) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
+	var handling = (1.0 + (c.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
 	handling *= 1.0 + (c.wet_skill - 85) * 0.004 * local.water
-	var desired = s.speed * sqrt(g) * handling * (1 - c.damage * 0.003) * (0.988 if c.pace == 0 else (1.01 if c.pace == 2 else 1.0))
-	desired *= (0.974 if c.engine == 0 else (1.014 if c.engine == 2 else 1.0))
-	desired *= (1.0 - maxf(0, 65 - c.health) * 0.002) / (1.0 + c.fuel * 0.0007)
+	var desired = s.speed * sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
+	desired *= tuning.pace.engine_modes[c.engine]
+	desired *= (1.0 - maxf(0, tuning.condition.health_reference - c.health) * tuning.condition.health_speed_loss) / (1.0 + c.fuel * tuning.fuel.runtime_mass_factor)
 	if absf(s.curvature) < 0.005: desired *= effects.straight
-	desired *= 1.0 - maxf(0, c.engine_temperature - 115) * 0.003
+	desired *= 1.0 - maxf(0, c.engine_temperature - tuning.condition.heat_reference_c) * tuning.condition.heat_speed_loss
 	if not WheelTyres.usable(TyreInventory.find(c, c.set_id)): desired = minf(desired, 27.0)
 	var target_lane = s.line
 	if is_run_session() and c.qual_state != "hotlap": desired = minf(desired * 0.76, 48)
@@ -356,7 +368,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	if is_run_session() and c.qual_state == "hotlap" and neutral(c):
 		c.hot_valid = false; c.invalid_reason = "Neutralized sector during the flying lap"
 	var old_speed = c.speed
-	c.speed = move_toward(c.speed, maxf(0, desired), STEP * (accel if desired > c.speed else brake))
+	c.speed = move_toward(c.speed, clampf(desired, 0, RaceCheckpoint.MAX_SPEED_MPS), STEP * (accel if desired > c.speed else brake))
 	var next = c.distance + c.speed * STEP / s.path_scale
 	if nearest_id >= 0 and (neutral(c) or traffic.block_pass or absf(c.lane - old[nearest_id].lane) < 2.6):
 		# Snapshot-based longitudinal constraint: never teleport ahead through a car.
@@ -431,7 +443,7 @@ func depart_on_planned_set(c: RaceCar) -> void:
 	if item.is_empty(): c.next_qual = clock + 60; c.intent = "No usable tyre set; choose a replacement"; return
 	TyreInventory.mount(c, item.id)
 	c.route = "pit"; c.pit_stage = "exit"; c.pit_d = c.box_d
-	c.pit_cycle = 0; c.pit_gate = -1.0; c.qual_state = "outlap"; c.qual_runs += 1; c.fuel = 4.0; c.speed = 0.0
+	c.pit_cycle = 0; c.pit_gate = -1.0; c.qual_state = "outlap"; c.qual_runs += 1; c.fuel = tuning.fuel.qualifying_load_laps; c.speed = 0.0
 	c.distance = track.pit_entry + (track.pit_exit - track.pit_entry) * c.pit_d / track.pit_length
 	post(phase, "%s leaves the garage for run %d." % [c.short, c.qual_runs])
 
@@ -507,6 +519,8 @@ func _base_snapshot() -> Dictionary:
 		result.roster_definition = roster_definition.to_snapshot()
 	if tyre_rules.authored(): result.tyre_definition = tyre_rules.to_snapshot()
 	if setup_definition.authored(): result.setup_definition = setup_definition.to_record()
+	if tuning.authored(): result.tuning_definition = tuning.to_record()
+	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
 	return result
 
 static func restore(data: Dictionary) -> RaceSim:
@@ -534,7 +548,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		if sim.tyre_rules.spec(c.compound).is_empty() or sim.tyre_rules.spec(c.next_compound).is_empty() or c.pace < 0 or c.pace > 2 or c.engine < 0 or c.engine > 2: return null
 		if c.route not in ["track", "pit", "garage"] or c.qual_state not in ["garage", "outlap", "hotlap", "inlap"]: return null
 	for key in sim.snapshot():
-		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: continue
+		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: continue
 		if not data.has(key): return null
 		var expected = sim.get(key)
 		if typeof(expected) in [TYPE_FLOAT, TYPE_INT]:
@@ -591,10 +605,10 @@ func _base_record_stint(c: RaceCar) -> void:
 func strategy_advice(c: RaceCar) -> String:
 	var remaining = maxf(0, laps - c.distance / track.length)
 	var item = TyreInventory.find(c, c.set_id)
-	var reference_wear = tyre_rules.spec(c.compound).wear * (1.25 if c.pace == 2 else (0.78 if c.pace == 0 else 1.0))
+	var reference_wear = tyre_rules.spec(c.compound).wear * tuning.pace.wear_modes[c.pace]
 	var estimate = maxf(0, (c.tyre - 20) / reference_wear)
 	var next = TyreInventory.planned(c, phase == "race")
-	return "Mounted %s · %.1f laps used\nPlan %s\n~%.1f laps to 20%% tread at current pace.\n%.1f race laps remain. Fuel margin ~%.1f laps.\nEstimate excludes future rain, traffic and incidents." % [item.get("label", "—"), item.get("laps", 0), (next.label + " · %.0f%%" % next.life) if not next.is_empty() else "no usable replacement", estimate, remaining, c.fuel - remaining * [0.84, 1.0, 1.14][c.engine]]
+	return "Mounted %s · %.1f laps used\nPlan %s\n~%.1f laps to 20%% tread at current pace.\n%.1f race laps remain. Fuel margin ~%.1f laps.\nEstimate excludes future rain, traffic and incidents." % [item.get("label", "—"), item.get("laps", 0), (next.label + " · %.0f%%" % next.life) if not next.is_empty() else "no usable replacement", estimate, remaining, c.fuel - remaining * tuning.fuel.engine_rates[c.engine]]
 
 func check_tyre_incident(c: RaceCar) -> void:
 	# Conditional damage uses the race PRNG only. Visual updates never call this path.
@@ -621,7 +635,7 @@ func _base_car_advisories(c: RaceCar) -> Array[String]:
 		if wheel.punctured: messages.append("%s PUNCTURE · plan a replacement and box" % key)
 		elif wheel.life < 15: messages.append("%s tread low · %.0f%% remaining" % [key, wheel.life])
 		elif wheel.core > tyre_rules.spec(c.compound).optimum + 20: messages.append("%s core hot · conserve pace" % key)
-	if c.engine_temperature > 115: messages.append("Engine hot · reduce engine mode")
+	if c.engine_temperature > tuning.condition.heat_reference_c: messages.append("Engine hot · reduce engine mode")
 	if c.fuel < maxf(0, laps - c.distance / track.length): messages.append("Fuel projection short · consider economy mode")
 	return messages
 
@@ -836,4 +850,6 @@ func content_options() -> Dictionary:
 	if roster_definition != null: result.roster_definition = roster_definition.to_snapshot()
 	if tyre_rules.authored(): result.tyre_definition = tyre_rules.to_snapshot()
 	if setup_definition.authored(): result.setup_definition = setup_definition.to_record()
-	return result
+	if tuning.authored(): result.tuning_definition = tuning.to_record()
+	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
+	return RaceContentSnapshot.options(result)

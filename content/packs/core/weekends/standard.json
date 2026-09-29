@@ -1,0 +1,22 @@
+{
+  "kind": "weekend",
+  "schema_version": 1,
+  "id": "core.weekend.standard",
+  "name": "Standard weekend",
+  "description": "The existing complete practice, qualifying and race journey with reference tuning.",
+  "vehicle_id": "core.vehicle.formula",
+  "roster_id": "core.roster.default",
+  "tyre_allocation_id": "core.tyre_allocation.default",
+  "setup_id": "core.setup.balanced",
+  "race_tuning_id": "core.race_tuning.default",
+  "settings": {
+    "laps": 24,
+    "seed": 7314,
+    "qual_duration": 480.0,
+    "scenario": "dry",
+    "intensity": "standard",
+    "weather_mode": "seeded",
+    "rival_styles": true,
+    "tactical_duels": true
+  }
+}

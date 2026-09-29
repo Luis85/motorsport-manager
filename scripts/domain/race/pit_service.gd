@@ -89,7 +89,7 @@ static func begin_service(sim: RaceSim, car: RaceCar) -> void:
 	car.service_set_id = item.get("id", "")
 	car.service_compound = car.next_compound
 	car.service_repair = car.repair
-	car.pit_timer = 3.0 + sim.service_random_value() * 1.5 + (car.damage * 0.14 if car.service_repair else 0.0)
+	car.pit_timer = sim.tuning.service.tyre_base_seconds + sim.service_random_value() * sim.tuning.service.tyre_jitter_seconds + (car.damage * sim.tuning.service.repair_seconds_per_damage if car.service_repair else 0.0)
 
 static func complete_service(sim: RaceSim, car: RaceCar) -> void:
 	if not car.service_set_id.is_empty():

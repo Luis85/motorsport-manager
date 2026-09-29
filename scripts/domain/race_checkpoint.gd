@@ -1,7 +1,10 @@
 class_name RaceCheckpoint
 extends RefCounted
 ## Reject malformed indexes and nested telemetry before a checkpoint reaches a view.
+const MAX_SPEED_MPS = 200.0
 static func valid(data: Dictionary) -> bool:
+	if data.has("tuning_definition") and RaceTuningDefinition.from_record(data.tuning_definition) == null: return false
+	if not WeekendDefinition.agrees_with_snapshot(data): return false
 	var setup_profile = SetupDefinition.legacy()
 	if data.has("setup_definition"):
 		setup_profile = SetupDefinition.from_record(data.setup_definition)
@@ -46,7 +49,7 @@ static func valid(data: Dictionary) -> bool:
 		grids.append(c.get("grid"))
 		if not CarSetup.valid(c, setup_profile): return false
 		if not TyreInventory.valid(c, int(data.get("laps", 12)), tyres): return false
-		for entry in [["speed", 0, 200], ["tyre", 0, 100], ["temperature", 0, 200], ["fuel", 0, 200], ["health", 0, 100], ["damage", 0, 1000], ["lane", -40, 40], ["pit_d", 0, 10000000]]:
+		for entry in [["speed", 0, MAX_SPEED_MPS], ["tyre", 0, 100], ["temperature", 0, 200], ["fuel", 0, 200], ["health", 0, 100], ["damage", 0, 1000], ["lane", -40, 40], ["pit_d", 0, 10000000]]:
 			if not number(c.get(entry[0]), entry[1], entry[2]): return false
 		for key in ["sectors", "qual_sectors"]:
 			if not numbers(c.get(key), 3): return false
@@ -96,6 +99,7 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 	if data.cars.size() != count: return {}
 	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
+	if (data.has("tuning_definition") or data.has("weekend_definition")) and data.version < 4: return {}
 	if data.has("setup_definition") and data.version < 4: return {}
 	if data.has("tyre_definition") and data.version < 4: return {}
 	if data.has("vehicle_definition") and data.version < 4: return {}

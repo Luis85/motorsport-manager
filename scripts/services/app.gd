@@ -69,7 +69,7 @@ func _ready() -> void:
 		return
 	var probe_selection: Dictionary = {}
 	for argument in OS.get_cmdline_user_args():
-		for key in ["roster_id", "tyre_allocation_id", "setup_id"]:
+		for key in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id"]:
 			var prefix = "--content-probe-" + key + "="
 			if argument.begins_with(prefix): probe_selection[key] = argument.trim_prefix(prefix)
 	for argument in OS.get_cmdline_user_args():

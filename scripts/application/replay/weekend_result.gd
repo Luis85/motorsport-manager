@@ -34,6 +34,8 @@ static func validate(data: Variant) -> String:
 		if data.model != TacticalDuels.MODEL or data.ruleset.get("checkpoint_schema") != 11 or not data.ruleset.get("tactical_duels") is bool or not data.ruleset.tactical_duels: return "Tactical result model and ruleset disagree."
 	if data.origin == "sandbox" and not RaceRecord.valid_id(data.parent.get("event_id")): return "Missing sandbox lineage."
 	if data.ruleset.has("setup_definition") and SetupDefinition.from_record(data.ruleset.setup_definition) == null: return "Invalid frozen setup profile."
+	if data.ruleset.has("tuning_definition") and RaceTuningDefinition.from_record(data.ruleset.tuning_definition) == null: return "Invalid frozen race tuning."
+	if data.ruleset.has("weekend_definition") and WeekendDefinition.from_record(data.ruleset.weekend_definition) == null: return "Invalid frozen weekend definition."
 	var tyres = RaceTyreRules.legacy()
 	if data.ruleset.has("tyre_definition"):
 		tyres = RaceTyreRules.from_snapshot(data.ruleset.tyre_definition)

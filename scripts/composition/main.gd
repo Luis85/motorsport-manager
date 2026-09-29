@@ -146,6 +146,26 @@ func show_library(test_track: Dictionary = {}) -> void:
 	left.add_child(UI.paragraph("Edited tracks saved in Circuit Atelier appear here. Race sessions use their own compiled copy, so editing cannot change a running weekend."))
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
+	var preset_rows = App.content_catalog.entries("weekend")
+	if not preset_rows.is_empty():
+		var preset_ids = preset_rows.map(func(row): return row.id)
+		controls.add_child(UI.label("WEEKEND", 12, UI.MUTED))
+		var preset_control = UI.option(["Custom selection"] + preset_rows.map(func(row): return row.name), func(index):
+			if index == 0:
+				config.erase("weekend_id")
+			else:
+				var preset = App.content_catalog.weekend(preset_ids[index - 1])
+				config = preset.launch_options()
+				config.weekend_id = preset.id
+				vehicle = preset.vehicle_id
+				show_library(test_track), preset_ids.find(config.get("weekend_id", "")) + 1)
+		preset_control.name = "WeekendPreset"
+		controls.add_child(preset_control)
+	var tuning_rows = App.content_catalog.entries("race_tuning")
+	if tuning_rows.size() > 1:
+		var tuning_ids = tuning_rows.map(func(row): return row.id)
+		controls.add_child(UI.label("RACE MODEL", 12, UI.MUTED))
+		controls.add_child(UI.option(tuning_rows.map(func(row): return row.name), func(index): config.race_tuning_id = tuning_ids[index], maxi(0, tuning_ids.find(config.get("race_tuning_id", "core.race_tuning.default")))))
 	var roster_rows = App.content_catalog.entries("roster")
 	if roster_rows.size() > 1:
 		var roster_ids = roster_rows.map(func(row): return row.id)
@@ -178,8 +198,6 @@ func show_library(test_track: Dictionary = {}) -> void:
 		controls.add_child(UI.option(["Seeded weather", "Scripted training / legacy"], func(index): config.weather_mode = WeekendWeather.MODES[index], 0 if config.get("weather_mode", "seeded") == "seeded" else 1))
 		controls.add_child(UI.label("LAPS", 12, UI.MUTED))
 		var lap_input = UI.spin(config.laps, 1, 100, 1, func(value): config.laps = int(value)); controls.add_child(lap_input)
-		controls.add_child(UI.option(["Standard · 24 laps", "Quick · 12 laps", "Custom · uncalibrated"], func(index):
-			if index < 2: lap_input.value = [24, 12][index], 0 if config.laps == 24 else (1 if config.laps == 12 else 2)))
 		controls.add_child(UI.label("QUAL MIN", 12, UI.MUTED)); controls.add_child(UI.spin(config.qual_duration / 60, 2, 30, 1, func(value): config.qual_duration = value * 60))
 		controls.add_child(UI.option(["Standard incidents", "Calm / testing", "Volatile"], func(index): config.intensity = ["standard", "calm", "volatile"][index], ["standard", "calm", "volatile"].find(config.intensity)))
 		controls.add_child(UI.label("SEED", 12, UI.MUTED)); controls.add_child(UI.spin(config.seed, 0, 4294967295, 1, func(value): config.seed = int(value)))

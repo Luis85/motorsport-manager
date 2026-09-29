@@ -6,10 +6,10 @@ const MAX_AGE = 5.0
 
 static func fuel_margin(sim: RaceSim, car: RaceCar) -> float:
 	var remaining = maxf(0, sim.laps - maxf(0, car.distance) / sim.track.length) if sim.phase in ["race", "results"] else float(sim.laps)
-	var formation = 0.6 if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else (0.6 * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
+	var formation = sim.tuning.fuel.reduced_rate if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else (sim.tuning.fuel.reduced_rate * maxf(0, 1 - car.distance / sim.track.length) if sim.phase == "formation" else 0.0)
 	# Qualifying has a separate four-lap fuel load. Do not call it a race shortfall.
-	var available = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(car.fuel)
-	return available - remaining * [0.84, 1.0, 1.14][car.engine] - formation
+	var available = sim.tuning.race_fuel(sim.laps) if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(car.fuel)
+	return available - remaining * sim.tuning.fuel.engine_rates[car.engine] - formation
 
 static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
@@ -24,6 +24,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
 		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision]
 	facts.append(sim.forecast_parameters(driver_id).get("key", []))
+	if sim.tuning.authored(): facts.append(sim.tuning.fingerprint)
 	if (sim is RaceSim and sim.has_mechanic("strategy")) and c.player: facts.append([sim.team_state.revision, sim.team_state.pit_priority.get("deferred_gate", -1)])
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
@@ -37,9 +38,9 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair", "dnf", "finished"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
 	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
-	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
+	own.projected_fuel = sim.tuning.race_fuel(sim.laps) if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
 	own.measured_race_wear = false
-	own.wear = c.tyre_rules.spec(c.compound).wear * [0.78, 1.0, 1.25][c.pace] * 1.05
+	own.wear = c.tyre_rules.spec(c.compound).wear * sim.tuning.pace.wear_modes[c.pace] * sim.tuning.pace.forecast_wear_factor
 	if not c.stints.is_empty():
 		var stint = c.stints.back()
 		var travelled = c.distance / sim.track.length - float(stint.get("from", 0))
@@ -74,6 +75,7 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 		"water": sim.average(sim.water), "flag": sim.flag, "gate": gate, "fuel_margin": fuel_margin(sim, c),
 		"model_context": sim.forecast_parameters(driver_id)}
 	if c.tyre_rules.authored(): result.tyre_context = c.tyre_rules.view()
+	if sim.tuning.authored(): result.tuning_context = sim.tuning.view()
 	return result
 
 static func set_by_id(s: Dictionary, id: String) -> Dictionary:
@@ -97,14 +99,15 @@ static func replacement(s: Dictionary) -> Dictionary:
 	return best
 
 static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
+	var tuning = RaceTuningDefinition.forecast_values(s).service
 	var own = s.own
 	if gate < 0: gate = s.gate.distance
 	var context = s.get("model_context", {})
 	var running_lap = s.reference_lap / float(context.get("neutral_factor", 1.0))
 	var mean_speed = s.length / maxf(10, running_lap)
 	var entry_eta = maxf(0, gate - own.distance) / mean_speed
-	var service = (2.5 if context.get("repair_only", false) else 3.75) + (own.damage * 0.14 if own.repair else 0.0)
-	var arrival = entry_eta + own.box_d / s.pit_limit + 1.5
+	var service = RaceTuningDefinition.mean_service(tuning, context.get("repair_only", false)) + (own.damage * tuning.repair_seconds_per_damage if own.repair else 0.0)
+	var arrival = entry_eta + own.box_d / s.pit_limit + tuning.arrival_allowance_seconds
 	var queue = 0.0
 	var mate = s.teammate
 	if not mate.is_empty():
@@ -113,11 +116,11 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 			if mate.pit_stage == "service": queue = maxf(0, mate.pit_timer - arrival)
 			elif mate.pit_stage == "entry": other_arrival = maxf(0, mate.box_d - mate.pit_d) / s.pit_limit
 		elif mate.pit_order:
-			other_arrival = maxf(0, mate.pit_gate - mate.distance) / mean_speed + mate.box_d / s.pit_limit + 1.5
-		var mate_service = (2.5 if context.get("teammate_repair_only", false) else 3.75) + (mate.damage * 0.14 if mate.repair else 0.0)
+			other_arrival = maxf(0, mate.pit_gate - mate.distance) / mean_speed + mate.box_d / s.pit_limit + tuning.arrival_allowance_seconds
+		var mate_service = RaceTuningDefinition.mean_service(tuning, context.get("teammate_repair_only", false)) + (mate.damage * tuning.repair_seconds_per_damage if mate.repair else 0.0)
 		if other_arrival <= arrival: queue = maxf(0, other_arrival + mate_service - arrival)
-	var visit = s.pit_length / s.pit_limit + service + 3.0 + queue
-	var uncertainty = 2.25 + (2.0 if queue > 0 else 0.0)
+	var visit = s.pit_length / s.pit_limit + service + tuning.transit_allowance_seconds + queue
+	var uncertainty = tuning.uncertainty_seconds + (tuning.queue_uncertainty_seconds if queue > 0 else 0.0)
 	var skipped = (s.pit_exit - s.pit_entry) / s.length * running_lap
 	var exit_station = gate + s.pit_exit - s.pit_entry
 	var position = 1; var lower_position = 1; var upper_position = 1
@@ -133,10 +136,11 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 	return {"visit": visit, "visit_low": maxf(service, visit - uncertainty), "visit_high": visit + uncertainty,
 		"loss": maxf(0, visit - skipped), "loss_low": maxf(0, visit - skipped - uncertainty), "loss_high": maxf(0, visit - skipped + uncertainty),
 		"queue": queue, "position": position, "position_low": lower_position, "position_high": upper_position,
-		"traffic": traffic, "exit_station": exit_station, "gate": gate, "entry_eta": entry_eta, "warmup": 0.0 if context.get("repair_only", false) else 1.5,
+		"traffic": traffic, "exit_station": exit_station, "gate": gate, "entry_eta": entry_eta, "warmup": 0.0 if context.get("repair_only", false) else tuning.warmup_seconds,
 		"assumptions": context.get("rule_summary", "Current conditions held constant; no future incidents predicted.")}
 
 static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
+	var tuning = RaceTuningDefinition.forecast_values(s)
 	var compound = item.compound
 	var wet = s.water
 	var spec = tyre_spec(s, compound)
@@ -150,16 +154,17 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 		wheel.surface = spec.optimum; wheel.core = wheel.surface
 		wheel_grip += WheelTyres.grip_wheel(wheel, compound, spec)
 	var grip = wheel_grip * 0.25 * spec.grip * match_factor
-	var handling = (1 + (s.own.skill - 85) * 0.002) * [0.988, 1.0, 1.01][s.own.pace] * [0.974, 1.0, 1.014][s.own.engine]
-	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * 0.00035
+	var handling = (1 + (s.own.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor) * tuning.pace.speed_modes[s.own.pace] * tuning.pace.engine_modes[s.own.engine]
+	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * tuning.fuel.forecast_mass_factor
 	var context = s.get("model_context", {})
 	var operation = float(context.get("health_factor", 1.0)) * float(context.get("thermal_factor", 1.0))
-	var lap = s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * 0.003) * operation)
+	var lap = s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * tuning.condition.damage_speed_loss) * operation)
 	lap *= context.get("practice", {}).get(compound, {}).get("lap_factor", 1.0)
 	return maxf(lap, s.reference_lap / float(context.get("neutral_factor", 1.0))) if context.get("neutral_factor", 1.0) < 1 else lap
 
 static func wear_rate(s: Dictionary, item: Dictionary) -> float:
-	var rate = tyre_spec(s, item.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
+	var tuning = RaceTuningDefinition.forecast_values(s).pace
+	var rate = tyre_spec(s, item.compound).wear * tuning.wear_modes[s.own.pace] * tuning.forecast_wear_factor
 	if item.id == s.own.set_id: rate = s.own.wear
 	if not (item.id == s.own.set_id and s.own.get("measured_race_wear", false)):
 		rate *= s.get("model_context", {}).get("practice", {}).get(item.compound, {}).get("wear_factor", 1.0)
@@ -208,7 +213,7 @@ static func evaluate_candidate(s: Dictionary, id: String, title: String, stops: 
 		confidence = float(matched.uncertainty)
 		for stop in stops:
 			confidence = maxf(confidence, priors.get(set_by_id(s, stop.set_id).get("compound", ""), {}).get("uncertainty", 0.06))
-	var uncertainty = maxf(3, seconds * confidence) + stops.size() * 2.25 + traffic_cost
+	var uncertainty = maxf(3, seconds * confidence) + stops.size() * RaceTuningDefinition.forecast_values(s).service.uncertainty_seconds + traffic_cost
 	var risk = "high" if minimum_life < 10 or s.fuel_margin < 0 else ("moderate" if minimum_life < 25 else "lower")
 	return {"id": id, "title": title, "available": true, "seconds": seconds, "low": maxf(0, seconds - uncertainty), "high": seconds + uncertainty,
 		"risk": risk, "minimum_life": minimum_life, "fuel_margin": s.fuel_margin, "stops": stops.duplicate(true),

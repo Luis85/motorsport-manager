@@ -53,6 +53,13 @@ func seal() -> Array:
 	for id in _records:
 		if _records[id].kind == "setup" and SetupDefinition.from_record(_records[id]) == null:
 			return _definition_error(id, "CONTENT_SETUP", "/controls", "Defaults/baselines must fit their control ranges and effect endpoints must remain physically positive. See docs/content/tyres-and-setup.md.")
+	for id in _records:
+		if _records[id].kind == "race_tuning" and tuning(id) == null:
+			return _definition_error(id, "CONTENT_TUNING", "", "Use ordered mode multipliers and supported physical ranges.")
+		if _records[id].kind == "weekend":
+			for key in WeekendDefinition.REFERENCES:
+				if record(_records[id][key]).get("kind") != WeekendDefinition.REFERENCES[key]:
+					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.REFERENCES[key] + " definition.")
 	_sealed = true
 	return []
 
@@ -101,6 +108,12 @@ func tyre_snapshot(id: String) -> Dictionary:
 
 func setup(id: String) -> SetupDefinition:
 	return SetupDefinition.from_record(record(id))
+
+func tuning(id: String) -> RaceTuningDefinition:
+	return RaceTuningDefinition.from_record(record(id))
+
+func weekend(id: String) -> WeekendDefinition:
+	return WeekendDefinition.from_record(record(id))
 
 func _definition_error(id: String, code: String, field: String, message: String) -> Array:
 	var diagnostic = ContentValidation.diagnostic(code, field, message)

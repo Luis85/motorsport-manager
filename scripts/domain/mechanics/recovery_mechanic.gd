@@ -35,8 +35,8 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 	for other in sim.cars:
 		if other.id != id and other.team_identity() == c.team_identity(): mate_only = sim.reliability(int(other.id)).repair_only
 	return {"key": [sim.control_state.revision, r.revision, int(c.health / 5), int(c.engine_temperature / 5), r.repair_only, mate_only],
-		"health_factor": 1.0 - maxf(0, 65 - c.health) * 0.002,
-		"thermal_factor": 1.0 - maxf(0, c.engine_temperature - 115) * 0.003,
+		"health_factor": 1.0 - maxf(0, sim.tuning.condition.health_reference - c.health) * sim.tuning.condition.health_speed_loss,
+		"thermal_factor": 1.0 - maxf(0, c.engine_temperature - sim.tuning.condition.heat_reference_c) * sim.tuning.condition.heat_speed_loss,
 		"neutral_factor": WeekendRaceControl.PACE_FACTOR if sim.control_state.state != "green" else 1.0,
 		"repair_only": r.repair_only, "teammate_repair_only": mate_only,
 		"rule_summary": "Current flag held constant for this estimate; a release or new hazard invalidates it. No future incidents are available. Local-yellow sector time is not separately forecast."}
@@ -109,7 +109,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	var critical = RaceReliability.stage(c, r) == "critical"
 	if sim.phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order and critical:
 		sim.manage_resources(c)
-		if StrategyPlan.owns(p, "pit") and r.emergency == "repair" and p.plan.get("allow_emergency", true) and c.damage > 0 and c.damage * RaceReliability.REPAIR_SECONDS_PER_DAMAGE <= r.repair_budget:
+		if StrategyPlan.owns(p, "pit") and r.emergency == "repair" and p.plan.get("allow_emergency", true) and c.damage > 0 and c.damage * sim.tuning.service.repair_seconds_per_damage <= r.repair_budget:
 			var advice = sim.recovery_advice(int(c.id))
 			if advice.repair_available:
 				sim.issue_repair(c, false, "Authorized critical repair within %.0fs work budget; finite fitted tyres retained." % r.repair_budget)
@@ -147,10 +147,10 @@ func begin_service(sim: RaceSim, c: RaceCar) -> void:
 	var r = sim.reliability(int(c.id))
 	if r.repair_only:
 		c.service_set_id = ""; c.service_compound = c.compound; c.service_repair = true
-		c.pit_timer = 2.0 + sim.service_random_value() + c.damage * RaceReliability.REPAIR_SECONDS_PER_DAMAGE
+		c.pit_timer = sim.tuning.service.repair_base_seconds + sim.service_random_value() * sim.tuning.service.repair_jitter_seconds + c.damage * sim.tuning.service.repair_seconds_per_damage
 	else: sim.mechanics.before("recovery", "begin_service", [c])
 	var job = {"started": sim.total_time, "duration": c.pit_timer, "damage_before": c.damage, "health_before": c.health,
-		"repair_seconds": c.damage * RaceReliability.REPAIR_SECONDS_PER_DAMAGE if c.service_repair else 0.0,
+		"repair_seconds": c.damage * sim.tuning.service.repair_seconds_per_damage if c.service_repair else 0.0,
 		"repair": c.service_repair, "repair_only": r.repair_only, "set_before": c.set_id}
 	job.event_id = RaceJournal.append(sim.strategy_state, sim, "recovery_service", int(c.id), {"reason": "Physical shared-box service started; repair plan frozen.", "stage": "started", "job": job.duplicate(true)}, sim.policy(int(c.id)).last_order_id)
 	r.service = job

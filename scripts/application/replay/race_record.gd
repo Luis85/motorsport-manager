@@ -203,6 +203,8 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
 	if int(snapshot.version) == 11: rules.tactical_duels = true
+	if snapshot.has("tuning_definition"): rules.tuning_definition = snapshot.tuning_definition.duplicate(true)
+	if snapshot.has("weekend_definition"): rules.weekend_definition = snapshot.weekend_definition.duplicate(true)
 	if snapshot.has("setup_definition"): rules.setup_definition = snapshot.setup_definition.duplicate(true)
 	if snapshot.has("tyre_definition"): rules.tyre_definition = snapshot.tyre_definition.duplicate(true)
 	if snapshot.has("roster_definition"):

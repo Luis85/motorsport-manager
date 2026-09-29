@@ -15,14 +15,19 @@ static func start(catalog: ContentCatalog, vehicle: String, selection: Dictionar
 	var read = Storage.read_json("res://data/tracks/hillside.json")
 	if not read.ok: return read
 	var options = {"laps": 2, "scenario": "dry", "intensity": "calm"}
+	if selection.has("weekend_id"):
+		var preset = catalog.weekend(str(selection.weekend_id))
+		if preset == null: return {"ok": false, "error": "Unknown probe weekend."}
+		options = preset.launch_options()
+		vehicle = preset.vehicle_id
 	for key in selection:
-		if key not in ["roster_id", "tyre_allocation_id", "setup_id"]:
+		if key not in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id"]:
 			return {"ok": false, "error": "Unknown probe selection: " + str(key)}
 		options[key] = selection[key]
 	# This is an explicitly sized acceptance circuit, not an automatic fix applied
 	# to user tracks. Normal launch still rejects a circuit with insufficient slots.
-	if selection.has("roster_id"):
-		var roster = catalog.roster(str(selection.roster_id))
+	if options.has("roster_id"):
+		var roster = catalog.roster(str(options.roster_id))
 		if roster == null: return {"ok": false, "error": "Unknown probe roster."}
 		read.data.grid.count = roster.count
 	var launch = WeekendLaunch.new(catalog)
@@ -57,6 +62,13 @@ static func restore() -> Dictionary:
 		"setup_id": sim.setup_definition.to_record().id if sim.setup_definition.authored() else "legacy",
 		"setup_content_hash": RaceStateValue.fingerprint(sim.setup_definition.to_record())}
 	var car: RaceCar = sim.cars[sim.player_ids()[0]]
+	result.tuning_id = sim.tuning.to_record().get("id", "legacy")
+	result.tuning_hash = sim.tuning.fingerprint
+	result.service_base_seconds = sim.tuning.service.tyre_base_seconds
+	result.race_fuel = sim.tuning.race_fuel(sim.laps)
+	result.weekend_id = sim.weekend_definition.id if sim.weekend_definition != null else "custom"
+	result.laps = sim.laps
+	result.weather_mode = sim.weather_state.model.mode
 	result.starting_compound = car.compound
 	result.compound_wear = sim.tyre_rules.spec(car.compound).wear
 	result.sets_per_driver = car.tyre_sets.size()

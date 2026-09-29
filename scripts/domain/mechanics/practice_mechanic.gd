@@ -8,7 +8,7 @@ func definition() -> Dictionary:
 
 func install(sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 
-	sim.practice_state = PracticeEvidence.create(sim.cars, clampf(maxf(600, sim.track.estimate * 7) if geometry != null else 600, 120, 1800))
+	sim.practice_state = PracticeEvidence.create(sim.cars, sim.tuning.practice_duration(sim.track.estimate if geometry != null else 0))
 
 	sim.rival_styles = RivalStyles.create(sim.cars, options.get("rival_styles", true) == true)
 	# Explicit new-weekend opt-in preserves historical saves, recipes and recordings.
@@ -42,7 +42,7 @@ func run_preview(sim: RaceSim, id: int, plan: Dictionary) -> Dictionary:
 	elif not plan.get("baseline") in PracticeEvidence.BASELINES: reason = "Choose a named baseline or the current applied setup."
 	elif not plan.get("set_id") is String or not WheelTyres.usable(TyreInventory.find(c, plan.set_id)): reason = "Choose a usable set belonging to this driver."
 	elif sim.clock + duration > sim.practice_state.duration: reason = "Insufficient session time for this run and its return margin. Shorten the run or finish practice."
-	var fuel = float(lap_count) * 1.14 + 3.0 if valid_laps else 0.0
+	var fuel = sim.tuning.practice_fuel(int(lap_count)) if valid_laps else 0.0
 	return {"driver_id": id, "time": sim.total_time, "key": PracticeEvidence.state_key(sim.practice_state, c),
 		"revision": d.revision, "available": reason.is_empty(), "reason": reason, "duration": duration,
 		"fuel": fuel, "remaining": maxf(0, sim.practice_state.duration - sim.clock),
@@ -138,7 +138,7 @@ func launch_run(sim: RaceSim, id: int, plan: Dictionary) -> void:
 	c.car_setup = run.setup.duplicate(); c.setup = c.car_setup.wing; c.pace = run.pace; c.engine = run.engine
 	c.next_set_id = plan.set_id; c.next_compound = run.compound
 	sim.depart_on_planned_set(c); c.qual_runs = 0 # practice cannot consume qualifying attempts
-	c.fuel = int(plan.laps) * 1.14 + 3.0
+	c.fuel = sim.tuning.practice_fuel(int(plan.laps))
 	c.previous_route = c.route; c.previous_distance = c.distance; c.previous_pit_d = c.pit_d
 	run.start = PracticeEvidence.observation(sim, c)
 	d.runs.append(run); d.active = {"run_id": run.id, "anchor": {}, "tainted": false, "water_sum": 0.0, "ticks": 0, "returning": false}; d.revision += 1
@@ -158,7 +158,7 @@ func reset_run_counters(sim: RaceSim) -> void:
 		c.qual_runs = 0; c.qual_best = 0.0; c.qual_laps = 0; c.qual_history.clear(); c.qual_state = "garage"
 		c.qual_sectors = [0.0, 0.0, 0.0]; c.sectors = [0.0, 0.0, 0.0]; c.last_lap = 0.0
 		c.qual_sector_start = 0.0; c.hot_start = 0.0; c.hot_valid = true; c.invalid_reason = ""
-		c.next_qual = 2.0 + c.id * 3.8; c.fuel = sim.laps * 1.13 + 1.5; c.pit_gate = -1.0
+		c.next_qual = sim.tuning.sessions.release_offset_seconds + c.id * sim.tuning.sessions.release_spacing_seconds; c.fuel = sim.tuning.race_fuel(sim.laps); c.pit_gate = -1.0
 		c.yield_to = -1; c.yield_side = 0.0; c.yield_clock = 0.0
 	sim.qual_closed = false
 
@@ -179,7 +179,7 @@ func qualifying_crossings(sim: RaceSim, c: RaceCar, before: float, after: float)
 		snapshot.water = water_mean; snapshot.own.projected_fuel = (a.anchor.fuel + c.fuel) * 0.5
 		var item = TyreInventory.find(c, c.set_id)
 		var predicted = RaceForecaster.lap_time(snapshot, item, (a.anchor.life + c.tyre) * 0.5)
-		var reference_wear = c.tyre_rules.spec(c.compound).wear * [0.78, 1.0, 1.25][c.pace] * 1.05 * (c.tyre_rules.spec(c.compound).thermal.wet_dry_wear_multiplier if c.tyre_rules.wet(c.compound) and water_mean < c.tyre_rules.spec(c.compound).thermal.wet_dry_water_threshold else 1.0)
+		var reference_wear = c.tyre_rules.spec(c.compound).wear * sim.tuning.pace.wear_modes[c.pace] * sim.tuning.pace.forecast_wear_factor * (c.tyre_rules.spec(c.compound).thermal.wet_dry_wear_multiplier if c.tyre_rules.wet(c.compound) and water_mean < c.tyre_rules.spec(c.compound).thermal.wet_dry_water_threshold else 1.0)
 		var clean = not a.tainted and c.pace == run.pace and c.engine == run.engine and c.hot_valid and absf(observed.water - a.anchor.water) < 0.10 and absf(observed.damage - a.anchor.damage) < 0.001
 		var sample = {"time": at, "seconds": seconds, "wear": wear, "wear_ratio": wear / reference_wear,
 			"model_ratio": seconds / maxf(1, predicted), "water": water_mean, "fuel": a.anchor.fuel,
@@ -243,7 +243,7 @@ func car_advisories(sim: RaceSim, c: RaceCar) -> Array[String]:
 		var wheel = TyreInventory.find(c,c.set_id).wheels[key]
 		if wheel.punctured: messages.append(key + " punctured; recall/physical return, then choose a usable set.")
 		elif wheel.life < 15: messages.append(key + " tread low; recall or retain remaining laps for later sessions.")
-	if c.engine_temperature > 115: messages.append("Engine hot; recall to cool before committing another run.")
+	if c.engine_temperature > sim.tuning.condition.heat_reference_c: messages.append("Engine hot; recall to cool before committing another run.")
 	if c.route != "garage" and c.fuel < 1.1: messages.append("Run fuel reserve low; physical return requested.")
 	return messages
 

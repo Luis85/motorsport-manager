@@ -23,7 +23,9 @@
     "tyres/endurance.json",
     "tyre_allocations/endurance.json",
     "setups/club.json",
-    "rosters/obsidian-expanded.json"
+    "rosters/obsidian-expanded.json",
+    "race_tuning/sprint.json",
+    "weekends/sprint.json"
   ],
   "overrides": []
 }

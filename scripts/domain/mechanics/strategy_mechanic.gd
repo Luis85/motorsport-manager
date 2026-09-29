@@ -157,11 +157,11 @@ func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> vo
 	if not plan.get("stops", []).is_empty(): target = maxf(0.1, float(plan.stops[0].to_lap - 1) + sim.track.pit_entry / sim.track.length - c.distance / sim.track.length)
 	var reserve = float(plan.get("tyre_reserve", 22.0))
 	if StrategyPlan.owns(p, "pace") and only_channel in ["", "pace"]:
-		var wear = c.tyre_rules.spec(c.compound).wear * 1.05
+		var wear = c.tyre_rules.spec(c.compound).wear * sim.tuning.pace.forecast_wear_factor
 		c.pace = 0 if emergency or sim.flag != "GREEN" or c.tyre - target * wear < reserve or c.engine_temperature > 120 else 1
 	if StrategyPlan.owns(p, "engine") and only_channel in ["", "engine"]:
 		var margin = c.fuel - remaining
-		c.engine = 0 if emergency or margin < float(plan.get("fuel_reserve", 0.35)) or c.engine_temperature > 115 else 1
+		c.engine = 0 if emergency or margin < float(plan.get("fuel_reserve", 0.35)) or c.engine_temperature > sim.tuning.condition.heat_reference_c else 1
 	if StrategyPlan.owns(p, "racecraft") and only_channel.is_empty():
 		c.battle_mode = "patient" if plan.get("objective") == "protect_finish" or c.damage > 24 else "balanced"
 		if plan.get("objective") == "chase_position" and c.tyre > 35 and c.damage < 12 and sim.flag == "GREEN" and RaceForecaster.fuel_margin(sim, c) > 0: c.battle_mode = "assertive"

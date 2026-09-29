@@ -5,10 +5,12 @@ const PRACTICE_CHECKPOINT_VERSION = 10
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	super(geometry, options, roster)
+	if not last_error.is_empty(): return
 	mechanics.configure(RaceMechanicProfiles.build("practice"))
 	mechanics.install(geometry, options)
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:
+	if not WeekendDefinition.agrees_with_snapshot(data): return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, TacticalDuels.CHECKPOINT_VERSION): return null
 	var native = int(data.version) >= 9
 	var native_styles = int(data.version) >= PRACTICE_CHECKPOINT_VERSION
@@ -19,7 +21,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if native: inherited.version = 8; inherited.erase("practice_state"); inherited.erase("rival_styles"); inherited.erase("duel_state")
 	var base = RecoveryRaceSim.restore_recovery(inherited)
 	if base == null: return null
-	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, clampf(maxf(600, base.track.estimate * 7), 120, 1800), "legacy")
+	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, base.tuning.practice_duration(base.track.estimate), "legacy")
 	if not PracticeEvidence.valid(state, base) or not PracticeEvidence.valid_records(base.strategy_state.records, state): return null
 	var styles = data.get("rival_styles") if native_styles else RivalStyles.create(base.cars, false)
 	if not RivalStyles.valid(styles, base.cars, base.total_time): return null
@@ -28,7 +30,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	options.rival_styles = false
 	var sim = PracticeRaceSim.new(base.track, options)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
 	if native_duels: sim.duel_state = data.duel_state.duplicate(true)

@@ -68,7 +68,8 @@ static func observation(c: RaceCar, r: Dictionary) -> Dictionary:
 		"distance": c.distance, "route": c.route, "set_id": c.set_id,
 		"exposure": "rising" if rate(c) > 0.1 else "low", "faults_observed": int(r.faults)}
 
-static func valid(state: Variant, cars: Array, now: float) -> bool:
+static func valid(state: Variant, cars: Array, now: float, tuning: RaceTuningDefinition = null) -> bool:
+	var max_repair = tuning.service.repair_seconds_per_damage * 1000 if tuning != null else 140.0
 	if not state is Dictionary or state.get("version") != VERSION or state.get("mode") not in ["staged", "legacy"]: return false
 	if not state.get("service_stream") is Dictionary or not RaceCheckpoint.integral(state.service_stream.get("rng"), 0, 4294967295): return false
 	if not state.get("drivers") is Array or state.drivers.size() != cars.size(): return false
@@ -89,12 +90,15 @@ static func valid(state: Variant, cars: Array, now: float) -> bool:
 			continue
 		var job = r.service
 		if c.route != "pit" or c.pit_stage not in ["service", "exit"]: return false
-		for field in [["started", 0, now], ["duration", 0, 200], ["damage_before", 0, 1000], ["health_before", 0, 100], ["repair_seconds", 0, 140]]:
+		for field in [["started", 0, now], ["duration", 0, 200], ["damage_before", 0, 1000], ["health_before", 0, 100], ["repair_seconds", 0, max_repair]]:
 			if not RaceCheckpoint.number(job.get(field[0]), field[1], field[2]): return false
 		for key in ["repair", "repair_only"]:
 			if not job.get(key) is bool: return false
 		if not job.get("set_before") is String or TyreInventory.find(c, job.set_before).is_empty(): return false
 		if not job.get("event_id") is String: return false
+		if tuning != null and tuning.authored():
+			var expected_repair = job.damage_before * tuning.service.repair_seconds_per_damage if job.repair else 0.0
+			if absf(job.repair_seconds - expected_repair) > 0.000001: return false
 		if job.repair_only != r.repair_only or job.repair != c.service_repair: return false
 		if c.pit_stage == "service" and (c.pit_timer > job.duration + 0.00001 or job.repair_only and not c.service_set_id.is_empty()): return false
 	return true
