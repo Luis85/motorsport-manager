@@ -33,7 +33,7 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 	var c = sim.cars[id]; var r = sim.reliability(id)
 	var mate_only = false
 	for other in sim.cars:
-		if other.id != id and EntrantIdentity.same_team(other, c): mate_only = sim.reliability(int(other.id)).repair_only
+		if other.id != id and other.team_identity() == c.team_identity(): mate_only = sim.reliability(int(other.id)).repair_only
 	return {"key": [sim.control_state.revision, r.revision, int(c.health / 5), int(c.engine_temperature / 5), r.repair_only, mate_only],
 		"health_factor": 1.0 - maxf(0, 65 - c.health) * 0.002,
 		"thermal_factor": 1.0 - maxf(0, c.engine_temperature - 115) * 0.003,
@@ -54,7 +54,7 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	sim.last_error = ""
 	if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the intended recovery driver.")
 	var id = int(payload.id); var c = sim.cars[id]; var r = sim.reliability(id)
-	if not c.player or c.dnf or c.finished: return sim.fail("Recovery commands require a running team driver.")
+	if not c.player or c.dnf or c.finished: return sim.fail(("Recovery commands require a running Obsidian driver." if sim.roster_definition == null else "Recovery commands require a running driver from your team."))
 	if action == "recovery_authority":
 		if sim.phase not in ["briefing", "race_preparation", "race"] or not RaceCheckpoint.integral(payload.get("revision"), 0, 1000000) or payload.revision != r.revision: return sim.fail("Review the current recovery authority before changing it.")
 		if payload.get("value") not in ["advise", "repair"] or not RaceCheckpoint.number(payload.get("budget"), 0, 30): return sim.fail("Choose advice or bounded emergency repair with a 0–30 second repair-work budget.")

@@ -24,7 +24,7 @@ func _ready() -> void:
 		var link = UI.button("Weather", func(): open_weather(id))
 		StrategyDesk.compact_button(link); decision_controls[id].compare.get_parent().add_child(link)
 		weather_links[id] = link
-	guide.steps.insert(6, {"title": "Rain is not the road", "body": "Weather separates observed rain from measured surface water. Compare three uncertain cases, the shared-box loss and the safe entry. Keep plan changes no order. The forecast cannot read hidden weather targets; both cars retain their own pit ownership.", "target": func(): return tabs, "reveal": func(): open_weather(3)})
+	guide.steps.insert(6, {"title": "Rain is not the road", "body": "Weather separates observed rain from measured surface water. Compare three uncertain cases, the shared-box loss and the safe entry. Keep plan changes no order. The forecast cannot read hidden weather targets; both cars retain their own pit ownership.", "target": func(): return tabs, "reveal": func(): open_weather(sim.player_ids()[0])})
 	refresh()
 
 func open_weather(id: int) -> void:
@@ -57,7 +57,7 @@ func refresh() -> void:
 		if next_stamp == weather_debrief_stamp: return
 		weather_debrief_stamp = next_stamp
 		# Rebuild from evidence rather than appending repeatedly during presentation refreshes.
-		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1, 3, 6])
+		var subset = strategy_model.strategy_state.records.filter(func(record): return record.driver_id in [-1] + strategy_model.player_ids())
 		var state = {"truncated": strategy_model.strategy_state.truncated, "records": subset.slice(maxi(0, subset.size() - 100))}
 		debrief_text.text = strategy_model.weekend_scenarios_team_result() + "\n\n" + sim.weather_debrief() + "\n\n" + "\n\n".join(RaceJournal.debrief(state, sim.cars))
 		if subset.size() > 100: debrief_text.text += "\n\nLatest 100 team records. Export retains the full journal."

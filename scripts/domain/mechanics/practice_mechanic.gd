@@ -81,7 +81,7 @@ func _practice_command(sim: RaceSim, action: String, payload: Dictionary) -> boo
 	if action in ["practice_run", "practice_recall"]:
 		if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the practice driver explicitly.")
 		var id = int(payload.id); var c = sim.cars[id]; var d = sim.practice_driver(id)
-		if not c.player or c.dnf or c.finished: return sim.fail("Only your running team drivers can receive a practice order.")
+		if not c.player or c.dnf or c.finished: return sim.fail("Only your running player-team drivers can receive a practice order.")
 		if sim.phase != "practice": return sim.fail("Practice run commands are available only during practice.")
 		if action == "practice_recall":
 			if d.active.is_empty() or c.route not in ["track", "pit"] or c.pit_stage == "entry" or d.active.returning: return sim.fail("There is no run available to recall before return commitment.")
@@ -179,7 +179,7 @@ func qualifying_crossings(sim: RaceSim, c: RaceCar, before: float, after: float)
 		snapshot.water = water_mean; snapshot.own.projected_fuel = (a.anchor.fuel + c.fuel) * 0.5
 		var item = TyreInventory.find(c, c.set_id)
 		var predicted = RaceForecaster.lap_time(snapshot, item, (a.anchor.life + c.tyre) * 0.5)
-		var reference_wear = RaceSim.TYRES[c.compound].wear * [0.78, 1.0, 1.25][c.pace] * 1.05 * (2.2 if c.compound in ["I", "W"] and water_mean < 0.15 else 1.0)
+		var reference_wear = c.tyre_rules.spec(c.compound).wear * [0.78, 1.0, 1.25][c.pace] * 1.05 * (c.tyre_rules.spec(c.compound).thermal.wet_dry_wear_multiplier if c.tyre_rules.wet(c.compound) and water_mean < c.tyre_rules.spec(c.compound).thermal.wet_dry_water_threshold else 1.0)
 		var clean = not a.tainted and c.pace == run.pace and c.engine == run.engine and c.hot_valid and absf(observed.water - a.anchor.water) < 0.10 and absf(observed.damage - a.anchor.damage) < 0.001
 		var sample = {"time": at, "seconds": seconds, "wear": wear, "wear_ratio": wear / reference_wear,
 			"model_ratio": seconds / maxf(1, predicted), "water": water_mean, "fuel": a.anchor.fuel,
@@ -209,7 +209,7 @@ func _practice_step(sim: RaceSim) -> void:
 	for c in sim.cars:
 		var d = sim.practice_driver(int(c.id))
 		if not c.player and d.runs.is_empty() and sim.clock >= d.next_release and not sim.practice_state.closed:
-			var item = TyreInventory.choose(c, "I" if sim.average(sim.water) > 0.24 else "M")
+			var item = TyreInventory.choose(c, sim.tyre_rules.practice_start(sim.average(sim.water)))
 			var plan = {"objective": "tyre_life", "laps": 2, "set_id": item.get("id", ""), "baseline": "current"}
 			if sim.run_preview(int(c.id), plan).available: sim.launch_run(int(c.id), plan)
 		if not d.active.is_empty() and c.route == "track" and c.qual_state == "hotlap":
@@ -287,7 +287,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	var record = TacticalDuels.current(sim, int(c.id))
 	if TacticalDuels.owns(record) and sim.phase == "race" and c.route == "track" and not c.dnf and not c.finished and not c.pit_order:
 		var sound = WheelTyres.usable(TyreInventory.find(c, c.set_id))
-		var dry_safe = c.tyre >= 18 and c.damage <= 24 and sound and sim.average(sim.water) <= 0.10 and sim.rain < 0.08 and c.compound not in ["I", "W"] and RaceReliability.stage(c, sim.reliability(int(c.id))) not in ["degraded", "critical"]
+		var dry_safe = c.tyre >= 18 and c.damage <= 24 and sound and sim.average(sim.water) <= 0.10 and sim.rain < 0.08 and not c.tyre_rules.wet(c.compound) and RaceReliability.stage(c, sim.reliability(int(c.id))) not in ["degraded", "critical"]
 		if not dry_safe:
 			# A narrow dry mandate cannot create previously absent emergency consent.
 			# Restore the real previous owner before the existing recovery/weather logic.

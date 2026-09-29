@@ -67,9 +67,14 @@ func _ready() -> void:
 		print("CONTENT_RESULT ", JSON.stringify({"ok": content_diagnostics.is_empty(), "diagnostics": content_diagnostics}))
 		get_tree().quit(0 if content_diagnostics.is_empty() else 1)
 		return
+	var probe_selection: Dictionary = {}
+	for argument in OS.get_cmdline_user_args():
+		for key in ["roster_id", "tyre_allocation_id", "setup_id"]:
+			var prefix = "--content-probe-" + key + "="
+			if argument.begins_with(prefix): probe_selection[key] = argument.trim_prefix(prefix)
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--content-probe=") or argument == "--content-probe-restore":
-			var result = ContentRuntimeProbe.restore() if argument == "--content-probe-restore" else ContentRuntimeProbe.start(content_catalog, argument.trim_prefix("--content-probe="))
+			var result = ContentRuntimeProbe.restore() if argument == "--content-probe-restore" else ContentRuntimeProbe.start(content_catalog, argument.trim_prefix("--content-probe="), probe_selection)
 			print("CONTENT_RESULT ", JSON.stringify(result))
 			get_tree().quit(0 if result.ok else 1)
 			return

@@ -199,7 +199,7 @@ func average(values: Array) -> float:
 
 func car_advisories(c: Dictionary) -> Array[String]:
 	var source: RaceSim = _source.get_ref()
-	var entrant = _entrant(c)
+	var entrant = _draft_entrant(c)
 	if source == null or entrant == null:
 		var unavailable: Array[String] = []
 		return unavailable
@@ -207,7 +207,7 @@ func car_advisories(c: Dictionary) -> Array[String]:
 
 func car_position(c: Dictionary, alpha: float = 1.0) -> Dictionary:
 	var source: RaceSim = _source.get_ref()
-	var entrant = _entrant(c)
+	var entrant = _draft_entrant(c)
 	return RaceStateValue.copy(source.car_position(entrant, alpha)) if source != null and entrant != null else {}
 
 func enhanced() -> bool:
@@ -228,7 +228,7 @@ func has_mechanic(identity: String) -> bool:
 
 func pit_status(c: Dictionary) -> String:
 	var source: RaceSim = _source.get_ref()
-	var entrant = _entrant(c)
+	var entrant = _draft_entrant(c)
 	return RaceStateValue.copy(source.pit_status(entrant)) if source != null and entrant != null else ""
 
 func policy(id: int) -> Dictionary:
@@ -269,7 +269,7 @@ func standings(qualifying: bool = false) -> Array:
 
 func strategy_advice(c: Dictionary) -> String:
 	var source: RaceSim = _source.get_ref()
-	var entrant = _entrant(c)
+	var entrant = _draft_entrant(c)
 	return RaceStateValue.copy(source.strategy_advice(entrant)) if source != null and entrant != null else ""
 
 func weather_advice(id: int) -> Dictionary:
@@ -326,7 +326,7 @@ func race_decision_view_model_receipt_progress(receipt: Dictionary) -> Dictionar
 
 func race_forecaster_fuel_margin(car: Dictionary) -> float:
 	var source: RaceSim = _source.get_ref()
-	var entrant = RaceCar.from_record(car)
+	var entrant = _draft_entrant(car)
 	return RaceStateValue.copy(RaceForecaster.fuel_margin(source, entrant)) if source != null and entrant != null else 0
 
 func race_forecaster_material_key(driver_id: int, revision: int = 0) -> String:
@@ -335,7 +335,7 @@ func race_forecaster_material_key(driver_id: int, revision: int = 0) -> String:
 
 func race_forecaster_qualifying_release(car: Dictionary) -> Dictionary:
 	var source: RaceSim = _source.get_ref()
-	var entrant = RaceCar.from_record(car)
+	var entrant = _draft_entrant(car)
 	return RaceStateValue.copy(RaceForecaster.qualifying_release(source, entrant)) if source != null and entrant != null else {}
 
 func race_forecaster_stale(forecast: Dictionary, revision: int = 0) -> bool:
@@ -402,35 +402,35 @@ func team_orders_preview() -> Dictionary:
 
 ## Draft calculations consume a detached typed value, not the live entrant.
 func setup_effects(record: Dictionary, wetness: float) -> Dictionary:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return CarSetup.effects(car, wetness) if car != null else {}
 
 func planned_set(record: Dictionary, exclude_mounted: bool = false) -> Dictionary:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return RaceStateValue.copy(TyreInventory.planned(car, exclude_mounted)) if car != null else {}
 
 func strategy_draft(record: Dictionary, laps_value: int, template: String = "balanced") -> Dictionary:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return StrategyPlan.draft(car, laps_value, template) if car != null else {}
 
 func strategy_plan_error(plan: Variant, record: Dictionary, laps_value: int, current_lap: int = 0) -> String:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return StrategyPlan.validate(plan, car, laps_value, current_lap) if car != null else "The driver data is unavailable."
 
 func practice_setup(record: Dictionary, baseline: String) -> Dictionary:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return PracticeEvidence.setup_for(car, baseline) if car != null else {}
 
 func practice_key(state: Dictionary, record: Dictionary) -> String:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return PracticeEvidence.state_key(state, car) if car != null else ""
 
 func reliability_observation(record: Dictionary, reliability_record: Dictionary) -> Dictionary:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return RaceReliability.observation(car, reliability_record) if car != null else {}
 
 func rival_description(state: Dictionary, record: Dictionary) -> String:
-	var car = _entrant(record)
+	var car = _draft_entrant(record)
 	return RivalStyles.public_driver(state, car) if car != null else "Driver unavailable."
 
 func tactical_plan_error(plan: Variant, id: int) -> String:
@@ -444,13 +444,49 @@ func player_ids() -> Array:
 	return source.player_ids() if source != null else []
 
 func teammate_id(id: int) -> int:
-	for player in player_ids():
-		if player != id: return int(player)
-	return -1
+	var players = player_ids()
+	return players[1] if not players.is_empty() and players[0] == id else (players[0] if not players.is_empty() else -1)
 
 func player_labels() -> Array:
 	return player_ids().map(func(id): return car(id).short + " · " + car(id).name)
 
-func _entrant(value: Dictionary) -> RaceCar:
+func pit_box_occupant(id: int) -> int:
+	var simulation = _source.get_ref() if _source != null else null
+	if simulation == null or id < 0 or id >= simulation.cars.size(): return -1
+	return int(simulation.pit_boxes.get(simulation.cars[id].team_identity(), -1))
+
+func public_rival_field() -> String:
 	var source: RaceSim = _source.get_ref()
-	return EntrantReadModel.decode(value, source.roster_definition) if source != null else null
+	if source == null: return "Rival field unavailable."
+	return RivalStyles.public_field(source.rival_styles, source.cars, source.rival_state.stops,
+		source.cars.map(func(c): return c.team_identity()))
+
+func tyre_info(compound: String) -> Dictionary:
+	var source: RaceSim = _source.get_ref()
+	return source.tyre_rules.spec(compound).duplicate(true) if source != null else {}
+
+func compound_choices() -> Array:
+	var source: RaceSim = _source.get_ref()
+	if source == null: return []
+	return source.tyre_rules.compounds().map(func(id): return {"id": id,
+		"name": source.tyre_rules.spec(id).name, "short": source.tyre_rules.spec(id).short})
+
+func set_label(car: Dictionary, identity: String) -> String:
+	return str(TyreInventory.find_in(car.get("tyre_sets", []), identity).get("label", "Unavailable set"))
+
+func setup_profile() -> Dictionary:
+	var source: RaceSim = _source.get_ref()
+	if source == null: return {}
+	return {"specs": source.setup_definition.specs().duplicate(true), "defaults": source.setup_definition.defaults().duplicate(true)}
+
+func _draft_entrant(record: Dictionary) -> RaceCar:
+	var source: RaceSim = _source.get_ref()
+	if source == null: return null
+	var car = EntrantReadModel.decode(record, source.roster_definition)
+	if car == null or source.tyre_rules.spec(car.compound).is_empty(): return null
+	if not TyreInventory.valid(car.to_record(), source.laps, source.tyre_rules) or not CarSetup.valid(car.to_record(), source.setup_definition): return null
+	car.tyre_rules = source.tyre_rules
+	car.setup_definition = source.setup_definition
+	if source.roster_definition != null and car.id >= 0 and car.id < source.cars.size():
+		car.entry_definition = source.roster_definition.entrant(car.id)
+	return car

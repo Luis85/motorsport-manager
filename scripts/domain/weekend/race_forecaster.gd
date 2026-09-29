@@ -28,7 +28,7 @@ static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> Str
 	for item in c.tyre_sets: facts.append([item.id, WheelTyres.usable(item)])
 	for other in sim.cars:
 		facts.append([other.id, other.route, other.pit_stops, other.dnf, other.finished])
-		if EntrantIdentity.same_team(other, c): facts.append([other.pit_order, other.pit_gate, other.pit_stage, int(other.pit_timer)])
+		if other.team_identity() == c.team_identity(): facts.append([other.pit_order, other.pit_gate, other.pit_stage, int(other.pit_timer)])
 	return JSON.stringify(facts).sha256_text()
 
 static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revision: int = 0) -> Dictionary:
@@ -39,7 +39,7 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
 	own.projected_fuel = float(sim.laps) * 1.13 + 1.5 if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
 	own.measured_race_wear = false
-	own.wear = RaceSim.TYRES[c.compound].wear * [0.78, 1.0, 1.25][c.pace] * 1.05
+	own.wear = c.tyre_rules.spec(c.compound).wear * [0.78, 1.0, 1.25][c.pace] * 1.05
 	if not c.stints.is_empty():
 		var stint = c.stints.back()
 		var travelled = c.distance / sim.track.length - float(stint.get("from", 0))
@@ -61,18 +61,20 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 			"compound": other.compound, "stops": other.pit_stops, "dnf": other.dnf, "finished": other.finished,
 			"lap_seconds": maxf(10, lap_seconds)})
 		# A team's own accepted orders are known to its strategist. Rival plans are never copied.
-		if EntrantIdentity.same_team(other, c):
+		if other.team_identity() == c.team_identity():
 			teammate = {"id": int(other.id), "distance": other.distance, "speed": other.speed, "pit_order": other.pit_order,
 				"pit_gate": other.pit_gate, "route": other.route, "pit_d": other.pit_d, "box_d": other.box_d,
 				"pit_stage": other.pit_stage, "pit_timer": other.pit_timer, "damage": other.damage, "repair": other.repair}
 	var gate = reachable_gate(sim, c)
-	return {"tick": roundi(sim.total_time / RaceSim.STEP), "time": sim.total_time, "phase": sim.phase,
+	var result = {"tick": roundi(sim.total_time / RaceSim.STEP), "time": sim.total_time, "phase": sim.phase,
 		"key": material_key(sim, driver_id, revision), "model_version": MODEL_VERSION, "scope": "own private + observed rival timing",
 		"own": own, "public": public, "teammate": teammate, "plan": plan.duplicate(true), "laps": sim.laps,
 		"length": sim.track.length, "reference_lap": sim.track.estimate, "pit_length": sim.track.pit_length,
 		"pit_limit": sim.track.pit_limit, "pit_entry": sim.track.pit_entry, "pit_exit": sim.track.pit_exit,
 		"water": sim.average(sim.water), "flag": sim.flag, "gate": gate, "fuel_margin": fuel_margin(sim, c),
 		"model_context": sim.forecast_parameters(driver_id)}
+	if c.tyre_rules.authored(): result.tyre_context = c.tyre_rules.view()
+	return result
 
 static func set_by_id(s: Dictionary, id: String) -> Dictionary:
 	for item in s.own.inventory:
@@ -82,9 +84,10 @@ static func set_by_id(s: Dictionary, id: String) -> Dictionary:
 static func replacement(s: Dictionary) -> Dictionary:
 	var wanted = s.own.next_compound
 	var wet = s.water
-	if wet > 0.68: wanted = "W"
-	elif wet > 0.24: wanted = "I"
-	elif wanted in ["I", "W"]: wanted = "M"
+	var selection: Dictionary = s.get("tyre_context", {}).get("selection", LegacyTyreContent.SELECTION)
+	if wet > selection.wet_threshold: wanted = selection.wet
+	elif wet > selection.intermediate_threshold: wanted = selection.intermediate
+	elif tyre_spec(s, wanted).family != "slick": wanted = selection.dry
 	var best: Dictionary = {}
 	for item in s.own.inventory:
 		if item.id == s.own.starting_set or not WheelTyres.usable(item): continue
@@ -136,18 +139,17 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var compound = item.compound
 	var wet = s.water
-	var match_factor = maxf(0.4, 1 - maxf(0, wet - 0.07) * 0.85)
-	if compound == "I": match_factor = 0.88 + wet * 0.2 - maxf(0, wet - 0.72) * 0.7
-	elif compound == "W": match_factor = 0.77 + wet * 0.33
+	var spec = tyre_spec(s, compound)
+	var match_factor = TyreSurfaceResponse.factor(spec, wet)
 	var wheel_grip = 0.0
 	for key in WheelTyres.KEYS:
 		var wheel = item.wheels[key].duplicate()
 		wheel.life = maxf(0, wheel.life - maxf(0, item.life - life))
 		# The coarse stint model assumes working temperature after a separately priced
 		# warm-up. Retained wear, flat spots, grain, blistering and punctures are real.
-		wheel.surface = WheelTyres.OPTIMUM[compound]; wheel.core = wheel.surface
-		wheel_grip += WheelTyres.grip_wheel(wheel, compound)
-	var grip = wheel_grip * 0.25 * RaceSim.TYRES[compound].grip * match_factor
+		wheel.surface = spec.optimum; wheel.core = wheel.surface
+		wheel_grip += WheelTyres.grip_wheel(wheel, compound, spec)
+	var grip = wheel_grip * 0.25 * spec.grip * match_factor
 	var handling = (1 + (s.own.skill - 85) * 0.002) * [0.988, 1.0, 1.01][s.own.pace] * [0.974, 1.0, 1.014][s.own.engine]
 	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * 0.00035
 	var context = s.get("model_context", {})
@@ -157,11 +159,12 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	return maxf(lap, s.reference_lap / float(context.get("neutral_factor", 1.0))) if context.get("neutral_factor", 1.0) < 1 else lap
 
 static func wear_rate(s: Dictionary, item: Dictionary) -> float:
-	var rate = RaceSim.TYRES[item.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
+	var rate = tyre_spec(s, item.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05
 	if item.id == s.own.set_id: rate = s.own.wear
 	if not (item.id == s.own.set_id and s.own.get("measured_race_wear", false)):
 		rate *= s.get("model_context", {}).get("practice", {}).get(item.compound, {}).get("wear_factor", 1.0)
-	if item.compound in ["I", "W"] and s.water < 0.15: rate *= 2.2
+	var spec = tyre_spec(s, item.compound)
+	if spec.family != "slick" and s.water < spec.thermal.wet_dry_water_threshold: rate *= spec.thermal.wet_dry_wear_multiplier
 	return rate
 
 static func limiting_life(item: Dictionary, average_life: float) -> float:
@@ -259,3 +262,12 @@ static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 	return {"required_seconds": needed, "latest_release": sim.qual_duration - needed,
 		"can_start_hotlap": sim.phase == "qualifying" and not sim.qual_closed and car.route == "garage" and sim.clock + needed < sim.qual_duration,
 		"label": "Estimate includes pit transit, an out-lap and 5s margin; traffic may delay release."}
+
+static func tyre_spec(snapshot: Dictionary, compound: String) -> Dictionary:
+	if snapshot.has("tyre_context"):
+		return snapshot.tyre_context.compounds.get(compound, {})
+	return RaceTyreRules.legacy().spec(compound)
+
+static func weather_family(snapshot: Dictionary, compound: String) -> String:
+	var family = tyre_spec(snapshot, compound).get("family", "")
+	return "I" if family == "intermediate" else ("W" if family == "wet" else "dry")

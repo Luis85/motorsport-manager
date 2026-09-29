@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal driver_selected(id: int)
 signal reading_requested(title: String, text: String, invoker: Control)
 var model: RaceViewQuery
-var driver_id = -1
+var driver_id = 3
 var text_scale = 1.0
 var drafts: Dictionary = {}
 var edited: Dictionary = {}
@@ -56,7 +56,9 @@ var pending: Dictionary = {}
 var notice = ""
 var reveal_serial = 0
 
-func configure(sim: RaceViewQuery) -> void: model = sim
+func configure(sim: RaceViewQuery) -> void:
+	model = sim
+	driver_id = model.player_ids()[0]
 
 func field(title: String, control: Control, parent: Node = null) -> void:
 	var container = parent if parent != null else plan_body
@@ -66,7 +68,6 @@ func field(title: String, control: Control, parent: Node = null) -> void:
 	if control is SpinBox: control.get_line_edit().accessibility_name = title
 
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 7)
 	picker = UI.option(model.player_labels(), func(index): choose_driver(model.player_ids()[index]); driver_selected.emit(driver_id))
 	field("Tactical driver", picker, self)
@@ -131,7 +132,7 @@ func _ready() -> void:
 	refresh_button.tooltip_text = "Compare this driver's draft. Reading estimates never issues a race command."
 	end_button.tooltip_text = "Review ending this tactic. An accepted physical pit stop is not cancelled."
 	approve_button = UI.button("Approve tactical plan", approve, true); commit_bar.add_child(approve_button)
-	choose_driver(int(model.player_ids()[0]))
+	choose_driver(model.player_ids()[0])
 
 func choose_driver(id: int) -> void:
 	if id not in model.player_ids(): return
@@ -145,7 +146,7 @@ func choose_driver(id: int) -> void:
 		if rival.get_item_metadata(i) == int(p.target_id): rival.select(i)
 	replacement.clear()
 	for item in model.car(id).tyre_sets:
-		var why = " · fitted" if item.id == model.car(id).set_id else (" · unusable" if not WheelTyres.usable(item) else (" · wet-weather" if item.compound in ["I", "W"] else ""))
+		var why = " · fitted" if item.id == model.car(id).set_id else (" · unusable" if not WheelTyres.usable(item) else (" · wet-weather" if model.tyre_info(item.compound).get("family", "slick") != "slick" else ""))
 		replacement.add_item("%s · %.0f%%%s" % [item.id.get_slice("-", 1), item.life, why])
 		replacement.set_item_metadata(replacement.item_count - 1, item.id)
 		if item.id == p.set_id: replacement.select(replacement.item_count - 1)

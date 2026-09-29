@@ -74,8 +74,8 @@ func refresh(model: RaceViewQuery, id: int) -> void:
 		var wheel = fitted.wheels[wheel_id]
 		minimum = minf(minimum, float(wheel.get("life", 100)))
 		if wheel.get("punctured", false): punctures.append(wheel_id)
-	facts[0].text = "%s · %.0f%% min" % [car.set_id.get_slice("-", 1), minimum]
-	if not punctures.is_empty(): facts[0].text = "%s · %s puncture" % [car.set_id.get_slice("-", 1), "/".join(punctures)]
+	facts[0].text = "%s · %.0f%% min" % [model.set_label(car, car.set_id), minimum]
+	if not punctures.is_empty(): facts[0].text = "%s · %s puncture" % [model.set_label(car, car.set_id), "/".join(punctures)]
 	facts[0].tooltip_text = controls.summary.tooltip_text + "\nInspect Car / Wheels for individual limiting conditions."
 	facts[1].text = "%+.1f laps" % model.race_forecaster_fuel_margin(car)
 	facts[1].tooltip_text = "Estimated finish margin in lap-equivalent units under the current engine policy. Not litres or a guaranteed result."

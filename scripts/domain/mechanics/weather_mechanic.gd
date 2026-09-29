@@ -71,8 +71,8 @@ func weather_issue(sim: RaceSim, id: int) -> String:
 	var c = sim.cars[id]
 	if sim.phase != "race" or c.route != "track" or c.dnf or c.finished: return ""
 	var observed = sim.weather_observation()
-	if c.compound not in ["I", "W"] and observed.peak > 0.30: return "Wet sections on slick tyres"
-	if c.compound in ["I", "W"] and observed.mean < 0.15: return "Wet tyres on a drying line"
+	if not c.tyre_rules.wet(c.compound) and observed.peak > 0.30: return "Wet sections on slick tyres"
+	if c.tyre_rules.wet(c.compound) and observed.mean < 0.15: return "Wet tyres on a drying line"
 	if sim.rain >= 0.08 and observed.mean < 0.24: return "Rain arriving; surface crossover uncertain"
 	return ""
 
@@ -81,7 +81,7 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	sim.last_error = ""
 	if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the weather decision's driver explicitly.")
 	var id = int(payload.id); var c = sim.cars[id]
-	if not c.player or c.dnf or c.finished or sim.phase != "race" or c.route != "track" or c.pit_order: return sim.fail("Weather decisions require a running team car without a committed stop.")
+	if not c.player or c.dnf or c.finished or sim.phase != "race" or c.route != "track" or c.pit_order: return sim.fail(("Weather decisions require a running Obsidian car without a committed stop." if sim.roster_definition == null else "Weather decisions require a running car from your team without a committed stop."))
 	if sim.weather_stale({"driver_id": id, "time": payload.get("time"), "key": payload.get("key"), "weather_key": payload.get("weather_key")}): return sim.fail("Weather or rejoin assumptions changed. Refresh the comparison before committing.")
 	var advice = sim.weather_advice(id)
 	if action == "weather_hold":
@@ -105,7 +105,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	var p = sim.policy(int(c.id))
 	if sim.weather_state.is_empty() or sim.weather_state.model.mode == "scripted_training" or sim.phase != "race" or c.route != "track" or c.dnf or c.finished or not p.plan.is_empty() or not StrategyPlan.owns(p, "pit") or c.pit_order or c.tyre < 18 or c.damage > 24 or not WheelTyres.usable(TyreInventory.find(c, c.set_id)):
 		sim.mechanics.before("weather", "engineer", [c]); return
-	if sim.rain < 0.08 and sim.average(sim.water) < 0.10 and c.compound not in ["I", "W"]:
+	if sim.rain < 0.08 and sim.average(sim.water) < 0.10 and not c.tyre_rules.wet(c.compound):
 		sim.mechanics.before("weather", "engineer", [c]); return
 	sim.manage_resources(c)
 	if sim.total_time < sim.weather_state.reviews[int(c.id)]: return

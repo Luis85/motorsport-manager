@@ -84,7 +84,7 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2.ZERO,size), DirectorStyle.BACKGROUND if full_workspace == null or full_workspace == call_room else UI.BG)
 
 func own_selection() -> int:
-	return sim.selected_id if sim.selected_id in sim.player_ids() else int(sim.player_ids()[0])
+	return sim.selected_id if sim.selected_id in sim.player_ids() else sim.player_ids()[0]
 
 func set_director_enabled(value: bool) -> void:
 	director_enabled = value
@@ -165,7 +165,7 @@ func open_destination(index: int, subtopic: int) -> void:
 
 func close_session_workspace() -> void:
 	var closing_call = full_workspace == call_room and call_room != null
-	var id = int(call_room.snapshot.get("driver_id",own_selection())) if closing_call else own_selection()
+	var id = int(call_room.snapshot.get("driver_id",sim.player_ids()[0])) if closing_call else own_selection()
 	var was_open = is_instance_valid(full_workspace) and full_workspace.visible
 	super.close_session_workspace()
 	if director_ready and director_enabled:
@@ -176,7 +176,7 @@ func close_session_workspace() -> void:
 
 func close_detail() -> void:
 	var closing_call = full_workspace == call_room and call_room != null
-	var id = int(call_room.snapshot.get("driver_id",own_selection())) if closing_call else own_selection()
+	var id = int(call_room.snapshot.get("driver_id",sim.player_ids()[0])) if closing_call else own_selection()
 	super.close_detail()
 	if director_ready and director_enabled:
 		adapt_layout()

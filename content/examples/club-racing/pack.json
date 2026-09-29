@@ -15,7 +15,15 @@
     "teams/workshop.json",
     "drivers/ash.json",
     "drivers/riv.json",
-    "rosters/expanded.json"
+    "rosters/expanded.json",
+    "teams/seventh.json",
+    "drivers/driver0.json",
+    "drivers/driver1.json",
+    "rosters/privateer.json",
+    "tyres/endurance.json",
+    "tyre_allocations/endurance.json",
+    "setups/club.json",
+    "rosters/obsidian-expanded.json"
   ],
   "overrides": []
 }

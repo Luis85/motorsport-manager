@@ -82,7 +82,7 @@ func _draw() -> void:
 			var offset={"pit":0,"pace":18,"engine":36}.get(item.kind,0)*scale_factor
 			var a=48+width*clampf(item.from/model.laps,0,1);var b=48+width*clampf(item.to/model.laps,0,1)
 			var rect=Rect2(a,y+offset,maxf(4,b-a),13*scale_factor)
-			var color=RaceStrategyChart.compound_color(item.set) if item.kind=="pit" else UI.ACCENT
+			var color=RaceStrategyChart.compound_color(item.set, model.get("set_styles", {})) if item.kind=="pit" else UI.ACCENT
 			if item.past: color=color.lerp(UI.CARD,0.65)
 			draw_rect(rect,color, item.kind=="pit", -1 if item.kind=="pit" else 2)
 			if item_index==selected_item and index==selected_driver: draw_rect(rect.grow(2),UI.INK,false,1)

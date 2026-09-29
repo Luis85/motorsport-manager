@@ -13,7 +13,7 @@ var sectors: RaceSectorTable
 var compare: CheckButton
 var lap_note: Label
 var drivers: OptionButton
-var driver_id = -1
+var driver_id = 3
 var mode = 0
 var next_button: Button
 var stint_chart: RaceStintHistory
@@ -23,9 +23,10 @@ var pit_visit_selector: OptionButton
 var pit_visit_detail: Label
 var pit_visits: Array = []
 var visit_stamp: Array = []
-func configure(value: RaceViewQuery) -> void: model = value
+func configure(value: RaceViewQuery) -> void:
+	model = value
+	driver_id = model.player_ids()[0]
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var top = UI.hbox(self)
 	var title = UI.label("SESSION / REVIEW",PitwallDesign.TYPE.display,UI.ACCENT); title.size_flags_horizontal = Control.SIZE_EXPAND_FILL; top.add_child(title)

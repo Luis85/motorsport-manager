@@ -3,7 +3,7 @@ extends PanelContainer
 ## Stable driver slots: neither priority changes nor acknowledgement move a focused button.
 signal review_requested(id: int)
 signal hold_requested(id: int)
-var player_ids: Array = []
+var driver_ids: Array = [] # Configured once before constructing stable slots.
 var slots: Dictionary = {}
 var count: Label
 var entries: Dictionary = {}
@@ -14,7 +14,7 @@ func _ready() -> void:
 	add_theme_stylebox_override("panel", UI.box(PitwallDesign.RACE_CREAM, UI.LINE, 5, 6))
 	var row = UI.hbox(self)
 	count = UI.label("DECISIONS  0", 11, UI.ACCENT); row.add_child(count)
-	for id in player_ids:
+	for id in driver_ids:
 		var group = UI.hbox(row); group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var badge = RaceStatusBadge.new(); group.add_child(badge)
 		var review = UI.button("", func(): review_requested.emit(id)); group.add_child(review)

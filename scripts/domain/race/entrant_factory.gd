@@ -3,27 +3,62 @@ extends RefCounted
 ## Builds one independent entrant record from the immutable roster and event setup.
 ## Serialized field names and defaults deliberately match pre-refactor checkpoints.
 
-static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, entry: EntrantDefinition = null) -> RaceCar:
-	var record = initial_record(r, i, track, laps, scenario, entry)
+static func create(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null) -> RaceCar:
+	var record = initial_record(r, i, track, laps, scenario)
 	record.merge(RaceSim.CAR_V2.duplicate(true))
-	TyreInventory.initialize_record(record)
-	CarSetup.initialize_record(record)
+	if tyres == null: tyres = RaceTyreRules.legacy()
+	record.compound = tyres.initial(scenario)
+	record.next_compound = record.compound if tyres.authored() else record.next_compound
+	record.service_compound = record.compound if tyres.authored() else record.service_compound
+	record.temperature = float(tyres.spec(record.compound).thermal.cold_c)
+	TyreInventory.initialize_record(record, tyres)
+	if setup_profile == null: setup_profile = SetupDefinition.legacy()
+	CarSetup.initialize_record(record, setup_profile)
 	var car = RaceCar.from_record(record)
+	car.tyre_rules = tyres
+	car.setup_definition = setup_profile
 	return car
 
-static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String, entry: EntrantDefinition = null) -> Dictionary:
+static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, scenario: String) -> Dictionary:
+	var entry = {"short": r[0], "name": r[1], "team": r[2], "color": r[3],
+		"skill": r[4], "consistency": r[5], "wet_skill": r[6], "reliability": r[7],
+		"number": r[8], "player": r[2] == "Obsidian",
+		"box_fraction": 0.30 + LegacyRoster.TEAMS.find(r[2]) * 0.055}
+	return named_record(entry, i, track, laps, scenario)
+
+static func from_definition(definition: EntrantDefinition, i: int,
+		track: TrackGeometry, laps: int, scenario: String, tyres: RaceTyreRules = null, setup_profile: SetupDefinition = null) -> RaceCar:
+	var record = named_record(definition.values(), i, track, laps, scenario)
+	record.team = definition.team_id
+	record.merge(RaceSim.CAR_V2.duplicate(true))
+	if tyres == null: tyres = RaceTyreRules.legacy()
+	record.compound = tyres.initial(scenario)
+	record.next_compound = record.compound if tyres.authored() else record.next_compound
+	record.service_compound = record.compound if tyres.authored() else record.service_compound
+	record.temperature = float(tyres.spec(record.compound).thermal.cold_c)
+	TyreInventory.initialize_record(record, tyres)
+	if setup_profile == null: setup_profile = SetupDefinition.legacy()
+	CarSetup.initialize_record(record, setup_profile)
+	var car = RaceCar.from_record(record)
+	car.entry_definition = definition
+	car.tyre_rules = tyres
+	car.setup_definition = setup_profile
+	return car
+
+static func named_record(entry: Dictionary, i: int, track: TrackGeometry,
+		laps: int, scenario: String) -> Dictionary:
 	return {
 		"id": i,
-		"short": r[0],
-		"name": r[1],
-		"team": entry.team_id if entry != null else r[2],
-		"color": r[3],
-		"skill": r[4],
-		"consistency": r[5],
-		"wet_skill": r[6],
-		"reliability": r[7],
-		"number": r[8],
-		"player": entry.player if entry != null else i in LegacyRoster.PLAYER_IDS,
+		"short": entry.short,
+		"name": entry.name,
+		"team": entry.team,
+		"color": entry.color,
+		"skill": entry.skill,
+		"consistency": entry.consistency,
+		"wet_skill": entry.wet_skill,
+		"reliability": entry.reliability,
+		"number": entry.number,
+		"player": entry.player,
 		"grid": i + 1,
 		"distance": -i * track.grid_spacing,
 		"previous_distance": -i * track.grid_spacing,
@@ -60,7 +95,7 @@ static func initial_record(r: Array, i: int, track: TrackGeometry, laps: int, sc
 		"pit_stage": "",
 		"pit_timer": 0.0,
 		"pit_stops": 0,
-		"box_d": track.pit_length * (entry.pit_fraction if entry != null else (0.30 + LegacyRoster.PIT_INDICES[i] * 0.055)),
+		"box_d": track.pit_length * entry.box_fraction,
 		"loss": 0.0,
 		"dnf": false,
 		"retire_reason": "",

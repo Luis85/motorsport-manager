@@ -24,9 +24,9 @@ static func restore_recovery(data: Dictionary) -> RecoveryRaceSim:
 	if native and reliability.mode == "staged" and data.get("flag") != WeekendRaceControl.flag_value(control): return null
 	if reliability.mode == "legacy" and (data.get("flag") == "VIRTUAL" or control != WeekendRaceControl.create()): return null
 	if not valid_recovery_records(base.strategy_state.records): return null
-	var sim = RecoveryRaceSim.new(base.track, {}, base.roster_definition)
+	var sim = RecoveryRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: sim.set(key, base.get(key))
 	sim.reliability_state = reliability.duplicate(true); sim.control_state = control.duplicate(true)
 	if native: sim.flag = data.flag
 	return sim

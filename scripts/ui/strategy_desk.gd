@@ -6,7 +6,7 @@ signal preview_changed(forecast: Dictionary)
 var timeline: RaceStrategyChart
 var timeline_toggle: Button
 var model: RaceViewQuery
-var driver_id = -1
+var driver_id = 3
 var drafts: Dictionary = {}
 var revisions: Dictionary = {}
 var dirty: Dictionary = {}
@@ -49,9 +49,9 @@ var topic_buttons: Array[Button] = []
 
 func configure(sim: RaceViewQuery) -> void:
 	model = sim
+	driver_id = model.player_ids()[0]
 
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 5)
 	target_picker = UI.option(model.player_labels(), func(index): select_driver(model.player_ids()[index])); add_child(target_picker); target_picker.visible = false

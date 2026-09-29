@@ -28,7 +28,15 @@
     "drivers/kiefer.json",
     "drivers/costa.json",
     "drivers/hart.json",
-    "rosters/default.json"
+    "rosters/default.json",
+    "tyre_thermals/four-wheel.json",
+    "tyres/s.json",
+    "tyres/m.json",
+    "tyres/h.json",
+    "tyres/i.json",
+    "tyres/w.json",
+    "tyre_allocations/default.json",
+    "setups/balanced.json"
   ],
   "overrides": []
 }

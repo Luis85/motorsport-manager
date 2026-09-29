@@ -93,7 +93,10 @@ static func debrief(state: Dictionary, cars: Array = []) -> Array[String]:
 	var lines: Array[String] = ["DECISION DEBRIEF", "Measured outcomes are observations. Strategy alternatives are uncalibrated model estimates, not alternate race results."]
 	if state.truncated: lines.append("Journal capacity reached. Later decisions are not available in this record.")
 	for record in state.records:
-		var who = (str(cars[int(record.driver_id)].short) if not cars.is_empty() else LegacyRoster.ROWS[int(record.driver_id)][0]) if record.driver_id >= 0 else "TEAM"
+		var who = "TEAM"
+		if record.driver_id >= 0:
+			var index = int(record.driver_id)
+			who = str(cars[index].short) if index < cars.size() else (str(LegacyRoster.ROWS[index][0]) if index < LegacyRoster.ROWS.size() else "Driver %d" % index)
 		var e = record.evidence
 		if record.kind == "command":
 			lines.append("%.1fs · %s · %s accepted" % [record.time, who, str(e.get("action", "intent")).replace("_", " ")])

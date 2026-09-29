@@ -37,10 +37,10 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	sim.last_error = ""
 	var global = action in GLOBAL_COMMANDS
 	if not global and not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the intended driver explicitly.")
-	var id = 3 if global else int(payload.id)
+	var id = int(sim.player_ids()[0]) if global else int(payload.id)
 	var c = sim.cars[id]; var p = sim.policy(id)
 	var accepted_payload = payload.duplicate(true); accepted_payload.id = id
-	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running team driver can receive this command.")
+	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running player-team driver can receive this command.")
 	if action in ["pace", "engine"] and not RaceCheckpoint.integral(payload.get("value"), 0, 2): return sim.fail("Choose a valid driving mode.")
 	if action == "speed" and not RaceCheckpoint.integral(payload.get("value"), 1, 16): return sim.fail("Choose a valid playback speed.")
 	if action == "auto" and not payload.get("value") is bool: return sim.fail("Choose an explicit delegation state.")
@@ -157,7 +157,7 @@ func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> vo
 	if not plan.get("stops", []).is_empty(): target = maxf(0.1, float(plan.stops[0].to_lap - 1) + sim.track.pit_entry / sim.track.length - c.distance / sim.track.length)
 	var reserve = float(plan.get("tyre_reserve", 22.0))
 	if StrategyPlan.owns(p, "pace") and only_channel in ["", "pace"]:
-		var wear = RaceSim.TYRES[c.compound].wear * 1.05
+		var wear = c.tyre_rules.spec(c.compound).wear * 1.05
 		c.pace = 0 if emergency or sim.flag != "GREEN" or c.tyre - target * wear < reserve or c.engine_temperature > 120 else 1
 	if StrategyPlan.owns(p, "engine") and only_channel in ["", "engine"]:
 		var margin = c.fuel - remaining
@@ -178,7 +178,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	if emergency and p.plan.get("allow_emergency", true):
 		var item = TyreInventory.choose(c, sim.recommended_compound(), true)
 		if item.is_empty():
-			for compound in RaceSim.TYRES:
+			for compound in sim.tyre_rules.compounds():
 				item = TyreInventory.choose(c, compound, true)
 				if not item.is_empty(): break
 		if item.is_empty(): sim.block_plan(c, "No sound replacement is available for the damaged tyre.")
@@ -206,7 +206,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 		if option.id == "box" and option.available: candidate = option
 	var item = RaceForecaster.replacement(snapshot)
 	if item.is_empty() or candidate.is_empty(): return
-	var urgent = c.tyre < 18 or c.damage > 24 or c.compound != sim.recommended_compound() and (c.compound in ["I", "W"] or sim.recommended_compound() in ["I", "W"])
+	var urgent = c.tyre < 18 or c.damage > 24 or c.compound != sim.recommended_compound() and (c.tyre_rules.wet(c.compound) or sim.tyre_rules.wet(sim.recommended_compound()))
 	var memory = sim.rival_state.drivers[int(c.id)]
 	if not urgent and sim.flag == "GREEN" and memory.hold_gate >= safe.distance: return
 	if not urgent:

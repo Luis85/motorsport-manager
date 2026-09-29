@@ -3,7 +3,8 @@ extends RefCounted
 ## Executable schema contract. Published JSON Schemas are generated from this source.
 ## Adding a new behavior/field is an engine change; adding an instance is content.
 const VERSION = 1
-const KINDS: Array[String] = ["vehicle", "team", "driver", "roster"]
+const MAX_ENTRANTS = 24
+const KINDS: Array[String] = ["vehicle", "team", "driver", "roster", "tyre", "tyre_thermal", "tyre_allocation", "setup"]
 const ID_PATTERN = "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$"
 
 static func text(limit: int = 160, minimum: int = 1) -> Dictionary:
@@ -63,6 +64,10 @@ static func definition(kind: String) -> Dictionary:
 				"number": integer(1, 999), "color": color_override()}), 24, 2)
 			properties.pit_assignments = array(object({"team_id": identity(),
 				"fraction": number(0.1, 0.9)}), 12, 1)
+		"tyre", "tyre_thermal", "tyre_allocation":
+			properties.merge(TyreSchema.fields(kind))
+		"setup":
+			properties.merge(SetupDefinition.fields())
 		_: return {}
 	return object(properties)
 

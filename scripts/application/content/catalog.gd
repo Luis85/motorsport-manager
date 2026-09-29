@@ -32,13 +32,27 @@ func seal() -> Array:
 	if _records.is_empty():
 		return [ContentValidation.diagnostic("CONTENT_EMPTY", "", "The selected content set is empty.")]
 	for id in _records:
-		if _records[id].kind == "roster":
-			var compiled = RosterDefinition.compile(_records[id], _records)
-			if not compiled.ok:
-				for diagnostic in compiled.diagnostics:
-					diagnostic.file = _sources[id].file
-					diagnostic.root = _sources[id].root
-				return compiled.diagnostics
+		if _records[id].kind != "roster": continue
+		var resolved = RosterDefinition.resolve(_records[id], _records)
+		if not resolved.ok:
+			for diagnostic in resolved.diagnostics:
+				diagnostic.file = _sources[id].file
+				diagnostic.root = _sources[id].root
+				diagnostic.entity = id
+			return resolved.diagnostics
+	for id in _records:
+		var entry: Dictionary = _records[id]
+		if entry.kind == "tyre":
+			var thermal = record(entry.thermal_profile_id)
+			if thermal.get("kind") != "tyre_thermal":
+				return _definition_error(id, "CONTENT_REFERENCE", "/thermal_profile_id", "Choose an existing tyre_thermal definition: " + str(entry.thermal_profile_id))
+			if TyreDefinition.compile(entry, thermal) == null:
+				return _definition_error(id, "CONTENT_TYRE_CURVE", "/surface_response", "Grip must remain between 0.05 and 2.0 throughout the supported water range; review the surface-response coefficients.")
+		if entry.kind == "tyre_allocation" and tyres(id) == null:
+			return _definition_error(id, "CONTENT_REFERENCE", "/sets", "Use unique existing compounds, at most 64 total sets, and selection references of the required family. See docs/content/tyres-and-setup.md.")
+	for id in _records:
+		if _records[id].kind == "setup" and SetupDefinition.from_record(_records[id]) == null:
+			return _definition_error(id, "CONTENT_SETUP", "/controls", "Defaults/baselines must fit their control ranges and effect endpoints must remain physically positive. See docs/content/tyres-and-setup.md.")
 	_sealed = true
 	return []
 
@@ -59,5 +73,40 @@ func vehicle(id: String) -> VehicleDefinition:
 	return VehicleDefinition.from_record(data) if not data.is_empty() else null
 
 func roster(id: String) -> RosterDefinition:
-	var compiled = RosterDefinition.compile(record(id), _records)
-	return compiled.definition if compiled.ok else null
+	if not _sealed or not _records.has(id): return null
+	var resolved = RosterDefinition.resolve(_records[id], _records)
+	return RosterDefinition.decode_snapshot(resolved.snapshot) if resolved.ok else null
+
+func tyres(id: String) -> RaceTyreRules:
+	return RaceTyreRules.from_snapshot(tyre_snapshot(id))
+
+func tyre_snapshot(id: String) -> Dictionary:
+	var allocation = record(id)
+	if allocation.get("kind") != "tyre_allocation": return {}
+	var compounds: Array = []
+	var profiles: Array = []
+	var seen: Dictionary = {}
+	for item in allocation.sets:
+		var compound = record(item.compound_id)
+		if compound.get("kind") != "tyre": return {}
+		compounds.append(compound)
+		var profile_id: String = compound.thermal_profile_id
+		if seen.has(profile_id): continue
+		seen[profile_id] = true
+		var profile = record(profile_id)
+		if profile.get("kind") != "tyre_thermal": return {}
+		profiles.append(profile)
+	return {"kind": "motorsport-manager-tyre-snapshot", "version": 1,
+		"allocation": allocation, "compounds": compounds, "thermal_profiles": profiles}
+
+func setup(id: String) -> SetupDefinition:
+	return SetupDefinition.from_record(record(id))
+
+func _definition_error(id: String, code: String, field: String, message: String) -> Array:
+	var diagnostic = ContentValidation.diagnostic(code, field, message)
+	var source: Dictionary = _sources.get(id, {})
+	diagnostic.root = source.get("root", "")
+	diagnostic.file = source.get("file", "")
+	diagnostic.pack = source.get("pack", "")
+	diagnostic.entity = id
+	return [diagnostic]

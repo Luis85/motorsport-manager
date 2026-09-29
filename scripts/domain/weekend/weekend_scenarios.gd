@@ -36,7 +36,7 @@ static func build(recipe: Dictionary, library: Array) -> StrategyRaceSim:
 	return sim
 
 static func briefing(sim: RaceSim) -> String:
-	var p = RaceForecaster.pit_prediction(RaceForecaster.capture(sim, int(sim.player_ids()[0])))
+	var p = RaceForecaster.pit_prediction(RaceForecaster.capture(sim, sim.player_ids()[0]))
 	var low = INF; var high = 0.0
 	for width in sim.track.widths: low = minf(low, width); high = maxf(high, width)
 	var text = "TEAM OBJECTIVE · Bring both cars home.\n%dlaps · %s reference lap · authored road width %.1f–%.1fm.\nEstimated net pit loss %.0f–%.0fs. No race refuelling or mandatory stop; allocations are driver-owned.\nDry / wet scenarios are fictional rules, not licensed series procedures." % [sim.laps, RaceSim.format_time(sim.track.estimate), low, high, p.loss_low, p.loss_high]
@@ -48,7 +48,7 @@ static func briefing(sim: RaceSim) -> String:
 
 static func team_result(sim: RaceSim) -> String:
 	if sim.phase != "results": return "TEAM OBJECTIVE · Bring both cars home. Result is pending."
-	var both = sim.player_ids().all(func(id): return sim.cars[id].finished and not sim.cars[id].dnf)
+	var both = sim.cars[sim.player_ids()[0]].finished and sim.cars[sim.player_ids()[1]].finished and not sim.cars[sim.player_ids()[0]].dnf and not sim.cars[sim.player_ids()[1]].dnf
 	var lines: Array[String] = ["TEAM OBJECTIVE · " + ("Both cars brought home." if both else "Both-car finish not achieved. No result is fabricated or awarded for commands alone.")]
 	var order = sim.standings()
 	for id in sim.player_ids():

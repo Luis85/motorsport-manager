@@ -60,7 +60,7 @@ func _ready() -> void:
 		body.add_child(UI.label(sim.car(id).short+" / "+sim.car(id).name.get_slice(" ",1),14,UI.INK))
 		var value=UI.paragraph("");body.add_child(value);driver_summaries[id]=value
 	var page = pages[0]
-	actor = UI.option(["%s ahead · %s following" % [sim.car(sim.player_ids()[0]).short, sim.car(sim.player_ids()[1]).short], "%s ahead · %s following" % [sim.car(sim.player_ids()[1]).short, sim.car(sim.player_ids()[0]).short]], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
+	actor = UI.option(sim.player_ids().map(func(id): return sim.car(id).short + " ahead · " + sim.car(sim.teammate_id(id)).short + " following"), func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
 	kind = UI.option(["Hold relative team position", "Allow the teammate through"], func(_index): refresh()); page.add_child(kind); StrategyDesk.compact_button(kind); kind.add_theme_font_size_override("font_size", 12)
 	duration = UI.spin(1, 1, 5, 1, func(_value): refresh()); duration.custom_minimum_size = Vector2(72, 30)
 	duration.get_line_edit().add_theme_font_size_override("font_size", 12)
@@ -115,7 +115,7 @@ func show_topic(index: int) -> void:
 	refresh()
 
 func draft() -> Dictionary:
-	var id = int(sim.player_ids()[actor.selected])
+	var id = sim.player_ids()[actor.selected]
 	return {"id": id, "teammate_id": sim.teammate_id(id), "kind": "hold" if kind.selected == 0 else "yield", "laps": int(duration.value), "revision": revision}
 
 func cancel(key: String) -> void:

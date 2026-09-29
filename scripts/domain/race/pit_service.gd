@@ -20,8 +20,8 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			car.pit_stage = ""
 			sim.post(sim.phase, car.short + " back in the garage.")
 			return
-		if not sim.pit_boxes.has(car.team):
-			sim.pit_boxes[car.team] = car.id
+		if not sim.pit_boxes.has(car.team_identity()):
+			sim.pit_boxes[car.team_identity()] = car.id
 			car.pit_stage = "service"
 			sim.begin_service(car)
 		else:
@@ -35,7 +35,7 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			car.pit_stops += 1
 			sim.stats.pits += 1
 			car.pit_stage = "exit"
-			sim.pit_boxes.erase(car.team)
+			sim.pit_boxes.erase(car.team_identity())
 			sim.post("pit", "%s serviced · %s tyres." % [car.short, car.compound])
 		return
 	var target = sim.track.pit_limit

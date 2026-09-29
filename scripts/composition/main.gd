@@ -13,7 +13,6 @@ var library_canvas: TrackCanvas
 var selected_track: Dictionary
 var config = {"laps": 24, "qual_duration": 480, "scenario": "dry", "intensity": "standard", "seed": 7314, "tactical_duels": true}
 var vehicle = "Formula"
-var roster_id = "core.roster.default"
 var editor_draft: Dictionary = {}
 var draft_signature = ""
 var return_editor_button: Button
@@ -143,9 +142,21 @@ func show_library(test_track: Dictionary = {}) -> void:
 	var setup_panel = UI.panel(); content.add_child(setup_panel)
 	var controls = HFlowContainer.new(); setup_panel.add_child(controls)
 	var roster_rows = App.content_catalog.entries("roster")
-	var roster_ids = roster_rows.map(func(row): return row.id)
-	controls.add_child(UI.label("FIELD", 12, UI.MUTED))
-	controls.add_child(UI.option(roster_rows.map(func(row): return row.name), func(index): roster_id = roster_ids[index], maxi(0, roster_ids.find(roster_id))))
+	if roster_rows.size() > 1:
+		var roster_ids = roster_rows.map(func(row): return row.id)
+		controls.add_child(UI.label("FIELD", 12, UI.MUTED))
+		controls.add_child(UI.option(roster_rows.map(func(row): return row.name), func(index): config.roster_id = roster_ids[index]; refresh.call(), maxi(0, roster_ids.find(config.get("roster_id", "core.roster.default")))))
+	var allocation_rows = App.content_catalog.entries("tyre_allocation")
+	var allocation_ids = allocation_rows.map(func(item): return item.id)
+	if not allocation_ids.has(config.get("tyre_allocation_id", "core.tyre_allocation.default")): config.tyre_allocation_id = "core.tyre_allocation.default"
+	if allocation_rows.size() > 1:
+		controls.add_child(UI.label("ALLOCATION", 12, UI.MUTED))
+		controls.add_child(UI.option(allocation_rows.map(func(item): return item.name), func(index): config.tyre_allocation_id = allocation_ids[index]; refresh.call(), allocation_ids.find(config.get("tyre_allocation_id", "core.tyre_allocation.default"))))
+	var setup_rows = App.content_catalog.entries("setup")
+	var setup_ids = setup_rows.map(func(item): return item.id)
+	if setup_rows.size() > 1:
+		controls.add_child(UI.label("SETUP PROFILE", 12, UI.MUTED))
+		controls.add_child(UI.option(setup_rows.map(func(item): return item.name), func(index): config.setup_id = setup_ids[index], maxi(0, setup_ids.find(config.get("setup_id", "core.setup.balanced")))))
 	var vehicle_rows = App.content_catalog.entries("vehicle")
 	var vehicle_ids = vehicle_rows.map(func(v): return v.id)
 	var vehicle_index = vehicle_ids.find(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower())
@@ -172,21 +183,15 @@ func show_library(test_track: Dictionary = {}) -> void:
 	launch.add_child(UI.paragraph("Review your choices before practice starts. Your existing weekend is not replaced here."))
 	if App.settings.get("pitwall_layout", "minimal") == "minimal":
 		launch.add_child(UI.button("Review weekend", func():
-			config.roster_id = roster_id
 			if not launch_draft.stage(selected_track, config, vehicle):
 				UI.notify(self, "Weekend needs attention", launch_draft.last_error); return
 			show_welcome(), true))
 	else:
 		launch.add_child(UI.button("Open weekend briefing", func():
 			var start = func():
-				config.roster_id = roster_id
 				if not launch_draft.stage(selected_track, config, vehicle):
 					UI.notify(self, "Weekend needs attention", launch_draft.last_error); return
-				var geometry = TrackGeometry.new(selected_track, vehicle, false, App.content_catalog.vehicle(vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()))
-				var findings = TrackDiagnostics.inspect(geometry)
-				if TrackDiagnostics.blocking(findings):
-					UI.notify(self, "Circuit needs attention", "The circuit has a blocking crossing. Open it in the editor and review Checks before driving."); return
-				App.weekend = PracticeRaceSim.new(geometry, config, App.content_catalog.roster(roster_id))
+				App.weekend = PracticeRaceSim.new(launch_draft.visual_track(), launch_draft.session_options())
 				App.weekend.speed = App.settings.speed
 				show_weekend()
 			if App.requires_entry_confirmation():

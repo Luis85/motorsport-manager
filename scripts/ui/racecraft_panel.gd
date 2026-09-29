@@ -3,6 +3,7 @@ extends VBoxContainer
 ## Staged setup values never get overwritten by a live telemetry refresh.
 var sim: RaceViewQuery
 var dispatch: Callable
+var profile: Dictionary = {}
 var fields: Dictionary = {}
 var sliders: Dictionary = {}
 var draft_effects: Label
@@ -24,18 +25,19 @@ var live_row: HBoxContainer
 
 func configure(model: RaceViewQuery, command: Callable) -> void:
 	sim = model; dispatch = command
+	profile = model.setup_profile()
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 7)
 	add_child(UI.label("GARAGE SETUP", 15, UI.ACCENT))
 	var intro = UI.paragraph("Stage values, then Apply. Focus a field for its trade-off; F1 opens help."); intro.add_theme_font_size_override("font_size", 12); add_child(intro)
 	garage_form = UI.vbox(self); garage_form.add_theme_constant_override("separation", 5)
-	for key in CarSetup.SPECS:
-		var spec = CarSetup.SPECS[key]
+	for key in profile.specs:
+		var spec = profile.specs[key]
 		var label_row = UI.hbox(garage_form)
 		var label = UI.label(spec[2], 13); label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; label_row.add_child(label)
 		var delta = UI.label("", 11, UI.MUTED); label_row.add_child(delta); delta_labels[key] = delta
-		var field = UI.spin(CarSetup.DEFAULTS[key], spec[0], spec[1], 1, func(value):
+		var field = UI.spin(profile.defaults[key], spec[0], spec[1], 1, func(value):
 			if loaded_driver >= 0:
 				drafts[loaded_driver][key] = int(value); edited[loaded_driver] = true
 			refresh_status())
@@ -55,7 +57,7 @@ func _ready() -> void:
 	note = UI.paragraph(""); note.add_theme_font_size_override("font_size", 12); add_child(note)
 	live_heading = UI.label("LIVE BRAKE BIAS", 14, UI.ACCENT); add_child(live_heading)
 	live_row = UI.hbox(self)
-	bias = UI.spin(56, 52, 62, 1, func(_value): pass); bias.custom_minimum_size.x = 80; live_row.add_child(bias)
+	bias = UI.spin(profile.defaults.bias, profile.specs.bias[0], profile.specs.bias[1], 1, func(_value): pass); bias.custom_minimum_size.x = 80; live_row.add_child(bias)
 	bias_button = UI.button("Set front %", func(): dispatch.call("brake_bias", {"value": int(bias.value)})); live_row.add_child(bias_button)
 	draft_effects=UI.paragraph("");garage_form.add_child(draft_effects)
 	effects_label = UI.paragraph(""); add_child(effects_label)
@@ -96,13 +98,13 @@ func refresh_status() -> void:
 	if not changed: edited[loaded_driver] = false
 	for key in delta_labels:
 		delta_labels[key].text = "%d → %d" % [sim.car(loaded_driver).car_setup[key], drafts[loaded_driver][key]]
-		delta_labels[key].tooltip_text = "Fitted → unapplied draft. " + CarSetup.SPECS[key][3]
+		delta_labels[key].tooltip_text = "Fitted → unapplied draft. " + profile.specs[key][3]
 	apply_button.disabled = not changed or not garage_allowed(); reset_button.disabled = not changed
 	note.text = sim.car(loaded_driver).name + (" · Unapplied adjustments · no effect yet." if changed else " · Setup is applied.")
 	apply_button.tooltip_text = "Apply only to " + sim.car(loaded_driver).name + "." if garage_allowed() else "Mechanical changes unlock in the garage or race preparation."
 	if not garage_allowed(): note.text += "\nMechanical changes unlock in the garage or race preparation."
 	if draft_effects:
-		var c=sim.car(loaded_driver).duplicate();c.car_setup=drafts[loaded_driver]
+		var c=sim.car(loaded_driver).duplicate();c.car_setup=drafts[loaded_driver];c.setup=c.car_setup.wing
 		var effect=sim.setup_effects(c,sim.average(sim.water))
 		draft_effects.text="DRAFT EFFECTS · CURRENT TYRE/SURFACE HELD CONSTANT\nCorner %+.1f%% · straight %+.1f%% · traction %+.1f%%\nChanges have no effect until Apply." % [(effect.corner-1)*100,(effect.straight-1)*100,(effect.traction-1)*100]
 		for key in sliders:sliders[key].set_value_no_signal(fields[key].value)

@@ -17,12 +17,11 @@ func _notification(what: int) -> void:
 	elif what in [NOTIFICATION_FOCUS_ENTER,NOTIFICATION_FOCUS_EXIT]: queue_redraw()
 func present(value: Dictionary) -> void:
 	model=value.duplicate(true)
-	var ids: Array = value.player_ids
-	var next=[value.cars[ids[0]].stints,value.cars[ids[1]].stints,value.cars[ids[0]].distance,value.cars[ids[1]].distance,value.cars[ids[0]].pit_stops,value.cars[ids[1]].pit_stops]
+	var next=[value.cars[value.player_ids[0]].stints,value.cars[value.player_ids[1]].stints,value.cars[value.player_ids[0]].distance,value.cars[value.player_ids[1]].distance,value.cars[value.player_ids[0]].pit_stops,value.cars[value.player_ids[1]].pit_stops]
 	if next==stamp:return
 	stamp=next.duplicate(true);update_count+=1
 	selected_stint=clampi(selected_stint,0,maxi(0,model.cars[model.player_ids[selected_driver]].stints.size()-1))
-	accessibility_name="Measured tyre stints for " + model.cars[ids[0]].name + " and " + model.cars[ids[1]].name
+	accessibility_name="Measured tyre stints for both player-team drivers"
 	accessibility_description=selected_text();selection_changed.emit(selected_text());queue_redraw()
 func selected_text() -> String:
 	if model.is_empty():return "No measured stint data"
@@ -78,9 +77,9 @@ func _draw() -> void:
 			var left=clampf(stint.from,0,model.laps);var right=clampf(car.distance/model.track.length if stint.to<0 else stint.to,left,model.laps)
 			var a=12+width*left/model.laps;var b=12+width*right/model.laps
 			var rect=Rect2(a,y+7*scale_factor,maxf(2,b-a-1),20*scale_factor)
-			var segment_color = RaceStrategyChart.compound_color(stint.set_id)
+			var segment_color = RaceStrategyChart.compound_color(stint.set_id, model.get("set_styles", {}))
 			draw_rect(rect,segment_color)
 			if index==selected_driver and i==selected_stint:draw_rect(rect.grow(2),UI.INK,false,1)
-			if b-a>34:draw_string(font,Vector2(a+4,y+22*scale_factor),str(stint.set_id).get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,text_size,GameTheme.ink_on(segment_color))
+			if b-a>34:draw_string(font,Vector2(a+4,y+22*scale_factor),str(model.get("set_styles", {}).get(stint.set_id, {}).get("label", stint.set_id)),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,text_size,GameTheme.ink_on(segment_color))
 	draw_string(font,Vector2(12,190*scale_factor),selected_text(),HORIZONTAL_ALIGNMENT_LEFT,width,text_size,UI.INK)
 	draw_string(font,Vector2(12,212*scale_factor),"↑/↓ driver · ←/→ stint · no future extrapolation",HORIZONTAL_ALIGNMENT_LEFT,width,caption,UI.MUTED)

@@ -13,13 +13,13 @@ static func stints(simulation: RaceSim) -> Dictionary:
 		cars[id] = {}
 		for key in ["name", "short", "stints", "distance", "pit_stops", "finished", "dnf"]:
 			cars[id][key] = RaceStateValue.copy(car[key])
-	return {"cars": cars, "player_ids": simulation.player_ids(), "laps": simulation.laps, "track": {"length": simulation.track.length}}
+	return {"cars": cars, "set_styles": set_styles(simulation), "player_ids": simulation.player_ids(), "laps": simulation.laps, "track": {"length": simulation.track.length}}
 
 static func strategy(simulation: RaceSim, id: int, forecast: Dictionary, initial_set: String = "") -> Array:
 	var car: RaceCar = simulation.cars[id]
 	return [forecast.get("options", []).duplicate(true), simulation.laps,
 		maxf(0, car.distance / simulation.track.length) if simulation.phase == "race" else 0.0,
-		car.set_id if initial_set.is_empty() else initial_set]
+		car.set_id if initial_set.is_empty() else initial_set, set_styles(simulation)]
 
 func selected_stints() -> Dictionary:
 	var simulation: RaceSim = _source.get_ref()
@@ -30,7 +30,7 @@ func selected_stints() -> Dictionary:
 	for stint in car.stints:
 		var fitted = TyreInventory.find(car, stint.set_id)
 		items.append({"from": stint.from, "to": stint.to,
-			"compound": fitted.get("compound", "M"), "label": fitted.get("label", "")})
+			"compound": fitted.get("compound", ""), "label": fitted.get("label", ""), "color": car.tyre_rules.spec(fitted.get("compound", "")).get("color", "9cae94")})
 	return {"stints": items, "distance": car.distance, "scheduled_lap": car.scheduled_lap,
 		"pit_gate": car.pit_gate, "laps": simulation.laps, "length": simulation.track.length}
 
@@ -76,3 +76,11 @@ func surface(channel: String, station: int, lane: int) -> Dictionary:
 	cell.grip = RaceSurface.grip(cell)
 	cell.metres = (station + 0.5) * simulation.track.length / RaceSurface.STATIONS
 	return {"cell": cell, "values": RaceVisualSource.new(simulation).surface_values(channel)}
+
+static func set_styles(simulation: RaceSim) -> Dictionary:
+	var styles: Dictionary = {}
+	for car in simulation.cars:
+		if not car.player: continue
+		for item in car.tyre_sets:
+			styles[item.id] = {"label": item.label, "color": car.tyre_rules.spec(item.compound).color}
+	return styles

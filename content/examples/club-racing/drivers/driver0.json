@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "local.club.driver.driver0",
+  "name": "Ada Lane",
+  "description": "Fictional reference content; existing sporting values retained.",
+  "short": "LAN",
+  "skill": 78,
+  "consistency": 90,
+  "wet_skill": 82,
+  "reliability": 90
+}

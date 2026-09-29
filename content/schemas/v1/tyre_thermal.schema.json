@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "tyre_thermal"
+      ]
+    },
+    "model": {
+      "enum": [
+        "four-wheel-v1"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "parameters": {
+      "additionalProperties": false,
+      "properties": {
+        "ambient_c": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "blister_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "blister_offset_c": {
+          "maximum": 160.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "blister_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "blister_wear_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_bias_load_gain": {
+          "maximum": 24.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_heat_gain": {
+          "maximum": 96.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_load_gain": {
+          "maximum": 1.2,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_slide_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "care_grain_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "clean_lower_offset_c": {
+          "maximum": 136.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "clean_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "clean_upper_offset_c": {
+          "maximum": 144.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cold_c": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cold_slide_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cold_slide_offset_c": {
+          "maximum": 120.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "core_grip_loss_per_c": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "core_grip_offset_c": {
+          "maximum": 152.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "core_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "corner_acceleration_scale_mps2": {
+          "maximum": 100.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "corner_heat_gain": {
+          "maximum": 152.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "flat_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "flat_wear_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "grain_grip_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "grain_offset_c": {
+          "maximum": 96.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "grain_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "grain_wear_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "heat_cycle_offset_c": {
+          "maximum": 96.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "heat_cycle_reset_c": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "lateral_load_gain": {
+          "maximum": 1.76,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "lockup_heat_c": {
+          "maximum": 64.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "minimum_damage_grip": {
+          "maximum": 1.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "minimum_thermal_grip": {
+          "maximum": 1.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "minimum_tread_grip": {
+          "maximum": 1.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "moving_surface_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "moving_target_c": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "neutral_target_c": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "pace_heat_gain": {
+          "maximum": 112.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "pressure_gain_per_c": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "puncture_grip": {
+          "maximum": 1.0,
+          "minimum": 0.05,
+          "type": "number"
+        },
+        "puncture_wear_per_lap": {
+          "maximum": 160.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "slide_heat_gain": {
+          "maximum": 184.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "spare_core_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "spare_surface_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "stopped_surface_rate_per_s": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "surface_grip_loss_per_c": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "throttle_heat_gain": {
+          "maximum": 64.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "throttle_load_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "throttle_slide_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "tread_cliff_percent": {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "tread_cliff_quadratic": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "tread_loss_per_percent": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "water_cooling_gain": {
+          "maximum": 192.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_dry_water_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wet_dry_wear_multiplier": {
+          "maximum": 8.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "working_band_c": {
+          "maximum": 112.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "cold_c",
+        "ambient_c",
+        "working_band_c",
+        "surface_grip_loss_per_c",
+        "core_grip_offset_c",
+        "core_grip_loss_per_c",
+        "minimum_thermal_grip",
+        "tread_loss_per_percent",
+        "tread_cliff_percent",
+        "tread_cliff_quadratic",
+        "minimum_tread_grip",
+        "grain_grip_loss",
+        "blister_grip_loss",
+        "flat_grip_loss",
+        "minimum_damage_grip",
+        "puncture_grip",
+        "corner_acceleration_scale_mps2",
+        "lateral_load_gain",
+        "brake_bias_load_gain",
+        "brake_load_gain",
+        "throttle_load_gain",
+        "brake_slide_gain",
+        "throttle_slide_gain",
+        "cold_slide_offset_c",
+        "cold_slide_gain",
+        "neutral_target_c",
+        "moving_target_c",
+        "corner_heat_gain",
+        "pace_heat_gain",
+        "slide_heat_gain",
+        "brake_heat_gain",
+        "throttle_heat_gain",
+        "water_cooling_gain",
+        "moving_surface_rate_per_s",
+        "stopped_surface_rate_per_s",
+        "core_rate_per_s",
+        "pressure_gain_per_c",
+        "grain_offset_c",
+        "grain_rate",
+        "care_grain_gain",
+        "clean_rate_per_s",
+        "clean_lower_offset_c",
+        "clean_upper_offset_c",
+        "blister_offset_c",
+        "blister_rate",
+        "grain_wear_gain",
+        "blister_wear_gain",
+        "flat_wear_gain",
+        "puncture_wear_per_lap",
+        "heat_cycle_offset_c",
+        "heat_cycle_reset_c",
+        "spare_surface_rate_per_s",
+        "spare_core_rate_per_s",
+        "lockup_heat_c",
+        "wet_dry_water_threshold",
+        "wet_dry_wear_multiplier"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "model",
+    "parameters"
+  ],
+  "title": "Motorsport Manager tyre_thermal v1",
+  "type": "object"
+}

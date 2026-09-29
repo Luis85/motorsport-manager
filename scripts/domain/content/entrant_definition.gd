@@ -1,29 +1,32 @@
 class_name EntrantDefinition
 extends RefCounted
-## One frozen event entry. Live fuel, wear, timing and ownership remain RaceCar state.
-var _driver: Dictionary
-var _team: Dictionary
-var _entry: Dictionary
-var _player: bool
-var _pit_fraction: float
-var driver_id: String:
-	get: return _driver.id
-var team_id: String:
-	get: return _team.id
-var player: bool:
-	get: return _player
-var pit_fraction: float:
-	get: return _pit_fraction
+## Frozen launch inputs. Runtime positions and condition stay in RaceCar.
+var _data: Dictionary = {}
 
-func _init(driver: Dictionary, team: Dictionary, entry: Dictionary,
-		owned: bool, pit: float) -> void:
-	_driver = RaceStateValue.read_only(driver)
-	_team = RaceStateValue.read_only(team)
-	_entry = RaceStateValue.read_only(entry)
-	_player = owned
-	_pit_fraction = pit
+static func create(driver: Dictionary, team: Dictionary, entry: Dictionary,
+		player_team: String, box_fraction: float) -> EntrantDefinition:
+	var result = EntrantDefinition.new()
+	result._data = RaceStateValue.read_only({"driver_id": driver.id, "team_id": team.id,
+		"short": driver.short, "name": driver.name, "team": team.name,
+		"color": entry.color if not entry.color.is_empty() else team.color, "skill": float(driver.skill),
+		"consistency": float(driver.consistency), "wet_skill": float(driver.wet_skill),
+		"reliability": float(driver.reliability), "number": int(entry.number),
+		"player": team.id == player_team, "box_fraction": box_fraction})
+	return result
+
+func values() -> Dictionary:
+	return _data
+
+var team_id: String:
+	get: return str(_data.get("team_id", ""))
+var driver_id: String:
+	get: return str(_data.get("driver_id", ""))
+
+var player: bool:
+	get: return bool(_data.get("player", false))
+var pit_fraction: float:
+	get: return float(_data.get("box_fraction", 0.0))
 
 func legacy_row() -> Array:
-	## Internal constructor adapter only. External authoring uses named fields.
-	return [_driver.short, _driver.name, _team.name, _entry.color if not _entry.color.is_empty() else _team.color,
-		_driver.skill, _driver.consistency, _driver.wet_skill, _driver.reliability, _entry.number]
+	return [_data.short, _data.name, _data.team, _data.color, _data.skill,
+		_data.consistency, _data.wet_skill, _data.reliability, _data.number]

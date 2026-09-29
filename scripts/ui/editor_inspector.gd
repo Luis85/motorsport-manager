@@ -60,6 +60,8 @@ static func render(editor: Control) -> void:
 	var selected = ids.find(editor.vehicle)
 	if selected < 0: selected = ids.find("core.vehicle." + editor.vehicle.to_lower())
 	track.add_child(UI.option(vehicles.map(func(v): return v.name), func(index): editor.vehicle = ids[index]; editor.recompile(), maxi(0, selected)))
+	UI.field(track, "Grid places", UI.spin(editor.document.grid.get("count", 12), 1, TrackDocument.MAX_GRID_PLACES, 1, func(value): editor.perform(func(): editor.document.grid.count = int(value))))
+	UI.field(track, "Grid spacing m", UI.spin(editor.document.grid.get("spacing", 8), 6, 20, 0.5, func(value): editor.perform(func(): editor.document.grid.spacing = value)))
 	UI.field(track, "Start / finish %", UI.spin(editor.document.start * 100, 0, 99.99, 0.01, func(value): editor.perform(func(): editor.document.start = value / 100)))
 	track.add_child(UI.paragraph("Set start / finish lets you click the road. Race distance zero and the grid follow this gate, not control point one."))
 	track.add_child(UI.label("TIMING SECTORS", 14, UI.ACCENT))

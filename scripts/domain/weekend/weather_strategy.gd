@@ -10,8 +10,8 @@ static func decision_key(advice: Dictionary) -> String:
 static func prefer_set(s: Dictionary, candidate_set: Dictionary, existing: Dictionary) -> bool:
 	if existing.is_empty(): return true
 	var remaining = minf(MAX_LAPS, maxf(0, s.laps - s.gate.distance / s.length))
-	var candidate_wear = RaceSim.TYRES[candidate_set.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
-	var existing_wear = RaceSim.TYRES[existing.compound].wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
+	var candidate_wear = RaceForecaster.tyre_spec(s, candidate_set.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
+	var existing_wear = RaceForecaster.tyre_spec(s, existing.compound).wear * [0.78, 1.0, 1.25][s.own.pace] * 1.05 * remaining
 	var candidate_safe = RaceForecaster.limiting_life(candidate_set, candidate_set.life - candidate_wear) >= 10
 	var existing_safe = RaceForecaster.limiting_life(existing, existing.life - existing_wear) >= 10
 	if candidate_safe != existing_safe: return candidate_safe
@@ -89,7 +89,7 @@ static func evaluate(s: Dictionary, outlook: Dictionary) -> Dictionary:
 		var families: Dictionary = {}
 		for item in s.own.inventory:
 			if item.id == s.own.starting_set or not WheelTyres.usable(item): continue
-			var family = item.compound if item.compound in ["I", "W"] else "dry"
+			var family = RaceForecaster.weather_family(s, item.compound)
 			if prefer_set(s, item, families.get(family, {})): families[family] = item
 		for family in ["dry", "I", "W"]:
 			if not families.has(family): continue

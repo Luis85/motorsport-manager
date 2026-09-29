@@ -4,7 +4,7 @@ var presentation_services: RacePresentationServices = RacePresentationServices.n
 ## Per-driver unapplied run drafts. Commands remain fixed above scrolling evidence.
 signal command_requested(action: String, payload: Dictionary)
 var model: RaceViewQuery
-var driver_id = -1
+var driver_id = 3
 var drafts: Dictionary = {}
 # Shared by both routes; only real user edits count, not constructed defaults.
 var edited: Dictionary = {}
@@ -29,6 +29,7 @@ var dashboard_host = false
 
 func configure(value: RaceViewQuery) -> void:
 	model = value
+	driver_id = model.player_ids()[0]
 	for id in model.player_ids():
 		drafts[id] = {"objective": "tyre_life", "set_id": model.car(id).set_id, "laps": 2, "baseline": "current"}
 		var driver=model.practice_driver(id)
@@ -37,7 +38,6 @@ func configure(value: RaceViewQuery) -> void:
 			drafts[id].merge({"objective":run_record.objective,"set_id":run_record.set_id,"laps":run_record.target},true)
 
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 6)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var targets = UI.hbox(self)

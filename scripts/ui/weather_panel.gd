@@ -5,7 +5,7 @@ signal command_requested(action: String, payload: Dictionary)
 signal surface_requested
 signal sector_requested(index: int)
 var model: RaceViewQuery
-var driver_id = -1
+var driver_id = 3
 var advice: Dictionary = {}
 var summary: Label
 var outlook_label: Label
@@ -22,10 +22,11 @@ var commit_bar: HBoxContainer
 var refresh_count = 0
 var outlook_chart: RaceMetricChart
 
-func configure(value: RaceViewQuery) -> void: model = value
+func configure(value: RaceViewQuery) -> void:
+	model = value
+	driver_id = model.player_ids()[0]
 
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	add_theme_constant_override("separation", 8)
 	var drivers = HBoxContainer.new(); navigation_bar = drivers; add_child(drivers)
 	for id in model.player_ids():

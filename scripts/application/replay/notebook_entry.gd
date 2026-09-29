@@ -12,9 +12,6 @@ static func build(record: RaceRecord) -> Dictionary:
 	if not RaceRecord.equivalent(RaceRecord.static_identity(record.initial), RaceRecord.static_identity(endpoint)): return {}
 	var brief = record.parent.get("scenario", {})
 	if not brief.is_empty() and not ScenarioBrief.validate(brief).is_empty(): return {}
-	if not brief.is_empty() and brief.goal in ["mer_top_six", "mor_top_six"] and sim.roster_definition != null:
-		var ids = sim.player_ids()
-		if sim.roster_definition.entry(ids[0]).driver_id != "core.driver.mercer" or sim.roster_definition.entry(ids[1]).driver_id != "core.driver.moreau": return {}
 	var players: Array = []
 	for id in sim.player_ids():
 		var car = sim.cars[id]
@@ -30,7 +27,10 @@ static func build(record: RaceRecord) -> Dictionary:
 		if brief.goal != "observe":
 			var met = players.all(func(c): return c.status == "finished")
 			if brief.goal in ["mer_top_six", "mor_top_six"]:
-				var car = players[0 if brief.goal == "mer_top_six" else 1]
+				var target = ScenarioBrief.named_target(brief.goal, sim.roster_definition)
+				var targets = players.filter(func(car): return car.id == target)
+				if targets.is_empty(): return {}
+				var car = targets[0]
 				met = car.status == "finished" and car.position <= 6
 			outcome = "met" if met else "not_met"
 		challenge = {"key": RaceRecord.fingerprint({"brief": brief, "start": RaceRecord.sporting(record.initial)}),
@@ -64,7 +64,7 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(context.get("seed"), 0, 4294967295) or not RaceCheckpoint.integral(context.get("laps"), 1, 100): return false
 	var rules = context.get("ruleset")
 	if not rules is Dictionary: return false
-	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0): return false
+	if rules.size() != (6 if rules.get("checkpoint_schema") == 11 else 5) + (1 if rules.has("vehicle_definition") else 0) + (1 if rules.has("roster_definition") else 0) + (1 if rules.has("tyre_definition") else 0) + (1 if rules.has("setup_definition") else 0): return false
 	if rules.has("vehicle_definition"):
 		if not rules.vehicle_definition is Dictionary: return false
 		var definition = VehicleDefinition.from_record(rules.vehicle_definition)
@@ -74,19 +74,21 @@ static func validate(entry: Variant) -> bool:
 	if not RaceCheckpoint.integral(rules.get("checkpoint_schema"), 10, 11) or rules.get("weather") not in WeekendWeather.MODES: return false
 	if rules.get("reliability") not in ["legacy", "staged"] or not rules.get("rival_styles") is bool: return false
 	if rules.get("race_control") not in ["virtual-neutralization-v1", "legacy-speed-cap"]: return false
-	var player_ids = LegacyRoster.PLAYER_IDS
-	var count = 12
+	var roster: RosterDefinition
+	if rules.has("setup_definition") and SetupDefinition.from_record(rules.setup_definition) == null: return false
+	if rules.has("tyre_definition") and RaceTyreRules.from_snapshot(rules.tyre_definition) == null: return false
 	if rules.has("roster_definition"):
-		var compiled = RosterDefinition.from_snapshot(rules.roster_definition)
-		if not compiled.ok: return false
-		player_ids = compiled.definition.players()
-		count = compiled.definition.size
+		roster = RosterDefinition.decode_snapshot(rules.roster_definition)
+		if roster == null: return false
+	var player_ids = roster.player_ids() if roster != null else [3, 6]
+	var entrant_count = roster.count if roster != null else 12
 	if not f.get("players") is Array or f.players.size() != 2: return false
 	for index in range(2):
 		var c = f.players[index]
 		if not c is Dictionary or c.size() != 8 or not RaceCheckpoint.integral(c.get("id"), player_ids[index], player_ids[index]): return false
-		if not text_valid(c.get("name"), 100) or c.get("status") not in ["finished", "retired"]: return false
-		if not RaceCheckpoint.integral(c.get("position"), 1, count) or not RaceCheckpoint.integral(c.get("laps"), 0, context.laps): return false
+		if roster != null and c.get("name") != roster.entrant(player_ids[index]).values().name: return false
+		if not text_valid(c.get("name"), 160) or c.get("status") not in ["finished", "retired"]: return false
+		if not RaceCheckpoint.integral(c.get("position"), 1, entrant_count) or not RaceCheckpoint.integral(c.get("laps"), 0, context.laps): return false
 		if not RaceCheckpoint.integral(c.get("stops"), 0, 10000) or not RaceCheckpoint.integral(c.get("practice_laps"), 0, 12): return false
 		if not RaceCheckpoint.number(c.get("qualifying_best"), 0, 10000000): return false
 	if f.players[0].position == f.players[1].position: return false
@@ -101,7 +103,10 @@ static func validate(entry: Variant) -> bool:
 		if challenge.goal != "observe":
 			var met = f.players.all(func(c): return c.status == "finished")
 			if challenge.goal in ["mer_top_six", "mor_top_six"]:
-				var c = f.players[0 if challenge.goal == "mer_top_six" else 1]
+				var target = ScenarioBrief.named_target(challenge.goal, roster)
+				var targets = f.players.filter(func(car): return car.id == target)
+				if targets.is_empty(): return false
+				var c = targets[0]
 				met = c.status == "finished" and c.position <= 6
 			expected = "met" if met else "not_met"
 		if challenge.outcome != expected: return false

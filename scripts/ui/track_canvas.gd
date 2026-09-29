@@ -132,8 +132,8 @@ func fit() -> void:
 	if geometry == null or geometry.points.is_empty(): return
 	var visible_bounds = geometry.bounds
 	for p in geometry.pit_points: visible_bounds = visible_bounds.expand(p)
-	for i in range(6):
-		var station = geometry.pit_sample(geometry.pit_length * (0.30 + i * 0.055))
+	for marker in geometry.pit_markers():
+		var station = geometry.pit_sample(geometry.pit_length * marker.fraction)
 		var roof = station.p + station.n * 18
 		visible_bounds = visible_bounds.expand(roof + Vector2(30, 30)).expand(roof - Vector2(30, 30))
 	visible_bounds = visible_bounds.grow(20)

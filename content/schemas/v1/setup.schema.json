@@ -1,0 +1,545 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "baselines": {
+      "additionalProperties": false,
+      "properties": {
+        "balanced": {
+          "additionalProperties": false,
+          "properties": {
+            "balance": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            },
+            "bias": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            },
+            "cooling": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "suspension": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wing": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "wing",
+            "balance",
+            "suspension",
+            "cooling",
+            "bias"
+          ],
+          "type": "object"
+        },
+        "low_drag": {
+          "additionalProperties": false,
+          "properties": {
+            "balance": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            },
+            "bias": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            },
+            "cooling": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "suspension": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wing": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "wing",
+            "balance",
+            "suspension",
+            "cooling",
+            "bias"
+          ],
+          "type": "object"
+        },
+        "stable_wet": {
+          "additionalProperties": false,
+          "properties": {
+            "balance": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            },
+            "bias": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            },
+            "cooling": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "suspension": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "wing": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "wing",
+            "balance",
+            "suspension",
+            "cooling",
+            "bias"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "balanced",
+        "low_drag",
+        "stable_wet"
+      ],
+      "type": "object"
+    },
+    "controls": {
+      "additionalProperties": false,
+      "properties": {
+        "balance": {
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            },
+            "description": {
+              "maxLength": 400,
+              "minLength": 0,
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maximum": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            },
+            "minimum": {
+              "maximum": 3,
+              "minimum": -3,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum",
+            "maximum",
+            "default",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        },
+        "bias": {
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            },
+            "description": {
+              "maxLength": 400,
+              "minLength": 0,
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maximum": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            },
+            "minimum": {
+              "maximum": 62,
+              "minimum": 52,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum",
+            "maximum",
+            "default",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        },
+        "cooling": {
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "description": {
+              "maxLength": 400,
+              "minLength": 0,
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maximum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minimum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum",
+            "maximum",
+            "default",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        },
+        "suspension": {
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "description": {
+              "maxLength": 400,
+              "minLength": 0,
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maximum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minimum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum",
+            "maximum",
+            "default",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        },
+        "wing": {
+          "additionalProperties": false,
+          "properties": {
+            "default": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "description": {
+              "maxLength": 400,
+              "minLength": 0,
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maximum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minimum": {
+              "maximum": 9,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimum",
+            "maximum",
+            "default",
+            "label",
+            "description"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "wing",
+        "balance",
+        "suspension",
+        "cooling",
+        "bias"
+      ],
+      "type": "object"
+    },
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "effects": {
+      "additionalProperties": false,
+      "properties": {
+        "balance_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "balance_traction_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "bias_brake_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "bias_centre": {
+          "maximum": 224.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "brake_min": {
+          "maximum": 1.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "braking_balance_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cooling_centre": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "cooling_drag_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "corner_balance_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "corner_max": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "corner_min": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "suspension_centre": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "suspension_corner_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "suspension_traction_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "traction_max": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "traction_min": {
+          "maximum": 2.0,
+          "minimum": 0.1,
+          "type": "number"
+        },
+        "wet_suspension_factor": {
+          "maximum": 8.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wheel_balance_gain": {
+          "maximum": 1.36,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wheel_bias_gain": {
+          "maximum": 48.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wheel_bias_limit": {
+          "maximum": 8.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wing_centre": {
+          "maximum": 20.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wing_corner_gain": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "wing_drag_loss": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "wing_centre",
+        "suspension_centre",
+        "cooling_centre",
+        "bias_centre",
+        "balance_gain",
+        "wheel_balance_gain",
+        "braking_balance_gain",
+        "wing_corner_gain",
+        "suspension_corner_gain",
+        "wet_suspension_factor",
+        "corner_balance_loss",
+        "corner_min",
+        "corner_max",
+        "wing_drag_loss",
+        "cooling_drag_loss",
+        "wheel_bias_gain",
+        "wheel_bias_limit",
+        "bias_brake_loss",
+        "brake_min",
+        "suspension_traction_gain",
+        "balance_traction_loss",
+        "traction_min",
+        "traction_max"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "initial_temperatures": {
+      "additionalProperties": false,
+      "properties": {
+        "brake_c": {
+          "maximum": 1500.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "engine_c": {
+          "maximum": 200.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "engine_c",
+        "brake_c"
+      ],
+      "type": "object"
+    },
+    "kind": {
+      "enum": [
+        "setup"
+      ]
+    },
+    "model": {
+      "enum": [
+        "five-control-v1"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "model",
+    "controls",
+    "effects",
+    "baselines",
+    "initial_temperatures"
+  ],
+  "title": "Motorsport Manager setup v1",
+  "type": "object"
+}

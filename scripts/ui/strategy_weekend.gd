@@ -92,7 +92,7 @@ func open_strategy(id: int) -> void:
 func targeted_command(action: String, payload: Dictionary) -> void:
 	if not commands.execute(action, payload): feedback(strategy_model.last_error)
 	else:
-		var id = int(payload.get("id", sim.selected_id))
+		var id = int(payload.get("id", sim.player_ids()[0]))
 		feedback("%s · %s accepted%s" % [sim.car(id).short, action.replace("_", " "), " · deferred to the next safe entry" if action == "pit" and sim.car(id).pit_deferred else ""])
 	forecast_cache.clear(); refresh()
 
@@ -124,7 +124,7 @@ func refresh() -> void:
 		UI.race_card_state(controls.panel, "warning" if card.get("priority", 0) >= 90 else ("selected" if sim.selected_id == id else "normal"))
 		var status = "Finished" if c.finished else ("Retired" if c.dnf else ("Pit order executing" if c.pit_order else "On plan · " + p.plan.get("objective", "balanced").replace("_", " ")))
 		controls.heading.text = "%s · %s" % [c.short, ("! " if card.get("priority", 0) >= 90 else "") + card.get("title", status)]
-		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [c.set_id.get_slice("-", 1), c.tyre, sim.race_forecaster_fuel_margin(c), StrategyPlan.ownership_text(p)]
+		controls.summary.text = "%s %.0f%% · fuel %+.1f laps · %s" % [sim.set_label(c, c.set_id), c.tyre, sim.race_forecaster_fuel_margin(c), StrategyPlan.ownership_text(p)]
 		controls.detail.text = sim.decision_feed_deadline_text(card) if not card.is_empty() else "Rejoin ~P%d–%d · pit loss %.0f–%.0fs · %s" % [f.pit.position_low, f.pit.position_high, f.pit.loss_low, f.pit.loss_high, "manual pits" if p.owners.pit == "player" else "engineer pits"]
 		if c.route == "pit": controls.detail.text = "Pit visit in progress · physical queue / frozen service plan"
 		var explanation = card.get("evidence", "The current strategy and ownership remain active.") + "
@@ -163,7 +163,7 @@ func refresh() -> void:
 			controls.battle.text = "Qualifying owner: " + p.owners.qualifying
 		if c.dnf or c.finished: controls.battle.text = "Contest ended · " + ("retired" if c.dnf else "finished")
 	if team_summary_label:
-		var occupant = int(sim.pit_boxes.get(EntrantIdentity.team(sim.car(int(sim.player_ids()[0]))), -1))
+		var occupant = sim.pit_box_occupant(sim.player_ids()[0])
 		var arrivals: Array[String] = []
 		for id in sim.player_ids():
 			if sim.car(id).route == "pit" and sim.car(id).pit_stage == "entry": arrivals.append(sim.car(id).short)
@@ -205,11 +205,11 @@ func setup_guide() -> void:
 	guide = ContextGuide.new()
 	guide.presentation_services = presentation_services
 	guide.configure("pit wall", [
-		{"title": "Your objective and your two cars", "body": "Bring both team cars home. Each driver has a separate plan and control owners. Both cards stay visible when you inspect a rival. This guide does not pause the race; use Space for reading time.", "target": func(): return teammate_buttons[0].get_parent(), "reveal": func(): open_strategy(int(sim.player_ids()[0]))},
+		{"title": "Your objective and your two cars", "body": "Bring both of your entered cars home. Your drivers have separate plans and control owners. Both cards stay visible when you inspect a rival. This guide does not pause the race; use Space for reading time.", "target": func(): return teammate_buttons[0].get_parent(), "reveal": func(): open_strategy(sim.player_ids()[0])},
 		{"title": "Read a decision before reacting", "body": "A card connects a current issue to evidence, a trade-off and a deadline. Compare opens details. Keep plan acknowledges the issue without changing an order. No alert changes your speed or pauses automatically.", "target": func(): return decision_bar},
-		{"title": "Compare, then commit", "body": "Pit loss, warm-up and possible rejoin traffic are estimates, not promises. A forecast Box call names the driver, set and safe gate. It is rejected if the displayed assumptions become stale.", "target": func(): return tabs, "reveal": func(): open_strategy(int(sim.player_ids()[0]))},
-		{"title": "Approve a plan, not a teleport", "body": "In Plan, choose a starting set and up to three windows. Draft edits do nothing until Approve. Approval delegates pit timing inside those windows; physical entry, inventory and the shared box still govern execution.", "target": func(): return tabs, "reveal": func(): open_strategy(int(sim.player_ids()[0])); strategy_desk.show_topic(1)},
-		{"title": "Delegate the work, retain intent", "body": "Control separates pace, engine, pit strategy, racecraft and qualifying. A two-lap push returns to the prior owner automatically. It does not disable fuel protection or replace a pit plan.", "target": func(): return tabs, "reveal": func(): open_strategy(int(sim.player_ids()[0])); strategy_desk.show_topic(2)},
+		{"title": "Compare, then commit", "body": "Pit loss, warm-up and possible rejoin traffic are estimates, not promises. A forecast Box call names the driver, set and safe gate. It is rejected if the displayed assumptions become stale.", "target": func(): return tabs, "reveal": func(): open_strategy(sim.player_ids()[0])},
+		{"title": "Approve a plan, not a teleport", "body": "In Plan, choose a starting set and up to three windows. Draft edits do nothing until Approve. Approval delegates pit timing inside those windows; physical entry, inventory and the shared box still govern execution.", "target": func(): return tabs, "reveal": func(): open_strategy(sim.player_ids()[0]); strategy_desk.show_topic(1)},
+		{"title": "Delegate the work, retain intent", "body": "Control separates pace, engine, pit strategy, racecraft and qualifying. A two-lap push returns to the prior owner automatically. It does not disable fuel protection or replace a pit plan.", "target": func(): return tabs, "reveal": func(): open_strategy(sim.player_ids()[0]); strategy_desk.show_topic(2)},
 		{"title": "Two drivers, one team", "body": "Team & battles provides bounded hold, allow-through and pit-priority instructions. Both drivers are named. Safe road geometry, flags and physical pit commitments take precedence. Battles retain a target and phases; Watch follows the selected contest until you pan or zoom.", "target": func(): return tabs, "reveal": func(): open_topic(8)},
 		{"title": "Learn from measured consequences", "body": "The debrief records accepted calls and measured pit visits. It compares actual duration with the estimate recorded at the call. No hypothetical finishing position is claimed as fact. Export keeps the full evidence.", "target": func(): return tabs, "reveal": func(): open_topic(7)}
 	])

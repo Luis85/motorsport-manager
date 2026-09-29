@@ -19,7 +19,7 @@ static func validate(sim, payload: Dictionary) -> String:
 	if payload.get("kind") not in ["hold", "yield", "pit_priority"]: return "Choose hold, allow through, or pit priority."
 	if not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1) or not RaceCheckpoint.integral(payload.get("teammate_id"), 0, sim.cars.size() - 1): return "Name both affected drivers."
 	var car = sim.cars[int(payload.id)]; var mate = sim.cars[int(payload.teammate_id)]
-	if car.id == mate.id or not car.player or not mate.player or not EntrantIdentity.same_team(car, mate): return "A team instruction needs the two different team drivers."
+	if car.id == mate.id or not car.player or not mate.player or car.team_identity() != mate.team_identity(): return "A team instruction needs the two different player-team drivers."
 	if car.dnf or car.finished or mate.dnf or mate.finished: return "Both affected drivers must still be running."
 	if not RaceCheckpoint.integral(payload.get("laps"), 1, 5): return "Choose an expiry of one to five laps."
 	if active(sim.team_state[slot(payload.kind)]): return "Cancel the active instruction before replacing it."
@@ -125,8 +125,8 @@ static func defer_stop(sim, car: RaceCar, window: Dictionary = {}) -> bool:
 	var mounted = TyreInventory.find(car, car.set_id)
 	var limiting_life = float(car.tyre)
 	for wheel in mounted.get("wheels", {}).values(): limiting_life = minf(limiting_life, wheel.life)
-	var safe_resources = WheelTyres.usable(mounted) and limiting_life - RaceSim.TYRES[car.compound].wear * 1.5 > 18 and car.damage < 24
-	if car.compound != sim.recommended_compound() and (car.compound in ["I", "W"] or sim.recommended_compound() in ["I", "W"]): safe_resources = false
+	var safe_resources = WheelTyres.usable(mounted) and limiting_life - car.tyre_rules.spec(car.compound).wear * 1.5 > 18 and car.damage < 24
+	if car.compound != sim.recommended_compound() and (car.tyre_rules.wet(car.compound) or sim.tyre_rules.wet(sim.recommended_compound())): safe_resources = false
 	if not safe_resources:
 		record.status = "queue"; record.reason = "Recovery takes priority; a physical queue may be necessary."
 		return false
@@ -176,7 +176,7 @@ static func valid(state: Variant, cars: Array, now: float) -> bool:
 		for field in ["actor_id", "teammate_id"]:
 			if not RaceCheckpoint.integral(record.get(field), 0, cars.size() - 1): return false
 		var car = cars[int(record.actor_id)]; var mate = cars[int(record.teammate_id)]
-		if not car.player or not mate.player or car.id == mate.id or not EntrantIdentity.same_team(car, mate): return false
+		if not car.player or not mate.player or car.id == mate.id or car.team_identity() != mate.team_identity(): return false
 		if not record.get("intent_id") is String or not record.intent_id.begins_with("rw-") or not record.get("reason") is String or record.reason.length() > 500: return false
 		if not RaceCheckpoint.number(record.get("started"), 0, now + RaceSim.STEP) or not RaceCheckpoint.number(record.get("until_distance"), 0, 100000000) or not RaceCheckpoint.number(record.get("deferred_gate"), -1, 100000000): return false
 		if not record.get("initial_stops") is Array or record.initial_stops.size() != 2: return false

@@ -24,7 +24,7 @@ func present() -> void:
 	if heading==null:return
 	for id in drivers:
 		var c=model.car(id)
-		drivers[id].text="%s · %s %.0f%% · fuel ~%+.1f laps\n%s" % [c.name,c.compound,c.tyre,model.race_forecaster_fuel_margin(c),str(c.intent).get_slice(" · ",0)]
+		drivers[id].text="%s · %s %.0f%% · fuel ~%+.1f laps\n%s" % [c.name,model.tyre_info(c.compound).get("name", "Tyres"),c.tyre,model.race_forecaster_fuel_margin(c),str(c.intent).get_slice(" · ",0)]
 		drivers[id].tooltip_text="%s · Fitted %s · %.0f%% average tyre. Estimated finish fuel %+.1f lap units.\n%s" % [c.name,c.set_id,c.tyre,model.race_forecaster_fuel_margin(c),c.intent]
 		drivers[id].accessibility_description=drivers[id].tooltip_text
 		PitwallDesign.navigation(drivers[id],model.selected_id==id)

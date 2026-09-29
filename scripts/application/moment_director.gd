@@ -27,6 +27,7 @@ var observed_steps = 0
 func configure(value: RaceSim) -> void:
 	detach()
 	model = value
+	watched_id = model.player_ids()[0]
 	model.fixed_step_completed.connect(_after_step)
 	model.input_accepted.connect(_input_accepted)
 
@@ -37,11 +38,12 @@ func detach() -> void:
 	armed = false
 	model = null
 
-func start(id: int = 3) -> bool:
+func start(id: int = -1) -> bool:
+	if id == -1 and model != null: id = model.player_ids()[0]
 	if model == null or id not in model.player_ids() or model.phase not in RaceSim.ACTIVE: return false
 	if armed: return false
 	watched_id = id
-	if model.cars[id].dnf or model.cars[id].finished: watched_id = int(model.player_ids()[1] if id == model.player_ids()[0] else model.player_ids()[0])
+	if model.cars[id].dnf or model.cars[id].finished: watched_id = model.player_ids()[1] if id == model.player_ids()[0] else model.player_ids()[0]
 	prior_speed = model.speed
 	initial = facts()
 	started_at = model.total_time

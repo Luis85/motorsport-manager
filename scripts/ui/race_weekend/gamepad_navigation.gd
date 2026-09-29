@@ -35,7 +35,7 @@ func _input(event: InputEvent) -> void:
 		JOY_BUTTON_Y:
 			host.show_navigator()
 		JOY_BUTTON_X:
-			host.open_decision(host.sim.selected_id if host.sim.selected_id in host.sim.player_ids() else int(host.sim.player_ids()[0]))
+			host.open_decision(host.sim.selected_id if host.sim.selected_id in host.sim.player_ids() else host.sim.player_ids()[0])
 		JOY_BUTTON_B:
 			if is_instance_valid(host.full_workspace) and host.full_workspace.visible: host.close_session_workspace()
 			else: host.close_detail()

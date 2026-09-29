@@ -2,12 +2,19 @@ class_name RaceCheckpoint
 extends RefCounted
 ## Reject malformed indexes and nested telemetry before a checkpoint reaches a view.
 static func valid(data: Dictionary) -> bool:
+	var setup_profile = SetupDefinition.legacy()
+	if data.has("setup_definition"):
+		setup_profile = SetupDefinition.from_record(data.setup_definition)
+		if setup_profile == null: return false
+	var tyres = RaceTyreRules.legacy()
+	if data.has("tyre_definition"):
+		tyres = RaceTyreRules.from_snapshot(data.tyre_definition)
+		if tyres == null: return false
 	var roster: RosterDefinition
 	if data.has("roster_definition"):
-		var compiled = RosterDefinition.from_snapshot(data.roster_definition)
-		if not compiled.ok: return false
-		roster = compiled.definition
-	var count = roster.size if roster != null else 12
+		roster = RosterDefinition.decode_snapshot(data.roster_definition)
+		if roster == null: return false
+	var count = roster.count if roster != null else 12
 	if not data.get("cars") is Array or data.cars.size() != count: return false
 	if not integral(data.get("selected_id"), 0, count - 1): return false
 	if data.has("vehicle_definition"):
@@ -37,14 +44,14 @@ static func valid(data: Dictionary) -> bool:
 			if not integral(c.get(entry[0]), entry[1], entry[2]): return false
 		if c.get("grid") in grids: return false
 		grids.append(c.get("grid"))
-		if not CarSetup.valid(c): return false
-		if not TyreInventory.valid(c, int(data.get("laps", 12))): return false
+		if not CarSetup.valid(c, setup_profile): return false
+		if not TyreInventory.valid(c, int(data.get("laps", 12)), tyres): return false
 		for entry in [["speed", 0, 200], ["tyre", 0, 100], ["temperature", 0, 200], ["fuel", 0, 200], ["health", 0, 100], ["damage", 0, 1000], ["lane", -40, 40], ["pit_d", 0, 10000000]]:
 			if not number(c.get(entry[0]), entry[1], entry[2]): return false
 		for key in ["sectors", "qual_sectors"]:
 			if not numbers(c.get(key), 3): return false
 		if c.get("pit_stage") not in ["", "entry", "service", "exit"]: return false
-		if c.get("service_compound") not in ["S", "M", "H", "I", "W"]: return false
+		if c.get("service_compound") not in tyres.compounds(): return false
 		if not c.get("telemetry") is Array or c.telemetry.size() > 120: return false
 		for sample in c.telemetry:
 			if not numbers(sample, 5, true): return false
@@ -56,12 +63,10 @@ static func valid(data: Dictionary) -> bool:
 	for team in data.pit_boxes:
 		if not team is String or not integral(data.pit_boxes[team], 0, count - 1): return false
 		var owner = data.cars[int(data.pit_boxes[team])]
-		var key = roster.entry(int(owner.id)).team_id if roster != null else str(owner.get("team", ""))
-		if key != team or owner.get("route") != "pit" or owner.get("pit_stage") != "service" or owner.get("dnf") == true: return false
+		if team_key(owner, roster) != team or owner.get("route") != "pit" or owner.get("pit_stage") != "service" or owner.get("dnf") == true: return false
 	for c in data.cars:
 		if c.get("pit_stage") == "service" and not c.get("dnf", false):
-			var key = roster.entry(int(c.id)).team_id if roster != null else str(c.get("team", ""))
-			if data.pit_boxes.get(key, -1) != c.get("id"): return false
+			if data.pit_boxes.get(team_key(c, roster), -1) != c.get("id"): return false
 	return true
 
 static func number(value: Variant, low: float, high: float) -> bool:
@@ -85,13 +90,14 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 	var count = 12
 	if data.has("roster_definition"):
 		if data.version < 4: return {}
-		var compiled = RosterDefinition.from_snapshot(data.roster_definition)
-		if not compiled.ok: return {}
-		count = compiled.definition.size
-		if int(data.track.grid.get("count", 12)) < count: return {}
+		var roster = RosterDefinition.decode_snapshot(data.roster_definition)
+		if roster == null: return {}
+		count = roster.count
 	if data.cars.size() != count: return {}
 	if data.get("phase") not in ["practice", "practice_results", "briefing", "qualifying", "qualifying_results", "race_preparation", "formation", "grid_ready", "lights", "race", "results"]: return {}
 	if not data.get("water") is Array or data.water.size() != 96 or not data.get("rubber") is Array or data.rubber.size() != 96: return {}
+	if data.has("setup_definition") and data.version < 4: return {}
+	if data.has("tyre_definition") and data.version < 4: return {}
 	if data.has("vehicle_definition") and data.version < 4: return {}
 	data = data.duplicate(true)
 	if data.version == 1:
@@ -125,3 +131,8 @@ static func prepare_base(data: Dictionary, entrant_defaults: Dictionary, compoun
 				if not TrackDocument.valid_number(value, 0, 1): return {}
 		data.surface = RaceSurface.create(legacy_geometry, data.water, data.rubber); data.surface_accumulator = 0.0
 	return data
+
+static func team_key(car: Dictionary, roster: RosterDefinition) -> String:
+	if roster == null: return str(car.get("team", ""))
+	if not integral(car.get("id"), 0, roster.count - 1): return ""
+	return roster.entrant(int(car.id)).team_id

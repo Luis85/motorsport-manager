@@ -79,7 +79,7 @@ static func deposit(grid: Array, length_m: float, c: RaceCar, from: float, to: f
 			if contact < 0.004: continue
 			var s = col.lanes[j]
 			s.rubber = minf(1, s.rubber + weight * contact * 0.009 * (1 - s.water) ** 2)
-			s.water = maxf(0, s.water - weight * contact * (0.021 if c.compound in ["I", "W"] else 0.013))
+			s.water = maxf(0, s.water - weight * contact * (0.021 if c.tyre_rules.wet(c.compound) else 0.013))
 			s.dust = maxf(0, s.dust - weight * contact * 0.021)
 			s.marbles = maxf(0, s.marbles - weight * contact * 0.005)
 			s.temperature = minf(80, s.temperature + weight * contact * (0.022 + c.braking * 0.06))

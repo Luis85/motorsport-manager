@@ -3,7 +3,7 @@ extends VBoxContainer
 ## Actions are siblings of the scrolling evidence. Refresh never replaces a focused control.
 signal command_requested(action: String, payload: Dictionary)
 var model: RaceViewQuery
-var driver_id = -1
+var driver_id = 3
 var advice: Dictionary = {}
 var selectors: Array[Button] = []
 var status: Label
@@ -25,10 +25,11 @@ var authority_drafts: Dictionary = {}
 var retirement_dialog: ConfirmationDialog
 var retirement_payload: Dictionary = {}
 
-func configure(value: RaceViewQuery) -> void: model = value
+func configure(value: RaceViewQuery) -> void:
+	model = value
+	driver_id = model.player_ids()[0]
 
 func _ready() -> void:
-	driver_id = int(model.player_ids()[0])
 	name = "Recovery"; add_theme_constant_override("separation", 7)
 	var row = HBoxContainer.new(); add_child(row)
 	for id in model.player_ids():

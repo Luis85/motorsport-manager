@@ -27,7 +27,7 @@ func _ready() -> void:
 		panel.command_requested.connect(func(action,payload): command_requested.emit(action,payload))
 	var actions = UI.hbox(self)
 	session_action = UI.button("Start practice",func(): command_requested.emit("practice_start",{}),true); actions.add_child(session_action)
-	finish = UI.button("End practice…",func(): panels[3].finish_session()); actions.add_child(finish)
+	finish = UI.button("End practice…",func(): panels[model.player_ids()[0]].finish_session()); actions.add_child(finish)
 func present() -> void:
 	if panels.is_empty(): return
 	var can_prepare = model.phase == "briefing" and model.practice_state.status == "available"

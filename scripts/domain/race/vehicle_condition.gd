@@ -8,12 +8,13 @@ static func wear_car(sim: RaceSim, car: RaceCar, distance: float, cell: int, eff
 		local = sim.surface_at(car)
 	var fraction = distance / sim.track.length
 	var effort = 0.55 if sim.phase == "formation" else (1.25 if car.pace == 2 else (0.78 if car.pace == 0 else 1.0))
-	var mismatch = 2.2 if car.compound in ["I", "W"] and local.water < 0.15 else 1.0
+	var spec = car.tyre_rules.spec(car.compound)
+	var mismatch = spec.thermal.wet_dry_wear_multiplier if car.tyre_rules.wet(car.compound) and local.water < spec.thermal.wet_dry_water_threshold else 1.0
 	var item = TyreInventory.find(car, car.set_id)
 	var curve = sim.track.sample(car.distance).curvature if car.route == "track" else 0.0
 	if effects.is_empty():
 		effects = CarSetup.effects(car, local.water)
-	WheelTyres.update(item, {"speed": car.speed, "curve": curve, "bias": car.car_setup.bias / 100.0, "brake": car.braking, "throttle": car.throttle, "slip": absf(effects.balance), "water": local.water, "push": effort, "neutral": sim.neutral(car), "care": car.consistency, "wear": RaceSim.TYRES[car.compound].wear * fraction * effort * mismatch, "lap": fraction}, RaceSim.STEP)
+	WheelTyres.update(item, {"speed": car.speed, "curve": curve, "bias": car.car_setup.bias / 100.0, "brake": car.braking, "throttle": car.throttle, "slip": absf(effects.balance), "water": local.water, "push": effort, "neutral": sim.neutral(car), "care": car.consistency, "wear": spec.wear * fraction * effort * mismatch, "lap": fraction}, RaceSim.STEP, spec)
 	car.tyre = item.life
 	car.temperature = item.temperature
 	var engine_target = 91 + car.engine * 8 - (car.car_setup.cooling - 5) * 3 + car.throttle * 12 - local.water * 8

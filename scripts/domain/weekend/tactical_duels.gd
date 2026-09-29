@@ -109,7 +109,7 @@ static func resource_targets(sim, c: RaceCar, channel: String = "") -> void:
 	var p = sim.policy(int(c.id)); var plan = r.plan
 	var gate_lap = plan.from_lap + (plan.wait_laps if plan.kind == "extend" else 0)
 	var distance = maxf(0, (float(gate_lap) - 1) + sim.track.pit_entry / sim.track.length - c.distance / sim.track.length)
-	if channel in ["", "pace"] and StrategyPlan.owns(p, "pace") and c.tyre - distance * RaceSim.TYRES[c.compound].wear * 1.05 < plan.tyre_floor:
+	if channel in ["", "pace"] and StrategyPlan.owns(p, "pace") and c.tyre - distance * c.tyre_rules.spec(c.compound).wear * 1.05 < plan.tyre_floor:
 		c.pace = 0
 	if channel in ["", "engine"] and StrategyPlan.owns(p, "engine") and RaceForecaster.fuel_margin(sim, c) < plan.fuel_reserve:
 		c.engine = 0

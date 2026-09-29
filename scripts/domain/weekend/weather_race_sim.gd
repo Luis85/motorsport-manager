@@ -66,9 +66,9 @@ static func restore_weather(data: Dictionary) -> WeatherRaceSim:
 		# Migration must not alter the already running weather schedule or invent old observations.
 		state = new_weather_state(base.seed_value, base.scenario, "scripted_training", base.cars.size())
 		state.model.rain = base.rain; state.next_sample = base.total_time + WeekendWeather.SAMPLE_INTERVAL
-	var restored = WeatherRaceSim.new(base.track, {}, base.roster_definition)
+	var restored = WeatherRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition"]: restored.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition"]: restored.set(key, base.get(key))
 	restored.weather_state = state
 	restored.weather_state.model.rng = int(state.model.rng)
 	return restored
