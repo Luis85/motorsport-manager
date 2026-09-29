@@ -1,0 +1,111 @@
+diff --git a/docs/content/persistence-numbers.md b/docs/content/persistence-numbers.md
+index 37180f6..e7b267a 100644
+--- a/docs/content/persistence-numbers.md
++++ b/docs/content/persistence-numbers.md
+@@ -28,3 +28,25 @@ Godot, using Python binary64 packing and high-precision Decimal halfway cases,
+ with deterministic seed 7314. The original sporting characterization is retained.
+ 
+ No cross-engine or cross-platform deterministic simulation guarantee is added.
++
++## Numerical fixture field names
++
++The 544 independent reference cases use `decimal_literal` for the input text and
++`bits` for the expected little-endian IEEE-754 binary64 bytes. Every input is a
++JSON decimal number, including boundary and halfway values; none is a credential.
++Keep the input as text so the production decoder, not the fixture reader, performs
++the conversion under test.
++
++The original input-field name was `token`, in the lexical-analysis sense. It
++triggered GitGuardian incident 37735342 at line 51 of this fixture because the
++generic high-entropy detector interprets that assignment name as sensitive. The
++flagged number is the largest finite binary64 value. The rename changes no input
++digits, expected bytes, ordering, simulation values, or digest algorithms.
++
++`test_json_number_fixtures.py` enforces the descriptive field names and numerical
++grammar, independently checks all expected bytes with Python, and pins the ordered
++reference pairs to their pre-rename digest. Neither this change nor the test adds
++scanner exclusions. The historical incident should be reviewed as **False positive
++(not a secret)**, not as a revoked credential. A source-only follow-up commit does
++not itself close the historical incident; no history rewrite is needed for this
++confirmed numerical fixture.
+diff --git a/tests/content_persistence_tests.gd b/tests/content_persistence_tests.gd
+index c5ef11e..64c2ce5 100644
+--- a/tests/content_persistence_tests.gd
++++ b/tests/content_persistence_tests.gd
+@@ -27,8 +27,8 @@ func bits(value: float) -> String:
+ func numbers() -> void:
+ 	var cases = Storage.read_json("res://tests/fixtures/json_number_cases.json").data
+ 	for example in cases:
+-		var parsed = ContentJson.parse(example.token, true)
+-		check(parsed.ok and bits(parsed.data) == example.bits, "Correct rounding: " + example.token)
++		var parsed = ContentJson.parse(example.decimal_literal, true)
++		check(parsed.ok and bits(parsed.data) == example.bits, "Correct rounding: " + example.decimal_literal)
+ 	for text in ["1e999", "NaN", "1e309", "1e-999", "01", "1e", "[1,]", "{\"value\":1,\"value\":2}"]:
+ 		check(not ContentJson.parse(text, true).ok, "Strict saved JSON rejects " + text)
+ 	var tiny = JsonNumber.parse("1.0797002911567688e-09").value
+diff --git a/tests/test_json_number_fixtures.py b/tests/test_json_number_fixtures.py
+new file mode 100644
+index 0000000..d6c5867
+--- /dev/null
++++ b/tests/test_json_number_fixtures.py
+@@ -0,0 +1,60 @@
++"""Verify the independent numerical corpus without credential-like field names."""
++from __future__ import annotations
++
++import hashlib
++import json
++import math
++from pathlib import Path
++import re
++import struct
++import sys
++import unittest
++
++FIXTURE = Path(__file__).parent / "fixtures" / "json_number_cases.json"
++DECIMAL = re.compile(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\Z")
++# Ordered input/expected-byte pairs, captured before the field-only rename.
++REFERENCE_DIGEST = "4e9cc50bbd28d6a34f6d2b9014661b39c1fdaf5d2242cac0eeb2fdd7d5a9c467"
++
++
++class JsonNumberFixtureTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls) -> None:
++        cls.cases = json.loads(FIXTURE.read_text(encoding="utf-8"))
++
++    def test_corpus_uses_exact_descriptive_fields(self) -> None:
++        self.assertIsInstance(self.cases, list)
++        self.assertEqual(len(self.cases), 544)
++        for index, case in enumerate(self.cases):
++            with self.subTest(case=index):
++                self.assertIsInstance(case, dict)
++                self.assertEqual(set(case), {"decimal_literal", "bits"})
++                self.assertIsInstance(case["decimal_literal"], str)
++                self.assertIsInstance(case["bits"], str)
++
++    def test_inputs_are_finite_decimal_numbers(self) -> None:
++        for index, case in enumerate(self.cases):
++            with self.subTest(case=index):
++                self.assertRegex(case["decimal_literal"], DECIMAL)
++                self.assertTrue(math.isfinite(float(case["decimal_literal"])))
++                self.assertRegex(case["bits"], r"^[0-9a-f]{16}$")
++
++    def test_expected_bits_match_independent_python_conversion(self) -> None:
++        for index, case in enumerate(self.cases):
++            with self.subTest(case=index):
++                expected = struct.pack("<d", float(case["decimal_literal"])).hex()
++                self.assertEqual(case["bits"], expected)
++
++    def test_reference_pairs_and_order_are_unchanged(self) -> None:
++        pairs = [[case["decimal_literal"], case["bits"]] for case in self.cases]
++        payload = json.dumps(pairs, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
++        self.assertEqual(hashlib.sha256(payload).hexdigest(), REFERENCE_DIGEST)
++
++    def test_numerical_boundaries_remain_in_the_corpus(self) -> None:
++        actual = {case["bits"] for case in self.cases}
++        for value in (0.0, -0.0, sys.float_info.max, sys.float_info.min, math.ulp(0.0)):
++            with self.subTest(value=value):
++                self.assertIn(struct.pack("<d", value).hex(), actual)
++
++
++if __name__ == "__main__":
++    unittest.main()
