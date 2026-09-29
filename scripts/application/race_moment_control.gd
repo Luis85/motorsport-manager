@@ -17,7 +17,7 @@ func _init(simulation: RaceSim) -> void:
 	_director.moment_reached.connect(_on_moment)
 func _on_moment(value: Dictionary) -> void:
 	moment_reached.emit(RaceStateValue.read_only(value))
-func start(id: int = 3) -> bool:
+func start(id: int) -> bool:
 	return _director.start(id)
 func stop(title: String = "Paused by you", detail: String = "Time is yours again. No car orders were changed.", id: int = -1) -> void:
 	_director.stop(title, detail, id)

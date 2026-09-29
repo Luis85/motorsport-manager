@@ -36,12 +36,22 @@ func run() -> void:
 	for car in sim.cars:
 		check(car is RaceCar and car.id >= 0 and car.id < 12, "All constructed entrants have explicit typed identity")
 	var fields: Array[String] = []
+	var bindings: Array[String] = []
+	var expected_bindings: Array[String] = ["entry_definition", "setup_definition", "tyre_rules"]
 	for property in sim.cars[3].get_property_list():
 		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
-			fields.append(property.name)
-	fields.sort()
+			if property.name in expected_bindings:
+				bindings.append(property.name)
+				check(property.type == TYPE_OBJECT, "Session content dependencies remain typed Object bindings")
+			else:
+				fields.append(property.name)
+	fields.sort(); bindings.sort(); expected_bindings.sort()
+	check(bindings == expected_bindings, "Only the three frozen session inputs are outside the mutable car-state codec")
 	var declared = RaceCar.FIELDS.duplicate(); declared.sort()
-	check(fields == declared and sim.cars[3].to_record().size() == fields.size(), "Every typed field is represented once in the codec contract")
+	check(fields == declared and sim.cars[3].to_record().size() == fields.size(), "Every mutable typed field is represented once in the codec contract")
+	check(fields.size() == 91, "The compatible car save contract still has exactly 91 fields")
+	for binding in expected_bindings:
+		check(not sim.cars[3].to_record().has(binding), "Frozen content remains session-owned: " + binding)
 	var record = sim.cars[3].to_record()
 	var decoded = RaceCar.from_record(JSON.parse_string(JSON.stringify(record, "", true, true)))
 	check(decoded != null and decoded.id is int and decoded.pace is int and decoded.distance is float, "JSON numbers regain their declared runtime types")

@@ -38,8 +38,7 @@ func detach() -> void:
 	armed = false
 	model = null
 
-func start(id: int = -1) -> bool:
-	if id == -1 and model != null: id = model.player_ids()[0]
+func start(id: int) -> bool:
 	if model == null or id not in model.player_ids() or model.phase not in RaceSim.ACTIVE: return false
 	if armed: return false
 	watched_id = id
