@@ -28,11 +28,13 @@ jobs:
           persist-credentials: true
       - name: Install pinned source and reproduce the standalone prototype
         run: python3 docs/concepts/littlewild/publication/install_payload.py
-      - name: Publish only the concept directory without force or merge
+      - name: Remove the one-time publication workflow
+        run: rm .github/workflows/littlewild-publication-once.yml
+      - name: Publish only the concept payload and workflow self-removal
         shell: bash
         run: |
           set -euo pipefail
-          git add -- docs/concepts/littlewild/
+          git add -- docs/concepts/littlewild/ .github/workflows/littlewild-publication-once.yml
           if git diff --cached --quiet; then
             echo 'No payload changes to publish.'
             exit 0
@@ -40,8 +42,12 @@ jobs:
           python3 - <<'PY'
           import subprocess
           paths = subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']).decode().split('\0')
-          if any(path and not path.startswith('docs/concepts/littlewild/') for path in paths):
-              raise SystemExit('Out-of-scope staged path; publication refused.')
+          allowed_workflow = '.github/workflows/littlewild-publication-once.yml'
+          bad = [path for path in paths if path and not (
+              path.startswith('docs/concepts/littlewild/') or path == allowed_workflow
+          )]
+          if bad:
+              raise SystemExit('Out-of-scope staged path; publication refused: ' + ', '.join(bad))
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
