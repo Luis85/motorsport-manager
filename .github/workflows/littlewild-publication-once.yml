@@ -1,0 +1,49 @@
+name: Littlewild publication (one-time)
+
+on:
+  push:
+    branches:
+      - concept/littlewild-v15-world-ui
+    paths:
+      - docs/concepts/littlewild/publication/transfer-ready.json
+
+permissions: {}
+
+concurrency:
+  group: littlewild-v15-publication
+  cancel-in-progress: false
+
+jobs:
+  install:
+    if: github.repository == 'Luis85/motorsport-manager' && github.ref == 'refs/heads/concept/littlewild-v15-world-ui'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+      - name: Install pinned source and reproduce the standalone prototype
+        run: python3 docs/concepts/littlewild/publication/install_payload.py
+      - name: Publish only the concept directory without force or merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- docs/concepts/littlewild/
+          if git diff --cached --quiet; then
+            echo 'No payload changes to publish.'
+            exit 0
+          fi
+          python3 - <<'PY'
+          import subprocess
+          paths = subprocess.check_output(['git', 'diff', '--cached', '--name-only', '-z']).decode().split('\0')
+          if any(path and not path.startswith('docs/concepts/littlewild/') for path in paths):
+              raise SystemExit('Out-of-scope staged path; publication refused.')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs(concepts): install verified Littlewild v15 game and sources'
+          git push origin HEAD:refs/heads/concept/littlewild-v15-world-ui
