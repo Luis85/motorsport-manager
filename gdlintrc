@@ -1,7 +1,0 @@
-# Physical file length counts documentation: the separate quality.py policy owns LOC.
-disable:
-  - max-file-lines
-max-line-length: 120
-max-public-methods: 20
-max-returns: 6
-function-arguments-number: 10
