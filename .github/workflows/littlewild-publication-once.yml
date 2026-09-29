@@ -11,12 +11,12 @@ permissions: {}
 
 concurrency:
   group: littlewild-v15-publication
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   install:
     if: github.repository == 'Luis85/motorsport-manager' && github.ref == 'refs/heads/concept/littlewild-v15-world-ui'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
