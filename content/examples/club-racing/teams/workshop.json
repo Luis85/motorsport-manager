@@ -1,8 +1,0 @@
-{
-  "kind": "team",
-  "schema_version": 1,
-  "id": "local.club.team.workshop",
-  "name": "Workshop Racing",
-  "description": "Data-only seventh team with explicit pit assignment.",
-  "color": "729cac"
-}
