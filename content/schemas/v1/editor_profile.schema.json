@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "description": {"maxLength": 2048, "minLength": 0, "type": "string"},
+    "guide": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {"maxLength": 800, "minLength": 1, "type": "string"},
+          "key": {"enum": ["shape", "scenery", "trace", "checks", "handoff"]},
+          "title": {"maxLength": 80, "minLength": 1, "type": "string"}
+        },
+        "required": ["key", "title", "body"],
+        "type": "object"
+      },
+      "maxItems": 5, "minItems": 5, "type": "array"
+    },
+    "id": {"maxLength": 96, "minLength": 1, "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$", "type": "string"},
+    "kind": {"enum": ["editor_profile"]},
+    "name": {"maxLength": 100, "minLength": 1, "type": "string"},
+    "placement_help": {"maxLength": 500, "minLength": 1, "type": "string"},
+    "placements": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {"maxLength": 32, "minLength": 1, "pattern": "^[a-z][a-z0-9_-]*$", "type": "string"},
+          "name": {"maxLength": 60, "minLength": 1, "type": "string"},
+          "object_type": {"enum": ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"]},
+          "rotation_deg": {"maximum": 360.0, "minimum": -360.0, "type": "number"},
+          "scale": {"maximum": 8.0, "minimum": 0.2, "type": "number"}
+        },
+        "required": ["id", "name", "object_type", "scale", "rotation_deg"],
+        "type": "object"
+      },
+      "maxItems": 32, "minItems": 1, "type": "array"
+    },
+    "schema_version": {"enum": [1]}
+  },
+  "required": ["kind", "schema_version", "id", "name", "description", "placements", "placement_help", "guide"],
+  "title": "Motorsport Manager editor_profile v1",
+  "type": "object"
+}

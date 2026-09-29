@@ -94,13 +94,20 @@ func _ready() -> void:
 
 func setup_guide() -> void:
 	guide = ContextGuide.new(); guide.presentation_services = presentation_services
-	guide.configure("editor", [
-		{"title": "Select, then shape", "body": "Click road points to expose their handles. Shift-click extends a selection; drag empty space for a marquee. A drag is one undo step; Escape cancels it.", "target": func(): return canvas, "reveal": func(): set_tool(0)},
-		{"title": "Arrange scenery together", "body": "Select scenery with S. Shift-click adds objects. Group, duplicate, rotate, scale, align and distribute from the contextual selection controls. Locks protect content.", "target": func(): return inspector, "reveal": func(): set_tool(10); inspector.current_tab = 0},
-		{"title": "Trace without overwriting", "body": "Draw connected freehand strokes or use Pen. Close the loop, preview the generated road, then explicitly Replace. The existing circuit stays untouched before confirmation.", "target": func(): return inspector, "reveal": func(): set_tool(8); inspector.current_tab = 6},
-		{"title": "Review before driving", "body": "Checks points out crossings and pit/timing issues. Click a finding to focus that location. Decorative bridges are not a guarantee of geometric clearance.", "target": func(): return inspector, "reveal": func(): set_tool(0); inspector.current_tab = 4},
-		{"title": "One circuit, two workspaces", "body": "Save to the shared library or use Test weekend. The live race receives an independent circuit snapshot. Unapplied trace drafts must be applied or cleared before testing.", "target": func(): return test_button, "reveal": func(): inspector.current_tab = 1}
-	])
+	var actions = {
+		"shape": {"target": func(): return canvas, "reveal": func(): set_tool(0)},
+		"scenery": {"target": func(): return inspector, "reveal": func(): set_tool(10); inspector.current_tab = 0},
+		"trace": {"target": func(): return inspector, "reveal": func(): set_tool(8); inspector.current_tab = 6},
+		"checks": {"target": func(): return inspector, "reveal": func(): set_tool(0); inspector.current_tab = 4},
+		"handoff": {"target": func(): return test_button, "reveal": func(): inspector.current_tab = 1},
+	}
+	var steps: Array = []
+	for copy in session.guide_steps():
+		if not actions.has(copy.key): continue
+		var step = {"title": copy.title, "body": copy.body}
+		step.merge(actions[copy.key])
+		steps.append(step)
+	guide.configure("editor", steps)
 	add_child(guide)
 
 func fit_canvas() -> void:

@@ -91,5 +91,6 @@
   {"id":"content_scenario_ui_tests","script":"tests/content_scenario_ui_tests.gd","native":true,"layout":"minimal","timeout":360,"reports":["content-scenario-ui-tests.json"]},
   {"id":"content_mechanic_profile_tests","script":"tests/content_mechanic_profile_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-mechanic-profile-tests.json"]},
   {"id":"content_wheel_operating_tests","script":"tests/content_wheel_operating_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-wheel-operating-tests.json"]},
-  {"id":"scenario_catalog_tests","script":"tests/scenario_catalog_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["scenario-catalog-tests.json"]}
+  {"id":"scenario_catalog_tests","script":"tests/scenario_catalog_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["scenario-catalog-tests.json"]},
+  {"id":"content_editor_profile_tests","script":"tests/content_editor_profile_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-editor-profile-tests.json"]}
 ]

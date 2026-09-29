@@ -40,7 +40,8 @@
     "race_tuning/default.json",
     "weekends/standard.json",
     "weekends/quick.json",
-    "mechanic_profiles/default.json"
+    "mechanic_profiles/default.json",
+    "editor_profiles/default.json"
   ],
   "overrides": []
 }

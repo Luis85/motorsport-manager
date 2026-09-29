@@ -74,6 +74,8 @@ func seal() -> Array:
 			return _definition_error(id, "CONTENT_TUNING", "", "Use ordered mode multipliers and supported physical ranges.")
 		if _records[id].kind == "mechanic_profile" and mechanic_profile(id) == null:
 			return _definition_error(id, "CONTENT_MECHANIC_PROFILE", "/profiles", "Use installed provider versions, preserve each save-reader prefix and satisfy ordered dependencies.")
+		if _records[id].kind == "editor_profile" and editor_profile(id) == null:
+			return _definition_error(id, "CONTENT_EDITOR_PROFILE", "", "Use the stable default editor-profile ID, unique placement IDs, supported scenery types and exactly one text-only guide step for each known editor guide key.")
 		if _records[id].kind == "weekend":
 			for key in WeekendDefinition.REFERENCES:
 				if record(_records[id][key]).get("kind") != WeekendDefinition.REFERENCES[key]:
@@ -195,3 +197,6 @@ func circuit_documents() -> Array:
 
 func mechanic_profile(id: String) -> MechanicProfileDefinition:
 	return MechanicProfileDefinition.from_record(record(id))
+
+func editor_profile(id: String) -> EditorProfileDefinition:
+	return EditorProfileDefinition.from_record(record(id))

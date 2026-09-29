@@ -32,6 +32,7 @@ var dot_scale = 1.0
 var rich_scenery = true
 var selected_object = -1
 var scenery_type = "tree"
+var scenery_preset: Dictionary = {}
 var diagnostics: Array = []
 var gesture = TrackCanvasGesture.new()
 var document_revision: int = 0

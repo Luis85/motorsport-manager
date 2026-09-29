@@ -27,6 +27,9 @@ by Circuit Atelier: the same nodes, handles, grid, pit route, features, scenery,
 timing gates and provenance. Existing positional-node imports remain supported.
 Validation and normalization stay in `TrackDocument`; editor transactions stay
 in `TrackEditorSession`.
+Circuit Atelier scenery choices and contextual guide copy come from the bounded
+[`editor_profile`](editor-profiles.md). The profile is authoring-only: placed scenery
+is immediately ordinary track data, and guide actions/targets remain code-owned.
 
 The outer stable ID is used by content references. The inner `document.id` is the
 saved circuit identity. Both must remain stable when merely renaming a circuit;

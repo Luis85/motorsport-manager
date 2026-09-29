@@ -106,8 +106,21 @@ static func render(editor: Control) -> void:
 			editor.feature_index = editor.document.features.size() - 1, true)))
 	features.add_child(UI.paragraph("Feature ranges wrap around the lap. Bridges and tunnels are top-down annotations; the road height controls the elevation profile and runtime data."))
 	features.add_child(UI.label("SCENERY", 16, UI.ACCENT))
-	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water", "Tent", "Cafe"], func(index): editor.canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"][index]; editor.set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"].find(editor.canvas.scenery_type)))
-	features.add_child(UI.paragraph("Choose a prop, then click the canvas to place it. Return to Select / move to select and drag existing objects; Point exposes rotation, size and position."))
+	var placements = editor.session.placement_choices()
+	var placement_index = 0
+	if not editor.canvas.scenery_preset.is_empty():
+		for index in range(placements.size()):
+			if placements[index].id == editor.canvas.scenery_preset.get("id", ""):
+				placement_index = index; break
+	elif not placements.is_empty():
+		editor.canvas.scenery_preset = placements[0].duplicate(true)
+		editor.canvas.scenery_type = placements[0].object_type
+	if not placements.is_empty():
+		features.add_child(UI.option(placements.map(func(p): return p.name), func(index):
+			editor.canvas.scenery_preset = placements[index].duplicate(true)
+			editor.canvas.scenery_type = placements[index].object_type
+			editor.set_tool(5), placement_index))
+	features.add_child(UI.paragraph(editor.session.placement_help()))
 	features.add_child(UI.button("Remove last scenery object", func():
 		if not editor.document.objects.is_empty(): editor.perform(func(): editor.document.objects.pop_back())))
 	var reference = editor.inspector_page("Reference")

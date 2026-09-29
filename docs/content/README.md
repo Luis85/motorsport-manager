@@ -10,9 +10,9 @@ resolved inspection export, comparison and bounded scenario execution.
 
 Wheel operating coefficients and registered provider selection are now authored.
 The six shipped developer diagnostic collections are also bounded file-backed resources;
-practice and rival recipes no longer live as executable GDScript tables. Editor placement
-presets/guide text, exhaustive consumer inventory and final full-plan acceptance remain
-unfinished. This is not a claim that every work package is complete.
+practice and rival recipes no longer live as executable GDScript tables. Circuit Atelier
+placement presets and its contextual-guide copy are now a bounded authoring-only editor
+profile. Exhaustive consumer inventory and final full-plan acceptance remain unfinished. This is not a claim that every work package is complete.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
@@ -80,6 +80,9 @@ AI, passing opportunities and coordinated pit forecasts: [competition authoring 
 
 Circuits, illustration styles, briefs, native review and authoring commands:
 [circuit/scenario guide](circuits-and-scenarios.md).
+
+Circuit Atelier placement presets and text-only guide customization:
+[editor profile guide](editor-profiles.md).
 
 Exact saved-state number decoding and retained replay integrity:
 [persistence contract](persistence-numbers.md).
