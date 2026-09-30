@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This is a behavior-preserving maintenance branch, not a redesign, new gameplay feature, or new save/schema migration. The shipping interface remains Minimal; advanced developer workspaces remain diagnostic.
+This is a focused maintenance branch, not a redesign, new sporting model, or new save/schema migration. The P1 milestone exposes an existing forecast as a bounded read-only Minimal surface without adding commands or changing gameplay authority; advanced developer workspaces remain diagnostic.
 
 ## Scoped work and acceptance
 
@@ -43,6 +43,19 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Extended registered `weekend_launch_tests` coverage for manifest detachment/integrity, stable identity projection, exact-once settlement, correction conflict and absence of invented rewards. Full physical finishing remains covered by existing full-weekend suites.
 - Added `docs/campaign/weekend-boundary.md` as the implementation and persistence contract.
 
+### P1 Minimal strategy discoverability
+
+- Added one visible **Strategy** action to the shipping Minimal toolbar for a selected running managed driver during the race. It opens a bounded read-only comparison of the current plan, next safe-entry stop and two-lap extension when those options exist.
+- Reused the existing `RaceForecaster` through `MinimalWeekendQuery.strategy_comparison()`. The application query enforces player/race/running scope and returns a detached copy; the popup receives no live simulation, inventory, command adapter or scheduler reference.
+- Forecast work is strictly on demand: opening the popup or pressing **Refresh estimate** computes a snapshot. The ordinary 5 Hz Minimal refresh loop does not forecast. Opening, refreshing and closing issue no commands, change no ownership, pause/resume state or speed, and consume no gameplay randomness.
+- Kept `workspace.gd` within the 400-code-line source budget by isolating stable popup rendering in `strategy_comparison.gd`. The popup has no Apply/Approve path and suppresses race shortcuts while focused.
+- Extended registered `minimal_tests` and native `minimal_ui_tests` with full-snapshot/RNG/command/playback invariants, detached-result checks, explicit-refresh behavior, keyboard-focus isolation and 1440×900 / 1100×720 at 130% layout coverage.
+- Updated the README, current-state authority and Minimal contract so they no longer claim that all forecast surfaces are absent.
+
+### P0/P1 closure
+
+All P0 and P1 items identified for this maintenance sequence are now implemented: documentation authority, active TrackCanvas debt reduction, immutable campaign/weekend manifest plus exactly-once settlement, and on-demand read-only Minimal strategy comparison. Remaining items below are deliberately outside this P0/P1 scope or require separate product/human validation.
+
 ### Verification boundary
 
 GitHub Actions executes independently for PR updates. Judge this branch **only by the checks attached to the exact final PR head**: six registered Godot shards and aggregate; content/schema/exported-runtime; runtime confidence; Linux/Windows packaged build/smoke; advisory quality comparison. A cancelled/superseded run on an earlier intermediate commit is not evidence about the final head. No local Godot runner is available in this maintenance execution environment. The PR description should record the exact final-source checks once completed.
@@ -51,4 +64,4 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 - `scripts/domain/race_sim.gd` and historical `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Playable campaign state/clock/economy, strategy discoverability in Minimal, human player testing, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work, not claimed fixed by the integration boundary.
+- Playable campaign state/clock/economy, human player testing, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. The bounded strategy comparison closes discoverability of the existing current-condition forecaster, but does not turn the diagnostic strategy workspace into a shipping editor or establish human usability.

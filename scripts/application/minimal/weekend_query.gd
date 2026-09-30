@@ -15,7 +15,7 @@ func capture() -> Dictionary:
 	var readouts: Dictionary = {}
 	for car in simulation.cars:
 		var identity: Dictionary = {}
-		for key in ["id", "short", "name", "number", "color", "player", "pace", "engine", "dnf", "retire_reason"]:
+		for key in ["id", "short", "name", "number", "color", "player", "pace", "engine", "dnf", "finished", "retire_reason"]:
 			identity[key] = car[key]
 		identity.state = MinimalRaceTiming.state(simulation, car)
 		cars.append(identity)
@@ -31,3 +31,11 @@ func capture() -> Dictionary:
 		"leader_distance": simulation.standings()[0].distance,
 		"cars": cars, "timing_rows": MinimalRaceTiming.rows(simulation), "readouts": readouts,
 	}
+
+
+func strategy_comparison(driver_id: int) -> Dictionary:
+	var simulation: RaceSim = _source.get_ref()
+	if simulation == null or simulation.phase != "race" or driver_id < 0 or driver_id >= simulation.cars.size(): return {}
+	var car = simulation.cars[driver_id]
+	if not car.player or car.dnf or car.finished: return {}
+	return simulation.forecast(driver_id).duplicate(true)

@@ -20,7 +20,7 @@ func profiles() -> void:
 			check(view.get_script().get_global_name() == "MinimalRaceWorkspace","Independent minimal root: "+tag)
 			check(view.canvas.size.x >= 300 and view.canvas.size.y >= 300 and inside(view.canvas),"Race viewport usable: "+tag)
 			check(inside(view.timing_panel) and inside(view.pitwall) and inside(view.toolbar),"Four regions contained: "+tag)
-			for node in [view.play_button,view.pause_button,view.speed_control,view.send_button,view.box_button,view.push_button,view.calm_button,view.engine_control,view.name_label]:
+			for node in [view.play_button,view.pause_button,view.speed_control,view.strategy_button,view.send_button,view.box_button,view.push_button,view.calm_button,view.engine_control,view.name_label]:
 				check(inside(node) and text_fits(node),"Visible complete label: "+node.text+" / "+tag)
 			check(view.driver_buttons.size()==2 and view.tower.columns==4,"Only two drivers and four timing columns: "+tag)
 			var columns = 0.0
@@ -90,6 +90,7 @@ func phase_layouts() -> void:
 		check(inside(view.driver_row), "Driver cards fit every compact phase: " + phase)
 		check(inside(view.canvas) and inside(view.pitwall),"Phase copy cannot push panels offscreen: "+phase)
 		check(inside(view.engine_control) and inside(view.send_button),"Core actions never require scrolling: "+phase)
+		check(view.strategy_button.disabled, "Read-only strategy comparison is unavailable outside a live race: " + phase)
 		await capture("minimal-phase-"+phase,"Synthetic phase-only compact/enlarged-text layout probe; not lifecycle evidence")
 
 func polish_interactions() -> void:
@@ -184,9 +185,36 @@ func instruments_interactions() -> void:
 	await click(view.driver_buttons[6]); await click(view.push_button)
 	check(model.cars[6].pace == 2 and model.cars[3].pace == 2 and card.metrics.stress.value.text == "—", "Switching away from a retired driver cannot transfer their stale state")
 
+func strategy_comparison_interactions() -> void:
+	root.size = Vector2i(1440,900); root.content_scale_size = root.size; app.settings.pitwall_text_scale = 1.0
+	model = race_fixture(); model.phase = "race"; model.paused = false; model.speed = 8; await reset()
+	var before = JSON.stringify(model.snapshot(), "", false, true); var commands = model.commands.size(); var rng = model.rng_state
+	await click(view.strategy_button)
+	check(view.strategy_popup.visible and not view.strategy_view.latest.is_empty(), "Strategy button opens one on-demand comparison for the selected managed driver")
+	check("Read-only snapshot" in view.strategy_view.status_label.text and view.strategy_view.latest.driver_id == view.selected_id, "Popup identifies its detached read-only scope")
+	check(before == JSON.stringify(model.snapshot(), "", false, true) and commands == model.commands.size() and rng == model.rng_state and not model.paused and model.speed == 8, "Opening comparison issues no command, pause, speed change, time step or random draw")
+	var frozen = JSON.stringify(view.strategy_view.latest, "", false, true)
+	model.cars[3].distance += model.track.length; model.cars[3].previous_distance = model.cars[3].distance
+	var changed = JSON.stringify(model.snapshot(), "", false, true)
+	for i in range(20): view.refresh()
+	check(JSON.stringify(view.strategy_view.latest, "", false, true) == frozen, "Ordinary 5 Hz presentation refresh never recomputes the open comparison")
+	await key(KEY_SPACE); await key(KEY_5)
+	check(not model.paused and model.speed == 8, "Race shortcuts cannot pause or change speed behind the open comparison")
+	await click(view.strategy_view.refresh_button)
+	check(JSON.stringify(view.strategy_view.latest, "", false, true) != frozen, "Only explicit Refresh estimate captures changed current conditions")
+	check(changed == JSON.stringify(model.snapshot(), "", false, true) and commands == model.commands.size() and rng == model.rng_state, "Explicit estimate refresh is observational and consumes no gameplay randomness")
+	await capture("minimal-strategy-comparison", "Synthetic running-race fixture; on-demand detached estimate, no command or future-weather claim")
+	await click(view.strategy_view.close_button); await settle(3)
+	check(not view.strategy_popup.visible and view.strategy_button.has_focus(), "Close returns focus to the Strategy button")
+	root.size = Vector2i(1100,720); root.content_scale_size = root.size; app.settings.pitwall_text_scale = 1.3
+	model = race_fixture(); model.phase = "race"; await reset(); await click(view.strategy_button)
+	check(view.strategy_popup.size.x <= root.size.x - 32 and view.strategy_popup.size.y <= root.size.y - 32, "Comparison stays inside the compact enlarged-text viewport")
+	check(text_fits(view.strategy_view.close_button) and text_fits(view.strategy_view.refresh_button), "Comparison actions retain complete labels at 130% text")
+	await capture("minimal-strategy-comparison-compact", "Synthetic race fixture at 1100x720 and 130% text; current-condition estimate only")
+
 func run() -> void:
 	game=load("res://scenes/main.tscn").instantiate(); root.add_child(game); app=root.get_node("App"); await settle()
 	check(app.settings.pitwall_layout=="minimal","Clean launch uses minimal layout")
-	await profiles(); await phase_layouts(); await interactions(); await polish_interactions(); await instruments_interactions()
+	await profiles(); await phase_layouts(); await interactions(); await polish_interactions(); await instruments_interactions(); await strategy_comparison_interactions()
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"screenshots":captures.size(),"captures":captures}
 	Storage.write_json("res://reports/minimal-ui.json",report); print("MINIMAL_UI ",JSON.stringify(report)); quit(0 if failures.is_empty() else 1)

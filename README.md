@@ -2,19 +2,19 @@
 
 > **Current capability map:** [docs/current-state.md](docs/current-state.md) distinguishes shipping Minimal UI, retained diagnostic tools, merged data-driven content and unimplemented management proposals. PR #24's validated content refactor is now merged; older feature-parity and port-status snapshots are historical.
 
-Native, local-first circuit authoring and two-car race management. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services while retaining the minimal pitwall and driver instruments. No new actions, sporting rules or stress mechanics.
+Native, local-first circuit authoring and two-car race management. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services while retaining the minimal pitwall and driver instruments. PR #27 adds one read-only Strategy comparison action; it adds no sporting command, save migration or stress mechanic.
 
 See [architecture, extension recipes and verification boundaries](docs/architecture-refactor.md).
 
 ## One race screen
 
-- **Top:** Menu, session/time or race lap/flag, Pause, Play, speed, and one next-session action.
+- **Top:** Menu, session/time or race lap/flag, Pause, Play, speed, an on-demand read-only **Strategy** comparison in a live race, and one next-session action.
 - **Left:** a four-column timing tower: position, driver, best time/gap and running state. Your two drivers are marked `*`; live estimated gaps are marked `~`.
 - **Centre:** the actual circuit and moving cars, with pan, zoom and fit.
 - **Right:** choose MER or MOR, then **Send out**, **Box this lap**, **Push**, **Calm**, or an **engine mode**.
 - **Bottom:** both drivers’ fitted tyres (minimum wheel tread), temperature, fuel in lap-equivalent units, mechanical condition and separate damage. Cards also show estimated driver stress, last measured lap, neighboring race gaps, current pace/engine orders, actual speed and engine temperature. Cards are read only.
 
-There are no telemetry dashboards, strategy tabs, drawers, two-car decision cards, tool finders, forecast panels, race stories, or review workspaces in the normal race screen. This is a deliberately reduced foundation, not another progressive-disclosure layer.
+There are no telemetry dashboards, editable strategy tabs/drawers, two-car decision cards, tool finders, race stories, or review workspaces in the normal race screen. The only forecast surface is the bounded read-only Strategy popup for the selected running driver. This remains a deliberately reduced foundation, not another progressive-disclosure layer.
 
 ## Open and play
 
@@ -38,15 +38,15 @@ Choose **Grand Prix Weekend**, a circuit, weather and race distance, then **Revi
 
 Closing practice or qualifying lets an already-started measured lap finish, waits for physical returns, and resumes playback if paused. The next session still requires your approval. Individual **Box this lap** calls in practice/qualifying abandon an unfinished timed lap; completed times remain.
 
-Push and Calm are persistent alternatives; press the active button again for Normal. Engine modes are Save, Standard and Power. Send out does not unpause a paused session. Play/Pause and speed are separate. Race pit calls use a real available tyre set for observed conditions; a missed current-lap entry is disabled rather than silently promising a later stop.
+Push and Calm are persistent alternatives; press the active button again for Normal. Engine modes are Save, Standard and Power. Send out does not unpause a paused session. Play/Pause and speed are separate. Race pit calls use a real available tyre set for observed conditions; a missed current-lap entry is disabled rather than silently promising a later stop. Strategy compares the current plan with available safe-entry/extension options using only current observations; it never issues or applies an order.
 
-**Space** toggles play/pause, **1–5** choose 1×/2×/4×/8×/16×, **F** fits the circuit, and Enter activates a focused control. Native menus retain their own keyboard navigation. Menu pauses and saves; Continue resumes the saved weekend. Settings offers 100%, 115% and 130% pit-wall text.
+**Space** toggles play/pause, **1–5** choose 1×/2×/4×/8×/16×, **F** fits the circuit, and Enter activates a focused control. Race shortcuts are suppressed while the Strategy popup has focus. Native menus retain their own keyboard navigation. Menu pauses and saves; Continue resumes the saved weekend. Settings offers 100%, 115% and 130% pit-wall text.
 
 ## Simulation retained, advanced UI removed
 
 Finite four-wheel tyre stock, wear, fuel, health, setup, telemetry, traffic, overtakes, seeded weather, qualifying timing, physical pit routes and shared-box service continue in the existing simulation. This increment does not replace the physics or fabricate race outcomes.
 
-Practice now accepts explicit pace/engine changes, preserves them through garage return, excludes mixed-mode laps from clean calibration evidence, and validates their saved state. The minimal screen uses real recorded commands and a separate, read-only timing adapter. Its refresh loop does not run strategy forecasts or rebuild the timing tree.
+Practice now accepts explicit pace/engine changes, preserves them through garage return, excludes mixed-mode laps from clean calibration evidence, and validates their saved state. The minimal screen uses real recorded commands and detached read adapters. Its ordinary refresh loop does not run strategy forecasts or rebuild the timing tree; the existing forecaster runs only when Strategy is opened or explicitly refreshed, without commands, playback changes or gameplay RNG consumption.
 
 The previous Director and Engineering implementations remain in source for regression and development only. They are **not selectable in the normal UI**, and old saved layout preferences migrate to Minimal. An explicit diagnostic launch can still use:
 
@@ -104,7 +104,7 @@ Menus, configuration, Settings, the editor, weekend entry, pitwall and final
 classification share `GameTheme`. The illustrated circuit keeps its own readable
 map palette. Settings preview changes before Apply, protect unsaved departures,
 and preserve edits on save failure. Interface text scaling also reaches the editor
-and native dialogs; the minimal five driver actions are unchanged.
+and native dialogs; the minimal five driver actions are unchanged and Strategy remains read only.
 
 The separate quality workflow produces warnings and downloadable reports without
 blocking CI. Budgets are 400 source / 450 test **code** lines, excluding blank and

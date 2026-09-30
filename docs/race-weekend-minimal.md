@@ -1,4 +1,6 @@
-# Minimal race weekend — 0.17.1
+# Minimal race weekend — current shipping contract
+
+Originated in 0.17.1 and maintained as the authority for the shipping Minimal weekend.
 
 ## Product decision
 
@@ -6,13 +8,13 @@ Restart the visible race UI rather than reorganizing the 0.16 Director. The norm
 
 ### Visible contract
 
-Toolbar: Menu, session identity, session clock or lap/flag, Pause, Play, speed (1/2/4/8/16), and a context-specific session button. In a live race the session button disappears. Finishing/formation states explain why it is disabled. Results offer New weekend.
+Toolbar: Menu, session identity, session clock or lap/flag, Pause, Play, speed (1/2/4/8/16), **Strategy**, and a context-specific session button. Strategy is enabled only for a running managed driver during the race. In a live race the session button disappears. Finishing/formation states explain why controls are disabled. Results offer New weekend.
 
 Timing: position, three-letter driver code, best time or gap, and compact running state. Practice times come from actual practice samples, not `qual_best`. Qualifying uses actual flying laps. Live race gaps remain the existing distance/speed estimates and are explicitly prefixed `~`; final classification uses actual completion/time. Full names and basic running state are available on hover. Only the player's two rows can select the pitwall driver.
 
 Race: existing TrackCanvas, fitted to the available rectangle, with actual car motion and start lights. Wheel zoom, middle-button pan, F to fit. Circuit labels follow the user's display preference. Engineering surface/racing-line overlays are not exposed. Rival car clicks cannot replace the selected managed driver.
 
-Pitwall: two driver selectors, selected full name and running state, Send out, Box this lap, Push/Calm, Save/Standard/Power engine mode. A small receipt reports acceptance/rejection; phase guidance is bounded rather than allowed to push controls offscreen. Full explanatory text remains in tooltips. No graphs, setup editors, strategy drawers, or rival inspection. Tyre/fuel/car information is read-only in the bottom cards, not mixed into the controls.
+Pitwall: two driver selectors, selected full name and running state, Send out, Box this lap, Push/Calm, Save/Standard/Power engine mode. A small receipt reports acceptance/rejection; phase guidance is bounded rather than allowed to push controls offscreen. Full explanatory text remains in tooltips. No graphs, setup editors, editable strategy drawers, or rival inspection. Tyre/fuel/car information is read-only in the bottom cards, not mixed into the controls.
 
 ### Read-only bottom row
 
@@ -53,11 +55,19 @@ Push/Calm toggle back to Normal on a second press. Engine modes are explicit. Pr
 
 An optional validated `active.live_modes` pair records current values without rewriting the run baseline. Older runs without that pair retain the original exact-baseline invariant. Invalid, incomplete or car-mismatched values fail restoration. The optional `manual_modes` run-plan field must be Boolean. New input histories need the new implementation; no backwards-read guarantee is made for 0.16 executables.
 
+### Read-only strategy comparison
+
+During a live race, **Strategy** opens a bounded comparison for the selected running managed driver. The existing `RaceForecaster` evaluates the current plan, the next safe-entry stop when available, and a two-lap extension when available. Each option shows an estimated remaining-time range, relative gain/loss, risk band, minimum projected tread and fuel margin. The panel also states the safe-entry lap, estimated pit-loss/rejoin range, model version, observation timestamp and current-condition assumptions. It predicts neither incidents nor exact finishing position and exposes no rival-private plan.
+
+The comparison is computed only when the player opens the panel or presses **Refresh estimate**. Ordinary 5 Hz screen refreshes never invoke it. The application query returns a detached copy; the popup receives no simulation, car, inventory, command adapter or scheduler reference. Opening, closing or refreshing the panel issues no command, does not claim ownership, does not pause or resume the race, does not change playback speed, and does not consume gameplay randomness. Race shortcuts are suppressed while the popup has focus. There is deliberately no Apply/Approve action.
+
 ## Implementation boundaries
 
 | Module | Responsibility |
 |---|---|
-| `scripts/ui/race_weekend/minimal/workspace.gd` | Native composition, focus/input, selection, bounded feedback, phase autosave and 5 Hz text refresh |
+| `scripts/ui/race_weekend/minimal/workspace.gd` | Native composition, focus/input, selection, bounded feedback, phase autosave, 5 Hz ordinary refresh and explicit strategy-popup lifecycle |
+| `scripts/application/minimal/weekend_query.gd` | Detached Minimal read models and the player/race-only on-demand strategy comparison query |
+| `scripts/ui/race_weekend/minimal/strategy_comparison.gd` | Stable native read-only rendering of one detached forecaster result; no command or simulation reference |
 | `controls.gd` | Narrow recorded command adapter, availability reasons, stage actions and finite-stock defaults |
 | `timing.gd` | Pure public classification and basic state strings |
 | `readout.gd` / `driver_card.gd` | Pure player-car projection and persistent read-only condition cards |
@@ -65,11 +75,11 @@ An optional validated `active.live_modes` pair records current values without re
 | `PracticeRaceSim` / `PracticeEvidence` | Actual running, practice mode semantics, clean-sample and persistence invariants |
 | `main.gd` / `App` | Minimal default, preference migration, simplified setup/menu, existing save/continue |
 
-The workspace directly extends VBoxContainer. It does not inherit the old multi-workspace UI. TrackCanvas observes the same simulation; there is no second simulation or animation-only car state. The 12 timing items have stable driver identities and move on ranking changes; they are not rebound to rank slots. Reordering waits while the pointer is held. The selected driver remains pinned. Text updates only when data changes. Open native dropdown choices are not reset by periodic refresh. Engine choices are pinned to their opening driver/phase; a driver or phase change closes the stale popup. Source modules and historical UI tests remain intact for later deliberate reuse, not as hidden player-facing tabs.
+The workspace directly extends VBoxContainer. It does not inherit the old multi-workspace UI. TrackCanvas observes the same simulation; there is no second simulation or animation-only car state. The ordinary refresh path captures timing/cards only; forecast computation stays behind explicit Strategy open/refresh intent. The 12 timing items have stable driver identities and move on ranking changes; they are not rebound to rank slots. Reordering waits while the pointer is held. The selected driver remains pinned. Text updates only when data changes. Open native dropdown choices are not reset by periodic refresh. Engine choices are pinned to their opening driver/phase; a driver or phase change closes the stale popup. Source modules and historical UI tests remain intact for later deliberate reuse, not as hidden player-facing tabs.
 
 ## Explicit exclusions
 
-No strategy plans, forecasts, programme dashboards, component engineering, telemetry charts, radio/event feed, replay browser, scenario authoring, notebook, race-story UI, tutorial overlay, campaign settlement or expanded racing features are added. Underlying data and simulation continue; this increment only changes the specific practice/command/evidence behavior described above. It does **not** claim that every retained simulation subsystem has been comprehensively reworked or calibrated.
+No strategy-plan editing/approval, automatic recommendations, programme dashboards, component engineering, telemetry charts, radio/event feed, replay browser, scenario authoring, notebook, race-story UI, tutorial overlay, campaign settlement or expanded racing features are added. The only strategy surface is the bounded read-only current-condition comparison described above. Underlying data and simulation continue; the read-only comparison adds no sporting behavior or persistence state. This contract does **not** claim that every retained simulation subsystem has been comprehensively reworked or calibrated.
 
 Desktop mouse/keyboard and the documented resolutions/text scales are the acceptance target. Actual enjoyment, broad wet/endurance balance, controller/screen-reader behavior, mobile layout, translations, and extreme scaling require separate testing.
 
