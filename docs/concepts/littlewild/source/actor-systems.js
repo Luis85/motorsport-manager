@@ -45,7 +45,7 @@
         this.refs.set(actor.id, actor);
         this.syncActor(actor);
       }
-      for (const id of this.world.entities.keys()) if (!seen.has(id)) {
+      for (const id of [...this.refs.keys()]) if (!seen.has(id)) {
         this.world.remove(id);
         this.refs.delete(id);
       }
