@@ -37,6 +37,18 @@ registry to non-empty legacy sporting history. Provisional results, corrections,
 season prizes and promotion require explicit later contracts rather than
 approximation inside final-only settlement.
 
+`CampaignEconomy` is the integer cash and binding-commitment authority. Cash,
+open commitments, reserve policy and forecast assumptions are different values:
+never make an unsigned offer, hypothetical prize or optimistic assumption
+spendable. Every posting needs exactly one event or settled-commitment source and
+must reconcile to opening cash. Commitments settle at their contractual due slot,
+not when a report is opened. Finance history cannot be dated after campaign time;
+planning changes freeze during an active weekend, while existing due obligations
+continue inside the atomic return transaction. Payroll and recurring schedules
+must create explicit dated commitments and must not also be charged through
+project summaries. Legacy ledgers migrate losslessly from an explicit authority
+slot; do not fabricate prior commitments.
+
 ## UI changes
 
 Use `GameTheme` through the existing UI/MinimalRaceStyle adapters for native
