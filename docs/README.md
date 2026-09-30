@@ -1,5 +1,7 @@
 # Motorsport Manager documentation
 
+**Start with [Current native project status](current-state.md).** It records the 30 September 2026 merged post-PR24 capabilities, shipping/diagnostic separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
+
 ## Current architecture — 0.19.0
 
 - [Architecture and ownership map](architecture-refactor.md)
