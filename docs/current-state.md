@@ -1,6 +1,6 @@
 # Current native project status
 
-**Authoritative snapshot:** `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c`, 30 September 2026 (merged PR #24). The merge has the same file tree as PR #24's tested source head `a8428c7ede134801acff609b12f20249cecc4054`. This page describes shipped/player-facing behavior separately from retained developer tools, completed foundations, and unimplemented proposals. It supersedes old “current release” claims in historical guides but does not replace their detailed technical contracts.
+**Current scope:** Native project after merged PR #24, including the focused technical/documentation maintenance recorded in PR #27. PR #24's merge commit `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` has the same file tree as its tested source head `a8428c7ede134801acff609b12f20249cecc4054` and remains the evidence anchor for that refactor. This page describes shipped/player-facing behavior separately from retained developer tools, completed foundations, and unimplemented proposals. It supersedes old “current release” claims in historical guides but does not replace their detailed technical contracts.
 
 ## Shipping player experience
 
@@ -26,6 +26,8 @@ Bundled diagnostic scenario collections are trusted file-backed verification res
 
 PR #24's final source head `a8428c7` passed all six registered Godot shards and aggregate gate, content/exported-runtime jobs, runtime confidence, Linux/Windows debug/release builds and native standalone smoke journeys. The merge introduced no file changes. The advisory quality job completed **with findings**; its success is not a clean-quality sign-off. Consult that commit's retained GitHub Actions logs/artifacts for exact counts and source provenance instead of copying numbers from historical release notes.
 
+Changes after that baseline, including the maintenance in PR #27, require their own exact-head workflows. A prior green run, an intermediate superseded run, or a successful advisory job is not substituted for final-source verification.
+
 Current checkout verification entry points:
 - `python3 scripts/verify.py --godot /path/to/pinned/Godot` — complete registered test gate, including required native UI environment.
 - `python3 scripts/check_architecture.py` — dependency/authority contract.
@@ -37,7 +39,7 @@ The registration source of truth is `scripts/verification_suites.json`; historic
 ## Active maintenance priorities
 
 1. Keep this page, the README and content status synchronized when a feature becomes player-facing, only diagnostic, or deliberately deferred.
-2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At this snapshot: `race_sim.gd` (726 counted code lines), historical `weekend.gd` (623), `track_canvas.gd` (476), historical `pitwall_workspace.gd` (419), against the 400-line source budget. Prioritize files touched by actual product work; the count alone is not a defect.
+2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At the PR #24 baseline, `race_sim.gd` had 726 counted code lines, historical `weekend.gd` 623 and historical `pitwall_workspace.gd` 419, against the 400-line source budget. This maintenance pass reduces active `track_canvas.gd` from 476 to exactly 400 by extracting read-only overlay responsibilities. Prioritize the remaining files when product work actually touches them; a line count alone is not a defect.
 3. Distinguish implementation correctness, human experience, cross-platform support and controlled performance comparisons in all PR evidence.
 4. Validate the race-weekend/campaign manifest-and-result boundary before implementing persistent management against standalone receipts.
 
