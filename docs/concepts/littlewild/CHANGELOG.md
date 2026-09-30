@@ -1,3 +1,7 @@
+## ECS M2 — activity and movement
+
+Moved authoritative path traversal and elapsed-work progression into named ECS systems. Current tasks are bound as transient `Task` components with an explicit `Intent` status; movement returns typed walking, arrived and blocked outcomes. Arrival does not spend work time in the same tick. The domain facade retains task selection, emergency interruption, construction payment and completion side effects. Added focused activity and real-engine parity tests without changing v8/v9 persistence.
+
 ## ECS architecture follow-up
 
 - Added a generic, DOM-free ECS world and deterministic scheduler with validated deferred structural changes.

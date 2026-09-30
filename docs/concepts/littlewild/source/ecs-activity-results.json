@@ -1,0 +1,35 @@
+{
+  "passed": 7,
+  "total": 7,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Movement advances the authoritative transform without completing work",
+      "passed": true
+    },
+    {
+      "name": "Arrival changes phase but never spends work time in the arrival tick",
+      "passed": true
+    },
+    {
+      "name": "Empty paths enter work without progress in the same tick",
+      "passed": true
+    },
+    {
+      "name": "Blocked movement reports an outcome without deleting domain state",
+      "passed": true
+    },
+    {
+      "name": "Work progression is rate based and reports exact completion",
+      "passed": true
+    },
+    {
+      "name": "Roster synchronization removes transient Task and Intent components",
+      "passed": true
+    },
+    {
+      "name": "Activity input rejects hidden or non-finite authority",
+      "passed": true
+    }
+  ]
+}

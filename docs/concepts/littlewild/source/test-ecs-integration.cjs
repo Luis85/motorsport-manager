@@ -37,6 +37,25 @@ test('ECS structural lifetime follows actor roster explicitly',()=>{
  e.ecs.sync([...e.creatures,copy]);assert.equal(e.ecs.world.query(['Needs']).length,count+1);
  e.ecs.sync(e.creatures);assert(!e.ecs.world.has('ecs-temp'));
 });
+test('Legacy facade delegates movement to ECS without spending work time on arrival',()=>{
+ const e=L.createWorldDemo(),c=e.creatures[0];e.selectCreature(c.id);
+ c.needs={food:90,water:90,energy:90,comfort:90,joy:90};c.creature.x=5;c.creature.y=5;
+ c.task={kind:'gather',phase:'walk',path:[{x:6,y:5}],duration:5,elapsed:0,label:'Walking'};
+ e.withActor(c,()=>e.stepActor(.1));assert(c.creature.x>5&&c.creature.x<6);assert.equal(c.task.phase,'walk');near(c.task.elapsed,0);
+ assert.equal(e.ecs.world.get(c.id,'Intent').status,'active');
+});
+test('Legacy facade mirrors ECS work progress and completes once',()=>{
+ const e=L.createWorldDemo(),c=e.creatures[0];e.selectCreature(c.id);
+ c.needs={food:90,water:90,energy:90,comfort:90,joy:90};
+ c.task={kind:'rest',phase:'work',path:[],duration:.05,elapsed:0,label:'Resting',need:'energy'};
+ e.withActor(c,()=>e.stepActor(.1));assert.equal(c.task,null);
+});
+test('Blocked ECS movement is resolved through the domain interruption boundary',()=>{
+ const e=L.createWorldDemo(),c=e.creatures[0];e.selectCreature(c.id);
+ c.needs={food:90,water:90,energy:90,comfort:90,joy:90};
+ c.task={kind:'gather',phase:'walk',path:[{x:-1,y:-1}],duration:5,elapsed:0,label:'Blocked'};
+ e.withActor(c,()=>e.stepActor(.1));assert.equal(c.task,null);
+});
 const passed=results.filter(r=>r.passed).length;
 fs.writeFileSync(__dirname+'/ecs-integration-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');
 console.log(passed+'/'+results.length+' ECS integration checks passed');if(passed!==results.length)process.exitCode=1;

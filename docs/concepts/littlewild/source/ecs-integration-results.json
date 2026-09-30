@@ -1,6 +1,6 @@
 {
-  "passed": 4,
-  "total": 4,
+  "passed": 7,
+  "total": 7,
   "failed": 0,
   "results": [
     {
@@ -17,6 +17,18 @@
     },
     {
       "name": "ECS structural lifetime follows actor roster explicitly",
+      "passed": true
+    },
+    {
+      "name": "Legacy facade delegates movement to ECS without spending work time on arrival",
+      "passed": true
+    },
+    {
+      "name": "Legacy facade mirrors ECS work progress and completes once",
+      "passed": true
+    },
+    {
+      "name": "Blocked ECS movement is resolved through the domain interruption boundary",
       "passed": true
     }
   ]

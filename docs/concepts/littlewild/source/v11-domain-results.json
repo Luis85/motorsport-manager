@@ -6,367 +6,367 @@
     {
       "name": "Runtime and independent schema agree on Growth schema 2",
       "passed": true,
-      "ms": 4.442173000000004
+      "ms": 5.899650999999999
     },
     {
       "name": "A new story has one owned-island clock without a map table",
       "passed": true,
-      "ms": 8.332079999999998
+      "ms": 8.565979999999996
     },
     {
       "name": "Every repeated scenario factory produces the current canonical engine",
       "passed": true,
-      "ms": 817.15254
+      "ms": 776.3495700000001
     },
     {
       "name": "Only the authored world example receives a completed map table",
       "passed": true,
-      "ms": 24.054359999999974
+      "ms": 16.96757100000002
     },
     {
       "name": "Map-table blueprint has finite material costs and research requirements",
       "passed": true,
-      "ms": 0.9620270000000346
+      "ms": 0.9164890000000696
     },
     {
       "name": "Wealth and old land research alone cannot bypass construction",
       "passed": true,
-      "ms": 9.558458000000087
+      "ms": 10.454613999999992
     },
     {
       "name": "A map-table building order is not an operational table",
       "passed": true,
-      "ms": 10.243700999999987
+      "ms": 9.32676600000002
     },
     {
       "name": "A completed map table grants map access but not free islands",
       "passed": true,
-      "ms": 8.254616000000055
+      "ms": 9.390777000000071
     },
     {
       "name": "Missing land research still blocks buying with a completed map table",
       "passed": true,
-      "ms": 10.282092999999918
+      "ms": 10.193912000000068
     },
     {
       "name": "Blocked map-table approaches are reported instead of granting access",
       "passed": true,
-      "ms": 9.159527000000026
+      "ms": 8.854353999999944
     },
     {
       "name": "Repeated map inspection is observational, including all random streams",
       "passed": true,
-      "ms": 91.96264499999984
+      "ms": 90.08111799999995
     },
     {
       "name": "Every biome carries an explicit level and valid quest pool",
       "passed": true,
-      "ms": 8.999029000000064
+      "ms": 8.787648999999988
     },
     {
       "name": "Farther islands add visible guide-level requirements",
       "passed": true,
-      "ms": 7.874399999999923
+      "ms": 7.790226000000075
     },
     {
       "name": "Individual island level requirements reject atomically",
       "passed": true,
-      "ms": 11.90634
+      "ms": 11.718367999999941
     },
     {
       "name": "Malformed coordinates cannot change an island purchase",
       "passed": true,
-      "ms": 46.459546000000046
+      "ms": 46.01041299999997
     },
     {
       "name": "Insufficient coin balance leaves prestige and topology untouched",
       "passed": true,
-      "ms": 12.328745000000026
+      "ms": 9.527014000000008
     },
     {
       "name": "Insufficient prestige leaves coins and topology untouched",
       "passed": true,
-      "ms": 9.319193999999925
+      "ms": 10.138177000000042
     },
     {
       "name": "An adjacent purchase commits exactly its reviewed price and one clock",
       "passed": true,
-      "ms": 12.500244000000066
+      "ms": 12.463553999999931
     },
     {
       "name": "A stale quote after another purchase rejects without a second debit",
       "passed": true,
-      "ms": 14.15751299999988
+      "ms": 13.357099999999946
     },
     {
       "name": "A stale quote after content revision rejects before debit",
       "passed": true,
-      "ms": 13.00914899999998
+      "ms": 11.486169000000018
     },
     {
       "name": "Duplicate purchase creates neither another receipt nor another bridge",
       "passed": true,
-      "ms": 11.82999800000016
+      "ms": 12.916268000000173
     },
     {
       "name": "New island resources do not teleport to inventories",
       "passed": true,
-      "ms": 11.434844999999996
+      "ms": 10.85909700000002
     },
     {
       "name": "An island purchase opens one invitation from that island’s pool",
       "passed": true,
-      "ms": 10.897645999999895
+      "ms": 10.71220900000003
     },
     {
       "name": "Template reuse across islands does not reuse invitation identity",
       "passed": true,
-      "ms": 80.36365500000011
+      "ms": 75.1624220000001
     },
     {
       "name": "An unowned island cannot inject an invitation",
       "passed": true,
-      "ms": 8.880719
+      "ms": 9.581417000000101
     },
     {
       "name": "Duplicate same-island invitations are rejected without sequence growth",
       "passed": true,
-      "ms": 9.97801800000002
+      "ms": 9.58739700000001
     },
     {
       "name": "Invitation cooldowns do not consume a creature’s GURPS RNG",
       "passed": true,
-      "ms": 9.214588999999933
+      "ms": 9.17748400000005
     },
     {
       "name": "Per-island director does not create early opportunities",
       "passed": true,
-      "ms": 12.932276000000002
+      "ms": 12.088445999999976
     },
     {
       "name": "Expired invitations are removed without replacing them before cooldown",
       "passed": true,
-      "ms": 8.64510099999984
+      "ms": 8.395288000000164
     },
     {
       "name": "Random misses have a bounded guaranteed next invitation",
       "passed": true,
-      "ms": 8.92180499999995
+      "ms": 9.711442000000034
     },
     {
       "name": "Pending or active island journey suppresses additional island cycles",
       "passed": true,
-      "ms": 10.687185999999883
+      "ms": 9.81738200000018
     },
     {
       "name": "New invitations enforce guide levels even for grandfathered knowledge",
       "passed": true,
-      "ms": 10.863652999999886
+      "ms": 11.459509000000025
     },
     {
       "name": "Island invitations enforce the individual creature’s level",
       "passed": true,
-      "ms": 9.437814000000117
+      "ms": 9.139037000000144
     },
     {
       "name": "Accepting an invitation copies its origin but consumes no provisions",
       "passed": true,
-      "ms": 8.715431999999964
+      "ms": 7.747355999999854
     },
     {
       "name": "Departure snapshots origin and charges carried provisions only once",
       "passed": true,
-      "ms": 9.022863000000143
+      "ms": 9.572419999999966
     },
     {
       "name": "An away creature cannot be fed or equipped through its context",
       "passed": true,
-      "ms": 10.298443000000134
+      "ms": 9.466540000000123
     },
     {
       "name": "Pending quests retain island requirements in planner rows",
       "passed": true,
-      "ms": 8.128692000000001
+      "ms": 9.000279999999975
     },
     {
       "name": "Reassignment cannot bypass the recipient’s expedition level",
       "passed": true,
-      "ms": 9.949114000000009
+      "ms": 9.897612999999865
     },
     {
       "name": "Paused quest plans survive exact portable round-trip",
       "passed": true,
-      "ms": 74.79078200000004
+      "ms": 71.25429899999995
     },
     {
       "name": "Early return callback cannot settle an unfinished quest",
       "passed": true,
-      "ms": 9.135293000000047
+      "ms": 9.431383000000096
     },
     {
       "name": "Return travel time must elapse before rewards",
       "passed": true,
-      "ms": 10.044701999999916
+      "ms": 8.773392000000058
     },
     {
       "name": "All checkpoints must finish before normal quest settlement",
       "passed": true,
-      "ms": 7.997779000000037
+      "ms": 8.73716300000001
     },
     {
       "name": "Completed quest records origin and prestige exactly once",
       "passed": true,
-      "ms": 10.134518999999955
+      "ms": 9.873807999999826
     },
     {
       "name": "Partial outcomes do not grant success prestige",
       "passed": true,
-      "ms": 8.011263999999983
+      "ms": 7.810735999999906
     },
     {
       "name": "A recall returns no success reward and records a recalled journey",
       "passed": true,
-      "ms": 70.15113899999983
+      "ms": 83.16189399999985
     },
     {
       "name": "Live checkpoints and independent island clocks restore deterministically",
       "passed": true,
-      "ms": 480.07447100000013
+      "ms": 557.228582
     },
     {
       "name": "Two live journeys on different islands remain independently owned",
       "passed": true,
-      "ms": 94.24646799999982
+      "ms": 91.98177299999998
     },
     {
       "name": "Malformed save rejects missing owned-island clock without changing live state",
       "passed": true,
-      "ms": 53.266771999999946
+      "ms": 38.532436999999845
     },
     {
       "name": "Malformed save rejects clock for unowned island without changing live state",
       "passed": true,
-      "ms": 40.28152799999998
+      "ms": 37.41663000000017
     },
     {
       "name": "Malformed save rejects non-finite clock without changing live state",
       "passed": true,
-      "ms": 15.56720200000018
+      "ms": 14.89489999999978
     },
     {
       "name": "Malformed save rejects zero RNG state without changing live state",
       "passed": true,
-      "ms": 41.81203100000039
+      "ms": 39.61116099999981
     },
     {
       "name": "Malformed save rejects duplicate invitation identity without changing live state",
       "passed": true,
-      "ms": 41.085721999999805
+      "ms": 38.71738499999992
     },
     {
       "name": "Malformed save rejects stale identity sequence without changing live state",
       "passed": true,
-      "ms": 40.58936999999969
+      "ms": 37.440485999999964
     },
     {
       "name": "Malformed save rejects unowned invitation origin without changing live state",
       "passed": true,
-      "ms": 39.900910999999724
+      "ms": 37.309537999999975
     },
     {
       "name": "Malformed save rejects negative island level without changing live state",
       "passed": true,
-      "ms": 40.19811199999958
+      "ms": 37.407562999999755
     },
     {
       "name": "Malformed save rejects oversized retained history without changing live state",
       "passed": true,
-      "ms": 39.839346000000205
+      "ms": 37.13144300000022
     },
     {
       "name": "Premature returning quest is rejected on save import",
       "passed": true,
-      "ms": 47.7631080000001
+      "ms": 36.37853200000018
     },
     {
       "name": "A settled receipt cannot also be active after import",
       "passed": true,
-      "ms": 39.638382999999976
+      "ms": 36.86932800000022
     },
     {
       "name": "A saved creature cannot prepare and travel at the same time",
       "passed": true,
-      "ms": 37.66318300000012
+      "ms": 35.313402000000224
     },
     {
       "name": "Runtime content validation rejects empty quest pool",
       "passed": true,
-      "ms": 1.048467999999957
+      "ms": 0.9770439999997507
     },
     {
       "name": "Runtime content validation rejects unknown quest reference",
       "passed": true,
-      "ms": 1.4902289999999994
+      "ms": 1.4666870000000927
     },
     {
       "name": "Runtime content validation rejects duplicate quest reference",
       "passed": true,
-      "ms": 1.5411530000001221
+      "ms": 1.5563160000001517
     },
     {
       "name": "Runtime content validation rejects duplicate biome identity",
       "passed": true,
-      "ms": 2.803928999999698
+      "ms": 2.7354809999997087
     },
     {
       "name": "Runtime content validation rejects empty biome description",
       "passed": true,
-      "ms": 2.531272000000172
+      "ms": 2.5096849999999904
     },
     {
       "name": "Runtime content validation rejects negative cooldown",
       "passed": true,
-      "ms": 2.470509999999649
+      "ms": 2.4318590000002587
     },
     {
       "name": "Runtime content validation rejects probability above one",
       "passed": true,
-      "ms": 3.62820099999999
+      "ms": 3.1336810000002515
     },
     {
       "name": "Runtime content validation rejects invalid map building",
       "passed": true,
-      "ms": 2.581627000000026
+      "ms": 1.7541400000000067
     },
     {
       "name": "Runtime content validation rejects missing map research",
       "passed": true,
-      "ms": 2.7891810000000987
+      "ms": 1.5500539999998182
     },
     {
       "name": "Runtime content validation rejects unsafe endgame prices",
       "passed": true,
-      "ms": 1.7252450000000863
+      "ms": 1.4750820000003841
     },
     {
       "name": "An Adventure update cannot remove a quest referenced by island content",
       "passed": true,
-      "ms": 15.517730000000029
+      "ms": 15.720718999999917
     },
     {
       "name": "Authored world example repeatedly round-trips without adding another table",
       "passed": true,
-      "ms": 298.9776029999998
+      "ms": 276.83761400000003
     },
     {
       "name": "Authentic v10 paid-work save migrates without free buildings or inventory",
       "passed": true,
-      "ms": 51.85078000000021
+      "ms": 43.01667499999985
     },
     {
       "name": "Authentic v10 migration continues paid work and can save again",
       "passed": true,
-      "ms": 282.0315989999999
+      "ms": 268.0015440000002
     }
   ]
 }

@@ -1,3 +1,8 @@
+
+## ECS M2 review
+
+`actor-ecs.js` now has separate dynamics and activity schedulers. Movement mutates only the bound Transform and Task records, while work progression mutates only Task elapsed time. Walkability and rates enter as explicit validated simulation context; no renderer or UI state is read. Domain-specific authorization and completion remain in `colony.js`, preventing the generic activity systems from spending inventory or emitting rewards.
+
 # v15 code review and scope
 
 ## Source identity

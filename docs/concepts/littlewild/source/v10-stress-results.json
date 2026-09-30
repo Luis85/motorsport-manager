@@ -5,17 +5,17 @@
     {
       "name": "Six creatures / three islands / 30 simulated minutes / seed 13",
       "passed": true,
-      "ms": 6484.896522
+      "ms": 9179.310597
     },
     {
       "name": "Six creatures / three islands / 30 simulated minutes / seed 47",
       "passed": true,
-      "ms": 5943.864723
+      "ms": 8695.898996
     },
     {
       "name": "25-island purchase cap, unique resources and reachable bridges",
       "passed": true,
-      "ms": 222.84725199999957
+      "ms": 203.47391900000002
     }
   ]
 }

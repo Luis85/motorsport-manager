@@ -2,6 +2,8 @@
 
 An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
 
+The incremental ECS migration now covers actor dynamics plus task movement and elapsed-work progression. Save formats and authored content contracts remain unchanged; see `ECS-ARCHITECTURE.md`.
+
 ## Play
 
 Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.

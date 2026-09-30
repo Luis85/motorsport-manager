@@ -62,15 +62,17 @@ Do not turn every record into an entity merely because ECS exists. An entity sho
 
 Definitions such as recipes, skills, items, behavior-tree templates, and scenario profiles remain immutable resources/configuration, not entities.
 
-## First migration slice
+## Implemented migration slices
 
-The first authoritative ECS slice covers creature **Needs**, **Learning**, and **Feelings** updates. It also binds Transform and Inventory components so identity/lifecycle are explicit, while leaving their behavior in existing systems for now.
+M1 covers creature **Needs**, **Learning**, and **Feelings** updates. It also binds Transform and Inventory components so identity/lifecycle are explicit, while leaving their behavior in existing systems for now.
 
 The adapter binds component stores to the exact nested actor objects already serialized today. There is no shadow component state and no ECS blob in exports. `Activity` is ephemeral, computed from current task plus an explicit, bounded snapshot of domain context. Existing `colony.js` retains its actor command permissions, task decisions, mood and stochastic temper checks. Only the migrated numerical decay/fatigue rules are removed from that legacy loop.
 
 Authoritative initial rule values live in `source/content/actor-rules.json`, loaded in Node and embedded in the standalone HTML. They reproduce the current constants; they are not silently overridable by a scene pack. Future per-pack overrides require a separately versioned manifest and save compatibility design.
 
 Actor-major stepping and previous RNG call order remain unchanged: the existing shared-world loop visits the saved creature order and invokes ECS once for each present actor. System order within an actor is: daily practice reset; learning fatigue/hysteresis; social decay; needs decay. Legacy incident/decision/task code follows.
+
+M2 adds explicit transient **Task** and **Intent** components and a second deterministic scheduler for activity progression. `task-movement` owns transform/path advancement; `task-work-progress` owns elapsed work time; the post phase records intent status. The legacy facade still creates tasks, applies interruption policy, authorizes construction costs, mirrors specialized progress records and invokes completion side effects. Arrival intentionally consumes no work time in the same tick, preserving the prior phase boundary. Blocked paths return a typed outcome to the facade rather than deleting tasks from inside a generic ECS system.
 
 ## Separation and ownership
 
@@ -86,7 +88,7 @@ Actor-major stepping and previous RNG call order remain unchanged: the existing 
 ## Migration sequence and exit gates
 
 - **M1 — ECS core + actor dynamics:** world, scheduler, rule manifest and legacy adapter; fixed-step unit tests; real-engine save/resume parity; unmodified four content-library schemas.
-- **M2 — tasks, intents and movement:** move activity lifecycle, path progress, interruptions and `Task`/`Intent` into explicit systems. Separate AI decision generation from movement and completion. Require physical logistics/task ownership parity.
+- **M2 — tasks, intents and movement (implemented):** explicit transient `Task`/`Intent`, deterministic path traversal, arrival/blocked outcomes and elapsed-work progression. Task selection, policy interruption, authorization and completion consequences remain explicit facade boundaries for M3/M4.
 - **M3 — world simulation:** migrate deposits, worksite inventories, production and carrier transfers. Verify conservation, exactly-once task completion, stable IDs and deterministic multi-actor conflicts.
 - **M4 — economy, quests and progression:** split authorization, settlement, rewards, presentation and journaling. Keep declarative behavior trees as decision providers, not ECS data mutators.
 - **M5 — composition cleanup:** replace extension chain (`systems.js`, `colony.js`, `world-simulation.js`, `village-systems.js`) with a thin facade, command handlers and scheduled domain systems. Remove legacy actor property proxies only when all callers use explicit IDs and views.

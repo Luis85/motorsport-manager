@@ -8612,11 +8612,11 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 </script>
 <script>
-/* First ECS migration slice: authoritative per-actor vital and learning updates.
+/* Incremental actor ECS: authoritative vitals, learning, task movement and work time.
  * Components bind by reference to existing serialized actor records, preserving v8/v9
- * saves and all four existing content-library contracts. Activity is transient data.
- * Command validation, RNG, social incidents and task decisions stay in the old
- * domain while migrated systems are proven against behavioral fixtures.
+ * saves and all four existing content-library contracts. Activity and Intent are transient.
+ * Command validation, RNG, task selection and completion side effects remain in the
+ * domain facade while the ECS owns deterministic progression between those boundaries.
  */
 (function (root) {
     'use strict';
@@ -8653,26 +8653,26 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
         });
     }
     function create(rules = DEFAULT) {
-        const tuning = validateRules(rules), w = new E.World(), scheduler = new E.Scheduler(),
-            workingKinds = new Set(tuning.needs.workingKinds);
-        scheduler.register({id:'practice-day',phase:'pre',order:10,query:['Learning'],update(world,id,dt,ctx) {
+        const tuning = validateRules(rules), w = new E.World(), dynamics = new E.Scheduler(),
+            activity = new E.Scheduler(), workingKinds = new Set(tuning.needs.workingKinds);
+        dynamics.register({id:'practice-day',phase:'pre',order:10,query:['Learning'],update(world,id,dt,ctx) {
             const l=world.get(id,'Learning');
             if(l.practiceDay!==ctx.day){l.practiceDay=ctx.day;l.practicedToday={};}
         }});
-        scheduler.register({id:'learning-fatigue',phase:'simulate',order:10,query:['Learning','Activity'],update(world,id,dt) {
+        dynamics.register({id:'learning-fatigue',phase:'simulate',order:10,query:['Learning','Activity'],update(world,id,dt) {
             const l=world.get(id,'Learning'),a=world.get(id,'Activity');
             l.fatigue=clamp(l.fatigue+dt*(a.studying?(a.style==='playful'?
                 tuning.learning.playfulFatigue:tuning.learning.standardFatigue):-tuning.learning.recoveryRate));
             if(l.fatigue>=tuning.learning.limitAt)l.recovering=true;
             if(l.fatigue<=tuning.learning.recoverAt)l.recovering=false;
         }});
-        scheduler.register({id:'social-decay',phase:'simulate',order:20,query:['Feelings','Activity'],update(world,id,dt) {
+        dynamics.register({id:'social-decay',phase:'simulate',order:20,query:['Feelings','Activity'],update(world,id,dt) {
             const f=world.get(id,'Feelings'),a=world.get(id,'Activity');
             f.social=clamp(f.social-dt*(tuning.feelings.socialRate+
                 tuning.feelings.socialPreferenceRate*a.socialPreference));
             f.anger=clamp(f.anger-dt*tuning.feelings.angerRate);
         }});
-        scheduler.register({id:'needs-decay',phase:'simulate',order:30,query:['Needs','Activity'],update(world,id,dt) {
+        dynamics.register({id:'needs-decay',phase:'simulate',order:30,query:['Needs','Activity'],update(world,id,dt) {
             const n=world.get(id,'Needs'),a=world.get(id,'Activity'),r=tuning.needs;
             n.food=clamp(n.food-dt*(a.working?r.foodWork:r.foodIdle));
             n.water=clamp(n.water-dt*(a.working?r.waterWork:r.waterIdle));
@@ -8680,6 +8680,40 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
                 (a.walking?1+a.loadLevel*r.walkLoadFactor:1));
             n.comfort=clamp(n.comfort-dt*(a.hasShelter?r.comfortShelter:r.comfortWithoutShelter));
             n.joy=clamp(n.joy-dt*r.joyRate);
+        }});
+        activity.register({id:'task-intent',phase:'pre',order:10,query:['Task','Intent'],update(world,id,dt,ctx) {
+            const task=world.get(id,'Task'),intent=world.get(id,'Intent');
+            intent.kind=task.kind||'unknown';intent.phase=task.phase||'work';
+            intent.orderId=task.orderId||null;intent.status='active';
+            ctx.outcome.intent=intent;
+        }});
+        activity.register({id:'task-movement',phase:'simulate',order:10,query:['Transform','Task','Intent'],update(world,id,dt,ctx) {
+            const transform=world.get(id,'Transform'),task=world.get(id,'Task');
+            if(task.phase!=='walk')return;
+            const point=Array.isArray(task.path)?task.path[0]:null;
+            if(!point){task.phase='work';ctx.outcome.state='arrived';return;}
+            if(!ctx.walkable(point.x,point.y)){ctx.outcome.state='blocked';return;}
+            const dx=point.x-transform.x,dy=point.y-transform.y,distance=Math.hypot(dx,dy),move=ctx.moveRate*dt;
+            if(dx)transform.dir=dx>0?1:-1;
+            if(distance<=move){transform.x=point.x;transform.y=point.y;task.path.shift();
+                if(!task.path.length)task.phase='work';ctx.outcome.state=task.phase==='work'?'arrived':'walking';
+            }else if(distance){transform.x+=dx/distance*move;transform.y+=dy/distance*move;ctx.outcome.state='walking';}
+            else{task.path.shift();if(!task.path.length)task.phase='work';ctx.outcome.state=task.phase==='work'?'arrived':'walking';}
+        }});
+        activity.register({id:'task-work-progress',phase:'simulate',order:20,query:['Task','Intent'],update(world,id,dt,ctx) {
+            const task=world.get(id,'Task');
+            if(task.phase==='walk'||ctx.outcome.state==='blocked'||ctx.outcome.state==='arrived')return;
+            const before=Number.isFinite(task.elapsed)?task.elapsed:0;
+            task.elapsed=before+dt*ctx.workRate;
+            ctx.outcome.state='working';ctx.outcome.progress=task.elapsed-before;
+            ctx.outcome.completed=task.elapsed>=task.duration;
+        }});
+        activity.register({id:'task-intent-result',phase:'post',order:10,query:['Intent'],update(world,id,dt,ctx) {
+            const intent=world.get(id,'Intent');
+            if(ctx.outcome.state==='blocked')intent.status='blocked';
+            else if(ctx.outcome.completed)intent.status='completed';
+            else if(ctx.outcome.state==='arrived')intent.status='arrived';
+            else intent.status='active';
         }});
         function bind(actor) {
             if(!actor || typeof actor.id !== 'string') throw Error('Invalid actor entity.');
@@ -8692,13 +8726,15 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
             }
         }
         return Object.freeze({
-            world:w, scheduler, rules:tuning,
+            world:w, scheduler:dynamics, dynamics, activity, rules:tuning,
             sync(actors) {
                 if (!Array.isArray(actors)) throw Error('Actor sync expects an array.');
                 const seen=new Set();
                 for(const actor of actors) {
                     if(!actor || seen.has(actor.id))throw Error('Invalid or duplicate actor.');
                     seen.add(actor.id);bind(actor);
+                    if(actor.task){if(w.get(actor.id,'Task')!==actor.task)w.set(actor.id,'Task',actor.task);}
+                    else{if(w.has(actor.id,'Task'))w.remove(actor.id,'Task');if(w.has(actor.id,'Intent'))w.remove(actor.id,'Intent');}
                 }
                 for(const id of [...w.entities])if(!seen.has(id))w.destroy(id);
             },
@@ -8716,8 +8752,24 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
                     style:task?.style||'',socialPreference:inputs.socialPreference,
                     loadLevel:inputs.loadLevel,hasShelter:inputs.hasShelter};
                 w.set(actor.id,'Activity',activity);
-                scheduler.step(w,dt,{entityId:actor.id,day:inputs.day});
+                dynamics.step(w,dt,{entityId:actor.id,day:inputs.day});
                 return {studying:activity.studying};
+            },
+            advanceActivity(actor,dt,inputs) {
+                if(!inputs || typeof inputs.walkable!=='function' || !Number.isFinite(inputs.moveRate) || inputs.moveRate<0 ||
+                    !Number.isFinite(inputs.workRate) || inputs.workRate<0 || !Number.isFinite(dt) || dt<=0 || dt>.25)
+                    throw Error('Invalid activity ECS inputs.');
+                bind(actor);
+                const task=actor.task,outcome={state:'idle',completed:false,progress:0,intent:null};
+                const id=actor.id;
+                if(!task){if(w.has(id,'Task'))w.remove(id,'Task');if(w.has(id,'Intent'))w.remove(id,'Intent');return outcome;}
+                if(!task || typeof task!=='object' || Array.isArray(task) || !Number.isFinite(task.duration) || task.duration<0)
+                    throw Error('Invalid actor task.');
+                if(w.get(id,'Task')!==task)w.set(id,'Task',task);
+                let intent=w.get(id,'Intent');
+                if(!intent){intent={kind:task.kind||'unknown',phase:task.phase||'work',orderId:task.orderId||null,status:'active'};w.set(id,'Intent',intent);}
+                activity.step(w,dt,{entityId:id,walkable:inputs.walkable,moveRate:inputs.moveRate,workRate:inputs.workRate,outcome});
+                return outcome;
             },
             forget(id) {return w.destroy(id);}
         });
@@ -9763,35 +9815,9 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
                 this.decide();
                 return;
             }
-            if (task.phase === 'walk') {
-                const p = task.path[0];
-                if (!p) {
-                    task.phase = 'work';
-                    return;
-                }
-                if (!this.walkable(p.x, p.y)) {
-                    this.releaseSocial(task);
-                    s.task = null;
-                    return;
-                }
-                const v = s.creature, dx = p.x - v.x, dy = p.y - v.y, d = Math.hypot(dx, dy), move = 1.8 * this.load().move * dt;
-                if (dx)
-                    v.dir = dx > 0 ? 1 : -1;
-                if (d <= move) {
-                    v.x = p.x;
-                    v.y = p.y;
-                    task.path.shift();
-                    if (!task.path.length)
-                        task.phase = 'work';
-                }
-                else if (d) {
-                    v.x += dx / d * move;
-                    v.y += dy / d * move;
-                }
-                return;
-            }
-            const rate = this.workRate(task);
-            if (task.kind === 'build') {
+            // Task selection and completion consequences remain domain responsibilities.
+            // ECS owns the deterministic movement and elapsed-work transition between them.
+            if (task.phase !== 'walk' && task.kind === 'build') {
                 const o = s.orders.find(o => o.id === task.orderId);
                 if (!o) {
                     s.task = null;
@@ -9807,17 +9833,30 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
                         s.inventory[id] -= n;
                     o.paid = true;
                 }
-                o.progress = Math.min(task.duration, task.elapsed + dt * rate);
+            }
+            const outcome = this.ecs.advanceActivity(c, dt, {
+                walkable: (x, y) => this.walkable(x, y),
+                moveRate: 1.8 * this.load().move,
+                workRate: this.workRate(task)
+            });
+            if (outcome.state === 'blocked') {
+                this.releaseSocial(task);
+                s.task = null;
+                return;
+            }
+            if (outcome.state === 'walking' || outcome.state === 'arrived')
+                return;
+            if (task.kind === 'build') {
+                const o = s.orders.find(o => o.id === task.orderId);
+                if (o) o.progress = Math.min(task.duration, task.elapsed);
             }
             if (task.kind === 'train' && s.training)
-                s.training.progress = Math.min(task.duration, task.elapsed + dt * rate);
+                s.training.progress = Math.min(task.duration, task.elapsed);
             if (task.kind === 'practice') {
                 const o = s.orders.find(o => o.id === task.orderId);
-                if (o)
-                    o.progress = Math.min(task.duration, task.elapsed + dt * rate);
+                if (o) o.progress = Math.min(task.duration, task.elapsed);
             }
-            task.elapsed += dt * rate;
-            if (task.elapsed >= task.duration)
+            if (outcome.completed)
                 this.finishTask(task);
         }
         releaseSocial(task) {
