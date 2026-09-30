@@ -27,6 +27,16 @@ publish one complete checkpoint or none. Never infer component diagnoses or
 consumption absent from the factual result, and never repair a partial campaign
 projection by silently fabricating its missing event.
 
+`CampaignCompetition` is the campaign sporting authority. New settlements require
+an explicit series rule pack, accepted entry field, active ordered calendar and
+the exact next-event manifest. Calendar dates/revisions/hashes and stable
+person/team/car mappings must agree before consequences stage. Standings rebuild
+from immutable awards; points then successive finishing counts determine order,
+and unresolved ties stay shared. Do not assign a fabricated calendar or entry
+registry to non-empty legacy sporting history. Provisional results, corrections,
+season prizes and promotion require explicit later contracts rather than
+approximation inside final-only settlement.
+
 ## UI changes
 
 Use `GameTheme` through the existing UI/MinimalRaceStyle adapters for native
