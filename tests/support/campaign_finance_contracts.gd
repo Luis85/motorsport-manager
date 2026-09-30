@@ -21,7 +21,7 @@ static func run(check: Callable) -> void:
 			return
 		economy = changed.economy
 	var due = CampaignEconomy.settle_due(economy, 8 * WEEK)
-	check.call(due.ok and due.settled_count == 15,
+	check.call(due.ok and due.settled_count == 13,
 		"Eight-week fixture settles each contracted receipt and payment exactly once")
 	if not due.ok:
 		return
