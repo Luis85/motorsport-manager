@@ -73,6 +73,7 @@ func run() -> void:
 			check(error == OK, "Native gesture evidence is saved")
 			captures.append(filename)
 	pure_moves()
+	overlay_geometry_cache()
 	await lifecycle()
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures,
 		"engine": Engine.get_version_info().string, "captures": captures,
@@ -163,6 +164,28 @@ func pure_moves() -> void:
 	result = TrackEdit.move_handle(document, 0, "out", TrackDocument.point(document.nodes[0]) + Vector2(20, 30))
 	check(result.ok and document == original, "Handle transformation preserves its input document")
 	check(TrackDocument.handle(result.document.nodes[0], "out") == Vector2(20, 30), "Handle transformation retains authored coordinates")
+
+func overlay_geometry_cache() -> void:
+	fixture()
+	var g: TrackGeometry = editor.canvas.geometry
+	var segments = TrackCanvasOverlays.surface_geometry(g)
+	check(segments.size() == RaceVisualPort.SURFACE_STATIONS, "Surface painter compiles every longitudinal station")
+	check(segments[0].size() == RaceVisualPort.SURFACE_LANES and segments[0][0].size() == 4,
+		"Surface painter preserves lane and quarter-station sampling")
+	var p = g.sample(0.0)
+	var q = g.sample(g.length / (RaceVisualPort.SURFACE_STATIONS * 4))
+	var lateral = 0.5 / RaceVisualPort.SURFACE_LANES - 0.5
+	check(segments[0][0][0][0].is_equal_approx(p.p + p.n * p.w * lateral) and
+		segments[0][0][0][1].is_equal_approx(q.p + q.n * q.w * lateral),
+		"Extracted surface painter uses the exact original lateral/longitudinal sample points")
+	editor.canvas._surface_geometry = null
+	var builds = editor.canvas.surface_geometry_builds
+	editor.canvas.build_surface_geometry()
+	check(editor.canvas.surface_geometry_builds == builds + 1 and editor.canvas._surface_segments == segments,
+		"Canvas retains equivalent cache values and increments only for a new geometry")
+	editor.canvas.build_surface_geometry()
+	check(editor.canvas.surface_geometry_builds == builds + 1,
+		"Repeated drawing preparation does not rebuild an unchanged circuit")
 
 func lifecycle() -> void:
 	# Warm up before comparing retained node/resource counts; do not assert OS bytes.
