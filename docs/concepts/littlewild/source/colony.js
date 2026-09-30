@@ -154,15 +154,7 @@
             if ((guide || pocket || research) && this.s.ledger[0])
                 this.s.ledger[0].actorId = this._actor?.id || null;
         }
-        xp(who, amount) {
-            const level = this.s.creature.level;
-            super.xp(who, amount);
-            if (who === 'creature' && this.actor?.rpg && this.s.creature.level > level) {
-                const points = (this.s.creature.level - level) * A.content.rules.cpPerLevel;
-                this.actor.rpg.cp += points;
-                this.emit('notice', this.s.name + ' earned ' + points + ' character points.');
-            }
-        }
+        xp(who, amount) { return super.xp(who, amount); }
         random(stream = 'actor') { const holder = stream === 'world' ? this.s.colony : this.actor.rpg, key = stream === 'world' ? 'rng' : 'rng'; const next = R.next(holder[key]); holder[key] = next.seed; return next.value; }
         load(c = this.actor) { return R.encumbrance(c.rpg.attributes.ST, Object.entries(c.inventory).reduce((n, [id, q]) => n + (item(id)?.weight || 0) * q, 0)); }
         traitEffects(c = this.actor) { return c.traits.map(id => A.content.traits.find(t => t.id === id)).filter(Boolean); }
@@ -286,7 +278,7 @@
             const price = this.purchasePrice();
             if (this.s.player.coins < price)
                 return fail('Need ' + price + ' guide coins to welcome another creature.');
-            const raw = new LegacyEngine().s, id = 'c' + this.s.colony.nextCreatureId++, names = ['Pip', 'Fern', 'Mochi', 'Clover', 'Bramble', 'Wren', 'Pebble', 'Juniper'];
+            const raw = new LegacyEngine().s, id = 'c' + this.s.colony.nextCreatureId, names = ['Pip', 'Fern', 'Mochi', 'Clover', 'Bramble', 'Wren', 'Pebble', 'Juniper'];
             const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, copy(raw[k])])), id, personality);
             c.name = names[(this.s.colony.purchased) % names.length];
             c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
@@ -295,11 +287,13 @@
             c.creature.y = GATE.y;
             c.allowance.given = 0;
             c.feelings.causes = [{ reason: 'A new place, and a new beginning', joy: 6, anger: 0, time: this.s.simTime }];
-            this.s.player.coins -= price;
+            const settlement = this.settleEconomy({ id: this.economySettlementId('welcome'), guide: -price }, 'Welcomed ' + c.name);
+            if (!settlement.ok)
+                return fail('The welcome cost could not be settled.');
+            this.s.colony.nextCreatureId++;
             this.s.colony.purchased++;
             this.creatures.push(c);
             this.s.colony.selectedId = null;
-            this.transaction('Welcomed ' + c.name, -price);
             this.log(c.name + ' arrived. Select a creature before giving an idea or sharing a moment.', 'paw');
             this.emit('arrival', c.name + ' found a place in our glade.', { actorId: c.id });
             return ok({ creature: c, price });
@@ -394,8 +388,8 @@
                 return fail('Only goods already deposited in the warehouse can be sold.');
             const total = Math.max(1, Math.floor(item(id).price * .65)) * qty;
             w[id] -= qty;
-            this.s.player.coins += total;
-            this.transaction('Sold warehouse stock: ' + item(id).name, total);
+            const settlement = this.settleEconomy({ id: this.economySettlementId('warehouse-sale'), guide: total }, 'Sold warehouse stock: ' + item(id).name);
+            if (!settlement.ok) { w[id] += qty; return fail('The sale could not be settled.'); }
             this.log('Sold ' + qty + ' ' + item(id).name.toLowerCase() + ' from the warehouse for ' + total + ' guide coins.', 'coin');
             return ok({ amount: total });
         }
@@ -538,26 +532,26 @@
                 q.returnRemaining = A.content.rules.returnSeconds;
             }
         }
+        questRewardSpec(q, completed) {
+            const id = 'adventure:' + this.actor.id + ':' + q.questId + ':' + Math.round(q.started * 1000);
+            if (!completed)
+                return { id, actorXp: q.aborted ? 1 : 6 };
+            const income = this.economyRuntime().splitIncome(q.coins);
+            return { id, ...income, research: q.research, playerXp: 10, actorXp: 18 };
+        }
         returnQuest() {
             const c = this.actor, q = c.activeQuest;
             if (!q)
                 return false; // A return is settled only once.
             const completed = !q.aborted && q.successes >= q.required;
-            if (completed) {
-                const pocket = Math.floor(q.coins * .3);
-                this.s.player.coins += q.coins - pocket;
-                this.s.creature.coins += pocket;
-                this.transaction('Adventure: ' + q.name, q.coins - pocket, pocket, q.research);
-                this.s.rp += q.research;
-                this.xp('player', 10);
-                this.xp('creature', 18);
+            const settlement = this.settleEconomy(this.questRewardSpec(q, completed), completed ? 'Adventure: ' + q.name : null);
+            if (!settlement.ok)
+                return false;
+            if (completed)
                 this.changeFeeling('I completed ' + q.name, 10, -9);
-            }
-            else {
-                this.xp('creature', q.aborted ? 1 : 6);
+            else
                 this.changeFeeling(q.aborted ? 'Back home after a recall' : 'We learned from a difficult adventure', q.aborted ? 0 : -4, q.aborted ? 0 : 7);
-            }
-            const report = { ...copy(q), finished: this.s.simTime, delivered: false, reward: completed ? q.coins : 0, researchReward: completed ? q.research : 0 };
+            const report = { ...copy(q), finished: this.s.simTime, delivered: false, reward: completed ? q.coins : 0, researchReward: completed ? q.research : 0, prestigeReward: Math.max(0, settlement.deltas?.prestige || 0) };
             c.questHistory.unshift(report);
             c.questHistory = c.questHistory.slice(0, 15);
             c.activeQuest = null;

@@ -1,0 +1,55 @@
+{
+  "passed": 12,
+  "total": 12,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Atomic settlement applies wallets, research, stats and prestige",
+      "passed": true
+    },
+    {
+      "name": "Insufficient balances block the entire settlement",
+      "passed": true
+    },
+    {
+      "name": "Explicit IDs settle once per runtime",
+      "passed": true
+    },
+    {
+      "name": "Chapter markers remain idempotent after ECS reconstruction",
+      "passed": true
+    },
+    {
+      "name": "Player level-up applies research bonus and returns neutral outbox events",
+      "passed": true
+    },
+    {
+      "name": "Actor level-up applies bond and configured character points",
+      "passed": true
+    },
+    {
+      "name": "Prestige spending never reduces earned prestige",
+      "passed": true
+    },
+    {
+      "name": "Missing prestige state blocks prestige mutations without wallet changes",
+      "passed": true
+    },
+    {
+      "name": "Income split is deterministic and data driven",
+      "passed": true
+    },
+    {
+      "name": "Settlement never writes presentation or journal records",
+      "passed": true
+    },
+    {
+      "name": "Failed system execution rolls every authoritative record back",
+      "passed": true
+    },
+    {
+      "name": "Actor wallets remain isolated while shared balances settle once",
+      "passed": true
+    }
+  ]
+}

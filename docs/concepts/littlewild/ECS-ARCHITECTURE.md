@@ -74,13 +74,19 @@ Actor-major stepping and previous RNG call order remain unchanged: the existing 
 
 M2 adds explicit transient **Task** and **Intent** components and a second deterministic scheduler for activity progression. `task-movement` owns transform/path advancement; `task-work-progress` owns elapsed work time; the post phase records intent status. The legacy facade still creates tasks, applies interruption policy, authorizes construction costs, mirrors specialized progress records and invokes completion side effects. Arrival intentionally consumes no work time in the same tick, preserving the prior phase boundary. Blocked paths return a typed outcome to the facade rather than deleting tasks from inside a generic ECS system.
 
+M3 adds `world-ecs.js` for physical ownership and production. Stable resource, inventory, worksite, harvest, carrier, and production identities are bound to the existing records. Deterministic systems settle transfers, finite depletion, reservations, worker claims, retries, and exactly-once output emission. The facade still chooses sources and recipes, performs skill checks, and owns rewards and narration.
+
+M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide and actor wallets, shared research, player and actor levels, prestige, statistics, and chapter completion are updated as one transaction with rollback on failure. Domain commands still decide whether an action is allowed and what the reward means; the facade alone writes the ledger, histories, memories, logs, and presentation events. A validated `economy-rules.json` manifest owns level thresholds, level-up bonuses, income sharing, and bounded settlement limits.
+
 ## Separation and ownership
 
 | Owner | Allowed | Forbidden |
 |---|---|---|
 | `ecs.js` | Stable identity, component storage, structural buffer, query and scheduling primitives | Game content, story formats, rendering, business rules |
 | `actor-ecs.js` | Actor components and physiological/social decay rules with validated tuning | Reading globals for selected creature, UI, RNG, work completion |
-| Legacy colony adapter | Translate legacy actor state/context; call ECS; retain unmigrated commands/tasks | Duplicate migrated needs/fatigue formulas |
+| `world-ecs.js` | Physical deposits, inventories, worksite jobs, reservations, transfers and exactly-once output settlement | Source selection, recipes, skill rolls, rewards, UI |
+| `economy-ecs.js` | Atomic wallets, research, XP, prestige, statistics and chapter settlement with rollback and a neutral outbox | Authorization, physical goods, histories, logs, memories, presentation, RNG |
+| Legacy simulation adapters | Translate legacy state/context; call ECS services; retain authorization, decision and presentation boundaries | Duplicate migrated calculations or balances |
 | Existing content registries | Definition parsing, ID/reference validation, immutable read tables | Executing imported callbacks |
 | Application shell | Input/command dispatch, save/export orchestration, render scheduling | Authoritative gameplay calculations |
 | Persistence | Existing v8 state and v9 portable envelope, versioned migrations | Serialization of renderer objects or duplicated ECS caches |
@@ -89,8 +95,8 @@ M2 adds explicit transient **Task** and **Intent** components and a second deter
 
 - **M1 — ECS core + actor dynamics:** world, scheduler, rule manifest and legacy adapter; fixed-step unit tests; real-engine save/resume parity; unmodified four content-library schemas.
 - **M2 — tasks, intents and movement (implemented):** explicit transient `Task`/`Intent`, deterministic path traversal, arrival/blocked outcomes and elapsed-work progression. Task selection, policy interruption, authorization and completion consequences remain explicit facade boundaries for M3/M4.
-- **M3 — world simulation:** migrate deposits, worksite inventories, production and carrier transfers. Verify conservation, exactly-once task completion, stable IDs and deterministic multi-actor conflicts.
-- **M4 — economy, quests and progression:** split authorization, settlement, rewards, presentation and journaling. Keep declarative behavior trees as decision providers, not ECS data mutators.
+- **M3 — world simulation (implemented):** deposits, worksite inventories, production reservations/jobs, finite substrate use, carrier transfers, conservation, stable IDs and deterministic contention.
+- **M4 — economy, quests and progression (implemented):** atomic wallets, research, XP, prestige, statistics and chapter settlement; authorization, physical goods, histories, journaling and presentation remain separate adapters.
 - **M5 — composition cleanup:** replace extension chain (`systems.js`, `colony.js`, `world-simulation.js`, `village-systems.js`) with a thin facade, command handlers and scheduled domain systems. Remove legacy actor property proxies only when all callers use explicit IDs and views.
 - **M6 — content/schema evolution:** publish optional versioned ECS rule profiles and composition archetypes in scenario packs; migrate story snapshots deliberately. Never infer executable behavior from external JSON.
 
@@ -98,4 +104,4 @@ Each migration has an executable regression gate and a baseline trace for old-ve
 
 ## Do not claim yet
 
-M1 does **not** make the whole game ECS. Quest, task completion, construction, physical logistics, market, progression and most command handlers still use existing domain classes. It also does not make all mechanics arbitrarily extensible via imported JSON, guarantee cross-platform bitwise float equality, or provide a live multiplayer simulation.
+M1–M4 do **not** remove the legacy engine-extension chain. AI decision providers, command handlers, quest/market history, construction consequences, narration, and presentation are still composed through the existing domain classes until M5. The migration also does not make all mechanics arbitrarily extensible via imported JSON, guarantee cross-platform bitwise float equality, or provide a live multiplayer simulation.

@@ -87,7 +87,7 @@ class Engine extends BaseEngine {
   if(!s.researched[id])return fail('Research this lesson first.');
   if(s.learning.queue.length+(s.training?1:0)>=4)return fail('Four lessons are enough to hold in mind. Finish or remove one first.');
   if(s.player.coins<k.coins)return fail('Need '+k.coins+' guide coins for this lesson.');
-  s.player.coins-=k.coins;this.transaction('Lesson: '+k.short,-k.coins);
+  const settlement=this.settleEconomy({id:this.economySettlementId('lesson-plan',id),guide:-k.coins},'Lesson: '+k.short);if(!settlement.ok)return fail('The lesson cost could not be settled.');
   const lesson={id,progress:0,style:s.learning.style,tuition:k.coins};
   if(!s.training)s.training=lesson;else s.learning.queue.push(lesson);
   this.log('A '+k.short+' lesson joins our plan: '+STYLES[lesson.style].name.toLowerCase()+'.','book');return {ok:true};
@@ -95,9 +95,9 @@ class Engine extends BaseEngine {
  cancelLesson(id){
   const s=this.s;let t=s.training?.id===id?s.training:s.learning.queue.find(t=>t.id===id);if(!t)return fail('That lesson is no longer queued.');
   const refund=t.progress===0?t.tuition:0;
+  if(refund){const settlement=this.settleEconomy({id:this.economySettlementId('lesson-refund',id),guide:refund},'Unused lesson refunded');if(!settlement.ok)return fail('The tuition refund could not be settled.');}
   if(s.training===t){if(s.task?.kind==='train')s.task=null;s.training=s.learning.queue.shift()||null;}
   else s.learning.queue=s.learning.queue.filter(l=>l.id!==id);
-  if(refund){s.player.coins+=refund;this.transaction('Unused lesson refunded',refund);}
   this.log('Set aside '+SKILLS[id].short+'. '+(refund?'Unused tuition returned.':'Teaching already began; tuition is not refunded.'),'book');return {ok:true};
  }
  setLearningStyle(style){if(!own(STYLES,style))return fail('Unknown learning style.');this.s.learning.style=style;return {ok:true};}
@@ -117,7 +117,7 @@ class Engine extends BaseEngine {
   const p=this.disciplineProgress(discipline),current=this.s.specializations[discipline];if(current===id)return fail('This is already Pip’s specialty.');
   if(p.learned<2||p.practice<12)return fail('Learn two skills in this discipline and earn 12 total practice points.');
   const rp=current?2:4,coins=current?0:18;if(this.s.rp<rp||this.s.player.coins<coins)return fail('Need '+rp+' shared research and '+coins+' guide coins.');
-  this.s.rp-=rp;this.s.player.coins-=coins;this.s.specializations[discipline]=id;this.transaction('Specialization: '+id,-coins,0,-rp);
+  const settlement=this.settleEconomy({id:this.economySettlementId('specialization',discipline+':'+id),guide:-coins,research:-rp},'Specialization: '+id);if(!settlement.ok)return fail('The specialization cost could not be settled.');this.s.specializations[discipline]=id;
   this.remember('specialty-'+id,'A talent taking shape',list.find(x=>x.id===id).name,'star');return {ok:true};
  }
  startStudy(id){const s=this.s,d=own(STUDIES,id)?STUDIES[id]:null;if(!d)return fail('Unknown field study.');if(s.fieldStudies.completed.includes(id))return fail('This discovery is already in our notebook.');if(s.fieldStudies.active)return fail('Finish the active field study or put it aside first.');if(d.requires&&!s.skills[d.requires])return fail('First learn '+SKILLS[d.requires].short+'.');s.fieldStudies.active=id;s.fieldStudies.progress[id] ||= {};
@@ -131,9 +131,8 @@ class Engine extends BaseEngine {
   if(!d.goals.some(g=>g.event===event))return;
   const p=s.fieldStudies.progress[id];p[event]=Math.min(10000,(p[event]||0)+amount);
   if(d.goals.every(g=>(p[g.event]||0)>=g.amount)){
+   const research=d.reward.rp+(this.specialization('thinker')?1:0),settlement=this.settleEconomy({id:this.economySettlementId('field-study',id),guide:d.reward.coins,research,playerXp:8,actorXp:8},'Field study: '+d.name);if(!settlement.ok)return;
    s.fieldStudies.completed.push(id);s.fieldStudies.active=null;
-   this.researchGain(d.reward.rp+(this.specialization('thinker')?1:0),'Field study: '+d.name);
-   s.player.coins+=d.reward.coins;this.transaction('Field study stipend',d.reward.coins);this.xp('player',8);this.xp('creature',8);
    this.remember('field-'+id,d.name,'A question answered through lived experience.','research');this.emit('celebrate','Field study complete: '+d.name);this.log('Our field study is complete. The evidence became shared knowledge.','research');
   }
  }

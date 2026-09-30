@@ -1,3 +1,11 @@
+## ECS M4 — economy, quests, and progression
+
+Introduced `economy-ecs.js` as the single atomic settlement boundary for guide and creature wallets, shared research, player and actor XP, prestige, chapter completion, and selected progression statistics. Commands still authorize actions and the domain facade still owns physical goods, quest and market history, memories, logs, events, and presentation. Settlement IDs prevent duplicate rewards during the active runtime, while persistent chapter identifiers prevent chapter rewards from being replayed after save/import.
+
+All direct coin, research, XP, and prestige mutations in `engine.js`, `systems.js`, `colony.js`, and `village-systems.js` now delegate to the economy settlement service. Market sale proceeds settle before staged goods are removed; adventure returns settle guide, pocket, research, XP, and prestige rewards together; failed authorizations and insufficient balances leave every financial and progression record unchanged.
+
+Gameplay constants for level thresholds, level-up bonuses, income splitting, and settlement limits live in validated `content/economy-rules.json`. Existing v8 state and v9 portable-story formats remain unchanged because ECS components continue to bind to the existing records by reference.
+
 ## ECS M2 — activity and movement
 
 Moved authoritative path traversal and elapsed-work progression into named ECS systems. Current tasks are bound as transient `Task` components with an explicit `Intent` status; movement returns typed walking, arrived and blocked outcomes. Arrival does not spend work time in the same tick. The domain facade retains task selection, emergency interruption, construction payment and completion side effects. Added focused activity and real-engine parity tests without changing v8/v9 persistence.

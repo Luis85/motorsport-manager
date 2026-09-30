@@ -44,6 +44,9 @@
                 this.newWish();
             this._blockedKey = '';
             this._blocked = new Set();
+            // Economy ECS state is transient; serialized balances and progression remain authoritative.
+            this.economyEcs = null;
+            this._economySettlementSequence = 0;
         }
         /** A bounded audit trail. Amounts are deltas, never a second source of balances. */
         transaction(label, guide = 0, pocket = 0, research = 0) {
@@ -52,6 +55,44 @@
                 return;
             s.ledger.unshift({ label, guide, pocket, research, day: s.day, hour: s.hour });
             s.ledger = s.ledger.slice(0, 80);
+        }
+        economyRuntime() {
+            if (!this.economyEcs) {
+                if (!root.LWEconomyECS)
+                    throw Error('Economy ECS runtime missing.');
+                this.economyEcs = root.LWEconomyECS.create();
+            }
+            return this.economyEcs;
+        }
+        economyActor() { return this._actor?.id ? this._actor : null; }
+        economySettlementId(scope, key = '') {
+            const actor = this._actor?.id || 'legacy';
+            const suffix = key || (Math.round(this.s.simTime * 1000) + ':' + (++this._economySettlementSequence));
+            return (scope + ':' + actor + ':' + suffix).replace(/[^a-zA-Z0-9._:-]/g, '_').slice(0, 95);
+        }
+        /** Apply one authorized economic/progression change, then translate its neutral outbox. */
+        settleEconomy(input, label = null) {
+            const spec = { ...input };
+            spec.id ||= this.economySettlementId('economy');
+            spec.actorCpPerLevel ??= root.LWAdventure?.content?.rules?.cpPerLevel || 0;
+            const out = this.economyRuntime().settle(this.s, this.economyActor(), spec);
+            if (!out.ok)
+                return out;
+            const d = out.deltas || {};
+            if (label)
+                this.transaction(label, d.guide || 0, d.pocket || 0, d.research || 0);
+            for (const event of out.levelUps || []) {
+                this.log((event.who === 'player' ? 'You' : this.s.name) + ' reached level ' + event.level + '!', 'star');
+                if (event.who === 'player') {
+                    this.transaction('Guide level ' + event.level, 0, 0, this.economyRuntime().rules.xp.playerResearchPerLevel);
+                    this.emit('celebrate', 'Your level grew. +' + this.economyRuntime().rules.xp.playerResearchPerLevel + ' shared research!');
+                }
+                else
+                    this.emit('celebrate', this.s.name + ' is growing in confidence!');
+            }
+            if (out.actorCp)
+                this.emit('notice', this.s.name + ' earned ' + out.actorCp + ' character points.');
+            return out;
         }
         remember(key, title, description, icon = 'heart') {
             const s = this.s;
@@ -202,20 +243,12 @@
         emit(type, text, extra = {}) { this.events.push({ type, text, ...extra }); }
         log(text, icon = 'leaf') { const entry = { text, icon, time: this.s.simTime, day: this.s.day, hour: this.s.hour }; this.s.log.unshift(entry); this.s.log = this.s.log.slice(0, 70); this.emit('log', text, { icon }); }
         drain() { const ev = this.events; this.events = []; return ev; }
-        xp(who, amount) { const p = who === 'player' ? this.s.player : this.s.creature; p.xp += amount; while (p.xp >= threshold(p.level)) {
-            p.xp -= threshold(p.level);
-            p.level++;
-            this.log((who === 'player' ? 'You' : this.s.name) + ' reached level ' + p.level + '!', 'star');
-            if (who === 'player') {
-                this.researchGain(2, 'Guide level ' + p.level);
-                this.emit('celebrate', 'Your level grew. +2 shared research!');
-            }
-            else {
-                this.s.bond = clamp(this.s.bond + 2, 0, 100);
-                this.emit('celebrate', this.s.name + ' is growing in confidence!');
-            }
-        } }
-        researchGain(n, label = 'Shared discovery') { this.s.rp += n; this.s.stats.researchEarned += n; this.transaction(label, 0, 0, n); }
+        xp(who, amount) {
+            return this.settleEconomy({ id: this.economySettlementId('xp'), [who === 'player' ? 'playerXp' : 'actorXp']: amount });
+        }
+        researchGain(n, label = 'Shared discovery') {
+            return this.settleEconomy({ id: this.economySettlementId('research'), research: n }, label);
+        }
         get buildingNames() { return BUILDINGS; }
         has(kind) { return has(this.s, kind); }
         mood() { const s = this.s, n = s.needs; if (n.water < 25)
@@ -229,7 +262,11 @@
         friendship() { const b = this.s.bond; return b < 30 ? 'Getting to know you' : b < 45 ? 'Little companions' : b < 65 ? 'Trusted buddies' : b < 85 ? 'Best of friends' : 'A bond for life'; }
         quest() { return QUESTS.find(q => !this.s.completedQuests.includes(q.id)) || null; }
         claimQuest() { let q = this.quest(); if (!q || !q.checks.every(c => c[1](this.s)))
-            return { ok: false, reason: 'There is a little more to discover first.' }; this.s.completedQuests.push(q.id); this.s.player.coins += q.reward.coins; this.transaction('Chapter: ' + q.title, q.reward.coins); this.remember('chapter-' + q.id, q.title, 'A chapter of our shared story.', 'star'); this.researchGain(q.reward.rp); this.xp('player', q.reward.xp); this.log('A shared milestone: ' + q.title + '. +' + q.reward.coins + ' coins, +' + q.reward.rp + ' research.', 'star'); this.emit('celebrate', 'A little chapter, a big memory.'); return { ok: true }; }
+            return { ok: false, reason: 'There is a little more to discover first.' };
+            const settlement = this.settleEconomy({ id: 'chapter:' + q.id, chapterId: q.id, guide: q.reward.coins, research: q.reward.rp, playerXp: q.reward.xp }, 'Chapter: ' + q.title);
+            if (!settlement.ok)
+                return { ok: false, reason: settlement.state === 'duplicate' ? 'This chapter is already complete.' : 'The reward could not be settled.' };
+            this.remember('chapter-' + q.id, q.title, 'A chapter of our shared story.', 'star'); this.log('A shared milestone: ' + q.title + '. +' + q.reward.coins + ' coins, +' + q.reward.rp + ' research.', 'star'); this.emit('celebrate', 'A little chapter, a big memory.'); return { ok: true }; }
         care(kind) {
             const s = this.s, n = s.needs;
             const issue = this.careIssue(kind);
@@ -301,17 +338,26 @@
             return { ok: false, reason: 'Already researched.' }; if (s.player.level < k.tier)
             return { ok: false, reason: 'Reach guide level ' + k.tier + ' to explore this tier.' }; const missing = k.requires.filter(r => !s.skills[r]); if (missing.length)
             return { ok: false, reason: 'First teach ' + missing.map(r => SKILLS[r].short).join(' and ') + '.' }; if (s.rp < k.rp)
-            return { ok: false, reason: 'Need ' + k.rp + ' shared research. Explore, practice, or finish a chapter.' }; s.rp -= k.rp; this.transaction('Research: ' + k.short, 0, 0, -k.rp); s.researched[id] = true; this.xp('player', 2); this.log('You researched “' + k.name + '”. The lesson is ready to teach.', 'research'); return { ok: true }; }
+            return { ok: false, reason: 'Need ' + k.rp + ' shared research. Explore, practice, or finish a chapter.' };
+            const settlement = this.settleEconomy({ id: this.economySettlementId('lesson-research', id), research: -k.rp, playerXp: 2 }, 'Research: ' + k.short);
+            if (!settlement.ok) return { ok: false, reason: 'The research cost could not be settled.' };
+            s.researched[id] = true; this.log('You researched “' + k.name + '”. The lesson is ready to teach.', 'research'); return { ok: true }; }
         teach(id) { const s = this.s, k = owns(SKILLS, id) ? SKILLS[id] : null; if (!k)
             return { ok: false, reason: 'Unknown lesson.' }; if (s.skills[id])
             return { ok: false, reason: 'Pip already knows this.' }; if (!s.researched[id])
             return { ok: false, reason: 'Research this lesson first.' }; if (s.training)
             return { ok: false, reason: 'One lesson at a time. Let the current lesson settle in.' }; if (s.player.coins < k.coins)
-            return { ok: false, reason: 'Need ' + k.coins + ' guide coins to buy this training.' }; s.player.coins -= k.coins; this.transaction('Lesson: ' + k.short, -k.coins); s.training = { id, progress: 0 }; this.log('You bought a ' + k.short + ' lesson. ' + s.name + ' will study when ready.', 'book'); return { ok: true }; }
+            return { ok: false, reason: 'Need ' + k.coins + ' guide coins to buy this training.' };
+            const settlement = this.settleEconomy({ id: this.economySettlementId('lesson-buy', id), guide: -k.coins }, 'Lesson: ' + k.short);
+            if (!settlement.ok) return { ok: false, reason: 'The lesson cost could not be settled.' };
+            s.training = { id, progress: 0 }; this.log('You bought a ' + k.short + ' lesson. ' + s.name + ' will study when ready.', 'book'); return { ok: true }; }
         setAllowance(n) { if (!Number.isFinite(n))
             return; this.s.allowance.limit = clamp(Math.round(n), 0, 30); this.emit('change', 'Allowance updated.'); }
         topUp(automatic = false) { const s = this.s, a = s.allowance; const remaining = Math.max(0, a.limit - a.given), amount = Math.min(remaining, s.player.coins); if (amount <= 0)
-            return { ok: false, reason: remaining === 0 ? 'Today’s allowance has already been issued. Lowering a limit does not reclaim coins.' : 'You need guide coins to fund an allowance.' }; s.player.coins -= amount; s.creature.coins += amount; a.given += amount; this.transaction('Daily allowance', -amount, amount); this.log((automatic ? 'New-day allowance: ' : 'You shared ') + amount + ' coins with ' + s.name + '.', 'coin'); return { ok: true, amount }; }
+            return { ok: false, reason: remaining === 0 ? 'Today’s allowance has already been issued. Lowering a limit does not reclaim coins.' : 'You need guide coins to fund an allowance.' };
+            const settlement = this.settleEconomy({ id: this.economySettlementId('allowance'), guide: -amount, pocket: amount }, 'Daily allowance');
+            if (!settlement.ok) return { ok: false, reason: 'The allowance could not be settled.' };
+            a.given += amount; this.log((automatic ? 'New-day allowance: ' : 'You shared ') + amount + ' coins with ' + s.name + '.', 'coin'); return { ok: true, amount }; }
         walkable(x, y) {
             if (!root.LWNavigation) return terrain(x, y) === 'grass' &&
                 !this.s.buildings.some(b => b.x === x && b.y === y) &&
@@ -722,13 +768,8 @@
                 n.energy = clamp(n.energy - 2, 0, 100);
             }
             else if (t.kind === 'explore') {
-                s.stats.explored++;
-                s.player.coins += 6;
-                s.creature.coins += 2;
-                this.transaction('Helped a traveler', 6, 2);
-                this.researchGain(2);
-                this.xp('creature', 7);
-                this.xp('player', 5);
+                const settlement = this.settleEconomy({ id: this.economySettlementId('explore'), guide: 6, pocket: 2, research: 2, actorXp: 7, playerXp: 5, stats: { explored: 1 } }, 'Helped a traveler');
+                if (!settlement.ok) { s.task = null; return; }
                 s.cooldowns.explore = s.simTime + 60;
                 this.log(s.name + ' discovered a trail marker and helped a traveler. +6 guide coins, +2 pocket coins, +2 research.', 'compass');
                 if (o)
@@ -749,9 +790,9 @@
             else if (t.kind === 'shop') {
                 const cost = RES[t.resource].price * t.amount;
                 if (s.creature.coins >= cost) {
-                    s.creature.coins -= cost;
+                    const settlement = this.settleEconomy({ id: this.economySettlementId('shop'), pocket: -cost }, s.name + ' bought ' + t.amount + ' ' + RES[t.resource].name.toLowerCase());
+                    if (!settlement.ok) { s.task = null; return; }
                     s.inventory[t.resource] += t.amount;
-                    this.transaction(s.name + ' bought ' + t.amount + ' ' + RES[t.resource].name.toLowerCase(), 0, -cost);
                     this.remember('first-shop', 'My very own choice', 'I bought what I needed with my pocket money.', 'market');
                     this.log(s.name + ' chose to buy ' + t.amount + ' ' + RES[t.resource].name.toLowerCase() + ' with ' + cost + ' pocket coins.', 'market');
                     this.xp('creature', 2);
@@ -760,13 +801,11 @@
             else if (t.kind === 'deliver' && o) {
                 const contract = CONTRACTS[o.contract];
                 if (Object.entries(contract.cost).every(([r, q]) => s.inventory[r] >= q)) {
+                    const income = this.economyRuntime().splitIncome(contract.coins);
+                    const settlement = this.settleEconomy({ id: this.economySettlementId('delivery'), ...income, research: contract.rp, actorXp: 10, playerXp: 8, stats: { earned: contract.coins, deliveries: 1 } }, 'Shared trade income');
+                    if (!settlement.ok) { s.task = null; return; }
                     for (const [r, q] of Object.entries(contract.cost))
                         s.inventory[r] -= q;
-                    this.splitIncome(contract.coins);
-                    this.researchGain(contract.rp);
-                    this.xp('creature', 10);
-                    this.xp('player', 8);
-                    s.stats.deliveries++;
                     s.contractIndex++;
                     o.done = 1;
                     s.bond = clamp(s.bond + 2, 0, 100);
@@ -775,9 +814,8 @@
                 }
             }
             else if (t.kind === 'research') {
-                this.researchGain(2);
-                this.xp('creature', 5);
-                this.xp('player', 2);
+                const settlement = this.settleEconomy({ id: this.economySettlementId('experiment'), research: 2, actorXp: 5, playerXp: 2 }, 'Shared discovery');
+                if (!settlement.ok) { s.task = null; return; }
                 s.cooldowns.research = s.simTime + 50;
                 this.log(s.name + '’s little experiment earned 2 shared research.', 'research');
                 achievement = true;
@@ -795,22 +833,23 @@
             }
             s.task = null;
         }
-        splitIncome(amount) { const pip = Math.floor(amount * .3); this.s.creature.coins += pip; this.s.player.coins += amount - pip; this.s.stats.earned += amount; this.transaction('Shared trade income', amount - pip, pip); }
+        splitIncome(amount) { const income = this.economyRuntime().splitIncome(amount); return this.settleEconomy({ id: this.economySettlementId('income'), ...income, stats: { earned: amount } }, 'Shared trade income'); }
         trade(resource, mode, qty = 1) { const s = this.s; if (!this.has('market'))
             return { ok: false, reason: 'Build a market stall to welcome traders.' }; if (!owns(RES, resource) || !['buy', 'sell'].includes(mode) || !Number.isInteger(qty) || qty < 1 || qty > 99)
             return { ok: false, reason: 'Invalid trade.' }; const price = mode === 'sell' ? Math.max(1, Math.floor(RES[resource].price * .65)) : RES[resource].price; const total = price * qty; if (mode === 'sell') {
             if (s.inventory[resource] < qty)
                 return { ok: false, reason: 'Not enough in our pantry.' };
+            const settlement = this.splitIncome(total);
+            if (!settlement.ok) return { ok: false, reason: 'The sale could not be settled.' };
             s.inventory[resource] -= qty;
-            this.splitIncome(total);
             this.log('Sold ' + qty + ' ' + RES[resource].name.toLowerCase() + ' for ' + total + ' coins. Earnings shared 70/30.', 'coin');
         }
         else {
             if (s.player.coins < total)
                 return { ok: false, reason: 'Not enough guide coins.' };
-            s.player.coins -= total;
+            const settlement = this.settleEconomy({ id: this.economySettlementId('trade-buy'), guide: -total }, 'You bought ' + qty + ' ' + RES[resource].name.toLowerCase());
+            if (!settlement.ok) return { ok: false, reason: 'The purchase could not be settled.' };
             s.inventory[resource] += qty;
-            this.transaction('You bought ' + qty + ' ' + RES[resource].name.toLowerCase(), -total);
             this.log('You bought ' + qty + ' ' + RES[resource].name.toLowerCase() + ' for the pantry.', 'market');
         } return { ok: true }; }
         step(dt) {

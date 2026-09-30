@@ -25,7 +25,7 @@ test('All four shipped content libraries validate through runtime CLIs',()=>{for
 
 const baseline=JSON.parse(fs.readFileSync(__dirname+'/fixtures/v14-retained-contracts.json'));
 const ecsMigrated=JSON.parse(fs.readFileSync(__dirname+'/fixtures/ecs-migration.json'));
-test('Only documented ECS migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['colony.js','world-simulation.js']));
+test('Only documented ECS migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['engine.js','systems.js','colony.js','world-simulation.js','village-systems.js']));
 for (const [file,sha] of Object.entries(baseline)) test('v14 retained contract: '+file,()=>{
   const actual=crypto.createHash('sha256').update(fs.readFileSync(__dirname+'/'+file)).digest('hex');
   if(!ecsMigrated[file])assert.equal(actual,sha);

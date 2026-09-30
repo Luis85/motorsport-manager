@@ -1,8 +1,8 @@
 {
   "passed": 54,
   "total": 54,
-  "htmlSha256": "203a92c4045730b84dd319eb8ddafc1ccaad72b4e63ca7a3bb1ad66101fc2ae1",
-  "bytes": 3726169,
+  "htmlSha256": "1d28f5971fddc775869a5b9924abebd6cf843b98aae54aff9ab5fa5f9898e13b",
+  "bytes": 3743368,
   "results": [
     {
       "name": "Title and entry point are v15, with no unresolved build markers",

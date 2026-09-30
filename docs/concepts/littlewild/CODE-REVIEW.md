@@ -1,3 +1,9 @@
+## ECS M4 review
+
+`economy-ecs.js` owns atomic settlement and nothing else. It validates a detached settlement plan, binds the existing player, actor, progression, statistics, and chapter records as components, applies the plan in a deterministic scheduler, and returns a neutral outbox. Any failure rolls every touched record back before the error crosses the boundary. It does not choose rewards, authorize commands, remove physical goods, write history, append ledger entries, create memories, emit UI events, or consume randomness.
+
+The simulation facade now translates approved domain outcomes into settlement plans and translates the outbox into existing journal and presentation behavior. This removes the previous duplicate-mutation pattern where market or quest code could update balances and then call XP/research helpers independently. Runtime settlement IDs provide exactly-once protection for one engine instance; chapter IDs remain exactly-once across export/import through the existing `completedQuests` record.
+
 
 ## ECS M2 review
 
