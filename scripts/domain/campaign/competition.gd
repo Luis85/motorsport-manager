@@ -50,12 +50,19 @@ static func create_season(current: Dictionary, definition: Dictionary) -> Dictio
 		return _reject("Campaign season identity already exists or the registry is full.", current)
 	if not CampaignIdentity.valid(series_id) or not data.series.has(series_id):
 		return _reject("Campaign season references an unknown series.", current)
-	for season in data.seasons.values():
-		if season.series_id == series_id and season.status != "completed":
+	for existing in data.seasons.values():
+		if existing.series_id == series_id and existing.status != "completed":
 			return _reject("A new season cannot open before the prior series season completes its transition.", current)
 	var season = CampaignSeason.build(definition, data.series[series_id])
 	if season.is_empty():
 		return _reject("Campaign season definition is invalid.", current)
+	var event_ids = {}
+	for existing in data.seasons.values():
+		for item in existing.calendar:
+			event_ids[item.campaign_event_id] = true
+	for item in season.calendar:
+		if event_ids.has(item.campaign_event_id):
+			return _reject("Campaign event identities must remain unique across every season.", current)
 	data.seasons[season_id] = season
 	_seal(data)
 	return _result(validate(data), "created", data, current)
@@ -215,6 +222,7 @@ static func validate(data: Variant) -> String:
 		var calendar = CampaignSeason.calendar_event(season, event_id)
 		if calendar.is_empty() or int(calendar.round) != int(event.round):
 			return "Campaign competition event disagrees with its calendar round."
+	var calendar_ids = {}
 	for season_id in data.seasons:
 		var season = data.seasons[season_id]
 		if season_id != season.get("season_id") or not data.series.has(season.get("series_id")):
@@ -222,6 +230,10 @@ static func validate(data: Variant) -> String:
 		var season_error = CampaignSeason.validate(season, data.series[season.series_id], data.events)
 		if not season_error.is_empty():
 			return season_error
+		for item in season.calendar:
+			if calendar_ids.has(item.campaign_event_id):
+				return "Campaign event identities must remain unique across every season."
+			calendar_ids[item.campaign_event_id] = season_id
 	var content = data.duplicate(true)
 	content.erase("digest")
 	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
