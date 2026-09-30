@@ -59,6 +59,13 @@ static func run(check: Callable) -> void:
 	mixed_evidence.erase("digest"); mixed_evidence["digest"] = RaceStateValue.fingerprint(mixed_evidence)
 	check.call(not CampaignCheckpoint.validate(mixed_evidence).is_empty(),
 		"Recomputed outer digests cannot conceal different factual evidence across sporting, inventory and financial projections")
+	var wrong_mapping = receipt.duplicate(true)
+	wrong_mapping.classification[0].car_id = "car.01"; wrong_mapping.classification[1].car_id = "car.00"
+	wrong_mapping.returned_resources[0].car_id = "car.01"; wrong_mapping.returned_resources[1].car_id = "car.00"
+	wrong_mapping.erase("digest"); wrong_mapping["digest"] = RaceStateValue.fingerprint(wrong_mapping)
+	var mapping_rejection = CampaignWeekendTransaction.stage_receipt(checkpoint, manifest, wrong_mapping, policy)
+	check.call(not mapping_rejection.ok and RaceStateValue.fingerprint(mapping_rejection.checkpoint) == before,
+		"A self-consistent receipt cannot remap stable cars away from the frozen campaign manifest")
 	var invalid_receipt = receipt.duplicate(true)
 	invalid_receipt.returned_resources[0].tyres = []
 	for index in range(CampaignInventory.MAX_TYRE_SETS + 1):
