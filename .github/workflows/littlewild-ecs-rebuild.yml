@@ -1,4 +1,4 @@
-# ECS M4 canonical payload recovery
+# ECS milestone transport uses independently hashed PR-comment chunks.
 name: Littlewild ECS rebuild
 on:
   push:
@@ -21,13 +21,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: concept/littlewild-v15-world-ui
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Recover and apply canonical M4 payload
+      - name: Recover and apply chunked ECS milestone
         id: milestone
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,32 +36,65 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/$REPOSITORY/issues/comments/5919816854" > /tmp/milestone-comment.json
+          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/milestone-comment-pages.json
           python - <<'PY'
           from pathlib import Path
           import base64, gzip, hashlib, json, subprocess
 
-          marker = '<!-- ecs-milestone-payload -->'
-          comment = json.loads(Path('/tmp/milestone-comment.json').read_text())
-          body = comment.get('body', '')
-          if marker not in body:
-              raise SystemExit('Canonical M4 comment does not contain a milestone payload.')
-          payload = json.loads(body.split(marker, 1)[1].strip())
-          expected = {
+          pages = json.loads(Path('/tmp/milestone-comment-pages.json').read_text())
+          comments = [comment for page in pages for comment in page]
+          meta_marker = '<!-- ecs-milestone-chunk-meta -->'
+          meta_comments = [comment for comment in comments if meta_marker in comment.get('body', '')]
+          if not meta_comments:
+              raise SystemExit('No chunked milestone metadata found.')
+          payload = json.loads(meta_comments[-1]['body'].split(meta_marker, 1)[1].strip())
+          required = {
+              'transport': 'm4-0c761acb',
               'milestone': 'M4',
               'base': '60dc144ae6dc40a31ba16cade9e67845fb0e23c3',
               'sha256': '0c761acb1d04fb7a1e6042aa7523cd34a564d718510ab8e4cfc310115481bc78',
-              'encoding': 'gzip+base64',
+              'gzipSha256': '146b36c07495c0f1c26f8ed0fb3de0173aba7a29b3d5981858a013e5e2a2365b',
+              'encoding': 'gzip+base64-chunks',
+              'chunks': 12,
+              'encodedChars': 34348,
           }
-          for key, value in expected.items():
+          for key, value in required.items():
               if payload.get(key) != value:
-                  raise SystemExit(f'Unexpected canonical payload {key}: {payload.get(key)!r}')
-          subprocess.run(['git', 'merge-base', '--is-ancestor', payload['base'], 'HEAD'], check=True)
-          compressed = base64.b64decode(payload['payload'], validate=True)
+                  raise SystemExit(f'Unexpected chunked payload {key}: {payload.get(key)!r}')
+          hashes = payload.get('chunkSha256')
+          if not isinstance(hashes, list) or len(hashes) != payload['chunks']:
+              raise SystemExit('Invalid chunk checksum manifest.')
+
+          prefix = f"<!-- ecs-milestone-chunk:{payload['transport']}:"
+          chunks = {}
+          for comment in comments:
+              body = comment.get('body', '')
+              if not body.startswith(prefix):
+                  continue
+              head, data = body.split('-->', 1)
+              index = int(head[len(prefix):].strip())
+              chunks[index] = data.strip()
+          expected_indices = list(range(payload['chunks']))
+          if sorted(chunks) != expected_indices:
+              raise SystemExit(f'Incomplete milestone chunks: {sorted(chunks)}')
+          for index in expected_indices:
+              digest = hashlib.sha256(chunks[index].encode()).hexdigest()
+              if digest != hashes[index]:
+                  raise SystemExit(f'Milestone chunk {index} checksum mismatch: {digest}')
+
+          encoded = ''.join(chunks[index] for index in expected_indices)
+          if len(encoded) != payload['encodedChars']:
+              raise SystemExit(f'Encoded milestone length mismatch: {len(encoded)}')
+          compressed = base64.b64decode(encoded, validate=True)
+          compressed_digest = hashlib.sha256(compressed).hexdigest()
+          if compressed_digest != payload['gzipSha256']:
+              raise SystemExit(f'Compressed milestone checksum mismatch: {compressed_digest}')
           patch = gzip.decompress(compressed)
-          digest = hashlib.sha256(patch).hexdigest()
-          if digest != payload['sha256']:
-              raise SystemExit(f'Milestone payload checksum mismatch: {digest}')
+          patch_digest = hashlib.sha256(patch).hexdigest()
+          if patch_digest != payload['sha256']:
+              raise SystemExit(f'Milestone patch checksum mismatch: {patch_digest}')
+
+          subprocess.run(['git', 'merge-base', '--is-ancestor', payload['base'], 'HEAD'], check=True)
           patch_path = Path('/tmp/littlewild-milestone.patch')
           patch_path.write_bytes(patch)
           state_path = Path('docs/concepts/littlewild/source/ecs-milestone-state.json')
