@@ -7,9 +7,11 @@ static func run(check: Callable) -> void:
 	var manifest = _manifest()
 	var receipt = _receipt(manifest)
 	var policy = _policy(manifest)
+	var competition = _competition(manifest, policy)
 	var economy = CampaignEconomy.create(state.campaign_id, state.organization_id, 10000)
-	var checkpoint = CampaignCheckpoint.build(state, {}, manifest, {}, economy, {})
-	check.call(not checkpoint.is_empty(), "A campaign at departure can freeze one active weekend with explicit economy and empty projections")
+	var checkpoint = CampaignCheckpoint.build(state, {}, manifest, competition, economy, {})
+	check.call(not competition.is_empty() and not checkpoint.is_empty(),
+		"A campaign at departure freezes one active registered season weekend with explicit economy")
 	var before = RaceStateValue.fingerprint(checkpoint)
 	var staged = CampaignWeekendTransaction.stage_receipt(checkpoint, manifest, receipt, policy)
 	check.call(staged.ok and staged.status == "settled", "One validated receipt stages all weekend consequences")
@@ -23,6 +25,8 @@ static func run(check: Callable) -> void:
 		"Standings use explicit campaign eligibility rather than inferring points from retirement or distance")
 	check.call(season.teams["team.00"].points == 15 and season.teams["team.00"].starts == 2,
 		"Team standings aggregate stable person and team identities from the factual classification")
+	check.call(season.calendar[0].status == "completed" and season.calendar[0].resolution_ref == receipt.result_digest,
+		"Atomic settlement resolves the exact next event in the registered season calendar")
 	var account: Dictionary = restored.economy.accounts[state.organization_id]
 	check.call(account.cash_minor == 10200 and account.postings.size() == 3,
 		"Entry cost, participation and best classified position post dated integer-minor-unit cash deltas")
@@ -76,11 +80,19 @@ static func run(check: Callable) -> void:
 		"Invalid returned inventory rejects the whole transaction before time, standings or cash can publish")
 	var drifted_state = _state_at_departure()
 	drifted_state.command("advance_slots", {"slots": 1})
-	var drifted = CampaignCheckpoint.build(drifted_state, {}, manifest, {},
+	var drifted = CampaignCheckpoint.build(drifted_state, {}, manifest, competition,
 		CampaignEconomy.create(drifted_state.campaign_id, drifted_state.organization_id, 10000), {})
 	var time_rejection = CampaignWeekendTransaction.stage_receipt(drifted, manifest, receipt, policy)
 	check.call(not time_rejection.ok and RaceStateValue.fingerprint(time_rejection.checkpoint) == RaceStateValue.fingerprint(drifted),
 		"Weekend consequences reject campaign time that no longer equals the frozen departure boundary")
+	var wrong_calendar_manifest = manifest.duplicate(true)
+	wrong_calendar_manifest.return_slot = int(manifest.return_slot) + 1
+	wrong_calendar_manifest.erase("digest"); wrong_calendar_manifest["digest"] = RaceStateValue.fingerprint(wrong_calendar_manifest)
+	var wrong_calendar_receipt = _receipt(wrong_calendar_manifest)
+	var calendar_rejection = CampaignWeekendTransaction.stage_receipt(checkpoint, wrong_calendar_manifest,
+		wrong_calendar_receipt, _policy(wrong_calendar_manifest))
+	check.call(not calendar_rejection.ok and RaceStateValue.fingerprint(calendar_rejection.checkpoint) == before,
+		"A self-consistent weekend cannot settle against different season-calendar dates")
 	var files = CampaignStorageContracts.MemoryFiles.new()
 	var storage = CampaignStorage.new("user://campaign-weekend-transaction.json", files)
 	check.call(storage.save_checkpoint(candidate).is_empty(), "Atomic storage accepts the complete consequence checkpoint")
@@ -88,7 +100,7 @@ static func run(check: Callable) -> void:
 	check.call(loaded.ok and loaded.state.clock.elapsed_slots == manifest.return_slot \
 		and loaded.economy.accounts[state.organization_id].cash_minor == 10200 \
 		and loaded.competition.events.has(manifest.campaign_event_id),
-		"Saved campaign restore preserves time, standings, inventory, ledger and exactly-once receipt together")
+		"Saved campaign restore preserves time, calendar, standings, inventory, ledger and exactly-once receipt together")
 	var legacy = {
 		"kind": CampaignCheckpoint.KIND,
 		"version": CampaignCheckpoint.LEGACY_VERSION,
@@ -112,6 +124,57 @@ static func _state_at_departure() -> CampaignState:
 	})
 	state.command("advance_slots", {"slots": 100})
 	return state
+
+static func _competition(manifest: Dictionary, policy: Dictionary) -> Dictionary:
+	var rules = CampaignSeriesRules.build({
+		"series_id": "series.test",
+		"name": "Test Championship",
+		"cars_per_entrant": 2,
+		"min_entrants": 1,
+		"max_entrants": 1,
+		"min_events": 1,
+		"max_events": 1,
+		"points_by_position": policy.points_by_position,
+		"countback_depth": 2
+	})
+	var competition = CampaignCompetition.empty(manifest.campaign_id)
+	var changed = CampaignCompetition.register_series(competition, rules)
+	if not changed.ok: return {}
+	competition = changed.competition
+	changed = CampaignCompetition.create_season(competition, {
+		"season_id": manifest.season_id,
+		"series_id": rules.series_id,
+		"calendar": [{
+			"campaign_event_id": manifest.campaign_event_id,
+			"round": 1,
+			"departure_slot": manifest.departure_slot,
+			"return_slot": manifest.return_slot,
+			"event_revision": manifest.event_revision,
+			"track_hash": manifest.track_hash,
+			"ruleset_hash": manifest.ruleset_hash
+		}]
+	})
+	if not changed.ok: return {}
+	competition = changed.competition
+	changed = CampaignCompetition.transition_season(competition, manifest.season_id, "entries_open")
+	if not changed.ok: return {}
+	competition = changed.competition
+	changed = CampaignCompetition.submit_entry(competition, manifest.season_id, {
+		"entrant_id": manifest.entrant_id,
+		"team_id": "team.00",
+		"person_ids": ["person.00", "person.01"],
+		"car_ids": ["car.00", "car.01"]
+	})
+	if not changed.ok: return {}
+	competition = changed.competition
+	changed = CampaignCompetition.decide_entry(competition, manifest.season_id, manifest.entrant_id, true)
+	if not changed.ok: return {}
+	competition = changed.competition
+	for target in ["preseason", "active"]:
+		changed = CampaignCompetition.transition_season(competition, manifest.season_id, target)
+		if not changed.ok: return {}
+		competition = changed.competition
+	return competition
 
 static func _manifest() -> Dictionary:
 	var data = {
