@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, an atomic weekend consequence transaction, and versioned series/season authority. None changes race physics, sporting authority or the independently tested standalone weekend.
+This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, an atomic weekend consequence transaction, versioned series/season authority, and commitment-aware cash forecasting. None changes race physics, sporting authority or the independently tested standalone weekend.
 
 ## Scoped work and acceptance
 
@@ -13,7 +13,7 @@ This branch began as focused technical/documentation maintenance. It now also co
 
 ## Exclusions
 
-No new race model, complete company-management campaign, content schema or mechanic provider; no altered race checkpoint format or race scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. The campaign work adds deterministic integration and sporting-domain foundations, not commitments/forecast finance, staff/projects/rivals simulation or management UI. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
+No new race model, complete company-management campaign, content schema or mechanic provider; no altered race checkpoint format or race scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. The campaign work adds deterministic integration, sporting and finance-domain foundations, not staff/projects/rivals simulation, accrual accounting or management UI. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
 
 ## Publication gate
 
@@ -25,7 +25,7 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 - Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping interfaces from retained diagnostic tooling, implemented foundations and proposals.
 - Promoted this authority in root and docs READMEs, corrected post-merge content inventory/acceptance claims, and labeled original `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` as historical rather than current.
-- Documented the canvas overlay extraction, campaign/weekend boundary, selectable interface, campaign state/storage, atomic consequence transaction and season lifecycle without rewriting historical implementation records as present-tense release claims.
+- Documented the canvas overlay extraction, campaign/weekend boundary, selectable interface, campaign state/storage, atomic consequence transaction, season lifecycle and commitment-aware finance without rewriting historical implementation records as present-tense release claims.
 
 ### Technical debt
 
@@ -96,9 +96,23 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Registered a four-round deterministic contract covering invalid transitions, identity conflicts, out-of-order results, frozen scoring, shared ties, countback, tamper detection, finalization, cancellation and safe next-season creation. The atomic transaction fixture now settles through a real registered season.
 - Added `docs/campaign/season-lifecycle.md`.
 
+### P0 cash commitments, due dates and minimum-cash forecast
+
+- Upgraded `CampaignEconomy` to version 2 while preserving version-one factual event ledgers. Legacy posting identity/date/amount/category/provenance migrate losslessly; commitment authority starts at the explicit migration slot instead of fabricating prior obligations.
+- Added immutable `CampaignCashCommitment` terms for stable source/account identity, creation/due slot, signed integer amount, category and an independent terms digest. Open, settled and cancelled states carry explicit resolution evidence.
+- Generalized postings to one source authority: either a settled weekend event or one settled commitment. Event indexes and settled commitment records must account for every posting exactly once; cash still reconciles to opening balance plus every posting.
+- Added `CampaignReservePolicy` as a planning floor distinct from cash and commitments. It does not reserve, move or create money.
+- Added pure `CampaignCashForecast` and read-only `CampaignFinanceQuery` with committed, conservative and optimistic scenarios. Unsigned assumptions remain detached; they never become commitments, postings or guaranteed cash. Forecasts report ending/minimum cash, minimum slot and reserve gap without changing the economy.
+- Added `CampaignFinanceTransaction` to add/cancel commitments, set reserve policy and settle due obligations through one complete checkpoint candidate. Planning changes freeze while a weekend manifest is active; due settlement cannot run beyond authoritative campaign time.
+- Added `CampaignEconomyTimeline` so posting, commitment creation/resolution, authority and reserve policy cannot be dated after the checkpoint clock. Open future due dates remain valid.
+- Extended `CampaignWeekendTransaction` so obligations due between departure and return post at their own due slots in the same atomic candidate as time, standings, inventory, event cash and the exactly-once receipt.
+- Registered the GDD eight-week fixture: `150,000 + 112,000 − 180,000 = 82,000`; a week-nine `28,000` obligation produces a committed minimum of `54,000` and a `6,000` shortfall against a `60,000` reserve. An optimistic unsigned receipt affects only the optimistic scenario.
+- Added focused contracts for exact-once settlement, cancellation, duplicate/tamper rejection, detached forecasting, invalid certainty, legacy migration, time consistency, weekend atomicity and storage round-trip.
+- Added `docs/campaign/finance-commitments-forecast.md`.
+
 ### P0/P1 closure and follow-up scope
 
-All P0 and P1 debt items identified for the original maintenance sequence remain implemented. The selectable-interface and campaign milestones are explicit follow-up product requests built on existing composition/storage seams; none reopens sporting authority. The next campaign dependency is TM-04: future commitments, due dates and minimum-cash forecasting over the factual ledger.
+All P0 and P1 debt items identified for the original maintenance sequence remain implemented. The selectable-interface and campaign milestones are explicit follow-up product requests built on existing composition/storage seams; none reopens sporting authority. The next campaign dependency is TM-05: people, roles, dated contracts, availability and payroll generation over the commitment-aware economy.
 
 ### Verification boundary
 
@@ -108,5 +122,5 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Provisional classifications and correction deltas; commitments and forecast finance; staff/contracts; engineering; rivals; season prizes/promotion; and campaign UI remain unimplemented. The calendar/consequence foundations do not make a playable campaign or establish balanced rewards.
+- Provisional classifications and correction deltas; recurring payroll/contracts; operating-result/assets/liabilities accounting; staff, engineering, facilities and rivals; season prizes/promotion; and campaign UI remain unimplemented. Calendar and finance foundations do not make a playable campaign or establish balanced rewards.
 - Human player testing of both interface modes, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. Selectability does not turn every retained specialist workspace into a validated final UX.
