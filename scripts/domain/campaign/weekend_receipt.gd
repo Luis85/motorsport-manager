@@ -16,7 +16,7 @@ static func validate(data: Variant) -> String:
 	for key in ["campaign_id", "season_id", "campaign_event_id", "entrant_id"]:
 		if not CampaignIdentity.valid(data.get(key)):
 			return "Campaign settlement receipt has an invalid " + key + "."
-	if not RaceRecord.valid_id(data.get("race_event_id")):
+	if not valid_race_id(data.get("race_event_id")):
 		return "Campaign settlement receipt has an invalid race identity."
 	for key in ["manifest_digest", "result_digest"]:
 		if not CampaignIdentity.valid_hash(data.get(key)):
@@ -56,3 +56,12 @@ static func validate(data: Variant) -> String:
 	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
 		return "Campaign settlement receipt integrity check failed."
 	return ""
+
+static func valid_race_id(value: Variant) -> bool:
+	if not value is String or value.length() != 36:
+		return false
+	for index in [8, 13, 18, 23]:
+		if value.substr(index, 1) != "-":
+			return false
+	var compact = value.replace("-", "")
+	return compact.length() == 32 and compact.is_valid_hex_number(false)
