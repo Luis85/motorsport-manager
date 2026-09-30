@@ -2,6 +2,8 @@
 
 An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
 
+The incremental ECS migration now covers actor dynamics plus task movement and elapsed-work progression. Save formats and authored content contracts remain unchanged; see `ECS-ARCHITECTURE.md`.
+
 ## Play
 
 Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
@@ -32,3 +34,7 @@ The normal build uses Python's standard library. External-pack builds additional
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
 
 This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, creature rigs and some legacy wording remain code. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+
+## ECS refactor on PR #25
+
+The first compatibility-preserving ECS migration and the next-stage architecture are documented in `ECS-ARCHITECTURE.md`. Its data-only actor rule manifest is `source/content/actor-rules.json`. The normal verification gate now includes standalone ECS tests and full-engine save/resume integration tests. This is an incremental simulation refactor, not a claim that the entire prototype already uses ECS.

@@ -24,7 +24,14 @@ test('Authoring CLI rejects invalid usage with structured error',()=>{const r=cp
 test('All four shipped content libraries validate through runtime CLIs',()=>{for(const[tool,file]of [['content','default-library.json'],['adventure','adventure-library.json'],['world','world-library.json'],['growth','growth-library.json']]){const r=cp.spawnSync(process.execPath,[__dirname+'/tools/'+tool+'-cli.cjs','validate',__dirname+'/content/'+file],{encoding:'utf8'});assert.equal(r.status,0,r.stdout+r.stderr);assert(JSON.parse(r.stdout).ok);}});
 
 const baseline=JSON.parse(fs.readFileSync(__dirname+'/fixtures/v14-retained-contracts.json'));
-for (const [file,sha] of Object.entries(baseline)) test('v14 retained contract: '+file,()=>assert.equal(crypto.createHash('sha256').update(fs.readFileSync(__dirname+'/'+file)).digest('hex'),sha));
+const ecsMigrated=JSON.parse(fs.readFileSync(__dirname+'/fixtures/ecs-migration.json'));
+test('Only documented ECS migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['colony.js','world-simulation.js']));
+for (const [file,sha] of Object.entries(baseline)) test('v14 retained contract: '+file,()=>{
+  const actual=crypto.createHash('sha256').update(fs.readFileSync(__dirname+'/'+file)).digest('hex');
+  if(!ecsMigrated[file])assert.equal(actual,sha);
+  else{assert.equal(ecsMigrated[file].prior_sha256,sha);assert.notEqual(actual,sha);
+    assert(fs.readFileSync(__dirname+'/'+file,'utf8').includes(ecsMigrated[file].required_token));}
+});
 test('Every bundled script parses as JavaScript',()=>{const vm=require('node:vm');for(const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(m[1]);});
 test('Scenario code is bundled without runtime network dependencies',()=>{for(const marker of ['LWScenarios','LWGuidePanel','LWBuildPanel','living-worlds-pack','emberworks'])assert(html.includes(marker));});
 

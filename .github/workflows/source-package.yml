@@ -1,3 +1,4 @@
+# Source snapshots support verified Littlewild milestone development and review.
 name: Source project
 on:
   push:

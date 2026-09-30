@@ -1,0 +1,83 @@
+name: Littlewild ECS rebuild
+on:
+  push:
+    branches:
+      - concept/littlewild-v15-world-ui
+    paths:
+      - 'docs/concepts/littlewild/source/**'
+      - 'docs/concepts/littlewild/verify-v15.py'
+      - 'docs/concepts/littlewild/*.md'
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
+permissions:
+  contents: write
+  issues: read
+jobs:
+  verify-and-rebuild:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: concept/littlewild-v15-world-ui
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply pending ECS milestone
+        id: milestone
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate > /tmp/comments.json
+          python - <<'PY'
+          from pathlib import Path
+          import base64,gzip,hashlib,json,os,subprocess
+          comments=json.loads(Path('/tmp/comments.json').read_text())
+          marker='<!-- ecs-milestone-payload -->'
+          candidates=[c for c in comments if marker in c.get('body','')]
+          state_path=Path('docs/concepts/littlewild/source/ecs-milestone-state.json')
+          state=json.loads(state_path.read_text()) if state_path.exists() else {}
+          message='build(littlewild): refresh ECS artifact and verification evidence'
+          if candidates:
+              payload=json.loads(candidates[-1]['body'].split(marker,1)[1].strip())
+              if payload['sha256']!=state.get('sha256'):
+                  patch=gzip.decompress(base64.b64decode(payload['payload']))
+                  if hashlib.sha256(patch).hexdigest()!=payload['sha256']:
+                      raise SystemExit('Milestone payload checksum mismatch')
+                  path=Path('/tmp/littlewild-milestone.patch');path.write_bytes(patch)
+                  subprocess.run(['git','apply','--check',str(path)],check=True)
+                  subprocess.run(['git','apply',str(path)],check=True)
+                  state_path.write_text(json.dumps({'milestone':payload['milestone'],'sha256':payload['sha256']},indent=2)+'\n')
+                  message=payload['commitMessage']
+          Path('/tmp/milestone-message').write_text(message)
+          PY
+          echo "message=$(cat /tmp/milestone-message)" >> "$GITHUB_OUTPUT"
+      - name: Install verification dependencies
+        working-directory: docs/concepts/littlewild
+        run: |
+          python -m pip install -r requirements-test.txt
+          python -m playwright install --with-deps chromium
+          CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          sudo ln -sf "$CHROMIUM" /usr/bin/chromium
+      - name: Verify source and rebuild standalone artifact
+        working-directory: docs/concepts/littlewild
+        run: python verify-v15.py
+      - name: Commit milestone and verification evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A docs/concepts/littlewild
+          if git diff --cached --quiet; then
+            echo 'Sources and generated outputs already current.'
+          else
+            git commit -m '${{ steps.milestone.outputs.message }}'
+            git push
+          fi

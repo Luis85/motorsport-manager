@@ -1,75 +1,135 @@
-/* Littlewild ECS foundation.
- * Pure deterministic entity/component scheduling. No game content, DOM, timers or RNG.
- * Existing save records remain authoritative while legacy adapters are migrated.
+/* Entity/component storage and deterministic, explicit system scheduling.
+ * Domain-only: no DOM, clocks, storage, network, or game-specific content.
+ * A structural command buffer prevents systems from invalidating an active query.
  */
 (function (root) {
-  'use strict';
-  const validId = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/.test(value);
-  const validName = value => typeof value === 'string' && /^[A-Z][A-Za-z0-9]{0,63}$/.test(value);
-  class World {
-    constructor() {
-      this.entities = new Map();
-      this.stores = new Map();
-      this.systems = new Map();
-      this._executing = false;
-    }
-    assertMutable() {
-      if (this._executing) throw Error('Structural ECS changes are forbidden during a system phase.');
-    }
-    create(id) {
-      this.assertMutable();
-      if (!validId(id) || this.entities.has(id)) throw Error('Invalid or duplicate entity ID.');
-      this.entities.set(id, true);
-      return id;
-    }
-    remove(id) {
-      this.assertMutable();
-      if (!this.entities.delete(id)) return false;
-      for (const store of this.stores.values()) store.delete(id);
-      return true;
-    }
-    set(id, type, component) {
-      this.assertMutable();
-      if (!this.entities.has(id) || !validName(type) || !component || typeof component !== 'object' || Array.isArray(component))
-        throw Error('Components require an existing entity, a valid type and an object.');
-      if (!this.stores.has(type)) this.stores.set(type, new Map());
-      this.stores.get(type).set(id, component);
-      return component;
-    }
-    get(id, type) { return this.stores.get(type)?.get(id) || null; }
-    has(id, ...types) { return this.entities.has(id) && types.every(type => this.stores.get(type)?.has(id)); }
-    detach(id, type) { this.assertMutable(); return this.stores.get(type)?.delete(id) || false; }
-    query(...types) { return [...this.entities.keys()].filter(id => this.has(id, ...types)); }
-    register({id, phase, order = 0, reads = [], writes = [], update}) {
-      this.assertMutable();
-      if (!validId(id) || !validId(phase) || this.systems.has(id) || !Number.isInteger(order) ||
-          !Array.isArray(reads) || !Array.isArray(writes) || [...reads, ...writes].some(t => !validName(t)) ||
-          typeof update !== 'function') throw Error('Invalid ECS system registration.');
-      const system = Object.freeze({id, phase, order, reads: Object.freeze([...new Set(reads)]),
-        writes: Object.freeze([...new Set(writes)]), update});
-      this.systems.set(id, system);
-      return system;
-    }
-    phase(phase, dt, context = {}, entityId = null) {
-      if (this._executing) throw Error('Nested ECS phases are forbidden.');
-      if (!Number.isFinite(dt) || dt < 0 || dt > .25) throw Error('Invalid ECS fixed step.');
-      if (entityId !== null && !this.entities.has(entityId)) throw Error('Unknown ECS entity.');
-      const systems = [...this.systems.values()].filter(s => s.phase === phase)
-        .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
-      this._executing = true;
-      try {
-        const ids = entityId === null ? [...this.entities.keys()] : [entityId];
-        // Actor-major ordering preserves the existing per-creature simulation ordering.
-        for (const id of ids) for (const system of systems) {
-          const required = [...new Set([...system.reads, ...system.writes])];
-          if (!this.has(id, ...required)) continue;
-          const components = Object.fromEntries(required.map(type => [type, this.get(id, type)]));
-          system.update(Object.freeze({id, dt, components: Object.freeze(components), context}));
+    'use strict';
+    const VALID = /^[a-zA-Z][a-zA-Z0-9._:-]{0,127}$/;
+    const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+    const plain = o => o !== null && typeof o === 'object' && !Array.isArray(o) &&
+        (Object.getPrototypeOf(o) === Object.prototype || Object.getPrototypeOf(o) === null);
+    const name = (s, label) => {
+        if (typeof s !== 'string' || !VALID.test(s)) throw Error('Invalid ' + label + '.');
+        return s;
+    };
+
+    class World {
+        constructor() {
+            this.entities = new Set();
+            this.stores = new Map();
+            this.running = false;
+            this.structural = [];
         }
-      } finally { this._executing = false; }
+        _editable() { if (this.running) throw Error('Structural ECS changes must be deferred.'); }
+        create(id) {
+            this._editable(); name(id, 'entity ID');
+            if (this.entities.has(id)) throw Error('Duplicate entity: ' + id);
+            this.entities.add(id); return id;
+        }
+        destroy(id) {
+            this._editable(); if (!this.entities.delete(id)) return false;
+            for (const store of this.stores.values()) store.delete(id);
+            return true;
+        }
+        set(id, type, data) {
+            this._editable(); name(type, 'component type');
+            if (!this.entities.has(id)) throw Error('Unknown entity: ' + id);
+            if (!plain(data)) throw Error('Component data must be a plain object.');
+            // Component payloads are mutable data, owned by their caller; no behavior is stored.
+            let store = this.stores.get(type);
+            if (!store) { store = new Map(); this.stores.set(type, store); }
+            store.set(id, data); return data;
+        }
+        remove(id, type) {
+            this._editable(); return this.stores.get(type)?.delete(id) || false;
+        }
+        get(id, type) { return this.stores.get(type)?.get(id); }
+        has(id, ...types) {
+            return this.entities.has(id) && types.every(t => this.stores.get(t)?.has(id));
+        }
+        query(types, except = []) {
+            if (!Array.isArray(types) || !Array.isArray(except)) throw Error('Expected component lists.');
+            return [...this.entities].filter(id => this.has(id, ...types) &&
+                except.every(type => !this.stores.get(type)?.has(id))).sort();
+        }
+        defer(operation, id, type, data) {
+            if (!['create', 'destroy', 'set', 'remove'].includes(operation)) throw Error('Invalid structural operation.');
+            name(id, 'entity ID');
+            if (operation === 'set' || operation === 'remove') name(type, 'component type');
+            if (operation === 'set' && !plain(data)) throw Error('Component data must be a plain object.');
+            this.structural.push({operation, id, type, data});
+        }
+        flush() {
+            this._editable();
+            // Check the whole buffer against shadow entity/component memberships first.
+            // An invalid late operation must not leave a half-created game entity.
+            const entities = new Set(this.entities);
+            const memberships = new Map([...this.stores].map(([type,store]) =>
+                [type,new Set(store.keys())]));
+            for (const a of this.structural) {
+                if (a.operation === 'create') {
+                    if (entities.has(a.id)) throw Error('Duplicate deferred entity: ' + a.id);
+                    entities.add(a.id);
+                } else if (a.operation === 'destroy') {
+                    entities.delete(a.id);
+                    for (const ids of memberships.values()) ids.delete(a.id);
+                } else if (a.operation === 'set') {
+                    if (!entities.has(a.id)) throw Error('Unknown deferred entity: ' + a.id);
+                    if (!memberships.has(a.type)) memberships.set(a.type,new Set());
+                    memberships.get(a.type).add(a.id);
+                } else if (a.operation === 'remove') {
+                    memberships.get(a.type)?.delete(a.id);
+                }
+            }
+            const actions = this.structural.splice(0);
+            for (const a of actions) {
+                if (a.operation === 'create') this.create(a.id);
+                else if (a.operation === 'destroy') this.destroy(a.id);
+                else if (a.operation === 'set') this.set(a.id, a.type, a.data);
+                else this.remove(a.id, a.type);
+            }
+        }
     }
-  }
-  const api = Object.freeze({World});
-  root.LWECS = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+
+    const PHASES = Object.freeze(['pre', 'simulate', 'post']);
+    class Scheduler {
+        constructor() { this.systems = []; }
+        register(spec) {
+            if (!spec || typeof spec.update !== 'function' || !Array.isArray(spec.query))
+                throw Error('A system needs a query and an update function.');
+            name(spec.id, 'system ID');
+            if (!PHASES.includes(spec.phase) || !Number.isSafeInteger(spec.order) ||
+                this.systems.some(s => s.id === spec.id)) throw Error('Invalid or duplicate system.');
+            const record = Object.freeze({id:spec.id,phase:spec.phase,order:spec.order,
+                query:Object.freeze([...spec.query]),update:spec.update});
+            this.systems.push(record);
+            this.systems.sort((a, b) => PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase) ||
+                a.order - b.order || a.id.localeCompare(b.id));
+            return this;
+        }
+        step(world, dt, context = {}) {
+            if (!(world instanceof World) || !Number.isFinite(dt) || dt <= 0 || dt > .25 ||
+                world.running || world.structural.length) throw Error('Invalid ECS step.');
+            if (context.entityId && !world.entities.has(context.entityId)) throw Error('Unknown ECS step entity.');
+            world.running = true;
+            try {
+                for (const system of this.systems) {
+                    const ids = context.entityId ?
+                        (world.has(context.entityId,...system.query) ? [context.entityId] : []) :
+                        world.query(system.query);
+                    for (const id of ids) system.update(world, id, dt, context);
+                }
+            } catch (error) {
+                // Never apply deferred structure produced by a failed system.
+                world.structural.length = 0;
+                throw error;
+            } finally {
+                world.running = false;
+            }
+            world.flush();
+        }
+    }
+    const api = Object.freeze({World, Scheduler, PHASES});
+    root.LWECS = api;
+    if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

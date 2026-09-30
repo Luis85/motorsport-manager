@@ -1,3 +1,16 @@
+## ECS M2 — activity and movement
+
+Moved authoritative path traversal and elapsed-work progression into named ECS systems. Current tasks are bound as transient `Task` components with an explicit `Intent` status; movement returns typed walking, arrived and blocked outcomes. Arrival does not spend work time in the same tick. The domain facade retains task selection, emergency interruption, construction payment and completion side effects. Added focused activity and real-engine parity tests without changing v8/v9 persistence.
+
+## ECS architecture follow-up
+
+- Added a generic, DOM-free ECS world and deterministic scheduler with validated deferred structural changes.
+- Moved creature needs decay, learning fatigue/hysteresis and baseline social decay from the colony loop into data-tuned actor systems.
+- Preserved v8/v9 save records by binding ECS components to existing serialized actor records rather than adding shadow state.
+- Added standalone ECS and real-engine save/resume regression suites to the v15 verification gate.
+- Kept the historical retained-contract hashes intact; the single intentional `colony.js` migration is explicitly documented and tested.
+- Added `ECS-ARCHITECTURE.md` with ownership rules, target component model and staged extraction plan.
+
 # v15 change log
 
 ## UI and interaction

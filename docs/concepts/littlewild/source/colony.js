@@ -59,9 +59,8 @@
             this.s.version = 5;
             this.ensureWarehouse();
             this.behaviorTree = new root.LWBehaviorTree(this.handlers());
-            // ECS stores share the authoritative v8 creature component objects.
-            this.actorEcs = new root.LWActorSystems.ActorBridge();
-            this.actorEcs.sync(this.creatures);
+            this.ecs = root.LWActorECS.create();
+            this.ecs.sync(this.creatures);
             if (!this.s.colony.board.offers.length && this.s.colony.board.nextAt === 0) {
                 this.addOffer('meadow', 'A neighbor’s invitation');
                 this.addOffer('woodland', 'Fresh trail signs');
@@ -953,7 +952,7 @@
                     }
                 }
                 this.updateQuestBoard();
-                this.actorEcs.sync(this.creatures);
+                this.ecs.sync(this.creatures);
                 for (const c of this.creatures) {
                     this._actor = c;
                     if (newDay) {
@@ -977,12 +976,12 @@
         }
         stepActor(dt) {
             const s = this.s, c = this.actor, n = s.needs, f = c.feelings, t = s.task;
-            const studying = t && ['train', 'practice'].includes(t.kind) && t.phase === 'work';
-            // Deterministic ECS actor systems run against the same objects saved in v8.
-            this.actorEcs.tick(c, dt, {
+            // The ECS owns deterministic physiology, learning fatigue and baseline social
+            // recovery. Legacy task/incident handlers consume those component values.
+            const {studying} = this.ecs.step(c, dt, {
                 day: s.day,
                 socialPreference: profile(c.personality).preferences.social,
-                loadLevel: t?.phase === 'walk' ? this.load().level : 0,
+                loadLevel: this.load().level,
                 hasShelter: this.has('shelter')
             });
             if ((n.food < 12 || n.water < 12) && s.simTime - (c.lastNeedFeeling || 0) > 40) {
@@ -1034,35 +1033,9 @@
                 this.decide();
                 return;
             }
-            if (task.phase === 'walk') {
-                const p = task.path[0];
-                if (!p) {
-                    task.phase = 'work';
-                    return;
-                }
-                if (!this.walkable(p.x, p.y)) {
-                    this.releaseSocial(task);
-                    s.task = null;
-                    return;
-                }
-                const v = s.creature, dx = p.x - v.x, dy = p.y - v.y, d = Math.hypot(dx, dy), move = 1.8 * this.load().move * dt;
-                if (dx)
-                    v.dir = dx > 0 ? 1 : -1;
-                if (d <= move) {
-                    v.x = p.x;
-                    v.y = p.y;
-                    task.path.shift();
-                    if (!task.path.length)
-                        task.phase = 'work';
-                }
-                else if (d) {
-                    v.x += dx / d * move;
-                    v.y += dy / d * move;
-                }
-                return;
-            }
-            const rate = this.workRate(task);
-            if (task.kind === 'build') {
+            // Task selection and completion consequences remain domain responsibilities.
+            // ECS owns the deterministic movement and elapsed-work transition between them.
+            if (task.phase !== 'walk' && task.kind === 'build') {
                 const o = s.orders.find(o => o.id === task.orderId);
                 if (!o) {
                     s.task = null;
@@ -1078,17 +1051,30 @@
                         s.inventory[id] -= n;
                     o.paid = true;
                 }
-                o.progress = Math.min(task.duration, task.elapsed + dt * rate);
+            }
+            const outcome = this.ecs.advanceActivity(c, dt, {
+                walkable: (x, y) => this.walkable(x, y),
+                moveRate: 1.8 * this.load().move,
+                workRate: this.workRate(task)
+            });
+            if (outcome.state === 'blocked') {
+                this.releaseSocial(task);
+                s.task = null;
+                return;
+            }
+            if (outcome.state === 'walking' || outcome.state === 'arrived')
+                return;
+            if (task.kind === 'build') {
+                const o = s.orders.find(o => o.id === task.orderId);
+                if (o) o.progress = Math.min(task.duration, task.elapsed);
             }
             if (task.kind === 'train' && s.training)
-                s.training.progress = Math.min(task.duration, task.elapsed + dt * rate);
+                s.training.progress = Math.min(task.duration, task.elapsed);
             if (task.kind === 'practice') {
                 const o = s.orders.find(o => o.id === task.orderId);
-                if (o)
-                    o.progress = Math.min(task.duration, task.elapsed + dt * rate);
+                if (o) o.progress = Math.min(task.duration, task.elapsed);
             }
-            task.elapsed += dt * rate;
-            if (task.elapsed >= task.duration)
+            if (outcome.completed)
                 this.finishTask(task);
         }
         releaseSocial(task) {

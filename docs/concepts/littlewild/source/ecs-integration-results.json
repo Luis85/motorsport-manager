@@ -1,0 +1,35 @@
+{
+  "passed": 7,
+  "total": 7,
+  "failed": 0,
+  "results": [
+    {
+      "name": "All simulated creatures bind authoritative v8 component records",
+      "passed": true
+    },
+    {
+      "name": "A world tick advances migrated actor dynamics once for every active actor",
+      "passed": true
+    },
+    {
+      "name": "Story roundtrip resumes deterministic legacy-plus-ECS stepping",
+      "passed": true
+    },
+    {
+      "name": "ECS structural lifetime follows actor roster explicitly",
+      "passed": true
+    },
+    {
+      "name": "Legacy facade delegates movement to ECS without spending work time on arrival",
+      "passed": true
+    },
+    {
+      "name": "Legacy facade mirrors ECS work progress and completes once",
+      "passed": true
+    },
+    {
+      "name": "Blocked ECS movement is resolved through the domain interruption boundary",
+      "passed": true
+    }
+  ]
+}

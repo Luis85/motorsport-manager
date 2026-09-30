@@ -80,3 +80,7 @@ Fingerprints detect accidental changes and stale reviews. They are opaque non-cr
 ## Still required for a fully general framework
 
 A complete setting-neutral runtime would additionally need configurable capability/role bindings, arbitrary content-ID catalogs, extracted mechanics constants and narrative vocabulary, renderer/rig asset descriptors, and richer topologies. This release provides tested world/scene repurposing within the current systems. It does not advertise unimplemented generality or a visual world editor.
+
+## Actor rules and ECS migration
+
+`source/content/actor-rules.json` contains validated default physiological, learning-fatigue and baseline social coefficients executed by the actor ECS. The file is embedded into standalone builds, but it is **not** yet a scene-pack override: v9 portable stories still serialize the existing creature records and their exact four established libraries. Arbitrary systems, executable callbacks, runtime component types and actor-rule changes through imported scenario JSON remain unsupported. A scenario-level rule profile requires its own versioned compatibility contract.
