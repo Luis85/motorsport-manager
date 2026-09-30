@@ -93,6 +93,7 @@ static func validate(data: Variant) -> String:
 	if not valid_id(data.get("event_id")) or data.get("origin") not in ["standalone", "legacy", "sandbox"]: return "Invalid recording identity or provenance."
 	if not data.get("parent") is Dictionary or not data.get("manifest") is Dictionary: return "Missing recording provenance."
 	if data.origin == "sandbox" and not valid_id(data.parent.get("event_id")): return "Sandbox parent identity is missing."
+	if not ContentScenarioDefinition.valid_record_context(data): return "Saved scenario context does not match its weekend or circuit."
 	if data.parent.has("scenario") and not ScenarioBrief.validate(data.parent.scenario).is_empty(): return "Invalid saved scenario brief."
 	if not data.get("model") is String or data.model.length() > 100: return "Missing simulation model version."
 	if not data.get("engine") is String or data.engine.length() > 100: return "Missing engine version."
@@ -116,7 +117,7 @@ static func validate(data: Variant) -> String:
 		if not valid_types(entry.payload, entry.get("integers")): return "Invalid input numeric types."
 		var context = entry.get("context")
 		if not context is Dictionary or context.size() != 4: return "Invalid input context."
-		if not RaceCheckpoint.integral(context.get("selected_id"), 0, 11) or not context.get("paused") is bool or (not RaceCheckpoint.integral(context.get("speed"), 1, 16) or int(context.speed) not in [1,2,4,8,16]) or not RaceCheckpoint.number(context.get("accumulator"), 0, 100): return "Invalid input context."
+		if not RaceCheckpoint.integral(context.get("selected_id"), 0, data.initial.cars.size() - 1) or not context.get("paused") is bool or (not RaceCheckpoint.integral(context.get("speed"), 1, 16) or int(context.speed) not in [1,2,4,8,16]) or not RaceCheckpoint.number(context.get("accumulator"), 0, 100): return "Invalid input context."
 	previous = 0
 	var cursor = 0
 	for mark in data.marks:
@@ -203,6 +204,8 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
 	if int(snapshot.version) == 11: rules.tactical_duels = true
+	for key in RaceContentSnapshot.RULE_KEYS:
+		if snapshot.has(key): rules[key] = snapshot[key].duplicate(true)
 	var scenarios: Array = []
 	for entry in snapshot.strategy_state.records:
 		if entry.kind == "scenario" and scenarios.size() < 3: scenarios.append(entry.evidence.duplicate(true))

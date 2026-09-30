@@ -37,10 +37,10 @@ func command(sim: RaceSim, action: String, payload: Dictionary = {}) -> bool:
 	sim.last_error = ""
 	var global = action in GLOBAL_COMMANDS
 	if not global and not RaceCheckpoint.integral(payload.get("id"), 0, sim.cars.size() - 1): return sim.fail("Name the intended driver explicitly.")
-	var id = 3 if global else int(payload.id)
+	var id = int(sim.player_ids()[0]) if global else int(payload.id)
 	var c = sim.cars[id]; var p = sim.policy(id)
 	var accepted_payload = payload.duplicate(true); accepted_payload.id = id
-	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running Obsidian driver can receive this command.")
+	if not global and (not c.player or c.dnf or c.finished): return sim.fail("Only a running %s driver can receive this command." % sim.player_team_label())
 	if action in ["pace", "engine"] and not RaceCheckpoint.integral(payload.get("value"), 0, 2): return sim.fail("Choose a valid driving mode.")
 	if action == "speed" and not RaceCheckpoint.integral(payload.get("value"), 1, 16): return sim.fail("Choose a valid playback speed.")
 	if action == "auto" and not payload.get("value") is bool: return sim.fail("Choose an explicit delegation state.")
@@ -157,14 +157,14 @@ func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> vo
 	if not plan.get("stops", []).is_empty(): target = maxf(0.1, float(plan.stops[0].to_lap - 1) + sim.track.pit_entry / sim.track.length - c.distance / sim.track.length)
 	var reserve = float(plan.get("tyre_reserve", 22.0))
 	if StrategyPlan.owns(p, "pace") and only_channel in ["", "pace"]:
-		var wear = RaceSim.TYRES[c.compound].wear * 1.05
-		c.pace = 0 if emergency or sim.flag != "GREEN" or c.tyre - target * wear < reserve or c.engine_temperature > 120 else 1
+		var wear = c.tyre_rules.spec(c.compound).wear * sim.tuning.pace.forecast_wear_factor
+		c.pace = 0 if emergency or sim.flag != "GREEN" or c.tyre - target * wear < reserve or c.engine_temperature > sim.tuning.competition.policy.pace_temperature_c else 1
 	if StrategyPlan.owns(p, "engine") and only_channel in ["", "engine"]:
 		var margin = c.fuel - remaining
-		c.engine = 0 if emergency or margin < float(plan.get("fuel_reserve", 0.35)) or c.engine_temperature > 115 else 1
+		c.engine = 0 if emergency or margin < float(plan.get("fuel_reserve", 0.35)) or c.engine_temperature > sim.tuning.condition.heat_reference_c else 1
 	if StrategyPlan.owns(p, "racecraft") and only_channel.is_empty():
-		c.battle_mode = "patient" if plan.get("objective") == "protect_finish" or c.damage > 24 else "balanced"
-		if plan.get("objective") == "chase_position" and c.tyre > 35 and c.damage < 12 and sim.flag == "GREEN" and RaceForecaster.fuel_margin(sim, c) > 0: c.battle_mode = "assertive"
+		c.battle_mode = "patient" if plan.get("objective") == "protect_finish" or c.damage > sim.tuning.competition.policy.repair_damage else "balanced"
+		if plan.get("objective") == "chase_position" and c.tyre > sim.tuning.competition.policy.attack_tread and c.damage < sim.tuning.competition.policy.attack_damage and sim.flag == "GREEN" and RaceForecaster.fuel_margin(sim, c) > 0: c.battle_mode = "assertive"
 
 func engineer(sim: RaceSim, c: RaceCar) -> void:
 	if sim.phase != "race" or c.route != "track" or c.dnf or c.finished: return
@@ -178,7 +178,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 	if emergency and p.plan.get("allow_emergency", true):
 		var item = TyreInventory.choose(c, sim.recommended_compound(), true)
 		if item.is_empty():
-			for compound in RaceSim.TYRES:
+			for compound in sim.tyre_rules.compounds():
 				item = TyreInventory.choose(c, compound, true)
 				if not item.is_empty(): break
 		if item.is_empty(): sim.block_plan(c, "No sound replacement is available for the damaged tyre.")
@@ -193,12 +193,12 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 		if not WheelTyres.usable(item) or item.id == c.set_id: sim.block_plan(c, "The approved replacement set is unavailable. Choose a new plan."); return
 		if TeamOrders.defer_stop(sim, c, window): return
 		var preview = RaceForecaster.pit_prediction(RaceForecaster.capture(sim, c.id))
-		if "avoid_traffic" in p.plan.branches and safe.lap < window.to_lap and (preview.queue > 1 or not preview.traffic.is_empty()) and not emergency: return
+		if "avoid_traffic" in p.plan.branches and safe.lap < window.to_lap and (preview.queue > sim.tuning.competition.policy.traffic_queue_seconds or not preview.traffic.is_empty()) and not emergency: return
 		sim.order_stop(c, item, "Approved window: lap %d–%d; estimated queue %.1fs" % [window.from_lap, window.to_lap, preview.queue])
 		return
-	if sim.total_time < p.next_review or remaining < 0.8: return
-	p.next_review = sim.total_time + 12.0 + float(c.id % 3)
-	if c.tyre > 80 and c.damage < 24 and c.compound == sim.recommended_compound() and not sim.contextual_rival(c): return
+	if sim.total_time < p.next_review or remaining < sim.tuning.competition.policy.stop_remaining_laps: return
+	p.next_review = sim.total_time + sim.tuning.competition.policy.review_seconds + float(c.id % 3) * sim.tuning.competition.policy.review_stagger_seconds
+	if c.tyre > sim.tuning.competition.policy.healthy_tread and c.damage < sim.tuning.competition.policy.repair_damage and c.compound == sim.recommended_compound() and not sim.contextual_rival(c): return
 	var snapshot = RaceForecaster.capture(sim, c.id)
 	var comparison = RaceForecaster.evaluate(snapshot)
 	var candidate: Dictionary = {}
@@ -206,7 +206,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 		if option.id == "box" and option.available: candidate = option
 	var item = RaceForecaster.replacement(snapshot)
 	if item.is_empty() or candidate.is_empty(): return
-	var urgent = c.tyre < 18 or c.damage > 24 or c.compound != sim.recommended_compound() and (c.compound in ["I", "W"] or sim.recommended_compound() in ["I", "W"])
+	var urgent = c.tyre < sim.tuning.competition.policy.urgent_tread or c.damage > sim.tuning.competition.policy.repair_damage or c.compound != sim.recommended_compound() and (c.tyre_rules.wet(c.compound) or sim.tyre_rules.wet(sim.recommended_compound()))
 	var memory = sim.rival_state.drivers[int(c.id)]
 	if not urgent and sim.flag == "GREEN" and memory.hold_gate >= safe.distance: return
 	if not urgent:
@@ -218,7 +218,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 			if response.kind == "cover" and not TeamOrders.defer_stop(sim, c): sim.order_stop(c, item, response.reason)
 			return
 	# Same public-context candidate model for every team; no hidden boost or future weather.
-	var worthwhile = candidate.gain > maxf(3.0, comparison.pit.loss * 0.12) and candidate.risk != "high"
+	var worthwhile = candidate.gain > maxf(sim.tuning.competition.policy.minimum_gain_seconds, comparison.pit.loss * sim.tuning.competition.policy.pit_loss_gain_factor) and candidate.risk != "high"
 	if urgent or worthwhile and not TeamOrders.defer_stop(sim, c): sim.order_stop(c, item, "Observed-resource recovery" if urgent else "Public timing / tyre-offset comparison favors a stop; estimated gain %.1fs" % candidate.gain)
 
 func contextual_rival(sim: RaceSim, _car: RaceCar) -> bool:
@@ -281,12 +281,12 @@ func step(sim: RaceSim) -> void:
 			if not p.plan.is_empty() and p.next_stop < p.plan.stops.size() and car.set_id == p.plan.stops[int(p.next_stop)].set_id:
 				p.next_stop += 1
 				if p.next_stop >= p.plan.stops.size(): p.plan_status = "completed"
-			p.visit = {}; p.order_forecast = {}; p.next_review = sim.total_time + 12
+			p.visit = {}; p.order_forecast = {}; p.next_review = sim.total_time + sim.tuning.competition.policy.review_seconds
 		sim.sync_ownership(car)
 	RacecraftController.after_step(sim)
 	TeamOrders.after_step(sim)
 	if sim.phase == "race" and roundi(sim.total_time / RaceSim.STEP) % 20 == 0:
-		for id in [3, 6]: sim.observe_warnings(sim.cars[id])
+		for id in sim.player_ids(): sim.observe_warnings(sim.cars[id])
 	if previous_phase != "results" and sim.phase == "results":
 		var classification: Array = []
 		for car in sim.standings(): classification.append({"id": car.id, "position": classification.size() + 1, "laps": car.completed, "time": car.finish_time, "retired": car.dnf})

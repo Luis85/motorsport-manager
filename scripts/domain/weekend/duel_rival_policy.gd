@@ -5,6 +5,7 @@ extends RefCounted
 static func decide(source: Dictionary, stops: Array, driver: Dictionary, comparison: Dictionary) -> Dictionary:
 	var result = RivalStyles.decide(source, stops, driver, comparison)
 	if result.is_empty(): return result
+	var tuning = RaceTuningDefinition.competition_values(source).rivals
 	var candidates = result.candidates
 	var box = candidates.filter(func(c): return c.id == "box")
 	var extend = candidates.filter(func(c): return c.id == "extend")
@@ -13,14 +14,14 @@ static func decide(source: Dictionary, stops: Array, driver: Dictionary, compari
 	var reason = result.reason
 	if not result.context.public_event.is_empty() and result.context.cover > 0 and not box.is_empty():
 		var viable_cover = result.context.fresh_lap_gain > comparison.pit.warmup + result.context.traffic_cost
-		if viable_cover and comparison.pit.queue <= 1.0 and box[0].score <= 2.0:
+		if viable_cover and comparison.pit.queue <= tuning.duel_queue_seconds and box[0].score <= tuning.duel_cover_score:
 			choice = "box"
 			reason = "Cover a credible observed entry: fresh-tyre opportunity exceeds modeled warm-up/traffic cost within the near-best alternatives."
 		elif not extend.is_empty():
 			choice = "extend"
 			reason = "Decline to cover the observed entry: warm-up, rejoin or shared service weakens the opportunity; extend usable tyres, then review."
 	# Own teammate's accepted stop is legitimate information, never a rival draft.
-	if choice == "box" and comparison.pit.queue > 1.0 and (not extend.is_empty() or not current.is_empty()):
+	if choice == "box" and comparison.pit.queue > tuning.duel_queue_seconds and (not extend.is_empty() or not current.is_empty()):
 		choice = "extend" if not extend.is_empty() else "current"
 		reason = "Split the team's response: a teammate already has accepted pit access; choose a feasible near-best alternative rather than add predicted queueing."
 	result.choice = choice; result.reason = reason

@@ -55,12 +55,12 @@ func present() -> Array:
 			text = "WINNER" if i == 0 else ("+%d L" % (leader.completed - car.completed) if car.completed < leader.completed else "+%.3f" % (car.finish_time - leader.finish_time))
 		elif leader.distance - car.distance >= model.track.length: text = "+%d L" % int((leader.distance - car.distance) / model.track.length)
 		var state = "DNF" if car.dnf else ("FIN" if car.finished else ("PIT" if car.route == "pit" else ({"garage": "BOX", "outlap": "OUT", "hotlap": "HOT", "inlap": "IN"}.get(car.qual_state, "") if q else ("BLUE" if car.blue else "%d%%" % car.tyre))))
-		var tooltip = "%s · %s\n%s\nTyres %.0f%% · %s\nBest %s" % [car.name, car.team, car.intent, car.tyre, car.compound, RaceViewQuery.format_time(car.qual_best if q else car.best_lap)]
+		var tooltip = "%s · %s\n%s\nTyres %.0f%% · %s\nBest %s" % [car.name, car.team, car.intent, car.tyre, model.tyre_info(car.compound).get("name", "Tyres"), RaceViewQuery.format_time(car.qual_best if q else car.best_lap)]
 		var appearance = [car.id, text, car.compound, state, tooltip, car.id == model.selected_id]
 		if rendered_rows.get(i) != appearance:
 			rendered_rows[i] = appearance; update_count += 1
 			row.set_text(0, str(i + 1)); row.set_text(1, car.short + ("*" if car.player else "")); row.set_metadata(0, car.id)
-			row.set_text(2, text); row.set_text(3, car.compound); row.set_text(4, state)
+			row.set_text(2, text); row.set_text(3, str(model.tyre_info(car.compound).get("short", "?"))); row.set_text(4, state)
 			row.set_custom_color(4, UI.ACCENT if state == "HOT" else (UI.DANGER if car.dnf else UI.MUTED))
 			for column in range(5):
 				row.set_tooltip_text(column, tooltip)

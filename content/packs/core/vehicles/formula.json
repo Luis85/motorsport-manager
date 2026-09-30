@@ -1,0 +1,12 @@
+{
+  "kind": "vehicle",
+  "schema_version": 1,
+  "id": "core.vehicle.formula",
+  "name": "Formula",
+  "description": "Reference vehicle for the existing path-following simulation.",
+  "top_speed_mps": 89.0,
+  "lateral_acceleration_mps2": 24.0,
+  "acceleration_mps2": 9.0,
+  "braking_mps2": 17.0,
+  "width_m": 2.0
+}

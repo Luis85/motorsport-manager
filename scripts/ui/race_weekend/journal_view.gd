@@ -20,7 +20,7 @@ func present() -> void:
 	rendered_sequence=int(model.strategy_state.sequence);update_count+=1
 	var entries: Array=[]
 	for r in model.strategy_state.records:
-		if r.driver_id in [-1,3,6] and r.kind in ["command","pit_exit","handback","strategy_order","plan_blocked","warning","team_order_outcome","pass_completed"]:entries.append(r)
+		if r.driver_id in [-1] + model.player_ids() and r.kind in ["command","pit_exit","handback","strategy_order","plan_blocked","warning","team_order_outcome","pass_completed"]:entries.append(r)
 	entries=entries.slice(maxi(0,entries.size()-100));entries.reverse()
 	caption.text="Latest %d team records · command / model estimates are distinct from observed outcomes. Pit duration is not net race-time loss." % entries.size()
 	if model.strategy_state.truncated:caption.text+=" Journal capacity reached; later records are unavailable."

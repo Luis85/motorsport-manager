@@ -194,7 +194,7 @@ func _draw_road() -> void:
 		var edge = PackedVector2Array()
 		for i in range(n): edge.append(geometry.points[i] + geometry.normals[i] * (geometry.widths[i] * 0.5 + 2.2) * side)
 		edge.append(edge[0]); draw_polyline(edge, Color("eae5ce"), 0.65, true)
-	for i in range(12):
+	for i in range(int(geometry.document.grid.get("count", 12))):
 		var sample = geometry.sample(-i * geometry.grid_spacing)
 		var p = sample.p + sample.n * (-2 if i % 2 == 0 else 2)
 		var tangent = Vector2(sample.n.y, -sample.n.x)
@@ -211,12 +211,12 @@ func _draw_pits() -> void:
 	if geometry.pit_points.size() < 2: return
 	draw_polyline(geometry.pit_points, Color("e4d7b7"), 9, true)
 	draw_polyline(geometry.pit_points, Color("8c9989"), 6, true)
-	for i in range(6):
-		var sample = geometry.pit_sample(geometry.pit_length * (0.30 + i * 0.055))
+	for marker in geometry.pit_markers():
+		var sample = geometry.pit_sample(geometry.pit_length * marker.fraction)
 		var p = sample.p + sample.n * 12
 		# Authored pit alignment, not invented decorative routing.
 		draw_set_transform(p, sample.n.angle() - PI * 0.5)
-		_building(Vector2(10, 9), Color("9eae93") if i != 3 else Color("c0a57a"), 2)
+		_building(Vector2(10, 9), Color("9eae93") if not marker.player else Color("c0a57a"), 2)
 		draw_set_transform(Vector2.ZERO)
 
 func _draw_feature(f: Dictionary) -> void:

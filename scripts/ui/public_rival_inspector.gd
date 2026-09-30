@@ -30,7 +30,7 @@ func present(view: PracticeWeekendView) -> void:
 		var row = view.rows[int(car.id)]
 		var state = "OUT" if car.dnf else ("FIN" if car.finished else ("PIT" if car.route == "pit" else ("BOX" if car.route == "garage" else "RUN")))
 		row.set_text(4, state)
-		var description = "%s · %s\n%s\nObserved compound %s; condition and future plans are private." % [car.name, car.team, RivalStyles.PROFILES[sim.rival_styles.drivers[int(car.id)].style].label, car.compound]
+		var description = "%s · %s\n%s\nObserved compound %s; condition and future plans are private." % [car.name, car.team, sim.rival_profile_label(int(car.id)), sim.tyre_info(car.compound).get("name", "Tyres")]
 		for column in range(5): row.set_tooltip_text(column, description)
 	var car = sim.car(sim.selected_id)
 	if car.player: return

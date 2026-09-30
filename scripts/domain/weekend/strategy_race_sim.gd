@@ -4,12 +4,14 @@ extends RaceSim
 const GLOBAL_COMMANDS = ["qualify", "close_qualifying", "prepare_race", "formation", "lights", "pause", "speed"]
 const POLICY_COMMANDS = ["approve_plan", "clear_plan", "delegation", "resource_intent", "hold_decision", "retire_car", "team_order", "cancel_team_order"]
 
-func _init(geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
-	super(geometry, options)
-	mechanics.configure(RaceMechanicProfiles.build("strategy"))
-	mechanics.install(geometry, options)
+func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
+	super(geometry, options, roster)
+	if not last_error.is_empty(): return
+	if not mechanics.configure(RaceMechanicProfiles.build("strategy", mechanic_definition)) or not mechanics.install(geometry, options):
+		last_error = mechanics.last_error
 
 static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
+	if not WeekendDefinition.agrees_with_snapshot(data): return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, 6): return null
 	var legacy = data.duplicate(true)
 	var is_strategy = int(legacy.version) >= 5
@@ -24,9 +26,9 @@ static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
 	var team = data.get("team_state") if is_living else TeamOrders.create()
 	var rivals = data.get("rival_state") if is_living else RivalStrategy.create(base.cars)
 	if not RacecraftController.valid(battles, base.cars, base.total_time) or not TeamOrders.valid(team, base.cars, base.total_time) or not RivalStrategy.valid(rivals, base.cars, base.total_time): return null
-	var sim = StrategyRaceSim.new(base.track)
+	var sim = StrategyRaceSim.new(base.track, base.content_options())
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: sim.set(key, base.get(key))
 	sim.battle_state = battles.duplicate(true); sim.team_state = team.duplicate(true); sim.rival_state = rivals.duplicate(true)
 	sim.strategy_state = state.duplicate(true)
 	sim.strategy_state.sequence = int(sim.strategy_state.sequence)

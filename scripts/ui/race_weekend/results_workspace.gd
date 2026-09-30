@@ -23,7 +23,9 @@ var pit_visit_selector: OptionButton
 var pit_visit_detail: Label
 var pit_visits: Array = []
 var visit_stamp: Array = []
-func configure(value: RaceViewQuery) -> void: model = value
+func configure(value: RaceViewQuery) -> void:
+	model = value
+	driver_id = model.player_ids()[0]
 func _ready() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var top = UI.hbox(self)
@@ -34,7 +36,7 @@ func _ready() -> void:
 		var index = buttons.size(); var button = UI.button(text,func(): show_page(index)); nav.add_child(button); buttons.append(button)
 	for i in range(4): pages.append(UI.vbox(self,true))
 	# Classification is attached by the host, retaining the exact same stable TreeItems.
-	drivers = UI.option([model.car(3).name,model.car(6).name],func(index): driver_id = [3,6][index]; present()); pages[1].add_child(drivers)
+	drivers = UI.option(model.player_labels(),func(index): driver_id = model.player_ids()[index]; present()); pages[1].add_child(drivers)
 	compare = UI.check("Compare teammate · same session",false,func(_value):present()); pages[1].add_child(compare)
 	var lap_scroll = ScrollContainer.new(); lap_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	lap_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; pages[1].add_child(lap_scroll)
@@ -87,7 +89,7 @@ func present() -> void:
 	var records = lap_records(driver_id)
 	var data = lap_data(records)
 	var secondary: Array = []; var secondary_name = ""
-	var other_id = 6 if driver_id == 3 else 3
+	var other_id = model.teammate_id(driver_id)
 	compare.disabled = model.phase == "practice_results"
 	compare.tooltip_text = "Practice objectives, setup and run conditions may differ; compare their reports rather than pair unmatched runs." if compare.disabled else "Observed laps are not a controlled strategy attribution. Unmatched lap/run IDs remain gaps."
 	compare.text = "Compare " + model.car(other_id).name + " · dashed trace"
@@ -115,7 +117,7 @@ func present() -> void:
 		narrative.text = "No final race stint or pit-visit summary for this session. Qualifying and practice use measured lap evidence; fitting a tyre set in the garage is not a race pit stop."
 		return
 	var lines: Array[String] = []
-	for id in [3,6]:
+	for id in model.player_ids():
 		var car = model.car(id)
 		lines.append("%s · %d completed laps · %d actual pit visits" % [car.name,car.completed,car.pit_stops])
 		for stint in car.stints:
@@ -171,7 +173,7 @@ func refresh_pit_visits() -> void:
 	pit_visits.clear();pit_visit_selector.clear()
 	var entries: Dictionary={}
 	for record in records:
-		if record.driver_id not in [3,6]:continue
+		if record.driver_id not in model.player_ids():continue
 		if record.kind=="pit_entry":entries[record.id]=record
 		elif record.kind=="pit_exit" and entries.has(record.related_id):
 			var entry=entries[record.related_id]

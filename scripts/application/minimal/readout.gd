@@ -18,7 +18,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 			if wheel.life < life: life = wheel.life; limiting = key
 			if wheel.punctured: punctures.append(key)
 		life = clampf(life, 0, 100)
-		tyre = "%s · %.0f%%" % [COMPOUNDS.get(fitted.compound, fitted.compound), floorf(life)]
+		tyre = "%s · %.0f%%" % [car.tyre_rules.spec(fitted.compound).get("name", "Tyres"), floorf(life)]
 		detail = "%s · %.0f°C avg" % [fitted.label, WheelTyres.average(fitted, "surface")]
 		puncture_count = punctures.size()
 		punctured = not punctures.is_empty()
@@ -35,7 +35,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 	var stress = MinimalDriverContext.stress(sim, car, life, punctured)
 	var lap = MinimalDriverContext.lap_context(sim, car)
 	var tyre_value = "%d%%" % floori(life) if life >= 0 else "—"
-	var tyre_title = str(COMPOUNDS.get(fitted.get("compound", ""), "Tyres")).to_upper() + " · MIN"
+	var tyre_title = str(car.tyre_rules.spec(fitted.get("compound", "")).get("name", "Tyres")).to_upper() + " · MIN"
 	var fuel_note = fuel_detail.replace("Lap-equivalent units", "Lap equiv.").replace("Remaining at finish", "At finish").replace("Remaining at retirement", "At retirement")
 	return {"id":id, "name":car.name, "short":car.short, "number":car.number, "state":MinimalRaceTiming.state(sim, car),
 		"tyre":tyre, "tyre_detail":detail, "tyre_life":life, "tyre_issue":issue, "set_id":car.set_id,
@@ -43,7 +43,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 		"health":"%.0f%%" % floorf(health), "health_value":health,
 		"car_detail":"Damage %.0f%%" % ceilf(damage) if damage > 0 else "No damage", "car_issue":health < 65 or damage > 0,
 		"retire_reason":car.retire_reason if car.dnf else "",
-		"color":car.color, "tyre_title":tyre_title, "wheels":wheels, "tyre_note":("%d punctures" % puncture_count if puncture_count > 1 else (detail if life >= 0 else "No data")), "tyre_value":tyre_value, "compound":fitted.get("compound", "?"), "fuel_note":fuel_note,
+		"color":car.color, "tyre_title":tyre_title, "wheels":wheels, "tyre_note":("%d punctures" % puncture_count if puncture_count > 1 else (detail if life >= 0 else "No data")), "tyre_value":tyre_value, "compound":car.tyre_rules.spec(fitted.get("compound", "")).get("short", "?"), "fuel_note":fuel_note,
 		"stress":stress, "lap":lap, "context":MinimalDriverContext.race_context(sim,car),
 		"orders":"%s · %s" % [["Calm", "Normal", "Push"][car.pace], ["Save", "Standard", "Power"][car.engine]],
 		"engine_temp":"Engine %.0f°C" % car.engine_temperature, "engine_hot":car.engine_temperature > 115,

@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "local.club.driver.riv",
+  "name": "Robin Vale",
+  "description": "Example externally authored driver.",
+  "short": "RIV",
+  "skill": 84,
+  "consistency": 91,
+  "wet_skill": 87,
+  "reliability": 90
+}

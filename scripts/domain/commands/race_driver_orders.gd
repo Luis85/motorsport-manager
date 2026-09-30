@@ -45,17 +45,17 @@ static func _recall(simulation: RaceSim, car: RaceCar) -> String:
 
 static func _setup(simulation: RaceSim, car: RaceCar, action: String, payload: Dictionary) -> String:
 	if simulation.phase not in ["briefing", "race_preparation"] and not (simulation.is_run_session() and car.route == "garage"): return "Mechanical setup changes require the garage or race preparation."
-	var changes = {"wing": payload.get("value", 5)} if action == "setup" else payload.get("values", {})
+	var changes = {"wing": payload.get("value", simulation.setup_definition.defaults().wing)} if action == "setup" else payload.get("values", {})
 	if not changes is Dictionary or changes.is_empty(): return "Choose at least one setup adjustment."
 	for key in changes:
-		if not CarSetup.SPECS.has(key) or not RaceCheckpoint.integral(changes[key], CarSetup.SPECS[key][0], CarSetup.SPECS[key][1]): return "Setup value is outside the available range."
+		if not simulation.setup_definition.specs().has(key) or not RaceCheckpoint.integral(changes[key], simulation.setup_definition.specs()[key][0], simulation.setup_definition.specs()[key][1]): return "Setup value is outside the available range."
 	for key in changes: car.car_setup[key] = int(changes[key])
 	car.setup = car.car_setup.wing
 	return ""
 
 static func _brake_bias(simulation: RaceSim, car: RaceCar, payload: Dictionary) -> String:
 	if simulation.phase != "race" or car.route != "track": return "Live brake bias is available on the racing track."
-	if not RaceCheckpoint.integral(payload.get("value"), 52, 62): return "Brake bias must be 52–62% front."
+	if not RaceCheckpoint.integral(payload.get("value"), simulation.setup_definition.specs().bias[0], simulation.setup_definition.specs().bias[1]): return "Brake bias is outside the selected setup profile."
 	car.car_setup.bias = int(payload.value)
 	return ""
 

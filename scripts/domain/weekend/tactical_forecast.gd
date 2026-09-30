@@ -11,7 +11,7 @@ static func target_for(sim: RaceSim, id: int) -> int:
 	var best = -1
 	var gap = INF
 	for c in sim.cars:
-		if c.team == own.team or c.dnf or c.finished: continue
+		if c.team_identity() == own.team_identity() or c.dnf or c.finished: continue
 		var distance = absf(c.distance - own.distance)
 		if distance < gap: best = int(c.id); gap = distance
 	return best
@@ -30,7 +30,7 @@ static func validate_plan(plan: Variant, cars: Array[RaceCar], id: int, laps: in
 	if not plan is Dictionary or plan.size() != 11: return "A tactical draft needs the complete supported fields."
 	if plan.get("kind") not in KINDS or plan.get("authority") not in AUTHORITIES: return "Choose a tactic and explicit recommendation or pit authority."
 	if not RaceCheckpoint.integral(plan.get("target_id"), 0, cars.size() - 1): return "Choose a named rival."
-	if cars[int(plan.target_id)].team == cars[id].team: return "A duel targets an opposing driver, not your teammate."
+	if cars[int(plan.target_id)].team_identity() == cars[id].team_identity(): return "A duel targets an opposing driver, not your teammate."
 	if not plan.get("set_id") is String or TyreInventory.find(cars[id], plan.set_id).is_empty(): return "Choose a set belonging to this driver."
 	if not RaceCheckpoint.integral(plan.get("from_lap"), 1, laps - 1) or not RaceCheckpoint.integral(plan.get("to_lap"), 1, laps - 1): return "The window must be before the final lap."
 	if plan.from_lap > plan.to_lap or not RaceCheckpoint.integral(plan.get("wait_laps"), 1, 2): return "Use an ordered window and a one- or two-entry extension."
@@ -57,10 +57,10 @@ static func preview(sim: RaceSim, id: int, plan: Dictionary) -> Dictionary:
 	if sim.phase == "race" and plan.kind == "undercut" and plan.rival_first and rival.route == "pit":
 		result.reason = "The rival is already in the pits; an undercut cannot be started against this entry."; return result
 	var s = RaceForecaster.capture(sim, id, sim.active_plan(id), int(sim.policy(id).revision))
-	if s.water > 0.15 or c.compound in ["I", "W"]:
+	if s.water > 0.15 or RaceForecaster.weather_family(s, c.compound) != "dry":
 		result.reason = "These are dry-race tactics. Use the weather comparison in crossover conditions."; return result
 	var item = TyreInventory.find(c, plan.set_id)
-	if not WheelTyres.usable(item) or item.id == s.own.starting_set or item.compound in ["I", "W"]:
+	if not WheelTyres.usable(item) or item.id == s.own.starting_set or RaceForecaster.weather_family(s, item.compound) != "dry":
 		result.reason = "Select another usable dry set; a draft cannot refresh or reuse the fitted set."; return result
 	var first_gate = maxf(s.gate.distance, (float(plan.from_lap) - 1) * s.length + s.pit_entry)
 	var chosen_gate = maxf(first_gate, (float(plan.from_lap + plan.wait_laps) - 1) * s.length + s.pit_entry) if plan.kind == "extend" else first_gate

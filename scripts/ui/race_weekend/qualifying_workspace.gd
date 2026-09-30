@@ -8,7 +8,7 @@ func configure(value: RaceViewQuery) -> void: model = value
 func _ready() -> void:
 	add_theme_stylebox_override("panel",UI.box(PitwallDesign.RACE_CREAM,UI.LINE,5,6))
 	var row = UI.hbox(self)
-	for id in [3,6]:
+	for id in model.player_ids():
 		var cell = UI.vbox(row); cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var button = UI.button(model.car(id).name + " · Run plan",func(): inspect_requested.emit(id)); cell.add_child(button)
 		var info = UI.label("",11); info.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; cell.add_child(info); labels[id] = info

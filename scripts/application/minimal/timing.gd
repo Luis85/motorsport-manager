@@ -49,7 +49,7 @@ static func rows(sim: RaceSim) -> Array:
 			if distance >= sim.track.length: value = "+%d L" % int(distance / sim.track.length)
 		var status = state(sim, car)
 		output.append({"id": car.id, "position": i + 1, "name": car.short + (" *" if car.player else ""), "time": value,
-			"state": status, "tag": tag(status), "player": car.player, "tooltip": car.name + " · " + car.team + " · " + status})
+			"state": status, "tag": tag(status), "player": car.player, "tooltip": car.name + " · " + EntrantReadModel.team_name(car, sim.roster_definition) + " · " + status})
 	return output
 
 static func tag(status: String) -> String:

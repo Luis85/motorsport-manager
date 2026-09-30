@@ -4,6 +4,7 @@ extends RefCounted
 const FORMAT = "motorsport-manager-track"
 const VERSION = 1
 const MAX_NODES = 2000
+const MAX_GRID_PLACES = 64
 
 static func node_at(p: Vector2, width: float = 14.0, identity: String = "") -> Dictionary:
 	# Content-derived fallback is deterministic. Editing commands supply a document-local ID.
@@ -92,6 +93,7 @@ static func validate(raw: Variant) -> Array[String]:
 	for key in ["grid", "provenance"]:
 		if not raw.get(key, {}) is Dictionary: return ["Invalid %s object." % key]
 	if not valid_number(raw.get("grid", {}).get("spacing", 8), 6, 20): return ["Grid spacing must be 6–20 metres."]
+	if not RaceCheckpoint.integral(raw.get("grid", {}).get("count", 12), 1, MAX_GRID_PLACES): return ["Grid places must be an integer from 1 to 64."]
 	if not raw.get("name", "") is String or str(raw.get("name", "")).strip_edges().is_empty(): errors.append("Give the circuit a name.")
 	if raw.has("visual"):
 		var visual = raw.visual

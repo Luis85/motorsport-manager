@@ -51,7 +51,11 @@ static func press_at(canvas: TrackCanvas, event: InputEventMouseButton) -> void:
 		if canvas.document.has("reference"): canvas._begin_drag("reference", p)
 		return
 	if canvas.mode == "scenery":
-		canvas.edit_started.emit(); canvas.document.objects.append({"type": canvas.scenery_type, "x": p.x, "y": p.y, "h": 0, "scale": 1, "rotation": 0}); canvas.selected_object = canvas.document.objects.size() - 1; canvas.selected = -1; canvas.edited.emit(); canvas.selection_changed.emit(); canvas.queue_redraw(); return
+		var preset = canvas.scenery_preset.duplicate(true)
+		if preset.is_empty(): preset = {"object_type": canvas.scenery_type, "scale": 1.0, "rotation_deg": 0.0}
+		var object = EditorProfileDefinition.placement_object(preset, p)
+		if object.is_empty(): return
+		canvas.edit_started.emit(); canvas.document.objects.append(object); canvas.selected_object = canvas.document.objects.size() - 1; canvas.selected = -1; canvas.edited.emit(); canvas.selection_changed.emit(); canvas.queue_redraw(); return
 	if canvas.mode == "pit":
 		if canvas.document.pits.is_empty(): return
 		canvas.selected_pit = -1

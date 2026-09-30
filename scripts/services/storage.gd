@@ -49,6 +49,17 @@ static func read_json(path: String, files: FileOperations = null) -> Dictionary:
 	var parser = JSON.new()
 	var err = parser.parse(result.text)
 	if err != OK: return {"ok": false, "error": "JSON line %d: %s" % [parser.get_error_line(), parser.get_error_message()]}
+	if parser.data is Dictionary and parser.data.get("kind") in [
+		"motorsport-manager-session", "motorsport-manager-replay", "motorsport-manager-weekend",
+		"motorsport-manager-scenario", "motorsport-manager-reproduction", "motorsport-manager-weekend-result",
+		"motorsport-manager-circuit-notebook", "motorsport-manager-result-receipts"]:
+		# Preserve the exact decimal values written by full-precision serialization.
+		# Legacy content/track import keeps its original numerical contract. Neither
+		# live values nor existing integrity hashes are quantized or rewritten.
+		var precise = ContentJson.parse(result.text, true)
+		if not precise.ok:
+			return {"ok": false, "error": "JSON line %d: %s" % [precise.line, precise.error]}
+		return {"ok": true, "data": precise.data}
 	return {"ok": true, "data": parser.data}
 
 static func write_json(path: String, data: Variant, files: FileOperations = null) -> String:

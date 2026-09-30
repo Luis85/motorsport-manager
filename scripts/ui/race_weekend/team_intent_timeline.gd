@@ -31,7 +31,7 @@ func present() -> void:
 
 func selected_text() -> String:
 	if lanes.is_empty(): return "No recorded intentions"
-	return model.cars[[3,6][selected_driver]].name + " · " + lanes[selected_driver][selected_item].text
+	return model.cars[model.player_ids[selected_driver]].name + " · " + lanes[selected_driver][selected_item].text
 
 func _gui_input(event: InputEvent) -> void:
 	if lanes.is_empty(): return
@@ -73,7 +73,7 @@ func _draw() -> void:
 		draw_line(Vector2(x,45*scale_factor),Vector2(x,170*scale_factor),UI.LINE,1)
 		draw_string(font,Vector2(x-16,39*scale_factor),"%.0f" % (model.laps*i/4.0),HORIZONTAL_ALIGNMENT_CENTER,32,caption,UI.MUTED)
 	for index in range(2):
-		var c=model.cars[[3,6][index]];var y=(56+index*62)*scale_factor
+		var c=model.cars[model.player_ids[index]];var y=(56+index*62)*scale_factor
 		draw_string(font,Vector2(8,y),c.short,HORIZONTAL_ALIGNMENT_LEFT,38,font_size,UI.INK)
 		for item_index in range(lanes[index].size()):
 			var item=lanes[index][item_index]
@@ -82,7 +82,7 @@ func _draw() -> void:
 			var offset={"pit":0,"pace":18,"engine":36}.get(item.kind,0)*scale_factor
 			var a=48+width*clampf(item.from/model.laps,0,1);var b=48+width*clampf(item.to/model.laps,0,1)
 			var rect=Rect2(a,y+offset,maxf(4,b-a),13*scale_factor)
-			var color=RaceStrategyChart.compound_color(item.set) if item.kind=="pit" else UI.ACCENT
+			var color=RaceStrategyChart.compound_color(item.set, model.get("set_styles", {})) if item.kind=="pit" else UI.ACCENT
 			if item.past: color=color.lerp(UI.CARD,0.65)
 			draw_rect(rect,color, item.kind=="pit", -1 if item.kind=="pit" else 2)
 			if item_index==selected_item and index==selected_driver: draw_rect(rect.grow(2),UI.INK,false,1)

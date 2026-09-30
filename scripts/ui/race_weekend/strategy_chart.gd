@@ -1,6 +1,7 @@
 class_name RaceStrategyChart
 extends Control
 ## Read-only supplied stop schedules. Windows and physical orders remain distinct.
+var set_styles: Dictionary = {}
 var options: Array = []
 var total_laps = 1
 var start_lap = 0.0
@@ -24,6 +25,7 @@ func _notification(what: int) -> void:
 func present(data: Array) -> void:
 	if data == stamp: return
 	stamp = data.duplicate(true); options = stamp[0]; total_laps = maxi(1,data[1]); start_lap = data[2]; current_set = data[3]; update_count += 1
+	set_styles = data[4].duplicate(true) if data.size() > 4 else {}
 	option_index = clampi(option_index,0,maxi(0,options.size()-1)); _describe(); queue_redraw()
 
 func selected_text() -> String:
@@ -65,7 +67,9 @@ func _gui_input(event: InputEvent) -> void:
 	elif direction == "right": stop_index = mini(maxi(0,options[option_index].get("stops",[]).size()-1),stop_index+1)
 	_describe();queue_redraw();accept_event()
 
-static func compound_color(set_id: String) -> Color:
+static func compound_color(set_id: String, styles: Dictionary = {}) -> Color:
+	if styles.has(set_id): return Color(styles[set_id].color)
+	# Legacy chart fixtures only; all production projections provide explicit set styles.
 	return {"S":Color("bf6053"),"M":Color("d4ad58"),"H":Color("a9b9af"),"I":Color("529276"),"W":Color("578ca7")}.get(set_id.get_slice("-",1).left(1),UI.LINE)
 
 func _draw() -> void:
@@ -89,9 +93,9 @@ func _draw() -> void:
 		for j in range(segments.size()):
 			var stop = segments[j];var finish=clampf(float(stop.at),left,total_laps)
 			var a=12+width*left/total_laps;var b=12+width*finish/total_laps
-			var segment_color = compound_color(set_id)
+			var segment_color = compound_color(set_id, set_styles)
 			draw_rect(Rect2(a,y+6*scale_factor,maxf(1,b-a-1),18*scale_factor),segment_color)
-			if b-a>30: draw_string(font,Vector2(a+4,y+20*scale_factor),set_id.get_slice("-",1),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,caption_size,GameTheme.ink_on(segment_color))
+			if b-a>30: draw_string(font,Vector2(a+4,y+20*scale_factor),str(set_styles.get(set_id, {}).get("label", set_id)),HORIZONTAL_ALIGNMENT_LEFT,b-a-4,caption_size,GameTheme.ink_on(segment_color))
 			if j<segments.size()-1:
 				draw_line(Vector2(b,y+3*scale_factor),Vector2(b,y+27*scale_factor),UI.INK,2)
 				if i==option_index and j==stop_index: draw_circle(Vector2(b,y+5*scale_factor),4,UI.INK)

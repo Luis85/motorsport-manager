@@ -54,13 +54,13 @@ func _ready() -> void:
 	commit_bar = UI.vbox(self)
 	for i in range(4): commit_pages.append(UI.vbox(commit_bar))
 	var people=UI.hbox(self);people_summary=people;move_child(people,0)
-	for id in [3,6]:
+	for id in sim.player_ids():
 		var panel=PitwallDesign.race_panel(false,8);panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;people.add_child(panel)
 		var body=UI.vbox(panel)
 		body.add_child(UI.label(sim.car(id).short+" / "+sim.car(id).name.get_slice(" ",1),14,UI.INK))
 		var value=UI.paragraph("");body.add_child(value);driver_summaries[id]=value
 	var page = pages[0]
-	actor = UI.option(["MER ahead · MOR following", "MOR ahead · MER following"], func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
+	actor = UI.option(sim.player_ids().map(func(id): return sim.car(id).short + " ahead · " + sim.car(sim.teammate_id(id)).short + " following"), func(_index): refresh()); page.add_child(actor); StrategyDesk.compact_button(actor); actor.add_theme_font_size_override("font_size", 12)
 	kind = UI.option(["Hold relative team position", "Allow the teammate through"], func(_index): refresh()); page.add_child(kind); StrategyDesk.compact_button(kind); kind.add_theme_font_size_override("font_size", 12)
 	duration = UI.spin(1, 1, 5, 1, func(_value): refresh()); duration.custom_minimum_size = Vector2(72, 30)
 	duration.get_line_edit().add_theme_font_size_override("font_size", 12)
@@ -74,7 +74,7 @@ func _ready() -> void:
 	
 	page = pages[1]
 	var watch_row = UI.hbox(commit_pages[1])
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		page.add_child(UI.label(sim.car(id).short + " / CURRENT CONTEST", 11, UI.ACCENT))
 		battle_labels[id] = text("", UI.INK); page.add_child(battle_labels[id])
 		var button = UI.button("Watch " + sim.car(id).short, func(): watch_requested.emit(id))
@@ -84,9 +84,9 @@ func _ready() -> void:
 	page = pages[2]
 	page.add_child(text("Two-lap priority · accepted stops are never reordered."))
 	var priorities = UI.hbox(commit_pages[2])
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var button = UI.button(sim.car(id).short + " first", func():
-			command_requested.emit("team_order", {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "pit_priority", "laps": 2, "revision": revision}))
+			command_requested.emit("team_order", {"id": id, "teammate_id": sim.teammate_id(id), "kind": "pit_priority", "laps": 2, "revision": revision}))
 		priorities.add_child(button); button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; StrategyDesk.compact_button(button); priority_buttons[id] = button
 	preview_text = text("", UI.INK); page.add_child(preview_text)
 	priority_status = text(""); page.add_child(priority_status)
@@ -95,7 +95,7 @@ func _ready() -> void:
 	service_view = RacePitServicePanel.new(); service_view.configure(sim); pages[2].add_child(service_view)
 	pages[2].move_child(service_view,0)
 	var cancel_row = UI.hbox(commit_pages[2]); commit_pages[2].move_child(cancel_row,0)
-	for id in [3,6]:
+	for id in sim.player_ids():
 		var button = UI.button("Cancel " + sim.car(id).short + " stop",func():command_requested.emit("cancel_pit",{"id":id}))
 		cancel_row.add_child(button); StrategyDesk.compact_button(button); cancel_stop_buttons[id] = button
 	intent_timeline = RaceTeamIntentTimeline.new(); intent_timeline.configure(sim.charts); pages[3].add_child(intent_timeline)
@@ -103,7 +103,7 @@ func _ready() -> void:
 	intent_timeline.selection_changed.connect(func(value):intent_detail.text=value)
 	pages[3].add_child(UI.paragraph("Pit windows authorize existing engineer discretion; outlined pace/engine bars are already-issued bounded overrides. Current-distance lines are measured. Neither selecting nor inspecting a bar issues a command."))
 	var edit_row = UI.hbox(commit_pages[3])
-	for id in [3,6]: edit_row.add_child(UI.button("Review " + sim.car(id).short + " plan",func():plan_requested.emit(id)))
+	for id in sim.player_ids(): edit_row.add_child(UI.button("Review " + sim.car(id).short + " plan",func():plan_requested.emit(id)))
 	show_topic(0); refresh()
 
 func show_topic(index: int) -> void:
@@ -115,8 +115,8 @@ func show_topic(index: int) -> void:
 	refresh()
 
 func draft() -> Dictionary:
-	var id = 3 if actor.selected == 0 else 6
-	return {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "hold" if kind.selected == 0 else "yield", "laps": int(duration.value), "revision": revision}
+	var id = sim.player_ids()[actor.selected]
+	return {"id": id, "teammate_id": sim.teammate_id(id), "kind": "hold" if kind.selected == 0 else "yield", "laps": int(duration.value), "revision": revision}
 
 func cancel(key: String) -> void:
 	var record = rendered_orders.get(key, {})
@@ -153,10 +153,10 @@ func refresh() -> void:
 		cancel_buttons[key].disabled = not TeamOrders.active(sim.team_state[key])
 		cancel_buttons[key].visible = not sim.team_state[key].is_empty()
 		cancel_buttons[key].tooltip_text = "Cancel only an active instruction. Completed or canceled outcomes remain in the debrief."
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		battle_labels[id].text = RacecraftController.describe(sim.battle_state, id, sim.cars)
 		watch_buttons[id].disabled = sim.car(id).dnf or sim.car(id).finished or sim.battle_state.drivers[id].target_id < 0
-		var priority = {"id": id, "teammate_id": 6 if id == 3 else 3, "kind": "pit_priority", "laps": 2, "revision": revision}
+		var priority = {"id": id, "teammate_id": sim.teammate_id(id), "kind": "pit_priority", "laps": 2, "revision": revision}
 		var reason = sim.team_orders_validate(priority)
 		priority_buttons[id].disabled = not reason.is_empty(); priority_buttons[id].tooltip_text = reason
 	var preview = sim.team_orders_preview()

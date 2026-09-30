@@ -16,7 +16,7 @@ static func draft(car: RaceCar, laps: int, template: String = "balanced") -> Dic
 	if starting.is_empty(): starting = TyreInventory.find(car, car.set_id)
 	var stops: Array = []
 	if template != "no_stop" and laps >= 4:
-		var replacement = TyreInventory.choose(car, "H" if template == "balanced" else "M", true)
+		var replacement = TyreInventory.choose(car, car.tyre_rules.strategy_compound(template), true)
 		if not replacement.is_empty() and replacement.id != starting.id:
 			var middle = clampi(roundi(laps * (0.46 if template == "balanced" else 0.62)), 2, laps - 1)
 			stops.append({"from_lap": middle, "to_lap": mini(laps - 1, middle + 1), "set_id": replacement.id})

@@ -31,11 +31,11 @@ func _input(event: InputEvent) -> void:
 		JOY_BUTTON_START:
 			if host.sim.phase in RaceViewQuery.ACTIVE: host.dispatch("pause")
 		JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER:
-			host.select_driver(6 if host.sim.selected_id == 3 else 3)
+			host.select_driver(host.sim.teammate_id(host.sim.selected_id))
 		JOY_BUTTON_Y:
 			host.show_navigator()
 		JOY_BUTTON_X:
-			host.open_decision(host.sim.selected_id if host.sim.selected_id in [3, 6] else 3)
+			host.open_decision(host.sim.selected_id if host.sim.selected_id in host.sim.player_ids() else host.sim.player_ids()[0])
 		JOY_BUTTON_B:
 			if is_instance_valid(host.full_workspace) and host.full_workspace.visible: host.close_session_workspace()
 			else: host.close_detail()

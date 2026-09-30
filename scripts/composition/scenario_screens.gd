@@ -2,10 +2,14 @@ class_name ScenarioScreens
 extends RefCounted
 ## Retained developer scenario galleries; not part of the minimal player menu.
 
+static func add_collection_intro(host: Node, family: String, fallback_title: String, fallback_description: String, size: int = 30) -> void:
+	var collection = ScenarioCatalog.collection(family)
+	host.content.add_child(UI.label(str(collection.get("title", fallback_title)), size))
+	host.content.add_child(UI.paragraph(str(collection.get("description", fallback_description))))
+
 static func show_strategy_scenarios(host: Node) -> void:
 	host.clear_screen("strategy_scenarios")
-	host.content.add_child(UI.label("Strategy, not scripted victories", 30))
-	host.content.add_child(UI.paragraph("Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage."))
+	add_collection_intro(host, "dry", "Strategy scenarios", "Scenario collection unavailable.")
 	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_vertical = Control.SIZE_EXPAND_FILL; host.content.add_child(entries)
 	for recipe in ScenarioCatalog.read("dry"):
 		if not WeekendScenarios.valid(recipe): continue
@@ -25,8 +29,7 @@ static func show_strategy_scenarios(host: Node) -> void:
 
 static func show_weather_scenarios(host: Node) -> void:
 	host.clear_screen("weather_scenarios")
-	host.content.add_child(UI.label("Forecast, choose, watch the road", 30))
-	host.content.add_child(UI.paragraph("Seeded conditions use observed-only forecasts. Training explicitly preserves the original schedule. Neither version forces results. All scenarios retain qualifying and start approvals."))
+	add_collection_intro(host, "weather", "Weather scenarios", "Scenario collection unavailable.")
 	var entries = GridContainer.new(); entries.columns = 2; entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL; host.content.add_child(entries)
 	for recipe in ScenarioCatalog.read("weather"):
 		if not WeatherScenarios.valid(recipe): continue
@@ -45,8 +48,7 @@ static func show_weather_scenarios(host: Node) -> void:
 
 static func show_recovery_scenarios(host: Node) -> void:
 	host.clear_screen("recovery_scenarios")
-	host.content.add_child(UI.label("Protect the result, or pay for a repair", 30))
-	host.content.add_child(UI.paragraph("Disclosed scalar condition, ordinary physical racing and no guaranteed outcome. Both scenarios start at briefing; qualifying, preparation and start approvals remain yours."))
+	add_collection_intro(host, "recovery", "Recovery scenarios", "Scenario collection unavailable.")
 	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; host.content.add_child(scroll)
 	var entries = UI.vbox(scroll, true)
 	for recipe in ScenarioCatalog.read("recovery"):
@@ -65,8 +67,7 @@ static func show_recovery_scenarios(host: Node) -> void:
 
 static func show_practice_scenarios(host: Node) -> void:
 	host.clear_screen("practice_scenarios")
-	host.content.add_child(UI.label("Learn the circuit, keep the choice", 30))
-	host.content.add_child(UI.paragraph("Practice spends real resources for useful information. Every scenario permits skipping; no race performance bonus is awarded for participation."))
+	add_collection_intro(host, "practice", "Practice scenarios", "Scenario collection unavailable.")
 	for recipe in PracticeScenarios.catalog():
 		var panel = UI.panel(); host.content.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
@@ -83,8 +84,7 @@ static func show_practice_scenarios(host: Node) -> void:
 
 static func show_rival_scenarios(host: Node) -> void:
 	host.clear_screen("rival_scenarios")
-	host.content.add_child(UI.label("Read the field, choose your response", 30))
-	host.content.add_child(UI.paragraph("Curated, untimed grids start at race preparation. Formation and start remain physical and require approval. No winner or incident is forced."))
+	add_collection_intro(host, "rivals", "Rival scenarios", "Scenario collection unavailable.")
 	for recipe in RivalScenarios.catalog():
 		var panel = UI.panel(); host.content.add_child(panel); var body = UI.vbox(panel)
 		body.add_child(UI.label(recipe.title, 20, UI.ACCENT))
@@ -102,8 +102,7 @@ static func show_rival_scenarios(host: Node) -> void:
 
 static func show_duel_scenarios(host: Node) -> void:
 	host.clear_screen("duel_scenarios")
-	host.content.add_child(UI.label("Strategic duels · two cars, competing plans", 27))
-	host.content.add_child(UI.paragraph("Four disclosed dry exercises. Compare, approve or deliberately wait, then inspect the actual outcome. No scripted victories or campaign rewards."))
+	add_collection_intro(host, "duels", "Strategic duels", "Scenario collection unavailable.", 27)
 	var scroll = ScrollContainer.new(); scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL; host.content.add_child(scroll)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var entries = UI.vbox(scroll); entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL

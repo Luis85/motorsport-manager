@@ -1,0 +1,2062 @@
+{
+  "version": 1,
+  "classifications": {
+    "contract": "Version/type/compatibility rules; changing these changes accepted data or reader semantics.",
+    "identity": "Stable IDs used for reference, provenance and continuation.",
+    "presentation": "Human-facing inert labels/copy/colors with no sporting authority.",
+    "reference": "References resolved and type-checked before activation.",
+    "authoring": "Authoring inputs that become ordinary validated domain data before runtime.",
+    "sporting": "Rules, allocations or session/competition policy that can change legal race behavior.",
+    "simulation": "Numeric/model inputs consumed by the authoritative simulation or geometry.",
+    "safety": "Bounds/clamps whose primary role is keeping runtime state inside validated operating limits."
+  },
+  "families": {
+    "pack": {
+      "schema": "content/schemas/v1/pack.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Pack envelope discriminator."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Manifest schema version."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Pack identity used by dependency ordering."
+        },
+        {
+          "prefix": "/version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Exact dependency version."
+        },
+        {
+          "prefix": "/runtime_contract",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Runtime compatibility gate."
+        },
+        {
+          "prefix": "/dependencies",
+          "classification": "reference",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Ordered exact pack dependencies."
+        },
+        {
+          "prefix": "/files",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Bounded pack-relative definition list."
+        },
+        {
+          "prefix": "/overrides",
+          "classification": "contract",
+          "consumers": [
+            "scripts/services/content/pack_loader.gd"
+          ],
+          "note": "Hash-pinned whole-record override authorization."
+        }
+      ],
+      "expected_leaves": [
+        "/dependencies/*/id",
+        "/dependencies/*/version",
+        "/files/*",
+        "/id",
+        "/kind",
+        "/overrides/*/expected_sha256",
+        "/overrides/*/id",
+        "/runtime_contract",
+        "/schema_version",
+        "/version"
+      ]
+    },
+    "vehicle": {
+      "schema": "content/schemas/v1/vehicle.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/top_speed_mps",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/vehicle_definition.gd"
+          ],
+          "note": "Frozen vehicle performance input."
+        },
+        {
+          "prefix": "/lateral_acceleration_mps2",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/vehicle_definition.gd"
+          ],
+          "note": "Frozen line/vehicle capability."
+        },
+        {
+          "prefix": "/acceleration_mps2",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/vehicle_definition.gd"
+          ],
+          "note": "Frozen longitudinal capability."
+        },
+        {
+          "prefix": "/braking_mps2",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/vehicle_definition.gd"
+          ],
+          "note": "Frozen braking capability."
+        },
+        {
+          "prefix": "/width_m",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/vehicle_definition.gd"
+          ],
+          "note": "Frozen vehicle width."
+        }
+      ],
+      "expected_leaves": [
+        "/acceleration_mps2",
+        "/braking_mps2",
+        "/description",
+        "/id",
+        "/kind",
+        "/lateral_acceleration_mps2",
+        "/name",
+        "/schema_version",
+        "/top_speed_mps",
+        "/width_m"
+      ]
+    },
+    "team": {
+      "schema": "content/schemas/v1/team.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/color",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Entrant/team identity color; no sporting authority."
+        }
+      ],
+      "expected_leaves": [
+        "/color",
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/schema_version"
+      ]
+    },
+    "driver": {
+      "schema": "content/schemas/v1/driver.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/short",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Timing/pitwall abbreviation."
+        },
+        {
+          "prefix": "/skill",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Frozen driver capability."
+        },
+        {
+          "prefix": "/consistency",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Frozen driver consistency."
+        },
+        {
+          "prefix": "/wet_skill",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Wet-condition capability."
+        },
+        {
+          "prefix": "/reliability",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/entrant_definition.gd"
+          ],
+          "note": "Driver reliability input."
+        }
+      ],
+      "expected_leaves": [
+        "/consistency",
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/reliability",
+        "/schema_version",
+        "/short",
+        "/skill",
+        "/wet_skill"
+      ]
+    },
+    "roster": {
+      "schema": "content/schemas/v1/roster.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/player_team_id",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/roster_definition.gd"
+          ],
+          "note": "Defines the two controlled entrant seats."
+        },
+        {
+          "prefix": "/entries",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/roster_definition.gd"
+          ],
+          "note": "Ordered field identities, numbers and optional colors."
+        },
+        {
+          "prefix": "/pit_assignments",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/roster_definition.gd"
+          ],
+          "note": "Physical team pit-box fractions."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/entries/*/color",
+        "/entries/*/driver_id",
+        "/entries/*/number",
+        "/entries/*/team_id",
+        "/id",
+        "/kind",
+        "/name",
+        "/pit_assignments/*/fraction",
+        "/pit_assignments/*/team_id",
+        "/player_team_id",
+        "/schema_version"
+      ]
+    },
+    "tyre": {
+      "schema": "content/schemas/v1/tyre.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/short",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Compound short label."
+        },
+        {
+          "prefix": "/color",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Compound display color."
+        },
+        {
+          "prefix": "/thermal_profile_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/application/content/catalog.gd",
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Required thermal-profile reference."
+        },
+        {
+          "prefix": "/family",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Dry/intermediate/wet behavior family."
+        },
+        {
+          "prefix": "/grip",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Base compound grip."
+        },
+        {
+          "prefix": "/wear",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Compound wear rate."
+        },
+        {
+          "prefix": "/optimum_c",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd"
+          ],
+          "note": "Thermal optimum."
+        },
+        {
+          "prefix": "/surface_response",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd",
+            "scripts/domain/content/tyre_surface_response.gd"
+          ],
+          "note": "Surface-water response curve."
+        }
+      ],
+      "expected_leaves": [
+        "/color",
+        "/description",
+        "/family",
+        "/grip",
+        "/id",
+        "/kind",
+        "/name",
+        "/optimum_c",
+        "/schema_version",
+        "/short",
+        "/surface_response/dry_floor",
+        "/surface_response/dry_loss",
+        "/surface_response/dry_onset",
+        "/surface_response/inter_base",
+        "/surface_response/inter_gain",
+        "/surface_response/inter_loss",
+        "/surface_response/inter_peak",
+        "/surface_response/wet_base",
+        "/surface_response/wet_gain",
+        "/thermal_profile_id",
+        "/wear"
+      ]
+    },
+    "tyre_thermal": {
+      "schema": "content/schemas/v1/tyre_thermal.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/model",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/tyre_schema.gd"
+          ],
+          "note": "Supported thermal-model discriminator."
+        },
+        {
+          "prefix": "/parameters",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/tyre_definition.gd",
+            "scripts/domain/wheel_tyres.gd"
+          ],
+          "note": "Four-wheel thermal/wear coefficients."
+        },
+        {
+          "prefix": "/operating",
+          "classification": "safety",
+          "consumers": [
+            "scripts/domain/content/tyre_operating_schema.gd",
+            "scripts/domain/wheel_tyres.gd"
+          ],
+          "note": "Bounded wheel operating thresholds and clamps."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/id",
+        "/kind",
+        "/model",
+        "/name",
+        "/operating/core_limit_c",
+        "/operating/corner_saturation",
+        "/operating/lockup_front_bias",
+        "/operating/maximum_load",
+        "/operating/maximum_pressure",
+        "/operating/minimum_load",
+        "/operating/minimum_pressure",
+        "/operating/moving_threshold_mps",
+        "/operating/reference_brake_bias",
+        "/operating/slide_saturation",
+        "/operating/surface_limit_c",
+        "/parameters/ambient_c",
+        "/parameters/blister_grip_loss",
+        "/parameters/blister_offset_c",
+        "/parameters/blister_rate",
+        "/parameters/blister_wear_gain",
+        "/parameters/brake_bias_load_gain",
+        "/parameters/brake_heat_gain",
+        "/parameters/brake_load_gain",
+        "/parameters/brake_slide_gain",
+        "/parameters/care_grain_gain",
+        "/parameters/clean_lower_offset_c",
+        "/parameters/clean_rate_per_s",
+        "/parameters/clean_upper_offset_c",
+        "/parameters/cold_c",
+        "/parameters/cold_slide_gain",
+        "/parameters/cold_slide_offset_c",
+        "/parameters/core_grip_loss_per_c",
+        "/parameters/core_grip_offset_c",
+        "/parameters/core_rate_per_s",
+        "/parameters/corner_acceleration_scale_mps2",
+        "/parameters/corner_heat_gain",
+        "/parameters/flat_grip_loss",
+        "/parameters/flat_wear_gain",
+        "/parameters/grain_grip_loss",
+        "/parameters/grain_offset_c",
+        "/parameters/grain_rate",
+        "/parameters/grain_wear_gain",
+        "/parameters/heat_cycle_offset_c",
+        "/parameters/heat_cycle_reset_c",
+        "/parameters/lateral_load_gain",
+        "/parameters/lockup_heat_c",
+        "/parameters/minimum_damage_grip",
+        "/parameters/minimum_thermal_grip",
+        "/parameters/minimum_tread_grip",
+        "/parameters/moving_surface_rate_per_s",
+        "/parameters/moving_target_c",
+        "/parameters/neutral_target_c",
+        "/parameters/pace_heat_gain",
+        "/parameters/pressure_gain_per_c",
+        "/parameters/puncture_grip",
+        "/parameters/puncture_wear_per_lap",
+        "/parameters/slide_heat_gain",
+        "/parameters/spare_core_rate_per_s",
+        "/parameters/spare_surface_rate_per_s",
+        "/parameters/stopped_surface_rate_per_s",
+        "/parameters/surface_grip_loss_per_c",
+        "/parameters/throttle_heat_gain",
+        "/parameters/throttle_load_gain",
+        "/parameters/throttle_slide_gain",
+        "/parameters/tread_cliff_percent",
+        "/parameters/tread_cliff_quadratic",
+        "/parameters/tread_loss_per_percent",
+        "/parameters/water_cooling_gain",
+        "/parameters/wet_dry_water_threshold",
+        "/parameters/wet_dry_wear_multiplier",
+        "/parameters/working_band_c",
+        "/schema_version"
+      ]
+    },
+    "tyre_allocation": {
+      "schema": "content/schemas/v1/tyre_allocation.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/sets",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/tyre_rules.gd"
+          ],
+          "note": "Finite driver-owned compound/set allocation."
+        },
+        {
+          "prefix": "/selection",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/tyre_rules.gd"
+          ],
+          "note": "Supported default/selection semantics."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/schema_version",
+        "/selection/dry",
+        "/selection/initial_dry",
+        "/selection/initial_wet",
+        "/selection/intermediate",
+        "/selection/intermediate_threshold",
+        "/selection/long_race/*",
+        "/selection/long_stint_laps",
+        "/selection/practice/*",
+        "/selection/qualifying/*",
+        "/selection/qualifying_dry",
+        "/selection/qualifying_threshold",
+        "/selection/qualifying_wet",
+        "/selection/race/*",
+        "/selection/template_balanced",
+        "/selection/template_extended",
+        "/selection/wet",
+        "/selection/wet_threshold",
+        "/sets/*/compound_id",
+        "/sets/*/count"
+      ]
+    },
+    "setup": {
+      "schema": "content/schemas/v1/setup.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/model",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/setup_definition.gd"
+          ],
+          "note": "Supported setup model."
+        },
+        {
+          "prefix": "/controls",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/setup_definition.gd"
+          ],
+          "note": "Bounded setup controls and defaults."
+        },
+        {
+          "prefix": "/baselines",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/domain/content/setup_definition.gd"
+          ],
+          "note": "Named safe setup baselines."
+        },
+        {
+          "prefix": "/effects",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/setup_definition.gd"
+          ],
+          "note": "Setup-to-runtime effect mapping."
+        },
+        {
+          "prefix": "/initial_temperatures",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/setup_definition.gd"
+          ],
+          "note": "Initial component/tyre temperature inputs."
+        }
+      ],
+      "expected_leaves": [
+        "/baselines/balanced/balance",
+        "/baselines/balanced/bias",
+        "/baselines/balanced/cooling",
+        "/baselines/balanced/suspension",
+        "/baselines/balanced/wing",
+        "/baselines/low_drag/balance",
+        "/baselines/low_drag/bias",
+        "/baselines/low_drag/cooling",
+        "/baselines/low_drag/suspension",
+        "/baselines/low_drag/wing",
+        "/baselines/stable_wet/balance",
+        "/baselines/stable_wet/bias",
+        "/baselines/stable_wet/cooling",
+        "/baselines/stable_wet/suspension",
+        "/baselines/stable_wet/wing",
+        "/controls/balance/default",
+        "/controls/balance/description",
+        "/controls/balance/label",
+        "/controls/balance/maximum",
+        "/controls/balance/minimum",
+        "/controls/bias/default",
+        "/controls/bias/description",
+        "/controls/bias/label",
+        "/controls/bias/maximum",
+        "/controls/bias/minimum",
+        "/controls/cooling/default",
+        "/controls/cooling/description",
+        "/controls/cooling/label",
+        "/controls/cooling/maximum",
+        "/controls/cooling/minimum",
+        "/controls/suspension/default",
+        "/controls/suspension/description",
+        "/controls/suspension/label",
+        "/controls/suspension/maximum",
+        "/controls/suspension/minimum",
+        "/controls/wing/default",
+        "/controls/wing/description",
+        "/controls/wing/label",
+        "/controls/wing/maximum",
+        "/controls/wing/minimum",
+        "/description",
+        "/effects/balance_gain",
+        "/effects/balance_traction_loss",
+        "/effects/bias_brake_loss",
+        "/effects/bias_centre",
+        "/effects/brake_min",
+        "/effects/braking_balance_gain",
+        "/effects/cooling_centre",
+        "/effects/cooling_drag_loss",
+        "/effects/corner_balance_loss",
+        "/effects/corner_max",
+        "/effects/corner_min",
+        "/effects/suspension_centre",
+        "/effects/suspension_corner_gain",
+        "/effects/suspension_traction_gain",
+        "/effects/traction_max",
+        "/effects/traction_min",
+        "/effects/wet_suspension_factor",
+        "/effects/wheel_balance_gain",
+        "/effects/wheel_bias_gain",
+        "/effects/wheel_bias_limit",
+        "/effects/wing_centre",
+        "/effects/wing_corner_gain",
+        "/effects/wing_drag_loss",
+        "/id",
+        "/initial_temperatures/brake_c",
+        "/initial_temperatures/engine_c",
+        "/kind",
+        "/model",
+        "/name",
+        "/schema_version"
+      ]
+    },
+    "race_tuning": {
+      "schema": "content/schemas/v1/race_tuning.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/model",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Supported tuning model."
+        },
+        {
+          "prefix": "/fuel",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Fuel use/mass tuning."
+        },
+        {
+          "prefix": "/condition",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Condition/damage tuning."
+        },
+        {
+          "prefix": "/service",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Physical pit-service timing/rules."
+        },
+        {
+          "prefix": "/pace",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Pace/engine mode multipliers."
+        },
+        {
+          "prefix": "/sessions",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/race_tuning_definition.gd"
+          ],
+          "note": "Session timing/format coefficients."
+        },
+        {
+          "prefix": "/environment",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/content/environment_tuning_schema.gd"
+          ],
+          "note": "Weather/surface model calibration."
+        },
+        {
+          "prefix": "/operations",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/operations_tuning_schema.gd"
+          ],
+          "note": "Reliability, incident and race-control operating rules."
+        },
+        {
+          "prefix": "/competition",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/competition_tuning_schema.gd"
+          ],
+          "note": "Rival/racecraft/competition policy tuning."
+        }
+      ],
+      "expected_leaves": [
+        "/competition/battle/acquire_distance_m",
+        "/competition/battle/assertive_preparation_seconds",
+        "/competition/battle/assertive_speed_advantage_mps",
+        "/competition/battle/balanced_preparation_seconds",
+        "/competition/battle/balanced_speed_advantage_mps",
+        "/competition/battle/maximum_curvature_per_m",
+        "/competition/battle/minimum_grip",
+        "/competition/battle/minimum_road_width_m",
+        "/competition/battle/overlap_timeout_seconds",
+        "/competition/battle/patient_maximum_water",
+        "/competition/battle/patient_preparation_seconds",
+        "/competition/battle/patient_speed_advantage_mps",
+        "/competition/battle/prepare_distance_m",
+        "/competition/battle/probe_seconds",
+        "/competition/battle/recovery_cooldown_seconds",
+        "/competition/battle/release_distance_m",
+        "/competition/battle/resolved_cooldown_seconds",
+        "/competition/model",
+        "/competition/movement/damaged_tyre_speed_mps",
+        "/competition/movement/dirty_air_factor",
+        "/competition/movement/following_headway_seconds",
+        "/competition/movement/following_response_per_second",
+        "/competition/movement/formation_release_seconds",
+        "/competition/movement/formation_speed_factor",
+        "/competition/movement/formation_speed_mps",
+        "/competition/movement/lateral_speed_mps",
+        "/competition/movement/run_transit_factor",
+        "/competition/movement/run_transit_speed_mps",
+        "/competition/movement/slipstream_curvature_per_m",
+        "/competition/movement/slipstream_factor",
+        "/competition/movement/start_reaction_seconds",
+        "/competition/movement/start_skill_seconds",
+        "/competition/movement/straight_curvature_per_m",
+        "/competition/movement/wake_distance_m",
+        "/competition/movement/wet_skill_factor",
+        "/competition/movement/wet_skill_reference",
+        "/competition/movement/yield_speed_mps",
+        "/competition/policy/attack_damage",
+        "/competition/policy/attack_tread",
+        "/competition/policy/conserve_tread",
+        "/competition/policy/fuel_reserve_factor",
+        "/competition/policy/healthy_tread",
+        "/competition/policy/minimum_gain_seconds",
+        "/competition/policy/pace_temperature_c",
+        "/competition/policy/pit_loss_gain_factor",
+        "/competition/policy/repair_damage",
+        "/competition/policy/review_seconds",
+        "/competition/policy/review_stagger_seconds",
+        "/competition/policy/stop_remaining_laps",
+        "/competition/policy/stop_start_laps",
+        "/competition/policy/stop_tread",
+        "/competition/policy/traffic_queue_seconds",
+        "/competition/policy/urgent_tread",
+        "/competition/profiles/*/id",
+        "/competition/profiles/*/label",
+        "/competition/profiles/*/summary",
+        "/competition/profiles/*/weights/*",
+        "/competition/rivals/behind_gap_seconds",
+        "/competition/rivals/cover_gap_seconds",
+        "/competition/rivals/cover_margin_seconds",
+        "/competition/rivals/cover_minimum_gain",
+        "/competition/rivals/cover_scale_seconds",
+        "/competition/rivals/duel_cover_score",
+        "/competition/rivals/duel_queue_seconds",
+        "/competition/rivals/extend_credit_seconds",
+        "/competition/rivals/extend_fresh_gain_seconds",
+        "/competition/rivals/extend_remaining_laps",
+        "/competition/rivals/extend_traffic_factor",
+        "/competition/rivals/extend_traffic_seconds",
+        "/competition/rivals/extend_tread",
+        "/competition/rivals/nearby_gap_seconds",
+        "/competition/rivals/observation_age_seconds",
+        "/competition/rivals/offset_laps",
+        "/competition/rivals/offset_scale_seconds",
+        "/competition/rivals/position_scale",
+        "/competition/rivals/shortlist_seconds",
+        "/competition/rivals/threat_position_factor",
+        "/competition/rivals/traffic_seconds_per_car",
+        "/competition/rivals/uncertainty_weight",
+        "/competition/team/priority_queue_margin_seconds",
+        "/competition/team/priority_tread",
+        "/competition/team/priority_wear_factor",
+        "/competition/team/yield_curvature_per_m",
+        "/competition/team/yield_execution_gap_m",
+        "/competition/team/yield_grip",
+        "/competition/team/yield_maximum_gap_m",
+        "/competition/team/yield_speed_delta_mps",
+        "/competition/team/yield_speed_factor",
+        "/competition/team/yield_width_m",
+        "/condition/brake_base_c",
+        "/condition/brake_response_per_second",
+        "/condition/brake_speed_c_per_mps",
+        "/condition/braking_c",
+        "/condition/cooling_c",
+        "/condition/cooling_reference",
+        "/condition/damage_speed_loss",
+        "/condition/engine_base_c",
+        "/condition/engine_mode_c",
+        "/condition/engine_response_per_second",
+        "/condition/health_reference",
+        "/condition/health_speed_loss",
+        "/condition/health_wear_attack",
+        "/condition/health_wear_normal",
+        "/condition/heat_reference_c",
+        "/condition/heat_speed_loss",
+        "/condition/throttle_c",
+        "/condition/water_c",
+        "/condition/wear_heat_factor",
+        "/condition/wear_heat_reference_c",
+        "/description",
+        "/environment/model",
+        "/environment/outlook/arrival_cloud_reference",
+        "/environment/outlook/arrival_cloud_slope",
+        "/environment/outlook/arrival_cloud_threshold",
+        "/environment/outlook/arrival_estimate_minimum_seconds",
+        "/environment/outlook/arrival_high_factor",
+        "/environment/outlook/arrival_high_margin_seconds",
+        "/environment/outlook/arrival_high_maximum_seconds",
+        "/environment/outlook/arrival_high_minimum_seconds",
+        "/environment/outlook/arrival_low_factor",
+        "/environment/outlook/arrival_low_minimum_seconds",
+        "/environment/outlook/condition_damp",
+        "/environment/outlook/condition_dry",
+        "/environment/outlook/condition_wet",
+        "/environment/outlook/history_seconds",
+        "/environment/outlook/horizon_laps",
+        "/environment/outlook/horizon_maximum_seconds",
+        "/environment/outlook/horizon_minimum_seconds",
+        "/environment/outlook/maximum_water_slope",
+        "/environment/outlook/minimum_trend_seconds",
+        "/environment/outlook/rain_heavy",
+        "/environment/outlook/rain_visible",
+        "/environment/outlook/spread_base",
+        "/environment/outlook/spread_maximum",
+        "/environment/outlook/spread_per_second",
+        "/environment/outlook/spread_without_history",
+        "/environment/outlook/trend_gain",
+        "/environment/outlook/trend_threshold",
+        "/environment/surface/contact/braking_temperature_c",
+        "/environment/surface/contact/dry_water_clearance",
+        "/environment/surface/contact/dust_clearance",
+        "/environment/surface/contact/marbles_clearance",
+        "/environment/surface/contact/outside_marbles",
+        "/environment/surface/contact/push_marbles_factor",
+        "/environment/surface/contact/rubber_deposit",
+        "/environment/surface/contact/temperature_gain_c",
+        "/environment/surface/contact/temperature_limit_c",
+        "/environment/surface/contact/wet_water_clearance",
+        "/environment/surface/contact/width_strips",
+        "/environment/surface/evolution/debris_decay",
+        "/environment/surface/evolution/drainage_camber",
+        "/environment/surface/evolution/drainage_minimum",
+        "/environment/surface/evolution/dry_temperature_c",
+        "/environment/surface/evolution/dust_wash",
+        "/environment/surface/evolution/evaporation_base",
+        "/environment/surface/evolution/evaporation_reference_c",
+        "/environment/surface/evolution/evaporation_temperature",
+        "/environment/surface/evolution/marbles_wash",
+        "/environment/surface/evolution/oil_decay",
+        "/environment/surface/evolution/oil_wash",
+        "/environment/surface/evolution/rain_amplitude",
+        "/environment/surface/evolution/rain_base",
+        "/environment/surface/evolution/rain_maximum",
+        "/environment/surface/evolution/rain_minimum",
+        "/environment/surface/evolution/rain_rubber_wash",
+        "/environment/surface/evolution/rain_station_radians",
+        "/environment/surface/evolution/rain_threshold",
+        "/environment/surface/evolution/rain_time_radians",
+        "/environment/surface/evolution/temperature_response",
+        "/environment/surface/evolution/water_arrival",
+        "/environment/surface/evolution/water_drainage",
+        "/environment/surface/evolution/water_drainage_base",
+        "/environment/surface/evolution/water_rubber_wash",
+        "/environment/surface/evolution/wet_evaporation",
+        "/environment/surface/evolution/wet_temperature_c",
+        "/environment/surface/grip/base",
+        "/environment/surface/grip/debris_loss",
+        "/environment/surface/grip/dust_loss",
+        "/environment/surface/grip/marbles_loss",
+        "/environment/surface/grip/maximum",
+        "/environment/surface/grip/minimum",
+        "/environment/surface/grip/oil_loss",
+        "/environment/surface/grip/rubber_gain",
+        "/environment/surface/grip/water_linear_loss",
+        "/environment/surface/grip/water_squared_loss",
+        "/environment/surface/grip/wet_rubber_loss",
+        "/environment/surface/grip/wet_rubber_threshold",
+        "/environment/surface/incident/adjacent_debris_factor",
+        "/environment/surface/incident/debris",
+        "/environment/surface/incident/oil",
+        "/environment/surface/incident/oil_health_threshold",
+        "/environment/surface/initial/dry_temperature_c",
+        "/environment/surface/initial/dry_water",
+        "/environment/surface/initial/dust_base",
+        "/environment/surface/initial/dust_per_strip",
+        "/environment/surface/initial/marbles",
+        "/environment/surface/initial/rubber",
+        "/environment/surface/initial/wet_temperature_c",
+        "/environment/surface/initial/wet_threshold",
+        "/environment/surface/initial/wet_water",
+        "/environment/surface/runoff/advection_per_second",
+        "/environment/surface/runoff/camber_factor",
+        "/environment/surface/runoff/diffusion_per_second",
+        "/environment/training/changeable_heavy_end",
+        "/environment/training/changeable_heavy_rain",
+        "/environment/training/changeable_heavy_start",
+        "/environment/training/changeable_light_end",
+        "/environment/training/changeable_light_rain",
+        "/environment/training/changeable_light_start",
+        "/environment/training/minimum_race_seconds",
+        "/environment/training/wet_dry_seconds",
+        "/environment/training/wet_ease_seconds",
+        "/environment/training/wet_eased_rain",
+        "/environment/training/wet_heavy_rain",
+        "/environment/weather/cloud_response_per_second",
+        "/environment/weather/initial_cloud_changeable_base",
+        "/environment/weather/initial_cloud_changeable_span",
+        "/environment/weather/initial_cloud_dry",
+        "/environment/weather/initial_cloud_wet",
+        "/environment/weather/initial_rain_wet",
+        "/environment/weather/rain_cloud_gain",
+        "/environment/weather/rain_cloud_threshold",
+        "/environment/weather/rain_response_per_second",
+        "/environment/weather/target_changeable_base",
+        "/environment/weather/target_changeable_span",
+        "/environment/weather/target_dry_base",
+        "/environment/weather/target_dry_span",
+        "/environment/weather/target_wet_base",
+        "/environment/weather/target_wet_span",
+        "/environment/weather/transition_base_seconds",
+        "/environment/weather/transition_span_seconds",
+        "/environment/weather_policy/dry_fallback_water",
+        "/environment/weather_policy/fallback_damage",
+        "/environment/weather_policy/fallback_tread",
+        "/environment/weather_policy/maximum_case_loss_factor",
+        "/environment/weather_policy/minimum_case_gain_seconds",
+        "/environment/weather_policy/model_allowance_seconds",
+        "/environment/weather_policy/moderate_tread",
+        "/environment/weather_policy/nominal_gain_seconds",
+        "/environment/weather_policy/nominal_pit_loss_factor",
+        "/environment/weather_policy/rain_warning_water",
+        "/environment/weather_policy/review_seconds",
+        "/environment/weather_policy/safe_tread",
+        "/environment/weather_policy/slick_warning_water",
+        "/environment/weather_policy/traffic_seconds_per_car",
+        "/environment/weather_policy/wet_warning_water",
+        "/environment/weather_policy/wettest_sector_factor",
+        "/fuel/engine_rates/*",
+        "/fuel/forecast_mass_factor",
+        "/fuel/practice_load_per_lap",
+        "/fuel/practice_reserve_laps",
+        "/fuel/qualifying_load_laps",
+        "/fuel/race_load_per_lap",
+        "/fuel/race_reserve_laps",
+        "/fuel/reduced_rate",
+        "/fuel/runtime_mass_factor",
+        "/id",
+        "/kind",
+        "/model",
+        "/name",
+        "/operations/control/ending_seconds",
+        "/operations/control/legacy_mechanical_seconds",
+        "/operations/control/legacy_neutral_speed_mps",
+        "/operations/control/local_incident_seconds",
+        "/operations/control/local_yellow_speed_mps",
+        "/operations/control/retired_car_seconds",
+        "/operations/control/virtual_pace_factor",
+        "/operations/incidents/assertive_factor",
+        "/operations/incidents/balanced_factor",
+        "/operations/incidents/barrier_probability",
+        "/operations/incidents/base_exposure_per_second",
+        "/operations/incidents/consistency_factor",
+        "/operations/incidents/damage_base",
+        "/operations/incidents/damage_span",
+        "/operations/incidents/legacy_mechanical_health",
+        "/operations/incidents/legacy_retirement_threshold",
+        "/operations/incidents/lost_seconds_base",
+        "/operations/incidents/lost_seconds_span",
+        "/operations/incidents/low_tread_factor",
+        "/operations/incidents/low_tread_reference",
+        "/operations/incidents/patient_factor",
+        "/operations/incidents/push_factor",
+        "/operations/incidents/reliability_factor",
+        "/operations/incidents/tread_loss",
+        "/operations/incidents/volatile_factor",
+        "/operations/incidents/water_factor",
+        "/operations/model",
+        "/operations/reliability/critical_recovery_per_second",
+        "/operations/reliability/damage_critical",
+        "/operations/reliability/damage_degraded",
+        "/operations/reliability/damage_exposure",
+        "/operations/reliability/damage_reference",
+        "/operations/reliability/damage_warning",
+        "/operations/reliability/default_repair_budget_seconds",
+        "/operations/reliability/engine_attack",
+        "/operations/reliability/engine_normal",
+        "/operations/reliability/engine_save",
+        "/operations/reliability/fault_damage_base",
+        "/operations/reliability/fault_damage_span",
+        "/operations/reliability/fault_health_base",
+        "/operations/reliability/fault_health_span",
+        "/operations/reliability/fault_threshold_base",
+        "/operations/reliability/fault_threshold_span",
+        "/operations/reliability/health_critical",
+        "/operations/reliability/health_degraded",
+        "/operations/reliability/health_exposure",
+        "/operations/reliability/health_reference",
+        "/operations/reliability/health_warning",
+        "/operations/reliability/maximum_exposure",
+        "/operations/reliability/minimum_critical_exposure",
+        "/operations/reliability/minimum_critical_seconds",
+        "/operations/reliability/observed_rising_exposure",
+        "/operations/reliability/repair_minimum_tread",
+        "/operations/reliability/stress_recovery_per_second",
+        "/operations/reliability/stress_warning",
+        "/operations/reliability/temperature_warning_c",
+        "/operations/reliability/temperature_warning_reset_c",
+        "/operations/reliability/terminal_threshold_base",
+        "/operations/reliability/terminal_threshold_span",
+        "/operations/reliability/thermal_exposure",
+        "/operations/reliability/thermal_reference_c",
+        "/pace/engine_modes/*",
+        "/pace/forecast_wear_factor",
+        "/pace/formation_wear",
+        "/pace/skill_factor",
+        "/pace/skill_reference",
+        "/pace/speed_modes/*",
+        "/pace/wear_modes/*",
+        "/schema_version",
+        "/service/arrival_allowance_seconds",
+        "/service/queue_uncertainty_seconds",
+        "/service/repair_base_seconds",
+        "/service/repair_jitter_seconds",
+        "/service/repair_seconds_per_damage",
+        "/service/transit_allowance_seconds",
+        "/service/tyre_base_seconds",
+        "/service/tyre_jitter_seconds",
+        "/service/uncertainty_seconds",
+        "/service/warmup_seconds",
+        "/sessions/practice_minimum_seconds",
+        "/sessions/practice_reference_laps",
+        "/sessions/qualifying_reference_laps",
+        "/sessions/release_offset_seconds",
+        "/sessions/release_spacing_seconds"
+      ]
+    },
+    "weekend": {
+      "schema": "content/schemas/v1/weekend.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/vehicle_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Vehicle definition reference."
+        },
+        {
+          "prefix": "/roster_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Roster reference."
+        },
+        {
+          "prefix": "/tyre_allocation_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Tyre allocation reference."
+        },
+        {
+          "prefix": "/setup_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Setup reference."
+        },
+        {
+          "prefix": "/race_tuning_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Race-tuning reference."
+        },
+        {
+          "prefix": "/mechanic_profile_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Registered mechanic-provider profile reference."
+        },
+        {
+          "prefix": "/settings",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/weekend_definition.gd"
+          ],
+          "note": "Frozen laps/seed/scenario/intensity/feature settings."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/id",
+        "/kind",
+        "/mechanic_profile_id",
+        "/name",
+        "/race_tuning_id",
+        "/roster_id",
+        "/schema_version",
+        "/settings/intensity",
+        "/settings/laps",
+        "/settings/qual_duration",
+        "/settings/rival_styles",
+        "/settings/scenario",
+        "/settings/seed",
+        "/settings/tactical_duels",
+        "/settings/weather_mode",
+        "/setup_id",
+        "/tyre_allocation_id",
+        "/vehicle_id"
+      ]
+    },
+    "circuit": {
+      "schema": "content/schemas/v1/circuit.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/document",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/domain/content/circuit_definition.gd",
+            "scripts/domain/track_document.gd"
+          ],
+          "note": "Existing bounded TrackDocument; compiled by the normal geometry path."
+        },
+        {
+          "prefix": "/style_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/circuit_definition.gd"
+          ],
+          "note": "Optional supported illustration-style reference."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/document",
+        "/id",
+        "/kind",
+        "/name",
+        "/schema_version",
+        "/style_id"
+      ]
+    },
+    "circuit_style": {
+      "schema": "content/schemas/v1/circuit_style.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/visual",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/circuit_definition.gd"
+          ],
+          "note": "Supported environment/season/seed illustration values."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/schema_version",
+        "/visual/environment",
+        "/visual/season",
+        "/visual/seed"
+      ]
+    },
+    "scenario": {
+      "schema": "content/schemas/v1/scenario.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/circuit_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/scenario_definition.gd",
+            "scripts/application/weekend_launch.gd"
+          ],
+          "note": "Scenario circuit reference."
+        },
+        {
+          "prefix": "/weekend_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/domain/content/scenario_definition.gd",
+            "scripts/application/weekend_launch.gd"
+          ],
+          "note": "Scenario weekend reference."
+        },
+        {
+          "prefix": "/brief",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/scenario_definition.gd",
+            "scripts/application/weekend_launch.gd"
+          ],
+          "note": "Inert brief/goal description validated against supported observational goals."
+        }
+      ],
+      "expected_leaves": [
+        "/brief/approaches/*",
+        "/brief/briefing",
+        "/brief/goal",
+        "/brief/hint",
+        "/brief/title",
+        "/brief/version",
+        "/circuit_id",
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/schema_version",
+        "/weekend_id"
+      ]
+    },
+    "mechanic_profile": {
+      "schema": "content/schemas/v1/mechanic_profile.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/profiles",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/mechanic_profile_definition.gd",
+            "scripts/domain/mechanics/race_mechanic_profiles.gd"
+          ],
+          "note": "Ordered installed providers/save-reader compatibility prefixes."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/id",
+        "/kind",
+        "/name",
+        "/profiles/practice/*/id",
+        "/profiles/practice/*/version",
+        "/profiles/recovery/*/id",
+        "/profiles/recovery/*/version",
+        "/profiles/strategy/*/id",
+        "/profiles/strategy/*/version",
+        "/profiles/weather/*/id",
+        "/profiles/weather/*/version",
+        "/schema_version"
+      ]
+    },
+    "editor_profile": {
+      "schema": "content/schemas/v1/editor_profile.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Definition family discriminator; validated before activation."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Version compatibility boundary; never a gameplay tuning value."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable namespaced identity and reference target."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing label retained with the frozen definition."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Inert author-facing explanatory copy."
+        },
+        {
+          "prefix": "/placements",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/domain/content/editor_profile_definition.gd",
+            "scripts/application/editor/track_editor_session.gd"
+          ],
+          "note": "Bounded allow-listed Circuit Atelier placement presets; placed values become ordinary TrackDocument data."
+        },
+        {
+          "prefix": "/placement_help",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/editor_profile_definition.gd",
+            "scripts/application/editor/track_editor_session.gd"
+          ],
+          "note": "Inert authoring help copy."
+        },
+        {
+          "prefix": "/guide",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/domain/content/editor_profile_definition.gd",
+            "scripts/ui/editor.gd"
+          ],
+          "note": "Text-only guide copy keyed to code-owned actions/targets."
+        }
+      ],
+      "expected_leaves": [
+        "/description",
+        "/guide/*/body",
+        "/guide/*/key",
+        "/guide/*/title",
+        "/id",
+        "/kind",
+        "/name",
+        "/placement_help",
+        "/placements/*/id",
+        "/placements/*/name",
+        "/placements/*/object_type",
+        "/placements/*/rotation_deg",
+        "/placements/*/scale",
+        "/schema_version"
+      ]
+    }
+  },
+  "retained_literals": [
+    {
+      "file": "scripts/domain/content/vehicle_definition.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Four pre-content vehicle presets retained only for old saves/direct legacy APIs; authored vehicles use schema records."
+    },
+    {
+      "file": "scripts/domain/content/legacy_roster.gd",
+      "symbol": "ROWS",
+      "classification": "contract",
+      "note": "Legacy twelve-driver adapter for old direct construction; external rosters use typed definitions."
+    },
+    {
+      "file": "scripts/domain/content/legacy_tyre_content.gd",
+      "symbol": "PROFILES",
+      "classification": "contract",
+      "note": "Legacy tyre compatibility values used to reproduce pre-content defaults exactly."
+    },
+    {
+      "file": "scripts/domain/content/legacy_setup_content.gd",
+      "symbol": "DEFAULTS",
+      "classification": "contract",
+      "note": "Legacy setup adapter; authored setup profiles own new instances."
+    },
+    {
+      "file": "scripts/domain/content/legacy_race_tuning.gd",
+      "symbol": "VALUES",
+      "classification": "contract",
+      "note": "Frozen pre-content race tuning compatibility baseline."
+    },
+    {
+      "file": "scripts/domain/content/legacy_environment.gd",
+      "symbol": "VALUES",
+      "classification": "contract",
+      "note": "Frozen pre-content environment compatibility baseline."
+    },
+    {
+      "file": "scripts/domain/content/legacy_operations.gd",
+      "symbol": "VALUES",
+      "classification": "contract",
+      "note": "Frozen pre-content operations/reliability compatibility baseline."
+    },
+    {
+      "file": "scripts/domain/content/legacy_competition.gd",
+      "symbol": "VALUES",
+      "classification": "contract",
+      "note": "Frozen pre-content competition/AI compatibility baseline."
+    },
+    {
+      "file": "scripts/domain/content/tyre_operating_schema.gd",
+      "symbol": "LEGACY",
+      "classification": "safety",
+      "note": "Exact legacy wheel operating limits used when old snapshots have no authored operating block."
+    },
+    {
+      "file": "scripts/domain/content/tyre_operating_schema.gd",
+      "symbol": "BOUNDS",
+      "classification": "safety",
+      "note": "Engine-owned safe envelope; content may tune only inside these limits."
+    },
+    {
+      "file": "scripts/services/content/pack_loader.gd",
+      "symbol": "MAX_FILE_BYTES",
+      "classification": "safety",
+      "note": "Security/resource bound, intentionally not pack-configurable."
+    },
+    {
+      "file": "scripts/services/content/pack_loader.gd",
+      "symbol": "MAX_TOTAL_BYTES",
+      "classification": "safety",
+      "note": "Security/resource bound, intentionally not pack-configurable."
+    },
+    {
+      "file": "scripts/services/content/pack_loader.gd",
+      "symbol": "MAX_PACKS",
+      "classification": "safety",
+      "note": "Security/resource bound, intentionally not pack-configurable."
+    },
+    {
+      "file": "scripts/services/content/pack_loader.gd",
+      "symbol": "MAX_FILES",
+      "classification": "safety",
+      "note": "Security/resource bound, intentionally not pack-configurable."
+    },
+    {
+      "file": "scripts/domain/content/validation.gd",
+      "symbol": "MAX_DIAGNOSTICS",
+      "classification": "safety",
+      "note": "Validation-work bound; not gameplay tuning."
+    },
+    {
+      "file": "scripts/domain/content/schema.gd",
+      "symbol": "VERSION",
+      "classification": "contract",
+      "note": "Published content schema version."
+    },
+    {
+      "file": "scripts/domain/content/schema.gd",
+      "symbol": "MAX_ENTRANTS",
+      "classification": "safety",
+      "note": "Supported field-size bound used by content schemas."
+    },
+    {
+      "file": "scripts/domain/track_document.gd",
+      "symbol": "MAX_NODES",
+      "classification": "safety",
+      "note": "Track authoring/resource bound; not race balance."
+    },
+    {
+      "file": "scripts/domain/track_document.gd",
+      "symbol": "MAX_GRID_PLACES",
+      "classification": "safety",
+      "note": "Track-format upper bound; actual roster/scenario capacity is validated separately."
+    },
+    {
+      "file": "scripts/domain/race_checkpoint.gd",
+      "symbol": "MAX_SPEED_MPS",
+      "classification": "safety",
+      "note": "Checkpoint validation ceiling, not a vehicle performance preset."
+    },
+    {
+      "file": "scripts/domain/mechanics/race_mechanic_profiles.gd",
+      "symbol": "ORDER",
+      "classification": "contract",
+      "note": "Installed save-reader/provider compatibility prefix order."
+    },
+    {
+      "file": "scripts/services/scenario_catalog.gd",
+      "symbol": "MAX_SCENARIOS",
+      "classification": "safety",
+      "note": "Bundled diagnostic collection size bound."
+    },
+    {
+      "file": "scripts/services/scenario_catalog.gd",
+      "symbol": "PATHS",
+      "classification": "contract",
+      "note": "Trusted bundled diagnostic-resource registry; not external executable content."
+    }
+  ]
+}

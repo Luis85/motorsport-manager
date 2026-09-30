@@ -12,9 +12,14 @@ const BASELINES = {
 
 static func setup_for(car: RaceCar, baseline: String) -> Dictionary:
 	var result = car.car_setup.duplicate()
-	if baseline == "balanced": result = CarSetup.DEFAULTS.duplicate()
-	elif baseline == "low_drag": result.wing = 2; result.cooling = 4
-	elif baseline == "stable_wet": result.wing = 7; result.suspension = 3; result.cooling = 6
+	if not car.setup_definition.authored():
+		if baseline == "balanced": return LegacySetupContent.DEFAULTS.duplicate()
+		if baseline == "low_drag": result.wing = 2; result.cooling = 4
+		elif baseline == "stable_wet": result.wing = 7; result.suspension = 3; result.cooling = 6
+		return result
+	if baseline != "current":
+		var values = car.setup_definition.baseline(baseline)
+		if not values.is_empty(): result = values
 	return result
 
 static func create(cars: Array, duration: float, status: String = "available") -> Dictionary:
@@ -35,7 +40,7 @@ static func observation(sim: RaceSim, car: RaceCar) -> Dictionary:
 static func prior(state: Dictionary, car: RaceCar, water: float) -> Dictionary:
 	# Never pool a rival's private measurements, nor transfer a teammate's skill/setup residual.
 	var result: Dictionary = {}
-	for compound in RaceSim.TYRES:
+	for compound in car.tyre_rules.compounds():
 		var samples: Array = []
 		for run in state.drivers[int(car.id)].runs:
 			if run.compound != compound or run.setup != car.car_setup or run.pace != car.pace or run.engine != car.engine: continue
@@ -122,8 +127,7 @@ static func valid(state: Variant, sim: RaceSim) -> bool:
 			if not RaceCheckpoint.integral(run.get("target"), 1, MAX_LAPS): return false
 			if not run.get("set_id") is String or TyreInventory.find(c, run.set_id).is_empty(): return false
 			if run.get("compound") != TyreInventory.find(c, run.set_id).compound or not run.get("setup") is Dictionary or run.setup.size() != 5: return false
-			for key in CarSetup.SPECS:
-				if not RaceCheckpoint.integral(run.setup.get(key), CarSetup.SPECS[key][0], CarSetup.SPECS[key][1]): return false
+			if not c.setup_definition.valid_values(run.setup): return false
 			for key in ["pace", "engine", "previous_pace", "previous_engine"]:
 				if not RaceCheckpoint.integral(run.get(key), 0, 2): return false
 			if not valid_observation(run.get("start"), sim.total_time) or not run.get("end") is Dictionary or not run.get("reason") is String: return false

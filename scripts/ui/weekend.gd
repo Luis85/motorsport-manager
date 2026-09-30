@@ -27,6 +27,7 @@ var radio_label: Label
 var pace: OptionButton
 var engine: OptionButton
 var compound: OptionButton
+var compound_ids: Array = []
 var automate: CheckButton
 var repair: CheckButton
 var box_button: Button
@@ -134,7 +135,7 @@ class StintPlot extends Control:
 			var left = clampf(stint.from / car.laps, 0, 1) * width + 10
 			var right = clampf(finish / car.laps, 0, 1) * width + 10
 			var item = stint
-			var color = {"S": Color("c9927d"), "M": Color("c4ad70"), "H": Color("9cae94"), "I": Color("7e9b7b"), "W": Color("83a6b5")}.get(item.get("compound", "M"), UI.GOOD)
+			var color = Color(item.get("color", "9cae94"))
 			draw_rect(Rect2(left, 33, maxf(2, right - left - 1), 20), color)
 			if right - left > 24: draw_string(ThemeDB.fallback_font, Vector2(left + 3, 48), item.get("label", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, GameTheme.ink_on(color))
 		if car.scheduled_lap > 0:
@@ -195,7 +196,7 @@ func _ready() -> void:
 	var wall = UI.vbox(right_panel, true); wall.add_theme_constant_override("separation", 5)
 	
 	var teammates = UI.hbox(wall)
-	for id in [3, 6]:
+	for id in sim.player_ids():
 		var b = UI.button("", func(): select_driver(id)); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; b.add_theme_font_size_override("font_size", 12)
 		teammates.add_child(b); teammate_buttons.append(b)
 	driver_status_card = UI.race_panel(false, 6); wall.add_child(driver_status_card)
@@ -247,10 +248,13 @@ func _ready() -> void:
 	battle_picker.tooltip_text = "Changes passing choices and incident exposure, not engine power."; commands.add_child(battle_picker)
 	commands = drive_pages[1]
 	commands.add_child(UI.label("COMPOUND / NEXT STOP", 11, UI.MUTED))
-	compound = UI.option(["S · Soft", "M · Medium", "H · Hard", "I · Intermediate", "W · Wet"], func(index): dispatch("compound", {"value": ["S", "M", "H", "I", "W"][index]})); commands.add_child(compound)
+	var compound_rows = sim.compound_choices()
+	compound_ids = compound_rows.map(func(item): return item.id)
+	compound = UI.option(compound_rows.map(func(item): return item.short + " · " + item.name), func(index): dispatch("compound", {"value": compound_ids[index]})); commands.add_child(compound)
 	commands.add_child(UI.button("Choose a fresh or used set →", func(): show_tyres(0)))
 	repair = UI.check("Repair damage at stop", true, func(value): dispatch("repair", {"value": value})); commands.add_child(repair)
-	setup = UI.spin(5, 1, 9, 1, func(value): dispatch("setup", {"value": value})); UI.field(commands, "Wing level", setup)
+	var setup_profile = sim.setup_profile()
+	setup = UI.spin(setup_profile.defaults.wing, setup_profile.specs.wing[0], setup_profile.specs.wing[1], 1, func(value): dispatch("setup", {"value": value})); UI.field(commands, setup_profile.specs.wing[2], setup)
 	commands.add_child(UI.button("Open complete setup →", func(): tabs.current_tab = 4))
 	command_note = UI.paragraph("", UI.MUTED); command_note.add_theme_font_size_override("font_size", 12); drive_pages[0].add_child(command_note)
 	var telemetry = tab_page("Telemetry")
@@ -411,7 +415,7 @@ func refresh() -> void:
 	steps[0].get_parent().visible = sim.phase not in RaceViewQuery.ACTIVE
 	for i in range(steps.size()): steps[i].add_theme_color_override("font_color", UI.ACCENT if i == step_index else (UI.GOOD if i < step_index else UI.MUTED))
 	for i in range(2):
-		var teammate = sim.cars[[3, 6][i]]
+		var teammate = sim.cars[sim.player_ids()[i]]
 		teammate_buttons[i].text = "%s · P%d" % [teammate.short, order.find(teammate) + 1]
 		UI.set_active(teammate_buttons[i], teammate.id == c.id)
 	driver_label.text = "%02d  %s" % [c.number, c.name]; driver_label.add_theme_color_override("font_color", UI.INK)
@@ -420,7 +424,7 @@ func refresh() -> void:
 	var nearest = order[selected_position - 2] if selected_position > 1 else null
 	driver_rival_label.text = ("Car ahead · %s" % nearest.short) if nearest != null else "Leading the classification"
 	intent_label.text = "Finished P%d" % c.finish_position if c.finished else ("Retired: " + c.retire_reason if c.dnf else c.intent); intent_label.tooltip_text = intent_label.text
-	driver_plan_label.text = "%s %d%%   ·   Finish fuel ~%+.1f laps   ·   %s" % [c.compound, c.tyre, sim.race_forecaster_fuel_margin(c), ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
+	driver_plan_label.text = "%s %d%%   ·   Finish fuel ~%+.1f laps   ·   %s" % [sim.tyre_info(c.compound).get("name", "Tyres"), c.tyre, sim.race_forecaster_fuel_margin(c), ("Pit lap %d" % c.scheduled_lap) if c.scheduled_lap > 0 else "No stop scheduled"]
 	var values = [c.tyre, c.fuel, c.health]
 	for i in range(3):
 		resource_labels[i].text = "%.1f laps" % values[i] if i == 1 else "%d%%" % values[i]
@@ -440,7 +444,7 @@ func refresh() -> void:
 		if telemetry_sectors: telemetry_sectors.present(records)
 	automate.set_pressed_no_signal(c.auto); repair.set_pressed_no_signal(c.repair)
 	battle_picker.select(["patient", "balanced", "assertive"].find(c.battle_mode))
-	pace.select(c.pace); engine.select(c.engine); compound.select(["S", "M", "H", "I", "W"].find(c.next_compound)); setup.set_value_no_signal(c.setup)
+	pace.select(c.pace); engine.select(c.engine); compound.select(compound_ids.find(c.next_compound)); setup.set_value_no_signal(c.setup)
 	var controllable = c.player and not c.dnf and not c.finished
 	for button in [automate, pace, engine, compound, repair, battle_picker]: button.disabled = not controllable
 	box_button.disabled = not controllable or sim.phase != "race" or c.route != "track" or c.pit_order and c.scheduled_lap < 1
@@ -452,7 +456,7 @@ func refresh() -> void:
 	setup.get_parent().visible = false # Complete setup has one staged editing surface.
 	setup.editable = controllable and (sim.phase in ["briefing", "race_preparation"] or c.route == "garage")
 	command_note.text = "Spectating a rival. Select MER or MOR to give commands." if not c.player else ("Engineer controls releases and strategy." if c.auto else "Manual control. Pace, engine and pit calls are yours.")
-	pit_note.text = ("Existing hot laps may finish." if sim.qual_closed else "Garage → Out → Hot → In → Garage") if q else (sim.pit_status(c) if c.pit_order or c.route == "pit" else "Planned compound: %s · %s\nRecommended now: %s" % [c.next_compound, "repair" if c.repair else "tyres only", sim.recommended_compound()])
+	pit_note.text = ("Existing hot laps may finish." if sim.qual_closed else "Garage → Out → Hot → In → Garage") if q else (sim.pit_status(c) if c.pit_order or c.route == "pit" else "Planned compound: %s · %s\nRecommended now: %s" % [sim.tyre_info(c.next_compound).get("name", "Tyres"), "repair" if c.repair else "tyres only", sim.tyre_info(sim.recommended_compound()).get("name", "Tyres")])
 	box_button.tooltip_text = "Late calls defer safely to the following pit entry."; cancel_box.tooltip_text = "A car already in the pit lane cannot cancel entry."
 	if radio_inspector and right_panel.visible and tabs.current_tab==2: radio_inspector.present()
 	var signature = str(sim.events.back()) if not sim.events.is_empty() else ""
@@ -537,7 +541,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.keycode == KEY_ESCAPE and right_panel.visible: close_detail(); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_SPACE and sim.phase in RaceViewQuery.ACTIVE: dispatch("pause"); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_B and not box_button.disabled: dispatch("pit"); get_viewport().set_input_as_handled()
-	elif event.keycode == KEY_TAB and event.ctrl_pressed: select_driver(6 if sim.selected_id == 3 else 3); get_viewport().set_input_as_handled()
+	elif event.keycode == KEY_TAB and event.ctrl_pressed: select_driver(sim.teammate_id(sim.selected_id)); get_viewport().set_input_as_handled()
 	elif event.keycode == KEY_F: set_follow(false); canvas.fit(); get_viewport().set_input_as_handled()
 	elif event.keycode >= KEY_1 and event.keycode <= KEY_5: dispatch("speed", {"value": [1, 2, 4, 8, 16][event.keycode - KEY_1]}); get_viewport().set_input_as_handled()
 

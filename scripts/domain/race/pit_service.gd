@@ -20,8 +20,8 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			car.pit_stage = ""
 			sim.post(sim.phase, car.short + " back in the garage.")
 			return
-		if not sim.pit_boxes.has(car.team):
-			sim.pit_boxes[car.team] = car.id
+		if not sim.pit_boxes.has(car.team_identity()):
+			sim.pit_boxes[car.team_identity()] = car.id
 			car.pit_stage = "service"
 			sim.begin_service(car)
 		else:
@@ -35,7 +35,7 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			car.pit_stops += 1
 			sim.stats.pits += 1
 			car.pit_stage = "exit"
-			sim.pit_boxes.erase(car.team)
+			sim.pit_boxes.erase(car.team_identity())
 			sim.post("pit", "%s serviced · %s tyres." % [car.short, car.compound])
 		return
 	var target = sim.track.pit_limit
@@ -89,7 +89,7 @@ static func begin_service(sim: RaceSim, car: RaceCar) -> void:
 	car.service_set_id = item.get("id", "")
 	car.service_compound = car.next_compound
 	car.service_repair = car.repair
-	car.pit_timer = 3.0 + sim.service_random_value() * 1.5 + (car.damage * 0.14 if car.service_repair else 0.0)
+	car.pit_timer = sim.tuning.service.tyre_base_seconds + sim.service_random_value() * sim.tuning.service.tyre_jitter_seconds + (car.damage * sim.tuning.service.repair_seconds_per_damage if car.service_repair else 0.0)
 
 static func complete_service(sim: RaceSim, car: RaceCar) -> void:
 	if not car.service_set_id.is_empty():
@@ -109,7 +109,7 @@ static func queue_pit(sim: RaceSim, car: RaceCar) -> void:
 static func plan_pit_gate(sim: RaceSim, car: RaceCar) -> void:
 	car.pit_deferred = false
 	car.pit_gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
-	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[sim.track.preset].brake * 0.5) + 8
+	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * sim.track.vehicle_definition.braking_mps2 * 0.5) + 8
 	if car.pit_gate - car.distance < stopping:
 		car.pit_gate += sim.track.length
 		car.pit_deferred = true

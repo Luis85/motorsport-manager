@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.valenti",
+  "name": "Nico Valenti",
+  "description": "Default fictional driver.",
+  "short": "VAL",
+  "skill": 91,
+  "consistency": 87,
+  "wet_skill": 82,
+  "reliability": 85
+}

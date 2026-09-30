@@ -1,4 +1,7 @@
 extends Node
+var content_catalog: ContentCatalog
+var content_diagnostics: Array = []
+var content_roots: Array = []
 var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
@@ -52,10 +55,28 @@ func _autosave_session(_phase: String) -> void:
 	session_runner.persistence_error = ReplayStorage.save_session(path, _session_record)
 
 func _ready() -> void:
-	load_library()
 	if FileAccess.file_exists("user://settings.json"):
 		var result = Storage.read_json("user://settings.json")
 		if result.ok and result.data is Dictionary: restore_settings(result.data)
+	if settings.get("content_roots") is Array: content_roots = settings.content_roots.duplicate()
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--content-pack="): content_roots.append(arg.trim_prefix("--content-pack="))
+	reload_content(content_roots)
+	if "--content-validate" in OS.get_cmdline_user_args():
+		print("CONTENT_RESULT ", JSON.stringify({"ok": content_diagnostics.is_empty(), "diagnostics": content_diagnostics}))
+		get_tree().quit(0 if content_diagnostics.is_empty() else 1)
+		return
+	var probe_selection: Dictionary = {}
+	for argument in OS.get_cmdline_user_args():
+		for key in ["roster_id", "tyre_allocation_id", "setup_id", "race_tuning_id", "weekend_id", "circuit_id", "scenario_id"]:
+			var prefix = "--content-probe-" + key + "="
+			if argument.begins_with(prefix): probe_selection[key] = argument.trim_prefix(prefix)
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--content-probe=") or argument == "--content-probe-restore":
+			var result = ContentRuntimeProbe.restore() if argument == "--content-probe-restore" else ContentRuntimeProbe.start(content_catalog, argument.trim_prefix("--content-probe="), probe_selection)
+			print("CONTENT_RESULT ", JSON.stringify(result))
+			get_tree().quit(0 if result.ok else 1)
+			return
 	# Developer/test-only launch override for retained regression workspaces.
 	for arg in OS.get_cmdline_user_args():
 		if arg in ["--pitwall-layout=minimal", "--pitwall-layout=director", "--pitwall-layout=engineering"]: settings.pitwall_layout = arg.get_slice("=",1)
@@ -65,6 +86,9 @@ func restore_settings(data: Dictionary) -> void:
 	# Saved legacy layouts must not bypass the new minimal default. Old screens
 	# remain reachable only by an explicit developer/test launch override.
 	settings.pitwall_layout = "minimal"
+	if data.get("content_roots") is Array and data.content_roots.size() <= 31:
+		if data.content_roots.all(func(path): return path is String and path.length() <= 1024):
+			settings.content_roots = data.content_roots.duplicate()
 	if data.get("pitwall_text_scale") in [1.0, 1.15, 1.3]: settings.pitwall_text_scale = float(data.pitwall_text_scale)
 	for key in ["fullscreen", "vsync", "labels", "racing_line", "reduced_motion"]:
 		if data.get(key) is bool: settings[key] = data[key]
@@ -88,7 +112,7 @@ func save_settings() -> String:
 
 func load_library() -> void:
 	library.clear(); load_errors.clear()
-	var bundled = Storage.read_catalog()
+	var bundled = {"ok": true, "data": content_catalog.circuit_documents()} if content_catalog != null else Storage.read_catalog()
 	if bundled.ok and bundled.data is Array:
 		for raw in bundled.data:
 			var errors = TrackDocument.validate(raw)
@@ -170,3 +194,19 @@ func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> Strin
 
 func has_saved_sandbox() -> bool:
 	return FileAccess.file_exists(sandbox_path)
+
+func reload_content(roots: Array) -> bool:
+	var result = ContentPackLoader.new().load_packs(["res://content/packs/core"] + roots)
+	content_diagnostics = result.diagnostics
+	if not result.ok:
+		return false
+	content_catalog = result.catalog
+	content_roots = roots.duplicate()
+	load_library()
+	return true
+
+func content_warnings() -> String:
+	var messages: Array[String] = []
+	for diagnostic in content_diagnostics:
+		messages.append("%s %s%s: %s" % [diagnostic.code, diagnostic.get("file", ""), diagnostic.field, diagnostic.message])
+	return "\n".join(messages)

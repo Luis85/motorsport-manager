@@ -19,6 +19,7 @@ static func observe_entry(state: Dictionary, snapshot: Dictionary, driver_id: in
 
 static func response(snapshot: Dictionary, observations: Array, memory: Dictionary, comparison: Dictionary) -> Dictionary:
 	if snapshot.phase != "race" or snapshot.flag != "GREEN" or snapshot.own.pit_order or snapshot.own.route != "track": return {}
+	var tuning = RaceTuningDefinition.competition_values(snapshot).rivals
 	var replacement = RaceForecaster.replacement(snapshot)
 	if replacement.is_empty(): return {}
 	var box: Dictionary = {}; var extend: Dictionary = {}
@@ -35,23 +36,23 @@ static func response(snapshot: Dictionary, observations: Array, memory: Dictiona
 		var event = observations[index]
 		if event.driver_id == snapshot.own.id or event.driver_id == snapshot.teammate.get("id", -1) or event.event_id == memory.event_id: continue
 		var age = snapshot.time - event.time
-		if age < 0 or age > minf(40, snapshot.reference_lap): continue
+		if age < 0 or age > minf(tuning.observation_age_seconds, snapshot.reference_lap): continue
 		var rival: Dictionary = {}
 		for observed in snapshot.public:
 			if observed.id == event.driver_id: rival = observed; break
 		if rival.is_empty() or rival.dnf or rival.finished: continue
 		# Reconstruct only a coarse public gap at entry. It is explicitly an estimate.
 		var gap_seconds = (snapshot.own.distance - velocity * age - event.distance) / velocity
-		if gap_seconds < -4.0 or gap_seconds > 8.0: continue
-		var traffic_cost = comparison.pit.traffic.size() * 0.8 + comparison.pit.queue
-		var cover_margin = fresh_gain * 2.0 - comparison.pit.warmup - traffic_cost - maxf(0, gap_seconds)
+		if gap_seconds < -tuning.behind_gap_seconds or gap_seconds > tuning.cover_gap_seconds: continue
+		var traffic_cost = comparison.pit.traffic.size() * tuning.traffic_seconds_per_car + comparison.pit.queue
+		var cover_margin = fresh_gain * tuning.offset_laps - comparison.pit.warmup - traffic_cost - maxf(0, gap_seconds)
 		var evidence = {"public_event": event.event_id, "rival_id": int(event.driver_id), "gap_estimate": gap_seconds,
 			"fresh_lap_gain_estimate": fresh_gain, "cover_margin_estimate": cover_margin, "traffic_cost_estimate": traffic_cost}
-		if gap_seconds >= 0 and cover_margin > 0.3 and box.gain >= -1.0:
+		if gap_seconds >= 0 and cover_margin > tuning.cover_margin_seconds and box.gain >= tuning.cover_minimum_gain:
 			return {"kind": "cover", "event_id": event.event_id, "set_id": replacement.id, "hold_gate": -1.0,
 				"reason": "Cover %s's observed stop: estimated tyre offset threatens the gap; next safe entry only." % event.short, "evidence": evidence}
-		var room_to_extend = remaining >= 3 and current.life > 35 and snapshot.fuel_margin >= 0
-		if room_to_extend and not extend.is_empty() and (traffic_cost >= 1.5 or extend.seconds <= box.seconds or fresh_gain < 1.5):
+		var room_to_extend = remaining >= tuning.extend_remaining_laps and current.life > tuning.extend_tread and snapshot.fuel_margin >= 0
+		if room_to_extend and not extend.is_empty() and (traffic_cost >= tuning.extend_traffic_seconds or extend.seconds <= box.seconds or fresh_gain < tuning.extend_fresh_gain_seconds):
 			return {"kind": "overcut", "event_id": event.event_id, "set_id": "", "hold_gate": snapshot.gate.distance,
 				"reason": "Extend after %s's observed stop: usable tyres or rejoin traffic favor waiting one entry, then review." % event.short, "evidence": evidence}
 	return {}

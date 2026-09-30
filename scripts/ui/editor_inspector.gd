@@ -55,7 +55,13 @@ static func render(editor: Control) -> void:
 	editor.name_field.text_submitted.connect(func(value): editor.perform(func(): editor.document.name = value.strip_edges()))
 	editor.name_field.focus_exited.connect(func():
 		if not editor._refreshing_inspector and is_instance_valid(editor.name_field) and editor.document.name != editor.name_field.text: editor.perform(func(): editor.document.name = editor.name_field.text.strip_edges()))
-	track.add_child(UI.option(TrackGeometry.PRESETS.keys(), func(index): editor.vehicle = TrackGeometry.PRESETS.keys()[index]; editor.recompile(), TrackGeometry.PRESETS.keys().find(editor.vehicle)))
+	var vehicles = editor.session.vehicle_choices()
+	var ids = vehicles.map(func(v): return v.id)
+	var selected = ids.find(editor.vehicle)
+	if selected < 0: selected = ids.find("core.vehicle." + editor.vehicle.to_lower())
+	track.add_child(UI.option(vehicles.map(func(v): return v.name), func(index): editor.vehicle = ids[index]; editor.recompile(), maxi(0, selected)))
+	UI.field(track, "Grid places", UI.spin(editor.document.grid.get("count", 12), 1, TrackDocument.MAX_GRID_PLACES, 1, func(value): editor.perform(func(): editor.document.grid.count = int(value))))
+	UI.field(track, "Grid spacing m", UI.spin(editor.document.grid.get("spacing", 8), 6, 20, 0.5, func(value): editor.perform(func(): editor.document.grid.spacing = value)))
 	UI.field(track, "Start / finish %", UI.spin(editor.document.start * 100, 0, 99.99, 0.01, func(value): editor.perform(func(): editor.document.start = value / 100)))
 	track.add_child(UI.paragraph("Set start / finish lets you click the road. Race distance zero and the grid follow this gate, not control point one."))
 	track.add_child(UI.label("TIMING SECTORS", 14, UI.ACCENT))
@@ -100,8 +106,25 @@ static func render(editor: Control) -> void:
 			editor.feature_index = editor.document.features.size() - 1, true)))
 	features.add_child(UI.paragraph("Feature ranges wrap around the lap. Bridges and tunnels are top-down annotations; the road height controls the elevation profile and runtime data."))
 	features.add_child(UI.label("SCENERY", 16, UI.ACCENT))
-	features.add_child(UI.option(["Tree", "Grandstand", "Garage", "Tower", "Yacht", "Water", "Tent", "Cafe"], func(index): editor.canvas.scenery_type = ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"][index]; editor.set_tool(5), ["tree", "grandstand", "garage", "tower", "yacht", "water", "tent", "cafe"].find(editor.canvas.scenery_type)))
-	features.add_child(UI.paragraph("Choose a prop, then click the canvas to place it. Return to Select / move to select and drag existing objects; Point exposes rotation, size and position."))
+	var placements = editor.session.placement_choices()
+	var placement_index = 0
+	if not editor.canvas.scenery_preset.is_empty():
+		for index in range(placements.size()):
+			if placements[index].id == editor.canvas.scenery_preset.get("id", ""):
+				placement_index = index; break
+	# Always replace cached preset values with the current validated profile.
+	# A removed ID or a changed scale/renderer must not survive an editor refresh.
+	if placements.is_empty():
+		editor.canvas.scenery_preset.clear()
+	else:
+		editor.canvas.scenery_preset = placements[placement_index].duplicate(true)
+		editor.canvas.scenery_type = placements[placement_index].object_type
+	if not placements.is_empty():
+		features.add_child(UI.option(placements.map(func(p): return p.name), func(index):
+			editor.canvas.scenery_preset = placements[index].duplicate(true)
+			editor.canvas.scenery_type = placements[index].object_type
+			editor.set_tool(5), placement_index))
+	features.add_child(UI.paragraph(editor.session.placement_help()))
 	features.add_child(UI.button("Remove last scenery object", func():
 		if not editor.document.objects.is_empty(): editor.perform(func(): editor.document.objects.pop_back())))
 	var reference = editor.inspector_page("Reference")

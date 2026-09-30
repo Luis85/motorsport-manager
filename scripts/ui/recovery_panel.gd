@@ -25,12 +25,14 @@ var authority_drafts: Dictionary = {}
 var retirement_dialog: ConfirmationDialog
 var retirement_payload: Dictionary = {}
 
-func configure(value: RaceViewQuery) -> void: model = value
+func configure(value: RaceViewQuery) -> void:
+	model = value
+	driver_id = model.player_ids()[0]
 
 func _ready() -> void:
 	name = "Recovery"; add_theme_constant_override("separation", 7)
 	var row = HBoxContainer.new(); add_child(row)
-	for id in [3, 6]:
+	for id in model.player_ids():
 		var button = UI.button(model.car(id).short + " recovery", func(): choose_driver(id)); row.add_child(button)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL; compact(button); selectors.append(button)
 	status = paragraph(); add_child(status)
@@ -67,7 +69,7 @@ static func paragraph() -> Label:
 	var label = UI.paragraph(""); label.add_theme_font_size_override("font_size", 12); return label
 
 func choose_driver(id: int) -> void:
-	if id not in [3, 6]: return
+	if id not in model.player_ids(): return
 	if driver_id != id:
 		if authority_dirty: authority_drafts[driver_id] = {"value": authority.selected, "budget": budget.value, "revision": authority_revision}
 		driver_id = id; authority_dirty = false; authority_revision = -1; advice = {}
@@ -104,7 +106,7 @@ func refresh() -> void:
 	if advice.is_empty() or model.recovery_stale(advice) or model.total_time - advice.time >= 2: advice = model.recovery_advice(driver_id)
 	var c = model.car(driver_id); var r = model.reliability(driver_id); var p = model.policy(driver_id)
 	var observed = advice.observed
-	for i in range(2): selectors[i].disabled = driver_id == [3, 6][i]
+	for i in range(2): selectors[i].disabled = driver_id == model.player_ids()[i]
 	var legal = model.enhanced() and model.phase == "race" and c.route == "track" and not c.dnf and not c.finished
 	protect_button.disabled = not legal; retire_button.disabled = not legal; repair_button.disabled = not legal or not advice.repair_available
 	status.text = "%s · %s\nDamage %.0f · health %.0f%% · heat %.0f°C" % [c.short, observed.stage.to_upper(), observed.damage, observed.health, observed.temperature]
@@ -128,7 +130,7 @@ func refresh() -> void:
 	if authority_dirty: authority_note.text = "UNAPPLIED AUTHORITY DRAFT\n" + authority_note.text
 	if not r.service.is_empty(): authority_note.text += "\nService plan frozen; elapsed ~%.1fs of planned %.1fs." % [maxf(0, model.total_time - r.service.started), r.service.duration]
 	if model.enhanced():
-		var control = WeekendRaceControl.public_view(model.control_state, model.total_time)
+		var control = model.control_observation()
 		rules.text = control.flag + " · " + control.reason
 		if control.state != "green": rules.text += "\nPhase transition in %.1fs simulated (~%.1fs at %d×); a new hazard can extend it." % [control.remaining, control.remaining / model.speed, model.speed]
 		for zone in control.zones: rules.text += "\nLocal yellow S%d · %.1fs remaining." % [zone.sector + 1, zone.remaining]

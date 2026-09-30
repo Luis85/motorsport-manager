@@ -13,20 +13,27 @@ const PROFILES = {
 	"adaptive": {"label": "Adaptive risk-taker", "summary": "Accepts a bounded, uncertain opportunity even without traffic ahead; still rejects unsafe or unaffordable options.", "weights": [0.2, 1.2, 0.7, -0.3, 1.0, 0.0]}
 }
 
-static func profile(style: String) -> Dictionary:
+static func definitions(tuning: Dictionary = LegacyCompetition.VALUES) -> Dictionary:
+	var result: Dictionary = {}
+	for item in tuning.profiles: result[item.id] = item
+	return result
+
+static func profile(style: String, tuning: Dictionary = LegacyCompetition.VALUES) -> Dictionary:
 	var weights: Dictionary = {}
-	for i in range(WEIGHTS.size()): weights[WEIGHTS[i]] = PROFILES[style].weights[i]
+	for i in range(WEIGHTS.size()): weights[WEIGHTS[i]] = definitions(tuning)[style].weights[i]
 	return weights
 
-static func create(cars: Array, enabled: bool) -> Dictionary:
+static func create(cars: Array, enabled: bool, tuning: Dictionary = LegacyCompetition.VALUES) -> Dictionary:
 	var teams: Array = []; var drivers: Array = []
+	var keys = definitions(tuning).keys()
 	for c in cars:
-		if not c.player and c.team not in teams: teams.append(c.team)
-		var style = KEYS[teams.find(c.team) % KEYS.size()] if enabled and not c.player else "legacy"
-		drivers.append({"driver_id": int(c.id), "style": style, "weights": profile(style) if style != "legacy" else {}, "hold_gate": -1.0, "reviews": 0})
+		if not c.player and c.team_identity() not in teams: teams.append(c.team_identity())
+		var style = keys[teams.find(c.team_identity()) % keys.size()] if enabled and not c.player else "legacy"
+		drivers.append({"driver_id": int(c.id), "style": style, "weights": profile(style, tuning) if style != "legacy" else {}, "hold_gate": -1.0, "reviews": 0})
 	return {"version": VERSION, "enabled": enabled, "drivers": drivers, "history": []}
 
 static func context(s: Dictionary, stops: Array, comparison: Dictionary) -> Dictionary:
+	var tuning = RaceTuningDefinition.competition_values(s).rivals
 	var current = RaceForecaster.set_by_id(s, s.own.set_id)
 	var replacement = RaceForecaster.replacement(s)
 	var fresh_gain = maxf(0, RaceForecaster.lap_time(s, current, current.life) - RaceForecaster.lap_time(s, replacement, replacement.life)) if not current.is_empty() and not replacement.is_empty() else 0.0
@@ -39,28 +46,30 @@ static func context(s: Dictionary, stops: Array, comparison: Dictionary) -> Dict
 		if other.id == s.teammate.get("id", -1): continue
 		# Absolute race distance, not 2D proximity: lapped or grade-separated traffic
 		# cannot be mistaken for a contest for this place.
-		if gap > 0 and gap <= 2.5: ahead = true
-		if gap < 0 and gap >= -2.5: behind = true
-	var traffic_cost = comparison.pit.traffic.size() * 0.8 + comparison.pit.queue
+		if gap > 0 and gap <= tuning.nearby_gap_seconds: ahead = true
+		if gap < 0 and gap >= -tuning.nearby_gap_seconds: behind = true
+	var traffic_cost = comparison.pit.traffic.size() * tuning.traffic_seconds_per_car + comparison.pit.queue
 	var event_id = ""; var cover = 0.0
 	for i in range(stops.size() - 1, -1, -1):
 		var event = stops[i]
 		if event.driver_id in [s.own.id, s.teammate.get("id", -1)]: continue
 		var age = s.time - event.time
-		if age < 0 or age > minf(40, s.reference_lap): continue
+		if age < 0 or age > minf(tuning.observation_age_seconds, s.reference_lap): continue
 		var visible = s.public.filter(func(car): return car.id == event.driver_id and not car.dnf and not car.finished)
 		if visible.is_empty(): continue
 		var gap = (s.own.distance - velocity * age - event.distance) / velocity
-		if gap < 0 or gap > 8: continue
+		if gap < 0 or gap > tuning.cover_gap_seconds: continue
 		event_id = event.event_id
-		cover = clampf((fresh_gain * 2 - comparison.pit.warmup - traffic_cost - gap) / 2, 0, 1)
+		cover = clampf((fresh_gain * tuning.offset_laps - comparison.pit.warmup - traffic_cost - gap) / tuning.cover_scale_seconds, 0, 1)
 		break
 	return {"traffic_ahead": ahead, "threat_behind": behind, "fresh_lap_gain": fresh_gain, "traffic_cost": traffic_cost,
 		"position_loss": maxf(0, comparison.pit.position - rank), "cover": cover, "public_event": event_id,
 		"remaining": maxf(0, s.laps - s.own.distance / s.length), "life": current.get("life", 0)}
 
 static func decide(s: Dictionary, stops: Array, driver: Dictionary, comparison: Dictionary) -> Dictionary:
-	if driver.style not in PROFILES or s.phase != "race" or s.flag != "GREEN" or s.own.route != "track" or s.own.pit_order or s.own.dnf or s.own.finished: return {}
+	var profiles = definitions(RaceTuningDefinition.competition_values(s))
+	var tuning = RaceTuningDefinition.competition_values(s).rivals
+	if driver.style not in profiles or s.phase != "race" or s.flag != "GREEN" or s.own.route != "track" or s.own.pit_order or s.own.dnf or s.own.finished: return {}
 	var c = context(s, stops, comparison); var weights = driver.weights
 	var replacement = RaceForecaster.replacement(s)
 	var legal: Array = []; var best_seconds = INF
@@ -68,22 +77,22 @@ static func decide(s: Dictionary, stops: Array, driver: Dictionary, comparison: 
 		if not option.available or option.id not in ["current", "box", "extend"]: continue
 		if option.risk == "high" or s.fuel_margin < 0: continue
 		if option.id == "box" and (replacement.is_empty() or s.gate.distance >= s.laps * s.length): continue
-		if option.id == "extend" and (c.remaining < 3 or c.life < 35): continue
+		if option.id == "extend" and (c.remaining < tuning.extend_remaining_laps or c.life < tuning.extend_tread): continue
 		legal.append(option); best_seconds = minf(best_seconds, option.seconds)
 	if legal.is_empty(): return {}
 	# A tendency cannot turn a plainly expensive strategy into a sensible one.
 	# Four estimated seconds is a disclosed tuning bound, not calibrated uncertainty.
 	var shortlist: Array = []; var selected: Dictionary = {}; var best_score = INF
 	for option in legal:
-		if option.seconds > best_seconds + 4.0: continue
+		if option.seconds > best_seconds + tuning.shortlist_seconds: continue
 		var bias = 0.0
 		if option.id == "box":
-			bias = weights.pit_cost * clampf(c.position_loss / 3, 0, 1) - weights.offset * clampf(c.fresh_lap_gain / 2, 0, 1)
+			bias = weights.pit_cost * clampf(c.position_loss / tuning.position_scale, 0, 1) - weights.offset * clampf(c.fresh_lap_gain / tuning.offset_scale_seconds, 0, 1)
 			if c.traffic_ahead: bias -= weights.traffic
 			bias -= weights.cover * c.cover
-			if option.risk == "moderate": bias += weights.uncertainty * 2
-		elif option.id == "extend": bias = weights.extend - minf(1.5, c.traffic_cost * 0.25)
-		elif c.threat_behind: bias = -weights.pit_cost * 0.25
+			if option.risk == "moderate": bias += weights.uncertainty * tuning.uncertainty_weight
+		elif option.id == "extend": bias = weights.extend - minf(tuning.extend_credit_seconds, c.traffic_cost * tuning.extend_traffic_factor)
+		elif c.threat_behind: bias = -weights.pit_cost * tuning.threat_position_factor
 		bias = clampf(bias, -4, 4)
 		var score = option.seconds - best_seconds + bias
 		shortlist.append({"id": option.id, "seconds": float(option.seconds), "risk": option.risk, "preference": bias, "score": score})
@@ -93,7 +102,7 @@ static func decide(s: Dictionary, stops: Array, driver: Dictionary, comparison: 
 	return {"driver_id": int(s.own.id), "time": float(s.time), "style": driver.style, "choice": selected.id,
 		"set_id": replacement.get("id", "") if selected.id == "box" else "", "gate": float(s.gate.distance),
 		"hold_gate": maxf(s.gate.distance, selected.stops[0].at * s.length - s.length) if selected.id == "extend" else -1.0,
-		"context": c, "candidates": shortlist, "reason": "%s preference among %d feasible, near-best alternatives; no outcome guarantee." % [PROFILES[driver.style].label, shortlist.size()]}
+		"context": c, "candidates": shortlist, "reason": "%s preference among %d feasible, near-best alternatives; no outcome guarantee." % [profiles[driver.style].label, shortlist.size()]}
 
 static func record(state: Dictionary, decision: Dictionary) -> void:
 	var driver = state.drivers[decision.driver_id]
@@ -102,20 +111,23 @@ static func record(state: Dictionary, decision: Dictionary) -> void:
 	state.history.append(decision.duplicate(true))
 	if state.history.size() > HISTORY_LIMIT: state.history.pop_front()
 
-static func public_driver(state: Dictionary, car: RaceCar) -> String:
+static func public_driver(state: Dictionary, car: RaceCar, tuning: Dictionary = LegacyCompetition.VALUES) -> String:
 	if car.player or not state.enabled: return "No expanded public rival profile for this driver."
-	var style = PROFILES[state.drivers[int(car.id)].style]
+	var style = definitions(tuning).get(state.drivers[int(car.id)].style, {})
+	if style.is_empty(): return "Rival profile unavailable."
 	return "%s · %s\n%s\n\n%s\n\nObserved compound: %s · completed pit stops: %d\nBest measured lap: %s\nLast measured lap: %s\n\nTyre condition, fuel, setup, intended stop and team diagnostics are private. Profiles bias feasible choices; they do not guarantee a response." % [car.name, car.team, style.label, style.summary, car.compound, car.pit_stops, RaceSim.format_time(car.best_lap), RaceSim.format_time(car.last_lap)]
 
-static func public_field(state: Dictionary, cars: Array, stops: Array) -> String:
+static func public_field(state: Dictionary, cars: Array, stops: Array, team_ids: Array = [], tuning: Dictionary = LegacyCompetition.VALUES) -> String:
 	if not state.enabled: return "Classic rival policy retained for this weekend. No expanded profile was added to its saved race."
 	var lines: Array[String] = ["RIVAL FIELD · PUBLIC PROFILES", "Tendencies, not promises. Exact plans, own-car estimates and decision scores remain private."]
 	var teams: Array = []
 	for c in cars:
-		if c.player or c.team in teams: continue
-		teams.append(c.team)
-		var style = PROFILES[state.drivers[c.id].style]
-		var pair = cars.filter(func(car): return car.team == c.team).map(func(car): return car.short)
+		var identity = team_ids[c.id] if not team_ids.is_empty() else c.team
+		if c.player or identity in teams: continue
+		teams.append(identity)
+		var style = definitions(tuning).get(state.drivers[c.id].style, {})
+		if style.is_empty(): continue
+		var pair = cars.filter(func(car): return (team_ids[car.id] if not team_ids.is_empty() else car.team) == identity).map(func(car): return car.short)
 		lines.append("%s / %s · %s\n%s" % [c.team, " + ".join(pair), style.label, style.summary])
 	lines.append("OBSERVED PIT ENTRIES · not secret future plans")
 	for event in stops.slice(maxi(0, stops.size() - 6)):
@@ -123,20 +135,23 @@ static func public_field(state: Dictionary, cars: Array, stops: Array) -> String
 	if stops.is_empty(): lines.append("None observed yet. A profile cannot tell you the next stop lap.")
 	return "\n\n".join(lines)
 
-static func valid(state: Variant, cars: Array, now: float) -> bool:
+static func valid(state: Variant, cars: Array, now: float, tuning: Dictionary = LegacyCompetition.VALUES, pinned: bool = false) -> bool:
 	if not state is Dictionary or state.get("version") != VERSION or not state.get("enabled") is bool: return false
 	if not state.get("drivers") is Array or state.drivers.size() != cars.size(): return false
 	if not state.get("history") is Array or state.history.size() > HISTORY_LIMIT: return false
+	var expected = create(cars, state.enabled, tuning) if pinned else {}
 	for i in range(cars.size()):
 		var d = state.drivers[i]
+		if pinned and d.get("style") != expected.drivers[i].style: return false
 		if not d is Dictionary or d.get("driver_id") != i or not d.get("weights") is Dictionary: return false
 		if not RaceCheckpoint.number(d.get("hold_gate"), -1, 100000000) or not RaceCheckpoint.integral(d.get("reviews"), 0, 10000000): return false
 		if not state.enabled or cars[i].player:
 			if d.get("style") != "legacy" or not d.weights.is_empty() or d.reviews != 0 or d.hold_gate != -1: return false
 		else:
-			if d.get("style") not in PROFILES or d.weights.size() != WEIGHTS.size(): return false
+			if d.get("style") not in definitions(tuning) or d.weights.size() != WEIGHTS.size(): return false
 			for key in WEIGHTS:
 				if not RaceCheckpoint.number(d.weights.get(key), -4, 4): return false
+			if pinned and d.weights != profile(d.style, tuning): return false
 	var last = -1.0
 	for item in state.history:
 		if not item is Dictionary or not RaceCheckpoint.integral(item.get("driver_id"), 0, cars.size() - 1): return false

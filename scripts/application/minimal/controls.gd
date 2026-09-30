@@ -106,13 +106,8 @@ func advance_stage() -> bool:
 func replacement(id: int, exclude_mounted: bool) -> Dictionary:
 	if not owned(id): return {}
 	var car = _simulation.cars[id]
-	var recommended = _simulation.recommended_compound()
-	var compounds: Array = [recommended]
-	if recommended == "M":
-		if _simulation.phase == "qualifying": compounds = ["S", "M", "H"]
-		elif _simulation.phase == "practice": compounds = ["M", "H", "S"]
-		else: compounds = ["H", "M", "S"] if _simulation.laps - maxf(0, car.distance / _simulation.track.length) > 15 else ["M", "H", "S"]
-	else: compounds.append("I" if recommended == "W" else "W")
+	var remaining = _simulation.laps - maxf(0, car.distance / _simulation.track.length)
+	var compounds = car.tyre_rules.preferences(_simulation.phase, _simulation.average(_simulation.water), remaining)
 	for compound in compounds:
 		var fitted = TyreInventory.find(car, car.set_id)
 		if _simulation.phase == "practice" and not exclude_mounted and fitted.compound == compound and fitted.life >= 40 and WheelTyres.usable(fitted): return fitted.duplicate(true)
@@ -195,7 +190,7 @@ func mode(id: int, channel: String, value: int) -> bool:
 	return true
 
 func selected_driver() -> int:
-	return _simulation.selected_id if _simulation != null and owned(_simulation.selected_id) else 3
+	return _simulation.selected_id if _simulation != null and owned(_simulation.selected_id) else (_simulation.player_ids()[0] if _simulation != null and not _simulation.player_ids().is_empty() else -1)
 
 func select_driver(id: int) -> bool:
 	# Selection is presentation intent, not a sporting command. No RNG, time or

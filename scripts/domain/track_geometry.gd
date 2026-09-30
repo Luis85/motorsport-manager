@@ -1,11 +1,10 @@
 class_name TrackGeometry
 extends RefCounted
 ## Compiled track values; no scene dependencies. Owners take detached copies across boundaries.
-const PRESETS = {
-	"Formula": {"top": 89.0, "lat": 24.0, "accel": 9.0, "brake": 17.0, "width": 2.0},
-	"GT": {"top": 76.0, "lat": 15.0, "accel": 6.0, "brake": 12.0, "width": 2.1},
-	"Touring": {"top": 66.0, "lat": 12.0, "accel": 5.2, "brake": 10.0, "width": 1.9},
-	"Kart": {"top": 38.0, "lat": 11.0, "accel": 5.0, "brake": 8.0, "width": 1.4}}
+const PRESETS = VehicleDefinition.LEGACY
+var vehicle_definition: VehicleDefinition
+var _authored_vehicle: bool = false
+var pit_box_markers: Array = [] # Detached presentation values supplied by the event entry.
 var preview_only = false
 var centre_estimate = 0.0
 var line_distances = PackedFloat64Array()
@@ -36,13 +35,15 @@ var sector_ends: Array = []
 var grid_spacing = 8.0
 var warnings: Array[String] = []
 
-func _init(d: Dictionary = {}, vehicle: String = "Formula", preview: bool = false) -> void:
-	if not d.is_empty(): compile(d, vehicle, preview)
+func _init(d: Dictionary = {}, vehicle: String = "Formula", preview: bool = false, definition: VehicleDefinition = null) -> void:
+	if not d.is_empty(): compile(d, vehicle, preview, definition)
 
-func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false) -> void:
+func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false, definition: VehicleDefinition = null) -> void:
 	preview_only = preview
 	document = TrackDocument.normalize(d)
-	preset = vehicle if PRESETS.has(vehicle) else "Formula"
+	_authored_vehicle = definition != null
+	preset = definition.id if definition != null else (vehicle if PRESETS.has(vehicle) else "Formula")
+	vehicle_definition = definition if definition != null else VehicleDefinition.legacy(preset)
 	start = document.start
 	grid_spacing = clampf(float(document.grid.get("spacing", 8)), 6, 20)
 	var raw: Array = []
@@ -87,11 +88,11 @@ func compile(d: Dictionary, vehicle: String = "Formula", preview: bool = false) 
 		var tangent = (points[(i + 1) % n] - points[posmod(i - 1, n)]).normalized()
 		normals[i] = Vector2(-tangent.y, tangent.x)
 	if preview:
-		speeds.resize(n); speeds.fill(PRESETS[preset].top)
+		speeds.resize(n); speeds.fill(vehicle_definition.top_speed_mps)
 		curvature.fill(0.0); line_distances.resize(n); line_distances.fill(spacing)
 		estimate = 0.0
 	else:
-		var result = RacingLine.solve(self, PRESETS[preset])
+		var result = RacingLine.solve(self, vehicle_definition.parameters())
 		offsets = result.offsets; speeds = result.speeds; curvature = result.curvature
 		line_distances = result.distances; estimate = result.time; centre_estimate = result.centre_time
 	warnings.clear()
@@ -172,7 +173,11 @@ func runtime_export() -> Dictionary:
 	var samples: Array = []
 	for i in range(points.size()):
 		samples.append({"s": i * spacing, "x": points[i].x, "y": points[i].y, "height": heights[i], "width": widths[i], "bank_deg": banks[i], "line_offset": offsets[i], "curvature": curvature[i], "speed_mps": speeds[i], "line_arc_to_next_m": line_distances[i]})
-	return {"kind": "motorsport-manager-runtime", "version": 2, "units": "metres-seconds-radians-except-bank_deg", "axis": "+X east, +Y north, +height up", "name": document.name, "length": length, "start_fraction": start, "vehicle": preset, "solver": RacingLine.REVISION, "estimate_seconds": estimate, "centreline_estimate_seconds": centre_estimate, "samples": samples, "pits": document.pits, "features": document.features, "objects": document.objects, "timing_gates": document.timingGates, "grid": document.grid, "sector_ends_m": sector_ends, "provenance": document.provenance, "visual": document.get("visual", {}).duplicate(true), "illustration_revision": "cozy-circuit-v1"}
+	var result = {"kind": "motorsport-manager-runtime", "version": 2, "units": "metres-seconds-radians-except-bank_deg", "axis": "+X east, +Y north, +height up", "name": document.name, "length": length, "start_fraction": start, "vehicle": preset, "solver": RacingLine.REVISION, "estimate_seconds": estimate, "centreline_estimate_seconds": centre_estimate, "samples": samples, "pits": document.pits, "features": document.features, "objects": document.objects, "timing_gates": document.timingGates, "grid": document.grid, "sector_ends_m": sector_ends, "provenance": document.provenance, "visual": document.get("visual", {}).duplicate(true), "illustration_revision": "cozy-circuit-v1"}
+	if _authored_vehicle:
+		result.vehicle_definition = authored_vehicle()
+		result.content_schema_version = 1
+	return result
 
 func detached_copy() -> TrackGeometry:
 	## Copy compiled values, not a second racing-line solve. The receiving owner
@@ -181,4 +186,15 @@ func detached_copy() -> TrackGeometry:
 	for property in get_property_list():
 		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
 			result.set(property.name, RaceStateValue.copy(get(property.name)))
+	return result
+
+func authored_vehicle() -> Dictionary:
+	return vehicle_definition.to_record() if _authored_vehicle else {}
+
+func pit_markers() -> Array:
+	if not pit_box_markers.is_empty(): return pit_box_markers.duplicate(true)
+	# Compatibility display for editor drafts/old standalone tracks without an entry.
+	var result: Array = []
+	for index in range(LegacyRoster.TEAMS.size()):
+		result.append({"fraction": 0.30 + index * 0.055, "player": index == 3})
 	return result

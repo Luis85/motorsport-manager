@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "consistency": {
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "driver"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "reliability": {
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    },
+    "short": {
+      "maxLength": 8,
+      "minLength": 1,
+      "type": "string"
+    },
+    "skill": {
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "wet_skill": {
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "type": "number"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "short",
+    "skill",
+    "consistency",
+    "wet_skill",
+    "reliability"
+  ],
+  "title": "Motorsport Manager driver v1",
+  "type": "object"
+}

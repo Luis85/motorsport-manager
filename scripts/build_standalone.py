@@ -69,7 +69,7 @@ def build(godot: Path, templates: Path, output: Path, target: str, mode: str,
         stage = Path(temporary) / "project"
         stage.mkdir()
         # No checkout/import cache or local reports enter the export staging project.
-        for directory in ("scripts", "scenes", "data"):
+        for directory in ("scripts", "scenes", "data", "content"):
             shutil.copytree(root / directory, stage / directory,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         for name in ("project.godot", "export_presets.cfg"):

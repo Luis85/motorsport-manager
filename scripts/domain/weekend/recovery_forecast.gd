@@ -16,7 +16,7 @@ static func evaluate(source: Dictionary, observed: Dictionary) -> Dictionary:
 	var pit = RaceForecaster.pit_prediction(pit_source)
 	var remaining = maxf(0, s.laps - maxf(0, s.own.distance / s.length))
 	var gain_per_lap = maxf(0, current_lap - repaired_lap)
-	var usable = WheelTyres.usable(item) and RaceForecaster.limiting_life(item, item.life) >= 10
+	var usable = WheelTyres.usable(item) and RaceForecaster.limiting_life(item, item.life) >= RaceTuningDefinition.operations_values(s).reliability.repair_minimum_tread
 	var available = s.phase == "race" and s.own.route == "track" and not s.own.pit_order and s.gate.distance < s.laps * s.length and s.own.damage > 0 and usable and not s.own.get("dnf", false) and not s.own.get("finished", false)
 	var reason = "A repair-only stop keeps the fitted set. It cannot fix a puncture or exhausted wheel."
 	if s.own.get("dnf", false) or s.own.get("finished", false): reason = "This car is no longer racing; no recovery order can be issued."
@@ -28,6 +28,6 @@ static func evaluate(source: Dictionary, observed: Dictionary) -> Dictionary:
 	return {"version": VERSION, "driver_id": int(s.own.id), "time": s.time, "key": s.key, "observed": observed.duplicate(true),
 		"gate": s.gate, "pit": pit, "repair_available": available, "unavailable_reason": "" if available else reason,
 		"remaining_laps": remaining, "current_lap": current_lap, "protected_lap": protected_lap, "repaired_lap": repaired_lap,
-		"repair_seconds": s.own.damage * RaceReliability.REPAIR_SECONDS_PER_DAMAGE,
+		"repair_seconds": s.own.damage * RaceTuningDefinition.forecast_values(s).service.repair_seconds_per_damage,
 		"gain_per_lap": gain_per_lap, "payback_laps": payback, "resource_risk": "high" if not usable or s.fuel_margin < 0 else "not currently critical",
 		"limitations": "Lap comparisons hold current tyres, heat, health, traffic assumptions and flag constant; later stops and future faults are not predicted. Payback is a break-even estimate, not a winning strategy. Engine saving reduces future exposure gradually. Repair removes scalar damage only, takes manual pit ownership and does not replenish health or tyre life. Re-approve any remaining windows afterward."}

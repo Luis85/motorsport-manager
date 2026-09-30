@@ -27,7 +27,7 @@ static func _schedule_pit(simulation: RaceSim, car: RaceCar, payload: Dictionary
 	var lap = payload.get("lap", -1)
 	if not RaceCheckpoint.integral(lap, 1, simulation.laps - 1): return "Choose a racing lap before the final lap."
 	var gate = (int(lap) - 1) * simulation.track.length + simulation.track.pit_entry
-	var stopping = maxf(0, car.speed ** 2 - simulation.track.pit_limit ** 2) / (2 * TrackGeometry.PRESETS[simulation.track.preset].brake * 0.5) + 12
+	var stopping = maxf(0, car.speed ** 2 - simulation.track.pit_limit ** 2) / (2 * simulation.track.vehicle_definition.braking_mps2 * 0.5) + 12
 	if gate - car.distance <= stopping: return "Too late for that lap's pit entry; choose a later lap."
 	if TyreInventory.planned(car, true).is_empty(): return "No usable replacement set. Select another compound or set."
 	car.scheduled_lap = int(lap); car.pit_gate = gate; car.pit_order = true; car.pit_deferred = false; car.auto = false
@@ -39,8 +39,8 @@ static func _cancel_schedule(car: RaceCar) -> String:
 	return ""
 
 static func _compound(simulation: RaceSim, car: RaceCar, payload: Dictionary) -> String:
-	var value = str(payload.get("value", "M"))
-	if not RaceSim.TYRES.has(value): return "Unknown tyre compound."
+	var value = str(payload.get("value", simulation.tyre_rules.initial("dry")))
+	if simulation.tyre_rules.spec(value).is_empty(): return "Unknown tyre compound."
 	if car.route == "pit": return "The tyre plan is locked until pit exit."
 	if TyreInventory.choose(car, value, simulation.phase == "race").is_empty(): return "No usable set of that compound remains."
 	car.next_compound = value; car.next_set_id = ""
