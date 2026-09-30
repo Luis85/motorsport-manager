@@ -23,6 +23,42 @@ func run() -> void:
 	for family in expected:
 		var collection = ScenarioCatalog.collection(family)
 		check(not str(collection.get("title", "")).is_empty() and not str(collection.get("description", "")).is_empty(), family + " collection owns its gallery presentation metadata")
+	# A malformed recipe must invalidate the entire collection, not merely hide one
+	# gallery card while another caller still receives an unchecked recipe.
+	for family in expected:
+		var original = ScenarioCatalog.collection(family)
+		var valid_copy = copied(original)
+		check(ScenarioCatalog.validate_collection(valid_copy, family) == original, family + " family validation preserves the authored order and bytes")
+		valid_copy.scenarios[0].title = "Mutated after copy"
+		check(ScenarioCatalog.collection(family) == original, family + " returns a detached collection")
+		for mutation in ["missing_metadata", "blank_title", "too_long", "unknown_root", "invalid_notice", "malformed_id", "unknown_recipe", "missing_reference", "duplicate_id", "empty_array", "over_limit"]:
+			var broken = copied(original)
+			match mutation:
+				"missing_metadata": broken.erase("title")
+				"blank_title": broken.title = "  "
+				"too_long": broken.description = "x".repeat(1201)
+				"unknown_root": broken["execute"] = "res://untrusted.gd"
+				"invalid_notice": broken["notice"] = true
+				"malformed_id": broken.scenarios[0].id = "invalid/id"
+				"unknown_recipe": broken.scenarios[0]["callback"] = "res://untrusted.gd"
+				"missing_reference": broken.scenarios[0].erase("track")
+				"duplicate_id": broken.scenarios.append(copied(broken.scenarios[0]))
+				"empty_array": broken.scenarios = []
+				"over_limit":
+					broken.scenarios = []
+					for i in range(ScenarioCatalog.MAX_SCENARIOS + 1): broken.scenarios.append(original.scenarios[0].duplicate(true))
+			check(ScenarioCatalog.validate_collection(broken, family).is_empty(), family + " fails closed: " + mutation)
+		var changed = copied(original)
+		match family:
+			"dry":
+				changed.scenarios[0].plans[0]["script"] = "res://untrusted.gd"
+				check(ScenarioCatalog.validate_collection(changed, family).is_empty(), "Dry plans reject unexpected nested executable fields")
+				changed = copied(original); changed.scenarios[0].plans[0].starting = ""
+			"weather": changed.scenarios[0].weather_mode = "unregistered"
+			"recovery": changed.scenarios[0].damage[0] = -3
+			"practice": changed.scenarios[0].scenario = "unknown"
+			"rivals", "duels": changed.scenarios[0].grid[1] = changed.scenarios[0].grid[0]
+		check(ScenarioCatalog.validate_collection(changed, family).is_empty(), family + " rejects an invalid family-specific recipe")
 	var practice = PracticeScenarios.catalog()
 	check(practice.size() == 2 and practice.all(func(r): return PracticeScenarios.valid(r)), "Practice recipes moved from code into validated shipped data")
 	var rivals = RivalScenarios.catalog()

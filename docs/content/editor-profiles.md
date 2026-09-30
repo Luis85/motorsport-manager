@@ -52,3 +52,18 @@ composition supplies the validated content catalog before Circuit Atelier enters
 the scene tree, so the checked-in JSON profile is the regular authoring source.
 The profile is deliberately not frozen into weekend/replay persistence because it
 cannot change an already-authored circuit or a running race.
+
+## Native interaction regression
+
+The inspector re-resolves a selected preset on refresh, including when a content
+pack overrides its scale, rotation or renderer. If a previously selected preset
+ID disappears, the inspector chooses the first currently validated option;
+previously placed scenery is unaffected. Selection alone never places an item.
+A normal canvas click publishes one ordinary editor transaction, with the same
+undo/redo and layer-lock rules as built-in scenery.
+
+Run `content_editor_profile_tests` for schema/override rejection and
+`content_editor_interaction_tests` for actual native placement, undo/redo, stale
+preset recovery, layer locks and long guide text at 1440×900 and 1100×720 with
+normal and enlarged text. The native suite retains screenshots as automated
+layout evidence; it is not a substitute for human usability review.

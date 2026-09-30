@@ -8,10 +8,11 @@ field**, and **which production code owns its interpretation**.
 The inventory uses the classifications `contract`, `identity`, `presentation`,
 `reference`, `authoring`, `sporting`, `simulation`, and `safety`. A prefix may
 own a whole bounded object/array (for example `/environment` or `/placements`);
-the regression test expands the generated schema to leaf paths and requires every
-leaf to resolve to an inventory entry. Unused/stale prefixes, missing production
-files, unknown classifications, duplicate prefixes, new schema files, and
-unclassified new fields fail the test.
+the regression test expands the generated schema to leaf paths and compares the
+exact sorted leaf-path snapshot before resolving each leaf to an inventory entry.
+A new nested field beneath an existing prefix still requires explicit review.
+Unused/stale prefixes, missing production files, unknown classifications,
+duplicate prefixes, new schema files and unclassified fields fail the test.
 
 The same JSON also registers deliberately retained code literal tables and
 structural/safety bounds. Those entries must name a live symbol, classification

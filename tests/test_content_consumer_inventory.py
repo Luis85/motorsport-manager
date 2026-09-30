@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 import unittest
 
@@ -46,6 +47,8 @@ class ContentConsumerInventoryTests(unittest.TestCase):
                 self.assertTrue(schema_path.is_file(), schema_path)
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
                 leaf_paths = leaves(schema)
+                self.assertEqual(sorted(set(leaf_paths)), spec["expected_leaves"],
+                                 f"published {family} schema leaf paths changed; review each nested field before updating ownership")
                 prefixes = [entry["prefix"] for entry in spec["coverage"]]
                 self.assertEqual(len(prefixes), len(set(prefixes)), "duplicate inventory prefix")
                 for leaf in leaf_paths:
@@ -55,6 +58,14 @@ class ContentConsumerInventoryTests(unittest.TestCase):
                     self.assertEqual(1, sum(len(entry["prefix"]) == longest for entry in matches), f"ambiguous owner for {family}{leaf}")
                 for entry in spec["coverage"]:
                     self.assertTrue(any(covers(entry["prefix"], leaf) for leaf in leaf_paths), f"stale inventory prefix {family}{entry['prefix']}")
+
+    def test_nested_schema_addition_requires_explicit_inventory_review(self):
+        spec = self.data["families"]["tyre_thermal"]
+        schema = json.loads((ROOT / spec["schema"]).read_text(encoding="utf-8"))
+        changed = deepcopy(schema)
+        changed["properties"]["operating"]["properties"]["new_limit"] = {"type": "number"}
+        self.assertNotEqual(sorted(set(leaves(changed))), spec["expected_leaves"])
+        self.assertIn("/operating/new_limit", leaves(changed))
 
     def test_every_inventory_entry_has_valid_classification_and_live_production_consumer(self):
         for family, spec in self.data["families"].items():

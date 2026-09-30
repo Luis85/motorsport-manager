@@ -86,9 +86,13 @@ This pre-weekend definition is intentionally distinct from a shareable mid-race
 `ReplayScenario`: the latter contains an exact independent sandbox starting
 state. The six shipped developer diagnostic collections remain separate
 verification resources, but all are now file-backed through the bounded
-`ScenarioCatalog` adapter and own their gallery title/description. Practice and
-rival recipes no longer live as GDScript literal tables. This does not make diagnostic fixtures executable
-external-pack content or campaign rewards.
+`ScenarioCatalog` adapter and own their gallery title and description. Practice
+and rival recipes no longer live as GDScript literal tables. Collection loading
+rejects unknown fields, missing/duplicate IDs, malformed family-specific recipes,
+invalid nested dry-race plans, and out-of-range values **as one failed collection**;
+it never silently drops a bad card while displaying the others. These trusted
+bundled diagnostic fixtures are distinct from editable external content packs:
+this does not introduce executable external-pack scenarios or campaign rewards.
 
 ## Authoring CLI
 

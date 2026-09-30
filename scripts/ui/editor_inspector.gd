@@ -112,9 +112,13 @@ static func render(editor: Control) -> void:
 		for index in range(placements.size()):
 			if placements[index].id == editor.canvas.scenery_preset.get("id", ""):
 				placement_index = index; break
-	elif not placements.is_empty():
-		editor.canvas.scenery_preset = placements[0].duplicate(true)
-		editor.canvas.scenery_type = placements[0].object_type
+	# Always replace cached preset values with the current validated profile.
+	# A removed ID or a changed scale/renderer must not survive an editor refresh.
+	if placements.is_empty():
+		editor.canvas.scenery_preset.clear()
+	else:
+		editor.canvas.scenery_preset = placements[placement_index].duplicate(true)
+		editor.canvas.scenery_type = placements[placement_index].object_type
 	if not placements.is_empty():
 		features.add_child(UI.option(placements.map(func(p): return p.name), func(index):
 			editor.canvas.scenery_preset = placements[index].duplicate(true)

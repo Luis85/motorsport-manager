@@ -6,12 +6,12 @@ complete final-source release gate.
 
 | Work package | Delivered foundation | Remaining gate |
 |---|---|---|
-| DD-00 Inventory | Per-family guides plus machine-checked ownership/classification for every published schema leaf and retained content-related literal table/bound | Keep the inventory gate current as contracts expand |
+| DD-00 Inventory | Per-family guides plus machine-checked ownership/classification for every published schema leaf and retained content-related literal table/bound | Keep the exact leaf-path snapshot and consumer gate current as contracts expand |
 | DD-01 Content boundary | Strict bounded packs, schemas, provenance, typed vehicles and external discovery | Retain regression gates as families expand |
 | DD-02 Field | Separate teams/drivers/rosters, stable ownership, fourteen-car example | Existing targeted tests retained |
 | DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Complete-source sporting and performance acceptance |
 | DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; registered-provider profiles frozen into weekends/replay; current published fields mapped to production consumers | New stateful provider implementations still require versioned code readers and inventory entries |
-| DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed diagnostic collections with gallery metadata, and bounded editor placement/guide profiles | Retain editor/content interaction regressions as authoring profiles evolve |
+| DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed diagnostic collections with gallery metadata, and bounded editor placement/guide profiles | Automate stale-preset and native guide/placement regression with each future profile change |
 | DD-06 Continuation | Frozen supported definitions, circuit/style snapshots and scenario context; exact persisted number decoding | Extend the same contract to any subsequently migrated families |
 | DD-07 Authoring | All authoring operations; ordered multi-pack selection, cross-pack cloning, side-specific diff dependencies, safe failed-write cleanup and explicit version incompatibility diagnostics | Real converters when an actual subsequent format is defined; none is fabricated for hypothetical versions |
 | DD-08 Acceptance | Registered domain/native tests and Linux debug/release exported-runtime acceptance | Complete final-source six-shard regression, performance comparison, and remote CI |
@@ -66,3 +66,18 @@ playtesting are separate acceptance gates.
 New source/test files remain within the code-line budgets. Existing oversized
 files remain visible (including RaceSim, which receives frozen-profile plumbing);
 no blanket quality exclusions or adjusted sporting checkpoints are added.
+
+## Final hardening follow-up
+
+The consumer inventory now pins **the exact sorted schema leaf paths** for all
+published families as well as their ownership prefixes. New nested fields cannot
+slip in under an existing broad prefix without changing the reviewed snapshot.
+
+Bundled diagnostic collections now validate each known recipe family and reject an
+entire malformed collection, including unknown top-level/recipe/dry-plan fields.
+Circuit Atelier resolves cached placement choices from the current validated
+profile whenever its inspector refreshes; a removed preset cannot continue to
+place an obsolete renderer or stale transform. Registered native UI checks cover
+actual placements, single-step undo/redo, layer locks and long guide content at
+1440×900/1100×720 in normal and enlarged text. These are regression controls;
+they do not constitute a manual accessibility or playtesting sign-off.
