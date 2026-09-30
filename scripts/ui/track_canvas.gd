@@ -251,36 +251,15 @@ func _draw() -> void:
 func build_surface_geometry() -> void:
 	if _surface_geometry == geometry: return
 	_surface_geometry = geometry; _surface_segments.clear(); surface_geometry_builds += 1
-	# Geometry is immutable within a weekend. Water/grip remain live, never cached here.
-	var samples: Array = []
-	for i in range(RaceVisualPort.SURFACE_STATIONS * 4 + 1): samples.append(geometry.sample(i * geometry.length / (RaceVisualPort.SURFACE_STATIONS * 4)))
-	for i in range(RaceVisualPort.SURFACE_STATIONS):
-		var lanes: Array = []
-		for lane in range(RaceVisualPort.SURFACE_LANES):
-			var segments: Array = []; var lateral = (lane + 0.5) / RaceVisualPort.SURFACE_LANES - 0.5
-			for j in range(4):
-				var p = samples[i * 4 + j]; var q = samples[i * 4 + j + 1]
-				segments.append([p.p + p.n * p.w * lateral, q.p + q.n * q.w * lateral, p.w])
-			lanes.append(segments)
-		_surface_segments.append(lanes)
+	_surface_segments.append_array(TrackCanvasOverlays.surface_geometry(geometry))
 
 func draw_surface(target: Control) -> void:
 	if not show_surface or visual_source == null or geometry == null: return
 	var values = visual_source.surface_values(surface_channel)
 	if values.is_empty(): return
 	build_surface_geometry()
-	for i in range(RaceVisualPort.SURFACE_STATIONS):
-		for lane in range(RaceVisualPort.SURFACE_LANES):
-			var value: float = values[i][lane]
-			var color = Color("4a97b4") if surface_channel == "water" else (Color("629162") if surface_channel == "grip" else Color("a77641"))
-			color.a = clampf(value, 0, 1) * 0.68
-			for segment in _surface_segments[i][lane]:
-				target.draw_line(screen(segment[0]), screen(segment[1]), color, maxf(0.75, segment[2] * zoom / RaceVisualPort.SURFACE_LANES), true)
-	target.draw_style_box(_surface_legend_style, Rect2(Vector2(16, 16), Vector2(260, 46)))
-	target.draw_string(ThemeDB.fallback_font, Vector2(28, 44), "%s  ·  seven lateral strips" % surface_channel.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
-	if inspected_fraction >= 0:
-		var sample = geometry.sample(inspected_fraction * geometry.length)
-		target.draw_circle(screen(sample.p), 13, CircuitPalette.ACCENT, false, 2, true)
+	TrackCanvasOverlays.paint_surface(target, _surface_segments, values, surface_channel,
+		inspected_fraction, geometry, zoom, _surface_legend_style, Callable(self, "screen"))
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
@@ -321,52 +300,9 @@ func _draw_profile() -> void:
 	draw_string(ThemeDB.fallback_font, r.position + Vector2(10, 18), "ELEVATION   %.1f–%.1f m" % [low, high], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
 
 func draw_cars(target: Control) -> void:
-	if geometry == null: return
-	if preview_running and visual_source == null:
-		var sample = geometry.sample(preview_distance)
-		var p = screen(sample.p + sample.n * sample.line)
-		target.draw_circle(p, 8, Color("fcf3d8"), true, -1, true)
-		target.draw_circle(p, 5, Color("466d52"), true, -1, true)
-		target.draw_style_box(UI.box(CircuitPalette.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55)))
-		target.draw_string(ThemeDB.fallback_font, Vector2(28, 39), "REFERENCE LAP  ·  %d km/h" % int(sample.speed * 3.6), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
-		target.draw_string(ThemeDB.fallback_font, Vector2(28, 58), "Heuristic preview · not a race simulation", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
-		return
-	if visual_frame.is_empty(): return
-	var font = ThemeDB.fallback_font
-	var occupied: Array[Rect2] = []
-	var display_cars = visual_frame.cars.duplicate()
-	display_cars.sort_custom(func(a, b): return a.id == visual_frame.selected_id if a.id != b.id else false)
-	for c in display_cars:
-		var p = screen(c.position)
-		if not Rect2(Vector2(-30, -30), size + Vector2(60, 60)).has_point(p): continue
-		var radius = clampf(4.6 + zoom * 0.35, 4.6, 7.5) * dot_scale
-		var color = Color(c.color)
-		if c.dnf: color = Color("697278")
-		if c.id == visual_frame.selected_id:
-			target.draw_arc(p, radius + 5, 0, TAU, 24, CircuitPalette.ACCENT, 1.8, true)
-			target.draw_circle(p, radius + 9, Color(0.9, 0.75, 0.45, 0.09))
-		target.draw_circle(p + Vector2(1, 2), radius + 2, Color("30493633"), true, -1, true)
-		target.draw_circle(p, radius + 2.2, Color("4e6454"), true, -1, true)
-		target.draw_circle(p, radius + 1.6, Color("fff7df"), true, -1, true)
-		target.draw_circle(p, radius, color, true, -1, true)
-		if show_labels:
-			for offset in [Vector2(radius + 5, -radius - 3), Vector2(-40, -radius - 3), Vector2(radius + 5, radius + 15), Vector2(-40, radius + 15), Vector2(0, -radius - 24)]:
-				var text_pos = p + offset
-				var rect = Rect2(text_pos - Vector2(1, 12), Vector2(35, 15))
-				var available = true
-				for previous in occupied:
-					if rect.intersects(previous): available = false; break
-				if not available or not Rect2(Vector2(3, 3), size - Vector2(6, 6)).encloses(rect): continue
-				occupied.append(rect)
-				target.draw_style_box(_car_label_style, rect.grow(2))
-				target.draw_string(font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("294934"))
-				break
-		if c.blue: target.draw_circle(p + Vector2(-radius - 3, -radius - 3), 3, Color("619acc"))
-	if visual_frame.phase == "lights":
-		var count = mini(5, int(visual_frame.clock))
-		var x = size.x * 0.5 - 100
-		target.draw_style_box(UI.box(Color("091116")), Rect2(Vector2(x - 24, 32), Vector2(250, 64)))
-		for i in range(5): target.draw_circle(Vector2(x + i * 48, 64), 17, Color("d96858") if i < count else Color("392929"))
+	TrackCanvasOverlays.paint_cars(target, geometry, preview_running and visual_source == null,
+		preview_distance, visual_frame, zoom, dot_scale, show_labels, size,
+		_car_label_style, Callable(self, "screen"))
 
 func _gui_input(event: InputEvent) -> void:
 	TrackCanvasInput.dispatch(self, event)
@@ -455,21 +391,8 @@ func finish_marquee() -> void:
 	select_items(kind, ids)
 
 func draw_selection() -> void:
-	if selection_ids.size() > 1:
-		var items: Array = document.nodes if selection_kind == "road" else document.objects
-		var rect = Rect2(); var first = true
-		for index in selection_ids:
-			if index < 0 or index >= items.size(): continue
-			var p = screen(TrackDocument.point(items[index]))
-			draw_rect(Rect2(p - Vector2(8, 8), Vector2(16, 16)), CircuitPalette.ACCENT, false, 1.5)
-			if first: rect = Rect2(p, Vector2.ZERO); first = false
-			else: rect = rect.expand(p)
-		if not first:
-			draw_rect(rect.grow(16), CircuitPalette.ACCENT, false, 1.5)
-			draw_string(ThemeDB.fallback_font, rect.position + Vector2(0, -23), "%d selected · Shift-click to add/remove" % selection_ids.size(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.INK)
-	if marquee_start != Vector2.INF:
-		var rectangle = Rect2(screen(marquee_start), screen(marquee_end) - screen(marquee_start)).abs()
-		draw_rect(rectangle, Color("ac965329")); draw_rect(rectangle, CircuitPalette.ACCENT, false, 1.5)
+	TrackCanvasOverlays.paint_selection(self, document, selection_kind, selection_ids,
+		marquee_start, marquee_end, Callable(self, "screen"))
 
 func sketch_input(event: InputEventMouseButton) -> void:
 	if not layer_editable("road") or sketch.closed: return
