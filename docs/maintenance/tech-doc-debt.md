@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, and an atomic weekend consequence transaction. None changes race physics, sporting authority or the independently tested standalone weekend.
+This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, an atomic weekend consequence transaction, and versioned series/season authority. None changes race physics, sporting authority or the independently tested standalone weekend.
 
 ## Scoped work and acceptance
 
@@ -13,7 +13,7 @@ This branch began as focused technical/documentation maintenance. It now also co
 
 ## Exclusions
 
-No new race model, complete company-management campaign, content schema or mechanic provider; no altered race checkpoint format or race scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. The campaign work adds a deterministic consequence foundation, not a full calendar, season lifecycle, commitments forecast, staff/projects/rivals simulation or management UI. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
+No new race model, complete company-management campaign, content schema or mechanic provider; no altered race checkpoint format or race scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. The campaign work adds deterministic integration and sporting-domain foundations, not commitments/forecast finance, staff/projects/rivals simulation or management UI. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
 
 ## Publication gate
 
@@ -25,7 +25,7 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 - Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping interfaces from retained diagnostic tooling, implemented foundations and proposals.
 - Promoted this authority in root and docs READMEs, corrected post-merge content inventory/acceptance claims, and labeled original `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` as historical rather than current.
-- Documented the canvas overlay extraction, campaign/weekend boundary, selectable interface, campaign state/storage and atomic consequence transaction without rewriting historical implementation records as present-tense release claims.
+- Documented the canvas overlay extraction, campaign/weekend boundary, selectable interface, campaign state/storage, atomic consequence transaction and season lifecycle without rewriting historical implementation records as present-tense release claims.
 
 ### Technical debt
 
@@ -83,9 +83,22 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Extended the registered campaign contracts with exact no-op reapplication, result/policy conflict, invalid-inventory rollback, departure-time drift rejection, dated financial reconciliation, explicit points eligibility, persistence and v1 migration checks.
 - Added `docs/campaign/weekend-consequence-transaction.md`.
 
+### P0 series calendar, entries, standings rules and season lifecycle
+
+- Upgraded `CampaignCompetition` to version 2 while retaining validation and exact duplicate no-op behavior for version-one sporting history. Non-empty legacy history stays read-only rather than receiving invented calendars or entrants.
+- Added immutable `CampaignSeriesRules` for cars per entrant, entrant/event bounds, frozen points table, countback depth and an explicit `final_only` classification policy.
+- Added versioned `CampaignSeason` records containing an ordered non-overlapping calendar, frozen event revision/track/rules hashes, persistent entry records, derived standings and lifecycle state.
+- Added submitted/accepted/rejected/withdrawn entry handling. Live entries cannot repeat entrant, team, person or car identities; undecided submissions and insufficient accepted fields block entry closure.
+- Bound every newly settled weekend to the next scheduled active-season event. Dates, revision, track/rules hashes and the complete accepted field must agree with the immutable manifest before any consequence stages.
+- Added prefix-only event resolution, explicit cancellation without sporting awards, final-classification gating and the controlled `planning → entries_open → preseason → active → final_classification → settled → contract_transition → completed` path.
+- Driver and team rankings rebuild from immutable event awards using points then successive finish-count countback. Exact unresolved ties receive a shared position; stable identity controls serialization order only.
+- Split calendar, entry registry and standings projection into bounded domain helpers while retaining the `CampaignSeason` API; all new source and test files remain within repository line budgets.
+- Registered a four-round deterministic contract covering invalid transitions, identity conflicts, out-of-order results, frozen scoring, shared ties, countback, tamper detection, finalization, cancellation and safe next-season creation. The atomic transaction fixture now settles through a real registered season.
+- Added `docs/campaign/season-lifecycle.md`.
+
 ### P0/P1 closure and follow-up scope
 
-All P0 and P1 debt items identified for the original maintenance sequence remain implemented. The selectable-interface and campaign milestones are explicit follow-up product requests built on existing composition/storage seams; none reopens sporting authority. The next campaign dependency is a versioned series calendar and season lifecycle over the transaction records, followed separately by financial commitments, due dates and minimum-cash forecasting.
+All P0 and P1 debt items identified for the original maintenance sequence remain implemented. The selectable-interface and campaign milestones are explicit follow-up product requests built on existing composition/storage seams; none reopens sporting authority. The next campaign dependency is TM-04: future commitments, due dates and minimum-cash forecasting over the factual ledger.
 
 ### Verification boundary
 
@@ -95,5 +108,5 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Series calendar/entry states, tie-breaking and season rollover; commitments and forecast finance; staff/contracts; engineering; rivals; corrections; and campaign UI remain unimplemented. The consequence transaction does not make a playable campaign or establish balanced rewards.
+- Provisional classifications and correction deltas; commitments and forecast finance; staff/contracts; engineering; rivals; season prizes/promotion; and campaign UI remain unimplemented. The calendar/consequence foundations do not make a playable campaign or establish balanced rewards.
 - Human player testing of both interface modes, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. Selectability does not turn every retained specialist workspace into a validated final UX.
