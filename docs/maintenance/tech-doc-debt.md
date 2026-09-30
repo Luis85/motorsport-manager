@@ -29,7 +29,8 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 ### Technical debt
 
-- Extracted UI-only surface sampling, live surface drawing, car/label painting and editor selection painting into `scripts/ui/track_canvas_overlays.gd` (97 counted code lines at introduction). `TrackCanvas` retains its public methods and its original cache invalidation/rebuild counter, live detached frame capture, view projection and all edit transactions.
+- Extracted UI-only surface sampling, live surface drawing, elevation-profile drawing, car/label painting and editor selection painting into `scripts/ui/track_canvas_overlays.gd`. `TrackCanvasOverlayRenderer` is now only a thin adapter from the canvas-owned cache and detached presentation snapshot into those stateless painters.
+- `TrackCanvas` retains its public methods, cache identity and rebuild counter, live detached frame capture, view projection and all edit transactions.
 - The active `track_canvas.gd` source is reduced from **476 to 400 counted code lines**, exactly the repository's declared budget, without changing commands, sporting arithmetic, saved data or editor mutations.
 - Extended the registered native `editor_gesture_tests` suite with direct sampling/cache checks. Existing rendered/click-through editor and complete-weekend suites remain mandatory; synthetic screenshots alone are not a human usability sign-off.
 
