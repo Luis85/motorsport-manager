@@ -249,17 +249,10 @@ func _draw() -> void:
 	draw_line(Vector2(size.x - 30, 60), Vector2(size.x - 30, 43), CircuitPalette.MUTED, 1.5)
 
 func build_surface_geometry() -> void:
-	if _surface_geometry == geometry: return
-	_surface_geometry = geometry; _surface_segments.clear(); surface_geometry_builds += 1
-	_surface_segments.append_array(TrackCanvasOverlays.surface_geometry(geometry))
+	TrackCanvasOverlayRenderer.build_surface_geometry(self)
 
 func draw_surface(target: Control) -> void:
-	if not show_surface or visual_source == null or geometry == null: return
-	var values = visual_source.surface_values(surface_channel)
-	if values.is_empty(): return
-	build_surface_geometry()
-	TrackCanvasOverlays.paint_surface(target, _surface_segments, values, surface_channel,
-		inspected_fraction, geometry, zoom, _surface_legend_style, Callable(self, "screen"))
+	TrackCanvasOverlayRenderer.draw_surface(self, target)
 
 func _draw_editor() -> void:
 	var font = ThemeDB.fallback_font
@@ -289,20 +282,10 @@ func _draw_editor() -> void:
 			if i == selected_pit: draw_string(font, p + Vector2(8, -8), "PIT POINT %d" % (i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, CircuitPalette.ACCENT)
 
 func _draw_profile() -> void:
-	var r = Rect2(Vector2(20, size.y - 126), Vector2(size.x - 40, 75))
-	draw_style_box(UI.box(Color("f7f2e4ee")), r)
-	var low = geometry.heights[0]; var high = low
-	for value in geometry.heights: low = minf(low, value); high = maxf(high, value)
-	var line = PackedVector2Array()
-	for i in range(geometry.heights.size()):
-		line.append(Vector2(r.position.x + 8 + (r.size.x - 16) * i / geometry.heights.size(), r.end.y - 8 - (r.size.y - 30) * (geometry.heights[i] - low) / maxf(1, high - low)))
-	draw_polyline(line, CircuitPalette.GOOD, 2, true)
-	draw_string(ThemeDB.fallback_font, r.position + Vector2(10, 18), "ELEVATION   %.1f–%.1f m" % [low, high], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, CircuitPalette.MUTED)
+	TrackCanvasOverlayRenderer.draw_profile(self)
 
 func draw_cars(target: Control) -> void:
-	TrackCanvasOverlays.paint_cars(target, geometry, preview_running and visual_source == null,
-		preview_distance, visual_frame, zoom, dot_scale, show_labels, size,
-		_car_label_style, Callable(self, "screen"))
+	TrackCanvasOverlayRenderer.draw_cars(self, target)
 
 func _gui_input(event: InputEvent) -> void:
 	TrackCanvasInput.dispatch(self, event)
