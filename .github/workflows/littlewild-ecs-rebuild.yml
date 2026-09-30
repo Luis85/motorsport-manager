@@ -1,4 +1,4 @@
-# ECS M4 settlement dispatch
+# ECS M4 canonical payload recovery
 name: Littlewild ECS rebuild
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply pending ECS milestone
+      - name: Recover and apply canonical M4 payload
         id: milestone
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,30 +35,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate > /tmp/comments.json
+          gh api "repos/$REPOSITORY/issues/comments/5919816854" > /tmp/milestone-comment.json
           python - <<'PY'
           from pathlib import Path
-          import base64,gzip,hashlib,json,os,subprocess
-          comments=json.loads(Path('/tmp/comments.json').read_text())
-          marker='<!-- ecs-milestone-payload -->'
-          candidates=[c for c in comments if marker in c.get('body','')]
-          state_path=Path('docs/concepts/littlewild/source/ecs-milestone-state.json')
-          state=json.loads(state_path.read_text()) if state_path.exists() else {}
-          message='build(littlewild): refresh ECS artifact and verification evidence'
-          if candidates:
-              payload=json.loads(candidates[-1]['body'].split(marker,1)[1].strip())
-              if payload['sha256']!=state.get('sha256'):
-                  patch=gzip.decompress(base64.b64decode(payload['payload']))
-                  if hashlib.sha256(patch).hexdigest()!=payload['sha256']:
-                      raise SystemExit('Milestone payload checksum mismatch')
-                  path=Path('/tmp/littlewild-milestone.patch');path.write_bytes(patch)
-                  subprocess.run(['git','apply','--check',str(path)],check=True)
-                  subprocess.run(['git','apply',str(path)],check=True)
-                  state_path.write_text(json.dumps({'milestone':payload['milestone'],'sha256':payload['sha256']},indent=2)+'\n')
-                  message=payload['commitMessage']
-          Path('/tmp/milestone-message').write_text(message)
+          import base64, gzip, hashlib, json, subprocess
+
+          marker = '<!-- ecs-milestone-payload -->'
+          comment = json.loads(Path('/tmp/milestone-comment.json').read_text())
+          body = comment.get('body', '')
+          if marker not in body:
+              raise SystemExit('Canonical M4 comment does not contain a milestone payload.')
+          payload = json.loads(body.split(marker, 1)[1].strip())
+          expected = {
+              'milestone': 'M4',
+              'base': '60dc144ae6dc40a31ba16cade9e67845fb0e23c3',
+              'sha256': '0c761acb1d04fb7a1e6042aa7523cd34a564d718510ab8e4cfc310115481bc78',
+              'encoding': 'gzip+base64',
+          }
+          for key, value in expected.items():
+              if payload.get(key) != value:
+                  raise SystemExit(f'Unexpected canonical payload {key}: {payload.get(key)!r}')
+          subprocess.run(['git', 'merge-base', '--is-ancestor', payload['base'], 'HEAD'], check=True)
+          compressed = base64.b64decode(payload['payload'], validate=True)
+          patch = gzip.decompress(compressed)
+          digest = hashlib.sha256(patch).hexdigest()
+          if digest != payload['sha256']:
+              raise SystemExit(f'Milestone payload checksum mismatch: {digest}')
+          patch_path = Path('/tmp/littlewild-milestone.patch')
+          patch_path.write_bytes(patch)
+          state_path = Path('docs/concepts/littlewild/source/ecs-milestone-state.json')
+          state = json.loads(state_path.read_text()) if state_path.exists() else {}
+          if state.get('sha256') != payload['sha256']:
+              subprocess.run(['git', 'apply', '--check', str(patch_path)], check=True)
+              subprocess.run(['git', 'apply', str(patch_path)], check=True)
+              state_path.write_text(json.dumps({
+                  'milestone': payload['milestone'],
+                  'sha256': payload['sha256'],
+              }, indent=2) + '\n')
+          Path('/tmp/milestone-message').write_text(payload['commitMessage'])
           PY
           echo "message=$(cat /tmp/milestone-message)" >> "$GITHUB_OUTPUT"
+      - name: Preserve recovered patch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: littlewild-m4-recovered-patch
+          path: /tmp/littlewild-milestone.patch
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
         run: |
