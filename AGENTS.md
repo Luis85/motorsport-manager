@@ -19,7 +19,13 @@ persistence boundaries.
 
 Campaign time is a separate dated-slot domain. It must not reuse the race tick,
 read the wall clock, or place competition/economy consequences inside RaceSim,
-replay, result presentation or the standalone receipt archive.
+replay, result presentation or the standalone receipt archive. Weekend facts enter
+through the immutable manifest/receipt boundary. Points eligibility, scoring and
+financial values must be explicit versioned policy input. Stage time, standings,
+returned resources, financial postings and the receipt on detached values, then
+publish one complete checkpoint or none. Never infer component diagnoses or
+consumption absent from the factual result, and never repair a partial campaign
+projection by silently fabricating its missing event.
 
 ## UI changes
 
