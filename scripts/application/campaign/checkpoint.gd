@@ -12,7 +12,9 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 		return {}
 	var ledger = CampaignWeekendSettlement.empty_ledger() if settlements.is_empty() else settlements.duplicate(true)
 	var sporting = CampaignCompetition.empty(state.campaign_id) if competition.is_empty() else competition.duplicate(true)
-	var accounts = CampaignEconomy.create(state.campaign_id, state.organization_id, 0) if economy.is_empty() else economy.duplicate(true)
+	var accounts = CampaignEconomy.create(
+		state.campaign_id, state.organization_id, 0, state.clock.elapsed_slots
+	) if economy.is_empty() else economy.duplicate(true)
 	var resources = CampaignInventory.empty(state.campaign_id) if inventory.is_empty() else inventory.duplicate(true)
 	var data = {
 		"kind": KIND,
@@ -42,7 +44,7 @@ static func validate(data: Variant) -> String:
 		return shared_error
 	var projection_errors = [
 		CampaignCompetition.validate(data.get("competition")),
-		CampaignEconomy.validate(data.get("economy")),
+		CampaignEconomyTimeline.validate(data.get("economy"), int(data.state.clock.elapsed_slots)),
 		CampaignInventory.validate(data.get("inventory"))
 	]
 	for error in projection_errors:
