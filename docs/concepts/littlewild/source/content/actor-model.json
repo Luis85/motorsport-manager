@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "workingKinds": [
+    "build",
+    "gather",
+    "craft",
+    "gearcraft",
+    "hunt",
+    "practice",
+    "produce",
+    "stockbuilding",
+    "emptybuilding",
+    "collectbuilding"
+  ],
+  "learning": {
+    "playfulRate": 0.45,
+    "regularRate": 0.7,
+    "recoveryRate": 0.16,
+    "recoveryStartsAt": 70,
+    "recoveryEndsAt": 30
+  },
+  "social": {
+    "socialBaseRate": 0.035,
+    "socialPreferenceRate": 0.01,
+    "angerRecoveryRate": 0.09
+  },
+  "needs": {
+    "foodWorking": 0.1,
+    "foodIdle": 0.07,
+    "waterWorking": 0.13,
+    "waterIdle": 0.09,
+    "energyWorking": 0.12,
+    "energyIdle": 0.05,
+    "walkingLoadMultiplier": 0.2,
+    "comfortShelter": 0.02,
+    "comfortOutside": 0.045,
+    "joyRate": 0.035
+  }
+}
