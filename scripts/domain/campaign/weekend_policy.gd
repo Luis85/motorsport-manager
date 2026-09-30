@@ -4,7 +4,7 @@ extends RefCounted
 ## The policy is explicit input: the race result never invents points or money.
 const KIND = "motorsport-manager-campaign-weekend-policy"
 const VERSION = 1
-const MAX_ENTRANTS = CampaignWeekendManifest.MAX_ENTRANTS
+const MAX_ENTRANTS = CampaignWeekendReceipt.MAX_ENTRANTS
 const MAX_POINTS = 1000000
 const MAX_MINOR = 1000000000000
 
@@ -67,7 +67,7 @@ static func receipt_error(policy: Dictionary, receipt: Dictionary) -> String:
 	var policy_error = validate(policy)
 	if not policy_error.is_empty():
 		return policy_error
-	var receipt_error = CampaignWeekendSettlement.validate_receipt(receipt)
+	var receipt_error = CampaignWeekendReceipt.validate(receipt)
 	if not receipt_error.is_empty():
 		return receipt_error
 	for key in ["campaign_id", "season_id", "campaign_event_id"]:
