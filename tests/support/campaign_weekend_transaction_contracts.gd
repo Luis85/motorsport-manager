@@ -53,6 +53,12 @@ static func run(check: Callable) -> void:
 	check.call(not receipt_conflict.ok and receipt_conflict.status == "conflict" \
 		and RaceStateValue.fingerprint(receipt_conflict.checkpoint) == RaceStateValue.fingerprint(candidate),
 		"A different factual result requires correction instead of duplicate time, points, stock or money")
+	var mixed_evidence = candidate.duplicate(true)
+	mixed_evidence.economy.events[manifest.campaign_event_id].result_digest = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+	mixed_evidence.economy.erase("digest"); mixed_evidence.economy["digest"] = RaceStateValue.fingerprint(mixed_evidence.economy)
+	mixed_evidence.erase("digest"); mixed_evidence["digest"] = RaceStateValue.fingerprint(mixed_evidence)
+	check.call(not CampaignCheckpoint.validate(mixed_evidence).is_empty(),
+		"Recomputed outer digests cannot conceal different factual evidence across sporting, inventory and financial projections")
 	var invalid_receipt = receipt.duplicate(true)
 	invalid_receipt.returned_resources[0].tyres = []
 	for index in range(CampaignInventory.MAX_TYRE_SETS + 1):
