@@ -25,7 +25,7 @@ static func stage(current: Dictionary, receipt: Dictionary, return_slot: int) ->
 	var error = validate(data)
 	if not error.is_empty():
 		return {"ok": false, "status": "rejected", "error": error}
-	error = CampaignWeekendSettlement.validate_receipt(receipt)
+	error = CampaignWeekendReceipt.validate(receipt)
 	if not error.is_empty():
 		return {"ok": false, "status": "rejected", "error": error}
 	if data.campaign_id != receipt.campaign_id or not RaceCheckpoint.integral(return_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
@@ -75,7 +75,7 @@ static func validate(data: Variant) -> String:
 			return "Campaign inventory event has an unsupported shape."
 		if not RaceCheckpoint.integral(event.get("return_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):
 			return "Campaign inventory event has an invalid return slot."
-		if not event.get("returns") is Array or event.returns.size() < 2 or event.returns.size() > CampaignWeekendManifest.MAX_ENTRANTS:
+		if not event.get("returns") is Array or event.returns.size() < 2 or event.returns.size() > CampaignWeekendReceipt.MAX_ENTRANTS:
 			return "Campaign inventory event has an invalid return collection."
 		var cars = {}
 		for returned in event.returns:
