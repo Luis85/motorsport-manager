@@ -58,9 +58,13 @@ static func validate(data: Variant) -> String:
 		return "Campaign consequence projections must contain the same complete event set."
 	var projection_error = ""
 	for event_id in data.competition.events:
-		projection_error = _projection_event_error(data, event_id, data.competition.events[event_id].result_digest)
+		var result_digest: String = data.competition.events[event_id].result_digest
+		projection_error = _projection_event_error(data, event_id, result_digest)
 		if not projection_error.is_empty():
 			return projection_error
+		if data.economy.events[event_id].result_digest != result_digest \
+				or data.inventory.events[event_id].result_digest != result_digest:
+			return "Campaign consequence projections use different factual results."
 		if data.economy.events[event_id].policy_digest != data.competition.events[event_id].policy_digest:
 			return "Campaign sporting and financial consequences use different policies."
 	return _digest_error(data)
