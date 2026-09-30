@@ -6,382 +6,382 @@
     {
       "name": "Fresh story starts on exactly one owned island and one slot",
       "passed": true,
-      "ms": 14.155862999999997
+      "ms": 10.778645999999995
     },
     {
       "name": "Land buying rejects a fresh player without changing balances or state",
       "passed": true,
-      "ms": 6.499329999999986
+      "ms": 3.641094999999993
     },
     {
       "name": "Island purchase supports edge 1,0 and physical bridge",
       "passed": true,
-      "ms": 378.45225700000003
+      "ms": 130.74363499999998
     },
     {
       "name": "Island purchase supports edge -1,0 and physical bridge",
       "passed": true,
-      "ms": 362.06661800000006
+      "ms": 90.99917500000004
     },
     {
       "name": "Island purchase supports edge 0,1 and physical bridge",
       "passed": true,
-      "ms": 175.69901900000002
+      "ms": 57.303853000000004
     },
     {
       "name": "Island purchase supports edge 0,-1 and physical bridge",
       "passed": true,
-      "ms": 197.12307099999998
+      "ms": 78.663186
     },
     {
       "name": "Nonadjacent and duplicate islands are rejected atomically",
       "passed": true,
-      "ms": 120.02183799999989
+      "ms": 22.66053099999999
     },
     {
       "name": "Each purchase increases both costs without changing creature positions",
       "passed": true,
-      "ms": 67.90580100000011
+      "ms": 18.64361699999995
     },
     {
       "name": "Completing an island square creates each shared edge exactly once",
       "passed": true,
-      "ms": 157.594421
+      "ms": 43.56918600000006
     },
     {
       "name": "Insufficient coins or prestige cannot create a bridge or resources",
       "passed": true,
-      "ms": 50.14199299999996
+      "ms": 12.328814999999963
     },
     {
       "name": "An actual moving creature crosses only owned bridge cells",
       "passed": true,
-      "ms": 125.33080100000006
+      "ms": 36.20805000000007
     },
     {
       "name": "New resource nodes have unique stable IDs and reserve bridge corridors",
       "passed": true,
-      "ms": 58.6696750000001
+      "ms": 21.013390000000072
     },
     {
       "name": "Camera-independent land generation does not consume gameplay RNG",
       "passed": true,
-      "ms": 45.65779900000007
+      "ms": 15.124670000000037
     },
     {
       "name": "Buildings cannot be placed on bridges or unowned islands",
       "passed": true,
-      "ms": 84.05490000000009
+      "ms": 11.656737000000021
     },
     {
       "name": "New-island placement is valid away from shore and nodes",
       "passed": true,
-      "ms": 308.3387899999998
+      "ms": 76.02024599999993
     },
     {
       "name": "Existing demo companions each have a capacity-safe assigned home",
       "passed": true,
-      "ms": 33.95797900000025
+      "ms": 9.294894999999997
     },
     {
       "name": "Home capacity increases with completed home level",
       "passed": true,
-      "ms": 63.46912100000009
+      "ms": 8.22489500000006
     },
     {
       "name": "Slot progression prices and level requirements escalate",
       "passed": true,
-      "ms": 40.82315100000005
+      "ms": 9.481781999999953
     },
     {
       "name": "Slot unlock validates guide level and prestige before charging",
       "passed": true,
-      "ms": 41.33536700000013
+      "ms": 9.894630000000006
     },
     {
       "name": "Recruitment requires a spare bed as well as an unlocked slot",
       "passed": true,
-      "ms": 24.511061000000154
+      "ms": 10.48282000000006
     },
     {
       "name": "Recruitment spends coins, keeps independent state and assigns a bed",
       "passed": true,
-      "ms": 51.17143199999964
+      "ms": 17.882614000000103
     },
     {
       "name": "Home assignment cannot overbook or move an away creature",
       "passed": true,
-      "ms": 39.15791199999967
+      "ms": 12.222178000000099
     },
     {
       "name": "Rest task travels to the assigned home doorway",
       "passed": true,
-      "ms": 41.808400999999776
+      "ms": 15.514671000000021
     },
     {
       "name": "Initial operational blueprints and recipes are narrowly unlocked",
       "passed": true,
-      "ms": 3.006565000000137
+      "ms": 1.9534929999999804
     },
     {
       "name": "Research charges points once, not coins or inventory, and then reveals content",
       "passed": true,
-      "ms": 3.142731000000367
+      "ms": 2.294607000000042
     },
     {
       "name": "Research prerequisites reject unsupported ranks without mutation",
       "passed": true,
-      "ms": 6.433806999999888
+      "ms": 1.967017999999939
     },
     {
       "name": "Prestige shop deposits to warehouse, not a selected satchel",
       "passed": true,
-      "ms": 34.78195199999982
+      "ms": 11.345010000000002
     },
     {
       "name": "Successful quest settlement grants prestige exactly once",
       "passed": true,
-      "ms": 48.10799599999973
+      "ms": 11.651728000000048
     },
     {
       "name": "Recalled quest yields no prestige and planner recall works without selected creature",
       "passed": true,
-      "ms": 39.428511999999955
+      "ms": 11.238157999999999
     },
     {
       "name": "An away creature has no interactions and rejects normal tasks",
       "passed": true,
-      "ms": 35.747127999999975
+      "ms": 10.985799000000043
     },
     {
       "name": "Listing without a market stall fails without spending or reserving goods",
       "passed": true,
-      "ms": 31.040180999999848
+      "ms": 9.441778
     },
     {
       "name": "Listing makes a plan but does not pay or teleport any stock",
       "passed": true,
-      "ms": 43.459126999999626
+      "ms": 10.360595999999987
     },
     {
       "name": "Pending warehouse sale cannot promise the same stock twice",
       "passed": true,
-      "ms": 33.02741300000025
+      "ms": 12.029209000000037
     },
     {
       "name": "Market pickup, delivery and sale each update the correct inventory",
       "passed": true,
-      "ms": 46.466933000000154
+      "ms": 15.129535000000033
     },
     {
       "name": "Market task completion is idempotent and cannot cancel another task",
       "passed": true,
-      "ms": 38.632056999999804
+      "ms": 14.783159999999953
     },
     {
       "name": "Pause preserves carrying commitments and prevents departure work",
       "passed": true,
-      "ms": 29.081919000000198
+      "ms": 11.952988000000005
     },
     {
       "name": "Sale reassignment is blocked while another creature carries goods",
       "passed": true,
-      "ms": 40.69109900000012
+      "ms": 10.242306999999983
     },
     {
       "name": "Cancel in transit releases claims but preserves personally carried goods",
       "passed": true,
-      "ms": 100.62661499999967
+      "ms": 15.512666999999965
     },
     {
       "name": "Cancel at stall creates actual reclaim work, never a remote refund",
       "passed": true,
-      "ms": 54.10021199999983
+      "ms": 10.033409000000006
     },
     {
       "name": "Exact market save/restore at ownership stage 0",
       "passed": true,
-      "ms": 286.17649299999994
+      "ms": 75.92242599999997
     },
     {
       "name": "Exact market save/restore at ownership stage 1",
       "passed": true,
-      "ms": 214.28912100000025
+      "ms": 73.92656999999997
     },
     {
       "name": "Exact market save/restore at ownership stage 2",
       "passed": true,
-      "ms": 336.0898890000003
+      "ms": 78.38599699999986
     },
     {
       "name": "Exact market save/restore at ownership stage 3",
       "passed": true,
-      "ms": 458.4781489999996
+      "ms": 88.33059999999978
     },
     {
       "name": "Real autonomous market fulfillment survives needs and pays only at stall",
       "passed": true,
-      "ms": 166.73554299999978
+      "ms": 44.87250400000016
     },
     {
       "name": "Reading planner rows never changes simulation or inventory",
       "passed": true,
-      "ms": 22.24186700000064
+      "ms": 10.385252000000037
     },
     {
       "name": "Planner adds an assigned gathering order and derives its queue row",
       "passed": true,
-      "ms": 13.97907000000032
+      "ms": 11.200077999999849
     },
     {
       "name": "Planner pause, stop and resume control the underlying order",
       "passed": true,
-      "ms": 20.196122999999716
+      "ms": 14.448479000000134
     },
     {
       "name": "Priorities are real order priorities and do not force footsteps",
       "passed": true,
-      "ms": 12.723060999999689
+      "ms": 13.111472000000049
     },
     {
       "name": "Reassigning an order preserves its ID, paused state and policy",
       "passed": true,
-      "ms": 25.888428000000204
+      "ms": 23.536579000000074
     },
     {
       "name": "Cancel removes only the intended order",
       "passed": true,
-      "ms": 8.8870280000001
+      "ms": 9.74110399999995
     },
     {
       "name": "Unstarted lesson reassignment keeps tuition, progress and paused policy",
       "passed": true,
-      "ms": 20.963190000000395
+      "ms": 8.290527000000111
     },
     {
       "name": "Workplace assignment and pause affect actual worker claims",
       "passed": true,
-      "ms": 170.07496400000036
+      "ms": 9.965912000000117
     },
     {
       "name": "Essential care rows reject stop and cancel",
       "passed": true,
-      "ms": 16.93210900000031
+      "ms": 9.514192999999977
     },
     {
       "name": "Stale task controls cannot mutate a completed queue",
       "passed": true,
-      "ms": 40.755419000000074
+      "ms": 8.680251999999882
     },
     {
       "name": "Planner rejects invalid assignee, quantity and task definition",
       "passed": true,
-      "ms": 29.297292999999627
+      "ms": 11.142540000000054
     },
     {
       "name": "Registered base interactions are generated without event-only actions",
       "passed": true,
-      "ms": 10.709421000000475
+      "ms": 7.947258999999804
     },
     {
       "name": "A home event adds one contextual, single-use interaction",
       "passed": true,
-      "ms": 12.038184000000001
+      "ms": 12.179499000000078
     },
     {
       "name": "Interaction recipient is explicit and cannot target a different selection",
       "passed": true,
-      "ms": 14.281474999999773
+      "ms": 8.673007999999982
     },
     {
       "name": "Temporary event interactions expire in simulation time, not view time",
       "passed": true,
-      "ms": 16.09987799999999
+      "ms": 9.796076999999968
     },
     {
       "name": "Interaction costs use carried stock, not warehouse goods",
       "passed": true,
-      "ms": 33.12236800000028
+      "ms": 13.096273999999994
     },
     {
       "name": "Custom bounded event interaction is valid and actually appears",
       "passed": true,
-      "ms": 38.58382399999937
+      "ms": 20.785552000000052
     },
     {
       "name": "Growth JSON defaults round-trip and preserve tool-owned metadata",
       "passed": true,
-      "ms": 5.254971000000296
+      "ms": 5.688497999999981
     },
     {
       "name": "Unknown interaction handler and unknown item cost are rejected",
       "passed": true,
-      "ms": 6.79119399999945
+      "ms": 3.9822059999999055
     },
     {
       "name": "Save format eight binds all four exact libraries",
       "passed": true,
-      "ms": 180.0985470000005
+      "ms": 86.42548699999998
     },
     {
       "name": "Reject duplicate island without replacing active content",
       "passed": true,
-      "ms": 119.5810419999998
+      "ms": 39.470510000000104
     },
     {
       "name": "Reject disconnected land without replacing active content",
       "passed": true,
-      "ms": 105.50656400000025
+      "ms": 41.469997999999805
     },
     {
       "name": "Reject negative prestige without replacing active content",
       "passed": true,
-      "ms": 91.15201100000013
+      "ms": 53.18384100000003
     },
     {
       "name": "Reject slots below population without replacing active content",
       "passed": true,
-      "ms": 74.06107000000065
+      "ms": 40.33026899999982
     },
     {
       "name": "Reject unknown home without replacing active content",
       "passed": true,
-      "ms": 64.00096199999916
+      "ms": 38.01467200000002
     },
     {
       "name": "Reject unknown feature without replacing active content",
       "passed": true,
-      "ms": 72.41263100000015
+      "ms": 38.331560999999965
     },
     {
       "name": "Reject forged planner operation without replacing active content",
       "passed": true,
-      "ms": 73.1045269999995
+      "ms": 46.162634000000025
     },
     {
       "name": "Reject invalid temporary event without replacing active content",
       "passed": true,
-      "ms": 67.39851700000054
+      "ms": 50.81472500000018
     },
     {
       "name": "Reject negative event clock without replacing active content",
       "passed": true,
-      "ms": 74.2048619999996
+      "ms": 38.000635999999986
     },
     {
       "name": "Reject blocked doorway without replacing active content",
       "passed": true,
-      "ms": 79.6705320000001
+      "ms": 39.86428100000012
     },
     {
       "name": "Live growth-library application is blocked around committed work",
       "passed": true,
-      "ms": 18.20672999999988
+      "ms": 13.218180999999959
     },
     {
       "name": "Rejected random commands preserve exact state across 100 variants",
       "passed": true,
-      "ms": 176.58350900000005
+      "ms": 145.9698249999999
     }
   ]
 }

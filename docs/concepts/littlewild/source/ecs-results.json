@@ -1,0 +1,42 @@
+{
+  "passed": 9,
+  "total": 9,
+  "results": [
+    {
+      "name": "Queries are deterministic and independent of entity insertion order",
+      "passed": true
+    },
+    {
+      "name": "Systems cannot make structural changes during a query",
+      "passed": true
+    },
+    {
+      "name": "Actor ECS mutates native records without introducing ECS save state",
+      "passed": true
+    },
+    {
+      "name": "Learning thresholds and playful tuning are data-driven",
+      "passed": true
+    },
+    {
+      "name": "Rule manifests reject behavior-shaped or unknown data",
+      "passed": true
+    },
+    {
+      "name": "Failed systems discard structural requests rather than partially applying them",
+      "passed": true
+    },
+    {
+      "name": "Invalid deferred batches cannot leave partially created entities",
+      "passed": true
+    },
+    {
+      "name": "Component lifecycle tracks a changing creature roster",
+      "passed": true
+    },
+    {
+      "name": "Stable system order is phase then order then id",
+      "passed": true
+    }
+  ]
+}

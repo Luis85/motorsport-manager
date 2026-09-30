@@ -217,7 +217,7 @@
       "seed": 13,
       "creatures": 6,
       "seconds": 1810,
-      "wallMs": 3531,
+      "wallMs": 5118,
       "needs": [
         {
           "name": "Pip",
@@ -274,7 +274,7 @@
       "seed": 29,
       "creatures": 6,
       "seconds": 1810,
-      "wallMs": 3154,
+      "wallMs": 4451,
       "needs": [
         {
           "name": "Pip",
@@ -331,7 +331,7 @@
       "seed": 47,
       "creatures": 6,
       "seconds": 1810,
-      "wallMs": 3099,
+      "wallMs": 4403,
       "needs": [
         {
           "name": "Pip",

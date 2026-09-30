@@ -1,8 +1,8 @@
 {
-  "passed": 53,
-  "total": 53,
-  "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
-  "bytes": 3695818,
+  "passed": 54,
+  "total": 54,
+  "htmlSha256": "a9d505658233ca0b4caa5bd0c75f9cbb69680771642eb07caa980dd0f5379568",
+  "bytes": 3710126,
   "results": [
     {
       "name": "Title and entry point are v15, with no unresolved build markers",
@@ -98,6 +98,10 @@
     },
     {
       "name": "All four shipped content libraries validate through runtime CLIs",
+      "passed": true
+    },
+    {
+      "name": "Only colony.js is exempted from historical byte parity",
       "passed": true
     },
     {

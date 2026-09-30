@@ -1,8 +1,32 @@
 {
   "status": "passed",
-  "passed": 871,
-  "total": 871,
+  "passed": 885,
+  "total": 885,
   "suites": [
+    {
+      "name": "ecs-core",
+      "command": [
+        "node",
+        "source/test-ecs.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.05,
+      "result": "source/ecs-results.json",
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "ecs-integration",
+      "command": [
+        "node",
+        "source/test-ecs-integration.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.53,
+      "result": "source/ecs-integration-results.json",
+      "passed": 4,
+      "total": 4
+    },
     {
       "name": "scenario-domain",
       "command": [
@@ -10,7 +34,7 @@
         "source/test-v15.cjs"
       ],
       "exitCode": 0,
-      "seconds": 9.08,
+      "seconds": 6.82,
       "result": "source/v15-domain-results.json",
       "passed": 77,
       "total": 77
@@ -22,7 +46,7 @@
         "source/test-v15-presentation.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.78,
+      "seconds": 0.61,
       "result": "source/v15-presentation-results.json",
       "passed": 47,
       "total": 47
@@ -34,7 +58,7 @@
         "source/test-v15-pause.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.39,
+      "seconds": 0.8,
       "result": "source/v15-pause-results.json",
       "passed": 54,
       "total": 54
@@ -46,7 +70,7 @@
         "source/test-v11.cjs"
       ],
       "exitCode": 0,
-      "seconds": 5.67,
+      "seconds": 3.37,
       "result": "source/v11-domain-results.json",
       "passed": 73,
       "total": 73
@@ -58,7 +82,7 @@
         "source/test-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 6.4,
+      "seconds": 2.21,
       "result": "source/v10-domain-results.json",
       "passed": 76,
       "total": 76
@@ -70,7 +94,7 @@
         "source/test-growth-stress.cjs"
       ],
       "exitCode": 0,
-      "seconds": 10.85,
+      "seconds": 12.73,
       "result": "source/v10-stress-results.json",
       "passed": 3,
       "total": 3
@@ -82,7 +106,7 @@
         "source/test-fresh-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.44,
+      "seconds": 4.73,
       "result": "source/v10-fresh-results.json",
       "passed": 8,
       "total": 8
@@ -94,7 +118,7 @@
         "source/test-v10-regression-v5.cjs"
       ],
       "exitCode": 0,
-      "seconds": 6.75,
+      "seconds": 4.37,
       "result": "source/v10-regression-v5-test-results.json",
       "passed": 133,
       "total": 133
@@ -106,7 +130,7 @@
         "source/test-v10-regression-v6.cjs"
       ],
       "exitCode": 0,
-      "seconds": 11.44,
+      "seconds": 14.9,
       "result": "source/v10-regression-v6-test-results.json",
       "passed": 52,
       "total": 52
@@ -118,7 +142,7 @@
         "source/test-v10-regression-v8.cjs"
       ],
       "exitCode": 0,
-      "seconds": 13.93,
+      "seconds": 15.31,
       "result": "source/v10-regression-v8-test-results.json",
       "passed": 88,
       "total": 88
@@ -130,7 +154,7 @@
         "source/test-v10-regression-quality-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.51,
+      "seconds": 1.08,
       "result": "source/v10-regression-v9-quality-results.json",
       "passed": 31,
       "total": 31
@@ -142,7 +166,7 @@
         "source/test-v10-regression-foundation-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 12.57,
+      "seconds": 8.03,
       "result": "source/v10-regression-v9-foundation-results.json",
       "passed": 31,
       "total": 31
@@ -150,11 +174,11 @@
     {
       "name": "legacy-schemas",
       "command": [
-        "/opt/pyvenv/bin/python",
+        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
         "schema-checks-v10.py"
       ],
       "exitCode": 0,
-      "seconds": 3.13,
+      "seconds": 0.55,
       "result": "source/v10-schema-results.json",
       "passed": 19,
       "total": 19
@@ -162,11 +186,11 @@
     {
       "name": "scenario-schema-cli",
       "command": [
-        "/opt/pyvenv/bin/python",
+        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
         "schema-checks-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 5.52,
+      "seconds": 0.89,
       "result": "source/v15-schema-results.json",
       "passed": 21,
       "total": 21
@@ -178,19 +202,19 @@
         "source/test-v15-release.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.36,
+      "seconds": 3.35,
       "result": "source/v15-release-results.json",
-      "passed": 53,
-      "total": 53
+      "passed": 54,
+      "total": 54
     },
     {
       "name": "browser",
       "command": [
-        "/opt/pyvenv/bin/python",
+        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
         "browser-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 21.82,
+      "seconds": 45.38,
       "result": "verification/v15/browser-results.json",
       "passed": 89,
       "total": 89
@@ -198,17 +222,17 @@
     {
       "name": "browser-contracts",
       "command": [
-        "/opt/pyvenv/bin/python",
+        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
         "browser-contracts-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 10.13,
+      "seconds": 10.92,
       "result": "verification/v15/browser-contract-results.json",
       "passed": 16,
       "total": 16
     }
   ],
   "browserIncluded": true,
-  "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
-  "htmlBytes": 3695818
+  "htmlSha256": "a9d505658233ca0b4caa5bd0c75f9cbb69680771642eb07caa980dd0f5379568",
+  "htmlBytes": 3710126
 }
