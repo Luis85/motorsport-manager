@@ -21,6 +21,8 @@ INSERTS = (
     ('BEHAVIOR', 'behavior-tree.js', 'script'),
     ('ADVENTURE', 'adventure-content.js', 'script'),
     ('POLICIES', 'colony-policies.js', 'script'),
+    ('ECS', 'ecs.js', 'script'),
+    ('ACTOR_ECS', 'actor-ecs.js', 'script'),
     ('COLONY', 'colony.js', 'script'),
     ('WORLD_CONTENT', 'world-content.js', 'script'),
     ('WORLD_INTEGRITY', 'world-integrity.js', 'script'),
@@ -77,6 +79,7 @@ def build(pack_path: Path | None = None, output_path: Path | None = None) -> Pat
     data += '\nwindow.LWAdventureSchema = ' + json.dumps(json.loads((ROOT/'content/adventure.schema.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWDefaultWorld = ' + json.dumps(json.loads((ROOT/'content/world-library.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWWorldSchema = ' + json.dumps(json.loads((ROOT/'content/world.schema.json').read_text()), ensure_ascii=False) + ';'
+    data += '\nwindow.LWActorRules = ' + json.dumps(json.loads((ROOT/'content/actor-rules.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWDefaultGrowth = ' + json.dumps(json.loads((ROOT/'content/growth-library.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWGrowthSchema = ' + json.dumps(json.loads((ROOT/'content/growth.schema.json').read_text()), ensure_ascii=False) + ';'
     for variable, filename in [('LWDefaultProfile','default-profile.json'),('LWScenarioSchema','scenario.schema.json')]:

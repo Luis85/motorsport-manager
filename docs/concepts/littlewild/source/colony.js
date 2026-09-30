@@ -59,6 +59,8 @@
             this.s.version = 5;
             this.ensureWarehouse();
             this.behaviorTree = new root.LWBehaviorTree(this.handlers());
+            this.ecs = root.LWActorECS.create();
+            this.ecs.sync(this.creatures);
             if (!this.s.colony.board.offers.length && this.s.colony.board.nextAt === 0) {
                 this.addOffer('meadow', 'A neighbor’s invitation');
                 this.addOffer('woodland', 'Fresh trail signs');
@@ -950,6 +952,7 @@
                     }
                 }
                 this.updateQuestBoard();
+                this.ecs.sync(this.creatures);
                 for (const c of this.creatures) {
                     this._actor = c;
                     if (newDay) {
@@ -973,24 +976,14 @@
         }
         stepActor(dt) {
             const s = this.s, c = this.actor, n = s.needs, f = c.feelings, t = s.task;
-            if (c.learning.practiceDay !== s.day) {
-                c.learning.practiceDay = s.day;
-                c.learning.practicedToday = {};
-            }
-            const studying = t && ['train', 'practice'].includes(t.kind) && t.phase === 'work';
-            c.learning.fatigue = clamp(c.learning.fatigue + dt * (studying ? (t.style === 'playful' ? .45 : .7) : -.16), 0, 100);
-            if (c.learning.fatigue >= 70)
-                c.learning.recovering = true;
-            if (c.learning.fatigue <= 30)
-                c.learning.recovering = false;
-            f.social = clamp(f.social - dt * (.035 + .01 * profile(c.personality).preferences.social), 0, 100);
-            f.anger = clamp(f.anger - dt * .09, 0, 100);
-            const working = t && ['build', 'gather', 'craft', 'gearcraft', 'hunt', 'practice', 'produce', 'stockbuilding', 'emptybuilding', 'collectbuilding'].includes(t.kind);
-            n.food = clamp(n.food - dt * (working ? .1 : .07), 0, 100);
-            n.water = clamp(n.water - dt * (working ? .13 : .09), 0, 100);
-            n.energy = clamp(n.energy - dt * (working ? .12 : .05) * (t?.phase === 'walk' ? 1 + this.load().level * .2 : 1), 0, 100);
-            n.comfort = clamp(n.comfort - dt * (this.has('shelter') ? .02 : .045), 0, 100);
-            n.joy = clamp(n.joy - dt * .035, 0, 100);
+            // The ECS owns deterministic physiology, learning fatigue and baseline social
+            // recovery. Legacy task/incident handlers consume those component values.
+            const {studying} = this.ecs.step(c, dt, {
+                day: s.day,
+                socialPreference: profile(c.personality).preferences.social,
+                loadLevel: this.load().level,
+                hasShelter: this.has('shelter')
+            });
             if ((n.food < 12 || n.water < 12) && s.simTime - (c.lastNeedFeeling || 0) > 40) {
                 c.lastNeedFeeling = s.simTime;
                 this.changeFeeling('An essential need is waiting', -3, 5);

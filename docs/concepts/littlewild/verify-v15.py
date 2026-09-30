@@ -11,6 +11,8 @@ args=parser.parse_args()
 OUT=ROOT/'verification/v15';OUT.mkdir(parents=True,exist_ok=True)
 source=lambda name:'source/'+name
 suites=[
+ ('ecs-core',['node',source('test-ecs.cjs')],source('ecs-results.json'),120),
+ ('ecs-integration',['node',source('test-ecs-integration.cjs')],source('ecs-integration-results.json'),180),
  ('scenario-domain',['node',source('test-v15.cjs')],source('v15-domain-results.json'),120),
  ('presentation',['node',source('test-v15-presentation.cjs')],source('v15-presentation-results.json'),120),
  ('pause-policy',['node',source('test-v15-pause.cjs')],source('v15-pause-results.json'),120),
