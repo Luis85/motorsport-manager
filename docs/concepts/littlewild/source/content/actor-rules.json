@@ -1,0 +1,29 @@
+{
+  "format": "littlewild-actor-rules",
+  "schemaVersion": 1,
+  "learning": {
+    "playfulFatigue": 0.45,
+    "standardFatigue": 0.7,
+    "recoveryRate": 0.16,
+    "recoverAt": 30,
+    "limitAt": 70
+  },
+  "feelings": {
+    "socialRate": 0.035,
+    "socialPreferenceRate": 0.01,
+    "angerRate": 0.09
+  },
+  "needs": {
+    "workingKinds": ["build", "gather", "craft", "gearcraft", "hunt", "practice", "produce", "stockbuilding", "emptybuilding", "collectbuilding"],
+    "foodWork": 0.1,
+    "foodIdle": 0.07,
+    "waterWork": 0.13,
+    "waterIdle": 0.09,
+    "energyWork": 0.12,
+    "energyIdle": 0.05,
+    "walkLoadFactor": 0.2,
+    "comfortShelter": 0.02,
+    "comfortWithoutShelter": 0.045,
+    "joyRate": 0.035
+  }
+}

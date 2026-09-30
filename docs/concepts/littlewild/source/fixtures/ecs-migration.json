@@ -1,0 +1,7 @@
+{
+  "colony.js": {
+    "prior_sha256": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
+    "reason": "Numerical actor dynamics moved into ECS; legacy command/task and RNG behavior retained.",
+    "required_token": "this.ecs.step(c, dt, {"
+  }
+}
