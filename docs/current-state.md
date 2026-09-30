@@ -19,14 +19,16 @@ The Advanced interface makes the retained strategy/rival, weather/recovery, race
 
 Bundled diagnostic scenario collections are trusted file-backed verification resources, not external executable scenario packs. Public authored complete-weekend scenarios can stage existing implemented weekend behavior, but do not add a campaign or arbitrary goal code.
 
-## Implemented integration foundation
+## Implemented campaign integration foundation
 
+- **Deterministic campaign shell:** `CampaignIdentity`, `CampaignClock` and `CampaignState` provide stable identities, a pure Gregorian fifteen-minute campaign clock, bounded daily principal energy, non-overlapping intervention reservations and an accepted command journal. State restores by replaying that journal; rejected commands do not mutate the snapshot.
+- **Atomic campaign checkpoint:** `CampaignCheckpoint` binds the state to the exactly-once settlement ledger and an optional active weekend manifest. `CampaignStorage` validates and publishes the envelope through the existing temporary/backup/rollback policy. Failed replacement leaves the previous campaign authoritative.
 - **Campaign/weekend boundary:** `CampaignWeekendManifest` freezes the exact race event, model, track, roster, starting resources, rules and stable campaign identity mapping. `CampaignWeekendSettlement` maps a valid completed `WeekendResult` back to stable campaign people/teams/cars and stages an exactly-once receipt ledger. Reapplying the same result is a no-op; a different result requires an explicit correction workflow.
-- This boundary deliberately does **not** calculate championship points, cash, XP, repairs, component diagnoses or campaign-time progression. A future campaign must atomically persist those consequences with its own state and rules rather than placing them in `RaceSim`, replay or the standalone receipt archive.
+- These foundations deliberately do **not** calculate championship points, cash, XP, repairs, component diagnoses or campaign-time consequences for a weekend. Those require separate versioned competition/economy rules and one atomic transaction over the campaign checkpoint.
 
 ## Not implemented or not established
 
-- **No persistent company/team-management campaign yet:** finances, dated management clock, energy, staff/contracts, engineering portfolio, seasons/championship rules, founder workshop and dynasty progression remain proposed work. The new campaign/weekend records are an integration foundation, not playable management or a second race engine.
+- **No playable company/team-management campaign yet:** no campaign composition/navigation, finances, staff/contracts, engineering portfolio, event calendar, seasons/championship rules, founder workshop, rival organizations or dynasty progression. The implemented clock/energy/intervention records are a deterministic domain and storage foundation, not a management game or a second race engine.
 - **Not a comprehensive vehicle-physics or licensed-regulations simulator.** Race damage remains aggregate; additional vehicle presets are not full competition formats. Editor bridge/tunnel annotations do not certify 3D clearances.
 - **Human playtesting, comprehensive accessibility, broad device/hardware calibration, wet/endurance balance and same-host comparative performance remain separate validation gates.** Successful automated checks do not establish them. Making Advanced selectable is not a human-usefulness sign-off for every retained workspace.
 
@@ -47,17 +49,18 @@ The registration source of truth is `scripts/verification_suites.json`; historic
 ## Active maintenance priorities
 
 1. Keep this page, the README and content status synchronized when a feature becomes player-facing, optional, only diagnostic, or deliberately deferred.
-2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At the PR #24 baseline, `race_sim.gd` had 726 counted code lines, historical `weekend.gd` 623 and historical `pitwall_workspace.gd` 419, against the 400-line source budget. This maintenance pass reduces active `track_canvas.gd` from 476 to exactly 400 by extracting read-only overlay responsibilities. Prioritize the remaining files when product work actually touches them; a line count alone is not a defect.
+2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At the PR #24 baseline, `race_sim.gd` had 726 counted code lines, retained `weekend.gd` 623 and retained `pitwall_workspace.gd` 419, against the 400-line source budget. This maintenance pass reduces active `track_canvas.gd` from 476 to exactly 400 by extracting read-only overlay responsibilities. Prioritize the remaining files when product work actually touches them; a line count alone is not a defect.
 3. Distinguish implementation correctness, human experience, cross-platform support and controlled performance comparisons in all PR evidence.
-4. Build deterministic campaign state, clock and atomic storage on top of the validated manifest/settlement boundary before introducing broad management UI.
+4. Add one versioned competition/economy transaction over the campaign checkpoint before introducing broad management UI: weekend elapsed time, standings, inventory and ledger deltas must commit together or not at all.
 
 ## Where to read next
 
 - **Current architecture and responsibility rules:** `docs/architecture-refactor.md`, `AGENTS.md`.
 - **Shipping Minimal weekend:** `docs/race-weekend-minimal.md`, `README.md`.
+- **Campaign state, clock and storage:** `docs/campaign/state-clock-storage.md`.
 - **Campaign/weekend integration contract:** `docs/campaign/weekend-boundary.md`.
 - **Authoritative content contracts:** `docs/content/README.md`, `docs/content/consumer-inventory.md`, `docs/content/version-compatibility.md`.
 - **Maintenance work:** `docs/maintenance/tech-doc-debt.md`.
 - **Historical implementation details:** `docs/README.md` links the complete prior handoffs. `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` retain period-specific descriptions and are not current capability inventories.
 
-**Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race state or ticking; changing an actual sporting rule, save schema or provider state requires explicit versioning, characterization and separate scope.
+**Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema or provider state requires explicit versioning, characterization and separate scope.

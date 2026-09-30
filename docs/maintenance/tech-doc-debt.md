@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This is a focused maintenance branch, not a new sporting model, campaign implementation, or save/schema migration. The first P1 milestone exposes an existing forecast as a bounded read-only Minimal surface. A follow-up product milestone makes the retained Advanced interface selectable without changing gameplay authority, race state or the independently tested Minimal default.
+This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, and the deterministic campaign state/storage shell required before management rules. None changes race physics, sporting authority or the independently tested standalone weekend.
 
 ## Scoped work and acceptance
 
@@ -13,7 +13,7 @@ This is a focused maintenance branch, not a new sporting model, campaign impleme
 
 ## Exclusions
 
-No new race model, company-management campaign, content schema or mechanic provider; no altered checkpoint format or scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
+No new race model, complete company-management campaign, content schema or mechanic provider; no altered race checkpoint format or scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. The campaign foundation adds no standings, finance, staff, projects, rival organizations or management UI. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
 
 ## Publication gate
 
@@ -23,9 +23,9 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 ### Documentation
 
-- Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping interfaces from retained diagnostic tooling and proposals.
+- Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping interfaces from retained diagnostic tooling, implemented foundations and proposals.
 - Promoted this authority in root and docs READMEs, corrected post-merge content inventory/acceptance claims, and labeled original `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` as historical rather than current.
-- Documented the canvas overlay extraction in the current architecture and editor guides. Historic implementation details are preserved, not rewritten as present-tense claims.
+- Documented the canvas overlay extraction, campaign/weekend boundary, selectable interface and campaign state/storage foundation without rewriting historical implementation records as present-tense release claims.
 
 ### Technical debt
 
@@ -39,7 +39,7 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Added `CampaignWeekendManifest`, a strict immutable record binding campaign/season/event identity, departure/return slots, exact race event/model, frozen track/roster/resource/rules hashes and complete race-local → stable campaign person/team/car mappings.
 - Added `CampaignWeekendSettlement`, which validates a factual `WeekendResult`, rejects sandbox or mismatching results, maps classification and returned resources to stable identities and stages one versioned receipt ledger.
 - Reapplying the same manifest/result returns `already_settled` without mutating the ledger. A different valid result for the same campaign event returns an explicit conflict and requires a future correction workflow.
-- The boundary intentionally awards no championship points, cash, XP, repair state, component diagnosis or calendar progression. Those remain responsibilities of a future atomic campaign transaction.
+- The boundary intentionally awards no championship points, cash, XP, repair state, component diagnosis or calendar progression. Those remain responsibilities of an atomic campaign transaction.
 - Extended registered `weekend_launch_tests` coverage for manifest detachment/integrity, stable identity projection, exact-once settlement, correction conflict and absence of invented rewards. Full physical finishing remains covered by existing full-weekend suites.
 - Added `docs/campaign/weekend-boundary.md` as the implementation and persistence contract.
 
@@ -61,9 +61,20 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Extended registered native `architecture_ui_tests` to exercise staged selection, real settings storage, legacy/public migration, both advanced starts and complete weekend/RNG fingerprint preservation while mounting each interface.
 - Updated the README, current-state inventory and Minimal contract to describe Advanced as optional player-facing presentation rather than a hidden diagnostic-only route.
 
+### P0 deterministic campaign state, clock and checkpoint
+
+- Added `CampaignIdentity` for bounded stable campaign keys and `CampaignClock` for a pure Gregorian calendar expressed as dated fifteen-minute slots. Batch and individual slot advances are equivalent; neither OS time nor race ticks are inputs.
+- Added `CampaignState` with campaign/organization/principal identity, six-point daily intervention energy, non-overlapping principal reservations, accepted-command revision/history and exact replay-based restoration.
+- Added the weak `CampaignCommands` application boundary. Rejected, malformed, duplicate, overlapping, unaffordable and overflow commands leave the complete snapshot unchanged.
+- Added `CampaignCheckpoint`, binding replay-validated state to the exactly-once settlement ledger and optional active manifest. Cross-campaign receipts/manifests and active-already-settled events fail closed.
+- Added `CampaignStorage`, reusing the existing temporary/backup/rollback JSON policy. Precise numeric decoding preserves integral slots/revisions; interrupted replacement retains the previous campaign; retry publishes the next revision.
+- Kept the slice domain/storage-only: no campaign UI, automatic clock, standings, money, staff, engineering, rivals, rewards or weekend consequence application.
+- Extended registered `weekend_launch_tests` through a focused contract helper covering identity/date validation, leap days, command non-mutation, energy/occupancy, replay determinism, history tamper detection, weak lifetime, exact JSON round-trip and atomic recovery.
+- Added `docs/campaign/state-clock-storage.md` and updated the boundary/current-state documents and repository rules.
+
 ### P0/P1 closure and follow-up scope
 
-All P0 and P1 debt items identified for the original maintenance sequence remain implemented: documentation authority, active TrackCanvas debt reduction, immutable campaign/weekend manifest plus exactly-once settlement, and on-demand read-only Minimal strategy comparison. The selectable-interface milestone is an explicit follow-up product request built on the retained composition seam; it does not reopen those authority boundaries.
+All P0 and P1 debt items identified for the original maintenance sequence remain implemented. The selectable-interface and deterministic-campaign-shell milestones are explicit follow-up product requests built on existing composition/storage seams; neither reopens sporting authority. The next campaign milestone is the smallest versioned competition/economy settlement transaction over the new checkpoint, not broad management UI.
 
 ### Verification boundary
 
@@ -73,4 +84,5 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Playable campaign state/clock/economy, human player testing of both interface modes, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. Selectability does not turn every retained specialist workspace into a validated final UX.
+- Championship/calendar rules, economy/ledger consequences, staff/contracts, engineering, rivals and campaign UI remain unimplemented. The state/clock/storage shell does not make a playable campaign.
+- Human player testing of both interface modes, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. Selectability does not turn every retained specialist workspace into a validated final UX.

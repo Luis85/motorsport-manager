@@ -116,6 +116,7 @@ func run() -> void:
 	invalid_mapping.mappings[1]["race_id"] = invalid_mapping.mappings[0].race_id
 	invalid_mapping.erase("digest"); invalid_mapping["digest"] = RaceRecord.fingerprint(invalid_mapping)
 	check(not CampaignWeekendManifest.validate(invalid_mapping).is_empty(), "Campaign manifest rejects duplicate race-to-campaign identity mappings")
+	CampaignStateContracts.run(check)
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
 	Storage.write_json("res://reports/weekend-launch-tests.json", report)
 	print("WEEKEND_LAUNCH_TESTS ", JSON.stringify(report))

@@ -1,15 +1,15 @@
 # Campaign-to-weekend boundary
 
-Status: implemented contract foundation on PR #27. This is not a persistent campaign, economy, championship or management UI.
+Status: implemented contract foundation on PR #27. Deterministic campaign state, clock and atomic checkpoint storage now surround this boundary, but championship, economy and management UI remain unimplemented.
 
 ## Purpose
 
-The native race weekend already owns physical racing, finite driver tyre inventories, timing, classification, aggregate condition, replay identity and factual result evidence. A future campaign must not duplicate those rules or infer outcomes the race did not measure. The campaign boundary therefore has two immutable records:
+The native race weekend already owns physical racing, finite driver tyre inventories, timing, classification, aggregate condition, replay identity and factual result evidence. A campaign must not duplicate those rules or infer outcomes the race did not measure. The campaign boundary therefore has two immutable records:
 
 1. `CampaignWeekendManifest` freezes the campaign event identity and maps stable campaign people/teams/cars to the race-local integer entrants used by the current simulation.
 2. `CampaignWeekendSettlement` validates a completed `WeekendResult`, maps its factual classification and returned resources back to stable campaign identities, and stages one idempotent receipt in a versioned ledger.
 
-Neither record grants points, cash, XP, repairs, component diagnoses or elapsed campaign time. Those consequences require a separate versioned competition/economy rule and atomic campaign storage transaction.
+Neither record grants points, cash, XP, repairs, component diagnoses or elapsed campaign time. Those consequences require separate versioned competition/economy rules and an atomic campaign transaction.
 
 ## Manifest contract
 
@@ -38,16 +38,19 @@ The receipt retains measured classification, aggregate health/damage, finite tyr
 
 A changed classification after settlement requires an explicit correction workflow that posts a reviewed delta. It must never append a second ordinary settlement or pay rewards twice.
 
-## Persistence boundary
+## Implemented persistence boundary
 
-The returned ledger is a staged value. A future `CampaignStorage` transaction must atomically persist:
+`CampaignCheckpoint` now stages the replay-validated `CampaignState`, settlement ledger and optional active manifest in one integrity-checked envelope. `CampaignStorage` validates that envelope and publishes it through the repository's existing recoverable atomic JSON policy. A failed replacement preserves the previous checkpoint; loading creates a detached state rather than mutating a live campaign.
 
-- authoritative campaign state;
-- the new settlement ledger/receipt;
-- inventory return and dated calendar progression;
-- any competition or financial deltas calculated by their own rules.
+This closes the storage *foundation*, not result application. A future settlement transaction must calculate and stage, before one publication:
 
-If persistence fails, the previous campaign and ledger remain authoritative. The standalone `ResultReceipts` archive remains separate evidence and cannot substitute for campaign settlement.
+- inventory return and dated weekend progression;
+- standings under an explicit competition rule;
+- contractual and financial ledger postings;
+- any supported repair/service consequences;
+- the settlement receipt and updated authoritative campaign state.
+
+If any validation or persistence step fails, the previous campaign and ledger remain authoritative. The standalone `ResultReceipts` archive remains separate evidence and cannot substitute for campaign settlement.
 
 ## Verification
 
@@ -60,10 +63,11 @@ The registered `weekend_launch_tests` suite covers:
 - absence of invented points, cash or XP;
 - same-result idempotence;
 - conflict rejection for a different valid result;
-- duplicate mapping rejection and ledger integrity.
+- duplicate mapping rejection and ledger integrity;
+- deterministic campaign clock/command replay and atomic checkpoint recovery.
 
 The suite uses a synthetic terminal classification after a real staged production launch. Full physical race completion remains covered by the existing native full-weekend suites. Human management-game validation is not claimed.
 
 ## Next implementation layer
 
-The next campaign slice may build a deterministic campaign state, dated clock and atomic storage around this boundary. It must not add campaign consequences directly to `RaceSim`, `WeekendResult`, `ResultReceipts`, rendering code or replay playback.
+Add a small versioned competition/economy settlement transaction over `CampaignCheckpoint`. It must not add campaign consequences directly to `RaceSim`, `WeekendResult`, `ResultReceipts`, rendering code or replay playback. See [Campaign state, clock and storage](state-clock-storage.md).
