@@ -16,9 +16,14 @@ The codebase retains advanced strategy/rival, weather/recovery, racecraft/team-o
 
 Bundled diagnostic scenario collections are trusted file-backed verification resources, not external executable scenario packs. Public authored complete-weekend scenarios can stage existing implemented weekend behavior, but do not add a campaign or arbitrary goal code.
 
+## Implemented integration foundation
+
+- **Campaign/weekend boundary:** `CampaignWeekendManifest` freezes the exact race event, model, track, roster, starting resources, rules and stable campaign identity mapping. `CampaignWeekendSettlement` maps a valid completed `WeekendResult` back to stable campaign people/teams/cars and stages an exactly-once receipt ledger. Reapplying the same result is a no-op; a different result requires an explicit correction workflow.
+- This boundary deliberately does **not** calculate championship points, cash, XP, repairs, component diagnoses or campaign-time progression. A future campaign must atomically persist those consequences with its own state and rules rather than placing them in `RaceSim`, replay or the standalone receipt archive.
+
 ## Not implemented or not established
 
-- **No persistent company/team-management campaign:** finances, dated management clock, energy, staff/contracts, engineering portfolio, seasons/championship settlement, founder workshop and dynasty progression belong to proposed GDDs. The standalone result receipt is idempotent evidence, **not** campaign points, cash, XP or inventory reconciliation.
+- **No persistent company/team-management campaign yet:** finances, dated management clock, energy, staff/contracts, engineering portfolio, seasons/championship rules, founder workshop and dynasty progression remain proposed work. The new campaign/weekend records are an integration foundation, not playable management or a second race engine.
 - **Not a comprehensive vehicle-physics or licensed-regulations simulator.** Race damage remains aggregate; additional vehicle presets are not full competition formats. Editor bridge/tunnel annotations do not certify 3D clearances.
 - **Human playtesting, comprehensive accessibility, broad device/hardware calibration, wet/endurance balance and same-host comparative performance remain separate validation gates.** Successful automated checks do not establish them.
 
@@ -41,12 +46,13 @@ The registration source of truth is `scripts/verification_suites.json`; historic
 1. Keep this page, the README and content status synchronized when a feature becomes player-facing, only diagnostic, or deliberately deferred.
 2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At the PR #24 baseline, `race_sim.gd` had 726 counted code lines, historical `weekend.gd` 623 and historical `pitwall_workspace.gd` 419, against the 400-line source budget. This maintenance pass reduces active `track_canvas.gd` from 476 to exactly 400 by extracting read-only overlay responsibilities. Prioritize the remaining files when product work actually touches them; a line count alone is not a defect.
 3. Distinguish implementation correctness, human experience, cross-platform support and controlled performance comparisons in all PR evidence.
-4. Validate the race-weekend/campaign manifest-and-result boundary before implementing persistent management against standalone receipts.
+4. Build deterministic campaign state, clock and atomic storage on top of the validated manifest/settlement boundary before introducing broad management UI.
 
 ## Where to read next
 
 - **Current architecture and responsibility rules:** `docs/architecture-refactor.md`, `AGENTS.md`.
 - **Shipping minimal weekend:** `docs/race-weekend-minimal.md`, `README.md`.
+- **Campaign/weekend integration contract:** `docs/campaign/weekend-boundary.md`.
 - **Authoritative content contracts:** `docs/content/README.md`, `docs/content/consumer-inventory.md`, `docs/content/version-compatibility.md`.
 - **Maintenance work:** `docs/maintenance/tech-doc-debt.md`.
 - **Historical implementation details:** `docs/README.md` links the complete prior handoffs. `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` retain period-specific descriptions and are not current capability inventories.

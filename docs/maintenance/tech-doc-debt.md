@@ -29,10 +29,19 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 ### Technical debt
 
-- Extracted UI-only surface sampling, live surface drawing, elevation-profile drawing, car/label painting and editor selection painting into `scripts/ui/track_canvas_overlays.gd`. `TrackCanvasOverlayRenderer` is now only a thin adapter from the canvas-owned cache and detached presentation snapshot into those stateless painters.
-- `TrackCanvas` retains its public methods, cache identity and rebuild counter, live detached frame capture, view projection and all edit transactions.
+- Extracted UI-only surface sampling, live surface drawing, car/label painting and editor selection painting into `scripts/ui/track_canvas_overlays.gd`. `TrackCanvas` retains its public methods and its original cache invalidation/rebuild counter, live detached frame capture, view projection and all edit transactions.
+- Kept `TrackCanvasOverlayRenderer` as a bounded host adapter so cache/lifecycle ownership remains visible while stateless painters stay independent of editor and race authority.
 - The active `track_canvas.gd` source is reduced from **476 to 400 counted code lines**, exactly the repository's declared budget, without changing commands, sporting arithmetic, saved data or editor mutations.
 - Extended the registered native `editor_gesture_tests` suite with direct sampling/cache checks. Existing rendered/click-through editor and complete-weekend suites remain mandatory; synthetic screenshots alone are not a human usability sign-off.
+
+### P0 campaign/weekend integration boundary
+
+- Added `CampaignWeekendManifest`, a strict immutable record binding campaign/season/event identity, departure/return slots, exact race event/model, frozen track/roster/resource/rules hashes and complete race-local → stable campaign person/team/car mappings.
+- Added `CampaignWeekendSettlement`, which validates a factual `WeekendResult`, rejects sandbox or mismatching results, maps classification and returned resources to stable identities and stages one versioned receipt ledger.
+- Reapplying the same manifest/result returns `already_settled` without mutating the ledger. A different valid result for the same campaign event returns an explicit conflict and requires a future correction workflow.
+- The boundary intentionally awards no championship points, cash, XP, repair state, component diagnosis or calendar progression. Those remain responsibilities of a future atomic campaign transaction.
+- Extended registered `weekend_launch_tests` coverage for manifest detachment/integrity, stable identity projection, exact-once settlement, correction conflict and absence of invented rewards. Full physical finishing remains covered by existing full-weekend suites.
+- Added `docs/campaign/weekend-boundary.md` as the implementation and persistence contract.
 
 ### Verification boundary
 
@@ -40,6 +49,6 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 ## Deliberately remaining debt
 
-- `scripts/domain/race_sim.gd` and historical `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without a dedicated characterization task would increase regression risk.
+- `scripts/domain/race_sim.gd` and historical `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Campaign integration, strategy discoverability, human player testing, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work, not claimed fixed by this maintenance PR.
+- Playable campaign state/clock/economy, strategy discoverability in Minimal, human player testing, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work, not claimed fixed by the integration boundary.
