@@ -1,6 +1,6 @@
 # Campaign series, entries and season lifecycle
 
-Status: implemented domain foundation on PR #27. This is not yet a playable campaign UI or a claim of balanced championship rules.
+Status: implemented domain/application foundation on PR #27. This is not yet a playable campaign UI or a claim of balanced championship rules.
 
 ## Authority and scope
 
@@ -35,14 +35,14 @@ A season retains the exact rules digest. A weekend policy must use the same poin
 
 A season calendar is ordered and immutable apart from its resolution state. Every event records:
 
-- campaign event identity and one-based round;
+- a globally unique campaign event identity and one-based round;
 - departure and return slots;
 - event revision;
 - frozen track and ruleset hashes;
 - `scheduled`, `completed` or `cancelled` status;
 - an empty, result-digest or cancellation-reason resolution reference.
 
-Events cannot overlap. Resolutions form a prefix of the calendar: a later round cannot complete or cancel while an earlier event remains scheduled. A completed item must have exactly one matching immutable competition event; a cancellation creates no sporting award.
+Events cannot overlap. Campaign event identities cannot be reused by another series or season. Resolutions form a prefix of the calendar: a later round cannot complete or cancel while an earlier event remains scheduled. A completed item must have exactly one matching immutable competition event; a cancellation creates no sporting award.
 
 Before a new settlement, `CampaignWeekendTransaction` asks the competition authority to verify the active manifest against the next scheduled event. Departure/return slots, event revision, track hash, ruleset hash and the entire accepted person/team/car field must match. A separately valid weekend with different dates or mappings is rejected without changing the caller checkpoint.
 
@@ -52,7 +52,7 @@ Entries move through explicit records:
 
 `submitted → accepted | rejected`
 
-A submitted or accepted entry may be withdrawn while entries remain open. Live entries cannot repeat entrant, team, person or car identities. Each accepted entry must contain the configured number of stable people and cars.
+A submitted or accepted entry may be withdrawn while entries remain open. Live entries cannot repeat entrant, team, person or car identities. Each accepted entry must contain the configured number of stable people and cars. Rejected and withdrawn records remain auditable but do not consume the live entrant limit.
 
 Closing entries requires:
 
@@ -88,7 +88,11 @@ Rows still equal after all configured countback positions receive the same sport
 
 Team starts and finishing counts aggregate every entered car. Driver points stay with the stable person identity and team points stay with the team identity recorded for that event.
 
-## Compatibility and persistence
+## Atomic administration and persistence
+
+`CampaignCompetitionTransaction` is the application-level write boundary for series registration, season creation, lifecycle transitions, entry decisions and event cancellation. It restores the caller checkpoint, applies one detached competition mutation, and rebuilds one complete `CampaignCheckpoint` containing the unchanged campaign state, receipts, economy and inventory plus the new competition projection.
+
+A failed mutation returns the exact caller value. Competition administration is frozen while an active weekend manifest exists; the frozen entry cannot be cancelled or administratively rewritten while its race is running. The existing `CampaignStorage` then validates and publishes the complete checkpoint through its temporary-file, backup and rollback policy.
 
 Version-one `CampaignCompetition` projections remain valid inside existing version-two campaign checkpoints. They are read-only when they contain event history because reconstructing an unrecorded calendar, entry field or rule pack would fabricate facts. An empty legacy projection can upgrade to version 2 when the first explicit series is registered.
 
@@ -115,7 +119,7 @@ The surrounding `CampaignCheckpoint` schema remains version 2. Its existing cros
 - cancellation without awards;
 - complete projection validation.
 
-The atomic weekend transaction contracts additionally settle a registered season event together with time, inventory, cash and the exactly-once receipt.
+Additional registered contracts cover globally unique event identities, atomic checkpoint publication, unchanged rejected checkpoints, active-weekend administration freeze, storage round-trip, and cancellation without sporting or financial consequences. The atomic weekend transaction contracts additionally settle a registered season event together with time, inventory, cash and the exactly-once receipt.
 
 ## Deliberate next work
 
