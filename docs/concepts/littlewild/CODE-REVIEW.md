@@ -33,3 +33,9 @@ Pack previews restore registries after failure. Late file reads are canceled by 
 This is incremental architecture work. Large legacy modules (`ui.js`, `engine.js`, `systems.js`, `colony.js` and others) remain beyond the repository's advisory per-file budgets. New modules stay under 400 physical lines and new test scripts under 450, but the legacy imports and generated HTML/vendor bundle are explicit exceptions for this isolated concept handoff. No quality-policy exclusions or native-game assertions are changed. Root native Godot gates were not run: no native runtime files were edited.
 
 Future extraction should proceed by responsibility with behavioral fixtures, not minification or arbitrary file slicing. Global registries still support one active experience in a runtime; concurrent independently configured games in one document are not supported. Some wording and mechanics bindings remain setting-specific and are documented in CONFIGURATION.md.
+
+## Follow-up: first ECS migration
+
+`ecs.js` now owns deterministic entity/component storage, structural command buffering, queries and explicit system scheduling. `actor-ecs.js` owns actor needs, learning fatigue and baseline social decay, with tuning in `content/actor-rules.json`. `colony.js` has one intentional numerical-loop extraction; all other historical pinned v14 sources remain hash-gated. `source/fixtures/ecs-migration.json` documents and narrows that exception.
+
+Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. See `ECS-ARCHITECTURE.md` for M2–M6.

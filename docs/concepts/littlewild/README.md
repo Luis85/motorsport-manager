@@ -32,3 +32,7 @@ The normal build uses Python's standard library. External-pack builds additional
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
 
 This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, creature rigs and some legacy wording remain code. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+
+## ECS refactor on PR #25
+
+The first compatibility-preserving ECS migration and the next-stage architecture are documented in `ECS-ARCHITECTURE.md`. Its data-only actor rule manifest is `source/content/actor-rules.json`. The normal verification gate now includes standalone ECS tests and full-engine save/resume integration tests. This is an incremental simulation refactor, not a claim that the entire prototype already uses ECS.
