@@ -3,5 +3,10 @@
     "prior_sha256": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
     "reason": "Actor dynamics, task movement and elapsed-work progression moved into ECS; legacy selection, authorization, completion and RNG behavior retained.",
     "required_token": "this.ecs.step(c, dt, {"
+  },
+  "world-simulation.js": {
+    "prior_sha256": "266f3e4cba99922e50f0049c7da06a7cc4b39c45ae5c0154d274bf4fca272cb9",
+    "reason": "Resource harvesting, physical inventory transfer, production reservation, job progress and exactly-once output settlement moved into deterministic ECS systems; policy, skill rolls, rewards and presentation remain in the domain facade.",
+    "required_token": "this.worldEcs.reserveProduction({"
   }
 }

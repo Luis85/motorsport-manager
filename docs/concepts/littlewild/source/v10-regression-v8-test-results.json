@@ -361,7 +361,7 @@
       "seed": 13,
       "creatures": 6,
       "simulatedSeconds": 1815,
-      "wallMs": 8262,
+      "wallMs": 6028,
       "batches": 11,
       "transfers": 28,
       "minimumNeed": 36.47599999999676
@@ -370,7 +370,7 @@
       "seed": 29,
       "creatures": 6,
       "simulatedSeconds": 1815,
-      "wallMs": 8243,
+      "wallMs": 6103,
       "batches": 12,
       "transfers": 30,
       "minimumNeed": 36.70399999999654
@@ -379,7 +379,7 @@
       "seed": 47,
       "creatures": 6,
       "simulatedSeconds": 1815,
-      "wallMs": 8190,
+      "wallMs": 5967,
       "batches": 11,
       "transfers": 29,
       "minimumNeed": 36.313999999996426

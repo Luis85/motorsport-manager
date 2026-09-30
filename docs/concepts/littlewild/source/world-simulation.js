@@ -20,6 +20,7 @@
    if(state?.colony){const c=state.colony.creatures.find(c=>c.id===state.colony.selectedId)||state.colony.creatures[0];for(const k of L.colony.PERSONAL)state[k]=copy(c[k]);}
    super(state);
    this.initWorld(options);
+   this.worldEcs=root.LWWorldECS.create();this._worldTransactionIds=new WeakMap();this._worldTransactionSequence=0;
   }
   initWorld({migrate=false,demo=false}={}){
    const s=this.s;
@@ -60,6 +61,11 @@
     b.stock=0;b.regen=0;
    }
   }
+  physicalToken(kind,record,subject='world'){
+   let id=this._worldTransactionIds.get(record);if(!id){id=String(++this._worldTransactionSequence);this._worldTransactionIds.set(record,id);}
+   return kind+':'+this.actor.id+':'+subject+':'+id;
+  }
+  releaseProduction(b,progress){const j=b?.storage?.job;if(!j)return null;return this.worldEcs.updateProduction({id:'release:'+j.id+':'+(++this._worldTransactionSequence),worksiteId:'worksite:'+b.id,storage:b.storage,jobId:j.id,action:'release',progress});}
   nodeAt(x,y){return this.s.nodes.find(n=>n.x===x&&n.y===y)||null;}
   nodeAvailable(n){return !!n&&!!W.node(n.kind)&&(W.node(n.kind).mode==='infinite'||n.stock>0);}
   remaining(n){return W.node(n.kind)?.mode==='infinite'?Infinity:n.stock;}
@@ -234,29 +240,30 @@
     if(t.jobId&&st.job?.id!==t.jobId)return false;
     if(I.substrateIssue(this,b,r))return false;
     if(!st.job){
-     const amount=r.amount+(this.specialization('cook')&&['meals','bread'].includes(r.output)?1:0),n=PROFILE(b.kind)?.requiresNode?this.nodeAt(b.x,b.y):null;
-     if(sum(st.output)+amount>this.capacity(b,'output')||!Object.entries(r.cost).every(([k,q])=>(st.input[k]||0)>=q)||n&&this.remaining(n)<r.depletion)return false;
-     for(const [k,q]of Object.entries(r.cost))st.input[k]-=q;
-     if(n&&W.node(n.kind).mode==='finite')n.stock-=r.depletion;
-     st.job={id:'work-'+this.s.world.sequence++,recipe:r.id,output:r.output,amount,cost:copy(r.cost),duration:r.time,progress:0,workerId:this.actor.id,originId:this.actor.id,orderId:t.orderId||null,attempts:0};
+     const amount=r.amount+(this.specialization('cook')&&['meals','bread'].includes(r.output)?1:0),n=PROFILE(b.kind)?.requiresNode?this.nodeAt(b.x,b.y):null,jobId='work-'+this.s.world.sequence;
+     const job={id:jobId,recipe:r.id,output:r.output,amount,cost:copy(r.cost),duration:r.time,progress:0,workerId:this.actor.id,originId:this.actor.id,orderId:t.orderId||null,attempts:0};
+     const reserved=this.worldEcs.reserveProduction({id:'reserve:'+jobId,worksiteId:'worksite:'+b.id,storage:st,recipe:r,outputCapacity:this.capacity(b,'output'),outputAmount:amount,depositId:n?'deposit:'+n.id:null,deposit:n,substrateResource:n?n.kind:'none',substrateFinite:n?W.node(n.kind).mode==='finite':false,substrateDepletion:r.depletion,job});
+     if(!reserved.ok)return false;this.s.world.sequence++;
     }
     const j=st.job;
     if(this.originatingOrder(j)?.paused)return false;
-    if(j.recipe!==r.id||j.workerId&&j.workerId!==this.actor.id&&this.creatures.some(c=>c.id===j.workerId&&c.task?.jobId===j.id))return false;
-    j.workerId=this.actor.id;t.jobId=j.id;t.elapsed=j.progress;t.duration=j.duration;
+    const occupied=j.workerId&&j.workerId!==this.actor.id&&this.creatures.some(c=>c.id===j.workerId&&c.task?.jobId===j.id);
+    if(j.recipe!==r.id||occupied)return false;
+    const claim=this.worldEcs.updateProduction({id:'claim:'+j.id+':'+this.actor.id,worksiteId:'worksite:'+b.id,storage:st,jobId:j.id,action:'claim',workerId:this.actor.id,allowTakeover:!occupied});if(!claim.ok)return false;
+    t.jobId=j.id;t.elapsed=j.progress;t.duration=j.duration;
    }
    t.path=path;t.phase=path.length?'walk':'work';t.elapsed=t.elapsed||0;t.duration=Math.max(1,t.duration||2);this.s.task=t;return true;
   }
   stepWorld(){
    this.syncBuildings();
    // Deposits never replenish here. Infinite supply is a declared source rule, not regeneration.
-   for(const b of this.s.buildings){const j=b.storage?.job;if(j&&j.workerId&&!this.creatures.some(c=>c.id===j.workerId&&!c.activeQuest&&c.task?.jobId===j.id))j.workerId=null;}
+   for(const b of this.s.buildings){const j=b.storage?.job;if(j&&j.workerId&&!this.creatures.some(c=>c.id===j.workerId&&!c.activeQuest&&c.task?.jobId===j.id))this.releaseProduction(b,j.progress);}
   }
   stepActor(dt){
    const t=this.actor.task;
-   if(t?.buffered){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(!b?.storage.enabled||b.storage.job?.id!==t.jobId){this.s.task=null;}else if(t.phase==='work')b.storage.job.progress=Math.min(t.duration,t.elapsed+dt*this.workRate(t));}
+   if(t?.buffered){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(!b?.storage.enabled||b.storage.job?.id!==t.jobId){this.s.task=null;}else if(t.phase==='work')this.worldEcs.updateProduction({id:'progress:'+t.jobId+':'+this.actor.id,worksiteId:'worksite:'+b.id,storage:b.storage,jobId:t.jobId,action:'progress',progress:Math.min(t.duration,t.elapsed+dt*this.workRate(t))});}
    super.stepActor(dt);
-   if(t?.buffered&&this.actor.task!==t){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(b?.storage.job?.id===t.jobId){b.storage.job.progress=Math.min(b.storage.job.progress,t.elapsed);b.storage.job.workerId=null;}}
+   if(t?.buffered&&this.actor.task!==t){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(b?.storage.job?.id===t.jobId)this.releaseProduction(b,Math.min(b.storage.job.progress,t.elapsed));}
   }
   recordBuildingTransfer(b,direction,id,n){
    this.s.world.transfers.unshift({time:this.s.simTime,actorId:this.actor.id,name:this.actor.name,buildingId:b.id,direction,resource:id,amount:n});this.s.world.transfers=this.s.world.transfers.slice(0,60);
@@ -269,13 +276,12 @@
    if(['stockbuilding','collectbuilding','emptybuilding'].includes(t.kind)){
     if(st&&this.at(b)){
      if(t.kind==='stockbuilding'){
-      const r=this.recipe(b,t.recipeId),missing=r?Math.max(0,(r.cost[t.resource]||0)-(st.input[t.resource]||0)):0;
-      const n=Math.min(t.amount,inv[t.resource]||0,missing,Math.max(0,this.capacity(b,'input')-sum(st.input)));
-      if(n>0&&st.enabled){inv[t.resource]-=n;st.input[t.resource]=(st.input[t.resource]||0)+n;this.recordBuildingTransfer(b,'in',t.resource,n);}
-      c.worldSupply=null;
+      const r=this.recipe(b,t.recipeId),missing=r?Math.max(0,(r.cost[t.resource]||0)-(st.input[t.resource]||0)):0,limit=Math.min(missing,Math.max(0,this.capacity(b,'input')-sum(st.input)));
+      const moved=st.enabled?this.worldEcs.transfer({id:this.physicalToken('transfer-in',t,b.id),sourceId:'inventory:actor:'+c.id,destinationId:'inventory:worksite:'+b.id+':input',source:inv,destination:st.input,resource:t.resource,requested:t.amount,destinationLimit:limit}):{amount:0};
+      if(moved.amount>0)this.recordBuildingTransfer(b,'in',t.resource,moved.amount);c.worldSupply=null;
      }else{
-      const src=t.kind==='emptybuilding'?st.input:st.output,n=Math.min(t.amount,src[t.resource]||0,this.room(t.resource));
-      if(n>0){src[t.resource]-=n;inv[t.resource]=(inv[t.resource]||0)+n;this.recordBuildingTransfer(b,'out',t.resource,n);if(t.forDelivery)c.needsDeposit=true;}
+      const src=t.kind==='emptybuilding'?st.input:st.output,moved=this.worldEcs.transfer({id:this.physicalToken('transfer-out',t,b.id),sourceId:'inventory:worksite:'+b.id+':'+(t.kind==='emptybuilding'?'input':'output'),destinationId:'inventory:actor:'+c.id,source:src,destination:inv,resource:t.resource,requested:t.amount,destinationLimit:this.room(t.resource)});
+      if(moved.amount>0){this.recordBuildingTransfer(b,'out',t.resource,moved.amount);if(t.forDelivery)c.needsDeposit=true;}
       if(t.kind==='collectbuilding'){c.worldPickup=null;if(sum(st.output)===0)st.flushOutput=false;}
      }
     }c.task=null;return;
@@ -283,10 +289,10 @@
    if(t.buffered){
     if(!st||!this.at(b)||!st.enabled||st.job?.id!==t.jobId||st.job.workerId!==c.id){c.task=null;return;}
     const j=st.job,r=this.recipe(b,j.recipe);if(!r){c.task=null;return;}
-    if(sum(st.output)+j.amount>this.capacity(b,'output')){j.progress=j.duration;j.workerId=null;c.task=null;return;}
-    const roll=this.check(r.skill,2,t.label);j.attempts++;
-    if(!roll.success){j.progress=j.duration*.4;j.workerId=null;this.xp('creature',1);this.changeFeeling('A batch needs another careful attempt',-1,roll.critical?5:2);st.lastMessage='Setback · inputs stay reserved';this.log(c.name+' will retry this batch. Its materials stay at '+BUILDINGS[b.kind].name+'.','leaf');c.task=null;return;}
-    st.output[j.output]=(st.output[j.output]||0)+j.amount;st.lastOutput=this.s.simTime;st.completed++;st.lastMessage='Finished '+j.amount+' '+item(j.output).name;
+    if(sum(st.output)+j.amount>this.capacity(b,'output')){this.releaseProduction(b,j.duration);c.task=null;return;}
+    const roll=this.check(r.skill,2,t.label),attempt='attempt:'+j.id+':'+(j.attempts+1);
+    if(!roll.success){this.worldEcs.settleProduction({id:attempt,worksiteId:'worksite:'+b.id,storage:st,jobId:j.id,success:false,retryProgress:j.duration*.4,outputCapacity:this.capacity(b,'output'),time:this.s.simTime,message:'Setback · inputs stay reserved'});this.xp('creature',1);this.changeFeeling('A batch needs another careful attempt',-1,roll.critical?5:2);this.log(c.name+' will retry this batch. Its materials stay at '+BUILDINGS[b.kind].name+'.','leaf');c.task=null;return;}
+    const settled=this.worldEcs.settleProduction({id:attempt,worksiteId:'worksite:'+b.id,storage:st,jobId:j.id,success:true,retryProgress:0,outputCapacity:this.capacity(b,'output'),time:this.s.simTime,message:'Finished '+j.amount+' '+item(j.output).name});if(!settled.ok){c.task=null;return;}
     if(st.requests[j.recipe]>0)st.requests[j.recipe]--;
     const owner=this.creatures.find(c=>c.id===j.originId),o=owner?.orders.find(o=>o.id===(j.orderId||t.orderId));
     if(o&&['craft','gather'].includes(o.type)&&o.resource===j.output){o.done=Math.min(o.amount,(o.done||0)+j.amount);if(o.done>=o.amount)owner.orders=owner.orders.filter(x=>x!==o);}
@@ -295,7 +301,7 @@
     this.practiceSkill(r.skill);this.xp('creature',5);this.xp('player',2);c.memory.lastAchievement=this.s.simTime;
     c.worldPickup={buildingId:b.id,resource:j.output,amount:j.amount};
     this.log(c.name+' finished '+j.amount+' '+item(j.output).name.toLowerCase()+'. Waiting in '+BUILDINGS[b.kind].name+' for collection.','bench');
-    this.emit('production',st.lastMessage,{x:b.x,y:b.y,buildingId:b.id,resource:j.output,amount:j.amount});st.job=null;c.task=null;return;
+    this.emit('production',st.lastMessage,{x:b.x,y:b.y,buildingId:b.id,resource:j.output,amount:j.amount});c.task=null;return;
    }
    if(t.worldGather||t.kind==='gather'||t.kind==='hunt'){
     const n=this.s.nodes.find(n=>n.id===t.nodeId),d=n&&W.node(n.kind),o=c.orders.find(o=>o.id===t.orderId);
@@ -304,8 +310,8 @@
     if(o?.type==='gather'&&o.resource===d.resource)amount=Math.min(amount,o.amount-o.done);
     if(amount<=0){c.task=null;return;}
     const roll=this.check(d.skill||'Per',3,t.label);if(!roll.success){this.xp('creature',1);this.changeFeeling('A gathering attempt did not work out',-1,roll.critical?4:1);c.task=null;return;}
-    inv[d.resource]=(inv[d.resource]||0)+amount;if(d.mode==='finite')n.stock-=amount;
-    c.stats.gathered+=amount;c.metrics.gathered[d.resource]=(c.metrics.gathered[d.resource]||0)+amount;this.record('gather:'+d.resource,amount);
+    const harvested=this.worldEcs.harvest({id:this.physicalToken('harvest',t,n.id),depositId:'deposit:'+n.id,deposit:n,finite:d.mode==='finite',destinationId:'inventory:actor:'+c.id,destination:inv,resource:d.resource,requested:amount,destinationLimit:amount});amount=harvested.amount;
+    if(amount<=0){c.task=null;return;}c.stats.gathered+=amount;c.metrics.gathered[d.resource]=(c.metrics.gathered[d.resource]||0)+amount;this.record('gather:'+d.resource,amount);
     if(o&&((o.type==='gather'&&o.resource===d.resource)||o.type==='hunt')){o.done=Math.min(o.amount,(o.done||0)+amount);if(o.done>=o.amount)c.orders=c.orders.filter(x=>x!==o);}
     if(d.skill)this.practiceSkill(d.skill);this.xp('creature',3);this.xp('player',1);if(Math.floor((c.stats.gathered-amount)/15)!==Math.floor(c.stats.gathered/15))this.researchGain(1);
     c.memory.lastAchievement=this.s.simTime;this.log(c.name+' gathered '+amount+' '+item(d.resource).name.toLowerCase()+'.'+(d.mode==='finite'?' '+n.stock+' remain in this deposit.':''),d.resource);
@@ -314,7 +320,7 @@
    }
    super.finishTask(t);if(t.kind==='build')this.syncBuildings();
   }
-  releaseDetachedWork(){for(const b of this.s.buildings){const j=b.storage?.job;if(j&&j.workerId&&!this.creatures.some(c=>c.id===j.workerId&&!c.activeQuest&&c.task?.jobId===j.id))j.workerId=null;}}
+  releaseDetachedWork(){for(const b of this.s.buildings){const j=b.storage?.job;if(j&&j.workerId&&!this.creatures.some(c=>c.id===j.workerId&&!c.activeQuest&&c.task?.jobId===j.id))this.releaseProduction(b,j.progress);}}
   care(kind){const r=super.care(kind);if(r.ok)this.releaseDetachedWork();return r;}
   cancel(id){const r=super.cancel(id);if(r.ok){for(const b of this.s.buildings)if(b.storage?.job?.orderId===id)b.storage.job.orderId=null;this.releaseDetachedWork();}return r;}
   cancelEquipment(id){const r=super.cancelEquipment(id);if(r.ok)this.releaseDetachedWork();return r;}
@@ -324,7 +330,7 @@
    if(value!==undefined&&typeof value!=='boolean')return fail('Choose paused or running.');
    order.paused=value===undefined?!order.paused:value;
    const t=this.actor.task;
-   if(order.paused&&t?.orderId===id){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(t.buffered&&b?.storage.job?.id===t.jobId)b.storage.job.progress=Math.min(t.duration,t.elapsed);this.actor.task=null;}
+   if(order.paused&&t?.orderId===id){const b=this.s.buildings.find(b=>b.id===t.buildingId);if(t.buffered&&b?.storage.job?.id===t.jobId)this.releaseProduction(b,Math.min(t.duration,t.elapsed));this.actor.task=null;}
    this.releaseDetachedWork();return ok();
   }
   depart(){const r=super.depart();if(r)this.releaseDetachedWork();return r;}
@@ -333,10 +339,10 @@
    const b=this.s.buildings.find(b=>b.id===id),st=b?.storage;if(!st)return fail('This building has no production inventory.');
    if(command==='enabled'){
     if(typeof value!=='boolean')return fail('Choose running or paused.');st.enabled=value;
-    if(!value)for(const c of this.creatures)if(c.task?.buildingId===id&&c.task.buffered){if(st.job){st.job.progress=Math.min(st.job.duration,c.task.elapsed);st.job.workerId=null;}c.task=null;}
+    if(!value)for(const c of this.creatures)if(c.task?.buildingId===id&&c.task.buffered){if(st.job)this.releaseProduction(b,Math.min(st.job.duration,c.task.elapsed));c.task=null;}
    }else if(command==='priority'){if(!isInt(value,0,2))return fail('Choose low, normal or high priority.');st.priority=value;}
    else if(command==='flush')st.flushOutput=true;
-   else if(command==='reclaim'){st.emptyInputs=true;st.enabled=false;for(const c of this.creatures)if(c.task?.buildingId===id&&c.task.buffered){if(st.job){st.job.progress=Math.min(st.job.duration,c.task.elapsed);st.job.workerId=null;}c.task=null;}}
+   else if(command==='reclaim'){st.emptyInputs=true;st.enabled=false;for(const c of this.creatures)if(c.task?.buildingId===id&&c.task.buffered){if(st.job)this.releaseProduction(b,Math.min(st.job.duration,c.task.elapsed));c.task=null;}}
    else if(command==='batch'||command==='target'){
     const {recipe:id,amount}=value||{};if(!this.recipe(b,id)||!isInt(amount,command==='batch'?1:0,command==='batch'?12:48))return fail('Choose a supported recipe and quantity.');
     if(command==='batch'){if((st.requests[id]||0)+amount>12)return fail('Finish the queued batches first.');st.requests[id]=(st.requests[id]||0)+amount;}else st.targets[id]=amount;

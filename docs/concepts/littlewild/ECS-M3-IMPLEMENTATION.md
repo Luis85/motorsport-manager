@@ -1,54 +1,44 @@
 # ECS M3 — world resources and physical logistics
 
-## Goal
+## Status
 
-Move the authoritative mutation of deposits, worksite inventories, production jobs, and carrier transfers into deterministic ECS systems while preserving the current v8/v9 save shape, authored content schemas, task-selection policy, economy rules, rewards, and presentation.
+**Complete.** M3 moved the authoritative physical mutation of deposits, carrier inventories, worksite buffers, production reservations, job progress, and output settlement into deterministic ECS systems. The legacy facade still owns command authorization, task selection, recipe choice, skill checks, rewards, journaling, and presentation; those policy and economy boundaries remain scheduled for M4.
 
-## Scope
+## Implemented scope
 
-M3 introduces explicit world-facing components and systems for:
+- finite and infinite resource deposits are bound as `ResourceDeposit` components;
+- actor and worksite inventories are bound as `Inventory` components;
+- buildings are bound as `Worksite` components with a live `ProductionJob` component;
+- carrier pickups and deliveries execute as stable-ID `CarrierTask` entities;
+- harvesting executes as `HarvestTask` entities;
+- paid work uses named reserve, progress/claim/release, and settlement systems;
+- simultaneous transfer requests are sorted by transaction ID before settlement;
+- ECS records bind by reference to the existing v8/v9-compatible save model and are never serialized.
 
-- finite resource deposits and harvesting claims;
-- worksite input/output inventories;
-- production-job progress and exactly-once completion;
-- carrier cargo, pickup, movement hand-off, and delivery;
-- deterministic contention between multiple actors;
-- conservation checks across source, cargo, destination, and consumed inputs.
+## Deterministic systems
 
-The existing domain facade remains responsible for command authorization, task selection, recipe choice, progression, rewards, journaling, and UI-facing notifications. Those boundaries move in M4.
+| Order | System | Responsibility |
+|---:|---|---|
+| 10 | `inventory-transfer` | atomic source-to-destination ownership transfer |
+| 20 | `resource-harvest` | finite depletion or infinite-source collection |
+| 30 | `production-reserve` | exactly-once input/substrate reservation and job creation |
+| 40 | `production-job-update` | progress, worker claim, interruption, and takeover |
+| 50 | `production-settlement` | failed-attempt retention or exactly-once output emission |
 
-## Component ownership
+## Preserved boundaries
 
-| Component | Authoritative data | M3 owner |
-|---|---|---|
-| `ResourceDeposit` | resource kind, remaining quantity, stable source ID | resource systems |
-| `Inventory` | bounded item quantities on actors and world entities | transfer systems |
-| `Worksite` | stable worksite ID, accepted inputs, buffered outputs | production systems |
-| `ProductionJob` | recipe/input reservation, elapsed work, completion token | production systems |
-| `CarrierTask` | source, destination, item, requested and carried quantities | logistics systems |
-| `Transform` / `Task` / `Intent` | actor location and activity lifecycle | M2 activity systems |
+The existing domain facade continues to decide whether an action is allowed, where an actor should work, which recipe or source should be selected, whether a skill roll succeeds, and which metrics, XP, memories, orders, messages, or UI events follow. M3 changes ownership of physical state mutation, not gameplay policy or randomness.
 
-Definitions such as recipes and item metadata remain immutable resources, not entities.
+## Invariants
 
-## Required invariants
+1. Every transfer applies an equal source decrement and destination increment.
+2. Production consumes declared inputs and finite substrate once per paid job.
+3. Failed attempts retain reserved inputs and reset only the attempt progress.
+4. Completion emits output and clears the paid job once.
+5. Quantities never become negative and blocked requests are atomic.
+6. Equal-tick carrier contention resolves by stable transaction ID.
+7. Save documents retain the existing state shape; ECS bindings are reconstructed after import.
 
-1. **Conservation:** every successful transfer has an equal source decrement and destination increment; production consumes declared inputs once and emits declared outputs once.
-2. **Exactly once:** a completed task or production job cannot complete again when stepped, resumed, imported, or observed by another facade layer.
-3. **No negative quantities:** deposits, inventories, reservations, and cargo never become negative.
-4. **Stable identity:** sources, worksites, jobs, and carriers use stable IDs rather than array position.
-5. **Deterministic conflict order:** equal-tick claims are resolved by scheduler order and stable entity ID.
-6. **Atomic failure:** blocked capacity, missing inputs, stale source IDs, and invalid destinations leave all authoritative quantities unchanged.
-7. **Compatibility:** exports retain the existing serialized world and actor records; transient ECS components are reconstructed on import.
+## Verification
 
-## Verification gates
-
-- focused unit tests for deposits, inventory capacity, atomic pickup/delivery, and production completion;
-- multi-actor contention tests proving deterministic allocation;
-- conservation ledgers before and after harvest, transfer, production, save, and resume;
-- real-engine integration tests using the existing colony facade;
-- complete `verify-v15.py` gate and deterministic standalone rebuild;
-- no content-library schema changes and no M4 economy/reward migration.
-
-## Completion definition
-
-M3 is complete when world-resource and physical-logistics mutations are executed through named ECS systems, the legacy facade delegates rather than duplicates those mutations, all conservation and exactly-once fixtures pass, and the rebuilt standalone artifact is committed with verification evidence.
+M3 adds eleven isolated world-ECS checks and six real-engine integration checks. Existing v8 logistics tests remain the compatibility authority for finite deposits, concurrent deliveries, output contention, paid batches, interruption/resume, substrate charging, save continuation, and long-running multi-creature logistics.

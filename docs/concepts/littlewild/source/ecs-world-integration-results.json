@@ -1,0 +1,31 @@
+{
+  "passed": 6,
+  "total": 6,
+  "failed": 0,
+  "results": [
+    {
+      "name": "World ECS is transient and uses the shared deterministic ECS core",
+      "passed": true
+    },
+    {
+      "name": "A real finite harvest settles through ResourceDeposit and Inventory components",
+      "passed": true
+    },
+    {
+      "name": "A real carrier transfer changes only source and destination ownership",
+      "passed": true
+    },
+    {
+      "name": "Production reservation binds one worksite job and charges inputs once",
+      "passed": true
+    },
+    {
+      "name": "Production completion emits once and clears the ECS job binding",
+      "passed": true
+    },
+    {
+      "name": "Failed production retains its paid batch across save and resume",
+      "passed": true
+    }
+  ]
+}

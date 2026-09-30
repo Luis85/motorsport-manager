@@ -23,6 +23,7 @@ INSERTS = (
     ('POLICIES', 'colony-policies.js', 'script'),
     ('ECS', 'ecs.js', 'script'),
     ('ACTOR_ECS', 'actor-ecs.js', 'script'),
+    ('WORLD_ECS', 'world-ecs.js', 'script'),
     ('COLONY', 'colony.js', 'script'),
     ('WORLD_CONTENT', 'world-content.js', 'script'),
     ('WORLD_INTEGRITY', 'world-integrity.js', 'script'),

@@ -1,8 +1,8 @@
 {
   "passed": 54,
   "total": 54,
-  "htmlSha256": "f08f73f6eb67b62e3f79d79490201bace61379cd99eaa7d705187acc32f04dc7",
-  "bytes": 3713935,
+  "htmlSha256": "203a92c4045730b84dd319eb8ddafc1ccaad72b4e63ca7a3bb1ad66101fc2ae1",
+  "bytes": 3726169,
   "results": [
     {
       "name": "Title and entry point are v15, with no unresolved build markers",
@@ -101,7 +101,7 @@
       "passed": true
     },
     {
-      "name": "Only colony.js is exempted from historical byte parity",
+      "name": "Only documented ECS migration files are exempted from historical byte parity",
       "passed": true
     },
     {

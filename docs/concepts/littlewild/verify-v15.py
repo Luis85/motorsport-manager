@@ -13,7 +13,9 @@ source=lambda name:'source/'+name
 suites=[
  ('ecs-core',['node',source('test-ecs.cjs')],source('ecs-results.json'),120),
  ('ecs-activity',['node',source('test-ecs-activity.cjs')],source('ecs-activity-results.json'),120),
+ ('ecs-world',['node',source('test-ecs-world.cjs')],source('ecs-world-results.json'),120),
  ('ecs-integration',['node',source('test-ecs-integration.cjs')],source('ecs-integration-results.json'),180),
+ ('ecs-world-integration',['node',source('test-ecs-world-integration.cjs')],source('ecs-world-integration-results.json'),180),
  ('scenario-domain',['node',source('test-v15.cjs')],source('v15-domain-results.json'),120),
  ('presentation',['node',source('test-v15-presentation.cjs')],source('v15-presentation-results.json'),120),
  ('pause-policy',['node',source('test-v15-pause.cjs')],source('v15-pause-results.json'),120),
