@@ -1,5 +1,7 @@
 # Motorsport Manager — Godot
 
+> **Current capability map:** [docs/current-state.md](docs/current-state.md) distinguishes shipping Minimal UI, retained diagnostic tools, merged data-driven content and unimplemented management proposals. PR #24's validated content refactor is now merged; older feature-parity and port-status snapshots are historical.
+
 Native, local-first circuit authoring and two-car race management. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services while retaining the minimal pitwall and driver instruments. No new actions, sporting rules or stress mechanics.
 
 See [architecture, extension recipes and verification boundaries](docs/architecture-refactor.md).
