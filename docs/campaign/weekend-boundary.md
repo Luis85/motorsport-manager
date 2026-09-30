@@ -1,6 +1,6 @@
 # Campaign-to-weekend boundary
 
-Status: implemented contract foundation on PR #27. Deterministic campaign state, clock and atomic checkpoint storage now surround this boundary, but championship, economy and management UI remain unimplemented.
+Status: implemented contract foundation on PR #27. Deterministic campaign state, versioned checkpoint storage and atomic weekend consequence application now surround this boundary, but a playable season and management UI remain unimplemented.
 
 ## Purpose
 
@@ -9,7 +9,7 @@ The native race weekend already owns physical racing, finite driver tyre invento
 1. `CampaignWeekendManifest` freezes the campaign event identity and maps stable campaign people/teams/cars to the race-local integer entrants used by the current simulation.
 2. `CampaignWeekendSettlement` validates a completed `WeekendResult`, maps its factual classification and returned resources back to stable campaign identities, and stages one idempotent receipt in a versioned ledger.
 
-Neither record grants points, cash, XP, repairs, component diagnoses or elapsed campaign time. Those consequences require separate versioned competition/economy rules and an atomic campaign transaction.
+Neither record itself grants points, cash, XP, repairs, component diagnoses or elapsed campaign time. Those consequences enter only through `CampaignWeekendTransaction` and an explicit versioned `CampaignWeekendPolicy`.
 
 ## Manifest contract
 
@@ -38,19 +38,25 @@ The receipt retains measured classification, aggregate health/damage, finite tyr
 
 A changed classification after settlement requires an explicit correction workflow that posts a reviewed delta. It must never append a second ordinary settlement or pay rewards twice.
 
-## Implemented persistence boundary
+## Implemented consequence boundary
 
-`CampaignCheckpoint` now stages the replay-validated `CampaignState`, settlement ledger and optional active manifest in one integrity-checked envelope. `CampaignStorage` validates that envelope and publishes it through the repository's existing recoverable atomic JSON policy. A failed replacement preserves the previous checkpoint; loading creates a detached state rather than mutating a live campaign.
+`CampaignWeekendTransaction` consumes the campaign checkpoint, the exact manifest, the factual result or independently validated receipt, and a strict `CampaignWeekendPolicy`. The policy explicitly identifies points-eligible people, ordered points and position-bonus tables, the organization account, participating people, event entry cost and participation amount. Standalone race facts never invent those rules.
 
-This closes the storage *foundation*, not result application. A future settlement transaction must calculate and stage, before one publication:
+Before returning one candidate checkpoint, the transaction stages:
 
-- inventory return and dated weekend progression;
-- standings under an explicit competition rule;
-- contractual and financial ledger postings;
-- any supported repair/service consequences;
-- the settlement receipt and updated authoritative campaign state.
+- the exactly-once factual receipt;
+- campaign-time advancement from the frozen departure slot to return slot;
+- event awards and rebuilt driver/team standings;
+- exact returned aggregate condition and tyre values by stable car identity; and
+- dated integer-minor-unit financial postings.
 
-If any validation or persistence step fails, the previous campaign and ledger remain authoritative. The standalone `ResultReceipts` archive remains separate evidence and cannot substitute for campaign settlement.
+The candidate uses `CampaignCheckpoint` version 2. Competition, economy and inventory projections must contain the same event set and agree with the receipt result digest; sporting and financial consequences must use the same policy digest. The active manifest is cleared only in the complete candidate.
+
+A failed rule, identity, time, inventory, account, digest or projection check returns the caller's unchanged checkpoint. Reapplying the same result and policy after complete application is an exact no-op. A different result or policy produces a conflict and requires an explicit correction workflow.
+
+`CampaignStorage.save_checkpoint` validates and normalizes the complete candidate, then publishes it through the existing temporary-file, backup and rollback policy. A failed replacement preserves the previous campaign. The standalone `ResultReceipts` archive remains separate evidence and cannot substitute for campaign settlement.
+
+See [Atomic weekend consequence transaction](weekend-consequence-transaction.md) for the full sequence and current projection limits.
 
 ## Verification
 
@@ -60,14 +66,18 @@ The registered `weekend_launch_tests` suite covers:
 - manifest/event/result binding;
 - factual result validation;
 - stable identity projection without race-local IDs;
-- absence of invented points, cash or XP;
-- same-result idempotence;
-- conflict rejection for a different valid result;
+- absence of invented points, cash or XP at the factual receipt boundary;
+- same-result receipt idempotence and changed-result conflict;
 - duplicate mapping rejection and ledger integrity;
-- deterministic campaign clock/command replay and atomic checkpoint recovery.
+- deterministic campaign clock/command replay and atomic checkpoint recovery;
+- explicit campaign points eligibility and ordered rule tables;
+- time, standings, returned inventory and cash posting as one candidate;
+- complete rollback for invalid inventory or departure-time drift;
+- exact no-op reapplication and policy/result conflict; and
+- version-one checkpoint migration without fabricated consequences.
 
-The suite uses a synthetic terminal classification after a real staged production launch. Full physical race completion remains covered by the existing native full-weekend suites. Human management-game validation is not claimed.
+The suite uses a synthetic terminal classification after a real staged production launch. Full physical race completion remains covered by the existing native full-weekend suites. Human management-game validation and reward balance are not claimed.
 
 ## Next implementation layer
 
-Add a small versioned competition/economy settlement transaction over `CampaignCheckpoint`. It must not add campaign consequences directly to `RaceSim`, `WeekendResult`, `ResultReceipts`, rendering code or replay playback. See [Campaign state, clock and storage](state-clock-storage.md).
+Build a small versioned series calendar and season lifecycle over these consequence records: scheduled event identity, entry states, final/provisional classifications, tie-breaking, season completion and a safe next-season transition. Financial commitments, due dates and minimum-cash forecasts remain a separate finance milestone. Neither belongs in `RaceSim`, `WeekendResult`, rendering or replay playback.
