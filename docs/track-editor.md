@@ -69,3 +69,9 @@ Use D for Freehand trace or choose Pen trace. Consecutive strokes must connect. 
 Drawing Undo/Redo targets strokes and closure while drawing. Changes to committed geometry invalidate preview. Unapplied traces block Test weekend/runtime export and are protected by discard/clear confirmation. They remain temporary: Save/Export write committed track data, not the prototype's serialized sketch workspace. Apply or clear a trace before driving. Editor guide can be dismissed, restarted and resumed from its saved step. See [interaction design](interaction-design.md).
 
 **Trace action placement:** Preview road and Replace road remain outside the scrollable inspector at both tested desktop sizes. Closed-loop state is explicit; a closed loop cannot be accidentally closed again to invalidate its preview. The action controls retain identity through inspector rebuilds.
+
+## Read-only canvas overlays and cache ownership
+
+The post-PR24 maintenance extraction places surface segment sampling, live surface coloring, dot-car/label painting and editor selection painting in `scripts/ui/track_canvas_overlays.gd`. The original `TrackCanvas` entry points remain intact and delegate only **drawing** to this UI helper. `TrackCanvas` continues to own the current geometry cache and its rebuild counter, projection, zoom, live capture, transient sketch, and revision-bound input gestures. No live race aggregate is retained by the overlay painter; the surface-value adapter still provides detached observations.
+
+The native `editor_gesture_tests` suite covers identical lateral sample geometry and cache reuse in addition to its existing real pointer/transaction checks. This extraction does not certify broader track geometry or introduce simulation changes.
