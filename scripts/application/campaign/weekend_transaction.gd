@@ -26,9 +26,9 @@ static func _apply(restored: Dictionary, manifest: Dictionary, ledger: Dictionar
 	var manifest_error = CampaignWeekendManifest.validate(manifest)
 	if not manifest_error.is_empty():
 		return _reject(manifest_error, original)
-	if receipt.manifest_digest != manifest.digest or receipt.campaign_id != manifest.campaign_id \
-			or receipt.campaign_event_id != manifest.campaign_event_id:
-		return _reject("Campaign receipt does not belong to the supplied immutable weekend manifest.", original)
+	var binding_error = _receipt_manifest_error(manifest, receipt)
+	if not binding_error.is_empty():
+		return _reject(binding_error, original)
 	var policy_error = CampaignWeekendPolicy.receipt_error(policy, receipt)
 	if not policy_error.is_empty():
 		return _reject(policy_error, original)
@@ -67,6 +67,34 @@ static func _apply(restored: Dictionary, manifest: Dictionary, ledger: Dictionar
 	var status = "settled" if settlement_status == "settled" else "completed_consequences"
 	return {"ok": true, "status": status, "error": "", "checkpoint": candidate,
 		"receipt": receipt.duplicate(true)}
+
+static func _receipt_manifest_error(manifest: Dictionary, receipt: Dictionary) -> String:
+	var bindings = [
+		["manifest_digest", manifest.digest],
+		["campaign_id", manifest.campaign_id],
+		["season_id", manifest.season_id],
+		["campaign_event_id", manifest.campaign_event_id],
+		["entrant_id", manifest.entrant_id],
+		["race_event_id", manifest.race_event_id]
+	]
+	for binding in bindings:
+		if receipt.get(binding[0]) != binding[1]:
+			return "Campaign receipt does not belong to the supplied immutable weekend manifest."
+	var expected = {}
+	for mapping in manifest.mappings:
+		expected[mapping.person_id] = {"team_id": mapping.team_id, "car_id": mapping.car_id}
+	for collection_name in ["classification", "returned_resources"]:
+		if not receipt.get(collection_name) is Array or receipt[collection_name].size() != expected.size():
+			return "Campaign receipt does not cover every frozen entrant."
+		var seen = {}
+		for row in receipt[collection_name]:
+			if not row is Dictionary or not expected.has(row.get("person_id")) or seen.has(row.person_id):
+				return "Campaign receipt has an unknown or repeated stable person identity."
+			seen[row.person_id] = true
+			var identity: Dictionary = expected[row.person_id]
+			if row.get("team_id") != identity.team_id or row.get("car_id") != identity.car_id:
+				return "Campaign receipt stable identity mapping differs from the frozen manifest."
+	return ""
 
 static func _stage_receipt(ledger: Dictionary, receipt: Dictionary) -> Dictionary:
 	var receipt_error = CampaignWeekendSettlement.validate_receipt(receipt)
