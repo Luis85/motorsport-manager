@@ -1,6 +1,6 @@
 # Motorsport Manager documentation
 
-**Start with [Current native project status](current-state.md).** It records the 30 September 2026 merged post-PR24 capabilities, shipping/diagnostic separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
+**Start with [Current native project status](current-state.md).** It records the 30 September 2026 merged post-PR24 capabilities, default/optional/diagnostic interface separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
 
 ## Current architecture — 0.19.0
 
@@ -9,21 +9,20 @@
 - [Composed rule profiles](composable-mechanics.md)
 - [Editor transactions and complete weekend flow](editor-and-weekend-boundaries.md)
 
-## Minimal UI contracts retained from 0.17.2
+## Current interface contracts
 
-- [Current pitwall, driver instruments and stress estimate](driver-instruments.md)
-- [Prior UI polish, driver cards and timing integrity](minimal-ui-polish.md)
-- [Visible contract, session flows and architecture](race-weekend-minimal.md)
-- [Executed checks and remaining validation](minimal-verification.md)
+- [Current Minimal pitwall, driver instruments and stress estimate](driver-instruments.md)
+- [Prior Minimal UI polish, driver cards and timing integrity](minimal-ui-polish.md)
+- [Minimal visible contract, session flows, interface-selection boundary and architecture](race-weekend-minimal.md)
+- [Executed Minimal checks and remaining validation](minimal-verification.md)
 
-The documents below describe retained historical implementations. Their advanced menus and workspaces are not exposed in the minimal player UI.
+Minimal is the default race interface. Settings can select Advanced and choose Race Director or Engineering as its starting surface. Both presentations mount over the same authoritative weekend; the selector does not issue commands, advance time or create a second simulation. The documents below describe the retained advanced implementations and their historical delivery evidence. Their original version claims remain historical even though the corresponding workspaces are now optionally player-selectable.
 
-## Historical Race Director — 0.16.0
+## Retained Advanced Race Director — historical implementation docs
 
 - [Research, audit and design decisions](design/race-director-research.md)
 - [Native behavior and compatibility](race-director.md)
 - [Verification and acceptance boundaries](race-director-verification.md)
-
 
 Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 
@@ -54,10 +53,10 @@ Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 | [Race-weekend strategy handoff](race-weekend-implementation.md) | Historical 0.5 milestone; retained strategy controls, ownership and forecast assumptions |
 | [Getting started](getting-started.md) | Open the project and exercise the playable workflows |
 | [Iteration 4](iteration-4.md) | Delivered racecraft, editor and interaction changes |
-| [Feature parity](feature-parity.md) | Source-to-native status, adaptations and explicit gaps |
+| [Feature parity](feature-parity.md) | Historical source-to-native status, adaptations and explicit gaps |
 | [Interaction design](interaction-design.md) | Observation, drafts, commands, guides and error recovery |
 | [Architecture](architecture.md) | Ownership, modules and extension boundaries |
-| [Race weekend](race-weekend.md) | Sessions, pit-wall decisions, timing and classification |
+| [Race weekend](race-weekend.md) | Historical sessions, pit-wall decisions, timing and classification handoff |
 | [Simulation](simulation.md) | Fixed step, geometry, traffic, tyres and conditions |
 | [Tyres and strategy](tyres-and-strategy.md) | Finite sets, four-wheel condition and physical stop planning |
 | [Track editor](track-editor.md) | Authoring, selection, trace, calibration and validation |
@@ -65,7 +64,7 @@ Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 | [Graphics](graphics.md) | Cozy illustration, dots, preferences and caching |
 | [Persistence](persistence.md) | Retained notebook/session/scenario storage; the 0.15 handoff supersedes native v10-only statements |
 | [Verification](verification.md) | Automated checks, reports and environment boundaries |
-| [Port status](port-status.md) | Current acceptance scope and unimplemented systems |
+| [Port status](port-status.md) | Historical acceptance scope and then-unimplemented systems |
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 

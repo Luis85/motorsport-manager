@@ -1,4 +1,6 @@
 extends Node
+const PITWALL_LAYOUTS = ["minimal", "director", "engineering"]
+const ADVANCED_PITWALL_LAYOUTS = ["director", "engineering"]
 var content_catalog: ContentCatalog
 var content_diagnostics: Array = []
 var content_roots: Array = []
@@ -6,7 +8,7 @@ var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
-var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal"}
+var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal", "advanced_pitwall_layout": "director"}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
 var recording: RaceRecord
@@ -77,15 +79,28 @@ func _ready() -> void:
 			print("CONTENT_RESULT ", JSON.stringify(result))
 			get_tree().quit(0 if result.ok else 1)
 			return
-	# Developer/test-only launch override for retained regression workspaces.
+	# Explicit launch overrides remain useful for development and automated suites.
 	for arg in OS.get_cmdline_user_args():
-		if arg in ["--pitwall-layout=minimal", "--pitwall-layout=director", "--pitwall-layout=engineering"]: settings.pitwall_layout = arg.get_slice("=",1)
+		if not arg.begins_with("--pitwall-layout="): continue
+		var requested = arg.get_slice("=", 1)
+		if requested == "advanced": requested = "director"
+		if requested in PITWALL_LAYOUTS:
+			settings.pitwall_layout = requested
+			if requested in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = requested
 	apply_settings()
 
 func restore_settings(data: Dictionary) -> void:
-	# Saved legacy layouts must not bypass the new minimal default. Old screens
-	# remain reachable only by an explicit developer/test launch override.
+	# Minimal remains the safe default. The preferred Advanced start is persisted
+	# independently so a temporary return to Minimal does not erase it.
 	settings.pitwall_layout = "minimal"
+	settings.advanced_pitwall_layout = "director"
+	var advanced_layout = str(data.get("advanced_pitwall_layout", "director"))
+	if advanced_layout in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = advanced_layout
+	var layout = str(data.get("pitwall_layout", "minimal"))
+	if layout == "advanced": layout = "director"
+	if layout in PITWALL_LAYOUTS:
+		settings.pitwall_layout = layout
+		if layout in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = layout
 	if data.get("content_roots") is Array and data.content_roots.size() <= 31:
 		if data.content_roots.all(func(path): return path is String and path.length() <= 1024):
 			settings.content_roots = data.content_roots.duplicate()

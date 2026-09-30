@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This is a focused maintenance branch, not a redesign, new sporting model, or new save/schema migration. The P1 milestone exposes an existing forecast as a bounded read-only Minimal surface without adding commands or changing gameplay authority; advanced developer workspaces remain diagnostic.
+This is a focused maintenance branch, not a new sporting model, campaign implementation, or save/schema migration. The first P1 milestone exposes an existing forecast as a bounded read-only Minimal surface. A follow-up product milestone makes the retained Advanced interface selectable without changing gameplay authority, race state or the independently tested Minimal default.
 
 ## Scoped work and acceptance
 
@@ -13,7 +13,7 @@ This is a focused maintenance branch, not a redesign, new sporting model, or new
 
 ## Exclusions
 
-No new race model, company-management campaign, content schema or mechanic provider; no altered checkpoint format or scoring; no reactivation of the retired advanced pit-wall navigation; no global formatting/renaming campaign. Do not claim that historical PR test counts were rerun on a different source.
+No new race model, company-management campaign, content schema or mechanic provider; no altered checkpoint format or scoring; no redesign of the retained Race Director/Engineering workspaces; no global formatting/renaming campaign. Making an existing interface selectable does not certify every advanced tool as intuitive, calibrated or accessibility-complete. Do not claim that historical PR test counts were rerun on a different source.
 
 ## Publication gate
 
@@ -23,7 +23,7 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 
 ### Documentation
 
-- Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping Minimal UI from retained diagnostic tooling and proposals.
+- Added `docs/current-state.md` as the authoritative post-PR24 capability/validation inventory, separating shipping interfaces from retained diagnostic tooling and proposals.
 - Promoted this authority in root and docs READMEs, corrected post-merge content inventory/acceptance claims, and labeled original `docs/port-status.md`, `docs/feature-parity.md` and `docs/race-weekend.md` as historical rather than current.
 - Documented the canvas overlay extraction in the current architecture and editor guides. Historic implementation details are preserved, not rewritten as present-tense claims.
 
@@ -52,9 +52,18 @@ Keep the PR in draft until the exact final commit has green required CI and its 
 - Extended registered `minimal_tests` and native `minimal_ui_tests` with full-snapshot/RNG/command/playback invariants, detached-result checks, explicit-refresh behavior, keyboard-focus isolation and 1440×900 / 1100×720 at 130% layout coverage.
 - Updated the README, current-state authority and Minimal contract so they no longer claim that all forecast surfaces are absent.
 
-### P0/P1 closure
+### Player-selectable Minimal and Advanced interfaces
 
-All P0 and P1 items identified for this maintenance sequence are now implemented: documentation authority, active TrackCanvas debt reduction, immutable campaign/weekend manifest plus exactly-once settlement, and on-demand read-only Minimal strategy comparison. Remaining items below are deliberately outside this P0/P1 scope or require separate product/human validation.
+- Added a staged **Race interface** setting with **Minimal** and **Advanced** choices. Minimal remains the default. Advanced can begin in the approachable Race Director surface or directly in Engineering.
+- Reused the existing `pitwall_layout` composition seam rather than introducing another router or simulation. The setting applies when a weekend screen next opens and mounts the selected presentation over the same authoritative weekend, recording, commands and application-owned scheduler.
+- Restored recognized persisted `minimal`, `director` and `engineering` values. The public `advanced` alias migrates deterministically to `director`; unsupported values fall back to Minimal. Explicit CLI overrides remain available for development and verification.
+- Kept racing-line presentation disabled while Minimal is staged, while retaining its saved value for Advanced. Settings preview remains non-mutating until Apply; persistence failures retain the draft through the existing recovery behavior.
+- Extended registered native `architecture_ui_tests` to exercise staged selection, real settings storage, legacy/public migration, both advanced starts and complete weekend/RNG fingerprint preservation while mounting each interface.
+- Updated the README, current-state inventory and Minimal contract to describe Advanced as optional player-facing presentation rather than a hidden diagnostic-only route.
+
+### P0/P1 closure and follow-up scope
+
+All P0 and P1 debt items identified for the original maintenance sequence remain implemented: documentation authority, active TrackCanvas debt reduction, immutable campaign/weekend manifest plus exactly-once settlement, and on-demand read-only Minimal strategy comparison. The selectable-interface milestone is an explicit follow-up product request built on the retained composition seam; it does not reopen those authority boundaries.
 
 ### Verification boundary
 
@@ -62,6 +71,6 @@ GitHub Actions executes independently for PR updates. Judge this branch **only b
 
 ## Deliberately remaining debt
 
-- `scripts/domain/race_sim.gd` and historical `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
+- `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them when implementation actually touches those responsibilities; extracting their stateful sporting code without dedicated characterization would increase regression risk.
 - Advisory findings are not a verified bug count, and moving a responsibility to its own source path can register as both resolved and new diagnostics. Review the full exact-head quality inventory and retain existing budgets.
-- Playable campaign state/clock/economy, human player testing, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. The bounded strategy comparison closes discoverability of the existing current-condition forecaster, but does not turn the diagnostic strategy workspace into a shipping editor or establish human usability.
+- Playable campaign state/clock/economy, human player testing of both interface modes, broad accessibility, same-machine performance comparison, and stronger clearance/collision diagnostics remain separate product/engineering work. Selectability does not turn every retained specialist workspace into a validated final UX.

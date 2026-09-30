@@ -11,6 +11,10 @@ var notice: Label
 var save_button: Button
 var back_button: Button
 var text_choice: OptionButton
+var layout_choice: OptionButton
+var advanced_choice: OptionButton
+var racing_line_choice: CheckButton
+var advanced_layout = "director"
 var sample: Label
 var scroll: ScrollContainer
 
@@ -18,6 +22,16 @@ func configure(value: Dictionary, path: String) -> void:
 	original = value.duplicate(true)
 	draft = value.duplicate(true)
 	data_path = path
+	var saved_layout = str(draft.get("pitwall_layout", "minimal"))
+	var preferred = str(draft.get("advanced_pitwall_layout", saved_layout))
+	advanced_layout = "director"
+	if saved_layout in ["director", "engineering"]: advanced_layout = saved_layout
+	if preferred in ["director", "engineering"]: advanced_layout = preferred
+	# Normalize pre-selector application dictionaries without creating a false
+	# unsaved-change banner merely by opening Settings.
+	if not original.has("advanced_pitwall_layout"):
+		original.advanced_pitwall_layout = advanced_layout
+		draft.advanced_pitwall_layout = advanced_layout
 
 func _ready() -> void:
 	theme = UI.theme()
@@ -35,6 +49,7 @@ func _ready() -> void:
 	body.add_child(columns)
 	_build_display()
 	_build_circuit()
+	_sync_layout_controls()
 	_build_data(body)
 	var footer = UI.panel()
 	add_child(footer)
@@ -68,13 +83,23 @@ func _build_display() -> void:
 	text_choice.tooltip_text = "Scales menus, editor controls, dialogs and the pitwall. Illustrated map labels keep their own scale."
 	text_choice.accessibility_name = "Interface text size"
 	UI.field(body, "Interface text", text_choice)
+	layout_choice = UI.option(["Minimal", "Advanced"], _set_layout,
+		0 if draft.get("pitwall_layout", "minimal") == "minimal" else 1)
+	layout_choice.tooltip_text = "Minimal keeps the focused race screen. Advanced opens Race Director and the full engineering workspaces. The choice applies when a weekend screen next opens."
+	layout_choice.accessibility_name = "Race interface"
+	UI.field(body, "Race interface", layout_choice)
+	advanced_choice = UI.option(["Race Director", "Engineering"], _set_advanced_layout,
+		0 if advanced_layout == "director" else 1)
+	advanced_choice.tooltip_text = "Race Director is the approachable advanced starting view. Engineering opens the complete technical workspace directly; both use the same live weekend."
+	advanced_choice.accessibility_name = "Advanced interface starting view"
+	UI.field(body, "Advanced starts in", advanced_choice)
 	sample = UI.label("Preview · MER · Box this lap", 14)
 	body.add_child(sample)
 	body.add_child(UI.check("Fullscreen", draft.fullscreen, func(value): _change("fullscreen", value)))
 	body.add_child(UI.check("Vertical synchronization", draft.vsync, func(value): _change("vsync", value)))
 	UI.field(body, "Default simulation speed", UI.option(["1×", "2×", "4×", "8×", "16×"],
 		func(index): _change("speed", [1, 2, 4, 8, 16][index]), [1, 2, 4, 8, 16].find(draft.speed)))
-	body.add_child(UI.paragraph("Text changes preview here. Apply saves them for the rest of the game. Space controls time only in a live weekend."))
+	body.add_child(UI.paragraph("Minimal remains the default. Changing interface mode alters presentation only: the weekend, commands, playback state, inventory and random state stay authoritative and shared."))
 
 func _build_circuit() -> void:
 	var body = _section("CIRCUIT PRESENTATION")
@@ -83,8 +108,9 @@ func _build_circuit() -> void:
 	UI.field(body, "Car dot size", UI.option(["Standard", "Large", "Extra large"],
 		func(index): _change("dot_scale", [1.0, 1.3, 1.6][index]), [1.0, 1.3, 1.6].find(draft.dot_scale)))
 	body.add_child(UI.check("Show driver labels by default", draft.labels, func(value): _change("labels", value)))
-	if draft.get("pitwall_layout", "minimal") != "minimal":
-		body.add_child(UI.check("Show racing line by default", draft.racing_line, func(value): _change("racing_line", value)))
+	racing_line_choice = UI.check("Show racing line by default", draft.racing_line, func(value): _change("racing_line", value))
+	racing_line_choice.tooltip_text = "Available in the Advanced interface. Minimal deliberately keeps engineering overlays hidden."
+	body.add_child(racing_line_choice)
 	body.add_child(UI.check("Reduced motion / direct follow camera", draft.reduced_motion,
 		func(value): _change("reduced_motion", value)))
 	body.add_child(UI.paragraph("These preferences change presentation, never grip, weather or the race model. Circuit defaults apply when a view opens."))
@@ -102,6 +128,21 @@ func _build_data(parent: Node) -> void:
 	actions.add_child(UI.button("Open data folder", func():
 		var error = OS.shell_open(data_path)
 		if error != OK: UI.notify(self, "Could not open folder", "Use Copy data path to open it manually. Error: " + error_string(error))))
+
+func _set_layout(index: int) -> void:
+	_change("pitwall_layout", "minimal" if index == 0 else advanced_layout)
+	_sync_layout_controls()
+
+func _set_advanced_layout(index: int) -> void:
+	advanced_layout = ["director", "engineering"][index]
+	_change("advanced_pitwall_layout", advanced_layout)
+	if draft.get("pitwall_layout", "minimal") != "minimal":
+		_change("pitwall_layout", advanced_layout)
+
+func _sync_layout_controls() -> void:
+	var minimal = draft.get("pitwall_layout", "minimal") == "minimal"
+	if advanced_choice != null: advanced_choice.disabled = minimal
+	if racing_line_choice != null: racing_line_choice.disabled = minimal
 
 func _change(key: String, value: Variant) -> void:
 	draft[key] = value

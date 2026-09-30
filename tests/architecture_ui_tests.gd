@@ -1,5 +1,80 @@
 extends "res://tests/minimal_ui_tests.gd"
 ## Real native controls plus explicit scheduling ownership; no synthetic racing results.
+
+func choose_option(control: OptionButton, index: int) -> void:
+	control.select(index)
+	control.item_selected.emit(index)
+	await settle(3)
+
+func interface_mode_journey() -> void:
+	# Persistence accepts the two historic advanced variants, a public alias, and
+	# falls back safely when an unsupported value is read.
+	app.settings.pitwall_layout = "minimal"
+	app.restore_settings({"pitwall_layout": "director"})
+	check(app.settings.pitwall_layout == "director" and app.settings.advanced_pitwall_layout == "director", "Saved Race Director preference survives settings restoration")
+	app.restore_settings({"pitwall_layout": "engineering"})
+	check(app.settings.pitwall_layout == "engineering" and app.settings.advanced_pitwall_layout == "engineering", "Saved Engineering preference survives settings restoration")
+	app.restore_settings({"pitwall_layout": "advanced"})
+	check(app.settings.pitwall_layout == "director" and app.settings.advanced_pitwall_layout == "director", "Public Advanced alias migrates to the approachable Race Director start")
+	app.restore_settings({"pitwall_layout": "minimal", "advanced_pitwall_layout": "engineering"})
+	check(app.settings.pitwall_layout == "minimal" and app.settings.advanced_pitwall_layout == "engineering", "Minimal can retain an independent preferred Advanced start")
+	app.restore_settings({"pitwall_layout": "unsupported"})
+	check(app.settings.pitwall_layout == "minimal", "Unsupported interface preference falls back to Minimal")
+
+	game.show_settings()
+	await settle(8)
+	var settings = game.content.get_child(0)
+	check(settings.layout_choice.selected == 0 and settings.draft.pitwall_layout == "minimal", "Settings expose Minimal as the default race interface")
+	check(settings.advanced_choice.disabled and settings.racing_line_choice.disabled, "Advanced-only preferences are unavailable while Minimal is selected")
+	var application_before = app.settings.duplicate(true)
+	await choose_option(settings.layout_choice, 1)
+	check(settings.draft.pitwall_layout == "director" and not settings.advanced_choice.disabled, "Selecting Advanced stages Race Director without rebuilding the current screen")
+	check(not settings.racing_line_choice.disabled, "Advanced selection exposes its circuit overlay preference")
+	await choose_option(settings.advanced_choice, 1)
+	check(settings.draft.pitwall_layout == "engineering" and settings.draft.advanced_pitwall_layout == "engineering", "Advanced start can be changed explicitly to Engineering")
+	await choose_option(settings.layout_choice, 0)
+	check(settings.draft.pitwall_layout == "minimal" and settings.draft.advanced_pitwall_layout == "engineering", "Returning to Minimal retains the staged Advanced starting surface")
+	check(settings.advanced_choice.disabled and settings.racing_line_choice.disabled, "Returning to Minimal disables advanced-only controls")
+	check(app.settings == application_before, "Interface preview does not mutate application settings before Apply")
+	await capture("architecture-interface-selector", "Native staged Minimal / Advanced setting; no live weekend mutation")
+	await click(settings.save_button)
+	check(not settings.has_changes() and app.settings.pitwall_layout == "minimal" and app.settings.advanced_pitwall_layout == "engineering", "Apply persists Minimal and its independent preferred Advanced start")
+	var stored = Storage.read_json("user://settings.json")
+	check(stored.ok and stored.data.pitwall_layout == "minimal" and stored.data.advanced_pitwall_layout == "engineering", "Both interface preferences are read back from real settings storage")
+
+	game.show_settings()
+	await settle(8)
+	settings = game.content.get_child(0)
+	check(settings.advanced_choice.selected == 1 and settings.advanced_choice.disabled, "Reopened Settings remembers Engineering while Minimal remains active")
+	await choose_option(settings.layout_choice, 1)
+	check(settings.draft.pitwall_layout == "engineering", "Switching back to Advanced restores the saved Engineering start")
+	await click(settings.save_button)
+	check(app.settings.pitwall_layout == "engineering", "Apply activates the restored Advanced interface preference")
+
+	# Both advanced starts mount on the same authoritative weekend and share its
+	# recording, commands and scheduler. Recomposition is presentation-only.
+	var advanced_model = PracticeRaceSim.new(TrackGeometry.new(app.library[7]), {"laps": 6, "scenario": "dry", "intensity": "calm", "seed": 7314})
+	advanced_model.paused = false
+	app.weekend = advanced_model
+	var before = RaceStateValue.fingerprint(advanced_model.snapshot())
+	game.show_weekend()
+	await settle(8)
+	var advanced_view = game.content.get_child(0)
+	check(advanced_view is RaceDirectorWorkspace and not advanced_view.director_enabled, "Engineering preference opens the retained full advanced workspace")
+	check(before == RaceStateValue.fingerprint(advanced_model.snapshot()), "Opening Engineering does not mutate weekend state or RNG")
+	app.settings.pitwall_layout = "director"
+	app.settings.advanced_pitwall_layout = "director"
+	game.show_weekend()
+	await settle(8)
+	advanced_view = game.content.get_child(0)
+	check(advanced_view is RaceDirectorWorkspace and advanced_view.director_enabled, "Race Director preference opens the approachable advanced surface")
+	check(before == RaceStateValue.fingerprint(advanced_model.snapshot()), "Switching advanced starting surface preserves the same weekend state and RNG")
+	app.stop_session()
+	app.settings.pitwall_layout = "minimal"
+	check(app.save_settings().is_empty(), "Test restores and persists the Minimal default")
+	game.show_menu()
+	await settle(6)
+
 func run() -> void:
 	root.size = Vector2i(1440, 900)
 	root.content_scale_size = root.size
@@ -7,6 +82,7 @@ func run() -> void:
 	root.add_child(game)
 	app = root.get_node("App")
 	await settle()
+	await interface_mode_journey()
 	app.settings.pitwall_layout = "minimal"
 	app.settings.pitwall_text_scale = 1.0
 	model = PracticeRaceSim.new(TrackGeometry.new(app.library[7]), {"laps": 6, "scenario": "dry", "intensity": "calm", "seed": 7314})
