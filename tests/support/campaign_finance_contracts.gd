@@ -135,6 +135,21 @@ static func _application_contract(check: Callable, economy: Dictionary) -> void:
 	check.call(forecast.ok and forecast.forecast.scenarios.committed.minimum_cash_minor == 54000 \
 		and RaceStateValue.fingerprint(checkpoint) == before,
 		"Application forecast returns a detached minimum-cash projection")
+	var preview = CampaignFinanceQuery.commitment_preview(checkpoint, {
+		"id": "preview.development-project",
+		"account_id": ACCOUNT,
+		"source_id": "project.preview",
+		"due_slot": 9 * WEEK,
+		"amount_minor": -10000,
+		"category": "development"
+	}, 9 * WEEK)
+	check.call(preview.ok \
+		and preview.forecast.scenarios.committed.minimum_cash_minor == 44000 \
+		and preview.forecast.scenarios.committed.reserve_gap_minor == 16000 \
+		and preview.commitment.status == "open" \
+		and not checkpoint.economy.commitments.has("preview.development-project") \
+		and RaceStateValue.fingerprint(checkpoint) == before,
+		"A proposed commitment exposes its reserve impact before purchase without becoming binding")
 	var early = CampaignFinanceTransaction.settle_due(checkpoint, 9 * WEEK)
 	check.call(not early.ok and RaceStateValue.fingerprint(early.checkpoint) == before,
 		"Application settlement cannot post beyond authoritative campaign time")
