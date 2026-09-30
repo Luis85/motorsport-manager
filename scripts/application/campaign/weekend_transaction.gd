@@ -39,6 +39,9 @@ static func _apply(restored: Dictionary, manifest: Dictionary, ledger: Dictionar
 	if settlement_status == "settled":
 		if active.is_empty() or active.digest != manifest.digest:
 			return _reject("A new weekend settlement requires the exact active campaign manifest.", original)
+		var season_error = CampaignCompetition.manifest_error(normalized.competition, manifest)
+		if not season_error.is_empty():
+			return _reject(season_error, original)
 	elif not active.is_empty() and active.digest != manifest.digest:
 		return _reject("Another campaign weekend is active.", original)
 	var competition = CampaignCompetition.stage(normalized.competition, receipt, policy)
