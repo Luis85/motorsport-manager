@@ -8,6 +8,8 @@ require('./rpg.js');
 require('./behavior-tree.js');
 require('./adventure-content.js');
 require('./colony-policies.js');
+require('./ecs.js');
+require('./actor-systems.js');
 require('./colony.js');
 require('./world-content.js');
 require('./world-integrity.js');
