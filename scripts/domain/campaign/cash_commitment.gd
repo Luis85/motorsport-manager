@@ -2,6 +2,7 @@ class_name CampaignCashCommitment
 extends RefCounted
 ## Binding future cash movement. Positive amounts are contracted receipts;
 ## negative amounts are contracted payments. Forecast assumptions stay separate.
+const MAX_MINOR = CampaignWeekendPolicy.MAX_MINOR
 const STATUSES = ["open", "settled", "cancelled"]
 const CATEGORIES = [
 	"fixed_operations", "event_operations", "development", "training",
@@ -37,7 +38,7 @@ static func validate(data: Variant) -> String:
 	if not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS) \
 			or not RaceCheckpoint.integral(data.get("due_slot"), int(data.created_slot), CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign cash commitment has invalid timing."
-	if not RaceCheckpoint.integral(data.get("amount_minor"), -CampaignEconomy.MAX_MINOR, CampaignEconomy.MAX_MINOR) \
+	if not RaceCheckpoint.integral(data.get("amount_minor"), -MAX_MINOR, MAX_MINOR) \
 			or int(data.amount_minor) == 0:
 		return "Campaign cash commitment has an invalid amount."
 	if data.get("category") not in CATEGORIES or data.get("status") not in STATUSES:
