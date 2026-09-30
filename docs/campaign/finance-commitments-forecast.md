@@ -76,7 +76,7 @@ Version-one economy data remains valid. On the first new finance/event mutation 
 
 Migration therefore does not claim knowledge of unrecorded historical obligations. A version-one economy can remain inside a valid checkpoint until a version-two operation is required.
 
-## Cash forecast
+## Cash forecast and commitment preview
 
 `CampaignFinanceQuery.cash_forecast()` restores a validated checkpoint and calls the pure `CampaignCashForecast`. It issues no campaign command, advances no clock, writes no file and mutates no caller value.
 
@@ -95,7 +95,9 @@ It returns three scenarios:
 
 Each scenario returns ordered movements, ending cash, lowest cash, the slot of that minimum, reserve breach and reserve gap. An overdue open commitment appears at the forecast start while retaining its original due slot.
 
-An unsigned sponsor offer, hypothetical prize or other optimistic assumption cannot improve committed or conservative cash. Refreshing or changing assumptions does not alter the economy digest.
+`CampaignFinanceQuery.commitment_preview()` additionally stages one proposed commitment only inside a detached economy copy, forecasts the resulting minimum cash, and returns the proposed record plus source checkpoint digest. It does not add that commitment to the checkpoint. This is the application seam for showing a purchase, contract or project obligation before the player binds it.
+
+An unsigned sponsor offer, hypothetical prize or other optimistic assumption cannot improve committed or conservative cash. Refreshing a forecast, changing assumptions or previewing a proposed commitment does not alter the economy digest.
 
 ## Worked fixture
 
@@ -110,7 +112,7 @@ The registered fixture implements the GDD's eight-week example:
 - reserve policy: `60,000`;
 - visible reserve gap: `6,000`.
 
-An additional optimistic `50,000` sponsor assumption raises only the optimistic ending cash. It does not become a posting, commitment or guaranteed balance.
+An additional optimistic `50,000` sponsor assumption raises only the optimistic ending cash. It does not become a posting, commitment or guaranteed balance. A proposed additional `10,000` development payment previews a `44,000` minimum and `16,000` reserve gap without becoming binding.
 
 ## Registered contracts
 
@@ -122,11 +124,11 @@ The mandatory campaign suite covers:
 - dated cancellation;
 - reserve-policy persistence;
 - committed/conservative/optimistic separation;
-- detached forecast non-mutation;
+- detached forecast and pre-commitment preview non-mutation;
 - invalid-assumption rejection;
 - terms tamper detection after outer digest recomputation;
 - explicit legacy authority migration;
-- prevention of settlement beyond campaign time;
+- prevention of settlement and finance history beyond campaign time;
 - complete checkpoint/storage round-trip;
 - obligations due during a weekend publishing atomically at their due slots;
 - duplicate weekend import not paying commitments or event rewards twice.
