@@ -1,7 +1,7 @@
 class_name CampaignWeekendTransaction
 extends RefCounted
-## Applies one weekend's time, standings, returned resources and cash postings to
-## a detached candidate checkpoint. The caller persists the candidate atomically.
+## Applies one weekend's time, standings, returned resources, event cash and due
+## commitments to a detached candidate checkpoint, then publishes all or none.
 static func stage(checkpoint: Dictionary, manifest: Dictionary, result: Dictionary, policy: Dictionary) -> Dictionary:
 	var restored = CampaignCheckpoint.restore(checkpoint)
 	if not restored.ok:
@@ -58,18 +58,21 @@ static func _apply(restored: Dictionary, manifest: Dictionary, ledger: Dictionar
 	if settlement_status == "already_settled" and all_applied:
 		return {"ok": true, "status": "already_settled", "error": "",
 			"checkpoint": normalized.duplicate(true), "receipt": receipt.duplicate(true)}
+	var due = CampaignEconomy.settle_due(economy.economy, int(manifest.return_slot))
+	if not due.ok:
+		return _reject(due.error, original, due.status)
 	var state: CampaignState = restored.state
 	if state.clock.elapsed_slots != int(manifest.departure_slot):
 		return _reject("Campaign time must still equal the frozen departure slot before consequences are applied.", original)
 	var elapsed = int(manifest.return_slot) - state.clock.elapsed_slots
 	if elapsed <= 0 or not state.command("advance_slots", {"slots": elapsed}):
 		return _reject("Campaign return time could not be applied exactly once: " + state.last_error, original)
-	var candidate = CampaignCheckpoint.build(state, ledger, {}, competition.competition, economy.economy, inventory.inventory)
+	var candidate = CampaignCheckpoint.build(state, ledger, {}, competition.competition, due.economy, inventory.inventory)
 	if candidate.is_empty():
 		return _reject("Weekend consequences could not form one valid campaign checkpoint.", original)
 	var status = "settled" if settlement_status == "settled" else "completed_consequences"
 	return {"ok": true, "status": status, "error": "", "checkpoint": candidate,
-		"receipt": receipt.duplicate(true)}
+		"receipt": receipt.duplicate(true), "settled_commitments": due.get("settled_count", 0)}
 
 static func _receipt_manifest_error(manifest: Dictionary, receipt: Dictionary) -> String:
 	var bindings = [
