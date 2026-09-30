@@ -44,9 +44,12 @@ static func run(check: Callable) -> void:
 		and commitment_posting.source_id == commitment.id,
 		"The due posting retains commitment provenance independently of the race event")
 	var event_postings = restored.economy.events[manifest.campaign_event_id].posting_ids
-	check.call(event_postings.size() == 3 and event_postings.all(
-		func(posting_id): return account.postings[posting_id].slot == manifest.return_slot \
-			and account.postings[posting_id].source_kind == "event"),
+	var event_postings_dated = event_postings.size() == 3
+	for posting_id in event_postings:
+		var posting: Dictionary = account.postings[posting_id]
+		event_postings_dated = event_postings_dated \
+			and posting.slot == manifest.return_slot and posting.source_kind == "event"
+	check.call(event_postings_dated,
 		"Weekend entry, participation and position postings remain dated at return")
 	var duplicate = CampaignWeekendTransaction.stage_receipt(staged.checkpoint, manifest, receipt, policy)
 	check.call(duplicate.ok and duplicate.status == "already_settled" \
