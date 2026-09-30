@@ -977,6 +977,7 @@
         }
         stepActor(dt) {
             const s = this.s, c = this.actor, n = s.needs, f = c.feelings, t = s.task;
+            const studying = t && ['train', 'practice'].includes(t.kind) && t.phase === 'work';
             // Deterministic ECS actor systems run against the same objects saved in v8.
             this.actorEcs.tick(c, dt, {
                 day: s.day,
