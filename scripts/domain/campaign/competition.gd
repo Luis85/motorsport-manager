@@ -78,7 +78,7 @@ static func validate(data: Variant) -> String:
 		for key in ["result_digest", "policy_digest"]:
 			if not CampaignIdentity.valid_hash(event.get(key)):
 				return "Campaign competition event has an invalid source digest."
-		if not event.get("awards") is Array or event.awards.size() < 2 or event.awards.size() > CampaignWeekendManifest.MAX_ENTRANTS:
+		if not event.get("awards") is Array or event.awards.size() < 2 or event.awards.size() > CampaignWeekendReceipt.MAX_ENTRANTS:
 			return "Campaign competition event has an invalid awards table."
 		var people = {}
 		for index in range(event.awards.size()):
@@ -112,9 +112,9 @@ static func _rebuild(events: Dictionary) -> Dictionary:
 		var season: Dictionary = seasons[event.season_id]
 		for award in event.awards:
 			if not season.drivers.has(award.person_id):
-				season.drivers[award.person_id] = {"points": 0, "starts": 0, "wins": 0, "best_position": CampaignWeekendManifest.MAX_ENTRANTS + 1}
+				season.drivers[award.person_id] = {"points": 0, "starts": 0, "wins": 0, "best_position": CampaignWeekendReceipt.MAX_ENTRANTS + 1}
 			if not season.teams.has(award.team_id):
-				season.teams[award.team_id] = {"points": 0, "starts": 0, "wins": 0, "best_position": CampaignWeekendManifest.MAX_ENTRANTS + 1}
+				season.teams[award.team_id] = {"points": 0, "starts": 0, "wins": 0, "best_position": CampaignWeekendReceipt.MAX_ENTRANTS + 1}
 			for key in ["drivers", "teams"]:
 				var identity = award.person_id if key == "drivers" else award.team_id
 				var row: Dictionary = season[key][identity]
