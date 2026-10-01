@@ -152,6 +152,7 @@ static func _migration_storage_and_freeze_contract(check: Callable) -> void:
 	previous.erase("personnel")
 	previous.erase("operations")
 	previous.erase("engineering")
+	previous.erase("management")
 	previous.economy = legacy_payroll.economy
 	CampaignPersonnelContracts._reseal(previous)
 	var migrated = CampaignCheckpoint.restore(previous)
