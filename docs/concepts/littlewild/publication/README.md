@@ -1,5 +1,7 @@
 # Littlewild v15 — publication record
 
+> **Historical publication record.** The active Littlewild source/build/verification workflow is now TypeScript-based. Files in this directory document the earlier one-time payload installation and are not the current release gate.
+
 ## Status
 
 **Published and runnable.** The checksum-pinned v15 payload is installed under

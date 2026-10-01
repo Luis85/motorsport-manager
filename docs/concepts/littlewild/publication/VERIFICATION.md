@@ -1,5 +1,7 @@
 # Littlewild v15 verification — 29 September 2026
 
+> **Historical pre-TypeScript publication evidence.** This record describes the one-time v15 payload publication and its then-current Python/JavaScript gate. It is retained for provenance only and is not current-head verification. See [`../VERIFICATION.md`](../VERIFICATION.md) for the authoritative TypeScript gate.
+
 ## Product build
 
 The supplied v15 source ZIP passed its archive-integrity check and was extracted

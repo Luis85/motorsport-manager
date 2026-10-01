@@ -1,5 +1,9 @@
 ## PR 25 final review and polishing pass
 
+> Current TypeScript / Clean Architecture / DDD review: [`PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md`](PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md)
+>
+> Historical sections below retain the `.js` / `.cjs` filenames that existed when those milestones were reviewed. The current authored source uses `.ts` / `.cts`; generated JavaScript lives only under ignored `.generated/` output.
+
 > Comprehensive final review: [`PR25-REVIEW-AND-POLISH.md`](PR25-REVIEW-AND-POLISH.md)
 
 The final branch-wide pass hardened failed ECS transaction recovery, physical-world preflight, exact story/scenario review binding, synchronous temporary-registry lifetimes, resource identity validation, multi-registry rollback, and the retained-contract release evidence. These changes preserve the M1–M6 ownership model while closing failure modes that were not covered by the milestone-by-milestone review.
