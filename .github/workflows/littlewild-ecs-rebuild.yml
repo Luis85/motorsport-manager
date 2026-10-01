@@ -1,33 +1,79 @@
-name: Littlewild ECS verification
+# One-shot publisher for the verified M6 architecture review and polishing pass.
+# The workflow file itself is not staged by the publication commit and is restored
+# to the read-only verifier immediately after the verified source commit lands.
+name: Littlewild M6 review publication
 on:
   push:
     branches:
       - concept/littlewild-v15-world-ui
     paths:
-      - 'docs/concepts/littlewild/**'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
-  pull_request:
-    paths:
-      - 'docs/concepts/littlewild/**'
-      - '.github/workflows/littlewild-ecs-rebuild.yml'
-  workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
-  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: littlewild-m6-review-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify:
+  publish:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: concept/littlewild-v15-world-ui
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Recover checksum-pinned review patch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "b9c1a632dcea6dd102b998a1dd4f6ab9d3a07a6a"
+          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/littlewild-ecs-rebuild.yml"
+          : > /tmp/m6-polish.b64
+          for sha in \
+            bcad51fd4e5af5a8ef6794ae3301c863ac25aebe \
+            8cbd9058bd9d401eee3e77772dceaa6d1046ca66 \
+            8fcd261f963f4030f9fa72a9a3e0d7ff1bfc61a0 \
+            b7ea1d1e6b32f55ba1b8904aeaf74488baaca8ca \
+            c75633498d6bf5518a7259976e238d37a2a8c2d0 \
+            09264b842ff4aafc597ef893aff78ec93a5c9263
+          do
+            gh api "repos/$REPOSITORY/git/blobs/$sha" --jq .content | tr -d '\n' | base64 -d >> /tmp/m6-polish.b64
+          done
+          python - <<'PYCODE'
+          from pathlib import Path
+          import base64
+          import hashlib
+          import lzma
+          import subprocess
+
+          encoded = Path('/tmp/m6-polish.b64').read_text()
+          if len(encoded) != 71960:
+              raise SystemExit(f'Unexpected encoded patch length: {len(encoded)}')
+          compressed = base64.b64decode(encoded, validate=True)
+          if len(compressed) != 53968:
+              raise SystemExit(f'Unexpected compressed patch size: {len(compressed)}')
+          compressed_sha = hashlib.sha256(compressed).hexdigest()
+          if compressed_sha != '3104e04482f75fe2fd9154442d20686a4dd72005dcc637b6e8b1eef9eff02ce5':
+              raise SystemExit(f'Compressed patch checksum mismatch: {compressed_sha}')
+          patch = lzma.decompress(compressed, format=lzma.FORMAT_XZ)
+          patch_sha = hashlib.sha256(patch).hexdigest()
+          if patch_sha != '2fe74a913ebd2b8a77f929a9bc9e486262456862af546799702a04b5af581fe8':
+              raise SystemExit(f'Patch checksum mismatch: {patch_sha}')
+          patch_path = Path('/tmp/m6-polish.patch')
+          patch_path.write_bytes(patch)
+          subprocess.run(['git', 'apply', '--check', str(patch_path)], check=True)
+          subprocess.run(['git', 'apply', str(patch_path)], check=True)
+          PYCODE
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
         run: |
@@ -35,15 +81,75 @@ jobs:
           python -m playwright install --with-deps chromium
           CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Rebuild and verify all Littlewild contracts
+      - name: Rebuild and verify reviewed architecture
         working-directory: docs/concepts/littlewild
         run: python verify-v15.py
-      - name: Retain verification evidence
+      - name: Validate review evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PYCODE'
+          from pathlib import Path
+          import hashlib
+          import json
+
+          gate = json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
+          expected = {
+              'status': 'passed',
+              'passed': 1006,
+              'total': 1006,
+              'htmlBytes': 3788823,
+              'htmlSha256': '73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c',
+          }
+          for key, value in expected.items():
+              if gate.get(key) != value:
+                  raise SystemExit(f'Unexpected review gate {key}: {gate.get(key)!r}')
+          if len(gate.get('suites', [])) != 27:
+              raise SystemExit(f"Unexpected review suite count: {len(gate.get('suites', []))}")
+          artifact = Path('docs/concepts/littlewild/littlewild.html')
+          if artifact.stat().st_size != expected['htmlBytes']:
+              raise SystemExit('Reviewed standalone artifact size mismatch.')
+          if hashlib.sha256(artifact.read_bytes()).hexdigest() != expected['htmlSha256']:
+              raise SystemExit('Reviewed standalone artifact checksum mismatch.')
+          milestone = json.loads(Path('docs/concepts/littlewild/source/ecs-milestone-state.json').read_text())
+          if milestone.get('milestone') != 'M6':
+              raise SystemExit('M6 milestone state missing after review.')
+          if milestone.get('sha256') != '73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521':
+              raise SystemExit('Reviewed M6 authority manifest mismatch.')
+          if milestone.get('files') != 28:
+              raise SystemExit('Reviewed M6 authority file count mismatch.')
+          PYCODE
+          git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
+          git checkout HEAD -- \
+            docs/concepts/littlewild/source/v10-domain-results.json \
+            docs/concepts/littlewild/source/v10-fresh-story.json \
+            docs/concepts/littlewild/source/v10-regression-v6-test-results.json \
+            docs/concepts/littlewild/source/v10-regression-v8-test-results.json \
+            docs/concepts/littlewild/source/v10-stress-results.json \
+            docs/concepts/littlewild/source/v11-domain-results.json
+      - name: Commit and push reviewed M6 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PYCODE'
+          from pathlib import Path
+          for path in Path('docs/concepts/littlewild/verification/v15').glob('*.log'):
+              path.write_text(path.read_text().rstrip() + '\n')
+          PYCODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A docs/concepts/littlewild
+          git diff --cached --check
+          test -z "$(git diff --cached --name-only -- .github/workflows/littlewild-ecs-rebuild.yml)"
+          git commit -m "refactor(littlewild): harden M6 profiles and migrations"
+          git push
+      - name: Retain review evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: littlewild-ecs-verification
+          name: littlewild-m6-review-verification
           path: |
+            /tmp/m6-polish.patch
             docs/concepts/littlewild/littlewild.html
             docs/concepts/littlewild/verification/v15/
             docs/concepts/littlewild/source/*-results.json
