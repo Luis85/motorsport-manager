@@ -162,6 +162,7 @@ static func _previous_checkpoint_migration_contract(check: Callable) -> void:
 	previous.economy = economy.economy
 	previous.erase("operations")
 	previous.erase("engineering")
+	previous.erase("management")
 	_reseal(previous)
 	check.call(CampaignCheckpoint.validate(previous).is_empty(),
 		"Version-three checkpoint remains valid without operations authority")
