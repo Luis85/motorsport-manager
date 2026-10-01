@@ -132,8 +132,10 @@ static func _debrief(restored: Dictionary, season: Dictionary, player_entry: Dic
 			positions.append(int(award.position))
 	if not positions.is_empty():
 		positions.sort()
-		facts.append({"level": "observed", "text": "Your cars finished P%s." %
-			" and P".join(positions.map(func(v): return str(v)))})
+		var position_text = ""
+		for index in range(positions.size()):
+			position_text += (" and P" if index > 0 else "") + str(positions[index])
+		facts.append({"level": "observed", "text": "Your cars finished P%s." % position_text})
 	var delta = 0
 	if restored.economy.events.has(item.campaign_event_id):
 		var finance = restored.economy.events[item.campaign_event_id]
