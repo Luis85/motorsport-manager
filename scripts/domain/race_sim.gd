@@ -376,7 +376,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
 			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * tuning.competition.movement.lateral_speed_mps)
-	var limits = track.vehicle_definition.parameters()
+	var limits = track.vehicle_definition.parameters().duplicate(true)
 	if not performance_profiles.is_empty():
 		for key in RacePerformanceProfile.KEYS:
 			limits[key] *= _performance_factor(c, key)
