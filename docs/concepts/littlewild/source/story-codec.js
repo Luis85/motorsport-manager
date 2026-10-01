@@ -9,6 +9,19 @@
     const W = node ? require('./world-content.js') : root.LWWorldContent;
     const G = node ? require('./growth-content.js') : root.LWGrowth;
     const registry = C.registry, SAVE_LIMIT = 12 * 1024 * 1024;
+    // Review evidence is intentionally process-local and object-bound. A caller may
+    // edit the public preview fields for display, but cannot replace the review token
+    // and thereby commit a different story without inspecting it again.
+    const reviews = new WeakMap();
+    const reviewHash = value => C.fingerprint({schemaVersion: 1, components: value});
+    const reviewedSnapshot = preview => ({
+        library: preview.library,
+        adventure: preview.adventure,
+        world: preview.world || W.defaults,
+        growth: preview.growth || G.defaults,
+        state: preview.engine?.export().state
+    });
+    const reviewFingerprint = preview => reviewHash(reviewedSnapshot(preview));
     function encode(engine) { return { app: 'littlewild', version: 8, savedAt: new Date().toISOString(), content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state }; }
     function withAdventure(pack, fn) { const previous = A.copy(A.content); try {
         A.replace(pack);
@@ -60,19 +73,38 @@
         if(!growth.ok)throw Error(growth.errors.join('\n'));
         const stateDoc = { app: 'littlewild', version: doc.version === 4 ? 3 : doc.version, state: doc.state };
         const engine = registry.withLibrary(content.candidate, () => withAdventure(expansion.content, () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(stateDoc)))));
-        return { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, sourceVersion: doc.version, migrationNotes, fingerprint: content.fingerprint, changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
+        const preview = { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, sourceVersion: doc.version, migrationNotes, fingerprint: content.fingerprint, changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
+        reviews.set(preview, reviewFingerprint(preview));
+        return preview;
     }
     function commit(preview) {
-        if (!preview?.engine || !preview.library || !preview.adventure)
+        const reviewed = preview && reviews.get(preview);
+        if (!preview?.engine || !preview.library || !preview.adventure || !reviewed)
             throw Error('Review a valid story first.');
+        if (reviewFingerprint(preview) !== reviewed)
+            throw Error('Story review changed; review again.');
         const content = registry.prepare(preview.library);
         if (!content.ok)
             throw new C.ContentError(content.errors);
-        const next = registry.withLibrary(content.candidate, () => withAdventure(preview.adventure, () => W.withLibrary(preview.world||W.defaults, () => G.withLibrary(preview.growth||G.defaults,()=>L.Engine.import(preview.engine.export())))));
-        registry.commit(content);
-        A.replace(preview.adventure);
-        W.replace(preview.world||W.defaults);
-        G.replace(preview.growth||G.defaults);
+        const expansion = A.validate(preview.adventure);
+        if (!expansion.ok) throw Error(expansion.errors.join('\n'));
+        const land = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => W.validate(preview.world || W.defaults)));
+        if (!land.ok) throw Error(land.errors.join('\n'));
+        const growth = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => G.validate(preview.growth || G.defaults)));
+        if (!growth.ok) throw Error(growth.errors.join('\n'));
+        const story = preview.engine.export();
+        const next = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(story)))));
+        const previous = {base:registry.export(),adventure:A.copy(A.content),world:W.clone(W.content),growth:G.clone(G.content)};
+        try {
+            registry.commit(content); A.replace(expansion.content);
+            W.replace(land.content); G.replace(growth.content);
+        } catch (error) {
+            registry.commit(registry.prepare(previous.base)); A.replace(previous.adventure);
+            W.replace(previous.world); G.replace(previous.growth); throw error;
+        }
         return next;
     }
     function committed(engine) { return engine.s.market?.orders.some(o=>!['done','cancelled'].includes(o.status)) || engine.s.buildings.some(b=>b.storage?.job || Object.values(b.storage?.requests||{}).some(n=>n>0)) || engine.creatures.some(c => c.training || c.learning.queue.length || c.orders.length || c.questPlan || c.activeQuest || c.equipQueue.length || !['idle', 'rest', 'reflect'].includes(c.task?.kind || 'idle')); }

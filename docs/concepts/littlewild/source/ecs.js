@@ -61,12 +61,16 @@
         }
         flush() {
             this._editable();
+            // A rejected command batch is consumed just like a failed transaction.
+            // Keeping invalid commands queued would permanently wedge the world because
+            // Scheduler.step intentionally refuses to run while structural work is pending.
+            const actions = this.structural.splice(0);
             // Check the whole buffer against shadow entity/component memberships first.
             // An invalid late operation must not leave a half-created game entity.
             const entities = new Set(this.entities);
             const memberships = new Map([...this.stores].map(([type,store]) =>
                 [type,new Set(store.keys())]));
-            for (const a of this.structural) {
+            for (const a of actions) {
                 if (a.operation === 'create') {
                     if (entities.has(a.id)) throw Error('Duplicate deferred entity: ' + a.id);
                     entities.add(a.id);
@@ -81,7 +85,6 @@
                     memberships.get(a.type)?.delete(a.id);
                 }
             }
-            const actions = this.structural.splice(0);
             for (const a of actions) {
                 if (a.operation === 'create') this.create(a.id);
                 else if (a.operation === 'destroy') this.destroy(a.id);

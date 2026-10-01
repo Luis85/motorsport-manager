@@ -19,7 +19,9 @@ test('Failed systems discard structural requests rather than partially applying 
 test('Invalid deferred batches cannot leave partially created entities',()=>{
  const w=new E.World();w.defer('create','c1');w.defer('create','c1');
  assert.throws(()=>w.flush(),/Duplicate deferred entity/);
- assert.deepEqual(w.query([]),[]);
+ assert.deepEqual(w.query([]),[]);assert.equal(w.structural.length,0);
+ w.defer('create','c2');w.flush();assert.deepEqual(w.query([]),['c2']);
+ new E.Scheduler().step(w,.1);assert.deepEqual(w.query([]),['c2']);
 });
 test('Component lifecycle tracks a changing creature roster',()=>{
  const mk=id=>({id,creature:{x:1,y:2},inventory:{wood:1},needs:{},learning:{},feelings:{}});

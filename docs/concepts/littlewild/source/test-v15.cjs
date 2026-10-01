@@ -58,12 +58,22 @@ test('Reject prototype-bearing raw JSON',()=>{assert(!X.validate('{"__proto__":{
 test('Reject corrupt JSON',()=>assert(!X.validate('{oops').ok));
 test('Reject oversized untrusted input',()=>assert(!X.validate(' '.repeat(8*1024*1024+1)).ok));
 test('Previews are detached from source pack edits',()=>{const p=copy(all[0]),r=X.prepareScene(p,p.scenes[0].id);p.presentation.title='Changed';assert.notEqual(r.pack.presentation.title,p.presentation.title);});
-test('Mutated preview cannot be committed',()=>{const p=X.prepareScene(all[0],'first-morning'),before=active();p.pack.name='Changed';assert.throws(()=>X.commitScene(p));assert.equal(active(),before);});
+test('Mutated preview cannot be committed',()=>{for(const edit of[
+ p=>p.pack.name='Changed',p=>p.sceneId='charted-home',
+ p=>{p.sceneId='charted-home';p.fingerprint=X.hash(p.pack);p.reviewFingerprint=X.hash({packFingerprint:p.fingerprint,sceneId:p.sceneId});}
+]){const p=X.prepareScene(all[0],'first-morning'),before=active();edit(p);assert.throws(()=>X.commitScene(p),/preview changed/);assert.equal(active(),before);}});
 test('Exported experience integrity is checked',()=>{const a=X.commitScene(X.prepareScene(all[1],all[1].scenes[0].id));const d=S.encode(a),before=active();d.experience.world.name='Changed';assert.throws(()=>S.inspect(d));assert.equal(active(),before);});
-test('Mutated story review cannot be committed',()=>{const a=X.commitScene(X.prepareScene(all[0],'first-morning')),p=S.inspect(S.encode(a));p.experience.name='Changed';assert.throws(()=>S.commit(p));});
+test('Mutated story review cannot be committed',()=>{const a=X.commitScene(X.prepareScene(all[0],'first-morning'));for(const edit of[
+ p=>p.experience.name='Changed',p=>{p.library=copy(p.library);p.library.library.name='Changed';},p=>p.adventure.revision='5.0.1',
+ p=>p.world.name='Changed',p=>p.growth.features[0].name='Changed',p=>p.engine.s.player.coins++,
+ p=>{p.experience.name='Changed';p.experienceFingerprint=X.hash(p.experience);p.simulationFingerprint=global.LWSimulationProfile.fingerprint(p.experience.simulation);p.reviewFingerprint='forged';}
+]){const p=S.inspect(S.encode(a)),before=active();edit(p);assert.throws(()=>S.commit(p),/stale|review changed/i);assert.equal(active(),before);}});
 test('Pack list returns detached copies',()=>{const p=X.builtins();p[0].name='Changed';assert.notEqual(X.builtins()[0].name,'Changed');});
 test('Active world is deeply frozen',()=>assert(Object.isFrozen(P.current)&&Object.isFrozen(P.current.terrain)));
-test('Temporary world registry always rolls back on errors',()=>{const before=P.current;assert.throws(()=>P.withProfile(all[1].worlds[0],()=>{throw Error('test');}));assert.strictEqual(P.current,before);});
+test('Temporary world registry always rolls back on errors',()=>{const before=P.current;assert.throws(()=>P.withProfile(all[1].worlds[0],()=>{throw Error('test');}));assert.strictEqual(P.current,before);for(const scope of[
+ work=>P.withProfile(all[1].worlds[0],work),work=>C.registry.withLibrary(C.registry.export(),work),
+ work=>W.withLibrary(W.content,work),work=>G.withLibrary(G.content,work)
+])assert.throws(()=>scope(()=>Promise.resolve()),/synchronous/);assert.strictEqual(P.current,before);});
 test('Scene validation failure rolls back every staged library',()=>{const before=active(),p=copy(all[1]);p.scenes[1].initialState.colony.creatures[0].creature.x=999;assert(!X.validate(p).ok);assert.equal(active(),before);});
 test('Source setup can select a different player level and budget',()=>{const p=copy(all[0]);p.scenes[0].initialState.player.coins=321;p.scenes[0].initialState.player.level=4;const a=X.commitScene(X.prepareScene(p,p.scenes[0].id));assert.equal(a.s.player.coins,321);assert.equal(a.s.player.level,4);});
 test('Second setting changes actual building definitions',()=>{X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));assert.equal(L.BUILDINGS.bench.name,'Assembly bench');assert.equal(global.LWGeography.describe(0,0).name,'Copper Shore');});

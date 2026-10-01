@@ -1,3 +1,9 @@
+## PR 25 final review and polishing pass
+
+> Comprehensive final review: [`PR25-REVIEW-AND-POLISH.md`](PR25-REVIEW-AND-POLISH.md)
+
+The final branch-wide pass hardened failed ECS transaction recovery, physical-world preflight, exact story/scenario review binding, synchronous temporary-registry lifetimes, resource identity validation, multi-registry rollback, and the retained-contract release evidence. These changes preserve the M1–M6 ownership model while closing failure modes that were not covered by the milestone-by-milestone review.
+
 ## ECS M6 review
 
 > Dedicated final review: [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md)
@@ -56,7 +62,7 @@ Pack previews restore registries after failure. Late file reads are canceled by 
 
 ## Preservation and remaining debt
 
-`source/fixtures/v14-retained-contracts.json` pins 19 unchanged runtime modules and eight original content-library/schema files. Changes to composition, geographic profile plumbing, pause-view classification and renderer materials are intentional and reviewed separately. The original historical test files remain in source; version-specific title/hash/full-screen expectations are not falsely reported as passing v15 checks. Behavioral presentation and pause assertions were carried forward without removing them, with new v15 identity contracts.
+`source/fixtures/v14-retained-contracts.json` pins the prior v14 hashes for 19 runtime modules and eight original content-library/schema files. `source/fixtures/ecs-migration.json` is the narrow allowlist for reviewed deviations; everything else remains byte-gated. Changes to composition, geographic profile plumbing, pause-view classification, renderer materials, and final story-import confirmation are intentional and documented there. The original historical test files remain in source; version-specific title/hash/full-screen expectations are not falsely reported as passing v15 checks. Behavioral presentation and pause assertions were carried forward without removing them, with new v15 identity contracts.
 
 This is incremental architecture work. Large legacy modules (`ui.js`, `engine.js`, `systems.js`, `colony.js` and others) remain beyond the repository's advisory per-file budgets. New modules stay under 400 physical lines and new test scripts under 450, but the legacy imports and generated HTML/vendor bundle are explicit exceptions for this isolated concept handoff. No quality-policy exclusions or native-game assertions are changed. Root native Godot gates were not run: no native runtime files were edited.
 
@@ -64,6 +70,6 @@ Future extraction should proceed by responsibility with behavioral fixtures, not
 
 ## Follow-up: first ECS migration
 
-`ecs.js` now owns deterministic entity/component storage, structural command buffering, queries and explicit system scheduling. `actor-ecs.js` owns actor needs, learning fatigue and baseline social decay, with tuning in `content/actor-rules.json`. `colony.js` has one intentional numerical-loop extraction; all other historical pinned v14 sources remain hash-gated. `source/fixtures/ecs-migration.json` documents and narrows that exception.
+`ecs.js` now owns deterministic entity/component storage, structural command buffering, queries and explicit system scheduling. `actor-ecs.js` owns actor needs, learning fatigue and baseline social decay, with tuning in `content/actor-rules.json`. `colony.js` has one intentional numerical-loop extraction. The reviewed M1–M6 deviations—including the final story-confirmation hardening—remain explicitly enumerated in `source/fixtures/ecs-migration.json`; every non-enumerated historical contract remains hash-gated.
 
 Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. See `ECS-ARCHITECTURE.md` for the completed M1–M6 boundaries and remaining product-level limitations.

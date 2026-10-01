@@ -4,37 +4,37 @@
 
 **1,006 / 1,006 checks passed in 27 suites.** Of these, 105 are browser checks and 901 exercise ECS, composition, simulation profiles, migrations, domain behavior, presentation, pause policy, schemas, authoring CLIs, compatibility, and release integrity.
 
-Artifact: `littlewild.html` — 3,788,823 bytes. SHA-256: `73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c`. Source gate: `python verify-v15.py`. Machine-readable evidence: `verification/v15/gate-results.json`.
+Artifact: `littlewild.html` — 3,795,633 bytes. SHA-256: `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1`. Source gate: `python3 verify-v15.py`. Machine-readable evidence: `verification/v15/gate-results.json`.
 
 | Suite | Passed / total | Elapsed seconds |
 |---|---:|---:|
-| ecs-core | 9 / 9 | 0.03 |
-| simulation-profile | 15 / 15 | 0.07 |
-| simulation-profile-integration | 15 / 15 | 2.29 |
-| engine-composition | 14 / 14 | 0.53 |
-| ecs-activity | 7 / 7 | 0.03 |
-| ecs-world | 11 / 11 | 0.03 |
-| ecs-economy | 12 / 12 | 0.03 |
-| ecs-integration | 7 / 7 | 0.42 |
-| ecs-world-integration | 6 / 6 | 0.24 |
-| ecs-economy-integration | 8 / 8 | 0.29 |
-| scenario-domain | 77 / 77 | 6.68 |
-| presentation | 47 / 47 | 0.64 |
-| pause-policy | 54 / 54 | 0.81 |
-| cartography | 73 / 73 | 3.28 |
-| domain | 76 / 76 | 2.03 |
-| growth-stress | 3 / 3 | 16.75 |
-| earned-progression | 8 / 8 | 5.53 |
-| legacy-v5 | 133 / 133 | 4.71 |
-| legacy-v6 | 52 / 52 | 20.45 |
-| legacy-v8 | 88 / 88 | 24.51 |
-| quality-v9 | 31 / 31 | 1.04 |
-| foundation-v9 | 31 / 31 | 8.08 |
-| legacy-schemas | 19 / 19 | 1.71 |
-| scenario-schema-cli | 47 / 47 | 2.65 |
-| release | 58 / 58 | 3.97 |
-| browser | 89 / 89 | 14.36 |
-| browser-contracts | 16 / 16 | 5.85 |
+| ecs-core | 9 / 9 | 0.05 |
+| simulation-profile | 15 / 15 | 0.08 |
+| simulation-profile-integration | 15 / 15 | 3.09 |
+| engine-composition | 14 / 14 | 0.90 |
+| ecs-activity | 7 / 7 | 0.04 |
+| ecs-world | 11 / 11 | 0.05 |
+| ecs-economy | 12 / 12 | 0.04 |
+| ecs-integration | 7 / 7 | 0.67 |
+| ecs-world-integration | 6 / 6 | 0.40 |
+| ecs-economy-integration | 8 / 8 | 0.40 |
+| scenario-domain | 77 / 77 | 10.32 |
+| presentation | 47 / 47 | 1.09 |
+| pause-policy | 54 / 54 | 1.49 |
+| cartography | 73 / 73 | 5.17 |
+| domain | 76 / 76 | 2.96 |
+| growth-stress | 3 / 3 | 23.25 |
+| earned-progression | 8 / 8 | 8.09 |
+| legacy-v5 | 133 / 133 | 7.19 |
+| legacy-v6 | 52 / 52 | 27.42 |
+| legacy-v8 | 88 / 88 | 29.62 |
+| quality-v9 | 31 / 31 | 1.34 |
+| foundation-v9 | 31 / 31 | 10.96 |
+| legacy-schemas | 19 / 19 | 2.63 |
+| scenario-schema-cli | 47 / 47 | 3.58 |
+| release | 58 / 58 | 5.72 |
+| browser | 89 / 89 | 16.08 |
+| browser-contracts | 16 / 16 | 7.29 |
 
 ## What was actually exercised
 
@@ -50,7 +50,7 @@ An actual browser save was captured from the supplied v14 artifact with hash `3e
 
 ## Gate integrity and historical assertions
 
-Every suite result is removed before that suite runs. Nonzero exits, missing results, mismatched counts, explicit failures, schema drift, profile/archetype drift, or unexpected artifact changes fail the gate. The entire gate was rerun after M6 source, authoring, UI, migration, and verification changes; the successful result above is the one committed with the milestone.
+Every suite result is removed before that suite runs. Nonzero exits, missing results, mismatched counts, explicit failures, schema drift, profile/archetype drift, or unexpected artifact changes fail the gate. The entire gate was rerun after the final PR 25 source, review-contract, transaction, documentation, and verification changes; the successful result above is the current handoff evidence.
 
 The historical v10–v14 browser scripts and per-version bundle hashes are not all rerun because some assert superseded full-screen Build/Tutorial behavior or former artifact identity. Their domain regression suites remain active, and prior pure presentation and pause assertions are retained in v15-specific suites. This 1,006-check gate is the current authoritative release gate; it is not presented as the sum of every obsolete historical harness.
 

@@ -14,7 +14,7 @@
  const total=inv=>Object.values(inv||{}).reduce((sum,n)=>sum+n,0);
  function inventory(inv,label){
   if(!plain(inv))throw Error('Invalid '+label+' inventory.');
-  for(const [id,n]of Object.entries(inv))if(!identity('i:'+id)||!integer(n))throw Error('Invalid '+label+' inventory quantity.');
+  for(const [id,n]of Object.entries(inv))if(!identity(id)||!integer(n))throw Error('Invalid '+label+' inventory quantity.');
   return inv;
  }
  function transaction(spec,kind){if(!plain(spec)||!identity(spec.id))throw Error('Invalid '+kind+' transaction.');return spec;}
@@ -29,7 +29,7 @@
   }
   const bindInventory=(id,items)=>component(id,'Inventory',{items:inventory(items,id)});
   const bindDeposit=(id,record,resource,finite)=>{
-   if(!plain(record)||!identity('i:'+resource)||typeof finite!=='boolean'||finite&&!integer(record.stock))throw Error('Invalid resource deposit.');
+   if(!plain(record)||!identity(resource)||typeof finite!=='boolean'||finite&&!integer(record.stock))throw Error('Invalid resource deposit.');
    return component(id,'ResourceDeposit',{record,resource,finite});
   };
   const bindWorksite=(id,storage)=>{
@@ -41,7 +41,7 @@
    const x=w.get(id,'CarrierTask'),s=x.spec;
    if(completed.has(s.id)){x.result=result('duplicate',{duplicate:true});return;}
    const source=w.get(s.sourceId,'Inventory')?.items,destination=w.get(s.destinationId,'Inventory')?.items;
-   if(!source||!destination||!identity('i:'+s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
+   if(!source||!destination||!identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
    const amount=Math.min(s.requested,quantity(source,s.resource),s.destinationLimit);
    if(amount<=0){x.result=result('blocked');return;}
    source[s.resource]=quantity(source,s.resource)-amount;destination[s.resource]=quantity(destination,s.resource)+amount;
@@ -62,7 +62,7 @@
    if(completed.has(s.id)){x.result=result('duplicate',{duplicate:true,job:st?.job||null});return;}
    if(!st||!jobComponent||!plain(r)||!plain(r.cost)||!plain(s.job)||!integer(s.outputCapacity)||!integer(s.outputAmount,1)||!identity(s.job.id))throw Error('Invalid production reservation.');
    if(st.job){x.result=result(st.job.id===s.job.id?'duplicate':'blocked',{duplicate:st.job.id===s.job.id,job:st.job});return;}
-   if(total(st.output)+s.outputAmount>s.outputCapacity||Object.entries(r.cost).some(([k,q])=>!identity('i:'+k)||!integer(q)||quantity(st.input,k)<q)){x.result=result('blocked');return;}
+   if(total(st.output)+s.outputAmount>s.outputCapacity||Object.entries(r.cost).some(([k,q])=>!identity(k)||!integer(q)||quantity(st.input,k)<q)){x.result=result('blocked');return;}
    const substrate=s.depositId?w.get(s.depositId,'ResourceDeposit'):null;
    if(s.depositId&&!substrate)throw Error('Missing production substrate.');
    if(substrate?.finite&&substrate.record.stock<s.substrateDepletion){x.result=result('blocked');return;}
@@ -108,15 +108,50 @@
     bindWorksite(s.worksiteId,s.storage);if(s.depositId)bindDeposit(s.depositId,s.deposit,s.substrateResource,s.substrateFinite);
    }else if(type==='ProductionJobUpdate'||type==='ProductionSettlement')bindWorksite(s.worksiteId,s.storage);
   }
+  function validateTask(type,s){
+   transaction(s,type);
+   if(type==='CarrierTask'){
+    if(!identity(s.sourceId)||!identity(s.destinationId)||s.sourceId===s.destinationId||s.source===s.destination||
+     !identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
+    inventory(s.source,'source');inventory(s.destination,'destination');
+   }else if(type==='HarvestTask'){
+    if(!identity(s.depositId)||!identity(s.destinationId)||!identity(s.resource)||!integer(s.requested,1)||
+     !integer(s.destinationLimit))throw Error('Invalid harvest request.');
+    if(!plain(s.deposit)||typeof s.finite!=='boolean'||s.finite&&!integer(s.deposit.stock))throw Error('Invalid resource deposit.');
+    inventory(s.destination,'destination');
+   }else if(type==='ProductionReservation'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !plain(s.recipe)||!plain(s.recipe.cost)||!plain(s.job)||!identity(s.job.id)||
+     !integer(s.outputCapacity)||!integer(s.outputAmount,1)||!integer(s.substrateDepletion||0)||
+     Object.entries(s.recipe.cost).some(([id,n])=>!identity(id)||!integer(n)))throw Error('Invalid production reservation.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+    if(s.depositId&&(!identity(s.depositId)||!plain(s.deposit)||!identity(s.substrateResource)||
+     typeof s.substrateFinite!=='boolean'||s.substrateFinite&&!integer(s.deposit.stock)))throw Error('Invalid production substrate.');
+   }else if(type==='ProductionJobUpdate'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !identity(s.jobId)||!['progress','claim','release'].includes(s.action))throw Error('Invalid production update.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+    if(s.action==='progress'&&(!Number.isFinite(s.progress)||s.progress<0) ||
+     s.action==='claim'&&(!identity(s.workerId)||typeof s.allowTakeover!=='boolean') ||
+     s.action==='release'&&s.progress!==undefined&&(!Number.isFinite(s.progress)||s.progress<0))throw Error('Invalid production update.');
+   }else if(type==='ProductionSettlement'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !identity(s.jobId)||typeof s.success!=='boolean'||!integer(s.outputCapacity)||!Number.isFinite(s.time)||
+     !s.success&&(!Number.isFinite(s.retryProgress)||s.retryProgress<0))throw Error('Invalid production settlement.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+   }else throw Error('Invalid physical transaction type.');
+   return s;
+  }
   function stage(type,spec){
-   transaction(spec,type);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+   validateTask(type,spec);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
    world.create(id);const command={spec,result:null};world.set(id,type,command);
    try{scheduler.step(world,.1,{entityId:id});return command.result;}finally{world.destroy(id);}
   }
   function batch(type,specs){
-   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[];
-   for(const spec of specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id)))){
-    transaction(spec,type);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[],ordered=specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id))),bindings=new Map();
+   for(const spec of ordered){validateTask(type,spec);for(const[id,record]of[[spec.sourceId,spec.source],[spec.destinationId,spec.destination]])if(id){if(bindings.has(id)&&bindings.get(id)!==record)throw Error('Conflicting physical entity binding.');bindings.set(id,record);}}
+   for(const spec of ordered){
+    prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
     world.create(id);const command={spec,result:null};world.set(id,type,command);records.push({id,command,spec});
    }
    try{scheduler.step(world,.1);return records.map(x=>({id:x.spec.id,...x.command.result}));}finally{for(const x of records)world.destroy(x.id);}

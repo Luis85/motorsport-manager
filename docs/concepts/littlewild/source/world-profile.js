@@ -16,7 +16,7 @@
     defaults: freeze(C.copy(defaults)), hashOf: hash,
     get current() { return active; }, get hash() { return revision; },
     apply(profile) { active = freeze(C.copy(profile)); revision = hash(active); },
-    withProfile(profile, work) { const prior = active, priorHash = revision; try { this.apply(profile); return work(); } finally { active = prior; revision = priorHash; } }
+    withProfile(profile, work) { const prior = active, priorHash = revision; try { this.apply(profile); const result=work(); if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('World profile callback must be synchronous.'); return result; } finally { active = prior; revision = priorHash; } }
   };
   root.LWWorldProfile = api;
   if (node) module.exports = api;

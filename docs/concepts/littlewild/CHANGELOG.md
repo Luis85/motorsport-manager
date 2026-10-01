@@ -1,3 +1,7 @@
+## PR 25 final review and hardening
+
+Completed a branch-wide M1–M6 review and polishing pass. Rejected deferred ECS batches are now consumed without wedging later scheduler steps; physical transaction batches and failed production settlements validate before authoritative mutation; story and scenario confirmation privately bind the exact reviewed engine state, four libraries, experience, simulation profile, and scene selection; temporary global library/profile scopes reject asynchronous escape; physical resource IDs validate their real values; and portable-story activation rolls back all registries as one boundary. Added regression coverage and a narrow reviewed-migration entry for the intentionally changed story codec.
+
 ## ECS M6 review and polish
 
 Hardened the final milestone with a standalone simulation-profile schema, explicit migration ownership, an immutable per-engine profile, compiled schedule/archetype validation, an independent simulation fingerprint, and atomic profile/library/world activation. Added a dedicated review record and expanded the complete gate to 1,006 checks across 27 suites.
