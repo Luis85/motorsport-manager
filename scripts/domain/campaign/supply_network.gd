@@ -69,7 +69,7 @@ static func consume_material(current:Dictionary,material_id:String,quantity:int,
 		return _reject("Material consumption exceeds physical stock or has invalid provenance.",current)
 	var data=current.duplicate(true);var stock:Dictionary=data.materials[material_id]
 	stock.quantity=int(stock.quantity)-quantity;stock.consumed_units=int(stock.consumed_units)+quantity
-	data.materials[material_id]=stock;_history(data,"consumed",source_id,slot,quantity)
+	data.materials[material_id]=stock;_history(data,"consumed",material_id,slot,quantity)
 	return _result(data,"consumed",current)
 
 static func register_project_evidence(current:Dictionary,project_id:String,
