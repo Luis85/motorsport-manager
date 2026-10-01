@@ -7,7 +7,7 @@ const STATUSES = ["open", "settled", "cancelled"]
 const CATEGORIES = [
 	"fixed_operations", "event_operations", "development", "training",
 	"facility", "payroll", "supplier", "sponsor", "participation",
-	"financing", "other"
+	"financing", "prize", "owner_transfer", "other"
 ]
 
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
