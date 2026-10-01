@@ -75,69 +75,86 @@
     };
 
     class World {
-        readonly entities = new Set<EntityId>();
-        readonly stores = new Map<ComponentType, Map<EntityId, ComponentData>>();
+        readonly #entitySet = new Set<EntityId>();
+        readonly #componentStores = new Map<ComponentType, Map<EntityId, ComponentData>>();
+        readonly #structuralBuffer: StructuralCommand[] = [];
         running = false;
-        readonly structural: StructuralCommand[] = [];
+
+        get entities(): ReadonlySet<EntityId> { return new Set(this.#entitySet); }
+        get stores(): ReadonlyMap<ComponentType, ReadonlyMap<EntityId, ComponentData>> {
+            return new Map([...this.#componentStores].map(([type, store]) => [type, new Map(store)]));
+        }
+        get structural(): readonly Readonly<StructuralCommand>[] {
+            return Object.freeze(this.#structuralBuffer.map(action => Object.freeze({...action})));
+        }
+        get pendingStructural(): number { return this.#structuralBuffer.length; }
 
         private editable(): void {
             if (this.running) throw Error('Structural ECS changes must be deferred.');
         }
         create(id: EntityId): EntityId {
             this.editable(); name(id, 'entity ID');
-            if (this.entities.has(id)) throw Error('Duplicate entity: ' + id);
-            this.entities.add(id);
+            if (this.#entitySet.has(id)) throw Error('Duplicate entity: ' + id);
+            this.#entitySet.add(id);
             return id;
         }
         destroy(id: EntityId): boolean {
             this.editable();
-            if (!this.entities.delete(id)) return false;
-            for (const store of this.stores.values()) store.delete(id);
+            if (!this.#entitySet.delete(id)) return false;
+            for (const store of this.#componentStores.values()) store.delete(id);
             return true;
         }
         set<T extends ComponentData>(id: EntityId, type: ComponentType, data: T): T {
             this.editable(); name(type, 'component type');
-            if (!this.entities.has(id)) throw Error('Unknown entity: ' + id);
+            if (!this.#entitySet.has(id)) throw Error('Unknown entity: ' + id);
             if (!plain(data) || !dataOnly(data)) throw Error('Component data must be behavior-free plain data.');
-            let store = this.stores.get(type);
+            let store = this.#componentStores.get(type);
             if (!store) {
                 store = new Map<EntityId, ComponentData>();
-                this.stores.set(type, store);
+                this.#componentStores.set(type, store);
             }
             store.set(id, data);
             return data;
         }
         remove(id: EntityId, type: ComponentType): boolean {
             this.editable();
-            return this.stores.get(type)?.delete(id) || false;
+            return this.#componentStores.get(type)?.delete(id) || false;
         }
         get<T extends ComponentData = ComponentData>(id: EntityId, type: ComponentType): T | undefined {
-            return this.stores.get(type)?.get(id) as T | undefined;
+            return this.#componentStores.get(type)?.get(id) as T | undefined;
         }
         has(id: EntityId, ...types: ComponentType[]): boolean {
-            return this.entities.has(id) && types.every(type => this.stores.get(type)?.has(id));
+            return this.#entitySet.has(id) && types.every(type => this.#componentStores.get(type)?.has(id));
         }
         query(types: readonly ComponentType[], except: readonly ComponentType[] = []): EntityId[] {
             if (!Array.isArray(types) || !Array.isArray(except)) throw Error('Expected component lists.');
             for (const type of [...types, ...except]) name(type, 'component type');
-            return [...this.entities].filter(id => this.has(id, ...types) &&
-                except.every(type => !this.stores.get(type)?.has(id))).sort();
+            return [...this.#entitySet].filter(id => this.has(id, ...types) &&
+                except.every(type => !this.#componentStores.get(type)?.has(id))).sort();
         }
         defer(operation: StructuralOperation, id: EntityId, type?: ComponentType, data?: ComponentData): void {
             if (!['create', 'destroy', 'set', 'remove'].includes(operation)) throw Error('Invalid structural operation.');
             name(id, 'entity ID');
             if (operation === 'set' || operation === 'remove') name(type, 'component type');
             if (operation === 'set' && (!plain(data) || !dataOnly(data))) throw Error('Component data must be behavior-free plain data.');
-            this.structural.push({ operation, id, type, data });
+            this.#structuralBuffer.push({ operation, id, type, data });
+        }
+        discardDeferred(): void {
+            this.editable();
+            this.#structuralBuffer.length = 0;
         }
         flush(): void {
             this.editable();
-            const actions = this.structural.splice(0);
-            const entities = new Set(this.entities);
-            const memberships = new Map([...this.stores].map(([type, store]) =>
+            const actions = this.#structuralBuffer.splice(0);
+            const entities = new Set(this.#entitySet);
+            const memberships = new Map([...this.#componentStores].map(([type, store]) =>
                 [type, new Set(store.keys())] as const));
 
             for (const action of actions) {
+                if (!['create','destroy','set','remove'].includes(action.operation))
+                    throw Error('Invalid structural operation.');
+                name(action.id, 'entity ID');
+                if (action.operation === 'set' || action.operation === 'remove') name(action.type, 'component type');
                 if (action.operation === 'create') {
                     if (entities.has(action.id)) throw Error('Duplicate deferred entity: ' + action.id);
                     entities.add(action.id);
@@ -167,7 +184,9 @@
 
     const PHASES = Object.freeze(['pre', 'simulate', 'post'] as const);
     class Scheduler {
-        readonly systems: SystemRecord[] = [];
+        readonly #records: SystemRecord[] = [];
+
+        get systems(): readonly SystemRecord[] { return Object.freeze([...this.#records]); }
 
         register(spec: SystemSpec): this {
             if (!spec || typeof spec.update !== 'function' || !Array.isArray(spec.query))
@@ -176,7 +195,7 @@
             for (const type of spec.query) name(type, 'component type');
             if (new Set(spec.query).size !== spec.query.length ||
                 !PHASES.includes(spec.phase) || !Number.isSafeInteger(spec.order) ||
-                this.systems.some(system => system.id === spec.id)) throw Error('Invalid or duplicate system.');
+                this.#records.some(system => system.id === spec.id)) throw Error('Invalid or duplicate system.');
             const record: SystemRecord = Object.freeze({
                 id: spec.id,
                 phase: spec.phase,
@@ -184,26 +203,27 @@
                 query: Object.freeze([...spec.query]),
                 update: spec.update
             });
-            this.systems.push(record);
-            this.systems.sort((a, b) => PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase) ||
+            this.#records.push(record);
+            this.#records.sort((a, b) => PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase) ||
                 a.order - b.order || a.id.localeCompare(b.id));
             return this;
         }
 
         step(world: World, dt: number, context: StepContext = {}): void {
             if (!(world instanceof World) || !Number.isFinite(dt) || dt <= 0 || dt > .25 ||
-                world.running || world.structural.length) throw Error('Invalid ECS step.');
+                world.running || world.pendingStructural) throw Error('Invalid ECS step.');
             if (context.entityId && !world.entities.has(context.entityId)) throw Error('Unknown ECS step entity.');
             world.running = true;
             try {
-                for (const system of this.systems) {
+                for (const system of this.#records) {
                     const ids = context.entityId
                         ? (world.has(context.entityId, ...system.query) ? [context.entityId] : [])
                         : world.query(system.query);
                     for (const id of ids) system.update(world, id, dt, context);
                 }
             } catch (error) {
-                world.structural.length = 0;
+                world.running = false;
+                world.discardDeferred();
                 throw error;
             } finally {
                 world.running = false;
