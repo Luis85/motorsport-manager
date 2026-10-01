@@ -52,7 +52,6 @@ var engine_control: OptionButton
 var strategy_button: Button
 var strategy_popup: PopupPanel
 var strategy_view
-var strategy_modal_open = false
 var text_scale = 1.0
 var preferences: Dictionary = {}
 var refresh_clock = 0.0
@@ -239,12 +238,11 @@ func build_strategy_comparison() -> void:
 	margin.add_child(strategy_view)
 	strategy_view.refresh_requested.connect(refresh_strategy_comparison)
 	strategy_view.close_requested.connect(close_strategy_comparison)
-	strategy_popup.popup_hide.connect(_strategy_popup_hidden)
+	strategy_popup.popup_hide.connect(_restore_strategy_focus)
 	strategy_popup.window_input.connect(_strategy_window_input)
 
 func show_strategy_comparison() -> void:
 	if strategy_button.disabled: return
-	strategy_modal_open = true
 	refresh_strategy_comparison()
 	var viewport = get_viewport_rect().size
 	var target = Vector2i(
@@ -260,10 +258,6 @@ func close_strategy_comparison() -> void:
 		strategy_popup.hide()
 	_restore_strategy_focus()
 
-func _strategy_popup_hidden() -> void:
-	strategy_modal_open = false
-	_restore_strategy_focus()
-
 func _restore_strategy_focus() -> void:
 	if is_inside_tree() and strategy_button != null:
 		strategy_button.call_deferred("grab_focus")
@@ -272,10 +266,7 @@ func _strategy_window_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	if event.keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5]:
-		# PopupPanel owns a separate viewport. Mark both it and the race viewport
-		# handled so global race shortcuts cannot leak through the modal window.
 		strategy_popup.get_viewport().set_input_as_handled()
-		get_viewport().set_input_as_handled()
 
 func refresh_strategy_comparison() -> void:
 	strategy_view.present(session.query.strategy_comparison(selected_id), frame.cars[selected_id].name)
@@ -430,9 +421,6 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or not event is InputEventKey or not event.pressed or event.echo: return
-	if strategy_modal_open:
-		get_viewport().set_input_as_handled()
-		return
 	if engine_control.get_popup().visible or speed_control.get_popup().visible or strategy_popup.visible: return
 	if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return
 	if event.keycode == KEY_SPACE:
