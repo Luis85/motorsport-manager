@@ -10,7 +10,7 @@ permissions:
   issues: read
 concurrency:
   group: littlewild-pr25-review-publication
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   publish:
     if: github.actor != 'github-actions[bot]'
