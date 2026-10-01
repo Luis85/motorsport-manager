@@ -34,24 +34,36 @@ static func register_part(checkpoint:Dictionary,part_id:String)->Dictionary:
 	if not r.engineering.parts.has(part_id):return _reject("Physical part is unknown.",checkpoint)
 	return _publish_supply(r,CampaignSupplyNetwork.register_part(r.management.supply,part_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
 static func wear_part(checkpoint:Dictionary,part_id:String,wear:int)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
-	return _publish_supply(r,CampaignSupplyNetwork.wear_part(r.management.supply,part_id,wear,r.state.clock.elapsed_slots),r.economy,checkpoint)
+	var r=_restore(checkpoint); if not r.ok: return r
+	var changed=CampaignSupplyNetwork.wear_part(r.management.supply,part_id,wear,r.state.clock.elapsed_slots)
+	if not changed.ok: return _reject(changed.error,checkpoint)
+	var condition=int(changed.supply.part_service[part_id].condition)
+	var engineering=CampaignEngineering.set_part_condition(r.engineering,part_id,condition)
+	if not engineering.ok: return _reject(engineering.error,checkpoint)
+	return _publish_supply(r,changed,r.economy,checkpoint,engineering.engineering)
 static func repair_part(checkpoint:Dictionary,part_id:String,work_order_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
-	if not r.operations.work_orders.has(work_order_id):return _reject("Repair work order is unknown.",checkpoint)
+	var r=_restore(checkpoint); if not r.ok: return r
+	if not r.operations.work_orders.has(work_order_id): return _reject("Repair work order is unknown.",checkpoint)
 	var work:Dictionary=r.operations.work_orders[work_order_id]
-	if work.family not in ["preparation_workshop","fabrication_shop"] or CampaignWorkOrder.state_at(work,r.state.clock.elapsed_slots)!="complete":return _reject("Part repair requires completed preparation/fabrication capacity.",checkpoint)
-	return _publish_supply(r,CampaignSupplyNetwork.repair_part(r.management.supply,part_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
+	if work.family not in ["preparation_workshop","fabrication_shop"] or CampaignWorkOrder.state_at(work,r.state.clock.elapsed_slots)!="complete":
+		return _reject("Part repair requires completed preparation/fabrication capacity.",checkpoint)
+	var changed=CampaignSupplyNetwork.repair_part(r.management.supply,part_id,r.state.clock.elapsed_slots)
+	if not changed.ok: return _reject(changed.error,checkpoint)
+	var engineering=CampaignEngineering.set_part_condition(r.engineering,part_id,100)
+	if not engineering.ok: return _reject(engineering.error,checkpoint)
+	return _publish_supply(r,changed,r.economy,checkpoint,engineering.engineering)
 static func _restore(checkpoint:Dictionary)->Dictionary:
 	var r=CampaignCheckpoint.restore(checkpoint)
 	if not r.ok:return _reject(r.error,checkpoint)
 	if not r.active_manifest.is_empty():return _reject("Supply planning is frozen while a weekend is active.",checkpoint)
 	return r
-static func _publish_supply(r:Dictionary,changed:Dictionary,economy:Dictionary,original:Dictionary)->Dictionary:
-	if not changed.ok:return _reject(changed.error,original,changed.get("status","rejected"))
+static func _publish_supply(r:Dictionary,changed:Dictionary,economy:Dictionary,original:Dictionary,
+		engineering:Dictionary={})->Dictionary:
+	if not changed.ok: return _reject(changed.error,original,changed.get("status","rejected"))
 	var m=CampaignManagement.with_supply(r.management,changed.supply)
-	if m.is_empty():return _reject("Supply change could not update management authority.",original)
-	var candidate=CampaignCheckpoint.build(r.state,r.settlements,r.active_manifest,r.competition,economy,r.inventory,r.personnel,r.operations,r.engineering,m)
+	if m.is_empty(): return _reject("Supply change could not update management authority.",original)
+	var actual_engineering=r.engineering if engineering.is_empty() else engineering
+	var candidate=CampaignCheckpoint.build(r.state,r.settlements,r.active_manifest,r.competition,economy,r.inventory,r.personnel,r.operations,actual_engineering,m)
 	if candidate.is_empty():return _reject("Supply change could not form one valid checkpoint.",original)
 	return {"ok":true,"status":changed.status,"error":"","checkpoint":candidate}
 static func _reject(message:String,checkpoint:Dictionary,status:String="rejected")->Dictionary:return {"ok":false,"status":status,"error":message,"checkpoint":checkpoint.duplicate(true)}
