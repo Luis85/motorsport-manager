@@ -63,6 +63,7 @@ jobs:
           raw=lzma.decompress(compressed)
           if hashlib.sha256(raw).hexdigest()!='f27241bb3d3765187d9ff97e76000433ecce8a5515e90485c6bd9b9043021128':
               raise SystemExit('PR25 review tar checksum mismatch')
+          Path('/tmp/pr25-review.tar').write_bytes(raw)
           with tarfile.open(fileobj=BytesIO(raw),mode='r:') as tf:
               members=tf.getmembers()
               if len(members)!=24:
@@ -99,10 +100,37 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          tar -xf /tmp/pr25-review.tar
           git show HEAD^:.github/workflows/littlewild-ecs-rebuild.yml > .github/workflows/littlewild-ecs-rebuild.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/littlewild-ecs-rebuild.yml docs/concepts/littlewild
+          git add .github/workflows/littlewild-ecs-rebuild.yml \
+            docs/concepts/littlewild/CHANGELOG.md \
+            docs/concepts/littlewild/CODE-REVIEW.md \
+            docs/concepts/littlewild/PR25-REVIEW-AND-POLISH.md \
+            docs/concepts/littlewild/PULL_REQUEST.md \
+            docs/concepts/littlewild/VERIFICATION.md \
+            docs/concepts/littlewild/delivery-manifest.json \
+            docs/concepts/littlewild/littlewild.html \
+            docs/concepts/littlewild/source/content-runtime.js \
+            docs/concepts/littlewild/source/ecs.js \
+            docs/concepts/littlewild/source/fixtures/ecs-migration.json \
+            docs/concepts/littlewild/source/growth-content.js \
+            docs/concepts/littlewild/source/scenario-runtime.js \
+            docs/concepts/littlewild/source/scenario-story.js \
+            docs/concepts/littlewild/source/simulation-profile.js \
+            docs/concepts/littlewild/source/story-codec.js \
+            docs/concepts/littlewild/source/test-ecs-world.cjs \
+            docs/concepts/littlewild/source/test-ecs.cjs \
+            docs/concepts/littlewild/source/test-simulation-profile.cjs \
+            docs/concepts/littlewild/source/test-v15-release.cjs \
+            docs/concepts/littlewild/source/test-v15.cjs \
+            docs/concepts/littlewild/source/v15-release-results.json \
+            docs/concepts/littlewild/source/world-content.js \
+            docs/concepts/littlewild/source/world-ecs.js \
+            docs/concepts/littlewild/source/world-profile.js \
+            docs/concepts/littlewild/verification/v15/emberworks.html \
+            docs/concepts/littlewild/verification/v15/gate-results.json
           git diff --cached --check
           git commit -m 'fix(littlewild): publish reviewed PR25 artifacts'
           git push origin HEAD:pr25-review-publish-20261001
