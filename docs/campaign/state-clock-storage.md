@@ -1,22 +1,22 @@
 # Campaign state, clock and storage foundation
 
-Status: implemented contract foundation on PR #27. This is not yet a playable company-management campaign, complete championship, finance forecast or headquarters UI.
+Status: implemented contract foundation on PR #27. This is not yet a playable company-management campaign or headquarters UI.
 
 ## Purpose
 
-This foundation establishes the authoritative campaign shell required before staff, engineering or broad management screens can be added. It is deliberately separate from `RaceSim`: campaign time advances in dated fifteen-minute slots, while the race weekend retains its fixed 0.05-second simulation and independent pause/speed controls.
+This foundation establishes the authoritative campaign shell required before broad management screens can be added. It is deliberately separate from `RaceSim`: campaign time advances in dated fifteen-minute slots, while the race weekend retains its fixed-step simulation and independent pause/speed controls.
 
 The foundation consists of five responsibilities:
 
 1. `CampaignIdentity` validates bounded inert campaign, organization, person, car and event identifiers.
 2. `CampaignClock` owns a deterministic civil date and fifteen-minute slot without consulting the OS or wall clock.
 3. `CampaignState` owns identity, clock, daily principal energy, committed intervention occupancy and an accepted command history.
-4. `CampaignCheckpoint` binds one state snapshot to factual weekend receipts, optional active weekend identity and the campaign consequence projections.
+4. `CampaignCheckpoint` binds one state snapshot to factual weekend receipts, the optional active weekend and every campaign projection.
 5. `CampaignStorage` publishes and restores that checkpoint through the repository's existing recoverable atomic JSON policy.
 
 ## Clock contract
 
-`CampaignClock` records its start date/slot, current date/slot and elapsed slots. The supported civil-calendar range is bounded and leap years follow the Gregorian rules. Advancing a batch of slots and advancing the same slots individually produce the same date. Rendering cadence, OS time, timezone and UI inspection are not inputs.
+`CampaignClock` records its start date/slot, current date/slot and elapsed slots. The supported civil-calendar range is bounded and leap years follow Gregorian rules. Advancing a batch of slots and advancing the same slots individually produce the same date. Rendering cadence, OS time, timezone and UI inspection are not inputs.
 
 The clock does not run automatically in this slice. Time changes only through an accepted `advance_slots` command. Future schedulers may supply those explicit commands, but may not mutate the clock directly or reuse the race step clock.
 
@@ -33,54 +33,82 @@ Rejected, stale, malformed, duplicate, unaffordable and calendar-overflow comman
 
 The accepted command journal is authoritative evidence. A snapshot restores by recreating the initial state and replaying every accepted command in order. Sequence numbers, before/after slots, resulting state and integrity digest must all agree. Recomputing an outer digest cannot conceal a history that no longer reproduces the saved state.
 
-## Checkpoint and persistence contract
+## Checkpoint version 3
 
-`CampaignCheckpoint` version 2 contains:
+`CampaignCheckpoint` version 3 contains:
 
 - campaign identity;
 - the complete replay-validated `CampaignState` snapshot;
 - the versioned `CampaignWeekendSettlement` ledger;
 - an optional immutable `CampaignWeekendManifest` for an active event;
-- `CampaignCompetition` event awards and derived standings;
-- `CampaignEconomy` accounts and dated integer-minor-unit postings;
-- `CampaignInventory` dated exact returned-resource records; and
+- `CampaignCompetition` series, seasons, event awards and standings;
+- `CampaignEconomy` accounts, commitments, reserve policy and postings;
+- `CampaignInventory` dated exact returned-resource records;
+- `CampaignPersonnel` people, contracts, role assignments and availability; and
 - an integrity digest over the complete envelope.
 
-All consequence projections belong to the same campaign and contain the same complete event set. Their result and policy digests must agree with the factual settlement receipt. An event cannot be both active and settled. A version-one checkpoint is accepted and migrated deterministically with empty projections; migration does not guess missing points, money or inventory consequences.
+All consequence projections belong to the same campaign and contain the same complete settled-event set. Their result and policy digests must agree with the factual receipt. An event cannot be both active and settled.
 
-`CampaignStorage` validates and normalizes the complete envelope before writing. It uses `Storage.write_json`, including temporary-file publication, preservation of the previous file and rollback when replacement fails. Loading constructs a new detached `CampaignState`; an invalid or interrupted candidate never mutates a caller's currently held state. Campaign checkpoints use the precise numeric JSON path so integral slots, command revisions and financial minor units survive round-trip without type drift.
+The checkpoint also validates cross-projection time and authority:
 
-The storage adapter also accepts a complete candidate from `CampaignWeekendTransaction`. It does not calculate campaign rules itself.
+- financial and personnel history cannot be dated after campaign time;
+- the organization's cash and payroll accounts must exist;
+- employment payroll must match its immutable contract schedule;
+- terminated employment cannot retain future open payroll; and
+- personnel belongs to the same campaign and organization.
 
-## Weekend consequence layer
+## Migration
 
-The implemented transaction is documented in [Atomic weekend consequence transaction](weekend-consequence-transaction.md). It applies the frozen departure-to-return interval, explicit competition awards, exact returned resources and explicit event financial postings together with the factual receipt. It returns one detached version-two candidate; persistence then publishes that candidate atomically.
+Version-one checkpoints remain accepted and migrate deterministically with empty campaign projections. Migration does not guess points, money, inventory or personnel history.
 
-The consequence transaction remains outside `RaceSim`, replay, rendering and the standalone result archive. Opening a management view or replay cannot advance the campaign or post another settlement.
+Version-two checkpoints preserve competition, economy and inventory exactly and gain empty personnel authority at the restored campaign slot. Existing version-two payroll commitments are placed in an explicit legacy-payroll index. This preserves recorded obligations without inventing people or employment terms. All payroll created after migration must be backed by an explicit contract.
+
+The campaign checkpoint schema remains independent from race-weekend checkpoint versions.
+
+## Persistence contract
+
+`CampaignStorage` validates and normalizes the complete envelope before writing. It uses `Storage.write_json`, including temporary-file publication, preservation of the previous file and rollback when replacement fails. Loading constructs a new detached `CampaignState`; an invalid or interrupted candidate never mutates a caller's currently held state.
+
+Campaign checkpoints use the precise numeric JSON path so integral slots, command revisions, minor monetary units, capacity basis points and dated personnel records survive round-trip without type drift.
+
+The storage adapter accepts complete candidates from campaign competition, finance, personnel and weekend transactions. It does not calculate campaign rules itself.
+
+## Transaction layers
+
+The checkpoint is the publication boundary for:
+
+- `CampaignCompetitionTransaction` — series, season, entry and cancellation administration;
+- `CampaignFinanceTransaction` — commitments, reserve policy and due settlement;
+- `CampaignPersonnelTransaction` — people, contracts, roles and availability; and
+- `CampaignWeekendTransaction` — elapsed weekend time, standings, inventory, event cash, due commitments and factual receipt.
+
+Each transaction restores the whole checkpoint, stages detached values and returns one valid complete candidate or the exact caller checkpoint. No projection is published independently.
 
 ## Deliberate limits
 
-This foundation does **not** implement staff work, contracts, financial commitments or forecasts, event schedules, complete season rules, projects, rivals, facilities, campaign randomness, automatic time flow, management UI, correction deltas or balanced rewards. Daily energy currently governs only explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
+This foundation does **not** implement automatic campaign time flow, staff productivity, facilities, projects, rivals, campaign randomness, recruitment UI, management navigation, correction deltas or balanced rewards. Daily energy currently governs only explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
 
-The next layer is a versioned series calendar and season lifecycle using the existing event awards: event entry states, final/provisional classification policy, tie-breaking, season completion and safe transition. Commitments, due dates and minimum-cash forecasting remain a separate finance milestone over the factual cash-posting ledger.
+The next dependency is TM-06: explicit staff/machine capacity, three facility families and rented services. It must use personnel availability and dated commitments rather than adding a parallel scheduler or budget.
 
 ## Verification
 
-The registered `weekend_launch_tests` suite covers:
+The registered campaign suite covers:
 
 - stable identity acceptance and rejection;
 - leap-day and batch-versus-step clock equivalence;
 - rejected-command non-mutation;
 - intervention energy, occupancy, duplicate and overlap rules;
 - day-boundary energy replenishment without carryover;
-- exact restoration and independent replay of the accepted command history;
-- command-history tamper detection even after digest recomputation;
+- exact restoration and independent replay of accepted command history;
+- history tamper detection even after digest recomputation;
 - weak command-handle lifetime;
 - detached checkpoint values;
 - precise JSON round-trip;
 - failed atomic replacement retaining the previous checkpoint;
 - successful retry publishing the next revision;
-- deterministic version-one to version-two migration; and
-- complete persistence of time, factual receipt, standings, inventory and cash postings after one weekend transaction.
+- deterministic version-one and version-two migration;
+- cross-envelope finance and personnel time validation;
+- complete persistence of competition, cash, inventory, personnel and payroll; and
+- atomic weekend return with due commitments.
 
 These are domain and persistence contracts. They do not establish campaign balance, management usability or player enjoyment.
