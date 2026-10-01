@@ -148,6 +148,8 @@ static func validate(data:Variant)->String:
 		var stock=data.materials[material_id]
 		if material_id!=stock.get("material_id") or not RaceCheckpoint.integral(stock.get("quantity"),0,100000000) 				or not RaceCheckpoint.integral(stock.get("received_units"),0,100000000) or not RaceCheckpoint.integral(stock.get("consumed_units"),0,100000000):
 			return "Campaign material stock is invalid."
+	if RaceStateValue.fingerprint(rebuilt)!=RaceStateValue.fingerprint(data.materials):
+		return "Campaign material stock does not conserve received and consumed units."
 	for id in data.project_evidence:
 		if id!=data.project_evidence[id].get("project_id") or not _evidence_error(data.project_evidence[id]).is_empty():return "Campaign engineering evidence is invalid."
 	for id in data.part_service:
