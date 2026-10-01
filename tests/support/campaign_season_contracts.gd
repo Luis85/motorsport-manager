@@ -206,10 +206,10 @@ static func _policy(season_id: String, event_id: String) -> Dictionary:
 
 static func _receipt(season_id: String, event_id: String, index: int, order: Array) -> Dictionary:
 	var race_ids = [
-		"10000000-0000-4000-8000-000000000001",
-		"10000000-0000-4000-8000-000000000002",
-		"10000000-0000-4000-8000-000000000003",
-		"10000000-0000-4000-8000-000000000004"
+		"10000000000040008000000000000001",
+		"10000000000040008000000000000002",
+		"10000000000040008000000000000003",
+		"10000000000040008000000000000004"
 	]
 	var manifest_hashes = [
 		"5555555555555555555555555555555555555555555555555555555555555555",
@@ -279,7 +279,7 @@ static func _manifest(season: Dictionary, event_index: int) -> Dictionary:
 		"event_revision": event.event_revision,
 		"departure_slot": event.departure_slot,
 		"return_slot": event.return_slot,
-		"race_event_id": "10000000-0000-4000-8000-000000000001",
+		"race_event_id": "10000000000040008000000000000001",
 		"race_model": "practice-race-sim",
 		"checkpoint_version": 11,
 		"track_hash": event.track_hash,
