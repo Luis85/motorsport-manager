@@ -35,6 +35,29 @@
     const plain = (value: unknown): value is ComponentData =>
         value !== null && typeof value === 'object' && !Array.isArray(value) &&
         (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
+    const dataOnly = (value: unknown, ancestors = new Set<object>(), depth = 0): boolean => {
+        if (depth > 64) return false;
+        if (value === null || value === undefined) return true;
+        if (typeof value === 'string' || typeof value === 'boolean') return true;
+        if (typeof value === 'number') return Number.isFinite(value);
+        if (typeof value !== 'object') return false;
+        const object = value as object;
+        if (ancestors.has(object) || Object.getOwnPropertySymbols(object).length) return false;
+        ancestors.add(object);
+        let ok = true;
+        if (Array.isArray(value)) {
+            ok = value.every(entry => dataOnly(entry, ancestors, depth + 1));
+        } else if (plain(value)) {
+            for (const descriptor of Object.values(Object.getOwnPropertyDescriptors(value))) {
+                if (descriptor.get || descriptor.set || !dataOnly(descriptor.value, ancestors, depth + 1)) {
+                    ok = false;
+                    break;
+                }
+            }
+        } else ok = false;
+        ancestors.delete(object);
+        return ok;
+    };
     const name = (value: unknown, label: string): string => {
         if (typeof value !== 'string' || !VALID.test(value)) throw Error('Invalid ' + label + '.');
         return value;
@@ -64,7 +87,7 @@
         set<T extends ComponentData>(id: EntityId, type: ComponentType, data: T): T {
             this.editable(); name(type, 'component type');
             if (!this.entities.has(id)) throw Error('Unknown entity: ' + id);
-            if (!plain(data)) throw Error('Component data must be a plain object.');
+            if (!plain(data) || !dataOnly(data)) throw Error('Component data must be behavior-free plain data.');
             let store = this.stores.get(type);
             if (!store) {
                 store = new Map<EntityId, ComponentData>();
@@ -85,6 +108,7 @@
         }
         query(types: readonly ComponentType[], except: readonly ComponentType[] = []): EntityId[] {
             if (!Array.isArray(types) || !Array.isArray(except)) throw Error('Expected component lists.');
+            for (const type of [...types, ...except]) name(type, 'component type');
             return [...this.entities].filter(id => this.has(id, ...types) &&
                 except.every(type => !this.stores.get(type)?.has(id))).sort();
         }
@@ -92,7 +116,7 @@
             if (!['create', 'destroy', 'set', 'remove'].includes(operation)) throw Error('Invalid structural operation.');
             name(id, 'entity ID');
             if (operation === 'set' || operation === 'remove') name(type, 'component type');
-            if (operation === 'set' && !plain(data)) throw Error('Component data must be a plain object.');
+            if (operation === 'set' && (!plain(data) || !dataOnly(data))) throw Error('Component data must be behavior-free plain data.');
             this.structural.push({ operation, id, type, data });
         }
         flush(): void {
@@ -136,7 +160,9 @@
             if (!spec || typeof spec.update !== 'function' || !Array.isArray(spec.query))
                 throw Error('A system needs a query and an update function.');
             name(spec.id, 'system ID');
-            if (!PHASES.includes(spec.phase) || !Number.isSafeInteger(spec.order) ||
+            for (const type of spec.query) name(type, 'component type');
+            if (new Set(spec.query).size !== spec.query.length ||
+                !PHASES.includes(spec.phase) || !Number.isSafeInteger(spec.order) ||
                 this.systems.some(system => system.id === spec.id)) throw Error('Invalid or duplicate system.');
             const record: SystemRecord = Object.freeze({
                 id: spec.id,
