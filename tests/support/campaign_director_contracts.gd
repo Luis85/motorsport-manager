@@ -64,8 +64,8 @@ static func run(check: Callable) -> void:
 	var next = CampaignDirectorQuery.overview(advanced.checkpoint)
 	check.call(next.next_event.round == 2 and int(next.next_event.departure_slot) == int(next.slot),
 		"Advance stops exactly at Round 2 departure rather than skipping a decision")
-	check.call(advanced.rivals_reviewed > 0,
-		"Rival organizations review their finite plans at the same dated campaign boundary")
+	check.call(followed.rivals_reviewed > 0 and advanced.rivals_reviewed == 0,
+		"Rival review occurs at the dated weekend-return boundary and is not repeated before its next review slot")
 	check.call(CampaignCheckpoint.validate(advanced.checkpoint).is_empty(),
 		"Create, depart, settle, debrief and advance remain one valid persistent campaign")
 
