@@ -459,6 +459,19 @@ func show_weekend(layout: String = "") -> void:
 	view.menu_requested.connect(go_home)
 
 func continue_weekend() -> void:
+	if App.campaign_checkpoint.is_empty() and App.has_saved_campaign():
+		var campaign_error = App.load_campaign()
+		if campaign_error.is_empty():
+			var restored = CampaignCheckpoint.restore(App.campaign_checkpoint)
+			if restored.ok and not restored.active_manifest.is_empty():
+				if App.weekend == null:
+					var active_error = App.load_weekend()
+					if not active_error.is_empty():
+						UI.notify(self, "Could not resume campaign weekend", active_error)
+						return
+				if App.weekend.phase == "results": show_weekend_end()
+				else: show_weekend("minimal")
+				return
 	if App.weekend == null:
 		var error = App.load_weekend()
 		if not error.is_empty(): UI.notify(self, "Could not resume", error); return
