@@ -90,6 +90,13 @@ static func run(check:Callable)->void:
 	checkpoint=done.checkpoint
 	check.call(CampaignCheckpoint.validate(checkpoint).is_empty(),
 		"TM-16 group expansions remain one conserved auditable campaign checkpoint")
+	var files = CampaignStorageContracts.MemoryFiles.new()
+	var storage = CampaignStorage.new("user://campaign-group-contract.json", files)
+	check.call(storage.save_checkpoint(checkpoint).is_empty(),
+		"Expanded management checkpoint persists through the atomic campaign store")
+	var loaded = storage.load()
+	check.call(loaded.ok and RaceStateValue.fingerprint(loaded.management) == RaceStateValue.fingerprint(checkpoint.management),
+		"Campaign storage round-trip preserves people, supply, group, dynasty and management history")
 
 static func _advance(checkpoint:Dictionary,slots:int)->Dictionary:
 	var r=CampaignCheckpoint.restore(checkpoint)
