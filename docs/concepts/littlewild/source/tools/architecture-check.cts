@@ -142,10 +142,14 @@ check("Domain and application core is platform independent", () => {
   assert(violations.length === 0, "Platform dependency leaked into core: " + violations.join("; "));
 });
 
-check("Deterministic core does not use ambient randomness or wall clock", () => {
+check("All domain/application modules avoid ambient randomness and wall clock", () => {
   const violations: string[] = [];
-  for (const file of coreModules) {
-    const text = source(file);
+  const deterministicFiles = DOMAIN_MAP.contexts
+    .filter(context => context.layer === "domain" || context.layer === "application")
+    .flatMap(context => context.files);
+  const withoutComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  for (const file of deterministicFiles) {
+    const text = withoutComments(source(file));
     for (const token of ["Math.random(", "crypto.random", "randomUUID(", "Date.now(", "performance.now("]) {
       if (text.includes(token)) violations.push(`${file}: ${token}`);
     }
