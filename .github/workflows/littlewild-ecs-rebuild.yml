@@ -61,9 +61,19 @@ jobs:
               chunks[index]=data.strip()
           expected_indices=list(range(payload['chunks']))
           if sorted(chunks)!=expected_indices: raise SystemExit(f'Incomplete M5 chunks: {sorted(chunks)}')
-          # The complete compressed payload and decompressed patch hashes are authoritative.
-          # Individual comment checksums are advisory because GitHub can normalize a comment body
-          # without changing the reconstructed base64 stream.
+          for index in expected_indices:
+              digest=hashlib.sha256(chunks[index].encode()).hexdigest()
+              if digest==hashes[index]: continue
+              # GitHub normalized one historical comment by dropping one base64 character.
+              # The exact position/character were recovered offline against the pinned chunk,
+              # compressed-stream and decompressed-patch SHA-256 values. Fail closed unless all
+              # of those independent identities still match below.
+              if index==1 and len(chunks[index])==17999:
+                  candidate=chunks[index][:8933]+'T'+chunks[index][8933:]
+                  if hashlib.sha256(candidate.encode()).hexdigest()==hashes[index]:
+                      chunks[index]=candidate
+                      continue
+              raise SystemExit(f'M5 chunk {index} checksum mismatch: {digest}')
           for index in expected_indices:
               Path(f'/tmp/m5-chunk-{index}.txt').write_text(chunks[index])
           encoded=''.join(chunks[index] for index in expected_indices)
@@ -105,7 +115,7 @@ jobs:
           artifact=Path('docs/concepts/littlewild/littlewild.html')
           if artifact.stat().st_size!=expected['htmlBytes'] or hashlib.sha256(artifact.read_bytes()).hexdigest()!=expected['htmlSha256']:
               raise SystemExit('Standalone artifact identity mismatch.')
-          Path('.github/workflows/littlewild-ecs-rebuild.yml').write_text('name: Littlewild ECS verification\non:\n  push:\n    branches:\n      - concept/littlewild-v15-world-ui\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \'.github/workflows/littlewild-ecs-rebuild.yml\'\n  pull_request:\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \' .github/workflows/littlewild-ecs-rebuild.yml\'\n  workflow_dispatch:\npermissions:\n  contents: read\nconcurrency:\n  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}\n  cancel-in-progress: true\njobs:\n  verify:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \'3.12\'\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \'22\'\n      - name: Install verification dependencies\n        working-directory: docs/concepts/littlewild\n        run: |\n          python -m pip install -r requirements-test.txt\n          python -m playwright install --with-deps chromium\n          CHROMIUM="$(python -c \'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()\')"\n          sudo ln -sf "$CHROMIUM" /usr/bin/chromium\n      - name: Rebuild and verify all Littlewild contracts\n        working-directory: docs/concepts/littlewild\n        run: python verify-v15.py\n      - name: Retain verification evidence\n        if: always()\n        uses: actions/upload-artifact@v4\n        with:\n          name: littlewild-ecs-verification\n          path: |\n            docs/concepts/littlewild/littlewild.html\n            docs/concepts/littlewild/verification/v15/\n            docs/concepts/littlewild/source/*-results.json\n          if-no-files-found: error\n          retention-days: 14\n')
+          Path('.github/workflows/littlewild-ecs-rebuild.yml').write_text('name: Littlewild ECS verification\non:\n  push:\n    branches:\n      - concept/littlewild-v15-world-ui\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \'.github/workflows/littlewild-ecs-rebuild.yml\'\n  pull_request:\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \'.github/workflows/littlewild-ecs-rebuild.yml\'\n  workflow_dispatch:\npermissions:\n  contents: read\nconcurrency:\n  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}\n  cancel-in-progress: true\njobs:\n  verify:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \'3.12\'\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \'22\'\n      - name: Install verification dependencies\n        working-directory: docs/concepts/littlewild\n        run: |\n          python -m pip install -r requirements-test.txt\n          python -m playwright install --with-deps chromium\n          CHROMIUM="$(python -c \'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()\')"\n          sudo ln -sf "$CHROMIUM" /usr/bin/chromium\n      - name: Rebuild and verify all Littlewild contracts\n        working-directory: docs/concepts/littlewild\n        run: python verify-v15.py\n      - name: Retain verification evidence\n        if: always()\n        uses: actions/upload-artifact@v4\n        with:\n          name: littlewild-ecs-verification\n          path: |\n            docs/concepts/littlewild/littlewild.html\n            docs/concepts/littlewild/verification/v15/\n            docs/concepts/littlewild/source/*-results.json\n          if-no-files-found: error\n          retention-days: 14\n')
           PYCODE
           git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
           git checkout HEAD -- docs/concepts/littlewild/source/v10-domain-results.json docs/concepts/littlewild/source/v10-fresh-story.json docs/concepts/littlewild/source/v10-regression-v6-test-results.json docs/concepts/littlewild/source/v10-regression-v8-test-results.json docs/concepts/littlewild/source/v10-stress-results.json docs/concepts/littlewild/source/v11-domain-results.json
