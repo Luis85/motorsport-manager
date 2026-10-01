@@ -355,8 +355,11 @@ static func _management_error(data: Dictionary) -> String:
 	error = CampaignCommercialAuthority.validate(data.management.commercial,
 		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
 	if not error.is_empty(): return error
-	return CampaignDelegationAuthority.validate(data.management.delegation,
+	error = CampaignDelegationAuthority.validate(data.management.delegation,
 		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
+	return CampaignRivalsAuthority.validate(data.management.rivals,
+		data.competition, int(data.state.clock.elapsed_slots))
 
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:
 	if not data.settlements.receipts.has(event_id):
