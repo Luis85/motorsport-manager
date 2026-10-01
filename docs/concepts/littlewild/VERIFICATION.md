@@ -1,10 +1,20 @@
 # Littlewild v15 verification
 
-## Current final gate
+## Current gate
 
-**1,006 / 1,006 checks passed in 27 suites.** Of these, 105 are browser checks and 901 exercise ECS, composition, simulation profiles, migrations, domain behavior, presentation, pause policy, schemas, authoring CLIs, compatibility, and release integrity.
+The authoritative gate is now the TypeScript pipeline:
 
-Artifact: `littlewild.html` — 3,795,633 bytes. SHA-256: `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1`. Source gate: `python3 verify-v15.py`. Machine-readable evidence: `verification/v15/gate-results.json`.
+```sh
+npm run typecheck
+npm run architecture
+npm run verify
+```
+
+The gate compiles all authored TypeScript into `.generated/`, rebuilds `littlewild.html`, runs the deterministic/domain/regression/schema/release suites against generated JavaScript, and runs the Playwright browser contracts. Machine-readable evidence remains `verification/v15/gate-results.json`.
+
+### Superseded pre-TypeScript baseline
+
+Before the TypeScript/Clean Architecture polishing pass, the branch passed **1,006 / 1,006 checks in 27 suites**, including 105 browser checks. That result and the former artifact SHA-256 `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1` are retained below only as a regression baseline; they are not claimed as evidence for the current head.
 
 | Suite | Passed / total | Elapsed seconds |
 |---|---:|---:|
@@ -50,9 +60,9 @@ An actual browser save was captured from the supplied v14 artifact with hash `3e
 
 ## Gate integrity and historical assertions
 
-Every suite result is removed before that suite runs. Nonzero exits, missing results, mismatched counts, explicit failures, schema drift, profile/archetype drift, or unexpected artifact changes fail the gate. The entire gate was rerun after the final PR 25 source, review-contract, transaction, documentation, and verification changes; the successful result above is the current handoff evidence.
+Every suite result is removed before that suite runs. Nonzero exits, missing results, mismatched counts, explicit failures, schema drift, profile/archetype drift, or unexpected artifact changes fail the gate. The pre-TypeScript result below remains useful as a behavioral baseline. The current handoff is valid only when the TypeScript workflow has rebuilt the artifact and produced a fresh passing `verification/v15/gate-results.json` for the current PR head.
 
-The historical v10–v14 browser scripts and per-version bundle hashes are not all rerun because some assert superseded full-screen Build/Tutorial behavior or former artifact identity. Their domain regression suites remain active, and prior pure presentation and pause assertions are retained in v15-specific suites. This 1,006-check gate is the current authoritative release gate; it is not presented as the sum of every obsolete historical harness.
+The historical v10–v14 browser scripts and per-version bundle hashes are not all rerun because some assert superseded full-screen Build/Tutorial behavior or former artifact identity. Their domain regression suites remain active, and prior pure presentation and pause assertions are retained in v15-specific suites. The 1,006-check result is the last pre-TypeScript baseline; it is not presented as evidence for the current head or as the sum of every obsolete historical harness.
 
 ## Limits
 
