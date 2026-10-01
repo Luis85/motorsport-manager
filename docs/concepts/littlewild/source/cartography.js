@@ -4,7 +4,7 @@
  */
 (function (root) {
   'use strict';
-  const L = root.LW, Parent = L.Engine, G = root.LWGeography;
+  const L = root.LW, Composition = L.EngineComposition, G = root.LWGeography;
   const C = root.LWGrowth, A = root.LWAdventure, B = root.LWContent;
   const copy = C.clone, fail = reason => ({ok: false, reason});
   const whole = (v, lo, hi) => Number.isSafeInteger(v) && v >= lo && v <= hi;
@@ -70,23 +70,22 @@
     }
     if (s.colony.board.sequence < largest) bad('invitation sequence would reuse an identity.');
   }
-  class Engine extends Parent {
-    constructor(state, options) {
-      super(state, options);
-      if (!this.s.atlas) {
-        this.s.atlas = {version: 1, clocks: {}, history: []};
-        for (const island of this.s.estate.islands) this.initializeIsland(islandKey(island));
-        // Legacy opportunities remain available: migration does not reroll or add loot.
-        for (const offer of this.s.colony.board.offers) Object.assign(offer, metadata(this, '0,0', offer.questId), {offerId: offer.id});
-        for (const c of this.creatures) {
-          for (const field of ['questPlan', 'activeQuest']) if (c[field]) {
-            Object.assign(c[field], metadata(this, '0,0', c[field].questId), {offerId: 'legacy-' + c.id + '-' + field});
-          }
-          c.questHistory.forEach((q, index) => Object.assign(q, metadata(this, '0,0', q.questId), {offerId: 'legacy-' + c.id + '-history-' + index}));
+  function initializeCartography(self) {
+    if (!self.s.atlas) {
+      self.s.atlas = {version: 1, clocks: {}, history: []};
+      for (const island of self.s.estate.islands) self.initializeIsland(islandKey(island));
+      // Legacy opportunities remain available: migration does not reroll or add loot.
+      for (const offer of self.s.colony.board.offers) Object.assign(offer, metadata(self, '0,0', offer.questId), {offerId: offer.id});
+      for (const c of self.creatures) {
+        for (const field of ['questPlan', 'activeQuest']) if (c[field]) {
+          Object.assign(c[field], metadata(self, '0,0', c[field].questId), {offerId: 'legacy-' + c.id + '-' + field});
         }
+        c.questHistory.forEach((q, index) => Object.assign(q, metadata(self, '0,0', q.questId), {offerId: 'legacy-' + c.id + '-history-' + index}));
       }
-      this.s.version = 8;
     }
+    self.s.version = 8;
+  }
+  function defineLayer(Base){return class CartographyLayer extends Base {
     initializeIsland(id) {
       this.s.atlas.clocks[id] = {nextAt: this.s.simTime + C.content.cartography.cooldown, misses: 0, rng: seedFor(id)};
     }
@@ -236,31 +235,34 @@
       if (input?.version === 8) {
         const raw = copy(input); validateAtlas(raw.state);
         raw.version = 7; raw.state.version = 7;
-        const old = Parent.import(raw), engine = new Engine(old.export().state);
+        const old = super.import(raw), engine = Composition.constructThrough('cartography',old.export().state);
         validateAtlas(engine.export().state); return engine;
       }
-      const old = Parent.import(input), engine = new Engine(old.export().state);
+      const old = super.import(input), engine = Composition.constructThrough('cartography',old.export().state);
       validateAtlas(engine.export().state); return engine;
     }
-  }
-  L.Engine = Engine;
+  };}
+
   // Authored scenario only: no table or currencies are silently granted to migrated players.
-  const scenarioNames = ['createWorldDemo', 'createColonyDemo', 'createWorkshopDemo'];
-  const original = Object.fromEntries(scenarioNames.map(name => [name, L[name]])), factories = {};
-  for (const name of scenarioNames) factories[name] = () => {
-    let previous;
-    try { Object.assign(L, original); previous = original[name](); }
-    finally { Object.assign(L, factories); }
-    const e = new Engine(previous.export().state);
-    if (name !== 'createWorldDemo') return e;
-    e.s.progression.research['blueprint-map-table'] = true;
-    e.s.progression.features.discovery = Math.max(2, e.s.progression.features.discovery || 0);
-    for (let y = 8; y <= 15 && !e.mapTable(); y++) for (let x = 5; x <= 14 && !e.mapTable(); x++) {
-      if (!e.placementIssue('map_table', x, y)) e.s.buildings.push({id: 'b' + e.s.nextId++, kind: 'map_table', x, y, level: 1, quality: 75, stock: 0, regen: 0});
-    }
-    return e;
-  };
-  Object.assign(L, factories);
+  function installFactories(){
+    const scenarioNames = ['createWorldDemo', 'createColonyDemo', 'createWorkshopDemo'];
+    const original = Object.fromEntries(scenarioNames.map(name => [name, L[name]])), factories = {};
+    for (const name of scenarioNames) factories[name] = () => {
+      let previous;
+      try { Object.assign(L, original); previous = original[name](); }
+      finally { Object.assign(L, factories); }
+      const e = Composition.constructThrough('cartography',previous.export().state);
+      if (name !== 'createWorldDemo') return e;
+      e.s.progression.research['blueprint-map-table'] = true;
+      e.s.progression.features.discovery = Math.max(2, e.s.progression.features.discovery || 0);
+      for (let y = 8; y <= 15 && !e.mapTable(); y++) for (let x = 5; x <= 14 && !e.mapTable(); x++) {
+        if (!e.placementIssue('map_table', x, y)) e.s.buildings.push({id: 'b' + e.s.nextId++, kind: 'map_table', x, y, level: 1, quality: 75, stock: 0, regen: 0});
+      }
+      return e;
+    };
+    Object.assign(L, factories);
+  }
+  Composition.register({id:'cartography',order:60,define:defineLayer,initialize:initializeCartography,installFactories});
   root.LWCartography = {validate: validateAtlas, seedFor};
   if (typeof module !== 'undefined' && module.exports) module.exports = L;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

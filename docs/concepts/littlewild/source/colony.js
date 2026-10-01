@@ -5,7 +5,7 @@
  */
 (function (root) {
     'use strict';
-    const L = root.LW, LegacyEngine = L.Engine, R = root.LWRPG, A = root.LWAdventure;
+    const L = root.LW, Composition = L.EngineComposition, R = root.LWRPG, A = root.LWAdventure;
     const { RES, SKILLS, BUILDINGS, RECIPES, DRILLS, STYLES, CONTRACTS, clamp, terrain, SIZE } = L;
     const copy = A.copy, fail = reason => ({ ok: false, reason }), ok = (x = {}) => ({ ok: true, ...x });
     const PERSONAL = ['name', 'creature', 'bond', 'needs', 'inventory', 'allowance', 'skills', 'researched', 'training', 'orders', 'task', 'focus', 'cooldowns', 'memory', 'stats', 'stockTargets', 'practice', 'memories', 'wish', 'daily', 'learning', 'specializations', 'fieldStudies', 'buildPolicy', 'metrics'];
@@ -37,36 +37,38 @@
         c.salvage = [];
         return c;
     }
-    class Engine extends LegacyEngine {
-        constructor(state) {
-            super(state);
-            this._simulating = false;
-            this._actor = null;
-            if (!this.s.colony) {
-                const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, this.s[k]])), 'c1');
-                const warehouse = { inventory: { ...c.inventory }, transfers: [] };
-                c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
-                for (const [r, n] of [['berries', 2], ['water', 2]]) {
-                    const take = Math.min(n, warehouse.inventory[r] || 0);
-                    c.inventory[r] = take;
-                    warehouse.inventory[r] -= take;
-                }
-                this.s.colony = { version: 1, selectedId: 'c1', nextCreatureId: 2, purchased: 1, creatures: [c], warehouse, relationships: {}, rng: 86420, board: { offers: [], nextAt: 0, misses: 0, sequence: 0 }, message: 'A shared home; a life of their own.' };
+    function initializeColony(self) {
+        self._simulating = false;
+        self._actor = null;
+        const state = self.s;
+        if (!state.colony) {
+            const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, state[k]])), 'c1');
+            const warehouse = { inventory: { ...c.inventory }, transfers: [] };
+            c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
+            for (const [r, n] of [['berries', 2], ['water', 2]]) {
+                const take = Math.min(n, warehouse.inventory[r] || 0);
+                c.inventory[r] = take;
+                warehouse.inventory[r] -= take;
             }
-            this._actor = this.s.colony.creatures.find(c => c.id === this.s.colony.selectedId) || this.s.colony.creatures[0];
-            for (const key of PERSONAL)
-                Object.defineProperty(this.s, key, { enumerable: true, configurable: true, get: () => this._actor[key], set: value => { this._actor[key] = value; } });
-            this.s.version = 5;
-            this.ensureWarehouse();
-            this.behaviorTree = new root.LWBehaviorTree(this.handlers());
-            this.ecs = root.LWActorECS.create();
-            this.ecs.sync(this.creatures);
-            if (!this.s.colony.board.offers.length && this.s.colony.board.nextAt === 0) {
-                this.addOffer('meadow', 'A neighbor’s invitation');
-                this.addOffer('woodland', 'Fresh trail signs');
-                this.s.colony.board.nextAt = this.s.simTime + A.content.rules.questCooldown;
-            }
+            state.colony = { version: 1, selectedId: 'c1', nextCreatureId: 2, purchased: 1, creatures: [c], warehouse, relationships: {}, rng: 86420, board: { offers: [], nextAt: 0, misses: 0, sequence: 0 }, message: 'A shared home; a life of their own.' };
         }
+        self._actor = state.colony.creatures.find(c => c.id === state.colony.selectedId) || state.colony.creatures[0];
+        self.state = state;
+        for (const key of PERSONAL) delete state[key];
+        self.s = root.LWActorStateView.create(self, state, PERSONAL);
+        self.s.version = 5;
+        self.ensureWarehouse();
+        self.behaviorTree = new root.LWBehaviorTree(self.handlers());
+        self.ecs = root.LWActorECS.create();
+        self.domainPipeline = root.LWSimulationPipeline.create();
+        self.ecs.sync(self.creatures);
+        if (!self.s.colony.board.offers.length && self.s.colony.board.nextAt === 0) {
+            self.addOffer('meadow', 'A neighbor’s invitation');
+            self.addOffer('woodland', 'Fresh trail signs');
+            self.s.colony.board.nextAt = self.s.simTime + A.content.rules.questCooldown;
+        }
+    }
+    function defineLayer(Base){return class ColonyLayer extends Base {
         get actor() { return this._actor; }
         get creatures() { return this.s.colony.creatures; }
         get selected() { return this.s.colony.selectedId ? this.creatures.find(c => c.id === this.s.colony.selectedId) : null; }
@@ -278,7 +280,7 @@
             const price = this.purchasePrice();
             if (this.s.player.coins < price)
                 return fail('Need ' + price + ' guide coins to welcome another creature.');
-            const raw = new LegacyEngine().s, id = 'c' + this.s.colony.nextCreatureId, names = ['Pip', 'Fern', 'Mochi', 'Clover', 'Bramble', 'Wren', 'Pebble', 'Juniper'];
+            const raw = Composition.constructThrough('systems').s, id = 'c' + this.s.colony.nextCreatureId, names = ['Pip', 'Fern', 'Mochi', 'Clover', 'Bramble', 'Wren', 'Pebble', 'Juniper'];
             const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, copy(raw[k])])), id, personality);
             c.name = names[(this.s.colony.purchased) % names.length];
             c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
@@ -905,69 +907,8 @@
                         board.misses++;
                 }
         }
-        // One shared world tick. Actors cannot accelerate time by multiplying the population.
-        step(dt) {
-            if (typeof dt !== 'number' || !Number.isFinite(dt)) return;
-            const s = this.s;
-            if (!s.started || s.paused)
-                return;
-            dt = clamp(dt, 0, .25);
-            if (!dt)
-                return;
-            this._simulating = true;
-            const previous = this._actor;
-            try {
-                s.simTime += dt;
-                s.hour += dt * .05;
-                let newDay = false;
-                if (s.hour >= 24) {
-                    s.hour -= 24;
-                    s.day++;
-                    newDay = true;
-                }
-                if (this.stepWorld) this.stepWorld(dt);
-                else {
-                for (const node of s.nodes)
-                    if (node.stock < node.max) {
-                        node.regen += dt;
-                        const limit = node.kind === 'berries' ? 18 : 24;
-                        if (node.regen >= limit) {
-                            node.regen -= limit;
-                            node.stock = Math.min(node.max, node.stock + 1);
-                        }
-                    }
-                for (const b of s.buildings)
-                    if (L.CROP_RES[b.kind]) {
-                        b.regen += dt * (1 + ((b.level || 1) - 1) * .1);
-                        if (b.regen >= 80) {
-                            b.regen -= 80;
-                            b.stock = Math.min(12, b.stock + (b.kind === 'orchard' ? 6 : 4) + ((b.level || 1) - 1));
-                        }
-                    }
-                }
-                this.updateQuestBoard();
-                this.ecs.sync(this.creatures);
-                for (const c of this.creatures) {
-                    this._actor = c;
-                    if (newDay) {
-                        c.daily = { day: s.day, bonded: 0 };
-                        c.allowance.given = 0;
-                        this.newWish();
-                        if (c.allowance.auto && !c.activeQuest)
-                            this.topUp(true);
-                    }
-                    if (c.activeQuest) {
-                        this.stepQuest(dt);
-                        continue;
-                    }
-                    this.stepActor(dt);
-                }
-            }
-            finally {
-                this._actor = previous;
-                this._simulating = false;
-            }
-        }
+        // One shared world tick. The explicit pipeline owns phase order; domain methods own behavior.
+        step(dt) { return this.domainPipeline.step(this, dt); }
         stepActor(dt) {
             const s = this.s, c = this.actor, n = s.needs, f = c.feelings, t = s.task;
             // The ECS owns deterministic physiology, learning fatigue and baseline social
@@ -1099,19 +1040,23 @@
         }
         static import(doc) {
             if (doc?.version !== 5) {
-                const base = LegacyEngine.import(doc);
-                return new Engine(base.s);
+                const base = super.import(doc);
+                return Composition.constructThrough('colony', base.s);
             }
             return importV5(doc);
         }
-    }
+    };}
     function invCount(c, id) { return c.inventory[id] || 0; }
     // Public creature commands share one guard. Simulation-internal calls use an explicit scope.
-    for (const name of ['care', 'research', 'teach', 'practice', 'cancelLesson', 'setLearningStyle', 'pauseLearning', 'chooseSpecialization', 'startStudy', 'pauseStudy', 'claimStudy', 'setAllowance', 'topUp', 'setStockTarget', 'place', 'upgrade', 'request', 'cancel', 'pauseOrder', 'prioritize', 'requestEquipment', 'unequip', 'cancelEquipment', 'acceptQuest', 'cancelQuestPlan', 'suggestSocial', 'requestUnpack', 'spendPoint']) {
-        const method = Engine.prototype[name] || LegacyEngine.prototype[name];
-        if (typeof method !== 'function')
-            continue;
-        Engine.prototype[name] = function (...args) { const issue = this.interactionIssue(); return issue ? fail(issue) : method.apply(this, args); };
+    function decorateLayer(Layer, Base) {
+        for (const name of ['care', 'research', 'teach', 'practice', 'cancelLesson', 'setLearningStyle', 'pauseLearning', 'chooseSpecialization', 'startStudy', 'pauseStudy', 'claimStudy', 'setAllowance', 'topUp', 'setStockTarget', 'place', 'upgrade', 'request', 'cancel', 'pauseOrder', 'prioritize', 'requestEquipment', 'unequip', 'cancelEquipment', 'acceptQuest', 'cancelQuestPlan', 'suggestSocial', 'requestUnpack', 'spendPoint']) {
+            const method = Layer.prototype[name] || Base.prototype[name];
+            if (typeof method !== 'function') continue;
+            Object.defineProperty(Layer.prototype, name, {configurable:true,writable:true,value:function (...args) {
+                const issue = this.interactionIssue();
+                return issue ? fail(issue) : method.apply(this, args);
+            }});
+        }
     }
     function importV5(doc) {
         const raw = A.parse(doc);
@@ -1313,51 +1258,42 @@
         const first = col.creatures.find(c => c.id === col.selectedId) || col.creatures[0];
         for (const key of PERSONAL)
             s[key] = copy(first[key]);
-        const e = new Engine(s);
-        return e;
+        return Composition.constructThrough('colony', s);
     }
-    L.LegacyEngine = LegacyEngine;
-    L.Engine = Engine;
     L.colony = { item, definition, profile, PERSONAL, GATE };
-    const oldDemo = L.createWorkshopDemo;
-    L.createWorkshopDemo = () => new Engine(oldDemo().s);
-    L.createColonyDemo = function () {
-        const e = L.createWorkshopDemo();
-        e.s.player.coins = 920;
-        e.s.rp = 62;
-        e.s.training = null;
-        e.s.learning.queue = [];
-        e.s.orders = [];
-        e.actor.equipment = { head: 'trail_cap', body: 'rain_cape', tool: 'walking_staff', feet: 'walking_boots', back: 'field_satchel', charm: 'friendship_charm' };
-        for (const id of Object.values(e.actor.equipment))
-            e.s.inventory[id] = 1;
-        Object.assign(e.s.inventory, { berries: 5, water: 5, wood: 3, rope: 2, meals: 2 });
-        Object.assign(e.s.colony.warehouse.inventory, { bread: 6, meals: 6, rope: 8, cloth: 8, iron: 4, glass: 3, wooden_chest: 1, walking_boots: 1, gathering_axe: 1, woodland_vest: 1, friendship_charm: 1 });
-        e.purchaseCreature('maker');
-        e.purchaseCreature('sunny');
-        e.s.player.coins = 620;
-        const fern = e.creatures[1];
-        for (const id of ['woodcraft', 'shelter', 'woodwork', 'stonework', 'fiberwork', 'commerce']) {
-            fern.skills[id] = true;
-            fern.researched[id] = true;
-            fern.rpg.points[id] = 4;
-        }
-        fern.creature.x = 9;
-        fern.creature.y = 10;
-        fern.feelings.anger = 34;
-        fern.feelings.causes = [{ reason: 'A first construction attempt was frustrating (authored scenario)', joy: -2, anger: 34, time: 0 }];
-        e.creatures[2].creature.x = 8;
-        e.creatures[2].creature.y = 11;
-        e.creatures[2].feelings.social = 32;
-        e.s.colony.selectedId = null;
-        e._actor = e.creatures[0];
-        e.s.started = true;
-        e.s.paused = false;
-        e.addOffer('brook', 'A neighbor needs a messenger');
-        e.s.log = [];
-        e.log('A shared-glade example: select Pip, Fern or Mochi before interacting. All supplies still need to travel.', 'paw');
-        return e;
-    };
+    function LegacyEngine(state, options) { return Composition.constructThrough('systems', state, options); }
+    L.LegacyEngine = LegacyEngine;
+    function installFactories() {
+        const oldDemo = L.createWorkshopDemo;
+        L.createWorkshopDemo = () => Composition.constructThrough('colony', oldDemo().s);
+        L.createColonyDemo = function () {
+            const e = L.createWorkshopDemo();
+            e.s.player.coins = 920;
+            e.s.rp = 62;
+            e.s.training = null;
+            e.s.learning.queue = [];
+            e.s.orders = [];
+            e.actor.equipment = { head: 'trail_cap', body: 'rain_cape', tool: 'walking_staff', feet: 'walking_boots', back: 'field_satchel', charm: 'friendship_charm' };
+            for (const id of Object.values(e.actor.equipment)) e.s.inventory[id] = 1;
+            Object.assign(e.s.inventory, { berries: 5, water: 5, wood: 3, rope: 2, meals: 2 });
+            Object.assign(e.s.colony.warehouse.inventory, { bread: 6, meals: 6, rope: 8, cloth: 8, iron: 4, glass: 3, wooden_chest: 1, walking_boots: 1, gathering_axe: 1, woodland_vest: 1, friendship_charm: 1 });
+            e.purchaseCreature('maker');
+            e.purchaseCreature('sunny');
+            e.s.player.coins = 620;
+            const fern = e.creatures[1];
+            for (const id of ['woodcraft', 'shelter', 'woodwork', 'stonework', 'fiberwork', 'commerce']) {
+                fern.skills[id] = true; fern.researched[id] = true; fern.rpg.points[id] = 4;
+            }
+            fern.creature.x = 9; fern.creature.y = 10; fern.feelings.anger = 34;
+            fern.feelings.causes = [{ reason: 'A first construction attempt was frustrating (authored scenario)', joy: -2, anger: 34, time: 0 }];
+            e.creatures[2].creature.x = 8; e.creatures[2].creature.y = 11; e.creatures[2].feelings.social = 32;
+            e.s.colony.selectedId = null; e._actor = e.creatures[0]; e.s.started = true; e.s.paused = false;
+            e.addOffer('brook', 'A neighbor needs a messenger'); e.s.log = [];
+            e.log('A shared-glade example: select Pip, Fern or Mochi before interacting. All supplies still need to travel.', 'paw');
+            return e;
+        };
+    }
+    Composition.register({id:'colony',order:20,define:defineLayer,initialize:initializeColony,decorate:decorateLayer,installFactories});
     if (typeof module !== 'undefined' && module.exports)
         module.exports = L;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

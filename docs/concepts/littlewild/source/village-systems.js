@@ -2,24 +2,24 @@
  * This domain layer extends the proven production engine. It owns no DOM or wall clock.
  * Commands validate before mutation; carriers and workplaces remain the inventory authority. */
 (function(root){'use strict';
- const L=root.LW,Base=L.Engine,G=root.LWGeography,C=root.LWGrowth,W=root.LWWorldContent,A=root.LWAdventure;
+ const L=root.LW,Composition=L.EngineComposition,G=root.LWGeography,C=root.LWGrowth,W=root.LWWorldContent,A=root.LWAdventure;
  const copy=C.clone,fail=reason=>({ok:false,reason}),ok=(extra={})=>({ok:true,...extra}),int=(n,a,b)=>Number.isInteger(n)&&n>=a&&n<=b;
  const indoor=new Set(['shelter','cottage','storehouse','workshop','bakery','study','herbarium','observatory','mill','loom','greenhouse','smelter']);
  const marketKinds=['market-pickup','market-deliver','market-sell','market-reclaim'];
  L.worldTaskKinds=[...L.worldTaskKinds,...marketKinds];
- class Engine extends Base{
-  constructor(state,options={}){
-   const legacy=!!state?.started&&!state.progression;super(state,options);
-   this.s.estate ||= {version:1,islands:[{ix:0,iy:0,...G.describe(0,0)}],purchases:0};
-   if(!this.s.progression){
-    this.s.progression={version:1,research:{},features:{},prestige:0,earnedPrestige:0,slots:Math.max(C.content.rules.initialSlots,this.creatures.length),grandfathered:legacy,tutorial:{step:0,dismissed:false,complete:false},interactionSequence:1};
-    for(const r of C.content.research)if(r.initial||legacy){this.s.progression.research[r.id]=true;if(r.grants)this.s.progression.features[r.grants.feature]=Math.max(this.s.progression.features[r.grants.feature]||0,r.grants.rank);}
-   }
-   this.s.market ||= {sequence:1,orders:[],history:[]};
-   this.s.planning ||= {controls:{},history:[]};
-   this.ensureDoors();for(const c of this.creatures){c.homeId??=null;c.eventInteractions||=[];c.interactionCooldowns||={};}
-   this.assignUnhoused(false);this.s.version=7;
+ function initializeVillage(self,state){
+  const legacy=!!state?.started&&!state.progression;
+  self.s.estate ||= {version:1,islands:[{ix:0,iy:0,...G.describe(0,0)}],purchases:0};
+  if(!self.s.progression){
+   self.s.progression={version:1,research:{},features:{},prestige:0,earnedPrestige:0,slots:Math.max(C.content.rules.initialSlots,self.creatures.length),grandfathered:legacy,tutorial:{step:0,dismissed:false,complete:false},interactionSequence:1};
+   for(const r of C.content.research)if(r.initial||legacy){self.s.progression.research[r.id]=true;if(r.grants)self.s.progression.features[r.grants.feature]=Math.max(self.s.progression.features[r.grants.feature]||0,r.grants.rank);}
   }
+  self.s.market ||= {sequence:1,orders:[],history:[]};
+  self.s.planning ||= {controls:{},history:[]};
+  self.ensureDoors();for(const c of self.creatures){c.homeId??=null;c.eventInteractions||=[];c.interactionCooldowns||={};}
+  self.assignUnhoused(false);self.s.version=7;
+ }
+ function defineLayer(Base){return class VillageLayer extends Base{
   interactionIssue(){if(this._authorizedActorId===this.actor?.id)return this.actor.activeQuest?'This creature is away. Only recall is possible.':null;return super.interactionIssue();}
   commandActor(id,fn,{away=false}={}){const c=this.creatures.find(c=>c.id===id);if(!c)return fail('Select a known creature.');if(c.activeQuest&&!away)return fail(c.name+' is away. Only recalling the quest is possible.');const old=this._authorizedActorId;try{this._authorizedActorId=id;return this.withActor(c,fn);}finally{this._authorizedActorId=old;}}
   requirement(category,id){return C.content.requirements[category]?.[id]||{playerLevel:1,features:{}};}
@@ -112,8 +112,8 @@
    else return fail('Unknown market command.');for(const c of this.creatures)if(c.task?.saleId===id)this.interruptActor(c);return ok();}
   handlers(){const h=super.handlers();const oldPlans=h.plans;h.plans=()=>{const t=this.marketTask();if(t&&this.startTask(t))return 'running';return oldPlans();};const quest=h.quest;h.quest=()=>this.actor.questPlan?.paused?'failure':quest();return h;}
   export(){const out=super.export();out.version=7;out.state.version=7;return out;}
-  static import(doc){if(doc?.version!==7){const base=Base.import(doc);return new Engine(base.export().state,{migrate:true});}const raw=copy(doc);validateVillage(raw.state);root.LWVillageValidation.validate(raw.state);raw.version=6;raw.state.version=6;const base=Base.import(raw);const e=new Engine(base.export().state);validateVillage(e.export().state);root.LWVillageValidation.validate(e.export().state);return e;}
- }
+  static import(doc){if(doc?.version!==7){const base=super.import(doc);return Composition.constructThrough('village',base.export().state,{migrate:true});}const raw=copy(doc);validateVillage(raw.state);root.LWVillageValidation.validate(raw.state);raw.version=6;raw.state.version=6;const base=super.import(raw);const e=Composition.constructThrough('village',base.export().state);validateVillage(e.export().state);root.LWVillageValidation.validate(e.export().state);return e;}
+ };}
  function validateVillage(s){const bad=m=>{throw Error('Village save: '+m);};if(!s?.estate||!Array.isArray(s.estate.islands)||!int(s.estate.purchases,0,48)||s.estate.islands.length!==s.estate.purchases+1||s.estate.islands.length>C.content.rules.maxIslands)bad('invalid islands');const owned=G.ownedSet?G.ownedSet(s):new Set(s.estate.islands.map(i=>G.key(i.ix,i.iy)));if(owned.size!==s.estate.islands.length||!owned.has('0,0'))bad('duplicate islands or missing homeland');for(const i of s.estate.islands)if(!int(i.ix,-48,48)||!int(i.iy,-48,48))bad('invalid island coordinate');const reached=new Set(['0,0']),q=[{ix:0,iy:0}];for(let h=0;h<q.length;h++)for(const[dx,dy]of G.DIRS){const p={ix:q[h].ix+dx,iy:q[h].iy+dy},k=G.key(p.ix,p.iy);if(owned.has(k)&&!reached.has(k)){reached.add(k);q.push(p);}}if(reached.size!==owned.size)bad('islands must share connected edges');
   const p=s.progression;if(!p||p.version!==1||!int(p.prestige,0,1e12)||!int(p.earnedPrestige,p.prestige,1e12)||!int(p.slots,s.colony.creatures.length,C.content.rules.maxSlots)||!int(p.interactionSequence,1,1e9))bad('invalid player progression');if(!p.research||Object.entries(p.research).some(([id,v])=>v!==true||!C.content.research.some(r=>r.id===id)))bad('unknown research');if(!p.features||Object.entries(p.features).some(([id,v])=>!int(v,0,4)||!C.content.features.some(f=>f.id===id)))bad('invalid feature rank');for(const[id,rank]of Object.entries(p.features))if(!C.content.research.some(r=>r.grants?.feature===id&&r.grants.rank===rank&&p.research[r.id]))bad('feature rank lacks research');if(!p.tutorial||!int(p.tutorial.step,0,30)||typeof p.tutorial.dismissed!=='boolean'||typeof p.tutorial.complete!=='boolean')bad('invalid onboarding');
   for(const b of s.buildings){if(!G.available(s,b.x,b.y))bad('building on unowned ground');if(b.door&&(!int(b.door.dx,-1,1)||!int(b.door.dy,-1,1)||Math.abs(b.door.dx)+Math.abs(b.door.dy)!==1))bad('invalid doorway');if(b.planAssignee&&!s.colony.creatures.some(c=>c.id===b.planAssignee))bad('unknown workplace assignee');}
@@ -121,7 +121,11 @@
   for(const b of s.buildings){const d=C.content.homes[b.kind];if(d&&s.colony.creatures.filter(c=>c.homeId===b.id).length>d.places+(b.level-1)*d.perLevel)bad('home over capacity');}
   const market=s.market;if(!market||!int(market.sequence,1,1e9)||!Array.isArray(market.orders)||market.orders.length>1000||!Array.isArray(market.history)||market.history.length>40)bad('invalid market');const ids=new Set();let max=0;const stocks={};for(const o of market.orders){if(ids.has(o.id)||!/^sale-\d+$/.test(o.id)||!L.colony.item(o.item)||!int(o.amount,1,99)||!int(o.remaining,0,99)||!int(o.sold,0,o.amount)||!int(o.unitPrice,1,10000)||!['queued','carrying','at-stall','cancelling','cancelled','done'].includes(o.status)||typeof o.paused!=='boolean'||!int(o.priority,0,2))bad('invalid sale order');ids.add(o.id);max=Math.max(max,+o.id.slice(5));if(o.assignedId&&!s.colony.creatures.some(c=>c.id===o.assignedId))bad('unknown sale assignee');let unsold=o.remaining;for(const[id,n]of Object.entries(o.transit)){const c=s.colony.creatures.find(c=>c.id===id);if(!c||!int(n,0,99)||n>(c.inventory[o.item]||0))bad('invalid market cargo');unsold+=n;}for(const[id,n]of Object.entries(o.staged)){const b=s.buildings.find(b=>b.id===id&&b.kind==='market');if(!b||!int(n,0,99))bad('invalid market stall');unsold+=n;stocks[id]||={};stocks[id][o.item]=(stocks[id][o.item]||0)+n;}if(!['cancelled','cancelling'].includes(o.status)&&unsold+o.sold!==o.amount)bad('sale quantities do not reconcile');}if(market.sequence<=max)bad('sale sequence collision');for(const b of s.buildings){for(const[id,n]of Object.entries(b.marketInventory||{}))if(!int(n,0,C.content.rules.marketCapacity)||n!==(stocks[b.id]?.[id]||0))bad('stall inventory does not reconcile');for(const[id,n]of Object.entries(stocks[b.id]||{}))if(n!==(b.marketInventory?.[id]||0))bad('missing physical stall inventory');}for(const c of s.colony.creatures)if(marketKinds.includes(c.task?.kind)&&!ids.has(c.task.saleId))bad('orphaned market task');
  }
- L.Engine=Engine;L.Village={validate:validateVillage,indoor,marketKinds};
- const oldDemo=L.createWorldDemo;L.createWorldDemo=()=>{const e=new Engine(oldDemo().export().state,{demo:true});e.s.progression.prestige=52;e.s.progression.earnedPrestige=52;e.s.player.level=Math.max(e.s.player.level,5);e.s.progression.tutorial.dismissed=true;for(const c of e.creatures)c.homeId=null;const home=e.s.buildings.find(b=>b.kind==='cottage');if(!home){const b=e.s.buildings.find(b=>b.kind==='shelter');if(b)b.level=3;}e.assignUnhoused();return e;};
+ L.Village={validate:validateVillage,indoor,marketKinds};
+ function installFactories(){
+  const oldDemo=L.createWorldDemo;
+  L.createWorldDemo=()=>{const e=Composition.constructThrough('village',oldDemo().export().state,{demo:true});e.s.progression.prestige=52;e.s.progression.earnedPrestige=52;e.s.player.level=Math.max(e.s.player.level,5);e.s.progression.tutorial.dismissed=true;for(const c of e.creatures)c.homeId=null;const home=e.s.buildings.find(b=>b.kind==='cottage');if(!home){const b=e.s.buildings.find(b=>b.kind==='shelter');if(b)b.level=3;}e.assignUnhoused();return e;};
+ }
+ Composition.register({id:'village',order:40,define:defineLayer,initialize:initializeVillage,installFactories});
  if(typeof module!=='undefined'&&module.exports)module.exports=L;
 })(typeof globalThis!=='undefined'?globalThis:this);

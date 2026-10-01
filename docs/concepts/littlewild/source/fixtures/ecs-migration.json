@@ -1,27 +1,37 @@
 {
   "engine.js": {
     "prior_sha256": "65ea53979623292a407e738da48c6c4463abf04430c8b993fff5804dba82abe8",
-    "reason": "Wallet, research, XP, chapter and shared-income mutations moved behind one atomic economy settlement boundary; command authorization, journaling and presentation remain in the facade.",
-    "required_token": "settleEconomy(input, label = null)"
+    "reason": "The base engine now invokes one explicit composition lifecycle while retaining the atomic economy settlement boundary and v1-v3 parser.",
+    "required_token": "composition ? composition.prepare(state, options)"
   },
   "systems.js": {
     "prior_sha256": "e228b95a174858ef6f6c4743166deae2e3b963eb7b26fa9fff9d115f1dd96598",
-    "reason": "Lesson, specialization and field-study costs and rewards now use economy settlement while learning-domain state stays in the system facade.",
-    "required_token": "this.settleEconomy({id:this.economySettlementId('field-study'"
+    "reason": "Progression mechanics register as the first explicit composition layer; learning-domain state and economy settlement remain separately owned.",
+    "required_token": "Composition.register({id:'systems'"
   },
   "colony.js": {
     "prior_sha256": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
-    "reason": "Actor dynamics, task progression, companion purchases, warehouse sales and adventure rewards moved through ECS boundaries; selection, authorization, quest history and presentation remain in the colony facade.",
-    "required_token": "questRewardSpec(q, completed)"
+    "reason": "Colony behavior registers as a composition layer, uses an actor-scoped view over plain root state, and delegates the high-level fixed-step order to the simulation pipeline.",
+    "required_token": "LWActorStateView.create(self, state, PERSONAL)"
   },
   "world-simulation.js": {
     "prior_sha256": "266f3e4cba99922e50f0049c7da06a7cc4b39c45ae5c0154d274bf4fca272cb9",
-    "reason": "Resource harvesting, physical inventory transfer, production reservation, job progress and exactly-once output settlement moved into deterministic ECS systems; policy, skill rolls, rewards and presentation remain in the domain facade.",
-    "required_token": "this.worldEcs.reserveProduction({"
+    "reason": "World logistics and production register as a composition layer while physical resource mutation remains in deterministic world ECS systems.",
+    "required_token": "Composition.register({id:'world-simulation'"
   },
   "village-systems.js": {
     "prior_sha256": "d09b25a3c1372e16e1e4a359a0f43db1dde7964dc423dcbe9246675195c223d7",
-    "reason": "Growth research, prestige spending, land purchases, quest prestige and market proceeds now settle atomically; physical goods, topology, authorization and events remain domain-owned.",
-    "required_token": "questRewardSpec(q,completed)"
+    "reason": "Village, market and progression policy registers as an explicit composition layer while economy and physical stock settlement remain separate services.",
+    "required_token": "Composition.register({id:'village'"
+  },
+  "planner.js": {
+    "prior_sha256": "76bc92d42508f2c19103806a85d36d0e168358dc1ee5a7e659f4f9cacfeec2db",
+    "reason": "Planner decision adapters register through the composition root instead of replacing the engine constructor; planner rows remain derived read models.",
+    "required_token": "Composition.register({id:'planner'"
+  },
+  "cartography.js": {
+    "prior_sha256": "7ec015ecaa70110a1ef62155ec39be174db2622b5aa70e17f6b4a8672a782018",
+    "reason": "Cartography registers as the final explicit composition layer and retains atlas validation, migration and authored scenario decoration.",
+    "required_token": "Composition.register({id:'cartography'"
   }
 }

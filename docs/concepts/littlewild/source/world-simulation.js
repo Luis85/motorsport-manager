@@ -4,7 +4,7 @@
  */
 (function(root){
  'use strict';
- const L=root.LW, Base=L.Engine, W=root.LWWorldContent, A=root.LWAdventure;
+ const L=root.LW, Composition=L.EngineComposition, W=root.LWWorldContent, A=root.LWAdventure;
  const {RES,RECIPES,BUILDINGS,SKILLS,clamp,terrain,SIZE}=L;
  const copy=W.clone, sum=inv=>Object.values(inv||{}).reduce((a,n)=>a+n,0);
  const fail=reason=>({ok:false,reason}), ok=()=>({ok:true});
@@ -14,14 +14,17 @@
  L.worldTaskKinds=CUSTOM;
  const PROFILE=id=>W.building(id), I=root.LWWorldIntegrity;
  const recordBlank=()=>({input:{},output:{},job:null,targets:{},requests:{},enabled:true,priority:1,emptyInputs:false,completed:0,lastOutput:0,lastMessage:'On demand'});
- class Engine extends Base {
-  constructor(state,options={}){
-   const configuration=W.validate(W.content);if(!configuration.ok)throw Error(configuration.errors.join('\n'));
-   if(state?.colony){const c=state.colony.creatures.find(c=>c.id===state.colony.selectedId)||state.colony.creatures[0];for(const k of L.colony.PERSONAL)state[k]=copy(c[k]);}
-   super(state);
-   this.initWorld(options);
-   this.worldEcs=root.LWWorldECS.create();this._worldTransactionIds=new WeakMap();this._worldTransactionSequence=0;
-  }
+ function prepareWorld(state){
+  const configuration=W.validate(W.content);if(!configuration.ok)throw Error(configuration.errors.join('\n'));
+  if(state?.colony){const c=state.colony.creatures.find(c=>c.id===state.colony.selectedId)||state.colony.creatures[0];for(const k of L.colony.PERSONAL)state[k]=copy(c[k]);}
+  return state;
+ }
+ function initializeWorld(self,_state,options={}){
+  self.initWorld(options);
+  self.worldEcs=root.LWWorldECS.create();self._worldTransactionIds=new WeakMap();self._worldTransactionSequence=0;
+ }
+ let WorldLayer;
+ function defineLayer(Base){WorldLayer=class WorldSimulationLayer extends Base {
   initWorld({migrate=false,demo=false}={}){
    const s=this.s;
    if(!s.world){
@@ -369,11 +372,11 @@
   static import(doc){
    const raw=copy(doc),modern=raw?.version===6;
    if(modern){if(!raw.state?.world)throw Error('Missing saved world state.');validateWorldState(raw.state);raw.version=5;raw.state.version=5;}
-   const base=Base.import(raw);
-   const e=new Engine(base.export().state,{migrate:!modern});
+   const base=super.import(raw);
+   const e=Composition.constructThrough('world-simulation',base.export().state,{migrate:!modern});
    validateWorldState(e.export().state);return e;
   }
- }
+ };return WorldLayer;}
  function validateWorldState(s){
   const bad=msg=>{throw Error('World save: '+msg);};
   const configuration=W.validate(W.content);if(!configuration.ok)bad(configuration.errors.join('; '));
@@ -385,7 +388,7 @@
   for(const b of s.buildings){const st=b.storage,p=PROFILE(b.kind);if(!p){if(st)bad('inventory on an unsupported building');continue;}if(!st)bad('missing building inventory');inv(st.input,'building input');inv(st.output,'building output');
    if(sum(st.input)>p.inputCapacity+((b.level||1)-1)*4||sum(st.output)+(st.job?.amount||0)>p.outputCapacity+((b.level||1)-1)*6)bad('building inventory exceeds its capacity');
    if(typeof st.enabled!=='boolean'||!isInt(st.priority,0,2)||!isInt(st.completed)||typeof st.lastOutput!=='number'||!Number.isFinite(st.lastOutput))bad('invalid production settings');
-   const recs=Engine.prototype.buildingRecipes.call({},b);
+   const recs=WorldLayer.prototype.buildingRecipes.call({},b);
    for(const key of ['targets','requests']){if(!st[key]||typeof st[key]!=='object'||Array.isArray(st[key]))bad('invalid '+key);for(const [id,q]of Object.entries(st[key]))if(!recs.some(r=>r.id===id)||!isInt(q,0,key==='targets'?48:12))bad('invalid production '+key);}
    if(p.requiresNode&&!s.nodes.some(n=>n.x===b.x&&n.y===b.y&&n.kind===p.requiresNode))bad('missing substrate below '+BUILDINGS[b.kind].name);
    const j=st.job;if(j){const r=recs.find(r=>r.id===j.recipe);if(!r||j.output!==r.output||!isInt(j.amount,r.amount,r.amount+1)||j.duration!==r.time||!Number.isFinite(j.progress)||j.progress<0||j.progress>j.duration||!isInt(j.attempts,0,1e7)||!I.sameQuantities(j.cost,r.cost)||typeof j.id!=='string'||!creatures.some(c=>c.id===j.originId))bad('invalid paid batch');if(j.workerId!==null&&!creatures.some(c=>c.id===j.workerId&&c.task?.jobId===j.id))bad('invalid batch worker');}
@@ -396,24 +399,31 @@
   }
   for(const t of s.world.transfers)if(!bids.has(t.buildingId)||!creatures.some(c=>c.id===t.actorId)||!item(t.resource)||!isInt(t.amount,1,128)||!['in','out'].includes(t.direction)||!Number.isFinite(t.time)||typeof t.name!=='string'||t.name.length>24)bad('invalid transfer record');
  }
- const oldWorkshop=L.createWorkshopDemo,oldColony=L.createColonyDemo;
- L.createWorkshopDemo=()=>{const old=oldWorkshop();return new Engine(old.export().state,{demo:true});};
- L.createColonyDemo=()=>{const old=oldColony();return new Engine(old.export().state,{demo:true});};
- L.createWorldDemo=()=>{
-  const e=L.createColonyDemo();e.s.player.coins=640;e.s.rp=42;
-  for(const c of e.creatures){for(const k of ['woodcraft','stonework','woodwork','fiberwork','claywork','pottery','milling','baking','gardening','masonry','firekeeping']){c.skills[k]=true;c.researched[k]=true;c.rpg.points[k]=4;}c.orders=[];c.training=null;c.learning.queue=[];c.stockTargets=Object.fromEntries(Object.keys(RES).map(id=>[id,0]));c.needs={food:85,water:86,energy:94,comfort:80,joy:80};c.task=null;}
-  e.syncBuildings({preserveLegacyStock:true});
-  // Authored demonstration changes scenario stock, never the normal simulation transfer rule.
-  const bench=e.s.buildings.find(b=>b.kind==='bench');bench.storage.input={wood:4};bench.storage.output={planks:2};bench.storage.requests={rope:2};
-  const kiln=e.s.buildings.find(b=>b.kind==='kiln');if(kiln){kiln.storage.input={clay:3};kiln.storage.requests={bricks:2};}
-  e.s.colony.warehouse.inventory.charcoal=4;e.s.colony.warehouse.inventory.fiber=12;
-  e.s.world.transfers=[];e.s.colony.selectedId=null;e.s.started=true;e.s.paused=false;
-  e.log('Look for resource nodes and inspect a workshop. Materials have to travel: source → satchel → input → output → warehouse.','leaf');return e;
- };
- // The fixed glade already has wild deposits and a starter warehouse. Validate authored
- // additions against that deterministic baseline instead of silently discarding conflicts.
- const baseline=new Base().s, occupiedSites=new Set([...baseline.nodes,...baseline.buildings].map(o=>o.x+','+o.y)),reservedIds=new Set(baseline.nodes.map(n=>n.id));
- function siteIssues(d){const errors=[];for(const s of d.sites){if(terrain(s.x,s.y)!=='grass')errors.push('/sites/'+s.id+': choose a grass tile');if(occupiedSites.has(s.x+','+s.y))errors.push('/sites/'+s.id+': tile conflicts with a built-in resource or starter warehouse');if(reservedIds.has(s.id))errors.push('/sites/'+s.id+': ID is reserved by a built-in resource');}return errors;}
- L.Engine=Engine;L.WorldSystem={validateState:validateWorldState,siteIssues,sum,taskKinds:CUSTOM};
+ function installFactories(){
+  const oldWorkshop=L.createWorkshopDemo,oldColony=L.createColonyDemo;
+  L.createWorkshopDemo=()=>{const old=oldWorkshop();return Composition.constructThrough('world-simulation',old.export().state,{demo:true});};
+  L.createColonyDemo=()=>{const old=oldColony();return Composition.constructThrough('world-simulation',old.export().state,{demo:true});};
+  L.createWorldDemo=()=>{
+   const e=L.createColonyDemo();e.s.player.coins=640;e.s.rp=42;
+   for(const c of e.creatures){for(const k of ['woodcraft','stonework','woodwork','fiberwork','claywork','pottery','milling','baking','gardening','masonry','firekeeping']){c.skills[k]=true;c.researched[k]=true;c.rpg.points[k]=4;}c.orders=[];c.training=null;c.learning.queue=[];c.stockTargets=Object.fromEntries(Object.keys(RES).map(id=>[id,0]));c.needs={food:85,water:86,energy:94,comfort:80,joy:80};c.task=null;}
+   e.syncBuildings({preserveLegacyStock:true});
+   const bench=e.s.buildings.find(b=>b.kind==='bench');bench.storage.input={wood:4};bench.storage.output={planks:2};bench.storage.requests={rope:2};
+   const kiln=e.s.buildings.find(b=>b.kind==='kiln');if(kiln){kiln.storage.input={clay:3};kiln.storage.requests={bricks:2};}
+   e.s.colony.warehouse.inventory.charcoal=4;e.s.colony.warehouse.inventory.fiber=12;
+   e.s.world.transfers=[];e.s.colony.selectedId=null;e.s.started=true;e.s.paused=false;
+   e.log('Look for resource nodes and inspect a workshop. Materials have to travel: source → satchel → input → output → warehouse.','leaf');return e;
+  };
+ }
+ let baselineCache=null;
+ function baseline(){
+  if(!baselineCache){
+   const state=Composition.constructThrough('colony').s;
+   baselineCache={occupiedSites:new Set([...state.nodes,...state.buildings].map(o=>o.x+','+o.y)),reservedIds:new Set(state.nodes.map(n=>n.id))};
+  }
+  return baselineCache;
+ }
+ function siteIssues(d){const {occupiedSites,reservedIds}=baseline(),errors=[];for(const s of d.sites){if(terrain(s.x,s.y)!=='grass')errors.push('/sites/'+s.id+': choose a grass tile');if(occupiedSites.has(s.x+','+s.y))errors.push('/sites/'+s.id+': tile conflicts with a built-in resource or starter warehouse');if(reservedIds.has(s.id))errors.push('/sites/'+s.id+': ID is reserved by a built-in resource');}return errors;}
+ L.WorldSystem={validateState:validateWorldState,siteIssues,sum,taskKinds:CUSTOM};
+ Composition.register({id:'world-simulation',order:30,define:defineLayer,prepare:prepareWorld,initialize:initializeWorld,installFactories});
  if(typeof module!=='undefined'&&module.exports)module.exports=L;
 })(typeof globalThis!=='undefined'?globalThis:this);

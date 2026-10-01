@@ -27,7 +27,9 @@
     function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
     function owns(table, key) { return typeof key === 'string' && Object.prototype.hasOwnProperty.call(table, key); }
     class Engine {
-        constructor(state) {
+        constructor(state, options = {}) {
+            const composition = root.LWEngineComposition;
+            state = composition ? composition.prepare(state, options) : state;
             this.s = state || initial();
             this.events = [];
             this.acc = 0;
@@ -47,6 +49,7 @@
             // Economy ECS state is transient; serialized balances and progression remain authoritative.
             this.economyEcs = null;
             this._economySettlementSequence = 0;
+            if (composition) composition.initialize(this, this.s, options);
         }
         /** A bounded audit trail. Amounts are deltas, never a second source of balances. */
         transaction(label, guide = 0, pocket = 0, research = 0) {
@@ -1117,7 +1120,7 @@
                 s.wish = { stat: w.stat, action: w.action, day: int(w.day, 1, s.day, 'wish day'), amount: int(w.amount, 1, 24, 'wish amount'), start: int(w.start, 0, 1e9, 'wish progress'), title: str(w.title, 100, 'wish'), thought: str(w.thought, 180, 'wish thought'), complete: !!w.complete };
             }
             s.task = null;
-            const loaded = new Engine(s);
+            const loaded = root.LWEngineComposition?.constructThrough('base', s) || new Engine(s);
             // Older versions could save a buddy on the tile of the building they just completed.
             // Relocate only to an adjacent passable tile, never inside the spring or outside the glade.
             const cx = Math.round(s.creature.x), cy = Math.round(s.creature.y);

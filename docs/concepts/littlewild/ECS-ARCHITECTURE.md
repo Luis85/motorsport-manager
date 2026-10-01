@@ -78,6 +78,8 @@ M3 adds `world-ecs.js` for physical ownership and production. Stable resource, i
 
 M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide and actor wallets, shared research, player and actor levels, prestige, statistics, and chapter completion are updated as one transaction with rollback on failure. Domain commands still decide whether an action is allowed and what the reward means; the facade alone writes the ledger, histories, memories, logs, and presentation events. A validated `economy-rules.json` manifest owns level thresholds, level-up bonuses, income sharing, and bounded settlement limits.
 
+M5 removes the runtime constructor-replacement chain. Feature modules register ordered descriptors with `engine-composition.js`, and `engine-composition-root.js` finalizes one stable facade in an explicit six-layer order. `actor-state-view.js` resolves personal fields by actor identity without adding getters to serialized root state. `simulation-pipeline.js` exposes the fixed-step world/actor phase order, while `command-router.js` provides a compiled allowlist for application commands and rejects arbitrary method dispatch. Historical import stages and authored fixtures use explicit partial-construction boundaries rather than global load order.
+
 ## Separation and ownership
 
 | Owner | Allowed | Forbidden |
@@ -86,7 +88,10 @@ M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide 
 | `actor-ecs.js` | Actor components and physiological/social decay rules with validated tuning | Reading globals for selected creature, UI, RNG, work completion |
 | `world-ecs.js` | Physical deposits, inventories, worksite jobs, reservations, transfers and exactly-once output settlement | Source selection, recipes, skill rolls, rewards, UI |
 | `economy-ecs.js` | Atomic wallets, research, XP, prestige, statistics and chapter settlement with rollback and a neutral outbox | Authorization, physical goods, histories, logs, memories, presentation, RNG |
-| Legacy simulation adapters | Translate legacy state/context; call ECS services; retain authorization, decision and presentation boundaries | Duplicate migrated calculations or balances |
+| `engine-composition.js` / root | Stable facade identity, explicit feature order, historical construction boundaries | Gameplay policy, persistence, UI |
+| `simulation-pipeline.js` | Fixed-step world/actor orchestration and visible phase order | Domain calculations, rendering, wall clock |
+| `command-router.js` | Compiled command allowlist, envelope validation, explicit actor routing | Arbitrary method dispatch, imported executable handlers |
+| Actor state view and simulation adapters | Translate actor/root context; call ECS services; retain authorization, decision and presentation boundaries | Root-state accessors, duplicated migrated calculations or balances |
 | Existing content registries | Definition parsing, ID/reference validation, immutable read tables | Executing imported callbacks |
 | Application shell | Input/command dispatch, save/export orchestration, render scheduling | Authoritative gameplay calculations |
 | Persistence | Existing v8 state and v9 portable envelope, versioned migrations | Serialization of renderer objects or duplicated ECS caches |
@@ -97,11 +102,11 @@ M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide 
 - **M2 — tasks, intents and movement (implemented):** explicit transient `Task`/`Intent`, deterministic path traversal, arrival/blocked outcomes and elapsed-work progression. Task selection, policy interruption, authorization and completion consequences remain explicit facade boundaries for M3/M4.
 - **M3 — world simulation (implemented):** deposits, worksite inventories, production reservations/jobs, finite substrate use, carrier transfers, conservation, stable IDs and deterministic contention.
 - **M4 — economy, quests and progression (implemented):** atomic wallets, research, XP, prestige, statistics and chapter settlement; authorization, physical goods, histories, journaling and presentation remain separate adapters.
-- **M5 — composition cleanup:** replace extension chain (`systems.js`, `colony.js`, `world-simulation.js`, `village-systems.js`) with a thin facade, command handlers and scheduled domain systems. Remove legacy actor property proxies only when all callers use explicit IDs and views.
+- **M5 — composition cleanup (implemented):** one stable facade; explicit systems/colony/world/village/planner/cartography root; actor-scoped view over plain root data; fixed-step pipeline; compiled command router; no feature-module constructor replacement.
 - **M6 — content/schema evolution:** publish optional versioned ECS rule profiles and composition archetypes in scenario packs; migrate story snapshots deliberately. Never infer executable behavior from external JSON.
 
 Each migration has an executable regression gate and a baseline trace for old-versus-new behavior, and must leave both Littlewild and Emberworks usable.
 
 ## Do not claim yet
 
-M1–M4 do **not** remove the legacy engine-extension chain. AI decision providers, command handlers, quest/market history, construction consequences, narration, and presentation are still composed through the existing domain classes until M5. The migration also does not make all mechanics arbitrarily extensible via imported JSON, guarantee cross-platform bitwise float equality, or provide a live multiplayer simulation.
+M1–M5 do **not** make imported JSON executable or convert every mature mechanic method into a small standalone system. AI decision providers, quest/market history, construction consequences, narration, and presentation remain domain adapters on the stable facade. Direct command methods remain compatibility aliases while callers migrate to the explicit router. The migration also does not guarantee cross-platform bitwise float equality or provide a live multiplayer simulation.

@@ -1,6 +1,6 @@
 /* Unified planner adapters. Rows are derived from authoritative orders, not a second task queue.
  * Adding a row delegates to a registered feature command. Lifecycles keep paid work physical. */
-(function(root){'use strict';const L=root.LW,C=root.LWGrowth,fail=reason=>({ok:false,reason}),ok=(extra={})=>({ok:true,...extra});
+(function(root){'use strict';const L=root.LW,Composition=L.EngineComposition,C=root.LWGrowth,fail=reason=>({ok:false,reason}),ok=(extra={})=>({ok:true,...extra});
  const key=(type,actor,id='')=>[type,actor,id].filter(Boolean).join(':'),terminal=q=>['done','cancelled'].includes(q.status);
  function control(e,k){return e.s.planning.controls[k]||{};}
  function paused(e,k){return !!control(e,k).paused;}
@@ -49,10 +49,12 @@
   engine.behaviorTree=new root.LWBehaviorTree(h);
   engine._plannerTree=C.clone(root.LWAdventure.content.behaviorTree);const children=engine._plannerTree.children;if(children){const at=children.findIndex(n=>n.type==='action'&&['outfit','quest','learning','plans'].includes(n.action));children.splice(at<0?Math.min(5,children.length):at,0,{id:'planner-priority',name:'Prioritized player plans',type:'action',action:'prioritized'});}
  }
- const Parent=L.Engine;class Engine extends Parent{constructor(s,o){super(s,o);attach(this);}decide(){if(this.actor.activeQuest)return;const result=this.behaviorTree.tick(this._plannerTree,{time:this.s.simTime,behaviorMemory:this.actor.behavior.memory});this.actor.behavior.trace=result.trace;this.actor.behavior.lastAction=this.actor.task?.label||'Considering the next step';}static import(doc){const old=Parent.import(doc);return new Engine(old.export().state);}}
- L.Engine=Engine;const scenarioNames=['createWorldDemo','createColonyDemo','createWorkshopDemo'],rawFactories=Object.fromEntries(scenarioNames.map(k=>[k,L[k]])),wrappedFactories={};
- // Existing authored fixtures compose the original factories. Canonicalize once after
- // their setup, so recruitment gates do not interfere with fixture construction.
- for(const name of scenarioNames)wrappedFactories[name]=()=>{let demo;try{Object.assign(L,rawFactories);demo=rawFactories[name]();}finally{Object.assign(L,wrappedFactories);}return new Engine(demo.export().state);};Object.assign(L,wrappedFactories);
+ function initializePlanner(self){attach(self);}
+ function defineLayer(Base){return class PlannerLayer extends Base{decide(){if(this.actor.activeQuest)return;const result=this.behaviorTree.tick(this._plannerTree,{time:this.s.simTime,behaviorMemory:this.actor.behavior.memory});this.actor.behavior.trace=result.trace;this.actor.behavior.lastAction=this.actor.task?.label||'Considering the next step';}static import(doc){const old=super.import(doc);return Composition.constructThrough('planner',old.export().state);}};}
+ function installFactories(){const scenarioNames=['createWorldDemo','createColonyDemo','createWorkshopDemo'],rawFactories=Object.fromEntries(scenarioNames.map(k=>[k,L[k]])),wrappedFactories={};
+  // Existing authored fixtures compose the original factories. Canonicalize once after
+  // their setup, so recruitment gates do not interfere with fixture construction.
+  for(const name of scenarioNames)wrappedFactories[name]=()=>{let demo;try{Object.assign(L,rawFactories);demo=rawFactories[name]();}finally{Object.assign(L,wrappedFactories);}return Composition.constructThrough('planner',demo.export().state);};Object.assign(L,wrappedFactories);}
+ Composition.register({id:'planner',order:50,define:defineLayer,initialize:initializePlanner,installFactories});
  root.LWPlanner={rows,act,add,types,taskOptions,availableTypes,control,paused,attach};if(typeof module!=='undefined'&&module.exports)module.exports=L;
 })(typeof globalThis!=='undefined'?globalThis:this);

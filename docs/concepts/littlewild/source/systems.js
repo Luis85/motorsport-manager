@@ -5,7 +5,7 @@
  */
 (function (root) {
 'use strict';
-const L = root.LW, BaseEngine = L.Engine;
+const L = root.LW, Composition = L.EngineComposition;
 const {clamp, terrain, SIZE} = L;
 const {SKILLS, BUILDINGS, RES, RECIPES, DISCIPLINES, DRILLS, STYLES, APPROACHES, SPECIALIZATIONS, STUDIES, PATHS} = root.LWContent.tables;
 const own = (o,k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o,k);
@@ -18,9 +18,8 @@ const CROP_RES={garden:'berries',grainplot:'grain',greenhouse:'herbs',orchard:'b
 const PHASE_NAMES=['Lay the groundwork','Raise the structure','Make it a place'];
 const COST_GROUPS=[['stone','clay','bricks'],['wood','planks','beams','iron','rope'],['fiber','cloth','glass','tools','pots','water']];
 const finite=(v,min,max,label,integer=false)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max||(integer&&!Number.isInteger(v)))throw Error('Invalid '+label+'.');return v;};
-class Engine extends BaseEngine {
- constructor(state){
-  super(state); const s=this.s; s.version=3;
+function initializeSystems(self){
+  const s=self.s;s.version=3;
   for(const id of Object.keys(RES)){s.inventory[id]??=0;s.stockTargets[id]??=0;}
   s.learning ||= {queue:[],style:'together',fatigue:0,recovering:false,paused:false,practiceDay:s.day,practicedToday:{},path:'home'};
   s.specializations ||= {};s.fieldStudies ||= {active:null,progress:{},completed:[]};s.buildPolicy ||= {approach:'balanced'};
@@ -28,8 +27,9 @@ class Engine extends BaseEngine {
   if(s.training){s.training.style ||= 'together';s.training.tuition ??= SKILLS[s.training.id].coins;}
   for(const b of s.buildings){b.level??=1;b.quality??=60;}
   for(const o of s.orders)if(o.type==='build'&&o.stage===undefined){o.stage=0;o.legacy=true;o.approach='balanced';}
-  this.addResourceNodes();
- }
+  self.addResourceNodes();
+}
+function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
  addResourceNodes(){
   const s=this.s,candidates=[[12,5],[12,6],[17,8],[14,10],[4,14],[6,12],[4,3],[10,4],[15,11],[9,15],[4,8],[11,12],[6,6],[3,9],[14,14],[5,13]];
   for(let y=2;y<17;y++)for(let x=2;x<17;x++)candidates.push([x,y]);
@@ -406,7 +406,7 @@ class Engine extends BaseEngine {
   a.orders=normalOrders;
   // New material keys were not part of v1/v2. Only those keys default to zero.
   for(const id of Object.keys(RES).filter(id=>!['wood','stone','fiber','berries','water','planks','meat','meals'].includes(id))){a.inventory[id]??=0;a.stockTargets??={};a.stockTargets[id]??=0;}
-  const base=BaseEngine.import(raw),s=base.s;
+  const base=super.import(raw),s=base.s;
   s.learning=learning;s.specializations=specs;s.fieldStudies=fs;s.buildPolicy={approach};s.metrics=metrics;s.training=training;
   s.buildings.forEach((b,j)=>{b.level=i(a.buildings[j].level??1,1,3,'building level');b.quality=n(a.buildings[j].quality??60,25,100,'finish quality');});
   s.orders.forEach((o,j)=>{if(o.type==='build'){const source=normalOrders[j];o.stage=v3?i(source.stage??0,0,2,'construction stage'):0;o.approach=v3?source.approach||'balanced':'balanced';o.legacy=v3?!!source.legacy:true;}});
@@ -414,16 +414,15 @@ class Engine extends BaseEngine {
   const extraNodes=(a.nodes||[]).filter(x=>typeof x.id==='string'&&x.id.startsWith('v3-'));
   if(extraNodes.length>8||new Set(extraNodes.map(n=>n.id)).size!==extraNodes.length)throw Error('Invalid new-world deposits.');
   for(const node of extraNodes){if(!['clay','ore','herbs','grain'].includes(node.kind)||!new RegExp('^v3-'+node.kind+'-[01]$').test(node.id))throw Error('Unknown deposit.');const x=i(node.x,1,17,'deposit position'),y=i(node.y,1,17,'deposit position');if(terrain(x,y)!=='grass'||s.nodes.some(n=>n.x===x&&n.y===y)||s.buildings.some(b=>b.x===x&&b.y===y)||s.orders.some(o=>o.type==='build'&&o.x===x&&o.y===y))throw Error('Deposit placement conflicts.');const max=node.kind==='ore'?8:10;s.nodes.push({id:node.id,kind:node.kind,x,y,max,stock:i(node.stock,0,max,'deposit stock'),regen:n(node.regen??0,0,24,'deposit regrowth')});}
-  const e=new Engine(s);
+  const e=Composition.constructThrough('systems',s);
   for(const o of s.orders)if(['build','upgrade'].includes(o.type)){if(!own(APPROACHES,o.approach))throw Error('Invalid construction approach.');const p=e.constructionPhases(o)[o.stage];if(!p||o.progress>p.time+.001||(!o.paid&&o.progress>0))throw Error('Inconsistent construction progress.');if(o.type==='build'&&!o.legacy&&e.placementIssue(o.kind,o.x,o.y))throw Error('Waterwheel is too far from the spring.');}
   return e;
  }
-}
-L.Engine=Engine;
+ };}
 Object.assign(L,{DISCIPLINES,DRILLS,STYLES,APPROACHES,SPECIALIZATIONS,STUDIES,PATHS,CATEGORY_NAMES,RAW,CROP_RES});
 // A clearly labeled, authored mid-game scenario. Normal play never calls this.
-L.createWorkshopDemo=function(){
- const e=new Engine(),s=e.s;s.started=true;s.player={level:5,xp:18,coins:296};s.creature={level:5,xp:24,coins:28,x:8,y:9,dir:1};s.bond=72;s.rp=52;s.needs={food:83,water:79,energy:76,comfort:84,joy:82};
+function createWorkshopDemo(){
+ const e=Composition.constructThrough('systems'),s=e.s;s.started=true;s.player={level:5,xp:18,coins:296};s.creature={level:5,xp:24,coins:28,x:8,y:9,dir:1};s.bond=72;s.rp=52;s.needs={food:83,water:79,energy:76,comfort:84,joy:82};
  const ids=['woodcraft','stonework','shelter','firekeeping','woodwork','gardening','commerce','tracking','cooking','masonry','architecture','invention','fiberwork','claywork','weaving','pottery','joinery','herbalism'];
  for(const id of ids){s.skills[id]=true;s.researched[id]=true;s.practice[id]=['woodwork','shelter','pottery'].includes(id)?20:10;}
  Object.assign(s.inventory,{wood:12,stone:12,fiber:9,berries:7,water:7,planks:4,meat:2,meals:2,clay:6,ore:2,rope:3,cloth:2,charcoal:2,bricks:2,pots:1});
@@ -436,7 +435,9 @@ L.createWorkshopDemo=function(){
  s.memories=[{key:'demo-home',title:'A clearing became a home',description:'Each useful place began as a possibility we imagined together.',icon:'home',day:1,hour:8},{key:'demo-craft',title:'Earth, fire, and patience',description:'The first pot came out a little crooked. It still held water.',icon:'fire',day:1,hour:8}];e.newWish();
  e.log('A growing-workshop example: metalworking is in our learning plan, a careful workshop is on the board, and a field study is active.','book');
  return e;
-};
+}
+Composition.register({id:'systems',order:10,define:defineLayer,initialize:initializeSystems,
+ installFactories({L}){L.createWorkshopDemo=createWorkshopDemo;}});
 
 if(typeof module!=='undefined'&&module.exports)module.exports=L;
 })(typeof globalThis!=='undefined'?globalThis:this);

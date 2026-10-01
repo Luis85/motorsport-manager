@@ -1,4 +1,6 @@
 {
-  "milestone": "M4",
-  "sha256": "0c761acb1d04fb7a1e6042aa7523cd34a564d718510ab8e4cfc310115481bc78"
+  "milestone": "M5",
+  "sha256": "a79d53124b96729ee171333d834d6d6f94ab9ee7b76bb999b58b43312ca9f423",
+  "scope": "composition-source-manifest-v1",
+  "files": 20
 }

@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "passed": 932,
-  "total": 932,
+  "passed": 946,
+  "total": 946,
   "suites": [
     {
       "name": "ecs-core",
@@ -10,10 +10,22 @@
         "source/test-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.05,
+      "seconds": 0.04,
       "result": "source/ecs-results.json",
       "passed": 9,
       "total": 9
+    },
+    {
+      "name": "engine-composition",
+      "command": [
+        "node",
+        "source/test-engine-composition.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.54,
+      "result": "source/engine-composition-results.json",
+      "passed": 14,
+      "total": 14
     },
     {
       "name": "ecs-activity",
@@ -22,7 +34,7 @@
         "source/test-ecs-activity.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.03,
       "result": "source/ecs-activity-results.json",
       "passed": 7,
       "total": 7
@@ -34,7 +46,7 @@
         "source/test-ecs-world.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.03,
       "result": "source/ecs-world-results.json",
       "passed": 11,
       "total": 11
@@ -46,7 +58,7 @@
         "source/test-economy-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.05,
+      "seconds": 0.03,
       "result": "source/economy-ecs-results.json",
       "passed": 12,
       "total": 12
@@ -58,7 +70,7 @@
         "source/test-ecs-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.55,
+      "seconds": 0.44,
       "result": "source/ecs-integration-results.json",
       "passed": 7,
       "total": 7
@@ -70,7 +82,7 @@
         "source/test-ecs-world-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.3,
+      "seconds": 0.25,
       "result": "source/ecs-world-integration-results.json",
       "passed": 6,
       "total": 6
@@ -82,7 +94,7 @@
         "source/test-economy-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.32,
+      "seconds": 0.31,
       "result": "source/economy-integration-results.json",
       "passed": 8,
       "total": 8
@@ -94,7 +106,7 @@
         "source/test-v15.cjs"
       ],
       "exitCode": 0,
-      "seconds": 6.84,
+      "seconds": 5.68,
       "result": "source/v15-domain-results.json",
       "passed": 77,
       "total": 77
@@ -106,7 +118,7 @@
         "source/test-v15-presentation.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.69,
+      "seconds": 0.65,
       "result": "source/v15-presentation-results.json",
       "passed": 47,
       "total": 47
@@ -118,7 +130,7 @@
         "source/test-v15-pause.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.99,
+      "seconds": 0.95,
       "result": "source/v15-pause-results.json",
       "passed": 54,
       "total": 54
@@ -130,7 +142,7 @@
         "source/test-v11.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.54,
+      "seconds": 2.9,
       "result": "source/v11-domain-results.json",
       "passed": 73,
       "total": 73
@@ -142,7 +154,7 @@
         "source/test-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 2.13,
+      "seconds": 1.74,
       "result": "source/v10-domain-results.json",
       "passed": 76,
       "total": 76
@@ -154,7 +166,7 @@
         "source/test-growth-stress.cjs"
       ],
       "exitCode": 0,
-      "seconds": 18.12,
+      "seconds": 14.26,
       "result": "source/v10-stress-results.json",
       "passed": 3,
       "total": 3
@@ -166,7 +178,7 @@
         "source/test-fresh-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 6.19,
+      "seconds": 4.97,
       "result": "source/v10-fresh-results.json",
       "passed": 8,
       "total": 8
@@ -178,7 +190,7 @@
         "source/test-v10-regression-v5.cjs"
       ],
       "exitCode": 0,
-      "seconds": 5.27,
+      "seconds": 4.18,
       "result": "source/v10-regression-v5-test-results.json",
       "passed": 133,
       "total": 133
@@ -190,7 +202,7 @@
         "source/test-v10-regression-v6.cjs"
       ],
       "exitCode": 0,
-      "seconds": 22.35,
+      "seconds": 17.18,
       "result": "source/v10-regression-v6-test-results.json",
       "passed": 52,
       "total": 52
@@ -202,7 +214,7 @@
         "source/test-v10-regression-v8.cjs"
       ],
       "exitCode": 0,
-      "seconds": 25.69,
+      "seconds": 19.06,
       "result": "source/v10-regression-v8-test-results.json",
       "passed": 88,
       "total": 88
@@ -214,7 +226,7 @@
         "source/test-v10-regression-quality-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.1,
+      "seconds": 0.95,
       "result": "source/v10-regression-v9-quality-results.json",
       "passed": 31,
       "total": 31
@@ -226,7 +238,7 @@
         "source/test-v10-regression-foundation-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 8.3,
+      "seconds": 7.4,
       "result": "source/v10-regression-v9-foundation-results.json",
       "passed": 31,
       "total": 31
@@ -238,7 +250,7 @@
         "schema-checks-v10.py"
       ],
       "exitCode": 0,
-      "seconds": 0.57,
+      "seconds": 0.43,
       "result": "source/v10-schema-results.json",
       "passed": 19,
       "total": 19
@@ -250,7 +262,7 @@
         "schema-checks-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 0.95,
+      "seconds": 0.82,
       "result": "source/v15-schema-results.json",
       "passed": 21,
       "total": 21
@@ -262,7 +274,7 @@
         "source/test-v15-release.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.86,
+      "seconds": 3.43,
       "result": "source/v15-release-results.json",
       "passed": 54,
       "total": 54
@@ -274,7 +286,7 @@
         "browser-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 44.79,
+      "seconds": 40.64,
       "result": "verification/v15/browser-results.json",
       "passed": 89,
       "total": 89
@@ -286,13 +298,13 @@
         "browser-contracts-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 10.87,
+      "seconds": 9.44,
       "result": "verification/v15/browser-contract-results.json",
       "passed": 16,
       "total": 16
     }
   ],
   "browserIncluded": true,
-  "htmlSha256": "1d28f5971fddc775869a5b9924abebd6cf843b98aae54aff9ab5fa5f9898e13b",
-  "htmlBytes": 3743368
+  "htmlSha256": "070cba4e47c64c8ff91d14f77416d4d1f22fc4e40e75ea2aec9c405438da1250",
+  "htmlBytes": 3758938
 }

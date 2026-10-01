@@ -1,3 +1,9 @@
+## ECS M5 review
+
+`LW.Engine` now has one stable identity. Feature modules register composition descriptors and never replace the constructor; the final facade has no runtime superclass tower. Existing `super` contracts are captured during composition so behavior remains unchanged, while explicit partial boundaries preserve historical imports and fixture setup. `engine.state` is plain authoritative data and `engine.s` is an actor-scoped view, eliminating accessors on save records.
+
+The high-level clock/actor order lives in `simulation-pipeline.js`; authoritative actor, world, and economy mutations remain in their dedicated ECS schedulers. `command-router.js` exposes a fixed capability manifest and bounded envelopes instead of arbitrary method lookup. Legacy direct methods are retained as compatibility adapters, not a second source of state.
+
 ## ECS M4 review
 
 `economy-ecs.js` owns atomic settlement and nothing else. It validates a detached settlement plan, binds the existing player, actor, progression, statistics, and chapter records as components, applies the plan in a deterministic scheduler, and returns a neutral outbox. Any failure rolls every touched record back before the error crosses the boundary. It does not choose rewards, authorize commands, remove physical goods, write history, append ledger entries, create memories, emit UI events, or consume randomness.
