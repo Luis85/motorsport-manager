@@ -11,6 +11,59 @@ static func stage(checkpoint: Dictionary, manifest: Dictionary, result: Dictiona
 		return _reject(settlement.error, checkpoint, settlement.status)
 	return _apply(restored, manifest, settlement.ledger, settlement.receipt, settlement.status, policy, checkpoint)
 
+static func correct(checkpoint: Dictionary, manifest: Dictionary,
+		result: Dictionary, policy: Dictionary) -> Dictionary:
+	## Explicit final-result correction. It replaces sporting, financial, inventory
+	## and receipt evidence atomically and never rewinds campaign time.
+	var restored = CampaignCheckpoint.restore(checkpoint)
+	if not restored.ok: return _reject(restored.error, checkpoint)
+	if not restored.active_manifest.is_empty():
+		return _reject("A settled result cannot be corrected while another weekend is active.", checkpoint)
+	var manifest_error = CampaignWeekendManifest.validate(manifest)
+	if not manifest_error.is_empty(): return _reject(manifest_error, checkpoint)
+	if restored.state.campaign_id != manifest.campaign_id 			or restored.state.clock.elapsed_slots < int(manifest.return_slot):
+		return _reject("Campaign correction identity or authoritative time is invalid.", checkpoint)
+	if not restored.settlements.receipts.has(manifest.campaign_event_id):
+		return _reject("Campaign correction requires an already-settled event.", checkpoint)
+	var previous_receipt: Dictionary = restored.settlements.receipts[manifest.campaign_event_id]
+	if previous_receipt.manifest_digest != manifest.digest:
+		return _reject("Campaign correction must use the original frozen manifest.", checkpoint)
+	var prior_event: Dictionary = restored.competition.events.get(manifest.campaign_event_id, {})
+	var prior_finance: Dictionary = restored.economy.events.get(manifest.campaign_event_id, {})
+	if prior_event.is_empty() or prior_finance.is_empty() 			or prior_event.policy_digest != policy.get("digest") 			or prior_finance.policy_digest != policy.get("digest"):
+		return _reject("Campaign correction cannot silently change the original event policy.", checkpoint)
+	for claim in restored.management.commercial.bonus_claims.values():
+		if claim.event_id == manifest.campaign_event_id:
+			return _reject("Correct the event before claiming result-contingent sponsor bonuses.", checkpoint)
+	var settlement = CampaignWeekendSettlement.correct(restored.settlements,
+		manifest, result, restored.state.clock.elapsed_slots)
+	if not settlement.ok: return _reject(settlement.error, checkpoint, settlement.status)
+	if settlement.status == "already_current":
+		return {"ok": true, "status": "already_current", "error": "",
+			"checkpoint": restored.checkpoint.duplicate(true),
+			"receipt": settlement.receipt.duplicate(true)}
+	var receipt: Dictionary = settlement.receipt
+	var policy_error = CampaignWeekendPolicy.receipt_error(policy, receipt)
+	if not policy_error.is_empty(): return _reject(policy_error, checkpoint)
+	var competition = CampaignCompetition.correct_event(restored.competition, receipt, policy)
+	if not competition.ok: return _reject(competition.error, checkpoint, competition.status)
+	var inventory = CampaignInventory.correct_event(
+		restored.inventory, receipt, int(manifest.return_slot))
+	if not inventory.ok: return _reject(inventory.error, checkpoint, inventory.status)
+	var economy = CampaignEconomy.correct_event(
+		restored.economy, receipt, policy, int(manifest.return_slot))
+	if not economy.ok: return _reject(economy.error, checkpoint, economy.status)
+	var account_id: String = policy.account_id
+	var cash_delta = int(economy.economy.accounts[account_id].cash_minor) 		- int(restored.economy.accounts[account_id].cash_minor)
+	var candidate = CampaignCheckpoint.build(restored.state, settlement.ledger, {},
+		competition.competition, economy.economy, inventory.inventory,
+		restored.personnel, restored.operations, restored.engineering, restored.management)
+	if candidate.is_empty():
+		return _reject("Corrected weekend evidence could not form one valid campaign checkpoint.", checkpoint)
+	return {"ok": true, "status": "corrected", "error": "", "checkpoint": candidate,
+		"receipt": receipt.duplicate(true), "correction": settlement.correction.duplicate(true),
+		"cash_delta_minor": cash_delta}
+
 static func stage_receipt(checkpoint: Dictionary, manifest: Dictionary, receipt: Dictionary, policy: Dictionary) -> Dictionary:
 	## Recovery/test seam after a receipt has been validated independently.
 	var restored = CampaignCheckpoint.restore(checkpoint)
