@@ -358,8 +358,16 @@ static func _management_error(data: Dictionary) -> String:
 	error = CampaignDelegationAuthority.validate(data.management.delegation,
 		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
 	if not error.is_empty(): return error
-	return CampaignRivalsAuthority.validate(data.management.rivals,
+	error = CampaignRivalsAuthority.validate(data.management.rivals,
 		data.competition, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
+	error = CampaignSupplyAuthority.validate(data.management.supply, data.economy,
+		data.engineering, data.operations, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
+	for row in data.management.distress.history:
+		if int(row.slot) > int(data.state.clock.elapsed_slots):
+			return "Campaign distress history is dated after authoritative campaign time."
+	return ""
 
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:
 	if not data.settlements.receipts.has(event_id):
