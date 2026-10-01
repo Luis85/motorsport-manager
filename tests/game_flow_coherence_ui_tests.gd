@@ -155,6 +155,29 @@ func settings_journey() -> void:
 	game.show_library(); await settle(); await key(KEY_ESCAPE)
 	check(game.screen_name == "main_menu", "Escape returns from configuration without launching a session")
 
+func campaign_shell() -> void:
+	root.size = Vector2i(1100, 720); root.content_scale_size = root.size
+	app.settings.pitwall_text_scale = 1.3
+	game.show_menu(); await settle(8)
+	var campaign_button = find_button(game.content, "TEAM PRINCIPAL CAMPAIGN")
+	check(campaign_button != null, "Main menu exposes the Team Principal campaign")
+	if campaign_button == null: return
+	await click(campaign_button); await settle(12)
+	check(game.screen_name == "campaign" and game.content.get_child(0) is CampaignDirectorDesk,
+		"Campaign entry opens the native Director Desk")
+	if game.screen_name != "campaign": return
+	var desk: CampaignDirectorDesk = game.content.get_child(0)
+	complete_button(desk.primary_action, "Campaign departure action / compact 130%")
+	check(desk.primary_action.text == "Start next event", "Opening campaign stops at the explicit departure decision")
+	check(CampaignCheckpoint.validate(app.campaign_checkpoint).is_empty(), "Native Director Desk owns a valid persisted campaign")
+	await capture("coherence-campaign-director-1100-130",
+		"Native Team Principal Director Desk at 1100x720 and 130% text; no fabricated result")
+	await click(desk.primary_action); await settle(12)
+	check(game.screen_name == "weekend" and not app.campaign_checkpoint.active_manifest.is_empty(),
+		"Campaign departure reuses the shipping Minimal weekend and freezes one active manifest")
+	check(app.weekend != null and app.weekend.phase == "briefing",
+		"Campaign departure does not skip practice, qualifying or race approvals")
+
 func run() -> void:
 	root.size = Vector2i(1440, 900); root.content_scale_size = root.size
 	game = load("res://scenes/main.tscn").instantiate(); root.add_child(game)
@@ -166,6 +189,7 @@ func run() -> void:
 	await shell_profiles()
 	await live_settings_resize()
 	await settings_journey()
+	await campaign_shell()
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures, "screenshots": captures.size(), "captures": captures}
 	Storage.write_json("res://reports/game-flow-coherence-ui.json", report)
 	print("GAME_FLOW_COHERENCE_UI ", JSON.stringify(report))
