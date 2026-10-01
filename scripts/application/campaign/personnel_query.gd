@@ -29,13 +29,17 @@ static func roster(checkpoint: Dictionary) -> Dictionary:
 		for assignment in restored.personnel.assignments.values():
 			if assignment.person_id != person_id:
 				continue
+			var contract: Dictionary = restored.personnel.contracts[assignment.contract_id]
+			var contract_status = CampaignEmploymentContract.status_at(contract, slot)
 			assignments.append({
 				"id": assignment.id,
 				"role_id": assignment.role_id,
 				"start_slot": assignment.start_slot,
 				"end_slot": assignment.end_slot,
 				"allocation_bps": assignment.allocation_bps,
-				"active_now": int(assignment.start_slot) <= slot and slot < int(assignment.end_slot)
+				"active_now": int(assignment.start_slot) <= slot \
+					and slot < int(assignment.end_slot) \
+					and contract_status in ["active", "renewal_window"]
 			})
 		assignments.sort_custom(func(left, right):
 			return int(left.start_slot) < int(right.start_slot) \
