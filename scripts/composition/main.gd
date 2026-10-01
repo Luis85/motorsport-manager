@@ -122,7 +122,13 @@ func show_campaign() -> void:
 	if not projection.ok:
 		_show_campaign_error(projection.error)
 		return
+	var scroll = ScrollContainer.new()
+	scroll.name = "CampaignScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var desk = CampaignDirectorDesk.new()
+	desk.name = "CampaignDirectorDesk"
 	desk.configure(projection, float(App.settings.get("pitwall_text_scale", 1.0)),
 		bool(App.settings.get("campaign_guide_hidden", false)))
 	desk.menu_requested.connect(show_menu)
@@ -133,7 +139,8 @@ func show_campaign() -> void:
 		var error = App.save_settings()
 		if not error.is_empty(): UI.notify(self, "Could not save guide preference", error)
 		show_campaign())
-	content.add_child(desk)
+	scroll.add_child(desk)
+	content.add_child(scroll)
 
 func _create_starter_campaign() -> String:
 	App.load_library()
