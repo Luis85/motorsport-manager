@@ -1,8 +1,8 @@
 class_name CampaignDistressTransaction
 extends RefCounted
 static func evaluate(checkpoint:Dictionary)->Dictionary:
-	var r=CampaignCheckpoint.restore(checkpoint)
-	if not r.ok:return _reject(r.error,checkpoint)
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	var horizon=mini(CampaignClock.MAX_ELAPSED_SLOTS,r.state.clock.elapsed_slots+30*CampaignClock.SLOTS_PER_DAY)
 	var f=CampaignFinanceQuery.cash_forecast(checkpoint,r.state.organization_id,horizon)
 	if not f.ok:return _reject(f.error,checkpoint)
@@ -11,8 +11,8 @@ static func evaluate(checkpoint:Dictionary)->Dictionary:
 		int(f.forecast.scenarios.committed.minimum_cash_minor),int(f.forecast.reserve_minor),r.state.clock.elapsed_slots)
 	return _publish(r,changed,r.economy,checkpoint)
 static func bridge_financing(checkpoint:Dictionary,amount_minor:int)->Dictionary:
-	var r=CampaignCheckpoint.restore(checkpoint)
-	if not r.ok:return _reject(r.error,checkpoint)
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	if not RaceCheckpoint.integral(amount_minor,1,CampaignEconomy.MAX_MINOR/2):return _reject("Bridge amount is invalid.",checkpoint)
 	var slot=r.state.clock.elapsed_slots;var economy=r.economy
 	for input in [
@@ -25,6 +25,12 @@ static func bridge_financing(checkpoint:Dictionary,amount_minor:int)->Dictionary
 	if not settled.ok:return _reject(settled.error,checkpoint)
 	var changed=CampaignDistress.record_recovery(r.management.distress,"bridge_financing",amount_minor,slot)
 	return _publish(r,changed,settled.economy,checkpoint)
+static func _restore(checkpoint:Dictionary)->Dictionary:
+	var r=CampaignCheckpoint.restore(checkpoint)
+	if not r.ok:return _reject(r.error,checkpoint)
+	if not r.active_manifest.is_empty():
+		return _reject("Financial distress actions are frozen while a campaign weekend is active.",checkpoint)
+	return r
 static func _publish(r:Dictionary,changed:Dictionary,economy:Dictionary,original:Dictionary)->Dictionary:
 	if not changed.ok:return _reject(changed.error,original)
 	var m=CampaignManagement.with_distress(r.management,changed.distress)
