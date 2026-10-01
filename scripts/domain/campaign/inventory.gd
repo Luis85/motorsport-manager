@@ -57,6 +57,34 @@ static func stage(current: Dictionary, receipt: Dictionary, return_slot: int) ->
 	return {"ok": error.is_empty(), "status": "applied" if error.is_empty() else "rejected",
 		"error": error, "inventory": data if error.is_empty() else current.duplicate(true)}
 
+static func correct_event(current: Dictionary, receipt: Dictionary, return_slot: int) -> Dictionary:
+	var data = current.duplicate(true)
+	var error = validate(data)
+	if not error.is_empty(): return {"ok": false, "status": "rejected", "error": error, "inventory": current.duplicate(true)}
+	error = CampaignWeekendReceipt.validate(receipt)
+	if not error.is_empty(): return {"ok": false, "status": "rejected", "error": error, "inventory": current.duplicate(true)}
+	var event_id: String = receipt.campaign_event_id
+	if not data.events.has(event_id) or int(data.events[event_id].return_slot) != return_slot:
+		return {"ok": false, "status": "rejected", "error": "Inventory correction requires the original event return slot.", "inventory": current.duplicate(true)}
+	var returns: Array = []
+	for row in receipt.returned_resources:
+		var returned = row.duplicate(true)
+		returned["event_id"] = event_id
+		returned["result_digest"] = receipt.result_digest
+		returned["return_slot"] = return_slot
+		returns.append(returned)
+	data.events[event_id] = {"result_digest": receipt.result_digest, "return_slot": return_slot, "returns": returns}
+	var refs: Array = []
+	for id in data.events: refs.append({"id": id, "slot": int(data.events[id].return_slot)})
+	refs.sort_custom(func(a,b): return int(a.slot) < int(b.slot) or (int(a.slot)==int(b.slot) and str(a.id)<str(b.id)))
+	data.cars = {}
+	for ref in refs:
+		for returned in data.events[ref.id].returns: data.cars[returned.car_id] = returned.duplicate(true)
+	data.erase("digest"); data["digest"] = RaceStateValue.fingerprint(data)
+	error = validate(data)
+	return {"ok": error.is_empty(), "status": "corrected" if error.is_empty() else "rejected",
+		"error": error, "inventory": data if error.is_empty() else current.duplicate(true)}
+
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign inventory exceeds serialized-value limits."
