@@ -60,6 +60,14 @@ static func with_delegation(current: Dictionary, delegation: Dictionary) -> Dict
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
+static func with_rivals(current: Dictionary, rivals: Dictionary) -> Dictionary:
+	if not validate(current).is_empty() or not CampaignRivals.validate(rivals).is_empty():
+		return {}
+	var data = current.duplicate(true)
+	data.rivals = rivals.duplicate(true)
+	_seal(data)
+	return data if validate(data).is_empty() else {}
+
 static func with_commercial(current: Dictionary, commercial: Dictionary) -> Dictionary:
 	if not validate(current).is_empty() or not CampaignCommercial.validate(commercial).is_empty():
 		return {}
