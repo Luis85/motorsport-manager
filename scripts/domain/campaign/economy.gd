@@ -92,6 +92,31 @@ static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary, 
 	}
 	return _validated(data, "applied", current)
 
+static func correct_event(current: Dictionary, receipt: Dictionary,
+		policy: Dictionary, return_slot: int) -> Dictionary:
+	var data = upgrade(current, return_slot)
+	if data.is_empty(): return _reject("Campaign economy could not be validated for correction.", current)
+	var error = CampaignWeekendPolicy.receipt_error(policy, receipt)
+	if not error.is_empty(): return _reject(error, current)
+	var event_id: String = receipt.campaign_event_id
+	if not data.events.has(event_id): return _reject("Financial correction requires an existing settled event.", current)
+	var prior: Dictionary = data.events[event_id]
+	if prior.policy_digest != policy.digest: return _reject("Financial correction cannot silently change the event policy.", current)
+	var account: Dictionary = data.accounts[prior.account_id]
+	for posting_id in prior.posting_ids:
+		if not account.postings.has(posting_id): return _reject("Financial correction is missing an indexed prior posting.", current)
+		account.cash_minor = int(account.cash_minor) - int(account.postings[posting_id].amount_minor)
+		account.postings.erase(posting_id)
+	data.accounts[prior.account_id] = account
+	data.events.erase(event_id)
+	_seal(data)
+	error = validate(data)
+	if not error.is_empty(): return _reject(error, current)
+	var applied = stage(data, receipt, policy, return_slot)
+	if not applied.ok: return _reject(applied.error, current)
+	applied.status = "corrected"
+	return applied
+
 static func add_commitment(current: Dictionary, input: Dictionary, created_slot: int) -> Dictionary:
 	var data = upgrade(current, created_slot)
 	if data.is_empty():
