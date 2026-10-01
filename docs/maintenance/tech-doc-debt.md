@@ -151,7 +151,9 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them only when product work touches their responsibilities and characterization is available.
 - Advisory findings are not a verified bug count. Responsibility extraction can appear as both resolved and new diagnostics; inspect the complete exact-head report.
-- Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, engineering uncertainty/raw-material stock/part wear/repairs, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
+- Live provisional race adjudication remains outside the final-only settlement contract. Explicit post-result correction preview/application is implemented; a live steward simulation is not.
+- Dedicated specialist management screens for recruitment, engineering portfolio, facilities, commercial, finance, academy and dynasty remain future presentation work over the implemented authorities.
+- Richer role-quality effects, staff fatigue/chemistry, supplier disruption, engineering failure modes, academy competition, era-specific UI composition and real-world accounting semantics remain later depth rather than hidden first-slice assumptions.
 - Human testing of interface modes and management workflows, broad accessibility, same-machine performance and stronger editor clearance/collision diagnostics remain separate validation work.
 
 ## TM-08 closed — event readiness and atomic departure
@@ -199,6 +201,45 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 - Added checkpoint authority validation so digest recomputation cannot hide roster remapping or future-dated rival decisions.
 - The Director Desk exposes a concise rival-paddock summary without turning rival administration into player chores.
 
-## P0 campaign roadmap complete
+## TM-13 closed — recruitment, development, morale and promises
 
-TM-01 through TM-12 now form the first four-event Team Principal slice. The next dependency is **TM-13 / P1: deeper recruitment, development, morale and promises**. P1 work must build on the verified P0 loop rather than expanding scope to hide usability, balance or causality problems.
+- Added a persistent candidate market with stable attributes, confidence, salary expectation, availability and preferences; inspection never rerolls a candidate.
+- Added bounded three-offer negotiation. Accepted hiring atomically creates the existing person, employment contract, role assignment and payroll commitments.
+- Added persistent morale/trust profiles, review-driven development plans and workload-derived development evidence.
+- Added explicit promises with deadline/evidence identity; fulfilment/failure changes trust once and cannot be farmed repeatedly.
+- Added cross-authority timeline checks so signed candidates/profiles/plans/promises/reviews must agree with real personnel and campaign time.
+
+## TM-14 closed — multi-season planning, prize and promotion
+
+- Added current-car versus next-car investment allocation plus sporting/organizational ambition records.
+- Added explicit promotion offers with deadline/funding gate and an accept/decline choice.
+- Added one atomic next-season transition that preserves prior season history, carries the accepted field, freezes a new rule pack and supports an eight-event second season.
+- Season prize is a dated `prize` receipt through the ordinary commitment ledger rather than a balance reset.
+- Registered two coherent seasons with independent scoring tables and preserved source-season classification.
+
+## TM-15 closed — procurement, engineering uncertainty, part life and financial pressure
+
+- Added explicit suppliers, price/lead/capacity terms, procurement commitments and conserved received-minus-consumed material stock.
+- Added persistent latent engineering outcome evidence with read-only confidence ranges; observations narrow uncertainty without rerolling.
+- Added physical part wear/repair bound to the same `CampaignPartInstance.condition` and completed preparation/fabrication work.
+- Expanded capacity families to fabrication, race operations, staff development, commercial operations and academy while retaining the no-passive-bonus rule.
+- Added explicit distress stages and bridge financing with a later repayment liability.
+- Added a game-defined financial-position query for cash, operating result, receivables, payables/debt and physical operating counts.
+
+## TM-16 closed — founder business, academy, era and dynasty
+
+- Added opt-in parent business orders that consume the same finite workshop/fabrication capacity as racing work.
+- Parent-to-team funding is conserved: parent cash falls by exactly the settled `owner_transfer` receipt entering the team account.
+- Added finite academy places backed by owned academy capacity and persistent candidate identities.
+- Added explicit era profiles/activation, employed-person succession and evidence-backed legacy goals without deleting organization history or adding a grind currency.
+- Cross-authority validation reconstructs parent cash from opening capital + completed customer work − transfers.
+
+## Correction workflow closed
+
+- Added detached provisional preview of corrected sporting/cash/inventory deltas.
+- Added atomic final-result replacement across receipt, standings, event cash and returned inventory under the original manifest/policy.
+- Added an immutable correction journal and exact duplicate no-op. Correction does not rewind campaign time and is blocked after result-contingent sponsor bonus claims.
+
+## Roadmap closure for PR #27
+
+TM-01 through TM-16 and the explicit final-result correction workflow are implemented as the dependency-ordered campaign foundation/first playable slice requested by this branch. No further implementation milestone remains open in this PR. Remaining work is validation, balance, dedicated specialist UI and optional deeper simulation breadth; it must build on these authorities rather than create parallel state.
