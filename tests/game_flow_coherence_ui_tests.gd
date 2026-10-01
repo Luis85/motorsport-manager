@@ -163,10 +163,13 @@ func campaign_shell() -> void:
 	check(campaign_button != null, "Main menu exposes the Team Principal campaign")
 	if campaign_button == null: return
 	await click(campaign_button); await settle(12)
-	check(game.screen_name == "campaign" and game.content.get_child(0) is CampaignDirectorDesk,
-		"Campaign entry opens the native Director Desk")
-	if game.screen_name != "campaign": return
-	var desk: CampaignDirectorDesk = game.content.get_child(0)
+	var campaign_scroll = game.content.get_child(0)
+	check(game.screen_name == "campaign" and campaign_scroll is ScrollContainer 		and campaign_scroll.get_child_count() == 1 and campaign_scroll.get_child(0) is CampaignDirectorDesk,
+		"Campaign entry opens the native scrollable Director Desk")
+	if game.screen_name != "campaign" or not campaign_scroll is ScrollContainer: return
+	var desk: CampaignDirectorDesk = campaign_scroll.get_child(0)
+	check(campaign_scroll.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED,
+		"Compact campaign uses vertical reading scroll without horizontal navigation")
 	complete_button(desk.primary_action, "Campaign departure action / compact 130%")
 	check(desk.primary_action.text == "Start next event", "Opening campaign stops at the explicit departure decision")
 	check(CampaignCheckpoint.validate(app.campaign_checkpoint).is_empty(), "Native Director Desk owns a valid persisted campaign")
