@@ -180,6 +180,25 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 - Revocation immediately prevents new autonomous actions while leaving existing binding obligations intact.
 - Delegated execution neither advances campaign time nor consumes founder intervention energy.
 
-## Next dependency
+## TM-11 closed — Director Desk, onboarding and causal debrief
 
-The next campaign milestone is **TM-11: Director Desk, decision queue, onboarding and causal campaign debrief**. It should expose the existing authoritative systems as a concise playable management surface rather than adding another simulation layer.
+- Added a native Team Principal campaign entry from the main menu with atomic campaign save/load.
+- Added a Director Desk read model that keeps cash, next-event timing, principal energy and championship position visible while limiting the priority queue to three decisions.
+- Added state-derived, dismissible/resumable onboarding for the first complete management → race → settlement loop.
+- Added explicit Advance to event and Start next event actions. Advancing settles dated obligations and rival reviews; departure remains blocked until the existing TM-08 readiness authority passes.
+- Campaign weekends reuse the shipping Minimal race weekend, its exact race checkpoint and result envelope. A campaign never owns a second race simulation.
+- Completed weekends settle through the existing exactly-once transaction and return to a factual debrief that labels observations without claiming unsupported counterfactual causality.
+- Added compact/enlarged-text shell coverage and a headless create → depart → settle → debrief → advance contract.
+
+## TM-12 closed — rival budgets, projects and rosters
+
+- Added bounded rival organizations linked exactly to accepted season-entry rosters.
+- Rivals have finite cash, explicit liquidity reserves, dated commitments, capability state, archetypes and project choices.
+- Rival reviews run only at campaign boundaries and record an auditable public-information scope; they do not read player drafts, future weather or race randomness.
+- Prior project commitments consume actual rival cash before capability changes, and a rival cannot commit below its declared reserve.
+- Added checkpoint authority validation so digest recomputation cannot hide roster remapping or future-dated rival decisions.
+- The Director Desk exposes a concise rival-paddock summary without turning rival administration into player chores.
+
+## P0 campaign roadmap complete
+
+TM-01 through TM-12 now form the first four-event Team Principal slice. The next dependency is **TM-13 / P1: deeper recruitment, development, morale and promises**. P1 work must build on the verified P0 loop rather than expanding scope to hide usability, balance or causality problems.
