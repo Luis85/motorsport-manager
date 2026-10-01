@@ -79,4 +79,5 @@ static func _record(track: Dictionary) -> RaceRecord:
 	var simulation = PracticeRaceSim.new(TrackGeometry.new(track, "Formula"), options)
 	if not simulation.last_error.is_empty(): return null
 	var record = RaceRecord.new(); record.attach(simulation)
+	record.set_meta("campaign_test_source", simulation)
 	return record
