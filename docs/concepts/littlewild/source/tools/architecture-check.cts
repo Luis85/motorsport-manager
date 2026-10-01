@@ -64,7 +64,10 @@ check("DDD domain map owns every runtime module exactly once", () => {
   const owned = DOMAIN_MAP.contexts.flatMap(context => context.files);
   assert(new Set(owned).size === owned.length, "A runtime file is owned by multiple bounded contexts.");
   const runtime = fs.readdirSync(SOURCE, { withFileTypes: true })
-    .filter(entry => entry.isFile() && entry.name.endsWith(".ts") && entry.name !== "build.ts")
+    .filter(entry => entry.isFile() && (
+      entry.name.endsWith(".ts") && entry.name !== "build.ts" ||
+      entry.name.endsWith(".cts") && !entry.name.startsWith("test-")
+    ))
     .map(entry => entry.name).sort();
   assert(JSON.stringify([...owned].sort()) === JSON.stringify(runtime), "Domain map/runtime mismatch. Owned: " + [...owned].sort().join(", ") + " Runtime: " + runtime.join(", "));
   for (const file of owned) assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
@@ -91,8 +94,7 @@ check("Clean Architecture dependency rules hold across mapped runtime layers", (
       const target = targetFile(match[1] ?? "");
       if (!target || !ownership.has(target)) continue;
       const targetLayer = ownership.get(target)!;
-      if (layer === "domain" && targetLayer !== "domain") violations.push(file + " -> " + target + " (" + targetLayer + ")");
-      if (layer === "application" && rank.get(targetLayer)! > rank.get("infrastructure")!) violations.push(file + " -> " + target + " (" + targetLayer + ")");
+      if (rank.get(targetLayer)! > rank.get(layer)!) violations.push(file + " -> " + target + " (" + targetLayer + ")");
     }
   }
   assert(violations.length === 0, "Architecture dependency violation: " + violations.join("; "));
