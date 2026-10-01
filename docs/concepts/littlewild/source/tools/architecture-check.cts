@@ -17,7 +17,9 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 function walk(directory: string): string[] {
+  if (!fs.existsSync(directory)) return [];
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    if (["node_modules", ".generated", "verification", "screenshots", "vendor"].includes(entry.name)) return [];
     const full = path.join(directory, entry.name);
     return entry.isDirectory() ? walk(full) : [full];
   });
@@ -26,9 +28,9 @@ function source(name: string): string {
   return fs.readFileSync(path.join(SOURCE, name), "utf8");
 }
 
-check("All authored executable Littlewild source is TypeScript", () => {
-  const legacy = walk(SOURCE).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
-  assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(SOURCE, file)).join(", "));
+check("All authored executable Littlewild code is TypeScript", () => {
+  const legacy = walk(ROOT).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
+  assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(ROOT, file)).join(", "));
 });
 
 const coreModules = [
@@ -94,6 +96,15 @@ check("Strict TypeScript gate covers the architecture kernel", () => {
   for (const file of ["source/ecs.ts", "source/command-router.ts", "source/build.ts", "source/tools/architecture-check.cts"]) {
     assert(config.includes(`"${file}"`), `Strict gate does not include ${file}`);
   }
+});
+
+check("ECS persistence remains plain-data owned by domain records", () => {
+  const actor = source("actor-ecs.ts");
+  const world = source("world-ecs.ts");
+  const economy = source("economy-ecs.ts");
+  assert(actor.includes("Components bind by reference"), "Actor ECS no longer documents authoritative record binding.");
+  assert(world.includes("no ECS state is") && world.includes("serialized"), "World ECS persistence boundary is unclear.");
+  assert(economy.includes("Existing save records remain authoritative"), "Economy ECS persistence boundary is unclear.");
 });
 
 check("Generated JavaScript is outside authored source", () => {
