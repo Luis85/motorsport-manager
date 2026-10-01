@@ -14,7 +14,7 @@ static func empty(campaign_id: String, organization_id: String,
 		"organization_id": organization_id, "authority_from_slot": authority_from_slot,
 		"commercial": CampaignCommercial.empty(),
 		"delegation": {"mandates": {}, "decisions": []},
-		"rivals": {"teams": {}, "decision_cycles": []},
+		"rivals": CampaignRivals.empty(),
 		"people": {"plans": {}, "promises": {}},
 		"season_planning": {"plans": {}},
 		"distress": {"stage": "normal", "history": []}
@@ -38,6 +38,9 @@ static func validate(data: Variant) -> String:
 	var delegation_error = CampaignDelegation.validate(data.get("delegation"))
 	if not delegation_error.is_empty():
 		return delegation_error
+	var rivals_error = CampaignRivals.validate(data.get("rivals"))
+	if not rivals_error.is_empty():
+		return rivals_error
 	for key in ["delegation", "rivals", "people", "season_planning", "distress"]:
 		if not data.get(key) is Dictionary:
 			return "Campaign management has an invalid " + key + " projection."
