@@ -455,7 +455,11 @@ func show_weekend(layout: String = "") -> void:
 		var error = replay_controller.open_data(view.recording.seal())
 		if not error.is_empty(): UI.notify(self, "Replay unavailable", error))
 	if view is MinimalRaceWorkspace: view.results_requested.connect(show_weekend_end)
-	view.new_weekend_requested.connect(show_library)
+	var campaign_event_active = false
+	if not App.campaign_checkpoint.is_empty():
+		var campaign = CampaignCheckpoint.restore(App.campaign_checkpoint)
+		campaign_event_active = campaign.ok and not campaign.active_manifest.is_empty()
+	view.new_weekend_requested.connect(show_campaign if campaign_event_active else show_library)
 	view.menu_requested.connect(go_home)
 
 func continue_weekend() -> void:
