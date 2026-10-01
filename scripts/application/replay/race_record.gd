@@ -209,8 +209,19 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 	var scenarios: Array = []
 	for entry in snapshot.strategy_state.records:
 		if entry.kind == "scenario" and scenarios.size() < 3: scenarios.append(entry.evidence.duplicate(true))
+	var starting_resources: Array = []
+	var profiles = snapshot.get("performance_profiles", [])
+	for index in range(snapshot.cars.size()):
+		var car = snapshot.cars[index]
+		var resource = {"id": car.id, "fuel": car.fuel, "health": car.health,
+			"damage": car.damage, "tyres": car.tyre_sets}
+		if int(snapshot.version) >= TacticalDuels.CHECKPOINT_VERSION:
+			var profile = profiles[index] if profiles is Array and profiles.size() == snapshot.cars.size() \
+				else RacePerformanceProfile.baseline()
+			resource["performance_profile"] = profile.duplicate(true)
+		starting_resources.append(resource)
 	return {"track_hash": fingerprint(snapshot.track), "roster_hash": fingerprint(snapshot.cars.map(func(c): return {"id": c.id, "name": c.name, "team": c.team})),
-		"starting_resources_hash": fingerprint(snapshot.cars.map(func(c): return {"id": c.id, "fuel": c.fuel, "health": c.health, "damage": c.damage, "tyres": c.tyre_sets})),
+		"starting_resources_hash": fingerprint(starting_resources),
 		"ruleset": rules, "vehicle": snapshot.vehicle, "seed": snapshot.seed_value, "laps": snapshot.laps,
 		"weather": snapshot.scenario, "incident_exposure": snapshot.intensity, "initial_phase": snapshot.phase,
 		"briefing": "Recorded initial resources and applied settings; no forced result. Changing a decision changes exposure and rival responses.",

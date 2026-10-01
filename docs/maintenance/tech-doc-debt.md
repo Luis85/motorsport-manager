@@ -154,13 +154,15 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 - Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, engineering uncertainty/raw-material stock/part wear/repairs, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
 - Human testing of interface modes and management workflows, broad accessibility, same-machine performance and stronger editor clearance/collision diagnostics remain separate validation work.
 
+## TM-08 closed — event readiness and atomic departure
+
+- Added a read-only readiness projection over the existing competition, personnel, finance and engineering authorities. Readiness is a checklist only; it has no hidden performance modifier.
+- A campaign departure now requires the registered next event, exact departure slot, covering race-driver and crew assignments, available people and the exact per-car performance profiles composed from installed physical parts.
+- Race checkpoint v12 starting-resource fingerprints now include each frozen performance profile. Older checkpoint versions keep their historical manifest identity.
+- Departure atomically reserves event-duty availability, posts one explicit event-operations commitment at the departure slot and freezes the existing immutable weekend manifest. A rejected departure returns the exact caller checkpoint.
+- First-event absence of prior return inventory is an explicit risk warning rather than fabricated stock history.
+- The weekend remains the only race-preparation/simulation authority; TM-08 validates and freezes its inputs instead of duplicating setup, tyre or pit logic.
+
 ## Next dependency
 
-The next campaign milestone is **TM-08: physical inventory, wear/repair and engineering uncertainty**. It must:
-
-- consume explicit TM-05 personnel and TM-06 facility capacity;
-- separate knowledge, design, manufactured instances, validation and installed race configuration;
-- conserve materials and unique part identities;
-- keep external manufacturing/services explicit rather than free progress;
-- bind every advertised car effect to a tested race performance-profile seam; and
-- ensure research completion alone never fabricates a fitted part.
+The next campaign milestone is **TM-09: sponsorship and commercial obligations**. It must keep guaranteed and conditional value separate, reserve any promised people/time through existing availability authority, and settle earned value through explicit dated commitments rather than fabricating spendable cash.
