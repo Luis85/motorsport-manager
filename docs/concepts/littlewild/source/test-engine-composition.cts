@@ -74,6 +74,13 @@ test('Save import and deterministic continuation remain exact through the compos
  a.advance(15);b.advance(15);assert.equal(canonical(a),canonical(b));
  const c=S.commit(S.inspect(S.encode(a)));a.advance(10);c.advance(10);assert.equal(canonical(a),canonical(c));
 });
+test('Simulation and default story exports are wall-clock independent',()=>{
+ const e=L.createWorldDemo(),first=e.export(),second=e.export();
+ assert.deepEqual(first,second);assert(!Object.hasOwn(first,'savedAt'));
+ const a=S.encode(e),b=S.encode(e);assert.deepEqual(a,b);assert.equal(a.savedAt,null);
+ const stamped=S.encode(e,'2026-10-02T00:00:00.000Z');assert.equal(stamped.savedAt,'2026-10-02T00:00:00.000Z');
+ assert.throws(()=>S.encode(e,'not-a-time'),/timestamp/);
+});
 
 test('Composed methods remain replaceable for deterministic test and adapter seams',()=>{
  const e=L.createWorldDemo(),original=e.check;

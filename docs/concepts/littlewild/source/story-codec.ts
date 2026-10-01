@@ -22,7 +22,11 @@
         state: preview.engine?.export().state
     });
     const reviewFingerprint = preview => reviewHash(reviewedSnapshot(preview));
-    function encode(engine) { return { app: 'littlewild', version: 8, savedAt: new Date().toISOString(), content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state }; }
+    function encode(engine, savedAt = null) {
+        if (savedAt !== null && (typeof savedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(savedAt)))
+            throw Error('Story timestamp must be an ISO UTC timestamp or null.');
+        return { app: 'littlewild', version: 8, savedAt, content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state };
+    }
     function withAdventure(pack, fn) { const previous = A.copy(A.content); try {
         A.replace(pack);
         return fn();

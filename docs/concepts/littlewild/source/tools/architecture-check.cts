@@ -57,7 +57,7 @@ const coreModules = [
 ] as const;
 const forbiddenPlatform = [
   "document.", "window.", "localStorage", "sessionStorage", "requestAnimationFrame",
-  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "performance.now("
+  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "new Date(", "performance.now("
 ];
 
 check("DDD domain map owns every runtime module exactly once", () => {
@@ -207,7 +207,7 @@ check("All domain/application modules avoid ambient randomness and wall clock", 
   const withoutComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
   for (const file of deterministicFiles) {
     const text = withoutComments(source(file));
-    for (const token of ["Math.random(", "crypto.random", "randomUUID(", "Date.now(", "performance.now("]) {
+    for (const token of ["Math.random(", "crypto.random", "randomUUID(", "Date.now(", "new Date(", "performance.now("]) {
       if (text.includes(token)) violations.push(`${file}: ${token}`);
     }
   }

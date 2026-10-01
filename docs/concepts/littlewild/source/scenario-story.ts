@@ -12,8 +12,8 @@
   const reviews=new WeakMap();
   const reviewOf=preview=>legacyHash({experience:preview.experience,
     experienceFingerprint:preview.experienceFingerprint,simulationFingerprint:preview.simulationFingerprint});
-  S.encode = engine => {
-    const doc = native.encode(engine);
+  S.encode = (engine, savedAt=null) => {
+    const doc = native.encode(engine, savedAt);
     if (engine.scenarioContext) {
       const ctx=X.checkContext(engine.scenarioContext);
       doc.version = 10;

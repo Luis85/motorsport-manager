@@ -972,7 +972,7 @@
             const remainder = seconds - count / 10;
             if (remainder > 1e-9) this.step(remainder);
         }
-        export() { const s = JSON.parse(JSON.stringify(this.s)); s.task = null; return { app: 'littlewild', version: VERSION, savedAt: new Date().toISOString(), state: s }; }
+        export() { const s = root.LWContent.copy(this.s); s.task = null; return { app: 'littlewild', version: VERSION, state: s }; }
         static import(data) {
             if (!data || data.app !== 'littlewild' || ![1, 2, VERSION].includes(data.version) || !data.state)
                 throw Error('This is not a supported Littlewild save (v1, v2 or v3).');

@@ -100,9 +100,10 @@
     else if (success)
         toast(success); updateUI(true); processEvents(); save(); return r.ok; }
     function timeLabel(hour) { return String(Math.floor(hour)).padStart(2, '0') + ':' + String(Math.floor((hour % 1) * 60)).padStart(2, '0'); }
+    function timestampedStory() { return LWStory.encode(engine, new Date().toISOString()); }
     function save(explicit = false) { if (!engine.s.started && !explicit)
         return; try {
-        const payload = LWStory.encode(engine);
+        const payload = timestampedStory();
         storage.write(payload,explicit);
         saveAvailable = true;
         text('save-label', 'Saved on this device');
@@ -114,12 +115,12 @@
             toast('Local saving is unavailable here. Export a portable save instead.', true);
     } }
     function exportSave() {
-        LWFiles.downloadJSON(LWStory.encode(engine),'littlewild-'+engine.s.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-day-'+engine.s.day+'-story.json');
+        LWFiles.downloadJSON(timestampedStory(),'littlewild-'+engine.s.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-day-'+engine.s.day+'-story.json');
         toast('Story exported, including its exact content library.');
     }
     function backupStory() {
         if(!engine.s.started)return true;
-        const kept=storage.backup(LWStory.encode(engine));
+        const kept=storage.backup(timestampedStory());
         if(!kept){ui.backupStatus='No recovery copy could be written. Keep an exported JSON copy before replacing this story.';toast(ui.backupStatus,true);}
         else ui.backupStatus='';
         return kept;

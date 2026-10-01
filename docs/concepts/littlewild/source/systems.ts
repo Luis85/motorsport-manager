@@ -9,7 +9,7 @@ const L = root.LW, Composition = L.EngineComposition;
 const {clamp, terrain, SIZE} = L;
 const {SKILLS, BUILDINGS, RES, RECIPES, DISCIPLINES, DRILLS, STYLES, APPROACHES, SPECIALIZATIONS, STUDIES, PATHS} = root.LWContent.tables;
 const own = (o,k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o,k);
-const clone = o => JSON.parse(JSON.stringify(o));
+const clone = o => root.LWContent.copy(o);
 const fail = reason => ({ok:false,reason});
 const CATEGORY_NAMES={all:'Everything',home:'Home & hearth',workshops:'Workshops',growing:'Food & growing',learning:'Learning',community:'Community'};
 const RAW_SKILLS={wood:'woodcraft',stone:'stonework',meat:'tracking',clay:'claywork',ore:'metalwork',herbs:'herbalism',grain:'gardening'};
