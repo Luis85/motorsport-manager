@@ -49,6 +49,18 @@ must create explicit dated commitments and must not also be charged through
 project summaries. Legacy ledgers migrate losslessly from an explicit authority
 slot; do not fabricate prior commitments.
 
+`CampaignPersonnel` is the people, employment, role-capacity and exclusive-
+availability authority. A person, contract, role assignment and reservation are
+separate records. Employment generates payroll through `CampaignEconomy`; it must
+not maintain another balance or bypass commitment settlement. Role allocations
+must fit eligible roles and contracted capacity. Work, event duty, travel,
+training and leave for one person cannot overlap. Renewal and replacement keep
+dated predecessor/successor or termination evidence; do not rewrite history or
+silently transfer assignments. Personnel planning freezes during an active
+weekend, while already binding payroll continues through dated settlement. Legacy
+payroll may be retained explicitly, but must not be assigned fabricated people or
+contracts.
+
 ## UI changes
 
 Use `GameTheme` through the existing UI/MinimalRaceStyle adapters for native
