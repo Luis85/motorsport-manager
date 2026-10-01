@@ -23,10 +23,23 @@ static func validate(group:Dictionary,economy:Dictionary,operations:Dictionary,
 			return "Group transfer disagrees with its team-side cash evidence."
 		expected-=int(transfer.amount_minor)
 	if expected!=int(group.parent_cash_minor):return "Parent-company cash does not conserve business income and transfers."
+	var academy_capacity = 0
+	for resource in operations.resources.values():
+		if resource.access == "owned" and resource.family == "academy":
+			academy_capacity += int(resource.capacity_units)
+	if int(group.academy.capacity) > academy_capacity:
+		return "Academy places exceed owned academy capacity."
 	for candidate_id in group.academy.prospects:
 		if not people.candidates.has(candidate_id):return "Academy prospect is absent from the persistent candidate market."
 	var principal=group.dynasty.operating_principal_id
-	if principal!=group.founder_id and not personnel.people.has(principal):return "Operating principal is not a known campaign person."
+	if principal!=group.founder_id:
+		if not personnel.people.has(principal):return "Operating principal is not a known campaign person."
+		var employed = false
+		for contract in personnel.contracts.values():
+			if contract.person_id == principal and CampaignEmploymentContract.status_at(contract,current_slot) in ["active","renewal_window"]:
+				employed = true
+				break
+		if not employed:return "Operating successor no longer has active employment."
 	for order in group.business_orders.values():
 		if int(order.created_slot)>current_slot or int(order.completed_slot)>current_slot:return "Founder business history is future-dated."
 	for transfer in group.transfers:
