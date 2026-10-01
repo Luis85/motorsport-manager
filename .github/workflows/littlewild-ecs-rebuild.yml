@@ -1,121 +1,33 @@
-# One-shot publisher for the checksum-pinned M6 review/polish delta.
-name: Littlewild M6 review publication
+name: Littlewild ECS verification
 on:
   push:
     branches:
       - concept/littlewild-v15-world-ui
     paths:
+      - 'docs/concepts/littlewild/**'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
+  pull_request:
+    paths:
+      - 'docs/concepts/littlewild/**'
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
+  workflow_dispatch:
 permissions:
-  contents: write
-  issues: read
+  contents: read
 concurrency:
-  group: littlewild-m6-review-${{ github.ref }}
+  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
-  publish:
-    if: github.actor != 'github-actions[bot]'
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: concept/littlewild-v15-world-ui
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Recover checksum-pinned review patch
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git merge-base --is-ancestor b9c1a632dcea6dd102b998a1dd4f6ab9d3a07a6a HEAD
-          test -z "$(git diff --name-only b9c1a632dcea6dd102b998a1dd4f6ab9d3a07a6a..HEAD -- docs/concepts/littlewild)"
-          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/m6-comments.json
-          python - <<'PYCODE'
-          from pathlib import Path
-          import base64, hashlib, json, lzma, subprocess
-
-          pages=json.loads(Path('/tmp/m6-comments.json').read_text())
-          comments=[c for page in pages for c in page]
-          marker='<!-- ecs-m6-polish-meta -->'
-          metas=[c for c in comments if marker in c.get('body','')]
-          if not metas:
-              raise SystemExit('M6 review metadata comment not found')
-          meta=json.loads(metas[-1]['body'].split(marker,1)[1].strip())
-          expected={
-              'transport':'m6-polish-2fe74a913e',
-              'milestone':'M6-review-polish',
-              'base':'bb67ac253fa9e66a9e5990e028e819f13817987b',
-              'commitMessage':'refactor(littlewild): harden M6 profiles and migrations',
-              'encoding':'xz+base64-chunks',
-              'chunks':5,
-              'encodedChars':71960,
-              'compressedBytes':53968,
-              'compressedSha256':'3104e04482f75fe2fd9154442d20686a4dd72005dcc637b6e8b1eef9eff02ce5',
-              'patchBytes':275504,
-              'patchSha256':'2fe74a913ebd2b8a77f929a9bc9e486262456862af546799702a04b5af581fe8',
-              'expectedChecks':1006,
-              'expectedSuites':27,
-              'htmlBytes':3788823,
-              'htmlSha256':'73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c',
-              'authoritySha256':'73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521',
-              'authorityFiles':28,
-          }
-          for key,value in expected.items():
-              if meta.get(key)!=value:
-                  raise SystemExit(f'Unexpected M6 metadata {key}: {meta.get(key)!r}')
-          hashes=meta.get('chunkSha256')
-          if not isinstance(hashes,list) or len(hashes)!=meta['chunks']:
-              raise SystemExit('Invalid M6 chunk hash manifest')
-          prefix=f"<!-- ecs-m6-polish-chunk:{meta['transport']}:"
-          chunks={}
-          for comment in comments:
-              body=comment.get('body','')
-              if not body.startswith(prefix):
-                  continue
-              head,data=body.split('-->',1)
-              index=int(head[len(prefix):].strip())
-              chunks[index]=data.strip()
-          indices=list(range(meta['chunks']))
-          if sorted(chunks)!=indices:
-              raise SystemExit(f'Incomplete M6 review chunks: {sorted(chunks)}')
-          for index in indices:
-              digest=hashlib.sha256(chunks[index].encode()).hexdigest()
-              if digest!=hashes[index]:
-                  raise SystemExit(f'M6 review chunk {index} checksum mismatch: {digest}')
-          encoded=''.join(chunks[i] for i in indices)
-          if len(encoded)!=meta['encodedChars']:
-              raise SystemExit(f'Unexpected encoded patch length: {len(encoded)}')
-          compressed=base64.b64decode(encoded,validate=True)
-          if len(compressed)!=meta['compressedBytes']:
-              raise SystemExit(f'Unexpected compressed patch size: {len(compressed)}')
-          if hashlib.sha256(compressed).hexdigest()!=meta['compressedSha256']:
-              raise SystemExit('Compressed patch checksum mismatch')
-          patch=lzma.decompress(compressed,format=lzma.FORMAT_XZ)
-          if len(patch)!=meta['patchBytes']:
-              raise SystemExit(f'Unexpected patch size: {len(patch)}')
-          if hashlib.sha256(patch).hexdigest()!=meta['patchSha256']:
-              raise SystemExit('Patch checksum mismatch')
-          path=Path('/tmp/m6-polish.patch')
-          path.write_bytes(patch)
-          subprocess.run(['git','apply','--check',str(path)],check=True)
-          subprocess.run(['git','apply',str(path)],check=True)
-          browser=Path('docs/concepts/littlewild/browser-v15.py')
-          source=browser.read_text()
-          old="    start=p.evaluate('Littlewild.engine.s.simTime');p.wait_for_timeout(550)\n    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))\n"
-          new="    start=p.evaluate('Littlewild.engine.s.simTime')\n    p.wait_for_function('(start)=>Littlewild.engine.s.simTime>start',arg=start,timeout=2500)\n    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))\n"
-          if source.count(old)!=1:
-              raise SystemExit('Unexpected browser timing contract source')
-          browser.write_text(source.replace(old,new,1))
-          Path('/tmp/m6-meta.json').write_text(json.dumps(meta))
-          PYCODE
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
         run: |
@@ -123,62 +35,15 @@ jobs:
           python -m playwright install --with-deps chromium
           CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Rebuild and verify reviewed architecture
+      - name: Rebuild and verify all Littlewild contracts
         working-directory: docs/concepts/littlewild
         run: python verify-v15.py
-      - name: Validate review evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PYCODE'
-          from pathlib import Path
-          import hashlib, json
-          meta=json.loads(Path('/tmp/m6-meta.json').read_text())
-          gate=json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
-          expected={'status':'passed','passed':meta['expectedChecks'],'total':meta['expectedChecks'],'htmlBytes':meta['htmlBytes'],'htmlSha256':meta['htmlSha256']}
-          for key,value in expected.items():
-              if gate.get(key)!=value:
-                  raise SystemExit(f'Unexpected review gate {key}: {gate.get(key)!r}')
-          if len(gate.get('suites',[]))!=meta['expectedSuites']:
-              raise SystemExit(f"Unexpected review suite count: {len(gate.get('suites',[]))}")
-          artifact=Path('docs/concepts/littlewild/littlewild.html')
-          if artifact.stat().st_size!=meta['htmlBytes'] or hashlib.sha256(artifact.read_bytes()).hexdigest()!=meta['htmlSha256']:
-              raise SystemExit('Reviewed standalone artifact identity mismatch')
-          milestone=json.loads(Path('docs/concepts/littlewild/source/ecs-milestone-state.json').read_text())
-          if milestone.get('milestone')!='M6' or milestone.get('sha256')!=meta['authoritySha256'] or milestone.get('files')!=meta['authorityFiles']:
-              raise SystemExit('Reviewed M6 authority manifest mismatch')
-          PYCODE
-          git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
-          git checkout HEAD -- \
-            docs/concepts/littlewild/source/v10-domain-results.json \
-            docs/concepts/littlewild/source/v10-fresh-story.json \
-            docs/concepts/littlewild/source/v10-regression-v6-test-results.json \
-            docs/concepts/littlewild/source/v10-regression-v8-test-results.json \
-            docs/concepts/littlewild/source/v10-stress-results.json \
-            docs/concepts/littlewild/source/v11-domain-results.json
-      - name: Commit and push reviewed M6 source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PYCODE'
-          from pathlib import Path
-          for path in Path('docs/concepts/littlewild/verification/v15').glob('*.log'):
-              path.write_text(path.read_text().rstrip()+'\n')
-          PYCODE
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A docs/concepts/littlewild
-          git diff --cached --check
-          test -z "$(git diff --cached --name-only -- .github/workflows/littlewild-ecs-rebuild.yml)"
-          git commit -m "refactor(littlewild): harden M6 profiles and migrations"
-          git push
-      - name: Retain review evidence
+      - name: Retain verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: littlewild-m6-review-verification
+          name: littlewild-ecs-verification
           path: |
-            /tmp/m6-polish.patch
             docs/concepts/littlewild/littlewild.html
             docs/concepts/littlewild/verification/v15/
             docs/concepts/littlewild/source/*-results.json
