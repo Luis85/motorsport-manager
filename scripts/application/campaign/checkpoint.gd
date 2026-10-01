@@ -364,6 +364,10 @@ static func _management_error(data: Dictionary) -> String:
 	error = CampaignSupplyAuthority.validate(data.management.supply, data.economy,
 		data.engineering, data.operations, int(data.state.clock.elapsed_slots))
 	if not error.is_empty(): return error
+	error = CampaignGroupAuthority.validate(data.management.group, data.economy,
+		data.operations, data.engineering, data.management.people, data.personnel,
+		int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
 	for row in data.management.distress.history:
 		if int(row.slot) > int(data.state.clock.elapsed_slots):
 			return "Campaign distress history is dated after authoritative campaign time."
