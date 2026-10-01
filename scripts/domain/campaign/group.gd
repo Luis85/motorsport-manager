@@ -120,8 +120,14 @@ static func validate(data:Variant)->String:
 	if data.initialized:
 		if not CampaignIdentity.valid(data.founder_id) or not data.eras.has(data.active_era_id) or not CampaignIdentity.valid(data.dynasty.get("operating_principal_id")):return "Campaign group initialization is invalid."
 	elif not data.founder_id.is_empty() or not data.active_era_id.is_empty():return "Uninitialized campaign group has identity."
+	var business_work_ids = {}
 	for id in data.business_orders:
-		if id!=data.business_orders[id].get("id") or not _business_order_error(data.business_orders[id]).is_empty():return "Campaign founder-business order is invalid."
+		var order: Dictionary = data.business_orders[id]
+		if id!=order.get("id") or not _business_order_error(order).is_empty():
+			return "Campaign founder-business order is invalid."
+		if business_work_ids.has(order.work_order_id):
+			return "Campaign founder-business work can fund only one customer order."
+		business_work_ids[order.work_order_id] = true
 	var transfer_ids={}
 	for row in data.transfers:
 		if not _transfer_error(row).is_empty() or transfer_ids.has(row.id):return "Campaign group transfer history is invalid."
