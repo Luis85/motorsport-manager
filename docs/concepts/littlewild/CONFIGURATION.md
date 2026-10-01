@@ -36,15 +36,19 @@ A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 t
 5. For a dedicated distributable, compile with `--pack`.
 
 ```sh
-node source/tools/scenario-cli.cjs validate source/content/emberworks.pack.json
-node source/tools/scenario-cli.cjs export littlewild my-setting.pack.json
-node source/tools/scenario-cli.cjs capture my-story.json captured.pack.json
-node source/tools/simulation-profile-cli.cjs validate source/content/simulation-profile.json
-node source/tools/simulation-profile-cli.cjs export my-profile.json
-python source/build.py --pack my-setting.pack.json --output my-setting.html
+npm install --no-audit --no-fund
+npm run build
+
+node .generated/tools/scenario-cli.cjs validate source/content/emberworks.pack.json
+node .generated/tools/scenario-cli.cjs export littlewild my-setting.pack.json
+node .generated/tools/scenario-cli.cjs capture my-story.json captured.pack.json
+node .generated/tools/simulation-profile-cli.cjs validate source/content/simulation-profile.json
+node .generated/tools/simulation-profile-cli.cjs export my-profile.json
+
+npm run build -- --pack my-setting.pack.json --output my-setting.html
 ```
 
-The build bundles the chosen pack, engine, original compatibility libraries and Three.js into the output. It does not require a runtime file server. The external-pack option needs Node.js for semantic validation; the ordinary built-in build needs only Python.
+TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, and bundles the chosen pack, runtime, compatibility libraries and Three.js into one offline HTML file. No runtime file server is required.
 
 ## Scene state is a precise snapshot
 
