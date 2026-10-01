@@ -1,7 +1,9 @@
 class_name CampaignCapacityResource
 extends RefCounted
 ## Dated internal facility or external rented-service capacity.
-const FAMILIES = ["preparation_workshop", "design_office", "test_validation"]
+const FAMILIES = ["preparation_workshop", "design_office", "test_validation",
+	"fabrication_shop", "race_operations", "staff_development",
+	"commercial_operations", "academy"]
 const ACCESS = ["owned", "service"]
 const MAX_UNITS = 64
 const MAX_NAME_LENGTH = 80
