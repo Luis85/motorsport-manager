@@ -16,7 +16,7 @@ static func empty(campaign_id: String, organization_id: String,
 		"delegation": {"mandates": {}, "decisions": []},
 		"rivals": CampaignRivals.empty(),
 		"people": CampaignPeopleDevelopment.empty(),
-		"season_planning": {"plans": {}},
+		"season_planning": CampaignSeasonPlanning.empty(),
 		"distress": {"stage": "normal", "history": []}
 	}
 	_seal(data)
@@ -44,6 +44,9 @@ static func validate(data: Variant) -> String:
 	var people_error = CampaignPeopleDevelopment.validate(data.get("people"))
 	if not people_error.is_empty():
 		return people_error
+	var planning_error = CampaignSeasonPlanning.validate(data.get("season_planning"))
+	if not planning_error.is_empty():
+		return planning_error
 	for key in ["delegation", "rivals", "people", "season_planning", "distress"]:
 		if not data.get(key) is Dictionary:
 			return "Campaign management has an invalid " + key + " projection."
@@ -54,6 +57,14 @@ static func validate(data: Variant) -> String:
 	if data.distress.get("stage") not in ["normal", "reserve_pressure", "funding_gap", "missed_obligation"]:
 		return "Campaign management has an invalid distress stage."
 	return _integrity_error(data)
+
+static func with_season_planning(current: Dictionary, planning: Dictionary) -> Dictionary:
+	if not validate(current).is_empty() or not CampaignSeasonPlanning.validate(planning).is_empty():
+		return {}
+	var data = current.duplicate(true)
+	data.season_planning = planning.duplicate(true)
+	_seal(data)
+	return data if validate(data).is_empty() else {}
 
 static func with_people(current: Dictionary, people: Dictionary) -> Dictionary:
 	if not validate(current).is_empty() or not CampaignPeopleDevelopment.validate(people).is_empty():
