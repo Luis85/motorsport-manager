@@ -14,16 +14,24 @@ The existing **Pause when opening panels** device preference also covers these p
 
 ## Build and verify
 
-```sh
-python source/build.py
-# A separate, single-pack HTML using the very same runtime:
-python source/build.py --pack source/content/emberworks.pack.json --output emberworks.html
+Littlewild's authored executable source is TypeScript. JavaScript under `.generated/` is disposable compiler output; the bundled `vendor/three.js` is third-party distribution code.
 
-python -m pip install -r requirements-test.txt
-python verify-v15.py
+```sh
+npm install --no-audit --no-fund
+npm run typecheck
+npm run architecture
+
+npm run build
+# A separate, single-pack HTML using the same compiled runtime:
+npm run build -- --pack source/content/emberworks.pack.json --output emberworks.html
+
+npx playwright install chromium
+npm run verify
+# Skip browser suites only for an explicitly partial local check:
+npm run verify -- --no-browser
 ```
 
-The normal build uses Python's standard library. External-pack builds additionally use Node.js for semantic validation. Verification uses Node.js, Python/jsonschema, and Playwright with `/usr/bin/chromium`; adjust that executable path for another development environment. `--no-browser` produces an explicitly partial result, not a full release pass.
+`typecheck` runs the strict TypeScript gate for the architecture kernel. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, then runs the generated Node and Playwright suites.
 
 ## Documentation
 
@@ -37,6 +45,6 @@ This is not yet an unrestricted game engine. Stable mechanic roles, handlers, is
 
 ## ECS refactor on PR #25
 
-The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine migration, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
+The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine migration, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
 
 - [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.
