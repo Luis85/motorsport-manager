@@ -34,10 +34,4 @@ static func validate(engineering: Dictionary, economy: Dictionary,
 		if commitment.status == "settled" and int(commitment.due_slot) > current_slot:
 			return "Campaign engineering material commitment settled before its due slot."
 		indexed[commitment_id] = true
-	for commitment_id in economy.commitments:
-		var commitment: Dictionary = economy.commitments[commitment_id]
-		if commitment.category != "development" or commitment_id in legacy:
-			continue
-		if int(commitment.created_slot) >= int(engineering.authority_from_slot) 				and not indexed.has(commitment_id):
-			return "Campaign economy contains development spending outside engineering authority."
 	return ""

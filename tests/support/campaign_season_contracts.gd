@@ -234,12 +234,12 @@ static func _receipt(season_id: String, event_id: String, index: int, order: Arr
 			"person_id": person_id,
 			"team_id": team_id,
 			"car_id": car_id,
-			"status": "Finished",
+			"status": "finished",
 			"laps": 12,
 			"finish_time": 900.0 + position,
-			"best_lap": 70.0 + position,
-			"points_eligibility": "not_defined_by_standalone_rules",
-			"classified": true
+			"name": person_id,
+			"team": team_id,
+			"points_eligibility": "not_defined_by_standalone_rules"
 		})
 		returned.append({
 			"person_id": person_id,

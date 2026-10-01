@@ -15,10 +15,18 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	var native = int(data.version) >= 9
 	var native_styles = int(data.version) >= PRACTICE_CHECKPOINT_VERSION
 	var native_duels = int(data.version) in [TacticalDuels.LEGACY_CHECKPOINT_VERSION, TacticalDuels.CHECKPOINT_VERSION]
+	var profiles = data.get("performance_profiles", [])
+	if data.has("performance_profiles") 			and not RacePerformanceProfile.validate_set(profiles, data.get("cars", []).size()).is_empty():
+		return null
 	if not native_duels and data.has("duel_state"): return null
 	if not native and data.get("phase") in ["practice", "practice_results"]: return null
 	var inherited = data.duplicate(true)
-	if native: inherited.version = 8; inherited.erase("practice_state"); inherited.erase("rival_styles"); inherited.erase("duel_state")
+	if native:
+		inherited.version = 8
+		inherited.erase("practice_state")
+		inherited.erase("rival_styles")
+		inherited.erase("duel_state")
+		inherited.erase("performance_profiles")
 	var base = RecoveryRaceSim.restore_recovery(inherited)
 	if base == null: return null
 	var state = data.get("practice_state") if native else PracticeEvidence.create(base.cars, base.tuning.practice_duration(base.track.estimate), "legacy")
@@ -28,6 +36,8 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if native_duels and not TacticalDuels.valid(data.get("duel_state"), base): return null
 	var options = base.content_options()
 	options.rival_styles = false
+	if not profiles.is_empty():
+		options.performance_profiles = profiles.duplicate(true)
 	var sim = PracticeRaceSim.new(base.track, options)
 	for key in base.snapshot():
 		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition", "performance_profiles"]: sim.set(key, base.get(key))

@@ -215,11 +215,11 @@ static func _receipt(manifest: Dictionary) -> Dictionary:
 		"result_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
 		"classification": [
 			{"position": 1, "person_id": "person.00", "team_id": "team.00", "car_id": "car.00",
-				"status": "Finished", "laps": 12, "finish_time": 900.0, "best_lap": 70.0,
-				"points_eligibility": "not_defined_by_standalone_rules", "classified": true},
+				"status": "finished", "laps": 12, "finish_time": 900.0, "name": "Person 00",
+				"team": "Team 00", "points_eligibility": "not_defined_by_standalone_rules"},
 			{"position": 2, "person_id": "person.01", "team_id": "team.00", "car_id": "car.01",
-				"status": "Retired", "laps": 10, "finish_time": 0.0, "best_lap": 71.0,
-				"points_eligibility": "not_defined_by_standalone_rules", "classified": false}
+				"status": "retired", "laps": 10, "finish_time": 0.0, "name": "Person 01",
+				"team": "Team 00", "points_eligibility": "not_defined_by_standalone_rules"}
 		],
 		"returned_resources": [
 			{"person_id": "person.00", "team_id": "team.00", "car_id": "car.00",
