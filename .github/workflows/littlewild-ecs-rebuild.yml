@@ -1,9 +1,11 @@
-# One-shot publisher for the checksum-pinned M6 review and polishing pass.
+# One-shot publisher for the checksum-pinned M6 review/polish delta.
 name: Littlewild M6 review publication
 on:
   push:
-    branches: [concept/littlewild-v15-world-ui]
-    paths: ['.github/workflows/littlewild-ecs-rebuild.yml']
+    branches:
+      - concept/littlewild-v15-world-ui
+    paths:
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
 permissions:
   contents: write
   issues: read
@@ -35,56 +37,77 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD^)" = "bb67ac253fa9e66a9e5990e028e819f13817987b"
           test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/littlewild-ecs-rebuild.yml"
-          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/pages.json
+          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/m6-comments.json
           python - <<'PYCODE'
           from pathlib import Path
           import base64, hashlib, json, lzma, subprocess
-          pages=json.loads(Path('/tmp/pages.json').read_text())
+
+          pages=json.loads(Path('/tmp/m6-comments.json').read_text())
           comments=[c for page in pages for c in page]
           marker='<!-- ecs-m6-polish-meta -->'
           metas=[c for c in comments if marker in c.get('body','')]
-          if not metas: raise SystemExit('No M6 review metadata found.')
-          p=json.loads(metas[-1]['body'].split(marker,1)[1].strip())
+          if not metas:
+              raise SystemExit('M6 review metadata comment not found')
+          meta=json.loads(metas[-1]['body'].split(marker,1)[1].strip())
           expected={
-            'transport':'m6-polish-2fe74a913e','milestone':'M6-review-polish',
-            'base':'bb67ac253fa9e66a9e5990e028e819f13817987b',
-            'commitMessage':'refactor(littlewild): harden M6 profiles and migrations',
-            'encoding':'xz+base64-chunks','chunks':5,'encodedChars':71960,
-            'compressedBytes':53968,
-            'compressedSha256':'3104e04482f75fe2fd9154442d20686a4dd72005dcc637b6e8b1eef9eff02ce5',
-            'patchBytes':275504,
-            'patchSha256':'2fe74a913ebd2b8a77f929a9bc9e486262456862af546799702a04b5af581fe8',
-            'expectedChecks':1006,'expectedSuites':27,'htmlBytes':3788823,
-            'htmlSha256':'73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c',
-            'authoritySha256':'73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521',
-            'authorityFiles':28}
-          for k,v in expected.items():
-            if p.get(k)!=v: raise SystemExit(f'Unexpected metadata {k}: {p.get(k)!r}')
-          hashes=['ebc386eec7c571b49f83d51b6f46d935851dff77c2d021b6670d0658836a056c','7649d6d1538c72cc516050be66cb175006b0bed770256eaf026c757536f17c93','47978f55be9b449175bbede324ed2ad2e460959a4a075c5476212df01e15505f','dd40c3904b1b90bab15e3e60b1d65adc9f33a8a3b8976323f8efdbf5a611bb67','c852ae3ec65a8550431571d9ecf2d08f0ab2ec1a7a39589b72d77585614769f2']
-          if p.get('chunkSha256')!=hashes: raise SystemExit('Unexpected chunk manifest.')
-          prefix=f"<!-- ecs-m6-polish-chunk:{p['transport']}:"
+              'transport':'m6-polish-2fe74a913e',
+              'milestone':'M6-review-polish',
+              'base':'bb67ac253fa9e66a9e5990e028e819f13817987b',
+              'commitMessage':'refactor(littlewild): harden M6 profiles and migrations',
+              'encoding':'xz+base64-chunks',
+              'chunks':5,
+              'encodedChars':71960,
+              'compressedBytes':53968,
+              'compressedSha256':'3104e04482f75fe2fd9154442d20686a4dd72005dcc637b6e8b1eef9eff02ce5',
+              'patchBytes':275504,
+              'patchSha256':'2fe74a913ebd2b8a77f929a9bc9e486262456862af546799702a04b5af581fe8',
+              'expectedChecks':1006,
+              'expectedSuites':27,
+              'htmlBytes':3788823,
+              'htmlSha256':'73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c',
+              'authoritySha256':'73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521',
+              'authorityFiles':28,
+          }
+          for key,value in expected.items():
+              if meta.get(key)!=value:
+                  raise SystemExit(f'Unexpected M6 metadata {key}: {meta.get(key)!r}')
+          hashes=meta.get('chunkSha256')
+          if not isinstance(hashes,list) or len(hashes)!=meta['chunks']:
+              raise SystemExit('Invalid M6 chunk hash manifest')
+          prefix=f"<!-- ecs-m6-polish-chunk:{meta['transport']}:"
           chunks={}
-          for c in comments:
-            body=c.get('body','')
-            if body.startswith(prefix):
+          for comment in comments:
+              body=comment.get('body','')
+              if not body.startswith(prefix):
+                  continue
               head,data=body.split('-->',1)
-              chunks[int(head[len(prefix):].strip())]=data.strip()
-          ids=list(range(p['chunks']))
-          if sorted(chunks)!=ids: raise SystemExit(f'Incomplete chunks: {sorted(chunks)}')
-          for i in ids:
-            got=hashlib.sha256(chunks[i].encode()).hexdigest()
-            if got!=hashes[i]: raise SystemExit(f'Chunk {i} checksum mismatch: {got}')
-          encoded=''.join(chunks[i] for i in ids)
-          if len(encoded)!=p['encodedChars']: raise SystemExit('Encoded length mismatch.')
+              index=int(head[len(prefix):].strip())
+              chunks[index]=data.strip()
+          indices=list(range(meta['chunks']))
+          if sorted(chunks)!=indices:
+              raise SystemExit(f'Incomplete M6 review chunks: {sorted(chunks)}')
+          for index in indices:
+              digest=hashlib.sha256(chunks[index].encode()).hexdigest()
+              if digest!=hashes[index]:
+                  raise SystemExit(f'M6 review chunk {index} checksum mismatch: {digest}')
+          encoded=''.join(chunks[i] for i in indices)
+          if len(encoded)!=meta['encodedChars']:
+              raise SystemExit(f'Unexpected encoded patch length: {len(encoded)}')
           compressed=base64.b64decode(encoded,validate=True)
-          if len(compressed)!=p['compressedBytes'] or hashlib.sha256(compressed).hexdigest()!=p['compressedSha256']:
-            raise SystemExit('Compressed payload identity mismatch.')
+          if len(compressed)!=meta['compressedBytes']:
+              raise SystemExit(f'Unexpected compressed patch size: {len(compressed)}')
+          if hashlib.sha256(compressed).hexdigest()!=meta['compressedSha256']:
+              raise SystemExit('Compressed patch checksum mismatch')
           patch=lzma.decompress(compressed,format=lzma.FORMAT_XZ)
-          if len(patch)!=p['patchBytes'] or hashlib.sha256(patch).hexdigest()!=p['patchSha256']:
-            raise SystemExit('Patch identity mismatch.')
-          path=Path('/tmp/m6-polish.patch'); path.write_bytes(patch)
+          if len(patch)!=meta['patchBytes']:
+              raise SystemExit(f'Unexpected patch size: {len(patch)}')
+          if hashlib.sha256(patch).hexdigest()!=meta['patchSha256']:
+              raise SystemExit('Patch checksum mismatch')
+          path=Path('/tmp/m6-polish.patch')
+          path.write_bytes(patch)
           subprocess.run(['git','apply','--check',str(path)],check=True)
           subprocess.run(['git','apply',str(path)],check=True)
+          Path('/tmp/m6-meta.json').write_text(json.dumps(meta))
           PYCODE
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
@@ -102,29 +125,38 @@ jobs:
           set -euo pipefail
           python - <<'PYCODE'
           from pathlib import Path
-          import hashlib,json
-          g=json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
-          expected={'status':'passed','passed':1006,'total':1006,'htmlBytes':3788823,'htmlSha256':'73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c'}
-          for k,v in expected.items():
-            if g.get(k)!=v: raise SystemExit(f'Unexpected gate {k}: {g.get(k)!r}')
-          if len(g.get('suites',[]))!=27: raise SystemExit('Unexpected suite count.')
-          a=Path('docs/concepts/littlewild/littlewild.html')
-          if a.stat().st_size!=3788823 or hashlib.sha256(a.read_bytes()).hexdigest()!=expected['htmlSha256']:
-            raise SystemExit('Standalone identity mismatch.')
-          m=json.loads(Path('docs/concepts/littlewild/source/ecs-milestone-state.json').read_text())
-          if m.get('milestone')!='M6' or m.get('sha256')!='73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521' or m.get('files')!=28:
-            raise SystemExit('M6 authority manifest mismatch.')
+          import hashlib, json
+          meta=json.loads(Path('/tmp/m6-meta.json').read_text())
+          gate=json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
+          expected={'status':'passed','passed':meta['expectedChecks'],'total':meta['expectedChecks'],'htmlBytes':meta['htmlBytes'],'htmlSha256':meta['htmlSha256']}
+          for key,value in expected.items():
+              if gate.get(key)!=value:
+                  raise SystemExit(f'Unexpected review gate {key}: {gate.get(key)!r}')
+          if len(gate.get('suites',[]))!=meta['expectedSuites']:
+              raise SystemExit(f"Unexpected review suite count: {len(gate.get('suites',[]))}")
+          artifact=Path('docs/concepts/littlewild/littlewild.html')
+          if artifact.stat().st_size!=meta['htmlBytes'] or hashlib.sha256(artifact.read_bytes()).hexdigest()!=meta['htmlSha256']:
+              raise SystemExit('Reviewed standalone artifact identity mismatch')
+          milestone=json.loads(Path('docs/concepts/littlewild/source/ecs-milestone-state.json').read_text())
+          if milestone.get('milestone')!='M6' or milestone.get('sha256')!=meta['authoritySha256'] or milestone.get('files')!=meta['authorityFiles']:
+              raise SystemExit('Reviewed M6 authority manifest mismatch')
           PYCODE
           git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
-          git checkout HEAD -- docs/concepts/littlewild/source/v10-domain-results.json docs/concepts/littlewild/source/v10-fresh-story.json docs/concepts/littlewild/source/v10-regression-v6-test-results.json docs/concepts/littlewild/source/v10-regression-v8-test-results.json docs/concepts/littlewild/source/v10-stress-results.json docs/concepts/littlewild/source/v11-domain-results.json
+          git checkout HEAD -- \
+            docs/concepts/littlewild/source/v10-domain-results.json \
+            docs/concepts/littlewild/source/v10-fresh-story.json \
+            docs/concepts/littlewild/source/v10-regression-v6-test-results.json \
+            docs/concepts/littlewild/source/v10-regression-v8-test-results.json \
+            docs/concepts/littlewild/source/v10-stress-results.json \
+            docs/concepts/littlewild/source/v11-domain-results.json
       - name: Commit and push reviewed M6 source
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PYCODE'
           from pathlib import Path
-          for p in Path('docs/concepts/littlewild/verification/v15').glob('*.log'):
-            p.write_text(p.read_text().rstrip()+'\n')
+          for path in Path('docs/concepts/littlewild/verification/v15').glob('*.log'):
+              path.write_text(path.read_text().rstrip()+'\n')
           PYCODE
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
