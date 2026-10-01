@@ -168,11 +168,12 @@ static func _records_error(data: Dictionary) -> String:
 				or not data.work_orders.has(reservation.get("work_order_id")):
 			return "Campaign operations contains an invalid capacity reservation."
 		var order: Dictionary = data.work_orders[reservation.work_order_id]
+		var reservation_status = "active" if order.status == "scheduled" else "cancelled"
 		if order.capacity_reservation_id != reservation_id or order.resource_id != reservation.resource_id \
 				or int(order.created_slot) != int(reservation.created_slot) \
 				or int(order.start_slot) != int(reservation.start_slot) \
 				or int(order.end_slot) != int(reservation.end_slot) or int(order.units) != int(reservation.units) \
-				or order.status != reservation.status \
+				or reservation.status != reservation_status \
 				or int(order.cancellation_slot) != int(reservation.cancellation_slot):
 			return "Campaign work order and capacity reservation disagree."
 	return ""
