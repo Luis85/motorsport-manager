@@ -137,8 +137,9 @@ static func weekend_policy(checkpoint: Dictionary) -> Dictionary:
 		if entry.status == "accepted": eligible.append_array(entry.person_ids)
 	var player: Dictionary = season.entries.get("entrant.player", {})
 	var bonuses: Array = []
+	var bonus_seed = [10000, 7000, 5000, 3000, 2000, 1000, 500, 250]
 	for index in range(rules.points_by_position.size()):
-		bonuses.append([10000, 7000, 5000, 3000, 2000, 1000, 500, 250].get(index, 0))
+		bonuses.append(int(bonus_seed[index]) if index < bonus_seed.size() else 0)
 	return CampaignWeekendPolicy.build({"campaign_id": restored.state.campaign_id,
 		"season_id": season.season_id, "campaign_event_id": event_id,
 		"account_id": restored.state.organization_id}, rules.points_by_position,
