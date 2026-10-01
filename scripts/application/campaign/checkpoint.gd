@@ -361,6 +361,12 @@ static func _management_error(data: Dictionary) -> String:
 	error = CampaignRivalsAuthority.validate(data.management.rivals,
 		data.competition, int(data.state.clock.elapsed_slots))
 	if not error.is_empty(): return error
+	error = CampaignPeopleDevelopmentAuthority.validate(data.management.people,
+		data.personnel, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
+	error = CampaignSeasonPlanningAuthority.validate(data.management.season_planning,
+		data.competition, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
 	error = CampaignSupplyAuthority.validate(data.management.supply, data.economy,
 		data.engineering, data.operations, int(data.state.clock.elapsed_slots))
 	if not error.is_empty(): return error
