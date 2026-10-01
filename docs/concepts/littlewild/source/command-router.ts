@@ -67,39 +67,64 @@
  const manifest=Object.freeze(definitions.map(definition=>Object.freeze({...definition})));
  const byId=new Map(manifest.map(definition=>[definition.id,definition] as const));
 
- const safeValue=(value: unknown,depth=0): value is JsonValue=>{
+ const safeValue=(value: unknown,ancestors=new Set<object>(),depth=0): value is JsonValue=>{
   if(depth>6)return false;
   if(value===null||typeof value==='string'||typeof value==='boolean')return true;
   if(typeof value==='number')return Number.isFinite(value);
-  if(Array.isArray(value))return value.length<=64&&value.every(entry=>safeValue(entry,depth+1));
-  if(typeof value==='object'){
-   const object=value as Record<string,unknown>;
-   return Object.getPrototypeOf(object)===Object.prototype&&Object.keys(object).length<=64&&
-    !Object.keys(object).some(key=>['__proto__','constructor','prototype'].includes(key))&&
-    Object.values(object).every(entry=>safeValue(entry,depth+1));
+  if(typeof value!=='object')return false;
+  const object=value as object;
+  if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)return false;
+  ancestors.add(object);
+  let ok=true;
+  if(Array.isArray(value)){
+   if(value.length>64)ok=false;
+   else{
+    const names=Object.getOwnPropertyNames(value);
+    if(names.length!==value.length+1||!names.includes('length'))ok=false;
+    else for(let index=0;index<value.length;index+=1){
+     const descriptor=Object.getOwnPropertyDescriptor(value,String(index));
+     if(!descriptor||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
+    }
+   }
+  }else{
+   if(Object.getPrototypeOf(value)!==Object.prototype)ok=false;
+   else{
+    const descriptors=Object.getOwnPropertyDescriptors(value);
+    const keys=Object.keys(descriptors);
+    if(keys.length>64||keys.some(key=>['__proto__','constructor','prototype'].includes(key)))ok=false;
+    else for(const descriptor of Object.values(descriptors)){
+     if(!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
+    }
+   }
   }
-  return false;
+  ancestors.delete(object);
+  return ok;
  };
  const fail=(reason:string):Failure=>({ok:false,reason});
 
  function dispatch(engine:EngineLike,envelope:unknown):unknown{
-  if(!engine||!envelope||typeof envelope!=='object'||Object.getPrototypeOf(envelope)!==Object.prototype)
+  if(!engine||!envelope||typeof envelope!=='object'||Object.getPrototypeOf(envelope)!==Object.prototype||
+   Object.getOwnPropertySymbols(envelope).length)return fail('Invalid command envelope.');
+  const descriptors=Object.getOwnPropertyDescriptors(envelope);
+  const keys=Object.keys(descriptors);
+  if(keys.some(key=>!['id','actorId','args'].includes(key))||
+   Object.values(descriptors).some(descriptor=>!descriptor.enumerable||descriptor.get||descriptor.set))
    return fail('Invalid command envelope.');
-  const candidate=envelope as Record<string,unknown>;
-  if(Object.keys(candidate).some(key=>!['id','actorId','args'].includes(key)))return fail('Unknown command field.');
-  if(typeof candidate.id!=='string')return fail('Unknown command.');
-  const definition=byId.get(candidate.id);if(!definition)return fail('Unknown command.');
-  const rawArgs=candidate.args??[];
-  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!rawArgs.every(value=>safeValue(value)))
+  const id=descriptors.id?.value;
+  if(typeof id!=='string')return fail('Unknown command.');
+  const definition=byId.get(id);if(!definition)return fail('Unknown command.');
+  const actorId=descriptors.actorId?.value;
+  const rawArgs=descriptors.args?.value??[];
+  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs))
    return fail('Invalid command arguments.');
   const args=rawArgs as JsonValue[];
   const handler=engine[definition.method];if(typeof handler!=='function')return fail('Command handler is unavailable.');
   if(definition.scope==='actor'){
-   if(typeof candidate.actorId!=='string'||!/^c[1-9][0-9]*$/.test(candidate.actorId))return fail('Select a valid creature.');
+   if(typeof actorId!=='string'||!/^c[1-9][0-9]*$/.test(actorId))return fail('Select a valid creature.');
    if(typeof engine.commandActor!=='function')return fail('Actor command boundary is unavailable.');
-   return engine.commandActor(candidate.actorId,()=>handler.apply(engine,args),{away:definition.away});
+   return engine.commandActor(actorId,()=>handler.apply(engine,args),{away:definition.away});
   }
-  if(candidate.actorId!==undefined)return fail('This command does not accept an actor.');
+  if(actorId!==undefined)return fail('This command does not accept an actor.');
   return handler.apply(engine,args);
  }
 

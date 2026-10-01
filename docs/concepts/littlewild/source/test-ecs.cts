@@ -37,6 +37,21 @@ test('Invalid deferred batches cannot leave partially created entities',()=>{
  w.defer('create','c2');w.flush();assert.deepEqual(w.query([]),['c2']);
  new E.Scheduler().step(w,.1);assert.deepEqual(w.query([]),['c2']);
 });
+test('Deferred component payload mutation cannot break structural atomicity',()=>{
+ const w=new E.World(),payload={value:1};
+ w.defer('create','c1');w.defer('set','c1','Data',payload);
+ payload.behavior=()=>true;
+ assert.throws(()=>w.flush(),/behavior-free/);
+ assert.deepEqual(w.query([]),[]);
+ assert.equal(w.structural.length,0);
+});
+test('Component data rejects sparse arrays and hidden array properties',()=>{
+ const w=new E.World();w.create('c1');
+ const sparse=[];sparse.length=2;sparse[1]=1;
+ assert.throws(()=>w.set('c1','Sparse',{items:sparse}),/behavior-free/);
+ const decorated=[1];Object.defineProperty(decorated,'hidden',{value:2});
+ assert.throws(()=>w.set('c1','Decorated',{items:decorated}),/behavior-free/);
+});
 test('Component lifecycle tracks a changing creature roster',()=>{
  const mk=id=>({id,creature:{x:1,y:2},inventory:{wood:1},needs:{},learning:{},feelings:{}});
  const first=mk('c1'),second=mk('c2'),ecs=A.create();

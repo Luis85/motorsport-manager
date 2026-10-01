@@ -46,7 +46,18 @@
         ancestors.add(object);
         let ok = true;
         if (Array.isArray(value)) {
-            ok = value.every(entry => dataOnly(entry, ancestors, depth + 1));
+            const names = Object.getOwnPropertyNames(value);
+            if (names.length !== value.length + 1 || !names.includes('length')) ok = false;
+            else {
+                for (let index = 0; index < value.length; index += 1) {
+                    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+                    if (!descriptor || descriptor.get || descriptor.set ||
+                        !dataOnly(descriptor.value, ancestors, depth + 1)) {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
         } else if (plain(value)) {
             for (const descriptor of Object.values(Object.getOwnPropertyDescriptors(value))) {
                 if (descriptor.get || descriptor.set || !dataOnly(descriptor.value, ancestors, depth + 1)) {
@@ -136,6 +147,8 @@
                 } else if (action.operation === 'set') {
                     if (!entities.has(action.id)) throw Error('Unknown deferred entity: ' + action.id);
                     const type = name(action.type, 'component type');
+                    if (!plain(action.data) || !dataOnly(action.data))
+                        throw Error('Component data must be behavior-free plain data.');
                     if (!memberships.has(type)) memberships.set(type, new Set());
                     memberships.get(type)!.add(action.id);
                 } else if (action.operation === 'remove') {

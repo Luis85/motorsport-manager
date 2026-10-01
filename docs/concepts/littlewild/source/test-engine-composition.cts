@@ -91,6 +91,18 @@ test('Command manifest is explicit, unique and cannot dispatch arbitrary methods
  const ids=L.Engine.commandManifest.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);assert(Object.isFrozen(L.Engine.commandManifest));const probe=new L.Engine();assert(L.Engine.commandManifest.every(x=>typeof probe[x.method]==='function'));
  const e=L.createColonyDemo(),before=canonical(e);assert.equal(e.dispatchCommand({id:'constructor',args:[]}).ok,false);assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:[()=>{}]}).ok,false);assert.equal(canonical(e),before);
 });
+test('Command validation rejects accessors, symbols, cycles and sparse arrays without executing them',()=>{
+ const e=L.createColonyDemo(),before=canonical(e);let touched=0;
+ const accessor={actorId:'c1',args:[]};Object.defineProperty(accessor,'id',{enumerable:true,get(){touched++;return 'care';}});
+ assert.equal(e.dispatchCommand(accessor).ok,false);assert.equal(touched,0);
+ const nested={};Object.defineProperty(nested,'value',{enumerable:true,get(){touched++;return 1;}});
+ assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:[nested]}).ok,false);assert.equal(touched,0);
+ const cyclic={};cyclic.self=cyclic;assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:[cyclic]}).ok,false);
+ const sparse=[];sparse.length=1;assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:sparse}).ok,false);
+ const symbolEnvelope={id:'select-creature',args:['c1']};symbolEnvelope[Symbol('hidden')]=true;
+ assert.equal(e.dispatchCommand(symbolEnvelope).ok,false);
+ assert.equal(canonical(e),before);
+});
 
 test('Actor commands dispatch through an explicit identity and preserve direct-command parity',()=>{
  const seed=L.createColonyDemo().export(),a=L.Engine.import(seed),b=L.Engine.import(seed);
