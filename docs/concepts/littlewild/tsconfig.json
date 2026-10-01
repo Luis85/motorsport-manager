@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "moduleDetection": "legacy",
+    "rootDir": "source",
+    "outDir": ".generated",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noCheck": true,
+    "declaration": false,
+    "sourceMap": false,
+    "removeComments": false,
+    "noEmitOnError": true,
+    "newLine": "lf"
+  },
+  "include": ["source/**/*.ts", "source/**/*.cts"],
+  "exclude": [".generated", "node_modules"]
+}

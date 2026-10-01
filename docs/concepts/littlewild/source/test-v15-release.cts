@@ -1,12 +1,12 @@
 'use strict';
 const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto'),cp=require('node:child_process'),path=require('node:path');
-const L=require('./simulation.cjs'),S=require('./story-codec.js'),G=require('./growth-content.js'),root=path.resolve(__dirname,'..');const results=[];
+const L=require('./simulation.cjs'),S=require('./story-codec.js'),G=require('./growth-content.js'),root=path.resolve(__dirname,'..'),sourceRoot=path.join(root,'source');const results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(e){results.push({name,passed:false,error:e.stack});console.error('FAIL',name,e.message);}}
 const html=fs.readFileSync(root+'/littlewild.html','utf8');
 test('Title and entry point are v15, with no unresolved build markers',()=>{assert(html.includes('Worlds of Possibility · v15'));assert(!html.includes('<!-- INLINE_'));assert(html.includes("version: '15.0.0'"));});
 test('No external executable or visual dependencies',()=>{assert(!/<script[^>]+src=/i.test(html));assert(!/<(?:link|img|iframe)[^>]+(?:href|src)=["']https?:/i.test(html));assert(html.includes("connect-src 'none'"));});
 test('Vendor license is retained in the actual HTML',()=>assert(html.includes('Copyright © 2010-2026 three.js authors')));
-test('Source parses without executing the browser',()=>{for(const name of fs.readdirSync(__dirname).filter(n=>n.endsWith('.js')||n.endsWith('.cjs')))cp.execFileSync(process.execPath,['--check',path.join(__dirname,name)],{stdio:'pipe',timeout:10000});});
+test('Compiled output parses and authored executable source is TypeScript',()=>{for(const name of fs.readdirSync(__dirname).filter(n=>n.endsWith('.js')||n.endsWith('.cjs')))cp.execFileSync(process.execPath,['--check',path.join(__dirname,name)],{stdio:'pipe',timeout:10000});const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);const legacy=walk(sourceRoot).filter(file=>/\\.(?:js|cjs|mjs|jsx|py)$/i.test(file));assert.deepEqual(legacy,[]);});
 for(const name of ['fresh','community','workplace'])test('Authentic v9 '+name+' migration and exact continuation',()=>{const doc=JSON.parse(fs.readFileSync(__dirname+'/fixtures/actual-v9-'+name+'.json'));assert.equal(doc.version,6);const e=S.commit(S.inspect(doc));assert.equal(e.export().version,8);assert(e.s.progression.grandfathered);assert.deepEqual(e.creatures.map(c=>c.skills),doc.state.colony.creatures.map(c=>c.skills));assert.deepEqual(e.s.colony.warehouse.inventory,doc.state.colony.warehouse.inventory);assert.deepEqual(e.s.buildings.map(b=>[b.id,b.x,b.y]),doc.state.buildings.map(b=>[b.id,b.x,b.y]));e.s.paused=false;e.advance(60);const b=S.commit(S.inspect(S.encode(e)));e.advance(10);b.advance(10);assert.deepEqual(e.export(),b.export());});
 test('Mechanical Growth change cannot replace committed work',()=>{const e=L.createWorldDemo(),candidate=G.clone(G.content);candidate.rules.landCoinsBase++;assert(S.committed(e));const before=JSON.stringify(e.export()),hash=G.hash;assert.throws(()=>S.applyGrowth(candidate,e));assert.equal(JSON.stringify(e.export()),before);assert.equal(G.hash,hash);});
 test('Presentation-only Growth change is safe during committed work',()=>{const e=L.createWorldDemo(),candidate=G.clone(G.content),before=JSON.stringify(e.export()),original=G.clone(G.content);candidate.interactions[0].label='A test label';try{const loaded=S.applyGrowth(candidate,e);assert.equal(G.content.interactions[0].label,'A test label');assert.equal(JSON.stringify(loaded.export()),before);}finally{G.replace(original);}});
@@ -31,10 +31,12 @@ const baseline=JSON.parse(fs.readFileSync(__dirname+'/fixtures/v14-retained-cont
 const ecsMigrated=JSON.parse(fs.readFileSync(__dirname+'/fixtures/ecs-migration.json'));
 test('Only documented reviewed migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['engine.js','systems.js','colony.js','world-simulation.js','village-systems.js','planner.js','cartography.js','story-codec.js']));
 for (const [file,sha] of Object.entries(baseline)) test('v14 retained contract: '+file,()=>{
-  const actual=crypto.createHash('sha256').update(fs.readFileSync(__dirname+'/'+file)).digest('hex');
+  const authored=file.endsWith('.cjs')?file.slice(0,-4)+'.cts':file.endsWith('.js')?file.slice(0,-3)+'.ts':file;
+  const sourcePath=path.join(sourceRoot,authored);
+  const actual=crypto.createHash('sha256').update(fs.readFileSync(sourcePath)).digest('hex');
   if(!ecsMigrated[file])assert.equal(actual,sha);
   else{assert.equal(ecsMigrated[file].prior_sha256,sha);assert.notEqual(actual,sha);
-    assert(fs.readFileSync(__dirname+'/'+file,'utf8').includes(ecsMigrated[file].required_token));}
+    assert(fs.readFileSync(sourcePath,'utf8').includes(ecsMigrated[file].required_token));}
 });
 test('Every bundled script parses as JavaScript',()=>{const vm=require('node:vm');for(const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(m[1]);});
 test('Scenario code is bundled without runtime network dependencies',()=>{for(const marker of ['LWScenarios','LWGuidePanel','LWBuildPanel','living-worlds-pack','emberworks'])assert(html.includes(marker));});

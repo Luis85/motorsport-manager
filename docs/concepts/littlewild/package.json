@@ -1,0 +1,16 @@
+{
+  "name": "littlewild-v15",
+  "version": "15.0.0",
+  "private": true,
+  "description": "TypeScript-authored, deterministic Littlewild simulation and standalone prototype.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.strict.json",
+    "architecture": "tsx source/tools/architecture-check.cts",
+    "build": "tsx source/build.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

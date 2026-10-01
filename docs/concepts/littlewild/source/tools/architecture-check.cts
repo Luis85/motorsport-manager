@@ -1,0 +1,107 @@
+'use strict';
+import fs from "node:fs";
+import path from "node:path";
+
+interface CheckResult { name: string; passed: boolean; error?: string; }
+
+const ROOT = path.resolve(__dirname, "../..");
+const SOURCE = path.join(ROOT, "source");
+const GENERATED = path.join(ROOT, ".generated");
+const results: CheckResult[] = [];
+
+function check(name: string, action: () => void): void {
+  try { action(); results.push({ name, passed: true }); }
+  catch (error) { results.push({ name, passed: false, error: error instanceof Error ? error.message : String(error) }); }
+}
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(message);
+}
+function walk(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const full = path.join(directory, entry.name);
+    return entry.isDirectory() ? walk(full) : [full];
+  });
+}
+function source(name: string): string {
+  return fs.readFileSync(path.join(SOURCE, name), "utf8");
+}
+
+check("All authored executable Littlewild source is TypeScript", () => {
+  const legacy = walk(SOURCE).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
+  assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(SOURCE, file)).join(", "));
+});
+
+const coreModules = [
+  "ecs.ts", "actor-ecs.ts", "world-ecs.ts", "economy-ecs.ts", "engine-composition.ts",
+  "command-router.ts", "simulation-pipeline.ts", "simulation-profile.ts",
+  "scenario-runtime.ts", "scenario-story.ts"
+] as const;
+const forbiddenPlatform = [
+  "document.", "window.", "localStorage", "sessionStorage", "requestAnimationFrame",
+  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "performance.now("
+];
+check("Domain and application core is platform independent", () => {
+  const violations: string[] = [];
+  for (const file of coreModules) {
+    const text = source(file);
+    for (const token of forbiddenPlatform) if (text.includes(token)) violations.push(`${file}: ${token}`);
+  }
+  assert(violations.length === 0, "Platform dependency leaked into core: " + violations.join("; "));
+});
+
+check("Deterministic core does not use ambient randomness or wall clock", () => {
+  const violations: string[] = [];
+  for (const file of coreModules) {
+    const text = source(file);
+    for (const token of ["Math.random(", "crypto.random", "randomUUID(", "Date.now(", "performance.now("]) {
+      if (text.includes(token)) violations.push(`${file}: ${token}`);
+    }
+  }
+  assert(violations.length === 0, "Nondeterministic API found: " + violations.join("; "));
+});
+
+check("Core dependency direction excludes presentation and IO adapters", () => {
+  const forbidden = /(?:ui|panel|presentation|world-3d|world-input|file-io|story-storage)\.(?:js|cjs)$/;
+  const violations: string[] = [];
+  for (const file of coreModules) {
+    for (const match of source(file).matchAll(/require\(['"]([^'"]+)['"]\)/g)) {
+      const dependency = match[1] ?? "";
+      if (forbidden.test(dependency)) violations.push(`${file} -> ${dependency}`);
+    }
+  }
+  assert(violations.length === 0, "Dependency inversion violation: " + violations.join("; "));
+});
+
+check("External simulation and scenario data contains no executable payload fields", () => {
+  const files = ["simulation-profile.json", "littlewild.pack.json", "emberworks.pack.json"];
+  const forbidden = new Set(["script", "callback", "execute", "eval", "sourceCode", "modulePath"]);
+  const violations: string[] = [];
+  const visit = (value: unknown, location: string): void => {
+    if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${location}/${index}`));
+    else if (value && typeof value === "object") {
+      for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+        if (forbidden.has(key)) violations.push(`${location}/${key}`);
+        visit(entry, `${location}/${key}`);
+      }
+    }
+  };
+  for (const file of files) visit(JSON.parse(fs.readFileSync(path.join(SOURCE, "content", file), "utf8")), file);
+  assert(violations.length === 0, "Executable-shaped data field found: " + violations.join("; "));
+});
+
+check("Strict TypeScript gate covers the architecture kernel", () => {
+  const config = fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8");
+  for (const file of ["source/ecs.ts", "source/command-router.ts", "source/build.ts", "source/tools/architecture-check.cts"]) {
+    assert(config.includes(`"${file}"`), `Strict gate does not include ${file}`);
+  }
+});
+
+check("Generated JavaScript is outside authored source", () => {
+  assert(!fs.existsSync(path.join(SOURCE, ".generated")), "Generated output must not live under source/.");
+});
+
+const report = { passed: results.filter(result => result.passed).length, total: results.length, failed: results.filter(result => !result.passed).length, results };
+fs.mkdirSync(GENERATED, { recursive: true });
+fs.writeFileSync(path.join(GENERATED, "typescript-architecture-results.json"), JSON.stringify(report, null, 2) + "\n");
+process.stdout.write(`${report.passed}/${report.total} TypeScript architecture checks passed\n`);
+if (report.failed) process.exitCode = 1;

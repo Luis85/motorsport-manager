@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 node_modules/
+.generated/
+node_modules/
