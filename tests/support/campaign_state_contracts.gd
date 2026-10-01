@@ -19,5 +19,6 @@ static func run(check: Callable) -> void:
 	CampaignCommercialContracts.run(check)
 	CampaignDelegationContracts.run(check)
 	CampaignRivalContracts.run(check)
+	CampaignDirectorContracts.run(check)
 	CampaignWeekendFinanceContracts.run(check)
 	CampaignWeekendTransactionContracts.run(check)
