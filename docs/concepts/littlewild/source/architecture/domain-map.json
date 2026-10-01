@@ -33,16 +33,14 @@
         "island-geometry.ts",
         "navigation.ts",
         "world-integrity.ts",
-        "validation-village.ts",
-        "cartography.ts"
+        "validation-village.ts"
       ]
     },
     {
       "id": "economy-progression",
       "layer": "domain",
       "files": [
-        "economy-ecs.ts",
-        "planner.ts"
+        "economy-ecs.ts"
       ]
     },
     {
@@ -73,7 +71,9 @@
         "simulation-pipeline.ts",
         "simulation-profile.ts",
         "command-router.ts",
-        "simulation.cts"
+        "simulation.cts",
+        "planner.ts",
+        "cartography.ts"
       ]
     },
     {
