@@ -3,20 +3,23 @@ extends RefCounted
 ## Atomic TM-13 people-market, hiring, development and promise boundary.
 
 static func register_candidate(checkpoint: Dictionary, input: Dictionary) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.register_candidate(restored.management.people,
 		input, restored.state.clock.elapsed_slots)
 	return _publish_people(restored, changed, checkpoint)
 
 static func approach(checkpoint: Dictionary, candidate_id: String) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.approach(restored.management.people,
 		candidate_id, restored.state.clock.elapsed_slots)
 	return _publish_people(restored, changed, checkpoint)
 
 static func offer_and_hire(checkpoint: Dictionary, candidate_id: String,
 		role_id: String, contract_terms: Dictionary, assignment_id: String) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var slot = restored.state.clock.elapsed_slots
 	var offer = CampaignPeopleDevelopment.evaluate_offer(restored.management.people,
 		candidate_id, role_id, int(contract_terms.get("pay_minor", 0)),
@@ -60,7 +63,8 @@ static func offer_and_hire(checkpoint: Dictionary, candidate_id: String,
 
 static func add_profile(checkpoint: Dictionary, person_id: String, attributes: Dictionary,
 		morale: int = 60, trust: int = 60) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.add_profile(restored.management.people,
 		person_id, attributes, restored.state.clock.elapsed_slots, morale, trust)
 	if changed.ok and not restored.personnel.people.has(person_id):
@@ -69,25 +73,29 @@ static func add_profile(checkpoint: Dictionary, person_id: String, attributes: D
 
 static func set_development_plan(checkpoint: Dictionary, person_id: String,
 		focus: String, review_slot: int) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.set_plan(restored.management.people,
 		person_id, focus, review_slot, restored.state.clock.elapsed_slots)
 	return _publish_people(restored, changed, checkpoint)
 
 static func create_promise(checkpoint: Dictionary, input: Dictionary) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.create_promise(restored.management.people,
 		input, restored.state.clock.elapsed_slots)
 	return _publish_people(restored, changed, checkpoint)
 
 static func resolve_promise(checkpoint: Dictionary, promise_id: String, fulfilled: bool) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.resolve_promise(restored.management.people,
 		promise_id, fulfilled, restored.state.clock.elapsed_slots)
 	return _publish_people(restored, changed, checkpoint)
 
 static func review_due(checkpoint: Dictionary) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.review_due(restored.management.people,
 		restored.personnel, restored.state.clock.elapsed_slots)
 	var result = _publish_people(restored, changed, checkpoint)
