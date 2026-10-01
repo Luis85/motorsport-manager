@@ -35,6 +35,9 @@ static func validate(data: Variant) -> String:
 	var commercial_error = CampaignCommercial.validate(data.get("commercial"))
 	if not commercial_error.is_empty():
 		return commercial_error
+	var delegation_error = CampaignDelegation.validate(data.get("delegation"))
+	if not delegation_error.is_empty():
+		return delegation_error
 	for key in ["delegation", "rivals", "people", "season_planning", "distress"]:
 		if not data.get(key) is Dictionary:
 			return "Campaign management has an invalid " + key + " projection."
@@ -45,6 +48,14 @@ static func validate(data: Variant) -> String:
 	if data.distress.get("stage") not in ["normal", "reserve_pressure", "funding_gap", "missed_obligation"]:
 		return "Campaign management has an invalid distress stage."
 	return _integrity_error(data)
+
+static func with_delegation(current: Dictionary, delegation: Dictionary) -> Dictionary:
+	if not validate(current).is_empty() or not CampaignDelegation.validate(delegation).is_empty():
+		return {}
+	var data = current.duplicate(true)
+	data.delegation = delegation.duplicate(true)
+	_seal(data)
+	return data if validate(data).is_empty() else {}
 
 static func with_commercial(current: Dictionary, commercial: Dictionary) -> Dictionary:
 	if not validate(current).is_empty() or not CampaignCommercial.validate(commercial).is_empty():

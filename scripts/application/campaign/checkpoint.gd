@@ -352,7 +352,10 @@ static func _management_error(data: Dictionary) -> String:
 		return "Campaign management belongs to another campaign or organization."
 	if int(data.management.authority_from_slot) > int(data.state.clock.elapsed_slots):
 		return "Campaign management authority begins after authoritative campaign time."
-	return CampaignCommercialAuthority.validate(data.management.commercial,
+	error = CampaignCommercialAuthority.validate(data.management.commercial,
+		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
+	if not error.is_empty(): return error
+	return CampaignDelegationAuthority.validate(data.management.delegation,
 		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
 
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:

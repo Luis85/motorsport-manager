@@ -171,6 +171,15 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 - Result bonuses require settled sporting evidence; unearned terms never enter the cash ledger.
 - All existing campaign transactions preserve the complete management projection.
 
+## TM-10 closed — persistent mandates and bounded delegation
+
+- Mandates persist owner, scope, review/expiry, per-action spend, future-obligation ceiling, minimum liquidity, permitted categories, protected resources and risk posture.
+- The first delegated execution path creates ordinary campaign cash commitments through the same finance authority and forecast used by manual planning.
+- Every delegated commitment records the mandate, reason and exact commitment digest; rejected or escalated actions leave campaign state unchanged.
+- Spending, total future obligation, protected-resource, category and liquidity limits are enforced before execution.
+- Revocation immediately prevents new autonomous actions while leaving existing binding obligations intact.
+- Delegated execution neither advances campaign time nor consumes founder intervention energy.
+
 ## Next dependency
 
-The next campaign milestone is **TM-10: persistent mandates and bounded delegation**. It must persist named authority, enforce spending/future-obligation/reserve limits, log delegated decisions and allow competent execution without consuming founder energy.
+The next campaign milestone is **TM-11: Director Desk, decision queue, onboarding and causal campaign debrief**. It should expose the existing authoritative systems as a concise playable management surface rather than adding another simulation layer.
