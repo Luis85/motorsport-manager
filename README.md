@@ -2,7 +2,7 @@
 
 > **Current capability map:** [docs/current-state.md](docs/current-state.md) distinguishes the default Minimal UI, optional Advanced interface, retained specialist tools, merged data-driven content and unimplemented management proposals. PR #24's validated content refactor is now merged; older feature-parity and port-status snapshots are historical.
 
-Native, local-first circuit authoring and two-car race management. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services. PR #27 adds the read-only Minimal Strategy comparison and a persisted player choice between the focused Minimal interface and the retained Advanced Race Director/Engineering stack; neither changes sporting authority, save semantics or the race model.
+Native, local-first circuit authoring, two-car race management and a bounded Team Principal campaign. **0.19.0 — Composed mechanics, owned editing and complete weekend flow** separates domain rules, application scheduling, commands, detached read queries and persistence services. PR #27 adds the read-only Minimal Strategy comparison, a persisted Minimal/Advanced race-interface choice, and the first four-event management loop; all reuse the same authoritative race weekend rather than introducing a second race model.
 
 See [architecture, extension recipes and verification boundaries](docs/architecture-refactor.md).
 
@@ -11,6 +11,18 @@ See [architecture, extension recipes and verification boundaries](docs/architect
 **Minimal** is the default and remains the recommended focused race screen. **Advanced** opens the retained Race Director or Engineering workspace over the same live weekend. Choose the mode in **Settings → Race interface**; Advanced can start in Race Director or directly in Engineering. The staged choice is saved only on Apply and takes effect when a weekend screen next opens.
 
 Interface selection is presentation configuration. It does not clone the simulation, reset the recording, issue a command, advance time, change pause/speed, alter inventory or consume gameplay randomness. Existing saved `director` and `engineering` preferences remain valid; an `advanced` preference maps to Race Director. Unsupported values fall back to Minimal.
+
+## Team Principal Campaign
+
+The main menu now offers a local **Team Principal Campaign** alongside standalone Grand Prix weekends. The first slice is four events and is intentionally focused on proving the complete management loop:
+
+**Director's Desk → review priorities → advance/start event → existing race weekend → exact settlement → factual debrief → next decision.**
+
+The Director Desk keeps cash, committed minimum cash, next-event timing, principal energy and team standing visible. It shows at most three current priorities, organization work, five bounded rival organizations, resumable onboarding and the latest evidence-backed debrief. Event departure uses explicit driver/crew availability, campaign finance and installed car profiles; a blocked readiness check does not partially mutate the career.
+
+Campaign weekends use the existing Minimal practice/qualifying/race flow and ordinary race recording/result envelope. Completed results are applied once to championship standings, returned inventory and cash before control returns to the Director Desk. Rivals have finite cash and reserves, accepted rosters and dated project cycles; they do not receive hidden race bonuses or private player information.
+
+The P0 slice does not yet provide the full dynasty product: deeper recruitment/negotiation, staff attributes/development/morale/promises, engineering uncertainty/material stock/wear/repairs, rich finance views, promotion, founder-business progression and broader specialist campaign screens remain later work.
 
 ## Minimal race screen
 
@@ -81,7 +93,7 @@ Reports and native screenshots go to `reports/`; CI publishes evidence. `reports
 
 ## Scope and provenance
 
-This is not a comprehensive tyre/vehicle physics rewrite, a new campaign, a telemetry redesign or a calibrated racing simulator. Human playtesting of both interface modes, controller/screen-reader completeness, text beyond 130%, broader wet/endurance balance and hardware profiling remain validation work. There is no universal frame-rate guarantee.
+This is not a comprehensive tyre/vehicle physics rewrite, a complete dynasty/ERP-scale management simulation, a telemetry redesign or a calibrated racing simulator. The new Team Principal campaign is a bounded four-event P0 slice. Human playtesting of campaign comprehension and both race-interface modes, controller/screen-reader completeness, text beyond 130%, broader wet/endurance balance and hardware profiling remain validation work. There is no universal frame-rate guarantee.
 
 Seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. [Third-party notices](THIRD_PARTY_NOTICES.md) retain attribution. These are unofficial reconstructions with authored estimates, not laser scans or certified circuit/vehicle models. No official championship branding, car models or driver likenesses are used. Code retains the [MIT license](LICENSE), copyright Luis Mendez.
 
