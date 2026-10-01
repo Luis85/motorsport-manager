@@ -5,6 +5,20 @@ const results=[];function test(name,fn){try{fn();results.push({name,passed:true}
 const close=(a,b)=>assert(Math.abs(a-b)<1e-9,`${a} != ${b}`);
 test('Queries are deterministic and independent of entity insertion order',()=>{const w=new E.World();for(const id of['c3','c1','c2']){w.create(id);w.set(id,'Needs',{});}assert.deepEqual(w.query(['Needs']),['c1','c2','c3']);});
 test('Systems cannot make structural changes during a query',()=>{const w=new E.World();w.create('c1');w.set('c1','Needs',{});const s=new E.Scheduler().register({id:'guard',phase:'simulate',order:1,query:['Needs'],update(world){assert.throws(()=>world.create('c2'),/deferred/);world.defer('create','c2');}});s.step(w,.1);assert(w.entities.has('c2'));});
+test('Components reject behavior, accessors, class instances and non-finite values',()=>{
+ const w=new E.World();w.create('c1');
+ assert.throws(()=>w.set('c1','Bad',{nested:{run:()=>true}}),/behavior-free/);
+ assert.throws(()=>w.set('c1','Bad',{value:Infinity}),/behavior-free/);
+ assert.throws(()=>w.set('c1','Bad',{nested:new Date()}),/behavior-free/);
+ const accessor={};Object.defineProperty(accessor,'value',{enumerable:true,get(){return 1;}});
+ assert.throws(()=>w.set('c1','Bad',accessor),/behavior-free/);
+ assert.equal(w.get('c1','Bad'),undefined);
+});
+test('Queries and systems reject malformed or duplicate component declarations',()=>{
+ const w=new E.World();w.create('c1');
+ assert.throws(()=>w.query(['bad component!']),/component type/);
+ assert.throws(()=>new E.Scheduler().register({id:'dup',phase:'simulate',order:1,query:['Needs','Needs'],update(){}}),/Invalid or duplicate system/);
+});
 test('Actor ECS mutates native records without introducing ECS save state',()=>{const c={id:'c1',creature:{x:1,y:1},inventory:{berries:2},needs:{food:80,water:70,energy:60,comfort:50,joy:40},learning:{practiceDay:1,practicedToday:{x:1},fatigue:20,recovering:false},feelings:{social:50,anger:10},task:{kind:'build',phase:'walk',style:'together'}};const e=A.create();const refs=[c.needs,c.learning,c.feelings];const r=e.step(c,.1,{day:2,socialPreference:2,loadLevel:3,hasShelter:true});assert.equal(r.studying,false);assert.equal(c.learning.practiceDay,2);assert.deepEqual(c.learning.practicedToday,{});assert.equal(e.world.get('c1','Needs'),refs[0]);close(c.learning.fatigue,19.984);close(c.feelings.social,49.9945);close(c.feelings.anger,9.991);close(c.needs.food,79.99);close(c.needs.water,69.987);close(c.needs.energy,59.9808);close(c.needs.comfort,49.998);close(c.needs.joy,39.9965);assert(!Object.hasOwn(c,'ecs'));});
 test('Learning thresholds and playful tuning are data-driven',()=>{const rules=JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json'));rules.learning.playfulFatigue=1;const c={id:'c1',creature:{x:1,y:1},inventory:{berries:2},needs:{food:100,water:100,energy:100,comfort:100,joy:100},learning:{practiceDay:4,practicedToday:{},fatigue:69.95,recovering:false},feelings:{social:100,anger:0},task:{kind:'practice',phase:'work',style:'playful'}};A.create(rules).step(c,.1,{day:4,socialPreference:0,loadLevel:0,hasShelter:false});close(c.learning.fatigue,70.05);assert.equal(c.learning.recovering,true);});
 test('Rule manifests reject behavior-shaped or unknown data',()=>{const rules=JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json'));rules.execute='alert(1)';assert.throws(()=>A.validateRules(rules),/schema/);rules.execute=undefined;delete rules.execute;rules.needs.workingKinds.push('bad task!');assert.throws(()=>A.validateRules(rules),/needs/);});
