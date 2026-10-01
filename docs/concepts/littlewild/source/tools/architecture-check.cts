@@ -94,6 +94,18 @@ check("Clean Code module budget is explicit and legacy debt is bounded", () => {
   assert(oversized.length === 0, "New oversized domain/application module requires decomposition, not a silent exception: " + oversized.join(", "));
 });
 
+check("Domain modules do not register application composition hooks", () => {
+  const domainFiles = DOMAIN_MAP.contexts.filter(context => context.layer === "domain").flatMap(context => context.files);
+  const violations: string[] = [];
+  for (const file of domainFiles) {
+    const text = source(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    for (const token of ["EngineComposition", "Composition.register(", "constructThrough(", "installFactories"]) {
+      if (text.includes(token)) violations.push(file + ": " + token);
+    }
+  }
+  assert(violations.length === 0, "Application composition leaked into domain ownership: " + violations.join("; "));
+});
+
 check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
   const ownership = new Map<string, "domain" | "application" | "infrastructure" | "presentation">();
   for (const context of DOMAIN_MAP.contexts) for (const file of context.files) ownership.set(file, context.layer);
