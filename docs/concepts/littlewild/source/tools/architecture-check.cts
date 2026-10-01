@@ -22,11 +22,18 @@ function check(name: string, action: () => void): void {
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
+const ignoredDirectories = new Set([
+  path.join(ROOT, "node_modules"),
+  path.join(ROOT, ".generated"),
+  path.join(ROOT, "verification"),
+  path.join(ROOT, "screenshots"),
+  path.join(ROOT, "vendor")
+]);
 function walk(directory: string): string[] {
   if (!fs.existsSync(directory)) return [];
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    if (["node_modules", ".generated", "verification", "screenshots", "vendor"].includes(entry.name)) return [];
     const full = path.join(directory, entry.name);
+    if (entry.isDirectory() && ignoredDirectories.has(full)) return [];
     return entry.isDirectory() ? walk(full) : [full];
   });
 }
