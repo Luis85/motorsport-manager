@@ -185,6 +185,49 @@ static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary) 
 	return {"ok": error.is_empty(), "status": "applied" if error.is_empty() else "rejected",
 		"error": error, "competition": data if error.is_empty() else current.duplicate(true)}
 
+static func correct_event(current: Dictionary, receipt: Dictionary,
+		policy: Dictionary) -> Dictionary:
+	var data = current.duplicate(true)
+	var error = validate(data)
+	if not error.is_empty(): return _reject(error, current)
+	error = CampaignWeekendPolicy.receipt_error(policy, receipt)
+	if not error.is_empty(): return _reject(error, current)
+	var event_id: String = receipt.campaign_event_id
+	if not data.events.has(event_id): return _reject("Sporting correction requires an existing event.", current)
+	var prior: Dictionary = data.events[event_id]
+	if prior.policy_digest != policy.digest or prior.season_id != receipt.season_id:
+		return _reject("Sporting correction cannot silently change event policy or season.", current)
+	var season: Dictionary = data.seasons[receipt.season_id]
+	error = CampaignSeasonEntries.field_mapping_error(season.entries,
+		receipt.entrant_id, receipt.classification)
+	if not error.is_empty(): return _reject(error, current)
+	var rules: Dictionary = data.series[season.series_id]
+	var awards: Array = []
+	for row in receipt.classification:
+		var eligible = row.person_id in policy.eligible_people
+		awards.append({"person_id": row.person_id, "team_id": row.team_id,
+			"position": int(row.position), "eligible": eligible,
+			"points": CampaignWeekendPolicy.points_for(policy, int(row.position)) if eligible else 0})
+	var replacement = prior.duplicate(true)
+	replacement.result_digest = receipt.result_digest
+	replacement.awards = awards
+	data.events[event_id] = replacement
+	var corrected_season = season.duplicate(true)
+	for index in range(corrected_season.calendar.size()):
+		if corrected_season.calendar[index].campaign_event_id == event_id:
+			if corrected_season.calendar[index].status != "completed":
+				return _reject("Sporting correction requires a completed calendar event.", current)
+			corrected_season.calendar[index].resolution_ref = receipt.result_digest
+			break
+	corrected_season = CampaignSeason.rebuild(corrected_season, data.events, rules)
+	corrected_season.erase("digest")
+	corrected_season["digest"] = RaceStateValue.fingerprint(corrected_season)
+	data.seasons[receipt.season_id] = corrected_season
+	_seal(data)
+	error = validate(data)
+	return {"ok": error.is_empty(), "status": "corrected" if error.is_empty() else "rejected",
+		"error": error, "competition": data if error.is_empty() else current.duplicate(true)}
+
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign competition exceeds serialized-value limits."
