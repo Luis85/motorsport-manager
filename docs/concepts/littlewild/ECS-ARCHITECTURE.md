@@ -6,10 +6,18 @@ Refactor the Littlewild simulation from a deep `Engine extends Engine` inheritan
 
 This migration is intentionally incremental. A rewrite would make it difficult to prove that movement, resource conservation, work, progression, and imported stories retained their behavior. Each slice therefore moves one authoritative rule into a system, adds parity tests, and then deletes the corresponding legacy rule.
 
+## TypeScript and bounded contexts
+
+All project-authored executable Littlewild code is TypeScript (`.ts` / `.cts`). The standalone still executes ordinary JavaScript because the build compiles TypeScript into the ignored `.generated/` directory before bundling. The only authored-tree JavaScript retained is third-party `vendor/three.js`; JSON, CSS, and HTML remain data/presentation assets rather than executable project source.
+
+`source/architecture/domain-map.json` is the machine-readable DDD ownership contract. It assigns every top-level runtime module exactly once to **simulation core**, **actors**, **physical world**, **economy/progression**, **content model**, **simulation application**, **experience application**, **persistence/clock infrastructure**, or **presentation**. CI fails for unowned/duplicate runtime modules, inward-layer violations, platform dependencies in domain/application code, executable-shaped scenario data, or reintroduction of authored JavaScript/Python executables.
+
+The current architecture deliberately retains a stable legacy-compatible `LW.Engine` facade and process-global registries. Those are compatibility adapters around the bounded contexts, not the target domain model. Large historical modules such as `engine.ts` and `colony.ts` remain migration debt protected by regression fixtures; they are not described as exemplary small-module Clean Code.
+
 ## Architectural rules
 
 1. **Entities are identities only.** Runtime entity IDs are stable domain IDs (`c1`, building IDs, node IDs, island IDs). Display names and array positions are never identities.
-2. **Components are data only.** Components contain no callbacks, DOM references, timers, storage providers, or rendering objects. Serialized game records remain plain JSON.
+2. **Components are data only.** The ECS kernel rejects nested functions, accessors, class instances, symbols, cycles, and non-finite numbers. Components contain no callbacks, DOM references, timers, storage providers, or rendering objects. Serialized game records remain plain data.
 3. **Systems own behavior.** Fixed-step mutation happens in named systems with an explicit phase and deterministic order. A system declares the components it requires.
 4. **Content remains data driven.** Constants that define gameplay belong in validated JSON rule/content documents. JSON may select data and known handler IDs; it never supplies executable code.
 5. **Commands are not systems.** Player/UI actions enter through validated domain commands. UI code does not mutate components directly.
@@ -66,7 +74,7 @@ Definitions such as recipes, skills, items, behavior-tree templates, and scenari
 
 M1 covers creature **Needs**, **Learning**, and **Feelings** updates. It also binds Transform and Inventory components so identity/lifecycle are explicit, while leaving their behavior in existing systems for now.
 
-The adapter binds component stores to the exact nested actor objects already serialized today. There is no shadow component state and no ECS blob in exports. `Activity` is ephemeral, computed from current task plus an explicit, bounded snapshot of domain context. Existing `colony.js` retains its actor command permissions, task decisions, mood and stochastic temper checks. Only the migrated numerical decay/fatigue rules are removed from that legacy loop.
+The adapter binds component stores to the exact nested actor objects already serialized today. There is no shadow component state and no ECS blob in exports. `Activity` is ephemeral, computed from current task plus an explicit, bounded snapshot of domain context. Existing `colony.ts` retains its actor command permissions, task decisions, mood and stochastic temper checks. Only the migrated numerical decay/fatigue rules are removed from that legacy loop.
 
 Authoritative compatibility values live in `source/content/simulation-profile.json`, which contains the validated actor and economy rule documents plus the exact compiled `living-world-v1` composition archetype. Scenario schema 2 requires a complete profile; schema 1 packs migrate explicitly to `classic-v1`. A profile may tune bounded actor/economy numbers, but its engine layers, fixed-step phases and transaction-system lists must exactly match the compiled runtime. JSON cannot add, remove, reorder or implement systems.
 
@@ -74,27 +82,27 @@ Actor-major stepping and previous RNG call order remain unchanged: the existing 
 
 M2 adds explicit transient **Task** and **Intent** components and a second deterministic scheduler for activity progression. `task-movement` owns transform/path advancement; `task-work-progress` owns elapsed work time; the post phase records intent status. The legacy facade still creates tasks, applies interruption policy, authorizes construction costs, mirrors specialized progress records and invokes completion side effects. Arrival intentionally consumes no work time in the same tick, preserving the prior phase boundary. Blocked paths return a typed outcome to the facade rather than deleting tasks from inside a generic ECS system.
 
-M3 adds `world-ecs.js` for physical ownership and production. Stable resource, inventory, worksite, harvest, carrier, and production identities are bound to the existing records. Deterministic systems settle transfers, finite depletion, reservations, worker claims, retries, and exactly-once output emission. The facade still chooses sources and recipes, performs skill checks, and owns rewards and narration.
+M3 adds `world-ecs.ts` for physical ownership and production. Stable resource, inventory, worksite, harvest, carrier, and production identities are bound to the existing records. Deterministic systems settle transfers, finite depletion, reservations, worker claims, retries, and exactly-once output emission. The facade still chooses sources and recipes, performs skill checks, and owns rewards and narration.
 
-M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide and actor wallets, shared research, player and actor levels, prestige, statistics, and chapter completion are updated as one transaction with rollback on failure. Domain commands still decide whether an action is allowed and what the reward means; the facade alone writes the ledger, histories, memories, logs, and presentation events. A validated `economy-rules.json` manifest owns level thresholds, level-up bonuses, income sharing, and bounded settlement limits.
+M4 adds `economy-ecs.ts` for atomic financial and progression settlement. Guide and actor wallets, shared research, player and actor levels, prestige, statistics, and chapter completion are updated as one transaction with rollback on failure. Domain commands still decide whether an action is allowed and what the reward means; the facade alone writes the ledger, histories, memories, logs, and presentation events. A validated `economy-rules.json` manifest owns level thresholds, level-up bonuses, income sharing, and bounded settlement limits.
 
-M5 removes the runtime constructor-replacement chain. Feature modules register ordered descriptors with `engine-composition.js`, and `engine-composition-root.js` finalizes one stable facade in an explicit six-layer order. `actor-state-view.js` resolves personal fields by actor identity without adding getters to serialized root state. `simulation-pipeline.js` exposes the fixed-step world/actor phase order, while `command-router.js` provides a compiled allowlist for application commands and rejects arbitrary method dispatch. Historical import stages and authored fixtures use explicit partial-construction boundaries rather than global load order.
+M5 removes the runtime constructor-replacement chain. Feature modules register ordered descriptors with `engine-composition.ts`, and `engine-composition-root.ts` finalizes one stable facade in an explicit six-layer order. `actor-state-view.ts` resolves personal fields by actor identity without adding getters to serialized root state. `simulation-pipeline.ts` exposes the fixed-step world/actor phase order, while `command-router.ts` provides a compiled allowlist for application commands and rejects arbitrary method dispatch. Historical import stages and authored fixtures use explicit partial-construction boundaries rather than global load order.
 
-M6 adds `simulation-profile.js` and `scenario-migrations.js` as explicit content and migration boundaries. Scenario schema 2 carries a self-contained, fingerprinted simulation profile. Engines capture an immutable validated profile at construction, and actor/economy runtimes use that captured data rather than whichever profile is globally active later. Portable scenario stories use envelope 10 with context version 2 and an independent simulation fingerprint; envelope 9 imports migrate to `classic-v1` and re-export as 10. Native state remains version 8.
+M6 adds `simulation-profile.ts` and `scenario-migrations.ts` as explicit content and migration boundaries. Scenario schema 2 carries a self-contained, fingerprinted simulation profile. Engines capture an immutable validated profile at construction, and actor/economy runtimes use that captured data rather than whichever profile is globally active later. Portable scenario stories use envelope 10 with context version 2 and an independent simulation fingerprint; envelope 9 imports migrate to `classic-v1` and re-export as 10. Native state remains version 8.
 
 ## Separation and ownership
 
 | Owner | Allowed | Forbidden |
 |---|---|---|
-| `ecs.js` | Stable identity, component storage, structural buffer, query and scheduling primitives | Game content, story formats, rendering, business rules |
-| `actor-ecs.js` | Actor components and physiological/social decay rules with validated tuning | Reading globals for selected creature, UI, RNG, work completion |
-| `world-ecs.js` | Physical deposits, inventories, worksite jobs, reservations, transfers and exactly-once output settlement | Source selection, recipes, skill rolls, rewards, UI |
-| `economy-ecs.js` | Atomic wallets, research, XP, prestige, statistics and chapter settlement with rollback and a neutral outbox | Authorization, physical goods, histories, logs, memories, presentation, RNG |
-| `engine-composition.js` / root | Stable facade identity, explicit feature order, historical construction boundaries | Gameplay policy, persistence, UI |
-| `simulation-pipeline.js` | Fixed-step world/actor orchestration and visible phase order | Domain calculations, rendering, wall clock |
-| `command-router.js` | Compiled command allowlist, envelope validation, explicit actor routing | Arbitrary method dispatch, imported executable handlers |
-| `simulation-profile.js` | Strict bounded profile parsing, actor/economy rule validation, immutable profile identity, compiled-archetype parity | Dynamic modules, callbacks, handler registration, system insertion/reordering |
-| `scenario-migrations.js` | Explicit schema-1→2 and context-1→2 migrations with review notes | Heuristic migration, silent behavior inference |
+| `ecs.ts` | Stable identity, component storage, structural buffer, query and scheduling primitives | Game content, story formats, rendering, business rules |
+| `actor-ecs.ts` | Actor components and physiological/social decay rules with validated tuning | Reading globals for selected creature, UI, RNG, work completion |
+| `world-ecs.ts` | Physical deposits, inventories, worksite jobs, reservations, transfers and exactly-once output settlement | Source selection, recipes, skill rolls, rewards, UI |
+| `economy-ecs.ts` | Atomic wallets, research, XP, prestige, statistics and chapter settlement with rollback and a neutral outbox | Authorization, physical goods, histories, logs, memories, presentation, RNG |
+| `engine-composition.ts` / root | Stable facade identity, explicit feature order, historical construction boundaries | Gameplay policy, persistence, UI |
+| `simulation-pipeline.ts` | Fixed-step world/actor orchestration and visible phase order | Domain calculations, rendering, wall clock |
+| `command-router.ts` | Compiled command allowlist, envelope validation, explicit actor routing | Arbitrary method dispatch, imported executable handlers |
+| `simulation-profile.ts` | Strict bounded profile parsing, actor/economy rule validation, immutable profile identity, compiled-archetype parity | Dynamic modules, callbacks, handler registration, system insertion/reordering |
+| `scenario-migrations.ts` | Explicit schema-1→2 and context-1→2 migrations with review notes | Heuristic migration, silent behavior inference |
 | Actor state view and simulation adapters | Translate actor/root context; call ECS services; retain authorization, decision and presentation boundaries | Root-state accessors, duplicated migrated calculations or balances |
 | Existing content registries | Definition parsing, ID/reference validation, immutable read tables | Executing imported callbacks |
 | Application shell | Input/command dispatch, save/export orchestration, render scheduling | Authoritative gameplay calculations |
