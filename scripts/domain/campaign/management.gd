@@ -18,6 +18,7 @@ static func empty(campaign_id: String, organization_id: String,
 		"people": CampaignPeopleDevelopment.empty(),
 		"season_planning": CampaignSeasonPlanning.empty(),
 		"supply": CampaignSupplyNetwork.empty(),
+		"group": CampaignGroup.empty(),
 		"distress": CampaignDistress.empty()
 	}
 	_seal(data)
@@ -26,7 +27,7 @@ static func empty(campaign_id: String, organization_id: String,
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign management exceeds serialized-value limits."
-	if not data is Dictionary or data.size() != 13 or data.get("kind") != KIND 			or not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION):
+	if not data is Dictionary or data.size() != 14 or data.get("kind") != KIND 			or not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION):
 		return "Unsupported campaign management projection."
 	for key in ["campaign_id", "organization_id"]:
 		if not CampaignIdentity.valid(data.get(key)):
@@ -51,10 +52,13 @@ static func validate(data: Variant) -> String:
 	var supply_error = CampaignSupplyNetwork.validate(data.get("supply"))
 	if not supply_error.is_empty():
 		return supply_error
+	var group_error = CampaignGroup.validate(data.get("group"))
+	if not group_error.is_empty():
+		return group_error
 	var distress_error = CampaignDistress.validate(data.get("distress"))
 	if not distress_error.is_empty():
 		return distress_error
-	for key in ["delegation", "rivals", "people", "season_planning", "supply", "distress"]:
+	for key in ["delegation", "rivals", "people", "season_planning", "supply", "group", "distress"]:
 		if not data.get(key) is Dictionary:
 			return "Campaign management has an invalid " + key + " projection."
 	if not data.delegation.get("mandates", {}) is Dictionary 			or not data.delegation.get("decisions", []) is Array 			or not data.rivals.get("teams", {}) is Dictionary 			or not data.rivals.get("decision_cycles", []) is Array 			or not data.people.get("plans", {}) is Dictionary 			or not data.people.get("promises", {}) is Dictionary 			or not data.season_planning.get("plans", {}) is Dictionary 			or not data.distress.get("history", []) is Array:
@@ -64,6 +68,14 @@ static func validate(data: Variant) -> String:
 	if data.distress.get("stage") not in ["normal", "reserve_pressure", "funding_gap", "missed_obligation"]:
 		return "Campaign management has an invalid distress stage."
 	return _integrity_error(data)
+
+static func with_group(current: Dictionary, group: Dictionary) -> Dictionary:
+	if not validate(current).is_empty() or not CampaignGroup.validate(group).is_empty():
+		return {}
+	var data = current.duplicate(true)
+	data.group = group.duplicate(true)
+	_seal(data)
+	return data if validate(data).is_empty() else {}
 
 static func with_supply(current: Dictionary, supply: Dictionary) -> Dictionary:
 	if not validate(current).is_empty() or not CampaignSupplyNetwork.validate(supply).is_empty():
