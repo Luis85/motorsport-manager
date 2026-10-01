@@ -13,7 +13,7 @@ static func fuel_margin(sim: RaceSim, car: RaceCar) -> float:
 
 static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
-	var limits = RacePerformanceProfile.limits(car.performance_profile, sim.track.vehicle_definition)
+	var limits = RacePerformanceProfile.limits(sim.performance_profile(car), sim.track.vehicle_definition)
 	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * float(limits.brake) * 0.5) + 8
 	var deferred = gate - car.distance < stopping
 	if deferred: gate += sim.track.length
@@ -23,7 +23,7 @@ static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> String:
 	var c = sim.cars[driver_id]
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
-		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision, c.performance_profile.digest]
+		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision, sim.performance_profile(c).digest]
 	facts.append(sim.forecast_parameters(driver_id).get("key", []))
 	if sim.tuning.authored(): facts.append(sim.tuning.fingerprint)
 	if (sim is RaceSim and sim.has_mechanic("strategy")) and c.player: facts.append([sim.team_state.revision, sim.team_state.pit_priority.get("deferred_gate", -1)])
@@ -38,7 +38,7 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	var own: Dictionary = {}
 	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair", "dnf", "finished"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
-	own.performance_profile = c.performance_profile.duplicate(true)
+	own.performance_profile = sim.performance_profile(c).duplicate(true)
 	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
 	own.projected_fuel = sim.tuning.race_fuel(sim.laps) if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
 	own.measured_race_wear = false
@@ -266,7 +266,7 @@ static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool
 
 static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var transit = maxf(0, sim.track.pit_length - car.box_d) / sim.track.pit_limit + 3
-	var outlap = sim.track.estimate * RacePerformanceProfile.forecast_lap_factor(car.performance_profile) / 0.76
+	var outlap = sim.track.estimate * RacePerformanceProfile.forecast_lap_factor(sim.performance_profile(car)) / 0.76
 	var needed = transit + outlap + 5
 	return {"required_seconds": needed, "latest_release": sim.qual_duration - needed,
 		"can_start_hotlap": sim.phase == "qualifying" and not sim.qual_closed and car.route == "garage" and sim.clock + needed < sim.qual_duration,

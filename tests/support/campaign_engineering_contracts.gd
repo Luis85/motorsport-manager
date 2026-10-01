@@ -105,7 +105,7 @@ static func _race_profile_contract(check: Callable, checkpoint: Dictionary, prof
 	check.call(enhanced.last_error.is_empty() and enhanced.snapshot().version == TacticalDuels.CHECKPOINT_VERSION,
 		"New weekend freezes per-car performance in the versioned native race checkpoint")
 	var restored = PracticeRaceSim.restore_practice(enhanced.snapshot())
-	check.call(restored != null and restored.cars[3].performance_profile.digest == profile.digest,
+	check.call(restored != null and restored.performance_profile(restored.cars[3]).digest == profile.digest,
 		"Race checkpoint restore preserves the exact installed-part performance source")
 	var baseline_profiles: Array = []
 	for _id in range(12): baseline_profiles.append(RacePerformanceProfile.baseline())

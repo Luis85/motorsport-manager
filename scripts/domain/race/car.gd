@@ -9,7 +9,6 @@ extends RefCounted
 var setup_definition: SetupDefinition = SetupDefinition.legacy()
 var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
 var entry_definition: EntrantDefinition
-var performance_profile: Dictionary = RacePerformanceProfile.baseline()
 
 func team_identity() -> String:
 	return entry_definition.team_id if entry_definition != null else team
@@ -300,7 +299,6 @@ func detached_copy() -> RaceCar:
 	result.entry_definition = entry_definition
 	result.tyre_rules = tyre_rules
 	result.setup_definition = setup_definition
-	result.performance_profile = performance_profile.duplicate(true)
 	return result
 
 static func from_record(record: Dictionary) -> RaceCar:

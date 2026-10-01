@@ -148,7 +148,7 @@ static func _migration_storage_and_freeze_contract(check: Callable) -> void:
 	if not legacy_payroll.ok:
 		return
 	var previous = current.duplicate(true)
-	previous.version = CampaignCheckpoint.PREVIOUS_VERSION
+	previous.version = CampaignCheckpoint.CONSEQUENCE_VERSION
 	previous.erase("personnel")
 	previous.economy = legacy_payroll.economy
 	CampaignPersonnelContracts._reseal(previous)

@@ -124,9 +124,26 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 			last_error = error
 			return
 		performance_profiles = options.performance_profiles.duplicate(true)
-		for index in range(cars.size()):
-			cars[index].performance_profile = performance_profiles[index].duplicate(true)
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
+
+func performance_profile(car: RaceCar) -> Dictionary:
+	if car == null or performance_profiles.is_empty():
+		return RacePerformanceProfile.baseline()
+	if car.id < 0 or car.id >= performance_profiles.size():
+		return {}
+	return performance_profiles[car.id].duplicate(true)
+
+func _performance_factor(car: RaceCar, key: String) -> float:
+	if performance_profiles.is_empty():
+		return 1.0
+	return float(performance_profiles[car.id][key + "_bps"]) / RacePerformanceProfile.BASE_BPS
+
+func _performance_line_factor(car: RaceCar, curvature: float) -> float:
+	if performance_profiles.is_empty():
+		return 1.0
+	var straight = (_performance_factor(car, "top") + _performance_factor(car, "accel")) * 0.5
+	var corner = (_performance_factor(car, "lat") + _performance_factor(car, "brake")) * 0.5
+	return lerpf(straight, corner, clampf(absf(curvature) * 100.0, 0.0, 1.0))
 
 func random_value() -> float:
 	rng_state = (1664525 * rng_state + 1013904223) & 0xffffffff
@@ -309,7 +326,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	var effects = CarSetup.effects(c, local.water)
 	var handling = (1.0 + (c.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
 	handling *= 1.0 + (c.wet_skill - tuning.competition.movement.wet_skill_reference) * tuning.competition.movement.wet_skill_factor * local.water
-	var desired = s.speed * RacePerformanceProfile.line_factor(c.performance_profile, s.curvature) 		* sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
+	var desired = s.speed * _performance_line_factor(c, s.curvature) 		* sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
 	desired *= tuning.pace.engine_modes[c.engine]
 	desired *= (1.0 - maxf(0, tuning.condition.health_reference - c.health) * tuning.condition.health_speed_loss) / (1.0 + c.fuel * tuning.fuel.runtime_mass_factor)
 	if absf(s.curvature) < tuning.competition.movement.straight_curvature_per_m: desired *= effects.straight
@@ -359,7 +376,10 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
 			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * tuning.competition.movement.lateral_speed_mps)
-	var limits = RacePerformanceProfile.limits(c.performance_profile, track.vehicle_definition)
+	var limits = track.vehicle_definition.parameters()
+	if not performance_profiles.is_empty():
+		for key in RacePerformanceProfile.KEYS:
+			limits[key] *= _performance_factor(c, key)
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
 	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
 	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
@@ -582,8 +602,6 @@ static func restore(data: Dictionary) -> RaceSim:
 		if sim.roster_definition != null: car.entry_definition = sim.roster_definition.entrant(car.id)
 		car.tyre_rules = sim.tyre_rules
 		car.setup_definition = sim.setup_definition
-		if not sim.performance_profiles.is_empty():
-			car.performance_profile = sim.performance_profiles[car.id].duplicate(true)
 		sim.cars.append(car)
 	return sim
 
