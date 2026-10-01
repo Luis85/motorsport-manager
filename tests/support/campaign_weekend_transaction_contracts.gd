@@ -187,7 +187,7 @@ static func _manifest() -> Dictionary:
 		"event_revision": 1,
 		"departure_slot": 100,
 		"return_slot": 140,
-		"race_event_id": "11111111-1111-4111-8111-111111111111",
+		"race_event_id": "11111111111141118111111111111111",
 		"race_model": "practice-race-sim",
 		"checkpoint_version": 11,
 		"track_hash": "1111111111111111111111111111111111111111111111111111111111111111",
