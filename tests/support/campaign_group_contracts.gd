@@ -29,6 +29,11 @@ static func run(check:Callable)->void:
 		"value_minor":10000,"due_slot":DAY})
 	check.call(order.ok,"Founder business income is bound to one shared work order")
 	if not order.ok:return
+	var duplicate_order=CampaignGroupTransaction.create_service_order(order.checkpoint,{
+		"id":"business.order.duplicate","customer":"Second Customer","work_order_id":"work.customer.1",
+		"value_minor":10000,"due_slot":DAY})
+	check.call(not duplicate_order.ok,
+		"One completed work order cannot be sold twice to duplicate parent-company revenue")
 	checkpoint=_advance(order.checkpoint,DAY)
 	if checkpoint.is_empty():return
 	var completed=CampaignGroupTransaction.complete_service_order(checkpoint,"business.order.1")
