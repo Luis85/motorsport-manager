@@ -10,7 +10,7 @@ static func validate(group:Dictionary,economy:Dictionary,operations:Dictionary,
 	for order in group.business_orders.values():
 		if not operations.work_orders.has(order.work_order_id):return "Founder business order references unknown shared capacity."
 		var work:Dictionary=operations.work_orders[order.work_order_id]
-		if work.family not in ["preparation_workshop","fabrication_shop"] or engineering.used_work_orders.has(order.work_order_id):
+		if work.status != "scheduled" or work.family not in ["preparation_workshop","fabrication_shop"] or engineering.used_work_orders.has(order.work_order_id):
 			return "Founder business order reuses incompatible or engineering-owned work."
 		if order.status=="completed":
 			if CampaignWorkOrder.state_at(work,int(order.completed_slot))!="complete":return "Founder business completed before shared work."
