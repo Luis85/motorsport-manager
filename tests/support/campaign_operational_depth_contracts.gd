@@ -7,9 +7,10 @@ static func run(check:Callable)->void:
 	var checkpoint=_engineering_part_fixture(check)
 	if checkpoint.is_empty():return
 	var part_id:String=checkpoint.engineering.parts.keys()[0]
+	var facility_start=int(checkpoint.state.clock.elapsed_slots)
 	var expanded=CampaignOperationsTransaction.register_owned(checkpoint,{
 		"id":"facility.fabrication","display_name":"Fabrication shop","family":"fabrication_shop",
-		"available_from_slot":0,"available_until_slot":60*DAY,"capacity_units":1})
+		"available_from_slot":facility_start,"available_until_slot":facility_start+60*DAY,"capacity_units":1})
 	check.call(expanded.ok,"Expanded fabrication facility is schedulable capability rather than a passive bonus")
 	if not expanded.ok:return
 	checkpoint=expanded.checkpoint
