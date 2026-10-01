@@ -34,6 +34,21 @@ function source(name: string): string {
   return fs.readFileSync(path.join(SOURCE, name), "utf8");
 }
 
+check("All authored executable Littlewild code is TypeScript", () => {
+  const legacy = walk(ROOT).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
+  assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(ROOT, file)).join(", "));
+});
+
+const coreModules = [
+  "ecs.ts", "actor-ecs.ts", "world-ecs.ts", "economy-ecs.ts", "engine-composition.ts",
+  "command-router.ts", "simulation-pipeline.ts", "simulation-profile.ts",
+  "scenario-runtime.ts", "scenario-story.ts"
+] as const;
+const forbiddenPlatform = [
+  "document.", "window.", "localStorage", "sessionStorage", "requestAnimationFrame",
+  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "performance.now("
+];
+
 check("DDD domain map owns every runtime module exactly once", () => {
   assert(DOMAIN_MAP.format === "littlewild-domain-map" && DOMAIN_MAP.schemaVersion === 1, "Invalid domain-map identity.");
   assert(JSON.stringify(DOMAIN_MAP.layers) === JSON.stringify(["domain","application","infrastructure","presentation"]), "Unexpected architecture layers.");
@@ -76,20 +91,6 @@ check("Clean Architecture dependency rules hold across mapped runtime layers", (
   assert(violations.length === 0, "Architecture dependency violation: " + violations.join("; "));
 });
 
-check("All authored executable Littlewild code is TypeScript", () => {
-  const legacy = walk(ROOT).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
-  assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(ROOT, file)).join(", "));
-});
-
-const coreModules = [
-  "ecs.ts", "actor-ecs.ts", "world-ecs.ts", "economy-ecs.ts", "engine-composition.ts",
-  "command-router.ts", "simulation-pipeline.ts", "simulation-profile.ts",
-  "scenario-runtime.ts", "scenario-story.ts"
-] as const;
-const forbiddenPlatform = [
-  "document.", "window.", "localStorage", "sessionStorage", "requestAnimationFrame",
-  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "performance.now("
-];
 check("Domain and application core is platform independent", () => {
   const violations: string[] = [];
   for (const file of coreModules) {
