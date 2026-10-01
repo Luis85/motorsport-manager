@@ -174,7 +174,7 @@ static func _supplier_error(d:Variant)->String:
 	return _digest_error(d)
 
 static func _order_error(d:Variant)->String:
-	if not d is Dictionary or d.size()!=10:return "shape"
+	if not d is Dictionary or d.size()!=11:return "shape"
 	for key in ["id","supplier_id","material_id","commitment_id"]:
 		if not CampaignIdentity.valid(d.get(key)):return "identity"
 	if not RaceCheckpoint.integral(d.get("quantity"),1,1000000) or not RaceCheckpoint.integral(d.get("ordered_slot"),0,CampaignClock.MAX_ELAPSED_SLOTS) 			or not RaceCheckpoint.integral(d.get("due_slot"),int(d.ordered_slot)+1,CampaignClock.MAX_ELAPSED_SLOTS) or not RaceCheckpoint.integral(d.get("amount_minor"),1,CampaignEconomy.MAX_MINOR) 			or d.get("status") not in ORDER_STATES or not RaceCheckpoint.integral(d.get("received_slot"),-1,CampaignClock.MAX_ELAPSED_SLOTS):return "terms"
