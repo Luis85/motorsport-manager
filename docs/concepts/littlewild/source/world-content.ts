@@ -5,7 +5,7 @@
  const C=node?require('./content-runtime.js'):root.LWContent;
  const defaults=node?require('./content/world-library.json'):root.LWDefaultWorld;
  const schema=node?require('./content/world.schema.json'):root.LWWorldSchema;
- const clone=x=>JSON.parse(JSON.stringify(x));
+ const clone=x=>C.copy(x);
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  // Wrap the whole world document: the base fingerprint intentionally hashes only its own schema fields.
  const hash=x=>C.fingerprint({schemaVersion:1,library:{id:x?.id,version:x?.version},components:x});
