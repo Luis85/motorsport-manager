@@ -21,7 +21,6 @@
       "layer": "domain",
       "files": [
         "actor-ecs.ts",
-        "colony-policies.ts",
         "rpg.ts"
       ]
     },
@@ -30,10 +29,7 @@
       "layer": "domain",
       "files": [
         "world-ecs.ts",
-        "island-geometry.ts",
-        "navigation.ts",
-        "world-integrity.ts",
-        "validation-village.ts"
+        "island-geometry.ts"
       ]
     },
     {
@@ -50,9 +46,31 @@
         "content-runtime.ts",
         "adventure-content.ts",
         "growth-content.ts",
-        "world-content.ts",
         "world-profile.ts",
         "scenario-shape.ts"
+      ]
+    },
+    {
+      "id": "actors-application",
+      "layer": "application",
+      "files": [
+        "colony-policies.ts"
+      ]
+    },
+    {
+      "id": "physical-world-application",
+      "layer": "application",
+      "files": [
+        "navigation.ts",
+        "world-integrity.ts",
+        "validation-village.ts"
+      ]
+    },
+    {
+      "id": "content-application",
+      "layer": "application",
+      "files": [
+        "world-content.ts"
       ]
     },
     {
@@ -127,5 +145,27 @@
     "systems.ts": "Historical composed engine layer retained for parity while rules move into bounded systems.",
     "world-simulation.ts": "Mature physical-world compatibility layer; new settlement invariants live in world-ecs.ts.",
     "world.ts": "Legacy world facade/presentation handoff retained for saved-story and interaction parity."
-  }
+  },
+  "domainGlobals": [
+    "LWECS",
+    "LWBehaviorTree",
+    "LWActorECS",
+    "LWActorRules",
+    "LWRPG",
+    "LWWorldECS",
+    "LWGeography",
+    "LWWorldProfile",
+    "LWEconomyECS",
+    "LWEconomyRules",
+    "LWContent",
+    "LWContentSchema",
+    "LWDefaultLibrary",
+    "LWAdventure",
+    "LWDefaultAdventure",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWGrowth",
+    "LWDefaultProfile",
+    "LWScenarioShape"
+  ]
 }

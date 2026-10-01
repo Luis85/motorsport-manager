@@ -14,6 +14,7 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   contexts: Array<{ id: string; layer: "domain" | "application" | "infrastructure" | "presentation"; files: string[] }>;
   moduleBudgetBytes: number;
   legacyCompatibilityModules: Record<string,string>;
+  domainGlobals: string[];
 };
 const results: CheckResult[] = [];
 
@@ -92,6 +93,22 @@ check("Clean Code module budget is explicit and legacy debt is bounded", () => {
     }
   }
   assert(oversized.length === 0, "New oversized domain/application module requires decomposition, not a silent exception: " + oversized.join(", "));
+});
+
+check("Domain compatibility globals are explicitly allowlisted", () => {
+  assert(Array.isArray(DOMAIN_MAP.domainGlobals) && DOMAIN_MAP.domainGlobals.length > 0, "Domain global allowlist is missing.");
+  assert(new Set(DOMAIN_MAP.domainGlobals).size === DOMAIN_MAP.domainGlobals.length, "Domain global allowlist contains duplicates.");
+  const allowed = new Set(DOMAIN_MAP.domainGlobals);
+  const domainFiles = DOMAIN_MAP.contexts.filter(context => context.layer === "domain").flatMap(context => context.files);
+  const violations: string[] = [];
+  for (const file of domainFiles) {
+    const text = source(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    for (const match of text.matchAll(/\b(?:root|global)\.(LW[A-Za-z0-9_]*)/g)) {
+      const symbol = match[1]!;
+      if (!allowed.has(symbol)) violations.push(file + ": " + symbol);
+    }
+  }
+  assert(violations.length === 0, "Domain module reaches undeclared compatibility global: " + violations.join("; "));
 });
 
 check("Domain modules do not register application composition hooks", () => {
