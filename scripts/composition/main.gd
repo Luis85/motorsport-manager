@@ -52,7 +52,10 @@ func clear_screen(name: String) -> void:
 	App.stop_session()
 	App.editor_session = null
 	global_header.visible = name != "weekend"
-	if screen_name == "weekend" and App.weekend != null:
+	if screen_name == "weekend" and name != "weekend" and App.weekend != null:
+		# Leaving the race may pause and checkpoint it. Rebuilding/switching the
+		# weekend view must never take time control from the player or mutate a
+		# newly supplied weekend before its session runner is attached.
 		App.weekend.paused = App.weekend.phase in RaceSim.ACTIVE
 		var error = App.save_weekend()
 		if not error.is_empty(): UI.notify(self, "Checkpoint warning", error)
