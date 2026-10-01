@@ -1,8 +1,8 @@
 {
   "passed": 58,
   "total": 58,
-  "htmlSha256": "73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c",
-  "bytes": 3788823,
+  "htmlSha256": "d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1",
+  "bytes": 3795633,
   "results": [
     {
       "name": "Title and entry point are v15, with no unresolved build markers",
@@ -117,7 +117,7 @@
       "passed": true
     },
     {
-      "name": "Only documented ECS migration files are exempted from historical byte parity",
+      "name": "Only documented reviewed migration files are exempted from historical byte parity",
       "passed": true
     },
     {

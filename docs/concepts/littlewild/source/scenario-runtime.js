@@ -12,6 +12,8 @@
   const schema = node ? require('./content/scenario.schema.json') : root.LWScenarioSchema;
   const builtin = node ? [require('./content/littlewild.pack.json'), require('./content/emberworks.pack.json')] : root.LWScenarioPacks;
   const copy = C.copy, hash = value => C.fingerprint({ schemaVersion: 2, components: value });
+  const sceneReview = (packFingerprint, sceneId) => hash({packFingerprint, sceneId});
+  const sceneReviews = new WeakMap();
   function unique(entries, path) {
     if (new Set(entries.map(e => e.id)).size !== entries.length) throw Error(path + ': duplicate IDs');
   }
@@ -118,10 +120,14 @@
     const engine = withRuntime(checked.pack.libraries,ctx.simulation, () => P.withProfile(ctx.world,
       () => L.Engine.import({app:'littlewild',version:8,state:scene.initialState})));
     engine.scenarioContext = ctx;
-    return { ...checked, sceneId: id, engine, context: ctx };
+    const preview = { ...checked, sceneId: id, engine, context: ctx };
+    sceneReviews.set(preview, sceneReview(checked.fingerprint,id));
+    return preview;
   }
   function commitScene(preview) {
-    if (!preview?.ok || hash(preview.pack) !== preview.fingerprint) throw Error('Scenario preview changed; review again');
+    if (!preview?.ok || hash(preview.pack) !== preview.fingerprint ||
+      sceneReview(preview.fingerprint,preview.sceneId) !== sceneReviews.get(preview))
+      throw Error('Scenario preview changed; review again');
     const fresh = prepareScene(preview.pack, preview.sceneId), libs = fresh.pack.libraries;
     // All contracts, the simulation profile and the complete scene were accepted above. Install together.
     const previous = {base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content),simulation:copy(Profiles.current)}, priorWorld = P.current;

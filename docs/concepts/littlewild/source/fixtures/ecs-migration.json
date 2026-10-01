@@ -33,5 +33,10 @@
     "prior_sha256": "7ec015ecaa70110a1ef62155ec39be174db2622b5aa70e17f6b4a8672a782018",
     "reason": "Cartography registers as the final explicit composition layer and retains atlas validation, migration and authored scenario decoration.",
     "required_token": "Composition.register({id:'cartography'"
+  },
+  "story-codec.js": {
+    "prior_sha256": "059c826d8725c0bfea4233c1321f6f5f60ea9f4f35f657be1db7bb36252e28ac",
+    "reason": "Portable-story confirmation now binds the reviewed engine state and all four definition libraries to a private review token, revalidates them together, and rolls back every active registry if installation fails.",
+    "required_token": "const reviews = new WeakMap()"
   }
 }

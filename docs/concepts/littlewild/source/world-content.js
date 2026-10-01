@@ -55,7 +55,7 @@
  }
  function diff(a,b,p=''){const out=[];if(JSON.stringify(a)===JSON.stringify(b))return out;if(a&&b&&typeof a==='object'&&typeof b==='object'&&!Array.isArray(a)&&!Array.isArray(b)){for(const k of new Set([...Object.keys(a),...Object.keys(b)]))out.push(...diff(a[k],b[k],p+'/'+k));}else if(Array.isArray(a)&&Array.isArray(b)&&a.every(x=>x?.id)&&b.every(x=>x?.id)){for(const id of new Set([...a.map(x=>x.id),...b.map(x=>x.id)]))out.push(...diff(a.find(x=>x.id===id),b.find(x=>x.id===id),p+'/'+id));if(a.map(x=>x.id).join()!==b.map(x=>x.id).join())out.push({path:p+'/$order',before:a.map(x=>x.id),after:b.map(x=>x.id)});}else out.push({path:p||'/',before:a===undefined?null:a,after:b===undefined?null:b});return out;}
  function replace(input){const r=validate(input);if(!r.ok)throw Error(r.errors.join('\n'));content=clone(r.content);return content;}
- function withLibrary(input,fn){const prior=content;try{replace(input);return fn();}finally{content=prior;}}
+ function withLibrary(input,fn){const prior=content;try{replace(input);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('World library sandbox callback must be synchronous.');return result;}finally{content=prior;}}
  const api={defaults:clone(defaults),schema,clone,validate,replace,withLibrary,diff,hashOf:hash,get content(){return content;},get hash(){return hash(content);},node:id=>content.nodes.find(n=>n.id===id),building:id=>content.buildings.find(b=>b.id===id)};
  if(node)module.exports=api;root.LWWorldContent=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

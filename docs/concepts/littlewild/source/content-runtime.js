@@ -239,7 +239,12 @@
     /** Synchronous sandbox for validating save state against another library, always rolled back. */
     withLibrary(candidate, work) {
       const prior = this.current;
-      try { this._activate(candidate); return work(); } finally { this._activate(prior); }
+      try {
+        this._activate(candidate); const result = work();
+        if (result && ['object','function'].includes(typeof result) && typeof result.then === 'function')
+          throw Error('Content library sandbox callback must be synchronous.');
+        return result;
+      } finally { this._activate(prior); }
     }
     _activate(doc) {
       this._current = freeze(copy(doc));

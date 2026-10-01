@@ -57,7 +57,7 @@
   return checked;
  }
  function apply(profile){const checked=assertRuntime(profile);active=checked;revision=fingerprint(checked);return revision;}
- function withProfile(profile,work){if(typeof work!=='function')throw Error('Simulation profile work callback required.');const prior=active,priorHash=revision;try{apply(profile);return work();}finally{active=prior;revision=priorHash;}}
+ function withProfile(profile,work){if(typeof work!=='function')throw Error('Simulation profile work callback required.');const prior=active,priorHash=revision;try{apply(profile);const result=work();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('Simulation profile callback must be synchronous.');return result;}finally{active=prior;revision=priorHash;}}
  const api=Object.freeze({validate,fingerprint,apply,withProfile,assertRuntime,expected:EXPECTED,defaults,get current(){return active;},get hash(){return revision;}});
  root.LWSimulationProfile=api;if(node)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

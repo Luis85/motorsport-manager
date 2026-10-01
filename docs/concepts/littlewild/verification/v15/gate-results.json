@@ -10,7 +10,7 @@
         "source/test-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.07,
+      "seconds": 0.05,
       "result": "source/ecs-results.json",
       "passed": 9,
       "total": 9
@@ -22,7 +22,7 @@
         "source/test-simulation-profile.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.09,
+      "seconds": 0.08,
       "result": "source/simulation-profile-results.json",
       "passed": 15,
       "total": 15
@@ -34,7 +34,7 @@
         "source/test-simulation-profile-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 2.62,
+      "seconds": 3.09,
       "result": "source/simulation-profile-integration-results.json",
       "passed": 15,
       "total": 15
@@ -46,7 +46,7 @@
         "source/test-engine-composition.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.63,
+      "seconds": 0.9,
       "result": "source/engine-composition-results.json",
       "passed": 14,
       "total": 14
@@ -58,7 +58,7 @@
         "source/test-ecs-activity.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.03,
+      "seconds": 0.04,
       "result": "source/ecs-activity-results.json",
       "passed": 7,
       "total": 7
@@ -70,7 +70,7 @@
         "source/test-ecs-world.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.05,
       "result": "source/ecs-world-results.json",
       "passed": 11,
       "total": 11
@@ -82,7 +82,7 @@
         "source/test-economy-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.03,
+      "seconds": 0.04,
       "result": "source/economy-ecs-results.json",
       "passed": 12,
       "total": 12
@@ -94,7 +94,7 @@
         "source/test-ecs-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.47,
+      "seconds": 0.67,
       "result": "source/ecs-integration-results.json",
       "passed": 7,
       "total": 7
@@ -106,7 +106,7 @@
         "source/test-ecs-world-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.28,
+      "seconds": 0.4,
       "result": "source/ecs-world-integration-results.json",
       "passed": 6,
       "total": 6
@@ -118,7 +118,7 @@
         "source/test-economy-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.32,
+      "seconds": 0.4,
       "result": "source/economy-integration-results.json",
       "passed": 8,
       "total": 8
@@ -130,7 +130,7 @@
         "source/test-v15.cjs"
       ],
       "exitCode": 0,
-      "seconds": 7.2,
+      "seconds": 10.32,
       "result": "source/v15-domain-results.json",
       "passed": 77,
       "total": 77
@@ -142,7 +142,7 @@
         "source/test-v15-presentation.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.67,
+      "seconds": 1.09,
       "result": "source/v15-presentation-results.json",
       "passed": 47,
       "total": 47
@@ -154,7 +154,7 @@
         "source/test-v15-pause.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.9,
+      "seconds": 1.49,
       "result": "source/v15-pause-results.json",
       "passed": 54,
       "total": 54
@@ -166,7 +166,7 @@
         "source/test-v11.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.29,
+      "seconds": 5.17,
       "result": "source/v11-domain-results.json",
       "passed": 73,
       "total": 73
@@ -178,7 +178,7 @@
         "source/test-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 2.06,
+      "seconds": 2.96,
       "result": "source/v10-domain-results.json",
       "passed": 76,
       "total": 76
@@ -190,7 +190,7 @@
         "source/test-growth-stress.cjs"
       ],
       "exitCode": 0,
-      "seconds": 16.54,
+      "seconds": 23.25,
       "result": "source/v10-stress-results.json",
       "passed": 3,
       "total": 3
@@ -202,7 +202,7 @@
         "source/test-fresh-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 5.76,
+      "seconds": 8.09,
       "result": "source/v10-fresh-results.json",
       "passed": 8,
       "total": 8
@@ -214,7 +214,7 @@
         "source/test-v10-regression-v5.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.86,
+      "seconds": 7.19,
       "result": "source/v10-regression-v5-test-results.json",
       "passed": 133,
       "total": 133
@@ -226,7 +226,7 @@
         "source/test-v10-regression-v6.cjs"
       ],
       "exitCode": 0,
-      "seconds": 19.57,
+      "seconds": 27.42,
       "result": "source/v10-regression-v6-test-results.json",
       "passed": 52,
       "total": 52
@@ -238,7 +238,7 @@
         "source/test-v10-regression-v8.cjs"
       ],
       "exitCode": 0,
-      "seconds": 22.4,
+      "seconds": 29.62,
       "result": "source/v10-regression-v8-test-results.json",
       "passed": 88,
       "total": 88
@@ -250,7 +250,7 @@
         "source/test-v10-regression-quality-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.05,
+      "seconds": 1.34,
       "result": "source/v10-regression-v9-quality-results.json",
       "passed": 31,
       "total": 31
@@ -262,7 +262,7 @@
         "source/test-v10-regression-foundation-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 8.17,
+      "seconds": 10.96,
       "result": "source/v10-regression-v9-foundation-results.json",
       "passed": 31,
       "total": 31
@@ -270,11 +270,11 @@
     {
       "name": "legacy-schemas",
       "command": [
-        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+        "/opt/pyvenv/bin/python3",
         "schema-checks-v10.py"
       ],
       "exitCode": 0,
-      "seconds": 0.44,
+      "seconds": 2.63,
       "result": "source/v10-schema-results.json",
       "passed": 19,
       "total": 19
@@ -282,11 +282,11 @@
     {
       "name": "scenario-schema-cli",
       "command": [
-        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+        "/opt/pyvenv/bin/python3",
         "schema-checks-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 1.45,
+      "seconds": 3.58,
       "result": "source/v15-schema-results.json",
       "passed": 47,
       "total": 47
@@ -298,7 +298,7 @@
         "source/test-v15-release.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.4,
+      "seconds": 5.72,
       "result": "source/v15-release-results.json",
       "passed": 58,
       "total": 58
@@ -306,11 +306,11 @@
     {
       "name": "browser",
       "command": [
-        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+        "/opt/pyvenv/bin/python3",
         "browser-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 40.91,
+      "seconds": 16.08,
       "result": "verification/v15/browser-results.json",
       "passed": 89,
       "total": 89
@@ -318,17 +318,17 @@
     {
       "name": "browser-contracts",
       "command": [
-        "/opt/hostedtoolcache/Python/3.12.14/x64/bin/python",
+        "/opt/pyvenv/bin/python3",
         "browser-contracts-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 10.33,
+      "seconds": 7.29,
       "result": "verification/v15/browser-contract-results.json",
       "passed": 16,
       "total": 16
     }
   ],
   "browserIncluded": true,
-  "htmlSha256": "73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c",
-  "htmlBytes": 3788823
+  "htmlSha256": "d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1",
+  "htmlBytes": 3795633
 }

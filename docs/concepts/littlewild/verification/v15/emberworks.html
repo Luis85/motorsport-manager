@@ -6310,7 +6310,12 @@ window.LWScenarioPacks = [{"format": "living-worlds-pack", "schemaVersion": 2, "
     /** Synchronous sandbox for validating save state against another library, always rolled back. */
     withLibrary(candidate, work) {
       const prior = this.current;
-      try { this._activate(candidate); return work(); } finally { this._activate(prior); }
+      try {
+        this._activate(candidate); const result = work();
+        if (result && ['object','function'].includes(typeof result) && typeof result.then === 'function')
+          throw Error('Content library sandbox callback must be synchronous.');
+        return result;
+      } finally { this._activate(prior); }
     }
     _activate(doc) {
       this._current = freeze(copy(doc));
@@ -6352,7 +6357,7 @@ window.LWScenarioPacks = [{"format": "living-worlds-pack", "schemaVersion": 2, "
     defaults: freeze(C.copy(defaults)), hashOf: hash,
     get current() { return active; }, get hash() { return revision; },
     apply(profile) { active = freeze(C.copy(profile)); revision = hash(active); },
-    withProfile(profile, work) { const prior = active, priorHash = revision; try { this.apply(profile); return work(); } finally { active = prior; revision = priorHash; } }
+    withProfile(profile, work) { const prior = active, priorHash = revision; try { this.apply(profile); const result=work(); if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('World profile callback must be synchronous.'); return result; } finally { active = prior; revision = priorHash; } }
   };
   root.LWWorldProfile = api;
   if (node) module.exports = api;
@@ -8717,12 +8722,16 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
         }
         flush() {
             this._editable();
+            // A rejected command batch is consumed just like a failed transaction.
+            // Keeping invalid commands queued would permanently wedge the world because
+            // Scheduler.step intentionally refuses to run while structural work is pending.
+            const actions = this.structural.splice(0);
             // Check the whole buffer against shadow entity/component memberships first.
             // An invalid late operation must not leave a half-created game entity.
             const entities = new Set(this.entities);
             const memberships = new Map([...this.stores].map(([type,store]) =>
                 [type,new Set(store.keys())]));
-            for (const a of this.structural) {
+            for (const a of actions) {
                 if (a.operation === 'create') {
                     if (entities.has(a.id)) throw Error('Duplicate deferred entity: ' + a.id);
                     entities.add(a.id);
@@ -8737,7 +8746,6 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
                     memberships.get(a.type)?.delete(a.id);
                 }
             }
-            const actions = this.structural.splice(0);
             for (const a of actions) {
                 if (a.operation === 'create') this.create(a.id);
                 else if (a.operation === 'destroy') this.destroy(a.id);
@@ -8975,7 +8983,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
  const total=inv=>Object.values(inv||{}).reduce((sum,n)=>sum+n,0);
  function inventory(inv,label){
   if(!plain(inv))throw Error('Invalid '+label+' inventory.');
-  for(const [id,n]of Object.entries(inv))if(!identity('i:'+id)||!integer(n))throw Error('Invalid '+label+' inventory quantity.');
+  for(const [id,n]of Object.entries(inv))if(!identity(id)||!integer(n))throw Error('Invalid '+label+' inventory quantity.');
   return inv;
  }
  function transaction(spec,kind){if(!plain(spec)||!identity(spec.id))throw Error('Invalid '+kind+' transaction.');return spec;}
@@ -8990,7 +8998,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
   }
   const bindInventory=(id,items)=>component(id,'Inventory',{items:inventory(items,id)});
   const bindDeposit=(id,record,resource,finite)=>{
-   if(!plain(record)||!identity('i:'+resource)||typeof finite!=='boolean'||finite&&!integer(record.stock))throw Error('Invalid resource deposit.');
+   if(!plain(record)||!identity(resource)||typeof finite!=='boolean'||finite&&!integer(record.stock))throw Error('Invalid resource deposit.');
    return component(id,'ResourceDeposit',{record,resource,finite});
   };
   const bindWorksite=(id,storage)=>{
@@ -9002,7 +9010,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
    const x=w.get(id,'CarrierTask'),s=x.spec;
    if(completed.has(s.id)){x.result=result('duplicate',{duplicate:true});return;}
    const source=w.get(s.sourceId,'Inventory')?.items,destination=w.get(s.destinationId,'Inventory')?.items;
-   if(!source||!destination||!identity('i:'+s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
+   if(!source||!destination||!identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
    const amount=Math.min(s.requested,quantity(source,s.resource),s.destinationLimit);
    if(amount<=0){x.result=result('blocked');return;}
    source[s.resource]=quantity(source,s.resource)-amount;destination[s.resource]=quantity(destination,s.resource)+amount;
@@ -9023,7 +9031,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
    if(completed.has(s.id)){x.result=result('duplicate',{duplicate:true,job:st?.job||null});return;}
    if(!st||!jobComponent||!plain(r)||!plain(r.cost)||!plain(s.job)||!integer(s.outputCapacity)||!integer(s.outputAmount,1)||!identity(s.job.id))throw Error('Invalid production reservation.');
    if(st.job){x.result=result(st.job.id===s.job.id?'duplicate':'blocked',{duplicate:st.job.id===s.job.id,job:st.job});return;}
-   if(total(st.output)+s.outputAmount>s.outputCapacity||Object.entries(r.cost).some(([k,q])=>!identity('i:'+k)||!integer(q)||quantity(st.input,k)<q)){x.result=result('blocked');return;}
+   if(total(st.output)+s.outputAmount>s.outputCapacity||Object.entries(r.cost).some(([k,q])=>!identity(k)||!integer(q)||quantity(st.input,k)<q)){x.result=result('blocked');return;}
    const substrate=s.depositId?w.get(s.depositId,'ResourceDeposit'):null;
    if(s.depositId&&!substrate)throw Error('Missing production substrate.');
    if(substrate?.finite&&substrate.record.stock<s.substrateDepletion){x.result=result('blocked');return;}
@@ -9069,15 +9077,50 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
     bindWorksite(s.worksiteId,s.storage);if(s.depositId)bindDeposit(s.depositId,s.deposit,s.substrateResource,s.substrateFinite);
    }else if(type==='ProductionJobUpdate'||type==='ProductionSettlement')bindWorksite(s.worksiteId,s.storage);
   }
+  function validateTask(type,s){
+   transaction(s,type);
+   if(type==='CarrierTask'){
+    if(!identity(s.sourceId)||!identity(s.destinationId)||s.sourceId===s.destinationId||s.source===s.destination||
+     !identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
+    inventory(s.source,'source');inventory(s.destination,'destination');
+   }else if(type==='HarvestTask'){
+    if(!identity(s.depositId)||!identity(s.destinationId)||!identity(s.resource)||!integer(s.requested,1)||
+     !integer(s.destinationLimit))throw Error('Invalid harvest request.');
+    if(!plain(s.deposit)||typeof s.finite!=='boolean'||s.finite&&!integer(s.deposit.stock))throw Error('Invalid resource deposit.');
+    inventory(s.destination,'destination');
+   }else if(type==='ProductionReservation'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !plain(s.recipe)||!plain(s.recipe.cost)||!plain(s.job)||!identity(s.job.id)||
+     !integer(s.outputCapacity)||!integer(s.outputAmount,1)||!integer(s.substrateDepletion||0)||
+     Object.entries(s.recipe.cost).some(([id,n])=>!identity(id)||!integer(n)))throw Error('Invalid production reservation.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+    if(s.depositId&&(!identity(s.depositId)||!plain(s.deposit)||!identity(s.substrateResource)||
+     typeof s.substrateFinite!=='boolean'||s.substrateFinite&&!integer(s.deposit.stock)))throw Error('Invalid production substrate.');
+   }else if(type==='ProductionJobUpdate'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !identity(s.jobId)||!['progress','claim','release'].includes(s.action))throw Error('Invalid production update.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+    if(s.action==='progress'&&(!Number.isFinite(s.progress)||s.progress<0) ||
+     s.action==='claim'&&(!identity(s.workerId)||typeof s.allowTakeover!=='boolean') ||
+     s.action==='release'&&s.progress!==undefined&&(!Number.isFinite(s.progress)||s.progress<0))throw Error('Invalid production update.');
+   }else if(type==='ProductionSettlement'){
+    if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
+     !identity(s.jobId)||typeof s.success!=='boolean'||!integer(s.outputCapacity)||!Number.isFinite(s.time)||
+     !s.success&&(!Number.isFinite(s.retryProgress)||s.retryProgress<0))throw Error('Invalid production settlement.');
+    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+   }else throw Error('Invalid physical transaction type.');
+   return s;
+  }
   function stage(type,spec){
-   transaction(spec,type);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+   validateTask(type,spec);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
    world.create(id);const command={spec,result:null};world.set(id,type,command);
    try{scheduler.step(world,.1,{entityId:id});return command.result;}finally{world.destroy(id);}
   }
   function batch(type,specs){
-   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[];
-   for(const spec of specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id)))){
-    transaction(spec,type);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[],ordered=specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id))),bindings=new Map();
+   for(const spec of ordered){validateTask(type,spec);for(const[id,record]of[[spec.sourceId,spec.source],[spec.destinationId,spec.destination]])if(id){if(bindings.has(id)&&bindings.get(id)!==record)throw Error('Conflicting physical entity binding.');bindings.set(id,record);}}
+   for(const spec of ordered){
+    prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
     world.create(id);const command={spec,result:null};world.set(id,type,command);records.push({id,command,spec});
    }
    try{scheduler.step(world,.1);return records.map(x=>({id:x.spec.id,...x.command.result}));}finally{for(const x of records)world.destroy(x.id);}
@@ -9311,7 +9354,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
   return checked;
  }
  function apply(profile){const checked=assertRuntime(profile);active=checked;revision=fingerprint(checked);return revision;}
- function withProfile(profile,work){if(typeof work!=='function')throw Error('Simulation profile work callback required.');const prior=active,priorHash=revision;try{apply(profile);return work();}finally{active=prior;revision=priorHash;}}
+ function withProfile(profile,work){if(typeof work!=='function')throw Error('Simulation profile work callback required.');const prior=active,priorHash=revision;try{apply(profile);const result=work();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('Simulation profile callback must be synchronous.');return result;}finally{active=prior;revision=priorHash;}}
  const api=Object.freeze({validate,fingerprint,apply,withProfile,assertRuntime,expected:EXPECTED,defaults,get current(){return active;},get hash(){return revision;}});
  root.LWSimulationProfile=api;if(node)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
@@ -10677,7 +10720,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
  }
  function diff(a,b,p=''){const out=[];if(JSON.stringify(a)===JSON.stringify(b))return out;if(a&&b&&typeof a==='object'&&typeof b==='object'&&!Array.isArray(a)&&!Array.isArray(b)){for(const k of new Set([...Object.keys(a),...Object.keys(b)]))out.push(...diff(a[k],b[k],p+'/'+k));}else if(Array.isArray(a)&&Array.isArray(b)&&a.every(x=>x?.id)&&b.every(x=>x?.id)){for(const id of new Set([...a.map(x=>x.id),...b.map(x=>x.id)]))out.push(...diff(a.find(x=>x.id===id),b.find(x=>x.id===id),p+'/'+id));if(a.map(x=>x.id).join()!==b.map(x=>x.id).join())out.push({path:p+'/$order',before:a.map(x=>x.id),after:b.map(x=>x.id)});}else out.push({path:p||'/',before:a===undefined?null:a,after:b===undefined?null:b});return out;}
  function replace(input){const r=validate(input);if(!r.ok)throw Error(r.errors.join('\n'));content=clone(r.content);return content;}
- function withLibrary(input,fn){const prior=content;try{replace(input);return fn();}finally{content=prior;}}
+ function withLibrary(input,fn){const prior=content;try{replace(input);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('World library sandbox callback must be synchronous.');return result;}finally{content=prior;}}
  const api={defaults:clone(defaults),schema,clone,validate,replace,withLibrary,diff,hashOf:hash,get content(){return content;},get hash(){return hash(content);},node:id=>content.nodes.find(n=>n.id===id),building:id=>content.buildings.find(b=>b.id===id)};
  if(node)module.exports=api;root.LWWorldContent=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
@@ -11227,7 +11270,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=L;
  const hash=p=>C.fingerprint({schemaVersion:1,library:{id:'littlewild-growth',version:1},components:p});
  function mechanicalHash(p){const strip=v=>Array.isArray(v)?v.map(strip):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!['name','label','description','icon','extensions'].includes(k)).map(([k,x])=>[k,strip(x)])):v;return hash(strip(p));}
  function replace(p){const v=validate(p);if(!v.ok)throw Error(v.errors.join('\n'));active=clone(v.content);return active;}
- function withLibrary(p,fn){const old=active;try{replace(p);return fn();}finally{active=old;}}
+ function withLibrary(p,fn){const old=active;try{replace(p);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('Growth library sandbox callback must be synchronous.');return result;}finally{active=old;}}
  const api={defaults,schema,clone,validate,replace,withLibrary,mechanicalHash,hashOf:hash,get content(){return active;},get hash(){return hash(active);}};
  root.LWGrowth=api;if(node)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
@@ -11997,6 +12040,19 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
     const W = node ? require('./world-content.js') : root.LWWorldContent;
     const G = node ? require('./growth-content.js') : root.LWGrowth;
     const registry = C.registry, SAVE_LIMIT = 12 * 1024 * 1024;
+    // Review evidence is intentionally process-local and object-bound. A caller may
+    // edit the public preview fields for display, but cannot replace the review token
+    // and thereby commit a different story without inspecting it again.
+    const reviews = new WeakMap();
+    const reviewHash = value => C.fingerprint({schemaVersion: 1, components: value});
+    const reviewedSnapshot = preview => ({
+        library: preview.library,
+        adventure: preview.adventure,
+        world: preview.world || W.defaults,
+        growth: preview.growth || G.defaults,
+        state: preview.engine?.export().state
+    });
+    const reviewFingerprint = preview => reviewHash(reviewedSnapshot(preview));
     function encode(engine) { return { app: 'littlewild', version: 8, savedAt: new Date().toISOString(), content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state }; }
     function withAdventure(pack, fn) { const previous = A.copy(A.content); try {
         A.replace(pack);
@@ -12048,19 +12104,38 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
         if(!growth.ok)throw Error(growth.errors.join('\n'));
         const stateDoc = { app: 'littlewild', version: doc.version === 4 ? 3 : doc.version, state: doc.state };
         const engine = registry.withLibrary(content.candidate, () => withAdventure(expansion.content, () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(stateDoc)))));
-        return { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, sourceVersion: doc.version, migrationNotes, fingerprint: content.fingerprint, changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
+        const preview = { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, sourceVersion: doc.version, migrationNotes, fingerprint: content.fingerprint, changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
+        reviews.set(preview, reviewFingerprint(preview));
+        return preview;
     }
     function commit(preview) {
-        if (!preview?.engine || !preview.library || !preview.adventure)
+        const reviewed = preview && reviews.get(preview);
+        if (!preview?.engine || !preview.library || !preview.adventure || !reviewed)
             throw Error('Review a valid story first.');
+        if (reviewFingerprint(preview) !== reviewed)
+            throw Error('Story review changed; review again.');
         const content = registry.prepare(preview.library);
         if (!content.ok)
             throw new C.ContentError(content.errors);
-        const next = registry.withLibrary(content.candidate, () => withAdventure(preview.adventure, () => W.withLibrary(preview.world||W.defaults, () => G.withLibrary(preview.growth||G.defaults,()=>L.Engine.import(preview.engine.export())))));
-        registry.commit(content);
-        A.replace(preview.adventure);
-        W.replace(preview.world||W.defaults);
-        G.replace(preview.growth||G.defaults);
+        const expansion = A.validate(preview.adventure);
+        if (!expansion.ok) throw Error(expansion.errors.join('\n'));
+        const land = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => W.validate(preview.world || W.defaults)));
+        if (!land.ok) throw Error(land.errors.join('\n'));
+        const growth = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => G.validate(preview.growth || G.defaults)));
+        if (!growth.ok) throw Error(growth.errors.join('\n'));
+        const story = preview.engine.export();
+        const next = registry.withLibrary(content.candidate, () => withAdventure(expansion.content,
+            () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(story)))));
+        const previous = {base:registry.export(),adventure:A.copy(A.content),world:W.clone(W.content),growth:G.clone(G.content)};
+        try {
+            registry.commit(content); A.replace(expansion.content);
+            W.replace(land.content); G.replace(growth.content);
+        } catch (error) {
+            registry.commit(registry.prepare(previous.base)); A.replace(previous.adventure);
+            W.replace(previous.world); G.replace(previous.growth); throw error;
+        }
         return next;
     }
     function committed(engine) { return engine.s.market?.orders.some(o=>!['done','cancelled'].includes(o.status)) || engine.s.buildings.some(b=>b.storage?.job || Object.values(b.storage?.requests||{}).some(n=>n>0)) || engine.creatures.some(c => c.training || c.learning.queue.length || c.orders.length || c.questPlan || c.activeQuest || c.equipQueue.length || !['idle', 'rest', 'reflect'].includes(c.task?.kind || 'idle')); }
@@ -12234,6 +12309,8 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
   const schema = node ? require('./content/scenario.schema.json') : root.LWScenarioSchema;
   const builtin = node ? [require('./content/littlewild.pack.json'), require('./content/emberworks.pack.json')] : root.LWScenarioPacks;
   const copy = C.copy, hash = value => C.fingerprint({ schemaVersion: 2, components: value });
+  const sceneReview = (packFingerprint, sceneId) => hash({packFingerprint, sceneId});
+  const sceneReviews = new WeakMap();
   function unique(entries, path) {
     if (new Set(entries.map(e => e.id)).size !== entries.length) throw Error(path + ': duplicate IDs');
   }
@@ -12340,10 +12417,14 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
     const engine = withRuntime(checked.pack.libraries,ctx.simulation, () => P.withProfile(ctx.world,
       () => L.Engine.import({app:'littlewild',version:8,state:scene.initialState})));
     engine.scenarioContext = ctx;
-    return { ...checked, sceneId: id, engine, context: ctx };
+    const preview = { ...checked, sceneId: id, engine, context: ctx };
+    sceneReviews.set(preview, sceneReview(checked.fingerprint,id));
+    return preview;
   }
   function commitScene(preview) {
-    if (!preview?.ok || hash(preview.pack) !== preview.fingerprint) throw Error('Scenario preview changed; review again');
+    if (!preview?.ok || hash(preview.pack) !== preview.fingerprint ||
+      sceneReview(preview.fingerprint,preview.sceneId) !== sceneReviews.get(preview))
+      throw Error('Scenario preview changed; review again');
     const fresh = prepareScene(preview.pack, preview.sceneId), libs = fresh.pack.libraries;
     // All contracts, the simulation profile and the complete scene were accepted above. Install together.
     const previous = {base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content),simulation:copy(Profiles.current)}, priorWorld = P.current;
@@ -12388,6 +12469,9 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
   const P = root.LWWorldProfile, Profiles=root.LWSimulationProfile, C = root.LWContent;
   const native = {encode:S.encode, inspect:S.inspect, commit:S.commit};
   const legacyHash=value=>C.fingerprint({schemaVersion:1,components:value});
+  const reviews=new WeakMap();
+  const reviewOf=preview=>legacyHash({experience:preview.experience,
+    experienceFingerprint:preview.experienceFingerprint,simulationFingerprint:preview.simulationFingerprint});
   S.encode = engine => {
     const doc = native.encode(engine);
     if (engine.scenarioContext) {
@@ -12418,9 +12502,11 @@ body.land-open .toast-stack{visibility:hidden}.land-inline-feedback{padding:9px 
     preview.experienceFingerprint = ctx ? X.hash(ctx) : null;
     preview.simulationFingerprint=ctx?Profiles.fingerprint(ctx.simulation):Profiles.fingerprint(Profiles.defaults);
     preview.changesSimulation = Profiles.hash !== preview.simulationFingerprint;
+    reviews.set(preview,reviewOf(preview));
     return preview;
   };
   S.commit = preview => {
+    if(!preview||reviews.get(preview)!==reviewOf(preview))throw Error('Experience review is stale');
     if (preview.experience && X.hash(preview.experience) !== preview.experienceFingerprint) throw Error('Experience review is stale');
     const ctx = preview.experience ? X.checkContext(preview.experience) : null;
     if(ctx&&Profiles.fingerprint(ctx.simulation)!==preview.simulationFingerprint)throw Error('Simulation profile review is stale');

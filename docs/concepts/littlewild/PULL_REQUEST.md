@@ -22,9 +22,9 @@ Native state remains version 8. ECS worlds, schedulers, profiles, composition de
 
 ## Review and polishing pass
 
-The final review replaced the first M6 profile-set draft with a stricter standalone profile contract, separated migrations from scenario orchestration, made profile lifetime instance-stable, added an independent simulation fingerprint, and expanded rollback and compatibility coverage. The publication failure was CI-permission-only: the verified M6 commit object was fast-forwarded directly and the branch returned to the read-only verifier.
+The final branch-wide review retained the M6 architecture and closed additional failure modes: rejected deferred ECS batches no longer wedge the scheduler; physical transaction batches validate before mutation; story/scenario confirmation privately binds the exact reviewed state, libraries, experience, simulation profile, and scene; temporary global registries reject asynchronous escape; resource IDs validate their real values; and multi-library story activation rolls back as one unit.
 
-See `ECS-M6-REVIEW-AND-POLISH.md` for findings, decisions, remaining debt, and separation-of-concerns evidence.
+See `PR25-REVIEW-AND-POLISH.md` for the complete findings, fixes, verification evidence, and remaining debt. `ECS-M6-REVIEW-AND-POLISH.md` retains the milestone-specific review.
 
 ## Verification
 
@@ -36,15 +36,15 @@ See `ECS-M6-REVIEW-AND-POLISH.md` for findings, decisions, remaining debt, and s
 - Release contracts: **58 / 58**.
 - Browser: **89 / 89**.
 - Browser contracts: **16 / 16**.
-- Standalone artifact: **3,788,823 bytes**.
-- SHA-256: `73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c`.
-- M6 authority manifest: `73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521` across 28 files.
+- Standalone artifact: **3,795,633 bytes**.
+- SHA-256: `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1`.
+- Historical M6 milestone authority manifest: `73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521` across 28 files; the final PR 25 artifact identity is the SHA-256 above.
 
 Detailed executed evidence and limitations are in `VERIFICATION.md` and `ECS-M6-RESULTS.md`.
 
 ## Review path
 
-Open `docs/concepts/littlewild/littlewild.html`, review a bundled scene under **More → Worlds & scenarios**, and inspect the displayed simulation profile and compiled archetype. Export a story and verify envelope 10 includes both experience and simulation fingerprints. Then review `CONFIGURATION.md`, `ECS-M6-IMPLEMENTATION.md`, and `ECS-M6-REVIEW-AND-POLISH.md`.
+Open `docs/concepts/littlewild/littlewild.html`, review a bundled scene under **More → Worlds & scenarios**, and inspect the displayed simulation profile and compiled archetype. Export a story and verify envelope 10 includes both experience and simulation fingerprints. Then review `CONFIGURATION.md`, `ECS-M6-IMPLEMENTATION.md`, `ECS-M6-REVIEW-AND-POLISH.md`, and `PR25-REVIEW-AND-POLISH.md`.
 
 ## Limits
 

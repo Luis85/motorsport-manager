@@ -9,6 +9,9 @@
   const P = root.LWWorldProfile, Profiles=root.LWSimulationProfile, C = root.LWContent;
   const native = {encode:S.encode, inspect:S.inspect, commit:S.commit};
   const legacyHash=value=>C.fingerprint({schemaVersion:1,components:value});
+  const reviews=new WeakMap();
+  const reviewOf=preview=>legacyHash({experience:preview.experience,
+    experienceFingerprint:preview.experienceFingerprint,simulationFingerprint:preview.simulationFingerprint});
   S.encode = engine => {
     const doc = native.encode(engine);
     if (engine.scenarioContext) {
@@ -39,9 +42,11 @@
     preview.experienceFingerprint = ctx ? X.hash(ctx) : null;
     preview.simulationFingerprint=ctx?Profiles.fingerprint(ctx.simulation):Profiles.fingerprint(Profiles.defaults);
     preview.changesSimulation = Profiles.hash !== preview.simulationFingerprint;
+    reviews.set(preview,reviewOf(preview));
     return preview;
   };
   S.commit = preview => {
+    if(!preview||reviews.get(preview)!==reviewOf(preview))throw Error('Experience review is stale');
     if (preview.experience && X.hash(preview.experience) !== preview.experienceFingerprint) throw Error('Experience review is stale');
     const ctx = preview.experience ? X.checkContext(preview.experience) : null;
     if(ctx&&Profiles.fingerprint(ctx.simulation)!==preview.simulationFingerprint)throw Error('Simulation profile review is stale');
