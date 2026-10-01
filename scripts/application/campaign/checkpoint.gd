@@ -3,13 +3,14 @@ extends RefCounted
 ## Versioned campaign envelope. State, factual receipts and derived projections are
 ## published together; persistence remains an injected service responsibility.
 const KIND = "motorsport-manager-campaign-checkpoint"
-const VERSION = 3
-const PREVIOUS_VERSION = 2
+const VERSION = 4
+const PERSONNEL_VERSION = 3
+const CONSEQUENCE_VERSION = 2
 const LEGACY_VERSION = 1
 
 static func build(state: CampaignState, settlements: Dictionary = {}, active_manifest: Dictionary = {},
 		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {},
-		personnel: Dictionary = {}) -> Dictionary:
+		personnel: Dictionary = {}, operations: Dictionary = {}) -> Dictionary:
 	if state == null:
 		return {}
 	var ledger = CampaignWeekendSettlement.empty_ledger() if settlements.is_empty() else settlements.duplicate(true)
@@ -21,6 +22,9 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 	var people = CampaignPersonnel.empty(
 		state.campaign_id, state.organization_id, state.clock.elapsed_slots
 	) if personnel.is_empty() else personnel.duplicate(true)
+	var work = CampaignOperations.empty(
+		state.campaign_id, state.organization_id, state.clock.elapsed_slots
+	) if operations.is_empty() else operations.duplicate(true)
 	var data = {
 		"kind": KIND,
 		"version": VERSION,
@@ -31,7 +35,8 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 		"competition": sporting,
 		"economy": accounts,
 		"inventory": resources,
-		"personnel": people
+		"personnel": people,
+		"operations": work
 	}
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
@@ -43,9 +48,11 @@ static func validate(data: Variant) -> String:
 		return "Unsupported campaign checkpoint."
 	if RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION):
 		return _validate_legacy(data)
-	if RaceCheckpoint.integral(data.get("version"), PREVIOUS_VERSION, PREVIOUS_VERSION):
-		return _validate_previous(data)
-	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 11:
+	if RaceCheckpoint.integral(data.get("version"), CONSEQUENCE_VERSION, CONSEQUENCE_VERSION):
+		return _validate_consequence_version(data)
+	if RaceCheckpoint.integral(data.get("version"), PERSONNEL_VERSION, PERSONNEL_VERSION):
+		return _validate_personnel_version(data)
+	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 12:
 		return "Unsupported campaign checkpoint version."
 	var shared_error = _shared_error(data)
 	if not shared_error.is_empty():
@@ -53,17 +60,12 @@ static func validate(data: Variant) -> String:
 	var projection_error = _projection_error(data)
 	if not projection_error.is_empty():
 		return projection_error
-	var personnel_error = CampaignPersonnelTimeline.validate(
-		data.get("personnel"), int(data.state.clock.elapsed_slots))
-	if not personnel_error.is_empty():
-		return personnel_error
-	if data.personnel.campaign_id != data.campaign_id \
-			or data.personnel.organization_id != data.state.organization_id:
-		return "Campaign personnel belongs to another campaign or organization."
-	personnel_error = CampaignPersonnelEconomy.validate(
-		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
-	if not personnel_error.is_empty():
-		return personnel_error
+	var people_error = _personnel_error(data)
+	if not people_error.is_empty():
+		return people_error
+	var operations_error = _operations_error(data)
+	if not operations_error.is_empty():
+		return operations_error
 	return _digest_error(data)
 
 static func restore(data: Variant) -> Dictionary:
@@ -83,6 +85,7 @@ static func restore(data: Variant) -> Dictionary:
 		"economy": normalized.economy.duplicate(true),
 		"inventory": normalized.inventory.duplicate(true),
 		"personnel": normalized.personnel.duplicate(true),
+		"operations": normalized.operations.duplicate(true),
 		"checkpoint": normalized.duplicate(true)
 	}
 
@@ -95,15 +98,21 @@ static func upgrade(data: Variant) -> Dictionary:
 	var state = CampaignState.restore(data.state)
 	if state == null:
 		return {}
-	if int(data.version) == PREVIOUS_VERSION:
-		var personnel = CampaignPersonnel.empty(
-			state.campaign_id,
-			state.organization_id,
-			state.clock.elapsed_slots,
-			_legacy_payroll_ids(data.economy)
-		)
+	if int(data.version) == PERSONNEL_VERSION:
+		var operations = CampaignOperations.empty(
+			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
+			_legacy_facility_ids(data.economy))
 		return build(state, data.settlements, data.active_manifest,
-			data.competition, data.economy, data.inventory, personnel)
+			data.competition, data.economy, data.inventory, data.personnel, operations)
+	if int(data.version) == CONSEQUENCE_VERSION:
+		var personnel = CampaignPersonnel.empty(
+			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
+			_legacy_payroll_ids(data.economy))
+		var operations = CampaignOperations.empty(
+			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
+			_legacy_facility_ids(data.economy))
+		return build(state, data.settlements, data.active_manifest,
+			data.competition, data.economy, data.inventory, personnel, operations)
 	return build(state, data.settlements, data.active_manifest)
 
 static func _legacy_payroll_ids(economy: Dictionary) -> Array:
@@ -116,9 +125,33 @@ static func _legacy_payroll_ids(economy: Dictionary) -> Array:
 	result.sort()
 	return result
 
-static func _validate_previous(data: Dictionary) -> String:
+static func _legacy_facility_ids(economy: Dictionary) -> Array:
+	var result: Array = []
+	if int(economy.get("version", 0)) != CampaignEconomy.VERSION:
+		return result
+	for commitment_id in economy.get("commitments", {}):
+		if economy.commitments[commitment_id].get("category") == "facility":
+			result.append(commitment_id)
+	result.sort()
+	return result
+
+static func _validate_personnel_version(data: Dictionary) -> String:
+	if data.size() != 11:
+		return "Unsupported personnel campaign checkpoint."
+	var error = _shared_error(data)
+	if not error.is_empty():
+		return error
+	error = _projection_error(data)
+	if not error.is_empty():
+		return error
+	error = _personnel_error(data)
+	if not error.is_empty():
+		return error
+	return _digest_error(data)
+
+static func _validate_consequence_version(data: Dictionary) -> String:
 	if data.size() != 10:
-		return "Unsupported previous campaign checkpoint."
+		return "Unsupported consequence campaign checkpoint."
 	var error = _shared_error(data)
 	if not error.is_empty():
 		return error
@@ -189,6 +222,31 @@ static func _projection_error(data: Dictionary) -> String:
 		if data.economy.events[event_id].policy_digest != data.competition.events[event_id].policy_digest:
 			return "Campaign sporting and financial consequences use different policies."
 	return ""
+
+static func _personnel_error(data: Dictionary) -> String:
+	var error = CampaignPersonnelTimeline.validate(
+		data.get("personnel"), int(data.state.clock.elapsed_slots))
+	if not error.is_empty():
+		return error
+	if data.personnel.campaign_id != data.campaign_id \
+			or data.personnel.organization_id != data.state.organization_id:
+		return "Campaign personnel belongs to another campaign or organization."
+	return CampaignPersonnelEconomy.validate(
+		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
+
+static func _operations_error(data: Dictionary) -> String:
+	var error = CampaignOperationsTimeline.validate(
+		data.get("operations"), int(data.state.clock.elapsed_slots))
+	if not error.is_empty():
+		return error
+	if data.operations.campaign_id != data.campaign_id \
+			or data.operations.organization_id != data.state.organization_id:
+		return "Campaign operations belongs to another campaign or organization."
+	error = CampaignOperationsPersonnel.validate(data.operations, data.personnel)
+	if not error.is_empty():
+		return error
+	return CampaignOperationsEconomy.validate(
+		data.operations, data.economy, int(data.state.clock.elapsed_slots))
 
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:
 	if not data.settlements.receipts.has(event_id):

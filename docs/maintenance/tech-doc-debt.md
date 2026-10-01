@@ -2,7 +2,7 @@
 
 Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
 
-This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, atomic weekend consequences, versioned season authority, commitment-aware finance, and people/contracts/availability. None changes race physics, sporting arithmetic or the independently playable standalone weekend.
+This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, atomic weekend consequences, versioned season authority, commitment-aware finance, people/contracts/availability, and facilities/capacity/rented services. None changes race physics, sporting arithmetic or the independently playable standalone weekend.
 
 ## Scope and acceptance
 
@@ -102,13 +102,25 @@ Keep the PR in draft until the exact final commit has green required CI and sync
 - Registered contracts for preview non-mutation, role capacity, exclusive availability, renewal lineage, replacement, weekend payroll, migration, storage and active-weekend freeze.
 - Added `docs/campaign/people-contracts-availability.md`.
 
+### 10. Facilities, capacity and rented services
+
+- Upgraded `CampaignCheckpoint` to version 4 and added `CampaignOperations` to the complete atomic envelope.
+- Added exactly three first-slice facility families: preparation workshop, design office and test/validation. Resources are explicitly owned or external services and expose bounded schedulable units rather than passive performance bonuses.
+- Added dated `CampaignWorkOrder` and `CampaignCapacityReservation` records. Internal orders require matching `factory_work` personnel reservations plus facility capacity; rented service orders require provider capacity and one explicit dated `facility` cash commitment.
+- Capacity is conserved across overlapping orders. One person cannot be double-booked across operations because work reservations reuse the TM-05 personnel authority.
+- Added detached capacity comparison/query output for owned and rented alternatives. Inspection does not reserve time, create commitments or mutate campaign state.
+- Added atomic operations transactions for resource registration, internal work, rented service work and pre-start cancellation. Generic personnel or finance mutations cannot orphan work-order-owned reservations or service commitments.
+- Version-three migration preserves existing facility-category commitments in an explicit legacy index without inventing facilities, capacity or work orders.
+- Registered contracts cover three facility families, staff/machine double-allocation rejection, rented-service viability/cost, provider-capacity conservation, atomic cancellation, cross-envelope tamper protection, migration and preservation through unrelated transactions.
+- Added `docs/campaign/facilities-capacity-services.md`.
+
 ## Preserved boundaries
 
 - No race-physics, race-RNG/arithmetic-order, race scoring, race checkpoint, content schema, mechanic provider or existing race-command change.
 - Minimal and Advanced mount over the same authoritative weekend.
-- Campaign time, competition, economy and personnel remain outside `RaceSim`, replay, rendering and the standalone result archive.
+- Campaign time, competition, economy, personnel and operations remain outside `RaceSim`, replay, rendering and the standalone result archive.
 - Cash, commitments, reserve policy and assumptions remain different values.
-- People, contracts, assignments and availability remain different records; a role title does not create work output or a race-performance bonus.
+- People, contracts, assignments, availability, facilities, capacity reservations and work orders remain different records; neither a role title nor facility ownership creates a race-performance bonus.
 - No component diagnosis, consumed stock, repair cost, season prize, promotion, person attribute or morale effect is inferred without authoritative evidence.
 - Existing sporting fixtures and the complete registered verification floor remain required.
 
@@ -128,16 +140,16 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them only when product work touches their responsibilities and characterization is available.
 - Advisory findings are not a verified bug count. Responsibility extraction can appear as both resolved and new diagnostics; inspect the complete exact-head report.
-- Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, facilities/capacity, engineering/physical parts, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
+- Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, engineering designs/physical parts/materials, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
 - Human testing of interface modes and management workflows, broad accessibility, same-machine performance and stronger editor clearance/collision diagnostics remain separate validation work.
 
 ## Next dependency
 
-The next campaign milestone is **TM-06: capacity, three facility families and rented services**. It must:
+The next campaign milestone is **TM-07: small development pipeline and physical part inventory**. It must:
 
-- consume explicit personnel availability;
-- conserve staff and machine time;
-- prevent double allocation;
-- use dated cash commitments;
-- distinguish owned, rented and outsourced capability; and
-- keep outsourcing viable rather than treating ownership as a universal upgrade path.
+- consume explicit TM-05 personnel and TM-06 facility capacity;
+- separate knowledge, design, manufactured instances, validation and installed race configuration;
+- conserve materials and unique part identities;
+- keep external manufacturing/services explicit rather than free progress;
+- bind every advertised car effect to a tested race performance-profile seam; and
+- ensure research completion alone never fabricates a fitted part.

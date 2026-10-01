@@ -80,6 +80,8 @@ The 0.14 notebook handoff governs opt-in run history, guarded personal interpret
 
 [0.19.0 simulation/presentation boundaries](architecture-refactor.md) supersedes older descriptions of UI-owned simulation scheduling and domain-owned recording/catalog I/O.
 
+Current campaign foundations: [state/clock/storage](campaign/state-clock-storage.md), [weekend boundary](campaign/weekend-boundary.md), [season lifecycle](campaign/season-lifecycle.md), [finance commitments](campaign/finance-commitments-forecast.md), [people/contracts/availability](campaign/people-contracts-availability.md), and [facilities/capacity/services](campaign/facilities-capacity-services.md). These are implementation contracts, not evidence of a complete playable management campaign.
+
 ## System contract hardening
 
 [System contract completion](system-contract-completion.md) records the bounded

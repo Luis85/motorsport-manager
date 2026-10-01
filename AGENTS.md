@@ -61,6 +61,16 @@ weekend, while already binding payroll continues through dated settlement. Legac
 payroll may be retained explicitly, but must not be assigned fabricated people or
 contracts.
 
+`CampaignOperations` is the facilities, schedulable capacity and work-order
+authority. Internal work must reserve both explicit personnel availability and
+facility capacity for the same dated interval. Rented/outsourced work must reserve
+provider capacity and create one explicit `facility` cash commitment; it must not
+consume hidden staff time or create summary-only costs. Owned capacity is not a
+race-performance bonus. Planning freezes during an active weekend, and generic
+personnel/finance mutations may not orphan work-order reservations or service
+commitments. Legacy facility commitments may be indexed explicitly during
+migration, but must not be assigned fabricated facilities or work orders.
+
 ## UI changes
 
 Use `GameTheme` through the existing UI/MinimalRaceStyle adapters for native

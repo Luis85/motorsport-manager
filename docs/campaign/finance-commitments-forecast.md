@@ -1,6 +1,6 @@
 # Campaign commitments, due dates and cash forecast
 
-Status: implemented TM-04 domain/application foundation on PR #27, extended by TM-05 employment-backed payroll. This is not a complete accounting system, commercial model or playable Finance screen.
+Status: implemented TM-04 domain/application foundation on PR #27, extended by TM-05 employment-backed payroll and TM-06 rented facility/service commitments. This is not a complete accounting system, commercial model or playable Finance screen.
 
 ## Authority and separation
 
@@ -58,9 +58,10 @@ TM-05 uses the same commitment ledger for payroll; it does not introduce a secon
 
 Signing or renewing a `CampaignEmploymentContract` creates one explicit payroll commitment for every complete installment in its immutable schedule. The contract identity is the commitment source. Account, signing slot, due slot, amount and `payroll` category must match the contract exactly.
 
-The version-three campaign checkpoint cross-validates personnel and economy:
+The version-four campaign checkpoint cross-validates personnel, operations and economy:
 
 - every new payroll commitment belongs to one recorded contract schedule;
+- every new `facility` commitment created after TM-06 authority belongs to one rented-service work order;
 - one contract installment cannot have zero or multiple commitments;
 - payroll cannot be cancelled while employment remains binding;
 - payroll cannot settle before its due slot;
@@ -81,9 +82,9 @@ Project, department or eligible-expenditure summaries must not create another sa
 
 `CampaignFinanceTransaction` restores the complete checkpoint, stages one finance change and publishes a complete replacement checkpoint or the exact caller value. It supports adding/cancelling ordinary commitments, changing reserve policy and settling due items up to current campaign time.
 
-A generic finance mutation that would violate personnel payroll authority fails complete-checkpoint publication. Employment payroll creation, renewal, cancellation and replacement enter through `CampaignPersonnelTransaction` so personnel terms and economy commitments publish together.
+A generic finance mutation that would violate personnel payroll or operations facility-commitment authority fails complete-checkpoint publication. Employment payroll creation, renewal, cancellation and replacement enter through `CampaignPersonnelTransaction` so personnel terms and economy commitments publish together.
 
-New planning changes are frozen while a campaign weekend manifest is active. Existing obligations still continue: `CampaignWeekendTransaction` settles commitments due between departure and return at their own due slots, then publishes them atomically with elapsed campaign time, standings, returned inventory, event cash, personnel and the exactly-once receipt. Failure in any sub-step publishes none of them.
+New planning changes are frozen while a campaign weekend manifest is active. Existing obligations still continue: `CampaignWeekendTransaction` settles commitments due between departure and return at their own due slots, then publishes them atomically with elapsed campaign time, standings, returned inventory, event cash, personnel, operations and the exactly-once receipt. Failure in any sub-step publishes none of them.
 
 ## Legacy compatibility
 
@@ -97,7 +98,7 @@ Version-one economy data remains valid. On the first new finance/event mutation 
 
 Migration therefore does not claim knowledge of unrecorded historical obligations. A version-one economy can remain inside a valid checkpoint until a version-two operation is required.
 
-When checkpoint version 2 migrates to version 3, recorded payroll commitments remain authoritative through the personnel legacy-payroll index. The migration does not invent employees, roles or contract dates.
+When checkpoint version 2 migrates forward, recorded payroll commitments remain authoritative through the personnel legacy-payroll index. When version 3 migrates to version 4, recorded facility commitments remain authoritative through the operations legacy-facility index. Migration invents neither employees/contracts nor facilities/work orders.
 
 ## Cash forecast and commitment preview
 
@@ -169,4 +170,4 @@ The mandatory campaign suite covers:
 
 The implemented payroll model uses fixed complete installments. It does not yet include prorating, bonuses, buyouts, notice pay, release clauses, receivable earning, operating-result recognition, assets/liabilities, loans, distress remedies, season-prize schedules, sponsor agreements, budgets/envelopes, UI or autonomous spending mandates.
 
-The next dependency milestone is **TM-06: capacity, facilities and rented services**. Facility construction, rent, outsourced work and recurring operation costs must use this commitment boundary rather than creating hidden or summary-only cash changes.
+TM-06 now uses this ledger for rented/outsourced facility work: one service work order creates one dated `facility` commitment. The next dependency milestone is **TM-07: engineering development and physical part inventory**; external engineering/manufacturing payments must continue through explicit commitments rather than hidden project-summary costs.

@@ -13,9 +13,9 @@ Status: implemented TM-05 domain/application foundation on PR #27. This is not a
 
 The first slice establishes the invariants required before capacity, facilities and projects can use people. It does not yet evaluate skill, morale, trust, fatigue, role quality or performance effects.
 
-## Checkpoint version 3
+## Checkpoint version 4
 
-`CampaignCheckpoint` version 3 adds one `CampaignPersonnel` projection to the complete campaign envelope. A valid checkpoint now publishes together:
+`CampaignCheckpoint` version 4 retains `CampaignPersonnel` and additionally binds TM-06 operations capacity to it. Personnel was introduced in version 3. A valid checkpoint now publishes together:
 
 - replay-validated campaign state and time;
 - factual weekend receipts and optional active manifest;
@@ -171,7 +171,7 @@ A replacement transaction performs termination and a different person’s new co
 
 Every operation restores the complete checkpoint, stages detached personnel and finance values, validates cross-envelope rules, and returns one complete candidate or the exact caller checkpoint.
 
-Personnel planning is frozen while an immutable weekend manifest is active. Existing payroll commitments still continue through ordinary dated settlement.
+Personnel planning is frozen while an immutable weekend manifest is active. Existing payroll commitments still continue through ordinary dated settlement. `factory_work` reservations owned by TM-06 work orders are additionally cross-validated against operations and cannot be cancelled through a generic personnel mutation while the work order remains scheduled.
 
 `CampaignPersonnelQuery.roster()` returns a detached, time-aware roster. Contract status is derived at the checkpoint slot. An assignment is reported active only while both its dates and effective employment are active. Availability is calculated without reserving time.
 
@@ -235,4 +235,4 @@ TM-05 does not implement:
 - mandates and delegated hiring; or
 - campaign Team/Person UI.
 
-The next dependency milestone is **TM-06: capacity, three facility families and rented services**. It will use these role and availability records so staff, machines and rented capability cannot be allocated twice, while outsourcing remains a viable alternative.
+TM-06 now consumes these role and availability records for internal facility work. The next dependency milestone is **TM-07: engineering development and physical part inventory**; project work must use these same people/facility reservations rather than creating hidden engineer hours.

@@ -33,9 +33,9 @@ Rejected, stale, malformed, duplicate, unaffordable and calendar-overflow comman
 
 The accepted command journal is authoritative evidence. A snapshot restores by recreating the initial state and replaying every accepted command in order. Sequence numbers, before/after slots, resulting state and integrity digest must all agree. Recomputing an outer digest cannot conceal a history that no longer reproduces the saved state.
 
-## Checkpoint version 3
+## Checkpoint version 4
 
-`CampaignCheckpoint` version 3 contains:
+`CampaignCheckpoint` version 4 contains:
 
 - campaign identity;
 - the complete replay-validated `CampaignState` snapshot;
@@ -44,7 +44,8 @@ The accepted command journal is authoritative evidence. A snapshot restores by r
 - `CampaignCompetition` series, seasons, event awards and standings;
 - `CampaignEconomy` accounts, commitments, reserve policy and postings;
 - `CampaignInventory` dated exact returned-resource records;
-- `CampaignPersonnel` people, contracts, role assignments and availability; and
+- `CampaignPersonnel` people, contracts, role assignments and availability;
+- `CampaignOperations` facilities, work orders and capacity reservations; and
 - an integrity digest over the complete envelope.
 
 All consequence projections belong to the same campaign and contain the same complete settled-event set. Their result and policy digests must agree with the factual receipt. An event cannot be both active and settled.
@@ -55,13 +56,15 @@ The checkpoint also validates cross-projection time and authority:
 - the organization's cash and payroll accounts must exist;
 - employment payroll must match its immutable contract schedule;
 - terminated employment cannot retain future open payroll; and
-- personnel belongs to the same campaign and organization.
+- personnel and operations belong to the same campaign and organization;
+- internal work orders own matching personnel reservations; and
+- rented service orders own matching dated facility commitments.
 
 ## Migration
 
 Version-one checkpoints remain accepted and migrate deterministically with empty campaign projections. Migration does not guess points, money, inventory or personnel history.
 
-Version-two checkpoints preserve competition, economy and inventory exactly and gain empty personnel authority at the restored campaign slot. Existing version-two payroll commitments are placed in an explicit legacy-payroll index. This preserves recorded obligations without inventing people or employment terms. All payroll created after migration must be backed by an explicit contract.
+Version-two checkpoints preserve competition, economy and inventory exactly and gain empty personnel authority at the restored campaign slot. Existing payroll commitments are placed in an explicit legacy-payroll index. Version-three checkpoints preserve personnel and gain empty operations authority at the restored campaign slot; existing `facility` commitments are placed in an explicit legacy-facility index. These migrations preserve recorded obligations without inventing people, employment terms, facilities or work orders.
 
 The campaign checkpoint schema remains independent from race-weekend checkpoint versions.
 
@@ -71,7 +74,7 @@ The campaign checkpoint schema remains independent from race-weekend checkpoint 
 
 Campaign checkpoints use the precise numeric JSON path so integral slots, command revisions, minor monetary units, capacity basis points and dated personnel records survive round-trip without type drift.
 
-The storage adapter accepts complete candidates from campaign competition, finance, personnel and weekend transactions. It does not calculate campaign rules itself.
+The storage adapter accepts complete candidates from campaign competition, finance, personnel, operations and weekend transactions. It does not calculate campaign rules itself.
 
 ## Transaction layers
 
@@ -79,16 +82,17 @@ The checkpoint is the publication boundary for:
 
 - `CampaignCompetitionTransaction` — series, season, entry and cancellation administration;
 - `CampaignFinanceTransaction` — commitments, reserve policy and due settlement;
-- `CampaignPersonnelTransaction` — people, contracts, roles and availability; and
+- `CampaignPersonnelTransaction` — people, contracts, roles and availability;
+- `CampaignOperationsTransaction` — facilities, internal work and rented services; and
 - `CampaignWeekendTransaction` — elapsed weekend time, standings, inventory, event cash, due commitments and factual receipt.
 
 Each transaction restores the whole checkpoint, stages detached values and returns one valid complete candidate or the exact caller checkpoint. No projection is published independently.
 
 ## Deliberate limits
 
-This foundation does **not** implement automatic campaign time flow, staff productivity, facilities, projects, rivals, campaign randomness, recruitment UI, management navigation, correction deltas or balanced rewards. Daily energy currently governs only explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
+This foundation does **not** implement automatic campaign time flow, staff productivity, engineering designs/parts/materials, rivals, campaign randomness, recruitment UI, management navigation, correction deltas or balanced rewards. Daily energy currently governs only explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
 
-The next dependency is TM-06: explicit staff/machine capacity, three facility families and rented services. It must use personnel availability and dated commitments rather than adding a parallel scheduler or budget.
+TM-06 now provides explicit staff/facility capacity and rented services. The next dependency is TM-07: engineering development and physical part inventory, consuming those reservations rather than adding another scheduler or hidden progress resource.
 
 ## Verification
 
@@ -107,8 +111,8 @@ The registered campaign suite covers:
 - failed atomic replacement retaining the previous checkpoint;
 - successful retry publishing the next revision;
 - deterministic version-one and version-two migration;
-- cross-envelope finance and personnel time validation;
-- complete persistence of competition, cash, inventory, personnel and payroll; and
+- cross-envelope finance, personnel and operations time validation;
+- complete persistence of competition, cash, inventory, personnel, payroll, facilities and work orders; and
 - atomic weekend return with due commitments.
 
 These are domain and persistence contracts. They do not establish campaign balance, management usability or player enjoyment.
