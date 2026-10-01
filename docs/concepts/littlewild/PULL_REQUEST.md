@@ -24,27 +24,27 @@ Native state remains version 8. ECS worlds, schedulers, profiles, composition de
 
 The final branch-wide review retained the M6 architecture and closed additional failure modes: rejected deferred ECS batches no longer wedge the scheduler; physical transaction batches validate before mutation; story/scenario confirmation privately binds the exact reviewed state, libraries, experience, simulation profile, and scene; temporary global registries reject asynchronous escape; resource IDs validate their real values; and multi-library story activation rolls back as one unit.
 
-See `PR25-REVIEW-AND-POLISH.md` for the complete findings, fixes, verification evidence, and remaining debt. `ECS-M6-REVIEW-AND-POLISH.md` retains the milestone-specific review.
+See `PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md` for the TypeScript/Clean Architecture/DDD review and `PR25-REVIEW-AND-POLISH.md` for the earlier transactional review. `ECS-M6-REVIEW-AND-POLISH.md` retains the milestone-specific review.
 
 ## Verification
 
-- **1,006 / 1,006 checks passed across 27 suites**.
-- Simulation-profile unit: **15 / 15**.
-- Simulation-profile real-engine integration: **15 / 15**.
-- Engine composition: **14 / 14**.
-- Scenario schema and CLI: **47 / 47**.
-- Release contracts: **58 / 58**.
-- Browser: **89 / 89**.
-- Browser contracts: **16 / 16**.
-- Standalone artifact: **3,795,633 bytes**.
-- SHA-256: `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1`.
-- Historical M6 milestone authority manifest: `73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521` across 28 files; the final PR 25 artifact identity is the SHA-256 above.
+The current authoritative gate is TypeScript-based:
 
-Detailed executed evidence and limitations are in `VERIFICATION.md` and `ECS-M6-RESULTS.md`.
+```sh
+npm install --no-audit --no-fund
+npm run typecheck
+npm run architecture
+npx playwright install chromium
+npm run verify
+```
+
+The previous pre-TypeScript head passed **1,006 / 1,006 checks across 27 suites**, including 105 browser checks. That result and its former standalone hash are retained as a regression baseline only. Current-head evidence is `verification/v15/gate-results.json` produced by the TypeScript workflow; do not substitute the historical baseline for a current run.
+
+The current source inventory contains 99 authored TypeScript/CTS files, 57 machine-owned runtime modules, and no project-authored JS/CJS/Python executable files. `vendor/three.js` is the only retained JavaScript source and is third-party distribution code.
 
 ## Review path
 
-Open `docs/concepts/littlewild/littlewild.html`, review a bundled scene under **More → Worlds & scenarios**, and inspect the displayed simulation profile and compiled archetype. Export a story and verify envelope 10 includes both experience and simulation fingerprints. Then review `CONFIGURATION.md`, `ECS-M6-IMPLEMENTATION.md`, `ECS-M6-REVIEW-AND-POLISH.md`, and `PR25-REVIEW-AND-POLISH.md`.
+Open `docs/concepts/littlewild/littlewild.html`, review a bundled scene under **More → Worlds & scenarios**, and inspect the displayed simulation profile and compiled archetype. Export a story and verify envelope 10 includes both experience and simulation fingerprints. Then review `CONFIGURATION.md`, `ECS-M6-IMPLEMENTATION.md`, `ECS-M6-REVIEW-AND-POLISH.md`, and `PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md`.
 
 ## Limits
 
