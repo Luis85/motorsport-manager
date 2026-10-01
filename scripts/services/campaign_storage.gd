@@ -9,8 +9,10 @@ func _init(destination: String = "user://campaign.json", operations: Storage.Fil
 	files = operations if operations != null else Storage.FileOperations.new()
 
 func save(state: CampaignState, settlements: Dictionary = {}, active_manifest: Dictionary = {},
-		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {}) -> String:
-	var checkpoint = CampaignCheckpoint.build(state, settlements, active_manifest, competition, economy, inventory)
+		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {},
+		personnel: Dictionary = {}) -> String:
+	var checkpoint = CampaignCheckpoint.build(
+		state, settlements, active_manifest, competition, economy, inventory, personnel)
 	if checkpoint.is_empty():
 		return "Campaign state could not form a valid checkpoint."
 	return save_checkpoint(checkpoint)
