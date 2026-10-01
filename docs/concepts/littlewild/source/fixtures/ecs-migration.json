@@ -9,6 +9,11 @@
     "reason": "Progression mechanics register as the first explicit composition layer; learning-domain state and economy settlement remain separately owned.",
     "required_token": "Composition.register({id:'systems'"
   },
+  "behavior-tree.js": {
+    "prior_sha256": "f019502f8fc8a58be3e8ec519eee20927492b876b09f76246e8d3d02044f9667",
+    "reason": "Behavior-tree documents now use exact behavior-free node schemas, prototype-safe cooldown memory and strict deterministic tick validation while retaining compiled action handlers.",
+    "required_token": "Behavior tick needs finite simulation time."
+  },
   "colony.js": {
     "prior_sha256": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
     "reason": "Colony behavior registers as a composition layer, uses an actor-scoped view over plain root state, and delegates the high-level fixed-step order to the simulation pipeline.",
