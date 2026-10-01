@@ -38,9 +38,7 @@ func strategy_comparison(driver_id: int) -> Dictionary:
 	if simulation == null or simulation.phase != "race" or driver_id < 0 or driver_id >= simulation.cars.size(): return {}
 	var car = simulation.cars[driver_id]
 	if not car.player or car.dnf or car.finished: return {}
-	# Comparisons are observational. Evaluate against a detached checkpoint so
-	# forecasting can never mutate the live race, its RNG, commands or playback.
-	var snapshot = simulation.snapshot()
-	var detached: RaceSim = PracticeRaceSim.restore_practice(snapshot) if simulation is PracticeRaceSim else RaceSim.restore(snapshot)
-	if detached == null: return {}
-	return detached.forecast(driver_id).duplicate(true)
+	# The forecaster is an observational query over the current state and returns
+	# detached data. Do not require a persistence-valid checkpoint here: UI/layout
+	# fixtures and live transitional states can be inspectable before they are saveable.
+	return simulation.forecast(driver_id).duplicate(true)
