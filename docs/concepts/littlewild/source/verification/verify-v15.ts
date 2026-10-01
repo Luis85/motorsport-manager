@@ -30,6 +30,7 @@ interface GateReport {
 const ROOT = path.resolve(__dirname, "../..");
 const GENERATED = path.join(ROOT, ".generated");
 const OUT = path.join(ROOT, "verification", "v15");
+fs.rmSync(OUT, { recursive:true, force:true });
 fs.mkdirSync(OUT, { recursive: true });
 const noBrowser = process.argv.includes("--no-browser");
 const generated = (name: string): string => path.join(".generated", name);

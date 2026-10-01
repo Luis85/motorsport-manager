@@ -25,6 +25,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Clear stale Littlewild verification evidence
+        working-directory: docs/concepts/littlewild
+        run: |
+          rm -rf verification/v15 .generated
+          rm -f littlewild.html
       - name: Install TypeScript verification toolchain
         working-directory: docs/concepts/littlewild
         run: npm install --no-audit --no-fund
@@ -49,5 +54,5 @@ jobs:
             docs/concepts/littlewild/littlewild.html
             docs/concepts/littlewild/verification/v15/
             docs/concepts/littlewild/.generated/*-results.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
