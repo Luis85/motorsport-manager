@@ -12,6 +12,8 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   schemaVersion: number;
   layers: string[];
   contexts: Array<{ id: string; layer: "domain" | "application" | "infrastructure" | "presentation"; files: string[] }>;
+  moduleBudgetBytes: number;
+  legacyCompatibilityModules: Record<string,string>;
 };
 const results: CheckResult[] = [];
 
@@ -71,6 +73,25 @@ check("DDD domain map owns every runtime module exactly once", () => {
     .map(entry => entry.name).sort();
   assert(JSON.stringify([...owned].sort()) === JSON.stringify(runtime), "Domain map/runtime mismatch. Owned: " + [...owned].sort().join(", ") + " Runtime: " + runtime.join(", "));
   for (const file of owned) assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
+});
+
+check("Clean Code module budget is explicit and legacy debt is bounded", () => {
+  assert(Number.isInteger(DOMAIN_MAP.moduleBudgetBytes) && DOMAIN_MAP.moduleBudgetBytes >= 10000, "Invalid runtime module budget.");
+  const ownership = new Map<string, string>();
+  for (const context of DOMAIN_MAP.contexts) for (const file of context.files) ownership.set(file, context.layer);
+  for (const [file, reason] of Object.entries(DOMAIN_MAP.legacyCompatibilityModules)) {
+    assert(ownership.get(file) === "application", "Only application compatibility adapters may be grandfathered: " + file);
+    assert(typeof reason === "string" && reason.trim().length >= 20, "Legacy module needs a concrete migration reason: " + file);
+  }
+  const oversized: string[] = [];
+  for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain" || context.layer === "application")) {
+    for (const file of context.files) {
+      const bytes = Buffer.byteLength(source(file));
+      if (bytes > DOMAIN_MAP.moduleBudgetBytes && !Object.hasOwn(DOMAIN_MAP.legacyCompatibilityModules,file))
+        oversized.push(file + " (" + bytes + " bytes)");
+    }
+  }
+  assert(oversized.length === 0, "New oversized domain/application module requires decomposition, not a silent exception: " + oversized.join(", "));
 });
 
 check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
