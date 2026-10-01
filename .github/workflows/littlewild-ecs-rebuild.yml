@@ -109,8 +109,13 @@ jobs:
           subprocess.run(['git','apply',str(path)],check=True)
           browser=Path('docs/concepts/littlewild/browser-v15.py')
           source=browser.read_text()
-          old="    start=p.evaluate('Littlewild.engine.s.simTime');p.wait_for_timeout(550)\\n    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))\\n"
-          new="    start=p.evaluate('Littlewild.engine.s.simTime')\\n    p.wait_for_function('(start)=>Littlewild.engine.s.simTime>start',arg=start,timeout=2500)\\n    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))\\n"
+          old="""    start=p.evaluate('Littlewild.engine.s.simTime');p.wait_for_timeout(550)
+    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))
+"""
+          new="""    start=p.evaluate('Littlewild.engine.s.simTime')
+    p.wait_for_function('(start)=>Littlewild.engine.s.simTime>start',arg=start,timeout=2500)
+    check('World runs behind a panel with automatic pause disabled',lambda:expect(p.evaluate('Littlewild.engine.s.simTime')>start))
+"""
           if source.count(old)!=1:
               raise SystemExit('Unexpected browser timing contract source')
           browser.write_text(source.replace(old,new,1))
