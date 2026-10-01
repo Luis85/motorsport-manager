@@ -17,7 +17,7 @@ The pre-pass implementation already had strong deterministic and transactional b
 
 The polishing pass therefore made **TypeScript the authored executable source of truth**, added **machine-enforced DDD/Clean Architecture ownership**, strengthened **ECS data-only invariants**, moved active build/verification/browser/schema tooling to TypeScript, and extended **strict TypeScript checking to the architecture-critical kernel**.
 
-This is still a compatibility-preserving strangler architecture. Five large historical application adapters remain deliberately grandfathered and are not presented as exemplary small-module Clean Code.
+This is still a compatibility-preserving strangler architecture. Four large historical application adapters remain deliberately grandfathered and are not presented as exemplary small-module Clean Code.
 
 ## Findings and resolutions
 
@@ -109,23 +109,33 @@ The build transpiles the compatibility modules without semantic drift, while `ts
 
 The ECS/command kernel and simulation pipeline/profile contracts were rewritten with explicit types rather than suppressions. The remaining mature compatibility modules are a staged typing/decomposition backlog, not claimed as fully strict.
 
+### P1 — renderer ownership was mislabeled as application logic
+
+The first DDD ownership pass mapped `world.ts` as an application compatibility adapter. Source inspection showed that the module is the isometric canvas renderer/view: it owns canvas creation, resize observation, camera/hover/placement presentation and browser globals. Keeping it in the application layer would either fail the platform-boundary gate or normalize presentation leakage.
+
+**Resolution**
+
+- Moved `world.ts` to the presentation bounded context.
+- Removed it from the oversized application compatibility exceptions.
+- Added an architecture check that domain-owned modules cannot register composition/application hooks.
+- Reclassified `planner.ts` and `cartography.ts` as application orchestration because both operate through the engine composition/facade.
+
 ### P1 — large legacy modules remain difficult to reason about
 
 The source still contains mature application adapters substantially larger than the preferred module scale.
 
 **Resolution**
 
-A **40 KB domain/application module budget** is now enforced. Only five named compatibility modules are grandfathered, each with an explicit migration reason:
+A **40 KB domain/application module budget** is now enforced. Only four named compatibility modules are grandfathered, each with an explicit migration reason:
 
 - `engine.ts`
 - `colony.ts`
 - `systems.ts`
 - `world-simulation.ts`
-- `world.ts`
 
 Any new domain/application module exceeding the budget fails architecture verification instead of silently increasing the monolith.
 
-This is a guardrail, not a claim that those five files are already cleanly decomposed.
+This is a guardrail, not a claim that those four files are already cleanly decomposed.
 
 ### P1 — data-driven architecture needed a clearer authority boundary
 
@@ -207,7 +217,7 @@ The authoritative evidence for the current head is `verification/v15/gate-result
 
 ## Deliberate remaining debt
 
-1. **Five large compatibility adapters remain.** They are bounded and regression-protected but should be decomposed incrementally by bounded context rather than mechanically split.
+1. **Four large compatibility adapters remain.** They are bounded and regression-protected but should be decomposed incrementally by bounded context rather than mechanically split.
 2. **Strict typing is concentrated at architecture-critical seams.** The rest of the migrated TypeScript tree is transpiled compatibility code and should gain strict types slice by slice as behavior moves out of the legacy adapters.
 3. **The global `LW` facade/registries remain.** They support the self-contained browser artifact and old saves, but a future module-native runtime should inject ports/services rather than discover process-global state.
 4. **Not every historic tuning literal is data-authored.** New mechanics/tuning should enter validated profile/content documents; compatibility constants should move only with parity tests and explicit migration.
