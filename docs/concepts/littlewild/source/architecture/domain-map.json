@@ -119,5 +119,13 @@
         "world-ui.ts"
       ]
     }
-  ]
+  ],
+  "moduleBudgetBytes": 40000,
+  "legacyCompatibilityModules": {
+    "engine.ts": "Stable v3 facade and migration/import boundary; extract behavior incrementally behind fixtures.",
+    "colony.ts": "Compatibility adapter for mature creature/community commands during ECS strangler migration.",
+    "systems.ts": "Historical composed engine layer retained for parity while rules move into bounded systems.",
+    "world-simulation.ts": "Mature physical-world compatibility layer; new settlement invariants live in world-ecs.ts.",
+    "world.ts": "Legacy world facade/presentation handoff retained for saved-story and interaction parity."
+  }
 }
