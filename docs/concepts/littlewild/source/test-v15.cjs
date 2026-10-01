@@ -11,9 +11,9 @@ function rejects(name,edit){test(name,()=>{const p=copy(all[0]);edit(p);const be
 for(const p of all){
  test(p.id+': validates without mutating active registries',()=>{const before=active();assert(X.validate(p).ok);assert.equal(active(),before);});
  for(const scene of p.scenes){
-  test(p.id+'/'+scene.id+': launches real scene and restores exact v9 state',()=>{
+  test(p.id+'/'+scene.id+': launches real scene and restores exact v10 state',()=>{
    const engine=X.commitScene(X.prepareScene(p,scene.id));assert.equal(engine.scenarioContext.packId,p.id);
-   const saved=S.encode(engine);assert.equal(saved.version,9);const back=S.commit(S.inspect(saved));
+   const saved=S.encode(engine);assert.equal(saved.version,10);const back=S.commit(S.inspect(saved));
    assert.deepEqual(back.export(),engine.export());assert.deepEqual(back.scenarioContext,engine.scenarioContext);
   });
   test(p.id+'/'+scene.id+': normal simulation continues deterministically',()=>{

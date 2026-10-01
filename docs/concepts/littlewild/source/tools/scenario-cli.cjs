@@ -13,7 +13,7 @@ try{
   if(command==='validate'){
     if(!input)throw Error('Usage: scenario-cli.cjs validate pack.json');
     const result=X.validate(fs.readFileSync(input,'utf8'));
-    console.log(JSON.stringify({ok:result.ok,errors:result.errors,pack:result.pack?.id,scenes:result.sceneCount,fingerprint:result.fingerprint},null,2));
+    console.log(JSON.stringify({ok:result.ok,errors:result.errors,pack:result.pack?.id,scenes:result.sceneCount,fingerprint:result.fingerprint,sourceSchemaVersion:result.sourceSchemaVersion,migrationNotes:result.migrationNotes||[]},null,2));
     if(!result.ok)process.exitCode=1;
   }else if(command==='capture'){
     if(!input)throw Error('Usage: scenario-cli.cjs capture story.json output.pack.json');

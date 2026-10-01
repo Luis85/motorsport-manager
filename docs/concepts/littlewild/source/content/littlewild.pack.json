@@ -1,6 +1,6 @@
 {
   "format": "living-worlds-pack",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "littlewild",
   "version": "1.0.0",
   "name": "Littlewild",
@@ -1044,7 +1044,9 @@
           },
           "history": []
         }
-      }
+      },
+      "ruleProfileId": "standard",
+      "actorArchetypeId": "creature-standard"
     },
     {
       "id": "charted-home",
@@ -3003,7 +3005,9 @@
           },
           "history": []
         }
-      }
+      },
+      "ruleProfileId": "standard",
+      "actorArchetypeId": "creature-standard"
     }
   ],
   "tutorial": [
@@ -3074,6 +3078,100 @@
       "action": "map"
     }
   ],
+  "simulation": {
+    "format": "littlewild-simulation-content",
+    "schemaVersion": 1,
+    "ruleProfiles": [
+      {
+        "format": "littlewild-ecs-rule-profile",
+        "schemaVersion": 1,
+        "id": "standard",
+        "name": "Standard",
+        "description": "The compatibility-preserving Littlewild actor and economy tuning used by legacy stories.",
+        "actor": {
+          "format": "littlewild-actor-rules",
+          "schemaVersion": 1,
+          "learning": {
+            "playfulFatigue": 0.45,
+            "standardFatigue": 0.7,
+            "recoveryRate": 0.16,
+            "recoverAt": 30,
+            "limitAt": 70
+          },
+          "feelings": {
+            "socialRate": 0.035,
+            "socialPreferenceRate": 0.01,
+            "angerRate": 0.09
+          },
+          "needs": {
+            "workingKinds": [
+              "build",
+              "gather",
+              "craft",
+              "gearcraft",
+              "hunt",
+              "practice",
+              "produce",
+              "stockbuilding",
+              "emptybuilding",
+              "collectbuilding"
+            ],
+            "foodWork": 0.1,
+            "foodIdle": 0.07,
+            "waterWork": 0.13,
+            "waterIdle": 0.09,
+            "energyWork": 0.12,
+            "energyIdle": 0.05,
+            "walkLoadFactor": 0.2,
+            "comfortShelter": 0.02,
+            "comfortWithoutShelter": 0.045,
+            "joyRate": 0.035
+          }
+        },
+        "economy": {
+          "format": "littlewild-economy-rules",
+          "schemaVersion": 1,
+          "xp": {
+            "base": 28,
+            "perLevel": 8,
+            "playerResearchPerLevel": 2,
+            "actorBondPerLevel": 2
+          },
+          "income": {
+            "pocketShare": 0.3
+          },
+          "limits": {
+            "balance": 1000000000000,
+            "delta": 1000000000,
+            "level": 1000000,
+            "stat": 1000000000000
+          }
+        }
+      }
+    ],
+    "compositionArchetypes": [
+      {
+        "format": "littlewild-composition-archetype",
+        "schemaVersion": 1,
+        "id": "creature-standard",
+        "name": "Standard creature",
+        "description": "A creature bound to the complete persisted actor state and transient activity pipeline.",
+        "entity": "creature",
+        "persistentComponents": [
+          "Transform",
+          "Needs",
+          "Learning",
+          "Feelings",
+          "Inventory"
+        ],
+        "transientComponents": [
+          "Activity",
+          "Task",
+          "Intent"
+        ]
+      }
+    ]
+  },
   "libraries": {
     "base": {
       "$schema": "urn:littlewild:content-schema:1",

@@ -1,13 +1,21 @@
 {
-  "passed": 21,
-  "total": 21,
+  "passed": 38,
+  "total": 38,
   "results": [
     {
-      "name": "Scenario schema validates its own structure",
+      "name": "Current scenario schema validates its own structure",
       "passed": true
     },
     {
-      "name": "littlewild validates with independent JSON Schema",
+      "name": "Legacy scenario schema validates its own structure",
+      "passed": true
+    },
+    {
+      "name": "littlewild validates with current independent JSON Schema",
+      "passed": true
+    },
+    {
+      "name": "littlewild is not silently valid under legacy schema",
       "passed": true
     },
     {
@@ -35,7 +43,23 @@
       "passed": true
     },
     {
-      "name": "littlewild CLI validates",
+      "name": "littlewild schema retains profile reference shape",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects executable profile fields",
+      "passed": true
+    },
+    {
+      "name": "littlewild rejects unknown component types",
+      "passed": true
+    },
+    {
+      "name": "littlewild CLI validates current schema",
+      "passed": true
+    },
+    {
+      "name": "littlewild CLI reports current source version",
       "passed": true
     },
     {
@@ -43,7 +67,11 @@
       "passed": true
     },
     {
-      "name": "emberworks validates with independent JSON Schema",
+      "name": "emberworks validates with current independent JSON Schema",
+      "passed": true
+    },
+    {
+      "name": "emberworks is not silently valid under legacy schema",
       "passed": true
     },
     {
@@ -71,7 +99,23 @@
       "passed": true
     },
     {
-      "name": "emberworks CLI validates",
+      "name": "emberworks schema retains profile reference shape",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects executable profile fields",
+      "passed": true
+    },
+    {
+      "name": "emberworks rejects unknown component types",
+      "passed": true
+    },
+    {
+      "name": "emberworks CLI validates current schema",
+      "passed": true
+    },
+    {
+      "name": "emberworks CLI reports current source version",
       "passed": true
     },
     {
@@ -79,11 +123,35 @@
       "passed": true
     },
     {
-      "name": "Export CLI creates a complete pack",
+      "name": "Derived schema-1 pack validates only through retained legacy schema",
       "passed": true
     },
     {
-      "name": "Capture CLI creates a valid template from an authentic legacy save",
+      "name": "Derived schema-1 pack is rejected by current schema",
+      "passed": true
+    },
+    {
+      "name": "CLI migrates schema-1 packs in memory",
+      "passed": true
+    },
+    {
+      "name": "CLI reports explicit schema-1 migration",
+      "passed": true
+    },
+    {
+      "name": "CLI reports migration notes",
+      "passed": true
+    },
+    {
+      "name": "Schema-1 validation leaves source unchanged",
+      "passed": true
+    },
+    {
+      "name": "Export CLI creates a complete current pack",
+      "passed": true
+    },
+    {
+      "name": "Capture CLI creates a current template from an authentic legacy save",
       "passed": true
     }
   ]

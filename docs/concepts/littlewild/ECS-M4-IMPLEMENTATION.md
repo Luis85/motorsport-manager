@@ -2,7 +2,7 @@
 
 ## Status
 
-**Implemented.** M4 establishes one deterministic, atomic settlement boundary for financial and progression state while preserving the existing v8 simulation state, v9 portable-story envelope, content-library schemas, command semantics, and presentation behavior.
+**Implemented.** M4 establishes one deterministic, atomic settlement boundary for financial and progression state while preserving the then-current v8 simulation state and v9 portable-story envelope (later evolved deliberately by M6), content-library schemas, command semantics, and presentation behavior.
 
 ## Ownership
 

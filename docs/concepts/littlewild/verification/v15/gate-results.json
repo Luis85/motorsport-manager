@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "passed": 946,
-  "total": 946,
+  "passed": 987,
+  "total": 987,
   "suites": [
     {
       "name": "ecs-core",
@@ -10,7 +10,7 @@
         "source/test-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.15,
       "result": "source/ecs-results.json",
       "passed": 9,
       "total": 9
@@ -22,10 +22,22 @@
         "source/test-engine-composition.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.54,
+      "seconds": 0.77,
       "result": "source/engine-composition-results.json",
       "passed": 14,
       "total": 14
+    },
+    {
+      "name": "simulation-content",
+      "command": [
+        "node",
+        "source/test-simulation-content.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 2.63,
+      "result": "source/simulation-content-results.json",
+      "passed": 24,
+      "total": 24
     },
     {
       "name": "ecs-activity",
@@ -34,7 +46,7 @@
         "source/test-ecs-activity.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.03,
+      "seconds": 0.04,
       "result": "source/ecs-activity-results.json",
       "passed": 7,
       "total": 7
@@ -46,7 +58,7 @@
         "source/test-ecs-world.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.03,
+      "seconds": 0.04,
       "result": "source/ecs-world-results.json",
       "passed": 11,
       "total": 11
@@ -58,7 +70,7 @@
         "source/test-economy-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.03,
+      "seconds": 0.04,
       "result": "source/economy-ecs-results.json",
       "passed": 12,
       "total": 12
@@ -70,7 +82,7 @@
         "source/test-ecs-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.44,
+      "seconds": 0.55,
       "result": "source/ecs-integration-results.json",
       "passed": 7,
       "total": 7
@@ -82,7 +94,7 @@
         "source/test-ecs-world-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.25,
+      "seconds": 0.34,
       "result": "source/ecs-world-integration-results.json",
       "passed": 6,
       "total": 6
@@ -94,7 +106,7 @@
         "source/test-economy-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.31,
+      "seconds": 0.37,
       "result": "source/economy-integration-results.json",
       "passed": 8,
       "total": 8
@@ -106,7 +118,7 @@
         "source/test-v15.cjs"
       ],
       "exitCode": 0,
-      "seconds": 5.68,
+      "seconds": 7.77,
       "result": "source/v15-domain-results.json",
       "passed": 77,
       "total": 77
@@ -118,7 +130,7 @@
         "source/test-v15-presentation.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.65,
+      "seconds": 0.76,
       "result": "source/v15-presentation-results.json",
       "passed": 47,
       "total": 47
@@ -130,7 +142,7 @@
         "source/test-v15-pause.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.95,
+      "seconds": 1.08,
       "result": "source/v15-pause-results.json",
       "passed": 54,
       "total": 54
@@ -142,7 +154,7 @@
         "source/test-v11.cjs"
       ],
       "exitCode": 0,
-      "seconds": 2.9,
+      "seconds": 3.73,
       "result": "source/v11-domain-results.json",
       "passed": 73,
       "total": 73
@@ -154,7 +166,7 @@
         "source/test-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.74,
+      "seconds": 2.31,
       "result": "source/v10-domain-results.json",
       "passed": 76,
       "total": 76
@@ -166,7 +178,7 @@
         "source/test-growth-stress.cjs"
       ],
       "exitCode": 0,
-      "seconds": 14.26,
+      "seconds": 19.44,
       "result": "source/v10-stress-results.json",
       "passed": 3,
       "total": 3
@@ -178,7 +190,7 @@
         "source/test-fresh-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.97,
+      "seconds": 6.87,
       "result": "source/v10-fresh-results.json",
       "passed": 8,
       "total": 8
@@ -190,7 +202,7 @@
         "source/test-v10-regression-v5.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.18,
+      "seconds": 5.58,
       "result": "source/v10-regression-v5-test-results.json",
       "passed": 133,
       "total": 133
@@ -202,7 +214,7 @@
         "source/test-v10-regression-v6.cjs"
       ],
       "exitCode": 0,
-      "seconds": 17.18,
+      "seconds": 23.34,
       "result": "source/v10-regression-v6-test-results.json",
       "passed": 52,
       "total": 52
@@ -214,7 +226,7 @@
         "source/test-v10-regression-v8.cjs"
       ],
       "exitCode": 0,
-      "seconds": 19.06,
+      "seconds": 25.54,
       "result": "source/v10-regression-v8-test-results.json",
       "passed": 88,
       "total": 88
@@ -226,7 +238,7 @@
         "source/test-v10-regression-quality-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.95,
+      "seconds": 1.19,
       "result": "source/v10-regression-v9-quality-results.json",
       "passed": 31,
       "total": 31
@@ -238,7 +250,7 @@
         "source/test-v10-regression-foundation-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 7.4,
+      "seconds": 9.35,
       "result": "source/v10-regression-v9-foundation-results.json",
       "passed": 31,
       "total": 31
@@ -250,7 +262,7 @@
         "schema-checks-v10.py"
       ],
       "exitCode": 0,
-      "seconds": 0.43,
+      "seconds": 0.58,
       "result": "source/v10-schema-results.json",
       "passed": 19,
       "total": 19
@@ -262,10 +274,10 @@
         "schema-checks-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 0.82,
+      "seconds": 1.42,
       "result": "source/v15-schema-results.json",
-      "passed": 21,
-      "total": 21
+      "passed": 38,
+      "total": 38
     },
     {
       "name": "release",
@@ -274,7 +286,7 @@
         "source/test-v15-release.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.43,
+      "seconds": 4.59,
       "result": "source/v15-release-results.json",
       "passed": 54,
       "total": 54
@@ -286,7 +298,7 @@
         "browser-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 40.64,
+      "seconds": 47.88,
       "result": "verification/v15/browser-results.json",
       "passed": 89,
       "total": 89
@@ -298,13 +310,13 @@
         "browser-contracts-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 9.44,
+      "seconds": 11.72,
       "result": "verification/v15/browser-contract-results.json",
       "passed": 16,
       "total": 16
     }
   ],
   "browserIncluded": true,
-  "htmlSha256": "070cba4e47c64c8ff91d14f77416d4d1f22fc4e40e75ea2aec9c405438da1250",
-  "htmlBytes": 3758938
+  "htmlSha256": "30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d",
+  "htmlBytes": 3786469
 }

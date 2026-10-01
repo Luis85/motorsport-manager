@@ -168,7 +168,7 @@
     "passed": true
   },
   {
-    "name": "Scenario save envelope includes the exact world template",
+    "name": "Scenario save envelope includes the exact world template and simulation selection",
     "passed": true
   },
   {

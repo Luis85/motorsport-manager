@@ -1,3 +1,9 @@
+## ECS M6 — versioned simulation content
+
+Added scenario-pack schema 2 with bounded, data-only ECS rule profiles and known creature composition archetypes. Each scene now selects one profile and archetype by stable ID. The bundled `standard` profile embeds the exact M5 actor/economy defaults, so Littlewild and Emberworks retain their established behavior. Profiles may tune validated numeric actor and economy rules; they cannot register systems, callbacks, handlers, methods or new component types.
+
+Scenario-aware exports now use portable envelope 10 and fingerprint the selected profile and archetype with the experience context. Retained schema-1 packs and envelope-9 experience contexts are validated against their original contracts before an explicit in-memory migration to `standard` / `creature-standard`. Native simulation state remains version 8. Capture, CLI validation, import review and standalone builds now carry the exact simulation selection.
+
 ## ECS M5 — composition cleanup
 
 Replaced the load-order `Engine extends Engine` chain with one stable facade and an explicit systems → colony → world → village → planner → cartography composition root. Added a plain authoritative root state plus actor-scoped compatibility view, an inspectable fixed-step pipeline, and a compiled command router that rejects arbitrary dispatch. Historical imports and authored fixtures now use named construction boundaries. M4/M5 canonical scenario traces remain byte-identical.
@@ -18,7 +24,7 @@ Moved authoritative path traversal and elapsed-work progression into named ECS s
 
 - Added a generic, DOM-free ECS world and deterministic scheduler with validated deferred structural changes.
 - Moved creature needs decay, learning fatigue/hysteresis and baseline social decay from the colony loop into data-tuned actor systems.
-- Preserved v8/v9 save records by binding ECS components to existing serialized actor records rather than adding shadow state.
+- Preserved v8 native save records by binding ECS components to existing serialized actor records rather than adding shadow state; M6 carries transient simulation selection in envelope 10.
 - Added standalone ECS and real-engine save/resume regression suites to the v15 verification gate.
 - Kept the historical retained-contract hashes intact; the single intentional `colony.js` migration is explicitly documented and tested.
 - Added `ECS-ARCHITECTURE.md` with ownership rules, target component model and staged extraction plan.
@@ -37,7 +43,7 @@ Corrected builder/approach ownership: choosing a construction approach is a UI d
 
 ## Reusable experiences
 
-Added a complete scenario-pack envelope containing worlds, starting scenes, presentation, tutorials, and all four existing content libraries. Added reversible validation, review/commit, capture-current-scene, JSON import/export, a local CLI and an external-pack build option. New scenario-aware saves use envelope 9; their underlying simulation remains format 8. Legacy stories remain readable without inventing a different geography.
+Added a complete scenario-pack envelope containing worlds, starting scenes, presentation, tutorials, and all four existing content libraries. Added reversible validation, review/commit, capture-current-scene, JSON import/export, a local CLI and an external-pack build option. Scenario-aware saves now use envelope 10 and include the exact validated simulation selection; their underlying simulation remains format 8. Envelope 9 experiences and schema-1 packs migrate explicitly to the canonical defaults.
 
 Littlewild and Emberworks are actual input packs. Emberworks changes material/ground colors, names, a shoreline template, resource density, tutorial copy and scene setup. It is also built and browser-tested as a standalone one-pack HTML.
 

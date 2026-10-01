@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:living-worlds:pack:2",
-  "title": "Living Worlds scenario pack v2",
+  "$id": "urn:living-worlds:pack:1",
+  "title": "Living Worlds scenario pack",
   "type": "object",
   "properties": {
     "format": {
       "const": "living-worlds-pack"
     },
     "schemaVersion": {
-      "const": 2
+      "const": 1
     },
     "id": {
       "type": "string",
@@ -82,9 +82,6 @@
         "growth"
       ],
       "additionalProperties": false
-    },
-    "simulation": {
-      "$ref": "#/$defs/simulation"
     }
   },
   "required": [
@@ -98,7 +95,6 @@
     "worlds",
     "scenes",
     "tutorial",
-    "simulation",
     "libraries"
   ],
   "additionalProperties": false,
@@ -405,14 +401,6 @@
         },
         "initialState": {
           "type": "object"
-        },
-        "ruleProfileId": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "actorArchetypeId": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
         }
       },
       "required": [
@@ -420,9 +408,7 @@
         "name",
         "description",
         "worldId",
-        "initialState",
-        "ruleProfileId",
-        "actorArchetypeId"
+        "initialState"
       ],
       "additionalProperties": false
     },
@@ -466,411 +452,6 @@
         "title",
         "body",
         "action"
-      ],
-      "additionalProperties": false
-    },
-    "actorRules": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-actor-rules"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "learning": {
-          "type": "object",
-          "properties": {
-            "playfulFatigue": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "standardFatigue": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "recoveryRate": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "recoverAt": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            },
-            "limitAt": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            }
-          },
-          "required": [
-            "playfulFatigue",
-            "standardFatigue",
-            "recoveryRate",
-            "recoverAt",
-            "limitAt"
-          ],
-          "additionalProperties": false
-        },
-        "feelings": {
-          "type": "object",
-          "properties": {
-            "socialRate": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "socialPreferenceRate": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "angerRate": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            }
-          },
-          "required": [
-            "socialRate",
-            "socialPreferenceRate",
-            "angerRate"
-          ],
-          "additionalProperties": false
-        },
-        "needs": {
-          "type": "object",
-          "properties": {
-            "workingKinds": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "pattern": "^[a-z][a-z0-9_-]{0,50}$"
-              },
-              "minItems": 1,
-              "maxItems": 32,
-              "uniqueItems": true
-            },
-            "foodWork": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "foodIdle": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "waterWork": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "waterIdle": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "energyWork": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "energyIdle": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "walkLoadFactor": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "comfortShelter": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "comfortWithoutShelter": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            },
-            "joyRate": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 10
-            }
-          },
-          "required": [
-            "workingKinds",
-            "foodWork",
-            "foodIdle",
-            "waterWork",
-            "waterIdle",
-            "energyWork",
-            "energyIdle",
-            "walkLoadFactor",
-            "comfortShelter",
-            "comfortWithoutShelter",
-            "joyRate"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "learning",
-        "feelings",
-        "needs"
-      ],
-      "additionalProperties": false
-    },
-    "economyRules": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-economy-rules"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "xp": {
-          "type": "object",
-          "properties": {
-            "base": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000000
-            },
-            "perLevel": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "playerResearchPerLevel": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "actorBondPerLevel": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 100
-            }
-          },
-          "required": [
-            "base",
-            "perLevel",
-            "playerResearchPerLevel",
-            "actorBondPerLevel"
-          ],
-          "additionalProperties": false
-        },
-        "income": {
-          "type": "object",
-          "properties": {
-            "pocketShare": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1
-            }
-          },
-          "required": [
-            "pocketShare"
-          ],
-          "additionalProperties": false
-        },
-        "limits": {
-          "type": "object",
-          "properties": {
-            "balance": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000000000000000
-            },
-            "delta": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000000000000
-            },
-            "level": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000000000
-            },
-            "stat": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000000000000000
-            }
-          },
-          "required": [
-            "balance",
-            "delta",
-            "level",
-            "stat"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "xp",
-        "income",
-        "limits"
-      ],
-      "additionalProperties": false
-    },
-    "ruleProfile": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-ecs-rule-profile"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "actor": {
-          "$ref": "#/$defs/actorRules"
-        },
-        "economy": {
-          "$ref": "#/$defs/economyRules"
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "id",
-        "name",
-        "description",
-        "actor",
-        "economy"
-      ],
-      "additionalProperties": false
-    },
-    "compositionArchetype": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-composition-archetype"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "entity": {
-          "const": "creature"
-        },
-        "persistentComponents": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "Transform",
-              "Needs",
-              "Learning",
-              "Feelings",
-              "Inventory"
-            ]
-          },
-          "minItems": 5,
-          "maxItems": 5,
-          "uniqueItems": true
-        },
-        "transientComponents": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "Activity",
-              "Task",
-              "Intent"
-            ]
-          },
-          "minItems": 3,
-          "maxItems": 3,
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "id",
-        "name",
-        "description",
-        "entity",
-        "persistentComponents",
-        "transientComponents"
-      ],
-      "additionalProperties": false
-    },
-    "simulation": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-simulation-content"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "ruleProfiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ruleProfile"
-          },
-          "minItems": 1,
-          "maxItems": 8
-        },
-        "compositionArchetypes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/compositionArchetype"
-          },
-          "minItems": 1,
-          "maxItems": 8
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "ruleProfiles",
-        "compositionArchetypes"
       ],
       "additionalProperties": false
     }

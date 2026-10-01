@@ -14,6 +14,7 @@ require('./ecs.js');
 require('./actor-ecs.js');
 require('./world-ecs.js');
 require('./economy-ecs.js');
+require('./simulation-content.js');
 require('./simulation-pipeline.js');
 require('./colony.js');
 require('./world-content.js');

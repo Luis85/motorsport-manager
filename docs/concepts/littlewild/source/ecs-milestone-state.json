@@ -1,6 +1,6 @@
 {
-  "milestone": "M5",
-  "sha256": "a79d53124b96729ee171333d834d6d6f94ab9ee7b76bb999b58b43312ca9f423",
-  "scope": "composition-source-manifest-v1",
-  "files": 20
+  "milestone": "M6",
+  "sha256": "68bc9530becd7b0f66c65e666cd8fd38db28d3ea3d87302249d1e948852aaaa4",
+  "scope": "simulation-content-source-manifest-v1",
+  "files": 21
 }

@@ -13,6 +13,7 @@ source=lambda name:'source/'+name
 suites=[
  ('ecs-core',['node',source('test-ecs.cjs')],source('ecs-results.json'),120),
  ('engine-composition',['node',source('test-engine-composition.cjs')],source('engine-composition-results.json'),180),
+ ('simulation-content',['node',source('test-simulation-content.cjs')],source('simulation-content-results.json'),180),
  ('ecs-activity',['node',source('test-ecs-activity.cjs')],source('ecs-activity-results.json'),120),
  ('ecs-world',['node',source('test-ecs-world.cjs')],source('ecs-world-results.json'),120),
  ('ecs-economy',['node',source('test-economy-ecs.cjs')],source('economy-ecs-results.json'),120),

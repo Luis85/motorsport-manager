@@ -1,3 +1,9 @@
+## ECS M6 review
+
+`simulation-content.js` is the sole installation boundary for scenario-selected actor/economy rules and creature composition metadata. It accepts bounded JSON-only documents, delegates numeric rule validation to the existing actor/economy authorities, canonicalizes the one supported dependency-complete creature archetype, freezes the result, and installs fresh services on one engine. It cannot register systems, callbacks, commands, methods, or new component implementations. The selected definition is non-enumerable transient metadata and is absent from native v8 exports.
+
+Scenario-pack schema 2 and portable envelope 10 make the selection explicit. The retained schema-1 contract and envelope-9 context are validated before migration; unsupported versions are rejected rather than guessed. Portable exports use the engine's actual active selection. Candidate pack validation remains reversible because profiles are engine-specific instead of process-global, and failed file reads clear stale migration notices.
+
 ## ECS M5 review
 
 `LW.Engine` now has one stable identity. Feature modules register composition descriptors and never replace the constructor; the final facade has no runtime superclass tower. Existing `super` contracts are captured during composition so behavior remains unchanged, while explicit partial boundaries preserve historical imports and fixture setup. `engine.state` is plain authoritative data and `engine.s` is an actor-scoped view, eliminating accessors on save records.
@@ -27,8 +33,9 @@ The actual v14 source ZIP was recovered and checked. Earlier v15 material consis
 |---|---|
 | `world-profile.js` | Detached, frozen active geography/palette profile, cached identity and reversible temporary profile |
 | `scenario-shape.js` | Bounded subset evaluator for the bundled scenario schema; not a general untrusted-schema interpreter |
-| `scenario-runtime.js` | Pack validation, world reachability, reversible four-library staging, detached scene preview and commit |
-| `scenario-story.js` | Version-9 experience metadata around the original portable-story codec |
+| `simulation-content.js` | Versioned rule-profile and known composition-archetype validation; engine-specific transient service installation |
+| `scenario-runtime.js` | Pack validation/migration, profile/archetype resolution, world reachability, reversible four-library staging, detached scene preview and commit |
+| `scenario-story.js` | Envelope-10 experience metadata, exact active simulation selection, and retained envelope-9 migration around the native codec |
 | `scenario-ui.js` | Pack catalog, file-read lifecycle, confirmation and exports |
 | `build-panel.js` | Non-modal construction catalog/detail/drafts with explicit creature assignment |
 | `guide-panel.js` | Non-modal, authored, resumable guidance |
@@ -55,4 +62,4 @@ Future extraction should proceed by responsibility with behavioral fixtures, not
 
 `ecs.js` now owns deterministic entity/component storage, structural command buffering, queries and explicit system scheduling. `actor-ecs.js` owns actor needs, learning fatigue and baseline social decay, with tuning in `content/actor-rules.json`. `colony.js` has one intentional numerical-loop extraction; all other historical pinned v14 sources remain hash-gated. `source/fixtures/ecs-migration.json` documents and narrows that exception.
 
-Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. See `ECS-ARCHITECTURE.md` for M2–M6.
+Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. The planned M1–M6 migration is complete; see `ECS-ARCHITECTURE.md` for preserved boundaries and deliberate remaining compatibility debt.

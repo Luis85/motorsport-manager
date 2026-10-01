@@ -48,7 +48,7 @@ Actor commands execute through `commandActor`; world commands invoke their named
 
 ## Preserved contracts
 
-- Simulation state remains version 8; portable stories remain envelope 9.
+- Simulation state remains version 8. M5 shipped with portable envelope 9; M6 deliberately evolves scenario-aware stories to envelope 10 while retaining envelope-9 import.
 - ECS services, composition descriptors, command manifests, pipelines, and actor views are transient.
 - Littlewild and Emberworks use the same mechanics and schemas.
 - Existing static import migrations still validate through each historical format.

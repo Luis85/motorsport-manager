@@ -1,37 +1,66 @@
-# Configurable experiences — authoring contract 1
+# Configurable experiences — authoring contract 2
 
 ## Product boundary
 
-The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting and its authored starts. **Littlewild is a bundled showcase**, alongside Emberworks.
+The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting, its authored starts and a bounded simulation selection. **Littlewild is a bundled showcase**, alongside Emberworks.
 
-The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. Creature rigs, animation programs, world lighting, island dimensions and certain legacy narrative strings remain compiled.
+The implementation separates data from execution. Existing core item, skill and building IDs remain mechanic roles. Their names, costs, recipes and supported settings are editable through the four established libraries; arbitrarily removing or renaming those roles, adding executable handlers, changing scheduler order or registering a new component type is unsupported. Creature rigs, animation programs, world lighting, island dimensions and some legacy narrative strings remain compiled.
 
 ## Supported configuration
 
 | Concern | JSON location | Runtime effect |
 |---|---|---|
-| Identity | `id`, `name`, `version`, `presentation` | Window/brand title, tagline, world subtitle, selected UI accent/paper/ink |
+| Identity | `id`, `name`, `version`, `presentation` | Window title, tagline, world subtitle and selected UI palette |
 | Terrain | `worlds[].terrain` | Actual 19×19 land/water cells used by drawing and navigation |
 | Regions | `biomeNames` | Names shown for the existing four biome roles |
 | Resources | `resourceCounts`, `fixedSites` | New-island harvesting distribution and exact authored sites |
 | Visual palette | `groundColors`, `materialColors` | Ground palette and procedural material-color substitutions |
-| Starting scenes | `scenes[].initialState` | Actual creatures, holdings, buildings, needs, skills, orders, player progression and owned islands |
+| Starting scenes | `scenes[].initialState` | Creatures, holdings, buildings, needs, skills, orders, progression and owned islands |
 | Guidance | `tutorial[]` | Ordered steps with supported real-workspace links |
-| Mechanics/tuning | `libraries.base/adventure/world/growth` | Existing definition schemas and supported configuration from all prior systems |
+| Definitions | `libraries.base/adventure/world/growth` | Existing versioned content contracts and supported mechanics data |
+| ECS tuning | `simulation.ruleProfiles[]` | Validated actor-needs, learning, feelings, economy, XP and settlement coefficients |
+| ECS composition | `simulation.compositionArchetypes[]` | A known, dependency-complete creature component contract |
+| Scene selection | `ruleProfileId`, `actorArchetypeId` | Chooses one published profile and archetype for a starting scene |
+
+## World profiles
 
 World profiles reuse the existing square-island lattice: 19×19 cells, stride 23, one crossing on each edge, connected purchased neighbors. Eight profiles and eight scenes per pack are supported; a scene selects one profile for its connected archipelago. This is not simultaneous different terrain templates per island or arbitrary scene-to-scene creature travel.
 
-A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 traversable so existing bridge crossings remain valid. All land must be connected; blocking fixed nodes must not seal access. Node counts are bounded to 0–30 per existing harvest role. Counts describe generation requests, not a guarantee that dense/blocked terrain can accommodate every requested node.
+A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 traversable so existing bridge crossings remain valid. All land must be connected; blocking fixed nodes must not seal access. Node counts are bounded to 0–30 per existing harvest role. Counts describe generation requests, not a guarantee that dense or blocked terrain can accommodate every request.
 
-`placementPolicy: "reserved-sites"` protects fixed-site coordinates from random generation. Bundled new packs use it. `legacy` reproduces old v14 generation for existing stories. Changing a generator does not retroactively refill or relocate existing saved nodes.
+`placementPolicy: "reserved-sites"` protects fixed-site coordinates from random generation. Bundled packs use it. `legacy` reproduces old v14 generation for existing stories. Changing a generator does not retroactively refill or relocate existing saved nodes.
+
+## Versioned simulation content
+
+Scenario-pack schema 2 requires a `littlewild-simulation-content` document. It may contain up to eight rule profiles and eight composition archetypes. Each definition has a stable ID and its own schema version.
+
+A rule profile wraps complete actor and economy rule manifests. The bundled `standard` profile contains the exact compatibility values from `actor-rules.json` and `economy-rules.json`. Numeric tuning is data-driven, but the meaning and execution of each field remain compiled. A profile cannot add a system, callback, command, expression, script, URL or event handler.
+
+Composition archetype version 1 declares the established creature contract:
+
+```json
+{
+  "format": "littlewild-composition-archetype",
+  "schemaVersion": 1,
+  "id": "creature-standard",
+  "name": "Standard creature",
+  "description": "A creature bound to the complete actor pipeline.",
+  "entity": "creature",
+  "persistentComponents": ["Transform", "Needs", "Learning", "Feelings", "Inventory"],
+  "transientComponents": ["Activity", "Task", "Intent"]
+}
+```
+
+Version 1 deliberately requires that complete dependency set. Renaming components, omitting dependencies or adding `Renderer`, `Script`, custom systems or arbitrary component names is rejected. This is a versioned compatibility declaration, not a general ECS scripting language.
 
 ## Recommended workflow
 
-1. Open a bundled scene that resembles the desired start, and configure it through normal gameplay or the supported definition tools.
-2. Use **More → Worlds & scenarios → Capture current scene**. This creates a complete editable pack with the current canonical native state and exact four libraries.
-3. Edit identity, palettes, world layout, text, starting state and library values in an external JSON tool. Keep IDs/references and active work consistent. Create additional scenes by copying a scene and assigning a unique ID; each must reference a declared world.
-4. Validate with the CLI, import into the catalog, review a starting scene, then explicitly launch it. Validating and selecting do not replace the active story.
-5. For a dedicated distributable, compile with `--pack`.
+1. Open a bundled scene that resembles the desired start and configure it through normal gameplay or the supported definition tools.
+2. Use **More → Worlds & scenarios → Capture current scene**. The output is a complete schema-2 pack with canonical native state, all four libraries, and the active rule profile and archetype.
+3. Edit identity, palettes, world layout, text, starting state, libraries and supported numeric profile fields in an external JSON tool. Keep IDs, references and active work consistent.
+4. Create additional scenes by copying a scene, assigning a unique ID, and selecting declared `worldId`, `ruleProfileId` and `actorArchetypeId` values.
+5. Validate with the CLI, import into the catalog, review a starting scene, then explicitly launch it. Validation and selection never replace the active story.
+6. For a dedicated distributable, compile with `--pack`.
 
 ```sh
 node source/tools/scenario-cli.cjs validate source/content/emberworks.pack.json
@@ -40,15 +69,13 @@ node source/tools/scenario-cli.cjs capture my-story.json captured.pack.json
 python source/build.py --pack my-setting.pack.json --output my-setting.html
 ```
 
-The build bundles the chosen pack, engine, original compatibility libraries and Three.js into the output. It does not require a runtime file server. The external-pack option needs Node.js for semantic validation; the ordinary built-in build needs only Python.
+The CLI reports `sourceSchemaVersion` and compatibility migration notes. It never rewrites the input. The build bundles the chosen pack, engine, retained schemas, libraries and Three.js into one offline HTML file.
 
 ## Scene state is a precise snapshot
 
-`initialState` is the canonical native **state**, not the outer portable-save envelope and not an unrestricted bag of display properties. Begin with a capture rather than an empty object. Player fields are `level`, `xp`, `coins`; companions reside in `colony.creatures`. Their names, own inventories, equipment, skills, needs and assignments are separate. Buildings, nodes, world inventories, work claims, homes, island identities, quest origins and ID counters must agree.
+`initialState` is canonical native **state**, not the outer portable-save envelope and not an unrestricted bag of display properties. Begin with a capture rather than an empty object. Player fields are `level`, `xp`, `coins`; companions reside in `colony.creatures`. Their names, inventories, equipment, skills, needs and assignments are separate. Buildings, nodes, world inventories, work claims, homes, island identities, quest origins and ID counters must agree.
 
-Validation rejects unknown scene-root and player fields, normalization mismatches, invalid coordinates and inconsistent native commitments. Other nested records retain their existing subsystem validators; this is not a claim that the scenario JSON Schema alone exhaustively describes every native save field.
-
-Example edits to a captured pack:
+Validation rejects unknown scene-root and player fields, normalization mismatches, invalid coordinates and inconsistent native commitments. Other nested records retain their existing subsystem validators; scenario JSON Schema alone does not exhaustively describe every native save invariant.
 
 ```python
 import json
@@ -59,28 +86,34 @@ pack['name'] = 'Harbor Keepers'
 pack['presentation']['title'] = 'Harbor Keepers'
 pack['worlds'][0]['name'] = 'Quiet Anchorage'
 pack['scenes'][0]['initialState']['player']['coins'] = 150
-pack['scenes'][0]['initialState']['colony']['creatures'][0]['name'] = 'Tern'
+pack['scenes'][0]['ruleProfileId'] = 'standard'
 Path('harbor-keepers.pack.json').write_text(json.dumps(pack, indent=2))
 ```
 
-Validate the resulting file. A change to a name is not a change to an identity. Avoid editing paid work, quest settlements or identity counters by hand unless all their native invariants are understood.
+Validate the result. A change to a name is not a change to an identity. Avoid editing paid work, quest settlements or identity counters by hand unless all native invariants are understood.
 
 ## Tutorial actions
 
-Allowed actions: `select`, `care`, `learn`, `home`, `planner`, `research`, `quests`, `growth`, `market`, `save`, `map`. They route to existing interfaces. They do not grant inventory, bypass research or mark a real task complete. One to 31 authored steps are supported. Tutorial progress is positional in the existing story field; changing/reordering a guide is safest as a new scene/pack version, not a live history rewrite.
+Allowed actions are `select`, `care`, `learn`, `home`, `planner`, `research`, `quests`, `growth`, `market`, `save` and `map`. They route to existing interfaces. They do not grant inventory, bypass research or mark a real task complete. One to 31 authored steps are supported. Tutorial progress is positional in the existing story field; changing or reordering a guide is safest as a new scene or pack version.
 
-## Safety and persistence
+## Migration and persistence
 
-Packs are at most 8 MiB, bounded in count and string length, and cannot contain executable scripts. The bundled schema validates shape; existing library/native validators check mechanics and references. Staging temporarily installs validated data only within synchronous reversible scopes. Failed validation restores previous registries and profile. Imports populate a read-only catalog; scene replacement requires a separate confirmation.
+| Input | Handling |
+|---|---|
+| Scenario pack schema 2 | Validated directly, including profile/archetype shape and ID references |
+| Scenario pack schema 1 | Validated against retained `scenario-v1.schema.json`, then migrated in memory to `standard` / `creature-standard` |
+| Scenario-aware story envelope 10 | Restores the exact fingerprinted simulation selection |
+| Scenario-aware story envelope 9 | Fingerprint checked first, then migrated explicitly to the standard selection with a review note |
+| Ordinary native stories 1–8 | Existing story and library migrations remain authoritative |
 
-Scenario-aware portable saves use version **9**, with exact experience context, its world profile/tutorial and four existing libraries. The native simulation payload remains version 8. Legacy saves retain their original library/geography compatibility. Device graphics and pause preferences remain separate from the scene context.
+The native simulation payload remains version 8. Profiles, archetype manifests, ECS stores, schedulers and renderer state are transient. Scenario-aware saves use envelope **10** to preserve the exact experience, world, tutorial, four libraries, selected rule profile and selected archetype.
 
-Fingerprints detect accidental changes and stale reviews. They are opaque non-cryptographic IDs, **not signatures, authentication or proof that a pack is trustworthy**. Rejected or delayed file reads cannot reopen a dismissed import. No network resources are loaded from packs.
+## Safety
+
+Packs are at most 8 MiB, bounded in count and string length, and must contain JSON data only. Shape validation is followed by semantic library, world, native-state, profile, archetype and reference validation. Candidate libraries and world profiles are staged only within synchronous reversible scopes. Simulation selections are engine-specific and cannot leak into the active story during preview.
+
+Fingerprints detect accidental changes and stale reviews. They are opaque non-cryptographic IDs, **not signatures, authentication or proof that a pack is trustworthy**. Rejected or delayed file reads cannot reopen a dismissed import. Packs load no network resources.
 
 ## Still required for a fully general framework
 
-A complete setting-neutral runtime would additionally need configurable capability/role bindings, arbitrary content-ID catalogs, extracted mechanics constants and narrative vocabulary, renderer/rig asset descriptors, and richer topologies. This release provides tested world/scene repurposing within the current systems. It does not advertise unimplemented generality or a visual world editor.
-
-## Actor rules and ECS migration
-
-`source/content/actor-rules.json` contains validated default physiological, learning-fatigue and baseline social coefficients executed by the actor ECS. The file is embedded into standalone builds, but it is **not** yet a scene-pack override: v9 portable stories still serialize the existing creature records and their exact four established libraries. Arbitrary systems, executable callbacks, runtime component types and actor-rule changes through imported scenario JSON remain unsupported. A scenario-level rule profile requires its own versioned compatibility contract.
+A setting-neutral runtime would additionally need configurable capability and role bindings, arbitrary content-ID catalogs, more extracted narrative vocabulary, renderer and rig asset descriptors, richer topologies, versioned component implementations and safe system-extension APIs. This contract provides tested world, scene, numeric tuning and known creature-composition repurposing within current systems. It does not advertise executable modding, a visual world editor or arbitrary ECS construction.

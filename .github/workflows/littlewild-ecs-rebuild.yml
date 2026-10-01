@@ -1,123 +1,33 @@
-# One-shot M6 publisher. The verified commit restores this file from its M5 parent.
-name: Littlewild ECS M6 publication
+name: Littlewild ECS verification
 on:
   push:
     branches:
       - concept/littlewild-v15-world-ui
     paths:
+      - 'docs/concepts/littlewild/**'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
+  pull_request:
+    paths:
+      - 'docs/concepts/littlewild/**'
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
+  workflow_dispatch:
 permissions:
-  contents: write
-  issues: read
+  contents: read
 concurrency:
-  group: littlewild-ecs-m6-${{ github.ref }}
-  cancel-in-progress: false
+  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
-  publish:
-    if: github.actor != 'github-actions[bot]'
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: concept/littlewild-v15-world-ui
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Recover and apply checksum-pinned M6 source patch
-        id: milestone
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/m6-comment-pages.json
-          python - <<'PYCODE'
-          from pathlib import Path
-          import base64, gzip, hashlib, json, subprocess
-
-          pages = json.loads(Path('/tmp/m6-comment-pages.json').read_text())
-          comments = [comment for page in pages for comment in page]
-          marker = '<!-- ecs-m6-chunk-meta -->'
-          metas = [comment for comment in comments if marker in comment.get('body', '')]
-          if not metas:
-              raise SystemExit('No M6 chunk metadata found.')
-          payload = json.loads(metas[-1]['body'].split(marker, 1)[1].strip())
-
-          expected = {
-              'transport': 'm6-9a4a55da48',
-              'milestone': 'M6',
-              'base': '5bea7919778cfe9eacfeaa0752caed4f9b2c5fba',
-              'commitMessage': 'refactor(littlewild): complete ECS M6 content evolution',
-              'sha256': '9a4a55da48aadaf784d340357d6012adfaeeabab7d77a8bb9b1b4444f2d84953',
-              'gzipSha256': '4deb42711c2413a4180f4bb47528339a76eb3b1865adb7688709709990b0526e',
-              'encoding': 'gzip+base64-chunks',
-              'chunks': 9,
-              'encodedChars': 57556,
-              'expectedChecks': 987,
-              'expectedSuites': 26,
-              'htmlSha256': '30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d',
-              'htmlBytes': 3786469,
-              'sourceManifestSha256': '68bc9530becd7b0f66c65e666cd8fd38db28d3ea3d87302249d1e948852aaaa4',
-          }
-          for key, value in expected.items():
-              if payload.get(key) != value:
-                  raise SystemExit(f'Unexpected M6 payload {key}: {payload.get(key)!r}')
-
-          hashes = [
-              '0c304b6c661ef01de2c7c86cb4ffdfce18090526a023c4b83f48277c9421e326',
-              'b1f9ec32c93c3b0e539e5be46a27aac212bcfd1dbf7784ff6026f1a4a726270e',
-              'bf362033bd649781106f12b0283818b353913ab141e2e8cda66f4a0d67a7bed9',
-              '91457899b70139b6a483c8668369b7d06673aa2da31daf1e7a006f6cb6765343',
-              'd22ce5da85bf3e41456b78dd1f9804dde0ec9eebcbdc636ba06dbe2986931760',
-              '3edee1038f2cb60c5bb0f4843d226f95e85a0b28db331f65650e33f602394c75',
-              '2006475d2ea1e3d7514abafbfdb452ea1faee14b7354f811bddf2b60dbb77dd0',
-              '62fbf06a6b53682a6fd4522ee481b2a92a6ae72baac678e3ec84bfc305fbe2d5',
-              '5df8166eb3ba7f853048e493296cd55391d8932b9e83583e7bd4cfec1bd4c834',
-          ]
-          if payload.get('chunkSha256') != hashes:
-              raise SystemExit('Invalid M6 chunk checksum manifest.')
-
-          prefix = f"<!-- ecs-m6-chunk:{payload['transport']}:"
-          chunks = {}
-          for comment in comments:
-              body = comment.get('body', '')
-              if body.startswith(prefix):
-                  head, data = body.split('-->', 1)
-                  chunks[int(head[len(prefix):].strip())] = data.strip()
-          indices = list(range(payload['chunks']))
-          if sorted(chunks) != indices:
-              raise SystemExit(f'Incomplete M6 chunks: {sorted(chunks)}')
-          for index in indices:
-              digest = hashlib.sha256(chunks[index].encode()).hexdigest()
-              if digest != hashes[index]:
-                  raise SystemExit(f'M6 chunk {index} checksum mismatch: {digest}')
-              Path(f'/tmp/m6-chunk-{index}.txt').write_text(chunks[index])
-
-          encoded = ''.join(chunks[index] for index in indices)
-          Path('/tmp/m6-encoded.txt').write_text(encoded)
-          if len(encoded) != payload['encodedChars']:
-              raise SystemExit(f'M6 encoded length mismatch: {len(encoded)}')
-          compressed = base64.b64decode(encoded, validate=True)
-          if hashlib.sha256(compressed).hexdigest() != payload['gzipSha256']:
-              raise SystemExit('M6 compressed checksum mismatch.')
-          patch = gzip.decompress(compressed)
-          if hashlib.sha256(patch).hexdigest() != payload['sha256']:
-              raise SystemExit('M6 patch checksum mismatch.')
-
-          subprocess.run(['git', 'merge-base', '--is-ancestor', payload['base'], 'HEAD'], check=True)
-          patch_path = Path('/tmp/littlewild-m6.patch')
-          patch_path.write_bytes(patch)
-          subprocess.run(['git', 'apply', '--check', str(patch_path)], check=True)
-          subprocess.run(['git', 'apply', str(patch_path)], check=True)
-          Path('/tmp/m6-commit-message').write_text(payload['commitMessage'])
-          PYCODE
-          echo "message=$(cat /tmp/m6-commit-message)" >> "$GITHUB_OUTPUT"
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
         run: |
@@ -125,77 +35,17 @@ jobs:
           python -m playwright install --with-deps chromium
           CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Rebuild and verify all M6 contracts
+      - name: Rebuild and verify all Littlewild contracts
         working-directory: docs/concepts/littlewild
         run: python verify-v15.py
-      - name: Validate evidence and restore read-only verification
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PYCODE'
-          from pathlib import Path
-          import hashlib, json
-
-          gate = json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
-          expected = {
-              'status': 'passed',
-              'passed': 987,
-              'total': 987,
-              'htmlBytes': 3786469,
-              'htmlSha256': '30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d',
-          }
-          for key, value in expected.items():
-              if gate.get(key) != value:
-                  raise SystemExit(f'Unexpected final gate {key}: {gate.get(key)!r}')
-          if len(gate.get('suites', [])) != 26:
-              raise SystemExit(f"Unexpected final suite count: {len(gate.get('suites', []))}")
-          artifact = Path('docs/concepts/littlewild/littlewild.html')
-          if artifact.stat().st_size != expected['htmlBytes']:
-              raise SystemExit('Standalone artifact size mismatch.')
-          if hashlib.sha256(artifact.read_bytes()).hexdigest() != expected['htmlSha256']:
-              raise SystemExit('Standalone artifact identity mismatch.')
-          milestone = json.loads(Path('docs/concepts/littlewild/source/ecs-milestone-state.json').read_text())
-          if milestone.get('milestone') != 'M6':
-              raise SystemExit('M6 milestone state was not published.')
-          if milestone.get('sha256') != '68bc9530becd7b0f66c65e666cd8fd38db28d3ea3d87302249d1e948852aaaa4':
-              raise SystemExit('M6 source manifest checksum mismatch.')
-          PYCODE
-          git show HEAD^:.github/workflows/littlewild-ecs-rebuild.yml > .github/workflows/littlewild-ecs-rebuild.yml
-          test "$(git hash-object .github/workflows/littlewild-ecs-rebuild.yml)" = "0fb9ebcdb01b3c8584234b0ad60f6193874b0cf7"
-          git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
-          git checkout HEAD -- \
-            docs/concepts/littlewild/source/v10-domain-results.json \
-            docs/concepts/littlewild/source/v10-fresh-story.json \
-            docs/concepts/littlewild/source/v10-regression-v6-test-results.json \
-            docs/concepts/littlewild/source/v10-regression-v8-test-results.json \
-            docs/concepts/littlewild/source/v10-stress-results.json \
-            docs/concepts/littlewild/source/v11-domain-results.json
-      - name: Commit and push verified M6 milestone
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PYCODE'
-          from pathlib import Path
-          for path in Path('docs/concepts/littlewild/verification/v15').glob('*.log'):
-              path.write_text(path.read_text().rstrip() + '\n')
-          PYCODE
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A docs/concepts/littlewild .github/workflows/littlewild-ecs-rebuild.yml
-          git diff --cached --check
-          git commit -m "${{ steps.milestone.outputs.message }}"
-          git push
-      - name: Retain M6 verification evidence
+      - name: Retain verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: littlewild-ecs-m6-verification
+          name: littlewild-ecs-verification
           path: |
-            /tmp/littlewild-m6.patch
-            /tmp/m6-encoded.txt
-            /tmp/m6-chunk-*.txt
             docs/concepts/littlewild/littlewild.html
             docs/concepts/littlewild/verification/v15/
             docs/concepts/littlewild/source/*-results.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14

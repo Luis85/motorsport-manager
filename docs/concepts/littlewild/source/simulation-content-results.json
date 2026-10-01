@@ -1,0 +1,103 @@
+{
+  "passed": 24,
+  "total": 24,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Default simulation content is versioned, validated, and deeply frozen",
+      "passed": true
+    },
+    {
+      "name": "Exported defaults are detached data",
+      "passed": true
+    },
+    {
+      "name": "Compatibility profile exactly embeds the authoritative actor and economy defaults",
+      "passed": true
+    },
+    {
+      "name": "Rule profiles reject executable and unknown fields",
+      "passed": true
+    },
+    {
+      "name": "Rule profiles reject unsupported profile and nested rule versions",
+      "passed": true
+    },
+    {
+      "name": "Composition archetypes accept only the known dependency-complete component contract",
+      "passed": true
+    },
+    {
+      "name": "Simulation sets reject duplicate profile and archetype identities",
+      "passed": true
+    },
+    {
+      "name": "Every bundled pack publishes resolvable profile and archetype references",
+      "passed": true
+    },
+    {
+      "name": "Unknown scene profile and archetype references fail before registry mutation",
+      "passed": true
+    },
+    {
+      "name": "Scenario-selected actor and economy tuning is installed on the real engine",
+      "passed": true
+    },
+    {
+      "name": "Simulation content remains transient and native state stays version 8",
+      "passed": true
+    },
+    {
+      "name": "Schema-1 packs migrate deliberately to current defaults without mutating input",
+      "passed": true
+    },
+    {
+      "name": "Migrated schema-1 packs launch and continue under the standard profile",
+      "passed": true
+    },
+    {
+      "name": "Current scenario stories use envelope 10 with an exact simulation snapshot",
+      "passed": true
+    },
+    {
+      "name": "Portable stories snapshot the engine's active selection instead of stale context metadata",
+      "passed": true
+    },
+    {
+      "name": "Envelope-10 profile tampering is rejected before any active registry changes",
+      "passed": true
+    },
+    {
+      "name": "Envelope-10 executable or unsupported simulation data is rejected even with a refreshed fingerprint",
+      "passed": true
+    },
+    {
+      "name": "Envelope-9 experience snapshots migrate explicitly to standard simulation content",
+      "passed": true
+    },
+    {
+      "name": "Custom-profile save and restore preserves deterministic continuation",
+      "passed": true
+    },
+    {
+      "name": "Captured packs preserve the selected profile and archetype as self-contained data",
+      "passed": true
+    },
+    {
+      "name": "Definition-library edits retain the engine-specific simulation selection",
+      "passed": true
+    },
+    {
+      "name": "Applying a profile validates actor composition before replacing runtimes",
+      "passed": true
+    },
+    {
+      "name": "Selection objects are detached, immutable, and absent from authoritative state",
+      "passed": true
+    },
+    {
+      "name": "M6 source manifest matches the exact simulation-content authority files",
+      "passed": true
+    }
+  ]
+}

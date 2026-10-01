@@ -1,4 +1,4 @@
-> **v15 integration note:** This retained reference describes the four existing content libraries. For reusable worlds/scenes and portable envelope 9, read `CONFIGURATION.md`. Native state and legacy stories remain version 8.
+> **v15 integration note:** This retained reference describes the four existing content libraries. For reusable worlds/scenes, simulation profiles, composition archetypes and portable envelope 10, read `CONFIGURATION.md`. Native state and legacy stories remain version 8; envelope 9 experiences migrate explicitly.
 
 > V14 compatibility note: these mechanics, content formats and pause rules are retained unchanged. See README.md, CHANGELOG.md and VERIFICATION.md for the current presentation changes and release evidence.
 

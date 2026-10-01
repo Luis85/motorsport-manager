@@ -119,7 +119,7 @@ with sync_playwright() as play:
     check('Confirmed pack launch uses imported companion setup',lambda:equal(p.evaluate('Littlewild.engine.creatures[0].name'),'Rivet'))
     check('Confirmed pack changes real definition names',lambda:equal(p.evaluate('LW.BUILDINGS.bench.name'),'Assembly bench'))
     check('World terrain reads the selected authored profile',lambda:equal(p.evaluate('LWGeography.islandTerrain(14,1)'),'water'))
-    check('Scenario save envelope includes the exact world template',lambda:equal(p.evaluate('Littlewild.snapshot().version'),9))
+    check('Scenario save envelope includes the exact world template and simulation selection',lambda:equal(p.evaluate('Littlewild.snapshot().version'),10))
     p.screenshot(path=str(SHOTS/'05-emberworks.png'))
     p.evaluate("Littlewild.open('scenarios')")
     with p.expect_download() as dl:p.locator('[data-scenario=capture]').click()

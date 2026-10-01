@@ -1,25 +1,38 @@
-# Littlewild v15: compact world panels and configurable scenario packs
+# Littlewild v15: data-driven worlds and ECS M1–M6
 
 ## Scope
 
-Add only `docs/concepts/littlewild/`. No native Motorsport Manager runtime, content, CI or quality-policy changes.
+This change remains confined to `docs/concepts/littlewild/` and its dedicated verification workflow. Native Motorsport Manager gameplay code is not modified.
 
-The existing Littlewild browser showcase gains compact non-modal Build/Tutorial panels, shared spacing, explicit assignment drafts, keyboard world/panel navigation, and a reusable scenario pack with two independently runnable settings (Littlewild and Emberworks). The existing simulation remains the behavioral base. This is not an unrestricted engine: stable mechanic roles, handlers, rigs and island topology limits remain documented.
+Littlewild v15 provides reusable scenario packs, compact world-facing UI, and a compatibility-preserving ECS migration through M6. M1–M4 establish actor, activity, physical-world, economy, quest, and progression boundaries. M5 replaces the load-order constructor chain with one stable facade, explicit composition, actor-scoped state views, a visible simulation pipeline, and a fail-closed command router. M6 adds versioned, data-only simulation profiles and known composition archetypes with deliberate pack/story migrations.
+
+## M6
+
+- Scenario-pack schema 2 adds a bounded simulation-content set and explicit scene references.
+- Rule-profile version 1 wraps complete validated actor and economy rule manifests.
+- Composition-archetype version 1 publishes only the existing dependency-complete creature contract.
+- Native simulation state remains version 8.
+- Scenario-aware portable stories use envelope 10 and fingerprint the exact selected profile/archetype with the world context.
+- Retained schema-1 packs and envelope-9 contexts migrate explicitly to the canonical defaults after validation against their original contracts.
+- Imported JSON cannot register systems, callbacks, commands, methods, component implementations, or executable behavior.
 
 ## Verification
 
-- 871 checks passed across 17 suites; 105 browser checks.
-- Supplied v14 HTML baseline: `3ee1c7f043f2c0e8a1fff3720ede5cf63950793857f89ea9fb141a7619824b0d`.
-- Final HTML: `acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032`.
-- Reversible pack validation, real imports/downloads, actual placement to a second creature, valid scene/save continuation and six window sizes covered.
-- Independent source rebuild recorded in `delivery-manifest.json`.
-- Hardware WebGL, physical devices, screen readers and human usability not verified; software renderer used for captures.
-- Native Godot full six-shard gate not run because this is an isolated concept addition with no native changes.
+- **987 / 987 checks passed across 26 suites**.
+- M6 simulation content: **24 / 24**.
+- Scenario schema/CLI: **38 / 38**.
+- Browser: **89 / 89**.
+- Browser contracts: **16 / 16**.
+- Standalone artifact: **3,786,469 bytes**.
+- SHA-256: `30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d`.
+- M6 source manifest: `68bc9530becd7b0f66c65e666cd8fd38db28d3ea3d87302249d1e948852aaaa4` across 21 authority files.
 
-## Repository quality note
-
-New cohesive modules and test scripts fit the advisory file-size budgets. Retained prototype legacy modules and the generated offline HTML/vendor bundle exceed them; these are explicit inherited-concept exceptions, not hidden exclusions or changes to native enforcement. Do not interpret historical per-version assertions as current passing results; see VERIFICATION.md for the current gate.
+Detailed executed evidence and limitations are in `VERIFICATION.md` and `ECS-M6-RESULTS.md`.
 
 ## Review
 
-Open `docs/concepts/littlewild/littlewild.html`; choose the charted scene, Build and Guide, then More → Worlds & scenarios → Emberworks. Review CONFIGURATION.md for supported authoring boundaries.
+Open `docs/concepts/littlewild/littlewild.html`; review a bundled scene under **More → Worlds & scenarios** and confirm the displayed Rules and Composition fields. Export a story and inspect envelope 10, then review `CONFIGURATION.md`, `ECS-M6-IMPLEMENTATION.md`, and the retained `source/content/scenario-v1.schema.json` migration boundary.
+
+## Limits
+
+M6 does not create a general entity-definition or scripting language. System order, component implementations, behavior handlers, command handlers, renderer rigs, island topology, and mature domain consequences remain compiled capabilities. Hardware WebGL, physical devices, screen readers, human usability, and balance are not verified by the automated gate.

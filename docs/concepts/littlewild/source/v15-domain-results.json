@@ -8,7 +8,7 @@
       "passed": true
     },
     {
-      "name": "littlewild/first-morning: launches real scene and restores exact v9 state",
+      "name": "littlewild/first-morning: launches real scene and restores exact v10 state",
       "passed": true
     },
     {
@@ -20,7 +20,7 @@
       "passed": true
     },
     {
-      "name": "littlewild/charted-home: launches real scene and restores exact v9 state",
+      "name": "littlewild/charted-home: launches real scene and restores exact v10 state",
       "passed": true
     },
     {
@@ -36,7 +36,7 @@
       "passed": true
     },
     {
-      "name": "emberworks/workshop-first-morning: launches real scene and restores exact v9 state",
+      "name": "emberworks/workshop-first-morning: launches real scene and restores exact v10 state",
       "passed": true
     },
     {
@@ -48,7 +48,7 @@
       "passed": true
     },
     {
-      "name": "emberworks/workshop-charted-home: launches real scene and restores exact v9 state",
+      "name": "emberworks/workshop-charted-home: launches real scene and restores exact v10 state",
       "passed": true
     },
     {
