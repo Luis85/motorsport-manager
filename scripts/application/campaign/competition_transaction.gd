@@ -71,7 +71,8 @@ static func _publish(restored: Dictionary, changed: Dictionary, original: Dictio
 		restored.economy,
 		restored.inventory,
 		restored.personnel,
-		restored.operations
+		restored.operations,
+		restored.engineering
 	)
 	if candidate.is_empty():
 		return _reject("Competition change could not form one valid campaign checkpoint.", original)

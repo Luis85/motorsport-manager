@@ -14,7 +14,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if not RaceCheckpoint.integral(data.get("version"), 1, TacticalDuels.CHECKPOINT_VERSION): return null
 	var native = int(data.version) >= 9
 	var native_styles = int(data.version) >= PRACTICE_CHECKPOINT_VERSION
-	var native_duels = int(data.version) == TacticalDuels.CHECKPOINT_VERSION
+	var native_duels = int(data.version) in [TacticalDuels.LEGACY_CHECKPOINT_VERSION, TacticalDuels.CHECKPOINT_VERSION]
 	if not native_duels and data.has("duel_state"): return null
 	if not native and data.get("phase") in ["practice", "practice_results"]: return null
 	var inherited = data.duplicate(true)
@@ -30,7 +30,7 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	options.rival_styles = false
 	var sim = PracticeRaceSim.new(base.track, options)
 	for key in base.snapshot():
-		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: sim.set(key, base.get(key))
+		if key not in ["kind", "version", "track", "vehicle", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition", "performance_profiles"]: sim.set(key, base.get(key))
 	sim.practice_state = state.duplicate(true)
 	sim.rival_styles = styles.duplicate(true)
 	if native_duels: sim.duel_state = data.duel_state.duplicate(true)

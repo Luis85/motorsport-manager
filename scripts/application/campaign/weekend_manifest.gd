@@ -56,7 +56,7 @@ static func validate(data: Variant) -> String:
 		return "Missing frozen race event identity."
 	if not data.get("race_model") is String or data.race_model.is_empty() or data.race_model.length() > 100:
 		return "Missing frozen race model."
-	if not RaceCheckpoint.integral(data.get("checkpoint_version"), 10, 11):
+	if not RaceCheckpoint.integral(data.get("checkpoint_version"), 10, 12):
 		return "Unsupported frozen race checkpoint."
 	for key in ["track_hash", "roster_hash", "starting_resources_hash", "ruleset_hash"]:
 		if not valid_hash(data.get(key)):

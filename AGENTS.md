@@ -71,6 +71,16 @@ personnel/finance mutations may not orphan work-order reservations or service
 commitments. Legacy facility commitments may be indexed explicitly during
 migration, but must not be assigned fabricated facilities or work orders.
 
+`CampaignEngineering` is the project/design/physical-part authority. Every project
+gate must consume one existing `CampaignOperations` work order; engineering must
+not invent staff time, machine time or project-summary cash. Validation may publish
+a design, production may publish a unique physical instance, and integration may
+install that exact instance on one stable campaign car. These are distinct states.
+Installed parts project to a bounded versioned `RacePerformanceProfile`; race
+construction freezes that profile before simulation. Campaign code may never
+rewrite a live race, final classification or telemetry to simulate an upgrade.
+Legacy race checkpoints retain baseline performance rather than fabricated parts.
+
 ## UI changes
 
 Use `GameTheme` through the existing UI/MinimalRaceStyle adapters for native

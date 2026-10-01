@@ -1,7 +1,7 @@
 class_name RaceContentSnapshot
 extends RefCounted
 ## Explicit content-metadata boundary; never copies arbitrary checkpoint keys into options.
-const RULE_KEYS = ["vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]
+const RULE_KEYS = ["vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition", "performance_profiles"]
 
 static func options(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}

@@ -105,7 +105,7 @@ static func validate(data: Variant) -> String:
 	if (not data.get("digest") is String or data.digest != fingerprint(content)): return "Recording integrity check failed. The source was not replaced."
 	for key in ["initial", "endpoint"]:
 		if not data.get(key) is Dictionary or not valid_types(data[key], data.get(key + "_integers")) or PracticeRaceSim.restore_practice(data[key]) == null: return "Invalid " + key + " checkpoint."
-	if not RaceCheckpoint.integral(data.initial.version, 10, 11) or data.endpoint.version != data.initial.version: return "Replay requires matching native v10 or v11 snapshots. Import older saves through Continue Weekend first."
+	if not RaceCheckpoint.integral(data.initial.version, 10, 12) or data.endpoint.version != data.initial.version: return "Replay requires matching native v10–v12 snapshots. Import older saves through Continue Weekend first."
 	if not equivalent(static_identity(data.initial), static_identity(data.endpoint)): return "Recording changes its frozen track, roster or rules."
 	if absf(float(data.endpoint.total_time) - float(data.initial.total_time) - float(data.steps) * RaceSim.STEP) > 0.00001: return "Recorded time and fixed-step count disagree."
 	if not equivalent(data.manifest, manifest_for(data.initial)): return "Scenario metadata does not match the recorded initial state."
@@ -203,7 +203,7 @@ static func manifest_for(snapshot: Dictionary) -> Dictionary:
 	var rules = {"checkpoint_schema": int(snapshot.version), "weather": snapshot.weather_state.model.mode,
 		"reliability": snapshot.reliability_state.mode, "rival_styles": snapshot.rival_styles.enabled,
 		"race_control": "virtual-neutralization-v1" if snapshot.reliability_state.mode == "staged" else "legacy-speed-cap"}
-	if int(snapshot.version) == 11: rules.tactical_duels = true
+	if int(snapshot.version) >= TacticalDuels.LEGACY_CHECKPOINT_VERSION: rules.tactical_duels = true
 	for key in RaceContentSnapshot.RULE_KEYS:
 		if snapshot.has(key): rules[key] = snapshot[key].duplicate(true)
 	var scenarios: Array = []
@@ -225,7 +225,10 @@ static func static_identity(snapshot: Dictionary) -> Dictionary:
 	return result
 
 static func model_for(snapshot: Dictionary) -> String:
-	return TacticalDuels.MODEL if int(snapshot.get("version", 0)) == 11 else MODEL
+	var version = int(snapshot.get("version", 0))
+	if version == TacticalDuels.CHECKPOINT_VERSION: return TacticalDuels.MODEL
+	if version == TacticalDuels.LEGACY_CHECKPOINT_VERSION: return TacticalDuels.LEGACY_MODEL
+	return MODEL
 
 static func model_supported(data: Dictionary) -> bool:
 	return data.get("initial") is Dictionary and data.get("model") == model_for(data.initial)

@@ -60,6 +60,7 @@ var control_state: Dictionary = {}
 var practice_state: Dictionary = {}
 var rival_styles: Dictionary = {}
 var duel_state: Dictionary = {}
+var performance_profiles: Array = []
 var mechanics: RaceMechanics
 
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
@@ -117,6 +118,14 @@ func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: Ros
 	else:
 		for i in range(ROSTER.size()):
 			cars.append(RaceEntrantFactory.create(ROSTER[i], i, track, laps, scenario, tyre_rules, setup_definition, tuning))
+	if options.has("performance_profiles"):
+		var error = RacePerformanceProfile.validate_set(options.performance_profiles, cars.size())
+		if not error.is_empty():
+			last_error = error
+			return
+		performance_profiles = options.performance_profiles.duplicate(true)
+		for index in range(cars.size()):
+			cars[index].performance_profile = performance_profiles[index].duplicate(true)
 	post("weekend", "%s · %d racing laps · %s" % [track.document.name, laps, track.preset])
 
 func random_value() -> float:
@@ -300,7 +309,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 	var effects = CarSetup.effects(c, local.water)
 	var handling = (1.0 + (c.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor) * lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
 	handling *= 1.0 + (c.wet_skill - tuning.competition.movement.wet_skill_reference) * tuning.competition.movement.wet_skill_factor * local.water
-	var desired = s.speed * sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
+	var desired = s.speed * RacePerformanceProfile.line_factor(c.performance_profile, s.curvature) 		* sqrt(g) * handling * (1 - c.damage * tuning.condition.damage_speed_loss) * tuning.pace.speed_modes[c.pace]
 	desired *= tuning.pace.engine_modes[c.engine]
 	desired *= (1.0 - maxf(0, tuning.condition.health_reference - c.health) * tuning.condition.health_speed_loss) / (1.0 + c.fuel * tuning.fuel.runtime_mass_factor)
 	if absf(s.curvature) < tuning.competition.movement.straight_curvature_per_m: desired *= effects.straight
@@ -350,7 +359,7 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 			if separation > 0: target_lane = maxf(target_lane, minf(c.lane, old[other.id].lane + clearance))
 			elif separation < 0: target_lane = minf(target_lane, maxf(c.lane, old[other.id].lane - clearance))
 	c.lane = move_toward(c.lane, clampf(target_lane, -s.w * 0.5 + 1.1, s.w * 0.5 - 1.1), STEP * tuning.competition.movement.lateral_speed_mps)
-	var limits = track.vehicle_definition.parameters()
+	var limits = RacePerformanceProfile.limits(c.performance_profile, track.vehicle_definition)
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
 	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
 	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
@@ -526,6 +535,7 @@ func _base_snapshot() -> Dictionary:
 	if tuning.authored(): result.tuning_definition = tuning.to_record()
 	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
 	if mechanic_definition != null: result.mechanic_definition = mechanic_definition.to_record()
+	if not performance_profiles.is_empty(): result.performance_profiles = performance_profiles.duplicate(true)
 	return result
 
 static func restore(data: Dictionary) -> RaceSim:
@@ -553,7 +563,7 @@ static func restore(data: Dictionary) -> RaceSim:
 		if sim.tyre_rules.spec(c.compound).is_empty() or sim.tyre_rules.spec(c.next_compound).is_empty() or c.pace < 0 or c.pace > 2 or c.engine < 0 or c.engine > 2: return null
 		if c.route not in ["track", "pit", "garage"] or c.qual_state not in ["garage", "outlap", "hotlap", "inlap"]: return null
 	for key in sim.snapshot():
-		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition"]: continue
+		if key in ["kind", "version", "track", "vehicle", "cars", "vehicle_definition", "roster_definition", "tyre_definition", "setup_definition", "tuning_definition", "weekend_definition", "mechanic_definition", "performance_profiles"]: continue
 		if not data.has(key): return null
 		var expected = sim.get(key)
 		if typeof(expected) in [TYPE_FLOAT, TYPE_INT]:
@@ -572,6 +582,8 @@ static func restore(data: Dictionary) -> RaceSim:
 		if sim.roster_definition != null: car.entry_definition = sim.roster_definition.entrant(car.id)
 		car.tyre_rules = sim.tyre_rules
 		car.setup_definition = sim.setup_definition
+		if not sim.performance_profiles.is_empty():
+			car.performance_profile = sim.performance_profiles[car.id].duplicate(true)
 		sim.cars.append(car)
 	return sim
 
@@ -858,4 +870,5 @@ func content_options() -> Dictionary:
 	if tuning.authored(): result.tuning_definition = tuning.to_record()
 	if weekend_definition != null: result.weekend_definition = weekend_definition.to_record()
 	if mechanic_definition != null: result.mechanic_definition = mechanic_definition.to_record()
+	if not performance_profiles.is_empty(): result.performance_profiles = performance_profiles.duplicate(true)
 	return RaceContentSnapshot.options(result)

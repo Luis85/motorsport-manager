@@ -29,7 +29,7 @@ func run() -> void:
 	check(advance(sim, "grid_ready", 10000) and sim.command("lights") and advance(sim, "race", 1000), "Physical grid and lights reach the race")
 	for id in [3, 6]: sim.command("auto", {"id": id, "value": false})
 	base = sim.snapshot()
-	check(base.version == 11 and PracticeRaceSim.restore_practice(json_copy(base)) != null, "New-model checkpoint v11 restores from JSON")
+	check(base.version == TacticalDuels.CHECKPOINT_VERSION and PracticeRaceSim.restore_practice(json_copy(base)) != null, "Current-model checkpoint restores from JSON")
 	var plan = draft(sim)
 	var before = RaceRecord.fingerprint(sim.snapshot())
 	var preview = TacticalForecast.preview(sim, 3, plan)

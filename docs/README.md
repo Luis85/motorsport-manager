@@ -72,7 +72,7 @@ The 0.15 handoff supersedes the current tactical model and v11 statements. The 0
 
 The 0.7 weather, 0.6 battle/team, 0.5 strategy and 0.4 editor/system documents remain useful for retained behavior except where later handoffs explicitly supersede their UI, model or checkpoint-version statements. No stage is declared human-playtest complete solely because automated checks pass.
 
-The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. Earlier recordings retain `race-weekend-0.12-v1` and checkpoint v10. New tactical recordings use `race-weekend-0.15-duels-v1` and checkpoint v11, with no silent conversion of the original rules. A goal is observed evidence, not an automatic reward.
+The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. Earlier recordings retain `race-weekend-0.12-v1` and checkpoint v10. Historical tactical recordings retain `race-weekend-0.15-duels-v1` and checkpoint v11. New weekends carrying frozen per-car performance profiles use checkpoint v12 and `race-weekend-0.20-performance-v1`; old records are not silently converted. A goal is observed evidence, not an automatic reward.
 
 The 0.14 notebook handoff governs opt-in run history, guarded personal interpretations and remembered challenge outcomes. The 0.12–0.14 work and PR #12 native workspaces are merged into main. All retained suites remain mandatory. Historical handoff counts describe their named revisions; consult the current feature PR and its exact-head `reports/verification.json` for new integration evidence.
 
@@ -80,7 +80,7 @@ The 0.14 notebook handoff governs opt-in run history, guarded personal interpret
 
 [0.19.0 simulation/presentation boundaries](architecture-refactor.md) supersedes older descriptions of UI-owned simulation scheduling and domain-owned recording/catalog I/O.
 
-Current campaign foundations: [state/clock/storage](campaign/state-clock-storage.md), [weekend boundary](campaign/weekend-boundary.md), [season lifecycle](campaign/season-lifecycle.md), [finance commitments](campaign/finance-commitments-forecast.md), [people/contracts/availability](campaign/people-contracts-availability.md), and [facilities/capacity/services](campaign/facilities-capacity-services.md). These are implementation contracts, not evidence of a complete playable management campaign.
+Current campaign foundations: [state/clock/storage](campaign/state-clock-storage.md), [weekend boundary](campaign/weekend-boundary.md), [season lifecycle](campaign/season-lifecycle.md), [finance commitments](campaign/finance-commitments-forecast.md), [people/contracts/availability](campaign/people-contracts-availability.md), [facilities/capacity/services](campaign/facilities-capacity-services.md), and [engineering/physical parts/race profile](campaign/engineering-parts-race-profile.md). These are implementation contracts, not evidence of a complete playable management campaign.
 
 ## System contract hardening
 

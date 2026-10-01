@@ -20,6 +20,8 @@ static func valid(data: Dictionary) -> bool:
 		if roster == null: return false
 	var count = roster.count if roster != null else 12
 	if not data.get("cars") is Array or data.cars.size() != count: return false
+	if data.has("performance_profiles") 			and not RacePerformanceProfile.validate_set(data.performance_profiles, count).is_empty():
+		return false
 	if not integral(data.get("selected_id"), 0, count - 1): return false
 	if data.has("vehicle_definition"):
 		if not data.vehicle_definition is Dictionary: return false

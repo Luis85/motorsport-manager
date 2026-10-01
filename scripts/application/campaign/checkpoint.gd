@@ -3,14 +3,15 @@ extends RefCounted
 ## Versioned campaign envelope. State, factual receipts and derived projections are
 ## published together; persistence remains an injected service responsibility.
 const KIND = "motorsport-manager-campaign-checkpoint"
-const VERSION = 4
+const VERSION = 5
+const OPERATIONS_VERSION = 4
 const PERSONNEL_VERSION = 3
 const CONSEQUENCE_VERSION = 2
 const LEGACY_VERSION = 1
 
 static func build(state: CampaignState, settlements: Dictionary = {}, active_manifest: Dictionary = {},
 		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {},
-		personnel: Dictionary = {}, operations: Dictionary = {}) -> Dictionary:
+		personnel: Dictionary = {}, operations: Dictionary = {}, engineering: Dictionary = {}) -> Dictionary:
 	if state == null:
 		return {}
 	var ledger = CampaignWeekendSettlement.empty_ledger() if settlements.is_empty() else settlements.duplicate(true)
@@ -25,6 +26,9 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 	var work = CampaignOperations.empty(
 		state.campaign_id, state.organization_id, state.clock.elapsed_slots
 	) if operations.is_empty() else operations.duplicate(true)
+	var development = CampaignEngineering.empty(
+		state.campaign_id, state.organization_id, state.clock.elapsed_slots
+	) if engineering.is_empty() else engineering.duplicate(true)
 	var data = {
 		"kind": KIND,
 		"version": VERSION,
@@ -36,7 +40,8 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 		"economy": accounts,
 		"inventory": resources,
 		"personnel": people,
-		"operations": work
+		"operations": work,
+		"engineering": development
 	}
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
@@ -52,7 +57,9 @@ static func validate(data: Variant) -> String:
 		return _validate_consequence_version(data)
 	if RaceCheckpoint.integral(data.get("version"), PERSONNEL_VERSION, PERSONNEL_VERSION):
 		return _validate_personnel_version(data)
-	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 12:
+	if RaceCheckpoint.integral(data.get("version"), OPERATIONS_VERSION, OPERATIONS_VERSION):
+		return _validate_operations_version(data)
+	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 13:
 		return "Unsupported campaign checkpoint version."
 	var shared_error = _shared_error(data)
 	if not shared_error.is_empty():
@@ -66,6 +73,9 @@ static func validate(data: Variant) -> String:
 	var operations_error = _operations_error(data)
 	if not operations_error.is_empty():
 		return operations_error
+	var engineering_error = _engineering_error(data)
+	if not engineering_error.is_empty():
+		return engineering_error
 	return _digest_error(data)
 
 static func restore(data: Variant) -> Dictionary:
@@ -86,6 +96,7 @@ static func restore(data: Variant) -> Dictionary:
 		"inventory": normalized.inventory.duplicate(true),
 		"personnel": normalized.personnel.duplicate(true),
 		"operations": normalized.operations.duplicate(true),
+		"engineering": normalized.engineering.duplicate(true),
 		"checkpoint": normalized.duplicate(true)
 	}
 
@@ -98,6 +109,9 @@ static func upgrade(data: Variant) -> Dictionary:
 	var state = CampaignState.restore(data.state)
 	if state == null:
 		return {}
+	if int(data.version) == OPERATIONS_VERSION:
+		return build(state, data.settlements, data.active_manifest,
+			data.competition, data.economy, data.inventory, data.personnel, data.operations)
 	if int(data.version) == PERSONNEL_VERSION:
 		var operations = CampaignOperations.empty(
 			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
@@ -134,6 +148,23 @@ static func _legacy_facility_ids(economy: Dictionary) -> Array:
 			result.append(commitment_id)
 	result.sort()
 	return result
+
+static func _validate_operations_version(data: Dictionary) -> String:
+	if data.size() != 12:
+		return "Unsupported operations campaign checkpoint."
+	var error = _shared_error(data)
+	if not error.is_empty():
+		return error
+	error = _projection_error(data)
+	if not error.is_empty():
+		return error
+	error = _personnel_error(data)
+	if not error.is_empty():
+		return error
+	error = _operations_error(data)
+	if not error.is_empty():
+		return error
+	return _digest_error(data)
 
 static func _validate_personnel_version(data: Dictionary) -> String:
 	if data.size() != 11:
@@ -247,6 +278,20 @@ static func _operations_error(data: Dictionary) -> String:
 		return error
 	return CampaignOperationsEconomy.validate(
 		data.operations, data.economy, int(data.state.clock.elapsed_slots))
+
+static func _engineering_error(data: Dictionary) -> String:
+	var error = CampaignEngineeringTimeline.validate(
+		data.get("engineering"), int(data.state.clock.elapsed_slots))
+	if not error.is_empty():
+		return error
+	if data.engineering.campaign_id != data.campaign_id 			or data.engineering.organization_id != data.state.organization_id:
+		return "Campaign engineering belongs to another campaign or organization."
+	error = CampaignEngineeringOperations.validate(
+		data.engineering, data.operations, int(data.state.clock.elapsed_slots))
+	if not error.is_empty():
+		return error
+	return CampaignEngineeringEconomy.validate(
+		data.engineering, data.economy, data.operations, int(data.state.clock.elapsed_slots))
 
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:
 	if not data.settlements.receipts.has(event_id):

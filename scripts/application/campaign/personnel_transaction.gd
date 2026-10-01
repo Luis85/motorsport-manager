@@ -143,7 +143,8 @@ static func _publish(restored: Dictionary, personnel: Dictionary, economy: Dicti
 		economy,
 		restored.inventory,
 		personnel,
-		restored.operations
+		restored.operations,
+		restored.engineering
 	)
 	if candidate.is_empty():
 		return _reject("Personnel change could not form one valid campaign checkpoint.", original)

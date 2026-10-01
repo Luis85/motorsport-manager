@@ -2,13 +2,14 @@ class_name RaceCar
 extends RefCounted
 ## Authoritative entrant state owned by one RaceSim aggregate.
 ## Rules receive this type; saves and read models receive detached records instead.
-## Numerical units and serialized names remain compatible with checkpoint versions 4–11.
+## Numerical units and serialized names remain compatible with checkpoint versions 4–12.
 
 ## Frozen session inputs are not part of the per-car 91-field serialized codec.
 ## The enclosing checkpoint validates and rebinds them; detached copies share them.
 var setup_definition: SetupDefinition = SetupDefinition.legacy()
 var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
 var entry_definition: EntrantDefinition
+var performance_profile: Dictionary = RacePerformanceProfile.baseline()
 
 func team_identity() -> String:
 	return entry_definition.team_id if entry_definition != null else team
@@ -299,6 +300,7 @@ func detached_copy() -> RaceCar:
 	result.entry_definition = entry_definition
 	result.tyre_rules = tyre_rules
 	result.setup_definition = setup_definition
+	result.performance_profile = performance_profile.duplicate(true)
 	return result
 
 static func from_record(record: Dictionary) -> RaceCar:

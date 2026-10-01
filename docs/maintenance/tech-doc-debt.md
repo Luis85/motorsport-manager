@@ -114,6 +114,17 @@ Keep the PR in draft until the exact final commit has green required CI and sync
 - Registered contracts cover three facility families, staff/machine double-allocation rejection, rented-service viability/cost, provider-capacity conservation, atomic cancellation, cross-envelope tamper protection, migration and preservation through unrelated transactions.
 - Added `docs/campaign/facilities-capacity-services.md`.
 
+### 11. Small engineering pipeline and physical part inventory
+
+- Upgraded `CampaignCheckpoint` to version 5 and added `CampaignEngineering` to the atomic envelope. Version-four operations checkpoints migrate with empty engineering authority at the restored slot; no historical research, design, part or performance is fabricated.
+- Added an explicit investigation → concept → detailed design → prototype → validation → production → integration pipeline. Every gate binds exactly one compatible TM-06 work order and cannot advance before that reserved work interval completes.
+- Validation publishes one traceable `CampaignEngineeringDesign`. Production requires that design, creates one unique `CampaignPartInstance`, and creates a dated `development` material commitment. Integration installs that exact instance on a named stable campaign car.
+- Added bounded per-car `RacePerformanceProfile` values for top speed, lateral capability, acceleration and braking. Profiles are composed only from installed physical instances and retain their part IDs.
+- Added native race checkpoint v12 / replay model `race-weekend-0.20-performance-v1`. Existing v10/v11 saves and recordings remain readable under their historical model identity and receive baseline performance rather than invented upgrades.
+- Runtime movement consumes the frozen profile at the existing vehicle-capability seams; the read-only forecaster consumes the same directional profile. Track geometry, racing line ownership, RNG, classification and final results are not rewritten.
+- Added detached stable-car → race-local profile projection and registered contracts for gate ordering, design-vs-part separation, unique physical production, installation, material cash, race save/restore and actual runtime/forecast effect.
+- Added `docs/campaign/engineering-parts-race-profile.md`.
+
 ## Preserved boundaries
 
 - No race-physics, race-RNG/arithmetic-order, race scoring, race checkpoint, content schema, mechanic provider or existing race-command change.
@@ -140,12 +151,12 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them only when product work touches their responsibilities and characterization is available.
 - Advisory findings are not a verified bug count. Responsibility extraction can appear as both resolved and new diagnostics; inspect the complete exact-head report.
-- Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, engineering designs/physical parts/materials, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
+- Provisional classifications and correction deltas, season prizes/promotion, scouting/negotiation, person attributes/development/workload/morale, engineering uncertainty/raw-material stock/part wear/repairs, sponsors, mandates, rivals, operating-result/assets/liabilities views and campaign UI remain unimplemented.
 - Human testing of interface modes and management workflows, broad accessibility, same-machine performance and stronger editor clearance/collision diagnostics remain separate validation work.
 
 ## Next dependency
 
-The next campaign milestone is **TM-07: small development pipeline and physical part inventory**. It must:
+The next campaign milestone is **TM-08: physical inventory, wear/repair and engineering uncertainty**. It must:
 
 - consume explicit TM-05 personnel and TM-06 facility capacity;
 - separate knowledge, design, manufactured instances, validation and installed race configuration;
