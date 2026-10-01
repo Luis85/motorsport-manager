@@ -37,7 +37,8 @@
         (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
     const dataOnly = (value: unknown, ancestors = new Set<object>(), depth = 0): boolean => {
         if (depth > 64) return false;
-        if (value === null || value === undefined) return true;
+        if (value === null) return true;
+        if (value === undefined) return false;
         if (typeof value === 'string' || typeof value === 'boolean') return true;
         if (typeof value === 'number') return Number.isFinite(value);
         if (typeof value !== 'object') return false;
@@ -84,8 +85,9 @@
         get stores(): ReadonlyMap<ComponentType, ReadonlyMap<EntityId, ComponentData>> {
             return new Map([...this.#componentStores].map(([type, store]) => [type, new Map(store)] as const));
         }
-        get structural(): readonly Readonly<StructuralCommand>[] {
-            return Object.freeze(this.#structuralBuffer.map(action => Object.freeze({...action})));
+        get structural(): readonly Readonly<Pick<StructuralCommand,'operation'|'id'|'type'>>[] {
+            return Object.freeze(this.#structuralBuffer.map(action =>
+                Object.freeze({operation:action.operation,id:action.id,type:action.type})));
         }
         get pendingStructural(): number { return this.#structuralBuffer.length; }
 

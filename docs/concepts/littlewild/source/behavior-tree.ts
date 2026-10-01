@@ -67,7 +67,7 @@
     }
 
     class BehaviorTree {
-        private readonly actions: Record<string, ActionHandler> = Object.create(null);
+        readonly #actions: Record<string, ActionHandler> = Object.create(null);
 
         constructor(actions: Record<string, ActionHandler>) {
             if (!plain(actions)) throw Error('Behavior actions must be a plain registry.');
@@ -75,9 +75,9 @@
         }
 
         register(id: string, handler: ActionHandler): void {
-            if (!ACTION.test(id) || typeof handler !== 'function' || own(this.actions, id))
+            if (!ACTION.test(id) || typeof handler !== 'function' || own(this.#actions, id))
                 throw Error('Use a unique named behavior handler.');
-            this.actions[id] = handler;
+            this.#actions[id] = handler;
         }
 
         validate(tree: unknown): tree is BehaviorNode {
@@ -95,7 +95,7 @@
                 if (node.type === 'action') {
                     exact(node, ['id','name','type','action'], 'behavior action');
                     if (typeof node.action !== 'string' || !ACTION.test(node.action) ||
-                        !own(this.actions, node.action) || typeof this.actions[node.action] !== 'function')
+                        !own(this.#actions, node.action) || typeof this.#actions[node.action] !== 'function')
                         throw Error('Unknown behavior action: ' + String(node.action));
                     return node as unknown as ActionNode;
                 }
@@ -134,7 +134,7 @@
             const visit = (node: BehaviorNode): Status => {
                 let status: Status = 'failure';
                 if (node.type === 'action') {
-                    status = this.actions[node.action]!(context) || 'failure';
+                    status = this.#actions[node.action]!(context) || 'failure';
                     if (!['success', 'running', 'failure'].includes(status))
                         throw Error('Invalid behavior status: ' + node.id);
                 } else if (node.type === 'cooldown') {

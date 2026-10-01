@@ -9,6 +9,7 @@ test('Components reject behavior, accessors, class instances and non-finite valu
  const w=new E.World();w.create('c1');
  assert.throws(()=>w.set('c1','Bad',{nested:{run:()=>true}}),/behavior-free/);
  assert.throws(()=>w.set('c1','Bad',{value:Infinity}),/behavior-free/);
+ assert.throws(()=>w.set('c1','Bad',{value:undefined}),/behavior-free/);
  assert.throws(()=>w.set('c1','Bad',{nested:new Date()}),/behavior-free/);
  const accessor={};Object.defineProperty(accessor,'value',{enumerable:true,get(){return 1;}});
  assert.throws(()=>w.set('c1','Bad',accessor),/behavior-free/);
@@ -24,6 +25,7 @@ test('ECS collection views cannot bypass world or scheduler invariants',()=>{
  const entities=w.entities;entities.add('c2');assert(!w.entities.has('c2'));
  const stores=w.stores;stores.get('Needs').set('c2',{food:9});assert.equal(w.get('c2','Needs'),undefined);
  w.defer('create','c3');const queued=w.structural;assert.throws(()=>queued.push({operation:'create',id:'c4'}),TypeError);
+ assert.equal(Object.hasOwn(queued[0],'data'),false);
  assert.equal(w.structural.length,1);w.flush();assert(w.entities.has('c3'));assert(!w.entities.has('c4'));
  const scheduler=new E.Scheduler().register({id:'one',phase:'simulate',order:1,query:['Needs'],update(){}});
  const systems=scheduler.systems;assert.throws(()=>systems.push({id:'zero'}),TypeError);

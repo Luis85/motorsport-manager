@@ -33,5 +33,9 @@ test('Behavior ticks reject invalid time and corrupted cooldown memory',()=>{
 test('Action registration rejects duplicate and malformed capabilities',()=>{
  const tree=new BehaviorTree(actions);assert.throws(()=>tree.register('ok',()=> 'success'),/unique/);assert.throws(()=>tree.register('Bad Action',()=> 'success'),/unique/);
 });
+test('Compiled action registry is not externally reachable',()=>{
+ const tree=new BehaviorTree(actions);assert.equal(Object.hasOwn(tree,'actions'),false);assert.equal(Object.hasOwn(tree,'#actions'),false);
+ assert.equal(tree.tick({id:'a',name:'A',type:'action',action:'ok'},{time:0,behaviorMemory:{}}).status,'success');
+});
 
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/behavior-tree-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} behavior-tree checks passed`);if(passed!==results.length)process.exitCode=1;
