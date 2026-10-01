@@ -87,11 +87,25 @@ const INSERTS: readonly Insert[] = [
   ["UI", "ui.js", "script"]
 ];
 
+function cleanGeneratedExecutables(directory: string): void {
+  if (!fs.existsSync(directory)) return;
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const full = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === "content" || entry.name === "fixtures") fs.rmSync(full, { recursive: true, force: true });
+      else cleanGeneratedExecutables(full);
+    } else if (/\.(?:js|cjs|mjs|map)$/.test(entry.name)) {
+      fs.rmSync(full, { force: true });
+    }
+  }
+}
+
 function compile(): void {
   if (!fs.existsSync(TSC)) {
     throw new Error("TypeScript dependencies are missing. Run npm install in docs/concepts/littlewild.");
   }
   fs.mkdirSync(GENERATED, { recursive: true });
+  cleanGeneratedExecutables(GENERATED);
   const result = spawnSync(process.execPath, [TSC, "-p", path.join(PROJECT, "tsconfig.json")], {
     cwd: PROJECT,
     stdio: "inherit"
