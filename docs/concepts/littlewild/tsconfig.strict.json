@@ -13,6 +13,7 @@
     "source/build.ts",
     "source/tools/architecture-check.cts",
     "source/simulation-pipeline.ts",
-    "source/simulation-profile.ts"
+    "source/simulation-profile.ts",
+    "source/behavior-tree.ts"
   ]
 }
