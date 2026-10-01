@@ -1,7 +1,8 @@
 class_name CampaignDelegatedExecutor
 extends RefCounted
-## First bounded autonomous action seam. It uses the normal economy authority and
-## records the mandate/evidence that permitted the decision.
+## First bounded autonomous action seam. The application composes the detached
+## forecast query with the pure domain authorization guard, then uses the normal
+## economy authority and records the mandate/evidence that permitted the decision.
 
 static func add_commitment(checkpoint: Dictionary, mandate_id: String,
 		input: Dictionary, reason: String) -> Dictionary:
@@ -9,7 +10,13 @@ static func add_commitment(checkpoint: Dictionary, mandate_id: String,
 	if not restored.ok: return _reject(restored.error, checkpoint)
 	if not restored.active_manifest.is_empty():
 		return _reject("New delegated campaign commitments are frozen during an active weekend.", checkpoint)
-	var allowed = CampaignDelegationGuard.finance_commitment(checkpoint, mandate_id, input)
+	var preview = CampaignFinanceQuery.commitment_preview(
+		checkpoint, input, int(input.get("due_slot", restored.state.clock.elapsed_slots)))
+	if not preview.ok: return _reject(preview.error, checkpoint, "escalated")
+	var allowed = CampaignDelegationGuard.finance_commitment(
+		restored.management.delegation, restored.personnel, restored.state.organization_id,
+		restored.state.clock.elapsed_slots, mandate_id, input,
+		int(preview.forecast.scenarios.committed.minimum_cash_minor))
 	if not allowed.ok: return _reject(allowed.error, checkpoint, "escalated")
 	var added = CampaignEconomy.add_commitment(
 		restored.economy, input, restored.state.clock.elapsed_slots)
