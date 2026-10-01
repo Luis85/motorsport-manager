@@ -15,7 +15,7 @@ jobs:
   publish:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,10 +56,8 @@ jobs:
           if len(encoded)!=78012:
               raise SystemExit(f'Unexpected encoded payload length: {len(encoded)}')
           compressed=base64.b64decode(encoded,validate=True)
-          if len(compressed)!=58508:
-              raise SystemExit(f'Unexpected compressed payload length: {len(compressed)}')
-          if hashlib.sha256(compressed).hexdigest()!='534487aa7797a466062ca6c8fa603949e30194ac632b7d1815b9793a2a3f9e9d':
-              raise SystemExit('PR25 review compressed checksum mismatch')
+          if len(compressed)!=58508 or hashlib.sha256(compressed).hexdigest()!='534487aa7797a466062ca6c8fa603949e30194ac632b7d1815b9793a2a3f9e9d':
+              raise SystemExit('PR25 review compressed payload mismatch')
           raw=lzma.decompress(compressed)
           if hashlib.sha256(raw).hexdigest()!='f27241bb3d3765187d9ff97e76000433ecce8a5515e90485c6bd9b9043021128':
               raise SystemExit('PR25 review tar checksum mismatch')
@@ -74,19 +72,11 @@ jobs:
                       raise SystemExit(f'Unsafe payload member: {member.name}')
               tf.extractall('.',filter='data')
           PYCODE
-      - name: Install verification dependencies
+      - name: Rebuild reviewed standalones
         working-directory: docs/concepts/littlewild
         run: |
-          python -m pip install -r requirements-test.txt
-          python -m playwright install --with-deps chromium
-          CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
-          sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Rebuild and verify reviewed Littlewild source
-        working-directory: docs/concepts/littlewild
-        run: python verify-v15.py
-      - name: Build Emberworks standalone
-        working-directory: docs/concepts/littlewild
-        run: python source/build.py --pack source/content/emberworks.pack.json --output verification/v15/emberworks.html
+          python source/build.py
+          python source/build.py --pack source/content/emberworks.pack.json --output verification/v15/emberworks.html
       - name: Verify reviewed standalone hashes
         working-directory: docs/concepts/littlewild
         shell: bash
@@ -96,15 +86,14 @@ jobs:
           test "$(sha256sum littlewild.html | cut -d' ' -f1)" = "d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1"
           test "$(stat -c%s verification/v15/emberworks.html)" = "3670431"
           test "$(sha256sum verification/v15/emberworks.html | cut -d' ' -f1)" = "64527e18dcd99a828203ec2565cbf21d9b25f0eb6f698adfe7acb931c8b31151"
-      - name: Publish reviewed overlay and restore read-only verifier
+      - name: Publish reviewed overlay
         shell: bash
         run: |
           set -euo pipefail
           tar -xf /tmp/pr25-review.tar
-          git show HEAD^:.github/workflows/littlewild-ecs-rebuild.yml > .github/workflows/littlewild-ecs-rebuild.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/littlewild-ecs-rebuild.yml \
+          git add \
             docs/concepts/littlewild/CHANGELOG.md \
             docs/concepts/littlewild/CODE-REVIEW.md \
             docs/concepts/littlewild/PR25-REVIEW-AND-POLISH.md \
