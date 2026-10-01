@@ -1,7 +1,8 @@
 class_name CampaignDistressTransaction
 extends RefCounted
 static func evaluate(checkpoint:Dictionary)->Dictionary:
-	var r=CampaignCheckpoint.restore(checkpoint);if not r.ok:return _reject(r.error,checkpoint)
+	var r=CampaignCheckpoint.restore(checkpoint)
+	if not r.ok:return _reject(r.error,checkpoint)
 	var horizon=mini(CampaignClock.MAX_ELAPSED_SLOTS,r.state.clock.elapsed_slots+30*CampaignClock.SLOTS_PER_DAY)
 	var f=CampaignFinanceQuery.cash_forecast(checkpoint,r.state.organization_id,horizon)
 	if not f.ok:return _reject(f.error,checkpoint)
@@ -10,14 +11,17 @@ static func evaluate(checkpoint:Dictionary)->Dictionary:
 		int(f.forecast.scenarios.committed.minimum_cash_minor),int(f.forecast.reserve_minor),r.state.clock.elapsed_slots)
 	return _publish(r,changed,r.economy,checkpoint)
 static func bridge_financing(checkpoint:Dictionary,amount_minor:int)->Dictionary:
-	var r=CampaignCheckpoint.restore(checkpoint);if not r.ok:return _reject(r.error,checkpoint)
+	var r=CampaignCheckpoint.restore(checkpoint)
+	if not r.ok:return _reject(r.error,checkpoint)
 	if not RaceCheckpoint.integral(amount_minor,1,CampaignEconomy.MAX_MINOR/2):return _reject("Bridge amount is invalid.",checkpoint)
 	var slot=r.state.clock.elapsed_slots;var economy=r.economy
 	for input in [
 		{"id":"bridge.receipt."+str(slot),"account_id":r.state.organization_id,"source_id":"bridge."+str(slot),"due_slot":slot,"amount_minor":amount_minor,"category":"financing"},
 		{"id":"bridge.repayment."+str(slot),"account_id":r.state.organization_id,"source_id":"bridge."+str(slot),"due_slot":mini(CampaignClock.MAX_ELAPSED_SLOTS,slot+30*CampaignClock.SLOTS_PER_DAY),"amount_minor":-int(round(amount_minor*1.10)),"category":"financing"}]:
-		var a=CampaignEconomy.add_commitment(economy,input,slot);if not a.ok:return _reject(a.error,checkpoint);economy=a.economy
-	var settled=CampaignEconomy.settle_due(economy,slot);if not settled.ok:return _reject(settled.error,checkpoint)
+		var a=CampaignEconomy.add_commitment(economy,input,slot)
+		if not a.ok:return _reject(a.error,checkpoint);economy=a.economy
+	var settled=CampaignEconomy.settle_due(economy,slot)
+	if not settled.ok:return _reject(settled.error,checkpoint)
 	var changed=CampaignDistress.record_recovery(r.management.distress,"bridge_financing",amount_minor,slot)
 	return _publish(r,changed,settled.economy,checkpoint)
 static func _publish(r:Dictionary,changed:Dictionary,economy:Dictionary,original:Dictionary)->Dictionary:

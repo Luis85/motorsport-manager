@@ -14,7 +14,8 @@ static func empty() -> Dictionary:
 		"part_service": {}, "history": []}
 
 static func register_supplier(current: Dictionary, input: Dictionary, slot: int) -> Dictionary:
-	var error = validate(current); if not error.is_empty(): return _reject(error, current)
+	var error = validate(current)
+	if not error.is_empty(): return _reject(error, current)
 	if current.suppliers.size() >= MAX_SUPPLIERS: return _reject("Supplier registry is full.", current)
 	var supplier = {"id": input.get("id"), "display_name": input.get("display_name"),
 		"material_id": input.get("material_id"), "unit_price_minor": input.get("unit_price_minor"),
@@ -28,7 +29,8 @@ static func register_supplier(current: Dictionary, input: Dictionary, slot: int)
 
 static func order_material(current: Dictionary, input: Dictionary, slot: int,
 		account_id: String) -> Dictionary:
-	var error=validate(current); if not error.is_empty(): return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty(): return _reject(error,current)
 	if current.orders.size()>=MAX_ORDERS or not current.suppliers.has(input.get("supplier_id")):
 		return _reject("Procurement order is invalid or supplier is unknown.",current)
 	var supplier:Dictionary=current.suppliers[input.supplier_id]
@@ -51,7 +53,8 @@ static func order_material(current: Dictionary, input: Dictionary, slot: int,
 	return result
 
 static func receive_order(current:Dictionary,order_id:String,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if not current.orders.has(order_id):return _reject("Procurement order is unknown.",current)
 	var order:Dictionary=current.orders[order_id]
 	if order.status!="ordered" or slot<int(order.due_slot):return _reject("Procurement order has not reached its promised delivery.",current)
@@ -64,7 +67,8 @@ static func receive_order(current:Dictionary,order_id:String,slot:int)->Dictiona
 
 static func consume_material(current:Dictionary,material_id:String,quantity:int,
 		source_id:String,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if not current.materials.has(material_id) or not RaceCheckpoint.integral(quantity,1,1000000) 			or int(current.materials[material_id].quantity)<quantity or not CampaignIdentity.valid(source_id):
 		return _reject("Material consumption exceeds physical stock or has invalid provenance.",current)
 	var data=current.duplicate(true);var stock:Dictionary=data.materials[material_id]
@@ -74,7 +78,8 @@ static func consume_material(current:Dictionary,material_id:String,quantity:int,
 
 static func register_project_evidence(current:Dictionary,project_id:String,
 		latent_outcome_bps:int,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if current.project_evidence.size()>=MAX_EVIDENCE or current.project_evidence.has(project_id) 			or not CampaignIdentity.valid(project_id) or not RaceCheckpoint.integral(latent_outcome_bps,-2500,2500):
 		return _reject("Engineering evidence seed is invalid or duplicated.",current)
 	var record={"project_id":project_id,"latent_outcome_bps":latent_outcome_bps,
@@ -83,7 +88,8 @@ static func register_project_evidence(current:Dictionary,project_id:String,
 	return _result(data,"evidence_registered",current)
 
 static func observe_project(current:Dictionary,project_id:String,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if not current.project_evidence.has(project_id):return _reject("Engineering evidence is unknown.",current)
 	var data=current.duplicate(true);var record:Dictionary=data.project_evidence[project_id]
 	record.observations=int(record.observations)+1
@@ -101,7 +107,8 @@ static func project_range(current:Dictionary,project_id:String)->Dictionary:
 		"observations":record.observations}
 
 static func register_part(current:Dictionary,part_id:String,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if current.part_service.size()>=MAX_PARTS or current.part_service.has(part_id) or not CampaignIdentity.valid(part_id):
 		return _reject("Part service record is invalid or duplicated.",current)
 	var record={"part_id":part_id,"condition":100,"wear_events":0,"repairs":0,
@@ -110,7 +117,8 @@ static func register_part(current:Dictionary,part_id:String,slot:int)->Dictionar
 	return _result(data,"part_registered",current)
 
 static func wear_part(current:Dictionary,part_id:String,wear:int,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if not current.part_service.has(part_id) or not RaceCheckpoint.integral(wear,1,100):
 		return _reject("Part wear request is invalid.",current)
 	var data=current.duplicate(true);var record:Dictionary=data.part_service[part_id]
@@ -119,7 +127,8 @@ static func wear_part(current:Dictionary,part_id:String,wear:int,slot:int)->Dict
 	return _result(data,"part_worn",current)
 
 static func repair_part(current:Dictionary,part_id:String,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if not current.part_service.has(part_id) or int(current.part_service[part_id].condition)>=100:
 		return _reject("Part does not require a recorded repair.",current)
 	var data=current.duplicate(true);var record:Dictionary=data.part_service[part_id]

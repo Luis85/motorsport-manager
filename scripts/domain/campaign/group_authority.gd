@@ -4,7 +4,8 @@ extends RefCounted
 
 static func validate(group:Dictionary,economy:Dictionary,operations:Dictionary,
 		engineering:Dictionary,people:Dictionary,personnel:Dictionary,current_slot:int)->String:
-	var error=CampaignGroup.validate(group);if not error.is_empty():return error
+	var error=CampaignGroup.validate(group)
+	if not error.is_empty():return error
 	if not group.initialized:return ""
 	var expected=int(group.opening_parent_cash_minor)
 	for order in group.business_orders.values():

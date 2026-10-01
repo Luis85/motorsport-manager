@@ -3,7 +3,8 @@ extends RefCounted
 ## TM-14 future-car planning, promotion choice, season prize and next-season creation.
 
 static func set_plan(checkpoint: Dictionary, input: Dictionary) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	if not restored.competition.seasons.has(input.get("season_id")):
 		return _reject("Season plan references an unknown season.", checkpoint)
 	var data = input.duplicate(true); data["id"] = input.get("season_id")
@@ -13,7 +14,8 @@ static func set_plan(checkpoint: Dictionary, input: Dictionary) -> Dictionary:
 
 static func offer_promotion(checkpoint: Dictionary, source_season_id: String,
 		target_series_id: String, deadline_slot: int, minimum_cash_minor: int) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	if not restored.competition.seasons.has(source_season_id) 			or restored.competition.seasons[source_season_id].status != "completed":
 		return _reject("Promotion can be offered only after a completed season.", checkpoint)
 	var changed = CampaignSeasonPlanning.offer_promotion(restored.management.season_planning, {
@@ -23,7 +25,8 @@ static func offer_promotion(checkpoint: Dictionary, source_season_id: String,
 	return _publish_planning(restored, changed, restored.economy, restored.competition, checkpoint)
 
 static func decide_promotion(checkpoint: Dictionary, offer_id: String, accept: bool) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	var cash = int(restored.economy.accounts[restored.state.organization_id].cash_minor)
 	var changed = CampaignSeasonPlanning.decide_promotion(restored.management.season_planning,
 		offer_id, accept, restored.state.clock.elapsed_slots, cash)
@@ -32,7 +35,8 @@ static func decide_promotion(checkpoint: Dictionary, offer_id: String, accept: b
 static func begin_next_season(checkpoint: Dictionary, source_season_id: String,
 		next_definition: Dictionary, target_rules: Dictionary, decision: String,
 		prize_minor: int) -> Dictionary:
-	var restored = _restore(checkpoint); if not restored.ok: return restored
+	var restored = _restore(checkpoint)
+	if not restored.ok: return restored
 	if decision not in CampaignSeasonPlanning.DECISIONS 			or not restored.competition.seasons.has(source_season_id):
 		return _reject("Next-season decision or source season is invalid.", checkpoint)
 	var source: Dictionary = restored.competition.seasons[source_season_id]

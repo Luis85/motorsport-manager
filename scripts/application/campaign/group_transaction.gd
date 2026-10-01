@@ -3,12 +3,14 @@ extends RefCounted
 ## TM-16 opt-in founder business, academy, era and succession actions.
 
 static func initialize(checkpoint:Dictionary,parent_cash_minor:int,era:Dictionary)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	var changed=CampaignGroup.initialize(r.management.group,r.state.principal_id,parent_cash_minor,era,r.state.clock.elapsed_slots)
 	return _publish_group(r,changed,r.economy,checkpoint)
 
 static func create_service_order(checkpoint:Dictionary,input:Dictionary)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	var work_id=input.get("work_order_id")
 	if not r.operations.work_orders.has(work_id):return _reject("Founder service order requires one shared work order.",checkpoint)
 	var work:Dictionary=r.operations.work_orders[work_id]
@@ -20,7 +22,8 @@ static func create_service_order(checkpoint:Dictionary,input:Dictionary)->Dictio
 	return _publish_group(r,changed,r.economy,checkpoint)
 
 static func complete_service_order(checkpoint:Dictionary,order_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	if not r.management.group.business_orders.has(order_id):return _reject("Founder service order is unknown.",checkpoint)
 	var order:Dictionary=r.management.group.business_orders[order_id]
 	if not r.operations.work_orders.has(order.work_order_id) 			or CampaignWorkOrder.state_at(r.operations.work_orders[order.work_order_id],r.state.clock.elapsed_slots)!="complete":
@@ -29,7 +32,8 @@ static func complete_service_order(checkpoint:Dictionary,order_id:String)->Dicti
 	return _publish_group(r,changed,r.economy,checkpoint)
 
 static func transfer_to_team(checkpoint:Dictionary,id:String,amount_minor:int)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	var changed=CampaignGroup.transfer_to_team(r.management.group,
 		{"id":id,"amount_minor":amount_minor},r.state.clock.elapsed_slots)
 	if not changed.ok:return _reject(changed.error,checkpoint)
@@ -41,7 +45,8 @@ static func transfer_to_team(checkpoint:Dictionary,id:String,amount_minor:int)->
 	return _publish_group(r,changed,settled.economy,checkpoint)
 
 static func set_academy_capacity(checkpoint:Dictionary,capacity:int)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	var available=0
 	for resource in r.operations.resources.values():
 		if resource.access=="owned" and resource.family=="academy":available+=int(resource.capacity_units)
@@ -49,23 +54,27 @@ static func set_academy_capacity(checkpoint:Dictionary,capacity:int)->Dictionary
 	return _publish_group(r,CampaignGroup.set_academy_capacity(r.management.group,capacity),r.economy,checkpoint)
 
 static func add_academy_prospect(checkpoint:Dictionary,candidate_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	if not r.management.people.candidates.has(candidate_id) 			or r.management.people.candidates[candidate_id].state not in ["available","approached","negotiating"]:
 		return _reject("Academy prospect must be an available persistent candidate.",checkpoint)
 	return _publish_group(r,CampaignGroup.add_academy_prospect(r.management.group,candidate_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func register_era(checkpoint:Dictionary,input:Dictionary)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	return _publish_group(r,CampaignGroup.register_era(r.management.group,input,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func activate_era(checkpoint:Dictionary,era_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	for season in r.competition.seasons.values():
 		if season.status!="completed":return _reject("Era transition requires completed championship seasons.",checkpoint)
 	return _publish_group(r,CampaignGroup.activate_era(r.management.group,era_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func appoint_successor(checkpoint:Dictionary,person_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	if not r.personnel.people.has(person_id):return _reject("Successor must be a known employed campaign person.",checkpoint)
 	var employed=false
 	for contract in r.personnel.contracts.values():
@@ -75,11 +84,13 @@ static func appoint_successor(checkpoint:Dictionary,person_id:String)->Dictionar
 	return _publish_group(r,CampaignGroup.appoint_successor(r.management.group,person_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func add_legacy_goal(checkpoint:Dictionary,input:Dictionary)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	return _publish_group(r,CampaignGroup.add_legacy_goal(r.management.group,input,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func complete_legacy_goal(checkpoint:Dictionary,goal_id:String,evidence_id:String)->Dictionary:
-	var r=_restore(checkpoint);if not r.ok:return r
+	var r=_restore(checkpoint)
+	if not r.ok:return r
 	return _publish_group(r,CampaignGroup.complete_legacy_goal(r.management.group,goal_id,evidence_id,r.state.clock.elapsed_slots),r.economy,checkpoint)
 
 static func _restore(checkpoint:Dictionary)->Dictionary:

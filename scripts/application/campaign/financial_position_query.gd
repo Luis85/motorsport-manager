@@ -2,7 +2,8 @@ class_name CampaignFinancialPositionQuery
 extends RefCounted
 ## Game-defined operational position; not a claim of real-world accounting compliance.
 static func snapshot(checkpoint:Dictionary)->Dictionary:
-	var r=CampaignCheckpoint.restore(checkpoint);if not r.ok:return {"ok":false,"error":r.error}
+	var r=CampaignCheckpoint.restore(checkpoint)
+	if not r.ok:return {"ok":false,"error":r.error}
 	var account:Dictionary=r.economy.accounts[r.state.organization_id]
 	var operating=0;var receivable=0;var payable=0;var debt=0
 	for posting in account.postings.values():

@@ -6,7 +6,8 @@ const ACTIONS=["defer_optional","bridge_financing","asset_sale","lower_ambition"
 const MAX_HISTORY=256
 static func empty()->Dictionary:return {"stage":"normal","history":[]}
 static func evaluate(current:Dictionary,cash_minor:int,minimum_cash_minor:int,reserve_minor:int,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	var stage="normal"
 	if cash_minor<0:stage="missed_obligation"
 	elif minimum_cash_minor<0:stage="funding_gap"
@@ -18,7 +19,8 @@ static func evaluate(current:Dictionary,cash_minor:int,minimum_cash_minor:int,re
 		row["digest"]=RaceStateValue.fingerprint(row);data.history.append(row);data.stage=stage
 	return _result(data,"evaluated",current)
 static func record_recovery(current:Dictionary,action:String,amount_minor:int,slot:int)->Dictionary:
-	var error=validate(current);if not error.is_empty():return _reject(error,current)
+	var error=validate(current)
+	if not error.is_empty():return _reject(error,current)
 	if action not in ACTIONS or not RaceCheckpoint.integral(amount_minor,0,CampaignEconomy.MAX_MINOR):return _reject("Distress recovery evidence is invalid.",current)
 	var data=current.duplicate(true);var row={"id":"recovery."+RaceStateValue.fingerprint([action,slot,data.history.size()]).substr(0,24),
 		"stage":data.stage,"slot":slot,"action":action,"amount_minor":amount_minor}

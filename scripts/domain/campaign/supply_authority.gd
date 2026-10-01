@@ -1,7 +1,8 @@
 class_name CampaignSupplyAuthority
 extends RefCounted
 static func validate(supply:Dictionary,economy:Dictionary,engineering:Dictionary,operations:Dictionary,slot:int)->String:
-	var error=CampaignSupplyNetwork.validate(supply);if not error.is_empty():return error
+	var error=CampaignSupplyNetwork.validate(supply)
+	if not error.is_empty():return error
 	if not CampaignEconomy.validate(economy).is_empty() or not CampaignEngineering.validate(engineering).is_empty():return "Supply authority has invalid dependencies."
 	for order in supply.orders.values():
 		if not economy.commitments.has(order.commitment_id):return "Supplier order has no matching cash commitment."

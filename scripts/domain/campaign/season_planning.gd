@@ -12,7 +12,8 @@ static func empty() -> Dictionary:
 	return {"plans": {}, "promotion_offers": {}, "transitions": []}
 
 static func set_plan(current: Dictionary, input: Dictionary, slot: int) -> Dictionary:
-	var error = validate(current); if not error.is_empty(): return _reject(error, current)
+	var error = validate(current)
+	if not error.is_empty(): return _reject(error, current)
 	if current.plans.size() >= MAX_PLANS: return _reject("Season planning registry is full.", current)
 	var plan = {"id": input.get("id"), "season_id": input.get("season_id"),
 		"created_slot": slot, "sporting_ambition": input.get("sporting_ambition"),
@@ -28,7 +29,8 @@ static func set_plan(current: Dictionary, input: Dictionary, slot: int) -> Dicti
 	return _result(data, "plan_set", current)
 
 static func offer_promotion(current: Dictionary, input: Dictionary, slot: int) -> Dictionary:
-	var error = validate(current); if not error.is_empty(): return _reject(error, current)
+	var error = validate(current)
+	if not error.is_empty(): return _reject(error, current)
 	if current.promotion_offers.size() >= MAX_OFFERS:
 		return _reject("Promotion offer registry is full.", current)
 	var offer = {"id": input.get("id"), "source_season_id": input.get("source_season_id"),
@@ -43,7 +45,8 @@ static func offer_promotion(current: Dictionary, input: Dictionary, slot: int) -
 
 static func decide_promotion(current: Dictionary, offer_id: String, accept: bool,
 		slot: int, current_cash_minor: int) -> Dictionary:
-	var error = validate(current); if not error.is_empty(): return _reject(error, current)
+	var error = validate(current)
+	if not error.is_empty(): return _reject(error, current)
 	if not current.promotion_offers.has(offer_id):
 		return _reject("Promotion offer is unknown.", current)
 	var offer: Dictionary = current.promotion_offers[offer_id]
@@ -57,7 +60,8 @@ static func decide_promotion(current: Dictionary, offer_id: String, accept: bool
 	return _result(data, offer.status, current)
 
 static func record_transition(current: Dictionary, input: Dictionary, slot: int) -> Dictionary:
-	var error = validate(current); if not error.is_empty(): return _reject(error, current)
+	var error = validate(current)
+	if not error.is_empty(): return _reject(error, current)
 	if current.transitions.size() >= MAX_TRANSITIONS:
 		return _reject("Season transition history is full.", current)
 	var record = {"id": input.get("id"), "source_season_id": input.get("source_season_id"),
