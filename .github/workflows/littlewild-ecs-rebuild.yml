@@ -1,24 +1,21 @@
-# ECS milestone transport uses independently hashed PR-comment chunks.
-name: Littlewild ECS rebuild
+# ECS M5 milestone transport; this workflow replaces itself with the read-only verification workflow after publication.
+name: Littlewild ECS M5 publication
 on:
   push:
     branches:
       - concept/littlewild-v15-world-ui
     paths:
-      - 'docs/concepts/littlewild/source/**'
-      - 'docs/concepts/littlewild/verify-v15.py'
-      - 'docs/concepts/littlewild/*.md'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
 permissions:
   contents: write
   issues: read
 concurrency:
-  group: littlewild-ecs-${{ github.ref }}
+  group: littlewild-ecs-m5-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify-and-rebuild:
+  publish:
     if: github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Recover and apply chunked ECS milestone
+      - name: Recover and apply checksum-pinned M5 source patch
         id: milestone
         env:
           GH_TOKEN: ${{ github.token }}
@@ -39,87 +36,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/milestone-comment-pages.json
-          python - <<'PY'
+          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/m5-comment-pages.json
+          python - <<'PYCODE'
           from pathlib import Path
           import base64, gzip, hashlib, json, subprocess
-
-          pages = json.loads(Path('/tmp/milestone-comment-pages.json').read_text())
-          comments = [comment for page in pages for comment in page]
-          meta_marker = '<!-- ecs-milestone-chunk-meta -->'
-          meta_comments = [comment for comment in comments if meta_marker in comment.get('body', '')]
-          if not meta_comments:
-              raise SystemExit('No chunked milestone metadata found.')
-          payload = json.loads(meta_comments[-1]['body'].split(meta_marker, 1)[1].strip())
-          required = {
-              'transport': 'm4-0c761acb',
-              'milestone': 'M4',
-              'base': '60dc144ae6dc40a31ba16cade9e67845fb0e23c3',
-              'sha256': '0c761acb1d04fb7a1e6042aa7523cd34a564d718510ab8e4cfc310115481bc78',
-              'gzipSha256': '146b36c07495c0f1c26f8ed0fb3de0173aba7a29b3d5981858a013e5e2a2365b',
-              'encoding': 'gzip+base64-chunks',
-              'chunks': 12,
-              'encodedChars': 34348,
-          }
-          for key, value in required.items():
-              if payload.get(key) != value:
-                  raise SystemExit(f'Unexpected chunked payload {key}: {payload.get(key)!r}')
-          hashes = payload.get('chunkSha256')
-          if not isinstance(hashes, list) or len(hashes) != payload['chunks']:
-              raise SystemExit('Invalid chunk checksum manifest.')
-
-          prefix = f"<!-- ecs-milestone-chunk:{payload['transport']}:"
-          chunks = {}
+          pages=json.loads(Path('/tmp/m5-comment-pages.json').read_text())
+          comments=[comment for page in pages for comment in page]
+          marker='<!-- ecs-m5-chunk-meta -->'
+          metas=[c for c in comments if marker in c.get('body','')]
+          if not metas: raise SystemExit('No M5 chunk metadata found.')
+          payload=json.loads(metas[-1]['body'].split(marker,1)[1].strip())
+          expected={"transport":"m5-58d27799de","milestone":"M5","base":"8fd13674ebd993306a68f7d029dee689fe232465","sha256":"58d27799deb618c1521a545341985721da54a530faa8922d8061b31dff0aca8d","gzipSha256":"30d214e2b37662c9cd8fb68c5a9c080991bb736cb4dd196f8562b1bdd48b5ab6","encoding":"gzip+base64-chunks","chunks":3,"encodedChars":43176,"expectedChecks":946,"expectedSuites":25,"htmlSha256":"070cba4e47c64c8ff91d14f77416d4d1f22fc4e40e75ea2aec9c405438da1250","htmlBytes":3758938}
+          for key,value in expected.items():
+              if payload.get(key)!=value: raise SystemExit(f'Unexpected M5 payload {key}: {payload.get(key)!r}')
+          hashes=payload.get('chunkSha256')
+          if not isinstance(hashes,list) or len(hashes)!=payload['chunks']: raise SystemExit('Invalid M5 chunk checksum manifest.')
+          prefix=f"<!-- ecs-m5-chunk:{payload['transport']}:"
+          chunks={}
           for comment in comments:
-              body = comment.get('body', '')
-              if not body.startswith(prefix):
-                  continue
-              head, data = body.split('-->', 1)
-              index = int(head[len(prefix):].strip())
-              chunks[index] = data.strip()
-          expected_indices = list(range(payload['chunks']))
-          if sorted(chunks) != expected_indices:
-              raise SystemExit(f'Incomplete milestone chunks: {sorted(chunks)}')
+              body=comment.get('body','')
+              if not body.startswith(prefix): continue
+              head,data=body.split('-->',1)
+              index=int(head[len(prefix):].strip())
+              chunks[index]=data.strip()
+          expected_indices=list(range(payload['chunks']))
+          if sorted(chunks)!=expected_indices: raise SystemExit(f'Incomplete M5 chunks: {sorted(chunks)}')
           for index in expected_indices:
-              digest = hashlib.sha256(chunks[index].encode()).hexdigest()
-              if digest != hashes[index]:
-                  raise SystemExit(f'Milestone chunk {index} checksum mismatch: {digest}')
-
-          encoded = ''.join(chunks[index] for index in expected_indices)
-          if len(encoded) != payload['encodedChars']:
-              raise SystemExit(f'Encoded milestone length mismatch: {len(encoded)}')
-          compressed = base64.b64decode(encoded, validate=True)
-          compressed_digest = hashlib.sha256(compressed).hexdigest()
-          if compressed_digest != payload['gzipSha256']:
-              raise SystemExit(f'Compressed milestone checksum mismatch: {compressed_digest}')
-          patch = gzip.decompress(compressed)
-          patch_digest = hashlib.sha256(patch).hexdigest()
-          if patch_digest != payload['sha256']:
-              raise SystemExit(f'Milestone patch checksum mismatch: {patch_digest}')
-
-          subprocess.run(['git', 'merge-base', '--is-ancestor', payload['base'], 'HEAD'], check=True)
-          patch_path = Path('/tmp/littlewild-milestone.patch')
-          patch_path.write_bytes(patch)
-          state_path = Path('docs/concepts/littlewild/source/ecs-milestone-state.json')
-          state = json.loads(state_path.read_text()) if state_path.exists() else {}
-          if state.get('sha256') != payload['sha256']:
-              subprocess.run(['git', 'apply', '--check', str(patch_path)], check=True)
-              subprocess.run(['git', 'apply', str(patch_path)], check=True)
-              state_path.write_text(json.dumps({
-                  'milestone': payload['milestone'],
-                  'sha256': payload['sha256'],
-              }, indent=2) + '\n')
-          Path('/tmp/milestone-message').write_text(payload['commitMessage'])
-          PY
-          echo "message=$(cat /tmp/milestone-message)" >> "$GITHUB_OUTPUT"
-      - name: Preserve recovered patch
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: littlewild-m4-recovered-patch
-          path: /tmp/littlewild-milestone.patch
-          if-no-files-found: ignore
-          retention-days: 14
+              digest=hashlib.sha256(chunks[index].encode()).hexdigest()
+              if digest!=hashes[index]: raise SystemExit(f'M5 chunk {index} checksum mismatch: {digest}')
+          encoded=''.join(chunks[index] for index in expected_indices)
+          if len(encoded)!=payload['encodedChars']: raise SystemExit(f'M5 encoded length mismatch: {len(encoded)}')
+          compressed=base64.b64decode(encoded,validate=True)
+          if hashlib.sha256(compressed).hexdigest()!=payload['gzipSha256']: raise SystemExit('M5 compressed checksum mismatch.')
+          patch=gzip.decompress(compressed)
+          if hashlib.sha256(patch).hexdigest()!=payload['sha256']: raise SystemExit('M5 patch checksum mismatch.')
+          subprocess.run(['git','merge-base','--is-ancestor',payload['base'],'HEAD'],check=True)
+          path=Path('/tmp/littlewild-m5.patch');path.write_bytes(patch)
+          subprocess.run(['git','apply','--check',str(path)],check=True)
+          subprocess.run(['git','apply',str(path)],check=True)
+          Path('/tmp/m5-commit-message').write_text(payload['commitMessage'])
+          PYCODE
+          echo "message=$(cat /tmp/m5-commit-message)" >> "$GITHUB_OUTPUT"
       - name: Install verification dependencies
         working-directory: docs/concepts/littlewild
         run: |
@@ -127,19 +84,47 @@ jobs:
           python -m playwright install --with-deps chromium
           CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           sudo ln -sf "$CHROMIUM" /usr/bin/chromium
-      - name: Verify source and rebuild standalone artifact
+      - name: Rebuild and verify all M5 contracts
         working-directory: docs/concepts/littlewild
         run: python verify-v15.py
-      - name: Commit milestone and verification evidence
+      - name: Validate final evidence and retire publication workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PYCODE'
+          from pathlib import Path
+          import hashlib,json
+          gate=json.loads(Path('docs/concepts/littlewild/verification/v15/gate-results.json').read_text())
+          expected={'status':'passed','passed':946,'total':946,'htmlBytes':3758938,'htmlSha256':'070cba4e47c64c8ff91d14f77416d4d1f22fc4e40e75ea2aec9c405438da1250'}
+          for key,value in expected.items():
+              if gate.get(key)!=value: raise SystemExit(f'Unexpected final gate {key}: {gate.get(key)!r}')
+          if len(gate.get('suites',[]))!=25: raise SystemExit('Unexpected final suite count.')
+          artifact=Path('docs/concepts/littlewild/littlewild.html')
+          if artifact.stat().st_size!=expected['htmlBytes'] or hashlib.sha256(artifact.read_bytes()).hexdigest()!=expected['htmlSha256']:
+              raise SystemExit('Standalone artifact identity mismatch.')
+          Path('.github/workflows/littlewild-ecs-rebuild.yml').write_text('name: Littlewild ECS verification\non:\n  push:\n    branches:\n      - concept/littlewild-v15-world-ui\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \'.github/workflows/littlewild-ecs-rebuild.yml\'\n  pull_request:\n    paths:\n      - \'docs/concepts/littlewild/**\'\n      - \'.github/workflows/littlewild-ecs-rebuild.yml\'\n  workflow_dispatch:\npermissions:\n  contents: read\nconcurrency:\n  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}\n  cancel-in-progress: true\njobs:\n  verify:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 30\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \'3.12\'\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \'22\'\n      - name: Install verification dependencies\n        working-directory: docs/concepts/littlewild\n        run: |\n          python -m pip install -r requirements-test.txt\n          python -m playwright install --with-deps chromium\n          CHROMIUM="$(python -c \'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()\')"\n          sudo ln -sf "$CHROMIUM" /usr/bin/chromium\n      - name: Rebuild and verify all Littlewild contracts\n        working-directory: docs/concepts/littlewild\n        run: python verify-v15.py\n      - name: Retain verification evidence\n        if: always()\n        uses: actions/upload-artifact@v4\n        with:\n          name: littlewild-ecs-verification\n          path: |\n            docs/concepts/littlewild/littlewild.html\n            docs/concepts/littlewild/verification/v15/\n            docs/concepts/littlewild/source/*-results.json\n          if-no-files-found: error\n          retention-days: 14\n')
+          PYCODE
+          git checkout HEAD -- docs/concepts/littlewild/screenshots/v15-final
+          git checkout HEAD -- docs/concepts/littlewild/source/v10-domain-results.json docs/concepts/littlewild/source/v10-fresh-story.json docs/concepts/littlewild/source/v10-regression-v6-test-results.json docs/concepts/littlewild/source/v10-regression-v8-test-results.json docs/concepts/littlewild/source/v10-stress-results.json docs/concepts/littlewild/source/v11-domain-results.json
+      - name: Commit and push verified M5 milestone
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A docs/concepts/littlewild
-          if git diff --cached --quiet; then
-            echo 'Sources and generated outputs already current.'
-          else
-            git commit -m '${{ steps.milestone.outputs.message }}'
-            git push
-          fi
+          git add -A docs/concepts/littlewild .github/workflows/littlewild-ecs-rebuild.yml
+          git diff --cached --check
+          git commit -m "${{ steps.milestone.outputs.message }}"
+          git push
+      - name: Retain M5 verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: littlewild-ecs-m5-verification
+          path: |
+            /tmp/littlewild-m5.patch
+            docs/concepts/littlewild/littlewild.html
+            docs/concepts/littlewild/verification/v15/
+            docs/concepts/littlewild/source/*-results.json
+          if-no-files-found: warn
+          retention-days: 14
