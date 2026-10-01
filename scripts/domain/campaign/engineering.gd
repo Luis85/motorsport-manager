@@ -95,6 +95,18 @@ static func complete_stage(current: Dictionary, project_id: String,
 	data.projects[project_id] = next
 	return _validated(data, "stage_completed", current)
 
+static func set_part_condition(current: Dictionary, part_id: String, condition: int) -> Dictionary:
+	var data = current.duplicate(true)
+	var error = validate(data)
+	if not error.is_empty(): return _reject(error, current)
+	if not data.parts.has(part_id) or not RaceCheckpoint.integral(condition, 0, 100):
+		return _reject("Campaign physical part condition update is invalid.", current)
+	var part: Dictionary = data.parts[part_id].duplicate(true)
+	part.condition = condition
+	part.erase("digest"); part["digest"] = RaceStateValue.fingerprint(part)
+	data.parts[part_id] = part
+	return _validated(data, "part_condition_updated", current)
+
 static func performance_profile(data: Dictionary, car_id: String) -> Dictionary:
 	if not validate(data).is_empty() or not CampaignIdentity.valid(car_id):
 		return {}
