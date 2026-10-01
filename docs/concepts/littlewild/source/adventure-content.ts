@@ -2,30 +2,14 @@
 (function (root) {
     'use strict';
     const node = typeof module !== 'undefined' && module.exports;
-    const copy = x => JSON.parse(JSON.stringify(x));
+    const C = node ? require('./content-runtime.js') : root.LWContent;
+    const copy = C.copy;
     const defaultContent = node ? require('./content/adventure-library.json') : root.LWDefaultAdventure;
-    const base = root.LWContent.tables;
+    const base = C.tables;
     const ACTIONS = ['essential', 'homecoming', 'overburdened', 'feelings', 'comfort', 'outfit', 'quest', 'learning', 'plans', 'companionship', 'supplies', 'deposit', 'curiosity', 'restful', 'workplaces'];
     const slots = ['head', 'body', 'tool', 'feet', 'back', 'charm'], visuals = ['cap', 'cape', 'boots', 'axe', 'hammer', 'staff', 'pack', 'charm', 'wizard', 'vest', 'lantern'];
     const ID = /^[a-z][a-z0-9_-]{0,60}$/;
-    function parse(input) {
-        const d = typeof input === 'string' ? (input.length > 1500000 ? (() => { throw Error('JSON exceeds 1.5 MB.'); })() : JSON.parse(input)) : copy(input);
-        let nodes = 0;
-        const scan = (x, depth = 0) => {
-            if (++nodes > 70000 || depth > 25)
-                throw Error('JSON is too deeply nested or too large.');
-            if (typeof x === 'number' && !Number.isFinite(x))
-                throw Error('Non-finite number.');
-            if (x && typeof x === 'object')
-                for (const [k, v] of Object.entries(x)) {
-                    if (['__proto__', 'constructor', 'prototype'].includes(k))
-                        throw Error('Unsafe property name.');
-                    scan(v, depth + 1);
-                }
-        };
-        scan(d);
-        return d;
-    }
+    function parse(input) { return C.parse(input, 1500000); }
     function validate(input) {
         let p;
         const errors = [];
