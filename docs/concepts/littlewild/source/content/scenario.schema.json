@@ -1,14 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:living-worlds:pack:2",
-  "title": "Living Worlds scenario pack v2",
+  "title": "Living Worlds scenario pack v1–v2",
   "type": "object",
   "properties": {
     "format": {
       "const": "living-worlds-pack"
     },
     "schemaVersion": {
-      "const": 2
+      "enum": [
+        1,
+        2
+      ]
     },
     "id": {
       "type": "string",
@@ -34,6 +37,9 @@
     },
     "presentation": {
       "$ref": "#/$defs/presentation"
+    },
+    "simulation": {
+      "$ref": "#/$defs/simulationProfile"
     },
     "worlds": {
       "type": "array",
@@ -82,9 +88,6 @@
         "growth"
       ],
       "additionalProperties": false
-    },
-    "simulation": {
-      "$ref": "#/$defs/simulation"
     }
   },
   "required": [
@@ -98,10 +101,47 @@
     "worlds",
     "scenes",
     "tutorial",
-    "simulation",
     "libraries"
   ],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 1
+          }
+        },
+        "required": [
+          "schemaVersion"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "simulation"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 2
+          }
+        },
+        "required": [
+          "schemaVersion"
+        ]
+      },
+      "then": {
+        "required": [
+          "simulation"
+        ]
+      }
+    }
+  ],
   "$defs": {
     "world": {
       "type": "object",
@@ -405,14 +445,6 @@
         },
         "initialState": {
           "type": "object"
-        },
-        "ruleProfileId": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "actorArchetypeId": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
         }
       },
       "required": [
@@ -420,9 +452,7 @@
         "name",
         "description",
         "worldId",
-        "initialState",
-        "ruleProfileId",
-        "actorArchetypeId"
+        "initialState"
       ],
       "additionalProperties": false
     },
@@ -466,6 +496,66 @@
         "title",
         "body",
         "action"
+      ],
+      "additionalProperties": false
+    },
+    "simulationProfile": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-simulation-profile"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "version": {
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "actor": {
+              "$ref": "#/$defs/actorRules"
+            },
+            "economy": {
+              "$ref": "#/$defs/economyRules"
+            }
+          },
+          "required": [
+            "actor",
+            "economy"
+          ],
+          "additionalProperties": false
+        },
+        "archetype": {
+          "$ref": "#/$defs/compositionArchetype"
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "id",
+        "version",
+        "name",
+        "description",
+        "rules",
+        "archetype"
       ],
       "additionalProperties": false
     },
@@ -552,8 +642,7 @@
                 "pattern": "^[a-z][a-z0-9_-]{0,50}$"
               },
               "minItems": 1,
-              "maxItems": 32,
-              "uniqueItems": true
+              "maxItems": 32
             },
             "foodWork": {
               "type": "number",
@@ -646,20 +735,20 @@
             "base": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 1000000
+              "maximum": 100000
             },
             "perLevel": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1000000
+              "maximum": 100000
             },
             "playerResearchPerLevel": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 1000000
+              "maximum": 100
             },
             "actorBondPerLevel": {
-              "type": "integer",
+              "type": "number",
               "minimum": 0,
               "maximum": 100
             }
@@ -692,22 +781,22 @@
             "balance": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 1000000000000000
+              "maximum": 9007199254740991
             },
             "delta": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 1000000000000
+              "maximum": 9007199254740991
             },
             "level": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 1000000000
+              "maximum": 1000000
             },
             "stat": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 1000000000000000
+              "maximum": 9007199254740991
             }
           },
           "required": [
@@ -728,149 +817,82 @@
       ],
       "additionalProperties": false
     },
-    "ruleProfile": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-ecs-rule-profile"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "actor": {
-          "$ref": "#/$defs/actorRules"
-        },
-        "economy": {
-          "$ref": "#/$defs/economyRules"
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "id",
-        "name",
-        "description",
-        "actor",
-        "economy"
-      ],
-      "additionalProperties": false
-    },
     "compositionArchetype": {
       "type": "object",
       "properties": {
-        "format": {
-          "const": "littlewild-composition-archetype"
-        },
-        "schemaVersion": {
-          "const": 1
-        },
         "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          "const": "living-world-v1"
         },
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500,
-          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
-        },
-        "entity": {
-          "const": "creature"
-        },
-        "persistentComponents": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "Transform",
-              "Needs",
-              "Learning",
-              "Feelings",
-              "Inventory"
-            ]
-          },
-          "minItems": 5,
-          "maxItems": 5,
-          "uniqueItems": true
-        },
-        "transientComponents": {
-          "type": "array",
-          "items": {
-            "enum": [
-              "Activity",
-              "Task",
-              "Intent"
-            ]
-          },
-          "minItems": 3,
-          "maxItems": 3,
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "format",
-        "schemaVersion",
-        "id",
-        "name",
-        "description",
-        "entity",
-        "persistentComponents",
-        "transientComponents"
-      ],
-      "additionalProperties": false
-    },
-    "simulation": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "const": "littlewild-simulation-content"
-        },
-        "schemaVersion": {
+        "version": {
           "const": 1
         },
-        "ruleProfiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ruleProfile"
-          },
-          "minItems": 1,
-          "maxItems": 8
+        "engineLayers": {
+          "const": [
+            "systems",
+            "colony",
+            "world-simulation",
+            "village",
+            "planner",
+            "cartography"
+          ]
         },
-        "compositionArchetypes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/compositionArchetype"
-          },
-          "minItems": 1,
-          "maxItems": 8
+        "simulationPipeline": {
+          "const": [
+            "clock",
+            "world",
+            "quest-board",
+            "actor-daily",
+            "actor-quest",
+            "actor-simulation"
+          ]
+        },
+        "actorDynamics": {
+          "const": [
+            "practice-day",
+            "learning-fatigue",
+            "social-decay",
+            "needs-decay"
+          ]
+        },
+        "actorActivity": {
+          "const": [
+            "task-intent",
+            "task-movement",
+            "task-work-progress",
+            "task-intent-result"
+          ]
+        },
+        "worldTransactions": {
+          "const": [
+            "inventory-transfer",
+            "resource-harvest",
+            "production-reserve",
+            "production-job-update",
+            "production-settlement"
+          ]
+        },
+        "economyTransactions": {
+          "const": [
+            "settlement-plan",
+            "wallet-settlement",
+            "shared-research-settlement",
+            "xp-progression",
+            "prestige-settlement",
+            "stat-settlement",
+            "chapter-settlement",
+            "settlement-outbox"
+          ]
         }
       },
       "required": [
-        "format",
-        "schemaVersion",
-        "ruleProfiles",
-        "compositionArchetypes"
+        "id",
+        "version",
+        "engineLayers",
+        "simulationPipeline",
+        "actorDynamics",
+        "actorActivity",
+        "worldTransactions",
+        "economyTransactions"
       ],
       "additionalProperties": false
     }

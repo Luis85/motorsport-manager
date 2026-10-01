@@ -1,11 +1,11 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),cp=require('node:child_process');
 const X=require('./scenario-runtime.js'),S=require('./scenario-story.js');
-const C=global.LWContent,A=global.LWAdventure,W=global.LWWorldContent,G=global.LWGrowth,P=global.LWWorldProfile,L=global.LW;
+const C=global.LWContent,A=global.LWAdventure,W=global.LWWorldContent,G=global.LWGrowth,P=global.LWWorldProfile,R=global.LWSimulationProfile,L=global.LW;
 const all=X.builtins(),results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error(name,error.message);}}
 const copy=C.copy;
-function active(){return C.stable({base:C.registry.export(),ad:A.content,world:W.content,growth:G.content,profile:P.current});}
+function active(){return C.stable({base:C.registry.export(),ad:A.content,world:W.content,growth:G.content,profile:P.current,simulation:R.current});}
 function defaults(){X.commitScene(X.prepareScene(all[0],'charted-home'));}
 function rejects(name,edit){test(name,()=>{const p=copy(all[0]);edit(p);const before=active(),v=X.validate(p);assert.equal(v.ok,false);assert(v.errors.length);assert.equal(active(),before);});}
 for(const p of all){
@@ -53,7 +53,7 @@ rejects('Reject impossible learning dependency',p=>p.libraries.base.components.s
 rejects('Reject incompatible progression rules',p=>p.libraries.growth.rules.maxSlots=10000);
 rejects('Reject unowned active scene island',p=>p.scenes[1].initialState.estate.islands=[{ix:99,iy:99}] );
 rejects('Reject terrain with a disconnected corner',p=>{p.worlds[0].terrain[0]='.~~'+p.worlds[0].terrain[0].slice(3);});
-test('Reject duplicate JSON object keys before parsing',()=>{const v=X.validate(JSON.stringify(all[0]).replace('"schemaVersion":1','"schemaVersion":1,"schemaVersion":1'));assert(!v.ok);});
+test('Reject duplicate JSON object keys before parsing',()=>{const v=X.validate(JSON.stringify(all[0]).replace('"schemaVersion":2','"schemaVersion":2,"schemaVersion":2'));assert(!v.ok);});
 test('Reject prototype-bearing raw JSON',()=>{assert(!X.validate('{"__proto__":{}}').ok);});
 test('Reject corrupt JSON',()=>assert(!X.validate('{oops').ok));
 test('Reject oversized untrusted input',()=>assert(!X.validate(' '.repeat(8*1024*1024+1)).ok));

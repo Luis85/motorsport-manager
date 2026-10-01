@@ -2,7 +2,7 @@
 
 An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
 
-The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition with scheduled simulation and command boundaries, and versioned data-only simulation profiles/archetypes. Native state remains version 8; scenario packs deliberately evolve to schema 2 and scenario-aware stories to envelope 10. See `ECS-ARCHITECTURE.md`.
+The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves now use envelope 10; envelope 9 migrates explicitly to the compatibility profile. See `ECS-ARCHITECTURE.md`.
 
 ## Play
 
@@ -27,7 +27,7 @@ The normal build uses Python's standard library. External-pack builds additional
 
 ## Documentation
 
-- `CONFIGURATION.md`: supported world/scene authoring, rule profiles, composition archetypes and current engine boundaries.
+- `CONFIGURATION.md`: scenario-schema 2, simulation-profile authoring, world/scene configuration, migrations and engine boundaries.
 - `UI-RESEARCH.md` and `UI-REVIEW.html`: research, observed baseline and actual captures.
 - `VERIFICATION.md`: this build's executed checks and limitations.
 - `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
@@ -37,4 +37,6 @@ This is not yet an unrestricted game engine. Stable mechanic roles, handlers, is
 
 ## ECS refactor on PR #25
 
-The compatibility-preserving M1–M6 migration is documented in `ECS-ARCHITECTURE.md`. Compatibility tuning lives in `source/content/actor-rules.json` and `source/content/economy-rules.json`; scenario-pack schema 2 publishes exact versioned profile snapshots around those validated manifests. The normal verification gate includes isolated ECS suites plus real-engine save/resume, logistics, quest, market, progression, and browser compatibility checks. The runtime inheritance chain has been removed; mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
+The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine migration, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
+
+- [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.

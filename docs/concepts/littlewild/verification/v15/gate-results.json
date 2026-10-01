@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "passed": 987,
-  "total": 987,
+  "passed": 1006,
+  "total": 1006,
   "suites": [
     {
       "name": "ecs-core",
@@ -10,10 +10,34 @@
         "source/test-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.15,
+      "seconds": 0.07,
       "result": "source/ecs-results.json",
       "passed": 9,
       "total": 9
+    },
+    {
+      "name": "simulation-profile",
+      "command": [
+        "node",
+        "source/test-simulation-profile.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.09,
+      "result": "source/simulation-profile-results.json",
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "simulation-profile-integration",
+      "command": [
+        "node",
+        "source/test-simulation-profile-integration.cjs"
+      ],
+      "exitCode": 0,
+      "seconds": 2.62,
+      "result": "source/simulation-profile-integration-results.json",
+      "passed": 15,
+      "total": 15
     },
     {
       "name": "engine-composition",
@@ -22,22 +46,10 @@
         "source/test-engine-composition.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.77,
+      "seconds": 0.63,
       "result": "source/engine-composition-results.json",
       "passed": 14,
       "total": 14
-    },
-    {
-      "name": "simulation-content",
-      "command": [
-        "node",
-        "source/test-simulation-content.cjs"
-      ],
-      "exitCode": 0,
-      "seconds": 2.63,
-      "result": "source/simulation-content-results.json",
-      "passed": 24,
-      "total": 24
     },
     {
       "name": "ecs-activity",
@@ -46,7 +58,7 @@
         "source/test-ecs-activity.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.03,
       "result": "source/ecs-activity-results.json",
       "passed": 7,
       "total": 7
@@ -70,7 +82,7 @@
         "source/test-economy-ecs.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.04,
+      "seconds": 0.03,
       "result": "source/economy-ecs-results.json",
       "passed": 12,
       "total": 12
@@ -82,7 +94,7 @@
         "source/test-ecs-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.55,
+      "seconds": 0.47,
       "result": "source/ecs-integration-results.json",
       "passed": 7,
       "total": 7
@@ -94,7 +106,7 @@
         "source/test-ecs-world-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.34,
+      "seconds": 0.28,
       "result": "source/ecs-world-integration-results.json",
       "passed": 6,
       "total": 6
@@ -106,7 +118,7 @@
         "source/test-economy-integration.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.37,
+      "seconds": 0.32,
       "result": "source/economy-integration-results.json",
       "passed": 8,
       "total": 8
@@ -118,7 +130,7 @@
         "source/test-v15.cjs"
       ],
       "exitCode": 0,
-      "seconds": 7.77,
+      "seconds": 7.2,
       "result": "source/v15-domain-results.json",
       "passed": 77,
       "total": 77
@@ -130,7 +142,7 @@
         "source/test-v15-presentation.cjs"
       ],
       "exitCode": 0,
-      "seconds": 0.76,
+      "seconds": 0.67,
       "result": "source/v15-presentation-results.json",
       "passed": 47,
       "total": 47
@@ -142,7 +154,7 @@
         "source/test-v15-pause.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.08,
+      "seconds": 0.9,
       "result": "source/v15-pause-results.json",
       "passed": 54,
       "total": 54
@@ -154,7 +166,7 @@
         "source/test-v11.cjs"
       ],
       "exitCode": 0,
-      "seconds": 3.73,
+      "seconds": 3.29,
       "result": "source/v11-domain-results.json",
       "passed": 73,
       "total": 73
@@ -166,7 +178,7 @@
         "source/test-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 2.31,
+      "seconds": 2.06,
       "result": "source/v10-domain-results.json",
       "passed": 76,
       "total": 76
@@ -178,7 +190,7 @@
         "source/test-growth-stress.cjs"
       ],
       "exitCode": 0,
-      "seconds": 19.44,
+      "seconds": 16.54,
       "result": "source/v10-stress-results.json",
       "passed": 3,
       "total": 3
@@ -190,7 +202,7 @@
         "source/test-fresh-v10.cjs"
       ],
       "exitCode": 0,
-      "seconds": 6.87,
+      "seconds": 5.76,
       "result": "source/v10-fresh-results.json",
       "passed": 8,
       "total": 8
@@ -202,7 +214,7 @@
         "source/test-v10-regression-v5.cjs"
       ],
       "exitCode": 0,
-      "seconds": 5.58,
+      "seconds": 4.86,
       "result": "source/v10-regression-v5-test-results.json",
       "passed": 133,
       "total": 133
@@ -214,7 +226,7 @@
         "source/test-v10-regression-v6.cjs"
       ],
       "exitCode": 0,
-      "seconds": 23.34,
+      "seconds": 19.57,
       "result": "source/v10-regression-v6-test-results.json",
       "passed": 52,
       "total": 52
@@ -226,7 +238,7 @@
         "source/test-v10-regression-v8.cjs"
       ],
       "exitCode": 0,
-      "seconds": 25.54,
+      "seconds": 22.4,
       "result": "source/v10-regression-v8-test-results.json",
       "passed": 88,
       "total": 88
@@ -238,7 +250,7 @@
         "source/test-v10-regression-quality-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 1.19,
+      "seconds": 1.05,
       "result": "source/v10-regression-v9-quality-results.json",
       "passed": 31,
       "total": 31
@@ -250,7 +262,7 @@
         "source/test-v10-regression-foundation-v9.cjs"
       ],
       "exitCode": 0,
-      "seconds": 9.35,
+      "seconds": 8.17,
       "result": "source/v10-regression-v9-foundation-results.json",
       "passed": 31,
       "total": 31
@@ -262,7 +274,7 @@
         "schema-checks-v10.py"
       ],
       "exitCode": 0,
-      "seconds": 0.58,
+      "seconds": 0.44,
       "result": "source/v10-schema-results.json",
       "passed": 19,
       "total": 19
@@ -274,10 +286,10 @@
         "schema-checks-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 1.42,
+      "seconds": 1.45,
       "result": "source/v15-schema-results.json",
-      "passed": 38,
-      "total": 38
+      "passed": 47,
+      "total": 47
     },
     {
       "name": "release",
@@ -286,10 +298,10 @@
         "source/test-v15-release.cjs"
       ],
       "exitCode": 0,
-      "seconds": 4.59,
+      "seconds": 4.4,
       "result": "source/v15-release-results.json",
-      "passed": 54,
-      "total": 54
+      "passed": 58,
+      "total": 58
     },
     {
       "name": "browser",
@@ -298,7 +310,7 @@
         "browser-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 47.88,
+      "seconds": 40.91,
       "result": "verification/v15/browser-results.json",
       "passed": 89,
       "total": 89
@@ -310,13 +322,13 @@
         "browser-contracts-v15.py"
       ],
       "exitCode": 0,
-      "seconds": 11.72,
+      "seconds": 10.33,
       "result": "verification/v15/browser-contract-results.json",
       "passed": 16,
       "total": 16
     }
   ],
   "browserIncluded": true,
-  "htmlSha256": "30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d",
-  "htmlBytes": 3786469
+  "htmlSha256": "73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c",
+  "htmlBytes": 3788823
 }

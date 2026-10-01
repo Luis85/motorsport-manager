@@ -2,7 +2,7 @@
 
 ## Goal
 
-Refactor the Littlewild simulation from a deep `Engine extends Engine` inheritance chain into an explicit entity-component-system runtime without giving up the existing JSON-authored content, deterministic fixed-step simulation, or v8 native and v10 portable-story compatibility.
+Refactor the Littlewild simulation from a deep `Engine extends Engine` inheritance chain into an explicit entity-component-system runtime without giving up the existing JSON-authored content, deterministic fixed-step simulation, or native-v8 state compatibility. Scenario-aware envelope 9 stories migrate explicitly to envelope 10 with a versioned simulation profile.
 
 This migration is intentionally incremental. A rewrite would make it difficult to prove that movement, resource conservation, work, progression, and imported stories retained their behavior. Each slice therefore moves one authoritative rule into a system, adds parity tests, and then deletes the corresponding legacy rule.
 
@@ -25,7 +25,7 @@ This migration is intentionally incremental. A rewrite would make it difficult t
 JSON content/scenario packs
         |
         v
-Validated definitions + versioned rule profiles/archetypes   Device preferences
+Validated definitions + rule manifests      Device preferences
         |                                         |
         v                                         v
 Application / commands  ---------------->  Presentation adapters
@@ -36,7 +36,7 @@ Simulation facade                                Read models
         +--> fixed-step clock boundary
         |
         v
-ECS World  <---- component adapters ---- existing v8 records (authoritative native state)
+ECS World  <---- component adapters ---- native v8 state records
         |
         v
 System Scheduler
@@ -68,7 +68,7 @@ M1 covers creature **Needs**, **Learning**, and **Feelings** updates. It also bi
 
 The adapter binds component stores to the exact nested actor objects already serialized today. There is no shadow component state and no ECS blob in exports. `Activity` is ephemeral, computed from current task plus an explicit, bounded snapshot of domain context. Existing `colony.js` retains its actor command permissions, task decisions, mood and stochastic temper checks. Only the migrated numerical decay/fatigue rules are removed from that legacy loop.
 
-The compatibility values live in `source/content/actor-rules.json` and `source/content/economy-rules.json`. M6 publishes those exact values as the `standard` versioned rule profile. Scenario-pack schema 2 may select other validated numeric profiles without changing system implementations, scheduler order, native state or executable behavior.
+Authoritative compatibility values live in `source/content/simulation-profile.json`, which contains the validated actor and economy rule documents plus the exact compiled `living-world-v1` composition archetype. Scenario schema 2 requires a complete profile; schema 1 packs migrate explicitly to `classic-v1`. A profile may tune bounded actor/economy numbers, but its engine layers, fixed-step phases and transaction-system lists must exactly match the compiled runtime. JSON cannot add, remove, reorder or implement systems.
 
 Actor-major stepping and previous RNG call order remain unchanged: the existing shared-world loop visits the saved creature order and invokes ECS once for each present actor. System order within an actor is: daily practice reset; learning fatigue/hysteresis; social decay; needs decay. Legacy incident/decision/task code follows.
 
@@ -80,7 +80,7 @@ M4 adds `economy-ecs.js` for atomic financial and progression settlement. Guide 
 
 M5 removes the runtime constructor-replacement chain. Feature modules register ordered descriptors with `engine-composition.js`, and `engine-composition-root.js` finalizes one stable facade in an explicit six-layer order. `actor-state-view.js` resolves personal fields by actor identity without adding getters to serialized root state. `simulation-pipeline.js` exposes the fixed-step world/actor phase order, while `command-router.js` provides a compiled allowlist for application commands and rejects arbitrary method dispatch. Historical import stages and authored fixtures use explicit partial-construction boundaries rather than global load order.
 
-M6 adds `simulation-content.js` as the data-only compatibility boundary for versioned actor/economy rule profiles and known creature composition archetypes. Scenario-pack schema 2 selects a profile and archetype per scene; envelope 10 snapshots that exact selection. Retained schema-1 packs and envelope-9 experience contexts are fingerprinted and migrated explicitly to the canonical defaults. The selected services are engine-specific, transient, and never serialized into native state.
+M6 adds `simulation-profile.js` and `scenario-migrations.js` as explicit content and migration boundaries. Scenario schema 2 carries a self-contained, fingerprinted simulation profile. Engines capture an immutable validated profile at construction, and actor/economy runtimes use that captured data rather than whichever profile is globally active later. Portable scenario stories use envelope 10 with context version 2 and an independent simulation fingerprint; envelope 9 imports migrate to `classic-v1` and re-export as 10. Native state remains version 8.
 
 ## Separation and ownership
 
@@ -93,11 +93,12 @@ M6 adds `simulation-content.js` as the data-only compatibility boundary for vers
 | `engine-composition.js` / root | Stable facade identity, explicit feature order, historical construction boundaries | Gameplay policy, persistence, UI |
 | `simulation-pipeline.js` | Fixed-step world/actor orchestration and visible phase order | Domain calculations, rendering, wall clock |
 | `command-router.js` | Compiled command allowlist, envelope validation, explicit actor routing | Arbitrary method dispatch, imported executable handlers |
-| `simulation-content.js` | Versioned numeric rule profiles, known component-contract validation, engine-specific transient service installation | System registration, callbacks, new component types, persistence mutation |
+| `simulation-profile.js` | Strict bounded profile parsing, actor/economy rule validation, immutable profile identity, compiled-archetype parity | Dynamic modules, callbacks, handler registration, system insertion/reordering |
+| `scenario-migrations.js` | Explicit schema-1→2 and context-1→2 migrations with review notes | Heuristic migration, silent behavior inference |
 | Actor state view and simulation adapters | Translate actor/root context; call ECS services; retain authorization, decision and presentation boundaries | Root-state accessors, duplicated migrated calculations or balances |
 | Existing content registries | Definition parsing, ID/reference validation, immutable read tables | Executing imported callbacks |
 | Application shell | Input/command dispatch, save/export orchestration, render scheduling | Authoritative gameplay calculations |
-| Persistence | Existing v8 native state, v10 portable envelope, retained v1/v9 migration boundaries | Serialization of renderer objects, duplicated ECS caches or implicit profile guesses |
+| Persistence | Native v8 state, envelope 10 scenario context, explicit envelope-9 migration | Serialization of renderer objects or duplicated ECS caches |
 
 ## Migration sequence and exit gates
 
@@ -106,10 +107,10 @@ M6 adds `simulation-content.js` as the data-only compatibility boundary for vers
 - **M3 — world simulation (implemented):** deposits, worksite inventories, production reservations/jobs, finite substrate use, carrier transfers, conservation, stable IDs and deterministic contention.
 - **M4 — economy, quests and progression (implemented):** atomic wallets, research, XP, prestige, statistics and chapter settlement; authorization, physical goods, histories, journaling and presentation remain separate adapters.
 - **M5 — composition cleanup (implemented):** one stable facade; explicit systems/colony/world/village/planner/cartography root; actor-scoped view over plain root data; fixed-step pipeline; compiled command router; no feature-module constructor replacement.
-- **M6 — content/schema evolution (implemented):** scenario-pack schema 2; versioned actor/economy rule profiles; known creature composition archetypes; envelope 10; retained schema-1 and envelope-9 migrations; engine-specific transient selection. External JSON remains data only.
+- **M6 — content/schema evolution (implemented):** scenario schema 2 requires a versioned simulation profile; actor/economy rules are bounded data; `living-world-v1` arrays are exact compiled contracts; schema-1 packs and envelope-9 stories migrate deliberately to `classic-v1`; scenario saves emit envelope 10 with an independent profile fingerprint.
 
 Each migration has an executable regression gate and a baseline trace for old-versus-new behavior, and must leave both Littlewild and Emberworks usable.
 
 ## Do not claim yet
 
-M1–M6 do **not** make imported JSON executable or convert every mature mechanic method into a small standalone system. AI decision providers, quest/market history, construction consequences, narration, and presentation remain domain adapters on the stable facade. Composition archetype version 1 validates only the existing dependency-complete creature contract; it is not a general component-definition language. Direct command methods remain compatibility aliases while callers migrate to the explicit router. The migration also does not guarantee cross-platform bitwise float equality or provide a live multiplayer simulation.
+M1–M6 do **not** make imported JSON executable or convert every mature mechanic method into a small standalone system. AI decision providers, quest/market history, construction consequences, narration, and presentation remain domain adapters on the stable facade. Direct command methods remain compatibility aliases while callers migrate to the explicit router. The migration also does not guarantee cross-platform bitwise float equality or provide a live multiplayer simulation.

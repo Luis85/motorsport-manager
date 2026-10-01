@@ -1,21 +1,49 @@
 {
-  "passed": 38,
-  "total": 38,
+  "passed": 47,
+  "total": 47,
   "results": [
     {
-      "name": "Current scenario schema validates its own structure",
+      "name": "Scenario schema validates its own structure",
       "passed": true
     },
     {
-      "name": "Legacy scenario schema validates its own structure",
+      "name": "Simulation profile schema validates its own structure",
       "passed": true
     },
     {
-      "name": "littlewild validates with current independent JSON Schema",
+      "name": "Default simulation profile validates independently",
       "passed": true
     },
     {
-      "name": "littlewild is not silently valid under legacy schema",
+      "name": "Compatibility profile embeds exact standalone actor and economy rules",
+      "passed": true
+    },
+    {
+      "name": "Scenario schema embeds the exact simulation profile definitions",
+      "passed": true
+    },
+    {
+      "name": "Independent profile schema rejects unknown compiled systems",
+      "passed": true
+    },
+    {
+      "name": "Independent profile schema rejects reordered engine layers",
+      "passed": true
+    },
+    {
+      "name": "Independent profile schema rejects unknown behavior-shaped fields",
+      "passed": true
+    },
+    {
+      "name": "littlewild publishes scenario schema 2",
+      "passed": true
+    },
+    {
+      "name": "littlewild embeds a valid simulation profile",
+      "passed": true
+    },
+    {
+      "name": "littlewild validates with independent JSON Schema",
       "passed": true
     },
     {
@@ -43,23 +71,19 @@
       "passed": true
     },
     {
-      "name": "littlewild schema retains profile reference shape",
+      "name": "littlewild schema 2 rejects a missing simulation profile",
       "passed": true
     },
     {
-      "name": "littlewild rejects executable profile fields",
+      "name": "littlewild rejects unsupported transaction ordering",
       "passed": true
     },
     {
-      "name": "littlewild rejects unknown component types",
+      "name": "littlewild CLI validates",
       "passed": true
     },
     {
-      "name": "littlewild CLI validates current schema",
-      "passed": true
-    },
-    {
-      "name": "littlewild CLI reports current source version",
+      "name": "littlewild CLI reports its simulation profile",
       "passed": true
     },
     {
@@ -67,11 +91,15 @@
       "passed": true
     },
     {
-      "name": "emberworks validates with current independent JSON Schema",
+      "name": "emberworks publishes scenario schema 2",
       "passed": true
     },
     {
-      "name": "emberworks is not silently valid under legacy schema",
+      "name": "emberworks embeds a valid simulation profile",
+      "passed": true
+    },
+    {
+      "name": "emberworks validates with independent JSON Schema",
       "passed": true
     },
     {
@@ -99,23 +127,19 @@
       "passed": true
     },
     {
-      "name": "emberworks schema retains profile reference shape",
+      "name": "emberworks schema 2 rejects a missing simulation profile",
       "passed": true
     },
     {
-      "name": "emberworks rejects executable profile fields",
+      "name": "emberworks rejects unsupported transaction ordering",
       "passed": true
     },
     {
-      "name": "emberworks rejects unknown component types",
+      "name": "emberworks CLI validates",
       "passed": true
     },
     {
-      "name": "emberworks CLI validates current schema",
-      "passed": true
-    },
-    {
-      "name": "emberworks CLI reports current source version",
+      "name": "emberworks CLI reports its simulation profile",
       "passed": true
     },
     {
@@ -123,35 +147,47 @@
       "passed": true
     },
     {
-      "name": "Derived schema-1 pack validates only through retained legacy schema",
+      "name": "Independent schema accepts a legacy schema 1 pack without simulation",
       "passed": true
     },
     {
-      "name": "Derived schema-1 pack is rejected by current schema",
+      "name": "Independent schema rejects ambiguous schema 1 packs with simulation",
       "passed": true
     },
     {
-      "name": "CLI migrates schema-1 packs in memory",
+      "name": "Scenario CLI explicitly migrates schema 1 to schema 2",
       "passed": true
     },
     {
-      "name": "CLI reports explicit schema-1 migration",
+      "name": "Export CLI creates a complete schema 2 pack",
       "passed": true
     },
     {
-      "name": "CLI reports migration notes",
+      "name": "Capture CLI creates a schema 2 template from an authentic legacy save",
       "passed": true
     },
     {
-      "name": "Schema-1 validation leaves source unchanged",
+      "name": "Simulation profile CLI exports the validated compatibility profile",
       "passed": true
     },
     {
-      "name": "Export CLI creates a complete current pack",
+      "name": "Simulation profile CLI validate succeeds",
       "passed": true
     },
     {
-      "name": "Capture CLI creates a current template from an authentic legacy save",
+      "name": "Simulation profile CLI validate leaves input unchanged",
+      "passed": true
+    },
+    {
+      "name": "Simulation profile CLI fingerprint succeeds",
+      "passed": true
+    },
+    {
+      "name": "Simulation profile CLI fingerprint leaves input unchanged",
+      "passed": true
+    },
+    {
+      "name": "Simulation profile CLI exposes the canonical schema",
       "passed": true
     }
   ]

@@ -1,0 +1,405 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:simulation-profile:1",
+  "title": "Littlewild simulation profile",
+  "$ref": "#/$defs/simulationProfile",
+  "$defs": {
+    "simulationProfile": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-simulation-profile"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "version": {
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "actor": {
+              "$ref": "#/$defs/actorRules"
+            },
+            "economy": {
+              "$ref": "#/$defs/economyRules"
+            }
+          },
+          "required": [
+            "actor",
+            "economy"
+          ],
+          "additionalProperties": false
+        },
+        "archetype": {
+          "$ref": "#/$defs/compositionArchetype"
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "id",
+        "version",
+        "name",
+        "description",
+        "rules",
+        "archetype"
+      ],
+      "additionalProperties": false
+    },
+    "actorRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-actor-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "learning": {
+          "type": "object",
+          "properties": {
+            "playfulFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "standardFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoveryRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoverAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "limitAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "playfulFatigue",
+            "standardFatigue",
+            "recoveryRate",
+            "recoverAt",
+            "limitAt"
+          ],
+          "additionalProperties": false
+        },
+        "feelings": {
+          "type": "object",
+          "properties": {
+            "socialRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "socialPreferenceRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "angerRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "socialRate",
+            "socialPreferenceRate",
+            "angerRate"
+          ],
+          "additionalProperties": false
+        },
+        "needs": {
+          "type": "object",
+          "properties": {
+            "workingKinds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,50}$"
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "foodWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "foodIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "walkLoadFactor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortWithoutShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "joyRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "workingKinds",
+            "foodWork",
+            "foodIdle",
+            "waterWork",
+            "waterIdle",
+            "energyWork",
+            "energyIdle",
+            "walkLoadFactor",
+            "comfortShelter",
+            "comfortWithoutShelter",
+            "joyRate"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "learning",
+        "feelings",
+        "needs"
+      ],
+      "additionalProperties": false
+    },
+    "economyRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-economy-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "xp": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "perLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "playerResearchPerLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "actorBondPerLevel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "base",
+            "perLevel",
+            "playerResearchPerLevel",
+            "actorBondPerLevel"
+          ],
+          "additionalProperties": false
+        },
+        "income": {
+          "type": "object",
+          "properties": {
+            "pocketShare": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "pocketShare"
+          ],
+          "additionalProperties": false
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "balance": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "delta": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "stat": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "balance",
+            "delta",
+            "level",
+            "stat"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "xp",
+        "income",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "compositionArchetype": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "living-world-v1"
+        },
+        "version": {
+          "const": 1
+        },
+        "engineLayers": {
+          "const": [
+            "systems",
+            "colony",
+            "world-simulation",
+            "village",
+            "planner",
+            "cartography"
+          ]
+        },
+        "simulationPipeline": {
+          "const": [
+            "clock",
+            "world",
+            "quest-board",
+            "actor-daily",
+            "actor-quest",
+            "actor-simulation"
+          ]
+        },
+        "actorDynamics": {
+          "const": [
+            "practice-day",
+            "learning-fatigue",
+            "social-decay",
+            "needs-decay"
+          ]
+        },
+        "actorActivity": {
+          "const": [
+            "task-intent",
+            "task-movement",
+            "task-work-progress",
+            "task-intent-result"
+          ]
+        },
+        "worldTransactions": {
+          "const": [
+            "inventory-transfer",
+            "resource-harvest",
+            "production-reserve",
+            "production-job-update",
+            "production-settlement"
+          ]
+        },
+        "economyTransactions": {
+          "const": [
+            "settlement-plan",
+            "wallet-settlement",
+            "shared-research-settlement",
+            "xp-progression",
+            "prestige-settlement",
+            "stat-settlement",
+            "chapter-settlement",
+            "settlement-outbox"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "engineLayers",
+        "simulationPipeline",
+        "actorDynamics",
+        "actorActivity",
+        "worldTransactions",
+        "economyTransactions"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

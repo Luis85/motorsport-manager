@@ -27,8 +27,8 @@ INSERTS = (
     ('ACTOR_ECS', 'actor-ecs.js', 'script'),
     ('WORLD_ECS', 'world-ecs.js', 'script'),
     ('ECONOMY_ECS', 'economy-ecs.js', 'script'),
-    ('SIMULATION_CONTENT', 'simulation-content.js', 'script'),
     ('SIMULATION_PIPELINE', 'simulation-pipeline.js', 'script'),
+    ('SIMULATION_PROFILE', 'simulation-profile.js', 'script'),
     ('COLONY', 'colony.js', 'script'),
     ('WORLD_CONTENT', 'world-content.js', 'script'),
     ('WORLD_INTEGRITY', 'world-integrity.js', 'script'),
@@ -44,6 +44,7 @@ INSERTS = (
     ('WORLD_EXPLORER_CSS', 'world-explorer.css', 'style'),
     ('STORY', 'story-codec.js', 'script'),
     ('SCENARIO_SHAPE', 'scenario-shape.js', 'script'),
+    ('SCENARIO_MIGRATIONS', 'scenario-migrations.js', 'script'),
     ('SCENARIOS', 'scenario-runtime.js', 'script'),
     ('SCENARIO_STORY', 'scenario-story.js', 'script'),
     ('STORAGE', 'story-storage.js', 'script'),
@@ -89,10 +90,11 @@ def build(pack_path: Path | None = None, output_path: Path | None = None) -> Pat
     data += '\nwindow.LWWorldSchema = ' + json.dumps(json.loads((ROOT/'content/world.schema.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWActorRules = ' + json.dumps(json.loads((ROOT/'content/actor-rules.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWEconomyRules = ' + json.dumps(json.loads((ROOT/'content/economy-rules.json').read_text()), ensure_ascii=False) + ';'
-    data += '\nwindow.LWDefaultSimulation = ' + json.dumps(json.loads((ROOT/'content/default-simulation.json').read_text()), ensure_ascii=False) + ';'
+    data += '\nwindow.LWDefaultSimulationProfile = ' + json.dumps(json.loads((ROOT/'content/simulation-profile.json').read_text()), ensure_ascii=False) + ';'
+    data += '\nwindow.LWSimulationSchema = ' + json.dumps(json.loads((ROOT/'content/simulation.schema.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWDefaultGrowth = ' + json.dumps(json.loads((ROOT/'content/growth-library.json').read_text()), ensure_ascii=False) + ';'
     data += '\nwindow.LWGrowthSchema = ' + json.dumps(json.loads((ROOT/'content/growth.schema.json').read_text()), ensure_ascii=False) + ';'
-    for variable, filename in [('LWDefaultProfile','default-profile.json'),('LWScenarioSchema','scenario.schema.json'),('LWScenarioV1Schema','scenario-v1.schema.json')]:
+    for variable, filename in [('LWDefaultProfile','default-profile.json'),('LWScenarioSchema','scenario.schema.json')]:
         data += '\nwindow.' + variable + ' = ' + json.dumps(json.loads((ROOT/'content'/filename).read_text()), ensure_ascii=False) + ';'
     packs = [json.loads(pack_path.read_text())] if pack_path else [json.loads((ROOT/'content'/f).read_text()) for f in ['littlewild.pack.json','emberworks.pack.json']]
     data += '\nwindow.LWScenarioPacks = ' + json.dumps(packs, ensure_ascii=False) + ';'

@@ -143,7 +143,7 @@
       "passed": true
     },
     {
-      "name": "Actual pack download contains scenes and four libraries",
+      "name": "Actual pack download contains schema 2, simulation profile, scenes and four libraries",
       "passed": true
     },
     {
@@ -171,11 +171,11 @@
       "passed": true
     },
     {
-      "name": "Scenario save envelope includes the exact world template and simulation selection",
+      "name": "Scenario save envelope 10 includes the exact world and simulation profiles",
       "passed": true
     },
     {
-      "name": "Captured current scene downloads as a valid pack",
+      "name": "Captured current scene downloads as a valid schema 2 pack with its simulation profile",
       "passed": true
     },
     {

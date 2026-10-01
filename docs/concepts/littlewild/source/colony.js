@@ -59,8 +59,8 @@
         self.s.version = 5;
         self.ensureWarehouse();
         self.behaviorTree = new root.LWBehaviorTree(self.handlers());
-        self.ecs = root.LWActorECS.create();
-        self.domainPipeline = root.LWSimulationPipeline.create();
+        self.ecs = root.LWActorECS.create(self.simulationProfile?.rules?.actor);
+        self.domainPipeline = root.LWSimulationPipeline.create(self.simulationProfile?.archetype);
         self.ecs.sync(self.creatures);
         if (!self.s.colony.board.offers.length && self.s.colony.board.nextAt === 0) {
             self.addOffer('meadow', 'A neighbor’s invitation');

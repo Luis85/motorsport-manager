@@ -1,96 +1,104 @@
-# ECS M6 — versioned simulation content and deliberate migrations
+# ECS M6 — versioned simulation profiles and schema evolution
 
 ## Status
 
-**Implemented.** M6 publishes data-only ECS rule profiles and creature composition archetypes as part of scenario-pack schema 2. Scenario-aware portable stories now use envelope 10 so the selected simulation definition travels with the exact world, tutorial, four established libraries, and native state. The authoritative simulation payload remains version 8.
+**Implemented.** M6 completes the planned ECS migration by making rule tuning, compiled composition identity, pack migration, and scenario-aware save migration explicit. Native simulation state remains version 8. Scenario packs now publish schema 2 and scenario-aware stories emit envelope 10.
 
-## Version boundaries
+## Versioned simulation profile
 
-| Boundary | Current version | Compatibility rule |
-|---|---:|---|
-| Native simulation state | 8 | Unchanged. No ECS registry, scheduler, profile, or archetype cache is serialized into state. |
-| Scenario pack | 2 | Schema-1 packs are validated against the retained schema before an in-memory migration adds the standard profile and archetype. |
-| Scenario-aware portable story | 10 | Envelope-9 experience contexts are fingerprint-checked first, then migrated to the standard profile and archetype with an explicit review note. |
-| Simulation content set | 1 | Contains bounded rule profiles and composition archetypes only. |
-| ECS rule profile | 1 | Wraps one validated actor-rules manifest and one validated economy-rules manifest. |
-| Creature composition archetype | 1 | Declares the known dependency-complete persisted and transient actor component contract. |
+`source/simulation-profile.js` owns the profile boundary. A profile is a bounded, JSON-only document with:
 
-The retained `scenario-v1.schema.json` is the authority for old pack input. Migration never changes the source file, guesses an unknown version, or rewrites native state.
+- identity and version metadata;
+- a complete validated actor-rule document;
+- a complete validated economy-rule document;
+- one compiled composition archetype declaration.
 
-## Rule profiles
+The compatibility document is `source/content/simulation-profile.json` (`classic-v1`). Its standalone JSON Schema is `source/content/simulation.schema.json`; the same definitions are embedded in the scenario schema and checked for drift.
 
-A rule profile has a stable ID, human-readable metadata, and complete nested `littlewild-actor-rules` and `littlewild-economy-rules` documents. Existing validators remain authoritative for numeric ranges, exact fields, thresholds, limits, working task kinds, and income sharing.
+Accepted profiles are deeply frozen and fingerprinted. An engine captures the active profile when it is constructed. Actor and economy ECS runtimes are built from that captured profile, so later catalog selection cannot retroactively change an existing story.
 
-The bundled `standard` profile embeds the exact M5 actor and economy defaults. Both Littlewild and Emberworks reference it, preserving their established behavior. A pack may publish up to eight profiles and each scene selects one by ID.
+## Compiled archetype, not executable content
 
-Profiles can tune only already implemented numeric rules. They cannot add systems, scheduler phases, commands, event handlers, functions, expressions, URLs, or arbitrary methods.
+The only supported archetype is `living-world-v1`. It declares the exact known order of:
 
-## Composition archetypes
+1. engine composition layers;
+2. high-level simulation pipeline phases;
+3. actor-dynamics systems;
+4. actor-activity systems;
+5. world-transaction systems;
+6. economy-transaction systems.
 
-Composition archetype version 1 describes a creature with these persisted component bindings:
+The schema uses structural constants for those arrays, and runtime validation independently compares them with the compiled schedulers. Imported JSON cannot add, remove, rename, or reorder systems. It cannot provide modules, callbacks, command handlers, source text, behavior-tree handlers, components, or executable functions.
 
-- `Transform`
-- `Needs`
-- `Learning`
-- `Feelings`
-- `Inventory`
+## Scenario schema 2
 
-and these transient runtime components:
+`source/content/scenario.schema.json` now accepts two source versions with unambiguous rules:
 
-- `Activity`
-- `Task`
-- `Intent`
+- schema 1 must not contain `simulation`;
+- schema 2 must contain a complete `simulation` profile.
 
-The runtime validates the complete set before replacing an engine's transient actor and economy services. Version 1 intentionally does not accept partial dependency graphs or new component names. This establishes a versioned composition contract without turning imported JSON into executable registration metadata.
+Both built-in packs publish schema 2. Captures and exports also produce schema 2. Existing schema-1 packs remain importable through a deliberate additive migration to `classic-v1`; a schema-1 pack that already contains simulation data fails closed rather than guessing intent.
 
-## Engine-specific application
+`source/scenario-shape.js` now evaluates the exact additional schema keywords needed by this contract: deep structural constants, conditional `if`/`then`, `not`, `allOf`, uniqueness, and deterministic local branch evaluation. It remains a bounded evaluator for the bundled schema, not an arbitrary schema engine.
 
-`source/simulation-content.js` validates, canonicalizes, freezes, resolves, and applies simulation selections. Applying a selection:
+## Explicit migrations
 
-1. validates the rule profile and archetype as JSON-only data;
-2. checks every current creature against the persisted component contract;
-3. creates a fresh actor ECS using the selected actor rules;
-4. creates a fresh economy ECS using the selected economy rules;
-5. stores the immutable selection as non-enumerable engine metadata.
+`source/scenario-migrations.js` contains the only scenario/profile migrations:
 
-Profiles are engine-specific rather than a mutable process-wide registry. Reversible pack validation therefore cannot leak a candidate profile into the active story. `engine.export()` continues to serialize native state only.
+| Input | Canonical result |
+|---|---|
+| Scenario pack schema 1 without `simulation` | Schema 2 with `classic-v1`, plus a migration note |
+| Scenario pack schema 2 with profile | Validated schema 2 |
+| Experience context version 1 | Context version 2 with `classic-v1`, plus a migration note |
+| Experience context version 2 | Validated context version 2 |
 
-## Scenario-pack schema 2
+Unsupported versions and ambiguous documents are rejected. Migration functions copy their inputs and do not mutate author files.
 
-A schema-2 pack adds:
+## Story boundary
 
-- top-level `simulation` content;
-- `ruleProfileId` on every scene;
-- `actorArchetypeId` on every scene.
+Scenario-aware portable stories now use envelope 10:
 
-Runtime validation performs referential checks in addition to JSON Schema shape validation. Unknown IDs, duplicate definitions, unsupported versions, incomplete archetypes, executable-shaped fields, and malformed nested rule documents fail before active registries or world profiles change.
+- native payload remains version 8;
+- experience context is version 2;
+- the exact simulation profile is embedded;
+- the complete experience has its existing fingerprint;
+- the simulation profile has an independent fingerprint.
 
-Capture produces a self-contained schema-2 pack containing the active scene's exact selected profile and archetype. The local CLI reports the source schema version and any compatibility migration notes while leaving inputs byte-unchanged.
+Envelope-9 stories first validate their original context fingerprint, then migrate to context version 2 and `classic-v1`. The preview exposes the migration note. A committed migrated story re-exports as envelope 10. Ordinary native-v8 stories use `classic-v1` without gaining scenario context.
 
-## Portable envelope 10
+## Atomic activation and rollback
 
-A scenario-aware export snapshots the selected profile and archetype inside `experience.simulation` and fingerprints the complete experience context. Import order is deliberate:
+Scene validation and commit stage these resources together:
 
-1. parse bounded JSON;
-2. verify the original experience fingerprint;
-3. validate or migrate the context;
-4. validate the world and four libraries;
-5. import native state 8;
-6. apply the selected simulation definition;
-7. expose a review; and
-8. commit only after confirmation.
+- Base library;
+- Adventure library;
+- World library;
+- Growth library;
+- simulation profile;
+- world profile;
+- imported native state.
 
-Envelope 9 has no simulation selection. It migrates to the canonical `standard` / `creature-standard` pair and reports that compatibility choice in `migrationNotes`. Tampering with an envelope-10 profile or archetype invalidates the fingerprint or the strict content contract.
+Failure restores all prior registries and profiles. Validation, import selection, and preview do not replace the active story. Only explicit scene launch commits the staged configuration.
 
-## Preserved contracts
+## Authoring tools and UI
 
-- Fixed-step order, actor-major order, random-draw order, and domain authorization remain unchanged.
-- Existing native formats 1–8 and their library migrations remain supported.
-- The four established content-library schemas remain independent of simulation content.
-- Littlewild and Emberworks still run the same compiled systems and component implementations.
-- Renderer, DOM, camera, wall clock, file I/O, and device preferences remain outside simulation inputs.
-- Direct command methods remain compatibility adapters to the M5 command router.
+`source/tools/simulation-profile-cli.cjs` provides local, non-mutating commands:
 
-## Deliberate limits
+```sh
+node source/tools/simulation-profile-cli.cjs validate profile.json
+node source/tools/simulation-profile-cli.cjs fingerprint profile.json
+node source/tools/simulation-profile-cli.cjs export profile.json
+node source/tools/simulation-profile-cli.cjs schema
+```
 
-M6 does not make component classes, scheduler order, behavior-tree handlers, command handlers, narrative code, renderer rigs, island topology, or arbitrary content roles configurable. Composition archetype version 1 publishes and validates the existing creature contract; it does not promise a general entity-definition language. New component types or executable mechanics require code, tests, and a new compatibility version.
+The scenario CLI reports source schema version, selected profile, archetype, and migration notes. The scenario UI displays the profile and archetype during catalog browsing and launch review, and exposes legacy migration notes before replacement.
+
+## Preserved boundaries
+
+- Native state is still version 8.
+- ECS worlds, schedulers, composition descriptors, command manifests, state views, and active registries remain transient.
+- Existing Base, Adventure, World, and Growth schemas remain their own contracts.
+- Rendering, camera, device preferences, file I/O, DOM state, and wall-clock time remain outside simulation inputs.
+- Randomness remains deterministic and domain-owned.
+- Littlewild and Emberworks continue to share the same compiled mechanics.
+- Mature domain methods remain facade adapters; M6 does not falsely turn every mechanic into a generic ECS system.

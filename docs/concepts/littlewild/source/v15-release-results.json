@@ -1,8 +1,8 @@
 {
-  "passed": 54,
-  "total": 54,
-  "htmlSha256": "30937a9328c51eceebee7bf53dfadc8f72fb60ffaae3bb3145747c122fc8a78d",
-  "bytes": 3786469,
+  "passed": 58,
+  "total": 58,
+  "htmlSha256": "73a1d790ec3ca2c04f57ff4dab16c3c68184b871dd555a7b613c2809861be96c",
+  "bytes": 3788823,
   "results": [
     {
       "name": "Title and entry point are v15, with no unresolved build markers",
@@ -98,6 +98,22 @@
     },
     {
       "name": "All four shipped content libraries validate through runtime CLIs",
+      "passed": true
+    },
+    {
+      "name": "Shipped simulation profile validates through its data-only CLI",
+      "passed": true
+    },
+    {
+      "name": "Simulation profile CLI exposes the committed standalone schema",
+      "passed": true
+    },
+    {
+      "name": "Built-in scenario packs publish schema 2 and a validated profile",
+      "passed": true
+    },
+    {
+      "name": "Standalone bundle contains the versioned profile and envelope-10 boundary",
       "passed": true
     },
     {

@@ -24,7 +24,8 @@
    if(b.regen>=80){b.regen-=80;b.stock=Math.min(12,b.stock+(b.kind==='orchard'?6:4)+((b.level||1)-1));}
   }
  }
- function create(){
+ function create(archetype=null){
+  if(archetype){const ids=schedule.map(step=>step.id),actual=archetype.simulationPipeline;if(!Array.isArray(actual)||actual.length!==ids.length||actual.some((id,index)=>id!==ids[index]))throw Error('Composition archetype does not match the simulation pipeline.');}
   function step(engine,dt){
    if(typeof dt!=='number'||!Number.isFinite(dt))return;
    const s=engine.s;if(!s.started||s.paused)return;

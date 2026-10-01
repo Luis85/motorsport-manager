@@ -31,6 +31,7 @@
             const composition = root.LWEngineComposition;
             state = composition ? composition.prepare(state, options) : state;
             this.s = state || initial();
+            this.simulationProfile = root.LWSimulationProfile ? root.LWSimulationProfile.current : null;
             this.events = [];
             this.acc = 0;
             this.refreshTimer = 0;
@@ -63,7 +64,7 @@
             if (!this.economyEcs) {
                 if (!root.LWEconomyECS)
                     throw Error('Economy ECS runtime missing.');
-                this.economyEcs = root.LWEconomyECS.create();
+                this.economyEcs = root.LWEconomyECS.create(this.simulationProfile?.rules?.economy);
             }
             return this.economyEcs;
         }

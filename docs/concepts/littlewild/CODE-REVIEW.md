@@ -1,8 +1,11 @@
 ## ECS M6 review
 
-`simulation-content.js` is the sole installation boundary for scenario-selected actor/economy rules and creature composition metadata. It accepts bounded JSON-only documents, delegates numeric rule validation to the existing actor/economy authorities, canonicalizes the one supported dependency-complete creature archetype, freezes the result, and installs fresh services on one engine. It cannot register systems, callbacks, commands, methods, or new component implementations. The selected definition is non-enumerable transient metadata and is absent from native v8 exports.
+> Dedicated final review: [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md)
 
-Scenario-pack schema 2 and portable envelope 10 make the selection explicit. The retained schema-1 contract and envelope-9 context are validated before migration; unsupported versions are rejected rather than guessed. Portable exports use the engine's actual active selection. Candidate pack validation remains reversible because profiles are engine-specific instead of process-global, and failed file reads clear stale migration notices.
+
+`simulation-profile.js` is the only runtime boundary for data-authored ECS tuning. It parses a bounded JSON document, delegates actor and economy values to their existing validators, deeply freezes accepted data, fingerprints the complete profile, and checks the declared archetype against the compiled engine, pipeline, actor, world, and economy schedules. A scenario can tune approved values but cannot register code or alter system topology.
+
+`scenario-migrations.js` makes schema evolution explicit. Scenario schema 1 migrates to schema 2 with `classic-v1`; context version 1 migrates to version 2 with the same compatibility profile. Ambiguous legacy documents fail closed. `scenario-story.js` emits envelope 10 with independent experience and simulation fingerprints, while envelope 9 remains an import-only migration source. Engines capture their profile at construction so a later active-pack change cannot mutate an existing simulation.
 
 ## ECS M5 review
 
@@ -32,15 +35,16 @@ The actual v14 source ZIP was recovered and checked. Earlier v15 material consis
 | Module | Ownership |
 |---|---|
 | `world-profile.js` | Detached, frozen active geography/palette profile, cached identity and reversible temporary profile |
-| `scenario-shape.js` | Bounded subset evaluator for the bundled scenario schema; not a general untrusted-schema interpreter |
-| `simulation-content.js` | Versioned rule-profile and known composition-archetype validation; engine-specific transient service installation |
-| `scenario-runtime.js` | Pack validation/migration, profile/archetype resolution, world reachability, reversible four-library staging, detached scene preview and commit |
-| `scenario-story.js` | Envelope-10 experience metadata, exact active simulation selection, and retained envelope-9 migration around the native codec |
+| `scenario-shape.js` | Bounded evaluator for the exact bundled scenario/schema keywords, including conditional versions and structural constants; not a general untrusted-schema interpreter |
+| `scenario-runtime.js` | Schema-1/2 pack validation, profile migration, world reachability, reversible four-library/profile staging, detached scene preview and commit |
+| `scenario-story.js` | Envelope-10 experience metadata, independent simulation identity and explicit envelope-9 migration around the native codec |
 | `scenario-ui.js` | Pack catalog, file-read lifecycle, confirmation and exports |
 | `build-panel.js` | Non-modal construction catalog/detail/drafts with explicit creature assignment |
 | `guide-panel.js` | Non-modal, authored, resumable guidance |
 | `v15.css` | Shared spacing vocabulary and panel-specific layouts |
+| `simulation-profile.js` / `scenario-migrations.js` | Strict rule/archetype boundary and explicit schema/context migrations |
 | `tools/scenario-cli.cjs` | Local file-based validation, export and capture |
+| `tools/simulation-profile-cli.cjs` | Local profile validation, fingerprinting, export and schema inspection |
 
 The engine and simulation modules remain authoritative for work and physical resources. Scene validation does not run arbitrary callbacks from JSON. Renderer materials and geography use an installed profile; profile changes invalidate topology/presentation caches. Generation retains a fixed role iteration order so JSON property order does not change the generated island.
 
@@ -62,4 +66,4 @@ Future extraction should proceed by responsibility with behavioral fixtures, not
 
 `ecs.js` now owns deterministic entity/component storage, structural command buffering, queries and explicit system scheduling. `actor-ecs.js` owns actor needs, learning fatigue and baseline social decay, with tuning in `content/actor-rules.json`. `colony.js` has one intentional numerical-loop extraction; all other historical pinned v14 sources remain hash-gated. `source/fixtures/ecs-migration.json` documents and narrows that exception.
 
-Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. The planned M1–M6 migration is complete; see `ECS-ARCHITECTURE.md` for preserved boundaries and deliberate remaining compatibility debt.
+Existing story records remain authoritative component storage during this migration and the original four content-library contracts are unchanged. The ECS binds those nested records by reference rather than serializing a parallel state tree. Task dispatch, movement, work completion, incidents, quests, world logistics, economy and progression are deliberately still legacy responsibilities until their individual parity slices land. See `ECS-ARCHITECTURE.md` for the completed M1–M6 boundaries and remaining product-level limitations.
