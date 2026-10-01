@@ -8,11 +8,13 @@ var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
-var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal", "advanced_pitwall_layout": "director"}
+var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal", "advanced_pitwall_layout": "director", "campaign_guide_hidden": false}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
 var recording: RaceRecord
 var sandbox_path = "user://sandbox.json"
+var campaign_path = "user://campaign.json"
+var campaign_checkpoint: Dictionary = {}
 
 # The application owns scheduling; scene visibility is not a simulation input.
 var session_runner: RaceSessionRunner
@@ -107,6 +109,7 @@ func restore_settings(data: Dictionary) -> void:
 	if data.get("pitwall_text_scale") in [1.0, 1.15, 1.3]: settings.pitwall_text_scale = float(data.pitwall_text_scale)
 	for key in ["fullscreen", "vsync", "labels", "racing_line", "reduced_motion"]:
 		if data.get(key) is bool: settings[key] = data[key]
+	if data.get("campaign_guide_hidden") is bool: settings.campaign_guide_hidden = data.campaign_guide_hidden
 	if data.get("scenery_detail") in ["rich", "simple"]: settings.scenery_detail = data.scenery_detail
 	if data.get("dot_scale") in [1.0, 1.3, 1.6]: settings.dot_scale = float(data.dot_scale)
 	var value = data.get("speed", 1)
@@ -209,6 +212,27 @@ func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> Strin
 
 func has_saved_sandbox() -> bool:
 	return FileAccess.file_exists(sandbox_path)
+
+func has_saved_campaign() -> bool:
+	return FileAccess.file_exists(campaign_path)
+
+func save_campaign() -> String:
+	if campaign_checkpoint.is_empty(): return "There is no campaign to save."
+	return CampaignStorage.new(campaign_path).save_checkpoint(campaign_checkpoint)
+
+func load_campaign() -> String:
+	var loaded = CampaignStorage.new(campaign_path).load()
+	if not loaded.get("ok", false): return loaded.get("error", "Campaign could not be loaded.")
+	campaign_checkpoint = loaded.checkpoint.duplicate(true)
+	return ""
+
+func clear_weekend_checkpoint() -> void:
+	stop_session()
+	weekend = null
+	recording = null
+	var absolute = ProjectSettings.globalize_path(checkpoint_path)
+	if FileAccess.file_exists(checkpoint_path): DirAccess.remove_absolute(absolute)
+
 
 func reload_content(roots: Array) -> bool:
 	var result = ContentPackLoader.new().load_packs(["res://content/packs/core"] + roots)
