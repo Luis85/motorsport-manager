@@ -67,7 +67,9 @@ static func _apply(restored: Dictionary, manifest: Dictionary, ledger: Dictionar
 	var elapsed = int(manifest.return_slot) - state.clock.elapsed_slots
 	if elapsed <= 0 or not state.command("advance_slots", {"slots": elapsed}):
 		return _reject("Campaign return time could not be applied exactly once: " + state.last_error, original)
-	var candidate = CampaignCheckpoint.build(state, ledger, {}, competition.competition, due.economy, inventory.inventory)
+	var candidate = CampaignCheckpoint.build(
+		state, ledger, {}, competition.competition, due.economy,
+		inventory.inventory, restored.personnel)
 	if candidate.is_empty():
 		return _reject("Weekend consequences could not form one valid campaign checkpoint.", original)
 	var status = "settled" if settlement_status == "settled" else "completed_consequences"
