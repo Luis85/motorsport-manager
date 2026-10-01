@@ -25,8 +25,13 @@ func configure(scale: float) -> void:
 	title_label = text("Strategy comparison", 19); titles.add_child(title_label)
 	status_label = text("Read-only estimate", 11, true); titles.add_child(status_label)
 	close_button = MinimalRaceStyle.button("Close", func(): close_requested.emit(), scale); heading.add_child(close_button)
-	options_grid = GridContainer.new(); options_grid.columns = 3; options_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	options_grid.add_theme_constant_override("h_separation", roundi(8 * scale)); add_child(options_grid)
+	options_grid = GridContainer.new()
+	options_grid.columns = 1 if scale >= 1.25 else 3
+	options_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	options_grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	options_grid.add_theme_constant_override("h_separation", roundi(8 * scale))
+	options_grid.add_theme_constant_override("v_separation", roundi(8 * scale))
+	add_child(options_grid)
 	for _i in range(3): option_rows.append(build_option())
 	pit_label = text("", 12); pit_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; add_child(pit_label)
 	snapshot_label = text("", 11, true); add_child(snapshot_label)

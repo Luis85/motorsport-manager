@@ -6,6 +6,16 @@ func choose_option(control: OptionButton, index: int) -> void:
 	control.item_selected.emit(index)
 	await settle(3)
 
+func capture_settings(label: String, provenance: String) -> void:
+	await settle()
+	await RenderingServer.frame_post_draw
+	var filename = "finish-" + label + ".png"
+	root.get_texture().get_image().save_png("res://reports/" + filename)
+	captures.append({"file": filename, "scope": "settings",
+		"viewport": [root.size.x, root.size.y],
+		"text_scale": app.settings.pitwall_text_scale,
+		"provenance": provenance})
+
 func interface_mode_journey() -> void:
 	# Persistence accepts the two historic advanced variants, a public alias, and
 	# falls back safely when an unsupported value is read.
@@ -36,7 +46,7 @@ func interface_mode_journey() -> void:
 	check(settings.draft.pitwall_layout == "minimal" and settings.draft.advanced_pitwall_layout == "engineering", "Returning to Minimal retains the staged Advanced starting surface")
 	check(settings.advanced_choice.disabled and settings.racing_line_choice.disabled, "Returning to Minimal disables advanced-only controls")
 	check(app.settings == application_before, "Interface preview does not mutate application settings before Apply")
-	await capture("architecture-interface-selector", "Native staged Minimal / Advanced setting; no live weekend mutation")
+	await capture_settings("architecture-interface-selector", "Native staged Minimal / Advanced setting; no live weekend mutation")
 	await click(settings.save_button)
 	check(not settings.has_changes() and app.settings.pitwall_layout == "minimal" and app.settings.advanced_pitwall_layout == "engineering", "Apply persists Minimal and its independent preferred Advanced start")
 	var stored = Storage.read_json("user://settings.json")

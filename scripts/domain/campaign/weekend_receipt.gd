@@ -41,12 +41,12 @@ static func validate(data: Variant) -> String:
 			return "Campaign classification repeats a person or car identity."
 		identities[row.person_id] = {"team_id": row.team_id, "car_id": row.car_id}
 		cars[row.car_id] = true
-		if not row.get("status") is String or row.status.is_empty() or row.status.length() > 100:
-			return "Campaign classification has an invalid status."
-		if not RaceCheckpoint.integral(row.get("laps"), 0, 100000) \
-				or not RaceCheckpoint.number(row.get("finish_time"), 0, 100000000) \
-				or not RaceCheckpoint.number(row.get("best_lap"), 0, 10000000) \
-				or not row.get("classified") is bool:
+		if row.get("status") not in ["finished", "retired"] \
+				or not row.get("name") is String or row.name.is_empty() or row.name.length() > 120 \
+				or not row.get("team") is String or row.team.is_empty() or row.team.length() > 120:
+			return "Campaign classification has invalid identity or finishing status."
+		if not RaceCheckpoint.integral(row.get("laps"), 0, 100) \
+				or not RaceCheckpoint.number(row.get("finish_time"), -1, 10000000):
 			return "Campaign classification has invalid measured values."
 		if row.get("points_eligibility") != "not_defined_by_standalone_rules":
 			return "Campaign settlement must not invent standalone points eligibility."
@@ -79,10 +79,9 @@ static func validate(data: Variant) -> String:
 	return ""
 
 static func valid_race_id(value: Variant) -> bool:
-	if not value is String or value.length() != 36:
+	if not value is String or value.length() != 32:
 		return false
-	for index in [8, 13, 18, 23]:
-		if value.substr(index, 1) != "-":
+	for character in value:
+		if character not in "0123456789abcdef":
 			return false
-	var compact = value.replace("-", "")
-	return compact.length() == 32 and compact.is_valid_hex_number(false)
+	return true
