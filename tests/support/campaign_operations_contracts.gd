@@ -46,7 +46,7 @@ static func _capacity_and_service_contract(check: Callable) -> void:
 		"units": 1,
 		"assignment_ids": ["assignment.mech.a"]
 	})
-	check.call(first.ok, "Internal work reserves explicit staff and facility capacity together")
+	check.call(first.ok, "Internal work reserves explicit staff and facility capacity together" + ("" if first.ok else ": " + str(first.error)))
 	if not first.ok:
 		return
 	checkpoint = first.checkpoint
