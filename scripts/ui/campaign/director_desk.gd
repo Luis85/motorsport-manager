@@ -49,7 +49,10 @@ func _build_header() -> void:
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; body.add_child(subtitle)
 
 func _build_status() -> void:
-	var row = HBoxContainer.new(); row.add_theme_constant_override("separation", roundi(8 * text_scale)); add_child(row)
+	var row = GridContainer.new()
+	row.columns = 2 if get_viewport_rect().size.x < 1250 or text_scale >= 1.25 else 4
+	row.add_theme_constant_override("h_separation", roundi(8 * text_scale))
+	row.add_theme_constant_override("v_separation", roundi(8 * text_scale)); add_child(row)
 	var season = data.get("season", {})
 	var next_event = data.get("next_event", {})
 	var standing = "—" if int(season.get("position", 0)) <= 0 else "P%d · %d pts" % [int(season.position), int(season.points)]
@@ -102,8 +105,10 @@ func _build_priorities() -> void:
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; body.add_child(detail)
 
 func _build_columns() -> void:
-	var columns = HBoxContainer.new(); columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	columns.add_theme_constant_override("separation", roundi(10 * text_scale)); add_child(columns)
+	var columns = GridContainer.new(); columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	columns.columns = 1 if get_viewport_rect().size.x < 1250 or text_scale >= 1.25 else 3
+	columns.add_theme_constant_override("h_separation", roundi(10 * text_scale))
+	columns.add_theme_constant_override("v_separation", roundi(10 * text_scale)); add_child(columns)
 	_build_work(columns)
 	_build_rivals(columns)
 	_build_debrief(columns)
