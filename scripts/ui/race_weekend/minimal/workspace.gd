@@ -218,19 +218,55 @@ func build_pitwall() -> void:
 	var space = Control.new(); space.size_flags_vertical = Control.SIZE_EXPAND_FILL; right.add_child(space)
 
 func build_strategy_comparison() -> void:
-	strategy_popup = PopupPanel.new(); add_child(strategy_popup)
-	var margin = MarginContainer.new(); margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); strategy_popup.add_child(margin)
-	for side in ["left", "top", "right", "bottom"]: margin.add_theme_constant_override("margin_" + side, roundi(14 * text_scale))
-	strategy_view = StrategyComparisonView.new(); strategy_view.configure(text_scale); margin.add_child(strategy_view)
-	strategy_view.refresh_requested.connect(refresh_strategy_comparison); strategy_view.close_requested.connect(strategy_popup.hide)
-	strategy_popup.popup_hide.connect(func(): strategy_button.call_deferred("grab_focus"))
+	strategy_popup = PopupPanel.new()
+	strategy_popup.exclusive = true
+	strategy_popup.unresizable = true
+	add_child(strategy_popup)
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	strategy_popup.add_child(scroll)
+	var margin = MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin)
+	for side in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, roundi(14 * text_scale))
+	strategy_view = StrategyComparisonView.new()
+	strategy_view.configure(text_scale)
+	margin.add_child(strategy_view)
+	strategy_view.refresh_requested.connect(refresh_strategy_comparison)
+	strategy_view.close_requested.connect(close_strategy_comparison)
+	strategy_popup.popup_hide.connect(_restore_strategy_focus)
+	strategy_popup.window_input.connect(_strategy_window_input)
 
 func show_strategy_comparison() -> void:
 	if strategy_button.disabled: return
 	refresh_strategy_comparison()
 	var viewport = get_viewport_rect().size
-	strategy_popup.popup_centered(Vector2i(mini(roundi(720 * text_scale), int(viewport.x - 32)), mini(roundi(430 * text_scale), int(viewport.y - 32))))
+	var target = Vector2i(
+		mini(roundi(720 * text_scale), int(viewport.x - 32)),
+		mini(roundi(430 * text_scale), int(viewport.y - 32)))
+	strategy_popup.min_size = Vector2i.ZERO
+	strategy_popup.max_size = target
+	strategy_popup.popup_centered(target)
 	strategy_view.refresh_button.call_deferred("grab_focus")
+
+func close_strategy_comparison() -> void:
+	if strategy_popup.visible:
+		strategy_popup.hide()
+	_restore_strategy_focus()
+
+func _restore_strategy_focus() -> void:
+	if is_inside_tree() and strategy_button != null:
+		strategy_button.call_deferred("grab_focus")
+
+func _strategy_window_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5]:
+		strategy_popup.get_viewport().set_input_as_handled()
 
 func refresh_strategy_comparison() -> void:
 	strategy_view.present(session.query.strategy_comparison(selected_id), frame.cars[selected_id].name)
