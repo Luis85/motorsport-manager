@@ -7,6 +7,12 @@ interface CheckResult { name: string; passed: boolean; error?: string; }
 const ROOT = path.resolve(__dirname, "../..");
 const SOURCE = path.join(ROOT, "source");
 const GENERATED = path.join(ROOT, ".generated");
+const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", "domain-map.json"), "utf8")) as {
+  format: string;
+  schemaVersion: number;
+  layers: string[];
+  contexts: Array<{ id: string; layer: "domain" | "application" | "infrastructure" | "presentation"; files: string[] }>;
+};
 const results: CheckResult[] = [];
 
 function check(name: string, action: () => void): void {
@@ -27,6 +33,48 @@ function walk(directory: string): string[] {
 function source(name: string): string {
   return fs.readFileSync(path.join(SOURCE, name), "utf8");
 }
+
+check("DDD domain map owns every runtime module exactly once", () => {
+  assert(DOMAIN_MAP.format === "littlewild-domain-map" && DOMAIN_MAP.schemaVersion === 1, "Invalid domain-map identity.");
+  assert(JSON.stringify(DOMAIN_MAP.layers) === JSON.stringify(["domain","application","infrastructure","presentation"]), "Unexpected architecture layers.");
+  const contextIds = DOMAIN_MAP.contexts.map(context => context.id);
+  assert(new Set(contextIds).size === contextIds.length, "Duplicate bounded-context ID.");
+  const owned = DOMAIN_MAP.contexts.flatMap(context => context.files);
+  assert(new Set(owned).size === owned.length, "A runtime file is owned by multiple bounded contexts.");
+  const runtime = fs.readdirSync(SOURCE, { withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith(".ts") && entry.name !== "build.ts")
+    .map(entry => entry.name).sort();
+  assert(JSON.stringify([...owned].sort()) === JSON.stringify(runtime), "Domain map/runtime mismatch. Owned: " + [...owned].sort().join(", ") + " Runtime: " + runtime.join(", "));
+  for (const file of owned) assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
+});
+
+check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
+  const ownership = new Map<string, "domain" | "application" | "infrastructure" | "presentation">();
+  for (const context of DOMAIN_MAP.contexts) for (const file of context.files) ownership.set(file, context.layer);
+  const rank = new Map([["domain",0],["application",1],["infrastructure",2],["presentation",3]]);
+  const violations: string[] = [];
+  const withoutComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const targetFile = (request: string): string | null => {
+    const base = path.basename(request);
+    if (base.endsWith(".js")) return base.slice(0,-3) + ".ts";
+    if (base.endsWith(".cjs")) return base.slice(0,-4) + ".cts";
+    return null;
+  };
+  for (const [file, layer] of ownership) {
+    const text = withoutComments(source(file));
+    if (layer === "domain" || layer === "application") {
+      for (const token of forbiddenPlatform) if (text.includes(token)) violations.push(file + ": platform token " + token);
+    }
+    for (const match of text.matchAll(/require\(['"]([^'"]+)['"]\)/g)) {
+      const target = targetFile(match[1] ?? "");
+      if (!target || !ownership.has(target)) continue;
+      const targetLayer = ownership.get(target)!;
+      if (layer === "domain" && targetLayer !== "domain") violations.push(file + " -> " + target + " (" + targetLayer + ")");
+      if (layer === "application" && rank.get(targetLayer)! > rank.get("infrastructure")!) violations.push(file + " -> " + target + " (" + targetLayer + ")");
+    }
+  }
+  assert(violations.length === 0, "Architecture dependency violation: " + violations.join("; "));
+});
 
 check("All authored executable Littlewild code is TypeScript", () => {
   const legacy = walk(ROOT).filter(file => /\.(?:js|cjs|mjs|jsx|py)$/i.test(file));
