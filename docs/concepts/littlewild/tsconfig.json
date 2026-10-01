@@ -8,6 +8,8 @@
     "outDir": ".generated",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "noCheck": true,
     "declaration": false,
