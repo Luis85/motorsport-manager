@@ -9,6 +9,8 @@ static func validate(personnel: Dictionary, economy: Dictionary, current_slot: i
 	error = CampaignEconomy.validate(economy)
 	if not error.is_empty():
 		return error
+	if not RaceCheckpoint.integral(current_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
+		return "Campaign payroll validation has no valid authoritative time boundary."
 	if personnel.campaign_id != economy.campaign_id:
 		return "Campaign personnel and economy belong to different campaigns."
 	if not economy.accounts.has(personnel.organization_id):
