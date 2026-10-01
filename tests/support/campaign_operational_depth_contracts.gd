@@ -81,7 +81,7 @@ static func run(check:Callable)->void:
 	var pressure=CampaignFinanceTransaction.add_commitment(checkpoint,{
 		"id":"optional.expansion","account_id":checkpoint.state.organization_id,
 		"source_id":"plan.expansion","due_slot":checkpoint.state.clock.elapsed_slots+DAY,
-		"amount_minor":-150000,"category":"facility"})
+		"amount_minor":-150000,"category":"other"})
 	if not pressure.ok:return
 	checkpoint=pressure.checkpoint
 	var evaluated=CampaignDistressTransaction.evaluate(checkpoint)
