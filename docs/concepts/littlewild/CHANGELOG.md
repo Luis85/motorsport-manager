@@ -1,3 +1,7 @@
+## PR 25 TypeScript / Clean Architecture / DDD hardening
+
+Made TypeScript the authored executable source of truth across Littlewild runtime, tests, CLIs, build, schema verification and browser contracts. Added a machine-readable bounded-context map for all runtime modules, inward-only dependency checks, platform-isolation checks, a strict TypeScript architecture kernel, a 40 KB module budget with five explicit legacy compatibility exceptions, and TypeScript-only source inventory enforcement. Hardened the ECS generic component contract so behavior-bearing nested data, accessors, class instances, cycles and non-finite values fail closed. The previous 1,006-check gate is retained only as a pre-TypeScript regression baseline; current-head evidence is produced by the TypeScript verification workflow.
+
 ## PR 25 final review and hardening
 
 Completed a branch-wide M1–M6 review and polishing pass. Rejected deferred ECS batches are now consumed without wedging later scheduler steps; physical transaction batches and failed production settlements validate before authoritative mutation; story and scenario confirmation privately bind the exact reviewed engine state, four libraries, experience, simulation profile, and scene selection; temporary global library/profile scopes reject asynchronous escape; physical resource IDs validate their real values; and portable-story activation rolls back all registries as one boundary. Added regression coverage and a narrow reviewed-migration entry for the intentionally changed story codec.
