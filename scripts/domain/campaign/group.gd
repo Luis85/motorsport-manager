@@ -10,14 +10,14 @@ const MAX_GOALS=64
 const ERA_CAPABILITIES=["craft","specialists","commercial","data","regulated"]
 
 static func empty()->Dictionary:
-	return {"initialized":false,"founder_id":"","parent_cash_minor":0,"business_orders":{},
+	return {"initialized":false,"founder_id":"","opening_parent_cash_minor":0,"parent_cash_minor":0,"business_orders":{},
 		"transfers":[],"academy":{"capacity":0,"prospects":{}},"eras":{},"active_era_id":"",
 		"dynasty":{"operating_principal_id":"","successions":[],"legacy_goals":{}}}
 
 static func initialize(current:Dictionary,founder_id:String,parent_cash_minor:int,era:Dictionary,slot:int)->Dictionary:
 	if not validate(current).is_empty() or current.initialized or not CampaignIdentity.valid(founder_id) 			or not RaceCheckpoint.integral(parent_cash_minor,0,CampaignEconomy.MAX_MINOR):return _reject("Campaign group initialization is invalid.",current)
 	var profile=_era(era,slot);if profile.is_empty():return _reject("Initial era profile is invalid.",current)
-	var data=current.duplicate(true);data.initialized=true;data.founder_id=founder_id;data.parent_cash_minor=parent_cash_minor
+	var data=current.duplicate(true);data.initialized=true;data.founder_id=founder_id;data.opening_parent_cash_minor=parent_cash_minor;data.parent_cash_minor=parent_cash_minor
 	data.eras[profile.id]=profile;data.active_era_id=profile.id;data.dynasty.operating_principal_id=founder_id
 	return _result(data,"initialized",current)
 
@@ -130,8 +130,9 @@ static func _era(input:Dictionary,slot:int)->Dictionary:
 	var data={"id":input.get("id"),"display_name":input.get("display_name"),"start_year":input.get("start_year"),"capabilities":input.get("capabilities",[]).duplicate(true),"created_slot":slot};_seal(data);return data if _era_error(data).is_empty() else {}
 static func _era_error(d:Variant)->String:
 	if not d is Dictionary or d.size()!=6 or not CampaignIdentity.valid(d.get("id")) or not d.get("display_name") is String or d.display_name.is_empty() or not RaceCheckpoint.integral(d.get("start_year"),1900,2200) or not d.get("capabilities") is Array:return "era"
-	var seen={};for cap in d.capabilities:
-		if cap not in ERA_CAPABILITIES or seen.has(cap):return "era cap"
+	var seen={}
+	for cap in d.capabilities:
+		if cap not in ERA_CAPABILITIES or seen.has(cap): return "era cap"
 		seen[cap]=true
 	return _digest_error(d)
 static func _business_order_error(d:Variant)->String:
