@@ -3,11 +3,13 @@ extends RefCounted
 ## Versioned campaign envelope. State, factual receipts and derived projections are
 ## published together; persistence remains an injected service responsibility.
 const KIND = "motorsport-manager-campaign-checkpoint"
-const VERSION = 2
+const VERSION = 3
+const PREVIOUS_VERSION = 2
 const LEGACY_VERSION = 1
 
 static func build(state: CampaignState, settlements: Dictionary = {}, active_manifest: Dictionary = {},
-		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {}) -> Dictionary:
+		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {},
+		personnel: Dictionary = {}) -> Dictionary:
 	if state == null:
 		return {}
 	var ledger = CampaignWeekendSettlement.empty_ledger() if settlements.is_empty() else settlements.duplicate(true)
@@ -16,6 +18,9 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 		state.campaign_id, state.organization_id, 0, state.clock.elapsed_slots
 	) if economy.is_empty() else economy.duplicate(true)
 	var resources = CampaignInventory.empty(state.campaign_id) if inventory.is_empty() else inventory.duplicate(true)
+	var people = CampaignPersonnel.empty(
+		state.campaign_id, state.organization_id, state.clock.elapsed_slots
+	) if personnel.is_empty() else personnel.duplicate(true)
 	var data = {
 		"kind": KIND,
 		"version": VERSION,
@@ -25,7 +30,8 @@ static func build(state: CampaignState, settlements: Dictionary = {}, active_man
 		"active_manifest": active_manifest.duplicate(true),
 		"competition": sporting,
 		"economy": accounts,
-		"inventory": resources
+		"inventory": resources,
+		"personnel": people
 	}
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
@@ -37,38 +43,27 @@ static func validate(data: Variant) -> String:
 		return "Unsupported campaign checkpoint."
 	if RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION):
 		return _validate_legacy(data)
-	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 10:
+	if RaceCheckpoint.integral(data.get("version"), PREVIOUS_VERSION, PREVIOUS_VERSION):
+		return _validate_previous(data)
+	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 11:
 		return "Unsupported campaign checkpoint version."
 	var shared_error = _shared_error(data)
 	if not shared_error.is_empty():
 		return shared_error
-	var projection_errors = [
-		CampaignCompetition.validate(data.get("competition")),
-		CampaignEconomyTimeline.validate(data.get("economy"), int(data.state.clock.elapsed_slots)),
-		CampaignInventory.validate(data.get("inventory"))
-	]
-	for error in projection_errors:
-		if not error.is_empty():
-			return error
-	for projection_key in ["competition", "economy", "inventory"]:
-		if data[projection_key].campaign_id != data.campaign_id:
-			return "Campaign " + projection_key + " belongs to a different campaign."
-	if not data.economy.accounts.has(data.state.organization_id):
-		return "Campaign economy does not contain the organization's account."
-	if not _same_event_keys(data.competition.events, data.economy.events) \
-			or not _same_event_keys(data.competition.events, data.inventory.events):
-		return "Campaign consequence projections must contain the same complete event set."
-	var projection_error = ""
-	for event_id in data.competition.events:
-		var result_digest: String = data.competition.events[event_id].result_digest
-		projection_error = _projection_event_error(data, event_id, result_digest)
-		if not projection_error.is_empty():
-			return projection_error
-		if data.economy.events[event_id].result_digest != result_digest \
-				or data.inventory.events[event_id].result_digest != result_digest:
-			return "Campaign consequence projections use different factual results."
-		if data.economy.events[event_id].policy_digest != data.competition.events[event_id].policy_digest:
-			return "Campaign sporting and financial consequences use different policies."
+	var projection_error = _projection_error(data)
+	if not projection_error.is_empty():
+		return projection_error
+	var personnel_error = CampaignPersonnelTimeline.validate(
+		data.get("personnel"), int(data.state.clock.elapsed_slots))
+	if not personnel_error.is_empty():
+		return personnel_error
+	if data.personnel.campaign_id != data.campaign_id \
+			or data.personnel.organization_id != data.state.organization_id:
+		return "Campaign personnel belongs to another campaign or organization."
+	personnel_error = CampaignPersonnelEconomy.validate(
+		data.personnel, data.economy, int(data.state.clock.elapsed_slots))
+	if not personnel_error.is_empty():
+		return personnel_error
 	return _digest_error(data)
 
 static func restore(data: Variant) -> Dictionary:
@@ -87,6 +82,7 @@ static func restore(data: Variant) -> Dictionary:
 		"competition": normalized.competition.duplicate(true),
 		"economy": normalized.economy.duplicate(true),
 		"inventory": normalized.inventory.duplicate(true),
+		"personnel": normalized.personnel.duplicate(true),
 		"checkpoint": normalized.duplicate(true)
 	}
 
@@ -99,7 +95,37 @@ static func upgrade(data: Variant) -> Dictionary:
 	var state = CampaignState.restore(data.state)
 	if state == null:
 		return {}
+	if int(data.version) == PREVIOUS_VERSION:
+		var personnel = CampaignPersonnel.empty(
+			state.campaign_id,
+			state.organization_id,
+			state.clock.elapsed_slots,
+			_legacy_payroll_ids(data.economy)
+		)
+		return build(state, data.settlements, data.active_manifest,
+			data.competition, data.economy, data.inventory, personnel)
 	return build(state, data.settlements, data.active_manifest)
+
+static func _legacy_payroll_ids(economy: Dictionary) -> Array:
+	var result: Array = []
+	if int(economy.get("version", 0)) != CampaignEconomy.VERSION:
+		return result
+	for commitment_id in economy.get("commitments", {}):
+		if economy.commitments[commitment_id].get("category") == "payroll":
+			result.append(commitment_id)
+	result.sort()
+	return result
+
+static func _validate_previous(data: Dictionary) -> String:
+	if data.size() != 10:
+		return "Unsupported previous campaign checkpoint."
+	var error = _shared_error(data)
+	if not error.is_empty():
+		return error
+	error = _projection_error(data)
+	if not error.is_empty():
+		return error
+	return _digest_error(data)
 
 static func _validate_legacy(data: Dictionary) -> String:
 	if data.size() != 7:
@@ -135,6 +161,35 @@ static func _shared_error(data: Dictionary) -> String:
 			return "A settled campaign event cannot remain active."
 	return ""
 
+static func _projection_error(data: Dictionary) -> String:
+	var projection_errors = [
+		CampaignCompetition.validate(data.get("competition")),
+		CampaignEconomyTimeline.validate(data.get("economy"), int(data.state.clock.elapsed_slots)),
+		CampaignInventory.validate(data.get("inventory"))
+	]
+	for error in projection_errors:
+		if not error.is_empty():
+			return error
+	for projection_key in ["competition", "economy", "inventory"]:
+		if data[projection_key].campaign_id != data.campaign_id:
+			return "Campaign " + projection_key + " belongs to a different campaign."
+	if not data.economy.accounts.has(data.state.organization_id):
+		return "Campaign economy does not contain the organization's account."
+	if not _same_event_keys(data.competition.events, data.economy.events) \
+			or not _same_event_keys(data.competition.events, data.inventory.events):
+		return "Campaign consequence projections must contain the same complete event set."
+	for event_id in data.competition.events:
+		var result_digest: String = data.competition.events[event_id].result_digest
+		var result_error = _projection_event_error(data, event_id, result_digest)
+		if not result_error.is_empty():
+			return result_error
+		if data.economy.events[event_id].result_digest != result_digest \
+				or data.inventory.events[event_id].result_digest != result_digest:
+			return "Campaign consequence projections use different factual results."
+		if data.economy.events[event_id].policy_digest != data.competition.events[event_id].policy_digest:
+			return "Campaign sporting and financial consequences use different policies."
+	return ""
+
 static func _projection_event_error(data: Dictionary, event_id: String, result_digest: String) -> String:
 	if not data.settlements.receipts.has(event_id):
 		return "Campaign consequence references an unsettled event."
@@ -152,6 +207,7 @@ static func _same_event_keys(left: Dictionary, right: Dictionary) -> bool:
 static func _digest_error(data: Dictionary) -> String:
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
+	if not CampaignIdentity.valid_hash(data.get("digest")) \
+			or data.digest != RaceStateValue.fingerprint(content):
 		return "Campaign checkpoint integrity check failed."
 	return ""
