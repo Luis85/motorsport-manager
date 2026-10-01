@@ -7,15 +7,16 @@
  'use strict';
  const node=typeof module!=='undefined'&&module.exports;
  const E=node?require('./ecs.js'):root.LWECS;
+ const C=node?require('./content-runtime.js'):root.LWContent;
  const DEFAULT=node?require('./content/economy-rules.json'):root.LWEconomyRules;
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  const plain=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);
- const clone=x=>JSON.parse(JSON.stringify(x));
+ const clone=x=>C.copy(x);
  const identity=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9._:-]{0,95}$/.test(s);
  const finite=(n,min,max)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const integer=(n,min,max)=>Number.isInteger(n)&&n>=min&&n<=max;
  function validateRules(input){
-  const r=clone(input),keys=(o,list)=>plain(o)&&Object.keys(o).length===list.length&&list.every(k=>own(o,k));
+  const r=C.parse(input,64*1024),keys=(o,list)=>plain(o)&&Object.keys(o).length===list.length&&list.every(k=>own(o,k));
   if(!keys(r,['format','schemaVersion','xp','income','limits'])||r.format!=='littlewild-economy-rules'||r.schemaVersion!==1||
    !keys(r.xp,['base','perLevel','playerResearchPerLevel','actorBondPerLevel'])||!keys(r.income,['pocketShare'])||
    !keys(r.limits,['balance','delta','level','stat']))throw Error('Invalid economy rules schema.');
@@ -36,7 +37,8 @@
    const actorRecord=actor?.creature||state.creature,actorStats=actor?.stats||state.stats;
    if(!plain(actorRecord)||!integer(actorRecord.coins,0,tuning.limits.balance)||!integer(actorRecord.level,1,tuning.limits.level)||
     !integer(actorRecord.xp,0,tuning.limits.balance)||!plain(actorStats))throw Error('Invalid actor economy state.');
-   const actorId=actor?.id&&identity(actor.id)?'actor:'+actor.id:'actor:legacy';
+   if(actor!==undefined&&actor!==null&&!identity(actor.id))throw Error('Invalid actor identity.');
+   const actorId=actor?'actor:'+actor.id:'actor:legacy';
    component('economy:shared','SharedEconomy',{state});
    component('economy:player','Wallet',{record:state.player});component('economy:player','LevelProgress',{record:state.player,who:'player'});
    const actorState=actor||state;if(!finite(actorState.bond,0,100))throw Error('Invalid actor bond state.');
@@ -54,8 +56,8 @@
    const deltas={guide:delta('guide'),pocket:delta('pocket'),research:delta('research'),playerXp:delta('playerXp'),actorXp:delta('actorXp'),prestige:delta('prestige'),earnedPrestige:delta('earnedPrestige')};
    for(const [k,n]of Object.entries(deltas))if(!integer(n,k.endsWith('Xp')?0:-tuning.limits.delta,tuning.limits.delta))throw Error('Invalid settlement delta: '+k);
    if(deltas.earnedPrestige<0)throw Error('Earned prestige cannot decrease.');
-   const stats=spec.stats===undefined?{}:spec.stats;if(!plain(stats)||Object.entries(stats).some(([k,n])=>!identity('s:'+k)||!integer(n,-tuning.limits.delta,tuning.limits.delta)))throw Error('Invalid settlement stats.');
-   const chapterId=spec.chapterId??null;if(chapterId!==null&&!identity('chapter:'+chapterId))throw Error('Invalid chapter ID.');
+   const stats=spec.stats===undefined?{}:spec.stats;if(!plain(stats)||Object.entries(stats).some(([k,n])=>!identity(k)||!integer(n,-tuning.limits.delta,tuning.limits.delta)))throw Error('Invalid settlement stats.');
+   const chapterId=spec.chapterId??null;if(chapterId!==null&&!identity(chapterId))throw Error('Invalid chapter ID.');
    const cpPerLevel=spec.actorCpPerLevel??0;if(!integer(cpPerLevel,0,100))throw Error('Invalid actor level reward.');
    return {id,deltas,stats:{...stats},chapterId,actorCpPerLevel:cpPerLevel};
   }

@@ -16,7 +16,16 @@
     paths: 'Learning paths', deliveries: 'Deliveries', chapters: 'Story chapters'
   };
   const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-  const copy = value => JSON.parse(JSON.stringify(value));
+  function cloneJson(value) {
+    if (Array.isArray(value)) return value.map(cloneJson);
+    if (value && typeof value === 'object') {
+      const result = Object.create(Object.getPrototypeOf(value) === null ? null : Object.prototype);
+      for (const key of Object.keys(value)) result[key] = cloneJson(value[key]);
+      return result;
+    }
+    return value;
+  }
+  function copy(value) { inspectJson(value); return cloneJson(value); }
   const pointer = key => String(key).replace(/~/g, '~0').replace(/\//g, '~1');
   const freeze = value => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
   const stable = value => Array.isArray(value) ? '[' + value.map(stable).join(',') + ']' : value && typeof value === 'object' ? '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}' : JSON.stringify(value);
@@ -53,22 +62,42 @@
   }
   function inspectJson(value) {
     let count = 0;
+    const ancestors = new Set();
+    function invalid(path, message) { throw new ContentError([diagnostic('JSON_ONLY', path, message)]); }
     function walk(v, path, depth) {
       if (++count > MAX_NODES || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
       if (v === null || typeof v === 'boolean') return;
       if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return; }
       if (typeof v === 'string') { if (v.length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return; }
-      if (typeof v !== 'object') throw new ContentError([diagnostic('JSON_ONLY', path, 'Only JSON data is accepted; functions and undefined values are not content.')]);
+      if (typeof v !== 'object') invalid(path, 'Only JSON data is accepted; functions and undefined values are not content.');
       if (!Array.isArray(v) && ![Object.prototype, null].includes(Object.getPrototypeOf(v))) throw new ContentError([diagnostic('PLAIN_OBJECT', path, 'Only plain JSON objects are accepted.')]);
-      for (const [k, item] of Object.entries(v)) {
-        if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', path + '/' + pointer(k), 'Reserved object property is not allowed.')]);
-        walk(item, path + '/' + pointer(k), depth + 1);
-      }
+      if (ancestors.has(v)) invalid(path, 'Cyclic object graphs are not JSON content.');
+      if (Object.getOwnPropertySymbols(v).length) invalid(path, 'Symbol-keyed properties are not JSON content.');
+      ancestors.add(v);
+      try {
+        if (Array.isArray(v)) {
+          const names = Object.getOwnPropertyNames(v);
+          if (names.length !== v.length + 1 || !names.includes('length')) invalid(path, 'Arrays must be dense JSON lists with no extra properties.');
+          for (let i = 0; i < v.length; i++) {
+            const descriptor = Object.getOwnPropertyDescriptor(v, String(i));
+            if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
+              invalid(path + '/' + i, 'Accessors and hidden array values are not JSON content.');
+            walk(descriptor.value, path + '/' + i, depth + 1);
+          }
+          return;
+        }
+        for (const [k, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(v))) {
+          if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', path + '/' + pointer(k), 'Reserved object property is not allowed.')]);
+          if (!descriptor.enumerable || descriptor.get || descriptor.set)
+            invalid(path + '/' + pointer(k), 'Accessors and hidden properties are not JSON content.');
+          walk(descriptor.value, path + '/' + pointer(k), depth + 1);
+        }
+      } finally { ancestors.delete(v); }
     }
     walk(value, '', 0);
   }
   function parse(input, limit = MAX_BYTES) {
-    if (typeof input !== 'string') { inspectJson(input); const serialized = JSON.stringify(input); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return copy(input); }
+    if (typeof input !== 'string') { inspectJson(input); const serialized = JSON.stringify(input); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return cloneJson(input); }
     if (new TextEncoder().encode(input).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the ' + Math.round(limit / 1024) + ' KiB file size limit.')]);
     let value;
     try { value = JSON.parse(input.replace(/^\uFEFF/, '')); } catch (error) { throw new ContentError([diagnostic('JSON_SYNTAX', '/', 'Could not read JSON: ' + error.message, 'Export UTF-8 JSON with no comments or trailing commas.')]); }

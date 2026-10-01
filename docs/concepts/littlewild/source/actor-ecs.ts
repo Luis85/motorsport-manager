@@ -8,12 +8,12 @@
     'use strict';
     const node = typeof module !== 'undefined' && module.exports;
     const E = node ? require('./ecs.js') : root.LWECS;
+    const C = node ? require('./content-runtime.js') : root.LWContent;
     const DEFAULT = node ? require('./content/actor-rules.json') : root.LWActorRules;
-    const clone = x => JSON.parse(JSON.stringify(x));
     const FIELDS = Object.freeze({Transform:'creature', Needs:'needs', Learning:'learning', Feelings:'feelings', Inventory:'inventory'});
     const clamp = n => Math.max(0, Math.min(100, n));
     function validateRules(input) {
-        const r = clone(input), keys = (o, expected) => o && typeof o === 'object' &&
+        const r = C.parse(input, 64 * 1024), keys = (o, expected) => o && typeof o === 'object' &&
             !Array.isArray(o) && Object.keys(o).length === expected.length &&
             expected.every(k => Object.prototype.hasOwnProperty.call(o,k));
         if (!keys(r,['format','schemaVersion','learning','feelings','needs']) ||
