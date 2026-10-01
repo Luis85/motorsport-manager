@@ -35,8 +35,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "bb67ac253fa9e66a9e5990e028e819f13817987b"
-          test "$(git diff --name-only HEAD^ HEAD)" = ".github/workflows/littlewild-ecs-rebuild.yml"
+          git merge-base --is-ancestor b9c1a632dcea6dd102b998a1dd4f6ab9d3a07a6a HEAD
+          test -z "$(git diff --name-only b9c1a632dcea6dd102b998a1dd4f6ab9d3a07a6a..HEAD -- docs/concepts/littlewild)"
           gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/m6-comments.json
           python - <<'PYCODE'
           from pathlib import Path
