@@ -1,1 +1,108 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+name: Littlewild PR25 review publication
+on:
+  push:
+    branches:
+      - pr25-review-publish-20261001
+    paths:
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
+permissions:
+  contents: write
+  issues: read
+concurrency:
+  group: littlewild-pr25-review-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recover checksum-pinned PR25 review payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPOSITORY/issues/25/comments?per_page=100" --paginate --slurp > /tmp/pr25-comments.json
+          python - <<'PYCODE'
+          from pathlib import Path
+          from io import BytesIO
+          import base64, hashlib, json, lzma, tarfile
+          pages=json.loads(Path('/tmp/pr25-comments.json').read_text())
+          comments=[c for page in pages for c in page]
+          transport='pr25-review-534487aa'
+          prefix=f'<!-- pr25-review-chunk:{transport}:'
+          chunks={}
+          for c in comments:
+              body=c.get('body','')
+              if not body.startswith(prefix):
+                  continue
+              head,data=body.split('-->',1)
+              idx=int(head[len(prefix):].strip())
+              chunks[idx]=data.strip()
+          if sorted(chunks)!=[0,1]:
+              raise SystemExit(f'Incomplete PR25 review payload: {sorted(chunks)}')
+          encoded=''.join(chunks[i] for i in [0,1])
+          if len(encoded)!=78012:
+              raise SystemExit(f'Unexpected encoded payload length: {len(encoded)}')
+          compressed=base64.b64decode(encoded,validate=True)
+          if len(compressed)!=58508:
+              raise SystemExit(f'Unexpected compressed payload length: {len(compressed)}')
+          if hashlib.sha256(compressed).hexdigest()!='534487aa7797a466062ca6c8fa603949e30194ac632b7d1815b9793a2a3f9e9d':
+              raise SystemExit('PR25 review compressed checksum mismatch')
+          raw=lzma.decompress(compressed)
+          if hashlib.sha256(raw).hexdigest()!='f27241bb3d3765187d9ff97e76000433ecce8a5515e90485c6bd9b9043021128':
+              raise SystemExit('PR25 review tar checksum mismatch')
+          with tarfile.open(fileobj=BytesIO(raw),mode='r:') as tf:
+              members=tf.getmembers()
+              if len(members)!=24:
+                  raise SystemExit(f'Unexpected PR25 review file count: {len(members)}')
+              for member in members:
+                  p=Path(member.name)
+                  if p.is_absolute() or '..' in p.parts or not member.isfile() or not member.name.startswith('docs/concepts/littlewild/'):
+                      raise SystemExit(f'Unsafe payload member: {member.name}')
+              tf.extractall('.',filter='data')
+          PYCODE
+      - name: Install verification dependencies
+        working-directory: docs/concepts/littlewild
+        run: |
+          python -m pip install -r requirements-test.txt
+          python -m playwright install --with-deps chromium
+          CHROMIUM="$(python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          sudo ln -sf "$CHROMIUM" /usr/bin/chromium
+      - name: Rebuild and verify reviewed Littlewild source
+        working-directory: docs/concepts/littlewild
+        run: python verify-v15.py
+      - name: Build Emberworks standalone
+        working-directory: docs/concepts/littlewild
+        run: python source/build.py --pack source/content/emberworks.pack.json --output verification/v15/emberworks.html
+      - name: Verify reviewed standalone hashes
+        working-directory: docs/concepts/littlewild
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(stat -c%s littlewild.html)" = "3795633"
+          test "$(sha256sum littlewild.html | cut -d' ' -f1)" = "d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1"
+          test "$(stat -c%s verification/v15/emberworks.html)" = "3670431"
+          test "$(sha256sum verification/v15/emberworks.html | cut -d' ' -f1)" = "64527e18dcd99a828203ec2565cbf21d9b25f0eb6f698adfe7acb931c8b31151"
+      - name: Publish reviewed overlay and restore read-only verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show HEAD^:.github/workflows/littlewild-ecs-rebuild.yml > .github/workflows/littlewild-ecs-rebuild.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/littlewild-ecs-rebuild.yml docs/concepts/littlewild
+          git diff --cached --check
+          git commit -m 'fix(littlewild): publish reviewed PR25 artifacts'
+          git push origin HEAD:pr25-review-publish-20261001
