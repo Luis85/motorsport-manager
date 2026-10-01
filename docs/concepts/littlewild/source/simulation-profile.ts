@@ -52,10 +52,11 @@
   }
   return value;
  };
- const exact=(value:unknown,keys:readonly string[],label:string):asserts value is Record<string,unknown>=>{
-  if(!plain(value)||Object.keys(value).length!==keys.length||keys.some(key=>!own(value,key)))
-   throw Error('Invalid '+label+' schema.');
- };
+ const exact:(value:unknown,keys:readonly string[],label:string)=>asserts value is Record<string,unknown> =
+  (value,keys,label)=>{
+   if(!plain(value)||Object.keys(value).length!==keys.length||keys.some(key=>!own(value,key)))
+    throw Error('Invalid '+label+' schema.');
+  };
  const list=(value:unknown,label:string,max=32):string[]=>{
   if(!Array.isArray(value)||!value.length||value.length>max||new Set(value).size!==value.length||value.some(entry=>!identity(entry)))
    throw Error('Invalid '+label+'.');
@@ -84,8 +85,10 @@
    typeof raw.description!=='string'||!raw.description.trim()||raw.description.length>500)
    throw Error('Invalid simulation profile identity.');
 
-  exact(raw.rules,['actor','economy'],'simulation rule profile');
-  const actor=Actor.validateRules(raw.rules.actor),economy=Economy.validateRules(raw.rules.economy),archetype=raw.archetype;
+  const rules=raw.rules;
+  exact(rules,['actor','economy'],'simulation rule profile');
+  const actor=Actor.validateRules(rules.actor),economy=Economy.validateRules(rules.economy);
+  const archetype=raw.archetype;
   exact(archetype,['id','version','engineLayers','simulationPipeline','actorDynamics','actorActivity','worldTransactions','economyTransactions'],'composition archetype');
   if(!identity(archetype.id)||archetype.version!==1)throw Error('Invalid composition archetype identity.');
 
