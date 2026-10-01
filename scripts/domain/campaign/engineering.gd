@@ -6,11 +6,13 @@ const VERSION = 1
 const MAX_PROJECTS = 512
 const MAX_PARTS = 2048
 
-static func empty(campaign_id: String, organization_id: String, authority_from_slot: int = 0) -> Dictionary:
+static func empty(campaign_id: String, organization_id: String,
+		authority_from_slot: int = 0, legacy_development_commitment_ids: Array = []) -> Dictionary:
 	if not CampaignIdentity.valid(campaign_id) or not CampaignIdentity.valid(organization_id) 			or not RaceCheckpoint.integral(authority_from_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return {}
 	var data = {"kind": KIND, "version": VERSION, "campaign_id": campaign_id,
 		"organization_id": organization_id, "authority_from_slot": authority_from_slot,
+		"legacy_development_commitment_ids": legacy_development_commitment_ids.duplicate(true),
 		"projects": {}, "designs": {}, "parts": {}, "used_work_orders": {}}
 	_seal(data)
 	return data if validate(data).is_empty() else {}
@@ -112,10 +114,17 @@ static func performance_profile(data: Dictionary, car_id: String) -> Dictionary:
 	return RacePerformanceProfile.build(delta, sources)
 
 static func validate(data: Variant) -> String:
-	if not RaceStateValue.serializable(data) or not data is Dictionary 			or data.size() != 10 or data.get("kind") != KIND:
+	if not RaceStateValue.serializable(data) or not data is Dictionary 			or data.size() != 11 or data.get("kind") != KIND:
 		return "Unsupported campaign engineering projection."
 	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) 			or not CampaignIdentity.valid(data.get("campaign_id")) 			or not CampaignIdentity.valid(data.get("organization_id")) 			or not RaceCheckpoint.integral(data.get("authority_from_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign engineering version, identity or authority is invalid."
+	if not data.get("legacy_development_commitment_ids") is Array 			or data.legacy_development_commitment_ids.size() > CampaignEconomy.MAX_COMMITMENTS:
+		return "Campaign engineering legacy development index is invalid."
+	var legacy_seen = {}
+	for commitment_id in data.legacy_development_commitment_ids:
+		if not CampaignIdentity.valid(commitment_id) or legacy_seen.has(commitment_id):
+			return "Campaign engineering legacy development index is invalid."
+		legacy_seen[commitment_id] = true
 	if not data.get("projects") is Dictionary or data.projects.size() > MAX_PROJECTS 			or not data.get("designs") is Dictionary or data.designs.size() > MAX_PROJECTS 			or not data.get("parts") is Dictionary or data.parts.size() > MAX_PARTS 			or not data.get("used_work_orders") is Dictionary:
 		return "Campaign engineering collections are invalid."
 	var error = _records_error(data)

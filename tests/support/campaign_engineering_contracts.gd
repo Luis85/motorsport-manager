@@ -140,8 +140,8 @@ static func _integrity_and_migration_contract(check: Callable, checkpoint: Dicti
 	previous.erase("engineering")
 	_reseal(previous)
 	var migrated = CampaignCheckpoint.restore(previous)
-	check.call(migrated.ok and migrated.engineering.projects.is_empty() 		and int(migrated.engineering.authority_from_slot) == migrated.state.clock.elapsed_slots,
-		"Version-four operations checkpoints gain empty engineering authority without invented history")
+	check.call(migrated.ok and migrated.engineering.projects.is_empty() 		and int(migrated.engineering.authority_from_slot) == migrated.state.clock.elapsed_slots 		and checkpoint.engineering.projects[PROJECT].material_commitment_id 			in migrated.engineering.legacy_development_commitment_ids,
+		"Version-four operations checkpoints preserve development commitments without invented project history")
 	check.call(RaceStateValue.fingerprint(checkpoint) == before,
 		"Engineering observations, profile projection and migration probes do not mutate their source checkpoint")
 

@@ -116,7 +116,7 @@ Keep the PR in draft until the exact final commit has green required CI and sync
 
 ### 11. Small engineering pipeline and physical part inventory
 
-- Upgraded `CampaignCheckpoint` to version 5 and added `CampaignEngineering` to the atomic envelope. Version-four operations checkpoints migrate with empty engineering authority at the restored slot; no historical research, design, part or performance is fabricated.
+- Upgraded `CampaignCheckpoint` to version 5 and added `CampaignEngineering` to the atomic envelope. Version-four operations checkpoints migrate with empty engineering authority at the restored slot; existing generic `development` commitments are indexed as legacy rather than assigned fabricated research, designs, parts or performance.
 - Added an explicit investigation → concept → detailed design → prototype → validation → production → integration pipeline. Every gate binds exactly one compatible TM-06 work order and cannot advance before that reserved work interval completes.
 - Validation publishes one traceable `CampaignEngineeringDesign`. Production requires that design, creates one unique `CampaignPartInstance`, and creates a dated `development` material commitment. Integration installs that exact instance on a named stable campaign car.
 - Added bounded per-car `RacePerformanceProfile` values for top speed, lateral capability, acceleration and braking. Profiles are composed only from installed physical instances and retain their part IDs.

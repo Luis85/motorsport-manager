@@ -91,7 +91,7 @@ The existing `RaceRecord` ruleset includes these frozen profiles, so the immutab
 
 ## Checkpoint and migration
 
-Campaign checkpoint schema version 5 adds the engineering projection. Version-4 operations checkpoints migrate with empty engineering authority beginning at the restored campaign slot. Migration does not invent historical research, designs, parts or fitted performance.
+Campaign checkpoint schema version 5 adds the engineering projection. Version-4 operations checkpoints migrate with empty engineering authority beginning at the restored campaign slot. Existing generic `development` commitments are retained in an explicit legacy index rather than assigned invented projects. Migration does not invent historical research, designs, parts or fitted performance.
 
 Every existing competition, finance, personnel, operations and weekend transaction must carry engineering forward unchanged unless it explicitly owns an engineering change.
 

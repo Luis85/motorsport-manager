@@ -91,6 +91,8 @@ static func validate(entry: Variant) -> bool:
 		if roster == null: return false
 	var player_ids = roster.player_ids() if roster != null else [3, 6]
 	var entrant_count = roster.count if roster != null else 12
+	if rules.has("performance_profiles") 			and not RacePerformanceProfile.validate_set(rules.performance_profiles, entrant_count).is_empty():
+		return false
 	if not f.get("players") is Array or f.players.size() != 2: return false
 	for index in range(2):
 		var c = f.players[index]
