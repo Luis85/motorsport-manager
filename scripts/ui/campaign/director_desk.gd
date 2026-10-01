@@ -26,8 +26,10 @@ func _ready() -> void:
 	add_theme_constant_override("separation", roundi(12 * text_scale))
 	_build_header()
 	_build_status()
-	_build_guide()
+	# Keep the next consequential decision above optional onboarding detail so
+	# compact/high-text layouts never hide the departure action below the fold.
 	_build_priorities()
+	_build_guide()
 	_build_columns()
 	_build_footer()
 	PitwallDesign.focus_later(primary_action if primary_action != null else menu_button)
