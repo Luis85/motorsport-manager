@@ -22,7 +22,7 @@ The Director Desk keeps cash, committed minimum cash, next-event timing, princip
 
 Campaign weekends use the existing Minimal practice/qualifying/race flow and ordinary race recording/result envelope. Completed results are applied once to championship standings, returned inventory and cash before control returns to the Director Desk. Rivals have finite cash and reserves, accepted rosters and dated project cycles; they do not receive hidden race bonuses or private player information.
 
-The P0 slice does not yet provide the full dynasty product: deeper recruitment/negotiation, staff attributes/development/morale/promises, engineering uncertainty/material stock/wear/repairs, rich finance views, promotion, founder-business progression and broader specialist campaign screens remain later work.
+The four-event route remains the player-facing slice, but the underlying roadmap now also includes persistent recruitment/negotiation, people development/morale/trust/promises, multi-season planning/promotion/prizes, supplier/material conservation, engineering uncertainty, physical part wear/repair, distress/financing, founder-business transfers, academy capacity, era profiles, succession and legacy goals. Those later authorities are currently contract/domain foundations rather than dedicated specialist screens.
 
 ## Minimal race screen
 
@@ -93,7 +93,7 @@ Reports and native screenshots go to `reports/`; CI publishes evidence. `reports
 
 ## Scope and provenance
 
-This is not a comprehensive tyre/vehicle physics rewrite, a complete dynasty/ERP-scale management simulation, a telemetry redesign or a calibrated racing simulator. The new Team Principal campaign is a bounded four-event P0 slice. Human playtesting of campaign comprehension and both race-interface modes, controller/screen-reader completeness, text beyond 130%, broader wet/endurance balance and hardware profiling remain validation work. There is no universal frame-rate guarantee.
+This is not a comprehensive tyre/vehicle physics rewrite, a fully presented dynasty/ERP-scale management simulation, a telemetry redesign or a calibrated racing simulator. The Team Principal campaign remains a bounded four-event player-facing slice even though TM-13–TM-16 foundations are now persisted behind it. Human playtesting of campaign comprehension and both race-interface modes, controller/screen-reader completeness, text beyond 130%, broader wet/endurance balance and hardware profiling remain validation work. There is no universal frame-rate guarantee.
 
 Seven geographic outlines derive from Tomislav Bacinger's MIT-licensed `f1-circuits` through the supplied prototype; Pinecrest is fictional. [Third-party notices](THIRD_PARTY_NOTICES.md) retain attribution. These are unofficial reconstructions with authored estimates, not laser scans or certified circuit/vehicle models. No official championship branding, car models or driver likenesses are used. Code retains the [MIT license](LICENSE), copyright Luis Mendez.
 
