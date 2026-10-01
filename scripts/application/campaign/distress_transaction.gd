@@ -19,7 +19,8 @@ static func bridge_financing(checkpoint:Dictionary,amount_minor:int)->Dictionary
 		{"id":"bridge.receipt."+str(slot),"account_id":r.state.organization_id,"source_id":"bridge."+str(slot),"due_slot":slot,"amount_minor":amount_minor,"category":"financing"},
 		{"id":"bridge.repayment."+str(slot),"account_id":r.state.organization_id,"source_id":"bridge."+str(slot),"due_slot":mini(CampaignClock.MAX_ELAPSED_SLOTS,slot+30*CampaignClock.SLOTS_PER_DAY),"amount_minor":-int(round(amount_minor*1.10)),"category":"financing"}]:
 		var a=CampaignEconomy.add_commitment(economy,input,slot)
-		if not a.ok:return _reject(a.error,checkpoint);economy=a.economy
+		if not a.ok: return _reject(a.error,checkpoint)
+		economy=a.economy
 	var settled=CampaignEconomy.settle_due(economy,slot)
 	if not settled.ok:return _reject(settled.error,checkpoint)
 	var changed=CampaignDistress.record_recovery(r.management.distress,"bridge_financing",amount_minor,slot)
