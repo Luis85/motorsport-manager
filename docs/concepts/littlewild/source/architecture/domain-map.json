@@ -166,5 +166,22 @@
     "LWGrowth",
     "LWDefaultProfile",
     "LWScenarioShape"
+  ],
+  "injectedDataGlobals": [
+    "LWDefaultLibrary",
+    "LWContentSchema",
+    "LWDefaultAdventure",
+    "LWAdventureSchema",
+    "LWDefaultWorld",
+    "LWWorldSchema",
+    "LWActorRules",
+    "LWEconomyRules",
+    "LWDefaultSimulationProfile",
+    "LWSimulationSchema",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWDefaultProfile",
+    "LWScenarioSchema",
+    "LWScenarioPacks"
   ]
 }

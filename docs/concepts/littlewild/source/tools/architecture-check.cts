@@ -15,6 +15,7 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   moduleBudgetBytes: number;
   legacyCompatibilityModules: Record<string,string>;
   domainGlobals: string[];
+  injectedDataGlobals: string[];
 };
 const results: CheckResult[] = [];
 
@@ -121,6 +122,45 @@ check("Domain modules do not register application composition hooks", () => {
     }
   }
   assert(violations.length === 0, "Application composition leaked into domain ownership: " + violations.join("; "));
+});
+
+check("Compatibility globals obey bounded-context dependency direction", () => {
+  assert(Array.isArray(DOMAIN_MAP.injectedDataGlobals), "Injected data-global allowlist is missing.");
+  assert(new Set(DOMAIN_MAP.injectedDataGlobals).size === DOMAIN_MAP.injectedDataGlobals.length,
+    "Injected data-global allowlist contains duplicates.");
+  const contextByFile = new Map<string, { id:string; layer:"domain"|"application"|"infrastructure"|"presentation" }>();
+  for (const context of DOMAIN_MAP.contexts)
+    for (const file of context.files) contextByFile.set(file,{id:context.id,layer:context.layer});
+  const rank = new Map([["domain",0],["application",1],["infrastructure",2],["presentation",3]]);
+  const exported = new Map<string,string>();
+  const violations: string[] = [];
+  const withoutComments = (text:string):string => text.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\/\/.*$/gm,"");
+  for (const file of contextByFile.keys()) {
+    const text=withoutComments(source(file));
+    for (const match of text.matchAll(/\broot\.(LW[A-Za-z0-9_]*)\s*=/g)) {
+      const symbol=match[1]!;
+      const prior=exported.get(symbol);
+      if (prior && prior!==file) violations.push("duplicate global "+symbol+": "+prior+" and "+file);
+      else exported.set(symbol,file);
+    }
+  }
+  const injected=new Set(DOMAIN_MAP.injectedDataGlobals);
+  for (const [file,context] of contextByFile) {
+    const text=withoutComments(source(file));
+    for (const match of text.matchAll(/\b(?:root|global)\.(LW[A-Za-z0-9_]*)/g)) {
+      const symbol=match[1]!;
+      const targetFile=exported.get(symbol);
+      if (targetFile) {
+        if (targetFile===file) continue;
+        const target=contextByFile.get(targetFile)!;
+        if (rank.get(target.layer)! > rank.get(context.layer)!)
+          violations.push(file+" ("+context.layer+") -> "+symbol+" / "+targetFile+" ("+target.layer+")");
+      } else if (!injected.has(symbol)) {
+        violations.push(file+" references undeclared compatibility global "+symbol);
+      }
+    }
+  }
+  assert(violations.length===0,"Compatibility-global dependency violation: "+violations.join("; "));
 });
 
 check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
