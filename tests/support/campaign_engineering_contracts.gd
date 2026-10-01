@@ -46,7 +46,7 @@ static func run(check: Callable) -> void:
 			"units": 1,
 			"assignment_ids": ["assignment.engineering"]
 		})
-		check.call(scheduled.ok, "Engineering gate reserves explicit people and capacity: " + stage)
+		check.call(scheduled.ok, "Engineering gate reserves explicit people and capacity: " + stage + ("" if scheduled.ok else ": " + str(scheduled.error)))
 		if not scheduled.ok: return
 		checkpoint = scheduled.checkpoint
 		var bound = CampaignEngineeringTransaction.bind_stage(checkpoint, PROJECT, order_id)
