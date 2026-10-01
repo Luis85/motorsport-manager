@@ -5,8 +5,7 @@
     "strict": true,
     "noEmit": true,
     "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "noUncheckedIndexedAccess": true
   },
   "files": [
     "source/ecs.ts",
