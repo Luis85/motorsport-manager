@@ -54,7 +54,8 @@ static func depart(checkpoint: Dictionary, context: Dictionary, record: RaceReco
 		settled_count = due.get("settled_count", 0)
 	var candidate = CampaignCheckpoint.build(
 		restored.state, restored.settlements, manifest, restored.competition,
-		economy, restored.inventory, personnel, restored.operations, restored.engineering)
+		economy, restored.inventory, personnel, restored.operations, restored.engineering,
+		restored.management)
 	if candidate.is_empty():
 		return _reject("Departure could not form one valid frozen campaign checkpoint.",
 			original, "rejected", readiness)

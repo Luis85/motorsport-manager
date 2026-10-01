@@ -163,6 +163,14 @@ A cancelled, superseded or intermediate run is not evidence for the final head. 
 - First-event absence of prior return inventory is an explicit risk warning rather than fabricated stock history.
 - The weekend remains the only race-preparation/simulation authority; TM-08 validates and freezes its inputs instead of duplicating setup, tyre or pit logic.
 
+## TM-09 closed — sponsorship and commercial obligations
+
+- Added one versioned campaign-management envelope so the remaining management subdomains can evolve without multiplying checkpoint schema migrations.
+- Sponsor agreements separate guaranteed dated receipts, result-contingent bonuses and appearance obligations.
+- Signing creates guaranteed sponsor commitments without creating cash and reserves promised people through the existing personnel availability authority.
+- Result bonuses require settled sporting evidence; unearned terms never enter the cash ledger.
+- All existing campaign transactions preserve the complete management projection.
+
 ## Next dependency
 
-The next campaign milestone is **TM-09: sponsorship and commercial obligations**. It must keep guaranteed and conditional value separate, reserve any promised people/time through existing availability authority, and settle earned value through explicit dated commitments rather than fabricating spendable cash.
+The next campaign milestone is **TM-10: persistent mandates and bounded delegation**. It must persist named authority, enforce spending/future-obligation/reserve limits, log delegated decisions and allow competent execution without consuming founder energy.

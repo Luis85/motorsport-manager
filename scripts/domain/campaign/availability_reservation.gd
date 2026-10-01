@@ -1,7 +1,7 @@
 class_name CampaignAvailabilityReservation
 extends RefCounted
 ## Exclusive dated use of one person. Active reservations cannot overlap.
-const KINDS = ["factory_work", "event_duty", "travel", "training", "leave"]
+const KINDS = ["factory_work", "event_duty", "commercial", "travel", "training", "leave"]
 const STATUSES = ["active", "cancelled"]
 
 static func build(input: Dictionary, created_slot: int) -> Dictionary:

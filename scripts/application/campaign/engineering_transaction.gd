@@ -59,7 +59,7 @@ static func _publish(restored: Dictionary, engineering: Dictionary, economy: Dic
 	var candidate = CampaignCheckpoint.build(
 		restored.state, restored.settlements, restored.active_manifest,
 		restored.competition, economy, restored.inventory, restored.personnel,
-		restored.operations, engineering)
+		restored.operations, engineering, restored.management)
 	if candidate.is_empty():
 		return _reject("Engineering change could not form one valid campaign checkpoint.", original)
 	return {"ok": true, "status": status, "error": "", "checkpoint": candidate}
