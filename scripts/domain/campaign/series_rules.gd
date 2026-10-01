@@ -1,8 +1,8 @@
 class_name CampaignSeriesRules
 extends RefCounted
 ## Immutable entry and sporting rules for one campaign competition family.
-## The first slice deliberately accepts final classifications only; provisional
-## settlement and correction deltas require a richer result contract.
+## Ordinary settlement accepts final classifications only. A separate explicit
+## correction workflow can preview and atomically replace a settled final result.
 const KIND = "motorsport-manager-campaign-series-rules"
 const VERSION = 1
 const MAX_NAME_LENGTH = 80
