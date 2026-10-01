@@ -82,7 +82,7 @@
 
         get entities(): ReadonlySet<EntityId> { return new Set(this.#entitySet); }
         get stores(): ReadonlyMap<ComponentType, ReadonlyMap<EntityId, ComponentData>> {
-            return new Map([...this.#componentStores].map(([type, store]) => [type, new Map(store)]));
+            return new Map([...this.#componentStores].map(([type, store]) => [type, new Map(store)] as const));
         }
         get structural(): readonly Readonly<StructuralCommand>[] {
             return Object.freeze(this.#structuralBuffer.map(action => Object.freeze({...action})));
