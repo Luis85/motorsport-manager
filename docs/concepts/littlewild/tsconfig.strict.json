@@ -11,6 +11,8 @@
     "source/ecs.ts",
     "source/command-router.ts",
     "source/build.ts",
-    "source/tools/architecture-check.cts"
+    "source/tools/architecture-check.cts",
+    "source/simulation-pipeline.ts",
+    "source/simulation-profile.ts"
   ]
 }
