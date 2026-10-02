@@ -86,7 +86,7 @@ test('Custom bounded event interaction is valid and actually appears',()=>{const
 // Import validation and registry safety.
 test('Growth JSON defaults round-trip and preserve tool-owned metadata',()=>{const pack=copy(C.content);pack.extensions={externalTool:{revision:17,reviewed:true}};assert(C.validate(pack).ok);C.withLibrary(pack,()=>assert.deepEqual(C.content.extensions,pack.extensions));});
 test('Unknown interaction handler and unknown item cost are rejected',()=>{const pack=copy(C.content);pack.interactions[0].handler='eval';assert(!C.validate(pack).ok);pack.interactions[0].handler='care';pack.interactions[0].cost={missing:1};assert(!C.validate(pack).ok);});
-test('Save format eight binds all four exact libraries',()=>{const e=clean(),save=S.encode(e);assert.equal(save.version,8);assert(save.growth?.library||save.growth?.content||save.growth);assert.deepEqual(S.commit(S.inspect(save)).export(),e.export());});
+test('Current story format binds all four exact libraries',()=>{const e=clean(),save=S.encode(e);assert.equal(save.version,10);assert(save.growth?.library||save.growth?.content||save.growth);assert.deepEqual(S.commit(S.inspect(save)).export(),e.export());});
 const invalidCases=[
  ['duplicate island',s=>{s.estate.islands.push({...s.estate.islands[0]});s.estate.purchases++;}],
  ['disconnected land',s=>{s.estate.islands.push({ix:3,iy:3,name:'Bad',biome:'Meadow'});s.estate.purchases++;}],

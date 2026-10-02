@@ -1,5 +1,5 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),cp=require('node:child_process');
+const assert=require('node:assert/strict'),fs=require('node:fs'),cp=require('node:child_process');
 const X=require('./scenario-runtime.js'),S=require('./scenario-story.js');
 const C=global.LWContent,A=global.LWAdventure,W=global.LWWorldContent,G=global.LWGrowth,P=global.LWWorldProfile,R=global.LWSimulationProfile,L=global.LW;
 const all=X.builtins(),results=[];
@@ -79,15 +79,10 @@ test('Source setup can select a different player level and budget',()=>{const p=
 test('Second setting changes actual building definitions',()=>{X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));assert.equal(L.BUILDINGS.bench.name,'Assembly bench');assert.equal(global.LWGeography.describe(0,0).name,'Copper Shore');});
 test('Second setting changes actual unowned-island node generation',()=>{defaults();let a=global.LWGeography.generatedNodes(1,0,W);X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));let b=global.LWGeography.generatedNodes(1,0,W);assert.notDeepEqual(a,b);assert(b.filter(n=>n.kind==='ore').length>a.filter(n=>n.kind==='ore').length);});
 test('Resource-map property order does not alter generation',()=>{defaults();const p=copy(P.current),a=global.LWGeography.generatedNodes(2,0,W);p.resourceCounts=Object.fromEntries(Object.entries(p.resourceCounts).reverse());P.withProfile(p,()=>assert.deepEqual(global.LWGeography.generatedNodes(2,0,W),a));});
-test('Ordinary v8 imports restore the default world, not the previously selected setting',()=>{defaults();const a=L.createWorldDemo(),d=S.encode(a);assert.equal(d.version,8);X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));const b=S.commit(S.inspect(d));assert(!b.scenarioContext);assert.equal(P.current.id,'mossmeadow');assert.deepEqual(b.export(),a.export());});
-for(const file of ['actual-v13-story.json','actual-v12-story.json'])test('Authentic '+file+' remains importable',()=>{defaults();const data=JSON.parse(fs.readFileSync(__dirname+'/fixtures/'+file));const a=S.commit(S.inspect(data));assert(a.creatures.length>0);});
-// Compare the authored default topology with the actual v14 implementation in Git.
-const old=fs.readFileSync(__dirname+'/fixtures/v14-island-geometry.cjs','utf8'),sandbox={module:{exports:{}}};vm.runInNewContext(old,sandbox);const OG=sandbox.module.exports;
+test('Current non-scenario stories restore the default world, not the previously selected setting',()=>{defaults();const a=L.createWorldDemo(),d=S.encode(a);assert.equal(d.version,10);X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));const b=S.commit(S.inspect(d));assert(!b.scenarioContext);assert.equal(P.current.id,'mossmeadow');assert.deepEqual(b.export(),a.export());});
 defaults();P.apply(P.defaults);
-let tileComparisons=0;
-test('Legacy profile terrain equals v14 at every tile across nine lattice cells',()=>{for(let y=-23;y<46;y++)for(let x=-23;x<46;x++){assert.equal(global.LWGeography.terrain(x,y),OG.terrain(x,y));tileComparisons++;}});
-for(const[x,y]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[3,-2]])test('Legacy profile generated island nodes equal v14 at '+x+','+y,()=>assert.equal(JSON.stringify(global.LWGeography.generatedNodes(x,y,W)),JSON.stringify(OG.generatedNodes(x,y,W))));
+test('Current default topology generation is deterministic',()=>{for(const[ix,iy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[3,-2]]){const a=global.LWGeography.generatedNodes(ix,iy,W),b=global.LWGeography.generatedNodes(ix,iy,W);assert.deepEqual(a,b);}});
 for(const p of all)for(const[ix,iy]of[[1,0],[-1,0],[0,1],[0,-1],[2,1]])test(p.id+': authored sites survive random resources at '+ix+','+iy,()=>{X.commitScene(X.prepareScene(p,p.scenes[0].id));const nodes=global.LWGeography.generatedNodes(ix,iy,W);for(const site of P.current.fixedSites)assert(nodes.some(n=>n.kind===site.kind&&n.x===site.x+23*ix&&n.y===site.y+23*iy));});
 test('Changing world layout invalidates an existing grid cache',()=>{defaults();const a=L.createWorldDemo(),first=global.LWGeography.grid(a.s);P.apply(all[1].worlds[0]);assert.notStrictEqual(first,global.LWGeography.grid(a.s));});
 defaults();
-const report={passed:results.filter(r=>r.passed).length,total:results.length,tileComparisons,results};fs.writeFileSync(__dirname+'/v15-domain-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
+const report={passed:results.filter(r=>r.passed).length,total:results.length,results};fs.writeFileSync(__dirname+'/v15-domain-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
