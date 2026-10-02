@@ -46,28 +46,32 @@
       "round": 1,
       "departure_day": 0,
       "return_day": 2,
-      "event_revision": 1
+      "event_revision": 1,
+      "circuit_id": "core.circuit.hillside"
     },
     {
       "campaign_event_id": "event.1950.2",
       "round": 2,
       "departure_day": 7,
       "return_day": 9,
-      "event_revision": 1
+      "event_revision": 1,
+      "circuit_id": "core.circuit.monza"
     },
     {
       "campaign_event_id": "event.1950.3",
       "round": 3,
       "departure_day": 14,
       "return_day": 16,
-      "event_revision": 1
+      "event_revision": 1,
+      "circuit_id": "core.circuit.silverstone"
     },
     {
       "campaign_event_id": "event.1950.4",
       "round": 4,
       "departure_day": 21,
       "return_day": 23,
-      "event_revision": 1
+      "event_revision": 1,
+      "circuit_id": "core.circuit.spa"
     }
   ],
   "player": {
