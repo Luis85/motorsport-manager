@@ -13,6 +13,14 @@
   const copy = C.copy, hash = value => C.fingerprint({ schemaVersion: 2, components: value });
   const sceneReview = (packFingerprint, sceneId) => hash({packFingerprint, sceneId});
   const sceneReviews = new WeakMap();
+  function stage(label, work) {
+    try { return work(); }
+    catch (error) {
+      const issues = Array.isArray(error?.issues) ? error.issues.map(issue => (issue.path || '/') + ': ' + issue.message) : null;
+      const detail = issues?.length ? issues.join('\n') : (error?.message || String(error));
+      throw Error(label + ': ' + detail);
+    }
+  }
   function unique(entries, path) {
     if (new Set(entries.map(e => e.id)).size !== entries.length) throw Error(path + ': duplicate IDs');
   }
@@ -86,27 +94,27 @@
   }
   function validate(input) {
     try {
-      const pack = C.parse(input, 8 * 1024 * 1024);
+      const pack = stage('pack parse', () => C.parse(input, 8 * 1024 * 1024));
       if(pack?.schemaVersion!==2)return {ok:false,errors:['/schemaVersion: only current scenario schema version 2 is supported']};
       const errors=shape(pack,schema);
       if (errors.length) return {ok:false,errors};
       unique(pack.worlds, '/worlds'); unique(pack.scenes, '/scenes'); unique(pack.tutorial, '/tutorial');
-      Profiles.validate(pack.simulation);
-      const base = C.registry.prepare(pack.libraries.base);
+      stage('simulation profile', () => Profiles.validate(pack.simulation));
+      const base = stage('base library', () => C.registry.prepare(pack.libraries.base));
       if (!base.ok) throw Error(base.errors.map(e => e.path + ': ' + e.message).join('\n'));
-      const ad = A.validate(pack.libraries.adventure);
+      const ad = stage('adventure library', () => A.validate(pack.libraries.adventure));
       if (!ad.ok) throw Error(ad.errors.join('\n'));
-      withRuntime(pack.libraries,pack.simulation, () => {
+      stage('runtime staging', () => withRuntime(pack.libraries,pack.simulation, () => {
         for (const world of pack.worlds) checkWorld(world, pack.libraries.world);
         for (const scene of pack.scenes) {
           const ctx = context(pack,scene);
           if (!ctx.world) throw Error('/scenes/' + scene.id + ': unknown world');
           checkSceneFields(scene.initialState, '/scenes/'+scene.id+'/initialState');
-          const imported=P.withProfile(ctx.world, () => L.Engine.import({app:'littlewild',version:8,state:scene.initialState}));
+          const imported=stage('scene '+scene.id+' import', () => P.withProfile(ctx.world, () => L.Engine.import({app:'littlewild',version:8,state:scene.initialState})));
           if(C.stable(imported.export().state)!==C.stable(scene.initialState))throw Error('/scenes/'+scene.id+'/initialState: unknown or noncanonical state values; capture a current scene as a template');
         }
-      });
-      return { ok: true, errors: [], pack: copy(pack), fingerprint: hash(pack), sceneCount: pack.scenes.length };
+      }));
+      return { ok: true, errors: [], pack: stage('pack copy', () => copy(pack)), fingerprint: hash(pack), sceneCount: pack.scenes.length };
     } catch (error) {
       const issues = Array.isArray(error?.issues) ? error.issues.map(issue => (issue.path || '/') + ': ' + issue.message) : null;
       return { ok:false, errors: issues?.length ? issues : [error?.message || String(error)] };
