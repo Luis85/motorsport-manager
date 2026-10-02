@@ -1,3 +1,0 @@
-seed 13 actions market-pickup,withdraw,idle,market-deliver,stockbuilding,market-sell,produce,gather,craft,collectbuilding,deposit,explore,social,socialwait,research,drink,eat,play,eatbread,rest market receipts 8
-seed 47 actions market-pickup,withdraw,idle,market-deliver,stockbuilding,market-sell,produce,gather,craft,collectbuilding,deposit,explore,research,drink,social,socialwait,eat,play,eatbread,rest market receipts 8
-3/3 stress scenarios passed
