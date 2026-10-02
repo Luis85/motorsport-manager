@@ -16,7 +16,13 @@
  const recordBlank=()=>({input:{},output:{},job:null,targets:{},requests:{},enabled:true,priority:1,emptyInputs:false,completed:0,lastOutput:0,lastMessage:'On demand'});
  function prepareWorld(state){
   const configuration=W.validate(W.content);if(!configuration.ok)throw Error(configuration.errors.join('\n'));
-  if(state?.colony){const c=state.colony.creatures.find(c=>c.id===state.colony.selectedId)||state.colony.creatures[0];for(const k of L.colony.PERSONAL)state[k]=copy(c[k]);}
+  if(state?.colony){
+   const c=state.colony.creatures.find(c=>c.id===state.colony.selectedId)||state.colony.creatures[0];
+   if(c)for(const k of L.colony.PERSONAL){
+    if(Object.hasOwn(c,k)&&c[k]!==undefined)state[k]=copy(c[k]);
+    else delete state[k];
+   }
+  }
   return state;
  }
  function initializeWorld(self,_state,options={}){
