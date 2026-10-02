@@ -81,7 +81,6 @@ static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
 		"person_ids": input.get("person_ids", []).duplicate(true),
 		"car_ids": input.get("car_ids", []).duplicate(true),
 		"archetype": input.get("archetype", "independent"),
-		"policy": input.get("policy", {}).duplicate(true),
 		"created_slot": created_slot, "cash_minor": input.get("cash_minor"),
 		"reserve_minor": input.get("reserve_minor"), "committed_minor": 0,
 		"capability_bps": input.get("capability_bps", 10000),
@@ -89,6 +88,7 @@ static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
 		"next_review_slot": input.get("next_review_slot", created_slot),
 		"review_interval_slots": input.get("review_interval_slots", CampaignClock.SLOTS_PER_DAY * 7)
 	}
+	if input.has("policy"): data["policy"] = input.policy.duplicate(true)
 	_seal_team(data)
 	return data if _team_error(data).is_empty() else {}
 
