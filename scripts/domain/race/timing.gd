@@ -3,20 +3,20 @@ extends RefCounted
 ## Timing and classification rules. Pure domain service; no renderer or file access.
 ## Invoke cross-system work through the aggregate so inherited rule-set hooks remain active.
 
-static func qualifying_crossings(sim: RaceSim, car: RaceCar, before: float, after: float) -> void:
+static func qualifying_crossings(sim: RaceSimFoundation, car: RaceCar, before: float, after: float) -> void:
 	if car.qual_state == "hotlap":
 		var base_lap = int(floor(before / sim.track.length))
 		for i in range(3):
 			var gate: float = base_lap * sim.track.length + sim.track.sector_ends[i]
 			if before < gate and after >= gate:
-				var at = sim.clock - RaceSim.STEP * (after - gate) / maxf(0.000001, after - before)
+				var at = sim.clock - RaceSimFoundation.STEP * (after - gate) / maxf(0.000001, after - before)
 				car.qual_sectors[i] = maxf(0, at - car.qual_sector_start)
 				car.qual_sector_start = at
 				car.sectors = car.qual_sectors.duplicate()
 	if floor(before / sim.track.length) == floor(after / sim.track.length):
 		return
 	var boundary = floor(after / sim.track.length) * sim.track.length
-	var crossed_at = sim.clock - RaceSim.STEP * (after - boundary) / maxf(0.000001, after - before)
+	var crossed_at = sim.clock - RaceSimFoundation.STEP * (after - boundary) / maxf(0.000001, after - before)
 	if car.qual_state == "outlap":
 		if sim.qual_closed:
 			car.qual_state = "inlap"
@@ -37,19 +37,19 @@ static func qualifying_crossings(sim: RaceSim, car: RaceCar, before: float, afte
 			car.last_lap = time
 			if car.qual_best == 0 or time < car.qual_best:
 				car.qual_best = time
-			sim.post("lap", "%s sets %s in qualifying." % [car.short, RaceSim.format_time(time)])
+			sim.post("lap", "%s sets %s in qualifying." % [car.short, RaceSimFoundation.format_time(time)])
 		else:
 			sim.post("lap", "%s flying lap invalid: %s." % [car.short, car.invalid_reason])
 		car.qual_state = "inlap"
 		car.pit_gate = -1.0
 
-static func finish_qualifying(sim: RaceSim) -> void:
+static func finish_qualifying(sim: RaceSimFoundation) -> void:
 	var order = sim.standings(true)
 	for i in range(order.size()):
 		order[i].grid = i + 1
 	sim.transition("qualifying_results")
 
-static func race_crossings(sim: RaceSim, car: RaceCar, before: float, after: float) -> void:
+static func race_crossings(sim: RaceSimFoundation, car: RaceCar, before: float, after: float) -> void:
 	if car.finished or car.dnf:
 		return
 	var base_lap = int(floor(maxf(0, before) / sim.track.length))
@@ -57,14 +57,14 @@ static func race_crossings(sim: RaceSim, car: RaceCar, before: float, after: flo
 		for i in range(3):
 			var gate = lap_index * sim.track.length + sim.track.sector_ends[i]
 			if before < gate and after >= gate:
-				var at = sim.clock - RaceSim.STEP * (after - gate) / maxf(0.000001, after - before)
+				var at = sim.clock - RaceSimFoundation.STEP * (after - gate) / maxf(0.000001, after - before)
 				car.sectors[i] = at - car.sector_start
 				car.sector_start = at
 	if floor(before / sim.track.length) == floor(after / sim.track.length) or after < sim.track.length:
 		return
 	car.completed = int(floor(after / sim.track.length))
 	var boundary = car.completed * sim.track.length
-	var crossed_at = sim.clock - RaceSim.STEP * (after - boundary) / maxf(0.000001, after - before)
+	var crossed_at = sim.clock - RaceSimFoundation.STEP * (after - boundary) / maxf(0.000001, after - before)
 	car.last_lap = crossed_at - car.lap_start
 	car.lap_start = crossed_at
 	if not car.pit_lap and (car.best_lap == 0 or car.last_lap < car.best_lap):
@@ -77,7 +77,7 @@ static func race_crossings(sim: RaceSim, car: RaceCar, before: float, after: flo
 		car.history.pop_front()
 	car.crossed_at = crossed_at
 
-static func resolve_finishes(sim: RaceSim) -> void:
+static func resolve_finishes(sim: RaceSimFoundation) -> void:
 	# Resolve every crossing in the tick by interpolated timestamp, not car iteration order.
 	var flag_at = -INF if sim.chequered else INF
 	if not sim.chequered:
@@ -106,7 +106,7 @@ static func resolve_finishes(sim: RaceSim) -> void:
 		if classified[i].finished:
 			classified[i].finish_position = i + 1
 
-static func standings(sim: RaceSim, qualifying: bool = false) -> Array:
+static func standings(sim: RaceSimFoundation, qualifying: bool = false) -> Array:
 	var order = sim.cars.duplicate()
 	order.sort_custom(func(a, b):
 		if qualifying:
