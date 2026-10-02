@@ -12,6 +12,7 @@ const eq=(a:unknown,b:unknown)=>assert.deepEqual(a,b);
 
 async function main():Promise<void>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox","--use-gl=swiftshader","--enable-unsafe-swiftshader"]});
+ try {
  let page=await browser.newPage({viewport:{width:1440,height:900}});const errors:string[]=[];
  page.on("pageerror",error=>errors.push(String(error)));
  await page.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});await page.waitForFunction("window.Littlewild");
@@ -51,7 +52,7 @@ async function main():Promise<void>{
  await check("Custom-build start uses the pack-defined first scene",async()=>eq(await page.evaluate("Littlewild.engine.scenarioContext.sceneId"),"workshop-first-morning"));
  await check("Custom-build start uses the authored companion name",async()=>eq(await page.evaluate("Littlewild.engine.creatures[0].name"),"Rivet"));
  await check("Custom-build start uses an authored world profile",async()=>eq(await page.evaluate("LWWorldProfile.current.name"),"Copper Shore"));
- await browser.close();
+ } finally { await browser.close(); }
  const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
  fs.writeFileSync(path.join(OUT,"browser-contract-results.json"),JSON.stringify(report,null,2)+"\n");process.stdout.write(`${report.passed}/${report.total}\n`);if(report.failed)process.exitCode=1;
 }

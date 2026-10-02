@@ -23,6 +23,7 @@ const screenshot=(page:Page,name:string)=>CAPTURE_SCREENSHOTS?page.screenshot({p
 
 async function main():Promise<void>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]});
+ try {
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
  const p=await context.newPage();p.setDefaultTimeout(5000);
  p.on("pageerror",error=>errors.push(String(error)));
@@ -138,6 +139,9 @@ async function main():Promise<void>{
 
  for(const [width,height] of [[1440,900],[1024,768],[768,1024],[390,844],[320,568],[844,390]] as const){
   await p.setViewportSize({width,height});await p.evaluate("Littlewild.open('construction')");await p.waitForTimeout(100);
+  if(await p.locator(".build-row").count()===0&&await p.locator("[data-build=list]").count()>0){
+   await p.locator("[data-build=list]").click();await p.waitForTimeout(20);
+  }
   const tag=`${width}x${height}`;
   await check(tag+": build panel fits viewport",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;})));
   await check(tag+": world remains visible beside/above Build",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.65;})));
@@ -153,7 +157,7 @@ async function main():Promise<void>{
  }
  await check("No uncaught browser errors in tested flows",()=>equal(errors,[]));
  await check("Game makes no HTTP/HTTPS requests",()=>equal(requests,[]));
- await browser.close();
+ } finally { await browser.close(); }
 
  const report={passed:results.filter(x=>x.passed).length,total:results.length,failed:results.filter(x=>!x.passed).length,results,errors,externalRequests:requests};
  fs.writeFileSync(path.join(OUTPUT,"browser-results.json"),JSON.stringify(report,null,2)+"\n");
