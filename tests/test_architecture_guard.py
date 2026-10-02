@@ -45,7 +45,7 @@ class ArchitectureGuardTests(unittest.TestCase):
         self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', 'scripts/ui/track_canvas.gd')])
 
     def test_ui_cannot_retain_extracted_race_authority_layers(self):
-        for name in ['RaceSimFoundation', 'RaceSimCore', 'RaceSimOperations']:
+        for name in ['RaceSimPort', 'RaceSimFoundation', 'RaceSimCore', 'RaceSimOperations']:
             self.assertIn('detached-renderer',
                           [v.rule for v in self.scan('var model: ' + name, 'scripts/ui/probe.gd')])
 
