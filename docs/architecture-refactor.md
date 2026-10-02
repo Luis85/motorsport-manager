@@ -42,7 +42,13 @@ definition. Numeric policy data may tune supported rival/people/supply algorithm
 but external content cannot add algorithms, executable providers or relax
 structural/safety bounds.
 
-## Race aggregate implementation split\n\n`RaceSim` remains the public aggregate and mechanic-dispatch surface. Its implementation is now split without changing authority: `RaceSimFoundation` owns authoritative state and deterministic utility APIs, `RaceSimCore` owns fixed-step/session/surface/on-track movement base behavior, and `RaceSimOperations` owns pit/recovery/persistence-projection base behavior. `RaceSim` itself constructs the aggregate, restores checkpoints and exposes the registered mechanic hooks. Existing derived compatibility profiles still extend `RaceSim`; save versions, hook names and arithmetic/RNG order are unchanged.\n\nThe UI follows the same responsibility split: `WeekendView` keeps concrete composition and live refresh over `WeekendViewSupport`; the native shell delegates campaign orchestration to `CampaignScreens`; the Minimal pitwall delegates timing-table diff/reorder work to `MinimalRaceTimingPresenter`. These collaborators do not own simulation time or authoritative state.\n\n## Race and replay lifetimes
+## Race aggregate implementation split
+
+`RaceSim` remains the public aggregate and mechanic-dispatch surface. A small `RaceSimPort` defines the dependency-free state/method contract consumed by fixed-step scheduling, timing, pit service, vehicle-condition and command services. `RaceSimFoundation` inherits that single state contract and owns deterministic aggregate utilities; `RaceSimCore` owns fixed-step/session/surface/on-track movement base behavior; `RaceSimOperations` owns pit/recovery/persistence-projection base behavior. `RaceSim` itself constructs the aggregate, restores checkpoints and exposes the registered mechanic hooks. The port is not a second simulation or state store. Existing derived compatibility profiles still extend `RaceSim`; save versions, hook names and arithmetic/RNG order are unchanged.
+
+The UI follows the same responsibility split: `WeekendView` keeps concrete composition and live refresh over `WeekendViewSupport`; the native shell delegates campaign orchestration to `CampaignScreens`; the Minimal pitwall delegates timing-table diff/reorder work to `MinimalRaceTimingPresenter`. `RaceSimPort`, the concrete race layers and runners are all classified as simulation authority by the architecture guard and remain forbidden in UI code. These collaborators do not own simulation time or authoritative state.
+
+## Race and replay lifetimes
 
 `RaceSessionRunner` owns one active `RaceSim`. `RaceStepClock` preserves the
 0.05-second step, frame-spike cap, pause boundaries and existing speed policy.
