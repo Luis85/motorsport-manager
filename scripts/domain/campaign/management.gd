@@ -2,7 +2,8 @@ class_name CampaignManagement
 extends RefCounted
 ## Stable envelope for management subdomains beyond the engineering foundation.
 const KIND = "motorsport-manager-campaign-management"
-const VERSION = 1
+const VERSION = 2
+const LEGACY_VERSION = 1
 const MAX_RECORDS = 4096
 
 static func empty(campaign_id: String, organization_id: String,
@@ -12,6 +13,7 @@ static func empty(campaign_id: String, organization_id: String,
 	var data = {
 		"kind": KIND, "version": VERSION, "campaign_id": campaign_id,
 		"organization_id": organization_id, "authority_from_slot": authority_from_slot,
+		"campaign_content": {},
 		"commercial": CampaignCommercial.empty(),
 		"delegation": {"mandates": {}, "decisions": []},
 		"rivals": CampaignRivals.empty(),
@@ -27,8 +29,17 @@ static func empty(campaign_id: String, organization_id: String,
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign management exceeds serialized-value limits."
-	if not data is Dictionary or data.size() != 14 or data.get("kind") != KIND 			or not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION):
+	if not data is Dictionary or data.get("kind") != KIND:
 		return "Unsupported campaign management projection."
+	var version = int(data.get("version", -1))
+	if version not in [LEGACY_VERSION, VERSION] or data.size() != (14 if version == LEGACY_VERSION else 15):
+		return "Unsupported campaign management projection."
+	if version == VERSION:
+		if not data.get("campaign_content") is Dictionary:
+			return "Campaign management has an invalid frozen-content slot."
+		if not data.campaign_content.is_empty():
+			var content_error = CampaignContentSnapshot.validate(data.campaign_content)
+			if not content_error.is_empty(): return content_error
 	for key in ["campaign_id", "organization_id"]:
 		if not CampaignIdentity.valid(data.get(key)):
 			return "Campaign management has an invalid " + key + "."
@@ -68,6 +79,15 @@ static func validate(data: Variant) -> String:
 	if data.distress.get("stage") not in ["normal", "reserve_pressure", "funding_gap", "missed_obligation"]:
 		return "Campaign management has an invalid distress stage."
 	return _integrity_error(data)
+
+static func with_campaign_content(current: Dictionary, content: Dictionary) -> Dictionary:
+	if not validate(current).is_empty() or not CampaignContentSnapshot.validate(content).is_empty():
+		return {}
+	var data = current.duplicate(true)
+	data.version = VERSION
+	data["campaign_content"] = content.duplicate(true)
+	_seal(data)
+	return data if validate(data).is_empty() else {}
 
 static func with_group(current: Dictionary, group: Dictionary) -> Dictionary:
 	if not validate(current).is_empty() or not CampaignGroup.validate(group).is_empty():
