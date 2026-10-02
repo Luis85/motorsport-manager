@@ -77,30 +77,35 @@ static func consume_material(current:Dictionary,material_id:String,quantity:int,
 	return _result(data,"consumed",current)
 
 static func register_project_evidence(current:Dictionary,project_id:String,
-		latent_outcome_bps:int,slot:int)->Dictionary:
+		latent_outcome_bps:int,slot:int,policy:Dictionary={})->Dictionary:
 	var error=validate(current)
+	var tuning=CampaignSupplyPolicy.normalized(policy)
 	if not error.is_empty():return _reject(error,current)
 	if current.project_evidence.size()>=MAX_EVIDENCE or current.project_evidence.has(project_id) 			or not CampaignIdentity.valid(project_id) or not RaceCheckpoint.integral(latent_outcome_bps,-2500,2500):
 		return _reject("Engineering evidence seed is invalid or duplicated.",current)
 	var record={"project_id":project_id,"latent_outcome_bps":latent_outcome_bps,
-		"confidence_bps":2000,"observations":0,"created_slot":slot,"last_observed_slot":-1}
+		"confidence_bps":int(tuning.initial_confidence_bps),"observations":0,"created_slot":slot,"last_observed_slot":-1}
 	_seal(record);var data=current.duplicate(true);data.project_evidence[project_id]=record
 	return _result(data,"evidence_registered",current)
 
-static func observe_project(current:Dictionary,project_id:String,slot:int)->Dictionary:
+static func observe_project(current:Dictionary,project_id:String,slot:int,policy:Dictionary={})->Dictionary:
 	var error=validate(current)
+	var tuning=CampaignSupplyPolicy.normalized(policy)
 	if not error.is_empty():return _reject(error,current)
 	if not current.project_evidence.has(project_id):return _reject("Engineering evidence is unknown.",current)
 	var data=current.duplicate(true);var record:Dictionary=data.project_evidence[project_id]
 	record.observations=int(record.observations)+1
-	record.confidence_bps=mini(9500,int(record.confidence_bps)+1500)
+	record.confidence_bps=mini(int(tuning.max_confidence_bps),
+		int(record.confidence_bps)+int(tuning.observation_gain_bps))
 	record.last_observed_slot=slot;_seal(record);data.project_evidence[project_id]=record
 	return _result(data,"observed",current)
 
-static func project_range(current:Dictionary,project_id:String)->Dictionary:
+static func project_range(current:Dictionary,project_id:String,policy:Dictionary={})->Dictionary:
 	if not validate(current).is_empty() or not current.project_evidence.has(project_id):return {}
+	var tuning=CampaignSupplyPolicy.normalized(policy)
 	var record:Dictionary=current.project_evidence[project_id]
-	var spread=maxi(50,int(round(2500.0*(10000-int(record.confidence_bps))/10000.0)))
+	var spread=maxi(int(tuning.spread_floor_bps),
+		int(round(float(tuning.spread_scale_bps)*(10000-int(record.confidence_bps))/10000.0)))
 	return {"project_id":project_id,"confidence_bps":record.confidence_bps,
 		"low_bps":int(record.latent_outcome_bps)-spread,
 		"high_bps":int(record.latent_outcome_bps)+spread,
