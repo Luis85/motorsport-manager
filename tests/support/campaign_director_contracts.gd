@@ -13,7 +13,7 @@ static func run(check: Callable) -> void:
 	var record = _record(track, loaded.catalog, campaign)
 	check.call(record != null, "Starter fixture creates a recorded authored race entry")
 	if record == null: return
-	var checkpoint = CampaignStarter.create(record, campaign.to_record())
+	var checkpoint = CampaignStarter.create(record, campaign.to_record(), _circuits(loaded.catalog, campaign))
 	check.call(not checkpoint.is_empty() and CampaignCheckpoint.validate(checkpoint).is_empty(),
 		"Team Principal starter creates one valid four-event campaign checkpoint")
 	if checkpoint.is_empty(): return
@@ -96,3 +96,11 @@ static func _record(track: Dictionary, catalog: ContentCatalog, campaign: Campai
 	var record = RaceRecord.new(); record.attach(simulation)
 	record.set_meta("campaign_test_source", simulation)
 	return record
+
+static func _circuits(catalog: ContentCatalog, campaign: CampaignDefinition) -> Dictionary:
+	var result = {}
+	for event in campaign.to_record().calendar:
+		var definition = catalog.circuit(event.circuit_id)
+		if definition == null: return {}
+		result[event.circuit_id] = definition.document()
+	return result
