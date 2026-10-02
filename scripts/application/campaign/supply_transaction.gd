@@ -28,12 +28,12 @@ static func register_project_evidence(checkpoint:Dictionary,project_id:String,la
 	var r=_restore(checkpoint)
 	if not r.ok:return r
 	if not r.engineering.projects.has(project_id):return _reject("Engineering project is unknown.",checkpoint)
-	var changed=CampaignSupplyNetwork.register_project_evidence(r.management.supply,project_id,latent_bps,r.state.clock.elapsed_slots)
+	var changed=CampaignSupplyNetwork.register_project_evidence(r.management.supply,project_id,latent_bps,r.state.clock.elapsed_slots,_supply_policy(r))
 	return _publish_supply(r,changed,r.economy,checkpoint)
 static func observe_project(checkpoint:Dictionary,project_id:String)->Dictionary:
 	var r=_restore(checkpoint)
 	if not r.ok:return r
-	var changed=CampaignSupplyNetwork.observe_project(r.management.supply,project_id,r.state.clock.elapsed_slots)
+	var changed=CampaignSupplyNetwork.observe_project(r.management.supply,project_id,r.state.clock.elapsed_slots,_supply_policy(r))
 	return _publish_supply(r,changed,r.economy,checkpoint)
 static func register_part(checkpoint:Dictionary,part_id:String)->Dictionary:
 	var r=_restore(checkpoint)
@@ -61,6 +61,11 @@ static func repair_part(checkpoint:Dictionary,part_id:String,work_order_id:Strin
 	var engineering=CampaignEngineering.set_part_condition(r.engineering,part_id,100)
 	if not engineering.ok: return _reject(engineering.error,checkpoint)
 	return _publish_supply(r,changed,r.economy,checkpoint,engineering.engineering)
+static func _supply_policy(r:Dictionary)->Dictionary:
+	var frozen=r.management.get("campaign_content",{})
+	if not frozen.is_empty() and CampaignContentSnapshot.validate(frozen).is_empty():
+		return CampaignSupplyPolicy.normalized(frozen.definition.get("supply_policy",{}))
+	return CampaignSupplyPolicy.LEGACY.duplicate(true)
 static func _restore(checkpoint:Dictionary)->Dictionary:
 	var r=CampaignCheckpoint.restore(checkpoint)
 	if not r.ok:return _reject(r.error,checkpoint)
