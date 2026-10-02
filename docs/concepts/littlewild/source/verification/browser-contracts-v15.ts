@@ -22,8 +22,8 @@ async function main():Promise<void>{
  await page.locator("#build-actor").selectOption("c2");await page.locator("#build-approach").selectOption("careful");
  await check("Alternate builder selection does not mutate either creature policy",async()=>eq(await page.evaluate("Littlewild.engine.creatures.map(c=>({id:c.id,n:c.orders.length,approach:c.buildPolicy.approach}))"),before));
  await page.locator("[data-build=place]").click();
- const tile=await page.evaluate("()=>{let e=Littlewild.engine;for(let y=1;y<18;y++)for(let x=1;x<18;x++)if(e.canBuild(x,y)&&!e.placementIssue('shelter',x,y))return{x,y};throw Error('No free plot')}");
- await page.evaluate("(tile)=>{Littlewild.world.hover=tile;Littlewild.world.keyboardTile=tile;}",tile);
+ const tile=await page.evaluate(()=>{const e=(window as any).Littlewild.engine;for(let y=1;y<18;y++)for(let x=1;x<18;x++)if(e.canBuild(x,y)&&!e.placementIssue("shelter",x,y))return{x,y};throw Error("No free plot");});
+ await page.evaluate(target=>{const app=(window as any).Littlewild;app.world.hover=target;app.world.keyboardTile=target;},tile);
  await page.locator("#world").focus();await page.keyboard.press("Enter");await page.waitForTimeout(100);
  const order=await page.evaluate("Littlewild.engine.creatures.find(c=>c.id==='c2').orders.at(-1)") as any;
  await check("Keyboard placement creates an actual construction task",()=>eq(order.type,"build"));
@@ -33,10 +33,10 @@ async function main():Promise<void>{
  await check("Placement keeps existing per-creature default policy",async()=>eq(await page.evaluate("Littlewild.engine.creatures[1].buildPolicy.approach"),before[1]!.approach));
  await check("Placing a plan does not pay remote supplies",()=>eq(order.paid,false));
  const saved=await page.evaluate("Littlewild.snapshot()");
- await check("Placed plan round-trips through scenario-aware save",async()=>await page.evaluate("(doc)=>{let e=LWStory.commit(LWStory.inspect(doc));return e.creatures.find(c=>c.id==='c2').orders.at(-1).approach==='careful';}",saved));
+ await check("Placed plan round-trips through scenario-aware save",async()=>await page.evaluate(doc=>{const w=window as any;const e=w.LWStory.commit(w.LWStory.inspect(doc));return e.creatures.find((c:any)=>c.id==="c2").orders.at(-1).approach==="careful";},saved));
  const fixture=path.join(ROOT,"source","fixtures","actual-v14-story.json");
  if(fs.existsSync(fixture)){
-  const doc=JSON.parse(fs.readFileSync(fixture,"utf8"));await page.evaluate("(doc)=>Littlewild.setEngine(LWStory.commit(LWStory.inspect(doc)))",doc);
+  const doc=JSON.parse(fs.readFileSync(fixture,"utf8"));await page.evaluate(doc=>{const w=window as any;w.Littlewild.setEngine(w.LWStory.commit(w.LWStory.inspect(doc)));},doc);
   await check("Authentic v14 browser story stays format 8",async()=>eq(await page.evaluate("Littlewild.snapshot().version"),8));
   await check("Authentic v14 story keeps its creature skills",async()=>eq(await page.evaluate("Littlewild.snapshot().state.colony.creatures.map(c=>c.skills)"),doc.state.colony.creatures.map((c:any)=>c.skills)));
  }

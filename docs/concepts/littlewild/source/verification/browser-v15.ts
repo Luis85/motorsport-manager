@@ -8,7 +8,8 @@ interface Result { name:string; passed:boolean; error?:string; }
 const ROOT=path.resolve(__dirname,"../..");
 const OUTPUT=path.join(ROOT,"verification","v15");
 const SHOTS=path.join(ROOT,"screenshots","v15-final");
-fs.mkdirSync(OUTPUT,{recursive:true});fs.mkdirSync(SHOTS,{recursive:true});
+const CAPTURE_SCREENSHOTS=process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==="1";
+fs.mkdirSync(OUTPUT,{recursive:true});if(CAPTURE_SCREENSHOTS)fs.mkdirSync(SHOTS,{recursive:true});
 const results:Result[]=[],errors:string[]=[],requests:string[]=[];
 
 async function check(name:string,fn:()=>unknown|Promise<unknown>):Promise<void>{
@@ -18,7 +19,7 @@ async function check(name:string,fn:()=>unknown|Promise<unknown>):Promise<void>{
 }
 const equal=(a:unknown,b:unknown):void=>assert.deepEqual(a,b);
 const expect=(value:unknown):void=>assert.ok(value);
-const screenshot=(page:Page,name:string)=>page.screenshot({path:path.join(SHOTS,name)});
+const screenshot=(page:Page,name:string)=>CAPTURE_SCREENSHOTS?page.screenshot({path:path.join(SHOTS,name),animations:"disabled"}):Promise.resolve();
 
 async function main():Promise<void>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]});
@@ -36,7 +37,7 @@ async function main():Promise<void>{
  await p.locator("[data-guide=next]").click();
  await check("Tutorial next advances only the saved guide index",async()=>equal(await p.evaluate("Littlewild.engine.s.progression.tutorial.step"),1));
  await p.locator("[data-guide=minimize]").click();
- await check("Guide collapses without losing its step",async()=>expect(await p.locator("#guide-panel").evaluate("(el)=>el.classList.contains('minimized')")));
+ await check("Guide collapses without losing its step",async()=>expect(await p.locator("#guide-panel").evaluate(el=>el.classList.contains("minimized"))));
  await p.locator("[data-guide=expand]").click();await p.locator("#guide-step").selectOption("3");
  await p.locator("[data-guide=show]").click();await p.waitForTimeout(250);
  await check("Show me opens real construction without a task",async()=>expect(await p.locator("#build-panel").isVisible()));
@@ -48,9 +49,9 @@ async function main():Promise<void>{
  await p.locator("[data-scenario=launch]").click();await p.waitForTimeout(400);
  await check("Established scene has three companions",async()=>equal(await p.evaluate("Littlewild.engine.creatures.length"),3));
  await p.evaluate("Littlewild.open('construction')");await p.waitForTimeout(100);
- await check("Build panel is a complementary region not a modal",async()=>equal(await p.locator("#build-panel").evaluate("(el)=>el.tagName+':'+el.getAttribute('aria-modal')"),"ASIDE:null"));
+ await check("Build panel is a complementary region not a modal",async()=>equal(await p.locator("#build-panel").evaluate(el=>el.tagName+":"+el.getAttribute("aria-modal")),"ASIDE:null"));
  await check("Automatic pause setting covers the build panel",async()=>equal(await p.evaluate("Littlewild.pauseStatus().running"),false));
- await check("Build panel leaves over 70% of desktop world uncovered",async()=>expect(await p.locator("#build-panel").evaluate("(el)=>{let r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.3;}")));
+ await check("Build panel leaves over 70% of desktop world uncovered",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.3;})));
  await check("Build panel has a visible close label",async()=>equal(await p.locator("#build-panel [data-build=close]").getAttribute("aria-label"),"Close build panel"));
  await p.locator("#build-search").fill("map");
  await check("Build search narrows the catalog",async()=>equal(await p.locator(".build-row").count(),1));
@@ -70,7 +71,7 @@ async function main():Promise<void>{
  await check("Panning does not dismiss the construction catalog",async()=>expect(await p.locator("#build-panel").isVisible()));
  await p.evaluate("Littlewild.preferences.set(false);Littlewild.refresh()");
  let start=await p.evaluate("Littlewild.engine.s.simTime") as number;
- await p.waitForFunction("(start)=>Littlewild.engine.s.simTime>start",start,{timeout:2500});
+ await p.waitForFunction(startTime=>(window as any).Littlewild.engine.s.simTime>startTime,start,{timeout:2500});
  await check("World runs behind a panel with automatic pause disabled",async()=>expect((await p.evaluate("Littlewild.engine.s.simTime") as number)>start));
  await p.evaluate("Littlewild.engine.s.paused=true;Littlewild.refresh()");
  start=await p.evaluate("Littlewild.engine.s.simTime") as number;await p.waitForTimeout(300);
@@ -123,32 +124,32 @@ async function main():Promise<void>{
  await check("Confirmed pack launch uses imported companion setup",async()=>equal(await p.evaluate("Littlewild.engine.creatures[0].name"),"Rivet"));
  await check("Confirmed pack changes real definition names",async()=>equal(await p.evaluate("LW.BUILDINGS.bench.name"),"Assembly bench"));
  await check("World terrain reads the selected authored profile",async()=>equal(await p.evaluate("LWGeography.islandTerrain(14,1)"),"water"));
- await check("Scenario save envelope 10 includes the exact world and simulation profiles",async()=>expect(await p.evaluate("()=>{const d=Littlewild.snapshot();return d.version===10&&d.experience.schemaVersion===2&&d.experience.simulation.id==='classic-v1'&&typeof d.simulationFingerprint==='string';}")));
+ await check("Scenario save envelope 10 includes the exact world and simulation profiles",async()=>expect(await p.evaluate(()=>{const d=(window as any).Littlewild.snapshot();return d.version===10&&d.experience.schemaVersion===2&&d.experience.simulation.id==="classic-v1"&&typeof d.simulationFingerprint==="string";})));
  await screenshot(p,"05-emberworks.png");
  await p.evaluate("Littlewild.open('scenarios')");
  const [captured]=await Promise.all([p.waitForEvent("download"),p.locator("[data-scenario=capture]").click()]);
  const capturedPath=await captured.path();assert.ok(capturedPath);const saved=fs.readFileSync(capturedPath,"utf8");
- await check("Captured current scene downloads as a valid schema 2 pack with its simulation profile",async()=>expect(await p.evaluate("(text)=>{const p=JSON.parse(text);return p.schemaVersion===2&&p.simulation&&LWScenarios.validate(p).ok;}",saved)));
- await p.evaluate("() => {window._originalText=File.prototype.text; File.prototype.text=function(){return new Promise(resolve=>setTimeout(()=>window._originalText.call(this).then(resolve),400))};}");
+ await check("Captured current scene downloads as a valid schema 2 pack with its simulation profile",async()=>expect(await p.evaluate(text=>{const pack=JSON.parse(text as string);return pack.schemaVersion===2&&pack.simulation&&(window as any).LWScenarios.validate(pack).ok;},saved)));
+ await p.evaluate(()=>{const w=window as any;w._originalText=File.prototype.text;File.prototype.text=function(){return new Promise(resolve=>setTimeout(()=>w._originalText.call(this).then(resolve),400));};});
  await p.locator("#scenario-import-file").setInputFiles({name:"later.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(custom))});
  await p.locator("#modal [data-act=close-modal]").first().click();await p.waitForTimeout(550);
  await check("Delayed import cannot reopen a dismissed library",async()=>equal(await p.evaluate("Littlewild.ui.modal"),null));
- await p.evaluate("() => {File.prototype.text=window._originalText;}");
+ await p.evaluate(()=>{File.prototype.text=(window as any)._originalText;});
 
  for(const [width,height] of [[1440,900],[1024,768],[768,1024],[390,844],[320,568],[844,390]] as const){
   await p.setViewportSize({width,height});await p.evaluate("Littlewild.open('construction')");await p.waitForTimeout(100);
   const tag=`${width}x${height}`;
-  await check(tag+": build panel fits viewport",async()=>expect(await p.locator("#build-panel").evaluate("(el)=>{let r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;}")));
-  await check(tag+": world remains visible beside/above Build",async()=>expect(await p.locator("#build-panel").evaluate("(el)=>{let r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.65;}")));
-  await check(tag+": build footer remains reachable",async()=>expect(await p.locator("#build-panel .panel-footer").evaluate("(el)=>el.getBoundingClientRect().bottom<=innerHeight")));
+  await check(tag+": build panel fits viewport",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;})));
+  await check(tag+": world remains visible beside/above Build",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.65;})));
+  await check(tag+": build footer remains reachable",async()=>expect(await p.locator("#build-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await check(tag+": no horizontal page overflow",async()=>expect(await p.evaluate("document.documentElement.scrollWidth<=innerWidth")));
   await screenshot(p,"build-"+tag+".png");
   await p.locator(".build-row").first().click();await p.locator("#build-actor").selectOption("c1");
   await p.locator("[data-build=place]").scrollIntoViewIfNeeded();
   await check(tag+": primary placement action scrolls into view",async()=>expect(await p.locator("[data-build=place]").isVisible()));
   await p.evaluate("Littlewild.open('v10-guide')");await p.waitForTimeout(80);
-  await check(tag+": guide fits without covering entire world",async()=>expect(await p.locator("#guide-panel").evaluate("(el)=>{let r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.bottom<=innerHeight&&r.width*r.height<innerWidth*innerHeight*.58;}")));
-  await check(tag+": guide footer remains reachable",async()=>expect(await p.locator("#guide-panel .panel-footer").evaluate("(el)=>el.getBoundingClientRect().bottom<=innerHeight")));
+  await check(tag+": guide fits without covering entire world",async()=>expect(await p.locator("#guide-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.bottom<=innerHeight&&r.width*r.height<innerWidth*innerHeight*.58;})));
+  await check(tag+": guide footer remains reachable",async()=>expect(await p.locator("#guide-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await screenshot(p,"guide-"+tag+".png");
   await p.locator("[data-guide=close]").click();
  }
