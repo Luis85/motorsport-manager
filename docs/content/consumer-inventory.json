@@ -1917,6 +1917,202 @@
         "/placements/*/scale",
         "/schema_version"
       ]
+    },
+    "campaign": {
+      "schema": "content/schemas/v1/campaign.schema.json",
+      "coverage": [
+        {
+          "prefix": "/kind",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Campaign definition family discriminator."
+        },
+        {
+          "prefix": "/schema_version",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/content_versions.gd"
+          ],
+          "note": "Campaign content schema version."
+        },
+        {
+          "prefix": "/id",
+          "classification": "identity",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Stable authored campaign profile identity."
+        },
+        {
+          "prefix": "/name",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing campaign label."
+        },
+        {
+          "prefix": "/description",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Human-facing campaign description."
+        },
+        {
+          "prefix": "/default",
+          "classification": "contract",
+          "consumers": [
+            "scripts/application/content/catalog.gd"
+          ],
+          "note": "Selects exactly one default campaign from the active catalog."
+        },
+        {
+          "prefix": "/weekend_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/application/content/catalog.gd",
+            "scripts/domain/content/campaign_definition.gd"
+          ],
+          "note": "References the authored weekend used to freeze the campaign race template."
+        },
+        {
+          "prefix": "/career",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Authoritative career identity, start date, energy and opening finance configuration."
+        },
+        {
+          "prefix": "/series",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Starter series identity and scoring configuration."
+        },
+        {
+          "prefix": "/calendar",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Dated starter season event schedule."
+        },
+        {
+          "prefix": "/player",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Player entrant, role and contract inputs compiled into campaign authorities."
+        },
+        {
+          "prefix": "/facilities",
+          "classification": "authoring",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Owned starter capacity compiled through CampaignOperations."
+        },
+        {
+          "prefix": "/rivals",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Rival organization starting resources and review cadence."
+        },
+        {
+          "prefix": "/rival_policy",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/campaign/rivals.gd",
+            "scripts/domain/campaign/rival_policy.gd"
+          ],
+          "note": "Numerical tuning for the bounded rival planning algorithm."
+        },
+        {
+          "prefix": "/event_finance",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/application/campaign/starter.gd"
+          ],
+          "note": "Explicit departure, participation and classified-position financial policy."
+        }
+      ],
+      "expected_leaves": [
+        "/calendar/*/campaign_event_id",
+        "/calendar/*/departure_day",
+        "/calendar/*/event_revision",
+        "/calendar/*/return_day",
+        "/calendar/*/round",
+        "/career/campaign_id",
+        "/career/energy_capacity",
+        "/career/opening_cash_minor",
+        "/career/organization_id",
+        "/career/principal_id",
+        "/career/reserve_minor",
+        "/career/start/day",
+        "/career/start/month",
+        "/career/start/slot",
+        "/career/start/year",
+        "/default",
+        "/description",
+        "/event_finance/departure_cost_minor",
+        "/event_finance/participation_minor",
+        "/event_finance/position_bonus_minor/*",
+        "/facilities/*/available_days",
+        "/facilities/*/capacity_units",
+        "/facilities/*/display_name",
+        "/facilities/*/family",
+        "/facilities/*/id",
+        "/id",
+        "/kind",
+        "/name",
+        "/player/driver_contract/allocation_bps",
+        "/player/driver_contract/duration_days",
+        "/player/driver_contract/pay_interval_days",
+        "/player/driver_contract/pay_minor",
+        "/player/driver_contract/renewal_window_days",
+        "/player/driver_role_id",
+        "/player/entrant_id",
+        "/player/operations_lead/contract/allocation_bps",
+        "/player/operations_lead/contract/duration_days",
+        "/player/operations_lead/contract/pay_interval_days",
+        "/player/operations_lead/contract/pay_minor",
+        "/player/operations_lead/contract/renewal_window_days",
+        "/player/operations_lead/display_name",
+        "/player/operations_lead/person_id",
+        "/player/operations_lead/role_id",
+        "/player/team_id",
+        "/rival_policy/cash_preservation_threshold_minor",
+        "/rival_policy/driver_development_gain_bps",
+        "/rival_policy/gain_minor_per_bps",
+        "/rival_policy/leading_rank_threshold",
+        "/rival_policy/max_gain_bps",
+        "/rival_policy/plan_spend_minor/balanced_development",
+        "/rival_policy/plan_spend_minor/driver_development",
+        "/rival_policy/plan_spend_minor/reliability",
+        "/rival_policy/reliability_gain_bps",
+        "/rivals/*/archetype",
+        "/rivals/*/capability_bps",
+        "/rivals/*/cash_minor",
+        "/rivals/*/entrant_id",
+        "/rivals/*/reserve_minor",
+        "/rivals/*/review_interval_days",
+        "/rivals/*/team_id",
+        "/schema_version",
+        "/series/cars_per_entrant",
+        "/series/name",
+        "/series/points_by_position/*",
+        "/series/season_id",
+        "/series/series_id",
+        "/weekend_id"
+      ]
     }
   },
   "retained_literals": [
@@ -2057,6 +2253,18 @@
       "symbol": "PATHS",
       "classification": "contract",
       "note": "Trusted bundled diagnostic-resource registry; not external executable content."
+    },
+    {
+      "file": "scripts/application/campaign/starter_legacy.gd",
+      "symbol": "DEFAULTS",
+      "classification": "contract",
+      "note": "Frozen pre-content campaign starter values used only to continue older campaign checkpoints."
+    },
+    {
+      "file": "scripts/domain/campaign/rival_policy.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Frozen rival planner coefficients used only by older rival records without authored policy."
     }
   ]
 }
