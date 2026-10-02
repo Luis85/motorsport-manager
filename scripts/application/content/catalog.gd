@@ -91,6 +91,12 @@ func seal() -> Array:
 			return _definition_error(id, "CONTENT_CAMPAIGN", "", "Campaign profile has invalid cross-field tuning.")
 		if record(campaign.weekend_id).get("kind") != "weekend":
 			return _definition_error(id, "CONTENT_REFERENCE", "/weekend_id", "Choose an existing weekend definition.")
+		var campaign_record = campaign.to_record()
+		for event_index in range(campaign_record.calendar.size()):
+			var circuit_id: String = campaign_record.calendar[event_index].circuit_id
+			if record(circuit_id).get("kind") != "circuit":
+				return _definition_error(id, "CONTENT_REFERENCE",
+					"/calendar/%d/circuit_id" % event_index, "Choose an existing circuit definition.")
 		if campaign.is_default:
 			if not default_campaign_id.is_empty():
 				return _definition_error(id, "CONTENT_CAMPAIGN_DEFAULT", "/default", "Only one selected campaign may be the default.")
