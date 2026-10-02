@@ -87,5 +87,5 @@ const exposed=runJson([path.join(GENERATED,"tools","simulation-profile-cli.cjs")
 check("Simulation profile CLI exposes the canonical schema",()=>{assert.equal(exposed.r.status,0);assert.equal(exposed.payload.$id,simulationSchema.$id);assert.deepEqual(exposed.payload.$defs,simulationSchema.$defs);});
 
 const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
-fs.mkdirSync(GENERATED,{recursive:true});fs.writeFileSync(path.join(GENERATED,"v15-schema-results.json"),JSON.stringify(report,null,2)+"\n");
+fs.mkdirSync(GENERATED,{recursive:true});fs.writeFileSync(path.join(GENERATED,"scenario-schema-results.json"),JSON.stringify(report,null,2)+"\n");
 process.stdout.write(`${report.passed}/${report.total}\n`);if(report.failed)process.exitCode=1;

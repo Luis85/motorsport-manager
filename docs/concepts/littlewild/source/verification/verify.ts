@@ -51,21 +51,21 @@ const suites: Suite[] = [
   ["ecs-integration", ["node", generated("test-ecs-integration.cjs")], generated("ecs-integration-results.json"), 180],
   ["ecs-world-integration", ["node", generated("test-ecs-world-integration.cjs")], generated("ecs-world-integration-results.json"), 180],
   ["ecs-economy-integration", ["node", generated("test-economy-integration.cjs")], generated("economy-integration-results.json"), 180],
-  ["scenario-domain", ["node", generated("test-v15.cjs")], generated("v15-domain-results.json"), 120],
-  ["presentation", ["node", generated("test-v15-presentation.cjs")], generated("v15-presentation-results.json"), 120],
-  ["pause-policy", ["node", generated("test-v15-pause.cjs")], generated("v15-pause-results.json"), 120],
-  ["cartography", ["node", generated("test-v11.cjs")], generated("v11-domain-results.json"), 180],
-  ["domain", ["node", generated("test-v10.cjs")], generated("v10-domain-results.json"), 180],
-  ["growth-stress", ["node", generated("test-growth-stress.cjs")], generated("v10-stress-results.json"), 300],
-  ["earned-progression", ["node", generated("test-fresh-v10.cjs")], generated("v10-fresh-results.json"), 300],
-  ["scenario-schema-cli", ["node", generated("verification/schema-checks-v15.js")], generated("v15-schema-results.json"), 90],
-  ["release", ["node", generated("test-v15-release.cjs")], generated("v15-release-results.json"), 180]
+  ["scenario-domain", ["node", generated("test-scenario-domain.cjs")], generated("scenario-domain-results.json"), 120],
+  ["presentation", ["node", generated("test-presentation.cjs")], generated("presentation-results.json"), 120],
+  ["pause-policy", ["node", generated("test-pause-policy.cjs")], generated("pause-policy-results.json"), 120],
+  ["cartography", ["node", generated("test-cartography.cjs")], generated("cartography-results.json"), 180],
+  ["domain", ["node", generated("test-domain.cjs")], generated("domain-results.json"), 180],
+  ["growth-stress", ["node", generated("test-growth-stress.cjs")], generated("growth-stress-results.json"), 300],
+  ["earned-progression", ["node", generated("test-earned-progression.cjs")], generated("earned-progression-results.json"), 300],
+  ["scenario-schema-cli", ["node", generated("verification/schema-checks.js")], generated("scenario-schema-results.json"), 90],
+  ["release", ["node", generated("test-release.cjs")], generated("release-results.json"), 180]
 ].map(([name, command, result, timeout]) => ({ name: name as string, command: command as string[], result: result as string, timeout: timeout as number }));
 
 if (!noBrowser) {
   suites.push(
-    { name:"browser", command:["node", generated("verification/browser-v15.js")], result:"verification/v15/browser-results.json", timeout:300 },
-    { name:"browser-contracts", command:["node", generated("verification/browser-contracts-v15.js")], result:"verification/v15/browser-contract-results.json", timeout:240 }
+    { name:"browser", command:["node", generated("verification/browser.js")], result:"verification/v15/browser-results.json", timeout:300 },
+    { name:"browser-contracts", command:["node", generated("verification/browser-contracts.js")], result:"verification/v15/browser-contract-results.json", timeout:240 }
   );
 }
 

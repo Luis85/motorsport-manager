@@ -7,7 +7,7 @@ interface Result { name:string; passed:boolean; error?:string; }
 
 const ROOT=path.resolve(__dirname,"../..");
 const OUTPUT=path.join(ROOT,"verification","v15");
-const SHOTS=path.join(ROOT,"screenshots","v15-final");
+const SHOTS=path.join(ROOT,"screenshots","browser");
 const CAPTURE_SCREENSHOTS=process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==="1";
 fs.mkdirSync(OUTPUT,{recursive:true});if(CAPTURE_SCREENSHOTS)fs.mkdirSync(SHOTS,{recursive:true});
 const results:Result[]=[],errors:string[]=[],requests:string[]=[];

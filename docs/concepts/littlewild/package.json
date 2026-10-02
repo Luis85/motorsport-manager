@@ -7,7 +7,7 @@
     "typecheck": "tsc -p tsconfig.strict.json",
     "architecture": "tsx source/tools/architecture-check.cts",
     "build": "tsx source/build.ts",
-    "verify": "tsx source/verification/verify-v15.ts"
+    "verify": "tsx source/verification/verify.ts"
   },
   "devDependencies": {
     "@types/node": "22.0.0",
