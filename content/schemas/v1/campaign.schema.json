@@ -1,0 +1,581 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "calendar": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "campaign_event_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          },
+          "departure_day": {
+            "maximum": 3660,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "event_revision": {
+            "maximum": 1000000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "return_day": {
+            "maximum": 3660,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "round": {
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "campaign_event_id",
+          "round",
+          "departure_day",
+          "return_day",
+          "event_revision"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "type": "array"
+    },
+    "career": {
+      "additionalProperties": false,
+      "properties": {
+        "campaign_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "energy_capacity": {
+          "maximum": 24,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "opening_cash_minor": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "organization_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "principal_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "reserve_minor": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "start": {
+          "additionalProperties": false,
+          "properties": {
+            "day": {
+              "maximum": 31,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "month": {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "slot": {
+              "maximum": 95,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "year": {
+              "maximum": 2200,
+              "minimum": 1900,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "year",
+            "month",
+            "day",
+            "slot"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "campaign_id",
+        "organization_id",
+        "principal_id",
+        "start",
+        "energy_capacity",
+        "opening_cash_minor",
+        "reserve_minor"
+      ],
+      "type": "object"
+    },
+    "default": {
+      "type": "boolean"
+    },
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "event_finance": {
+      "additionalProperties": false,
+      "properties": {
+        "departure_cost_minor": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "participation_minor": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "position_bonus_minor": {
+          "items": {
+            "maximum": 1000000000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "departure_cost_minor",
+        "participation_minor",
+        "position_bonus_minor"
+      ],
+      "type": "object"
+    },
+    "facilities": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "available_days": {
+            "maximum": 3660,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "capacity_units": {
+            "maximum": 64,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "display_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "family": {
+            "enum": [
+              "preparation_workshop",
+              "design_office",
+              "test_validation",
+              "fabrication_shop",
+              "race_operations",
+              "staff_development",
+              "commercial_operations",
+              "academy"
+            ]
+          },
+          "id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "family",
+          "capacity_units",
+          "available_days"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "campaign"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "player": {
+      "additionalProperties": false,
+      "properties": {
+        "driver_contract": {
+          "additionalProperties": false,
+          "properties": {
+            "allocation_bps": {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "duration_days": {
+              "maximum": 3660,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pay_interval_days": {
+              "maximum": 3660,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "pay_minor": {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "renewal_window_days": {
+              "maximum": 3660,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "duration_days",
+            "pay_interval_days",
+            "renewal_window_days",
+            "pay_minor",
+            "allocation_bps"
+          ],
+          "type": "object"
+        },
+        "driver_role_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "entrant_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "operations_lead": {
+          "additionalProperties": false,
+          "properties": {
+            "contract": {
+              "additionalProperties": false,
+              "properties": {
+                "allocation_bps": {
+                  "maximum": 10000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "duration_days": {
+                  "maximum": 3660,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "pay_interval_days": {
+                  "maximum": 3660,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "pay_minor": {
+                  "maximum": 1000000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "renewal_window_days": {
+                  "maximum": 3660,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "duration_days",
+                "pay_interval_days",
+                "renewal_window_days",
+                "pay_minor",
+                "allocation_bps"
+              ],
+              "type": "object"
+            },
+            "display_name": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "person_id": {
+              "maxLength": 96,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+              "type": "string"
+            },
+            "role_id": {
+              "maxLength": 96,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "person_id",
+            "display_name",
+            "role_id",
+            "contract"
+          ],
+          "type": "object"
+        },
+        "team_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entrant_id",
+        "team_id",
+        "driver_role_id",
+        "driver_contract",
+        "operations_lead"
+      ],
+      "type": "object"
+    },
+    "rival_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "cash_preservation_threshold_minor": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "driver_development_gain_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "gain_minor_per_bps": {
+          "maximum": 1000000000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "leading_rank_threshold": {
+          "maximum": 32,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "max_gain_bps": {
+          "maximum": 5000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "plan_spend_minor": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced_development": {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "driver_development": {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "reliability": {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "reliability",
+            "balanced_development",
+            "driver_development"
+          ],
+          "type": "object"
+        },
+        "reliability_gain_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cash_preservation_threshold_minor",
+        "leading_rank_threshold",
+        "plan_spend_minor",
+        "gain_minor_per_bps",
+        "max_gain_bps",
+        "reliability_gain_bps",
+        "driver_development_gain_bps"
+      ],
+      "type": "object"
+    },
+    "rivals": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "archetype": {
+            "enum": [
+              "constructor",
+              "customer",
+              "talent",
+              "innovator",
+              "reliability",
+              "commercial",
+              "independent"
+            ]
+          },
+          "capability_bps": {
+            "maximum": 20000,
+            "minimum": 5000,
+            "type": "integer"
+          },
+          "cash_minor": {
+            "maximum": 1000000000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "entrant_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          },
+          "reserve_minor": {
+            "maximum": 1000000000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "review_interval_days": {
+            "maximum": 3660,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "team_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entrant_id",
+          "team_id",
+          "archetype",
+          "cash_minor",
+          "reserve_minor",
+          "capability_bps",
+          "review_interval_days"
+        ],
+        "type": "object"
+      },
+      "maxItems": 31,
+      "minItems": 1,
+      "type": "array"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    },
+    "series": {
+      "additionalProperties": false,
+      "properties": {
+        "cars_per_entrant": {
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "points_by_position": {
+          "items": {
+            "maximum": 1000000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "type": "array"
+        },
+        "season_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
+        "series_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "series_id",
+        "season_id",
+        "name",
+        "cars_per_entrant",
+        "points_by_position"
+      ],
+      "type": "object"
+    },
+    "weekend_id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "default",
+    "weekend_id",
+    "career",
+    "series",
+    "calendar",
+    "player",
+    "facilities",
+    "rivals",
+    "rival_policy",
+    "event_finance"
+  ],
+  "title": "Motorsport Manager campaign v1",
+  "type": "object"
+}
