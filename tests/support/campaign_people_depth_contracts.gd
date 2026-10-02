@@ -5,6 +5,23 @@ const DAY = CampaignClock.SLOTS_PER_DAY
 const WEEK = 7 * DAY
 
 static func run(check: Callable) -> void:
+	var policy_people = CampaignPeopleDevelopment.empty()
+	var policy_candidate = CampaignPeopleDevelopment.register_candidate(policy_people, {
+		"id": "person.policy", "display_name": "Policy Candidate",
+		"eligible_roles": ["technical_lead"],
+		"attributes": {"technical": 60, "operations": 60, "commercial": 60, "feedback": 60, "development": 60},
+		"confidence": 70, "salary_expectation_minor": 10000,
+		"available_slot": 0, "preferences": ["stable_role"]}, 0)
+	if policy_candidate.ok:
+		var policy_approach = CampaignPeopleDevelopment.approach(policy_candidate.people, "person.policy", 0)
+		var custom_policy = CampaignPeoplePolicy.LEGACY.duplicate(true)
+		custom_policy.counter_offer_ratio_bps = 9500
+		var policy_offer = CampaignPeopleDevelopment.evaluate_offer(
+			policy_approach.people, "person.policy", "technical_lead", 9000, 0, 0, custom_policy)
+		check.call(policy_offer.ok and policy_offer.status == "rejected",
+			"Authored people policy changes bounded negotiation without changing the negotiation algorithm")
+	else:
+		check.call(false, "People policy fixture registers a candidate")
 	var state = CampaignState.create({"campaign_id": "career.people-depth",
 		"organization_id": "organization.people-depth", "principal_id": "person.principal",
 		"start": {"year": 1950, "month": 1, "day": 1, "slot": 0}})
