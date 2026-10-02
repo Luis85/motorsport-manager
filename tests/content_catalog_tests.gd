@@ -39,6 +39,15 @@ func contracts() -> void:
 		print(JSON.stringify(loaded)); return
 	catalog = loaded.catalog
 	check(catalog.entries("circuit").size() == 9, "Eight retained circuits and one file-only addition")
+	check(catalog.entries("campaign").size() == 1, "Core publishes one authored Team Principal campaign")
+	var campaign = catalog.default_campaign()
+	check(campaign != null and campaign.weekend_id == "core.weekend.campaign-starter",
+		"Catalog resolves the default campaign through a validated weekend reference")
+	if campaign != null:
+		var detached_campaign = campaign.to_record()
+		detached_campaign.career.opening_cash_minor = 1
+		check(campaign.to_record().career.opening_cash_minor == 150000,
+			"Campaign definitions are detached projections rather than mutable authority")
 	var manifest = Storage.read_json("res://data/tracks/catalog.json").data
 	for filename in manifest.files:
 		var source = Storage.read_json("res://data/tracks/" + filename).data
@@ -68,6 +77,21 @@ func contracts() -> void:
 	check(catalog.circuit(CIRCUIT).document() == original, "Editor history never mutates the shared catalog")
 
 func invalid_content() -> void:
+	var campaign_record = catalog.record("core.campaign.team-principal")
+	campaign_record.weekend_id = "missing.weekend"
+	var campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
+	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_REFERENCE",
+		"A campaign cannot activate with a missing weekend definition")
+	campaign_record = catalog.record("core.campaign.team-principal")
+	campaign_record.default = false
+	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
+	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN_DEFAULT",
+		"Catalog requires one explicit default campaign rather than dictionary-order selection")
+	campaign_record = catalog.record("core.campaign.team-principal")
+	campaign_record.event_finance.position_bonus_minor.pop_back()
+	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
+	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN",
+		"Campaign cross-field finance/scoring mismatch rejects the complete candidate")
 	var record = catalog.record(SCENARIO)
 	record.circuit_id = "missing.circuit"
 	var errors = candidate(SCENARIO, record).seal()
