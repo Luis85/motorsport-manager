@@ -81,6 +81,7 @@ static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
 		"person_ids": input.get("person_ids", []).duplicate(true),
 		"car_ids": input.get("car_ids", []).duplicate(true),
 		"archetype": input.get("archetype", "independent"),
+		"policy": input.get("policy", {}).duplicate(true),
 		"created_slot": created_slot, "cash_minor": input.get("cash_minor"),
 		"reserve_minor": input.get("reserve_minor"), "committed_minor": 0,
 		"capability_bps": input.get("capability_bps", 10000),
@@ -92,8 +93,10 @@ static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
 	return data if _team_error(data).is_empty() else {}
 
 static func _team_error(data: Variant) -> String:
-	if not data is Dictionary or data.size() != 15:
+	if not data is Dictionary or data.size() not in [15, 16]:
 		return "Campaign rival team has an unsupported shape."
+	if data.has("policy") and not CampaignRivalPolicy.valid(data.policy):
+		return "Campaign rival team has an invalid planning policy."
 	for key in ["team_id", "entrant_id"]:
 		if not CampaignIdentity.valid(data.get(key)): return "Campaign rival team has an invalid " + key + "."
 	if data.get("archetype") not in ARCHETYPES or data.get("project") not in PROJECTS:
@@ -130,32 +133,39 @@ static func _cycle_error(data: Variant) -> String:
 
 static func _settle_previous(team: Dictionary) -> Dictionary:
 	var result = team.duplicate(true)
+	var policy = _policy(result)
 	var spend = int(result.committed_minor)
 	if spend > 0:
 		result.cash_minor = maxi(0, int(result.cash_minor) - spend)
-		var gain = mini(250, int(round(float(spend) / 200.0)))
-		if result.project == "reliability": gain = int(round(gain * 0.8))
-		elif result.project == "driver_development": gain = int(round(gain * 0.6))
+		var gain = mini(int(policy.max_gain_bps), int(round(float(spend) / float(policy.gain_minor_per_bps))))
+		if result.project == "reliability":
+			gain = int(round(float(gain) * float(policy.reliability_gain_bps) / 10000.0))
+		elif result.project == "driver_development":
+			gain = int(round(float(gain) * float(policy.driver_development_gain_bps) / 10000.0))
 		result.capability_bps = mini(MAX_CAPABILITY_BPS, int(result.capability_bps) + gain)
 	result.committed_minor = 0
 	return result
 
 static func _choose_plan(team: Dictionary, public_context: Dictionary) -> String:
+	var policy = _policy(team)
 	var rank = int(public_context.get("team_positions", {}).get(team.team_id, 99))
-	if int(team.cash_minor) - int(team.reserve_minor) < 5000: return "cash_preservation"
+	if int(team.cash_minor) - int(team.reserve_minor) < int(policy.cash_preservation_threshold_minor):
+		return "cash_preservation"
 	if team.archetype == "reliability": return "reliability"
 	if team.archetype == "talent": return "driver_development"
 	if team.archetype in ["constructor", "innovator"]: return "balanced_development"
-	if rank <= 2 and team.archetype in ["customer", "independent"]: return "cash_preservation"
+	if rank <= int(policy.leading_rank_threshold) and team.archetype in ["customer", "independent"]:
+		return "cash_preservation"
 	return "balanced_development"
 
 static func _project_spend(team: Dictionary, plan: String) -> int:
 	if plan == "cash_preservation": return 0
+	var policy = _policy(team)
 	var available = maxi(0, int(team.cash_minor) - int(team.reserve_minor))
-	var target = 6000
-	if plan == "balanced_development": target = 10000
-	elif plan == "driver_development": target = 5000
-	return mini(available, target)
+	return mini(available, int(policy.plan_spend_minor.get(plan, 0)))
+
+static func _policy(team: Dictionary) -> Dictionary:
+	return CampaignRivalPolicy.normalized(team.get("policy", {}))
 
 static func _record_digest_error(data: Dictionary) -> String:
 	var content = data.duplicate(true); content.erase("digest")
