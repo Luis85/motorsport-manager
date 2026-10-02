@@ -911,7 +911,7 @@
         stepActor(dt) {
             const s = this.s, c = this.actor, n = s.needs, f = c.feelings, t = s.task;
             // The ECS owns deterministic physiology, learning fatigue and baseline social
-            // recovery. Legacy task/incident handlers consume those component values.
+            // recovery. Task and incident handlers consume those component values.
             const {studying} = this.ecs.step(c, dt, {
                 day: s.day,
                 socialPreference: profile(c.personality).preferences.social,

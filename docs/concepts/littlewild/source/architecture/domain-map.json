@@ -202,7 +202,6 @@
   "moduleBudgetExceptions": {
     "engine.ts": "Large application facade and current import boundary; decompose behind typed application services.",
     "colony.ts": "Large actor/community application module; decompose into focused actor and community services.",
-    "systems.ts": "Large progression application module; extract progression rules into focused domain services.",
     "world-simulation.ts": "Large physical-world application module; split logistics, production and world orchestration into focused services."
   }
 }
