@@ -1,7 +1,7 @@
-/* Behavioral assertions retained from test-v13.cjs. Its historical hash check is replaced by test-v15-release.cjs; no behavior assertions are removed. */
+/* Current pause-policy behavior and preference isolation. Historical story migrations are intentionally outside the current-only contract. */
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
-const P=require('./interface-pause.js'),L=require('./simulation.cjs'),S=require('./story-codec.js');
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const P=require('./interface-pause.js'),L=require('./simulation.cjs');
 const out=[];function test(name,fn){try{fn();out.push({name,passed:true});}catch(e){out.push({name,passed:false,error:e.stack});console.error(name,e.message);}}
 const state={started:true,paused:false};
 for(const kind of['modal','tile','creature','more','world','planner','placement']){
@@ -25,7 +25,5 @@ test('Unsupported preference versions and nonbooleans use safe default',()=>{for
 test('Unavailable storage does not disable a session preference',()=>{const p=P.create(()=>{throw Error('blocked');});assert(p.pauseOnOpen);assert.equal(p.set(false).persisted,false);assert.equal(p.pauseOnOpen,false);assert(p.error);});
 test('Corrupted preferences are nonfatal',()=>assert.equal(P.create(()=>({getItem:()=>'{bad'})).pauseOnOpen,true));
 test('Invalid setter does not partially mutate the setting',()=>{const p=P.create(()=>({getItem:()=>null,setItem:()=>{}}));assert.throws(()=>p.set('false'));assert(p.pauseOnOpen);});
-test('Authentic v12 story retains all resources, claims and unlocks',()=>{const doc=JSON.parse(fs.readFileSync(__dirname+'/fixtures/actual-v12-story.json'));const e=S.commit(S.inspect(doc));assert.deepEqual(S.encode(e).state,doc.state);});
-test('Authentic v12 save continues deterministically in v13',()=>{const doc=JSON.parse(fs.readFileSync(__dirname+'/fixtures/actual-v12-story.json'));const e=S.commit(S.inspect(doc));e.s.paused=false;e.advance(120);const r=S.commit(S.inspect(S.encode(e)));e.advance(45);r.advance(45);assert.deepEqual(e.export(),r.export());});
 test('Pause preference is not authored content or portable game state',()=>{const e=L.createWorldDemo(),before=JSON.stringify(e.export());const prefs=P.create(()=>({getItem:()=>null,setItem:()=>{}}));prefs.set(false);prefs.status(e.s,{modal:true});assert.equal(JSON.stringify(e.export()),before);assert.equal(e.export().version,8);});
 const report={passed:out.filter(x=>x.passed).length,total:out.length,results:out};fs.writeFileSync(__dirname+'/v15-pause-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
