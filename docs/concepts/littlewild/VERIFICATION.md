@@ -12,6 +12,22 @@ npm run verify
 
 The gate compiles all authored TypeScript into `.generated/`, rebuilds `littlewild.html`, runs the deterministic/domain/regression/schema/release suites against generated JavaScript, and runs the Playwright browser contracts. Machine-readable evidence remains `verification/v15/gate-results.json`.
 
+### Verified TypeScript head
+
+Implementation head `1ebb80e513d47df06060321bbede3499792ef0cf` passed **1,040 / 1,040 checks across 30 suites** in GitHub Actions run `36974329454`.
+
+- strict TypeScript gate: passed;
+- architecture/DDD gate: **14 / 14**;
+- deterministic/domain/regression/schema/release checks before browser: **935 / 935**;
+- main Playwright browser suite: **89 / 89**;
+- focused browser contracts: **16 / 16**;
+- total browser contracts: **105 / 105**;
+- standalone SHA-256: `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c`;
+- standalone bytes: **3,986,007**.
+
+CI uses the committed lockfile and `npm ci`. Browser screenshot capture is opt-in with `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; screenshots are evidence, not functional gate requirements. The functional browser assertions remain mandatory.
+
+
 ### Superseded pre-TypeScript baseline
 
 Before the TypeScript/Clean Architecture polishing pass, the branch passed **1,006 / 1,006 checks in 27 suites**, including 105 browser checks. That result and the former artifact SHA-256 `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1` are retained below only as a regression baseline; they are not claimed as evidence for the current head.

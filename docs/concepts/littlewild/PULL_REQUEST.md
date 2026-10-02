@@ -31,12 +31,14 @@ See `PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md` for the TypeScript/Clean Architectu
 The current authoritative gate is TypeScript-based:
 
 ```sh
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run typecheck
 npm run architecture
 npx playwright install chromium
 npm run verify
 ```
+
+Implementation head `1ebb80e513d47df06060321bbede3499792ef0cf` passed **1,040 / 1,040 checks across 30 suites** in workflow run `36974329454`, including **105 / 105 browser contracts**. The rebuilt standalone SHA-256 is `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c`.
 
 The previous pre-TypeScript head passed **1,006 / 1,006 checks across 27 suites**, including 105 browser checks. That result and its former standalone hash are retained as a regression baseline only. Current-head evidence is `verification/v15/gate-results.json` produced by the TypeScript workflow; do not substitute the historical baseline for a current run.
 

@@ -5,7 +5,7 @@
 - Repository: `Luis85/motorsport-manager`
 - Pull request: **#25 — Littlewild v15: data-driven worlds and ECS M1–M6**
 - Review branch: `concept/littlewild-v15-world-ui`
-- Reviewed head for this pass: `65cac65c83106ab95f17bc3cece988916803b93c`
+- Verified implementation head for this pass: `1ebb80e513d47df06060321bbede3499792ef0cf`
 - Scope: `docs/concepts/littlewild/` plus the dedicated Littlewild verification workflow
 - Native Motorsport Manager Godot gameplay remains outside this isolated Littlewild refactor.
 
@@ -197,12 +197,12 @@ The configuration path is bounded and testable rather than “JSON can do anythi
 
 ## Testing assessment
 
-The previous pre-TypeScript head passed **1,006 / 1,006 checks across 27 suites**, including 105 browser checks. That result is retained only as a behavioral regression baseline.
+The verified TypeScript implementation head passed **1,040 / 1,040 checks across 30 suites**, including **105 / 105 browser contracts**. The previous pre-TypeScript head passed **1,006 / 1,006 across 27 suites** and is retained only as a behavioral regression baseline.
 
 The TypeScript pass adds or strengthens:
 
 - strict compiler checks for the architecture kernel;
-- **11 architecture/DDD checks**;
+- **14 architecture/DDD checks**;
 - ECS behavior-free-component tests;
 - invalid query/system-shape tests;
 - TypeScript-only source inventory checks;
@@ -213,7 +213,7 @@ The TypeScript pass adds or strengthens:
 - existing ECS/domain/compatibility/schema/CLI/release suites executed against compiler output;
 - existing 105 browser interaction/layout contracts ported to Playwright TypeScript.
 
-The authoritative evidence for the current head is `verification/v15/gate-results.json` produced by `npm run verify`. The pre-TypeScript 1,006-check result must not be cited as proof for the new head.
+The authoritative evidence is `verification/v15/gate-results.json` produced by `npm run verify`. Workflow run `36974329454` recorded status `passed`, **1,040 / 1,040**, and standalone SHA-256 `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c` for implementation head `1ebb80e513d47df06060321bbede3499792ef0cf`.
 
 ## Deliberate remaining debt
 

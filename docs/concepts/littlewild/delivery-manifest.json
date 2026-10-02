@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 — Worlds of Possibility",
-  "status": "typescript-architecture-review-complete; current verification is evidence-driven",
+  "status": "typescript-architecture-review-complete; verified",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
     "authoredTypeScriptFiles": 99,
@@ -56,14 +56,26 @@
       "browserChecks": 105,
       "htmlSha256": "d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1",
       "status": "historical regression baseline only"
+    },
+    "current": {
+      "verifiedImplementationHead": "1ebb80e513d47df06060321bbede3499792ef0cf",
+      "workflowRun": 36974329454,
+      "status": "passed",
+      "passed": 1040,
+      "total": 1040,
+      "suites": 30,
+      "browserChecks": 105,
+      "htmlSha256": "8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c",
+      "htmlBytes": 3986007,
+      "evidenceArtifact": "littlewild-ecs-verification"
     }
   },
   "github": {
     "repository": "Luis85/motorsport-manager",
     "branch": "concept/littlewild-v15-world-ui",
     "pullRequest": 25,
-    "reviewedCodeHead": "40d534221bc6501557fec125f98dcdd27a281953",
-    "note": "This manifest update is metadata-only; use Git for the final branch head and verification/v15/gate-results.json for current executable evidence."
+    "reviewedCodeHead": "1ebb80e513d47df06060321bbede3499792ef0cf",
+    "note": "The verified implementation head above passed the complete TypeScript/architecture/domain/schema/release/browser gate. Later documentation-only commits do not change runtime behavior."
   },
   "deliberateDebt": [
     "Four large compatibility adapters remain and should be decomposed incrementally behind parity fixtures.",
