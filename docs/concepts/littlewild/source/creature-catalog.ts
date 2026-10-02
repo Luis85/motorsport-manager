@@ -6,17 +6,29 @@
  type Mode='founder'|'arrival';
  interface Binding{type:string;field:string;}
  interface Definition{
-  format:'littlewild-creature';schemaVersion:1;id:string;name:string;description:string;defaultPersonality:string;
-  personalities:readonly string[];names:readonly string[];
+  format:'littlewild-creature';
+  schemaVersion:1;
+  id:string;
+  name:string;
+  description:string;
+  defaultPersonality:string;
+  personalities:readonly string[];
+  names:readonly string[];
   movement:Readonly<{baseSpeed:number;bondThreshold:number;bondedSpeedBonus:number}>;
   rng:Readonly<{base:number;stride:number}>;
   state:Readonly<{personalFields:readonly string[];defaults:Plain;modes:Readonly<Record<Mode,Plain>>}>;
   ecs:Readonly<{components:readonly Binding[]}>;
  }
  interface Api{
-  readonly revision:number;readonly defaultPersonality:string;readonly personalFields:readonly string[];readonly personalities:readonly string[];
-  all():readonly Definition[];get(id:string):Definition|null;forPersonality(id:string):Definition|null;
-  componentBindings(personality:string):readonly Binding[];seed(personality:string,mode:Mode,sequence:number):Plain;
+  readonly revision:number;
+  readonly defaultPersonality:string;
+  readonly personalFields:readonly string[];
+  readonly personalities:readonly string[];
+  all():readonly Definition[];
+  get(id:string):Definition|null;
+  forPersonality(id:string):Definition|null;
+  componentBindings(personality:string):readonly Binding[];
+  seed(personality:string,mode:Mode,sequence:number):Plain;
  }
  interface Root{LWCreatureDefinitions?:unknown;LWCreatures?:Api;}
 
@@ -32,19 +44,46 @@
 
  const plain=(value:unknown):value is Plain=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
  const clone=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
- const bounded=(value:unknown,low:number,high:number):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>=low&&value<=high;
- const integer=(value:unknown,low:number,high:number):value is number=>bounded(value,low,high)&&Number.isSafeInteger(value);
  const fail=(message:string):never=>{throw Error('Creature definition: '+message);};
+ const record=(value:unknown,label:string):Plain=>plain(value)?value:fail(label+' must be an object');
+ const list=(value:unknown,label:string,min=0,max=Number.MAX_SAFE_INTEGER):unknown[]=>{
+  if(!Array.isArray(value)||value.length<min||value.length>max) return fail(label+' must be a list of '+min+'–'+max+' entries');
+  return value;
+ };
+ const textValue=(value:unknown,label:string,max:number,pattern?:RegExp):string=>{
+  if(typeof value!=='string'||!value.trim()||value.length>max||(pattern&&!pattern.test(value))) return fail('invalid '+label);
+  return value;
+ };
+ const numberValue=(value:unknown,label:string,low:number,high:number,whole=false):number=>{
+  if(typeof value!=='number'||!Number.isFinite(value)||value<low||value>high||(whole&&!Number.isSafeInteger(value))) return fail('invalid '+label);
+  return value;
+ };
+ const stringList=(value:unknown,label:string,min:number,max:number,validate:(value:string)=>boolean):string[]=>{
+  const values=list(value,label,min,max),out:string[]=[];
+  for(const entry of values){
+   if(typeof entry!=='string'||!validate(entry)) return fail('invalid '+label+' entry');
+   out.push(entry);
+  }
+  if(new Set(out).size!==out.length) return fail('duplicate '+label+' entry');
+  return out;
+ };
 
  function dataOnly(value:unknown,path:string,depth=0):void{
   if(depth>16)fail(path+' exceeds maximum nesting');
   if(Array.isArray(value)){value.forEach((entry,index)=>dataOnly(entry,path+'/'+index,depth+1));return;}
-  if(plain(value)){for(const [key,entry] of Object.entries(value)){if(forbidden.has(key))fail(path+'/'+key+' is executable-shaped');dataOnly(entry,path+'/'+key,depth+1);}return;}
+  if(plain(value)){
+   for(const [key,entry] of Object.entries(value)){
+    if(forbidden.has(key))fail(path+'/'+key+' is executable-shaped');
+    dataOnly(entry,path+'/'+key,depth+1);
+   }
+   return;
+  }
   if(value!==null&&typeof value!=='string'&&typeof value!=='boolean'&&!(typeof value==='number'&&Number.isFinite(value)))fail(path+' contains a non-JSON value');
  }
  function deepFreeze(value:unknown):void{
   if(!value||typeof value!=='object'||Object.isFrozen(value))return;
-  Object.freeze(value);for(const entry of Object.values(value as Plain))deepFreeze(entry);
+  Object.freeze(value);
+  for(const entry of Object.values(value as Plain))deepFreeze(entry);
  }
  function merge(base:Plain,override:Plain):Plain{
   const out=clone(base);
@@ -54,90 +93,74 @@
   }
   return out;
  }
+
  function validate(input:unknown):Definition{
-  if(!plain(input))fail('entry must be an object');
-  const raw:Plain=input;
+  const raw=record(input,'creature definition');
   const rootKeys=['format','schemaVersion','id','name','description','defaultPersonality','personalities','names','movement','rng','state','ecs'];
   if(Object.keys(raw).length!==rootKeys.length||rootKeys.some(key=>!Object.hasOwn(raw,key)))fail('invalid root schema');
+  if(raw.format!=='littlewild-creature'||raw.schemaVersion!==1)fail('invalid format/version');
 
-  const idValue=raw.id;
-  if(typeof idValue!=='string'||!safeId.test(idValue))fail('invalid identity');
-  const definitionId:string=idValue;
-  if(raw.format!=='littlewild-creature'||raw.schemaVersion!==1)fail(definitionId+' invalid format/version');
+  const id=textValue(raw.id,'creature ID',61,safeId);
+  const name=textValue(raw.name,id+' name',80);
+  const description=textValue(raw.description,id+' description',500);
+  const personalities=stringList(raw.personalities,id+' personalities',1,32,value=>safeId.test(value));
+  const defaultPersonality=textValue(raw.defaultPersonality,id+' default personality',61,safeId);
+  if(!personalities.includes(defaultPersonality))fail(id+' default personality is not supported');
+  const names=stringList(raw.names,id+' names',1,64,value=>value.trim().length>0&&value.length<=24);
 
-  const nameValue=raw.name,descriptionValue=raw.description;
-  if(typeof nameValue!=='string'||!nameValue.trim()||nameValue.length>80||typeof descriptionValue!=='string'||!descriptionValue.trim()||descriptionValue.length>500)fail(definitionId+' invalid display text');
-
-  const personalityValues=raw.personalities;
-  if(!Array.isArray(personalityValues)||!personalityValues.length||personalityValues.length>32)fail(definitionId+' invalid personalities');
-  const personalityIds:string[]=personalityValues.map((value:unknown)=>{
-   if(typeof value!=='string'||!safeId.test(value))return fail(definitionId+' invalid personality identifier');
-   return value;
+  const movementSource=record(raw.movement,id+' movement');
+  const movement=Object.freeze({
+   baseSpeed:numberValue(movementSource.baseSpeed,id+' base speed',.05,8),
+   bondThreshold:numberValue(movementSource.bondThreshold,id+' bond threshold',0,100),
+   bondedSpeedBonus:numberValue(movementSource.bondedSpeedBonus,id+' bonded speed bonus',0,4)
   });
-  if(new Set(personalityIds).size!==personalityIds.length)fail(definitionId+' duplicate personalities');
-  const defaultPersonalityValue=raw.defaultPersonality;
-  if(typeof defaultPersonalityValue!=='string'||!personalityIds.includes(defaultPersonalityValue))fail(definitionId+' invalid default personality');
 
-  const nameValues=raw.names;
-  if(!Array.isArray(nameValues)||!nameValues.length||nameValues.length>64)fail(definitionId+' invalid name pool');
-  const names:string[]=nameValues.map((value:unknown)=>{
-   if(typeof value!=='string'||!value.trim()||value.length>24)return fail(definitionId+' invalid creature name');
-   return value;
+  const rngSource=record(raw.rng,id+' RNG');
+  const rng=Object.freeze({
+   base:numberValue(rngSource.base,id+' RNG base',0,4294967295,true),
+   stride:numberValue(rngSource.stride,id+' RNG stride',1,4294967295,true)
   });
-  if(new Set(names).size!==names.length)fail(definitionId+' duplicate creature names');
 
-  const movementValue=raw.movement;
-  if(!plain(movementValue))fail(definitionId+' invalid movement tuning');
-  const movement:Plain=movementValue;
-  if(!bounded(movement.baseSpeed,.05,8)||!bounded(movement.bondThreshold,0,100)||!bounded(movement.bondedSpeedBonus,0,4))fail(definitionId+' invalid movement tuning');
-
-  const rngValue=raw.rng;
-  if(!plain(rngValue))fail(definitionId+' invalid RNG tuning');
-  const rng:Plain=rngValue;
-  if(!integer(rng.base,0,4294967295)||!integer(rng.stride,1,4294967295))fail(definitionId+' invalid RNG tuning');
-
-  const stateValue=raw.state;
-  if(!plain(stateValue))fail(definitionId+' invalid state');
-  const state:Plain=stateValue;
-  const personalFieldValues=state.personalFields;
-  if(!Array.isArray(personalFieldValues)||!personalFieldValues.length)fail(definitionId+' invalid personal fields');
-  const personalFields:string[]=personalFieldValues.map((value:unknown)=>{
-   if(typeof value!=='string'||!safeField.test(value))return fail(definitionId+' invalid personal field');
-   return value;
-  });
-  if(new Set(personalFields).size!==personalFields.length)fail(definitionId+' duplicate personal fields');
-
-  const defaultsValue=state.defaults,modesValue=state.modes;
-  if(!plain(defaultsValue)||!plain(modesValue))fail(definitionId+' invalid state templates');
-  const defaults:Plain=defaultsValue,modes:Plain=modesValue;
-  if(!plain(modes.founder)||!plain(modes.arrival))fail(definitionId+' invalid spawn modes');
-  for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(definitionId+' personal default missing '+key);
-  for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(definitionId+' creature default missing '+key);
-
-  const ecsValue=raw.ecs;
-  if(!plain(ecsValue))fail(definitionId+' invalid ECS bindings');
-  const ecs:Plain=ecsValue,componentValues=ecs.components;
-  if(!Array.isArray(componentValues)||componentValues.length<5||componentValues.length>32)fail(definitionId+' invalid ECS bindings');
-  const types=new Set<string>(),fields=new Set<string>();
-  for(const inputBinding of componentValues){
-   if(!plain(inputBinding))fail(definitionId+' invalid ECS binding');
-   const binding:Plain=inputBinding,typeValue=binding.type,fieldValue=binding.field;
-   if(Object.keys(binding).length!==2||typeof typeValue!=='string'||typeof fieldValue!=='string')fail(definitionId+' invalid ECS binding');
-   const componentType:string=typeValue,fieldName:string=fieldValue;
-   if(!safeComponent.test(componentType)||!Object.hasOwn(defaults,fieldName)||types.has(componentType)||fields.has(fieldName))fail(definitionId+' invalid or duplicate ECS binding');
-   if(!plain(defaults[fieldName]))fail(definitionId+' ECS field '+fieldName+' must default to an object');
-   types.add(componentType);fields.add(fieldName);
+  const stateSource=record(raw.state,id+' state');
+  const personalFields=stringList(stateSource.personalFields,id+' personal fields',1,96,value=>safeField.test(value));
+  const defaults=record(stateSource.defaults,id+' defaults');
+  const modesSource=record(stateSource.modes,id+' modes');
+  const founder=record(modesSource.founder,id+' founder mode');
+  const arrival=record(modesSource.arrival,id+' arrival mode');
+  if(Object.keys(modesSource).length!==2)fail(id+' modes must be founder and arrival only');
+  for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(id+' personal default missing '+key);
+  for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(id+' creature default missing '+key);
+  for(const [mode,values] of [['founder',founder],['arrival',arrival]] as const){
+   for(const key of Object.keys(values))if(!personalFields.includes(key))fail(id+' '+mode+' override is not actor-scoped: '+key);
   }
-  for(const type of requiredComponents)if(!types.has(type))fail(definitionId+' missing ECS component '+type);
 
-  dataOnly(raw,definitionId);
-  const value=clone(raw) as unknown as Definition;
+  const ecsSource=record(raw.ecs,id+' ECS');
+  const componentSources=list(ecsSource.components,id+' ECS components',5,32);
+  const components:Binding[]=[],types=new Set<string>(),fields=new Set<string>();
+  for(const inputBinding of componentSources){
+   const binding=record(inputBinding,id+' ECS binding');
+   if(Object.keys(binding).length!==2)fail(id+' ECS binding has unknown fields');
+   const componentType=textValue(binding.type,id+' component type',61,safeComponent);
+   const field=textValue(binding.field,id+' component field',61,safeField);
+   if(types.has(componentType)||fields.has(field))fail(id+' duplicate ECS binding');
+   if(!Object.hasOwn(defaults,field)||!plain(defaults[field]))fail(id+' ECS field '+field+' must reference an object default');
+   types.add(componentType);fields.add(field);components.push({type:componentType,field});
+  }
+  for(const type of requiredComponents)if(!types.has(type))fail(id+' missing ECS component '+type);
+
+  dataOnly(raw,id);
+  const value:Definition={
+   format:'littlewild-creature',schemaVersion:1,id,name,description,defaultPersonality,
+   personalities:Object.freeze(personalities),names:Object.freeze(names),movement,rng,
+   state:Object.freeze({personalFields:Object.freeze(personalFields),defaults:clone(defaults),modes:Object.freeze({founder:clone(founder),arrival:clone(arrival)})}),
+   ecs:Object.freeze({components:Object.freeze(components)})
+  };
   deepFreeze(value);
   return value;
  }
 
- if(!Array.isArray(source)||!source.length||source.length>32)fail('bundled definition list is missing or invalid');
- const definitions:Definition[]=(source as unknown[]).map(validate);
+ const sources=list(source,'bundled creature definitions',1,32);
+ const definitions:Definition[]=sources.map(validate);
  const byId=new Map<string,Definition>(),byPersonality=new Map<string,Definition>();
  for(const definition of definitions){
   if(byId.has(definition.id))fail('duplicate creature '+definition.id);
@@ -155,8 +178,7 @@
 
  function byProfile(personality:string):Definition{
   const definition=byPersonality.get(personality);
-  if(!definition)return fail('unknown personality '+personality);
-  return definition;
+  return definition??fail('unknown personality '+personality);
  }
  function all():readonly Definition[]{return definitions;}
  function get(id:string):Definition|null{return byId.get(id)||null;}
@@ -168,13 +190,11 @@
   const state=merge(definition.state.defaults,definition.state.modes[mode]);
   state.personality=personality;
   state.name=definition.names[sequence%definition.names.length]!;
-  const rpg=state.rpg;
-  if(!plain(rpg))return fail(definition.id+' missing RPG state');
+  const rpg=record(state.rpg,definition.id+' RPG state');
   rpg.rng=(definition.rng.base+Math.imul(sequence,definition.rng.stride))>>>0;
   return state;
  }
- const first=definitions[0];
- if(!first)return fail('no creature definitions');
+ const first=definitions[0]??fail('no creature definitions');
  const api:Api=Object.freeze({revision,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,forPersonality,componentBindings,seed});
  root.LWCreatures=api;
  if(node)module.exports=api;
