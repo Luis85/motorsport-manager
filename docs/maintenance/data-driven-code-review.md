@@ -52,7 +52,7 @@ The executable policy is 400 code lines for source. Exact review found five viol
 | `scripts/ui/pitwall_workspace.gd` | 419 | finishing-guide composition extracted |
 | `scripts/ui/race_weekend/minimal/workspace.gd` | 410 | timing-table presenter extracted |
 
-Post-split code-line counts are 257/176/255/93 for the RaceSim chain, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
+Post-split code-line counts are 257/181/255/93 for the RaceSim chain, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
 
 The splits are responsibility-based; no assertions, comments or formatting were compressed to pass the metric.
 
