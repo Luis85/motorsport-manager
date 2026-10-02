@@ -1,6 +1,5 @@
 /* Current portable story boundary.
- * Native stories use format 8; scenario-aware stories use envelope 10.
- * Older envelopes are intentionally unsupported in this prototype.
+ * The prototype has one story envelope: version 10. Scenario context is optional.
  */
 (function(inputRoot: unknown){
  'use strict';
@@ -95,9 +94,9 @@
  };
  S.inspect=(input:unknown):StoryPreview=>{
   const doc=asRecord(C.parse(input,S.SAVE_LIMIT),'Portable story') as StoryDocument;
-  if(doc.version!==8&&doc.version!==10)throw Error('Only current Littlewild story formats are supported (native v8 or scenario envelope v10).');
+  if(doc.version!==10)throw Error('Only the current Littlewild story format (v10) is supported.');
   let ctx:ExperienceContext|null=null;
-  if(doc.version===10){
+  if(doc.experience!==undefined&&doc.experience!==null){
    ctx=X.checkContext(doc.experience);
    if(X.hash(ctx)!==doc.experienceFingerprint)throw Error('Experience fingerprint does not match');
    if(doc.simulationFingerprint!==Profiles.fingerprint(ctx.simulation))throw Error('Simulation profile fingerprint does not match');
@@ -105,7 +104,7 @@
    X.checkWorld(ctx.world,worldEnvelope.library);
   }
   const preview=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,
-   ()=>native.inspect({...doc,version:8}))) as StoryPreview;
+   ()=>native.inspect(doc))) as StoryPreview;
   if(ctx)preview.engine.scenarioContext=ctx;
   preview.experience=ctx;
   preview.experienceFingerprint=ctx?X.hash(ctx):null;

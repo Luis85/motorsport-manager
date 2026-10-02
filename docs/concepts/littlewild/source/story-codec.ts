@@ -8,7 +8,7 @@
     const A = node ? require('./adventure-content.js') : root.LWAdventure;
     const W = node ? require('./world-content.js') : root.LWWorldContent;
     const G = node ? require('./growth-content.js') : root.LWGrowth;
-    const registry = C.registry, SAVE_LIMIT = 12 * 1024 * 1024;
+    const registry = C.registry, SAVE_LIMIT = 12 * 1024 * 1024, STORY_VERSION = 10, ENGINE_STATE_VERSION = 8;
     // Review evidence is intentionally process-local and object-bound. A caller may
     // edit the public preview fields for display, but cannot replace the review token
     // and thereby commit a different story without inspecting it again.
@@ -25,7 +25,7 @@
     function encode(engine, savedAt = null) {
         if (savedAt !== null && (typeof savedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(savedAt)))
             throw Error('Story timestamp must be an ISO UTC timestamp or null.');
-        return { app: 'littlewild', version: 8, savedAt, content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state };
+        return { app: 'littlewild', version: STORY_VERSION, savedAt, content: { fingerprint: registry.hash, library: registry.export() }, adventure: { fingerprint: A.hash, library: A.copy(A.content) }, world: {fingerprint:W.hash,library:W.clone(W.content)}, growth:{fingerprint:G.hash,library:G.clone(G.content)}, state: engine.export().state };
     }
     function withAdventure(pack, fn) { const previous = A.copy(A.content); try {
         A.replace(pack);
@@ -38,8 +38,8 @@
         const doc = C.parse(input, SAVE_LIMIT);
         if (doc?.format)
             throw Error('This is a definition library. Use Content Library or Adventure Library, not Import story.');
-        if (doc?.app !== 'littlewild' || doc.version !== 8 || !doc.state)
-            throw Error('Only the current Littlewild native story format (v8) is supported.');
+        if (doc?.app !== 'littlewild' || doc.version !== STORY_VERSION || !doc.state)
+            throw Error('Only the current Littlewild story format is supported.');
         if (doc.content?.library?.kind !== 'library' || !doc.adventure?.library || !doc.world?.library || !doc.growth?.library)
             throw Error('This story is missing its complete current definition snapshot.');
         if (doc.content.fingerprint !== C.fingerprint(doc.content.library))
@@ -60,7 +60,7 @@
         if (doc.growth.fingerprint !== G.hashOf(growthLibrary)) throw Error('The progression definition fingerprint does not match.');
         const growth=registry.withLibrary(content.candidate,()=>withAdventure(expansion.content,()=>G.validate(growthLibrary)));
         if(!growth.ok)throw Error(growth.errors.join('\n'));
-        const stateDoc = { app: 'littlewild', version: 8, state: doc.state };
+        const stateDoc = { app: 'littlewild', version: ENGINE_STATE_VERSION, state: doc.state };
         const engine = registry.withLibrary(content.candidate, () => withAdventure(expansion.content, () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(stateDoc)))));
         const preview = { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, fingerprint: content.fingerprint,
             changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
