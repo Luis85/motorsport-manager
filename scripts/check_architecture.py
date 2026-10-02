@@ -29,7 +29,7 @@ ENGINE_AUTHORITY = {'Node', 'Node2D', 'Node3D', 'Control', 'SceneTree', 'Timer',
 PRESENTATION_AUTHORITY = {
     'TrackReferencePreview', 'RaceSessionRunner', 'ReplayPlayback', 'RaceViewSession',
     'MinimalRaceSession', 'ReplaySessionBinding', 'RaceCar', 'RaceSim', 'RaceSimPort', 'RaceSimFoundation',
-    'RaceSimCore', 'RaceSimOperations', 'PracticeRaceSim',
+    'RaceSimPort', 'RaceSimCore', 'RaceSimOperations', 'PracticeRaceSim',
     'StrategyRaceSim', 'RecoveryRaceSim', 'WeatherRaceSim', 'App', 'Storage', 'FileAccess',
     'DirAccess', 'ReplayStorage', 'RaceReplay', 'CircuitNotebook', 'ResultReceipts',
     'RaceMomentDirector',
