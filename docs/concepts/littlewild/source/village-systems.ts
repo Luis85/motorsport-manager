@@ -8,11 +8,10 @@
  const marketKinds=['market-pickup','market-deliver','market-sell','market-reclaim'];
  L.worldTaskKinds=[...L.worldTaskKinds,...marketKinds];
  function initializeVillage(self,state){
-  const legacy=!!state?.started&&!state.progression;
   self.s.estate ||= {version:1,islands:[{ix:0,iy:0,...G.describe(0,0)}],purchases:0};
   if(!self.s.progression){
-   self.s.progression={version:1,research:{},features:{},prestige:0,earnedPrestige:0,slots:Math.max(C.content.rules.initialSlots,self.creatures.length),grandfathered:legacy,tutorial:{step:0,dismissed:false,complete:false},interactionSequence:1};
-   for(const r of C.content.research)if(r.initial||legacy){self.s.progression.research[r.id]=true;if(r.grants)self.s.progression.features[r.grants.feature]=Math.max(self.s.progression.features[r.grants.feature]||0,r.grants.rank);}
+   self.s.progression={version:1,research:{},features:{},prestige:0,earnedPrestige:0,slots:Math.max(C.content.rules.initialSlots,self.creatures.length),tutorial:{step:0,dismissed:false,complete:false},interactionSequence:1};
+   for(const r of C.content.research)if(r.initial){self.s.progression.research[r.id]=true;if(r.grants)self.s.progression.features[r.grants.feature]=Math.max(self.s.progression.features[r.grants.feature]||0,r.grants.rank);}
   }
   self.s.market ||= {sequence:1,orders:[],history:[]};
   self.s.planning ||= {controls:{},history:[]};
@@ -23,7 +22,7 @@
   interactionIssue(){if(this._authorizedActorId===this.actor?.id)return this.actor.activeQuest?'This creature is away. Only recall is possible.':null;return super.interactionIssue();}
   commandActor(id,fn,{away=false}={}){const c=this.creatures.find(c=>c.id===id);if(!c)return fail('Select a known creature.');if(c.activeQuest&&!away)return fail(c.name+' is away. Only recalling the quest is possible.');const old=this._authorizedActorId;try{this._authorizedActorId=id;return this.withActor(c,fn);}finally{this._authorizedActorId=old;}}
   requirement(category,id){return C.content.requirements[category]?.[id]||{playerLevel:1,features:{}};}
-  gateIssue(category,id){if(category==='recipes'&&L.RES[id]){const itemIssue=this.gateIssue('items',id);if(itemIssue)return itemIssue;}const p=this.s.progression;if(!p)return null;const r=this.requirement(category,id);if(this.s.player.level<r.playerLevel&&!p.grandfathered)return 'Reach guide level '+r.playerLevel+' first.';for(const[k,n]of Object.entries(r.features||{}))if((p.features[k]||0)<n)return 'Research '+(C.content.features.find(f=>f.id===k)?.name||k)+' '+n+' first.';if(r.research&&!p.research[r.research])return 'Research '+(C.content.research.find(r0=>r0.id===r.research)?.name||r.research)+' first.';return null;}
+  gateIssue(category,id){if(category==='recipes'&&L.RES[id]){const itemIssue=this.gateIssue('items',id);if(itemIssue)return itemIssue;}const p=this.s.progression;if(!p)return null;const r=this.requirement(category,id);if(this.s.player.level<r.playerLevel)return 'Reach guide level '+r.playerLevel+' first.';for(const[k,n]of Object.entries(r.features||{}))if((p.features[k]||0)<n)return 'Research '+(C.content.features.find(f=>f.id===k)?.name||k)+' '+n+' first.';if(r.research&&!p.research[r.research])return 'Research '+(C.content.research.find(r0=>r0.id===r.research)?.name||r.research)+' first.';return null;}
   unlocked(category,id){return !this.gateIssue(category,id);}
   researchIssue(id){const r=C.content.research.find(x=>x.id===id);if(!r)return 'Unknown research.';const p=this.s.progression;if(p.research[id])return 'Already researched.';if(this.s.player.level<r.playerLevel)return 'Guide level '+r.playerLevel+' required.';for(const[k,n]of Object.entries(r.requires))if((p.features[k]||0)<n)return 'Requires '+(C.content.features.find(f=>f.id===k)?.name||k)+' '+n+'.';if(this.s.rp<r.cost)return 'Need '+r.cost+' shared research points.';return null;}
   researchFeature(id){const issue=this.researchIssue(id);if(issue)return fail(issue);const r=C.content.research.find(r=>r.id===id),settlement=this.settleEconomy({id:this.economySettlementId('growth-research',id),research:-r.cost,playerXp:2},'Researched '+r.name);if(!settlement.ok)return fail('The research cost could not be settled.');this.s.progression.research[id]=true;if(r.grants)this.s.progression.features[r.grants.feature]=r.grants.rank;this.log('New knowledge: '+r.name+'.','research');this.emit('celebrate',r.name+' unlocked.');return ok();}

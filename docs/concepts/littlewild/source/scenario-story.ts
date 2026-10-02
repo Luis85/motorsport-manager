@@ -1,8 +1,6 @@
-/* Portable format 10 adds a versioned simulation profile to experience context.
- * Legacy envelope-9 experiences migrate explicitly to the classic compatibility profile.
- * Native state remains v8 and ECS runtime objects remain transient.
- * This module is an anti-corruption layer: imported data stays unknown until validated,
- * while the legacy story codec remains the owner of v1-v8 save mechanics.
+/* Current portable story boundary.
+ * Native stories use format 8; scenario-aware stories use envelope 10.
+ * Older envelopes are intentionally unsupported in this prototype.
  */
 (function(inputRoot: unknown){
  'use strict';
@@ -23,8 +21,6 @@
  }
  interface StoryPreview extends DataRecord {
   engine:EngineLike;
-  migrationNotes:string[];
-  sourceVersion:unknown;
   experience:ExperienceContext|null;
   experienceFingerprint:string|null;
   simulationFingerprint:string;
@@ -41,10 +37,8 @@
   applyGrowth(pack:unknown,engine:EngineLike,newStory?:boolean):EngineLike;
   [key:string]:unknown;
  }
- interface ScenarioMigration { context:ExperienceContext; migrationNotes:string[]; }
  interface ScenarioApi {
   checkContext(input:unknown):ExperienceContext;
-  migrateContext(input:unknown):ScenarioMigration;
   checkWorld(world:unknown,library:unknown):void;
   hash(input:unknown):string;
   activate(engine:EngineLike):void;
@@ -79,13 +73,13 @@
  if(!story||!scenarios||!profiles||!worldProfiles||!content)throw Error('Scenario story dependencies are missing.');
  const S:NativeStoryApi=story,X:ScenarioApi=scenarios,Profiles:ProfileApi=profiles,P:WorldProfileApi=worldProfiles,C:ContentApi=content;
  const native=Object.freeze({encode:S.encode.bind(S),inspect:S.inspect.bind(S),commit:S.commit.bind(S)});
- const legacyHash=(value:unknown):string=>C.fingerprint({schemaVersion:1,components:value});
+ const reviewHash=(value:unknown):string=>C.fingerprint({schemaVersion:1,components:value});
  const reviews=new WeakMap<object,string>();
  const asRecord=(value:unknown,label:string):DataRecord=>{
   if(value===null||typeof value!=='object'||Array.isArray(value))throw Error(label+' must be an object.');
   return value as DataRecord;
  };
- const reviewOf=(preview:StoryPreview):string=>legacyHash({experience:preview.experience,
+ const reviewOf=(preview:StoryPreview):string=>reviewHash({experience:preview.experience,
   experienceFingerprint:preview.experienceFingerprint,simulationFingerprint:preview.simulationFingerprint});
 
  S.encode=(engine:EngineLike,savedAt:string|null=null):DataRecord=>{
@@ -101,22 +95,18 @@
  };
  S.inspect=(input:unknown):StoryPreview=>{
   const doc=asRecord(C.parse(input,S.SAVE_LIMIT),'Portable story') as StoryDocument;
+  if(doc.version!==8&&doc.version!==10)throw Error('Only current Littlewild story formats are supported (native v8 or scenario envelope v10).');
   let ctx:ExperienceContext|null=null;
-  let migration:ScenarioMigration={context:Object.create(null) as ExperienceContext,migrationNotes:[]};
-  if(doc.version===9||doc.version===10){
-   if(doc.version===9&&legacyHash(doc.experience)!==doc.experienceFingerprint)throw Error('Experience fingerprint does not match');
-   migration=X.migrateContext(doc.experience);ctx=X.checkContext(migration.context);
-   if(doc.version===10&&X.hash(ctx)!==doc.experienceFingerprint)throw Error('Experience fingerprint does not match');
-   if(doc.version===10&&doc.simulationFingerprint!==Profiles.fingerprint(ctx.simulation))throw Error('Simulation profile fingerprint does not match');
+  if(doc.version===10){
+   ctx=X.checkContext(doc.experience);
+   if(X.hash(ctx)!==doc.experienceFingerprint)throw Error('Experience fingerprint does not match');
+   if(doc.simulationFingerprint!==Profiles.fingerprint(ctx.simulation))throw Error('Simulation profile fingerprint does not match');
    const worldEnvelope=asRecord(doc.world,'World story envelope');
    X.checkWorld(ctx.world,worldEnvelope.library);
   }
-  const nativeVersion=(doc.version===9||doc.version===10)?8:doc.version;
   const preview=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,
-   ()=>native.inspect({...doc,version:nativeVersion}))) as StoryPreview;
+   ()=>native.inspect({...doc,version:8}))) as StoryPreview;
   if(ctx)preview.engine.scenarioContext=ctx;
-  preview.migrationNotes.push(...migration.migrationNotes);
-  preview.sourceVersion=doc.version;
   preview.experience=ctx;
   preview.experienceFingerprint=ctx?X.hash(ctx):null;
   preview.simulationFingerprint=ctx?Profiles.fingerprint(ctx.simulation):Profiles.fingerprint(Profiles.defaults);

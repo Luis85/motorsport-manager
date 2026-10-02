@@ -57,12 +57,6 @@ const suites: Suite[] = [
   ["domain", ["node", generated("test-v10.cjs")], generated("v10-domain-results.json"), 180],
   ["growth-stress", ["node", generated("test-growth-stress.cjs")], generated("v10-stress-results.json"), 300],
   ["earned-progression", ["node", generated("test-fresh-v10.cjs")], generated("v10-fresh-results.json"), 300],
-  ["legacy-v5", ["node", generated("test-v10-regression-v5.cjs")], generated("v10-regression-v5-test-results.json"), 180],
-  ["legacy-v6", ["node", generated("test-v10-regression-v6.cjs")], generated("v10-regression-v6-test-results.json"), 240],
-  ["legacy-v8", ["node", generated("test-v10-regression-v8.cjs")], generated("v10-regression-v8-test-results.json"), 300],
-  ["quality-v9", ["node", generated("test-v10-regression-quality-v9.cjs")], generated("v10-regression-v9-quality-results.json"), 180],
-  ["foundation-v9", ["node", generated("test-v10-regression-foundation-v9.cjs")], generated("v10-regression-v9-foundation-results.json"), 240],
-  ["legacy-schemas", ["node", generated("verification/schema-checks-v10.js")], generated("v10-schema-results.json"), 90],
   ["scenario-schema-cli", ["node", generated("verification/schema-checks-v15.js")], generated("v15-schema-results.json"), 90],
   ["release", ["node", generated("test-v15-release.cjs")], generated("v15-release-results.json"), 180]
 ].map(([name, command, result, timeout]) => ({ name: name as string, command: command as string[], result: result as string, timeout: timeout as number }));

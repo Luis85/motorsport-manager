@@ -31,7 +31,7 @@
  }
  interface MarketReceipt { id:string; item:string; amount:number; coins:number; time:number; actorId:string; }
  interface VillageState {
-  progression:{grandfathered:boolean;interactionSequence:number};
+  progression:{interactionSequence:number};
   planning:{controls:Record<string,Record<string,unknown>>;history:PlannerHistory[]};
   colony:{creatures:Creature[]};
   simTime:number;
@@ -62,7 +62,6 @@
   const p=s.progression,creatures=s.colony?.creatures,events=new Set<string>();
   if(!p||!Array.isArray(creatures)||!Array.isArray(s.buildings)||!s.market)fail('invalid root state');
   let largest=0;
-  if(typeof p.grandfathered!=='boolean')fail('invalid migration flag');
   if(!dict(s.planning)||!dict(s.planning.controls)||Object.keys(s.planning.controls).length>4000||!Array.isArray(s.planning.history)||s.planning.history.length>60)fail('invalid planner state');
   for(const [key,value] of Object.entries(s.planning.controls)){
    if(!/^(order|lesson|outfit|quest|social|unpack|activity):[\w:.-]{1,160}$/.test(key)||!dict(value))fail('invalid planner control');

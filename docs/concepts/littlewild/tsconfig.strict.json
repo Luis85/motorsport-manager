@@ -24,7 +24,6 @@
     "source/simulation.cts",
     "source/engine-composition-root.ts",
     "source/actor-state-view.ts",
-    "source/scenario-migrations.ts",
     "source/engine-composition.ts",
     "source/actor-ecs.ts",
     "source/scenario-story.ts",

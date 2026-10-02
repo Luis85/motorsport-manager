@@ -97,7 +97,6 @@
       "id": "experience-application",
       "layer": "application",
       "files": [
-        "scenario-migrations.ts",
         "scenario-runtime.ts",
         "scenario-story.ts",
         "story-codec.ts"

@@ -8,7 +8,6 @@
   const C = root.LWContent, A = root.LWAdventure, W = root.LWWorldContent;
   const G = root.LWGrowth, P = root.LWWorldProfile, Profiles = root.LWSimulationProfile;
   const shape = node ? require('./scenario-shape.js') : root.LWScenarioShape;
-  const M = node ? require('./scenario-migrations.js') : root.LWScenarioMigrations;
   const schema = node ? require('./content/scenario.schema.json') : root.LWScenarioSchema;
   const builtin = node ? [require('./content/littlewild.pack.json'), require('./content/emberworks.pack.json')] : root.LWScenarioPacks;
   const copy = C.copy, hash = value => C.fingerprint({ schemaVersion: 2, components: value });
@@ -57,9 +56,9 @@
       sceneName: scene.name, worldId: scene.worldId, presentation: copy(pack.presentation), simulation: copy(pack.simulation),
       world: copy(pack.worlds.find(w => w.id === scene.worldId)), tutorial: copy(pack.tutorial) };
   }
-  function migrateContext(ctx) { return M.migrateContext(ctx); }
   function checkContext(input) {
-    const migrated=M.migrateContext(input),ctx=migrated.context;
+    const ctx=copy(input);
+    if(!ctx||typeof ctx!=='object'||Array.isArray(ctx)||ctx.schemaVersion!==2)throw Error('Unsupported experience context version; expected schemaVersion 2');
     const fields = ['schemaVersion','packId','name','version','sceneId','sceneName','worldId','presentation','simulation','world','tutorial'];
     if (!ctx || fields.some(k => !Object.hasOwn(ctx,k)) || Object.keys(ctx).some(k => !fields.includes(k))) throw Error('Invalid experience context');
     const mini = { format: 'living-worlds-pack', schemaVersion: 2, id: ctx.packId, version: ctx.version,
@@ -87,9 +86,9 @@
   }
   function validate(input) {
     try {
-      const raw = C.parse(input, 8 * 1024 * 1024), rawErrors = shape(raw, schema);
-      if (rawErrors.length) return {ok:false, errors:rawErrors};
-      const migration=M.migratePack(raw),pack=migration.pack,errors=shape(pack,schema);
+      const pack = C.parse(input, 8 * 1024 * 1024);
+      if(pack?.schemaVersion!==2)return {ok:false,errors:['/schemaVersion: only current scenario schema version 2 is supported']};
+      const errors=shape(pack,schema);
       if (errors.length) return {ok:false,errors};
       unique(pack.worlds, '/worlds'); unique(pack.scenes, '/scenes'); unique(pack.tutorial, '/tutorial');
       Profiles.validate(pack.simulation);
@@ -107,8 +106,7 @@
           if(C.stable(imported.export().state)!==C.stable(scene.initialState))throw Error('/scenes/'+scene.id+'/initialState: unknown or noncanonical state values; capture a current scene as a template');
         }
       });
-      return { ok: true, errors: [], pack: copy(pack), fingerprint: hash(pack), sceneCount: pack.scenes.length,
-        sourceSchemaVersion:migration.sourceSchemaVersion,migrationNotes:[...migration.migrationNotes] };
+      return { ok: true, errors: [], pack: copy(pack), fingerprint: hash(pack), sceneCount: pack.scenes.length };
     } catch (error) { return { ok:false, errors: [error.message] }; }
   }
   function prepareScene(pack, id) {
@@ -153,7 +151,7 @@
       scenes:[{id:ctx.sceneId,name:ctx.sceneName,description:'Captured starting state',worldId:ctx.worldId,initialState:engine.export().state}],
       libraries:{base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content)}};
   }
-  const api = {validate,prepareScene,commitScene,activate,capture,checkContext,migrateContext,checkWorld,hash,withLibraries,withRuntime,schema,
+  const api = {validate,prepareScene,commitScene,activate,capture,checkContext,checkWorld,hash,withLibraries,withRuntime,schema,
     builtins: () => copy(builtin), defaultTutorial: () => copy(builtin[0].tutorial), defaultPresentation: () => copy(builtin[0].presentation),
     defaultSimulation:()=>copy(Profiles.defaults)};
   root.LWScenarios = api; if (node) module.exports = api;

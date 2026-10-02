@@ -53,7 +53,6 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_EXPLORER_CSS", "world-explorer.css", "style"],
   ["STORY", "story-codec.js", "script"],
   ["SCENARIO_SHAPE", "scenario-shape.js", "script"],
-  ["SCENARIO_MIGRATIONS", "scenario-migrations.js", "script"],
   ["SCENARIOS", "scenario-runtime.js", "script"],
   ["SCENARIO_STORY", "scenario-story.js", "script"],
   ["STORAGE", "story-storage.js", "script"],

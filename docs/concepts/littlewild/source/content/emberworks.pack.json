@@ -1140,7 +1140,6 @@
           "prestige": 0,
           "earnedPrestige": 0,
           "slots": 1,
-          "grandfathered": false,
           "tutorial": {
             "step": 0,
             "dismissed": false,
@@ -3099,7 +3098,6 @@
           "prestige": 52,
           "earnedPrestige": 52,
           "slots": 3,
-          "grandfathered": true,
           "tutorial": {
             "step": 0,
             "dismissed": true,

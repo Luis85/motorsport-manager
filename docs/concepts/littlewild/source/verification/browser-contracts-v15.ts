@@ -35,12 +35,6 @@ async function main():Promise<void>{
  await check("Placing a plan does not pay remote supplies",()=>eq(order.paid,false));
  const saved=await page.evaluate("Littlewild.snapshot()");
  await check("Placed plan round-trips through scenario-aware save",async()=>await page.evaluate(doc=>{const w=window as any;const e=w.LWStory.commit(w.LWStory.inspect(doc));return e.creatures.find((c:any)=>c.id==="c2").orders.at(-1).approach==="careful";},saved));
- const fixture=path.join(ROOT,"source","fixtures","actual-v14-story.json");
- if(fs.existsSync(fixture)){
-  const doc=JSON.parse(fs.readFileSync(fixture,"utf8"));await page.evaluate(doc=>{const w=window as any;w.Littlewild.setEngine(w.LWStory.commit(w.LWStory.inspect(doc)));},doc);
-  await check("Authentic v14 browser story stays format 8",async()=>eq(await page.evaluate("Littlewild.snapshot().version"),8));
-  await check("Authentic v14 story keeps its creature skills",async()=>eq(await page.evaluate("Littlewild.snapshot().state.colony.creatures.map(c=>c.skills)"),doc.state.colony.creatures.map((c:any)=>c.skills)));
- }
  await check("No browser errors during placement/save workflow",()=>eq(errors,[]));
  const artifact=path.join(OUT,"emberworks.html");
  const build=spawnSync("npm",["run","build","--silent","--","--pack","source/content/emberworks.pack.json","--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});

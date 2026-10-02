@@ -27,7 +27,7 @@
     return {islandId: G.key(...p), islandName: region.name,
       playerLevel: Math.max(quest?.tier || 1, region.minimumLevel), creatureLevel: quest?.tier || 1};
   }
-  /** Reject invalid current-format records; migration of old records is explicit below. */
+  /** Reject invalid current-format records. */
   function validateAtlas(s) {
     const bad = text => { throw Error('World map save: ' + text); };
     const a = s.atlas;
@@ -42,7 +42,7 @@
     function reference(q, active) {
       if (!q || !owned.has(q.islandId) || typeof q.islandName !== 'string' || q.islandName.length > 100 ||
           !whole(q.playerLevel, 1, 100) || !whole(q.creatureLevel, 1, 100) ||
-          typeof q.offerId !== 'string' || !/^(offer\d+|legacy-[\w-]{1,70})$/.test(q.offerId)) bad('invalid expedition origin.');
+          typeof q.offerId !== 'string' || !/^offer\d+$/.test(q.offerId)) bad('invalid expedition origin.');
       if (q.offerId.startsWith('offer')) largest = Math.max(largest, Number(q.offerId.slice(5)));
       if (active) { if (activeIds.has(q.offerId)) bad('an invitation cannot have two owners.'); activeIds.add(q.offerId); }
     }
@@ -74,14 +74,8 @@
     if (!self.s.atlas) {
       self.s.atlas = {version: 1, clocks: {}, history: []};
       for (const island of self.s.estate.islands) self.initializeIsland(islandKey(island));
-      // Legacy opportunities remain available: migration does not reroll or add loot.
+      // Earlier composition layers may seed current quest-board offers before cartography initializes.
       for (const offer of self.s.colony.board.offers) Object.assign(offer, metadata(self, '0,0', offer.questId), {offerId: offer.id});
-      for (const c of self.creatures) {
-        for (const field of ['questPlan', 'activeQuest']) if (c[field]) {
-          Object.assign(c[field], metadata(self, '0,0', c[field].questId), {offerId: 'legacy-' + c.id + '-' + field});
-        }
-        c.questHistory.forEach((q, index) => Object.assign(q, metadata(self, '0,0', q.questId), {offerId: 'legacy-' + c.id + '-history-' + index}));
-      }
     }
     self.s.version = 8;
   }
@@ -184,7 +178,7 @@
     questPlanIssue(q, c = this.actor) {
       if (!q || !A.content.quests.some(d => d.id === q.questId)) return 'This expedition is unavailable.';
       if (!this.s.atlas.clocks[q.islandId]) return 'This expedition belongs to an island you do not own.';
-      if (this.s.player.level < q.playerLevel && !q.offerId?.startsWith('legacy-')) return 'Guide level ' + q.playerLevel + ' required for this island expedition.';
+      if (this.s.player.level < q.playerLevel) return 'Guide level ' + q.playerLevel + ' required for this island expedition.';
       if (c.creature.level < q.creatureLevel) return c.name + ' needs creature level ' + q.creatureLevel + ' for this expedition.';
       return this.gateIssue('features', 'quests');
     }
@@ -232,18 +226,15 @@
     }
     export() { const doc = super.export(); doc.version = 8; doc.state.version = 8; return doc; }
     static import(input) {
-      if (input?.version === 8) {
-        const raw = copy(input); validateAtlas(raw.state);
-        raw.version = 7; raw.state.version = 7;
-        const old = super.import(raw), engine = Composition.constructThrough('cartography',old.export().state);
-        validateAtlas(engine.export().state); return engine;
-      }
-      const old = super.import(input), engine = Composition.constructThrough('cartography',old.export().state);
+      if (input?.version !== 8) throw Error('Only the current Littlewild save format (v8) is supported.');
+      const raw = copy(input); validateAtlas(raw.state);
+      raw.version = 7; raw.state.version = 7;
+      const old = super.import(raw), engine = Composition.constructThrough('cartography',old.export().state);
       validateAtlas(engine.export().state); return engine;
     }
   };}
 
-  // Authored scenario only: no table or currencies are silently granted to migrated players.
+  // Authored scenario setup only.
   function installFactories(){
     const scenarioNames = ['createWorldDemo', 'createColonyDemo', 'createWorkshopDemo'];
     const original = Object.fromEntries(scenarioNames.map(name => [name, L[name]])), factories = {};

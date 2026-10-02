@@ -38,46 +38,32 @@
         const doc = C.parse(input, SAVE_LIMIT);
         if (doc?.format)
             throw Error('This is a definition library. Use Content Library or Adventure Library, not Import story.');
-        if (doc?.app !== 'littlewild' || ![1, 2, 3, 4, 5, 6, 7, 8].includes(doc.version) || !doc.state)
-            throw Error('Choose a Littlewild v1–v11 portable story file.');
-        if (doc.version >= 4 && doc.content?.library?.kind !== 'library')
-            throw Error('This story is missing its complete content library.');
-        // Check consistency of the original snapshot before an additive, explicit format migration.
-        if (doc.version >= 4 && doc.content.fingerprint !== C.fingerprint(doc.content.library))
+        if (doc?.app !== 'littlewild' || doc.version !== 8 || !doc.state)
+            throw Error('Only the current Littlewild native story format (v8) is supported.');
+        if (doc.content?.library?.kind !== 'library' || !doc.adventure?.library || !doc.world?.library || !doc.growth?.library)
+            throw Error('This story is missing its complete current definition snapshot.');
+        if (doc.content.fingerprint !== C.fingerprint(doc.content.library))
             throw Error('The story’s definition fingerprint does not match.');
-        const library = C.copy(doc.version >= 4 ? doc.content.library : registry.defaults);
-        const migrationNotes = [];
-        if (doc.version < 8 && !library.components.buildings.some(b => b.id === 'map_table')) {
-            library.components.buildings.push(C.copy(registry.defaults.components.buildings.find(b => b.id === 'map_table')));
-            migrationNotes.push('Added the map-table blueprint definition. Existing buildings, balances and owned islands stay unchanged. Build the table before purchasing further islands.');
-        }
+        const library = C.copy(doc.content.library);
         const content = registry.prepare(library);
-        if (!content.ok)
-            throw new C.ContentError(content.errors);
-        if (doc.version >= 8 && doc.content.fingerprint !== content.fingerprint)
+        if (!content.ok) throw new C.ContentError(content.errors);
+        if (doc.content.fingerprint !== content.fingerprint)
             throw Error('The story’s definition fingerprint does not match. Edit definitions through the library importer instead.');
-        const expansion = A.validate(doc.version >= 5 ? doc.adventure?.library : A.defaultContent);
-        if (!expansion.ok)
-            throw Error(expansion.errors.join('\n'));
-        if (doc.version >= 5 && doc.adventure?.fingerprint !== A.hashOf(expansion.content))
+        const expansion = A.validate(doc.adventure.library);
+        if (!expansion.ok) throw Error(expansion.errors.join('\n'));
+        if (doc.adventure.fingerprint !== A.hashOf(expansion.content))
             throw Error('The story’s adventure fingerprint does not match its definitions.');
-        const land = registry.withLibrary(content.candidate,()=>withAdventure(expansion.content,()=>W.validate(doc.version >= 6 ? doc.world?.library : W.defaults)));
+        const land = registry.withLibrary(content.candidate,()=>withAdventure(expansion.content,()=>W.validate(doc.world.library)));
         if (!land.ok) throw Error(land.errors.join('\n'));
-        if (doc.version >= 6 && doc.world?.fingerprint !== W.hashOf(land.content)) throw Error('The world definition fingerprint does not match.');
-        const growthLibrary = G.clone(doc.version >= 7 ? doc.growth?.library : G.defaults);
-        if (doc.version >= 7 && doc.growth?.fingerprint !== G.hashOf(growthLibrary)) throw Error('The progression definition fingerprint does not match.');
-        if (doc.version < 8) {
-            growthLibrary.schemaVersion = 2;
-            if (!growthLibrary.cartography) growthLibrary.cartography = G.clone(G.defaults.cartography);
-            if (!growthLibrary.requirements.buildings.map_table) growthLibrary.requirements.buildings.map_table = G.clone(G.defaults.requirements.buildings.map_table);
-            if (!growthLibrary.research.some(r=>r.id==='blueprint-map-table')) growthLibrary.research.push(G.clone(G.defaults.research.find(r=>r.id==='blueprint-map-table')));
-            migrationNotes.push('Existing expeditions retain their work, supplies and outcomes and receive a Mossmeadow origin. Each owned island receives its own future invitation clock.');
-        }
+        if (doc.world.fingerprint !== W.hashOf(land.content)) throw Error('The world definition fingerprint does not match.');
+        const growthLibrary = G.clone(doc.growth.library);
+        if (doc.growth.fingerprint !== G.hashOf(growthLibrary)) throw Error('The progression definition fingerprint does not match.');
         const growth=registry.withLibrary(content.candidate,()=>withAdventure(expansion.content,()=>G.validate(growthLibrary)));
         if(!growth.ok)throw Error(growth.errors.join('\n'));
-        const stateDoc = { app: 'littlewild', version: doc.version === 4 ? 3 : doc.version, state: doc.state };
+        const stateDoc = { app: 'littlewild', version: 8, state: doc.state };
         const engine = registry.withLibrary(content.candidate, () => withAdventure(expansion.content, () => W.withLibrary(land.content, () => G.withLibrary(growth.content,()=>L.Engine.import(stateDoc)))));
-        const preview = { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, sourceVersion: doc.version, migrationNotes, fingerprint: content.fingerprint, changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
+        const preview = { engine, library: content.candidate, adventure: expansion.content, world: land.content, growth:growth.content, fingerprint: content.fingerprint,
+            changesLibrary: registry.hash !== content.fingerprint || A.hash !== A.hashOf(expansion.content) || W.hash !== W.hashOf(land.content)||G.hash!==G.hashOf(growth.content) };
         reviews.set(preview, reviewFingerprint(preview));
         return preview;
     }
