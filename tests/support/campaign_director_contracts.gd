@@ -24,6 +24,14 @@ static func run(check: Callable) -> void:
 	detached_definition.career.opening_cash_minor = 1
 	check.call(CampaignStarter.definition(checkpoint).career.opening_cash_minor == 150000,
 		"Campaign content projections are detached and cannot mutate the frozen career")
+	var frozen_circuits = CampaignStarter.circuits(checkpoint)
+	check.call(frozen_circuits.size() == 4 and frozen_circuits.has("core.circuit.hillside")
+			and frozen_circuits.has("core.circuit.spa"),
+		"Starter freezes every authored calendar circuit into the career")
+	var starter_state = CampaignCheckpoint.restore(checkpoint)
+	var starter_season: Dictionary = starter_state.competition.seasons[campaign.to_record().series.season_id]
+	check.call(starter_season.calendar[0].track_hash != starter_season.calendar[1].track_hash,
+		"Authored rounds carry distinct frozen track hashes rather than one reused starter circuit")
 	var before_query = RaceStateValue.fingerprint(checkpoint)
 	var desk = CampaignDirectorQuery.overview(checkpoint)
 	check.call(desk.ok and desk.season.total_events == 4 and desk.next_event.round == 1,
