@@ -57,8 +57,7 @@ static func create(record: RaceRecord, definition: Dictionary) -> Dictionary:
 		{"season_id": series.season_id, "series_id": series.series_id, "calendar": calendar})
 	if not changed.ok: return {}
 	checkpoint = changed.checkpoint
-	var season_id: String = changed.season_id if changed.has("season_id") else _only_season_id(checkpoint)
-	if season_id.is_empty(): return {}
+	var season_id: String = str(series.season_id)
 	changed = CampaignCompetitionTransaction.transition_season(checkpoint, season_id, "entries_open")
 	if not changed.ok: return {}
 	checkpoint = changed.checkpoint
@@ -297,11 +296,6 @@ static func _player_entry(restored: Dictionary, season: Dictionary) -> Dictionar
 				break
 		if owned: return entry
 	return {}
-
-static func _only_season_id(checkpoint: Dictionary) -> String:
-	var restored = CampaignCheckpoint.restore(checkpoint)
-	if not restored.ok or restored.competition.seasons.size() != 1: return ""
-	return str(restored.competition.seasons.keys()[0])
 
 static func _person_id(race_id: int) -> String:
 	return "person.race.%02d" % race_id
