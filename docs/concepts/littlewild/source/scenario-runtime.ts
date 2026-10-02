@@ -88,9 +88,17 @@
       'ledger','nextId','colony','world','estate','progression','market','planning','atlas'];
     for (const key of Object.keys(state)) if (!rootKeys.includes(key))
       throw Error(path + '/' + key + ': unknown scene-state field');
-    if (state.player && typeof state.player === 'object')
+    if (state.player && typeof state.player === 'object') {
       for (const key of Object.keys(state.player)) if (!['level','xp','coins'].includes(key))
         throw Error(path + '/player/' + key + ': unknown player field');
+      const player = state.player;
+      if (!Number.isSafeInteger(player.level) || player.level < 1 || player.level > 1000000)
+        throw Error(path + '/player/level: expected a positive integer');
+      if (!Number.isSafeInteger(player.xp) || player.xp < 0 || player.xp > Number.MAX_SAFE_INTEGER)
+        throw Error(path + '/player/xp: expected a non-negative integer');
+      if (!Number.isSafeInteger(player.coins) || player.coins < 0 || player.coins > Number.MAX_SAFE_INTEGER)
+        throw Error(path + '/player/coins: expected a non-negative integer');
+    } else throw Error(path + '/player: expected an object');
   }
   function validate(input) {
     try {
