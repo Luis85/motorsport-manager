@@ -17,7 +17,9 @@ static func create(record: RaceRecord, definition: Dictionary, circuits: Diction
 	var groups = _roster_groups(record.initial)
 	if groups.is_empty() or config.rivals.size() != groups.size() - 1: return {}
 	var player_label = _player_team_label(record.initial)
-	if player_label.is_empty() or not groups.has(player_label): return {}
+	if player_label.is_empty() or player_label != config.player.roster_team_id \
+			or not groups.has(player_label):
+		return {}
 	var career: Dictionary = config.career
 	var state = CampaignState.create({
 		"campaign_id": career.campaign_id, "organization_id": career.organization_id,
@@ -63,13 +65,14 @@ static func create(record: RaceRecord, definition: Dictionary, circuits: Diction
 	changed = CampaignCompetitionTransaction.transition_season(checkpoint, season_id, "entries_open")
 	if not changed.ok: return {}
 	checkpoint = changed.checkpoint
-	var labels = groups.keys(); labels.sort()
-	var rival_index = 0
-	for label in labels:
-		var group: Array = groups[label]
+	var entry_configs: Array = [config.player]
+	entry_configs.append_array(config.rivals)
+	if entry_configs.size() != groups.size(): return {}
+	for entry_config in entry_configs:
+		var roster_team_id: String = entry_config.roster_team_id
+		if not groups.has(roster_team_id): return {}
+		var group: Array = groups[roster_team_id]
 		if group.size() != int(series.cars_per_entrant): return {}
-		var player = label == player_label
-		var entry_config: Dictionary = config.player if player else config.rivals[rival_index]
 		var entry = {
 			"entrant_id": entry_config.entrant_id, "team_id": entry_config.team_id,
 			"person_ids": group.map(func(id): return _person_id(int(id))),
@@ -81,7 +84,6 @@ static func create(record: RaceRecord, definition: Dictionary, circuits: Diction
 			checkpoint, season_id, entry.entrant_id, true)
 		if not changed.ok: return {}
 		checkpoint = changed.checkpoint
-		if not player: rival_index += 1
 	for target in ["preseason", "active"]:
 		changed = CampaignCompetitionTransaction.transition_season(checkpoint, season_id, target)
 		if not changed.ok: return {}
