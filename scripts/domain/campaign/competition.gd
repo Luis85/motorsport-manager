@@ -4,7 +4,6 @@ extends RefCounted
 ## immutable event awards, countback standings and lifecycle transitions.
 const KIND = "motorsport-manager-campaign-competition"
 const VERSION = 2
-const LEGACY_VERSION = 1
 const MAX_EVENTS = 1024
 const MAX_SERIES = 32
 const MAX_SEASONS = 64
@@ -107,8 +106,6 @@ static func manifest_error(current: Dictionary, manifest: Dictionary) -> String:
 	var error = validate(current)
 	if not error.is_empty():
 		return error
-	if int(current.version) != VERSION:
-		return "Legacy competition history cannot launch a new versioned season weekend."
 	if manifest.get("campaign_id") != current.campaign_id:
 		return "Campaign weekend belongs to another competition."
 	var season_id = manifest.get("season_id")
@@ -137,12 +134,6 @@ static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary) 
 		return {"ok": false, "status": "conflict",
 			"error": "Competition consequences already exist for this event under different evidence or rules.",
 			"competition": current.duplicate(true)}
-	if int(data.version) == LEGACY_VERSION:
-		if not data.events.is_empty() or not data.seasons.is_empty():
-			return {"ok": false, "status": "rejected",
-				"error": "Legacy sporting history is read-only until an explicit calendar migration is supplied.",
-				"competition": current.duplicate(true)}
-		data = empty(data.campaign_id)
 	if data.events.size() >= MAX_EVENTS:
 		return {"ok": false, "status": "rejected", "error": "Competition event history is full.",
 			"competition": current.duplicate(true)}
@@ -233,8 +224,6 @@ static func validate(data: Variant) -> String:
 		return "Campaign competition exceeds serialized-value limits."
 	if not data is Dictionary or data.get("kind") != KIND:
 		return "Unsupported campaign competition projection."
-	if RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION):
-		return _validate_legacy(data)
 	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 7 \
 			or not CampaignIdentity.valid(data.get("campaign_id")):
 		return "Campaign competition version, shape or identity is invalid."
@@ -337,13 +326,8 @@ static func _publish_season(data: Dictionary, season_id: String, changed: Dictio
 
 static func _writable(current: Dictionary) -> Dictionary:
 	var error = validate(current)
-	if not error.is_empty():
-		return {"ok": false, "error": error}
-	if int(current.version) == VERSION:
-		return {"ok": true, "competition": current.duplicate(true)}
-	if current.events.is_empty() and current.seasons.is_empty():
-		return {"ok": true, "competition": empty(current.campaign_id)}
-	return {"ok": false, "error": "Legacy sporting history is read-only until an explicit calendar migration is supplied."}
+	return {"ok": error.is_empty(), "error": error,
+		"competition": current.duplicate(true) if error.is_empty() else {}}
 
 static func _result(error: String, status: String, candidate: Dictionary, original: Dictionary) -> Dictionary:
 	return {"ok": error.is_empty(), "status": status if error.is_empty() else "rejected", "error": error,
@@ -355,69 +339,3 @@ static func _reject(message: String, current: Dictionary) -> Dictionary:
 static func _seal(data: Dictionary) -> void:
 	data.erase("digest")
 	data["digest"] = RaceStateValue.fingerprint(data)
-
-static func _validate_legacy(data: Dictionary) -> String:
-	if data.size() != 6 or not CampaignIdentity.valid(data.get("campaign_id")) \
-			or not data.get("seasons") is Dictionary or not data.get("events") is Dictionary \
-			or data.events.size() > MAX_EVENTS:
-		return "Unsupported legacy campaign competition projection."
-	for event_id in data.events:
-		if not CampaignIdentity.valid(event_id):
-			return "Legacy campaign competition has an invalid event identity."
-		var event = data.events[event_id]
-		if not event is Dictionary or event.size() != 4 or not CampaignIdentity.valid(event.get("season_id")):
-			return "Legacy campaign competition event has an unsupported shape."
-		for key in ["result_digest", "policy_digest"]:
-			if not CampaignIdentity.valid_hash(event.get(key)):
-				return "Legacy campaign competition event has an invalid source digest."
-		if not event.get("awards") is Array or event.awards.size() < 2 \
-				or event.awards.size() > CampaignWeekendReceipt.MAX_ENTRANTS:
-			return "Legacy campaign competition event has an invalid awards table."
-		var people = {}
-		for index in range(event.awards.size()):
-			var award = event.awards[index]
-			if not award is Dictionary or award.size() != 5:
-				return "Legacy campaign competition award has an unsupported shape."
-			if not CampaignIdentity.valid(award.get("person_id")) or not CampaignIdentity.valid(award.get("team_id")) \
-					or people.has(award.person_id):
-				return "Legacy campaign competition award has an invalid or repeated identity."
-			people[award.person_id] = true
-			if not RaceCheckpoint.integral(award.get("position"), index + 1, index + 1) \
-					or not award.get("eligible") is bool:
-				return "Legacy campaign competition award ordering or eligibility is invalid."
-			if not RaceCheckpoint.integral(award.get("points"), 0, MAX_POINTS) \
-					or (not award.eligible and int(award.points) != 0):
-				return "Legacy campaign competition award points are invalid."
-	var rebuilt = _rebuild_legacy(data.events)
-	if RaceStateValue.fingerprint(rebuilt) != RaceStateValue.fingerprint(data.seasons):
-		return "Legacy campaign standings disagree with their event awards."
-	var content = data.duplicate(true)
-	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
-		return "Legacy campaign competition integrity check failed."
-	return ""
-
-static func _rebuild_legacy(events: Dictionary) -> Dictionary:
-	var seasons = {}
-	var event_ids = events.keys()
-	event_ids.sort()
-	for event_id in event_ids:
-		var event: Dictionary = events[event_id]
-		if not seasons.has(event.season_id):
-			seasons[event.season_id] = {"drivers": {}, "teams": {}}
-		var season: Dictionary = seasons[event.season_id]
-		for award in event.awards:
-			if not season.drivers.has(award.person_id):
-				season.drivers[award.person_id] = {"points": 0, "starts": 0, "wins": 0,
-					"best_position": CampaignWeekendReceipt.MAX_ENTRANTS + 1}
-			if not season.teams.has(award.team_id):
-				season.teams[award.team_id] = {"points": 0, "starts": 0, "wins": 0,
-					"best_position": CampaignWeekendReceipt.MAX_ENTRANTS + 1}
-			for key in ["drivers", "teams"]:
-				var identity = award.person_id if key == "drivers" else award.team_id
-				var row: Dictionary = season[key][identity]
-				row.points = int(row.points) + int(award.points)
-				row.starts = int(row.starts) + 1
-				row.wins = int(row.wins) + (1 if int(award.position) == 1 else 0)
-				row.best_position = mini(int(row.best_position), int(award.position))
-	return seasons

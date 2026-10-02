@@ -14,8 +14,6 @@ static func validate(value: Variant, elapsed_slot: int) -> String:
 		for posting in account.postings.values():
 			if int(posting.slot) > elapsed_slot:
 				return "Campaign cash posting is dated after authoritative campaign time."
-	if int(economy.version) == CampaignEconomy.LEGACY_VERSION:
-		return ""
 	if int(economy.authority_from_slot) > elapsed_slot:
 		return "Campaign commitment authority begins after authoritative campaign time."
 	for commitment in economy.commitments.values():

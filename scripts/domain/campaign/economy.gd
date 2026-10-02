@@ -4,7 +4,6 @@ extends RefCounted
 ## Forecast assumptions are detached inputs and never mutate this authority.
 const KIND = "motorsport-manager-campaign-economy"
 const VERSION = 2
-const LEGACY_VERSION = 1
 const MAX_EVENTS = 1024
 const MAX_POSTINGS = 8192
 const MAX_COMMITMENTS = 8192
@@ -37,19 +36,13 @@ static func create(campaign_id: String, account_id: String, opening_minor: int =
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
-static func upgrade(data: Dictionary, authority_from_slot: int) -> Dictionary:
-	var error = validate(data)
-	if not error.is_empty():
-		return {}
-	if int(data.version) == VERSION:
-		return data.duplicate(true)
-	var upgraded = CampaignEconomyLegacy.upgrade(data, authority_from_slot)
-	return upgraded if not upgraded.is_empty() and validate(upgraded).is_empty() else {}
+static func current(data: Dictionary) -> Dictionary:
+	return data.duplicate(true) if validate(data).is_empty() else {}
 
 static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary, return_slot: int) -> Dictionary:
-	var data = upgrade(current, return_slot)
+	var data = current(current)
 	if data.is_empty():
-		return _reject("Campaign economy could not be upgraded or validated.", current)
+		return _reject("Campaign economy could not be validated.", current)
 	var error = CampaignWeekendPolicy.receipt_error(policy, receipt)
 	if not error.is_empty():
 		return _reject(error, current)
@@ -94,7 +87,7 @@ static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary, 
 
 static func correct_event(current: Dictionary, receipt: Dictionary,
 		policy: Dictionary, return_slot: int) -> Dictionary:
-	var data = upgrade(current, return_slot)
+	var data = current(current)
 	if data.is_empty(): return _reject("Campaign economy could not be validated for correction.", current)
 	var error = CampaignWeekendPolicy.receipt_error(policy, receipt)
 	if not error.is_empty(): return _reject(error, current)
@@ -118,9 +111,9 @@ static func correct_event(current: Dictionary, receipt: Dictionary,
 	return applied
 
 static func add_commitment(current: Dictionary, input: Dictionary, created_slot: int) -> Dictionary:
-	var data = upgrade(current, created_slot)
+	var data = current(current)
 	if data.is_empty():
-		return _reject("Campaign economy could not be upgraded or validated.", current)
+		return _reject("Campaign economy could not be validated.", current)
 	if created_slot < int(data.authority_from_slot):
 		return _reject("Cash commitment predates this economy's commitment authority.", current)
 	var commitment = CampaignCashCommitment.build(input, created_slot)
@@ -132,9 +125,9 @@ static func add_commitment(current: Dictionary, input: Dictionary, created_slot:
 	return _validated(data, "added", current)
 
 static func cancel_commitment(current: Dictionary, commitment_id: String, resolution_slot: int) -> Dictionary:
-	var data = upgrade(current, resolution_slot)
+	var data = current(current)
 	if data.is_empty():
-		return _reject("Campaign economy could not be upgraded or validated.", current)
+		return _reject("Campaign economy could not be validated.", current)
 	if not data.commitments.has(commitment_id) or data.commitments[commitment_id].status != "open":
 		return _reject("Only an open campaign cash commitment can be cancelled.", current)
 	var commitment: Dictionary = data.commitments[commitment_id]
@@ -145,9 +138,9 @@ static func cancel_commitment(current: Dictionary, commitment_id: String, resolu
 
 static func set_reserve_policy(current: Dictionary, account_id: String,
 		minimum_cash_minor: int, effective_slot: int) -> Dictionary:
-	var data = upgrade(current, effective_slot)
+	var data = current(current)
 	if data.is_empty():
-		return _reject("Campaign economy could not be upgraded or validated.", current)
+		return _reject("Campaign economy could not be validated.", current)
 	if not data.accounts.has(account_id) or effective_slot < int(data.authority_from_slot):
 		return _reject("Campaign reserve policy references an unknown account or predates authority.", current)
 	var policy = CampaignReservePolicy.build(account_id, minimum_cash_minor, effective_slot)
@@ -157,9 +150,9 @@ static func set_reserve_policy(current: Dictionary, account_id: String,
 	return _validated(data, "policy_set", current)
 
 static func settle_due(current: Dictionary, through_slot: int) -> Dictionary:
-	var data = upgrade(current, through_slot)
+	var data = current(current)
 	if data.is_empty():
-		return _reject("Campaign economy could not be upgraded or validated.", current)
+		return _reject("Campaign economy could not be validated.", current)
 	if not RaceCheckpoint.integral(through_slot, int(data.authority_from_slot), CampaignClock.MAX_ELAPSED_SLOTS):
 		return _reject("Campaign commitment settlement slot is outside recorded authority.", current)
 	var settled_count = 0
@@ -187,8 +180,6 @@ static func validate(data: Variant) -> String:
 		return "Campaign economy exceeds serialized-value limits."
 	if not data is Dictionary or data.get("kind") != KIND:
 		return "Unsupported campaign economy projection."
-	if RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION):
-		return CampaignEconomyLegacy.validate(data)
 	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 9 \
 			or not CampaignIdentity.valid(data.get("campaign_id")) \
 			or not RaceCheckpoint.integral(data.get("authority_from_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):

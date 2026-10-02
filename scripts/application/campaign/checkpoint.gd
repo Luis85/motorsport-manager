@@ -4,11 +4,6 @@ extends RefCounted
 ## published together; persistence remains an injected service responsibility.
 const KIND = "motorsport-manager-campaign-checkpoint"
 const VERSION = 6
-const ENGINEERING_VERSION = 5
-const OPERATIONS_VERSION = 4
-const PERSONNEL_VERSION = 3
-const CONSEQUENCE_VERSION = 2
-const LEGACY_VERSION = 1
 
 static func build(state: CampaignState, settlements: Dictionary = {}, active_manifest: Dictionary = {},
 		competition: Dictionary = {}, economy: Dictionary = {}, inventory: Dictionary = {},
@@ -57,16 +52,6 @@ static func validate(data: Variant) -> String:
 		return "Campaign checkpoint exceeds serialized-value limits."
 	if not data is Dictionary or data.get("kind") != KIND:
 		return "Unsupported campaign checkpoint."
-	if RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION):
-		return _validate_legacy(data)
-	if RaceCheckpoint.integral(data.get("version"), CONSEQUENCE_VERSION, CONSEQUENCE_VERSION):
-		return _validate_consequence_version(data)
-	if RaceCheckpoint.integral(data.get("version"), PERSONNEL_VERSION, PERSONNEL_VERSION):
-		return _validate_personnel_version(data)
-	if RaceCheckpoint.integral(data.get("version"), OPERATIONS_VERSION, OPERATIONS_VERSION):
-		return _validate_operations_version(data)
-	if RaceCheckpoint.integral(data.get("version"), ENGINEERING_VERSION, ENGINEERING_VERSION):
-		return _validate_engineering_version(data)
 	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) or data.size() != 14:
 		return "Unsupported campaign checkpoint version."
 	var shared_error = _shared_error(data)
@@ -90,165 +75,27 @@ static func validate(data: Variant) -> String:
 	return _digest_error(data)
 
 static func restore(data: Variant) -> Dictionary:
-	var normalized = upgrade(data)
-	if normalized.is_empty():
-		return {"ok": false, "error": validate(data)}
-	var state = CampaignState.restore(normalized.state)
+	var error = validate(data)
+	if not error.is_empty():
+		return {"ok": false, "error": error}
+	var state = CampaignState.restore(data.state)
 	if state == null:
 		return {"ok": false, "error": "Campaign state could not be restored."}
 	return {
 		"ok": true,
 		"error": "",
 		"state": state,
-		"settlements": normalized.settlements.duplicate(true),
-		"active_manifest": normalized.active_manifest.duplicate(true),
-		"competition": normalized.competition.duplicate(true),
-		"economy": normalized.economy.duplicate(true),
-		"inventory": normalized.inventory.duplicate(true),
-		"personnel": normalized.personnel.duplicate(true),
-		"operations": normalized.operations.duplicate(true),
-		"engineering": normalized.engineering.duplicate(true),
-		"management": normalized.management.duplicate(true),
-		"checkpoint": normalized.duplicate(true)
+		"settlements": data.settlements.duplicate(true),
+		"active_manifest": data.active_manifest.duplicate(true),
+		"competition": data.competition.duplicate(true),
+		"economy": data.economy.duplicate(true),
+		"inventory": data.inventory.duplicate(true),
+		"personnel": data.personnel.duplicate(true),
+		"operations": data.operations.duplicate(true),
+		"engineering": data.engineering.duplicate(true),
+		"management": data.management.duplicate(true),
+		"checkpoint": data.duplicate(true)
 	}
-
-static func upgrade(data: Variant) -> Dictionary:
-	var error = validate(data)
-	if not error.is_empty():
-		return {}
-	if int(data.version) == VERSION:
-		return data.duplicate(true)
-	var state = CampaignState.restore(data.state)
-	if state == null:
-		return {}
-	if int(data.version) == ENGINEERING_VERSION:
-		var management = CampaignManagement.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots)
-		return build(state, data.settlements, data.active_manifest, data.competition,
-			data.economy, data.inventory, data.personnel, data.operations, data.engineering, management)
-	if int(data.version) == OPERATIONS_VERSION:
-		var engineering = CampaignEngineering.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_development_ids(data.economy))
-		return build(state, data.settlements, data.active_manifest,
-			data.competition, data.economy, data.inventory, data.personnel, data.operations, engineering)
-	if int(data.version) == PERSONNEL_VERSION:
-		var operations = CampaignOperations.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_facility_ids(data.economy))
-		var engineering = CampaignEngineering.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_development_ids(data.economy))
-		return build(state, data.settlements, data.active_manifest,
-			data.competition, data.economy, data.inventory, data.personnel, operations, engineering)
-	if int(data.version) == CONSEQUENCE_VERSION:
-		var personnel = CampaignPersonnel.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_payroll_ids(data.economy))
-		var operations = CampaignOperations.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_facility_ids(data.economy))
-		var engineering = CampaignEngineering.empty(
-			state.campaign_id, state.organization_id, state.clock.elapsed_slots,
-			_legacy_development_ids(data.economy))
-		return build(state, data.settlements, data.active_manifest,
-			data.competition, data.economy, data.inventory, personnel, operations, engineering)
-	return build(state, data.settlements, data.active_manifest)
-
-static func _legacy_payroll_ids(economy: Dictionary) -> Array:
-	var result: Array = []
-	if int(economy.get("version", 0)) != CampaignEconomy.VERSION:
-		return result
-	for commitment_id in economy.get("commitments", {}):
-		if economy.commitments[commitment_id].get("category") == "payroll":
-			result.append(commitment_id)
-	result.sort()
-	return result
-
-static func _legacy_facility_ids(economy: Dictionary) -> Array:
-	var result: Array = []
-	if int(economy.get("version", 0)) != CampaignEconomy.VERSION:
-		return result
-	for commitment_id in economy.get("commitments", {}):
-		if economy.commitments[commitment_id].get("category") == "facility":
-			result.append(commitment_id)
-	result.sort()
-	return result
-
-static func _legacy_development_ids(economy: Dictionary) -> Array:
-	var result: Array = []
-	if int(economy.get("version", 0)) != CampaignEconomy.VERSION:
-		return result
-	for commitment_id in economy.get("commitments", {}):
-		if economy.commitments[commitment_id].get("category") == "development":
-			result.append(commitment_id)
-	result.sort()
-	return result
-
-static func _validate_engineering_version(data: Dictionary) -> String:
-	if data.size() != 13:
-		return "Unsupported engineering campaign checkpoint."
-	var error = _shared_error(data)
-	if not error.is_empty(): return error
-	error = _projection_error(data)
-	if not error.is_empty(): return error
-	error = _personnel_error(data)
-	if not error.is_empty(): return error
-	error = _operations_error(data)
-	if not error.is_empty(): return error
-	error = _engineering_error(data)
-	if not error.is_empty(): return error
-	return _digest_error(data)
-
-static func _validate_operations_version(data: Dictionary) -> String:
-	if data.size() != 12:
-		return "Unsupported operations campaign checkpoint."
-	var error = _shared_error(data)
-	if not error.is_empty():
-		return error
-	error = _projection_error(data)
-	if not error.is_empty():
-		return error
-	error = _personnel_error(data)
-	if not error.is_empty():
-		return error
-	error = _operations_error(data)
-	if not error.is_empty():
-		return error
-	return _digest_error(data)
-
-static func _validate_personnel_version(data: Dictionary) -> String:
-	if data.size() != 11:
-		return "Unsupported personnel campaign checkpoint."
-	var error = _shared_error(data)
-	if not error.is_empty():
-		return error
-	error = _projection_error(data)
-	if not error.is_empty():
-		return error
-	error = _personnel_error(data)
-	if not error.is_empty():
-		return error
-	return _digest_error(data)
-
-static func _validate_consequence_version(data: Dictionary) -> String:
-	if data.size() != 10:
-		return "Unsupported consequence campaign checkpoint."
-	var error = _shared_error(data)
-	if not error.is_empty():
-		return error
-	error = _projection_error(data)
-	if not error.is_empty():
-		return error
-	return _digest_error(data)
-
-static func _validate_legacy(data: Dictionary) -> String:
-	if data.size() != 7:
-		return "Unsupported legacy campaign checkpoint."
-	var error = _shared_error(data)
-	if not error.is_empty():
-		return error
-	return _digest_error(data)
 
 static func _shared_error(data: Dictionary) -> String:
 	if not CampaignIdentity.valid(data.get("campaign_id")):
