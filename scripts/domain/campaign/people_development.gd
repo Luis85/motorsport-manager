@@ -29,7 +29,6 @@ static func register_candidate(current: Dictionary, input: Dictionary, created_s
 static func approach(current: Dictionary, candidate_id: String, slot: int) -> Dictionary:
 	var error = validate(current)
 	if not error.is_empty(): return _reject(error, current)
-	var tuning = CampaignPeoplePolicy.normalized(policy)
 	if not current.candidates.has(candidate_id):
 		return _reject("Candidate is unknown.", current)
 	var candidate: Dictionary = current.candidates[candidate_id]
@@ -44,6 +43,7 @@ static func approach(current: Dictionary, candidate_id: String, slot: int) -> Di
 static func evaluate_offer(current: Dictionary, candidate_id: String,
 		role_id: String, pay_minor: int, start_slot: int, slot: int, policy: Dictionary = {}) -> Dictionary:
 	var error = validate(current)
+	var tuning = CampaignPeoplePolicy.normalized(policy)
 	if not error.is_empty(): return _reject(error, current)
 	if not current.candidates.has(candidate_id):
 		return _reject("Candidate is unknown.", current)
