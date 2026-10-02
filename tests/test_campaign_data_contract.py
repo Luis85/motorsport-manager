@@ -10,6 +10,7 @@ CAMPAIGN = ROOT / "content/packs/core/campaigns/team-principal.json"
 PACK = ROOT / "content/packs/core/pack.json"
 STARTER = ROOT / "scripts/application/campaign/starter.gd"
 RIVALS = ROOT / "scripts/domain/campaign/rivals.gd"
+SCREENS = ROOT / "scripts/composition/campaign_screens.gd"
 INVENTORY = ROOT / "docs/content/consumer-inventory.json"
 
 
@@ -49,6 +50,12 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertIn("CampaignDefinition.from_record", source)
         self.assertIn("CampaignContentSnapshot.build", source)
         self.assertIn("CampaignStarterLegacy", source)
+
+    def test_campaign_entry_uses_authored_circuits_not_library_order(self):
+        source = SCREENS.read_text(encoding="utf-8")
+        self.assertIn("_resolved_campaign_circuits", source)
+        self.assertIn("CampaignStarter.circuits", source)
+        self.assertNotIn("App.library[mini(7", source)
 
     def test_rival_algorithm_consumes_policy_instead_of_tuning_literals(self):
         source = RIVALS.read_text(encoding="utf-8")
