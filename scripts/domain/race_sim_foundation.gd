@@ -1,5 +1,5 @@
 class_name RaceSimFoundation
-extends RaceSimPort
+extends "res://scripts/domain/race_sim_port.gd"
 ## Authoritative race state, deterministic utilities and stable base API shared by
 ## the fixed-step core and final mechanic-dispatch aggregate.
 signal event_posted(entry: Dictionary)
