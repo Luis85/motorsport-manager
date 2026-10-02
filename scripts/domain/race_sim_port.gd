@@ -36,6 +36,7 @@ func queue_pit(_c: RaceCar) -> void: pass
 func standings(_qualifying: bool = false) -> Array: return []
 func surface_at(_c: RaceCar) -> Dictionary: return {}
 func check_tyre_incident(_c: RaceCar) -> void: pass
+func player_team_label() -> String: return "player-team"
 
 func step() -> void: pass
 func service_random_value() -> float: return 0.0
