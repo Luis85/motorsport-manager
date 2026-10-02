@@ -104,6 +104,70 @@
           "material": "center"
         }
       ]
+    },
+    "grass": {
+      "nodes": [
+        {
+          "primitive": "cone",
+          "id": "blade-a",
+          "position": [
+            -0.08,
+            0.09,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.18,
+            0.025
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            -0.12
+          ]
+        },
+        {
+          "primitive": "cone",
+          "id": "blade-b",
+          "position": [
+            0.02,
+            0.105,
+            0.01
+          ],
+          "scale": [
+            0.028,
+            0.21,
+            0.028
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0.08
+          ]
+        },
+        {
+          "primitive": "cone",
+          "id": "blade-c",
+          "position": [
+            0.1,
+            0.075,
+            -0.02
+          ],
+          "scale": [
+            0.022,
+            0.15,
+            0.022
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0.18
+          ]
+        }
+      ]
     }
   },
   "metadata": {

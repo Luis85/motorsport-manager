@@ -16,10 +16,10 @@
  function equipmentDefs(){return root.LWAdventure?.content?.equipment||root.LWDefaultAdventure?.equipment||[];}
  function create(kit,parent,c){
   const index=(Math.max(1,+String(c.id).replace(/\D/g,''))-1)%6,pal=swatches[index],shape=index%3;
-  const instance=root.LWAssetRenderer.createActor(kit,parent,'sproutling','world',{materials:pal}),g=instance.root;
+  const variant=['world-round','world-long','world-pointed'][shape]||'world';
+  const instance=root.LWAssetRenderer.createActor(kit,parent,'sproutling',variant,{materials:pal}),g=instance.root;
   g.userData.fidelity='companion';g.userData.radius=instance.asset.metadata?.radius||1.4;
   const body=handles(instance,'body'),torso=handles(instance,'torso'),bib=handles(instance,'bib'),head=handles(instance,'head'),ears=handles(instance,'ears'),tail=handles(instance,'tail'),feet=handles(instance,'feet'),arms=handles(instance,'arms'),eyes=handles(instance,'eyes'),brows=handles(instance,'brows'),mouth=handles(instance,'mouth'),carry=handles(instance,'carry'),care=handles(instance,'care'),snack=handles(instance,'snack'),cup=handles(instance,'cup');
-  if(shape===1)ears.forEach(e=>e.scale.y*=1.20);if(shape===2)ears.forEach(e=>{e.scale.x*=.88;e.rotation.z*=1.3;});
   const defs=equipmentDefs(),equip=slot=>defs.find(d=>d.id===c.equipment?.[slot]),attachments=[];
   function attach(slot,parentHandle){
    const def=equip(slot);if(!def||!root.LWAssets.item(def.id)?.models?.equipped)return null;

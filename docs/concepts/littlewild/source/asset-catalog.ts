@@ -37,7 +37,9 @@
    if(!raw.models.world||!plain(raw.rig)||!plain(behavior.sockets))fail(raw.id+' actor needs world model, rig and sockets');
    const references=[];
    for(const value of [...Object.values(raw.rig),...Object.values(behavior.sockets)])Array.isArray(value)?references.push(...value):references.push(value);
-   for(const id of references)if(typeof id!=='string'||!ids.has(id))fail(raw.id+' invalid rig/socket node '+id);
+   for(const [modelName,modelIds] of modelNodes)if(modelName==='world'||modelName.startsWith('world-')){
+    for(const id of references)if(typeof id!=='string'||!modelIds.has(id))fail(raw.id+' invalid rig/socket node '+id+' in '+modelName);
+   }
   }
   return deepFreeze(copy(raw));
  }
