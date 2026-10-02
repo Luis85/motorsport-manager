@@ -3,10 +3,10 @@ extends RefCounted
 ## Physical pit entry, shared service, fitting and exit. Keeps finite stock and physical queues authoritative.
 ## Invoke cross-system work through the aggregate so inherited rule-set hooks remain active.
 
-static func leave_garage(sim: RaceSim, car: RaceCar) -> void:
+static func leave_garage(sim: RaceSimFoundation, car: RaceCar) -> void:
 	sim.depart_on_planned_set(car)
 
-static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
+static func update_pit(sim: RaceSimFoundation, car: RaceCar, old: Array = []) -> void:
 	var before = car.distance
 	var previous_pit_d = car.pit_d
 	car.intent = ("Crew fitting tyres and repairing damage" if car.service_repair else "Crew fitting tyres") if car.pit_stage == "service" else "Pit lane · speed limiter active"
@@ -29,7 +29,7 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			return
 	if car.pit_stage == "service":
 		car.speed = 0.0
-		car.pit_timer -= RaceSim.STEP
+		car.pit_timer -= RaceSimFoundation.STEP
 		if car.pit_timer <= 0:
 			sim.complete_service(car)
 			car.pit_stops += 1
@@ -41,8 +41,8 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 	var target = sim.track.pit_limit
 	if car.pit_stage == "entry":
 		target = minf(target, sqrt(2 * 8 * maxf(0, car.box_d - car.pit_d)))
-	car.speed = move_toward(car.speed, target, RaceSim.STEP * (5 if target > car.speed else 8))
-	var next = minf(sim.track.pit_length, car.pit_d + car.speed * RaceSim.STEP)
+	car.speed = move_toward(car.speed, target, RaceSimFoundation.STEP * (5 if target > car.speed else 8))
+	var next = minf(sim.track.pit_length, car.pit_d + car.speed * RaceSimFoundation.STEP)
 	if car.pit_stage == "entry":
 		next = minf(next, car.box_d)
 	# Use the same pre-tick snapshot as on-track movement. Do not step through a queue.
@@ -57,7 +57,7 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 			var limit: float = state.pit_d - 6.5
 			if next > limit:
 				next = maxf(previous_pit_d, limit)
-				car.speed = maxf(0, (next - previous_pit_d) / RaceSim.STEP)
+				car.speed = maxf(0, (next - previous_pit_d) / RaceSimFoundation.STEP)
 				car.intent = "Pit lane · queue ahead"
 	if next >= sim.track.pit_length:
 		var safe = true
@@ -84,14 +84,14 @@ static func update_pit(sim: RaceSim, car: RaceCar, old: Array = []) -> void:
 		car.lane = sim.track.sample(car.distance).line
 		sim.post("pit", sim.pit_exit_message(car))
 
-static func begin_service(sim: RaceSim, car: RaceCar) -> void:
+static func begin_service(sim: RaceSimFoundation, car: RaceCar) -> void:
 	var item = TyreInventory.planned(car, true)
 	car.service_set_id = item.get("id", "")
 	car.service_compound = car.next_compound
 	car.service_repair = car.repair
 	car.pit_timer = sim.tuning.service.tyre_base_seconds + sim.service_random_value() * sim.tuning.service.tyre_jitter_seconds + (car.damage * sim.tuning.service.repair_seconds_per_damage if car.service_repair else 0.0)
 
-static func complete_service(sim: RaceSim, car: RaceCar) -> void:
+static func complete_service(sim: RaceSimFoundation, car: RaceCar) -> void:
 	if not car.service_set_id.is_empty():
 		TyreInventory.mount(car, car.service_set_id)
 	else:
@@ -102,11 +102,11 @@ static func complete_service(sim: RaceSim, car: RaceCar) -> void:
 	if car.service_repair:
 		car.damage = 0.0
 
-static func queue_pit(sim: RaceSim, car: RaceCar) -> void:
+static func queue_pit(sim: RaceSimFoundation, car: RaceCar) -> void:
 	car.pit_order = true
 	sim.plan_pit_gate(car)
 
-static func plan_pit_gate(sim: RaceSim, car: RaceCar) -> void:
+static func plan_pit_gate(sim: RaceSimFoundation, car: RaceCar) -> void:
 	car.pit_deferred = false
 	car.pit_gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
 	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * sim.track.vehicle_definition.braking_mps2 * 0.5) + 8
@@ -115,14 +115,14 @@ static func plan_pit_gate(sim: RaceSim, car: RaceCar) -> void:
 		car.pit_deferred = true
 		sim.post("pit", car.short + ": too late to brake safely; pit entry deferred one lap.")
 
-static func record_stint(sim: RaceSim, car: RaceCar) -> void:
+static func record_stint(sim: RaceSimFoundation, car: RaceCar) -> void:
 	var lap = maxf(0, car.distance / sim.track.length)
 	if not car.stints.is_empty():
 		car.stints.back().to = lap
 	if car.stints.size() < 110:
 		car.stints.append({"set_id": car.set_id, "from": lap, "to": -1.0})
 
-static func pit_status(sim: RaceSim, car: RaceCar) -> String:
+static func pit_status(sim: RaceSimFoundation, car: RaceCar) -> String:
 	if car.route == "pit":
 		if car.pit_stage == "service":
 			return "Fitting %s · %.1f s remaining\n%s" % [car.service_compound, maxf(0, car.pit_timer), "Repairs included" if car.service_repair else "Tyres only"]
