@@ -54,8 +54,7 @@ static func create(record: RaceRecord, definition: Dictionary) -> Dictionary:
 			"track_hash": race_manifest.track_hash,
 			"ruleset_hash": RaceRecord.fingerprint(race_manifest.ruleset)})
 	changed = CampaignCompetitionTransaction.create_season(checkpoint,
-		{"season_id": config.series.get("season_id", config.career.campaign_id + ".season"),
-			"series_id": series.series_id, "calendar": calendar})
+		{"season_id": series.season_id, "series_id": series.series_id, "calendar": calendar})
 	if not changed.ok: return {}
 	checkpoint = changed.checkpoint
 	var season_id: String = changed.season_id if changed.has("season_id") else _only_season_id(checkpoint)
