@@ -74,15 +74,24 @@ func _create_starter_campaign() -> String:
 	var campaign = App.content_catalog.default_campaign()
 	if campaign == null:
 		return "Team Principal Campaign requires exactly one validated default campaign profile."
-	App.load_library()
-	if App.library.is_empty(): return "Team Principal Campaign requires at least one validated circuit."
-	var track: Dictionary = App.library[mini(7, App.library.size() - 1)]
-	var record = _campaign_seed_record(track, campaign)
+	var circuits = _resolved_campaign_circuits(campaign)
+	if circuits.is_empty(): return "Team Principal Campaign has no valid authored circuit calendar."
+	var campaign_record = campaign.to_record()
+	var opening_circuit_id: String = campaign_record.calendar[0].circuit_id
+	var record = _campaign_seed_record(circuits[opening_circuit_id], campaign)
 	if record == null: return "Starter race entry could not be created from the authored campaign weekend."
-	var checkpoint = CampaignStarter.create(record, campaign.to_record())
+	var checkpoint = CampaignStarter.create(record, campaign_record, circuits)
 	if checkpoint.is_empty(): return "Starter campaign could not form a valid authoritative checkpoint."
 	App.campaign_checkpoint = checkpoint
 	return App.save_campaign()
+
+func _resolved_campaign_circuits(campaign: CampaignDefinition) -> Dictionary:
+	var result = {}
+	for event in campaign.to_record().calendar:
+		var definition = App.content_catalog.circuit(event.circuit_id)
+		if definition == null: return {}
+		result[event.circuit_id] = definition.document()
+	return result
 
 func _campaign_seed_record(track: Dictionary, campaign: CampaignDefinition) -> RaceRecord:
 	var launch = WeekendLaunch.new(App.content_catalog)
@@ -99,6 +108,11 @@ func _campaign_seed_record(track: Dictionary, campaign: CampaignDefinition) -> R
 	return record
 
 func _campaign_track(track_hash: String) -> Dictionary:
+	var frozen = CampaignStarter.circuits(App.campaign_checkpoint)
+	for document in frozen.values():
+		if RaceStateValue.fingerprint(document) == track_hash:
+			return document.duplicate(true)
+	# Explicit compatibility path for pre-authored campaign saves.
 	App.load_library()
 	var authored_vehicle = CampaignStarter.vehicle_definition(App.campaign_checkpoint)
 	var vehicle_definition = VehicleDefinition.from_record(authored_vehicle) if not authored_vehicle.is_empty() else null
@@ -131,7 +145,7 @@ func _start_campaign_event() -> void:
 		return
 	var document = _campaign_track(projection.next_event.track_hash)
 	if document.is_empty():
-		UI.notify(host, "Departure unavailable", "The frozen campaign circuit is not available in the current library.")
+		UI.notify(host, "Departure unavailable", "The frozen campaign circuit is unavailable or does not match the scheduled event.")
 		return
 	var mappings = CampaignStarter.mappings(App.campaign_checkpoint)
 	var profiles = CampaignEngineeringQuery.race_profiles(App.campaign_checkpoint, mappings)
