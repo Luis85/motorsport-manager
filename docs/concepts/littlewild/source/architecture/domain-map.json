@@ -192,9 +192,6 @@
     "adventure-content.ts": "Adventure definitions depend on the dynamic content registry and schema tables; migrate after the content-runtime contract is typed.",
     "growth-content.ts": "Growth definitions depend on Adventure/content dynamic tables and extension records; migrate after the shared content contracts are typed.",
     "colony-policies.ts": "Policy orchestration still consumes the dynamic Engine and Adventure facades; migrate after shared application/domain ports replace facade discovery.",
-    "navigation.ts": "Navigation still consumes dynamically shaped topology/engine records; migrate with the physical-world profile and topology contracts.",
-    "world-integrity.ts": "World integrity currently validates broad engine/world-content objects; migrate after navigation and world-content expose typed ports.",
-    "validation-village.ts": "Village persistence validation spans multiple legacy planner, market and interaction records; migrate behind versioned persisted DTOs.",
     "world-content.ts": "World content adapts dynamic schema tables into runtime lookups; migrate after the content registry exposes typed world-definition ports.",
     "engine.ts": "Stable legacy facade and save/import boundary is intentionally retained during the strangler migration; decompose behind typed application ports.",
     "systems.ts": "Historical progression composition adapter remains for save parity; extract remaining rules behind typed domain services before strict migration.",
@@ -206,5 +203,5 @@
     "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and compatibility migrations; migrate after scenario/content ports are fully typed.",
     "story-codec.ts": "Portable-story codec preserves multiple legacy envelope/save formats and dynamic migrations; migrate incrementally behind typed versioned DTOs."
   },
-  "strictTypingDebtBudget": 20
+  "strictTypingDebtBudget": 17
 }

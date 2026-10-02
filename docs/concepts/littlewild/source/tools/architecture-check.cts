@@ -280,7 +280,7 @@ check("Strict TypeScript coverage is an explicit domain/application ratchet", ()
     assert(typeof reason==="string"&&reason.trim().length>=40,"Typing debt needs a concrete migration reason: "+file);
   }
   const strictRuntime=[...owned.keys()].filter(file=>strictFiles.has(file));
-  assert(strictRuntime.length>=15,"Strict runtime coverage regressed below 15 modules: "+strictRuntime.length);
+  assert(strictRuntime.length>=18,"Strict runtime coverage regressed below 18 modules: "+strictRuntime.length);
 });
 
 check("Strict runtime modules contain no explicit any or TypeScript suppression", () => {

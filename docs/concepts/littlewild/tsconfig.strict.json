@@ -27,7 +27,10 @@
     "source/scenario-migrations.ts",
     "source/engine-composition.ts",
     "source/actor-ecs.ts",
-    "source/scenario-story.ts"
+    "source/scenario-story.ts",
+    "source/navigation.ts",
+    "source/world-integrity.ts",
+    "source/validation-village.ts"
   ],
   "include": []
 }

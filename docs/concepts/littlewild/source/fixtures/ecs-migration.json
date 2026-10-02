@@ -29,10 +29,20 @@
     "reason": "World logistics and production register as a composition layer while physical resource mutation remains in deterministic world ECS systems.",
     "required_token": "Composition.register({id:'world-simulation'"
   },
+  "world-integrity.js": {
+    "prior_sha256": "07ba132c5c8808275381101bb4117cdac354f64dd0f48c28b145dbbb6c3643c0",
+    "reason": "World integrity checks now use explicit TypeScript ports for engine state, world content and navigation so physical-world invariants are strict-checked without changing validation behavior.",
+    "required_token": "interface WorldIntegrityApi"
+  },
   "village-systems.js": {
     "prior_sha256": "d09b25a3c1372e16e1e4a359a0f43db1dde7964dc423dcbe9246675195c223d7",
     "reason": "Village, market and progression policy registers as an explicit composition layer while economy and physical stock settlement remain separate services.",
     "required_token": "Composition.register({id:'village'"
+  },
+  "validation-village.js": {
+    "prior_sha256": "3de6a77afa9d70fbf5a9ad2c47f391c14eff130e71e9b4e84801b6761ae3455e",
+    "reason": "Village/save validation now narrows unknown persisted input into explicit TypeScript records for planning, market, event and navigation invariants while retaining the same fail-closed runtime checks.",
+    "required_token": "interface VillageValidationApi"
   },
   "planner.js": {
     "prior_sha256": "76bc92d42508f2c19103806a85d36d0e168358dc1ee5a7e659f4f9cacfeec2db",

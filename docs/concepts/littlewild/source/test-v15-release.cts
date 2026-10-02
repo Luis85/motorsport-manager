@@ -29,7 +29,7 @@ test('Standalone bundle contains the versioned profile and envelope-10 boundary'
 
 const baseline=JSON.parse(fs.readFileSync(__dirname+'/fixtures/v14-retained-contracts.json'));
 const ecsMigrated=JSON.parse(fs.readFileSync(__dirname+'/fixtures/ecs-migration.json'));
-test('Only documented reviewed migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['engine.js','systems.js','behavior-tree.js','rpg.js','colony.js','world-simulation.js','village-systems.js','planner.js','cartography.js','story-codec.js']));
+test('Only documented reviewed migration files are exempted from historical byte parity',()=>assert.deepEqual(Object.keys(ecsMigrated),['engine.js','systems.js','behavior-tree.js','rpg.js','colony.js','world-simulation.js','world-integrity.js','village-systems.js','validation-village.js','planner.js','cartography.js','story-codec.js']));
 for (const [file,sha] of Object.entries(baseline)) test('v14 retained contract: '+file,()=>{
   const authored=file.endsWith('.cjs')?file.slice(0,-4)+'.cts':file.endsWith('.js')?file.slice(0,-3)+'.ts':file;
   const sourcePath=path.join(sourceRoot,authored);
