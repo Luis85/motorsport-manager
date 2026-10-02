@@ -2003,6 +2003,16 @@
           "note": "Dated starter season event schedule."
         },
         {
+          "prefix": "/calendar/*/circuit_id",
+          "classification": "reference",
+          "consumers": [
+            "scripts/application/content/catalog.gd",
+            "scripts/application/campaign/starter.gd",
+            "scripts/domain/campaign/content_snapshot.gd"
+          ],
+          "note": "Stable circuit reference resolved before activation and frozen into each campaign career."
+        },
+        {
           "prefix": "/player",
           "classification": "authoring",
           "consumers": [
