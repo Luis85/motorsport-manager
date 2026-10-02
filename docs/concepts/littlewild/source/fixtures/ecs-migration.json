@@ -14,6 +14,11 @@
     "reason": "Behavior-tree documents now use exact behavior-free node schemas, prototype-safe cooldown memory and strict deterministic tick validation while retaining compiled action handlers.",
     "required_token": "Behavior tick needs finite simulation time."
   },
+  "rpg.js": {
+    "prior_sha256": "1b5c12364f8ea9fe9040d2e486d13a218ee567871bcd73c02bff6a3f0dee557f",
+    "reason": "The deterministic RPG kernel now exposes explicit TypeScript result/API contracts and typed difficulty/outcome state while preserving the same seeded roll algorithms and public LWRPG surface.",
+    "required_token": "interface RpgApi"
+  },
   "colony.js": {
     "prior_sha256": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
     "reason": "Colony behavior registers as a composition layer, uses an actor-scoped view over plain root state, and delegates the high-level fixed-step order to the simulation pipeline.",

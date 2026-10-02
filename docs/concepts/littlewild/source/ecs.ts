@@ -2,20 +2,26 @@
  * Domain-only: no DOM, clocks, storage, network, or game-specific content.
  * Structural buffering is atomic; component-value rollback remains domain-transaction owned.
  */
-(function (root: any) {
+(function (inputRoot: unknown) {
     'use strict';
+
+    interface LittlewildRoot { LWECS?: unknown; }
+    const root = inputRoot as LittlewildRoot;
 
     type EntityId = string;
     type ComponentType = string;
     type ComponentData = Record<string, unknown>;
     type StructuralOperation = 'create' | 'destroy' | 'set' | 'remove';
 
-    interface StructuralCommand {
-        operation: StructuralOperation;
-        id: EntityId;
-        type?: ComponentType;
-        data?: ComponentData;
-    }
+    type StructuralCommand =
+        | { operation: 'create'; id: EntityId }
+        | { operation: 'destroy'; id: EntityId }
+        | { operation: 'remove'; id: EntityId; type: ComponentType }
+        | { operation: 'set'; id: EntityId; type: ComponentType; data: ComponentData };
+    type StructuralPreview =
+        | { operation: 'create'; id: EntityId }
+        | { operation: 'destroy'; id: EntityId }
+        | { operation: 'set' | 'remove'; id: EntityId; type: ComponentType };
     interface StepContext {
         entityId?: EntityId;
         [key: string]: unknown;
@@ -85,9 +91,10 @@
         get stores(): ReadonlyMap<ComponentType, ReadonlyMap<EntityId, ComponentData>> {
             return new Map([...this.#componentStores].map(([type, store]) => [type, new Map(store)] as const));
         }
-        get structural(): readonly Readonly<Pick<StructuralCommand,'operation'|'id'|'type'>>[] {
-            return Object.freeze(this.#structuralBuffer.map(action =>
-                Object.freeze({operation:action.operation,id:action.id,type:action.type})));
+        get structural(): readonly Readonly<StructuralPreview>[] {
+            return Object.freeze(this.#structuralBuffer.map(action => action.operation === 'create' || action.operation === 'destroy'
+                ? Object.freeze({ operation: action.operation, id: action.id })
+                : Object.freeze({ operation: action.operation, id: action.id, type: action.type })));
         }
         get pendingStructural(): number { return this.#structuralBuffer.length; }
 
@@ -134,12 +141,23 @@
             return [...this.#entitySet].filter(id => this.has(id, ...types) &&
                 except.every(type => !this.#componentStores.get(type)?.has(id))).sort();
         }
+        defer(operation: 'create' | 'destroy', id: EntityId): void;
+        defer(operation: 'remove', id: EntityId, type: ComponentType): void;
+        defer(operation: 'set', id: EntityId, type: ComponentType, data: ComponentData): void;
         defer(operation: StructuralOperation, id: EntityId, type?: ComponentType, data?: ComponentData): void {
             if (!['create', 'destroy', 'set', 'remove'].includes(operation)) throw Error('Invalid structural operation.');
             name(id, 'entity ID');
-            if (operation === 'set' || operation === 'remove') name(type, 'component type');
-            if (operation === 'set' && (!plain(data) || !dataOnly(data))) throw Error('Component data must be behavior-free plain data.');
-            this.#structuralBuffer.push({ operation, id, type, data });
+            if (operation === 'create' || operation === 'destroy') {
+                this.#structuralBuffer.push({ operation, id });
+                return;
+            }
+            const componentType = name(type, 'component type');
+            if (operation === 'remove') {
+                this.#structuralBuffer.push({ operation, id, type: componentType });
+                return;
+            }
+            if (!plain(data) || !dataOnly(data)) throw Error('Component data must be behavior-free plain data.');
+            this.#structuralBuffer.push({ operation, id, type: componentType, data });
         }
         discardDeferred(): void {
             this.editable();
@@ -237,4 +255,4 @@
     const api = Object.freeze({ World, Scheduler, PHASES });
     root.LWECS = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+})(globalThis);

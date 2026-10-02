@@ -1,6 +1,7 @@
 'use strict';
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
 
@@ -16,6 +17,7 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   legacyCompatibilityModules: Record<string,string>;
   domainGlobals: string[];
   injectedDataGlobals: string[];
+  strictTypingDebt: Record<string,string>;
 };
 const results: CheckResult[] = [];
 
@@ -243,11 +245,59 @@ check("External simulation and scenario data contains no executable payload fiel
   assert(violations.length === 0, "Executable-shaped data field found: " + violations.join("; "));
 });
 
-check("Strict TypeScript gate covers the architecture kernel", () => {
-  const config = fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8");
-  for (const file of ["source/ecs.ts", "source/command-router.ts", "source/build.ts", "source/tools/architecture-check.cts"]) {
-    assert(config.includes(`"${file}"`), `Strict gate does not include ${file}`);
+check("Strict TypeScript compiler contract is hardened", () => {
+  const config = JSON.parse(fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8")) as {
+    compilerOptions?: Record<string,unknown>;
+    files?: string[];
+  };
+  const options=config.compilerOptions??{};
+  for (const [key,value] of Object.entries({
+    noCheck:false,strict:true,noEmit:true,noImplicitOverride:true,noUncheckedIndexedAccess:true,
+    exactOptionalPropertyTypes:true,noImplicitReturns:true,noFallthroughCasesInSwitch:true
+  })) assert(options[key]===value,`Strict compiler option ${key} must be ${String(value)}.`);
+  assert(Array.isArray(config.files)&&config.files.length>0,"Strict TypeScript file list is missing.");
+});
+
+check("Strict TypeScript coverage is an explicit domain/application ratchet", () => {
+  const config = JSON.parse(fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8")) as {files?:string[]};
+  const listed=config.files??[];
+  assert(new Set(listed).size===listed.length,"Strict TypeScript file list contains duplicates.");
+  const strictFiles=new Set(listed.filter(file=>file.startsWith("source/")).map(file=>path.basename(file)));
+  const owned=new Map<string,string>();
+  for(const context of DOMAIN_MAP.contexts)for(const file of context.files)
+    if(context.layer==="domain"||context.layer==="application")owned.set(file,context.layer);
+  const debt=DOMAIN_MAP.strictTypingDebt;
+  assert(debt&&typeof debt==="object"&&!Array.isArray(debt),"Strict typing debt register is missing.");
+  for(const [file,layer] of owned){
+    assert(strictFiles.has(file)||Object.hasOwn(debt,file),`${layer} runtime module is neither strict nor registered debt: ${file}`);
   }
+  for(const [file,reason] of Object.entries(debt)){
+    assert(owned.has(file),"Strict typing debt names a non-domain/application module: "+file);
+    assert(!strictFiles.has(file),"Strict module remains in typing debt: "+file);
+    assert(typeof reason==="string"&&reason.trim().length>=40,"Typing debt needs a concrete migration reason: "+file);
+  }
+  const strictRuntime=[...owned.keys()].filter(file=>strictFiles.has(file));
+  assert(strictRuntime.length>=14,"Strict runtime coverage regressed below 14 modules: "+strictRuntime.length);
+});
+
+check("Strict runtime modules contain no explicit any or TypeScript suppression", () => {
+  const config = JSON.parse(fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8")) as {files?:string[]};
+  const strictFiles=new Set((config.files??[]).filter(file=>file.startsWith("source/")).map(file=>path.basename(file)));
+  const runtime=new Set(DOMAIN_MAP.contexts
+    .filter(context=>context.layer==="domain"||context.layer==="application")
+    .flatMap(context=>context.files));
+  const violations:string[]=[];
+  for(const file of [...strictFiles].filter(file=>runtime.has(file)).sort()){
+    const text=source(file);
+    if(/@ts-(?:ignore|nocheck|expect-error)/.test(text))violations.push(file+": TypeScript suppression");
+    const ast=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,file.endsWith(".cts")?ts.ScriptKind.TS:ts.ScriptKind.TS);
+    const visit=(node:ts.Node):void=>{
+      if(node.kind===ts.SyntaxKind.AnyKeyword)violations.push(file+": explicit any");
+      ts.forEachChild(node,visit);
+    };
+    visit(ast);
+  }
+  assert(violations.length===0,"Strict runtime typing escape hatch found: "+[...new Set(violations)].join("; "));
 });
 
 check("ECS persistence remains plain-data owned by domain records", () => {

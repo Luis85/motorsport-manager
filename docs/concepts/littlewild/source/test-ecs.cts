@@ -31,6 +31,19 @@ test('ECS collection views cannot bypass world or scheduler invariants',()=>{
  const systems=scheduler.systems;assert.throws(()=>systems.push({id:'zero'}),TypeError);
  assert.deepEqual(scheduler.systems.map(system=>system.id),['one']);
 });
+test('Deferred structural commands expose exact operation-specific shapes and reject incomplete runtime calls',()=>{
+ const w=new E.World();
+ assert.throws(()=>w.defer('remove','c1'),/component type/);
+ assert.throws(()=>w.defer('set','c1','Data'),/behavior-free/);
+ w.defer('create','c1');w.defer('set','c1','Data',{value:1});w.defer('remove','c1','Data');w.defer('destroy','c1');
+ const byOp=Object.fromEntries(w.structural.map(command=>[command.operation,command]));
+ assert.deepEqual(byOp.create,{operation:'create',id:'c1'});
+ assert.deepEqual(byOp.set,{operation:'set',id:'c1',type:'Data'});
+ assert.deepEqual(byOp.remove,{operation:'remove',id:'c1',type:'Data'});
+ assert.deepEqual(byOp.destroy,{operation:'destroy',id:'c1'});
+ assert.equal(Object.hasOwn(byOp.set,'data'),false);
+ w.flush();assert.equal(w.entities.has('c1'),false);
+});
 test('Actor ECS mutates native records without introducing ECS save state',()=>{const c={id:'c1',creature:{x:1,y:1},inventory:{berries:2},needs:{food:80,water:70,energy:60,comfort:50,joy:40},learning:{practiceDay:1,practicedToday:{x:1},fatigue:20,recovering:false},feelings:{social:50,anger:10},task:{kind:'build',phase:'walk',style:'together'}};const e=A.create();const refs=[c.needs,c.learning,c.feelings];const r=e.step(c,.1,{day:2,socialPreference:2,loadLevel:3,hasShelter:true});assert.equal(r.studying,false);assert.equal(c.learning.practiceDay,2);assert.deepEqual(c.learning.practicedToday,{});assert.equal(e.world.get('c1','Needs'),refs[0]);close(c.learning.fatigue,19.984);close(c.feelings.social,49.9945);close(c.feelings.anger,9.991);close(c.needs.food,79.99);close(c.needs.water,69.987);close(c.needs.energy,59.9808);close(c.needs.comfort,49.998);close(c.needs.joy,39.9965);assert(!Object.hasOwn(c,'ecs'));});
 test('Learning thresholds and playful tuning are data-driven',()=>{const rules=JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json'));rules.learning.playfulFatigue=1;const c={id:'c1',creature:{x:1,y:1},inventory:{berries:2},needs:{food:100,water:100,energy:100,comfort:100,joy:100},learning:{practiceDay:4,practicedToday:{},fatigue:69.95,recovering:false},feelings:{social:100,anger:0},task:{kind:'practice',phase:'work',style:'playful'}};A.create(rules).step(c,.1,{day:4,socialPreference:0,loadLevel:0,hasShelter:false});close(c.learning.fatigue,70.05);assert.equal(c.learning.recovering,true);});
 test('Rule manifests reject behavior-shaped or unknown data',()=>{const rules=JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json'));rules.execute='alert(1)';assert.throws(()=>A.validateRules(rules),/schema/);rules.execute=undefined;delete rules.execute;rules.needs.workingKinds.push('bad task!');assert.throws(()=>A.validateRules(rules),/needs/);});

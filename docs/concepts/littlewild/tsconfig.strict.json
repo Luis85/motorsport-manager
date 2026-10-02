@@ -5,7 +5,10 @@
     "strict": true,
     "noEmit": true,
     "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "files": [
     "source/ecs.ts",
@@ -14,7 +17,16 @@
     "source/tools/architecture-check.cts",
     "source/simulation-pipeline.ts",
     "source/simulation-profile.ts",
-    "source/behavior-tree.ts"
+    "source/behavior-tree.ts",
+    "source/world-profile.ts",
+    "source/rpg.ts",
+    "source/scenario-shape.ts",
+    "source/simulation.cts",
+    "source/engine-composition-root.ts",
+    "source/actor-state-view.ts",
+    "source/scenario-migrations.ts",
+    "source/engine-composition.ts",
+    "source/actor-ecs.ts"
   ],
   "include": []
 }

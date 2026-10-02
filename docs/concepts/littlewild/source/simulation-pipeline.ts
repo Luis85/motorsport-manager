@@ -2,7 +2,7 @@
  * This module owns orchestration only: domain methods and ECS systems own mutations.
  * Actor-major order and the fixed-step clock remain compatibility contracts.
  */
-(function(root: any){
+(function(inputRoot: unknown){
  'use strict';
 
  interface ScheduleStep {
@@ -11,25 +11,55 @@
   readonly order: number;
   readonly owner: string;
  }
- interface Archetype {
-  simulationPipeline?: readonly string[];
+ interface Archetype { simulationPipeline?: readonly string[]; }
+ interface ResourceNode { stock:number; max:number; regen:number; kind:string; }
+ interface Building { kind:string; regen:number; stock:number; level?:number; }
+ interface Creature {
+  daily:{day:number;bonded:number};
+  allowance:{given:number;auto?:boolean};
+  activeQuest?:unknown;
+ }
+ interface SimulationState {
+  started:boolean;
+  paused:boolean;
+  simTime:number;
+  hour:number;
+  day:number;
+  nodes:ResourceNode[];
+  buildings:Building[];
  }
  interface EngineLike {
-  s: any;
-  _simulating?: boolean;
-  _actor?: any;
-  stepWorld?: (dt: number) => void;
-  updateQuestBoard: () => void;
-  ecs: { sync: (creatures: any[]) => void };
-  creatures: any[];
-  newWish: () => void;
-  topUp: (automatic?: boolean) => unknown;
-  stepQuest: (dt: number) => void;
-  stepActor: (dt: number) => void;
+  s:SimulationState;
+  _simulating?:boolean|undefined;
+  _actor?:Creature|undefined;
+  stepWorld?:((dt:number)=>void)|undefined;
+  updateQuestBoard:()=>void;
+  ecs:{sync:(creatures:Creature[])=>void};
+  creatures:Creature[];
+  newWish:()=>void;
+  topUp:(automatic?:boolean)=>unknown;
+  stepQuest:(dt:number)=>void;
+  stepActor:(dt:number)=>void;
  }
+ interface LittlewildFacade {
+  CROP_RES:Record<string,unknown>;
+  clamp(value:number,min:number,max:number):number;
+  SimulationPipeline?:SimulationPipelineApi;
+ }
+ interface SimulationPipeline {
+  readonly schedule:readonly ScheduleStep[];
+  step(engine:EngineLike,dt:number):void;
+ }
+ interface SimulationPipelineApi {
+  readonly schedule:readonly ScheduleStep[];
+  create(archetype?:Archetype|null):SimulationPipeline;
+ }
+ interface LittlewildRoot { LW?:LittlewildFacade; LWSimulationPipeline?:SimulationPipelineApi; }
+ const root=inputRoot as LittlewildRoot;
+ const facade=root.LW;if(!facade)throw Error('Littlewild facade missing.');
+ const L:LittlewildFacade=facade;
 
- const L:any=root.LW;
- const schedule: readonly ScheduleStep[]=Object.freeze([
+ const schedule:readonly ScheduleStep[]=Object.freeze([
   Object.freeze({id:'clock',scope:'world',order:10,owner:'simulation-pipeline'}),
   Object.freeze({id:'world',scope:'world',order:20,owner:'world-simulation'}),
   Object.freeze({id:'quest-board',scope:'world',order:30,owner:'cartography'}),
@@ -51,13 +81,13 @@
  });
 
  function fallbackWorld(engine:EngineLike,dt:number):void{
-  const s=engine.s;
-  for(const node of s.nodes)if(node.stock<node.max){
+  const state=engine.s;
+  for(const node of state.nodes)if(node.stock<node.max){
    node.regen+=dt;
    const limit=node.kind==='berries'?LEGACY_FALLBACK.berryNodeRegenSeconds:LEGACY_FALLBACK.otherNodeRegenSeconds;
    if(node.regen>=limit){node.regen-=limit;node.stock=Math.min(node.max,node.stock+1);}
   }
-  for(const building of s.buildings)if(L.CROP_RES[building.kind]){
+  for(const building of state.buildings)if(L.CROP_RES[building.kind]){
    building.regen+=dt*(1+((building.level||1)-1)*LEGACY_FALLBACK.cropLevelRate);
    if(building.regen>=LEGACY_FALLBACK.cropCycleSeconds){
     building.regen-=LEGACY_FALLBACK.cropCycleSeconds;
@@ -67,7 +97,7 @@
   }
  }
 
- function create(archetype:Archetype|null=null){
+ function create(archetype:Archetype|null=null):SimulationPipeline{
   if(archetype){
    const ids=schedule.map(step=>step.id),actual=archetype.simulationPipeline;
    if(!Array.isArray(actual)||actual.length!==ids.length||actual.some((id,index)=>id!==ids[index]))
@@ -75,18 +105,18 @@
   }
   function step(engine:EngineLike,dt:number):void{
    if(typeof dt!=='number'||!Number.isFinite(dt))return;
-   const s=engine.s;if(!s.started||s.paused)return;
+   const state=engine.s;if(!state.started||state.paused)return;
    dt=L.clamp(dt,0,.25);if(!dt)return;
    engine._simulating=true;const previous=engine._actor;
    try{
-    s.simTime+=dt;s.hour+=dt*.05;let newDay=false;
-    if(s.hour>=24){s.hour-=24;s.day++;newDay=true;}
+    state.simTime+=dt;state.hour+=dt*.05;let newDay=false;
+    if(state.hour>=24){state.hour-=24;state.day++;newDay=true;}
     if(engine.stepWorld)engine.stepWorld(dt);else fallbackWorld(engine,dt);
     engine.updateQuestBoard();engine.ecs.sync(engine.creatures);
     for(const creature of engine.creatures){
      engine._actor=creature;
      if(newDay){
-      creature.daily={day:s.day,bonded:0};creature.allowance.given=0;engine.newWish();
+      creature.daily={day:state.day,bonded:0};creature.allowance.given=0;engine.newWish();
       if(creature.allowance.auto&&!creature.activeQuest)engine.topUp(true);
      }
      if(creature.activeQuest){engine.stepQuest(dt);continue;}
@@ -97,7 +127,7 @@
   return Object.freeze({schedule,step});
  }
 
- const api=Object.freeze({schedule,create});
+ const api:SimulationPipelineApi=Object.freeze({schedule,create});
  root.LWSimulationPipeline=api;L.SimulationPipeline=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
-})(typeof globalThis!=='undefined'?globalThis:this);
+})(globalThis);

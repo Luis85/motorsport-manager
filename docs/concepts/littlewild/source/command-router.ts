@@ -1,8 +1,12 @@
 /* Explicit application-command boundary for the composed simulation facade.
  * Command IDs and handler mappings are compiled capabilities; imported JSON cannot add code.
  */
-(function(root: any){
+(function(inputRoot: unknown){
  'use strict';
+
+ interface LittlewildFacade { CommandRouter?: unknown; }
+ interface LittlewildRoot { LW?: LittlewildFacade; LWCommandRouter?: unknown; }
+ const root=inputRoot as LittlewildRoot;
 
  type Scope = 'world' | 'actor';
  type JsonScalar = null | string | boolean | number;
@@ -25,7 +29,7 @@
  }
  interface Failure { ok: false; reason: string; }
 
- const L=root.LW;
+ const L=root.LW;if(!L)throw Error('Littlewild facade missing.');
  const definitions: readonly CommandDefinition[] = Object.freeze([
   {id:'select-creature',method:'selectCreature',scope:'world',maxArgs:1,away:false},
   {id:'care',method:'care',scope:'actor',maxArgs:1,away:false},
@@ -139,4 +143,4 @@
  const api=Object.freeze({manifest,dispatch,install});
  root.LWCommandRouter=api;L.CommandRouter=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
-})(typeof globalThis!=='undefined'?globalThis:this);
+})(globalThis);

@@ -1,8 +1,11 @@
 /* Data-authored decision tree. Leaves are registered compiled functions, never code from JSON.
  * Node documents are exact, behavior-free data; tick order and cooldown memory are deterministic.
  */
-(function (root: any) {
+(function (inputRoot: unknown) {
     'use strict';
+
+    interface LittlewildRoot { LWBehaviorTree?: unknown; }
+    const root = inputRoot as LittlewildRoot;
 
     type Status = 'success' | 'running' | 'failure';
     type ActionResult = Status | false | null | undefined;
@@ -171,4 +174,4 @@
 
     root.LWBehaviorTree = BehaviorTree;
     if (typeof module !== 'undefined' && module.exports) module.exports = BehaviorTree;
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+})(globalThis);
