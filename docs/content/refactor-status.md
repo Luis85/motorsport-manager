@@ -1,20 +1,23 @@
 # Data-driven refactor: implementation status
 
-This review continuation is tracked directly on PR #24. The package table is
-updated with each published increment; focused evidence does not replace the
-complete final-source release gate.
+PR #24 was merged into `main` on 30 September 2026. Its exact final source head
+`a8428c7` passed the six-shard Godot aggregate, content/exported-runtime,
+runtime-confidence and Linux/Windows debug/release build and native-smoke gates.
+The merge introduced no file changes. The table retains scope-specific follow-up
+work; passing automation does not establish human usability or broad balance.
+See [current project status](../current-state.md) for the current player-facing boundary.
 
 | Work package | Delivered foundation | Remaining gate |
 |---|---|---|
 | DD-00 Inventory | Per-family guides plus machine-checked ownership/classification for every published schema leaf and retained content-related literal table/bound | Keep the exact leaf-path snapshot and consumer gate current as contracts expand |
 | DD-01 Content boundary | Strict bounded packs, schemas, provenance, typed vehicles and external discovery | Retain regression gates as families expand |
 | DD-02 Field | Separate teams/drivers/rosters, stable ownership, fourteen-car example | Existing targeted tests retained |
-| DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Complete-source sporting and performance acceptance |
+| DD-03 Tyres/setup | Arbitrary compounds, allocations, thermal/setup profiles; eleven authored wheel operating coefficients and documented invariant/safety classification | Exact-source sporting/runtime acceptance is complete; controlled same-host paired performance remains separate |
 | DD-04 Mechanics/weekends | Shared fuel, service, environment, operations, competition/rival tuning; registered-provider profiles frozen into weekends/replay; current published fields mapped to production consumers | New stateful provider implementations still require versioned code readers and inventory entries |
 | DD-05 Editor/content | Shared circuit catalog, original track files, external styles, ordinary editor transactions, complete-weekend scenario briefs, six bounded file-backed diagnostic collections with gallery metadata, and bounded editor placement/guide profiles | Automate stale-preset and native guide/placement regression with each future profile change |
 | DD-06 Continuation | Frozen supported definitions, circuit/style snapshots and scenario context; exact persisted number decoding | Extend the same contract to any subsequently migrated families |
 | DD-07 Authoring | All authoring operations; ordered multi-pack selection, cross-pack cloning, side-specific diff dependencies, safe failed-write cleanup and explicit version incompatibility diagnostics | Real converters when an actual subsequent format is defined; none is fabricated for hypothetical versions |
-| DD-08 Acceptance | Registered domain/native tests and Linux debug/release exported-runtime acceptance | Complete final-source six-shard regression, performance comparison, and remote CI |
+| DD-08 Acceptance | Registered domain/native tests and Linux debug/release exported-runtime acceptance | Exact-source six-shard/remote CI completed; same-host paired performance and human playtesting remain separate |
 
 ## Scope of this continuation
 
@@ -32,8 +35,10 @@ existing monotonic suite floor, not substituted for it.
 
 A local source/patch handover is not evidence that GitHub was updated. Check the
 actual PR head before publishing, and do not force-push over concurrent work.
-This increment must remain a draft until its remaining work and complete-source
-release gates are satisfied. No merge is authorized by this document.
+Historical publication requirement: this work remained draft until the exact-head
+release gates were satisfied. That condition was met before PR #24 merged.
+Future changes require their own exact-source gates; this historical note is not a
+new authorization to merge an unverified maintenance PR.
 
 ## Review and hardening changes
 
@@ -60,8 +65,8 @@ placement presets and contextual guide copy now use an authoring-only profile;
 code retains every target/reveal action and the renderer type allow-list. The
 developer diagnostic collections remain bundled verification resources with their
 own validated presentation metadata, rather than a new executable external-pack format. The completed-wheel classification is not represented
-as an audit of every other subsystem. Windows runtime execution and human
-playtesting are separate acceptance gates.
+as an audit of every other subsystem. Windows native exported-runtime execution passed on the exact PR #24 head.
+Human playtesting is still a separate product-validation activity.
 
 New source/test files remain within the code-line budgets. Existing oversized
 files remain visible (including RaceSim, which receives frozen-profile plumbing);

@@ -1,5 +1,6 @@
 class_name MinimalRaceWorkspace
 extends VBoxContainer
+const StrategyComparisonView = preload("res://scripts/ui/race_weekend/minimal/strategy_comparison.gd")
 ## A new, small race screen. Does not construct/inherit Director or Engineering UI.
 signal menu_requested
 signal new_weekend_requested
@@ -48,6 +49,9 @@ var box_button: Button
 var push_button: Button
 var calm_button: Button
 var engine_control: OptionButton
+var strategy_button: Button
+var strategy_popup: PopupPanel
+var strategy_view
 var text_scale = 1.0
 var preferences: Dictionary = {}
 var refresh_clock = 0.0
@@ -71,7 +75,7 @@ func _ready() -> void:
 	theme = MinimalRaceStyle.theme(text_scale)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL; size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_theme_constant_override("separation", 8)
-	build_toolbar(); build_body(); build_driver_row()
+	build_toolbar(); build_body(); build_driver_row(); build_strategy_comparison()
 	last_phase = frame.phase; ready_to_draw = true
 	get_viewport().size_changed.connect(func(): call_deferred("refresh"))
 	refresh(); canvas.call_deferred("fit")
@@ -103,6 +107,7 @@ func build_toolbar() -> void:
 	for speed in [1,2,4,8,16]: speed_control.add_item(str(speed) + "×", speed)
 	speed_control.item_selected.connect(func(index): controls.set_speed(speed_control.get_item_id(index)); refresh())
 	speed_control.accessibility_name = "Simulation speed"; row.add_child(speed_control)
+	strategy_button = button("Strategy", show_strategy_comparison); row.add_child(strategy_button)
 	primary_button = button("Start practice", advance_stage); MinimalRaceStyle.primary(primary_button, text_scale); row.add_child(primary_button)
 
 func build_body() -> void:
@@ -212,9 +217,64 @@ func build_pitwall() -> void:
 	hint_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; right.add_child(hint_label)
 	var space = Control.new(); space.size_flags_vertical = Control.SIZE_EXPAND_FILL; right.add_child(space)
 
+func build_strategy_comparison() -> void:
+	strategy_popup = PopupPanel.new()
+	strategy_popup.exclusive = true
+	strategy_popup.unresizable = true
+	add_child(strategy_popup)
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	strategy_popup.add_child(scroll)
+	var margin = MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin)
+	for side in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, roundi(14 * text_scale))
+	strategy_view = StrategyComparisonView.new()
+	strategy_view.configure(text_scale)
+	margin.add_child(strategy_view)
+	strategy_view.refresh_requested.connect(refresh_strategy_comparison)
+	strategy_view.close_requested.connect(close_strategy_comparison)
+	strategy_popup.popup_hide.connect(_restore_strategy_focus)
+	strategy_popup.window_input.connect(_strategy_window_input)
+
+func show_strategy_comparison() -> void:
+	if strategy_button.disabled: return
+	refresh_strategy_comparison()
+	var viewport = get_viewport_rect().size
+	var target = Vector2i(
+		mini(roundi(720 * text_scale), int(viewport.x - 32)),
+		mini(roundi(430 * text_scale), int(viewport.y - 32)))
+	strategy_popup.min_size = Vector2i.ZERO
+	strategy_popup.max_size = target
+	strategy_popup.popup_centered(target)
+	strategy_view.refresh_button.call_deferred("grab_focus")
+
+func close_strategy_comparison() -> void:
+	if strategy_popup.visible:
+		strategy_popup.hide()
+	_restore_strategy_focus()
+
+func _restore_strategy_focus() -> void:
+	if is_inside_tree() and strategy_button != null:
+		strategy_button.call_deferred("grab_focus")
+
+func _strategy_window_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5]:
+		strategy_popup.get_viewport().set_input_as_handled()
+
+func refresh_strategy_comparison() -> void:
+	strategy_view.present(session.query.strategy_comparison(selected_id), frame.cars[selected_id].name)
+
 func select_driver(id: int) -> void:
 	if not controls.owned(id): return
 	if id != selected_id and engine_control.get_popup().visible: engine_control.get_popup().hide()
+	if id != selected_id and strategy_popup.visible: strategy_popup.hide()
 	selected_id = id; controls.select_driver(id); refresh()
 
 func remember_message() -> void:
@@ -270,6 +330,9 @@ func refresh() -> void:
 	primary_button.disabled = frame.phase in ["formation","lights"] or (frame.phase == "practice" and frame.practice_state.closed) or (frame.phase == "qualifying" and frame.qual_closed)
 	primary_button.tooltip_text = "Close the session; current timed laps may finish. Playback resumes to bring cars home." if frame.phase in ["practice","qualifying"] else "Advance only when you are ready."
 	var car = frame.cars[selected_id]
+	strategy_button.disabled = frame.phase != "race" or car.dnf or car.finished
+	strategy_button.tooltip_text = "Open a read-only current-plan comparison; no order, pause, speed change or automatic refresh." if not strategy_button.disabled else ("This car is no longer running." if car.dnf or car.finished else "Available during the live race.")
+	if strategy_popup.visible and strategy_button.disabled: strategy_popup.hide()
 	for id in driver_buttons: driver_buttons[id].set_pressed_no_signal(id == selected_id)
 	name_label.text = car.name; state_label.text = car.state; state_label.tooltip_text = state_label.text
 	pit_identity.text = "#%02d" % car.number; pit_identity.add_theme_color_override("font_color", Color(car.color))
@@ -350,6 +413,7 @@ func _process(delta: float) -> void:
 	var phase = controls.current_phase()
 	if phase != last_phase:
 		last_phase = phase; receipts.clear(); global_message = ""; refresh_clock = 0
+		if strategy_popup.visible: strategy_popup.hide()
 	if not session_status.persistence_error.is_empty():
 		global_message = "Autosave failed: " + session_status.persistence_error
 	refresh_clock -= delta
@@ -357,7 +421,7 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or not event is InputEventKey or not event.pressed or event.echo: return
-	if engine_control.get_popup().visible or speed_control.get_popup().visible: return
+	if engine_control.get_popup().visible or speed_control.get_popup().visible or strategy_popup.visible: return
 	if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return
 	if event.keycode == KEY_SPACE:
 		if controls.is_paused(): controls.play()

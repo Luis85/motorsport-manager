@@ -22,6 +22,7 @@ func set_layout(layout: String) -> String:
 	if layout not in ["minimal", "engineering", "director"]: return "Unsupported workspace."
 	var previous = owner.settings.duplicate(true)
 	owner.settings.pitwall_layout = layout
+	if layout in ["director", "engineering"]: owner.settings.advanced_pitwall_layout = layout
 	var error: String = owner.save_settings()
 	if not error.is_empty(): owner.settings = previous
 	return error

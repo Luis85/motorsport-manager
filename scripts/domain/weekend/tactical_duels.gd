@@ -2,8 +2,10 @@ class_name TacticalDuels
 extends RefCounted
 ## A bounded, persistent mandate for ONE next stop. Physical pit execution stays in RaceSim.
 const VERSION = 1
-const CHECKPOINT_VERSION = 11
-const MODEL = "race-weekend-0.15-duels-v1"
+const LEGACY_CHECKPOINT_VERSION = 11
+const CHECKPOINT_VERSION = 12
+const LEGACY_MODEL = "race-weekend-0.15-duels-v1"
+const MODEL = "race-weekend-0.20-performance-v1"
 const HISTORY_LIMIT = 8
 const EVENT_LIMIT = 20
 const STATES = ["approved", "preparing", "ordered", "executing", "evaluating", "review", "completed", "abandoned"]

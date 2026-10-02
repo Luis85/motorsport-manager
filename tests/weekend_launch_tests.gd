@@ -83,6 +83,40 @@ func run() -> void:
 	check(summary.managed[1].status == "Retired" and summary.managed[1].laps == 4, "Retirement and completed laps remain explicit")
 	summary.rows.clear(); summary.managed[0].name = "UI edit"
 	check(before == RaceStateValue.fingerprint(simulation.snapshot()), "Results are a detached observation with no sporting or reward side effects")
+
+	var factual = WeekendResult.build(result.record)
+	check(not factual.is_empty() and WeekendResult.validate(factual).is_empty(), "A completed original weekend creates a valid factual result envelope")
+	var mappings: Array = []
+	for car in result.record.initial.cars:
+		mappings.append({"race_id": int(car.id), "person_id": "person.%02d" % int(car.id),
+			"team_id": "team.%02d" % int(car.id / 2), "car_id": "car.%02d" % int(car.id)})
+	var context = {"campaign_id": "career.test", "season_id": "season.1", "campaign_event_id": "round.1",
+		"entrant_id": "entrant.player", "event_revision": 1, "departure_slot": 100, "return_slot": 140}
+	var manifest = CampaignWeekendManifest.build(context, result.record, mappings)
+	check(not manifest.is_empty() and CampaignWeekendManifest.validate(manifest).is_empty(), "Campaign entry freezes a valid immutable weekend manifest")
+	check(manifest.race_event_id == factual.event_id and manifest.mappings.size() == factual.classification.size(), "Campaign entry binds the exact race event and every stable identity")
+	var detached_manifest = manifest.duplicate(true)
+	detached_manifest.mappings[0]["person_id"] = "person.changed"
+	check(manifest.mappings[0].person_id == "person.00", "Campaign manifest owns detached stable identity mappings")
+	var first_settlement = CampaignWeekendSettlement.stage({}, manifest, factual)
+	check(first_settlement.ok and first_settlement.status == "settled", "A matching factual weekend stages one campaign receipt")
+	check(CampaignWeekendSettlement.validate_ledger(first_settlement.ledger).is_empty(), "Staged campaign settlement ledger validates as a complete envelope")
+	check(first_settlement.receipt.classification[0].has("person_id") and not first_settlement.receipt.classification[0].has("driver_id"), "Campaign receipt maps race-local identities to stable campaign identities")
+	check(not first_settlement.receipt.has("points") and not first_settlement.receipt.has("cash") and not first_settlement.receipt.has("xp"), "Campaign boundary does not invent points, money or XP")
+	var settled_hash = RaceRecord.fingerprint(first_settlement.ledger)
+	var repeated = CampaignWeekendSettlement.stage(first_settlement.ledger, manifest, factual)
+	check(repeated.ok and repeated.status == "already_settled" and RaceRecord.fingerprint(repeated.ledger) == settled_hash, "Reapplying the same result is an idempotent no-op")
+	var corrected = factual.duplicate(true)
+	corrected.statistics.passes = int(corrected.statistics.passes) + 1
+	corrected.erase("digest"); corrected["digest"] = RaceRecord.fingerprint(corrected)
+	check(WeekendResult.validate(corrected).is_empty(), "A different valid factual result can be represented for correction review")
+	var conflict = CampaignWeekendSettlement.stage(first_settlement.ledger, manifest, corrected)
+	check(not conflict.ok and conflict.status == "conflict" and RaceRecord.fingerprint(first_settlement.ledger) == settled_hash, "A different result cannot silently settle the same campaign event twice")
+	var invalid_mapping = manifest.duplicate(true)
+	invalid_mapping.mappings[1]["race_id"] = invalid_mapping.mappings[0].race_id
+	invalid_mapping.erase("digest"); invalid_mapping["digest"] = RaceRecord.fingerprint(invalid_mapping)
+	check(not CampaignWeekendManifest.validate(invalid_mapping).is_empty(), "Campaign manifest rejects duplicate race-to-campaign identity mappings")
+	CampaignStateContracts.run(check)
 	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures}
 	Storage.write_json("res://reports/weekend-launch-tests.json", report)
 	print("WEEKEND_LAUNCH_TESTS ", JSON.stringify(report))

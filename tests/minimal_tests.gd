@@ -90,6 +90,23 @@ func test_recorded_modes() -> void:
 	invalid=sim.snapshot();invalid.practice_state.drivers[3].active.live_modes.engine=0
 	check(PracticeRaceSim.restore_practice(invalid)==null,"Stored live mode must match the actual car")
 
+func test_strategy_comparison_query() -> void:
+	var sim = fixture(); sim.phase = "race"; sim.paused = false; sim.speed = 8
+	for car in sim.cars:
+		car.route = "track"; car.distance = 300 + (12 - car.id) * 24; car.previous_distance = car.distance; car.speed = 40
+	var query = MinimalWeekendQuery.new(sim)
+	var before = JSON.stringify(sim.snapshot(), "", false, true); var commands = sim.commands.size(); var rng = sim.rng_state
+	var forecast = query.strategy_comparison(3)
+	check(not forecast.is_empty() and forecast.driver_id == 3 and forecast.options.size() >= 1, "Managed live driver gets the existing bounded strategy comparison")
+	check(forecast.options[0].id == "current" and forecast.options[0].title == "Keep current plan", "Comparison starts with the current-plan baseline")
+	check(before == JSON.stringify(sim.snapshot(), "", false, true) and commands == sim.commands.size() and rng == sim.rng_state, "Strategy query issues no command and preserves playback, state, time and RNG")
+	var original = forecast.options[0].title; forecast.options[0].title = "tampered"
+	check(query.strategy_comparison(3).options[0].title == original, "Comparison values are detached from the simulation and later queries")
+	before = JSON.stringify(sim.snapshot(), "", false, true)
+	check(query.strategy_comparison(0).is_empty() and query.strategy_comparison(-1).is_empty() and query.strategy_comparison(99).is_empty(), "Strategy query exposes neither rivals nor invalid identities")
+	sim.phase = "qualifying"; var non_race = JSON.stringify(sim.snapshot(), "", false, true)
+	check(query.strategy_comparison(3).is_empty() and non_race == JSON.stringify(sim.snapshot(), "", false, true), "Comparison is unavailable outside the live race without side effects")
+
 func test_readouts_and_timing() -> void:
 	# Synthetic read-model edge fixtures. No physics or classification injection
 	# in the separate full weekend journey.
@@ -226,6 +243,6 @@ func test_driver_context() -> void:
 
 func run() -> void:
 	var started=Time.get_ticks_msec(); geometry=TrackGeometry.new(Storage.read_catalog().data[7])
-	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes(); test_readouts_and_timing(); test_driver_context()
+	test_observation_and_ownership(); test_pit_deadlines(); test_recorded_modes(); test_strategy_comparison_query(); test_readouts_and_timing(); test_driver_context()
 	var report={"passed":failures.is_empty(),"checks":checks,"failures":failures,"metrics":metrics,"elapsed_seconds":(Time.get_ticks_msec()-started)/1000.0}
 	Storage.write_json("res://reports/minimal-tests.json",report);print("MINIMAL_TESTS ",JSON.stringify(report));quit(0 if failures.is_empty() else 1)

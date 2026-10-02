@@ -1,5 +1,7 @@
 # External content
 
+**Status:** This guide describes the shipped external-content system merged through PR #24. For up-to-date capabilities, test evidence and remaining product validation, read [Current native project status](../current-state.md); [refactor status](refactor-status.md) retains implementation history.
+
 Status: vehicles, rosters, tyres/allocations, setup, shared race tuning, named
 weekends, weather/surface calibration, scalar reliability, incidents and supported
 virtual race-control settings, shared AI/racecraft tuning and externally named rival
@@ -12,7 +14,7 @@ Wheel operating coefficients and registered provider selection are now authored.
 The six shipped developer diagnostic collections are also bounded file-backed resources;
 practice and rival recipes no longer live as executable GDScript tables, and every
 collection owns its bounded gallery title/description. Circuit Atelier placement presets
-and its contextual-guide copy are now a bounded authoring-only editor profile. Exhaustive consumer inventory and final full-plan acceptance remain unfinished. This is not a claim that every work package is complete.
+and its contextual-guide copy are now a bounded authoring-only editor profile. The merged PR #24 adds a machine-checked consumer inventory for all 16 published schema families and completed exact-source CI, including six-shard Godot verification and Linux/Windows exported-runtime acceptance. This is not proof of gameplay balance, human usability or a same-hardware paired performance improvement. See [current-state inventory](../current-state.md) for the authoritative post-merge capability boundary.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.

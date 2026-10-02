@@ -36,6 +36,11 @@ func _ready() -> void:
 	continue_button.tooltip_text = "Resume your checkpoint, including the final classification." if not continue_button.disabled else "No saved weekend yet. Start a Grand Prix to create one."
 	if continue_button.disabled:
 		menu.add_child(UI.paragraph("No saved weekend yet. Start a Grand Prix above."))
+	var campaign_label = "CONTINUE TEAM PRINCIPAL CAMPAIGN\nDirector's Desk · Championship · Team"
+	if not data.get("can_continue_campaign", false):
+		campaign_label = "TEAM PRINCIPAL CAMPAIGN\nFour-event management career"
+	var campaign_button = _action(menu, campaign_label, "campaign", true)
+	campaign_button.custom_minimum_size.y = 58
 	var editor_button = _action(menu, "TRACK EDITOR\nCreate or edit a circuit", "editor")
 	editor_button.custom_minimum_size.y = 52
 	if preferences.get("pitwall_layout", "minimal") != "minimal":

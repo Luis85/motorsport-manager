@@ -1,4 +1,6 @@
 extends Node
+const PITWALL_LAYOUTS = ["minimal", "director", "engineering"]
+const ADVANCED_PITWALL_LAYOUTS = ["director", "engineering"]
 var content_catalog: ContentCatalog
 var content_diagnostics: Array = []
 var content_roots: Array = []
@@ -6,11 +8,13 @@ var editor_session: TrackEditorSession
 ## Application services and user data; the simulation never reads this singleton.
 var library: Array = []
 var load_errors: Array[String] = []
-var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal"}
+var settings = {"fullscreen": false, "vsync": true, "labels": true, "racing_line": false, "speed": 1, "scenery_detail": "rich", "reduced_motion": false, "dot_scale": 1.0, "guides": {}, "pitwall_text_scale": 1.0, "pitwall_layout": "minimal", "advanced_pitwall_layout": "director", "campaign_guide_hidden": false}
 var weekend: RaceSim
 var checkpoint_path = "user://weekend.json"
 var recording: RaceRecord
 var sandbox_path = "user://sandbox.json"
+var campaign_path = "user://campaign.json"
+var campaign_checkpoint: Dictionary = {}
 
 # The application owns scheduling; scene visibility is not a simulation input.
 var session_runner: RaceSessionRunner
@@ -77,21 +81,35 @@ func _ready() -> void:
 			print("CONTENT_RESULT ", JSON.stringify(result))
 			get_tree().quit(0 if result.ok else 1)
 			return
-	# Developer/test-only launch override for retained regression workspaces.
+	# Explicit launch overrides remain useful for development and automated suites.
 	for arg in OS.get_cmdline_user_args():
-		if arg in ["--pitwall-layout=minimal", "--pitwall-layout=director", "--pitwall-layout=engineering"]: settings.pitwall_layout = arg.get_slice("=",1)
+		if not arg.begins_with("--pitwall-layout="): continue
+		var requested = arg.get_slice("=", 1)
+		if requested == "advanced": requested = "director"
+		if requested in PITWALL_LAYOUTS:
+			settings.pitwall_layout = requested
+			if requested in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = requested
 	apply_settings()
 
 func restore_settings(data: Dictionary) -> void:
-	# Saved legacy layouts must not bypass the new minimal default. Old screens
-	# remain reachable only by an explicit developer/test launch override.
+	# Minimal remains the safe default. The preferred Advanced start is persisted
+	# independently so a temporary return to Minimal does not erase it.
 	settings.pitwall_layout = "minimal"
+	settings.advanced_pitwall_layout = "director"
+	var advanced_layout = str(data.get("advanced_pitwall_layout", "director"))
+	if advanced_layout in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = advanced_layout
+	var layout = str(data.get("pitwall_layout", "minimal"))
+	if layout == "advanced": layout = "director"
+	if layout in PITWALL_LAYOUTS:
+		settings.pitwall_layout = layout
+		if layout in ADVANCED_PITWALL_LAYOUTS: settings.advanced_pitwall_layout = layout
 	if data.get("content_roots") is Array and data.content_roots.size() <= 31:
 		if data.content_roots.all(func(path): return path is String and path.length() <= 1024):
 			settings.content_roots = data.content_roots.duplicate()
 	if data.get("pitwall_text_scale") in [1.0, 1.15, 1.3]: settings.pitwall_text_scale = float(data.pitwall_text_scale)
 	for key in ["fullscreen", "vsync", "labels", "racing_line", "reduced_motion"]:
 		if data.get(key) is bool: settings[key] = data[key]
+	if data.get("campaign_guide_hidden") is bool: settings.campaign_guide_hidden = data.campaign_guide_hidden
 	if data.get("scenery_detail") in ["rich", "simple"]: settings.scenery_detail = data.scenery_detail
 	if data.get("dot_scale") in [1.0, 1.3, 1.6]: settings.dot_scale = float(data.dot_scale)
 	var value = data.get("speed", 1)
@@ -194,6 +212,27 @@ func commit_weekend_entry(draft: WeekendLaunch, expected_revision: int) -> Strin
 
 func has_saved_sandbox() -> bool:
 	return FileAccess.file_exists(sandbox_path)
+
+func has_saved_campaign() -> bool:
+	return FileAccess.file_exists(campaign_path)
+
+func save_campaign() -> String:
+	if campaign_checkpoint.is_empty(): return "There is no campaign to save."
+	return CampaignStorage.new(campaign_path).save_checkpoint(campaign_checkpoint)
+
+func load_campaign() -> String:
+	var loaded = CampaignStorage.new(campaign_path).load()
+	if not loaded.get("ok", false): return loaded.get("error", "Campaign could not be loaded.")
+	campaign_checkpoint = loaded.checkpoint.duplicate(true)
+	return ""
+
+func clear_weekend_checkpoint() -> void:
+	stop_session()
+	weekend = null
+	recording = null
+	var absolute = ProjectSettings.globalize_path(checkpoint_path)
+	if FileAccess.file_exists(checkpoint_path): DirAccess.remove_absolute(absolute)
+
 
 func reload_content(roots: Array) -> bool:
 	var result = ContentPackLoader.new().load_packs(["res://content/packs/core"] + roots)

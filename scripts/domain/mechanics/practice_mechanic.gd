@@ -275,7 +275,7 @@ func snapshot(sim: RaceSim) -> Dictionary:
 	data.practice_state = sim.practice_state.duplicate(true)
 	data.rival_styles = sim.rival_styles.duplicate(true)
 	if sim.duel_state.get("enabled", false):
-		data.version = TacticalDuels.CHECKPOINT_VERSION
+		data.version = TacticalDuels.CHECKPOINT_VERSION if not sim.performance_profiles.is_empty() 			else TacticalDuels.LEGACY_CHECKPOINT_VERSION
 		data.duel_state = sim.duel_state.duplicate(true)
 	return data
 

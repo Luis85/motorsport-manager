@@ -131,6 +131,27 @@ func editor_costs(document: Dictionary) -> void:
 	game.show_editor(authored)
 	await settle()
 	var editor: TrackEditor = game.editor
+	# The extracted canvas overlay painter must retain the one-build-per-geometry
+	# contract; observation must never mutate the editor's canonical document.
+	var before_overlay = editor.session.read_document()
+	var canvas: TrackCanvas = editor.canvas
+	check(canvas.geometry != null, "Shipping editor has compiled geometry for overlay validation")
+	if canvas.geometry != null:
+		var previous_builds = canvas.surface_geometry_builds
+		canvas.build_surface_geometry()
+		check(canvas.surface_geometry_builds == previous_builds + 1,
+			"Overlay compiles its surface cache once for a new geometry")
+		check(canvas._surface_segments.size() == RaceVisualPort.SURFACE_STATIONS,
+			"Overlay cache retains exactly the configured longitudinal stations")
+		if canvas._surface_segments.size() == RaceVisualPort.SURFACE_STATIONS:
+			check(canvas._surface_segments[0].size() == RaceVisualPort.SURFACE_LANES
+				and canvas._surface_segments[0][0].size() == 4,
+				"Overlay retains all lateral strips and four subsegments per station")
+		canvas.build_surface_geometry()
+		check(canvas.surface_geometry_builds == previous_builds + 1,
+			"Re-reading an unchanged circuit does not rebuild surface geometry")
+	check(editor.session.read_document() == before_overlay,
+		"Overlay cache inspection leaves canonical editor history unchanged")
 	measure("editor/full_compile", func(): editor.session.compile_draft(authored, "Formula"), 8)
 	measure("editor/preview_compile", func(): editor.session.compile_draft(authored, "Formula", true), 8)
 	measure("editor/pure_move", func(): TrackEdit.move_positions(authored, "road", {0: Vector2(40, 50)}))

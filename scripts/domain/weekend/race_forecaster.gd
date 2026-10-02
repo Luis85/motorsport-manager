@@ -13,7 +13,8 @@ static func fuel_margin(sim: RaceSim, car: RaceCar) -> float:
 
 static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var gate = (floor((car.distance - sim.track.pit_entry) / sim.track.length) + 1) * sim.track.length + sim.track.pit_entry
-	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * sim.track.vehicle_definition.braking_mps2 * 0.5) + 8
+	var limits = RacePerformanceProfile.limits(sim.performance_profile(car), sim.track.vehicle_definition)
+	var stopping = maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * float(limits.brake) * 0.5) + 8
 	var deferred = gate - car.distance < stopping
 	if deferred: gate += sim.track.length
 	return {"distance": gate, "lap": int(round((gate - sim.track.pit_entry) / sim.track.length)) + 1,
@@ -22,7 +23,7 @@ static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 static func material_key(sim: RaceSim, driver_id: int, revision: int = 0) -> String:
 	var c = sim.cars[driver_id]
 	var facts: Array = [sim.phase, sim.flag, sim.yellow_sector, int(sim.average(sim.water) * 20), c.set_id,
-		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision]
+		c.next_set_id, c.next_compound, c.pit_order, c.pit_gate, c.pace, c.engine, c.repair, int(c.damage), int(c.tyre / 5), int(fuel_margin(sim, c) * 5), reachable_gate(sim, c).distance, revision, sim.performance_profile(c).digest]
 	facts.append(sim.forecast_parameters(driver_id).get("key", []))
 	if sim.tuning.authored(): facts.append(sim.tuning.fingerprint)
 	if (sim is RaceSim and sim.has_mechanic("strategy")) and c.player: facts.append([sim.team_state.revision, sim.team_state.pit_priority.get("deferred_gate", -1)])
@@ -37,6 +38,7 @@ static func capture(sim: RaceSim, driver_id: int, plan: Dictionary = {}, revisio
 	var own: Dictionary = {}
 	for key in ["id", "short", "team", "distance", "speed", "compound", "set_id", "next_set_id", "next_compound", "tyre", "temperature", "fuel", "damage", "health", "pace", "engine", "skill", "route", "pit_order", "pit_gate", "scheduled_lap", "box_d", "repair", "dnf", "finished"]: own[key] = c[key]
 	own.inventory = c.tyre_sets.duplicate(true)
+	own.performance_profile = sim.performance_profile(c).duplicate(true)
 	own.starting_set = plan.get("starting_set", c.set_id) if sim.phase in ["briefing", "practice", "practice_results", "qualifying", "qualifying_results", "race_preparation"] else c.set_id
 	own.projected_fuel = sim.tuning.race_fuel(sim.laps) if sim.phase in ["practice", "practice_results", "qualifying", "qualifying_results"] else float(c.fuel)
 	own.measured_race_wear = false
@@ -103,7 +105,8 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 	var own = s.own
 	if gate < 0: gate = s.gate.distance
 	var context = s.get("model_context", {})
-	var running_lap = s.reference_lap / float(context.get("neutral_factor", 1.0))
+	var profile_lap = s.reference_lap * RacePerformanceProfile.forecast_lap_factor(s.own.performance_profile)
+	var running_lap = profile_lap / float(context.get("neutral_factor", 1.0))
 	var mean_speed = s.length / maxf(10, running_lap)
 	var entry_eta = maxf(0, gate - own.distance) / mean_speed
 	var service = RaceTuningDefinition.mean_service(tuning, context.get("repair_only", false)) + (own.damage * tuning.repair_seconds_per_damage if own.repair else 0.0)
@@ -158,7 +161,8 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var fuel_mass = 1.0 + maxf(0, s.own.projected_fuel) * tuning.fuel.forecast_mass_factor
 	var context = s.get("model_context", {})
 	var operation = float(context.get("health_factor", 1.0)) * float(context.get("thermal_factor", 1.0))
-	var lap = s.reference_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * tuning.condition.damage_speed_loss) * operation)
+	var profile_lap = s.reference_lap * RacePerformanceProfile.forecast_lap_factor(s.own.performance_profile)
+	var lap = profile_lap * fuel_mass / maxf(0.2, sqrt(grip) * handling * (1 - minf(200, s.own.damage) * tuning.condition.damage_speed_loss) * operation)
 	lap *= context.get("practice", {}).get(compound, {}).get("lap_factor", 1.0)
 	return maxf(lap, s.reference_lap / float(context.get("neutral_factor", 1.0))) if context.get("neutral_factor", 1.0) < 1 else lap
 
@@ -262,7 +266,7 @@ static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool
 
 static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 	var transit = maxf(0, sim.track.pit_length - car.box_d) / sim.track.pit_limit + 3
-	var outlap = sim.track.estimate / 0.76
+	var outlap = sim.track.estimate * RacePerformanceProfile.forecast_lap_factor(sim.performance_profile(car)) / 0.76
 	var needed = transit + outlap + 5
 	return {"required_seconds": needed, "latest_release": sim.qual_duration - needed,
 		"can_start_hotlap": sim.phase == "qualifying" and not sim.qual_closed and car.route == "garage" and sim.clock + needed < sim.qual_duration,

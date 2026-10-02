@@ -2,7 +2,7 @@ class_name RaceCar
 extends RefCounted
 ## Authoritative entrant state owned by one RaceSim aggregate.
 ## Rules receive this type; saves and read models receive detached records instead.
-## Numerical units and serialized names remain compatible with checkpoint versions 4–11.
+## Numerical units and serialized names remain compatible with checkpoint versions 4–12.
 
 ## Frozen session inputs are not part of the per-car 91-field serialized codec.
 ## The enclosing checkpoint validates and rebinds them; detached copies share them.

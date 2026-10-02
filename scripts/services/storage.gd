@@ -52,7 +52,8 @@ static func read_json(path: String, files: FileOperations = null) -> Dictionary:
 	if parser.data is Dictionary and parser.data.get("kind") in [
 		"motorsport-manager-session", "motorsport-manager-replay", "motorsport-manager-weekend",
 		"motorsport-manager-scenario", "motorsport-manager-reproduction", "motorsport-manager-weekend-result",
-		"motorsport-manager-circuit-notebook", "motorsport-manager-result-receipts"]:
+		"motorsport-manager-circuit-notebook", "motorsport-manager-result-receipts",
+		"motorsport-manager-campaign-checkpoint"]:
 		# Preserve the exact decimal values written by full-precision serialization.
 		# Legacy content/track import keeps its original numerical contract. Neither
 		# live values nor existing integrity hashes are quantized or rewritten.

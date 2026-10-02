@@ -1,5 +1,7 @@
 # Architecture — 0.19.0
 
+> **Post-PR24 orientation:** The 0.19.0 ownership model below remains in force after the merged content refactor. [Current project status](current-state.md) records the present shipping/diagnostic boundary and exact release evidence. On the tech/doc maintenance branch, `TrackCanvasOverlays` now owns read-only car/road-surface/selection painting and sampled surface geometry. `TrackCanvas` retains geometry-cache invalidation, input/gestures, document state and view lifecycle; neither owns simulation time or sporting data. Original suite-count statements below describe their dated implementation checkpoints, not the current registry.
+
 This map includes the completed PR #19 foundation, merged PR #20 maintainability
 pass and the subsequent system-contract hardening. It is not a continuation of
 the former PR #18 branch.

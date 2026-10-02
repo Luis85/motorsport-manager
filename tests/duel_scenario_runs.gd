@@ -46,7 +46,7 @@ func run_case(recipe: Dictionary, policy: String, legacy: bool) -> void:
 	check(sim.cars.all(func(c):return c.finished or c.dnf),"Every car has an authoritative terminal status")
 	check(PracticeRaceSim.restore_practice(json_copy(sim.snapshot()))!=null,"Final state validates, including tactical lifecycle and rival diagnostics")
 	var result=WeekendResult.build(record)
-	check(not result.is_empty() and WeekendResult.validate(json_copy(result)).is_empty(),"Completed v10/v11 result envelope validates")
+	check(not result.is_empty() and WeekendResult.validate(json_copy(result)).is_empty(),"Completed supported result envelope validates")
 	check(NotebookEntry.validate(json_copy(NotebookEntry.build(record))),"Completed race remains compatible with the existing opt-in notebook")
 	var players: Array=[]
 	for id in [3,6]:
