@@ -61,6 +61,8 @@ static func fields() -> Dictionary:
 			"available_days": ContentSchema.integer(1, MAX_DAYS)}), 32, 1),
 		"rivals": ContentSchema.array(rival, CampaignSeriesRules.MAX_ENTRANTS - 1, 1),
 		"rival_policy": CampaignRivalPolicy.fields(),
+		"people_policy": CampaignPeoplePolicy.fields(),
+		"supply_policy": CampaignSupplyPolicy.fields(),
 		"event_finance": ContentSchema.object({
 			"departure_cost_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
 			"participation_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
@@ -115,6 +117,10 @@ static func semantic_error(record: Dictionary) -> String:
 		facilities[facility.id] = true
 	if not CampaignRivalPolicy.valid(record.rival_policy):
 		return "Campaign rival policy is invalid."
+	if not CampaignPeoplePolicy.valid(record.people_policy):
+		return "Campaign people policy is invalid."
+	if not CampaignSupplyPolicy.valid(record.supply_policy):
+		return "Campaign supply policy is invalid."
 	return ""
 
 func to_record() -> Dictionary:
