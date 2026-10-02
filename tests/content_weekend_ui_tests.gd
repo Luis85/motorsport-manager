@@ -49,8 +49,14 @@ func run() -> void:
 	var popup = selector.get_popup()
 	check(popup.visible, "Preset selector opens with keyboard input")
 	var window_id = popup.get_window_id()
+	var preset_rows = app.content_catalog.entries("weekend")
+	var preset_ids = preset_rows.map(func(row): return row.id)
+	var target_index = preset_ids.find("local.club.weekend.sprint")
+	check(target_index >= 0, "External sprint preset is present in the selected catalog")
+	if target_index < 0: finish(); return
 	await key(KEY_HOME, window_id)
-	for index in range(3): await key(KEY_DOWN, window_id)
+	# Custom selection occupies index zero; catalog order is not semantic authority.
+	for index in range(target_index + 1): await key(KEY_DOWN, window_id)
 	await key(KEY_ENTER, window_id); await settle()
 	check(game.config.get("weekend_id") == "local.club.weekend.sprint", "Native selection applies the external preset ID")
 	check(game.config.laps == 8 and game.vehicle == "local.club.vehicle.sport", "Preset selection updates vehicle and race length together")
