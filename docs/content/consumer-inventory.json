@@ -2066,6 +2066,7 @@
       ],
       "expected_leaves": [
         "/calendar/*/campaign_event_id",
+        "/calendar/*/circuit_id",
         "/calendar/*/departure_day",
         "/calendar/*/event_revision",
         "/calendar/*/return_day",
