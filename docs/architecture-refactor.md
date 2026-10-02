@@ -30,8 +30,8 @@ The Team Principal campaign now follows the same immutable-content rule as a
 weekend. `ContentCatalog` resolves one selected `CampaignDefinition`;
 `CampaignStarter` interprets that data through existing competition, economy,
 personnel, operations and rival transactions rather than owning duplicate balance
-tables. `CampaignContentSnapshot` freezes the campaign record plus effective
-weekend, vehicle, roster, tyre, setup, race-tuning and mechanic definitions into
+tables. `CampaignContentSnapshot` freezes the campaign record, every referenced calendar circuit,
+and the effective weekend, vehicle, roster, tyre, setup, race-tuning and mechanic definitions into
 `CampaignManagement` before publication.
 
 Later campaign departures and weekend settlement read that frozen closure rather
