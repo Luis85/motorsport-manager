@@ -96,7 +96,8 @@
         "pay_minor": 5000,
         "allocation_bps": 10000
       }
-    }
+    },
+    "roster_team_id": "core.team.obsidian"
   },
   "facilities": [
     {
@@ -129,7 +130,8 @@
       "cash_minor": 100000,
       "reserve_minor": 40000,
       "capability_bps": 9500,
-      "review_interval_days": 7
+      "review_interval_days": 7,
+      "roster_team_id": "core.team.aster"
     },
     {
       "entrant_id": "entrant.rival.1",
@@ -138,7 +140,8 @@
       "cash_minor": 100000,
       "reserve_minor": 40000,
       "capability_bps": 9650,
-      "review_interval_days": 7
+      "review_interval_days": 7,
+      "roster_team_id": "core.team.kestrel"
     },
     {
       "entrant_id": "entrant.rival.2",
@@ -147,7 +150,8 @@
       "cash_minor": 100000,
       "reserve_minor": 40000,
       "capability_bps": 9800,
-      "review_interval_days": 7
+      "review_interval_days": 7,
+      "roster_team_id": "core.team.nordstar"
     },
     {
       "entrant_id": "entrant.rival.3",
@@ -156,7 +160,8 @@
       "cash_minor": 100000,
       "reserve_minor": 40000,
       "capability_bps": 9950,
-      "review_interval_days": 7
+      "review_interval_days": 7,
+      "roster_team_id": "core.team.veridian"
     },
     {
       "entrant_id": "entrant.rival.4",
@@ -165,7 +170,8 @@
       "cash_minor": 100000,
       "reserve_minor": 40000,
       "capability_bps": 10100,
-      "review_interval_days": 7
+      "review_interval_days": 7,
+      "roster_team_id": "core.team.volpe"
     }
   ],
   "rival_policy": {
