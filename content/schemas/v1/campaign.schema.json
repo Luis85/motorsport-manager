@@ -427,6 +427,12 @@
           ],
           "type": "object"
         },
+        "roster_team_id": {
+          "maxLength": 96,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+          "type": "string"
+        },
         "team_id": {
           "maxLength": 96,
           "minLength": 1,
@@ -435,6 +441,7 @@
         }
       },
       "required": [
+        "roster_team_id",
         "entrant_id",
         "team_id",
         "driver_role_id",
@@ -555,6 +562,12 @@
             "minimum": 1,
             "type": "integer"
           },
+          "roster_team_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          },
           "team_id": {
             "maxLength": 96,
             "minLength": 1,
@@ -563,6 +576,7 @@
           }
         },
         "required": [
+          "roster_team_id",
           "entrant_id",
           "team_id",
           "archetype",
