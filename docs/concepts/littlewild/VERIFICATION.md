@@ -14,7 +14,7 @@ The gate compiles all authored TypeScript into `.generated/`, rebuilds `littlewi
 
 ### Verified TypeScript head
 
-Implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2` passed **1,053 / 1,053 checks across 31 suites** in GitHub Actions run `37034722607`.
+Implementation head `c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc` passed **1,053 / 1,053 checks across 31 suites** in GitHub Actions run `37036136280`.
 
 - strict TypeScript gate: passed;
 - architecture/DDD gate: **16 / 16**;
@@ -23,8 +23,8 @@ Implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2` passed **1,053 / 
 - main Playwright browser suite: **89 / 89**;
 - focused browser contracts: **16 / 16**;
 - total browser contracts: **105 / 105**;
-- standalone SHA-256: `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5`;
-- standalone bytes: **4,123,645**.
+- standalone SHA-256: `1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8`;
+- standalone bytes: **4,140,507**.
 
 CI uses the committed lockfile and `npm ci`. Browser screenshot capture is opt-in with `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; screenshots are evidence, not functional gate requirements. The functional browser assertions remain mandatory.
 

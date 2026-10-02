@@ -66,25 +66,25 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "verifiedImplementationHead": "dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2",
-      "workflowRun": 37034722607,
+      "verifiedImplementationHead": "c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc",
+      "workflowRun": 37036136280,
       "status": "passed",
       "passed": 1053,
       "total": 1053,
       "suites": 31,
       "assetChecks": 8,
       "browserChecks": 105,
-      "htmlSha256": "4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5",
-      "htmlBytes": 4123645,
+      "htmlSha256": "1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8",
+      "htmlBytes": 4140507,
       "evidenceArtifact": "littlewild-ecs-verification",
-      "evidenceArtifactId": 11239001715
+      "evidenceArtifactId": 11240382109
     }
   },
   "github": {
     "repository": "Luis85/motorsport-manager",
     "branch": "concept/littlewild-v15-world-ui",
     "pullRequest": 25,
-    "reviewedCodeHead": "dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2",
+    "reviewedCodeHead": "c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc",
     "note": "The verified implementation head above passed the complete TypeScript/architecture/asset/domain/schema/release/browser gate. Later documentation-only commits do not change runtime behavior."
   },
   "deliberateDebt": [

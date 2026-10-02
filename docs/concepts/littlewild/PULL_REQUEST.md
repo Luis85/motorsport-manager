@@ -40,7 +40,7 @@ npx playwright install chromium
 npm run verify
 ```
 
-Implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2` passed **1,053 / 1,053 checks across 31 suites** in workflow run `37034722607`, including **8 / 8 asset-catalog checks** and **105 / 105 browser contracts**. The rebuilt standalone SHA-256 is `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5`.
+Implementation head `c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc` passed **1,053 / 1,053 checks across 31 suites** in workflow run `37036136280`, including **8 / 8 asset-catalog checks** and **105 / 105 browser contracts**. The rebuilt standalone SHA-256 is `1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8`.
 
 The previous pre-TypeScript head passed **1,006 / 1,006 checks across 27 suites**, including 105 browser checks. That result and its former standalone hash are retained as a regression baseline only. Current-head evidence is `verification/v15/gate-results.json` produced by the TypeScript workflow; do not substitute the historical baseline for a current run.
 

@@ -5,7 +5,7 @@
 - Repository: `Luis85/motorsport-manager`
 - Pull request: **#25 — Littlewild v15: data-driven worlds and ECS M1–M6**
 - Review branch: `concept/littlewild-v15-world-ui`
-- Verified implementation head for this pass: `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2`
+- Verified implementation head for this pass: `c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc`
 - Scope: `docs/concepts/littlewild/` plus the dedicated Littlewild verification workflow
 - Native Motorsport Manager Godot gameplay remains outside this isolated Littlewild refactor.
 
@@ -232,7 +232,7 @@ The TypeScript pass adds or strengthens:
 - existing ECS/domain/compatibility/schema/CLI/release suites executed against compiler output;
 - existing 105 browser interaction/layout contracts ported to Playwright TypeScript.
 
-The authoritative evidence is `verification/v15/gate-results.json` produced by `npm run verify`. Workflow run `37034722607` recorded status `passed`, **1,053 / 1,053**, and standalone SHA-256 `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5` for implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2`.
+The authoritative evidence is `verification/v15/gate-results.json` produced by `npm run verify`. Workflow run `37036136280` recorded status `passed`, **1,053 / 1,053**, and standalone SHA-256 `1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8` for implementation head `c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc`.
 
 ## Deliberate remaining debt
 
