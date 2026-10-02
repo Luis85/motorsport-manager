@@ -23,7 +23,7 @@ static func offer_and_hire(checkpoint: Dictionary, candidate_id: String,
 	var slot = restored.state.clock.elapsed_slots
 	var offer = CampaignPeopleDevelopment.evaluate_offer(restored.management.people,
 		candidate_id, role_id, int(contract_terms.get("pay_minor", 0)),
-		int(contract_terms.get("start_slot", -1)), slot)
+		int(contract_terms.get("start_slot", -1)), slot, _people_policy(restored))
 	if not offer.ok: return _reject(offer.error, checkpoint)
 	if not offer.accepted:
 		var management = CampaignManagement.with_people(restored.management, offer.people)
@@ -53,8 +53,9 @@ static func offer_and_hire(checkpoint: Dictionary, candidate_id: String,
 		if not added.ok: return _reject(added.error, checkpoint)
 		economy = added.economy
 	var people = offer.people
+	var tuning = _people_policy(restored)
 	var profile = CampaignPeopleDevelopment.add_profile(people, candidate.id,
-		candidate.attributes, slot, 62, 58)
+		candidate.attributes, slot, int(tuning.new_hire_morale), int(tuning.new_hire_trust))
 	if not profile.ok: return _reject(profile.error, checkpoint)
 	var management = CampaignManagement.with_people(restored.management, profile.people)
 	if management.is_empty(): return _reject("Hired candidate could not enter management people authority.", checkpoint)
@@ -97,10 +98,16 @@ static func review_due(checkpoint: Dictionary) -> Dictionary:
 	var restored = _restore(checkpoint)
 	if not restored.ok: return restored
 	var changed = CampaignPeopleDevelopment.review_due(restored.management.people,
-		restored.personnel, restored.state.clock.elapsed_slots)
+		restored.personnel, restored.state.clock.elapsed_slots, _people_policy(restored))
 	var result = _publish_people(restored, changed, checkpoint)
 	if result.ok: result["reviewed"] = changed.reviewed
 	return result
+
+static func _people_policy(restored: Dictionary) -> Dictionary:
+	var frozen = restored.management.get("campaign_content", {})
+	if not frozen.is_empty() and CampaignContentSnapshot.validate(frozen).is_empty():
+		return CampaignPeoplePolicy.normalized(frozen.definition.get("people_policy", {}))
+	return CampaignPeoplePolicy.LEGACY.duplicate(true)
 
 static func _restore(checkpoint: Dictionary) -> Dictionary:
 	var restored = CampaignCheckpoint.restore(checkpoint)
