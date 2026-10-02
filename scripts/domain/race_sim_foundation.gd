@@ -184,6 +184,11 @@ func check_tyre_incident(c: RaceCar) -> void:
 
 ## Virtual hook surface used by base simulation methods. RaceSim overrides these
 ## through the installed mechanic dispatcher while keeping legacy base behavior callable.
+func step() -> void: pass
+func service_random_value() -> float: return 0.0
+func begin_service(_c: RaceCar) -> void: pass
+func complete_service(_c: RaceCar) -> void: pass
+func pit_exit_message(_c: RaceCar) -> String: return ""
 func record_stint(_c: RaceCar) -> void: pass
 func update_surface() -> void: pass
 func update_flags() -> void: pass
