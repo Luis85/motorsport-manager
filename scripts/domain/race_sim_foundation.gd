@@ -1,31 +1,16 @@
 class_name RaceSimFoundation
-extends RefCounted
+extends RaceSimPort
 ## Authoritative race state, deterministic utilities and stable base API shared by
 ## the fixed-step core and final mechanic-dispatch aggregate.
 signal event_posted(entry: Dictionary)
-const STEP = 0.05
-const ACTIVE = ["practice", "qualifying", "formation", "lights", "race"]
 const TYRES = LegacyTyreContent.PERFORMANCE
 const ROSTER = LegacyRoster.ROWS
 const CAR_V2 = {"yield_to": -1, "yield_side": 0.0, "yield_clock": 0.0, "qual_history": [], "qual_sectors": [0.0, 0.0, 0.0], "qual_sector_start": 0.0, "invalid_reason": "", "throttle": 0.0, "braking": 0.0, "pit_deferred": false, "pit_lap": false, "service_compound": "M", "service_repair": true}
-var tuning: RaceTuningDefinition = RaceTuningDefinition.legacy()
 var mechanic_definition: MechanicProfileDefinition
 var weekend_definition: WeekendDefinition
-var setup_definition: SetupDefinition = SetupDefinition.legacy()
-var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
 var roster_definition: RosterDefinition
-var track: TrackGeometry
-var cars: Array[RaceCar] = []
-var phase = "briefing"
-var clock = 0.0
-var total_time = 0.0
 var race_time = 0.0
-var accumulator = 0.0
-var speed = 1
-var paused = false
-var laps = 12
 var qual_duration = 480.0
-var qual_closed = false
 var scenario = "changeable"
 var intensity = "standard"
 var rng_state = 7314
@@ -34,20 +19,14 @@ var flag = "GREEN"
 var flag_until = 0.0
 var yellow_sector = -1
 var rain = 0.0
-var water: Array = []
 var rubber: Array = []
 var surface: Array = []
 var surface_accumulator = 0.0
 var weather_name = "Clear skies"
 var events: Array = []
 var commands: Array = []
-var pit_boxes: Dictionary = {}
-var chequered = false
-var finish_count = 0
-var fastest = 0.0
 var selected_id = 3
 var last_error = ""
-var stats = {"passes": 0, "incidents": 0, "pits": 0, "blue_flags": 0}
 
 signal input_accepted(action: String, payload: Dictionary, context: Dictionary)
 signal fixed_step_completed
@@ -62,7 +41,6 @@ var practice_state: Dictionary = {}
 var rival_styles: Dictionary = {}
 var duel_state: Dictionary = {}
 var performance_profiles: Array = []
-var mechanics: RaceMechanics
 
 func performance_profile(car: RaceCar) -> Dictionary:
 	if car == null or performance_profiles.is_empty():
@@ -153,10 +131,6 @@ func car_position(c: RaceCar, alpha: float = 1.0) -> Dictionary:
 	s.p += s.n * lerpf(c.previous_lane, c.lane, alpha)
 	return s
 
-static func format_time(value: float) -> String:
-	if value <= 0: return "—"
-	return "%d:%06.3f" % [int(value / 60), fmod(value, 60)]
-
 func strategy_advice(c: RaceCar) -> String:
 	var remaining = maxf(0, laps - c.distance / track.length)
 	var item = TyreInventory.find(c, c.set_id)
@@ -181,33 +155,3 @@ func check_tyre_incident(c: RaceCar) -> void:
 		var key = WheelTyres.lockup(item, c.car_setup.bias / 100.0, 4.0, tyre_rules.spec(c.compound))
 		c.temperature = item.temperature; c.tyre = item.life
 		post("tyre", "%s: cold-tyre lock-up leaves a flat spot on %s." % [c.short, key])
-
-## Virtual hook surface used by base simulation methods. RaceSim overrides these
-## through the installed mechanic dispatcher while keeping legacy base behavior callable.
-func step() -> void: pass
-func service_random_value() -> float: return 0.0
-func begin_service(_c: RaceCar) -> void: pass
-func complete_service(_c: RaceCar) -> void: pass
-func pit_exit_message(_c: RaceCar) -> String: return ""
-func record_stint(_c: RaceCar) -> void: pass
-func update_surface() -> void: pass
-func update_flags() -> void: pass
-func engineer(_c: RaceCar) -> void: pass
-func leave_garage(_c: RaceCar) -> void: pass
-func update_pit(_c: RaceCar, _old: Array = []) -> void: pass
-func move_car(_c: RaceCar, _old: Array) -> void: pass
-func neutral(_c: RaceCar) -> bool: return false
-func neutral_speed_limit(_c: RaceCar, _sample: Dictionary) -> float: return 0.0
-func update_yield(_c: RaceCar, _old: Array) -> float: return 0.0
-func traffic_instruction(_c: RaceCar, _old: Array, _nearest: int, _gap: float, desired: float, lane: float, _sample: Dictionary, _local: Dictionary) -> Dictionary:
-	return {"desired": desired, "lane": lane, "attempt": false, "block_pass": false}
-func constrain_progress(_c: RaceCar, next: float, _old: Array, _nearest: int) -> float: return next
-func plan_pit_gate(_c: RaceCar) -> void: pass
-func wear_car(_c: RaceCar, _distance: float, _cell: int, _effects: Dictionary = {}, _local: Dictionary = {}) -> void: pass
-func qualifying_crossings(_c: RaceCar, _before: float, _after: float) -> void: pass
-func record_track_pass(_c: RaceCar, _other: RaceCar) -> void: pass
-func incident(_c: RaceCar) -> void: pass
-func is_run_session() -> bool: return false
-func pit_status(_c: RaceCar) -> String: return ""
-func retire(_c: RaceCar, _reason: String) -> void: pass
-
