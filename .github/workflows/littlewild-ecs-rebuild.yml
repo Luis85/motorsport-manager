@@ -1,11 +1,5 @@
 name: Littlewild ECS verification
 on:
-  push:
-    branches:
-      - concept/littlewild-v15-world-ui
-    paths:
-      - 'docs/concepts/littlewild/**'
-      - '.github/workflows/littlewild-ecs-rebuild.yml'
   pull_request:
     paths:
       - 'docs/concepts/littlewild/**'
@@ -25,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/concepts/littlewild/package-lock.json
       - name: Clear stale Littlewild verification evidence
         working-directory: docs/concepts/littlewild
         run: |
