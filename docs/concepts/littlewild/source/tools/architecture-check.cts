@@ -267,4 +267,7 @@ const report = { passed: results.filter(result => result.passed).length, total: 
 fs.mkdirSync(GENERATED, { recursive: true });
 fs.writeFileSync(path.join(GENERATED, "typescript-architecture-results.json"), JSON.stringify(report, null, 2) + "\n");
 process.stdout.write(`${report.passed}/${report.total} TypeScript architecture checks passed\n`);
+for (const result of report.results) {
+  if (!result.passed) process.stderr.write(`FAIL ${result.name}: ${result.error || "unknown architecture failure"}\n`);
+}
 if (report.failed) process.exitCode = 1;
