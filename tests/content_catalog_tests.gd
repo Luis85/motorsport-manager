@@ -93,7 +93,7 @@ func invalid_content() -> void:
 	check(not campaign_errors.is_empty() and campaign_errors[0].code in ["CONTENT_CAMPAIGN", "CONTENT_CAMPAIGN_ROSTER"],
 		"Campaign cannot map two organizations to the same authored roster team")
 	campaign_record = catalog.record("core.campaign.team-principal")
-	campaign_record.player.roster_team_id = "core.team.volpe"
+	campaign_record.player.roster_team_id = "core.team.missing"
 	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
 	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN_ROSTER",
 		"Campaign player mapping must match the selected weekend roster player team")
