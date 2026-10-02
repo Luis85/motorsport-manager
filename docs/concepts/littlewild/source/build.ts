@@ -183,20 +183,34 @@ function build(packPath: string | null, outputPath: string): void {
     if (validation.status !== 0) throw new Error("Scenario pack validation failed.");
   }
 
-  let html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  const dataMarker = "<!-- INLINE_CONTENT_DATA -->";
-  if (html.split(dataMarker).length !== 2) throw new Error("Missing unique content-data insertion point.");
-  html = html.replace(dataMarker, `<script>\n${inlineData(packPath)}\n</script>`);
+  const template = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const replacements = new Map<string,string>();
+  replacements.set("CONTENT_DATA", `<script>\n${inlineData(packPath)}\n</script>`);
 
   for (const [name, file, kind] of INSERTS) {
-    const marker = `<!-- INLINE_${name} -->`;
-    if (html.split(marker).length !== 2) throw new Error(`Expected exactly one ${marker} insertion point.`);
     const content = fs.readFileSync(sourceFor(file, kind), "utf8");
     if (content.toLowerCase().includes(`</${kind}`)) {
       throw new Error(`${file} contains an unsafe inline closing tag.`);
     }
-    html = html.replace(marker, `<${kind}>\n${content}\n</${kind}>`);
+    if (replacements.has(name)) throw new Error(`Duplicate inline build key: ${name}`);
+    replacements.set(name, `<${kind}>\n${content}\n</${kind}>`);
   }
+
+  const actual = [...template.matchAll(/<!-- INLINE_([A-Z0-9_]+) -->/g)].map(match => match[1]!);
+  const expected = [...replacements.keys()];
+  const duplicates = actual.filter((name,index) => actual.indexOf(name) !== index);
+  const missing = expected.filter(name => !actual.includes(name));
+  const unknown = actual.filter(name => !replacements.has(name));
+  if (duplicates.length || missing.length || unknown.length || actual.length !== expected.length) {
+    throw new Error("Inline template contract mismatch: " + JSON.stringify({duplicates:[...new Set(duplicates)],missing,unknown}));
+  }
+
+  const html = template.replace(/<!-- INLINE_([A-Z0-9_]+) -->/g, (_marker,name:string) => {
+    const replacement = replacements.get(name);
+    if (replacement === undefined) throw new Error(`Unknown inline build key: ${name}`);
+    return replacement;
+  });
+  if (html.includes("<!-- INLINE_")) throw new Error("Unresolved inline build marker.");
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, html, "utf8");
