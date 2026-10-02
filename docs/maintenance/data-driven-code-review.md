@@ -46,13 +46,13 @@ The executable policy is 400 code lines for source. Exact review found five viol
 
 | File before split | Code lines before | Resolution |
 |---|---:|---|
-| `scripts/domain/race_sim.gd` | 754 | dispatch aggregate + foundation/core/operations layers |
+| `scripts/domain/race_sim.gd` | 754 | dispatch aggregate + simulation port + foundation/core/operations layers |
 | `scripts/ui/weekend.gd` | 623 | concrete live view + shared interaction/support base |
 | `scripts/composition/main.gd` | 546 | campaign orchestration extracted to `CampaignScreens` |
 | `scripts/ui/pitwall_workspace.gd` | 419 | finishing-guide composition extracted |
 | `scripts/ui/race_weekend/minimal/workspace.gd` | 410 | timing-table presenter extracted |
 
-Post-split code-line counts are 257/181/255/93 for the RaceSim chain, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
+Post-split code-line counts are 258/64/130/255/93 for RaceSim/port/foundation/core/operations, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
 
 The splits are responsibility-based; no assertions, comments or formatting were compressed to pass the metric.
 
