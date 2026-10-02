@@ -95,8 +95,6 @@ func seal() -> Array:
 			if not default_campaign_id.is_empty():
 				return _definition_error(id, "CONTENT_CAMPAIGN_DEFAULT", "/default", "Only one selected campaign may be the default.")
 			default_campaign_id = id
-	if default_campaign_id.is_empty():
-		return [ContentValidation.diagnostic("CONTENT_CAMPAIGN_DEFAULT", "/default", "Select exactly one default campaign profile.")]
 	var documents: Dictionary = {}
 	for id in _records:
 		var entry: Dictionary = _records[id]
