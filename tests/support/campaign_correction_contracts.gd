@@ -3,19 +3,28 @@ extends RefCounted
 ## Explicit provisional preview and atomic final-result correction contracts.
 
 static func run(check: Callable) -> void:
+	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	if not loaded.ok:
+		check.call(false, "Correction fixture loads validated core content")
+		return
+	var campaign = loaded.catalog.default_campaign()
+	if campaign == null:
+		check.call(false, "Correction fixture resolves the authored campaign")
+		return
 	var track = Storage.read_json("res://data/tracks/hillside.json").data
-	var record = CampaignDirectorContracts._record(track)
+	var record = CampaignDirectorContracts._record(track, loaded.catalog, campaign)
 	if record == null:
 		check.call(false, "Correction fixture creates a recorded race entry")
 		return
-	var checkpoint = CampaignStarter.create(record)
+	var checkpoint = CampaignStarter.create(
+		record, campaign.to_record(), CampaignDirectorContracts._circuits(loaded.catalog, campaign))
 	if checkpoint.is_empty():
 		check.call(false, "Correction fixture creates a campaign")
 		return
 	var mappings = CampaignStarter.mappings(checkpoint)
 	var departed = CampaignDepartureTransaction.depart(checkpoint,
 		CampaignStarter.next_event_context(checkpoint), record, mappings,
-		CampaignStarter.event_assignments(checkpoint), CampaignStarter.EVENT_COST_MINOR)
+		CampaignStarter.event_assignments(checkpoint), CampaignStarter.event_cost_minor(checkpoint))
 	if not departed.ok:
 		check.call(false, "Correction fixture departs")
 		return
@@ -39,9 +48,12 @@ static func run(check: Callable) -> void:
 		return
 	checkpoint = followed.checkpoint
 	var corrected = original_result.duplicate(true)
+	var authored = CampaignStarter.definition(checkpoint)
+	var season_id: String = authored.series.season_id
+	var player_entrant_id: String = authored.player.entrant_id
 	var player_race_id = -1
 	for mapping in mappings:
-		if mapping.person_id in checkpoint.competition.seasons[CampaignStarter.SEASON_ID].entries["entrant.player"].person_ids:
+		if mapping.person_id in checkpoint.competition.seasons[season_id].entries[player_entrant_id].person_ids:
 			player_race_id = int(mapping.race_id)
 			break
 	var player_index = -1
