@@ -187,7 +187,6 @@
   "strictTypingDebt": {
     "world-ecs.ts": "Physical transaction services still expose broad legacy resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",
     "island-geometry.ts": "Topology helpers still consume dynamically authored world-profile records; migrate after a shared typed topology/profile contract is extracted.",
-    "economy-ecs.ts": "Economy settlement spans several legacy save aggregates and progression records; migrate behind explicit wallet, progression and settlement DTOs.",
     "content-runtime.ts": "The mature content registry and JSON-Schema interpreter still use dynamic schema/data records; migrate around a typed schema AST and registry model.",
     "adventure-content.ts": "Adventure definitions depend on the dynamic content registry and schema tables; migrate after the content-runtime contract is typed.",
     "growth-content.ts": "Growth definitions depend on Adventure/content dynamic tables and extension records; migrate after the shared content contracts are typed.",
@@ -203,5 +202,5 @@
     "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and compatibility migrations; migrate after scenario/content ports are fully typed.",
     "story-codec.ts": "Portable-story codec preserves multiple legacy envelope/save formats and dynamic migrations; migrate incrementally behind typed versioned DTOs."
   },
-  "strictTypingDebtBudget": 17
+  "strictTypingDebtBudget": 16
 }

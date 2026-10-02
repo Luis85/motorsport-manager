@@ -30,7 +30,8 @@
     "source/scenario-story.ts",
     "source/navigation.ts",
     "source/world-integrity.ts",
-    "source/validation-village.ts"
+    "source/validation-village.ts",
+    "source/economy-ecs.ts"
   ],
   "include": []
 }
