@@ -44,6 +44,11 @@ class ArchitectureGuardTests(unittest.TestCase):
     def test_renderer_cannot_retain_aggregate(self):
         self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', 'scripts/ui/track_canvas.gd')])
 
+    def test_ui_cannot_retain_extracted_race_authority_layers(self):
+        for name in ['RaceSimFoundation', 'RaceSimCore', 'RaceSimOperations']:
+            self.assertIn('detached-renderer',
+                          [v.rule for v in self.scan('var model: ' + name, 'scripts/ui/probe.gd')])
+
     def test_every_presentation_component_has_the_detached_boundary(self):
         for name in ["editor", "weekend", "scenario_author", "new_instrument"]:
             self.assertIn('detached-renderer', [v.rule for v in self.scan('var model: RaceSim', f'scripts/ui/{name}.gd')])
