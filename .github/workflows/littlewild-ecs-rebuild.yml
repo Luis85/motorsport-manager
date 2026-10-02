@@ -32,7 +32,7 @@ jobs:
           rm -f littlewild.html
       - name: Install TypeScript verification toolchain
         working-directory: docs/concepts/littlewild
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Type-check strict architecture kernel
         working-directory: docs/concepts/littlewild
         run: npm run typecheck
@@ -56,4 +56,5 @@ jobs:
             docs/concepts/littlewild/verification/v15/
             docs/concepts/littlewild/.generated/*-results.json
           if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 14
