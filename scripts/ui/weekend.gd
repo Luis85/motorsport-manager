@@ -1,5 +1,5 @@
 class_name WeekendView
-extends WeekendViewSupport
+extends "res://scripts/ui/weekend_support.gd"
 ## Persistent native controls: live telemetry never rebuilds the timing tree or pit wall.
 func _ready() -> void:
 	# Retained Engineering tools keep their established compact type and spacing.
