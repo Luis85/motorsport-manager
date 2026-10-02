@@ -3,14 +3,27 @@ extends RefCounted
 ## TM-11/TM-12 complete first-loop contract over the real campaign/weekend seams.
 
 static func run(check: Callable) -> void:
+	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	check.call(loaded.ok, "Starter fixture loads the validated core content pack")
+	if not loaded.ok: return
+	var campaign = loaded.catalog.default_campaign()
+	check.call(campaign != null, "Core content exposes one default Team Principal campaign")
+	if campaign == null: return
 	var track = Storage.read_json("res://data/tracks/hillside.json").data
-	var record = _record(track)
-	check.call(record != null, "Starter fixture creates a v12 recorded race entry")
+	var record = _record(track, loaded.catalog, campaign)
+	check.call(record != null, "Starter fixture creates a recorded authored race entry")
 	if record == null: return
-	var checkpoint = CampaignStarter.create(record)
+	var checkpoint = CampaignStarter.create(record, campaign.to_record())
 	check.call(not checkpoint.is_empty() and CampaignCheckpoint.validate(checkpoint).is_empty(),
 		"Team Principal starter creates one valid four-event campaign checkpoint")
 	if checkpoint.is_empty(): return
+	check.call(not CampaignStarter.content(checkpoint).is_empty() \
+			and CampaignStarter.definition(checkpoint).id == campaign.id,
+		"Starter freezes authored campaign and weekend content into the career checkpoint")
+	var detached_definition = CampaignStarter.definition(checkpoint)
+	detached_definition.career.opening_cash_minor = 1
+	check.call(CampaignStarter.definition(checkpoint).career.opening_cash_minor == 150000,
+		"Campaign content projections are detached and cannot mutate the frozen career")
 	var before_query = RaceStateValue.fingerprint(checkpoint)
 	var desk = CampaignDirectorQuery.overview(checkpoint)
 	check.call(desk.ok and desk.season.total_events == 4 and desk.next_event.round == 1,
@@ -29,7 +42,7 @@ static func run(check: Callable) -> void:
 		"Starter campaign preserves all twelve race mappings and explicit player event duty")
 	var departed = CampaignDepartureTransaction.depart(checkpoint,
 		CampaignStarter.next_event_context(checkpoint), record, mappings, assignments,
-		CampaignStarter.EVENT_COST_MINOR)
+		CampaignStarter.event_cost_minor(checkpoint))
 	check.call(departed.ok and not departed.checkpoint.active_manifest.is_empty(),
 		"Director departure freezes the exact existing race entry atomically")
 	if not departed.ok: return
@@ -69,14 +82,16 @@ static func run(check: Callable) -> void:
 	check.call(CampaignCheckpoint.validate(advanced.checkpoint).is_empty(),
 		"Create, depart, settle, debrief and advance remain one valid persistent campaign")
 
-static func _record(track: Dictionary) -> RaceRecord:
-	var options = CampaignStarter.race_options()
-	var probe = PracticeRaceSim.new(TrackGeometry.new(track, "Formula"), options)
+static func _record(track: Dictionary, catalog: ContentCatalog, campaign: CampaignDefinition) -> RaceRecord:
+	var launch = WeekendLaunch.new(catalog)
+	if not launch.stage_preset(campaign.weekend_id, track): return null
+	var probe = PracticeRaceSim.new(launch.visual_track(), launch.session_options())
 	if not probe.last_error.is_empty(): return null
 	var profiles: Array = []
 	for _car in probe.cars: profiles.append(RacePerformanceProfile.baseline())
+	var options = launch.session_options()
 	options["performance_profiles"] = profiles
-	var simulation = PracticeRaceSim.new(TrackGeometry.new(track, "Formula"), options)
+	var simulation = PracticeRaceSim.new(launch.visual_track(), options)
 	if not simulation.last_error.is_empty(): return null
 	var record = RaceRecord.new(); record.attach(simulation)
 	record.set_meta("campaign_test_source", simulation)
