@@ -232,6 +232,74 @@
       "minLength": 1,
       "type": "string"
     },
+    "people_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "counter_offer_ratio_bps": {
+          "maximum": 10000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "morale_overload_delta": {
+          "maximum": 10,
+          "minimum": -10,
+          "type": "integer"
+        },
+        "morale_safe_delta": {
+          "maximum": 10,
+          "minimum": -10,
+          "type": "integer"
+        },
+        "morale_safe_load_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "new_hire_morale": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "new_hire_trust": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "other_gain": {
+          "maximum": 10,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "productive_gain": {
+          "maximum": 10,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "productive_load_max_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "productive_load_min_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "counter_offer_ratio_bps",
+        "productive_load_min_bps",
+        "productive_load_max_bps",
+        "productive_gain",
+        "other_gain",
+        "morale_safe_load_bps",
+        "morale_safe_delta",
+        "morale_overload_delta",
+        "new_hire_morale",
+        "new_hire_trust"
+      ],
+      "type": "object"
+    },
     "player": {
       "additionalProperties": false,
       "properties": {
@@ -552,6 +620,44 @@
       ],
       "type": "object"
     },
+    "supply_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "initial_confidence_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_confidence_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observation_gain_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "spread_floor_bps": {
+          "maximum": 5000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "spread_scale_bps": {
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "initial_confidence_bps",
+        "observation_gain_bps",
+        "max_confidence_bps",
+        "spread_floor_bps",
+        "spread_scale_bps"
+      ],
+      "type": "object"
+    },
     "weekend_id": {
       "maxLength": 96,
       "minLength": 1,
@@ -574,6 +680,8 @@
     "facilities",
     "rivals",
     "rival_policy",
+    "people_policy",
+    "supply_policy",
     "event_finance"
   ],
   "title": "Motorsport Manager campaign v1",
