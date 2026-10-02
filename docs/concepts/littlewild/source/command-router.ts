@@ -83,7 +83,7 @@
     if(names.length!==value.length+1||!names.includes('length'))ok=false;
     else for(let index=0;index<value.length;index+=1){
      const descriptor=Object.getOwnPropertyDescriptor(value,String(index));
-     if(!descriptor||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
+     if(!descriptor||!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
     }
    }
   }else{

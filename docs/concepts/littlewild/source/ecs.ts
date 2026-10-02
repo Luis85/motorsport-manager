@@ -52,7 +52,7 @@
             else {
                 for (let index = 0; index < value.length; index += 1) {
                     const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
-                    if (!descriptor || descriptor.get || descriptor.set ||
+                    if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set ||
                         !dataOnly(descriptor.value, ancestors, depth + 1)) {
                         ok = false;
                         break;

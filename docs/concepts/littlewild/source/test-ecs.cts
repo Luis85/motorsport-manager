@@ -63,6 +63,8 @@ test('Component data rejects sparse arrays and hidden array properties',()=>{
  assert.throws(()=>w.set('c1','Sparse',{items:sparse}),/behavior-free/);
  const decorated=[1];Object.defineProperty(decorated,'hidden',{value:2});
  assert.throws(()=>w.set('c1','Decorated',{items:decorated}),/behavior-free/);
+ const hiddenIndex=[];Object.defineProperty(hiddenIndex,'0',{value:1,enumerable:false});hiddenIndex.length=1;
+ assert.throws(()=>w.set('c1','HiddenIndex',{items:hiddenIndex}),/behavior-free/);
 });
 test('Component lifecycle tracks a changing creature roster',()=>{
  const mk=id=>({id,creature:{x:1,y:2},inventory:{wood:1},needs:{},learning:{},feelings:{}});

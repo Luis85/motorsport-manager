@@ -106,6 +106,8 @@ test('Command validation rejects accessors, symbols, cycles and sparse arrays wi
  assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:[nested]}).ok,false);assert.equal(touched,0);
  const cyclic={};cyclic.self=cyclic;assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:[cyclic]}).ok,false);
  const sparse=[];sparse.length=1;assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:sparse}).ok,false);
+ const hiddenIndex=[];Object.defineProperty(hiddenIndex,'0',{value:'x',enumerable:false});hiddenIndex.length=1;
+ assert.equal(e.dispatchCommand({id:'care',actorId:'c1',args:hiddenIndex}).ok,false);
  const symbolEnvelope={id:'select-creature',args:['c1']};symbolEnvelope[Symbol('hidden')]=true;
  assert.equal(e.dispatchCommand(symbolEnvelope).ok,false);
  assert.equal(canonical(e),before);
