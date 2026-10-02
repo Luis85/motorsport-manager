@@ -71,7 +71,7 @@ The registration source of truth is `scripts/verification_suites.json`; historic
 ## Active maintenance priorities
 
 1. Keep this page, the README and content status synchronized when a feature becomes player-facing, optional, only diagnostic, or deliberately deferred.
-2. Reduce active high-churn legacy hotspots **by cohesive responsibility**, not semicolon packing or assertion weakening. At the PR #24 baseline, `race_sim.gd` had 726 counted code lines, retained `weekend.gd` 623 and retained `pitwall_workspace.gd` 419, against the 400-line source budget. This maintenance pass reduces active `track_canvas.gd` from 476 to exactly 400 by extracting read-only overlay responsibilities. Prioritize the remaining files when product work actually touches them; a line count alone is not a defect.
+2. Keep the source-size budget closed **by cohesive responsibility**, not semicolon packing or assertion weakening. The data-driven review split the remaining active violations: `RaceSim` is now a bounded dispatch aggregate over foundation/core/operations layers; `WeekendView` separates live composition/refresh from shared interaction support; campaign shell orchestration, pitwall finishing-guide composition and Minimal timing presentation are extracted collaborators. Every touched/new source is at or below the 400-code-line source budget.
 3. Distinguish implementation correctness, human experience, cross-platform support and controlled performance comparisons in all PR evidence.
 4. Treat TM-01 through TM-16 plus final-result correction as the closed implementation roadmap for PR #27. Further work should prioritize human validation, balancing, specialist management UI and selective deeper simulation instead of adding parallel authorities.
 
