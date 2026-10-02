@@ -24,6 +24,24 @@ application-owned runners. It does not calculate car movement or pit outcomes.
 The race editor and race weekend are separate contexts sharing pure track data,
 not a mutable active-race document.
 
+## Campaign content ownership
+
+The Team Principal campaign now follows the same immutable-content rule as a
+weekend. `ContentCatalog` resolves one selected `CampaignDefinition`;
+`CampaignStarter` interprets that data through existing competition, economy,
+personnel, operations and rival transactions rather than owning duplicate balance
+tables. `CampaignContentSnapshot` freezes the campaign record plus effective
+weekend, vehicle, roster, tyre, setup, race-tuning and mechanic definitions into
+`CampaignManagement` before publication.
+
+Later campaign departures and weekend settlement read that frozen closure rather
+than the live catalog. Thus an external pack can change a future career but cannot
+rewrite an active season. Version-1 management envelopes remain readable with
+explicit legacy policy defaults; new careers must use a validated campaign
+definition. Numeric policy data may tune supported rival/people/supply algorithms,
+but external content cannot add algorithms, executable providers or relax
+structural/safety bounds.
+
 ## Race and replay lifetimes
 
 `RaceSessionRunner` owns one active `RaceSim`. `RaceStepClock` preserves the
