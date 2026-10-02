@@ -26,6 +26,8 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertEqual(5, len(campaign["rivals"]))
         self.assertEqual(8000, campaign["event_finance"]["departure_cost_minor"])
         self.assertIn("cash_preservation_threshold_minor", campaign["rival_policy"])
+        self.assertEqual(8500, campaign["people_policy"]["counter_offer_ratio_bps"])
+        self.assertEqual(2000, campaign["supply_policy"]["initial_confidence_bps"])
 
     def test_core_pack_publishes_campaign_and_its_weekend(self):
         manifest = json.loads(PACK.read_text(encoding="utf-8"))
@@ -53,11 +55,27 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertNotIn("target = 10000", source)
         self.assertNotIn("float(spend) / 200.0", source)
 
+    def test_people_and_supply_algorithms_consume_policy(self):
+        people = (ROOT / "scripts/domain/campaign/people_development.gd").read_text(encoding="utf-8")
+        supply = (ROOT / "scripts/domain/campaign/supply_network.gd").read_text(encoding="utf-8")
+        people_tx = (ROOT / "scripts/application/campaign/people_transaction.gd").read_text(encoding="utf-8")
+        supply_tx = (ROOT / "scripts/application/campaign/supply_transaction.gd").read_text(encoding="utf-8")
+        self.assertIn("CampaignPeoplePolicy.normalized", people)
+        self.assertIn("_people_policy(restored)", people_tx)
+        self.assertNotIn("ratio >= 0.85", people)
+        self.assertNotIn("load >= 0.2 and load <= 0.8", people)
+        self.assertIn("CampaignSupplyPolicy.normalized", supply)
+        self.assertIn("_supply_policy(r)", supply_tx)
+        self.assertNotIn('"confidence_bps":2000', supply)
+        self.assertNotIn("mini(9500", supply)
+
     def test_legacy_literals_are_explicit_compatibility_not_new_content(self):
         inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
         retained = {(row["file"], row["symbol"]) for row in inventory["retained_literals"]}
         self.assertIn(("scripts/application/campaign/starter_legacy.gd", "DEFAULTS"), retained)
         self.assertIn(("scripts/domain/campaign/rival_policy.gd", "LEGACY"), retained)
+        self.assertIn(("scripts/domain/campaign/people_policy.gd", "LEGACY"), retained)
+        self.assertIn(("scripts/domain/campaign/supply_policy.gd", "LEGACY"), retained)
 
 
 if __name__ == "__main__":
