@@ -23,6 +23,8 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertEqual(150000, campaign["career"]["opening_cash_minor"])
         self.assertEqual(60000, campaign["career"]["reserve_minor"])
         self.assertEqual(4, len(campaign["calendar"]))
+        self.assertEqual(["core.circuit.hillside", "core.circuit.monza", "core.circuit.silverstone", "core.circuit.spa"],
+                         [event["circuit_id"] for event in campaign["calendar"]])
         self.assertEqual(5, len(campaign["rivals"]))
         self.assertEqual(8000, campaign["event_finance"]["departure_cost_minor"])
         self.assertIn("cash_preservation_threshold_minor", campaign["rival_policy"])
@@ -39,7 +41,7 @@ class CampaignDataContractTests(unittest.TestCase):
         forbidden = [
             "const EVENT_COST_MINOR", "const CAMPAIGN_ID", "const ORGANIZATION_ID",
             "const SEASON_ID", "const SERIES_ID", '"opening_cash_minor": 150000',
-            '"laps": 6', "9500 + index * 150",
+            '"laps": 6', "9500 + index * 150", "App.library[mini(7",
         ]
         for token in forbidden:
             with self.subTest(token=token):
