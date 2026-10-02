@@ -1,4 +1,4 @@
-/* Littlewild v5 — multiple independent actors in one authoritative world.
+/* Multiple independent actors in one authoritative world.
  * Existing learning/construction services read a scoped actor view (s.*).
  * Only this module advances the shared clock, nodes, crops and quest director.
  * Warehouse transfers are commands completed at a physical destination, never UI transfers.
@@ -11,7 +11,6 @@
     const PERSONAL = ['name', 'creature', 'bond', 'needs', 'inventory', 'allowance', 'skills', 'researched', 'training', 'orders', 'task', 'focus', 'cooldowns', 'memory', 'stats', 'stockTargets', 'practice', 'memories', 'wish', 'daily', 'learning', 'specializations', 'fieldStudies', 'buildPolicy', 'metrics'];
     const FOOD = ['meals', 'bread', 'berries', 'meat'], GATE = { x: 17, y: 16 };
     const safeInt = (x, a, b) => Number.isInteger(x) && x >= a && x <= b;
-    const listKnown = (o, keys) => o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).every(k => keys.includes(k));
     function definition(id) { return A.content.equipment.find(x => x.id === id); }
     function item(id) { return RES[id] ? { id, ...RES[id], weight: A.content.weights[id] } : definition(id) || (id === 'wooden_chest' ? (A.content.chest || A.defaultContent.chest) : null); }
     function profile(id) { return A.content.personalities.find(x => x.id === id) || A.content.personalities[0]; }
@@ -1038,13 +1037,7 @@
             state.version = 5;
             return { app: 'littlewild', version: 5, state };
         }
-        static import(doc) {
-            if (doc?.version !== 5) {
-                const base = super.import(doc);
-                return Composition.constructThrough('colony', base.s);
-            }
-            return importV5(doc);
-        }
+
     };}
     function invCount(c, id) { return c.inventory[id] || 0; }
     // Public creature commands share one guard. Simulation-internal calls use an explicit scope.
@@ -1058,211 +1051,7 @@
             }});
         }
     }
-    function importV5(doc) {
-        const raw = A.parse(doc);
-        if (raw.app !== 'littlewild' || raw.version !== 5 || !raw.state?.colony)
-            throw Error('Not a v5 Littlewild story.');
-        const s = raw.state, col = s.colony;
-        const lo=s.estate?-1200:0, hi=s.estate?1200:18;
-        const check = (x, m) => {
-            if (!x)
-                throw Error('Story: ' + m);
-        };
-        const finite = (v, a, b) => typeof v === 'number' && Number.isFinite(v) && v >= a && v <= b;
-        const str = (v, n) => typeof v === 'string' && v.length <= n;
-        check(finite(s.simTime, 0, 1e10) && safeInt(s.day, 1, 1e8) && finite(s.hour, 0, 24), 'invalid time.');
-        check(safeInt(s.player?.coins, 0, 1e12) && safeInt(s.player?.level, 1, 10000) && finite(s.player?.xp, 0, 1e8) && safeInt(s.rp, 0, 1e12), 'invalid shared balances.');
-        check([1, 2, 4, 8].includes(s.speed), 'invalid speed.');
-        check(Array.isArray(col.creatures) && col.creatures.length >= 1 && col.creatures.length <= A.content.rules.maxCreatures, 'invalid creature roster.');
-        check(safeInt(col.nextCreatureId, 2, 1e6) && safeInt(col.purchased, 1, 1e6) && safeInt(col.rng, 0, 4294967295), 'invalid colony counters.');
-        const ids = col.creatures.map(c => c.id);
-        check(new Set(ids).size === ids.length && ids.every(id => /^c[1-9][0-9]*$/.test(id)), 'duplicate or invalid creature IDs.');
-        check(col.selectedId === null || ids.includes(col.selectedId), 'invalid selection.');
-        const itemIds = [...Object.keys(RES), ...A.content.equipment.map(g => g.id), 'wooden_chest'];
-        const inventory = (inv, label, fill = true) => {
-            check(listKnown(inv, itemIds), label + ' contains an unknown item.');
-            for (const n of Object.values(inv))
-                check(safeInt(n, 0, 1000000), label + ' contains an invalid quantity.');
-            if (fill)
-                for (const id of Object.keys(RES))
-                    inv[id] ??= 0;
-        };
-        inventory(col.warehouse?.inventory, 'warehouse');
-        check(Array.isArray(col.warehouse.transfers) && col.warehouse.transfers.length <= 50, 'invalid transfer history.');
-        check(Array.isArray(s.buildings) && s.buildings.length <= (s.estate?1000:30), 'invalid buildings.');
-        const occupied = new Set();
-        for (const b of s.buildings) {
-            check(Object.hasOwn(BUILDINGS, b.kind) && safeInt(b.x, lo, hi) && safeInt(b.y, lo, hi) && terrain(b.x, b.y) === 'grass' && safeInt(b.level, 1, 3) && finite(b.quality, 0, 100), 'invalid building.');
-            check(!occupied.has(b.x + ',' + b.y), 'overlapping buildings.');
-            occupied.add(b.x + ',' + b.y);
-        }
-        check(Array.isArray(s.nodes) && s.nodes.length <= (s.estate?8000:120), 'invalid resource nodes.');
-        for (const n of s.nodes)
-            check(str(n.id, 80) && safeInt(n.x, lo, hi) && safeInt(n.y, lo, hi) && finite(n.stock, 0, 1000) && finite(n.max, 1, 1000) && n.stock <= n.max && finite(n.regen, 0, 100), 'invalid deposit.');
-        const taskKinds = ['build', 'gather', 'craft', 'gearcraft', 'train', 'practice', 'rest', 'warm', 'play', 'idle', 'eat', 'eatbread', 'drink', 'usebalm', 'hunt', 'explore', 'research', 'deliver', 'shop', 'reflect', 'withdraw', 'deposit', 'equip', 'unpack', 'social', 'socialwait', 'calmdown', 'salvage', ...(L.worldTaskKinds || [])];
-        for (const c of col.creatures) {
-            check(str(c.name, 24) && c.name.trim() && A.content.personalities.some(p => p.id === c.personality), 'invalid creature identity.');
-            check(Array.isArray(c.traits) && c.traits.length <= 4 && new Set(c.traits).size === c.traits.length && c.traits.every(id => A.content.traits.some(t => t.id === id)), 'invalid traits.');
-            inventory(c.inventory, c.name + ' satchel');
-            check(listKnown(c.needs, ['food', 'water', 'energy', 'comfort', 'joy']) && Object.keys(c.needs).length === 5 && Object.values(c.needs).every(v => finite(v, 0, 100)), 'invalid needs.');
-            check(finite(c.bond, 0, 100) && safeInt(c.creature?.coins, 0, 1e12) && safeInt(c.creature?.level, 1, 10000) && finite(c.creature?.xp, 0, 1e8) && finite(c.creature.x, lo, hi) && finite(c.creature.y, lo, hi), 'invalid creature state.');
-            for (const id of ['ST', 'DX', 'IQ', 'HT'])
-                check(safeInt(c.rpg?.attributes?.[id], 8, 16), 'invalid RPG attribute.');
-            check(safeInt(c.rpg.cp, 0, 100000) && safeInt(c.rpg.rng, 0, 4294967295), 'invalid RPG points or seed.');
-            check(listKnown(c.rpg.points, Object.keys(SKILLS)) && Object.values(c.rpg.points).every(n => safeInt(n, 0, 40)), 'invalid skill points.');
-            check(listKnown(c.skills, Object.keys(SKILLS)) && Object.values(c.skills).every(n => n === true), 'invalid learned skills.');
-            check(listKnown(c.researched, Object.keys(SKILLS)), 'invalid researched skills.');
-            check(Array.isArray(c.rpg.rolls) && c.rpg.rolls.length <= 60, 'invalid roll history.');
-            check(listKnown(c.equipment, A.slots) && Object.keys(c.equipment).length === A.slots.length, 'invalid equipment slots.');
-            for (const [slot, id] of Object.entries(c.equipment))
-                if (id !== null)
-                    check(definition(id)?.slot === slot && c.inventory[id] >= 1, 'equipped item must be in the owner’s inventory.');
-            check(Array.isArray(c.equipQueue) && c.equipQueue.length <= 4 && c.equipQueue.every(id => definition(id)), 'invalid outfit plan.');
-            check(finite(c.feelings?.anger, 0, 100) && finite(c.feelings?.social, 0, 100) && Array.isArray(c.feelings.causes) && c.feelings.causes.length <= 8, 'invalid feelings.');
-            check(Array.isArray(c.orders) && c.orders.length <= 12 && Array.isArray(c.salvage) && c.salvage.length <= 24, 'invalid plans.');
-            for (const o of c.orders) {
-                check(str(o.id, 60) && ['build', 'upgrade', 'practice', 'gather', 'craft', 'explore', 'hunt', 'deliver'].includes(o.type), 'invalid work order.');
-                if (['build', 'upgrade'].includes(o.type))
-                    check(Object.hasOwn(BUILDINGS, o.kind) && safeInt(o.x, lo, hi) && safeInt(o.y, lo, hi) && safeInt(o.stage || 0, 0, 2) && finite(o.progress || 0, 0, 10000), 'invalid construction order.');
-                if (['gather', 'craft'].includes(o.type))
-                    check(Object.hasOwn(RES, o.resource) && safeInt(o.amount, 1, 24) && safeInt(o.done || 0, 0, o.amount), 'invalid production order.');
-                if (o.type === 'practice')
-                    check(Object.hasOwn(SKILLS, o.skillId) && safeInt(o.amount, 1, 3), 'invalid practice.');
-            }
-            check(c.learning && Array.isArray(c.learning.queue) && c.learning.queue.length <= 4 && Object.hasOwn(STYLES, c.learning.style) && finite(c.learning.fatigue, 0, 100), 'invalid learning plan.');
-            for (const t of [...c.learning.queue, ...(c.training ? [c.training] : [])])
-                check(Object.hasOwn(SKILLS, t.id) && finite(t.progress, 0, SKILLS[t.id].time) && Object.hasOwn(STYLES, t.style), 'invalid lesson.');
-            if (c.questPlan)
-                check(A.content.quests.some(q => q.id === c.questPlan.questId), 'unknown planned quest.');
-            if (c.activeQuest) {
-                const q = c.activeQuest;
-                check(A.content.quests.some(t => t.id === q.questId) && ['exploring', 'returning'].includes(q.status) && finite(q.duration, 10, 5000) && finite(q.elapsed, 0, q.duration) && safeInt(q.checkIndex, 0, 8) && safeInt(q.successes, 0, q.checkIndex) && Array.isArray(q.checks) && q.checks.length >= 1 && q.checks.length <= 8 && q.checkIndex <= q.checks.length && Array.isArray(q.rolls) && q.rolls.length === q.checkIndex, 'invalid active quest.');
-                check(finite(q.energy, 0, 100) && finite(q.energySpent, 0, q.energy) && finite(q.returnRemaining, 0, 60) && safeInt(q.coins, 0, 1000) && safeInt(q.research, 0, 50), 'invalid quest balances.');
-                inventory(q.found, 'quest finds', false);
-                check(!c.task, 'an absent creature cannot have a world task.');
-            }
-            check(Array.isArray(c.questHistory) && c.questHistory.length <= 15, 'invalid adventure history.');
-            if (c.task) {
-                const t = c.task;
-                check(taskKinds.includes(t.kind) && ['walk', 'work'].includes(t.phase) && Array.isArray(t.path) && t.path.length <= (s.estate?20000:361) && t.path.every(p => safeInt(p.x, lo, hi) && safeInt(p.y, lo, hi) && terrain(p.x, p.y) === 'grass') && finite(t.duration, 1, 10000) && finite(t.elapsed, 0, t.duration + .25), 'invalid active task.');
-                if (t.resource)
-                    check(itemIds.includes(t.resource), 'unknown task resource.');
-            }
-        }
-        check(col.board && Array.isArray(col.board.offers) && col.board.offers.length <= (s.atlas ? 128 : 4) && finite(col.board.nextAt, 0, 1e10) && safeInt(col.board.sequence, 0, 1e9), 'invalid quest director.');
-        for (const o of col.board.offers)
-            check(str(o.id, 60) && A.content.quests.some(q => q.id === o.questId) && finite(o.expires, 0, 1e10), 'invalid offer.');
-        check(col.relationships && typeof col.relationships === 'object' && !Array.isArray(col.relationships) && Object.keys(col.relationships).length <= 28, 'invalid relationships.');
-        for (const [key, r] of Object.entries(col.relationships))
-            check(ids.includes(r.a) && ids.includes(r.b) && r.a !== r.b && key === [r.a, r.b].sort().join('|') && finite(r.affinity, -100, 100) && finite(r.trust, 0, 100) && Array.isArray(r.memories) && r.memories.length <= 8, 'invalid relationship record.');
-        // Validate optional persisted subtrees before any live registry is committed.
-        const mapNumbers = (m, label, keys = null, max = 1e10) => {
-            check(m && typeof m === 'object' && !Array.isArray(m), label + ' must be a map.');
-            if (keys)
-                check(Object.keys(m).every(k => keys.includes(k)), label + ' has an unknown reference.');
-            check(Object.values(m).every(n => finite(n, 0, max)), label + ' has an invalid value.');
-        };
-        const roll = r => {
-            check(r && Array.isArray(r.dice) && r.dice.length === 3 && r.dice.every(n => safeInt(n, 1, 6)) && finite(r.target, -50, 100) && str(r.label || '', 200), 'invalid roll record.');
-            const resolved = R.resolve(r.target, r.dice);
-            for (const key of ['total', 'margin', 'success', 'critical', 'outcome'])
-                check(r[key] === resolved[key], 'inconsistent roll result.');
-        };
-        check(safeInt(s.seed, 0, 4294967295) && safeInt(s.nextId, 1, 1e9) && safeInt(s.contractIndex, 0, 1e8), 'invalid world counters.');
-        check(typeof s.started === 'boolean' && typeof s.paused === 'boolean', 'invalid world status.');
-        check(listKnown(s.settings, ['sound', 'follow', 'reducedMotion', 'highContrast']) && Object.values(s.settings).every(v => typeof v === 'boolean'), 'invalid preferences.');
-        check(Array.isArray(s.log) && s.log.length <= 120 && s.log.every(r => str(r.text, 1000) && finite(r.time, 0, 1e10)), 'invalid journal.');
-        check(Array.isArray(s.ledger) && s.ledger.length <= 120 && s.ledger.every(r => str(r.label, 300) && ['guide', 'pocket', 'research'].every(k => finite(r[k], -1e12, 1e12))), 'invalid ledger.');
-        check(Array.isArray(s.completedQuests) && s.completedQuests.every(id => L.QUESTS.some(q => q.id === id)), 'invalid story chapters.');
-        check(col.nextCreatureId > Math.max(...ids.map(id => Number(id.slice(1)))) && col.purchased >= col.creatures.length, 'invalid roster sequence.');
-        check(new Set(s.buildings.map(b => b.id)).size === s.buildings.length && s.buildings.every(b => str(b.id, 60) && finite(b.stock || 0, 0, 1000) && finite(b.regen || 0, 0, 100)), 'invalid building record.');
-        check(s.buildings.some(b => b.kind === 'storehouse'), 'a colony needs a warehouse.');
-        check(new Set(s.nodes.map(n => n.id)).size === s.nodes.length && s.nodes.every(n => ['wood', 'stone', 'fiber', 'berries', 'water', 'hunt', 'clay', 'ore', 'herbs', 'grain', 'soil', 'groundwater', 'stream'].includes(n.kind)), 'unknown or duplicated resource node.');
-        for (const tr of col.warehouse.transfers) {
-            check(ids.includes(tr.actorId) && ['in', 'out'].includes(tr.direction) && str(tr.name, 24) && finite(tr.time, 0, 1e10), 'invalid transfer record.');
-            inventory(tr.items, 'transfer record', false);
-        }
-        for (const c of col.creatures) {
-            check(['balanced', 'cozy', 'builder', 'curious'].includes(c.focus), 'invalid creature focus.');
-            check(c.allowance && safeInt(c.allowance.limit, 0, 30) && safeInt(c.allowance.given, 0, 1000) && safeInt(c.allowance.reserve, 0, 30) && typeof c.allowance.auto === 'boolean' && ['balanced', 'shop', 'gather'].includes(c.allowance.sourcing), 'invalid allowance.');
-            mapNumbers(c.cooldowns, 'cooldowns');
-            mapNumbers(c.stats, 'statistics');
-            mapNumbers(c.stockTargets, 'reserve targets', Object.keys(RES), 99);
-            mapNumbers(c.practice, 'practice history', Object.keys(SKILLS));
-            mapNumbers(c.rpg.practiceCredit, 'practice credit', Object.keys(SKILLS));
-            mapNumbers(c.learning.practicedToday, 'daily practice', Object.keys(SKILLS));
-            check(Object.values(c.researched).every(v => v === true), 'invalid research status.');
-            check(L.PATHS[c.learning.path] && typeof c.learning.paused === 'boolean' && typeof c.learning.recovering === 'boolean' && safeInt(c.learning.practiceDay, 1, 1e8), 'invalid learning preferences.');
-            check(L.APPROACHES[c.buildPolicy?.approach], 'unknown construction approach.');
-            check(listKnown(c.specializations, Object.keys(L.DISCIPLINES)) && Object.entries(c.specializations).every(([d, id]) => L.SPECIALIZATIONS[d]?.some(t => t.id === id)), 'invalid talent.');
-            check(c.fieldStudies && (!c.fieldStudies.active || L.STUDIES[c.fieldStudies.active]) && Array.isArray(c.fieldStudies.completed) && c.fieldStudies.completed.every(id => L.STUDIES[id]), 'invalid field study.');
-            check(c.fieldStudies.progress && typeof c.fieldStudies.progress === 'object' && !Array.isArray(c.fieldStudies.progress), 'invalid study evidence.');
-            check(c.metrics && ['crafts', 'gathered', 'practices'].every(k => c.metrics[k] && typeof c.metrics[k] === 'object'), 'invalid work metrics.');
-            check(Array.isArray(c.memories) && c.memories.length <= 100 && c.memories.every(m => str(m.title, 200) && str(m.description, 600)), 'invalid memories.');
-            check(c.memory && typeof c.memory === 'object' && !Array.isArray(c.memory) && c.daily && finite(c.daily.bonded, 0, 1e6), 'invalid daily memory.');
-            if (c.wish)
-                check(str(c.wish.title, 200) && str(c.wish.thought, 300) && safeInt(c.wish.amount, 1, 100) && Object.hasOwn(c.stats, c.wish.stat) && finite(c.wish.start, 0, 1e10), 'invalid daily wish.');
-            check(c.behavior && Array.isArray(c.behavior.trace) && c.behavior.trace.length <= 100 && c.behavior.trace.every(t => str(t.id, 61) && str(t.name, 100) && ['running', 'success', 'failure'].includes(t.status)), 'invalid behavior trace.');
-            mapNumbers(c.behavior.memory, 'behavior cooldown memory');
-            check(c.feelings.causes.every(r => str(r.reason, 400) && finite(r.time, 0, 1e10) && finite(r.joy, -100, 100) && finite(r.anger, -100, 100)), 'invalid feeling cause.');
-            for (const k of ['lastControl', 'coolingUntil', 'lastSocial'])
-                check(finite(c.feelings[k], -1000, 1e10), 'invalid feeling timer.');
-            c.rpg.rolls.forEach(roll);
-            if (c.lastRoll)
-                roll(c.lastRoll);
-            if (c.socialIntent)
-                check(ids.includes(c.socialIntent) && c.socialIntent !== c.id, 'invalid social intent.');
-            for (const cache of c.salvage) {
-                check(safeInt(cache.x, lo, hi) && safeInt(cache.y, lo, hi), 'invalid salvage position.');
-                inventory(cache.items, 'salvage', false);
-            }
-            for (const o of c.orders) {
-                if (o.paid !== undefined)
-                    check(typeof o.paid === 'boolean', 'invalid paid construction stage.');
-                if (['build', 'upgrade'].includes(o.type))
-                    check(L.APPROACHES[o.approach] && (o.quality === undefined || finite(o.quality, 0, 100)), 'invalid project finish.');
-                if (o.type === 'upgrade')
-                    check(s.buildings.some(b => b.kind === o.kind && b.x === o.x && b.y === o.y), 'unknown upgrade target.');
-            }
-            if (c.task) {
-                const t = c.task;
-                if (t.target)
-                    check(finite(t.target.x, lo, hi) && finite(t.target.y, lo, hi), 'invalid task destination.');
-                if (t.skillId)
-                    check(SKILLS[t.skillId], 'unknown task skill.');
-                if (t.kind === 'withdraw')
-                    check(safeInt(t.amount, 1, 1000000), 'invalid withdrawal amount.');
-                if (t.kind === 'equip')
-                    check(definition(t.itemId), 'unknown equipment task.');
-                if (['social', 'socialwait'].includes(t.kind))
-                    check(ids.includes(t.otherId || t.partner), 'unknown social partner.');
-                if (['craft', 'gearcraft'].includes(t.kind))
-                    check(RECIPES[t.resource] || definition(t.resource)?.recipe, 'unknown craft recipe.');
-                if (t.orderId)
-                    check(c.orders.some(o => o.id === t.orderId), 'orphaned task order.');
-            }
-            if (c.activeQuest) {
-                const q = c.activeQuest;
-                check(safeInt(q.required, 1, q.checks.length) && typeof q.aborted === 'boolean' && str(q.name, 160), 'invalid quest snapshot.');
-                for (const st of q.checks)
-                    check((SKILLS[st.skill] || ['ST', 'DX', 'IQ', 'HT', 'Per', 'Will', 'social'].includes(st.skill)) && finite(st.target, -50, 100) && finite(st.base, -50, 100) && Array.isArray(st.modifiers) && st.modifiers.every(m => str(m.name, 100) && finite(m.value, -30, 30)), 'invalid quest check.');
-                q.rolls.forEach(roll);
-                check(q.rolls.filter(r => r.success).length === q.successes, 'invalid quest success count.');
-            }
-            for (const q of c.questHistory) {
-                check(str(q.name, 160) && str(q.outcome, 80) && finite(q.finished, 0, 1e10) && typeof q.delivered === 'boolean' && Array.isArray(q.rolls) && q.rolls.length <= 8, 'invalid quest history.');
-                inventory(q.found, 'past quest finds', false);
-                q.rolls.forEach(roll);
-            }
-        }
-        const first = col.creatures.find(c => c.id === col.selectedId) || col.creatures[0];
-        for (const key of PERSONAL)
-            s[key] = copy(first[key]);
-        return Composition.constructThrough('colony', s);
-    }
     L.colony = { item, definition, profile, PERSONAL, GATE };
-    function LegacyEngine(state, options) { return Composition.constructThrough('systems', state, options); }
-    L.LegacyEngine = LegacyEngine;
     function installFactories() {
         const oldDemo = L.createWorkshopDemo;
         L.createWorkshopDemo = () => Composition.constructThrough('colony', oldDemo().s);

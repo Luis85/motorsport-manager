@@ -51,7 +51,7 @@
   engine.behaviorTree.validate(engine._plannerTree);
  }
  function initializePlanner(self){attach(self);}
- function defineLayer(Base){return class PlannerLayer extends Base{decide(){if(this.actor.activeQuest)return;const result=this.behaviorTree.tick(this._plannerTree,{time:this.s.simTime,behaviorMemory:this.actor.behavior.memory});this.actor.behavior.trace=result.trace;this.actor.behavior.lastAction=this.actor.task?.label||'Considering the next step';}static import(doc){const old=super.import(doc);return Composition.constructThrough('planner',old.export().state);}};}
+ function defineLayer(Base){return class PlannerLayer extends Base{decide(){if(this.actor.activeQuest)return;const result=this.behaviorTree.tick(this._plannerTree,{time:this.s.simTime,behaviorMemory:this.actor.behavior.memory});this.actor.behavior.trace=result.trace;this.actor.behavior.lastAction=this.actor.task?.label||'Considering the next step';}};}
  function installFactories(){const scenarioNames=['createWorldDemo','createColonyDemo','createWorkshopDemo'],rawFactories=Object.fromEntries(scenarioNames.map(k=>[k,L[k]])),wrappedFactories={};
   // Existing authored fixtures compose the original factories. Canonicalize once after
   // their setup, so recruitment gates do not interfere with fixture construction.
