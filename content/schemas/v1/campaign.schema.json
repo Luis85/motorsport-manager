@@ -9,13 +9,13 @@
           "campaign_event_id": {
             "maxLength": 96,
             "minLength": 1,
-            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
             "type": "string"
           },
           "circuit_id": {
             "maxLength": 96,
             "minLength": 1,
-            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
             "type": "string"
           },
           "departure_day": {
@@ -59,7 +59,7 @@
         "campaign_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         },
         "energy_capacity": {
@@ -75,13 +75,13 @@
         "organization_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         },
         "principal_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         },
         "reserve_minor": {
@@ -160,7 +160,7 @@
             "minimum": 0,
             "type": "integer"
           },
-          "maxItems": 32,
+          "maxItems": 64,
           "minItems": 1,
           "type": "array"
         }
@@ -206,7 +206,7 @@
           "id": {
             "maxLength": 96,
             "minLength": 1,
-            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
             "type": "string"
           }
         },
@@ -226,7 +226,7 @@
     "id": {
       "maxLength": 96,
       "minLength": 1,
-      "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
       "type": "string"
     },
     "kind": {
@@ -349,15 +349,21 @@
           "type": "object"
         },
         "driver_role_id": {
-          "maxLength": 96,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
-          "type": "string"
+          "enum": [
+            "race_driver",
+            "race_engineer",
+            "technical_lead",
+            "chief_mechanic",
+            "operations_lead",
+            "commercial_lead",
+            "department_workforce",
+            "academy_lead"
+          ]
         },
         "entrant_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         },
         "operations_lead": {
@@ -409,14 +415,20 @@
             "person_id": {
               "maxLength": 96,
               "minLength": 1,
-              "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+              "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
               "type": "string"
             },
             "role_id": {
-              "maxLength": 96,
-              "minLength": 1,
-              "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
-              "type": "string"
+              "enum": [
+                "race_driver",
+                "race_engineer",
+                "technical_lead",
+                "chief_mechanic",
+                "operations_lead",
+                "commercial_lead",
+                "department_workforce",
+                "academy_lead"
+              ]
             }
           },
           "required": [
@@ -436,7 +448,7 @@
         "team_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         }
       },
@@ -549,7 +561,7 @@
           "entrant_id": {
             "maxLength": 96,
             "minLength": 1,
-            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
             "type": "string"
           },
           "reserve_minor": {
@@ -571,7 +583,7 @@
           "team_id": {
             "maxLength": 96,
             "minLength": 1,
-            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
             "type": "string"
           }
         },
@@ -615,20 +627,20 @@
             "minimum": 0,
             "type": "integer"
           },
-          "maxItems": 32,
+          "maxItems": 64,
           "minItems": 1,
           "type": "array"
         },
         "season_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         },
         "series_id": {
           "maxLength": 96,
           "minLength": 1,
-          "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
           "type": "string"
         }
       },
@@ -682,7 +694,7 @@
     "weekend_id": {
       "maxLength": 96,
       "minLength": 1,
-      "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
       "type": "string"
     }
   },
