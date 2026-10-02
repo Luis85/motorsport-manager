@@ -27,6 +27,8 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertEqual(["core.circuit.hillside", "core.circuit.monza", "core.circuit.silverstone", "core.circuit.spa"],
                          [event["circuit_id"] for event in campaign["calendar"]])
         self.assertEqual(5, len(campaign["rivals"]))
+        self.assertEqual("core.team.obsidian", campaign["player"]["roster_team_id"])
+        self.assertEqual(5, len({row["roster_team_id"] for row in campaign["rivals"]}))
         self.assertEqual(8000, campaign["event_finance"]["departure_cost_minor"])
         self.assertIn("cash_preservation_threshold_minor", campaign["rival_policy"])
         self.assertEqual(8500, campaign["people_policy"]["counter_offer_ratio_bps"])
@@ -50,6 +52,9 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertIn("CampaignDefinition.from_record", source)
         self.assertIn("CampaignContentSnapshot.build", source)
         self.assertIn("CampaignStarterLegacy", source)
+        self.assertIn("entry_config.roster_team_id", source)
+        self.assertNotIn("labels.sort()", source)
+        self.assertNotIn("rival_index", source)
 
     def test_campaign_entry_uses_authored_circuits_not_library_order(self):
         source = SCREENS.read_text(encoding="utf-8")
