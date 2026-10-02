@@ -88,6 +88,16 @@ func invalid_content() -> void:
 	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_REFERENCE",
 		"Campaign calendar rejects a missing circuit reference before career creation")
 	campaign_record = catalog.record("core.campaign.team-principal")
+	campaign_record.rivals[0].roster_team_id = campaign_record.player.roster_team_id
+	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
+	check(not campaign_errors.is_empty() and campaign_errors[0].code in ["CONTENT_CAMPAIGN", "CONTENT_CAMPAIGN_ROSTER"],
+		"Campaign cannot map two organizations to the same authored roster team")
+	campaign_record = catalog.record("core.campaign.team-principal")
+	campaign_record.player.roster_team_id = "core.team.volpe"
+	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
+	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN_ROSTER",
+		"Campaign player mapping must match the selected weekend roster player team")
+	campaign_record = catalog.record("core.campaign.team-principal")
 	campaign_record.event_finance.position_bonus_minor.pop_back()
 	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
 	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN",
