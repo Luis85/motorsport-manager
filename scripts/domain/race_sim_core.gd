@@ -1,5 +1,5 @@
 class_name RaceSimCore
-extends RaceSimFoundation
+extends "res://scripts/domain/race_sim_foundation.gd"
 ## Fixed-step session, surface, strategy and on-track movement implementation.
 func _base_command(action: String, payload: Dictionary = {}) -> bool:
 	last_error = ""
