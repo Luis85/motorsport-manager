@@ -116,6 +116,8 @@
       "id": "presentation",
       "layer": "presentation",
       "files": [
+        "asset-renderer.ts",
+        "asset-catalog.ts",
         "build-panel.ts",
         "colony-ui.ts",
         "content-ui.ts",
@@ -182,7 +184,8 @@
     "LWGrowthSchema",
     "LWDefaultProfile",
     "LWScenarioSchema",
-    "LWScenarioPacks"
+    "LWScenarioPacks",
+    "LWAssetDefinitions"
   ],
   "strictTypingDebt": {
     "world-ecs.ts": "Physical transaction services still expose broad legacy resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",

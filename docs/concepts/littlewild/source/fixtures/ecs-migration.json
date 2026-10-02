@@ -58,5 +58,10 @@
     "prior_sha256": "059c826d8725c0bfea4233c1321f6f5f60ea9f4f35f657be1db7bb36252e28ac",
     "reason": "Portable-story confirmation now binds the reviewed engine state and all four definition libraries to a private review token, revalidates them together, and rolls back every active registry if installation fails.",
     "required_token": "const reviews = new WeakMap()"
+  },
+  "world-fidelity.js": {
+    "prior_sha256": "28aa690ba4fbec3a05fa9fcb7dfb371dbd0b73953b12ee9333658c869545e546",
+    "reason": "Companion mesh construction and equipment/cargo geometry moved to validated bundled asset descriptors; world-fidelity now owns animation and expression only.",
+    "required_token": "LWAssetRenderer.createActor"
   }
 }

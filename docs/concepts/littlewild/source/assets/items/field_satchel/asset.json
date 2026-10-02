@@ -1,0 +1,75 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "field_satchel",
+  "name": "Field satchel",
+  "materials": {
+    "primary": "#b07848",
+    "light": "#e7d3a5",
+    "dark": "#7d674f",
+    "metal": "#a5b1aa",
+    "glow": {
+      "color": "#e7bd73",
+      "emissive": "#d99d49",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "models": {
+    "equipped": {
+      "nodes": [
+        {
+          "primitive": "soft",
+          "id": "pack",
+          "position": [
+            0,
+            0,
+            -0.02
+          ],
+          "scale": [
+            0.18,
+            0.22,
+            0.11
+          ],
+          "material": "primary"
+        },
+        {
+          "primitive": "box",
+          "id": "flap",
+          "position": [
+            0,
+            0.06,
+            -0.12
+          ],
+          "scale": [
+            0.23,
+            0.1,
+            0.025
+          ],
+          "material": "light"
+        },
+        {
+          "primitive": "box",
+          "id": "buckle",
+          "position": [
+            0,
+            0.02,
+            -0.14
+          ],
+          "scale": [
+            0.045,
+            0.06,
+            0.012
+          ],
+          "material": "metal"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "equipment": true,
+    "slot": "back",
+    "visual": "pack",
+    "radius": 0.45
+  }
+}

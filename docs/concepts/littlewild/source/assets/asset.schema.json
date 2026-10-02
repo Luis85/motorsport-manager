@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "littlewild-3d-asset.schema.json",
+  "title": "Littlewild bundled 3D asset",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "format",
+    "schemaVersion",
+    "category",
+    "id",
+    "name",
+    "materials",
+    "models",
+    "metadata"
+  ],
+  "properties": {
+    "format": {
+      "const": "littlewild-3d-asset"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "category": {
+      "enum": [
+        "building",
+        "item",
+        "actor"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "materials": {
+      "type": "object"
+    },
+    "models": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "behaviors": {
+      "type": "object"
+    },
+    "rig": {
+      "type": "object"
+    }
+  }
+}

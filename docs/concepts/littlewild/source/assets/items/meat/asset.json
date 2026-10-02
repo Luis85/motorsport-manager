@@ -1,0 +1,67 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "meat",
+  "name": "Wild meat",
+  "materials": {
+    "primary": "#bd776d",
+    "light": "#d9c69d",
+    "dark": "#84694d",
+    "metal": "#9ba6a0"
+  },
+  "models": {
+    "carry": {
+      "nodes": [
+        {
+          "primitive": "box",
+          "id": "box",
+          "position": [
+            0,
+            0.15,
+            0
+          ],
+          "scale": [
+            0.32,
+            0.3,
+            0.3
+          ],
+          "material": "primary"
+        },
+        {
+          "primitive": "box",
+          "id": "lid",
+          "position": [
+            0,
+            0.3,
+            0
+          ],
+          "scale": [
+            0.34,
+            0.04,
+            0.32
+          ],
+          "material": "light"
+        },
+        {
+          "primitive": "box",
+          "id": "band",
+          "position": [
+            0,
+            0.13,
+            0
+          ],
+          "scale": [
+            0.35,
+            0.045,
+            0.06
+          ],
+          "material": "dark"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6
+  }
+}

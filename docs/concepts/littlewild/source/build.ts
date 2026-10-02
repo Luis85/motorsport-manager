@@ -69,6 +69,8 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_UI", "world-ui.js", "script"],
   ["QUALITY_CSS", "quality.css", "style"],
   ["THREE", "../vendor/three.js", "script"],
+  ["ASSET_CATALOG", "asset-catalog.js", "script"],
+  ["ASSET_RENDERER", "asset-renderer.js", "script"],
   ["SOFTWARE_3D", "software-3d.js", "script"],
   ["WORLD_INPUT", "world-input.js", "script"],
   ["FIDELITY", "world-fidelity.js", "script"],
@@ -123,6 +125,30 @@ function json(file: string): unknown {
   return JSON.parse(fs.readFileSync(path.join(ROOT, "content", file), "utf8"));
 }
 
+interface AssetFile {
+  format: string;
+  schemaVersion: number;
+  category: string;
+  id: string;
+  [key: string]: unknown;
+}
+function assetDefinitions(): AssetFile[] {
+  const assetRoot = path.join(ROOT, "assets");
+  const out: AssetFile[] = [];
+  for (const category of fs.readdirSync(assetRoot, { withFileTypes: true }).filter(entry => entry.isDirectory())) {
+    for (const model of fs.readdirSync(path.join(assetRoot, category.name), { withFileTypes: true }).filter(entry => entry.isDirectory())) {
+      const file = path.join(assetRoot, category.name, model.name, "asset.json");
+      if (!fs.existsSync(file)) throw new Error(`Asset folder is missing asset.json: ${category.name}/${model.name}`);
+      const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as AssetFile;
+      if (parsed.format !== "littlewild-3d-asset" || parsed.schemaVersion !== 1 || parsed.category + "s" !== category.name || parsed.id !== model.name) {
+        throw new Error(`Asset identity/path mismatch: ${category.name}/${model.name}`);
+      }
+      out.push(parsed);
+    }
+  }
+  return out.sort((a,b) => (a.category + ":" + a.id).localeCompare(b.category + ":" + b.id));
+}
+
 function inlineData(packPath: string | null): string {
   const declarations: Array<[string, unknown]> = [
     ["LWDefaultLibrary", json("default-library.json")],
@@ -138,7 +164,8 @@ function inlineData(packPath: string | null): string {
     ["LWDefaultGrowth", json("growth-library.json")],
     ["LWGrowthSchema", json("growth.schema.json")],
     ["LWDefaultProfile", json("default-profile.json")],
-    ["LWScenarioSchema", json("scenario.schema.json")]
+    ["LWScenarioSchema", json("scenario.schema.json")],
+    ["LWAssetDefinitions", assetDefinitions()]
   ];
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]

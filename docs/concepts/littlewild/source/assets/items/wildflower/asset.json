@@ -1,0 +1,112 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "wildflower",
+  "name": "Wildflower",
+  "materials": {
+    "stem": "#789465",
+    "petal": "#ece2c7",
+    "petalAlt": "#dec2a4",
+    "center": "#d4b45c"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "stem",
+          "position": [
+            0,
+            0.12,
+            0
+          ],
+          "scale": [
+            0.01,
+            0.23,
+            0.01
+          ],
+          "material": "stem"
+        },
+        {
+          "primitive": "ball",
+          "id": "petal-0",
+          "position": [
+            0.038,
+            0.235,
+            0
+          ],
+          "scale": [
+            0.036,
+            0.019,
+            0.036
+          ],
+          "material": "petal"
+        },
+        {
+          "primitive": "ball",
+          "id": "petal-1",
+          "position": [
+            2.326828918379971e-18,
+            0.235,
+            0.038
+          ],
+          "scale": [
+            0.036,
+            0.019,
+            0.036
+          ],
+          "material": "petalAlt"
+        },
+        {
+          "primitive": "ball",
+          "id": "petal-2",
+          "position": [
+            -0.038,
+            0.235,
+            4.653657836759942e-18
+          ],
+          "scale": [
+            0.036,
+            0.019,
+            0.036
+          ],
+          "material": "petal"
+        },
+        {
+          "primitive": "ball",
+          "id": "petal-3",
+          "position": [
+            -6.980486755139913e-18,
+            0.235,
+            -0.038
+          ],
+          "scale": [
+            0.036,
+            0.019,
+            0.036
+          ],
+          "material": "petalAlt"
+        },
+        {
+          "primitive": "ball",
+          "id": "center",
+          "position": [
+            0,
+            0.249,
+            0
+          ],
+          "scale": [
+            0.02,
+            0.014,
+            0.02
+          ],
+          "material": "center"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6
+  }
+}

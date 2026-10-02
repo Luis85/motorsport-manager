@@ -1,0 +1,198 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "building",
+  "id": "loom",
+  "name": "Weaving loom",
+  "materials": {
+    "wood": "#bd9b70",
+    "dark": "#8d704f",
+    "paper": "#e2c69a",
+    "accent": "#778d7d",
+    "cloth": "#b78d76",
+    "metal": "#9da9a1",
+    "stone": "#b89b83",
+    "fire": {
+      "color": "#e5a15e",
+      "emissive": "#cb7541",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "box",
+          "id": "frame-left",
+          "position": [
+            -0.42,
+            0.57,
+            0
+          ],
+          "scale": [
+            0.08,
+            1.14,
+            0.1
+          ],
+          "material": "dark"
+        },
+        {
+          "primitive": "box",
+          "id": "frame-right",
+          "position": [
+            0.42,
+            0.57,
+            0
+          ],
+          "scale": [
+            0.08,
+            1.14,
+            0.1
+          ],
+          "material": "dark"
+        },
+        {
+          "primitive": "box",
+          "id": "frame-top",
+          "position": [
+            0,
+            1.08,
+            0
+          ],
+          "scale": [
+            0.92,
+            0.08,
+            0.1
+          ],
+          "material": "dark"
+        },
+        {
+          "primitive": "box",
+          "id": "frame-bottom",
+          "position": [
+            0,
+            0.12,
+            0
+          ],
+          "scale": [
+            0.92,
+            0.08,
+            0.1
+          ],
+          "material": "dark"
+        },
+        {
+          "primitive": "box",
+          "id": "cloth",
+          "position": [
+            0,
+            0.58,
+            0.02
+          ],
+          "scale": [
+            0.67,
+            0.72,
+            0.035
+          ],
+          "material": "cloth"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-0",
+          "position": [
+            -0.28,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-1",
+          "position": [
+            -0.16800000000000004,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-2",
+          "position": [
+            -0.05600000000000002,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-3",
+          "position": [
+            0.055999999999999994,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-4",
+          "position": [
+            0.16799999999999998,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        },
+        {
+          "primitive": "box",
+          "id": "thread-5",
+          "position": [
+            0.28,
+            0.59,
+            0.045
+          ],
+          "scale": [
+            0.012,
+            0.7,
+            0.012
+          ],
+          "material": "paper"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "orientation": "none",
+    "indoor": false,
+    "hitHeight": 1.15,
+    "radius": 1.05
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "friendship_charm",
+  "name": "Friendship charm",
+  "materials": {
+    "primary": "#db9987",
+    "light": "#e7d3a5",
+    "dark": "#7d674f",
+    "metal": "#a5b1aa",
+    "glow": {
+      "color": "#e7bd73",
+      "emissive": "#d99d49",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "models": {
+    "equipped": {
+      "nodes": [
+        {
+          "primitive": "ring",
+          "id": "chain",
+          "position": [
+            0,
+            0.05,
+            0
+          ],
+          "scale": [
+            0.07,
+            0.09,
+            0.04
+          ],
+          "material": "light",
+          "rotation": [
+            1.5707963267948966,
+            0,
+            0
+          ]
+        },
+        {
+          "primitive": "soft",
+          "id": "charm",
+          "position": [
+            0,
+            -0.04,
+            0.02
+          ],
+          "scale": [
+            0.045,
+            0.05,
+            0.03
+          ],
+          "material": "primary"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "equipment": true,
+    "slot": "charm",
+    "visual": "charm",
+    "radius": 0.45
+  }
+}
