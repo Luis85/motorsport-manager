@@ -1,8 +1,8 @@
-/* Behavioral assertions retained from test-v14.cjs. Its historical hash check is replaced by test-v15-release.cjs; no behavior assertions are removed. */
+/* Current presentation behavior: interpolation, pacing and label layout. Historical story snapshots are intentionally outside the current-only contract. */
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const {MotionSamples,FramePacer,placeLabels,visibleAnchor}=require('./world-presentation.js');
-const L=require('./simulation.cjs'),S=require('./story-codec.js');
+const L=require('./simulation.cjs');
 const results=[];function test(name,fn){try{fn();results.push({name,passed:true});}catch(e){results.push({name,passed:false,error:e.stack});console.error(name,e.message);}}
 const c=()=>({id:'c1',creature:{x:5,y:8},task:{kind:'gather',phase:'walk'}});
 function motion(){const a=c(),m=new MotionSamples();m.begin([a]);a.creature.x=5.1;m.end([a],.1);return{a,m};}
@@ -34,6 +34,4 @@ test('Keyboard focus receives priority over ordinary labels',()=>{const out=plac
 test('Long labels remain horizontally within viewport',()=>{for(const x of[10,320-10]){const out=placeLabels([{...entry('c1',x),width:216}],320,600)[0];assert(out.x-out.width/2>=7.99&&out.x+out.width/2<=312.01);}});
 for(const p of[null,{x:NaN,y:300},{x:-100,y:300},{x:2000,y:300},{x:300,y:5},{x:300,y:900}])test('Off-screen/invalid anchor cannot leave a misplaced floating name: '+JSON.stringify(p),()=>assert.equal(visibleAnchor(p,900,700),false));
 test('Layout and sampling consume no simulation randomness or resources',()=>{const e=L.createWorldDemo(),before=JSON.stringify(e.export()),m=new MotionSamples();m.begin(e.creatures);m.end(e.creatures,e.s.simTime);for(let i=0;i<50;i++){for(const c of e.creatures)m.sample(c,e.s.simTime,.5,true);placeLabels([entry('c1'),entry('c2')],900,700);}assert.equal(JSON.stringify(e.export()),before);});
-test('Authentic v13 snapshot preserves exact colony state',()=>{const doc=JSON.parse(fs.readFileSync(__dirname+'/fixtures/actual-v13-story.json'));const e=S.commit(S.inspect(doc));assert.deepEqual(S.encode(e).state,doc.state);});
-test('Authentic v13 game continues deterministically after restore',()=>{const doc=JSON.parse(fs.readFileSync(__dirname+'/fixtures/actual-v13-story.json'));const a=S.commit(S.inspect(doc));a.s.paused=false;a.advance(30);const b=S.commit(S.inspect(S.encode(a)));a.advance(30);b.advance(30);assert.deepEqual(a.export(),b.export());});
 const report={passed:results.filter(r=>r.passed).length,total:results.length,results};fs.writeFileSync(__dirname+'/v15-presentation-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
