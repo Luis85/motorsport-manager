@@ -4,7 +4,7 @@ extends RefCounted
 ## Empty error means accepted; the aggregate alone posts radio and appends history.
 const ACTIONS = ["select_set", "schedule_pit", "cancel_schedule", "compound", "pit", "cancel_pit"]
 
-static func apply(simulation: RaceSim, car: RaceCar, action: String, payload: Dictionary) -> String:
+static func apply(simulation: RaceSimFoundation, car: RaceCar, action: String, payload: Dictionary) -> String:
 	match action:
 		"select_set": return _select_set(simulation, car, payload)
 		"schedule_pit": return _schedule_pit(simulation, car, payload)
@@ -14,7 +14,7 @@ static func apply(simulation: RaceSim, car: RaceCar, action: String, payload: Di
 		"cancel_pit": return _cancel_pit(car)
 	return "Unknown command: " + action
 
-static func _select_set(simulation: RaceSim, car: RaceCar, payload: Dictionary) -> String:
+static func _select_set(simulation: RaceSimFoundation, car: RaceCar, payload: Dictionary) -> String:
 	if car.route == "pit": return "The tyre plan is locked until pit exit."
 	var item = TyreInventory.find(car, str(payload.get("set_id", "")))
 	if not WheelTyres.usable(item): return "That set is exhausted or does not belong to this driver."
@@ -22,7 +22,7 @@ static func _select_set(simulation: RaceSim, car: RaceCar, payload: Dictionary) 
 	car.next_compound = item.compound; car.next_set_id = item.id
 	return ""
 
-static func _schedule_pit(simulation: RaceSim, car: RaceCar, payload: Dictionary) -> String:
+static func _schedule_pit(simulation: RaceSimFoundation, car: RaceCar, payload: Dictionary) -> String:
 	if simulation.phase != "race" or car.route != "track" or car.pit_order: return "Schedule an on-track car with no existing pit order."
 	var lap = payload.get("lap", -1)
 	if not RaceCheckpoint.integral(lap, 1, simulation.laps - 1): return "Choose a racing lap before the final lap."
@@ -38,7 +38,7 @@ static func _cancel_schedule(car: RaceCar) -> String:
 	car.scheduled_lap = -1; car.pit_order = false; car.pit_gate = -1.0; car.pit_deferred = false
 	return ""
 
-static func _compound(simulation: RaceSim, car: RaceCar, payload: Dictionary) -> String:
+static func _compound(simulation: RaceSimFoundation, car: RaceCar, payload: Dictionary) -> String:
 	var value = str(payload.get("value", simulation.tyre_rules.initial("dry")))
 	if simulation.tyre_rules.spec(value).is_empty(): return "Unknown tyre compound."
 	if car.route == "pit": return "The tyre plan is locked until pit exit."
@@ -46,7 +46,7 @@ static func _compound(simulation: RaceSim, car: RaceCar, payload: Dictionary) ->
 	car.next_compound = value; car.next_set_id = ""
 	return ""
 
-static func _pit(simulation: RaceSim, car: RaceCar) -> String:
+static func _pit(simulation: RaceSimFoundation, car: RaceCar) -> String:
 	if simulation.phase != "race" or car.route != "track": return "Pit calls require a car racing on track."
 	if TyreInventory.planned(car, true).is_empty(): return "No usable replacement set. Select another compound or set."
 	car.scheduled_lap = -1; simulation.queue_pit(car); car.auto = false
