@@ -4,6 +4,23 @@ extends RefCounted
 const DAY=CampaignClock.SLOTS_PER_DAY
 
 static func run(check:Callable)->void:
+	var evidence_policy=CampaignSupplyPolicy.LEGACY.duplicate(true)
+	evidence_policy.initial_confidence_bps=4000
+	evidence_policy.observation_gain_bps=1000
+	evidence_policy.max_confidence_bps=6000
+	evidence_policy.spread_floor_bps=100
+	evidence_policy.spread_scale_bps=1000
+	var policy_evidence=CampaignSupplyNetwork.register_project_evidence(
+		CampaignSupplyNetwork.empty(),"project.policy",0,0,evidence_policy)
+	check.call(policy_evidence.ok and policy_evidence.supply.project_evidence["project.policy"].confidence_bps==4000,
+		"Authored supply policy sets initial engineering-evidence confidence")
+	if policy_evidence.ok:
+		var range_before=CampaignSupplyNetwork.project_range(policy_evidence.supply,"project.policy",evidence_policy)
+		var policy_observed=CampaignSupplyNetwork.observe_project(policy_evidence.supply,"project.policy",1,evidence_policy)
+		var range_after=CampaignSupplyNetwork.project_range(policy_observed.supply,"project.policy",evidence_policy)
+		check.call(policy_observed.ok and policy_observed.supply.project_evidence["project.policy"].confidence_bps==5000
+				and int(range_after.high_bps)-int(range_after.low_bps)<int(range_before.high_bps)-int(range_before.low_bps),
+			"Authored supply policy controls observation gain and uncertainty spread")
 	var checkpoint=_engineering_part_fixture(check)
 	if checkpoint.is_empty():return
 	var part_id:String=checkpoint.engineering.parts.keys()[0]
