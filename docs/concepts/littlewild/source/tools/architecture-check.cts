@@ -18,6 +18,7 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   domainGlobals: string[];
   injectedDataGlobals: string[];
   strictTypingDebt: Record<string,string>;
+  strictTypingDebtBudget: number;
 };
 const results: CheckResult[] = [];
 
@@ -268,6 +269,8 @@ check("Strict TypeScript coverage is an explicit domain/application ratchet", ()
     if(context.layer==="domain"||context.layer==="application")owned.set(file,context.layer);
   const debt=DOMAIN_MAP.strictTypingDebt;
   assert(debt&&typeof debt==="object"&&!Array.isArray(debt),"Strict typing debt register is missing.");
+  assert(Number.isInteger(DOMAIN_MAP.strictTypingDebtBudget)&&DOMAIN_MAP.strictTypingDebtBudget>=0,"Strict typing debt budget is invalid.");
+  assert(Object.keys(debt).length<=DOMAIN_MAP.strictTypingDebtBudget,`Strict typing debt exceeded budget ${DOMAIN_MAP.strictTypingDebtBudget}: ${Object.keys(debt).length}`);
   for(const [file,layer] of owned){
     assert(strictFiles.has(file)||Object.hasOwn(debt,file),`${layer} runtime module is neither strict nor registered debt: ${file}`);
   }
@@ -277,7 +280,7 @@ check("Strict TypeScript coverage is an explicit domain/application ratchet", ()
     assert(typeof reason==="string"&&reason.trim().length>=40,"Typing debt needs a concrete migration reason: "+file);
   }
   const strictRuntime=[...owned.keys()].filter(file=>strictFiles.has(file));
-  assert(strictRuntime.length>=14,"Strict runtime coverage regressed below 14 modules: "+strictRuntime.length);
+  assert(strictRuntime.length>=15,"Strict runtime coverage regressed below 15 modules: "+strictRuntime.length);
 });
 
 check("Strict runtime modules contain no explicit any or TypeScript suppression", () => {

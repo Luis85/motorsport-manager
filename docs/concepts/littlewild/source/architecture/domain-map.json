@@ -1,20 +1,142 @@
 {
   "format": "littlewild-domain-map",
   "schemaVersion": 1,
-  "layers": ["domain","application","infrastructure","presentation"],
+  "layers": [
+    "domain",
+    "application",
+    "infrastructure",
+    "presentation"
+  ],
   "contexts": [
-    {"id":"simulation-core","layer":"domain","files":["ecs.ts","behavior-tree.ts"]},
-    {"id":"actors","layer":"domain","files":["actor-ecs.ts","rpg.ts"]},
-    {"id":"physical-world","layer":"domain","files":["world-ecs.ts","island-geometry.ts"]},
-    {"id":"economy-progression","layer":"domain","files":["economy-ecs.ts"]},
-    {"id":"content-model","layer":"domain","files":["content-runtime.ts","adventure-content.ts","growth-content.ts","world-profile.ts","scenario-shape.ts"]},
-    {"id":"actors-application","layer":"application","files":["colony-policies.ts"]},
-    {"id":"physical-world-application","layer":"application","files":["navigation.ts","world-integrity.ts","validation-village.ts"]},
-    {"id":"content-application","layer":"application","files":["world-content.ts"]},
-    {"id":"simulation-application","layer":"application","files":["engine.ts","engine-composition.ts","engine-composition-root.ts","actor-state-view.ts","systems.ts","colony.ts","village-systems.ts","world-simulation.ts","simulation-pipeline.ts","simulation-profile.ts","command-router.ts","simulation.cts","planner.ts","cartography.ts"]},
-    {"id":"experience-application","layer":"application","files":["scenario-migrations.ts","scenario-runtime.ts","scenario-story.ts","story-codec.ts"]},
-    {"id":"persistence-and-clock","layer":"infrastructure","files":["file-io.ts","story-storage.ts","simulation-clock.ts"]},
-    {"id":"presentation","layer":"presentation","files":["build-panel.ts","colony-ui.ts","content-ui.ts","guide-panel.ts","interface-pause.ts","progression-ui.ts","scenario-ui.ts","software-3d.ts","tile-context.ts","ui.ts","village-ui.ts","world-3d.ts","world-explorer.ts","world-fidelity.ts","world-input.ts","world-layout.ts","world-presentation.ts","world-ui.ts","world.ts"]}
+    {
+      "id": "simulation-core",
+      "layer": "domain",
+      "files": [
+        "ecs.ts",
+        "behavior-tree.ts"
+      ]
+    },
+    {
+      "id": "actors",
+      "layer": "domain",
+      "files": [
+        "actor-ecs.ts",
+        "rpg.ts"
+      ]
+    },
+    {
+      "id": "physical-world",
+      "layer": "domain",
+      "files": [
+        "world-ecs.ts",
+        "island-geometry.ts"
+      ]
+    },
+    {
+      "id": "economy-progression",
+      "layer": "domain",
+      "files": [
+        "economy-ecs.ts"
+      ]
+    },
+    {
+      "id": "content-model",
+      "layer": "domain",
+      "files": [
+        "content-runtime.ts",
+        "adventure-content.ts",
+        "growth-content.ts",
+        "world-profile.ts",
+        "scenario-shape.ts"
+      ]
+    },
+    {
+      "id": "actors-application",
+      "layer": "application",
+      "files": [
+        "colony-policies.ts"
+      ]
+    },
+    {
+      "id": "physical-world-application",
+      "layer": "application",
+      "files": [
+        "navigation.ts",
+        "world-integrity.ts",
+        "validation-village.ts"
+      ]
+    },
+    {
+      "id": "content-application",
+      "layer": "application",
+      "files": [
+        "world-content.ts"
+      ]
+    },
+    {
+      "id": "simulation-application",
+      "layer": "application",
+      "files": [
+        "engine.ts",
+        "engine-composition.ts",
+        "engine-composition-root.ts",
+        "actor-state-view.ts",
+        "systems.ts",
+        "colony.ts",
+        "village-systems.ts",
+        "world-simulation.ts",
+        "simulation-pipeline.ts",
+        "simulation-profile.ts",
+        "command-router.ts",
+        "simulation.cts",
+        "planner.ts",
+        "cartography.ts"
+      ]
+    },
+    {
+      "id": "experience-application",
+      "layer": "application",
+      "files": [
+        "scenario-migrations.ts",
+        "scenario-runtime.ts",
+        "scenario-story.ts",
+        "story-codec.ts"
+      ]
+    },
+    {
+      "id": "persistence-and-clock",
+      "layer": "infrastructure",
+      "files": [
+        "file-io.ts",
+        "story-storage.ts",
+        "simulation-clock.ts"
+      ]
+    },
+    {
+      "id": "presentation",
+      "layer": "presentation",
+      "files": [
+        "build-panel.ts",
+        "colony-ui.ts",
+        "content-ui.ts",
+        "guide-panel.ts",
+        "interface-pause.ts",
+        "progression-ui.ts",
+        "scenario-ui.ts",
+        "software-3d.ts",
+        "tile-context.ts",
+        "ui.ts",
+        "village-ui.ts",
+        "world-3d.ts",
+        "world-explorer.ts",
+        "world-fidelity.ts",
+        "world-input.ts",
+        "world-layout.ts",
+        "world-presentation.ts",
+        "world-ui.ts",
+        "world.ts"
+      ]
+    }
   ],
   "moduleBudgetBytes": 40000,
   "legacyCompatibilityModules": {
@@ -23,8 +145,45 @@
     "systems.ts": "Historical composed engine layer retained for parity while rules move into bounded systems.",
     "world-simulation.ts": "Mature physical-world compatibility layer; new settlement invariants live in world-ecs.ts."
   },
-  "domainGlobals": ["LWECS","LWBehaviorTree","LWActorECS","LWActorRules","LWRPG","LWWorldECS","LWGeography","LWWorldProfile","LWEconomyECS","LWEconomyRules","LWContent","LWContentSchema","LWDefaultLibrary","LWAdventure","LWDefaultAdventure","LWDefaultGrowth","LWGrowthSchema","LWGrowth","LWDefaultProfile","LWScenarioShape"],
-  "injectedDataGlobals": ["LWDefaultLibrary","LWContentSchema","LWDefaultAdventure","LWAdventureSchema","LWDefaultWorld","LWWorldSchema","LWActorRules","LWEconomyRules","LWDefaultSimulationProfile","LWSimulationSchema","LWDefaultGrowth","LWGrowthSchema","LWDefaultProfile","LWScenarioSchema","LWScenarioPacks"],
+  "domainGlobals": [
+    "LWECS",
+    "LWBehaviorTree",
+    "LWActorECS",
+    "LWActorRules",
+    "LWRPG",
+    "LWWorldECS",
+    "LWGeography",
+    "LWWorldProfile",
+    "LWEconomyECS",
+    "LWEconomyRules",
+    "LWContent",
+    "LWContentSchema",
+    "LWDefaultLibrary",
+    "LWAdventure",
+    "LWDefaultAdventure",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWGrowth",
+    "LWDefaultProfile",
+    "LWScenarioShape"
+  ],
+  "injectedDataGlobals": [
+    "LWDefaultLibrary",
+    "LWContentSchema",
+    "LWDefaultAdventure",
+    "LWAdventureSchema",
+    "LWDefaultWorld",
+    "LWWorldSchema",
+    "LWActorRules",
+    "LWEconomyRules",
+    "LWDefaultSimulationProfile",
+    "LWSimulationSchema",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWDefaultProfile",
+    "LWScenarioSchema",
+    "LWScenarioPacks"
+  ],
   "strictTypingDebt": {
     "world-ecs.ts": "Physical transaction services still expose broad legacy resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",
     "island-geometry.ts": "Topology helpers still consume dynamically authored world-profile records; migrate after a shared typed topology/profile contract is extracted.",
@@ -45,7 +204,7 @@
     "planner.ts": "Planner composition still consumes broad dynamic Engine/content facades; migrate after planner commands and read models receive explicit application ports.",
     "cartography.ts": "Cartography composition still relies on dynamic atlas and Engine facade shapes; migrate after typed map/atlas domain contracts are extracted.",
     "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and compatibility migrations; migrate after scenario/content ports are fully typed.",
-    "scenario-story.ts": "Portable scenario-story decoration still bridges the typed scenario model and legacy story codec; migrate with the versioned story DTO boundary.",
     "story-codec.ts": "Portable-story codec preserves multiple legacy envelope/save formats and dynamic migrations; migrate incrementally behind typed versioned DTOs."
-  }
+  },
+  "strictTypingDebtBudget": 20
 }
