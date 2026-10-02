@@ -4,13 +4,13 @@ extends RefCounted
 ## and one actual race entry. Ongoing careers consume their frozen content closure.
 const DAY = CampaignClock.SLOTS_PER_DAY
 
-static func create(record: RaceRecord, definition: Dictionary) -> Dictionary:
+static func create(record: RaceRecord, definition: Dictionary, circuits: Dictionary) -> Dictionary:
 	if record == null or not RaceRecord.valid_id(record.event_id) 			or not record.initial is Dictionary or record.initial.is_empty():
 		return {}
 	if int(record.initial.get("version", 0)) < TacticalDuels.CHECKPOINT_VERSION:
 		return {}
 	var campaign = CampaignDefinition.from_record(definition)
-	var frozen = CampaignContentSnapshot.build(definition, record.initial)
+	var frozen = CampaignContentSnapshot.build(definition, record.initial, circuits)
 	if campaign == null or frozen.is_empty(): return {}
 	var config = campaign.to_record()
 	var race_manifest = RaceRecord.manifest_for(record.initial)
@@ -46,12 +46,14 @@ static func create(record: RaceRecord, definition: Dictionary) -> Dictionary:
 	checkpoint = changed.checkpoint
 	var calendar: Array = []
 	for authored in config.calendar:
+		var circuit: Dictionary = circuits.get(authored.circuit_id, {})
+		if circuit.is_empty(): return {}
 		calendar.append({
 			"campaign_event_id": authored.campaign_event_id, "round": authored.round,
 			"departure_slot": int(authored.departure_day) * DAY,
 			"return_slot": int(authored.return_day) * DAY,
 			"event_revision": authored.event_revision,
-			"track_hash": race_manifest.track_hash,
+			"track_hash": RaceStateValue.fingerprint(circuit),
 			"ruleset_hash": RaceRecord.fingerprint(race_manifest.ruleset)})
 	changed = CampaignCompetitionTransaction.create_season(checkpoint,
 		{"season_id": series.season_id, "series_id": series.series_id, "calendar": calendar})
@@ -104,6 +106,10 @@ static func content(checkpoint: Dictionary) -> Dictionary:
 static func definition(checkpoint: Dictionary) -> Dictionary:
 	var frozen = content(checkpoint)
 	return frozen.get("definition", {}).duplicate(true)
+
+static func circuits(checkpoint: Dictionary) -> Dictionary:
+	var frozen = content(checkpoint)
+	return frozen.get("circuits", {}).duplicate(true)
 
 static func race_options(checkpoint: Dictionary) -> Dictionary:
 	var frozen = content(checkpoint)
