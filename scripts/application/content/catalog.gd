@@ -83,6 +83,20 @@ func seal() -> Array:
 			for key in WeekendDefinition.OPTIONAL_REFERENCES:
 				if _records[id].has(key) and record(_records[id][key]).get("kind") != WeekendDefinition.OPTIONAL_REFERENCES[key]:
 					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.OPTIONAL_REFERENCES[key] + " definition.")
+	var default_campaign_id = ""
+	for id in _records:
+		if _records[id].kind != "campaign": continue
+		var campaign = campaign(id)
+		if campaign == null:
+			return _definition_error(id, "CONTENT_CAMPAIGN", "", "Campaign profile has invalid cross-field tuning.")
+		if record(campaign.weekend_id).get("kind") != "weekend":
+			return _definition_error(id, "CONTENT_REFERENCE", "/weekend_id", "Choose an existing weekend definition.")
+		if campaign.is_default:
+			if not default_campaign_id.is_empty():
+				return _definition_error(id, "CONTENT_CAMPAIGN_DEFAULT", "/default", "Only one selected campaign may be the default.")
+			default_campaign_id = id
+	if default_campaign_id.is_empty():
+		return [ContentValidation.diagnostic("CONTENT_CAMPAIGN_DEFAULT", "/default", "Select exactly one default campaign profile.")]
 	var documents: Dictionary = {}
 	for id in _records:
 		var entry: Dictionary = _records[id]
@@ -197,6 +211,14 @@ func circuit_documents() -> Array:
 
 func mechanic_profile(id: String) -> MechanicProfileDefinition:
 	return MechanicProfileDefinition.from_record(record(id))
+
+func campaign(id: String) -> CampaignDefinition:
+	return CampaignDefinition.from_record(record(id))
+
+func default_campaign() -> CampaignDefinition:
+	for entry in entries("campaign"):
+		if entry.get("default", false): return campaign(entry.id)
+	return null
 
 func editor_profile(id: String) -> EditorProfileDefinition:
 	return EditorProfileDefinition.from_record(record(id))
