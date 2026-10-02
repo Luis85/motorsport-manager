@@ -4,7 +4,7 @@ const A=require('./actor-ecs.js');
 const results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error('FAIL',name,error.message);}}
 const near=(a,b)=>assert(Math.abs(a-b)<1e-9,`${a} != ${b}`);
-function actor(task){return {id:'c1',creature:{x:0,y:0,dir:1},inventory:{},needs:{food:100,water:100,energy:100,comfort:100,joy:100},learning:{practiceDay:1,practicedToday:{},fatigue:0,recovering:false},feelings:{social:100,anger:0},task};}
+function actor(task){return {id:'c1',personality:'curious',creature:{x:0,y:0,dir:1},inventory:{},needs:{food:100,water:100,energy:100,comfort:100,joy:100},learning:{practiceDay:1,practicedToday:{},fatigue:0,recovering:false},feelings:{social:100,anger:0},task};}
 test('Movement advances the authoritative transform without completing work',()=>{
  const c=actor({kind:'gather',phase:'walk',path:[{x:1,y:0}],duration:5,elapsed:0}),ecs=A.create();
  const out=ecs.advanceActivity(c,.1,{walkable:()=>true,moveRate:2,workRate:3});

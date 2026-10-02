@@ -20,10 +20,11 @@ const COST_GROUPS=[['stone','clay','bricks'],['wood','planks','beams','iron','ro
 const finite=(v,min,max,label,integer=false)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max||(integer&&!Number.isInteger(v)))throw Error('Invalid '+label+'.');return v;};
 function initializeSystems(self){
   const s=self.s;s.version=3;
+  const baseline=root.LWCreatures.seed(s.personality||root.LWCreatures.defaultPersonality,'founder',0);
+  if(baseline.daily)baseline.daily.day=s.day;
+  if(baseline.learning)baseline.learning.practiceDay=s.day;
+  for(const field of root.LWCreatures.personalFields)if(s[field]===undefined)s[field]=clone(baseline[field]);
   for(const id of Object.keys(RES)){s.inventory[id]??=0;s.stockTargets[id]??=0;}
-  s.learning ||= {queue:[],style:'together',fatigue:0,recovering:false,paused:false,practiceDay:s.day,practicedToday:{},path:'home'};
-  s.specializations ||= {};s.fieldStudies ||= {active:null,progress:{},completed:[]};s.buildPolicy ||= {approach:'balanced'};
-  s.metrics ||= {crafts:{},gathered:{},practices:{},stages:0,upgrades:0,lessons:0};
   if(s.training){s.training.style ||= 'together';s.training.tuition ??= SKILLS[s.training.id].coins;}
   for(const b of s.buildings){b.level??=1;b.quality??=60;}
   self.addResourceNodes();

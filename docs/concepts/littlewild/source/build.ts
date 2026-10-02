@@ -21,6 +21,7 @@ const INSERTS: readonly Insert[] = [
   ["REFINEMENT", "refinement.css", "style"],
   ["WORLD_UI_CSS", "world-ui.css", "style"],
   ["CONTENT_RUNTIME", "content-runtime.js", "script"],
+  ["CREATURE_CATALOG", "creature-catalog.js", "script"],
   ["WORLD_PROFILE", "world-profile.js", "script"],
   ["GEOGRAPHY", "island-geometry.js", "script"],
   ["NAVIGATION", "navigation.js", "script"],
@@ -31,6 +32,7 @@ const INSERTS: readonly Insert[] = [
   ["RPG", "rpg.js", "script"],
   ["BEHAVIOR", "behavior-tree.js", "script"],
   ["ADVENTURE", "adventure-content.js", "script"],
+  ["CREATURE_FACTORY", "creature-factory.js", "script"],
   ["POLICIES", "colony-policies.js", "script"],
   ["ECS", "ecs.js", "script"],
   ["ACTOR_ECS", "actor-ecs.js", "script"],
@@ -118,10 +120,27 @@ function compile(): void {
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
+  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions()));
 }
 
 function json(file: string): unknown {
   return JSON.parse(fs.readFileSync(path.join(ROOT, "content", file), "utf8"));
+}
+
+function creatureDefinitions(): unknown[] {
+  const creatureRoot = path.join(ROOT, "creatures");
+  const out: Array<Record<string,unknown>> = [];
+  for (const entry of fs.readdirSync(creatureRoot, { withFileTypes: true }).filter(entry => entry.isDirectory())) {
+    const file = path.join(creatureRoot, entry.name, "creature.json");
+    if (!fs.existsSync(file)) throw new Error(`Creature folder is missing creature.json: ${entry.name}`);
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string,unknown>;
+    if (parsed.format !== "littlewild-creature" || parsed.schemaVersion !== 1 || parsed.id !== entry.name) {
+      throw new Error(`Creature identity/path mismatch: ${entry.name}`);
+    }
+    out.push(parsed);
+  }
+  if (!out.length) throw new Error("At least one creature definition is required.");
+  return out.sort((a,b) => String(a.id).localeCompare(String(b.id)));
 }
 
 interface AssetFile {
@@ -152,6 +171,7 @@ function inlineData(packPath: string | null): string {
   const declarations: Array<[string, unknown]> = [
     ["LWDefaultLibrary", json("default-library.json")],
     ["LWContentSchema", json("library.schema.json")],
+    ["LWCreatureDefinitions", creatureDefinitions()],
     ["LWDefaultAdventure", json("adventure-library.json")],
     ["LWAdventureSchema", json("adventure.schema.json")],
     ["LWDefaultWorld", json("world-library.json")],

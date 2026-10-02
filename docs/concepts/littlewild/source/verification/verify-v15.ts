@@ -40,6 +40,7 @@ const suites: Suite[] = [
   ["behavior-tree", ["node", generated("test-behavior-tree.cjs")], generated("behavior-tree-results.json"), 60],
   ["content-boundary", ["node", generated("test-content-boundary.cjs")], generated("content-boundary-results.json"), 60],
   ["assets", ["node", generated("test-assets.cjs")], generated("asset-catalog-results.json"), 60],
+  ["creatures", ["node", generated("test-creatures.cjs")], generated("creature-catalog-results.json"), 60],
   ["ecs-core", ["node", generated("test-ecs.cjs")], generated("ecs-results.json"), 120],
   ["simulation-profile", ["node", generated("test-simulation-profile.cjs")], generated("simulation-profile-results.json"), 120],
   ["simulation-profile-integration", ["node", generated("test-simulation-profile-integration.cjs")], generated("simulation-profile-integration-results.json"), 180],

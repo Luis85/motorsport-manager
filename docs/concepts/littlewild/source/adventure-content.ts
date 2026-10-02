@@ -64,6 +64,9 @@
                 bonuses(d.bonuses, d.id);
                 check(num(d.angerRate, .25, 2) && num(d.soothing, .5, 2) && integer(d.social, -30, 30) && num(d.travel, 0, .2), 'Invalid trait effects.');
             }
+            const creatureProfiles = root.LWCreatures?.personalities;
+            if (Array.isArray(creatureProfiles))
+                check(creatureProfiles.length === sets.personalities.size && creatureProfiles.every(id => sets.personalities.has(id)), 'Personality identifiers must match bundled creature definitions.');
             for (const d of p.personalities) {
                 check(text(d.name, 80) && text(d.description, 500), 'Personality needs a name and description.');
                 check(Array.isArray(d.traits) && d.traits.length <= 4 && d.traits.every(t => sets.traits.has(t)) && new Set(d.traits).size === d.traits.length, 'Invalid personality trait references.');

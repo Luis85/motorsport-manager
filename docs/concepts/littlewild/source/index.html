@@ -106,7 +106,7 @@
   <div id="cx-interaction-gate" class="cx-interaction-gate" hidden></div><div id="cx-roll-feedback" class="cx-roll-feedback" hidden></div><section class="dock" aria-label="Care, build, train and trade"><div class="dock-header"><div class="tabs" role="tablist" aria-label="Interaction type"><button class="tab active" role="tab" aria-selected="true" data-act="tab" data-id="care"><svg class="icon"><use href="#i-heart"/></svg>Care</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="build"><svg class="icon"><use href="#i-home"/></svg>Build</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="train"><svg class="icon"><use href="#i-book"/></svg>Learn</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="trade"><svg class="icon"><use href="#i-market"/></svg>Trade</button></div><span class="dock-hint" id="dock-hint">Good company makes a good day.</span></div><div class="dock-body" id="dock-body" role="tabpanel"></div></section>
  </section>
  <aside class="sidebar right-sidebar" aria-label="Selected creature’s needs, thoughts and plans">
-  <section class="card buddy-card"><div class="buddy-header"><div class="portrait-shell"><canvas id="portrait" width="134" height="138" aria-label="Pip, your little woodland buddy"></canvas></div><div><div class="buddy-name"><h2 data-buddy-name>Pip</h2><button class="rename" data-act="rename" title="Rename your buddy" aria-label="Rename your buddy"><svg class="icon"><use href="#i-edit"/></svg></button></div><p class="buddy-sub">A curious little sproutling</p><span class="mood-pill" id="buddy-mood">Feeling good</span></div></div>
+  <section class="card buddy-card"><div class="buddy-header"><div class="portrait-shell"><canvas id="portrait" width="134" height="138" aria-label="Pip, your little woodland buddy"></canvas></div><div><div class="buddy-name"><h2 data-buddy-name>Pip</h2><button class="rename" data-act="rename" title="Rename your buddy" aria-label="Rename your buddy"><svg class="icon"><use href="#i-edit"/></svg></button></div><p class="buddy-sub">A woodland companion</p><span class="mood-pill" id="buddy-mood">Feeling good</span></div></div>
    <div id="cx-character-summary"></div><div class="buddy-level"><strong id="buddy-level">Level 1</strong><div class="meter"><i id="buddy-xp-fill" style="width:0"></i></div><span id="buddy-xp">0 / 36 XP</span></div>
    <div class="task-card"><div class="eyebrow"><span>ON MY LITTLE MIND</span><span class="dot"></span></div><div class="task-label" id="task-label" aria-live="polite">A new friend. A new beginning.</div><p class="task-reason" id="task-reason">I’m taking it all in. What a lovely place to begin.</p><div class="meter"><i id="task-progress" style="width:0"></i></div><div class="task-meta"><span id="task-phase">Thinking for myself</span><span id="task-percent">Autonomous</span></div><button class="decision-link" data-act="decision"><span id="decision-source">Pip’s choice</span><span>Why this? ↗</span></button></div>
    <div class="needs-area"><div class="needs-heading">The little essentials <small>NEEDS</small></div><div id="needs-list"></div></div>
@@ -150,6 +150,7 @@
 <input id="import-file" type="file" accept=".json,application/json" hidden>
 <!-- INLINE_CONTENT_DATA -->
 <!-- INLINE_CONTENT_RUNTIME -->
+<!-- INLINE_CREATURE_CATALOG -->
 <!-- INLINE_WORLD_PROFILE -->
 <!-- INLINE_GEOGRAPHY -->
 <!-- INLINE_NAVIGATION -->
@@ -160,6 +161,7 @@
 <!-- INLINE_RPG -->
 <!-- INLINE_BEHAVIOR -->
 <!-- INLINE_ADVENTURE -->
+<!-- INLINE_CREATURE_FACTORY -->
 <!-- INLINE_POLICIES -->
 <!-- INLINE_ECS -->
 <!-- INLINE_ACTOR_ECS -->

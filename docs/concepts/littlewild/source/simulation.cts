@@ -1,4 +1,5 @@
 require('./content-runtime.js');
+require('./creature-catalog.js');
 require('./world-profile.js');
 require('./island-geometry.js');
 require('./navigation.js');
@@ -9,6 +10,7 @@ require('./systems.js');
 require('./rpg.js');
 require('./behavior-tree.js');
 require('./adventure-content.js');
+require('./creature-factory.js');
 require('./colony-policies.js');
 require('./ecs.js');
 require('./actor-ecs.js');

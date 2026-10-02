@@ -2,6 +2,7 @@
 (function (root) {
     'use strict';
     if (typeof module !== 'undefined' && module.exports && !root.LWNavigation) require('./navigation.js');
+    if (typeof module !== 'undefined' && module.exports && !root.LWCreatures) require('./creature-catalog.js');
     const VERSION = 3, SIZE = 19;
     const {RES, SKILLS, BUILDINGS, RECIPES, QUESTS, CONTRACTS} = root.LWContent.tables;
     function has(s, id) { return s.buildings.some(b => b.kind === id); }
@@ -22,7 +23,10 @@
         add('hunt', 17, 15, 999);
         return n;
     }
-    function initial() { return { version: VERSION, name: 'Pip', seed: 2718, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, focus: 'balanced', player: { level: 1, xp: 0, coins: 86 }, creature: { level: 1, xp: 0, coins: 6, x: 8, y: 9, dir: 1 }, rp: 10, bond: 22, needs: { food: 68, water: 58, energy: 82, comfort: 52, joy: 65 }, inventory: { wood: 2, stone: 0, fiber: 2, berries: 5, water: 4, planks: 0, meat: 0, meals: 0 }, allowance: { limit: 10, given: 6, auto: true, reserve: 4, sourcing: 'balanced' }, skills: {}, researched: {}, training: null, buildings: [], orders: [], nodes: makeNodes(), task: null, log: [], completedQuests: [], stats: { fed: 0, watered: 0, bonded: 0, gathered: 0, built: 0, trained: 0, planksMade: 0, deliveries: 0, explored: 0, earned: 0, researchEarned: 0 }, cooldowns: { feed: 0, water: 0, bond: 0, praise: 0, explore: 0, research: 0 }, memory: { lastAchievement: -100, lastPraise: -100, lastGentleWarning: -100, lastPlan: '', lastDecline: -100 }, contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, stockTargets: { wood: 0, stone: 0, fiber: 0, berries: 4, water: 3, planks: 0, meat: 0, meals: 0 }, practice: {}, memories: [], ledger: [], wish: null, daily: { day: 1, bonded: 0 }, nextId: 1 }; }
+    function initial() {
+        const personal = root.LWCreatures.seed(root.LWCreatures.defaultPersonality, 'founder', 0);
+        return { version: VERSION, ...personal, seed: 2718, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, player: { level: 1, xp: 0, coins: 86 }, rp: 10, buildings: [], nodes: makeNodes(), log: [], completedQuests: [], contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, ledger: [], nextId: 1 };
+    }
     function threshold(level) { return 28 + level * 8; }
     function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
     function owns(table, key) { return typeof key === 'string' && Object.prototype.hasOwnProperty.call(table, key); }

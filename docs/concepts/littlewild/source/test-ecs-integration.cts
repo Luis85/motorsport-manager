@@ -10,8 +10,9 @@ test('All simulated creatures bind authoritative v8 component records',()=>{
  e.ecs.sync(e.creatures);
  assert.deepEqual(e.ecs.world.query(['Needs']),e.creatures.map(c=>c.id).slice().sort());
  for(const c of e.creatures){
-  for(const [type,field] of Object.entries(global.LWActorECS.FIELDS))
+  for(const {type,field} of e.ecs.componentBindings(c))
    assert.equal(e.ecs.world.get(c.id,type),c[field]);
+  assert.equal(e.ecs.world.get(c.id,'Creature').personality,c.personality);
  }
  assert(!Object.hasOwn(e.export().state,'ecs'));
 });
@@ -22,7 +23,7 @@ test('A world tick advances migrated actor dynamics once for every active actor'
  e.step(.1);
  for(const b of before){const c=e.creatures.find(a=>a.id===b.id);assert(c.needs.food<b.food);assert(c.learning.fatigue<=b.fatigue);}
 });
-test('Story roundtrip resumes deterministic legacy-plus-ECS stepping',()=>{
+test('Story roundtrip resumes deterministic domain-plus-ECS stepping',()=>{
  const e=L.createWorldDemo();e.s.paused=false;e.s.started=true;e.advance(12);
  const doc=S.encode(e),restored=S.commit(S.inspect(doc));
  assert.deepEqual(restored.export().state,e.export().state);
@@ -37,14 +38,14 @@ test('ECS structural lifetime follows actor roster explicitly',()=>{
  e.ecs.sync([...e.creatures,copy]);assert.equal(e.ecs.world.query(['Needs']).length,count+1);
  e.ecs.sync(e.creatures);assert(!e.ecs.world.has('ecs-temp'));
 });
-test('Legacy facade delegates movement to ECS without spending work time on arrival',()=>{
+test('Application facade delegates movement to ECS without spending work time on arrival',()=>{
  const e=L.createWorldDemo(),c=e.creatures[0];e.selectCreature(c.id);
  c.needs={food:90,water:90,energy:90,comfort:90,joy:90};c.creature.x=5;c.creature.y=5;
  c.task={kind:'gather',phase:'walk',path:[{x:6,y:5}],duration:5,elapsed:0,label:'Walking'};
  e.withActor(c,()=>e.stepActor(.1));assert(c.creature.x>5&&c.creature.x<6);assert.equal(c.task.phase,'walk');near(c.task.elapsed,0);
  assert.equal(e.ecs.world.get(c.id,'Intent').status,'active');
 });
-test('Legacy facade mirrors ECS work progress and completes once',()=>{
+test('Application facade mirrors ECS work progress and completes once',()=>{
  const e=L.createWorldDemo(),c=e.creatures[0];e.selectCreature(c.id);
  c.needs={food:90,water:90,energy:90,comfort:90,joy:90};
  c.task={kind:'rest',phase:'work',path:[],duration:.05,elapsed:0,label:'Resting',need:'energy'};

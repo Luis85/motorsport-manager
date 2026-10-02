@@ -5,43 +5,23 @@
  */
 (function (root) {
     'use strict';
-    const L = root.LW, Composition = L.EngineComposition, R = root.LWRPG, A = root.LWAdventure;
+    const L = root.LW, Composition = L.EngineComposition, R = root.LWRPG, A = root.LWAdventure, Creatures = root.LWCreatures, Factory = root.LWCreatureFactory;
     const { RES, SKILLS, BUILDINGS, RECIPES, DRILLS, STYLES, CONTRACTS, clamp, terrain, SIZE } = L;
     const copy = A.copy, fail = reason => ({ ok: false, reason }), ok = (x = {}) => ({ ok: true, ...x });
-    const PERSONAL = ['name', 'creature', 'bond', 'needs', 'inventory', 'allowance', 'skills', 'researched', 'training', 'orders', 'task', 'focus', 'cooldowns', 'memory', 'stats', 'stockTargets', 'practice', 'memories', 'wish', 'daily', 'learning', 'specializations', 'fieldStudies', 'buildPolicy', 'metrics'];
-    const FOOD = ['meals', 'bread', 'berries', 'meat'], GATE = { x: 17, y: 16 };
+    const PERSONAL = Factory.personalFields;
+    const FOOD = ['meals', 'bread', 'berries', 'meat'];
     const safeInt = (x, a, b) => Number.isInteger(x) && x >= a && x <= b;
     function definition(id) { return A.content.equipment.find(x => x.id === id); }
     function item(id) { return RES[id] ? { id, ...RES[id], weight: A.content.weights[id] } : definition(id) || (id === 'wooden_chest' ? (A.content.chest || A.defaultContent.chest) : null); }
     function profile(id) { return A.content.personalities.find(x => x.id === id) || A.content.personalities[0]; }
-    function decorateActor(c, id, personality = 'curious') {
-        const p = profile(personality);
-        c.id = id;
-        c.personality = p.id;
-        c.traits = [...p.traits];
-        c.rpg = { attributes: { ...p.attributes }, cp: 0, points: {}, practiceCredit: {}, rolls: [], rng: 2718 + Number(id.slice(1)) * 1913 };
-        for (const key of Object.keys(c.skills))
-            if (c.skills[key])
-                c.rpg.points[key] = Math.min(12, 1 + Math.floor((c.practice[key] || 0) / 8));
-        c.equipment = Object.fromEntries(A.slots.map(k => [k, null]));
-        c.equipQueue = [];
-        c.questPlan = null;
-        c.activeQuest = null;
-        c.questHistory = [];
-        c.needsDeposit = false;
-        c.feelings = { anger: 0, social: 76, causes: [], lastControl: -100, coolingUntil: 0, lastSocial: -100, mood: 'Content' };
-        c.behavior = { trace: [], memory: {}, lastAction: 'A new beginning' };
-        c.lastRoll = null;
-        c.careVisual = null;
-        c.salvage = [];
-        return c;
-    }
     function initializeColony(self) {
         self._simulating = false;
         self._actor = null;
         const state = self.s;
         if (!state.colony) {
-            const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, state[k]])), 'c1');
+            const base = Object.fromEntries(PERSONAL.filter(k => state[k] !== undefined).map(k => [k, state[k]]));
+            const personality = typeof base.personality === 'string' && Factory.supportsPersonality(base.personality) ? base.personality : Creatures.defaultPersonality;
+            const c = Factory.hydrate(base, { id: 'c1', personality, mode: 'founder', sequence: 0, day: state.day, simTime: state.simTime });
             const warehouse = { inventory: { ...c.inventory }, transfers: [] };
             c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
             for (const [r, n] of [['berries', 2], ['water', 2]]) {
@@ -158,6 +138,8 @@
         xp(who, amount) { return super.xp(who, amount); }
         random(stream = 'actor') { const holder = stream === 'world' ? this.s.colony : this.actor.rpg, key = stream === 'world' ? 'rng' : 'rng'; const next = R.next(holder[key]); holder[key] = next.seed; return next.value; }
         load(c = this.actor) { return R.encumbrance(c.rpg.attributes.ST, Object.entries(c.inventory).reduce((n, [id, q]) => n + (item(id)?.weight || 0) * q, 0)); }
+        creatureDefinition(c = this.actor) { const definition = Creatures.forPersonality(c.personality); if (!definition) throw Error('Unknown creature definition.'); return definition; }
+        movementRate(c = this.actor) { const movement = this.creatureDefinition(c).movement; return (movement.baseSpeed + (c.bond >= movement.bondThreshold ? movement.bondedSpeedBonus : 0)) * this.load(c).move; }
         traitEffects(c = this.actor) { return c.traits.map(id => A.content.traits.find(t => t.id === id)).filter(Boolean); }
         modifiers(skill, c = this.actor) {
             const rule = A.content.skillRules[skill], attr = rule?.attribute || (['ST', 'DX', 'IQ', 'HT'].includes(skill) ? skill : skill === 'Per' || skill === 'Will' || skill === 'social' ? 'IQ' : 'DX');
@@ -272,28 +254,22 @@
         }
         purchasePrice() { return Math.ceil(A.content.rules.purchaseBase * Math.pow(A.content.rules.purchaseGrowth, this.s.colony.purchased - 1)); }
         purchaseCreature(personality) {
-            if (!A.content.personalities.some(p => p.id === personality))
-                return fail('Choose an available personality.');
+            if (!Factory.supportsPersonality(personality))
+                return fail('Choose an available creature personality.');
             if (this.creatures.length >= A.content.rules.maxCreatures)
                 return fail('This prototype supports ' + A.content.rules.maxCreatures + ' creatures.');
             const price = this.purchasePrice();
             if (this.s.player.coins < price)
                 return fail('Need ' + price + ' guide coins to welcome another creature.');
-            const raw = Composition.constructThrough('systems').s, id = 'c' + this.s.colony.nextCreatureId, names = ['Pip', 'Fern', 'Mochi', 'Clover', 'Bramble', 'Wren', 'Pebble', 'Juniper'];
-            const c = decorateActor(Object.fromEntries(PERSONAL.map(k => [k, copy(raw[k])])), id, personality);
-            c.name = names[(this.s.colony.purchased) % names.length];
-            c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
-            c.creature.coins = 0;
-            c.creature.x = GATE.x;
-            c.creature.y = GATE.y;
-            c.allowance.given = 0;
-            c.feelings.causes = [{ reason: 'A new place, and a new beginning', joy: 6, anger: 0, time: this.s.simTime }];
+            const id = 'c' + this.s.colony.nextCreatureId;
+            const c = Factory.create({ id, personality, mode: 'arrival', sequence: this.s.colony.purchased, day: this.s.day, simTime: this.s.simTime });
             const settlement = this.settleEconomy({ id: this.economySettlementId('welcome'), guide: -price }, 'Welcomed ' + c.name);
             if (!settlement.ok)
                 return fail('The welcome cost could not be settled.');
             this.s.colony.nextCreatureId++;
             this.s.colony.purchased++;
             this.creatures.push(c);
+            this.ecs.sync(this.creatures);
             this.s.colony.selectedId = null;
             this.log(c.name + ' arrived. Select a creature before giving an idea or sharing a moment.', 'paw');
             this.emit('arrival', c.name + ' found a place in our glade.', { actorId: c.id });
@@ -988,7 +964,7 @@
             }
             const outcome = this.ecs.advanceActivity(c, dt, {
                 walkable: (x, y) => this.walkable(x, y),
-                moveRate: 1.8 * this.load().move,
+                moveRate: this.movementRate(c),
                 workRate: this.workRate(task)
             });
             if (outcome.state === 'blocked') {
