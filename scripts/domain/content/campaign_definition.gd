@@ -15,9 +15,9 @@ var is_default: bool:
 static func fields() -> Dictionary:
 	var contract = ContentSchema.object({
 		"duration_days": ContentSchema.integer(1, MAX_DAYS),
-		"pay_interval_days": ContentSchema.integer(1, MAX_DAYS),
+		"pay_interval_days": ContentSchema.integer(1, 366),
 		"renewal_window_days": ContentSchema.integer(1, MAX_DAYS),
-		"pay_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
+		"pay_minor": ContentSchema.integer(1, MAX_MONEY_MINOR),
 		"allocation_bps": ContentSchema.integer(1, 10000)})
 	var rival = ContentSchema.object({
 		"entrant_id": ContentSchema.identity(), "team_id": ContentSchema.identity(),
@@ -25,7 +25,7 @@ static func fields() -> Dictionary:
 		"cash_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
 		"reserve_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
 		"capability_bps": ContentSchema.integer(5000, CampaignRivals.MAX_CAPABILITY_BPS),
-		"review_interval_days": ContentSchema.integer(1, MAX_DAYS)})
+		"review_interval_days": ContentSchema.integer(1, 366)})
 	return {
 		"default": {"type": "boolean"},
 		"weekend_id": ContentSchema.identity(),
@@ -80,6 +80,13 @@ static func from_record(record: Variant) -> CampaignDefinition:
 	return value
 
 static func semantic_error(record: Dictionary) -> String:
+	if CampaignClock.create(record.career.start) == null:
+		return "Campaign start must be a valid civil date and slot."
+	if record.player.entrant_id == record.player.team_id:
+		return "Campaign player entrant and team identities must be distinct."
+	for contract in [record.player.driver_contract, record.player.operations_lead.contract]:
+		var contract_error = _contract_error(contract)
+		if not contract_error.is_empty(): return contract_error
 	if int(record.career.reserve_minor) > int(record.career.opening_cash_minor):
 		return "Campaign reserve cannot exceed opening cash."
 	if record.series.points_by_position.size() != record.event_finance.position_bonus_minor.size():
@@ -121,6 +128,17 @@ static func semantic_error(record: Dictionary) -> String:
 		return "Campaign people policy is invalid."
 	if not CampaignSupplyPolicy.valid(record.supply_policy):
 		return "Campaign supply policy is invalid."
+	return ""
+
+static func _contract_error(contract: Dictionary) -> String:
+	var duration = int(contract.duration_days)
+	var interval = int(contract.pay_interval_days)
+	if duration % interval != 0:
+		return "Campaign starter contracts must contain complete payroll intervals."
+	if int(duration / interval) > CampaignEmploymentContract.MAX_INSTALLMENTS:
+		return "Campaign starter contract has too many payroll installments."
+	if int(contract.renewal_window_days) > duration:
+		return "Campaign starter renewal window cannot exceed contract duration."
 	return ""
 
 func to_record() -> Dictionary:
