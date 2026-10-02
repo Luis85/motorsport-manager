@@ -42,7 +42,7 @@ definition. Numeric policy data may tune supported rival/people/supply algorithm
 but external content cannot add algorithms, executable providers or relax
 structural/safety bounds.
 
-## Race and replay lifetimes
+## Race aggregate implementation split\n\n`RaceSim` remains the public aggregate and mechanic-dispatch surface. Its implementation is now split without changing authority: `RaceSimFoundation` owns authoritative state and deterministic utility APIs, `RaceSimCore` owns fixed-step/session/surface/on-track movement base behavior, and `RaceSimOperations` owns pit/recovery/persistence-projection base behavior. `RaceSim` itself constructs the aggregate, restores checkpoints and exposes the registered mechanic hooks. Existing derived compatibility profiles still extend `RaceSim`; save versions, hook names and arithmetic/RNG order are unchanged.\n\nThe UI follows the same responsibility split: `WeekendView` keeps concrete composition and live refresh over `WeekendViewSupport`; the native shell delegates campaign orchestration to `CampaignScreens`; the Minimal pitwall delegates timing-table diff/reorder work to `MinimalRaceTimingPresenter`. These collaborators do not own simulation time or authoritative state.\n\n## Race and replay lifetimes
 
 `RaceSessionRunner` owns one active `RaceSim`. `RaceStepClock` preserves the
 0.05-second step, frame-spike cap, pause boundaries and existing speed policy.
