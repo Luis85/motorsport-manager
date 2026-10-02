@@ -86,16 +86,16 @@ static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
 		"capability_bps": input.get("capability_bps", 10000),
 		"project": "cash_preservation", "last_review_slot": created_slot,
 		"next_review_slot": input.get("next_review_slot", created_slot),
-		"review_interval_slots": input.get("review_interval_slots", CampaignClock.SLOTS_PER_DAY * 7)
+		"review_interval_slots": input.get("review_interval_slots", CampaignClock.SLOTS_PER_DAY * 7),
+		"policy": input.get("policy", {}).duplicate(true)
 	}
-	if input.has("policy"): data["policy"] = input.policy.duplicate(true)
 	_seal_team(data)
 	return data if _team_error(data).is_empty() else {}
 
 static func _team_error(data: Variant) -> String:
-	if not data is Dictionary or data.size() not in [15, 16]:
+	if not data is Dictionary or data.size() != 16:
 		return "Campaign rival team has an unsupported shape."
-	if data.has("policy") and not CampaignRivalPolicy.valid(data.policy):
+	if not CampaignRivalPolicy.valid(data.get("policy")):
 		return "Campaign rival team has an invalid planning policy."
 	for key in ["team_id", "entrant_id"]:
 		if not CampaignIdentity.valid(data.get(key)): return "Campaign rival team has an invalid " + key + "."
@@ -165,7 +165,7 @@ static func _project_spend(team: Dictionary, plan: String) -> int:
 	return mini(available, int(policy.plan_spend_minor.get(plan, 0)))
 
 static func _policy(team: Dictionary) -> Dictionary:
-	return CampaignRivalPolicy.normalized(team.get("policy", {}))
+	return team.policy
 
 static func _record_digest_error(data: Dictionary) -> String:
 	var content = data.duplicate(true); content.erase("digest")

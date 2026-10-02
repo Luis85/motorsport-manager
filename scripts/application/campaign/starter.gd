@@ -114,12 +114,10 @@ static func circuits(checkpoint: Dictionary) -> Dictionary:
 	return frozen.get("circuits", {}).duplicate(true)
 
 static func race_options(checkpoint: Dictionary) -> Dictionary:
-	var frozen = content(checkpoint)
-	return frozen.race_options.duplicate(true) if not frozen.is_empty() 		else CampaignStarterLegacy.race_options()
+	return content(checkpoint).get("race_options", {}).duplicate(true)
 
 static func vehicle(checkpoint: Dictionary) -> String:
-	var frozen = content(checkpoint)
-	return str(frozen.vehicle) if not frozen.is_empty() else str(CampaignStarterLegacy.DEFAULTS.vehicle)
+	return str(content(checkpoint).get("vehicle", ""))
 
 static func vehicle_definition(checkpoint: Dictionary) -> Dictionary:
 	var frozen = content(checkpoint)
@@ -127,7 +125,7 @@ static func vehicle_definition(checkpoint: Dictionary) -> Dictionary:
 
 static func event_cost_minor(checkpoint: Dictionary) -> int:
 	var authored = definition(checkpoint)
-	return int(authored.event_finance.departure_cost_minor) if not authored.is_empty() 		else int(CampaignStarterLegacy.DEFAULTS.departure_cost_minor)
+	return int(authored.get("event_finance", {}).get("departure_cost_minor", 0))
 
 static func mappings(checkpoint: Dictionary) -> Array:
 	var restored = CampaignCheckpoint.restore(checkpoint)
@@ -150,10 +148,9 @@ static func event_assignments(checkpoint: Dictionary) -> Array:
 	var restored = CampaignCheckpoint.restore(checkpoint)
 	if not restored.ok: return []
 	var authored = definition(checkpoint)
-	var driver_role = str(authored.get("player", {}).get(
-		"driver_role_id", CampaignStarterLegacy.DEFAULTS.driver_role_id))
-	var operations_role = str(authored.get("player", {}).get("operations_lead", {}).get(
-		"role_id", CampaignStarterLegacy.DEFAULTS.operations_role_id))
+	if authored.is_empty(): return []
+	var driver_role = str(authored.player.driver_role_id)
+	var operations_role = str(authored.player.operations_lead.role_id)
 	var result: Array = []
 	for assignment in restored.personnel.assignments.values():
 		if assignment.role_id in [driver_role, operations_role]:
@@ -190,11 +187,9 @@ static func weekend_policy(checkpoint: Dictionary) -> Dictionary:
 	var player = _player_entry(restored, season)
 	if player.is_empty(): return {}
 	var authored = definition(checkpoint)
-	var participation = int(CampaignStarterLegacy.DEFAULTS.participation_minor)
-	var bonuses = CampaignStarterLegacy.position_bonuses(rules.points_by_position.size())
-	if not authored.is_empty():
-		participation = int(authored.event_finance.participation_minor)
-		bonuses = authored.event_finance.position_bonus_minor.duplicate(true)
+	if authored.is_empty(): return {}
+	var participation = int(authored.event_finance.participation_minor)
+	var bonuses = authored.event_finance.position_bonus_minor.duplicate(true)
 	return CampaignWeekendPolicy.build({
 		"campaign_id": restored.state.campaign_id, "season_id": season.season_id,
 		"campaign_event_id": event_id, "account_id": restored.state.organization_id},

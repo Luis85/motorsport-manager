@@ -107,7 +107,7 @@ static func _people_policy(restored: Dictionary) -> Dictionary:
 	var frozen = restored.management.get("campaign_content", {})
 	if not frozen.is_empty() and CampaignContentSnapshot.validate(frozen).is_empty():
 		return CampaignPeoplePolicy.normalized(frozen.definition.get("people_policy", {}))
-	return CampaignPeoplePolicy.LEGACY.duplicate(true)
+	return {}
 
 static func _restore(checkpoint: Dictionary) -> Dictionary:
 	var restored = CampaignCheckpoint.restore(checkpoint)

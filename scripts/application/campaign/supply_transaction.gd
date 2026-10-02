@@ -65,7 +65,7 @@ static func _supply_policy(r:Dictionary)->Dictionary:
 	var frozen=r.management.get("campaign_content",{})
 	if not frozen.is_empty() and CampaignContentSnapshot.validate(frozen).is_empty():
 		return CampaignSupplyPolicy.normalized(frozen.definition.get("supply_policy",{}))
-	return CampaignSupplyPolicy.LEGACY.duplicate(true)
+	return {}
 static func _restore(checkpoint:Dictionary)->Dictionary:
 	var r=CampaignCheckpoint.restore(checkpoint)
 	if not r.ok:return _reject(r.error,checkpoint)

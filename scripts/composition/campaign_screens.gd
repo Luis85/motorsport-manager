@@ -112,15 +112,6 @@ func _campaign_track(track_hash: String) -> Dictionary:
 	for document in frozen.values():
 		if RaceStateValue.fingerprint(document) == track_hash:
 			return document.duplicate(true)
-	# Explicit compatibility path for pre-authored campaign saves.
-	App.load_library()
-	var authored_vehicle = CampaignStarter.vehicle_definition(App.campaign_checkpoint)
-	var vehicle_definition = VehicleDefinition.from_record(authored_vehicle) if not authored_vehicle.is_empty() else null
-	var vehicle_id = CampaignStarter.vehicle(App.campaign_checkpoint)
-	for document in App.library:
-		var geometry = TrackGeometry.new(document, vehicle_id, false, vehicle_definition)
-		if RaceRecord.fingerprint(geometry.document) == track_hash:
-			return document
 	return {}
 
 func _advance_campaign() -> void:
