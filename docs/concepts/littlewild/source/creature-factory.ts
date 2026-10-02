@@ -69,7 +69,7 @@
   return state;
  }
  function hydrate(base:Plain,options:Options):Plain{
-  if(!/^c[1-9][0-9]*$/.test(options.id)||!Number.isSafeInteger(options.sequence)||options.sequence<0||!Number.isSafeInteger(options.day)||options.day<1||!Number.isFinite(options.simTime)||options.simTime<0)throw Error('Creature factory: invalid creation options');
+  if((options.mode!=='founder'&&options.mode!=='arrival')||!/^c[1-9][0-9]*$/.test(options.id)||!Number.isSafeInteger(options.sequence)||options.sequence<0||!Number.isSafeInteger(options.day)||options.day<1||!Number.isFinite(options.simTime)||options.simTime<0)throw Error('Creature factory: invalid creation options');
   if(!Creatures.forPersonality(options.personality))throw Error('Creature factory: unsupported personality '+options.personality);
   return normalize(merge(Creatures.seed(options.personality,options.mode,options.sequence),base),options);
  }

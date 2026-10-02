@@ -2,14 +2,14 @@
 (function(root){
  'use strict';
  let definitionRef=null,definitionRevision=0;
+ const visualProfiles=new Map();
  function revision(){const c=root.LWAdventure?.content;if(c!==definitionRef){definitionRef=c;definitionRevision++;}return definitionRevision+(root.LWAssets?.revision||0)+(root.LWCreatures?.revision||0);}
- function mood(c){if(c.task?.kind==='rest')return 'rest';if((c.feelings?.anger||0)>=45)return 'angry';if((c.needs?.energy??100)<30)return 'tired';if((c.needs?.food??100)<25||(c.needs?.water??100)<25)return 'concerned';if((c.needs?.joy??60)>72)return 'happy';return 'content';}
+ function visualProfile(c){let profile=visualProfiles.get(c.personality);if(profile)return profile;const definition=root.LWCreatures?.forPersonality(c.personality);if(!definition)throw Error('No creature definition for personality '+c.personality);const asset=root.LWAssets.actor(definition.id),appearance=asset?.behaviors?.appearances?.[c.personality],animation=asset?.behaviors?.animation,expression=asset?.behaviors?.expression;if(!asset||!appearance||!animation||!expression)throw Error('No actor presentation profile for '+definition.id+'/'+c.personality);profile={definition,asset,appearance,animation,expression};visualProfiles.set(c.personality,profile);return profile;}
+ function mood(c){const e=visualProfile(c).expression;if(c.task?.kind==='rest')return 'rest';if((c.feelings?.anger||0)>=e.angerAt)return 'angry';if((c.needs?.energy??100)<e.tiredEnergyBelow)return 'tired';if((c.needs?.food??100)<e.concernFoodBelow||(c.needs?.water??100)<e.concernWaterBelow)return 'concerned';if((c.needs?.joy??60)>e.happyJoyAbove)return 'happy';return 'content';}
  function handles(instance,ref){const value=instance.asset.rig?.[ref];if(Array.isArray(value))return value.map(id=>instance.handles.get(id));return instance.handles.get(value);}
  function equipmentDefs(){return root.LWAdventure?.content?.equipment||root.LWDefaultAdventure?.equipment||[];}
  function create(kit,parent,c){
-  const definition=root.LWCreatures?.forPersonality(c.personality);if(!definition)throw Error('No creature definition for personality '+c.personality);
-  const asset=root.LWAssets.actor(definition.id),appearance=asset?.behaviors?.appearances?.[c.personality],animation=asset?.behaviors?.animation;
-  if(!asset||!appearance||!animation)throw Error('No actor appearance for '+definition.id+'/'+c.personality);
+  const {definition,asset,appearance,animation}=visualProfile(c);
   const instance=root.LWAssetRenderer.createActor(kit,parent,definition.id,appearance.model,{materials:appearance.materials,scale:appearance.scale}),g=instance.root;
   g.userData.fidelity='creature:'+definition.id;g.userData.radius=instance.asset.metadata?.radius||1.4;
   const body=handles(instance,'body'),torso=handles(instance,'torso'),bib=handles(instance,'bib'),head=handles(instance,'head'),ears=handles(instance,'ears'),tail=handles(instance,'tail'),feet=handles(instance,'feet'),arms=handles(instance,'arms'),eyes=handles(instance,'eyes'),brows=handles(instance,'brows'),mouth=handles(instance,'mouth'),carry=handles(instance,'carry'),care=handles(instance,'care'),snack=handles(instance,'snack'),cup=handles(instance,'cup');

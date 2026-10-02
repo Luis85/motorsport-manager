@@ -41,8 +41,9 @@ npm run verify -- --no-browser
 - `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
 - `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
+- `CREATURE-ARCHITECTURE.md`: creature archetype data, factory/ECS ownership, visual asset boundary and extension workflow.
 
-This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, animation programs and some legacy wording remain code. **3D model geometry, material roles, actor rig node names/sockets and building animation anchors are now bundled data** under `source/assets/`; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions and animation algorithms remain compiled capabilities. **Creature defaults, spawn modes, movement tuning, ECS bindings, 3D geometry, appearance profiles, expression thresholds, animation tuning, rig node names/sockets and building animation anchors are bundled data**; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
 
 ## ECS refactor on PR #25
 

@@ -29,6 +29,7 @@
   forPersonality(id:string):Definition|null;
   componentBindings(personality:string):readonly Binding[];
   seed(personality:string,mode:Mode,sequence:number):Plain;
+  validate(input:unknown):Definition;
  }
  interface Root{LWCreatureDefinitions?:unknown;LWCreatures?:Api;}
 
@@ -46,6 +47,11 @@
  const clone=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
  const fail=(message:string):never=>{throw Error('Creature definition: '+message);};
  const record=(value:unknown,label:string):Plain=>plain(value)?value:fail(label+' must be an object');
+ const exact=(value:unknown,label:string,keys:readonly string[]):Plain=>{
+  const out=record(value,label),actual=Object.keys(out);
+  if(actual.length!==keys.length||keys.some(key=>!Object.hasOwn(out,key)))fail(label+' has unknown or missing fields');
+  return out;
+ };
  const list=(value:unknown,label:string,min=0,max=Number.MAX_SAFE_INTEGER):unknown[]=>{
   if(!Array.isArray(value)||value.length<min||value.length>max) return fail(label+' must be a list of '+min+'–'+max+' entries');
   return value;
@@ -108,33 +114,33 @@
   if(!personalities.includes(defaultPersonality))fail(id+' default personality is not supported');
   const names=stringList(raw.names,id+' names',1,64,value=>value.trim().length>0&&value.length<=24);
 
-  const movementSource=record(raw.movement,id+' movement');
+  const movementSource=exact(raw.movement,id+' movement',['baseSpeed','bondThreshold','bondedSpeedBonus']);
   const movement=Object.freeze({
    baseSpeed:numberValue(movementSource.baseSpeed,id+' base speed',.05,8),
    bondThreshold:numberValue(movementSource.bondThreshold,id+' bond threshold',0,100),
    bondedSpeedBonus:numberValue(movementSource.bondedSpeedBonus,id+' bonded speed bonus',0,4)
   });
 
-  const rngSource=record(raw.rng,id+' RNG');
+  const rngSource=exact(raw.rng,id+' RNG',['base','stride']);
   const rng=Object.freeze({
    base:numberValue(rngSource.base,id+' RNG base',0,4294967295,true),
    stride:numberValue(rngSource.stride,id+' RNG stride',1,4294967295,true)
   });
 
-  const stateSource=record(raw.state,id+' state');
+  const stateSource=exact(raw.state,id+' state',['personalFields','defaults','modes']);
   const personalFields=stringList(stateSource.personalFields,id+' personal fields',1,96,value=>safeField.test(value));
   const defaults=record(stateSource.defaults,id+' defaults');
-  const modesSource=record(stateSource.modes,id+' modes');
+  const modesSource=exact(stateSource.modes,id+' modes',['founder','arrival']);
   const founder=record(modesSource.founder,id+' founder mode');
   const arrival=record(modesSource.arrival,id+' arrival mode');
-  if(Object.keys(modesSource).length!==2)fail(id+' modes must be founder and arrival only');
   for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(id+' personal default missing '+key);
+  for(const key of Object.keys(defaults))if(!personalFields.includes(key))fail(id+' default is not actor-scoped: '+key);
   for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(id+' creature default missing '+key);
   for(const [mode,values] of [['founder',founder],['arrival',arrival]] as const){
    for(const key of Object.keys(values))if(!personalFields.includes(key))fail(id+' '+mode+' override is not actor-scoped: '+key);
   }
 
-  const ecsSource=record(raw.ecs,id+' ECS');
+  const ecsSource=exact(raw.ecs,id+' ECS',['components']);
   const componentSources=list(ecsSource.components,id+' ECS components',5,32);
   const components:Binding[]=[],types=new Set<string>(),fields=new Set<string>();
   for(const inputBinding of componentSources){
@@ -160,7 +166,7 @@
  }
 
  const sources=list(source,'bundled creature definitions',1,32);
- const definitions:Definition[]=sources.map(validate);
+ const definitions:readonly Definition[]=Object.freeze(sources.map(validate));
  const byId=new Map<string,Definition>(),byPersonality=new Map<string,Definition>();
  for(const definition of definitions){
   if(byId.has(definition.id))fail('duplicate creature '+definition.id);
@@ -185,6 +191,7 @@
  function forPersonality(id:string):Definition|null{return byPersonality.get(id)||null;}
  function componentBindings(personality:string):readonly Binding[]{return byProfile(personality).ecs.components;}
  function seed(personality:string,mode:Mode,sequence:number):Plain{
+  if(mode!=='founder'&&mode!=='arrival')fail('invalid creature mode');
   if(!Number.isSafeInteger(sequence)||sequence<0)fail('invalid creature sequence');
   const definition=byProfile(personality);
   const state=merge(definition.state.defaults,definition.state.modes[mode]);
@@ -195,7 +202,7 @@
   return state;
  }
  const first=definitions[0]??fail('no creature definitions');
- const api:Api=Object.freeze({revision,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,forPersonality,componentBindings,seed});
+ const api:Api=Object.freeze({revision,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,forPersonality,componentBindings,seed,validate});
  root.LWCreatures=api;
  if(node)module.exports=api;
 })(globalThis);

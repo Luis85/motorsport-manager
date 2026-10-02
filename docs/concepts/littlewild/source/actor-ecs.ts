@@ -65,7 +65,7 @@
 
  function create(rules:unknown=DEFAULT):ActorEcsRuntime {
   const tuning=validateRules(rules),world=new E.World(),dynamics=new E.Scheduler(),activity=new E.Scheduler(),workingKinds=new Set(tuning.needs.workingKinds);
-  const markers=new Map<string,CreatureMarker>(),boundTypes=new Map<string,Set<string>>();
+  const markers=new Map<string,CreatureMarker>(),boundTypes=new Map<string,Set<string>>(),boundRefs=new Map<string,Map<string,ComponentData>>();
 
   dynamics.register<DynamicsContext>({id:'practice-day',phase:'pre',order:10,query:['Creature','Learning'],update(w,id,_dt,ctx){const learning=required<Learning>(w,id,'Learning');if(learning.practiceDay!==ctx.day){learning.practiceDay=ctx.day;learning.practicedToday={};}}});
   dynamics.register<DynamicsContext>({id:'learning-fatigue',phase:'simulate',order:10,query:['Creature','Learning','Activity'],update(w,id,dt){const learning=required<Learning>(w,id,'Learning'),a=required<Activity>(w,id,'Activity');learning.fatigue=clamp(learning.fatigue+dt*(a.studying?(a.style==='playful'?tuning.learning.playfulFatigue:tuning.learning.standardFatigue):-tuning.learning.recoveryRate));if(learning.fatigue>=tuning.learning.limitAt)learning.recovering=true;if(learning.fatigue<=tuning.learning.recoverAt)learning.recovering=false;}});
@@ -88,10 +88,10 @@
    if(!world.entities.has(actor.id))world.create(actor.id);
    let marker=markers.get(actor.id);
    if(!marker||marker.definitionId!==definition.id||marker.personality!==actor.personality){marker={definitionId:definition.id,personality:actor.personality};markers.set(actor.id,marker);world.set(actor.id,'Creature',marker);}
-   const bindings=componentBindings(actor),next=new Set(bindings.map(binding=>binding.type)),prior=boundTypes.get(actor.id);
-   if(prior)for(const type of prior)if(!next.has(type)&&world.has(actor.id,type))world.remove(actor.id,type);
-   for(const binding of bindings){const value=actor[binding.field];if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing actor component: '+binding.type);if(world.get(actor.id,binding.type)!==value)world.set(actor.id,binding.type,value as ComponentData);}
-   boundTypes.set(actor.id,next);
+   const bindings=componentBindings(actor),next=new Set(bindings.map(binding=>binding.type)),prior=boundTypes.get(actor.id),refs=boundRefs.get(actor.id)||new Map<string,ComponentData>();
+   if(prior)for(const type of prior)if(!next.has(type)){if(world.has(actor.id,type))world.remove(actor.id,type);refs.delete(type);}
+   for(const binding of bindings){const value=actor[binding.field];if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing actor component: '+binding.type);const component=value as ComponentData;if(refs.get(binding.type)!==component){world.set(actor.id,binding.type,component);refs.set(binding.type,component);}}
+   boundTypes.set(actor.id,next);boundRefs.set(actor.id,refs);
   }
 
   const runtime:ActorEcsRuntime={
@@ -100,12 +100,14 @@
     if(!Array.isArray(actors))throw Error('Actor sync expects an array.');
     const seen=new Set<string>();
     for(const actor of actors){if(!actor||seen.has(actor.id))throw Error('Invalid or duplicate actor.');seen.add(actor.id);bind(actor);if(actor.task){if(world.get(actor.id,'Task')!==actor.task)world.set(actor.id,'Task',actor.task);}else{if(world.has(actor.id,'Task'))world.remove(actor.id,'Task');if(world.has(actor.id,'Intent'))world.remove(actor.id,'Intent');}}
-    for(const id of world.entities)if(!seen.has(id)){world.destroy(id);markers.delete(id);boundTypes.delete(id);}
+    for(const id of world.entities)if(!seen.has(id)){world.destroy(id);markers.delete(id);boundTypes.delete(id);boundRefs.delete(id);}
    },
    step(actor:ActorRecord,dt:number,inputs:StepInputs):{studying:boolean}{
     if(!inputs||!Number.isSafeInteger(inputs.day)||!Number.isFinite(inputs.socialPreference)||inputs.socialPreference<0||inputs.socialPreference>100||!Number.isFinite(inputs.loadLevel)||inputs.loadLevel<0||inputs.loadLevel>100||typeof inputs.hasShelter!=='boolean'||!Number.isFinite(dt)||dt<=0||dt>.25)throw Error('Invalid actor ECS inputs.');
-    bind(actor);const task=actor.task,a:Activity={studying:!!task&&['train','practice'].includes(task.kind)&&task.phase==='work',working:!!task&&workingKinds.has(task.kind),walking:task?.phase==='walk',style:task?.style||'',socialPreference:inputs.socialPreference,loadLevel:inputs.loadLevel,hasShelter:inputs.hasShelter};
-    world.set(actor.id,'Activity',a);dynamics.step(world,dt,{entityId:actor.id,day:inputs.day});return{studying:a.studying};
+    bind(actor);const task=actor.task,values={studying:!!task&&['train','practice'].includes(task.kind)&&task.phase==='work',working:!!task&&workingKinds.has(task.kind),walking:task?.phase==='walk',style:task?.style||'',socialPreference:inputs.socialPreference,loadLevel:inputs.loadLevel,hasShelter:inputs.hasShelter};
+    let a=world.get<Activity>(actor.id,'Activity');
+    if(!a){a={...values};world.set(actor.id,'Activity',a);}else Object.assign(a,values);
+    dynamics.step(world,dt,{entityId:actor.id,day:inputs.day});return{studying:a.studying};
    },
    advanceActivity(actor:ActorRecord,dt:number,inputs:ActivityInputs):ActivityOutcome{
     if(!inputs||typeof inputs.walkable!=='function'||!Number.isFinite(inputs.moveRate)||inputs.moveRate<0||!Number.isFinite(inputs.workRate)||inputs.workRate<0||!Number.isFinite(dt)||dt<=0||dt>.25)throw Error('Invalid activity ECS inputs.');
@@ -115,7 +117,7 @@
     if(world.get(id,'Task')!==task)world.set(id,'Task',task);let intent=world.get<Intent>(id,'Intent');if(!intent){intent={kind:task.kind||'unknown',phase:task.phase||'work',orderId:task.orderId||null,status:'active'};world.set(id,'Intent',intent);}
     activity.step(world,dt,{entityId:id,walkable:inputs.walkable,moveRate:inputs.moveRate,workRate:inputs.workRate,outcome});return outcome;
    },
-   forget(id:string):boolean{markers.delete(id);boundTypes.delete(id);return world.destroy(id);}
+   forget(id:string):boolean{markers.delete(id);boundTypes.delete(id);boundRefs.delete(id);return world.destroy(id);}
   };
   return Object.freeze(runtime);
  }

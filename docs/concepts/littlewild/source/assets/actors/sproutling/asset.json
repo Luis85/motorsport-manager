@@ -3048,6 +3048,13 @@
           "nose": "#847048"
         }
       }
+    },
+    "expression": {
+      "angerAt": 45,
+      "tiredEnergyBelow": 30,
+      "concernFoodBelow": 25,
+      "concernWaterBelow": 25,
+      "happyJoyAbove": 72
     }
   },
   "rig": {

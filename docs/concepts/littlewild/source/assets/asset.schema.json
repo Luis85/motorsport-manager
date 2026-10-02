@@ -51,7 +51,62 @@
       "type": "object",
       "properties": {
         "animation": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bodyBob",
+            "breath",
+            "earSway",
+            "tailSway",
+            "footLift",
+            "footStride",
+            "walkArmSwing",
+            "workArmBase",
+            "workArmSwing",
+            "blinkThreshold",
+            "idleHeadYaw",
+            "idleHeadRoll"
+          ],
+          "properties": {
+            "bodyBob": {
+              "type": "number"
+            },
+            "breath": {
+              "type": "number"
+            },
+            "earSway": {
+              "type": "number"
+            },
+            "tailSway": {
+              "type": "number"
+            },
+            "footLift": {
+              "type": "number"
+            },
+            "footStride": {
+              "type": "number"
+            },
+            "walkArmSwing": {
+              "type": "number"
+            },
+            "workArmBase": {
+              "type": "number"
+            },
+            "workArmSwing": {
+              "type": "number"
+            },
+            "blinkThreshold": {
+              "type": "number",
+              "minimum": 0.8,
+              "exclusiveMaximum": 1
+            },
+            "idleHeadYaw": {
+              "type": "number"
+            },
+            "idleHeadRoll": {
+              "type": "number"
+            }
+          }
         },
         "appearances": {
           "type": "object",
@@ -90,6 +145,44 @@
               "materials": {
                 "type": "object"
               }
+            }
+          }
+        },
+        "expression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "angerAt",
+            "tiredEnergyBelow",
+            "concernFoodBelow",
+            "concernWaterBelow",
+            "happyJoyAbove"
+          ],
+          "properties": {
+            "angerAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "tiredEnergyBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "concernFoodBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "concernWaterBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "happyJoyAbove": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
             }
           }
         }

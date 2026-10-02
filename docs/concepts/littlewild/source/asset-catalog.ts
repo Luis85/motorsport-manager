@@ -34,7 +34,11 @@
   if(raw.category==='building'&&!raw.models.world)fail(raw.id+' building needs world model');
   if(behavior.smoke&&(!plain(behavior.smoke)||!vec(behavior.smoke.position)||typeof behavior.smoke.always!=='boolean') )fail(raw.id+' invalid smoke behavior');
   if(raw.category==='actor'){
-   if(!raw.models.world||!plain(raw.rig)||!plain(behavior.sockets)||!plain(behavior.animation)||!plain(behavior.appearances)||!Object.keys(behavior.appearances).length)fail(raw.id+' actor needs world model, rig, sockets, animation and appearances');
+   const actorBehaviorKeys=['sockets','animation','expression','appearances'],rigKeys=['body','torso','bib','head','ears','tail','feet','arms','eyes','brows','mouth','carry','care','snack','cup'],socketKeys=['head','body','back','feet','tool','charm','carry'];
+   if(!raw.models.world||!plain(raw.rig)||!plain(behavior.sockets)||!plain(behavior.animation)||!plain(behavior.expression)||!plain(behavior.appearances)||!Object.keys(behavior.appearances).length)fail(raw.id+' actor needs world model, rig, sockets, animation, expression and appearances');
+   if(Object.keys(behavior).length!==actorBehaviorKeys.length||actorBehaviorKeys.some(key=>!Object.hasOwn(behavior,key)))fail(raw.id+' invalid actor behavior contract');
+   if(Object.keys(raw.rig).length!==rigKeys.length||rigKeys.some(key=>!Object.hasOwn(raw.rig,key)))fail(raw.id+' invalid actor rig contract');
+   if(Object.keys(behavior.sockets).length!==socketKeys.length||socketKeys.some(key=>!Object.hasOwn(behavior.sockets,key)))fail(raw.id+' invalid actor socket contract');
    const references=[];
    for(const value of [...Object.values(raw.rig),...Object.values(behavior.sockets)])Array.isArray(value)?references.push(...value):references.push(value);
    for(const [modelName,modelIds] of modelNodes)if(modelName==='world'||modelName.startsWith('world-')){
@@ -43,6 +47,8 @@
    const animationKeys=['bodyBob','breath','earSway','tailSway','footLift','footStride','walkArmSwing','workArmBase','workArmSwing','blinkThreshold','idleHeadYaw','idleHeadRoll'];
    if(Object.keys(behavior.animation).length!==animationKeys.length||animationKeys.some(key=>!Object.hasOwn(behavior.animation,key)||!Number.isFinite(behavior.animation[key])))fail(raw.id+' invalid animation tuning');
    if(behavior.animation.blinkThreshold<.8||behavior.animation.blinkThreshold>=1||Math.abs(behavior.animation.workArmBase)>2)fail(raw.id+' animation tuning outside bounds');
+   const expressionKeys=['angerAt','tiredEnergyBelow','concernFoodBelow','concernWaterBelow','happyJoyAbove'];
+   if(Object.keys(behavior.expression).length!==expressionKeys.length||expressionKeys.some(key=>!Object.hasOwn(behavior.expression,key)||!Number.isFinite(behavior.expression[key])||behavior.expression[key]<0||behavior.expression[key]>100))fail(raw.id+' invalid expression tuning');
    for(const [profile,appearance] of Object.entries(behavior.appearances)){
     const appearanceKeys=['model','scale','labelHeight','contextHeight','bubbleHeight','materials'];
     if(!safeId.test(profile)||!plain(appearance)||Object.keys(appearance).length!==appearanceKeys.length||appearanceKeys.some(key=>!Object.hasOwn(appearance,key))||typeof appearance.model!=='string'||!modelNodes.has(appearance.model)||!vec(appearance.scale)||!Number.isFinite(appearance.labelHeight)||appearance.labelHeight<.5||appearance.labelHeight>3||!Number.isFinite(appearance.contextHeight)||appearance.contextHeight<.2||appearance.contextHeight>2||!Number.isFinite(appearance.bubbleHeight)||appearance.bubbleHeight<.5||appearance.bubbleHeight>3||!plain(appearance.materials))fail(raw.id+' invalid appearance '+profile);
