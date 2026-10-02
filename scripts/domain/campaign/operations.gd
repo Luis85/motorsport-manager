@@ -8,7 +8,7 @@ const MAX_ORDERS = 4096
 const MAX_RESERVATIONS = 4096
 
 static func empty(campaign_id: String, organization_id: String,
-		authority_from_slot: int = 0, legacy_facility_commitment_ids: Array = []) -> Dictionary:
+		authority_from_slot: int = 0) -> Dictionary:
 	if not CampaignIdentity.valid(campaign_id) or not CampaignIdentity.valid(organization_id) \
 			or not RaceCheckpoint.integral(authority_from_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return {}
@@ -18,7 +18,6 @@ static func empty(campaign_id: String, organization_id: String,
 		"campaign_id": campaign_id,
 		"organization_id": organization_id,
 		"authority_from_slot": authority_from_slot,
-		"legacy_facility_commitment_ids": legacy_facility_commitment_ids.duplicate(true),
 		"resources": {},
 		"work_orders": {},
 		"capacity_reservations": {}
@@ -119,16 +118,14 @@ static func availability_error(data: Dictionary, resource_id: String,
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign operations exceeds serialized-value limits."
-	if not data is Dictionary or data.size() != 10 or data.get("kind") != KIND:
+	if not data is Dictionary or data.size() != 9 or data.get("kind") != KIND:
 		return "Unsupported campaign operations projection."
 	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) \
 			or not CampaignIdentity.valid(data.get("campaign_id")) \
 			or not CampaignIdentity.valid(data.get("organization_id")) \
 			or not RaceCheckpoint.integral(data.get("authority_from_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign operations version, identity or authority is invalid."
-	if not data.get("legacy_facility_commitment_ids") is Array \
-			or data.legacy_facility_commitment_ids.size() > CampaignEconomy.MAX_COMMITMENTS \
-			or not data.get("resources") is Dictionary or data.resources.size() > MAX_RESOURCES \
+	if not data.get("resources") is Dictionary or data.resources.size() > MAX_RESOURCES \
 			or not data.get("work_orders") is Dictionary or data.work_orders.size() > MAX_ORDERS \
 			or not data.get("capacity_reservations") is Dictionary or data.capacity_reservations.size() > MAX_RESERVATIONS:
 		return "Campaign operations collections are invalid."
@@ -141,11 +138,6 @@ static func validate(data: Variant) -> String:
 	return _integrity_error(data)
 
 static func _records_error(data: Dictionary) -> String:
-	var legacy_seen = {}
-	for commitment_id in data.legacy_facility_commitment_ids:
-		if not CampaignIdentity.valid(commitment_id) or legacy_seen.has(commitment_id):
-			return "Campaign operations legacy facility commitment index is invalid."
-		legacy_seen[commitment_id] = true
 	for resource_id in data.resources:
 		if resource_id != data.resources[resource_id].get("id") \
 				or not CampaignCapacityResource.validate(data.resources[resource_id]).is_empty() \

@@ -14,14 +14,6 @@ static func validate(operations: Dictionary, economy: Dictionary, current_slot: 
 		return "Campaign operations and economy belong to different organizations."
 	if not RaceCheckpoint.integral(current_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign operations finance has no valid authoritative time boundary."
-	if int(economy.version) == CampaignEconomy.LEGACY_VERSION:
-		return "Legacy campaign economy cannot carry operations authority."
-	var legacy = {}
-	for commitment_id in operations.legacy_facility_commitment_ids:
-		if legacy.has(commitment_id) or not economy.commitments.has(commitment_id) \
-				or economy.commitments[commitment_id].category != "facility":
-			return "Campaign operations legacy facility commitment index is invalid."
-		legacy[commitment_id] = true
 	var indexed = {}
 	for order in operations.work_orders.values():
 		if order.mode == "internal":
@@ -46,7 +38,7 @@ static func validate(operations: Dictionary, economy: Dictionary, current_slot: 
 		indexed[commitment_id] = true
 	for commitment_id in economy.commitments:
 		var commitment: Dictionary = economy.commitments[commitment_id]
-		if commitment.category != "facility" or commitment_id in legacy:
+		if commitment.category != "facility":
 			continue
 		if int(commitment.created_slot) >= int(operations.authority_from_slot) \
 				and not indexed.has(commitment_id):

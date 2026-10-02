@@ -36,11 +36,11 @@ static func create(campaign_id: String, account_id: String, opening_minor: int =
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
-static func current(data: Dictionary) -> Dictionary:
+static func _validated_copy(data: Dictionary) -> Dictionary:
 	return data.duplicate(true) if validate(data).is_empty() else {}
 
 static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary, return_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty():
 		return _reject("Campaign economy could not be validated.", current)
 	var error = CampaignWeekendPolicy.receipt_error(policy, receipt)
@@ -87,7 +87,7 @@ static func stage(current: Dictionary, receipt: Dictionary, policy: Dictionary, 
 
 static func correct_event(current: Dictionary, receipt: Dictionary,
 		policy: Dictionary, return_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty(): return _reject("Campaign economy could not be validated for correction.", current)
 	var error = CampaignWeekendPolicy.receipt_error(policy, receipt)
 	if not error.is_empty(): return _reject(error, current)
@@ -111,7 +111,7 @@ static func correct_event(current: Dictionary, receipt: Dictionary,
 	return applied
 
 static func add_commitment(current: Dictionary, input: Dictionary, created_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty():
 		return _reject("Campaign economy could not be validated.", current)
 	if created_slot < int(data.authority_from_slot):
@@ -125,7 +125,7 @@ static func add_commitment(current: Dictionary, input: Dictionary, created_slot:
 	return _validated(data, "added", current)
 
 static func cancel_commitment(current: Dictionary, commitment_id: String, resolution_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty():
 		return _reject("Campaign economy could not be validated.", current)
 	if not data.commitments.has(commitment_id) or data.commitments[commitment_id].status != "open":
@@ -138,7 +138,7 @@ static func cancel_commitment(current: Dictionary, commitment_id: String, resolu
 
 static func set_reserve_policy(current: Dictionary, account_id: String,
 		minimum_cash_minor: int, effective_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty():
 		return _reject("Campaign economy could not be validated.", current)
 	if not data.accounts.has(account_id) or effective_slot < int(data.authority_from_slot):
@@ -150,7 +150,7 @@ static func set_reserve_policy(current: Dictionary, account_id: String,
 	return _validated(data, "policy_set", current)
 
 static func settle_due(current: Dictionary, through_slot: int) -> Dictionary:
-	var data = current(current)
+	var data = _validated_copy(current)
 	if data.is_empty():
 		return _reject("Campaign economy could not be validated.", current)
 	if not RaceCheckpoint.integral(through_slot, int(data.authority_from_slot), CampaignClock.MAX_ELAPSED_SLOTS):

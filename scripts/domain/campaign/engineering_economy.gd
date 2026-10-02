@@ -12,11 +12,6 @@ static func validate(engineering: Dictionary, economy: Dictionary,
 		return "Campaign engineering and economy belong to different authorities."
 	if not RaceCheckpoint.integral(current_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign engineering finance has no valid authoritative time."
-	var legacy = {}
-	for commitment_id in engineering.legacy_development_commitment_ids:
-		if legacy.has(commitment_id) or not economy.commitments.has(commitment_id) 				or economy.commitments[commitment_id].category != "development":
-			return "Campaign engineering legacy development index is invalid."
-		legacy[commitment_id] = true
 	var indexed = {}
 	for project in engineering.projects.values():
 		if project.material_commitment_id.is_empty():

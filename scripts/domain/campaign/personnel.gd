@@ -9,7 +9,7 @@ const MAX_ASSIGNMENTS = 2048
 const MAX_RESERVATIONS = 8192
 
 static func empty(campaign_id: String, organization_id: String,
-		authority_from_slot: int = 0, legacy_payroll_ids: Array = []) -> Dictionary:
+		authority_from_slot: int = 0) -> Dictionary:
 	if not CampaignIdentity.valid(campaign_id) or not CampaignIdentity.valid(organization_id) \
 			or not RaceCheckpoint.integral(authority_from_slot, 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return {}
@@ -19,7 +19,6 @@ static func empty(campaign_id: String, organization_id: String,
 		"campaign_id": campaign_id,
 		"organization_id": organization_id,
 		"authority_from_slot": authority_from_slot,
-		"legacy_payroll_ids": legacy_payroll_ids.duplicate(true),
 		"people": {},
 		"contracts": {},
 		"assignments": {},
@@ -194,7 +193,7 @@ static func contract_status(data: Dictionary, contract_id: String, slot: int) ->
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign personnel exceeds serialized-value limits."
-	if not data is Dictionary or data.size() != 11 or data.get("kind") != KIND:
+	if not data is Dictionary or data.size() != 10 or data.get("kind") != KIND:
 		return "Unsupported campaign personnel projection."
 	var error = _header_error(data)
 	if not error.is_empty():
@@ -223,14 +222,6 @@ static func _header_error(data: Dictionary) -> String:
 			or not RaceCheckpoint.integral(
 				data.get("authority_from_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign personnel version, identity or authority is invalid."
-	if not data.get("legacy_payroll_ids") is Array \
-			or data.legacy_payroll_ids.size() > CampaignEconomy.MAX_COMMITMENTS:
-		return "Campaign personnel legacy payroll index is invalid."
-	var seen = {}
-	for commitment_id in data.legacy_payroll_ids:
-		if not CampaignIdentity.valid(commitment_id) or seen.has(commitment_id):
-			return "Campaign personnel legacy payroll identity is invalid or duplicated."
-		seen[commitment_id] = true
 	if not data.get("people") is Dictionary or data.people.size() > MAX_PEOPLE \
 			or not data.get("contracts") is Dictionary or data.contracts.size() > MAX_CONTRACTS \
 			or not data.get("assignments") is Dictionary or data.assignments.size() > MAX_ASSIGNMENTS \

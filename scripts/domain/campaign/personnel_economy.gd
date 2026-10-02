@@ -15,28 +15,11 @@ static func validate(personnel: Dictionary, economy: Dictionary, current_slot: i
 		return "Campaign personnel and economy belong to different campaigns."
 	if not economy.accounts.has(personnel.organization_id):
 		return "Campaign payroll account is absent from the economy."
-	if int(economy.version) == CampaignEconomy.LEGACY_VERSION:
-		return _legacy_economy_error(personnel)
-	error = _legacy_index_error(personnel, economy)
-	if not error.is_empty():
-		return error
 	var indexed = {}
 	error = _contract_payroll_error(personnel, economy, current_slot, indexed)
 	if not error.is_empty():
 		return error
 	return _unowned_payroll_error(personnel, economy, indexed)
-
-static func _legacy_economy_error(personnel: Dictionary) -> String:
-	if personnel.contracts.is_empty() and personnel.legacy_payroll_ids.is_empty():
-		return ""
-	return "Legacy campaign economy cannot carry personnel payroll authority."
-
-static func _legacy_index_error(personnel: Dictionary, economy: Dictionary) -> String:
-	for commitment_id in personnel.legacy_payroll_ids:
-		if not economy.commitments.has(commitment_id) \
-				or economy.commitments[commitment_id].category != "payroll":
-			return "Campaign legacy payroll index references a missing payroll commitment."
-	return ""
 
 static func _contract_payroll_error(personnel: Dictionary, economy: Dictionary,
 		current_slot: int, indexed: Dictionary) -> String:
@@ -46,8 +29,6 @@ static func _contract_payroll_error(personnel: Dictionary, economy: Dictionary,
 			return "Campaign employment contract references an unknown payroll account."
 		for input in CampaignEmploymentContract.payroll_inputs(contract):
 			var commitment_id: String = input.id
-			if commitment_id in personnel.legacy_payroll_ids:
-				return "Campaign employment payroll collides with migrated legacy payroll."
 			if indexed.has(commitment_id) or not economy.commitments.has(commitment_id):
 				return "Campaign employment payroll commitment is missing or duplicated."
 			var error = _commitment_error(
@@ -89,6 +70,6 @@ static func _unowned_payroll_error(personnel: Dictionary, economy: Dictionary,
 			if commitment_id not in personnel.contracts[commitment.source_id].payroll_commitment_ids \
 					or not indexed.has(commitment_id):
 				return "Campaign economy contains payroll outside its employment schedule."
-		elif commitment_id not in personnel.legacy_payroll_ids:
-			return "Campaign economy contains new payroll without one employment contract."
+		else:
+			return "Campaign economy contains payroll without one employment contract."
 	return ""
