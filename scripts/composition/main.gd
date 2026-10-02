@@ -143,33 +143,42 @@ func show_campaign() -> void:
 	content.add_child(scroll)
 
 func _create_starter_campaign() -> String:
+	if App.content_catalog == null:
+		return "Team Principal Campaign requires a valid content catalog."
+	var campaign = App.content_catalog.default_campaign()
+	if campaign == null:
+		return "Team Principal Campaign requires exactly one validated default campaign profile."
 	App.load_library()
 	if App.library.is_empty(): return "Team Principal Campaign requires at least one validated circuit."
 	var track: Dictionary = App.library[mini(7, App.library.size() - 1)]
-	var record = _campaign_seed_record(track)
-	if record == null: return "Starter race entry could not be created."
-	var checkpoint = CampaignStarter.create(record)
+	var record = _campaign_seed_record(track, campaign)
+	if record == null: return "Starter race entry could not be created from the authored campaign weekend."
+	var checkpoint = CampaignStarter.create(record, campaign.to_record())
 	if checkpoint.is_empty(): return "Starter campaign could not form a valid authoritative checkpoint."
 	App.campaign_checkpoint = checkpoint
 	return App.save_campaign()
 
-func _campaign_seed_record(track: Dictionary) -> RaceRecord:
-	var geometry = TrackGeometry.new(track, "Formula")
-	var probe = PracticeRaceSim.new(geometry, CampaignStarter.race_options())
+func _campaign_seed_record(track: Dictionary, campaign: CampaignDefinition) -> RaceRecord:
+	var launch = WeekendLaunch.new(App.content_catalog)
+	if not launch.stage_preset(campaign.weekend_id, track): return null
+	var probe = PracticeRaceSim.new(launch.visual_track(), launch.session_options())
 	if not probe.last_error.is_empty(): return null
 	var profiles: Array = []
 	for _car in probe.cars: profiles.append(RacePerformanceProfile.baseline())
-	var options = CampaignStarter.race_options()
+	var options = launch.session_options()
 	options["performance_profiles"] = profiles
-	var simulation = PracticeRaceSim.new(TrackGeometry.new(track, "Formula"), options)
+	var simulation = PracticeRaceSim.new(launch.visual_track(), options)
 	if not simulation.last_error.is_empty(): return null
 	var record = RaceRecord.new(); record.attach(simulation)
 	return record
 
 func _campaign_track(track_hash: String) -> Dictionary:
 	App.load_library()
+	var authored_vehicle = CampaignStarter.vehicle_definition(App.campaign_checkpoint)
+	var vehicle_definition = VehicleDefinition.from_record(authored_vehicle) if not authored_vehicle.is_empty() else null
+	var vehicle_id = CampaignStarter.vehicle(App.campaign_checkpoint)
 	for document in App.library:
-		var geometry = TrackGeometry.new(document, "Formula")
+		var geometry = TrackGeometry.new(document, vehicle_id, false, vehicle_definition)
 		if RaceRecord.fingerprint(geometry.document) == track_hash:
 			return document
 	return {}
@@ -203,15 +212,19 @@ func _start_campaign_event() -> void:
 	if not profiles.ok:
 		UI.notify(self, "Departure unavailable", profiles.error)
 		return
-	var options = CampaignStarter.race_options(); options["performance_profiles"] = profiles.profiles
-	var simulation = PracticeRaceSim.new(TrackGeometry.new(document, "Formula"), options)
+	var options = CampaignStarter.race_options(App.campaign_checkpoint)
+	options["performance_profiles"] = profiles.profiles
+	var authored_vehicle = CampaignStarter.vehicle_definition(App.campaign_checkpoint)
+	var vehicle_definition = VehicleDefinition.from_record(authored_vehicle) if not authored_vehicle.is_empty() else null
+	var geometry = TrackGeometry.new(document, CampaignStarter.vehicle(App.campaign_checkpoint), false, vehicle_definition)
+	var simulation = PracticeRaceSim.new(geometry, options)
 	if not simulation.last_error.is_empty():
 		UI.notify(self, "Departure unavailable", simulation.last_error)
 		return
 	var record = RaceRecord.new(); record.attach(simulation)
 	var departed = CampaignDepartureTransaction.depart(App.campaign_checkpoint,
 		CampaignStarter.next_event_context(App.campaign_checkpoint), record, mappings,
-		CampaignStarter.event_assignments(App.campaign_checkpoint), CampaignStarter.EVENT_COST_MINOR)
+		CampaignStarter.event_assignments(App.campaign_checkpoint), CampaignStarter.event_cost_minor(App.campaign_checkpoint))
 	if not departed.ok:
 		UI.notify(self, "Departure blocked", departed.error)
 		return
