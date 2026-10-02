@@ -17,13 +17,15 @@ static func fields() -> Dictionary:
 		"duration_days": ContentSchema.integer(1, MAX_DAYS),
 		"pay_interval_days": ContentSchema.integer(1, MAX_DAYS),
 		"renewal_window_days": ContentSchema.integer(1, MAX_DAYS),
-		"pay_minor": ContentSchema.integer(0, MAX_MONEY_MINOR)})
+		"pay_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
+		"allocation_bps": ContentSchema.integer(1, 10000)})
 	var rival = ContentSchema.object({
 		"entrant_id": ContentSchema.identity(), "team_id": ContentSchema.identity(),
 		"archetype": {"enum": CampaignRivals.ARCHETYPES},
 		"cash_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
 		"reserve_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
-		"capability_bps": ContentSchema.integer(5000, CampaignRivals.MAX_CAPABILITY_BPS)})
+		"capability_bps": ContentSchema.integer(5000, CampaignRivals.MAX_CAPABILITY_BPS),
+		"review_interval_days": ContentSchema.integer(1, MAX_DAYS)})
 	return {
 		"default": {"type": "boolean"},
 		"weekend_id": ContentSchema.identity(),
@@ -37,7 +39,7 @@ static func fields() -> Dictionary:
 			"opening_cash_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
 			"reserve_minor": ContentSchema.integer(0, MAX_MONEY_MINOR)}),
 		"series": ContentSchema.object({
-			"series_id": ContentSchema.identity(), "name": ContentSchema.text(80),
+			"series_id": ContentSchema.identity(), "season_id": ContentSchema.identity(), "name": ContentSchema.text(80),
 			"cars_per_entrant": ContentSchema.integer(1, CampaignSeriesRules.MAX_CARS_PER_ENTRANT),
 			"points_by_position": ContentSchema.array(
 				ContentSchema.integer(0, CampaignSeriesRules.MAX_POINTS),
