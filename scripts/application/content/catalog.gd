@@ -94,11 +94,27 @@ func seal() -> Array:
 		if record(campaign.weekend_id).get("kind") != "weekend":
 			return _definition_error(id, "CONTENT_REFERENCE", "/weekend_id", "Choose an existing weekend definition.")
 		var campaign_record = campaign.to_record()
+		var campaign_weekend = weekend(campaign.weekend_id)
+		if campaign_weekend == null:
+			return _definition_error(id, "CONTENT_REFERENCE", "/weekend_id", "Choose a valid weekend definition.")
+		var weekend_record = campaign_weekend.to_record()
+		var resolved_roster = RosterDefinition.resolve(record(weekend_record.roster_id), _records)
+		var campaign_roster = RosterDefinition.decode_snapshot(resolved_roster.snapshot) if resolved_roster.ok else null
+		var campaign_vehicle = vehicle(weekend_record.vehicle_id)
 		for event_index in range(campaign_record.calendar.size()):
 			var circuit_id: String = campaign_record.calendar[event_index].circuit_id
 			if record(circuit_id).get("kind") != "circuit":
 				return _definition_error(id, "CONTENT_REFERENCE",
 					"/calendar/%d/circuit_id" % event_index, "Choose an existing circuit definition.")
+			var campaign_circuit = circuit(circuit_id)
+			if campaign_circuit == null or campaign_roster == null or campaign_vehicle == null:
+				return _definition_error(id, "CONTENT_CAMPAIGN_CAPACITY",
+					"/calendar/%d/circuit_id" % event_index, "Campaign circuit, roster or vehicle could not be resolved.")
+			var campaign_track = TrackGeometry.new(campaign_circuit.document(), weekend_record.vehicle_id, true, campaign_vehicle)
+			var track_errors = campaign_roster.track_errors(campaign_track)
+			if not track_errors.is_empty():
+				return _definition_error(id, "CONTENT_CAMPAIGN_CAPACITY",
+					"/calendar/%d/circuit_id" % event_index, "\n".join(track_errors))
 		if campaign.is_default:
 			if not default_campaign_id.is_empty():
 				return _definition_error(id, "CONTENT_CAMPAIGN_DEFAULT", "/default", "Only one selected campaign may be the default.")
