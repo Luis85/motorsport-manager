@@ -170,7 +170,7 @@ This follow-up closes the touched debt without rewriting unrelated race/UI syste
 
 ## Deliberately remaining debt
 
-- `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them only when product work touches their responsibilities and characterization is available.
+- The previously oversized `race_sim.gd`, `weekend.gd`, `main.gd`, `pitwall_workspace.gd` and Minimal race workspace were closed in the data-driven review through cohesive responsibility extraction. Keep the 400-code-line budget closed for future changes; do not collapse the extracted authorities back into their facades.
 - Advisory findings are not a verified bug count. Responsibility extraction can appear as both resolved and new diagnostics; inspect the complete exact-head report.
 - Live provisional race adjudication remains outside the final-only settlement contract. Explicit post-result correction preview/application is implemented; a live steward simulation is not.
 - Dedicated specialist management screens for recruitment, engineering portfolio, facilities, commercial, finance, academy and dynasty remain future presentation work over the implemented authorities.
