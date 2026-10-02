@@ -45,7 +45,8 @@ static func fields() -> Dictionary:
 				ContentSchema.integer(0, CampaignSeriesRules.MAX_POINTS),
 				CampaignWeekendReceipt.MAX_ENTRANTS, 1)}),
 		"calendar": ContentSchema.array(ContentSchema.object({
-			"campaign_event_id": ContentSchema.identity(), "round": ContentSchema.integer(1, CampaignSeriesRules.MAX_EVENTS),
+			"campaign_event_id": ContentSchema.identity(), "circuit_id": ContentSchema.identity(),
+			"round": ContentSchema.integer(1, CampaignSeriesRules.MAX_EVENTS),
 			"departure_day": ContentSchema.integer(0, MAX_DAYS), "return_day": ContentSchema.integer(1, MAX_DAYS),
 			"event_revision": ContentSchema.integer(1, 1000000)}), CampaignSeriesRules.MAX_EVENTS, 1),
 		"player": ContentSchema.object({
