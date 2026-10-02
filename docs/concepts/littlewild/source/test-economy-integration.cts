@@ -32,8 +32,10 @@ test('Growth research authorizes first and settles research plus XP before unloc
  const r=e.researchFeature(id);assert.equal(r.ok,true);assert.equal(e.s.rp,0);assert.equal(e.s.progression.research[id],true);assert.equal(e.s.progression.features.making,1);assert.equal(e.s.player.xp,2);
 });
 test('Prestige purchases spend only current prestige and preserve earned prestige',()=>{
- const e=demo(),offer=global.LWGrowth.content.shop[0],beforeEarned=e.s.progression.earnedPrestige,before=e.s.progression.prestige;e.s.player.level=Math.max(e.s.player.level,offer.playerLevel);
- const r=e.buyPrestigeItem(offer.id);assert.equal(r.ok,true);assert.equal(e.s.progression.prestige,before-offer.prestige);assert.equal(e.s.progression.earnedPrestige,beforeEarned);
+ const e=demo(),offer=global.LWGrowth.content.shop[0];e.s.rp=1000;e.s.player.level=Math.max(e.s.player.level,offer.playerLevel,2);
+ for(const id of ['community-1','feature-prestige-shop'])if(!e.s.progression.research[id]){const unlocked=e.researchFeature(id);assert.equal(unlocked.ok,true,unlocked.reason);}
+ const beforeEarned=e.s.progression.earnedPrestige,before=e.s.progression.prestige,r=e.buyPrestigeItem(offer.id);
+ assert.equal(r.ok,true,r.reason);assert.equal(e.s.progression.prestige,before-offer.prestige);assert.equal(e.s.progression.earnedPrestige,beforeEarned);
 });
 test('Market sale settles cash and both XP rewards exactly once',()=>{
  const e=demo(),c=e.actor,b=e.s.buildings.find(x=>x.kind==='market');assert(b);c.creature.x=b.x;c.creature.y=b.y;b.marketInventory={wood:2};
