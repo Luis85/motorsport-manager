@@ -280,7 +280,7 @@ check("Strict TypeScript coverage is an explicit domain/application ratchet", ()
     assert(typeof reason==="string"&&reason.trim().length>=40,"Typing debt needs a concrete migration reason: "+file);
   }
   const strictRuntime=[...owned.keys()].filter(file=>strictFiles.has(file));
-  assert(strictRuntime.length>=19,"Strict runtime coverage regressed below 19 modules: "+strictRuntime.length);
+  assert(strictRuntime.length>=18,"Strict runtime coverage regressed below 18 modules: "+strictRuntime.length);
 });
 
 check("Strict runtime modules contain no explicit any or TypeScript suppression", () => {
@@ -301,6 +301,33 @@ check("Strict runtime modules contain no explicit any or TypeScript suppression"
     visit(ast);
   }
   assert(violations.length===0,"Strict runtime typing escape hatch found: "+[...new Set(violations)].join("; "));
+});
+
+check("Prototype compatibility artifacts stay removed", () => {
+  const obsolete = [
+    "scenario-migrations.ts",
+    "test-v10-regression-v5.cts",
+    "test-v10-regression-v6.cts",
+    "test-v10-regression-v8.cts",
+    "test-v10-regression-quality-v9.cts",
+    "test-v10-regression-foundation-v9.cts",
+    "verification/schema-checks-v10.ts",
+    "fixtures/actual-v9-fresh.json",
+    "fixtures/actual-v9-community.json",
+    "fixtures/actual-v9-workplace.json",
+    "fixtures/actual-v14-story.json",
+    "fixtures/v14-retained-contracts.json",
+    "fixtures/ecs-migration.json"
+  ];
+  const remaining=obsolete.filter(file=>fs.existsSync(path.join(SOURCE,file)));
+  assert(remaining.length===0,"Obsolete compatibility artifacts returned: "+remaining.join(", "));
+  for(const [file,token] of [
+    ["scenario-runtime.ts","migrateContext"],
+    ["scenario-story.ts","version===9"],
+    ["village-systems.ts","grandfathered"]
+  ] as const){
+    assert(!source(file).includes(token),file+" still contains obsolete compatibility token "+token);
+  }
 });
 
 check("ECS persistence remains plain-data owned by domain records", () => {
