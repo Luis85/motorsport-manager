@@ -1,5 +1,5 @@
 class_name RaceSimOperations
-extends RaceSimCore
+extends "res://scripts/domain/race_sim_core.gd"
 ## Pit service, reliability, persistence projection and recovery-oriented base rules.
 func _base_wear_car(c: RaceCar, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	RaceVehicleCondition.wear_car(self, c, distance, cell, effects, local)
