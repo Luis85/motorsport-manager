@@ -159,7 +159,8 @@
     }
     else {
         engine.s.started = true;
-        engine.log('A little sproutling found a place in the glade. And a friend in you.', 'leaf');
+        const creatureName = LWCreatures.forPersonality(engine.actor.personality)?.name?.toLowerCase() || 'companion';
+        engine.log('A little ' + creatureName + ' found a place in the glade. And a friend in you.', 'leaf');
     } closeModal(); save(); world.say(demo ? 'I’ll pick up a little water.' : 'Hi. I think we’ll be good friends.', 'heart'); updateUI(true); }
     function storyMarkup() { const s = engine.s, q = engine.quest(); if (!q) {
         const path=LW.PATHS[s.learning.path], next=path.skills.find(id=>!s.skills[id]),place=path.buildings.find(id=>!engine.has(id)), count=path.skills.filter(id=>s.skills[id]).length;

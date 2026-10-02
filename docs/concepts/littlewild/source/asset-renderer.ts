@@ -38,7 +38,7 @@
   return{...instance,smoke:behavior.smoke||null};
  }
  function createItem(kit,parent,id,model='carry',options={}){return create(kit,parent,'item',id,model,options);}
- function createActor(kit,parent,id='sproutling',model='world',options={}){return create(kit,parent,'actor',id,model,options);}
+ function createActor(kit,parent,id,model='world',options={}){if(!id)throw Error('Actor asset ID is required');return create(kit,parent,'actor',id,model,options);}
  root.LWAssetRenderer=Object.freeze({create,createBuilding,createItem,createActor});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWAssetRenderer;
 })(typeof globalThis!=='undefined'?globalThis:this);

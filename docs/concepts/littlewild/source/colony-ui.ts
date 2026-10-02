@@ -1,7 +1,7 @@
 /* Colony presentation: inspection is read-only. Every command carries the current explicit actor. */
 (function (root) {
     'use strict';
-    const A = root.LWAdventure, R = root.LWRPG, L = root.LW;
+    const A = root.LWAdventure, R = root.LWRPG, L = root.LW, Creatures = root.LWCreatures;
     function create(h) {
         const e = h.esc, ic = h.icon, E = () => h.engine(), actor = () => E().selected, view = { panel: null, quest: null, questDetail: false, gearSlot: 'all', stockFilter: 'all', stockSearch: '', pending: null, search: '', preview: null, baseHash: null, newStory: false, filename: '', qty: 1 };
         const btn = (label, act, id = '', cls = '', disabled = false) => `<button class="btn ${cls}" data-act="${act}" data-id="${e(id)}" ${disabled ? 'disabled' : ''}>${label}</button>`;
@@ -394,7 +394,7 @@
             document.getElementById('portrait')?.setAttribute('aria-label', c ? c.name + ' and their worn equipment' : 'No creature selected');
             const sub = document.querySelector('.buddy-sub');
             if (sub)
-                sub.textContent = c ? L.colony.profile(c.personality).name : 'Each companion has a life of their own';
+                sub.textContent = c ? L.colony.profile(c.personality).name + ' · ' + (Creatures.forPersonality(c.personality)?.name || 'Companion') : 'Each companion has a life of their own';
             if (c?.activeQuest) {
                 const q = c.activeQuest;
                 document.getElementById('task-label').textContent = q.status === 'returning' ? 'On the way home' : 'Beyond the glade';

@@ -48,7 +48,52 @@
       "type": "object"
     },
     "behaviors": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "animation": {
+          "type": "object"
+        },
+        "appearances": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "model",
+              "scale",
+              "labelHeight",
+              "contextHeight",
+              "bubbleHeight",
+              "materials"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "scale": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "labelHeight": {
+                "type": "number"
+              },
+              "contextHeight": {
+                "type": "number"
+              },
+              "bubbleHeight": {
+                "type": "number"
+              },
+              "materials": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     },
     "rig": {
       "type": "object"
