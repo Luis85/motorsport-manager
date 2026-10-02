@@ -4,7 +4,7 @@ extends RefCounted
 ## Empty error means accepted; the aggregate alone posts radio and appends history.
 const ACTIONS = ["qualify", "close_qualifying", "prepare_race", "formation", "lights", "pause", "speed"]
 
-static func apply(simulation: RaceSimFoundation, action: String, payload: Dictionary) -> String:
+static func apply(simulation: RaceSimPort, action: String, payload: Dictionary) -> String:
 	match action:
 		"qualify": return _qualify(simulation)
 		"close_qualifying": return _close_qualifying(simulation)
@@ -15,7 +15,7 @@ static func apply(simulation: RaceSimFoundation, action: String, payload: Dictio
 		"speed": return _speed(simulation, payload)
 	return "Unknown command: " + action
 
-static func _qualify(simulation: RaceSimFoundation) -> String:
+static func _qualify(simulation: RaceSimPort) -> String:
 	if simulation.phase != "briefing": return "Qualifying is only available at the briefing."
 	simulation.transition("qualifying")
 	for car in simulation.cars:
@@ -23,12 +23,12 @@ static func _qualify(simulation: RaceSimFoundation) -> String:
 		if car.auto: car.next_compound = simulation.tyre_rules.qualifying_start(simulation.average(simulation.water)); car.next_set_id = ""
 	return ""
 
-static func _close_qualifying(simulation: RaceSimFoundation) -> String:
+static func _close_qualifying(simulation: RaceSimPort) -> String:
 	if simulation.phase != "qualifying" or simulation.qual_closed: return "Qualifying is not open."
 	simulation.qual_closed = true; simulation.post("flag", "Qualifying chequered: active flying laps may finish; no new runs.")
 	return ""
 
-static func _prepare_race(simulation: RaceSimFoundation) -> String:
+static func _prepare_race(simulation: RaceSimPort) -> String:
 	if simulation.phase not in ["briefing", "qualifying_results"]: return "Finish the current session first."
 	simulation.transition("race_preparation")
 	for car in simulation.cars:
@@ -40,7 +40,7 @@ static func _prepare_race(simulation: RaceSimFoundation) -> String:
 		car.sectors = [0.0, 0.0, 0.0]; car.sector_start = 0.0; car.yield_to = -1; car.yield_side = 0.0; car.blue = false
 	return ""
 
-static func _formation(simulation: RaceSimFoundation) -> String:
+static func _formation(simulation: RaceSimPort) -> String:
 	if simulation.phase != "race_preparation": return "Prepare the race before formation."
 	for car in simulation.cars:
 		if TyreInventory.planned(car).is_empty(): return car.short + ": select a usable starting set before formation."
@@ -50,17 +50,17 @@ static func _formation(simulation: RaceSimFoundation) -> String:
 	simulation.transition("formation")
 	return ""
 
-static func _lights(simulation: RaceSimFoundation) -> String:
+static func _lights(simulation: RaceSimPort) -> String:
 	if simulation.phase != "grid_ready": return "All cars must complete formation first."
 	simulation.transition("lights")
 	return ""
 
-static func _pause(simulation: RaceSimFoundation) -> String:
-	if simulation.phase not in RaceSimFoundation.ACTIVE: return "No live session to pause."
+static func _pause(simulation: RaceSimPort) -> String:
+	if simulation.phase not in RaceSimPort.ACTIVE: return "No live session to pause."
 	simulation.paused = not simulation.paused
 	return ""
 
-static func _speed(simulation: RaceSimFoundation, payload: Dictionary) -> String:
+static func _speed(simulation: RaceSimPort, payload: Dictionary) -> String:
 	if not RaceCheckpoint.integral(payload.get("value", 1), 1, 16): return "Invalid simulation speed."
 	var value = int(payload.get("value", 1))
 	if value not in [1, 2, 4, 8, 16]: return "Invalid simulation speed."
