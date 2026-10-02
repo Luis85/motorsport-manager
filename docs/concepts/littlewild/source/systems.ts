@@ -1,4 +1,4 @@
-/* Littlewild v3 — content and progression layer.
+/* Littlewild content and progression layer.
  * The core engine still owns pathfinding, needs, time and movement. This module
  * adds paid learning queues, practical mastery, field evidence, production chains
  * and staged construction through explicit simulation hooks. No DOM or I/O.
@@ -26,7 +26,6 @@ function initializeSystems(self){
   s.metrics ||= {crafts:{},gathered:{},practices:{},stages:0,upgrades:0,lessons:0};
   if(s.training){s.training.style ||= 'together';s.training.tuition ??= SKILLS[s.training.id].coins;}
   for(const b of s.buildings){b.level??=1;b.quality??=60;}
-  for(const o of s.orders)if(o.type==='build'&&o.stage===undefined){o.stage=0;o.legacy=true;o.approach='balanced';}
   self.addResourceNodes();
 }
 function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
@@ -138,7 +137,6 @@ function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
  }
  constructionSkill(o){if(o.type==='upgrade'&&o.targetLevel===3){const cat=BUILDINGS[o.kind].category;return cat==='learning'?'mentorship':cat==='growing'?'stewardship':cat==='community'?'logistics':cat==='home'?'architecture':'engineering';}return BUILDINGS[o.kind].skill;}
  constructionCost(o){
-  if(o.legacy)return BUILDINGS[o.kind].cost;
   return this.constructionPhases(o)[o.stage||0].cost;
  }
  totalCost(o){
@@ -148,7 +146,6 @@ function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
   return cost;
  }
  constructionPhases(o){
-  if(o.legacy)return [{name:'Finish our original plan',cost:BUILDINGS[o.kind].cost,time:BUILDINGS[o.kind].time}];
   const time=BUILDINGS[o.kind].time*(o.type==='upgrade'?.8:1)*APPROACHES[o.approach||'balanced'].time;
   const phases=PHASE_NAMES.map((name,i)=>({name,cost:{},time:time*[.25,.45,.3][i]}));
   for(const [r,n]of Object.entries(this.totalCost(o))){let group=COST_GROUPS.findIndex(g=>g.includes(r));if(group<0)group=2;phases[group].cost[r]=n;}
@@ -161,7 +158,7 @@ function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
  place(kind,x,y){
   if(!own(BUILDINGS,kind))return fail('Unknown blueprint.');
   const issue=this.placementIssue(kind,x,y);if(issue)return fail(issue);
-  const r=super.place(kind,x,y);if(r.ok){r.order.stage=0;r.order.legacy=false;r.order.approach=this.s.buildPolicy.approach;}
+  const r=super.place(kind,x,y);if(r.ok){r.order.stage=0;r.order.approach=this.s.buildPolicy.approach;}
   return r;
  }
  upgrade(id){
@@ -363,61 +360,7 @@ function defineLayer(BaseEngine){return class SystemsLayer extends BaseEngine {
   if(s.task?.kind==='train'&&s.training){const phase=this.learningPhase();s.task.label='Learning '+SKILLS[s.training.id].short.toLowerCase()+' · '+phase.label.toLowerCase();}
  }
  export(){const d=super.export();d.version=3;d.state.version=3;return d;}
- static import(data){
-  if(!data||data.app!=='littlewild'||![1,2,3].includes(data.version)||!data.state)throw Error('This is not a supported Littlewild save (v1, v2 or v3).');
-  const raw=clone(data),a=raw.state,v3=data.version===3;
-  // Validate extensions first. The core parser below revalidates all inherited state.
-  const n=(v,min,max,l)=>finite(v,min,max,l),i=(v,min,max,l)=>finite(v,min,max,l,true);
-  let learning={queue:[],style:'together',fatigue:0,recovering:false,paused:false,practiceDay:a.day,practicedToday:{},path:'home'};
-  const lesson=t=>{
-   if(!t||!own(SKILLS,t.id)||a.skills[t.id]||!a.researched[t.id])throw Error('Invalid queued lesson.');
-   const style=t.style||'together';if(!own(STYLES,style))throw Error('Invalid lesson style.');
-   return {id:t.id,progress:n(t.progress??0,0,SKILLS[t.id].time,'lesson progress'),style,tuition:i(t.tuition??SKILLS[t.id].coins,0,10000,'tuition')};
-  };
-  if(v3&&a.learning){
-   const l=a.learning;if(!Array.isArray(l.queue)||l.queue.length>4||!own(STYLES,l.style)||!own(PATHS,l.path))throw Error('Invalid learning plan.');
-   learning={queue:l.queue.map(lesson),style:l.style,fatigue:n(l.fatigue,0,100,'mental effort'),recovering:!!l.recovering,paused:!!l.paused,practiceDay:i(l.practiceDay,1,a.day,'practice day'),practicedToday:{},path:l.path};
-   if(!l.practicedToday||typeof l.practicedToday!=='object'||Array.isArray(l.practicedToday))throw Error('Invalid daily practice.');
-   for(const[id,num]of Object.entries(l.practicedToday)){if(!own(SKILLS,id))throw Error('Unknown practiced skill.');learning.practicedToday[id]=i(num,0,10000,'daily practice');}
-  }
-  const training=a.training?lesson(a.training):null;
-  const ids=[...(training?[training.id]:[]),...learning.queue.map(t=>t.id)];if(new Set(ids).size!==ids.length||ids.length>4)throw Error('Duplicate or excessive lesson queue.');
-  let specs={};if(v3&&a.specializations){if(typeof a.specializations!=='object'||Array.isArray(a.specializations))throw Error('Invalid specialties.');for(const[d,id]of Object.entries(a.specializations)){if(!own(SPECIALIZATIONS,d)||!SPECIALIZATIONS[d].some(x=>x.id===id))throw Error('Unknown specialty.');specs[d]=id;}}
-  let fs={active:null,progress:{},completed:[]};if(v3&&a.fieldStudies){const f=a.fieldStudies;if(f.active!==null&&!own(STUDIES,f.active))throw Error('Unknown field study.');if(!Array.isArray(f.completed)||f.completed.some(id=>!own(STUDIES,id))||new Set(f.completed).size!==f.completed.length)throw Error('Invalid study history.');fs={active:f.active,completed:[...f.completed],progress:{}};if(fs.completed.includes(fs.active))throw Error('Completed study cannot be active.');for(const[id,progress]of Object.entries(f.progress||{})){if(!own(STUDIES,id)||!progress||typeof progress!=='object')throw Error('Invalid field evidence.');fs.progress[id]={};for(const[event,num]of Object.entries(progress)){if(!STUDIES[id].goals.some(g=>g.event===event))throw Error('Unknown field evidence.');fs.progress[id][event]=i(num,0,10000,'field evidence');}}if(fs.active)fs.progress[fs.active]||={};}
-  const metrics={crafts:{},gathered:{},practices:{},stages:0,upgrades:0,lessons:0};if(v3&&a.metrics){for(const key of ['stages','upgrades','lessons'])metrics[key]=i(a.metrics[key]??0,0,1e9,'progress statistics');for(const key of ['crafts','gathered','practices'])for(const[id,num]of Object.entries(a.metrics[key]||{})){if(!own(key==='practices'?SKILLS:RES,id))throw Error('Unknown statistic.');metrics[key][id]=i(num,0,1e9,'progress statistic');}}
-  const approach=v3?a.buildPolicy?.approach||'balanced':'balanced';if(!own(APPROACHES,approach))throw Error('Invalid building approach.');
-  if(!Array.isArray(a.orders)||a.orders.length>12)throw Error('Invalid plan board.');
-  const specialOrders=[],normalOrders=[];
-  for(const o of a.orders){
-   if(['upgrade','practice'].includes(o.type)){
-    if(!v3)throw Error('Unsupported legacy order.');
-    const common={id:'oextra'+specialOrders.length,type:o.type,paused:!!o.paused,priority:o.priority===1?1:0,created:n(o.created??0,0,1e9,'plan time')};
-    if(o.type==='practice'){
-     if(!own(SKILLS,o.skillId)||!a.skills[o.skillId])throw Error('Invalid practice plan.');
-     const amount=i(o.amount,1,3,'practice count'),done=i(o.done??0,0,amount-1,'practice progress');
-     specialOrders.push({...common,skillId:o.skillId,amount,done,progress:n(o.progress||0,0,12,'practice progress')});
-    }else{
-     if(!own(BUILDINGS,o.kind))throw Error('Unknown improvement.');const b=a.buildings.find(b=>b.kind===o.kind);if(!b||o.targetLevel!==(b.level||1)+1||o.targetLevel>3)throw Error('Invalid improvement level.');
-     specialOrders.push({...common,kind:o.kind,targetLevel:o.targetLevel,x:b.x,y:b.y,stage:i(o.stage,0,2,'construction stage'),progress:n(o.progress||0,0,100,'construction progress'),paid:!!o.paid,approach:o.approach||'balanced'});
-    }
-   }else normalOrders.push(o);
-  }
-  if(new Set(specialOrders.filter(o=>o.type==='upgrade').map(o=>o.kind)).size!==specialOrders.filter(o=>o.type==='upgrade').length)throw Error('Duplicate improvements.');
-  a.orders=normalOrders;
-  // New material keys were not part of v1/v2. Only those keys default to zero.
-  for(const id of Object.keys(RES).filter(id=>!['wood','stone','fiber','berries','water','planks','meat','meals'].includes(id))){a.inventory[id]??=0;a.stockTargets??={};a.stockTargets[id]??=0;}
-  const base=super.import(raw),s=base.s;
-  s.learning=learning;s.specializations=specs;s.fieldStudies=fs;s.buildPolicy={approach};s.metrics=metrics;s.training=training;
-  s.buildings.forEach((b,j)=>{b.level=i(a.buildings[j].level??1,1,3,'building level');b.quality=n(a.buildings[j].quality??60,25,100,'finish quality');});
-  s.orders.forEach((o,j)=>{if(o.type==='build'){const source=normalOrders[j];o.stage=v3?i(source.stage??0,0,2,'construction stage'):0;o.approach=v3?source.approach||'balanced':'balanced';o.legacy=v3?!!source.legacy:true;}});
-  s.orders.push(...specialOrders);
-  const extraNodes=(a.nodes||[]).filter(x=>typeof x.id==='string'&&x.id.startsWith('v3-'));
-  if(extraNodes.length>8||new Set(extraNodes.map(n=>n.id)).size!==extraNodes.length)throw Error('Invalid new-world deposits.');
-  for(const node of extraNodes){if(!['clay','ore','herbs','grain'].includes(node.kind)||!new RegExp('^v3-'+node.kind+'-[01]$').test(node.id))throw Error('Unknown deposit.');const x=i(node.x,1,17,'deposit position'),y=i(node.y,1,17,'deposit position');if(terrain(x,y)!=='grass'||s.nodes.some(n=>n.x===x&&n.y===y)||s.buildings.some(b=>b.x===x&&b.y===y)||s.orders.some(o=>o.type==='build'&&o.x===x&&o.y===y))throw Error('Deposit placement conflicts.');const max=node.kind==='ore'?8:10;s.nodes.push({id:node.id,kind:node.kind,x,y,max,stock:i(node.stock,0,max,'deposit stock'),regen:n(node.regen??0,0,24,'deposit regrowth')});}
-  const e=Composition.constructThrough('systems',s);
-  for(const o of s.orders)if(['build','upgrade'].includes(o.type)){if(!own(APPROACHES,o.approach))throw Error('Invalid construction approach.');const p=e.constructionPhases(o)[o.stage];if(!p||o.progress>p.time+.001||(!o.paid&&o.progress>0))throw Error('Inconsistent construction progress.');if(o.type==='build'&&!o.legacy&&e.placementIssue(o.kind,o.x,o.y))throw Error('Waterwheel is too far from the spring.');}
-  return e;
- }
+
  };}
 Object.assign(L,{DISCIPLINES,DRILLS,STYLES,APPROACHES,SPECIALIZATIONS,STUDIES,PATHS,CATEGORY_NAMES,RAW,CROP_RES});
 // A clearly labeled, authored mid-game scenario. Normal play never calls this.

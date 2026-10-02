@@ -35,14 +35,6 @@
             this.events = [];
             this.acc = 0;
             this.refreshTimer = 0;
-            // New systems have defaults for both legacy stories and the established-camp preset.
-            this.s.stockTargets ||= { ...initial().stockTargets };
-            this.s.practice ||= {};
-            this.s.memories ||= [];
-            this.s.ledger ||= [];
-            this.s.daily ||= { day: this.s.day, bonded: 0 };
-            this.s.allowance.reserve ??= 4;
-            this.s.allowance.sourcing ||= 'balanced';
             if (!this.s.wish)
                 this.newWish();
             this._blockedKey = '';
@@ -70,7 +62,7 @@
         }
         economyActor() { return this._actor?.id ? this._actor : null; }
         economySettlementId(scope, key = '') {
-            const actor = this._actor?.id || 'legacy';
+            const actor = this._actor?.id || 'global';
             const suffix = key || (Math.round(this.s.simTime * 1000) + ':' + (++this._economySettlementSequence));
             return (scope + ':' + actor + ':' + suffix).replace(/[^a-zA-Z0-9._:-]/g, '_').slice(0, 95);
         }
@@ -973,184 +965,7 @@
             if (remainder > 1e-9) this.step(remainder);
         }
         export() { const s = root.LWContent.copy(this.s); s.task = null; return { app: 'littlewild', version: VERSION, state: s }; }
-        static import(data) {
-            if (!data || data.app !== 'littlewild' || ![1, 2, VERSION].includes(data.version) || !data.state)
-                throw Error('This is not a supported Littlewild save (v1, v2 or v3).');
-            const a = data.state, s = initial();
-            const num = (v, min, max, label) => { if (typeof v !== 'number' || !Number.isFinite(v) || v < min || v > max)
-                throw Error('Invalid ' + label + '.'); return v; };
-            const int = (v, min, max, l) => { num(v, min, max, l); if (!Number.isInteger(v))
-                throw Error('Invalid ' + l + '.'); return v; };
-            if (typeof a.name !== 'string' || a.name.length < 1 || a.name.length > 20)
-                throw Error('Invalid buddy name.');
-            s.name = a.name.replace(/[<>\u0000-\u001f]/g, '').trim() || 'Pip';
-            s.simTime = num(a.simTime, 0, 1e9, 'time');
-            s.day = int(a.day, 1, 1e7, 'day');
-            s.hour = num(a.hour, 0, 24, 'hour');
-            s.started = !!a.started;
-            s.paused = !!a.paused;
-            s.speed = [1, 2, 4].includes(a.speed) ? a.speed : 1;
-            s.focus = ['balanced', 'cozy', 'builder', 'curious'].includes(a.focus) ? a.focus : 'balanced';
-            for (const k of ['player', 'creature']) {
-                if (!a[k])
-                    throw Error('Missing character.');
-                s[k].level = int(a[k].level, 1, 9999, 'level');
-                s[k].xp = num(a[k].xp, 0, threshold(s[k].level), 'experience');
-                s[k].coins = int(a[k].coins, 0, 1e9, 'coins');
-            }
-            s.creature.x = num(a.creature.x, 0, SIZE - 1, 'position');
-            s.creature.y = num(a.creature.y, 0, SIZE - 1, 'position');
-            s.creature.dir = a.creature.dir === -1 ? -1 : 1;
-            if (terrain(Math.round(s.creature.x), Math.round(s.creature.y)) !== 'grass')
-                throw Error('Buddy must be on land.');
-            s.rp = int(a.rp, 0, 1e9, 'research');
-            s.bond = num(a.bond, 0, 100, 'friendship');
-            for (const k of Object.keys(s.needs))
-                s.needs[k] = num(a.needs?.[k], 0, 100, 'need');
-            for (const k of Object.keys(RES))
-                s.inventory[k] = int(a.inventory?.[k], 0, 1e7, 'inventory');
-            if (!a.allowance)
-                throw Error('Missing allowance.');
-            s.allowance = { limit: int(a.allowance.limit, 0, 30, 'allowance'), given: int(a.allowance.given, 0, 1e9, 'allowance issued'), auto: !!a.allowance.auto, reserve: int(a.allowance.reserve ?? 4, 0, 30, 'pocket savings reserve'), sourcing: ['balanced', 'gather', 'shop'].includes(a.allowance.sourcing) ? a.allowance.sourcing : 'balanced' };
-            for (const key of ['skills', 'researched']) {
-                if (!a[key] || typeof a[key] !== 'object' || Array.isArray(a[key]))
-                    throw Error('Invalid skills.');
-                for (const id of Object.keys(a[key])) {
-                    if (!owns(SKILLS, id) || a[key][id] !== true)
-                        throw Error('Unknown lesson.');
-                    s[key][id] = true;
-                }
-            }
-            if (a.training) {
-                if (!owns(SKILLS, a.training.id) || s.skills[a.training.id] || !s.researched[a.training.id])
-                    throw Error('Invalid training.');
-                s.training = { id: a.training.id, progress: num(a.training.progress, 0, SKILLS[a.training.id].time, 'training progress') };
-            }
-            const occupied = new Set(), builtKinds = new Set();
-            if (!Array.isArray(a.buildings) || a.buildings.length > 40)
-                throw Error('Invalid buildings.');
-            s.buildings = a.buildings.map((b, i) => { if (!owns(BUILDINGS, b.kind))
-                throw Error('Unknown building.'); if (builtKinds.has(b.kind))
-                throw Error('Duplicate unique building.'); builtKinds.add(b.kind); const x = int(b.x, 2, 16, 'building position'), y = int(b.y, 2, 16, 'building position'), key = x + ',' + y; if (terrain(x, y) !== 'grass' || s.nodes.some(n => n.x === x && n.y === y) || occupied.has(key))
-                throw Error('Building placement conflicts.'); occupied.add(key); return { id: 'bload' + i, kind: b.kind, x, y, stock: int(b.stock || 0, 0, 12, 'garden stock'), regen: num(b.regen || 0, 0, 80, 'growth') }; });
-            if (!Array.isArray(a.orders) || a.orders.length > 12)
-                throw Error('Invalid ideas.');
-            s.orders = a.orders.map((o, i) => { if (!['build', 'gather', 'craft', 'explore', 'hunt', 'deliver'].includes(o.type))
-                throw Error('Unknown idea.'); const n = { id: 'oload' + i, type: o.type, paused: !!o.paused, priority: o.priority === 1 ? 1 : 0, created: num(o.created || 0, 0, 1e9, 'idea time') }; if (o.type === 'build') {
-                if (!owns(BUILDINGS, o.kind))
-                    throw Error('Unknown plan.');
-                if (builtKinds.has(o.kind))
-                    throw Error('Duplicate unique plan.');
-                builtKinds.add(o.kind);
-                n.kind = o.kind;
-                n.x = int(o.x, 2, 16, 'plan position');
-                n.y = int(o.y, 2, 16, 'plan position');
-                const key = n.x + ',' + n.y;
-                if (terrain(n.x, n.y) !== 'grass' || occupied.has(key) || s.nodes.some(p => p.x === n.x && p.y === n.y))
-                    throw Error('Plan placement conflicts.');
-                occupied.add(key);
-                n.progress = num(o.progress || 0, 0, BUILDINGS[o.kind].time, 'build progress');
-                n.paid = !!o.paid;
-            }
-            else {
-                if (o.type === 'gather' && !['wood', 'stone', 'fiber', 'berries', 'water', 'clay', 'ore', 'herbs', 'grain'].includes(o.resource))
-                    throw Error('Invalid resource.');
-                if (o.type === 'craft' && !owns(RECIPES, o.resource))
-                    throw Error('Invalid recipe.');
-                n.resource = o.resource || null;
-                n.amount = int(o.amount, 1, 100, 'idea amount');
-                n.done = int(o.done || 0, 0, 100, 'idea progress');
-                if (o.type === 'deliver')
-                    n.contract = int(o.contract, 0, CONTRACTS.length - 1, 'delivery');
-            } return n; });
-            s.nextId = int(a.nextId || 1, 1, 1e9, 'identifier');
-            s.contractIndex = int(a.contractIndex || 0, 0, 1e9, 'contract');
-            s.completedQuests = Array.isArray(a.completedQuests) ? a.completedQuests.filter(id => QUESTS.some(q => q.id === id)).filter((v, i, arr) => arr.indexOf(v) === i) : [];
-            for (const k of Object.keys(s.stats))
-                s.stats[k] = int(a.stats?.[k] || 0, 0, 1e9, 'statistics');
-            for (const k of Object.keys(s.cooldowns))
-                s.cooldowns[k] = num(a.cooldowns?.[k] || 0, 0, 1e9, 'cooldown');
-            for (const k of ['lastAchievement', 'lastPraise', 'lastGentleWarning', 'lastDecline'])
-                s.memory[k] = num(a.memory?.[k] ?? -100, -100, 1e9, 'memory');
-            if (Array.isArray(a.nodes))
-                for (const node of s.nodes) {
-                    const source = a.nodes.find(n => n.id === node.id);
-                    if (source) {
-                        node.stock = int(source.stock, 0, node.max, 'resource stock');
-                        node.regen = num(source.regen || 0, 0, 24, 'regrowth');
-                    }
-                }
-            s.settings = { sound: !!a.settings?.sound, follow: !!a.settings?.follow, reducedMotion: !!a.settings?.reducedMotion, highContrast: !!a.settings?.highContrast };
-            s.log = Array.isArray(a.log) ? a.log.slice(0, 70).filter(l => typeof l.text === 'string').map(l => ({ text: l.text.slice(0, 300), icon: typeof l.icon === 'string' ? l.icon : 'leaf', time: typeof l.time === 'number' ? l.time : 0, day: Number.isInteger(l.day) ? l.day : 1, hour: Number.isFinite(l.hour) ? l.hour : 8 })) : [];
-            // v2 extensions are fully validated before any live story is replaced.
-            if (a.stockTargets !== undefined) {
-                if (!a.stockTargets || typeof a.stockTargets !== 'object')
-                    throw Error('Invalid pantry policy.');
-                for (const r of Object.keys(RES))
-                    s.stockTargets[r] = int(a.stockTargets[r] ?? s.stockTargets[r], 0, 24, 'pantry target');
-            }
-            if (a.practice !== undefined) {
-                if (!a.practice || typeof a.practice !== 'object' || Array.isArray(a.practice))
-                    throw Error('Invalid practice.');
-                for (const [id, n] of Object.entries(a.practice)) {
-                    if (!owns(SKILLS, id))
-                        throw Error('Unknown practiced skill.');
-                    s.practice[id] = int(n, 0, 1e8, 'practice');
-                }
-            }
-            const str = (v, max, label) => { if (typeof v !== 'string' || v.length > max)
-                throw Error('Invalid ' + label + '.'); return v.replace(/[\u0000-\u001f]/g, ''); };
-            if (a.memories !== undefined) {
-                if (!Array.isArray(a.memories) || a.memories.length > 60)
-                    throw Error('Invalid memories.');
-                s.memories = a.memories.map(m => ({ key: str(m.key, 80, 'memory key'), title: str(m.title, 150, 'memory'), description: str(m.description, 350, 'memory'), icon: str(m.icon, 30, 'memory icon'), day: int(m.day, 1, s.day, 'memory day'), hour: num(m.hour, 0, 24, 'memory hour') }));
-            }
-            if (a.ledger !== undefined) {
-                if (!Array.isArray(a.ledger) || a.ledger.length > 80)
-                    throw Error('Invalid ledger.');
-                s.ledger = a.ledger.map(m => ({ label: str(m.label, 180, 'transaction'), guide: int(m.guide, -1e9, 1e9, 'guide delta'), pocket: int(m.pocket, -1e9, 1e9, 'pocket delta'), research: int(m.research, -1e9, 1e9, 'research delta'), day: int(m.day, 1, s.day, 'ledger day'), hour: num(m.hour, 0, 24, 'ledger hour') }));
-            }
-            if (a.daily)
-                s.daily = { day: s.day, bonded: int(a.daily.bonded, 0, 1e8, 'daily friendship') };
-            else
-                s.daily = { day: s.day, bonded: 0 };
-            if (a.wish) {
-                const w = a.wish;
-                if (!['bonded', 'explored', 'gathered', 'fed'].includes(w.stat) || !['bond', 'explore', 'gather', 'feed'].includes(w.action))
-                    throw Error('Invalid wish.');
-                s.wish = { stat: w.stat, action: w.action, day: int(w.day, 1, s.day, 'wish day'), amount: int(w.amount, 1, 24, 'wish amount'), start: int(w.start, 0, 1e9, 'wish progress'), title: str(w.title, 100, 'wish'), thought: str(w.thought, 180, 'wish thought'), complete: !!w.complete };
-            }
-            s.task = null;
-            const loaded = root.LWEngineComposition?.constructThrough('base', s) || new Engine(s);
-            // Older versions could save a buddy on the tile of the building they just completed.
-            // Relocate only to an adjacent passable tile, never inside the spring or outside the glade.
-            const cx = Math.round(s.creature.x), cy = Math.round(s.creature.y);
-            if (!loaded.walkable(cx, cy)) {
-                const free = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x: cx + x, y: cy + y })).find(p => loaded.walkable(p.x, p.y));
-                if (!free)
-                    throw Error('Buddy has no safe place to stand.');
-                s.creature.x = free.x;
-                s.creature.y = free.y;
-            }
-            // Reject disconnected settlements instead of accepting a save whose planner can never recover.
-            const queue = [{ x: Math.round(s.creature.x), y: Math.round(s.creature.y) }], seen = new Set(queue.map(p => p.x + ',' + p.y));
-            let head = 0;
-            while (head < queue.length) {
-                const p = queue[head++];
-                for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-                    const x = p.x + dx, y = p.y + dy, k = x + ',' + y;
-                    if (loaded.walkable(x, y) && !seen.has(k)) {
-                        seen.add(k);
-                        queue.push({ x, y });
-                    }
-                }
-            }
-            for (let x = 0; x < SIZE; x++)
-                for (let y = 0; y < SIZE; y++)
-                    if (loaded.walkable(x, y) && !seen.has(x + ',' + y))
-                        throw Error('Buildings disconnect the glade.');
-            return loaded;
-        }
+
     }
     const api = { Engine, initial, SKILLS, BUILDINGS, RES, RECIPES, QUESTS, CONTRACTS, SIZE, terrain, seeded, threshold, clamp };
     if (typeof module !== 'undefined' && module.exports)

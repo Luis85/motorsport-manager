@@ -25,42 +25,37 @@
  }
  let WorldLayer;
  function defineLayer(Base){WorldLayer=class WorldSimulationLayer extends Base {
-  initWorld({migrate=false,demo=false}={}){
+  initWorld({demo=false}={}){
    const s=this.s;
    if(!s.world){
-    s.world={version:1,sequence:1,transfers:[],migrated:migrate};
-    for(const n of s.nodes){const d=W.node(n.kind);if(!d)continue;if(!migrate){n.stock=n.max=d.quantity;}n.regen=0;}
+    s.world={version:1,sequence:1,transfers:[]};
+    for(const n of s.nodes){const d=W.node(n.kind);if(!d)continue;n.stock=n.max=d.quantity;n.regen=0;}
     for(const site of W.content.sites){
      if(s.nodes.some(n=>n.x===site.x&&n.y===site.y)||s.buildings.some(b=>b.x===site.x&&b.y===site.y)||this.allOrders().some(o=>o.type==='build'&&o.x===site.x&&o.y===site.y))continue;
      const d=W.node(site.kind);if(terrain(site.x,site.y)==='grass')s.nodes.push({...site,stock:d.quantity,max:d.quantity,regen:0});
     }
-    // Existing places stay where their player built them. Migration adds an explicit substrate
-    // only for those places; ordinary placement never fabricates deposits.
+    // Current seeded/demo places receive their authored substrate; ordinary placement never fabricates deposits.
     this.seedExistingSites();
     for(const c of this.creatures){
      c.worldPickup=null;
-     if(migrate&&c.task&&['gather','craft','gearcraft','hunt'].includes(c.task.kind))c.task=null;
     }
    }else if(demo)this.seedExistingSites();
-   this.syncBuildings({preserveLegacyStock:migrate||demo});
-   // v8 snapshots did not persist order identity on paid work. Recover only explicit evidence.
-   for(const b of s.buildings){const j=b.storage?.job;if(j&&j.orderId===undefined){const c=this.creatures.find(c=>c.id===j.originId);j.orderId=c?.task?.jobId===j.id?c.task.orderId||null:null;}}
+   this.syncBuildings({preserveSeededStock:demo});
    this.s.version=6;
   }
   seedExistingSites(){
    for(const b of [...this.s.buildings,...this.allOrders().filter(o=>o.type==='build')]){
     const p=PROFILE(b.kind);if(!p?.requiresNode)continue;
     if(this.s.nodes.some(n=>n.x===b.x&&n.y===b.y&&n.kind===p.requiresNode))continue;
-    // Prior versions prohibited construction on resource nodes, so this is normally empty.
     if(this.s.nodes.some(n=>n.x===b.x&&n.y===b.y))continue;
-    const d=W.node(p.requiresNode);this.s.nodes.push({id:'legacy-site-'+(b.id||b.kind),kind:d.id,x:b.x,y:b.y,stock:d.quantity,max:d.quantity,regen:0});
+    const d=W.node(p.requiresNode);this.s.nodes.push({id:'seeded-site-'+(b.id||b.kind),kind:d.id,x:b.x,y:b.y,stock:d.quantity,max:d.quantity,regen:0});
    }
   }
-  syncBuildings({preserveLegacyStock=false}={}){
+  syncBuildings({preserveSeededStock=false}={}){
    for(const b of this.s.buildings){const p=PROFILE(b.kind);if(!p||b.storage)continue;
     b.storage=recordBlank();
     if(p.production&&p.defaultTarget)b.storage.targets[p.production.output]=p.defaultTarget;
-    if(preserveLegacyStock&&L.CROP_RES[b.kind]&&(b.stock||0)>0)b.storage.output[L.CROP_RES[b.kind]]=Math.floor(b.stock);
+    if(preserveSeededStock&&L.CROP_RES[b.kind]&&(b.stock||0)>0)b.storage.output[L.CROP_RES[b.kind]]=Math.floor(b.stock);
     b.stock=0;b.regen=0;
    }
   }
@@ -369,13 +364,7 @@
    return {label:'Ready to work',kind:'ready',detail:'Ingredients are in place. Creatures take care of urgent needs before working.'};
   }
   export(){const out=super.export();out.version=6;out.state.version=6;return out;}
-  static import(doc){
-   const raw=copy(doc),modern=raw?.version===6;
-   if(modern){if(!raw.state?.world)throw Error('Missing saved world state.');validateWorldState(raw.state);raw.version=5;raw.state.version=5;}
-   const base=super.import(raw);
-   const e=Composition.constructThrough('world-simulation',base.export().state,{migrate:!modern});
-   validateWorldState(e.export().state);return e;
-  }
+
  };return WorldLayer;}
  function validateWorldState(s){
   const bad=msg=>{throw Error('World save: '+msg);};
@@ -406,7 +395,7 @@
   L.createWorldDemo=()=>{
    const e=L.createColonyDemo();e.s.player.coins=640;e.s.rp=42;
    for(const c of e.creatures){for(const k of ['woodcraft','stonework','woodwork','fiberwork','claywork','pottery','milling','baking','gardening','masonry','firekeeping']){c.skills[k]=true;c.researched[k]=true;c.rpg.points[k]=4;}c.orders=[];c.training=null;c.learning.queue=[];c.stockTargets=Object.fromEntries(Object.keys(RES).map(id=>[id,0]));c.needs={food:85,water:86,energy:94,comfort:80,joy:80};c.task=null;}
-   e.syncBuildings({preserveLegacyStock:true});
+   e.syncBuildings({preserveSeededStock:true});
    const bench=e.s.buildings.find(b=>b.kind==='bench');bench.storage.input={wood:4};bench.storage.output={planks:2};bench.storage.requests={rope:2};
    const kiln=e.s.buildings.find(b=>b.kind==='kiln');if(kiln){kiln.storage.input={clay:3};kiln.storage.requests={bricks:2};}
    e.s.colony.warehouse.inventory.charcoal=4;e.s.colony.warehouse.inventory.fiber=12;
