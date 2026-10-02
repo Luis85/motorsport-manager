@@ -12,6 +12,12 @@
             "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
             "type": "string"
           },
+          "circuit_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          },
           "departure_day": {
             "maximum": 3660,
             "minimum": 0,
@@ -35,6 +41,7 @@
         },
         "required": [
           "campaign_event_id",
+          "circuit_id",
           "round",
           "departure_day",
           "return_day",
