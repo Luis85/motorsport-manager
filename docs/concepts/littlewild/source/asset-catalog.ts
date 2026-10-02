@@ -3,6 +3,7 @@
  const categories=new Set(['building','item','actor']);
  const primitives=new Set(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground']);
  const safeId=/^[a-z0-9][a-z0-9_-]{0,79}$/;
+ const safeRole=/^[A-Za-z][A-Za-z0-9_-]{0,79}$/;
  const vec=(v,n=3)=>Array.isArray(v)&&v.length===n&&v.every(Number.isFinite);
  const plain=v=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
  const copy=v=>JSON.parse(JSON.stringify(v));
@@ -22,7 +23,7 @@
  function validate(raw){
   if(!plain(raw)||raw.format!=='littlewild-3d-asset'||raw.schemaVersion!==1||!categories.has(raw.category)||typeof raw.id!=='string'||!safeId.test(raw.id)||typeof raw.name!=='string'||raw.name.length<1||raw.name.length>120)fail('invalid identity');
   if(!plain(raw.materials)||!plain(raw.models)||!Object.keys(raw.models).length)fail(raw.id+' missing materials/models');
-  for(const [key,value] of Object.entries(raw.materials)){if(!safeId.test(key)||!(typeof value==='string'||plain(value)))fail(raw.id+' invalid material '+key);}
+  for(const [key,value] of Object.entries(raw.materials)){if(!safeRole.test(key)||!(typeof value==='string'||plain(value)))fail(raw.id+' invalid material '+key);if(plain(value)&&(typeof value.color!=='string'||!/^#[0-9a-f]{6}$/i.test(value.color)))fail(raw.id+' invalid material color '+key);}
   const modelNodes=new Map();
   for(const [name,model] of Object.entries(raw.models)){if(!safeId.test(name)||!plain(model)||!Array.isArray(model.nodes))fail(raw.id+' invalid model '+name);const ids=new Set();nodeIds(model.nodes,raw.materials,ids,raw.id+'/'+name);modelNodes.set(name,ids);}
   const ids=modelNodes.get('world')||new Set();
@@ -31,14 +32,20 @@
   if(behavior.door&&(!plain(behavior.door)||!ids.has(behavior.door.node)))fail(raw.id+' invalid door node');
   for(const rotor of behavior.rotors||[])if(!plain(rotor)||!ids.has(rotor.node)||!['x','y','z'].includes(rotor.axis)||!Number.isFinite(rotor.speed))fail(raw.id+' invalid rotor');
   if(raw.category==='building'&&!raw.models.world)fail(raw.id+' building needs world model');
-  if(raw.category==='actor'&&(!raw.models.world||!plain(raw.rig)))fail(raw.id+' actor needs world model and rig');
+  if(behavior.smoke&&(!plain(behavior.smoke)||!vec(behavior.smoke.position)||typeof behavior.smoke.always!=='boolean') )fail(raw.id+' invalid smoke behavior');
+  if(raw.category==='actor'){
+   if(!raw.models.world||!plain(raw.rig)||!plain(behavior.sockets))fail(raw.id+' actor needs world model, rig and sockets');
+   const references=[];
+   for(const value of [...Object.values(raw.rig),...Object.values(behavior.sockets)])Array.isArray(value)?references.push(...value):references.push(value);
+   for(const id of references)if(typeof id!=='string'||!ids.has(id))fail(raw.id+' invalid rig/socket node '+id);
+  }
   return deepFreeze(copy(raw));
  }
  const raw=root.LWAssetDefinitions;
  if(!Array.isArray(raw))fail('bundled definition list is missing');
  const defs=raw.map(validate),index=new Map();
  for(const a of defs){const key=a.category+':'+a.id;if(index.has(key))fail('duplicate '+key);index.set(key,a);}
- const revision=defs.reduce((h,a)=>{for(const ch of a.category+':'+a.id)h=(h*33+ch.charCodeAt(0))>>>0;return h;},5381);
+ const revision=defs.reduce((h,a)=>{for(const ch of JSON.stringify(a))h=(h*33+ch.charCodeAt(0))>>>0;return h;},5381);
  const api=Object.freeze({
   revision,
   all:()=>defs,

@@ -21,8 +21,6 @@
  }
 
  const artKit={T,group,box,ball,piece,mat};
-
- const artKit={T,group,box,ball,piece,mat,crate};
  function creature(parent,c){return root.LWFidelity.create(artKit,parent,c);}
  class World {
   constructor(canvas,engine,handlers={}){
@@ -79,7 +77,7 @@
   rebuild(){for(const g of [...this.staticRoot.children]){this.staticRoot.remove(g);g.traverse(o=>{if(o.isInstancedMesh)o.dispose();});}for(const o of [...this.motionRoot.children])this.motionRoot.remove(o);this.doors.clear();this.rotors=[];this.waterMotions=[];this.smokeParticles=[];
    const staging=new T.Group(),s=this.engine.s,occupied=new Set(s.buildings.map(b=>b.x+','+b.y));
    for(const i of s.estate.islands){const ix=i.ix*23,iy=i.iy*23,pal=root.LWWorldProfile.current.groundColors[G.describe(i.ix,i.iy).biome]||palettes.Meadow;
-    for(let x=0;x<19;x++)for(let y=0;y<19;y++){const terrain=G.islandTerrain(x,y),hash=G.hash(ix+x,iy+y)/4294967296;if(terrain==='water'){if(x>=13&&x<=16&&y>=3&&y<=7){box(staging,ix+x,-.12,iy+y,1,.14,1,'#87b4b0');if(hash>.6){piece(staging,'cylinder',ix+x-.2,-.024,iy+y,.13,.012,.13,'#95b581');}
+    for(let x=0;x<19;x++)for(let y=0;y<19;y++){const terrain=G.islandTerrain(x,y),hash=G.hash(ix+x,iy+y)/4294967296;if(terrain==='water'){if(x>=13&&x<=16&&y>=3&&y<=7){box(staging,ix+x,-.12,iy+y,1,.14,1,'#87b4b0');if(hash>.6)root.LWAssetRenderer.createItem(artKit,staging,'water-lily','world',{position:[ix+x-.2,-.04,iy+y],rotation:[0,hash*Math.PI*2,0]});
       if(hash>.83){for(let j=0;j<2;j++){const wave=box(this.motionRoot,ix+x-.2,-.028,iy+y+j*.22,.34,.006,.022,'#b9d8cb');wave.castShadow=false;this.waterMotions.push({mesh:wave,x:wave.position.x,phase:x+y+j});}}
       }continue;}
      const shore=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>G.islandTerrain(x+dx,y+dy)==='water'),path=x===9||y===9,clear=x>=6&&x<=12&&y>=8&&y<=12;
@@ -87,10 +85,10 @@
      // Hidden internal cube faces are omitted. Only actual coast edges have skirts.
      for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(G.islandTerrain(x+dx,y+dy)==='water')box(staging,ix+x+dx*.48,-.30,iy+y+dy*.48,dx?.045:1,.66,dy?.045:1,'#b0ac8b');
      if(path){if(x===9)piece(staging,'ground',ix+x,.044,iy+y,.60,1,1.01,'#c3b48c');if(y===9)piece(staging,'ground',ix+x,.045,iy+y,1.01,1,.60,'#c3b48c');}
-     if(shore&&hash>.64){for(let j=0;j<2;j++){const reed=piece(staging,'cone',ix+x+.32-j*.12,.12,iy+y-.24,.025,.25,.025,'#819a71');reed.rotation.z=(hash-.5)*.4;}}
+     if(shore&&hash>.64){for(let j=0;j<2;j++)root.LWAssetRenderer.createItem(artKit,staging,'reed','world',{position:[ix+x+.32-j*.12,0,iy+y-.24],rotation:[0,(hash+j*.27)*Math.PI*2,(hash-.5)*.25],scale:[.85,.9+hash*.22,.85]});}
      if(shore&&hash>.73){box(staging,ix+x+.10,-.46,iy+y-.05,.82,.13,.84,'#9aa597');}
      
-     if(shore&&hash>.50)ball(staging,ix+x+.1,-.34,iy+y+.15,.51,.36,.50,'#a8b3a5');
+     if(shore&&hash>.50)root.LWAssetRenderer.createItem(artKit,staging,'shore-rock','world',{position:[ix+x+.1,-.52,iy+y+.15],rotation:[0,hash*Math.PI*2,0],scale:[.9+hash*.16,.9+hash*.10,.9+hash*.16]});
      if(!path&&!clear&&hash>.60&&!occupied.has((ix+x)+','+(iy+y))){for(let n=0;n<3;n++){const a=ix+x-.29+n*.2,b=iy+y+Math.sin(n+x)*.28;piece(staging,'cone',a,.075,b,.025,.16,.025,'#86a572');if(hash>.84)root.LWAssetRenderer.createItem(artKit,staging,'wildflower','world',{position:[a,0,b],rotation:[0,(hash+n*.1)*6.283,0],scale:[.9+(hash%1)*.2,.9+(hash%1)*.2,.9+(hash%1)*.2]});}}
     }
    }
@@ -101,7 +99,7 @@
     else if(['stone','ore','clay'].includes(n.kind)&&n.stock===0)model='depleted';
     if(root.LWAssets.item(n.kind)?.models?.[model])root.LWAssetRenderer.createItem(artKit,staging,n.kind,model,{position:[n.x,0,n.y],rotation,scale,materials});
    }
-   // Buildings remain separate small groups so working doors animate independently.   // Buildings remain separate small groups so working doors animate independently.
+   // Buildings remain separate small groups so working doors animate independently.
    for(const b of s.buildings){const rendered=root.LWAssetRenderer.createBuilding(artKit,staging,b,this.doors,this.rotors);
     if(rendered.smoke){rendered.root.updateMatrixWorld(true);const origin=new T.Vector3(...rendered.smoke.position);rendered.root.localToWorld(origin);for(let j=0;j<3;j++){const smoke=piece(this.motionRoot,'ball',origin.x,origin.y+j*.18,origin.z,.08,.07,.08,'#edf0de',0,{transparent:true,opacity:.25,depthWrite:false});smoke.castShadow=false;this.smokeParticles.push({mesh:smoke,building:b,j,origin,always:!!rendered.smoke.always});}}
     piece(staging,'cylinder',b.x,.044,b.y,.74,.006,.66,'#526f57',0,{transparent:true,opacity:.16,depthWrite:false});
@@ -111,12 +109,12 @@
      for(const x of[-.75,.75]){box(t,x,.22,.65,.055,.42,.055,'#aa9269');box(t,x,.25,.35,.055,.05,.62,'#cab087');}
     }
    }
-   for(const n of s.nodes)if(n.kind==='wood')   for(const n of s.nodes)if(n.kind==='wood')piece(staging,'cylinder',n.x+.12,.043,n.y+.08,.65,.006,.48,'#526f57',0,{transparent:true,opacity:.16,depthWrite:false});
+   for(const n of s.nodes)if(n.kind==='wood')piece(staging,'cylinder',n.x+.12,.043,n.y+.08,.65,.006,.48,'#526f57',0,{transparent:true,opacity:.16,depthWrite:false});
    staging.updateMatrixWorld(true);
    for(const d of this.doors.values()){this.motionRoot.attach(d.group);d.closedAngle=d.group.rotation.y;}
    for(const r of this.rotors){this.motionRoot.attach(r.group);r.startAngle=r.group.rotation[r.axis];}
    this.staticRoot.add(batch(staging));this.staticRevision++;this.invalidate();
-   this.geometryKey=JSON.stringify([root.LWWorldProfile.hash,s.estate.islands,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);this.marker.visible=false;
+   this.geometryKey=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,s.estate.islands,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);this.marker.visible=false;
   }
   draw(time,dt){if(this.contextLost)return;const started=performance.now();this.time=time;this.expireResponses();const e=this.engine,s=e.s,reduced=s.settings.reducedMotion;
    if(this.lastState!==s){this.resetPresentation();this.lastState=s;}
@@ -124,7 +122,7 @@
    if(!this.running&&!this.forceDraw&&this.renderKey===frameKey){this.skippedFrames++;return;}
    this.forceDraw=false;this.renderKey=frameKey;if(this.running)this.visualTime+=Math.min(.10,Math.max(0,dt));const motion=this.visualTime;
    
-   const key=JSON.stringify([root.LWWorldProfile.hash,s.estate.islands,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);if(key!==this.geometryKey)this.rebuild();
+   const key=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,s.estate.islands,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);if(key!==this.geometryKey)this.rebuild();
    if(s.settings.follow&&e.selected&&!e.selected.activeQuest&&!this.contextChoosing){const sample=this.motion.sample(e.selected,s.simTime,this.presentationAlpha,this.running),p=this.toScreen(sample.x,sample.z),ease=reduced?1:1-Math.exp(-Math.max(0,dt)*3);this.camera.x+=(this.canvas.width/2-p.x)*ease;this.camera.y+=(this.canvas.height*.50-p.y)*ease;}
    this.syncCamera();const indoorCounts=new Map(),labelEntries=[];this.actorAnchors.clear();for(const c of e.creatures){let v=this.actors.get(c.id),eq=JSON.stringify([c.equipment,root.LWFidelity.revision()]);if(!v||v.key!==eq){if(v)this.dynamicRoot.remove(v.root);v=creature(this.dynamicRoot,c);this.actors.set(c.id,v);}v.root.visible=!c.activeQuest;if(c.activeQuest)continue;
     const t=c.task,buildingId=t?.phase==='work'&&(t.insideBuildingId||(t.target&&s.buildings.find(b=>e.isIndoor(b)&&b.x===t.target.x&&b.y===t.target.y)?.id)),b=buildingId&&s.buildings.find(b=>b.id===buildingId),inside=b?b.id:null;
@@ -157,7 +155,7 @@
    this.renderPlans();this.renderer.render(this.scene,this.cam);this.labelLayer.paint(labelEntries,this.canvas.width,this.canvas.height,this.camera.z);this.paintResponses();this.drawLens();this.drawFeedback();this.frameCount++;this.lastFrameMs=performance.now()-started;
   }
   renderPlans(){const sig=JSON.stringify(this.engine.allOrders().filter(o=>o.type==='build').map(o=>[o.id,o.x,o.y,o.kind,o.stage]));if(sig!==this.planKey){if(this.plans)this.scene.remove(this.plans);this.plans=new T.Group();this.scene.add(this.plans);for(const o of this.engine.allOrders().filter(o=>o.type==='build')){box(this.plans,o.x,.05,o.y,1.0,.04,1.0,'#d8c596');for(const[dx,dy]of[[-.45,-.45],[.45,-.45],[.45,.45],[-.45,.45]])box(this.plans,o.x+dx,.18,o.y+dy,.05,.36,.05,'#c3a473');if(o.stage>0)box(this.plans,o.x,.22,o.y,.72,.35,.72,'#b2b5a0');}this.planKey=sig;}}
-  drawLens(){this.lens??=document.createElement('div');if(!this.lens.parentElement){this.lens.className='v10-lens';this.labels.appendChild(this.lens);}const wanted=root.LWWorldContent.building(this.placement)?.requiresNode;const active=this.resourceLens||!!this.placement;this.lens.hidden=!active;if(!active)return;const sig=JSON.stringify([this.camera,this.canvas.width,this.canvas.height,this.placement,this.engine.s.nodes.map(n=>[n.id,n.stock])]);if(sig===this.lensKey)return;this.lensKey=sig;this.lens.replaceChildren();for(const n of this.engine.s.nodes){if(wanted&&n.kind!==wanted)continue;const d=root.LWWorldContent.node(n.kind);if(!d)continue;const p=this.toScreen(n.x,n.y,n.kind==='wood'?2:.25);if(p.x<0||p.x>this.canvas.width||p.y<60||p.y>this.canvas.height-70)continue;const b=document.createElement('span');b.style.transform=`translate(${p.x}px,${p.y}px)`;b.textContent=wanted?'Build here':d.mode==='finite'?n.stock+' '+(d.name||n.kind):d.name+' ∞';this.lens.appendChild(b);}}
+  drawLens(){this.lens??=document.createElement('div');if(!this.lens.parentElement){this.lens.className='v10-lens';this.labels.appendChild(this.lens);}const wanted=root.LWWorldContent.building(this.placement)?.requiresNode;const active=this.resourceLens||!!this.placement;this.lens.hidden=!active;if(!active)return;const sig=JSON.stringify([this.camera,this.canvas.width,this.canvas.height,this.placement,this.engine.s.nodes.map(n=>[n.id,n.stock])]);if(sig===this.lensKey)return;this.lensKey=sig;this.lens.replaceChildren();for(const n of this.engine.s.nodes){if(wanted&&n.kind!==wanted)continue;const d=root.LWWorldContent.node(n.kind);if(!d)continue;const p=this.toScreen(n.x,n.y,root.LWAssets.item(n.kind)?.metadata?.worldHitHeight||.25);if(p.x<0||p.x>this.canvas.width||p.y<60||p.y>this.canvas.height-70)continue;const b=document.createElement('span');b.style.transform=`translate(${p.x}px,${p.y}px)`;b.textContent=wanted?'Build here':d.mode==='finite'?n.stock+' '+(d.name||n.kind):d.name+' ∞';this.lens.appendChild(b);}}
   drawFeedback(){this.feedback??=document.createElement('div');if(!this.feedback.parentElement){this.feedback.className='v10-world-feedback';this.labels.appendChild(this.feedback);}this.feedback.hidden=!this.bubble||this.bubble.time<this.time;if(!this.feedback.hidden){const a=this.engine.creatures.find(c=>c.id===this.bubble.actorId&&!c.activeQuest);if(!a){this.feedback.hidden=true;return;}const anchor=this.creatureAnchor(a.id);const p=this.toScreen(anchor?.x??a.creature.x,anchor?.z??a.creature.y,1.55);this.feedback.style.transform=`translate(${p.x}px,${p.y-22}px) translate(-50%,-100%)`;this.feedback.textContent=this.bubble.text;}}
   creatureAnchor(id){return this.actorAnchors.get(id)||null;}
   diagnostics(){return{labels:this.labelLayer.diagnostics(),renderer:this.mode,quality:this.quality,renderedFrames:this.frameCount,skippedFrames:this.skippedFrames,lastFrameMs:+(this.lastFrameMs||0).toFixed(2),software:this.renderer.diagnostics?.(),drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,islands:this.engine.s.estate.islands.length};}
