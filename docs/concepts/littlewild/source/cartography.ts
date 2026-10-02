@@ -245,6 +245,8 @@
       const e = Composition.constructThrough('cartography',previous.export().state);
       if (name !== 'createWorldDemo') return e;
       e.s.progression.research['blueprint-map-table'] = true;
+      e.s.progression.research['discovery-1'] = true;
+      e.s.progression.research['discovery-2'] = true;
       e.s.progression.features.discovery = Math.max(2, e.s.progression.features.discovery || 0);
       for (let y = 8; y <= 15 && !e.mapTable(); y++) for (let x = 5; x <= 14 && !e.mapTable(); x++) {
         if (!e.placementIssue('map_table', x, y)) e.s.buildings.push({id: 'b' + e.s.nextId++, kind: 'map_table', x, y, level: 1, quality: 75, stock: 0, regen: 0});
