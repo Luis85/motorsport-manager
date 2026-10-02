@@ -2036,6 +2036,26 @@
           "note": "Numerical tuning for the bounded rival planning algorithm."
         },
         {
+          "prefix": "/people_policy",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/campaign/people_policy.gd",
+            "scripts/domain/campaign/people_development.gd",
+            "scripts/application/campaign/people_transaction.gd"
+          ],
+          "note": "Numerical recruitment, development and morale tuning consumed from the frozen campaign profile."
+        },
+        {
+          "prefix": "/supply_policy",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/campaign/supply_policy.gd",
+            "scripts/domain/campaign/supply_network.gd",
+            "scripts/application/campaign/supply_transaction.gd"
+          ],
+          "note": "Numerical engineering-evidence confidence tuning consumed from the frozen campaign profile."
+        },
+        {
           "prefix": "/event_finance",
           "classification": "sporting",
           "consumers": [
@@ -2073,6 +2093,16 @@
         "/id",
         "/kind",
         "/name",
+        "/people_policy/counter_offer_ratio_bps",
+        "/people_policy/morale_overload_delta",
+        "/people_policy/morale_safe_delta",
+        "/people_policy/morale_safe_load_bps",
+        "/people_policy/new_hire_morale",
+        "/people_policy/new_hire_trust",
+        "/people_policy/other_gain",
+        "/people_policy/productive_gain",
+        "/people_policy/productive_load_max_bps",
+        "/people_policy/productive_load_min_bps",
         "/player/driver_contract/allocation_bps",
         "/player/driver_contract/duration_days",
         "/player/driver_contract/pay_interval_days",
@@ -2111,6 +2141,11 @@
         "/series/points_by_position/*",
         "/series/season_id",
         "/series/series_id",
+        "/supply_policy/initial_confidence_bps",
+        "/supply_policy/max_confidence_bps",
+        "/supply_policy/observation_gain_bps",
+        "/supply_policy/spread_floor_bps",
+        "/supply_policy/spread_scale_bps",
         "/weekend_id"
       ]
     }
@@ -2265,6 +2300,18 @@
       "symbol": "LEGACY",
       "classification": "contract",
       "note": "Frozen rival planner coefficients used only by older rival records without authored policy."
+    },
+    {
+      "file": "scripts/domain/campaign/people_policy.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Frozen pre-content people-development tuning used only when a checkpoint has no authored campaign policy."
+    },
+    {
+      "file": "scripts/domain/campaign/supply_policy.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Frozen pre-content supply-evidence tuning used only when a checkpoint has no authored campaign policy."
     }
   ]
 }
