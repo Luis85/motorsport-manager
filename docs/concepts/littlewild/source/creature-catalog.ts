@@ -56,48 +56,84 @@
  }
  function validate(input:unknown):Definition{
   if(!plain(input))fail('entry must be an object');
-  const raw=input as Plain;
+  const raw:Plain=input;
   const rootKeys=['format','schemaVersion','id','name','description','defaultPersonality','personalities','names','movement','rng','state','ecs'];
   if(Object.keys(raw).length!==rootKeys.length||rootKeys.some(key=>!Object.hasOwn(raw,key)))fail('invalid root schema');
-  const rawId=raw.id;
-  if(raw.format!=='littlewild-creature'||raw.schemaVersion!==1||typeof rawId!=='string'||!safeId.test(rawId))fail('invalid identity');
-  if(typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>80||typeof raw.description!=='string'||!raw.description.trim()||raw.description.length>500)fail(rawId+' invalid display text');
+
+  const idValue=raw.id;
+  if(typeof idValue!=='string'||!safeId.test(idValue))fail('invalid identity');
+  const definitionId:string=idValue;
+  if(raw.format!=='littlewild-creature'||raw.schemaVersion!==1)fail(definitionId+' invalid format/version');
+
+  const nameValue=raw.name,descriptionValue=raw.description;
+  if(typeof nameValue!=='string'||!nameValue.trim()||nameValue.length>80||typeof descriptionValue!=='string'||!descriptionValue.trim()||descriptionValue.length>500)fail(definitionId+' invalid display text');
+
   const personalityValues=raw.personalities;
-  if(!Array.isArray(personalityValues)||!personalityValues.length||personalityValues.length>32||personalityValues.some((value:unknown)=>typeof value!=='string'||!safeId.test(value))||new Set(personalityValues).size!==personalityValues.length)fail(rawId+' invalid personalities');
-  const personalities=personalityValues as string[];
-  if(typeof raw.defaultPersonality!=='string'||!personalities.includes(raw.defaultPersonality))fail(rawId+' invalid default personality');
+  if(!Array.isArray(personalityValues)||!personalityValues.length||personalityValues.length>32)fail(definitionId+' invalid personalities');
+  const personalityIds:string[]=personalityValues.map((value:unknown)=>{
+   if(typeof value!=='string'||!safeId.test(value))return fail(definitionId+' invalid personality identifier');
+   return value;
+  });
+  if(new Set(personalityIds).size!==personalityIds.length)fail(definitionId+' duplicate personalities');
+  const defaultPersonalityValue=raw.defaultPersonality;
+  if(typeof defaultPersonalityValue!=='string'||!personalityIds.includes(defaultPersonalityValue))fail(definitionId+' invalid default personality');
+
   const nameValues=raw.names;
-  if(!Array.isArray(nameValues)||!nameValues.length||nameValues.length>64||nameValues.some((value:unknown)=>typeof value!=='string'||!value.trim()||value.length>24)||new Set(nameValues).size!==nameValues.length)fail(rawId+' invalid name pool');
+  if(!Array.isArray(nameValues)||!nameValues.length||nameValues.length>64)fail(definitionId+' invalid name pool');
+  const names:string[]=nameValues.map((value:unknown)=>{
+   if(typeof value!=='string'||!value.trim()||value.length>24)return fail(definitionId+' invalid creature name');
+   return value;
+  });
+  if(new Set(names).size!==names.length)fail(definitionId+' duplicate creature names');
+
   const movementValue=raw.movement;
-  if(!plain(movementValue)||!bounded(movementValue.baseSpeed,.05,8)||!bounded(movementValue.bondThreshold,0,100)||!bounded(movementValue.bondedSpeedBonus,0,4))fail(rawId+' invalid movement tuning');
+  if(!plain(movementValue))fail(definitionId+' invalid movement tuning');
+  const movement:Plain=movementValue;
+  if(!bounded(movement.baseSpeed,.05,8)||!bounded(movement.bondThreshold,0,100)||!bounded(movement.bondedSpeedBonus,0,4))fail(definitionId+' invalid movement tuning');
+
   const rngValue=raw.rng;
-  if(!plain(rngValue)||!integer(rngValue.base,0,4294967295)||!integer(rngValue.stride,1,4294967295))fail(rawId+' invalid RNG tuning');
+  if(!plain(rngValue))fail(definitionId+' invalid RNG tuning');
+  const rng:Plain=rngValue;
+  if(!integer(rng.base,0,4294967295)||!integer(rng.stride,1,4294967295))fail(definitionId+' invalid RNG tuning');
+
   const stateValue=raw.state;
-  if(!plain(stateValue))fail(rawId+' invalid state');
-  const state=stateValue as Plain,personalFieldValues=state.personalFields;
-  if(!Array.isArray(personalFieldValues)||!personalFieldValues.length||personalFieldValues.some((value:unknown)=>typeof value!=='string'||!safeField.test(value))||new Set(personalFieldValues).size!==personalFieldValues.length)fail(rawId+' invalid personal fields');
-  const personalFields=personalFieldValues as string[],defaultsValue=state.defaults,modesValue=state.modes;
-  if(!plain(defaultsValue)||!plain(modesValue)||!plain(modesValue.founder)||!plain(modesValue.arrival))fail(rawId+' invalid state templates');
-  const defaults=defaultsValue as Plain;
-  for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(rawId+' personal default missing '+key);
-  for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(rawId+' creature default missing '+key);
+  if(!plain(stateValue))fail(definitionId+' invalid state');
+  const state:Plain=stateValue;
+  const personalFieldValues=state.personalFields;
+  if(!Array.isArray(personalFieldValues)||!personalFieldValues.length)fail(definitionId+' invalid personal fields');
+  const personalFields:string[]=personalFieldValues.map((value:unknown)=>{
+   if(typeof value!=='string'||!safeField.test(value))return fail(definitionId+' invalid personal field');
+   return value;
+  });
+  if(new Set(personalFields).size!==personalFields.length)fail(definitionId+' duplicate personal fields');
+
+  const defaultsValue=state.defaults,modesValue=state.modes;
+  if(!plain(defaultsValue)||!plain(modesValue))fail(definitionId+' invalid state templates');
+  const defaults:Plain=defaultsValue,modes:Plain=modesValue;
+  if(!plain(modes.founder)||!plain(modes.arrival))fail(definitionId+' invalid spawn modes');
+  for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(definitionId+' personal default missing '+key);
+  for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(definitionId+' creature default missing '+key);
+
   const ecsValue=raw.ecs;
-  if(!plain(ecsValue))fail(rawId+' invalid ECS bindings');
-  const componentValues=ecsValue.components;
-  if(!Array.isArray(componentValues)||componentValues.length<5||componentValues.length>32)fail(rawId+' invalid ECS bindings');
-  const components=componentValues as unknown[],types=new Set<string>(),fields=new Set<string>();
-  for(const inputBinding of components){
-   if(!plain(inputBinding))fail(rawId+' invalid ECS binding');
-   const binding=inputBinding as Plain,typeValue=binding.type,fieldValue=binding.field;
-   if(Object.keys(binding).length!==2||typeof typeValue!=='string'||typeof fieldValue!=='string')fail(rawId+' invalid ECS binding');
-   const type=typeValue as string,field=fieldValue as string;
-   if(!safeComponent.test(type)||!Object.hasOwn(defaults,field)||types.has(type)||fields.has(field))fail(rawId+' invalid or duplicate ECS binding');
-   if(!plain(defaults[field]))fail(rawId+' ECS field '+field+' must default to an object');
-   types.add(type);fields.add(field);
+  if(!plain(ecsValue))fail(definitionId+' invalid ECS bindings');
+  const ecs:Plain=ecsValue,componentValues=ecs.components;
+  if(!Array.isArray(componentValues)||componentValues.length<5||componentValues.length>32)fail(definitionId+' invalid ECS bindings');
+  const types=new Set<string>(),fields=new Set<string>();
+  for(const inputBinding of componentValues){
+   if(!plain(inputBinding))fail(definitionId+' invalid ECS binding');
+   const binding:Plain=inputBinding,typeValue=binding.type,fieldValue=binding.field;
+   if(Object.keys(binding).length!==2||typeof typeValue!=='string'||typeof fieldValue!=='string')fail(definitionId+' invalid ECS binding');
+   const componentType:string=typeValue,fieldName:string=fieldValue;
+   if(!safeComponent.test(componentType)||!Object.hasOwn(defaults,fieldName)||types.has(componentType)||fields.has(fieldName))fail(definitionId+' invalid or duplicate ECS binding');
+   if(!plain(defaults[fieldName]))fail(definitionId+' ECS field '+fieldName+' must default to an object');
+   types.add(componentType);fields.add(fieldName);
   }
-  for(const type of requiredComponents)if(!types.has(type))fail(rawId+' missing ECS component '+type);
-  dataOnly(raw,rawId);
-  const value=clone(raw) as unknown as Definition;deepFreeze(value);return value;
+  for(const type of requiredComponents)if(!types.has(type))fail(definitionId+' missing ECS component '+type);
+
+  dataOnly(raw,definitionId);
+  const value=clone(raw) as unknown as Definition;
+  deepFreeze(value);
+  return value;
  }
 
  if(!Array.isArray(source)||!source.length||source.length>32)fail('bundled definition list is missing or invalid');
