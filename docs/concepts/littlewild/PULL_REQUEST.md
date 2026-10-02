@@ -4,7 +4,7 @@
 
 This change remains confined to `docs/concepts/littlewild/` and its dedicated verification workflow. Native Motorsport Manager gameplay code is not modified.
 
-Littlewild v15 provides reusable scenario packs, compact world-facing UI, and a compatibility-preserving ECS migration through M6. M1–M4 establish actor, activity, physical-world, economy, quest, and progression boundaries. M5 replaces the load-order constructor chain with one stable facade, explicit composition, actor-scoped state views, an inspectable simulation pipeline, and a fail-closed command router. M6 completes the plan with versioned simulation profiles, compiled composition identity, explicit migrations, and deterministic portable-story compatibility.
+Littlewild v15 provides reusable scenario packs, compact world-facing UI, a compatibility-preserving ECS migration through M6, and a data-driven bundled 3D asset layer. M1–M4 establish actor, activity, physical-world, economy, quest, and progression boundaries. M5 replaces the load-order constructor chain with one stable facade, explicit composition, actor-scoped state views, an inspectable simulation pipeline, and a fail-closed command router. M6 completes the plan with versioned simulation profiles, compiled composition identity, explicit migrations, and deterministic portable-story compatibility.
 
 ## Implemented architecture
 
@@ -17,6 +17,8 @@ Littlewild v15 provides reusable scenario packs, compact world-facing UI, and a 
 - Independent experience and simulation-profile fingerprints for stale-review detection.
 - Atomic activation and rollback across Base, Adventure, World, Growth, simulation profile, world profile, and imported state.
 - Data-only imports: JSON cannot register systems, handlers, commands, callbacks, modules, source code, or arbitrary components.
+- A bundled 3D asset catalog with one folder per building/item/actor model; imported scenarios cannot register or replace assets.
+- Generic primitive-scene rendering with data-authored materials, model variants, actor sockets, door/rotor/smoke anchors and asset-derived hit bounds.
 
 Native state remains version 8. ECS worlds, schedulers, profiles, composition descriptors, state views, command manifests, renderer state, and UI state remain transient.
 
@@ -38,11 +40,11 @@ npx playwright install chromium
 npm run verify
 ```
 
-Implementation head `1ebb80e513d47df06060321bbede3499792ef0cf` passed **1,040 / 1,040 checks across 30 suites** in workflow run `36974329454`, including **105 / 105 browser contracts**. The rebuilt standalone SHA-256 is `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c`.
+Implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2` passed **1,053 / 1,053 checks across 31 suites** in workflow run `37034722607`, including **8 / 8 asset-catalog checks** and **105 / 105 browser contracts**. The rebuilt standalone SHA-256 is `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5`.
 
 The previous pre-TypeScript head passed **1,006 / 1,006 checks across 27 suites**, including 105 browser checks. That result and its former standalone hash are retained as a regression baseline only. Current-head evidence is `verification/v15/gate-results.json` produced by the TypeScript workflow; do not substitute the historical baseline for a current run.
 
-The current source inventory contains 99 authored TypeScript/CTS files, 57 machine-owned runtime modules, and no project-authored JS/CJS/Python executable files. `vendor/three.js` is the only retained JavaScript source and is third-party distribution code.
+The current source inventory contains 104 authored TypeScript/CTS files, 59 machine-owned runtime modules, **67 isolated 3D asset manifests** (24 buildings, 42 items, 1 actor), and no project-authored JS/CJS/Python executable files. `vendor/three.js` is the only retained JavaScript source and is third-party distribution code.
 
 ## Review path
 
@@ -50,4 +52,4 @@ Open `docs/concepts/littlewild/littlewild.html`, review a bundled scene under **
 
 ## Limits
 
-M6 does not create a general entity-definition or scripting language. System implementations, behavior handlers, command handlers, renderer rigs, island topology, and mature domain consequences remain compiled capabilities. Content registries still support one active experience per document. Hardware WebGL, physical devices, screen readers, human usability, and game balance are not verified by the automated gate.
+M6 does not create a general entity-definition or scripting language. System implementations, behavior handlers, command handlers, animation programs, island topology, and mature domain consequences remain compiled capabilities. Bundled model descriptors are data-driven, but external scenario packs cannot register model files or renderer code. Content registries still support one active experience per document. Hardware WebGL, physical devices, screen readers, human usability, and game balance are not verified by the automated gate.

@@ -4,13 +4,20 @@
   "status": "typescript-architecture-review-complete; verified",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 99,
-    "runtimeModules": 57,
+    "authoredTypeScriptFiles": 104,
+    "runtimeModules": 59,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
       "vendor/three.js"
     ],
-    "generatedJavaScriptDirectory": ".generated/"
+    "generatedJavaScriptDirectory": ".generated/",
+    "bundled3DAssets": {
+      "total": 67,
+      "buildings": 24,
+      "items": 42,
+      "actors": 1,
+      "root": "source/assets/"
+    }
   },
   "architecture": {
     "ownershipContract": "source/architecture/domain-map.json",
@@ -33,7 +40,8 @@
       "Domain/application code cannot depend on DOM, browser storage, network, wall clock, or ambient RNG.",
       "Domain compatibility globals are explicitly allowlisted.",
       "ECS component payloads are behavior-free plain data.",
-      "Imported JSON cannot register executable systems, commands, callbacks, modules, or source code."
+      "Imported JSON cannot register executable systems, commands, callbacks, modules, or source code.",
+      "Bundled 3D assets are immutable data manifests; model geometry and rig sockets do not live in renderer branches."
     ]
   },
   "reviews": [
@@ -58,31 +66,33 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "verifiedImplementationHead": "1ebb80e513d47df06060321bbede3499792ef0cf",
-      "workflowRun": 36974329454,
+      "verifiedImplementationHead": "dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2",
+      "workflowRun": 37034722607,
       "status": "passed",
-      "passed": 1040,
-      "total": 1040,
-      "suites": 30,
+      "passed": 1053,
+      "total": 1053,
+      "suites": 31,
+      "assetChecks": 8,
       "browserChecks": 105,
-      "htmlSha256": "8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c",
-      "htmlBytes": 3986007,
-      "evidenceArtifact": "littlewild-ecs-verification"
+      "htmlSha256": "4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5",
+      "htmlBytes": 4123645,
+      "evidenceArtifact": "littlewild-ecs-verification",
+      "evidenceArtifactId": 11239001715
     }
   },
   "github": {
     "repository": "Luis85/motorsport-manager",
     "branch": "concept/littlewild-v15-world-ui",
     "pullRequest": 25,
-    "reviewedCodeHead": "1ebb80e513d47df06060321bbede3499792ef0cf",
-    "note": "The verified implementation head above passed the complete TypeScript/architecture/domain/schema/release/browser gate. Later documentation-only commits do not change runtime behavior."
+    "reviewedCodeHead": "dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2",
+    "note": "The verified implementation head above passed the complete TypeScript/architecture/asset/domain/schema/release/browser gate. Later documentation-only commits do not change runtime behavior."
   },
   "deliberateDebt": [
     "Four large compatibility adapters remain and should be decomposed incrementally behind parity fixtures.",
     "Strict semantic TypeScript checking is concentrated at architecture-critical seams; compatibility modules are migrated slice by slice.",
     "The global LW facade and process-global registries remain compatibility surfaces for the self-contained browser artifact.",
-    "Not every historical tuning literal is data-authored; new tuning must use validated profiles/content contracts.",
-    "Generic ECS structural changes are atomic, while domain value transactions retain explicit preflight/rollback responsibility."
+    "Generic ECS structural changes are atomic, while domain value transactions retain explicit preflight/rollback responsibility.",
+    "3D assets are build-time bundled and data-driven, but external scenario packs cannot yet import or replace asset manifests; that requires a separately designed trust/versioning policy."
   ],
   "limits": [
     "Hardware WebGL/GPU behavior is not verified by headless browser tests.",

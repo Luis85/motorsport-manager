@@ -5,7 +5,7 @@
 - Repository: `Luis85/motorsport-manager`
 - Pull request: **#25 — Littlewild v15: data-driven worlds and ECS M1–M6**
 - Review branch: `concept/littlewild-v15-world-ui`
-- Verified implementation head for this pass: `1ebb80e513d47df06060321bbede3499792ef0cf`
+- Verified implementation head for this pass: `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2`
 - Scope: `docs/concepts/littlewild/` plus the dedicated Littlewild verification workflow
 - Native Motorsport Manager Godot gameplay remains outside this isolated Littlewild refactor.
 
@@ -109,6 +109,24 @@ The build transpiles the compatibility modules without semantic drift, while `ts
 
 The ECS/command kernel and simulation pipeline/profile contracts were rewritten with explicit types rather than suppressions. The remaining mature compatibility modules are a staged typing/decomposition backlog, not claimed as fully strict.
 
+### P1 — 3D model ownership was still interleaved with renderer code
+
+The architecture correctly classified the renderer as presentation, but building meshes, resource props, carried items and the companion body/equipment rig were still constructed through hard-coded renderer branches. That made visual refinement risky and forced renderer edits for ordinary model work.
+
+**Resolution**
+
+- Added `source/assets/buildings/<id>/asset.json`, `items/<id>/asset.json`, and `actors/<id>/asset.json`.
+- Added 67 isolated manifests: 24 building assets, 42 item/environment/equipment assets, and the Sproutling actor.
+- Added `asset-catalog.ts` for validation/freeze/indexing and `asset-renderer.ts` as the generic primitive-scene interpreter.
+- Building manifests now own complete meshes plus optional door, rotor and smoke anchors.
+- Item manifests can expose `world`, `depleted`, `carry`, and `equipped` variants.
+- The actor manifest owns body geometry, named rig nodes and equipment/carry sockets; `world-fidelity.ts` is reduced to pose/expression/attachment behavior.
+- World hit heights and static-geometry invalidation now read asset metadata/revisions.
+- Refined the current models with clearer silhouettes and purpose cues: differentiated homes/workplaces, dedicated study/loom/smelter interiors, improved market/well/waterwheel/mill/observatory props, richer resources, carried goods, equipment, shoreline props and biome tree variants.
+- Asset JSON remains build-time bundled data. Scenario/story imports cannot add systems, code or arbitrary asset manifests.
+
+The asset gate verifies path/identity alignment, model coverage for every gameplay building/item/equipment definition, actor rig/socket completeness, data-only payloads and catalog immutability.
+
 ### P1 — renderer ownership was mislabeled as application logic
 
 The first DDD ownership pass mapped `world.ts` as an application compatibility adapter. Source inspection showed that the module is the isometric canvas renderer/view: it owns canvas creation, resize observation, camera/hover/placement presentation and browser globals. Keeping it in the application layer would either fail the platform-boundary gate or normalize presentation leakage.
@@ -197,12 +215,13 @@ The configuration path is bounded and testable rather than “JSON can do anythi
 
 ## Testing assessment
 
-The verified TypeScript implementation head passed **1,040 / 1,040 checks across 30 suites**, including **105 / 105 browser contracts**. The previous pre-TypeScript head passed **1,006 / 1,006 across 27 suites** and is retained only as a behavioral regression baseline.
+The verified TypeScript implementation head passed **1,053 / 1,053 checks across 31 suites**, including **8 / 8 dedicated asset-catalog checks** and **105 / 105 browser contracts**. The previous pre-TypeScript head passed **1,006 / 1,006 across 27 suites** and is retained only as a behavioral regression baseline.
 
 The TypeScript pass adds or strengthens:
 
 - strict compiler checks for the architecture kernel;
-- **14 architecture/DDD checks**;
+- **16 architecture/DDD checks**;
+- 8 dedicated 3D asset catalog/coverage/immutability checks;
 - ECS behavior-free-component tests;
 - invalid query/system-shape tests;
 - TypeScript-only source inventory checks;
@@ -213,7 +232,7 @@ The TypeScript pass adds or strengthens:
 - existing ECS/domain/compatibility/schema/CLI/release suites executed against compiler output;
 - existing 105 browser interaction/layout contracts ported to Playwright TypeScript.
 
-The authoritative evidence is `verification/v15/gate-results.json` produced by `npm run verify`. Workflow run `36974329454` recorded status `passed`, **1,040 / 1,040**, and standalone SHA-256 `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c` for implementation head `1ebb80e513d47df06060321bbede3499792ef0cf`.
+The authoritative evidence is `verification/v15/gate-results.json` produced by `npm run verify`. Workflow run `37034722607` recorded status `passed`, **1,053 / 1,053**, and standalone SHA-256 `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5` for implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2`.
 
 ## Deliberate remaining debt
 

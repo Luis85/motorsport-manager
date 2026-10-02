@@ -14,16 +14,17 @@ The gate compiles all authored TypeScript into `.generated/`, rebuilds `littlewi
 
 ### Verified TypeScript head
 
-Implementation head `1ebb80e513d47df06060321bbede3499792ef0cf` passed **1,040 / 1,040 checks across 30 suites** in GitHub Actions run `36974329454`.
+Implementation head `dc90003d3ff7b2ac8f6ffaa0d476d3cf3c2ba3a2` passed **1,053 / 1,053 checks across 31 suites** in GitHub Actions run `37034722607`.
 
 - strict TypeScript gate: passed;
-- architecture/DDD gate: **14 / 14**;
-- deterministic/domain/regression/schema/release checks before browser: **935 / 935**;
+- architecture/DDD gate: **16 / 16**;
+- bundled 3D asset catalog: **8 / 8**;
+- deterministic/domain/regression/schema/release checks before browser: **948 / 948**;
 - main Playwright browser suite: **89 / 89**;
 - focused browser contracts: **16 / 16**;
 - total browser contracts: **105 / 105**;
-- standalone SHA-256: `8c86ebff29fe3ae28a34bbaa7ce3ed158fa50dd1b2c3c152263dbf6db124364c`;
-- standalone bytes: **3,986,007**.
+- standalone SHA-256: `4c736366ece17e34ee52d2a51d7432de3ce281e31fde97d4d738e96738d0ede5`;
+- standalone bytes: **4,123,645**.
 
 CI uses the committed lockfile and `npm ci`. Browser screenshot capture is opt-in with `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; screenshots are evidence, not functional gate requirements. The functional browser assertions remain mandatory.
 
@@ -66,7 +67,7 @@ Before the TypeScript/Clean Architecture polishing pass, the branch passed **1,0
 
 The M6 profile suites validate the complete `classic-v1` actor/economy rule document, exact `living-world-v1` compiled archetype order, deep immutability, deterministic fingerprints, per-engine profile capture, both bundled schema-2 packs, atomic profile/library rollback, and deterministic continuation through envelope-10 export/import. They also validate the deliberate schema-1 pack and envelope-9 story migrations and reject profile fingerprint tampering, ambiguous legacy documents, unsupported versions, executable values, unknown systems, reordered systems, and behavior-shaped JSON.
 
-The scenario suite validates both packs and four starting scenes, reversed JSON property order, reversible library and simulation-profile staging, unknown fields, malformed input, world references, disconnected layouts, protected sites, fresh and captured states, corruption/stale-review checks, and exact simulation continuation. It compares 4,761 terrain cells with the authentic v14 geometry fixture and six generated legacy layouts. Separate navigation foundations perform 8,432 route comparisons; these are subcases, not additional inflated test totals.
+The asset suite validates all isolated `source/assets/` folders, unique category/ID identities, complete visual coverage for every gameplay building/item/equipment definition, actor rig/socket references, data-only payloads and catalog immutability. The scenario suite validates both packs and four starting scenes, reversed JSON property order, reversible library and simulation-profile staging, unknown fields, malformed input, world references, disconnected layouts, protected sites, fresh and captured states, corruption/stale-review checks, and exact simulation continuation. It compares 4,761 terrain cells with the authentic v14 geometry fixture and six generated legacy layouts. Separate navigation foundations perform 8,432 route comparisons; these are subcases, not additional inflated test totals.
 
 Legacy regression suites cover physical logistics, work interruption, RPG/quests, housing, prestige, map gating, market deliveries, deterministic restoration, and old save/schema compatibility. Six-creature stress scenarios retain their source-defined durations in the detailed JSON logs. The automated earned-progression controller completes its first expansion and physical market sale through normal commands; this is reachability evidence, not human pacing validation.
 

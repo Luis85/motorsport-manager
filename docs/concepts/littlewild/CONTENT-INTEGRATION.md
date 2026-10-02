@@ -6,7 +6,7 @@
 
 **No content-format change in v13.** Base, Adventure, World and Growth libraries and schemas are byte-identical to the supplied v12 defaults. Existing authoring exports, validators and examples remain applicable. Story format remains 8.
 
-Equipment `visual` and `color` fields are now used more faithfully by the procedural companion presentation. No new graphic asset-file import format is promised. Creature silhouettes and decorative detail are renderer code, not new game-definition collections.
+Equipment `visual` and `color` fields remain gameplay-content hints, but the concrete bundled equipment meshes now live in the 3D asset catalog. PR25 adds an internal `littlewild-3d-asset` manifest for build-time assets; this is **not** a new scenario/content import format. Creature geometry, carried-item meshes, equipment meshes, building models and their visual anchors are no longer embedded in the renderer.
 
 The new pause preference is separate device configuration (`littlewild.interface.v1`) and is not a content patch or story field. Exchanging a library does not alter that preference.
 
@@ -18,7 +18,7 @@ The guide below describes the existing supported authoring contracts. Earlier ve
 
 V12 is a presentation/input release. Base, Adventure, World and Growth definitions and schemas are **byte-identical to v11**. Portable story format remains 8; Growth schema remains 2. No content authoring migration is required. The original content-authoring kit remains compatible.
 
-The tile menu uses existing runtime definitions and validators; it is not a separate content file. External definitions cannot inject executable context-menu handlers. Visual quality is a local browser preference. Third-party 3D asset ingestion, textures, shader graphs and a separate visual-asset registry are not introduced in this release.
+The tile menu uses existing runtime definitions and validators; it is not a separate content file. External definitions cannot inject executable context-menu handlers. Visual quality is a local browser preference. A **bundled, immutable visual-asset registry** now serves engine-owned models from `source/assets/`; third-party runtime 3D ingestion, textures, shader graphs and scenario-supplied assets are still not introduced.
 
 The following is the unchanged v11 content contract, retained for reference:
 

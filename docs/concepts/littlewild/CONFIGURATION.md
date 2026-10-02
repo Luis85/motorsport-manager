@@ -4,7 +4,7 @@
 
 The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting and its authored starts. **Littlewild is a bundled showcase**, alongside Emberworks.
 
-The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. Creature rigs, animation programs, world lighting, island dimensions and certain legacy narrative strings remain compiled.
+The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. **Bundled 3D model geometry, material roles, actor rig sockets and building animation anchors are declarative asset data under `source/assets/`.** Animation programs, world lighting, island dimensions and certain legacy narrative strings remain compiled.
 
 ## Supported configuration
 
@@ -48,7 +48,9 @@ node .generated/tools/simulation-profile-cli.cjs export my-profile.json
 npm run build -- --pack my-setting.pack.json --output my-setting.html
 ```
 
-TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, and bundles the chosen pack, runtime, compatibility libraries and Three.js into one offline HTML file. No runtime file server is required.
+TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, discovers and validates every `source/assets/{buildings,items,actors}/<id>/asset.json`, and bundles the chosen pack, immutable asset catalog, runtime, compatibility libraries and Three.js into one offline HTML file. No runtime file server is required.
+
+3D assets are a **build-time bundled catalog**, not part of scenario schema 2 or portable stories. This keeps user-imported world/scenario JSON data-only and prevents an imported pack from registering renderer behavior or executable asset loaders. See `ASSET-ARCHITECTURE.md`.
 
 ## Scene state is a precise snapshot
 
@@ -89,7 +91,7 @@ Fingerprints detect accidental changes and stale reviews. They are opaque non-cr
 
 ## Still required for a fully general framework
 
-A complete setting-neutral runtime would additionally need configurable capability/role bindings, arbitrary content-ID catalogs, extracted mechanics constants and narrative vocabulary, renderer/rig asset descriptors, and richer topologies. This release provides tested world/scene repurposing within the current systems. It does not advertise unimplemented generality or a visual world editor.
+A complete setting-neutral runtime would additionally need configurable capability/role bindings, arbitrary content-ID catalogs, extracted mechanics constants and narrative vocabulary, a supported external asset-pack/import policy, and richer topologies. The renderer/rig descriptor foundation itself now exists for bundled assets. This release provides tested world/scene repurposing within the current systems. It does not advertise unimplemented external asset ingestion or a visual world editor.
 
 ## Simulation profiles and ECS boundaries
 

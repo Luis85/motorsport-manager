@@ -31,7 +31,7 @@ npm run verify
 npm run verify -- --no-browser
 ```
 
-`typecheck` runs the strict TypeScript gate for the architecture kernel. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, then runs the generated Node and Playwright suites.
+`typecheck` runs the strict TypeScript gate for the architecture kernel. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
 
 ## Documentation
 
@@ -40,8 +40,9 @@ npm run verify -- --no-browser
 - `VERIFICATION.md`: this build's executed checks and limitations.
 - `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
+- `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
 
-This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, creature rigs and some legacy wording remain code. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions, animation programs and some legacy wording remain code. **3D model geometry, material roles, actor rig node names/sockets and building animation anchors are now bundled data** under `source/assets/`; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
 
 ## ECS refactor on PR #25
 
