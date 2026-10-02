@@ -81,9 +81,9 @@
   if(value!==null&&typeof value!=='string'&&typeof value!=='boolean'&&!(typeof value==='number'&&Number.isFinite(value)))fail(path+' contains a non-JSON value');
  }
  function deepFreeze(value:unknown):void{
-  if(!value||typeof value!=='object'||Object.isFrozen(value))return;
-  Object.freeze(value);
+  if(!value||typeof value!=='object')return;
   for(const entry of Object.values(value as Plain))deepFreeze(entry);
+  if(!Object.isFrozen(value))Object.freeze(value);
  }
  function merge(base:Plain,override:Plain):Plain{
   const out=clone(base);
