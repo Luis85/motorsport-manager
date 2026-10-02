@@ -5,7 +5,7 @@ extends RefCounted
 const KIND = "motorsport-manager-campaign-content"
 const VERSION = 1
 
-static func build(definition: Dictionary, race_initial: Dictionary) -> Dictionary:
+static func build(definition: Dictionary, race_initial: Dictionary, circuits: Dictionary) -> Dictionary:
 	var campaign = CampaignDefinition.from_record(definition)
 	if campaign == null or not race_initial is Dictionary:
 		return {}
@@ -15,19 +15,37 @@ static func build(definition: Dictionary, race_initial: Dictionary) -> Dictionar
 		"kind": KIND, "version": VERSION, "definition": campaign.to_record(),
 		"vehicle": race_initial.get("vehicle", ""),
 		"vehicle_definition": race_initial.get("vehicle_definition", {}).duplicate(true),
-		"race_options": options
+		"race_options": options, "circuits": circuits.duplicate(true),
+		"opening_track_hash": RaceStateValue.fingerprint(race_initial.get("track", {}))
 	}
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
 static func validate(data: Variant) -> String:
-	if not RaceStateValue.serializable(data) or not data is Dictionary or data.size() != 7:
+	if not RaceStateValue.serializable(data) or not data is Dictionary or data.size() != 9:
 		return "Campaign content snapshot has an unsupported shape."
 	if data.get("kind") != KIND or not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION):
 		return "Unsupported campaign content snapshot."
 	var campaign = CampaignDefinition.from_record(data.get("definition"))
 	if campaign == null:
 		return "Campaign content snapshot has an invalid campaign definition."
+	if not data.get("circuits") is Dictionary or not CampaignIdentity.valid_hash(data.get("opening_track_hash")):
+		return "Campaign content snapshot has an invalid circuit closure."
+	var campaign_record = campaign.to_record()
+	var expected_circuits = {}
+	for event in campaign_record.calendar:
+		expected_circuits[event.circuit_id] = true
+	var circuit_ids = data.circuits.keys(); circuit_ids.sort()
+	var expected_ids = expected_circuits.keys(); expected_ids.sort()
+	if circuit_ids != expected_ids:
+		return "Campaign circuit closure disagrees with its authored calendar."
+	for circuit_id in circuit_ids:
+		if not data.circuits[circuit_id] is Dictionary or not TrackDocument.validate(data.circuits[circuit_id]).is_empty():
+			return "Campaign circuit closure contains an invalid track document."
+	if not campaign_record.calendar.is_empty():
+		var first_id: String = campaign_record.calendar[0].circuit_id
+		if RaceStateValue.fingerprint(data.circuits[first_id]) != data.opening_track_hash:
+			return "Campaign opening race does not match the first authored circuit."
 	if not data.get("vehicle") is String or data.vehicle.is_empty() or not data.get("vehicle_definition") is Dictionary:
 		return "Campaign content snapshot has an invalid vehicle closure."
 	var vehicle = VehicleDefinition.from_record(data.vehicle_definition)
