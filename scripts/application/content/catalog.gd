@@ -84,8 +84,10 @@ func seal() -> Array:
 				if _records[id].has(key) and record(_records[id][key]).get("kind") != WeekendDefinition.OPTIONAL_REFERENCES[key]:
 					return _definition_error(id, "CONTENT_REFERENCE", "/" + key, "Choose an existing " + WeekendDefinition.OPTIONAL_REFERENCES[key] + " definition.")
 	var default_campaign_id = ""
+	var campaign_count = 0
 	for id in _records:
 		if _records[id].kind != "campaign": continue
+		campaign_count += 1
 		var campaign = campaign(id)
 		if campaign == null:
 			return _definition_error(id, "CONTENT_CAMPAIGN", "", "Campaign profile has invalid cross-field tuning.")
@@ -101,6 +103,9 @@ func seal() -> Array:
 			if not default_campaign_id.is_empty():
 				return _definition_error(id, "CONTENT_CAMPAIGN_DEFAULT", "/default", "Only one selected campaign may be the default.")
 			default_campaign_id = id
+	if campaign_count > 0 and default_campaign_id.is_empty():
+		return [ContentValidation.diagnostic("CONTENT_CAMPAIGN_DEFAULT", "/default",
+			"Selected campaign content requires exactly one default campaign profile.")]
 	var documents: Dictionary = {}
 	for id in _records:
 		var entry: Dictionary = _records[id]
