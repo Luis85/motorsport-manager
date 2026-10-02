@@ -31,7 +31,8 @@
   const stable = value => Array.isArray(value) ? '[' + value.map(stable).join(',') + ']' : value && typeof value === 'object' ? '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}' : JSON.stringify(value);
   /** An opaque, deterministic change identifier; NOT a cryptographic signature. */
   function fingerprint(doc) {
-    const s = stable({schemaVersion: doc.schemaVersion, library: doc.library, components: doc.components});
+    const safe = copy(doc);
+    const s = stable({schemaVersion: safe.schemaVersion, library: safe.library, components: safe.components});
     let a = 2166136261, b = 0x9e3779b9;
     for (let i = 0; i < s.length; i++) { a = Math.imul(a ^ s.charCodeAt(i), 16777619); b = Math.imul(b ^ s.charCodeAt(i), 2246822519); }
     return (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0');

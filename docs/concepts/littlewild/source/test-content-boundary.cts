@@ -13,6 +13,11 @@ test('Content copy rejects symbols, sparse arrays, hidden properties and cycles'
  const hidden={a:1};Object.defineProperty(hidden,'x',{value:2});assert.throws(()=>C.copy(hidden),/hidden properties/);
  const cycle={};cycle.self=cycle;assert.throws(()=>C.copy(cycle),/Cyclic/);
 });
+test('Public fingerprints reject behavior-shaped objects without invoking accessors',()=>{
+ let touched=0;const doc={schemaVersion:1,library:{id:'x',version:1},components:{}};
+ Object.defineProperty(doc.components,'bad',{enumerable:true,get(){touched++;return 1;}});
+ assert.throws(()=>C.fingerprint(doc),/Accessors|JSON content/);assert.equal(touched,0);
+});
 test('Actor rule validation fails closed on executable or undefined fields',()=>{
  const base=JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json'));
  const executable=JSON.parse(JSON.stringify(base));executable.execute=()=>true;assert.throws(()=>A.validateRules(executable),/JSON data/);

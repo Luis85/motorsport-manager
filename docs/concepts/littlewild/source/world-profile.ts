@@ -7,7 +7,7 @@
   const defaults = node ? require('./content/default-profile.json') : root.LWDefaultProfile;
   function freeze(v) { if (v && typeof v === 'object') { Object.values(v).forEach(freeze); Object.freeze(v); } return v; }
   function hash(v) {
-    const text = C.stable(v); let n = 2166136261;
+    const text = C.stable(C.copy(v)); let n = 2166136261;
     for (let i = 0; i < text.length; i++) n = Math.imul(n ^ text.charCodeAt(i), 16777619);
     return (n >>> 0).toString(16).padStart(8, '0');
   }

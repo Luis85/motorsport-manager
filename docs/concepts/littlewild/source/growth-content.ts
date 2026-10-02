@@ -37,7 +37,7 @@
  // Base fingerprint hashes a library envelope, so wrap the entire Growth document.
  // Do not pass Growth directly: its fields are outside Base's components projection.
  const hash=p=>C.fingerprint({schemaVersion:1,library:{id:'littlewild-growth',version:1},components:p});
- function mechanicalHash(p){const strip=v=>Array.isArray(v)?v.map(strip):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!['name','label','description','icon','extensions'].includes(k)).map(([k,x])=>[k,strip(x)])):v;return hash(strip(p));}
+ function mechanicalHash(p){p=clone(p);const strip=v=>Array.isArray(v)?v.map(strip):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!['name','label','description','icon','extensions'].includes(k)).map(([k,x])=>[k,strip(x)])):v;return hash(strip(p));}
  function replace(p){const v=validate(p);if(!v.ok)throw Error(v.errors.join('\n'));active=clone(v.content);return active;}
  function withLibrary(p,fn){const old=active;try{replace(p);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof result.then==='function')throw Error('Growth library sandbox callback must be synchronous.');return result;}finally{active=old;}}
  const api={defaults,schema,clone,validate,replace,withLibrary,mechanicalHash,hashOf:hash,get content(){return active;},get hash(){return hash(active);}};

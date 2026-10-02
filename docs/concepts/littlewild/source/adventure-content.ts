@@ -113,6 +113,7 @@
         }
     }
     function hash(p) {
+        p = parse(p);
         const stable = v => v && typeof v === 'object' ? Array.isArray(v) ? v.map(stable) : Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])])) : v;
         const text = JSON.stringify(stable(p));
         let h = 2166136261;
