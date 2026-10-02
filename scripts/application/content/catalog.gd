@@ -98,9 +98,27 @@ func seal() -> Array:
 		if campaign_weekend == null:
 			return _definition_error(id, "CONTENT_REFERENCE", "/weekend_id", "Choose a valid weekend definition.")
 		var weekend_record = campaign_weekend.to_record()
-		var resolved_roster = RosterDefinition.resolve(record(weekend_record.roster_id), _records)
+		var roster_record: Dictionary = record(weekend_record.roster_id)
+		var resolved_roster = RosterDefinition.resolve(roster_record, _records)
 		var campaign_roster = RosterDefinition.decode_snapshot(resolved_roster.snapshot) if resolved_roster.ok else null
 		var campaign_vehicle = vehicle(weekend_record.vehicle_id)
+		if roster_record.get("player_team_id") != campaign_record.player.roster_team_id:
+			return _definition_error(id, "CONTENT_CAMPAIGN_ROSTER", "/player/roster_team_id",
+				"Campaign player roster-team mapping must match the weekend roster player team.")
+		var roster_counts: Dictionary = {}
+		for roster_entry in roster_record.get("entries", []):
+			roster_counts[roster_entry.team_id] = int(roster_counts.get(roster_entry.team_id, 0)) + 1
+		var mapped_teams: Array = [campaign_record.player.roster_team_id]
+		for rival in campaign_record.rivals: mapped_teams.append(rival.roster_team_id)
+		mapped_teams.sort()
+		var roster_teams = roster_counts.keys(); roster_teams.sort()
+		if mapped_teams != roster_teams:
+			return _definition_error(id, "CONTENT_CAMPAIGN_ROSTER", "/rivals",
+				"Campaign roster-team mappings must cover the selected weekend roster exactly.")
+		for team_id in roster_teams:
+			if int(roster_counts[team_id]) != int(campaign_record.series.cars_per_entrant):
+				return _definition_error(id, "CONTENT_CAMPAIGN_ROSTER", "/series/cars_per_entrant",
+					"Campaign cars-per-entrant must match every team in the selected weekend roster.")
 		for event_index in range(campaign_record.calendar.size()):
 			var circuit_id: String = campaign_record.calendar[event_index].circuit_id
 			if record(circuit_id).get("kind") != "circuit":
