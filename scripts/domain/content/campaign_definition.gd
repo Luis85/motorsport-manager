@@ -53,10 +53,10 @@ static func fields() -> Dictionary:
 		"player": ContentSchema.object({
 			"roster_team_id": ContentSchema.identity(),
 			"entrant_id": ContentSchema.identity(), "team_id": ContentSchema.identity(),
-			"driver_role_id": ContentSchema.identity(), "driver_contract": contract,
+			"driver_role_id": {"enum": CampaignRoleAssignment.ROLES}, "driver_contract": contract,
 			"operations_lead": ContentSchema.object({
 				"person_id": ContentSchema.identity(), "display_name": ContentSchema.text(80),
-				"role_id": ContentSchema.identity(), "contract": contract})}),
+				"role_id": {"enum": CampaignRoleAssignment.ROLES}, "contract": contract})}),
 		"facilities": ContentSchema.array(ContentSchema.object({
 			"id": ContentSchema.identity(), "display_name": ContentSchema.text(80),
 			"family": {"enum": CampaignCapacityResource.FAMILIES},
