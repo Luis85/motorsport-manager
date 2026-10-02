@@ -331,6 +331,8 @@ check("Obsolete story and migration artifacts stay removed", () => {
     ["scenario-story.ts","version===9"],
     ["scenario-story.ts","version!==8"],
     ["story-codec.ts","native story format (v8)"],
+    ["cartography.ts","raw.version = 7"],
+    ["cartography.ts","super.import(raw)"],
     ["village-systems.ts","grandfathered"]
   ] as const){
     assert(!source(file).includes(token),file+" still contains obsolete compatibility token "+token);

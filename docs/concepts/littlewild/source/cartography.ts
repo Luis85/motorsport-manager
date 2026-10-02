@@ -226,11 +226,20 @@
     }
     export() { const doc = super.export(); doc.version = 8; doc.state.version = 8; return doc; }
     static import(input) {
-      if (input?.version !== 8) throw Error('Only the current Littlewild save format (v8) is supported.');
-      const raw = copy(input); validateAtlas(raw.state);
-      raw.version = 7; raw.state.version = 7;
-      const old = super.import(raw), engine = Composition.constructThrough('cartography',old.export().state);
-      validateAtlas(engine.export().state); return engine;
+      if (input?.app !== 'littlewild' || input.version !== 8 || !input.state)
+        throw Error('Only the current Littlewild engine state (v8) is supported.');
+      const raw = copy(input);
+      validateAtlas(raw.state);
+      L.WorldSystem.validateState(raw.state);
+      L.Village.validate(raw.state);
+      root.LWVillageValidation.validate(raw.state);
+      const engine = Composition.constructThrough('cartography', raw.state);
+      const state = engine.export().state;
+      validateAtlas(state);
+      L.WorldSystem.validateState(state);
+      L.Village.validate(state);
+      root.LWVillageValidation.validate(state);
+      return engine;
     }
   };}
 
