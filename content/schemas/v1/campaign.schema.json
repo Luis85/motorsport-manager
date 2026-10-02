@@ -317,13 +317,13 @@
               "type": "integer"
             },
             "pay_interval_days": {
-              "maximum": 3660,
+              "maximum": 366,
               "minimum": 1,
               "type": "integer"
             },
             "pay_minor": {
               "maximum": 1000000000,
-              "minimum": 0,
+              "minimum": 1,
               "type": "integer"
             },
             "renewal_window_days": {
@@ -370,13 +370,13 @@
                   "type": "integer"
                 },
                 "pay_interval_days": {
-                  "maximum": 3660,
+                  "maximum": 366,
                   "minimum": 1,
                   "type": "integer"
                 },
                 "pay_minor": {
                   "maximum": 1000000000,
-                  "minimum": 0,
+                  "minimum": 1,
                   "type": "integer"
                 },
                 "renewal_window_days": {
@@ -544,7 +544,7 @@
             "type": "integer"
           },
           "review_interval_days": {
-            "maximum": 3660,
+            "maximum": 366,
             "minimum": 1,
             "type": "integer"
           },
