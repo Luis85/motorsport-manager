@@ -82,14 +82,18 @@
   for(const key of personalFields)if(!Object.hasOwn(defaults,key))fail(rawId+' personal default missing '+key);
   for(const key of requiredDefaults)if(!Object.hasOwn(defaults,key))fail(rawId+' creature default missing '+key);
   const ecsValue=raw.ecs;
-  if(!plain(ecsValue)||!Array.isArray(ecsValue.components)||ecsValue.components.length<5||ecsValue.components.length>32)fail(rawId+' invalid ECS bindings');
-  const components=ecsValue.components as unknown[],types=new Set<string>(),fields=new Set<string>();
+  if(!plain(ecsValue))fail(rawId+' invalid ECS bindings');
+  const componentValues=ecsValue.components;
+  if(!Array.isArray(componentValues)||componentValues.length<5||componentValues.length>32)fail(rawId+' invalid ECS bindings');
+  const components=componentValues as unknown[],types=new Set<string>(),fields=new Set<string>();
   for(const inputBinding of components){
    if(!plain(inputBinding))fail(rawId+' invalid ECS binding');
    const binding=inputBinding as Plain,typeValue=binding.type,fieldValue=binding.field;
-   if(Object.keys(binding).length!==2||typeof typeValue!=='string'||typeof fieldValue!=='string'||!safeComponent.test(typeValue)||!Object.hasOwn(defaults,fieldValue)||types.has(typeValue)||fields.has(fieldValue))fail(rawId+' invalid or duplicate ECS binding');
-   if(!plain(defaults[fieldValue]))fail(rawId+' ECS field '+fieldValue+' must default to an object');
-   types.add(typeValue);fields.add(fieldValue);
+   if(Object.keys(binding).length!==2||typeof typeValue!=='string'||typeof fieldValue!=='string')fail(rawId+' invalid ECS binding');
+   const type=typeValue as string,field=fieldValue as string;
+   if(!safeComponent.test(type)||!Object.hasOwn(defaults,field)||types.has(type)||fields.has(field))fail(rawId+' invalid or duplicate ECS binding');
+   if(!plain(defaults[field]))fail(rawId+' ECS field '+field+' must default to an object');
+   types.add(type);fields.add(field);
   }
   for(const type of requiredComponents)if(!types.has(type))fail(rawId+' missing ECS component '+type);
   dataOnly(raw,rawId);
