@@ -10,7 +10,12 @@
     "campaign_id": "career.team-principal",
     "organization_id": "organization.obsidian",
     "principal_id": "person.principal",
-    "start": {"year": 1950, "month": 1, "day": 1, "slot": 0},
+    "start": {
+      "year": 1950,
+      "month": 1,
+      "day": 1,
+      "slot": 0
+    },
     "energy_capacity": 6,
     "opening_cash_minor": 150000,
     "reserve_minor": 60000
@@ -20,13 +25,50 @@
     "season_id": "season.1950",
     "name": "Obsidian Starter Championship",
     "cars_per_entrant": 2,
-    "points_by_position": [15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0]
+    "points_by_position": [
+      15,
+      12,
+      10,
+      8,
+      6,
+      4,
+      2,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
   },
   "calendar": [
-    {"campaign_event_id": "event.1950.1", "round": 1, "departure_day": 0, "return_day": 2, "event_revision": 1},
-    {"campaign_event_id": "event.1950.2", "round": 2, "departure_day": 7, "return_day": 9, "event_revision": 1},
-    {"campaign_event_id": "event.1950.3", "round": 3, "departure_day": 14, "return_day": 16, "event_revision": 1},
-    {"campaign_event_id": "event.1950.4", "round": 4, "departure_day": 21, "return_day": 23, "event_revision": 1}
+    {
+      "campaign_event_id": "event.1950.1",
+      "round": 1,
+      "departure_day": 0,
+      "return_day": 2,
+      "event_revision": 1
+    },
+    {
+      "campaign_event_id": "event.1950.2",
+      "round": 2,
+      "departure_day": 7,
+      "return_day": 9,
+      "event_revision": 1
+    },
+    {
+      "campaign_event_id": "event.1950.3",
+      "round": 3,
+      "departure_day": 14,
+      "return_day": 16,
+      "event_revision": 1
+    },
+    {
+      "campaign_event_id": "event.1950.4",
+      "round": 4,
+      "departure_day": 21,
+      "return_day": 23,
+      "event_revision": 1
+    }
   ],
   "player": {
     "entrant_id": "entrant.player",
@@ -53,29 +95,123 @@
     }
   },
   "facilities": [
-    {"id": "facility.workshop", "display_name": "Preparation workshop", "family": "preparation_workshop", "capacity_units": 1, "available_days": 28},
-    {"id": "facility.design", "display_name": "Design office", "family": "design_office", "capacity_units": 1, "available_days": 28},
-    {"id": "facility.test", "display_name": "Validation rig", "family": "test_validation", "capacity_units": 1, "available_days": 28}
+    {
+      "id": "facility.workshop",
+      "display_name": "Preparation workshop",
+      "family": "preparation_workshop",
+      "capacity_units": 1,
+      "available_days": 28
+    },
+    {
+      "id": "facility.design",
+      "display_name": "Design office",
+      "family": "design_office",
+      "capacity_units": 1,
+      "available_days": 28
+    },
+    {
+      "id": "facility.test",
+      "display_name": "Validation rig",
+      "family": "test_validation",
+      "capacity_units": 1,
+      "available_days": 28
+    }
   ],
   "rivals": [
-    {"entrant_id": "entrant.rival.0", "team_id": "team.rival.0", "archetype": "constructor", "cash_minor": 100000, "reserve_minor": 40000, "capability_bps": 9500, "review_interval_days": 7},
-    {"entrant_id": "entrant.rival.1", "team_id": "team.rival.1", "archetype": "customer", "cash_minor": 100000, "reserve_minor": 40000, "capability_bps": 9650, "review_interval_days": 7},
-    {"entrant_id": "entrant.rival.2", "team_id": "team.rival.2", "archetype": "talent", "cash_minor": 100000, "reserve_minor": 40000, "capability_bps": 9800, "review_interval_days": 7},
-    {"entrant_id": "entrant.rival.3", "team_id": "team.rival.3", "archetype": "innovator", "cash_minor": 100000, "reserve_minor": 40000, "capability_bps": 9950, "review_interval_days": 7},
-    {"entrant_id": "entrant.rival.4", "team_id": "team.rival.4", "archetype": "reliability", "cash_minor": 100000, "reserve_minor": 40000, "capability_bps": 10100, "review_interval_days": 7}
+    {
+      "entrant_id": "entrant.rival.0",
+      "team_id": "team.rival.0",
+      "archetype": "constructor",
+      "cash_minor": 100000,
+      "reserve_minor": 40000,
+      "capability_bps": 9500,
+      "review_interval_days": 7
+    },
+    {
+      "entrant_id": "entrant.rival.1",
+      "team_id": "team.rival.1",
+      "archetype": "customer",
+      "cash_minor": 100000,
+      "reserve_minor": 40000,
+      "capability_bps": 9650,
+      "review_interval_days": 7
+    },
+    {
+      "entrant_id": "entrant.rival.2",
+      "team_id": "team.rival.2",
+      "archetype": "talent",
+      "cash_minor": 100000,
+      "reserve_minor": 40000,
+      "capability_bps": 9800,
+      "review_interval_days": 7
+    },
+    {
+      "entrant_id": "entrant.rival.3",
+      "team_id": "team.rival.3",
+      "archetype": "innovator",
+      "cash_minor": 100000,
+      "reserve_minor": 40000,
+      "capability_bps": 9950,
+      "review_interval_days": 7
+    },
+    {
+      "entrant_id": "entrant.rival.4",
+      "team_id": "team.rival.4",
+      "archetype": "reliability",
+      "cash_minor": 100000,
+      "reserve_minor": 40000,
+      "capability_bps": 10100,
+      "review_interval_days": 7
+    }
   ],
   "rival_policy": {
     "cash_preservation_threshold_minor": 5000,
     "leading_rank_threshold": 2,
-    "plan_spend_minor": {"reliability": 6000, "balanced_development": 10000, "driver_development": 5000},
+    "plan_spend_minor": {
+      "reliability": 6000,
+      "balanced_development": 10000,
+      "driver_development": 5000
+    },
     "gain_minor_per_bps": 200,
     "max_gain_bps": 250,
     "reliability_gain_bps": 8000,
     "driver_development_gain_bps": 6000
   },
+  "people_policy": {
+    "counter_offer_ratio_bps": 8500,
+    "productive_load_min_bps": 2000,
+    "productive_load_max_bps": 8000,
+    "productive_gain": 2,
+    "other_gain": 1,
+    "morale_safe_load_bps": 8500,
+    "morale_safe_delta": 1,
+    "morale_overload_delta": -3,
+    "new_hire_morale": 62,
+    "new_hire_trust": 58
+  },
+  "supply_policy": {
+    "initial_confidence_bps": 2000,
+    "observation_gain_bps": 1500,
+    "max_confidence_bps": 9500,
+    "spread_floor_bps": 50,
+    "spread_scale_bps": 2500
+  },
   "event_finance": {
     "departure_cost_minor": 8000,
     "participation_minor": 5000,
-    "position_bonus_minor": [10000, 7000, 5000, 3000, 2000, 1000, 500, 250, 0, 0, 0, 0]
+    "position_bonus_minor": [
+      10000,
+      7000,
+      5000,
+      3000,
+      2000,
+      1000,
+      500,
+      250,
+      0,
+      0,
+      0,
+      0
+    ]
   }
 }
