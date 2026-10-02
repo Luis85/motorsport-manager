@@ -29,7 +29,7 @@
     "bondedSpeedBonus": 0.12
   },
   "rng": {
-    "base": 2718,
+    "base": 4631,
     "stride": 1913
   },
   "state": {
