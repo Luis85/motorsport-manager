@@ -3,7 +3,7 @@ extends RefCounted
 ## Four-wheel wear, fuel consumption and aggregate thermal/condition integration in fixed simulation steps.
 ## Invoke cross-system work through the aggregate so inherited rule-set hooks remain active.
 
-static func wear_car(sim: RaceSimFoundation, car: RaceCar, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
+static func wear_car(sim: RaceSimPort, car: RaceCar, distance: float, cell: int, effects: Dictionary = {}, local: Dictionary = {}) -> void:
 	if local.is_empty():
 		local = sim.surface_at(car)
 	var fraction = distance / sim.track.length
@@ -15,12 +15,12 @@ static func wear_car(sim: RaceSimFoundation, car: RaceCar, distance: float, cell
 	var curve = sim.track.sample(car.distance).curvature if car.route == "track" else 0.0
 	if effects.is_empty():
 		effects = CarSetup.effects(car, local.water)
-	WheelTyres.update(item, {"speed": car.speed, "curve": curve, "bias": car.car_setup.bias / 100.0, "brake": car.braking, "throttle": car.throttle, "slip": absf(effects.balance), "water": local.water, "push": effort, "neutral": sim.neutral(car), "care": car.consistency, "wear": spec.wear * fraction * effort * mismatch, "lap": fraction}, RaceSimFoundation.STEP, spec)
+	WheelTyres.update(item, {"speed": car.speed, "curve": curve, "bias": car.car_setup.bias / 100.0, "brake": car.braking, "throttle": car.throttle, "slip": absf(effects.balance), "water": local.water, "push": effort, "neutral": sim.neutral(car), "care": car.consistency, "wear": spec.wear * fraction * effort * mismatch, "lap": fraction}, RaceSimPort.STEP, spec)
 	car.tyre = item.life
 	car.temperature = item.temperature
 	var engine_target = tuning.condition.engine_base_c + car.engine * tuning.condition.engine_mode_c - (car.car_setup.cooling - tuning.condition.cooling_reference) * tuning.condition.cooling_c + car.throttle * tuning.condition.throttle_c - local.water * tuning.condition.water_c
-	car.engine_temperature = lerpf(car.engine_temperature, engine_target, 1 - exp(-RaceSimFoundation.STEP * tuning.condition.engine_response_per_second))
-	car.brake_temperature = lerpf(car.brake_temperature, tuning.condition.brake_base_c + car.braking * tuning.condition.braking_c + car.speed * tuning.condition.brake_speed_c_per_mps, 1 - exp(-RaceSimFoundation.STEP * tuning.condition.brake_response_per_second))
+	car.engine_temperature = lerpf(car.engine_temperature, engine_target, 1 - exp(-RaceSimPort.STEP * tuning.condition.engine_response_per_second))
+	car.brake_temperature = lerpf(car.brake_temperature, tuning.condition.brake_base_c + car.braking * tuning.condition.braking_c + car.speed * tuning.condition.brake_speed_c_per_mps, 1 - exp(-RaceSimPort.STEP * tuning.condition.brake_response_per_second))
 	if sim.phase == "race" and not sim.neutral(car) and sim.total_time >= car.tyre_event_clock:
 		car.tyre_event_clock = sim.total_time + 2.0
 		sim.check_tyre_incident(car)
