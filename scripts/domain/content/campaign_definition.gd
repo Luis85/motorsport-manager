@@ -20,6 +20,7 @@ static func fields() -> Dictionary:
 		"pay_minor": ContentSchema.integer(1, MAX_MONEY_MINOR),
 		"allocation_bps": ContentSchema.integer(1, 10000)})
 	var rival = ContentSchema.object({
+		"roster_team_id": ContentSchema.identity(),
 		"entrant_id": ContentSchema.identity(), "team_id": ContentSchema.identity(),
 		"archetype": {"enum": CampaignRivals.ARCHETYPES},
 		"cash_minor": ContentSchema.integer(0, MAX_MONEY_MINOR),
@@ -50,6 +51,7 @@ static func fields() -> Dictionary:
 			"departure_day": ContentSchema.integer(0, MAX_DAYS), "return_day": ContentSchema.integer(1, MAX_DAYS),
 			"event_revision": ContentSchema.integer(1, 1000000)}), CampaignSeriesRules.MAX_EVENTS, 1),
 		"player": ContentSchema.object({
+			"roster_team_id": ContentSchema.identity(),
 			"entrant_id": ContentSchema.identity(), "team_id": ContentSchema.identity(),
 			"driver_role_id": ContentSchema.identity(), "driver_contract": contract,
 			"operations_lead": ContentSchema.object({
@@ -111,9 +113,13 @@ static func semantic_error(record: Dictionary) -> String:
 		previous_departure = int(event.departure_day)
 		expected_round += 1
 	var identities = {record.player.entrant_id: true, record.player.team_id: true}
+	var roster_teams = {record.player.roster_team_id: true}
 	for rival in record.rivals:
 		if int(rival.reserve_minor) > int(rival.cash_minor):
 			return "Campaign rival reserve cannot exceed its opening cash."
+		if roster_teams.has(rival.roster_team_id):
+			return "Campaign roster-team mappings must be unique."
+		roster_teams[rival.roster_team_id] = true
 		for key in ["entrant_id", "team_id"]:
 			if identities.has(rival[key]):
 				return "Campaign entrant and team identities must be unique."
