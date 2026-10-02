@@ -114,6 +114,9 @@ function compile(): void {
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
+  for (const fixture of ["scenario-v3-grown.json"]) {
+    fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
+  }
 }
 
 function json(file: string): unknown {

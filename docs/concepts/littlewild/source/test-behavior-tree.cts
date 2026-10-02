@@ -25,9 +25,12 @@ test('Selectors and sequences preserve deterministic child order',()=>{
  const doc={id:'root',name:'Root',type:'selector',children:[{id:'a-node',name:'A',type:'action',action:'a'},{id:'seq',name:'Sequence',type:'sequence',children:[{id:'b-node',name:'B',type:'action',action:'b'},{id:'c-node',name:'C',type:'action',action:'c'}]}]};
  assert(tree.validate(doc));assert.equal(tree.tick(doc,{time:1,behaviorMemory:{}}).status,'success');assert.deepEqual(calls,['a','b','c']);
 });
-test('Behavior ticks reject invalid time and corrupted cooldown memory',()=>{
+test('Behavior ticks preserve the legacy zero-time default and reject invalid explicit time',()=>{
  const tree=new BehaviorTree(actions),doc={id:'cool',name:'Cooldown',type:'cooldown',seconds:2,children:[{id:'child',name:'Child',type:'action',action:'ok'}]};
- assert(tree.validate(doc));assert.throws(()=>tree.tick(doc,{time:NaN,behaviorMemory:{}}),/finite simulation time/);
+ assert(tree.validate(doc));
+ const context={behaviorMemory:{}};assert.equal(tree.tick(doc,context).status,'success');assert.equal(context.time,0);
+ assert.throws(()=>tree.tick(doc,{time:NaN,behaviorMemory:{}}),/finite simulation time/);
+ assert.throws(()=>tree.tick(doc,{time:-1,behaviorMemory:{}}),/finite simulation time/);
  assert.throws(()=>tree.tick(doc,{time:1,behaviorMemory:{cool:Infinity}}),/cooldown memory/);
 });
 test('Action registration rejects duplicate and malformed capabilities',()=>{

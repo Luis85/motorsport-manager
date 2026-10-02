@@ -122,7 +122,10 @@
         }
 
         tick(tree: BehaviorNode, context: BehaviorContext): { status: Status; trace: TraceRow[] } {
-            if (!context || typeof context !== 'object' || !Number.isFinite(context.time) || context.time < 0)
+            if (!context || typeof context !== 'object')
+                throw Error('Behavior tick needs a context object.');
+            if (context.time === undefined) context.time = 0;
+            if (!Number.isFinite(context.time) || context.time < 0)
                 throw Error('Behavior tick needs finite simulation time.');
             if (context.behaviorMemory === undefined) context.behaviorMemory = {};
             const memory = context.behaviorMemory;
