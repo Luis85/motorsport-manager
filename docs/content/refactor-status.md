@@ -86,3 +86,26 @@ place an obsolete renderer or stale transform. Registered native UI checks cover
 actual placements, single-step undo/redo, layer locks and long guide content at
 1440×900/1100×720 in normal and enlarged text. These are regression controls;
 they do not constitute a manual accessibility or playtesting sign-off.
+
+
+## Post-PR27 campaign data-driven closure
+
+A subsequent review found that the race/content side was externally authored while
+the initial Team Principal career still duplicated product content and balance
+coefficients in `CampaignStarter`, `CampaignRivals`, people development and
+engineering-evidence code. The follow-up refactor closes that split authority:
+
+- a versioned `campaign` content family owns starter identity/resources, series,
+  calendar, contracts, facilities, rivals, event finance and campaign tuning;
+- campaign launch reuses a validated authored `weekend` instead of a parallel
+  legacy race-options dictionary;
+- the resolved campaign and race-content closure is frozen into the career at
+  creation, so pack edits cannot rewrite an existing season;
+- rival, people-development and supply-evidence numerical coefficients are explicit
+  campaign policies; supported algorithms, state machines and safety bounds stay
+  code-owned;
+- compatibility constants are isolated and inventoried only for older checkpoints
+  and direct legacy-domain contracts.
+
+This is a data-ownership refactor, not a new scripting surface. External content
+still cannot load executable Godot code or change structural/safety limits.
