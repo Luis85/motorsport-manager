@@ -14,7 +14,7 @@ const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", 
   layers: string[];
   contexts: Array<{ id: string; layer: "domain" | "application" | "infrastructure" | "presentation"; files: string[] }>;
   moduleBudgetBytes: number;
-  legacyCompatibilityModules: Record<string,string>;
+  moduleBudgetExceptions: Record<string,string>;
   domainGlobals: string[];
   injectedDataGlobals: string[];
   strictTypingDebt: Record<string,string>;
@@ -80,26 +80,26 @@ check("DDD domain map owns every runtime module exactly once", () => {
   for (const file of owned) assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
 });
 
-check("Clean Code module budget is explicit and legacy debt is bounded", () => {
+check("Clean Code module budget and decomposition debt are explicit", () => {
   assert(Number.isInteger(DOMAIN_MAP.moduleBudgetBytes) && DOMAIN_MAP.moduleBudgetBytes >= 10000, "Invalid runtime module budget.");
   const ownership = new Map<string, string>();
   for (const context of DOMAIN_MAP.contexts) for (const file of context.files) ownership.set(file, context.layer);
-  for (const [file, reason] of Object.entries(DOMAIN_MAP.legacyCompatibilityModules)) {
-    assert(ownership.get(file) === "application", "Only application compatibility adapters may be grandfathered: " + file);
-    assert(typeof reason === "string" && reason.trim().length >= 20, "Legacy module needs a concrete migration reason: " + file);
+  for (const [file, reason] of Object.entries(DOMAIN_MAP.moduleBudgetExceptions)) {
+    assert(ownership.get(file) === "application", "Only application modules may receive a temporary size exception: " + file);
+    assert(typeof reason === "string" && reason.trim().length >= 20, "Oversized module needs a concrete decomposition reason: " + file);
   }
   const oversized: string[] = [];
   for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain" || context.layer === "application")) {
     for (const file of context.files) {
       const bytes = Buffer.byteLength(source(file));
-      if (bytes > DOMAIN_MAP.moduleBudgetBytes && !Object.hasOwn(DOMAIN_MAP.legacyCompatibilityModules,file))
+      if (bytes > DOMAIN_MAP.moduleBudgetBytes && !Object.hasOwn(DOMAIN_MAP.moduleBudgetExceptions,file))
         oversized.push(file + " (" + bytes + " bytes)");
     }
   }
   assert(oversized.length === 0, "New oversized domain/application module requires decomposition, not a silent exception: " + oversized.join(", "));
 });
 
-check("Domain compatibility globals are explicitly allowlisted", () => {
+check("Domain runtime globals are explicitly allowlisted", () => {
   assert(Array.isArray(DOMAIN_MAP.domainGlobals) && DOMAIN_MAP.domainGlobals.length > 0, "Domain global allowlist is missing.");
   assert(new Set(DOMAIN_MAP.domainGlobals).size === DOMAIN_MAP.domainGlobals.length, "Domain global allowlist contains duplicates.");
   const allowed = new Set(DOMAIN_MAP.domainGlobals);
@@ -112,7 +112,7 @@ check("Domain compatibility globals are explicitly allowlisted", () => {
       if (!allowed.has(symbol)) violations.push(file + ": " + symbol);
     }
   }
-  assert(violations.length === 0, "Domain module reaches undeclared compatibility global: " + violations.join("; "));
+  assert(violations.length === 0, "Domain module reaches undeclared runtime global: " + violations.join("; "));
 });
 
 check("Domain modules do not register application composition hooks", () => {
@@ -127,7 +127,7 @@ check("Domain modules do not register application composition hooks", () => {
   assert(violations.length === 0, "Application composition leaked into domain ownership: " + violations.join("; "));
 });
 
-check("Compatibility globals obey bounded-context dependency direction", () => {
+check("Runtime globals obey bounded-context dependency direction", () => {
   assert(Array.isArray(DOMAIN_MAP.injectedDataGlobals), "Injected data-global allowlist is missing.");
   assert(new Set(DOMAIN_MAP.injectedDataGlobals).size === DOMAIN_MAP.injectedDataGlobals.length,
     "Injected data-global allowlist contains duplicates.");
@@ -159,11 +159,11 @@ check("Compatibility globals obey bounded-context dependency direction", () => {
         if (rank.get(target.layer)! > rank.get(context.layer)!)
           violations.push(file+" ("+context.layer+") -> "+symbol+" / "+targetFile+" ("+target.layer+")");
       } else if (!injected.has(symbol)) {
-        violations.push(file+" references undeclared compatibility global "+symbol);
+        violations.push(file+" references undeclared runtime global "+symbol);
       }
     }
   }
-  assert(violations.length===0,"Compatibility-global dependency violation: "+violations.join("; "));
+  assert(violations.length===0,"Runtime-global dependency violation: "+violations.join("; "));
 });
 
 check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
@@ -303,7 +303,7 @@ check("Strict runtime modules contain no explicit any or TypeScript suppression"
   assert(violations.length===0,"Strict runtime typing escape hatch found: "+[...new Set(violations)].join("; "));
 });
 
-check("Prototype compatibility artifacts stay removed", () => {
+check("Obsolete story and migration artifacts stay removed", () => {
   const obsolete = [
     "scenario-migrations.ts",
     "test-v10-regression-v5.cts",
@@ -317,13 +317,20 @@ check("Prototype compatibility artifacts stay removed", () => {
     "fixtures/actual-v9-workplace.json",
     "fixtures/actual-v14-story.json",
     "fixtures/v14-retained-contracts.json",
-    "fixtures/ecs-migration.json"
+    "fixtures/ecs-migration.json",
+    "fixtures/actual-v11-workplace.json",
+    "fixtures/actual-v12-story.json",
+    "fixtures/actual-v13-story.json",
+    "fixtures/v14-island-geometry.cts"
   ];
   const remaining=obsolete.filter(file=>fs.existsSync(path.join(SOURCE,file)));
-  assert(remaining.length===0,"Obsolete compatibility artifacts returned: "+remaining.join(", "));
+  if(fs.existsSync(path.join(ROOT,"examples","migration","v10-world-story.json")))remaining.push("../examples/migration/v10-world-story.json");
+  assert(remaining.length===0,"Obsolete story/migration artifacts returned: "+remaining.join(", "));
   for(const [file,token] of [
     ["scenario-runtime.ts","migrateContext"],
     ["scenario-story.ts","version===9"],
+    ["scenario-story.ts","version!==8"],
+    ["story-codec.ts","native story format (v8)"],
     ["village-systems.ts","grandfathered"]
   ] as const){
     assert(!source(file).includes(token),file+" still contains obsolete compatibility token "+token);

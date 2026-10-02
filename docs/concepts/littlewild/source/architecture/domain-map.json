@@ -140,12 +140,6 @@
     }
   ],
   "moduleBudgetBytes": 40000,
-  "legacyCompatibilityModules": {
-    "engine.ts": "Stable v3 facade and migration/import boundary; extract behavior incrementally behind fixtures.",
-    "colony.ts": "Compatibility adapter for mature creature/community commands during ECS strangler migration.",
-    "systems.ts": "Historical composed engine layer retained for parity while rules move into bounded systems.",
-    "world-simulation.ts": "Mature physical-world compatibility layer; new settlement invariants live in world-ecs.ts."
-  },
   "domainGlobals": [
     "LWECS",
     "LWBehaviorTree",
@@ -194,15 +188,21 @@
     "growth-content.ts": "Growth definitions depend on Adventure/content dynamic tables and extension records; migrate after the shared content contracts are typed.",
     "colony-policies.ts": "Policy orchestration still consumes the dynamic Engine and Adventure facades; migrate after shared application/domain ports replace facade discovery.",
     "world-content.ts": "World content adapts dynamic schema tables into runtime lookups; migrate after the content registry exposes typed world-definition ports.",
-    "engine.ts": "Stable legacy facade and save/import boundary is intentionally retained during the strangler migration; decompose behind typed application ports.",
+    "engine.ts": "Stable broad facade and save/import boundary is intentionally retained during the strangler migration; decompose behind typed application ports.",
     "systems.ts": "Historical progression composition adapter remains for save parity; extract remaining rules behind typed domain services before strict migration.",
-    "colony.ts": "Mature creature/community compatibility adapter still owns broad legacy facade behavior; migrate incrementally behind typed actor/application ports.",
-    "village-systems.ts": "Village/market orchestration spans several legacy state shapes; migrate after market and village domain contracts are extracted.",
-    "world-simulation.ts": "Physical-world compatibility adapter still bridges legacy save state and newer ECS services; migrate as typed ports replace facade state discovery.",
+    "colony.ts": "Mature creature/community application module still owns broad broad facade behavior; migrate incrementally behind typed actor/application ports.",
+    "village-systems.ts": "Village/market orchestration spans several broad current state shapes; migrate after market and village domain contracts are extracted.",
+    "world-simulation.ts": "Physical-world application module still bridges legacy save state and newer ECS services; migrate as typed ports replace facade state discovery.",
     "planner.ts": "Planner composition still consumes broad dynamic Engine/content facades; migrate after planner commands and read models receive explicit application ports.",
     "cartography.ts": "Cartography composition still relies on dynamic atlas and Engine facade shapes; migrate after typed map/atlas domain contracts are extracted.",
-    "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and compatibility migrations; migrate after scenario/content ports are fully typed.",
-    "story-codec.ts": "Portable-story codec preserves multiple legacy envelope/save formats and dynamic migrations; migrate incrementally behind typed versioned DTOs."
+    "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and scenario activation boundaries; migrate after scenario/content ports are fully typed.",
+    "story-codec.ts": "Portable-story codec preserves multiple portable story/state shapes and dynamic migrations; migrate incrementally behind typed versioned DTOs."
   },
-  "strictTypingDebtBudget": 16
+  "strictTypingDebtBudget": 16,
+  "moduleBudgetExceptions": {
+    "engine.ts": "Large application facade and current import boundary; decompose behind typed application services.",
+    "colony.ts": "Large actor/community application module; decompose into focused actor and community services.",
+    "systems.ts": "Large progression application module; extract progression rules into focused domain services.",
+    "world-simulation.ts": "Large physical-world application module; split logistics, production and world orchestration into focused services."
+  }
 }
