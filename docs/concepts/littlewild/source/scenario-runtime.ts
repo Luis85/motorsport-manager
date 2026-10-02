@@ -107,7 +107,10 @@
         }
       });
       return { ok: true, errors: [], pack: copy(pack), fingerprint: hash(pack), sceneCount: pack.scenes.length };
-    } catch (error) { return { ok:false, errors: [error.message] }; }
+    } catch (error) {
+      const issues = Array.isArray(error?.issues) ? error.issues.map(issue => (issue.path || '/') + ': ' + issue.message) : null;
+      return { ok:false, errors: issues?.length ? issues : [error?.message || String(error)] };
+    }
   }
   function prepareScene(pack, id) {
     const checked = validate(pack);
