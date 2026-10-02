@@ -15,5 +15,6 @@
     "source/simulation-pipeline.ts",
     "source/simulation-profile.ts",
     "source/behavior-tree.ts"
-  ]
+  ],
+  "include": []
 }
