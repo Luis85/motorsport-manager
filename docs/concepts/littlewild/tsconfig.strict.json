@@ -18,6 +18,8 @@
     "source/simulation-pipeline.ts",
     "source/simulation-profile.ts",
     "source/behavior-tree.ts",
+    "source/creature-factory.ts",
+    "source/creature-catalog.ts",
     "source/world-profile.ts",
     "source/rpg.ts",
     "source/scenario-shape.ts",

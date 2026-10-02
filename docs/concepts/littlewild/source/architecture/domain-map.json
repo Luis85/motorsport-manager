@@ -44,6 +44,7 @@
       "layer": "domain",
       "files": [
         "content-runtime.ts",
+        "creature-catalog.ts",
         "adventure-content.ts",
         "growth-content.ts",
         "world-profile.ts",
@@ -54,7 +55,8 @@
       "id": "actors-application",
       "layer": "application",
       "files": [
-        "colony-policies.ts"
+        "colony-policies.ts",
+        "creature-factory.ts"
       ]
     },
     {
@@ -160,7 +162,9 @@
     "LWGrowthSchema",
     "LWGrowth",
     "LWDefaultProfile",
-    "LWScenarioShape"
+    "LWScenarioShape",
+    "LWCreatureDefinitions",
+    "LWCreatures"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -178,7 +182,8 @@
     "LWDefaultProfile",
     "LWScenarioSchema",
     "LWScenarioPacks",
-    "LWAssetDefinitions"
+    "LWAssetDefinitions",
+    "LWCreatureDefinitions"
   ],
   "strictTypingDebt": {
     "world-ecs.ts": "Physical transaction services still expose broad legacy resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",
