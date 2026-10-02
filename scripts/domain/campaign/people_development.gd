@@ -29,6 +29,7 @@ static func register_candidate(current: Dictionary, input: Dictionary, created_s
 static func approach(current: Dictionary, candidate_id: String, slot: int) -> Dictionary:
 	var error = validate(current)
 	if not error.is_empty(): return _reject(error, current)
+	var tuning = CampaignPeoplePolicy.normalized(policy)
 	if not current.candidates.has(candidate_id):
 		return _reject("Candidate is unknown.", current)
 	var candidate: Dictionary = current.candidates[candidate_id]
@@ -41,7 +42,7 @@ static func approach(current: Dictionary, candidate_id: String, slot: int) -> Di
 	return _result(data, "approached", current)
 
 static func evaluate_offer(current: Dictionary, candidate_id: String,
-		role_id: String, pay_minor: int, start_slot: int, slot: int) -> Dictionary:
+		role_id: String, pay_minor: int, start_slot: int, slot: int, policy: Dictionary = {}) -> Dictionary:
 	var error = validate(current)
 	if not error.is_empty(): return _reject(error, current)
 	if not current.candidates.has(candidate_id):
@@ -60,7 +61,7 @@ static func evaluate_offer(current: Dictionary, candidate_id: String,
 	var accepted = ratio >= 1.0
 	if accepted:
 		candidate.state = "signed"
-	elif ratio >= 0.85 and candidate.offer_count < 3:
+	elif ratio * 10000.0 >= float(tuning.counter_offer_ratio_bps) and candidate.offer_count < 3:
 		candidate.state = "negotiating"
 	else:
 		candidate.state = "withdrawn"
@@ -128,8 +129,9 @@ static func resolve_promise(current: Dictionary, promise_id: String, fulfilled: 
 	profile.last_change_slot = slot; _seal(profile); data.profiles[promise.person_id] = profile
 	return _result(data, promise.status, current)
 
-static func review_due(current: Dictionary, personnel: Dictionary, slot: int) -> Dictionary:
+static func review_due(current: Dictionary, personnel: Dictionary, slot: int, policy: Dictionary = {}) -> Dictionary:
 	var error = validate(current)
+	var tuning = CampaignPeoplePolicy.normalized(policy)
 	if not error.is_empty(): return _reject(error, current)
 	error = CampaignPersonnel.validate(personnel)
 	if not error.is_empty(): return _reject(error, current)
@@ -141,9 +143,13 @@ static func review_due(current: Dictionary, personnel: Dictionary, slot: int) ->
 		if not personnel.people.has(person_id): continue
 		var profile: Dictionary = data.profiles[person_id]
 		var load = _workload(personnel, person_id, int(plan.last_review_slot), slot)
-		var gain = 2 if load >= 0.2 and load <= 0.8 else 1
+		var load_bps = int(round(load * 10000.0))
+		var gain = int(tuning.productive_gain) if load_bps >= int(tuning.productive_load_min_bps) \
+			and load_bps <= int(tuning.productive_load_max_bps) else int(tuning.other_gain)
 		profile.attributes[plan.focus] = mini(100, int(profile.attributes[plan.focus]) + gain)
-		profile.morale = clampi(int(profile.morale) + (1 if load <= 0.85 else -3), 0, 100)
+		var morale_delta = int(tuning.morale_safe_delta) if load_bps <= int(tuning.morale_safe_load_bps) \
+			else int(tuning.morale_overload_delta)
+		profile.morale = clampi(int(profile.morale) + morale_delta, 0, 100)
 		profile.last_change_slot = slot; _seal(profile); data.profiles[person_id] = profile
 		var interval = maxi(CampaignClock.SLOTS_PER_DAY, int(plan.review_slot) - int(plan.last_review_slot))
 		plan.last_review_slot = slot; plan.review_slot = mini(CampaignClock.MAX_ELAPSED_SLOTS, slot + interval)
