@@ -4,7 +4,7 @@ extends RefCounted
 ## Empty error means accepted; the aggregate alone posts radio and appends history.
 const ACTIONS = ["pace", "engine", "repair", "auto", "send", "recall", "setup", "setup_all", "brake_bias", "battle_mode"]
 
-static func apply(simulation: RaceSimFoundation, car: RaceCar, action: String, payload: Dictionary) -> String:
+static func apply(simulation: RaceSimPort, car: RaceCar, action: String, payload: Dictionary) -> String:
 	match action:
 		"pace", "engine": return _pace(car, action, payload)
 		"repair": return _repair(car, payload)
@@ -32,18 +32,18 @@ static func _auto(car: RaceCar, payload: Dictionary) -> String:
 	car.auto = payload.get("value", not car.auto)
 	return ""
 
-static func _send(simulation: RaceSimFoundation, car: RaceCar) -> String:
+static func _send(simulation: RaceSimPort, car: RaceCar) -> String:
 	if simulation.phase != "qualifying" or simulation.qual_closed or car.route != "garage": return "Garage release unavailable."
 	if TyreInventory.planned(car).is_empty(): return "No usable set selected for this run."
 	simulation.leave_garage(car)
 	return ""
 
-static func _recall(simulation: RaceSimFoundation, car: RaceCar) -> String:
+static func _recall(simulation: RaceSimPort, car: RaceCar) -> String:
 	if simulation.phase != "qualifying" or car.route != "track": return "Only an on-track qualifying car can be recalled."
 	car.qual_state = "inlap"; car.hot_valid = false; car.invalid_reason = "Recalled by the pit wall"
 	return ""
 
-static func _setup(simulation: RaceSimFoundation, car: RaceCar, action: String, payload: Dictionary) -> String:
+static func _setup(simulation: RaceSimPort, car: RaceCar, action: String, payload: Dictionary) -> String:
 	if simulation.phase not in ["briefing", "race_preparation"] and not (simulation.is_run_session() and car.route == "garage"): return "Mechanical setup changes require the garage or race preparation."
 	var changes = {"wing": payload.get("value", simulation.setup_definition.defaults().wing)} if action == "setup" else payload.get("values", {})
 	if not changes is Dictionary or changes.is_empty(): return "Choose at least one setup adjustment."
@@ -53,7 +53,7 @@ static func _setup(simulation: RaceSimFoundation, car: RaceCar, action: String, 
 	car.setup = car.car_setup.wing
 	return ""
 
-static func _brake_bias(simulation: RaceSimFoundation, car: RaceCar, payload: Dictionary) -> String:
+static func _brake_bias(simulation: RaceSimPort, car: RaceCar, payload: Dictionary) -> String:
 	if simulation.phase != "race" or car.route != "track": return "Live brake bias is available on the racing track."
 	if not RaceCheckpoint.integral(payload.get("value"), simulation.setup_definition.specs().bias[0], simulation.setup_definition.specs().bias[1]): return "Brake bias is outside the selected setup profile."
 	car.car_setup.bias = int(payload.value)
