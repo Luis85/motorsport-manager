@@ -1,6 +1,7 @@
 class_name RaceSim
 extends "res://scripts/domain/race_sim_operations.gd"
 ## Fixed-step, seeded simulation. No UI, wall-clock or scene-tree dependencies.
+var mechanics: RaceMechanics
 func _init(geometry: TrackGeometry = null, options: Dictionary = {}, roster: RosterDefinition = null) -> void:
 	if roster != null:
 		options = options.duplicate(true)
