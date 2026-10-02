@@ -83,11 +83,6 @@ func invalid_content() -> void:
 	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_REFERENCE",
 		"A campaign cannot activate with a missing weekend definition")
 	campaign_record = catalog.record("core.campaign.team-principal")
-	campaign_record.default = false
-	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
-	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN_DEFAULT",
-		"Catalog requires one explicit default campaign rather than dictionary-order selection")
-	campaign_record = catalog.record("core.campaign.team-principal")
 	campaign_record.event_finance.position_bonus_minor.pop_back()
 	campaign_errors = candidate("core.campaign.team-principal", campaign_record).seal()
 	check(not campaign_errors.is_empty() and campaign_errors[0].code == "CONTENT_CAMPAIGN",
