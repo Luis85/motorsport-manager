@@ -31,10 +31,13 @@ static func validate(data: Variant) -> String:
 		return "Campaign management exceeds serialized-value limits."
 	if not data is Dictionary or data.get("kind") != KIND:
 		return "Unsupported campaign management projection."
-	var version = int(data.get("version", -1))
-	if version not in [LEGACY_VERSION, VERSION] or data.size() != (14 if version == LEGACY_VERSION else 15):
+	var legacy = RaceCheckpoint.integral(data.get("version"), LEGACY_VERSION, LEGACY_VERSION)
+	var current = RaceCheckpoint.integral(data.get("version"), VERSION, VERSION)
+	if not legacy and not current:
 		return "Unsupported campaign management projection."
-	if version == VERSION:
+	if data.size() != (14 if legacy else 15):
+		return "Unsupported campaign management projection."
+	if current:
 		if not data.get("campaign_content") is Dictionary:
 			return "Campaign management has an invalid frozen-content slot."
 		if not data.campaign_content.is_empty():
