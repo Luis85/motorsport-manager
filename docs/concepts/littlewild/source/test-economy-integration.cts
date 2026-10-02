@@ -42,6 +42,13 @@ test('Market sale settles cash and both XP rewards exactly once',()=>{
  e.finishMarketTask(task);assert.equal(e.s.player.coins,coins+10);assert.equal(q.status,'done');assert.equal(q.sold,2);assert.equal(b.marketInventory.wood,0);assert.equal(e.s.player.xp,px+1);assert.equal(c.creature.xp,ax+1);
  e.finishMarketTask(task);assert.equal(e.s.player.coins,coins+10);
 });
+test('Economy ECS never binds the actor-scoped state proxy as shared component data',()=>{
+ const e=demo();delete e.actor.socialIntent;const before=e.s.player.coins;
+ assert.doesNotThrow(()=>e.settleEconomy({id:'root-state:shared',guide:1}));
+ assert.equal(e.s.player.coins,before+1);
+ const shared=e.economyRuntime().world.get('economy:shared','SharedEconomy');
+ assert.strictEqual(shared.state,e.state);assert.notStrictEqual(shared.state,e.s);
+});
 test('Story roundtrip reconstructs settlement services and resumes deterministic rewards',()=>{
  const a=demo();a.settleEconomy({id:'roundtrip:seed',guide:3,research:2,actorXp:1},'Roundtrip seed');const restored=S.commit(S.inspect(S.encode(a)));
  assert.deepEqual(restored.export().state,a.export().state);assert(restored.economyRuntime().world instanceof E.World);

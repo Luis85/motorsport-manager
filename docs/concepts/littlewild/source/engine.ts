@@ -75,7 +75,8 @@
             const spec = { ...input };
             spec.id ||= this.economySettlementId('economy');
             spec.actorCpPerLevel ??= root.LWAdventure?.content?.rules?.cpPerLevel || 0;
-            const out = this.economyRuntime().settle(this.s, this.economyActor(), spec);
+            const sharedState = root.LWActorStateView?.rootOf(this.s) || this.s;
+            const out = this.economyRuntime().settle(sharedState, this.economyActor(), spec);
             if (!out.ok)
                 return out;
             const d = out.deltas || {};

@@ -105,7 +105,7 @@
    if(!plain(stateInput))throw Error('Invalid economy state.');
    const state=stateInput as unknown as EconomyState;
    if(!plain(state.player)||!integer(state.player.coins,0,tuning.limits.balance)||!integer(state.player.level,1,tuning.limits.level)||!integer(state.player.xp,0,tuning.limits.balance)||
-    !integer(state.rp,0,tuning.limits.balance)||!plain(state.stats)||!Array.isArray(state.completedQuests))throw Error('Invalid economy state.');
+    !integer(state.rp,0,tuning.limits.balance)||!Array.isArray(state.completedQuests))throw Error('Invalid shared economy state.');
    let actor:ActorRecord|null=null;
    if(actorInput!==undefined&&actorInput!==null){if(!plain(actorInput))throw Error('Invalid actor economy state.');actor=actorInput as unknown as ActorRecord;}
    const actorRecord=actor?.creature||state.creature,actorStats=actor?.stats||state.stats;
