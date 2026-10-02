@@ -143,14 +143,12 @@ async function main():Promise<void>{
   await check(tag+": world remains visible beside/above Build",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.65;})));
   await check(tag+": build footer remains reachable",async()=>expect(await p.locator("#build-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await check(tag+": no horizontal page overflow",async()=>expect(await p.evaluate("document.documentElement.scrollWidth<=innerWidth")));
-  await screenshot(p,"build-"+tag+".png");
   await p.locator(".build-row").first().click();await p.locator("#build-actor").selectOption("c1");
   await p.locator("[data-build=place]").scrollIntoViewIfNeeded();
   await check(tag+": primary placement action scrolls into view",async()=>expect(await p.locator("[data-build=place]").isVisible()));
   await p.evaluate("Littlewild.open('v10-guide')");await p.waitForTimeout(80);
   await check(tag+": guide fits without covering entire world",async()=>expect(await p.locator("#guide-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.bottom<=innerHeight&&r.width*r.height<innerWidth*innerHeight*.58;})));
   await check(tag+": guide footer remains reachable",async()=>expect(await p.locator("#guide-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
-  await screenshot(p,"guide-"+tag+".png");
   await p.locator("[data-guide=close]").click();
  }
  await check("No uncaught browser errors in tested flows",()=>equal(errors,[]));
