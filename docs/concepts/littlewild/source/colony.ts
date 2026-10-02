@@ -14,6 +14,7 @@
     function definition(id) { return A.content.equipment.find(x => x.id === id); }
     function item(id) { return RES[id] ? { id, ...RES[id], weight: A.content.weights[id] } : definition(id) || (id === 'wooden_chest' ? (A.content.chest || A.defaultContent.chest) : null); }
     function profile(id) { return A.content.personalities.find(x => x.id === id) || A.content.personalities[0]; }
+    function arrivalPoint(personality = Creatures.defaultPersonality) { const transform = Creatures.seed(personality, 'arrival', 0).creature; return { x: transform.x, y: transform.y }; }
     function initializeColony(self) {
         self._simulating = false;
         self._actor = null;
@@ -533,8 +534,9 @@
             c.questHistory = c.questHistory.slice(0, 15);
             c.activeQuest = null;
             c.needsDeposit = true;
-            c.creature.x = GATE.x;
-            c.creature.y = GATE.y;
+            const arrival = arrivalPoint(c.personality);
+            c.creature.x = arrival.x;
+            c.creature.y = arrival.y;
             c.task = null;
             this.log(c.name + ' returned: ' + q.outcome + '. Finds remain in the satchel until the warehouse visit.', 'compass');
             this.emit('return', c.name + ' is home. First, a visit to the warehouse.');
@@ -1027,7 +1029,7 @@
             }});
         }
     }
-    L.colony = { item, definition, profile, PERSONAL, GATE };
+    L.colony = { item, definition, profile, PERSONAL, arrivalPoint };
     function installFactories() {
         const oldDemo = L.createWorkshopDemo;
         L.createWorkshopDemo = () => Composition.constructThrough('colony', oldDemo().s);
