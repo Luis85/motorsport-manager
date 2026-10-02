@@ -32,7 +32,7 @@
             const en = E(), c = actor();
             if (!c)
                 return wrap('Beyond the glade.', 'Select a companion, prepare, then let them find their way.', selection());
-            if(root.LWQuestDestination){view.questIsland=root.LWQuestDestination;root.LWQuestDestination=null;view.quest=null;view.questDetail=false;}let body = hero(c);
+            if(root.LWQuestDestination){view.questIsland=root.LWQuestDestination;Reflect.deleteProperty(root,'LWQuestDestination');view.quest=null;view.questDetail=false;}let body = hero(c);
             if (c.activeQuest)
                 body += questActive(c);
             else if (c.questPlan) {
