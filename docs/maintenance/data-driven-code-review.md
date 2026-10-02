@@ -26,7 +26,7 @@ The race weekend already used strict JSON packs, schemas, stable references and 
 
 The campaign constructed a legacy-style race-options dictionary instead of referencing the same authored weekend contract used by standalone play.
 
-**Resolution:** added `core.weekend.campaign-starter`. The campaign references that weekend by stable ID and freezes its resolved roster, tyres, setup, tuning, mechanic profile and vehicle definition through the ordinary race-content boundary.
+**Resolution:** added `core.weekend.campaign-starter`. The campaign references that weekend by stable ID, authors a circuit ID per event, and freezes the resolved circuit documents, roster, tyres, setup, tuning, mechanic profile and vehicle definition through the ordinary race-content boundary.
 
 ### CR-03 — Content pack changes could affect a running career — closed
 
