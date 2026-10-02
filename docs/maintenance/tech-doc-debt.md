@@ -147,6 +147,27 @@ GitHub Actions executes independently for PR updates. Judge this branch only by 
 
 A cancelled, superseded or intermediate run is not evidence for the final head. No local Godot runner is available in this maintenance execution environment. Source/tree, bounded static review, documentation consistency and line-budget checks do not replace executable acceptance.
 
+## Campaign data-authority review and closure
+
+A post-PR27 review found one remaining split authority in the campaign path. Race
+content was already strict/frozen, but `CampaignStarter` still authored the
+initial career, series/calendar, finance, staff/facilities and rival seeds in code;
+three campaign algorithms also retained product-tuning coefficients.
+
+This follow-up closes the touched debt without rewriting unrelated race/UI systems:
+
+- starter campaign content is a validated `campaign` definition in the core pack;
+- the campaign references an authored weekend and freezes the effective race-content
+  closure into the save before the first checkpoint is published;
+- rival planning, people development and supply-evidence coefficients are authored
+  bounded policies instead of hidden literals;
+- old v1 management envelopes and pre-content campaign saves remain readable via
+  isolated compatibility adapters registered in the content-consumer inventory;
+- the composition layer consumes the frozen campaign closure on later departures,
+  so live pack changes cannot alter an existing career;
+- regression contracts cover catalog references, cross-field validation, frozen
+  detachment, starter construction and static ownership of retained literals.
+
 ## Deliberately remaining debt
 
 - `scripts/domain/race_sim.gd` and retained `scripts/ui/weekend.gd` / `scripts/ui/pitwall_workspace.gd` remain above the source-size budget. Prioritize them only when product work touches their responsibilities and characterization is available.
