@@ -1,7 +1,10 @@
 extends SceneTree
+
+
 ## Developer entrypoint, excluded from ordinary export presets.
 func _initialize() -> void:
 	call_deferred("run")
+
 
 func run() -> void:
 	var args = OS.get_cmdline_user_args()
