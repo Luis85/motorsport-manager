@@ -1,5 +1,7 @@
 {
-  "publicationStatus": "staging-only; game and source payload are not yet in this branch",
+  "historical": true,
+  "scope": "Historical supplied staging payload; current release recorded in ../delivery-manifest.json",
+  "publicationStatus": "historical staging-only snapshot; game and source payload were not yet in this branch at that checkpoint",
   "repository": "Luis85/motorsport-manager",
   "branch": "concept/littlewild-v15-world-ui",
   "path": "docs/concepts/littlewild",

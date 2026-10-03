@@ -26,4 +26,3 @@ declare namespace LWPhysicalPorts {
  interface Runtime {world:World;scheduler:Scheduler;bindInventory(id:string,items:Inventory):Components['Inventory'];bindDeposit(id:string,record:Deposit,resource:string,finite:boolean):Components['ResourceDeposit'];bindWorksite(id:string,storage:Storage):Components['ProductionJob'];transfer(spec:Transfer):Result;transfers(specs:Transfer[]):(Result & {id:string})[];harvest(spec:Harvest):Result;reserveProduction(spec:Reservation):Result;updateProduction(spec:JobUpdate):Result;settleProduction(spec:Settlement):Result;hasSettled(id:string):boolean;forget(id:string):boolean;}
  interface EcsPhysicalApi {create():Runtime;total(inventory:Inventory|null|undefined):number;}
 }
-

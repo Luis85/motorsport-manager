@@ -24,7 +24,9 @@ checksum, and then removed its temporary workflow and transfer staging.
 - Publication workflow run: `36643462040` — success
 
 `STATUS.json` records the installer result. `payload-manifest.json` pins the
-supplied archive, and `VERIFICATION.md` records the current product gate.
+supplied archive, and `VERIFICATION.md` records the historical supplied product gate.
+The current release identity and gate are recorded in `../delivery-manifest.json`
+and `../VERIFICATION.md`.
 
 ## Scope
 

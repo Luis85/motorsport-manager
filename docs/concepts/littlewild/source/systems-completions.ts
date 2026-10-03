@@ -65,7 +65,7 @@ const s=engine.s,o=s.orders.find(o=>o.id===t.orderId),sk=engine.taskSkill(t);
    s.needs.comfort=clamp(s.needs.comfort+extra+(engine.specialization('comfort')?B.forEngine(engine).recovery.comfortSpecialist:0),0,100);if(t.kind==='rest')s.needs.energy=clamp(s.needs.energy+extra,0,100);
   }
   if(t.kind==='play'&&engine.has('orchard'))s.needs.joy=clamp(s.needs.joy+B.forEngine(engine).recovery.reflectJoy,0,100);
- 
+
  }
  const api=Object.freeze({finish});root.LWSkillCompletions=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

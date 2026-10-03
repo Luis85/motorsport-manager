@@ -77,7 +77,7 @@
   }
   expireResponses(){const now=performance.now();for(const r of this.responses||[])if(now>r.until||!this.engine.creatures.some(c=>c.id===r.actorId&&this.present(c)))r.el.remove();this.responses=(this.responses||[]).filter(r=>r.el.isConnected);}
   paintResponses(){for(const r of this.responses||[]){const c=this.engine.creatures.find(c=>c.id===r.actorId&&this.present(c));if(!c||performance.now()>r.until){r.el.remove();continue;}const v=this.actors.get(c.id);const p=this.toScreen(v?.root.position.x??c.creature.x,v?.root.position.z??c.creature.y,1.05);r.el.style.left='0';r.el.style.top='0';r.el.style.transform=`translate3d(${p.x}px,${p.y-18}px,0)`;}this.responses=(this.responses||[]).filter(r=>r.el.isConnected);}
-  
+
   rebuild(){for(const g of [...this.staticRoot.children]){this.staticRoot.remove(g);g.traverse(o=>{if(o.isInstancedMesh)o.dispose();});}for(const o of [...this.motionRoot.children])this.motionRoot.remove(o);this.doors.clear();this.rotors=[];this.waterMotions=[];this.smokeParticles=[];
    const staging=new T.Group(),s=this.engine.s,occupied=new Set(s.buildings.map(b=>b.x+','+b.y));
    this.environment=root.LWSceneEnvironment?.read()||null;this.sea.visible=!this.environment;this.scene.background.set(this.environment?.background||'#d5e4df');this.scene.fog=this.environment?null:new T.Fog('#d5e4df',105,195);this.atmosphere.hidden=!!this.environment;
@@ -94,7 +94,7 @@
      if(path){if(x===9)piece(tileRoot,'ground',ix+x,.044,iy+y,.60,1,1.01,'#c3b48c');if(y===9)piece(tileRoot,'ground',ix+x,.045,iy+y,1.01,1,.60,'#c3b48c');}
      if(shore&&hash>.64){for(let j=0;j<2;j++)root.LWAssetRenderer.createItem(artKit,tileRoot,'reed','world',{position:[ix+x+.32-j*.12,0,iy+y-.24],rotation:[0,(hash+j*.27)*Math.PI*2,(hash-.5)*.25],scale:[.85,.9+hash*.22,.85]});}
      if(shore&&hash>.73){box(tileRoot,ix+x+.10,-.46,iy+y-.05,.82,.13,.84,'#9aa597');}
-     
+
      if(shore&&hash>.50)root.LWAssetRenderer.createItem(artKit,tileRoot,'shore-rock','world',{position:[ix+x+.1,-.52,iy+y+.15],rotation:[0,hash*Math.PI*2,0],scale:[.9+hash*.16,.9+hash*.10,.9+hash*.16]});
      if(!path&&!clear&&hash>.60&&!occupied.has((ix+x)+','+(iy+y))){for(let n=0;n<3;n++){const a=ix+x-.29+n*.2,b=iy+y+Math.sin(n+x)*.28;root.LWAssetRenderer.createItem(artKit,tileRoot,'wildflower',hash>.84?'world':'grass',{position:[a,0,b],rotation:[0,(hash+n*.1)*6.283,0],scale:[.9+(hash%1)*.2,.9+(hash%1)*.2,.9+(hash%1)*.2]});}}
     }
@@ -129,7 +129,7 @@
    const frameKey=JSON.stringify([s.simTime,s.terraform?.revision||0,this.camera,this.canvas.width,this.canvas.height,this.quality,root.LWFidelity.revision(),this.showPath,this.resourceLens,this.keyboardTile,this.hover,this.menuTile,this.landSelected,this.placement,e.selected?.id,reduced,s.settings.follow,s.buildings.map(b=>[b.id,b.level]),s.nodes.filter(n=>['wood','stone','ore','clay'].includes(n.kind)).map(n=>[n.id,n.stock===0]),e.creatures.map(c=>[c.id,c.personality,c.equipment,c.activeQuest?.status,c.task?.kind,c.task?.phase,c.creature.x,c.creature.y,root.LWFidelity.mood(c),c.careVisual]),this.bubble&&[this.bubble.text,time<this.bubble.time],e.allOrders().filter(o=>o.type==='build').map(o=>[o.id,o.x,o.y,o.kind,o.stage])]);
    if(!this.running&&!this.forceDraw&&this.renderKey===frameKey){this.skippedFrames++;return;}
    this.forceDraw=false;this.renderKey=frameKey;if(this.running)this.visualTime+=Math.min(.10,Math.max(0,dt));const motion=this.visualTime;
-   
+
    const key=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,root.LWSceneProps?.exterior(this.engine),s.estate.islands,s.terraform?.revision||0,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);if(key!==this.geometryKey)this.rebuild();
    if(s.settings.follow&&e.selected&&!e.selected.activeQuest&&!this.contextChoosing){const sample=this.motion.sample(e.selected,s.simTime,this.presentationAlpha,this.running),p=this.toScreen(sample.x,sample.z),ease=reduced?1:1-Math.exp(-Math.max(0,dt)*3);this.camera.x+=(this.canvas.width/2-p.x)*ease;this.camera.y+=(this.canvas.height*.50-p.y)*ease;}
    this.syncCamera();const indoorCounts=new Map(),labelEntries=[];this.actorAnchors.clear();for(const c of e.creatures){let v=this.actors.get(c.id),eq=JSON.stringify([c.personality,c.equipment,root.LWFidelity.revision()]);if(!v||v.key!==eq){if(v)this.dynamicRoot.remove(v.root);v=creature(this.dynamicRoot,c);this.actors.set(c.id,v);}v.root.visible=this.present(c);if(!v.root.visible)continue;
@@ -155,7 +155,7 @@
    for(const r of this.rotors)r.group.rotation[r.axis]=r.startAngle+(!reduced?motion*(r.speed??.32):0);
    for(const w of this.waterMotions)w.mesh.position.x=w.x+(!reduced?Math.sin(motion*.7+w.phase)*.10:0);
    for(const p of this.smokeParticles){const b=p.building,active=p.always||indoorCounts.has(b.id)||e.creatures.some(c=>c.task?.phase==='work'&&c.task.buildingId===b.id);p.mesh.visible=active&&!reduced;const v=(motion*.32+p.j/3)%1;p.mesh.position.set(p.origin.x+v*.10,p.origin.y+v*.62,p.origin.z-v*.06);p.mesh.scale.setScalar(.05+v*.10);}
-   
+
    const selectedAnchor=this.actorAnchors.get(e.selected?.id);let point=this.placement&&this.hover?this.hover:selectedAnchor?.visible&&!(selectedAnchor.inside&&selectedAnchor.phase>.55)?{x:selectedAnchor.x,y:selectedAnchor.z}:null;if(this.landSelected)point=this.landSelected;this.marker.visible=!!point;if(point){const bridge=G.bridges(s).some(b=>Math.abs(point.x-b.x)<(b.dy?.52:2.7)&&Math.abs(point.y-b.y)<(b.dy?2.7:.52));this.marker.position.set(point.x,(bridge?.113:.074)+G.heightAt(s,point.x,point.y)*.4,point.y);this.marker.material.color.set(this.placement&&e.placementIssue(this.placement,point.x,point.y)?'#d2927e':'#f7df9c');}
    const tile=this.menuTile||(!this.placement?this.keyboardTile||this.hover:null);this.tileCursor.visible=!!tile;
    if(tile)this.tileCursor.position.set(tile.x,.11+G.heightAt(s,tile.x,tile.y)*.4,tile.y);
