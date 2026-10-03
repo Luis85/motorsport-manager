@@ -256,5 +256,87 @@ class ArchitectureGuardTests(unittest.TestCase):
                 self.assertEqual("mechanic-hook-contract" in rules, invalid)
 
 
+class ToolboxArchitectureTests(unittest.TestCase):
+    """Developer command facets cannot become a presentation query shortcut."""
+
+    AUTHORITIES = {
+        "GameToolbox": "scripts/application/toolbox/game_toolbox.gd",
+        "DeveloperWeekends": "scripts/application/toolbox/developer_weekends.gd",
+        "DeveloperCampaigns": "scripts/application/toolbox/developer_campaigns.gd",
+        "DeveloperTracks": "scripts/application/toolbox/developer_tracks.gd",
+        "GameToolboxFactory": "scripts/services/toolbox/factory.gd",
+    }
+
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+        for name, path in self.AUTHORITIES.items():
+            self.write(path, f"class_name {name}\nextends RefCounted\n")
+
+    def write(self, path, source):
+        target = self.root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(source)
+
+    def scan_consumer(self, source, path="scripts/ui/probe.gd"):
+        self.write(path, source)
+        return [error for error in inspect(self.root)[0] if error.path == path]
+
+    def test_ui_cannot_retain_command_facets_even_for_query_only_use(self):
+        for authority in self.AUTHORITIES:
+            source = (
+                f"var port: {authority}\nfunc refresh():\n"
+                '\treturn port.query("session", "state", {})\n'
+            )
+            with self.subTest(authority=authority):
+                self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_named_subclasses_cannot_hide_live_toolbox_authority(self):
+        for authority in self.AUTHORITIES:
+            self.write(
+                "scripts/application/toolbox/alias.gd",
+                f"class_name HiddenPort extends {authority}\n",
+            )
+            with self.subTest(authority=authority):
+                self.assertIn(
+                    "detached-renderer",
+                    [v.rule for v in self.scan_consumer("var live = HiddenPort.new()\n")],
+                )
+
+    def test_literal_aliases_and_inheritance_cannot_hide_toolbox_authority(self):
+        for authority, target in self.AUTHORITIES.items():
+            for source in (
+                f'const Hidden = preload("res://{target}")\n',
+                f'extends "res://{target}"\n',
+            ):
+                with self.subTest(authority=authority, source=source):
+                    self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_ui_cannot_construct_the_service_factory(self):
+        violations = self.scan_consumer("var factory = GameToolboxFactory.new()\n")
+        self.assertIn("dependency-direction", [v.rule for v in violations])
+        self.assertIn("detached-renderer", [v.rule for v in violations])
+
+    def test_composition_may_own_developer_command_facets(self):
+        source = "\n".join(
+            f"var port_{index}: {name}" for index, name in enumerate(self.AUTHORITIES)
+        )
+        self.assertEqual([], self.scan_consumer(source, "scripts/composition/tools.gd"))
+
+    def test_detached_queries_and_value_helpers_remain_available_to_ui(self):
+        names = ("RaceViewHandle", "RaceViewQuery", "CampaignFinanceQuery", "DeveloperToolResult")
+        for name in names:
+            self.write(f"scripts/application/{name}.gd", f"class_name {name}\nextends RefCounted\n")
+        source = "\n".join(f"var query_{index}: {name}" for index, name in enumerate(names))
+        self.assertEqual([], self.scan_consumer(source))
+
+    def test_documentation_does_not_create_command_authority_edges(self):
+        names = " ".join(self.AUTHORITIES)
+        self.assertEqual(
+            [], self.scan_consumer(f'extends Control\n# {names}\nvar help = "{names}"\n')
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

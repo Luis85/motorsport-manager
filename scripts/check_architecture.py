@@ -51,6 +51,11 @@ ENGINE_AUTHORITY = {
     "App",
 }
 PRESENTATION_AUTHORITY = {
+    "GameToolbox",
+    "GameToolboxFactory",
+    "DeveloperWeekends",
+    "DeveloperCampaigns",
+    "DeveloperTracks",
     "TrackReferencePreview",
     "RaceSessionRunner",
     "ReplayPlayback",
