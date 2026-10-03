@@ -3,11 +3,19 @@ extends SceneTree
 var game
 var view
 var results: Array = []
+var checks = 0
+var errors: Array[String] = []
 var draws = {"cars": 0, "battle": 0, "rejoin": 0, "surface": 0}
 
 
 func _initialize():
 	call_deferred("run")
+
+
+func check(condition: bool, message: String) -> void:
+	checks += 1
+	if not condition:
+		errors.append(message)
 
 
 func distribution(values: Array) -> Dictionary:
@@ -67,9 +75,14 @@ func run():
 	measure("commands / paused refresh", view.refresh)
 	measure("uncached forecast / one driver", func(): sim.forecast(3), 30)
 	var unchanged = original == JSON.stringify(sim.snapshot())
+	check(unchanged, "Paused analytical refresh and forecasts preserve simulation state")
 	if view.has_method("close_detail"):
 		view.close_detail()
 	measure("watch / paused refresh", view.refresh)
+	check(
+		original == JSON.stringify(sim.snapshot()),
+		"Paused watch refresh preserves simulation state"
+	)
 	view.canvas.overlay.draw.connect(func(): draws.cars += 1)
 	view.battle_overlay.draw.connect(func(): draws.battle += 1)
 	view.rejoin_overlay.draw.connect(func(): draws.rejoin += 1)
@@ -88,11 +101,15 @@ func run():
 	results.append(frame_result)
 	var paused_draws = draws.duplicate()
 	var paused_calls = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+	check(
+		original == JSON.stringify(sim.snapshot()), "Native paused frames preserve simulation state"
+	)
 	var active: Array = []
 	for factor in [1, 16]:
 		sim.command("speed", {"value": factor})
 		sim.paused = false
 		var shadow = StrategyRaceSim.restore_weekend(sim.snapshot())
+		check(shadow != null, "Active workload restores its deterministic headless shadow")
 		if shadow == null:
 			unchanged = false
 			break
@@ -112,6 +129,7 @@ func run():
 			shadow.advance(1.0 / 60.0)
 		var deterministic = JSON.stringify(sim.snapshot()) == JSON.stringify(shadow.snapshot())
 		unchanged = unchanged and deterministic
+		check(deterministic, "Native workload matches the headless outcome at speed " + str(factor))
 		active.append(
 			{
 				"speed": factor,
@@ -125,12 +143,16 @@ func run():
 			}
 		)
 		sim.paused = true
+	check(active.size() == 2, "Both controlled speed workloads completed")
+	unchanged = unchanged and errors.is_empty()
 	var label = "current"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("label="):
 			label = arg.trim_prefix("label=")
 	var report = {
 		"passed": unchanged,
+		"checks": checks,
+		"errors": errors,
 		"label": label,
 		"engine": Engine.get_version_info().string,
 		"cpu": OS.get_processor_name(),
