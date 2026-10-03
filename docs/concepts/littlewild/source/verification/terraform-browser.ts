@@ -27,7 +27,7 @@ async function main():Promise<void>{
    assert.equal(await page.locator('[data-terraform=apply]').isDisabled(),false);await page.locator('[data-terraform=apply]').click();
    assert.equal(await page.evaluate(`Littlewild.engine.terrainHeight(${tile.x},${tile.y})`),1);
    assert.equal(await page.evaluate(`LWGeography.heightAt(Littlewild.engine.s,${tile.x},${tile.y})`),1);assert.match(await page.locator('.terraform-feedback').innerText(),/Changes applied/);
-   await page.screenshot({path:path.join(OUT,'terraform-desktop.png'),fullPage:true});
+   if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-desktop.png'),fullPage:true});
   });
   await check('Unsafe resource flooding explains rejection and disables Apply without erasing stock',async()=>{
    await page.locator('#terraform-tool').selectOption('water');const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
@@ -45,10 +45,10 @@ async function main():Promise<void>{
    assert(await page.locator('#terraform-kind').isVisible());assert(await page.locator('#terraform-model').isVisible());
    const geometry=await page.locator('#terraform-panel').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,viewport:innerWidth,overflow:el.scrollWidth>el.clientWidth};});
    assert(geometry.left>=0&&geometry.right<=geometry.viewport);assert.equal(geometry.overflow,false);
-   await page.screenshot({path:path.join(OUT,'terraform-mobile.png'),fullPage:true});
+   if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-mobile.png'),fullPage:true});
    const point=await page.evaluate(`(()=>{const e=Littlewild.engine;for(let y=2;y<=16;y++)for(let x=2;x<=16;x++)if(e.previewTerraform({revision:e.terraformSnapshot().revision,tiles:[],plants:[{x,y,kind:'wood',model:'world'}]}).ok)return {x,y};throw Error('No safe plant tile');})()`) as {x:number;y:number};
    await page.locator('[data-terraform=map]').click();assert.equal(await page.locator('#terraform-tool').isVisible(),false);
-   await page.evaluate(`Littlewild.world.focus(${point.x},${point.y})`);await page.screenshot({path:path.join(OUT,'terraform-mobile-map.png'),fullPage:true});
+   await page.evaluate(`Littlewild.world.focus(${point.x},${point.y})`);if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-mobile-map.png'),fullPage:true});
    const screen=await page.evaluate(`Littlewild.world.toScreen(${point.x},${point.y})`) as {x:number;y:number},canvas=await page.locator('#world').boundingBox();assert(canvas);
    await page.mouse.click(canvas.x+screen.x,canvas.y+screen.y);assert(await page.locator('#terraform-tool').isVisible());assert.match(await page.locator('.terraform-changes').innerText(),/plant Branching grove/);
    await page.keyboard.press('Escape');assert.equal(await page.locator('#terraform-panel').isVisible(),false);
@@ -66,14 +66,14 @@ async function main():Promise<void>{
      assert.deepEqual(await page.evaluate('terraformCanvasHits.at(-1)'),point);assert.deepEqual(await page.evaluate('({x:terraformCanvasView.hover.x,y:terraformCanvasView.hover.y})'),point);
     }
     assert.equal(await page.evaluate('Array.from(terraformCanvasView.c.getImageData(innerWidth/2,innerHeight/2,1,1).data).slice(0,3).some(channel=>channel>0)'),true);
-    await page.screenshot({path:path.join(OUT,'terraform-canvas-heights.png'),fullPage:true});
+    if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-canvas-heights.png'),fullPage:true});
    }finally{await page.evaluate('terraformCanvasView.dispose();terraformCanvasView.canvas.remove();delete window.terraformCanvasView;delete window.terraformCanvasHits');}
   });
   await check('Actual 3D geometry rebuild and draw render a newly planted tree without script or console failures',async()=>{
    const point=await page.evaluate(`(()=>{const e=Littlewild.engine;for(let y=2;y<=16;y++)for(let x=2;x<=16;x++){const edit={revision:e.terraformSnapshot().revision,tiles:[],plants:[{x,y,kind:'wood',model:'world'}]};if(e.previewTerraform(edit).ok){const result=e.applyTerraform(edit);if(!result.ok)throw Error(result.reason);return {x,y};}}throw Error('No safe tree tile');})()`) as {x:number;y:number};
    try{
     await page.evaluate(`(()=>{const canvas=document.createElement('canvas');canvas.id='terraform-three-proof';canvas.tabIndex=0;canvas.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:10000';document.body.appendChild(canvas);window.terraformThreeView=new LWArt.World(canvas,Littlewild.engine);if(!terraformThreeView.scene||!terraformThreeView.renderer)throw Error('Actual 3D renderer unavailable');terraformThreeView.focus(${point.x},${point.y});terraformThreeView.rebuild();terraformThreeView.draw(0,0);})()`);
-    await page.screenshot({path:path.join(OUT,'terraform-three-plant.png'),fullPage:true});assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);
+    if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-three-plant.png'),fullPage:true});assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);
    }finally{await page.evaluate("window.terraformThreeView?.dispose();document.querySelector('#terraform-three-proof')?.remove();delete window.terraformThreeView");}
   });
   await check('Indoor Office terrain uses the same editable ground and elevation while preserving its authored stage',async()=>{
@@ -84,7 +84,7 @@ async function main():Promise<void>{
    await page.locator('#terraform-tool').selectOption('raise');await page.evaluate(`Littlewild.world.keyboardTile=${JSON.stringify(point)};Littlewild.world.canvas.focus()`);await page.keyboard.press('Enter');
    await page.locator('#terraform-tool').selectOption('water');await page.evaluate('Littlewild.world.canvas.focus()');await page.keyboard.press('Enter');await page.locator('[data-terraform=apply]').click();
    assert.equal(await page.evaluate(`Littlewild.engine.terrainHeight(${point.x},${point.y})`),1);assert.equal(await page.evaluate(`Littlewild.engine.terrainAt(${point.x},${point.y})`),'water');
-   await page.screenshot({path:path.join(OUT,'terraform-office.png'),fullPage:true});
+   if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'terraform-office.png'),fullPage:true});
   });
   await check('Terraform browser runs offline without script or console failures',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
  }finally{await context.close();await browser.close();}

@@ -79,7 +79,7 @@ async function main():Promise<void>{
     assert.equal(await page.getByRole('button',{name:'Add floor',exact:true}).count(),1);
     await page.locator('[data-tool=station]').focus();assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-tool')),'station');
     await page.locator('[data-floor=ground]').click();
-    await page.screenshot({path:path.join(OUT,`construction-editor-${viewport.width===1440?'desktop':'mobile'}.png`),fullPage:true});
+    if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,`construction-editor-${viewport.width===1440?'desktop':'mobile'}.png`),fullPage:true});
    });
    await check('Actual routed construction reserves its entire footprint at '+viewport.width+'px',async()=>{
     const site=await page.evaluate(()=>{

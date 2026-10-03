@@ -128,7 +128,7 @@ async function main():Promise<void>{
    await page.keyboard.press('Tab');
    assert.equal(await page.evaluate(()=>document.activeElement?.id),'quests-setting');
    await page.locator('#duels-setting').scrollIntoViewIfNeeded();
-   await page.screenshot({path:path.join(OUT,'game-settings-'+viewport.width+'.png')});
+   if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'game-settings-'+viewport.width+'.png')});
    await page.close();
   }
  }catch(error){results.push({name:'Settings browser setup and capture',passed:false,error:String(error)});}
