@@ -80,13 +80,19 @@ test('Malformed graph/config metadata and ambiguous references reject before inp
   d=>{rows(d.nodes).push(copy(rows(d.nodes)[0]!));},d=>{rows(d.edges)[0]!.toNode='missing';},d=>{rows(d.edges).push(copy(rows(d.edges)[0]!));},
   d=>{node(d,'scene:child-shift').x=Number(node(d,'scene:'+first.id).x);node(d,'scene:child-shift').y=Number(node(d,'scene:'+first.id).y);node(d,'scene:child-shift').width=node(d,'scene:'+first.id).width;node(d,'scene:child-shift').height=node(d,'scene:'+first.id).height;},
   d=>{config(d,'scene-config:'+first.id,p=>{data(data(p.properties).graph).rendererModule='https://example.invalid/code.js';});},
-  d=>{config(d,'scene-config:'+first.id,p=>{data(data(p.properties).graph).rendering={dimension:'2d',rendererId:'eval'};});},
+  d=>{config(d,'scene-config:'+first.id,p=>{data(data(p.properties).graph).rendering={dimension:'2d',rendererId:'javascript:eval'};});},
   d=>{config(d,'scene-config:child-shift',p=>{data(data(p.properties).graph).binding={type:'island',sourceSceneId:'missing',ix:0,iy:0};});},
   d=>{config(d,'scene-config:child-shift',p=>{p.id=first.id;});},d=>{node(d,'scene-config:'+first.id).text='Littlewild scene\n(()=> alert(1))()';},
   d=>{d.nodes=rows(d.nodes).filter(n=>n.id!=='exchange-part:0');},d=>{node(d,'scene:'+first.id).width=NaN;},
   d=>{config(d,'scene-config:'+first.id,p=>{data(data(p.properties).graph).rendering={dimension:'3d',rendererId:'basic',embeds:[{id:'loop',sceneId:first.id,role:'minimap'}]};});}
  ];
  for(const mutate of changes){const invalid=exported(p);mutate(invalid);const snapshot=copy(invalid);assert.equal(E.import(invalid).ok,false);assert.deepEqual(invalid,snapshot);assert.deepEqual(draft.snapshot(),p);assert.equal(draft.revision,0);assert.deepEqual(engine.export(),before);}
+});
+test('Canvas preserves an unavailable stable renderer identity as inert portable data',()=>{
+ const p=graph(),first=p.scenes[0]!,doc=exported(p);
+ config(doc,'scene-config:'+first.id,value=>{data(data(value.properties).graph).rendering={dimension:'2d',rendererId:'eval'};});
+ const before=copy(doc),back=accepted(E.import(doc));
+ assert.equal(back.pack.scenes[0]!.graph!.rendering!.rendererId,'eval');assert.deepEqual(back.pack.scenes[0]!.initialState,first.initialState);assert.deepEqual(doc,before);assert(X.validate(back.pack).ok);
 });
 test('Bounded portable Canvas authoring rejects unknown canonical refs, behavior fields and excessive metadata',()=>{
  const p=base();p.canvasAuthoring={version:1,nodes:{'scene:unknown':{x:0,y:0,width:50,height:50}},edges:{}};assert.throws(()=>A.validate(p));

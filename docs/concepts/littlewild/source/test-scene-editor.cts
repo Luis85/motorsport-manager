@@ -85,9 +85,15 @@ test('Published graph schema agrees with runtime shape for compatible and unsupp
  const shape=require('./scenario-shape.js') as (input:unknown,schema:LWContentPorts.Schema)=>string[];
  const ajv=new Ajv2020({strict:true}),validate=ajv.compile(X.schema),pack=graph();pack.scenes[0]!.graph!.requirements=[{type:'building',kind:'map_table'},{type:'item',itemId:'field_satchel',quantity:1}];
  assert(validate(pack));assert.deepEqual(shape(pack,X.schema),[]);assert(X.validate(pack).ok);
- for(const graph of [{kind:'unsupported'},{kind:'level',rendering:{dimension:'4d',rendererId:'basic'}},{kind:'level',rendering:{dimension:'2d',rendererId:'script'}},{kind:'level',rendering:{dimension:'3d',rendererId:'basic',embeds:[{id:'map',sceneId:'remote',role:'frame'}]}}]){
+ for(const graph of [{kind:'unsupported'},{kind:'level',rendering:{dimension:'4d',rendererId:'basic'}},{kind:'level',rendering:{dimension:'2d',rendererId:'javascript:script'}},{kind:'level',rendering:{dimension:'3d',rendererId:'basic',embeds:[{id:'map',sceneId:'remote',role:'frame'}]}}]){
   const bad:Pack=C.copy(pack);Object.assign(bad.scenes[0]!,{graph});assert.equal(validate(bad),false);assert(shape(bad,X.schema).length>0);assert.equal(X.validate(bad).ok,false);
  }
+});
+test('Scene drafts and published schema retain a portable custom renderer identity',()=>{
+ const pack=graph(),scene=pack.scenes[0]!,draft=E.create(pack),before=C.copy(scene.initialState);
+ draft.updateScene(scene.id,{graph:{...scene.graph!,rendering:{dimension:'2d',rendererId:'script'}}});
+ const exported=asPack(draft.export()),validate=new Ajv2020({strict:true}).compile(X.schema);
+ assert(validate(exported));assert(X.validate(exported).ok);assert.equal(exported.scenes[0]!.graph!.rendering!.rendererId,'script');assert.deepEqual(exported.scenes[0]!.initialState,before);
 });
 test('Rendering selections and embedded views reject mismatches, cycles and missing scenes',()=>{
  const pack=graph(),source=pack.scenes[0]!,map=C.copy(source);map.id='map';map.name='Map';map.graph={kind:'level',rendering:{dimension:'2d',rendererId:'pixi-2d'}};pack.scenes.push(map);

@@ -6,6 +6,8 @@ This gives a code generator complete source and data inputs. It does not automat
 
 The developer World & Scene Editor has a closed “Engine and code generator export” disclosure. Select a scene in a complete validated draft and download engine JSON. Export captures detached draft data before asynchronous source inflation. A changed/closed draft discards a pending download. Native state, active engine, history and host lease stay unchanged. Export a pack captured from a native story to include progressed paid jobs and exact continuation state; dormant scene owners remain in the full pack.
 
+The `extensions` snapshot captures bounded descriptive metadata for authored custom renderer and animation IDs before the first asynchronous boundary. Built-in renderer/p5 descriptors are host-independent. Engine JSON validates on a cold host after extensions are withdrawn, without loading or installing their factories. Codegen admission validates a detached full-pack projection with only renderer/preset IDs substituted by built-ins, independently checks every original ID, dimension and captured descriptor, then restores the original IDs. Playable scenario admission continues to require compiled animation capabilities. Custom renderer metadata has no declared source association; identify or supply its module and manually port it. An animation source path describes provenance, not authenticated executable behavior; source hashes authenticate only the included trusted inventory. Snapshots are inert descriptive data, never extension installation instructions.
+
 ```ts
 // Browser LWDeveloper or Node require('./.generated/developer-sdk.cjs').toolbox:
 const result = await toolbox.engineExport.export(pack, sceneId);
