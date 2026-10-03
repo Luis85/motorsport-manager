@@ -127,11 +127,15 @@ static func _inspect_object(
 ) -> void:
 	var properties: Dictionary = schema.get("properties", {})
 	for required in schema.get("required", []):
+		if errors.size() >= MAX_DIAGNOSTICS:
+			return
 		if not value.has(required):
 			errors.append(
 				diagnostic("CONTENT_REQUIRED", path + "/" + required, "Required field is missing.")
 			)
 	for key in value:
+		if errors.size() >= MAX_DIAGNOSTICS:
+			return
 		if not key is String:
 			errors.append(diagnostic("CONTENT_KEY", path, "Object keys must be strings."))
 			return

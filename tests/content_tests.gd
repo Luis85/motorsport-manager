@@ -67,6 +67,7 @@ func run() -> void:
 		finish()
 		return
 	var catalog: ContentCatalog = loaded.catalog
+	preload("res://tests/support/content_schema_contracts.gd").run(check, catalog)
 	check(catalog.entries("vehicle").size() == 5, "Fifth vehicle is discovered from a manifest")
 	var definition = catalog.vehicle("local.club.vehicle.sport")
 	check(
