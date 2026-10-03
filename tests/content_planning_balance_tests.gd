@@ -38,7 +38,14 @@ func tuning_record(with_balance: bool = true) -> Dictionary:
 
 
 func run() -> void:
-	geometry = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var loaded = Storage.read_json(
+		ContentPackLoader.BUILTIN_ROOT.path_join("circuits/hillside.json")
+	)
+	check(loaded.ok, "Planning fixture reads the circuit from the sole config root")
+	if not loaded.ok:
+		quit(1)
+		return
+	geometry = TrackGeometry.new(loaded.data)
 	validation()
 	baseline()
 	practice_and_drafts()
