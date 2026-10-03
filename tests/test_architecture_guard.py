@@ -262,6 +262,7 @@ class ToolboxArchitectureTests(unittest.TestCase):
     AUTHORITIES = {
         "GameToolbox": "scripts/application/toolbox/game_toolbox.gd",
         "DeveloperWeekends": "scripts/application/toolbox/developer_weekends.gd",
+        "DeveloperWeekendSession": "scripts/application/toolbox/developer_weekend_session.gd",
         "DeveloperCampaigns": "scripts/application/toolbox/developer_campaigns.gd",
         "DeveloperTracks": "scripts/application/toolbox/developer_tracks.gd",
         "GameToolboxFactory": "scripts/services/toolbox/factory.gd",
@@ -291,6 +292,12 @@ class ToolboxArchitectureTests(unittest.TestCase):
             )
             with self.subTest(authority=authority):
                 self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_ui_cannot_advance_injected_weekend_lifetime_owner(self):
+        source = (
+            "var owner: DeveloperWeekendSession\nfunc refresh():\n\treturn owner.step_ticks(1)\n"
+        )
+        self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
 
     def test_named_subclasses_cannot_hide_live_toolbox_authority(self):
         for authority in self.AUTHORITIES:
