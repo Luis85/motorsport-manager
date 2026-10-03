@@ -31,8 +31,8 @@ func _rosters() -> Array:
 		var resolved = RosterDefinition.resolve(_records[id], _records)
 		if not resolved.ok:
 			for diagnostic in resolved.diagnostics:
-				diagnostic.file = _sources[id].file
-				diagnostic.root = _sources[id].root
+				diagnostic.file = _sources[id].get("file", "")
+				diagnostic.root = _sources[id].get("root", "")
 				diagnostic.entity = id
 			return resolved.diagnostics
 	return []

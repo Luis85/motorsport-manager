@@ -51,3 +51,35 @@ static func run(check: Callable, loaded_catalog: ContentCatalog) -> void:
 		errors.size() == ContentValidation.MAX_DIAGNOSTICS,
 		"Nested required-field rejection respects the same diagnostic budget"
 	)
+	_missing_roster_context(check, loaded_catalog)
+
+
+static func _missing_roster_context(check: Callable, loaded_catalog: ContentCatalog) -> void:
+	var candidate = ContentCatalog.new()
+	var roster = loaded_catalog.record("core.roster.default")
+	check.call(
+		candidate.add(roster, {}).is_empty(), "A roster can be staged without file provenance"
+	)
+	var errors = candidate.seal()
+	check.call(
+		(
+			not errors.is_empty()
+			and errors[0].code == "CONTENT_REFERENCE_MISSING"
+			and errors[0].file == ""
+			and errors[0].root == ""
+			and errors[0].entity == roster.id
+		),
+		"Missing roster dependencies report diagnostics when file provenance is unavailable"
+	)
+	check.call(
+		candidate.record(roster.id) == roster, "Failed closure validation preserves the roster"
+	)
+	var repaired = true
+	for kind in ["team", "driver"]:
+		for definition in loaded_catalog.entries(kind):
+			repaired = candidate.add(definition, {}).is_empty() and repaired
+	check.call(repaired, "Failed closure validation leaves the candidate editable for retry")
+	check.call(
+		candidate.seal().is_empty() and candidate.roster(roster.id) != null,
+		"Restoring the roster dependencies publishes a complete usable catalog"
+	)
