@@ -4,8 +4,10 @@ extends RefCounted
 ## assumptions or proposed commitments, issue commands, advance time or mutate
 ## the caller value.
 
-static func cash_forecast(checkpoint: Dictionary, account_id: String,
-		through_slot: int, assumptions: Array = []) -> Dictionary:
+
+static func cash_forecast(
+	checkpoint: Dictionary, account_id: String, through_slot: int, assumptions: Array = []
+) -> Dictionary:
 	var restored = CampaignCheckpoint.restore(checkpoint)
 	if not restored.ok:
 		return {"ok": false, "error": restored.error}
@@ -17,15 +19,15 @@ static func cash_forecast(checkpoint: Dictionary, account_id: String,
 		assumptions.duplicate(true)
 	)
 
-static func commitment_preview(checkpoint: Dictionary, input: Dictionary,
-		through_slot: int, assumptions: Array = []) -> Dictionary:
+
+static func commitment_preview(
+	checkpoint: Dictionary, input: Dictionary, through_slot: int, assumptions: Array = []
+) -> Dictionary:
 	var restored = CampaignCheckpoint.restore(checkpoint)
 	if not restored.ok:
 		return {"ok": false, "error": restored.error}
 	var staged = CampaignEconomy.add_commitment(
-		restored.economy,
-		input.duplicate(true),
-		restored.state.clock.elapsed_slots
+		restored.economy, input.duplicate(true), restored.state.clock.elapsed_slots
 	)
 	if not staged.ok:
 		return {"ok": false, "error": staged.error}

@@ -4,9 +4,16 @@ extends RefCounted
 const KIND = "motorsport-manager-campaign-season"
 const VERSION = 1
 const STATUSES = [
-	"planning", "entries_open", "preseason", "active",
-	"final_classification", "settled", "contract_transition", "completed"
+	"planning",
+	"entries_open",
+	"preseason",
+	"active",
+	"final_classification",
+	"settled",
+	"contract_transition",
+	"completed"
 ]
+
 
 static func build(definition: Dictionary, rules: Dictionary) -> Dictionary:
 	if not CampaignSeriesRules.validate(rules).is_empty():
@@ -30,14 +37,21 @@ static func build(definition: Dictionary, rules: Dictionary) -> Dictionary:
 	_seal(data)
 	return data if validate(data, rules, {}).is_empty() else {}
 
-static func transition(current: Dictionary, target: String, rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func transition(
+	current: Dictionary, target: String, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return _reject(error, current)
 	var allowed = {
-		"planning": "entries_open", "entries_open": "preseason", "preseason": "active",
-		"active": "final_classification", "final_classification": "settled",
-		"settled": "contract_transition", "contract_transition": "completed"
+		"planning": "entries_open",
+		"entries_open": "preseason",
+		"preseason": "active",
+		"active": "final_classification",
+		"final_classification": "settled",
+		"settled": "contract_transition",
+		"contract_transition": "completed"
 	}
 	if allowed.get(current.status, "") != target:
 		return _reject("Campaign season lifecycle transition is not permitted.", current)
@@ -53,33 +67,49 @@ static func transition(current: Dictionary, target: String, rules: Dictionary, e
 	candidate.status = target
 	return _validated(candidate, "transitioned", current, rules, events)
 
-static func submit_entry(current: Dictionary, entry: Dictionary, rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func submit_entry(
+	current: Dictionary, entry: Dictionary, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return _reject(error, current)
 	if current.status != "entries_open":
 		return _reject("Campaign entries may be submitted only while entries are open.", current)
-	return _publish_entries(current, CampaignSeasonEntries.submit(current.entries, entry, rules), rules, events)
+	return _publish_entries(
+		current, CampaignSeasonEntries.submit(current.entries, entry, rules), rules, events
+	)
 
-static func decide_entry(current: Dictionary, entrant_id: String, accept: bool,
-		rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func decide_entry(
+	current: Dictionary, entrant_id: String, accept: bool, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return _reject(error, current)
 	if current.status != "entries_open":
 		return _reject("Campaign entry decisions require the open entry window.", current)
-	return _publish_entries(current, CampaignSeasonEntries.decide(current.entries, entrant_id, accept), rules, events)
+	return _publish_entries(
+		current, CampaignSeasonEntries.decide(current.entries, entrant_id, accept), rules, events
+	)
 
-static func withdraw_entry(current: Dictionary, entrant_id: String, rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func withdraw_entry(
+	current: Dictionary, entrant_id: String, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return _reject(error, current)
 	if current.status != "entries_open":
 		return _reject("Campaign entry can be withdrawn only before entries close.", current)
-	return _publish_entries(current, CampaignSeasonEntries.withdraw(current.entries, entrant_id), rules, events)
+	return _publish_entries(
+		current, CampaignSeasonEntries.withdraw(current.entries, entrant_id), rules, events
+	)
 
-static func cancel_next_event(current: Dictionary, event_id: String, reason: String,
-		rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func cancel_next_event(
+	current: Dictionary, event_id: String, reason: String, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return _reject(error, current)
@@ -92,7 +122,10 @@ static func cancel_next_event(current: Dictionary, event_id: String, reason: Str
 	candidate.calendar = changed.calendar
 	return _validated(candidate, "cancelled", current, rules, events)
 
-static func manifest_error(current: Dictionary, manifest: Dictionary, rules: Dictionary, events: Dictionary) -> String:
+
+static func manifest_error(
+	current: Dictionary, manifest: Dictionary, rules: Dictionary, events: Dictionary
+) -> String:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return error
@@ -103,24 +136,36 @@ static func manifest_error(current: Dictionary, manifest: Dictionary, rules: Dic
 	error = CampaignSeasonCalendar.manifest_error(current.calendar, manifest)
 	if not error.is_empty():
 		return error
-	return CampaignSeasonEntries.field_mapping_error(current.entries,
-		manifest.get("entrant_id"), manifest.get("mappings"))
+	return CampaignSeasonEntries.field_mapping_error(
+		current.entries, manifest.get("entrant_id"), manifest.get("mappings")
+	)
 
-static func result_error(current: Dictionary, receipt: Dictionary, policy: Dictionary,
-		rules: Dictionary, events: Dictionary) -> String:
+
+static func result_error(
+	current: Dictionary,
+	receipt: Dictionary,
+	policy: Dictionary,
+	rules: Dictionary,
+	events: Dictionary
+) -> String:
 	var error = validate(current, rules, events)
 	if not error.is_empty():
 		return error
 	if current.status != "active":
 		return "Campaign result requires an active season."
-	if receipt.get("season_id") != current.season_id \
-			or receipt.get("campaign_event_id") != next_scheduled_event_id(current):
+	if (
+		receipt.get("season_id") != current.season_id
+		or receipt.get("campaign_event_id") != next_scheduled_event_id(current)
+	):
 		return "Campaign result is not for the next scheduled season event."
-	if RaceStateValue.fingerprint(policy.get("points_by_position")) \
-			!= RaceStateValue.fingerprint(rules.points_by_position):
+	if (
+		RaceStateValue.fingerprint(policy.get("points_by_position"))
+		!= RaceStateValue.fingerprint(rules.points_by_position)
+	):
 		return "Campaign event policy does not use the season's frozen scoring table."
-	error = CampaignSeasonEntries.field_mapping_error(current.entries,
-		receipt.get("entrant_id"), receipt.get("classification"))
+	error = CampaignSeasonEntries.field_mapping_error(
+		current.entries, receipt.get("entrant_id"), receipt.get("classification")
+	)
 	if not error.is_empty():
 		return error
 	var expected = CampaignSeasonEntries.accepted_people(current.entries)
@@ -133,8 +178,10 @@ static func result_error(current: Dictionary, receipt: Dictionary, policy: Dicti
 			return "Campaign financial participant does not belong to the settled entrant."
 	return ""
 
-static func apply_event(current: Dictionary, event_id: String, event: Dictionary,
-		rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func apply_event(
+	current: Dictionary, event_id: String, event: Dictionary, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	var changed = CampaignSeasonCalendar.complete(current.calendar, event_id, event.result_digest)
 	if not changed.ok:
 		return _reject(changed.error, current)
@@ -143,11 +190,14 @@ static func apply_event(current: Dictionary, event_id: String, event: Dictionary
 	candidate = rebuild(candidate, events, rules)
 	return _validated(candidate, "applied", current, rules, events)
 
+
 static func next_scheduled_event_id(data: Dictionary) -> String:
 	return CampaignSeasonCalendar.next_event_id(data.get("calendar", []))
 
+
 static func calendar_event(data: Dictionary, event_id: String) -> Dictionary:
 	return CampaignSeasonCalendar.event(data.get("calendar", []), event_id)
+
 
 static func rebuild(current: Dictionary, events: Dictionary, rules: Dictionary) -> Dictionary:
 	var candidate = current.duplicate(true)
@@ -157,13 +207,16 @@ static func rebuild(current: Dictionary, events: Dictionary, rules: Dictionary) 
 	candidate.rankings = standings.rankings
 	return candidate
 
+
 static func validate(data: Variant, rules: Dictionary, events: Dictionary) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign season exceeds serialized-value limits."
 	if not data is Dictionary or data.size() != 12 or data.get("kind") != KIND:
 		return "Unsupported campaign season."
-	if not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION) \
-			or not CampaignIdentity.valid(data.get("season_id")):
+	if (
+		not RaceCheckpoint.integral(data.get("version"), VERSION, VERSION)
+		or not CampaignIdentity.valid(data.get("season_id"))
+	):
 		return "Campaign season version or identity is invalid."
 	var error = CampaignSeriesRules.validate(rules)
 	if not error.is_empty():
@@ -188,15 +241,20 @@ static func validate(data: Variant, rules: Dictionary, events: Dictionary) -> St
 	error = _event_link_error(data, events)
 	if not error.is_empty():
 		return error
-	error = CampaignStandings.projection_error(data,
-		CampaignStandings.build(data.season_id, events, rules))
+	error = CampaignStandings.projection_error(
+		data, CampaignStandings.build(data.season_id, events, rules)
+	)
 	if not error.is_empty():
 		return error
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign season integrity check failed."
 	return ""
+
 
 static func _event_link_error(data: Dictionary, events: Dictionary) -> String:
 	var calendar = {}
@@ -206,40 +264,64 @@ static func _event_link_error(data: Dictionary, events: Dictionary) -> String:
 		var event = events[event_id]
 		if not event is Dictionary or event.get("season_id") != data.season_id:
 			continue
-		if not calendar.has(event_id) or calendar[event_id].status != "completed" \
-				or calendar[event_id].resolution_ref != event.get("result_digest"):
+		if (
+			not calendar.has(event_id)
+			or calendar[event_id].status != "completed"
+			or calendar[event_id].resolution_ref != event.get("result_digest")
+		):
 			return "Campaign event history disagrees with the season calendar."
-		var mapping_error = CampaignSeasonEntries.awards_mapping_error(data.entries, event.get("awards"))
+		var mapping_error = CampaignSeasonEntries.awards_mapping_error(
+			data.entries, event.get("awards")
+		)
 		if not mapping_error.is_empty():
 			return mapping_error
 	for event_id in calendar:
 		var item = calendar[event_id]
-		if item.status == "completed" and (not events.has(event_id) \
-				or events[event_id].get("season_id") != data.season_id):
+		if (
+			item.status == "completed"
+			and (not events.has(event_id) or events[event_id].get("season_id") != data.season_id)
+		):
 			return "Completed campaign calendar event has no sporting record."
-		if item.status != "completed" and events.has(event_id) \
-				and events[event_id].get("season_id") == data.season_id:
+		if (
+			item.status != "completed"
+			and events.has(event_id)
+			and events[event_id].get("season_id") == data.season_id
+		):
 			return "Unresolved campaign calendar event already has a sporting record."
 	return ""
 
-static func _publish_entries(current: Dictionary, changed: Dictionary,
-		rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func _publish_entries(
+	current: Dictionary, changed: Dictionary, rules: Dictionary, events: Dictionary
+) -> Dictionary:
 	if not changed.ok:
 		return _reject(changed.error, current)
 	var candidate = current.duplicate(true)
 	candidate.entries = changed.entries
 	return _validated(candidate, changed.status, current, rules, events)
 
-static func _validated(candidate: Dictionary, status: String, current: Dictionary,
-		rules: Dictionary, events: Dictionary) -> Dictionary:
+
+static func _validated(
+	candidate: Dictionary,
+	status: String,
+	current: Dictionary,
+	rules: Dictionary,
+	events: Dictionary
+) -> Dictionary:
 	_seal(candidate)
 	var error = validate(candidate, rules, events)
-	return {"ok": error.is_empty(), "status": status if error.is_empty() else "rejected",
-		"error": error, "season": candidate if error.is_empty() else current.duplicate(true)}
+	return {
+		"ok": error.is_empty(),
+		"status": status if error.is_empty() else "rejected",
+		"error": error,
+		"season": candidate if error.is_empty() else current.duplicate(true)
+	}
+
 
 static func _seal(data: Dictionary) -> void:
 	data.erase("digest")
 	data["digest"] = RaceStateValue.fingerprint(data)
+
 
 static func _reject(message: String, current: Dictionary) -> Dictionary:
 	return {"ok": false, "status": "rejected", "error": message, "season": current.duplicate(true)}

@@ -5,6 +5,7 @@ const MODES = ["internal", "rented_service"]
 const STATUSES = ["scheduled", "cancelled"]
 const MAX_ASSIGNMENTS = 16
 
+
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
 	var data = {
 		"id": input.get("id"),
@@ -26,15 +27,21 @@ static func build(input: Dictionary, created_slot: int) -> Dictionary:
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
+
 static func cancel(current: Dictionary, slot: int) -> Dictionary:
-	if not validate(current).is_empty() or current.status != "scheduled" \
-			or slot < int(current.created_slot) or slot > int(current.start_slot):
+	if (
+		not validate(current).is_empty()
+		or current.status != "scheduled"
+		or slot < int(current.created_slot)
+		or slot > int(current.start_slot)
+	):
 		return {}
 	var data = current.duplicate(true)
 	data.status = "cancelled"
 	data.cancellation_slot = slot
 	_seal(data)
 	return data if validate(data).is_empty() else {}
+
 
 static func state_at(data: Dictionary, slot: int) -> String:
 	if not validate(data).is_empty() or slot < int(data.created_slot):
@@ -47,14 +54,18 @@ static func state_at(data: Dictionary, slot: int) -> String:
 		return "active"
 	return "complete"
 
+
 static func personnel_reservation_id(order_id: String, assignment_id: String) -> String:
 	return "workperson." + RaceStateValue.fingerprint([order_id, assignment_id]).substr(0, 24)
+
 
 static func capacity_reservation_id(order_id: String) -> String:
 	return "workcapacity." + RaceStateValue.fingerprint(order_id).substr(0, 24)
 
+
 static func commitment_id(order_id: String) -> String:
 	return "facility." + RaceStateValue.fingerprint(order_id).substr(0, 24)
+
 
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
@@ -68,24 +79,40 @@ static func validate(data: Variant) -> String:
 		return "Campaign work order has an unsupported mode or facility family."
 	if data.capacity_reservation_id != capacity_reservation_id(data.id):
 		return "Campaign work order has a non-deterministic capacity reservation identity."
-	if not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS) \
-			or not RaceCheckpoint.integral(data.get("start_slot"), int(data.created_slot), CampaignClock.MAX_ELAPSED_SLOTS) \
-			or not RaceCheckpoint.integral(data.get("end_slot"), int(data.start_slot) + 1, CampaignClock.MAX_ELAPSED_SLOTS) \
-			or not RaceCheckpoint.integral(data.get("units"), 1, CampaignCapacityResource.MAX_UNITS):
+	if (
+		not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS)
+		or not RaceCheckpoint.integral(
+			data.get("start_slot"), int(data.created_slot), CampaignClock.MAX_ELAPSED_SLOTS
+		)
+		or not RaceCheckpoint.integral(
+			data.get("end_slot"), int(data.start_slot) + 1, CampaignClock.MAX_ELAPSED_SLOTS
+		)
+		or not RaceCheckpoint.integral(data.get("units"), 1, CampaignCapacityResource.MAX_UNITS)
+	):
 		return "Campaign work order has invalid timing or units."
-	if not RaceCheckpoint.integral(data.get("quoted_cost_minor"), 0, CampaignEconomy.MAX_MINOR) \
-			or data.get("status") not in STATUSES \
-			or not RaceCheckpoint.integral(data.get("cancellation_slot"), -1, CampaignClock.MAX_ELAPSED_SLOTS):
+	if (
+		not RaceCheckpoint.integral(data.get("quoted_cost_minor"), 0, CampaignEconomy.MAX_MINOR)
+		or data.get("status") not in STATUSES
+		or not RaceCheckpoint.integral(
+			data.get("cancellation_slot"), -1, CampaignClock.MAX_ELAPSED_SLOTS
+		)
+	):
 		return "Campaign work order has invalid financial or lifecycle evidence."
 	var list_error = _lists_error(data)
 	if not list_error.is_empty():
 		return list_error
 	if data.status == "scheduled" and int(data.cancellation_slot) != -1:
 		return "Scheduled campaign work order already has cancellation evidence."
-	if data.status == "cancelled" and (int(data.cancellation_slot) < int(data.created_slot) \
-			or int(data.cancellation_slot) > int(data.start_slot)):
+	if (
+		data.status == "cancelled"
+		and (
+			int(data.cancellation_slot) < int(data.created_slot)
+			or int(data.cancellation_slot) > int(data.start_slot)
+		)
+	):
 		return "Cancelled campaign work order has invalid evidence."
 	return _integrity_error(data)
+
 
 static func _lists_error(data: Dictionary) -> String:
 	for key in ["assignment_ids", "personnel_reservation_ids", "commitment_ids"]:
@@ -96,26 +123,44 @@ static func _lists_error(data: Dictionary) -> String:
 			if not CampaignIdentity.valid(value) or seen.has(value):
 				return "Campaign work order has a duplicated or invalid linked identity."
 			seen[value] = true
-	if data.assignment_ids.size() > MAX_ASSIGNMENTS \
-			or data.personnel_reservation_ids.size() != data.assignment_ids.size():
+	if (
+		data.assignment_ids.size() > MAX_ASSIGNMENTS
+		or data.personnel_reservation_ids.size() != data.assignment_ids.size()
+	):
 		return "Campaign work order has an invalid personnel reservation set."
-	if data.mode == "internal" and (data.assignment_ids.is_empty() \
-			or not data.commitment_ids.is_empty() or int(data.quoted_cost_minor) != 0):
+	if (
+		data.mode == "internal"
+		and (
+			data.assignment_ids.is_empty()
+			or not data.commitment_ids.is_empty()
+			or int(data.quoted_cost_minor) != 0
+		)
+	):
 		return "Internal campaign work requires staff and cannot hide a rented-service charge."
-	if data.mode == "rented_service" and (not data.assignment_ids.is_empty() \
-			or data.commitment_ids.size() != 1 or int(data.quoted_cost_minor) <= 0):
+	if (
+		data.mode == "rented_service"
+		and (
+			not data.assignment_ids.is_empty()
+			or data.commitment_ids.size() != 1
+			or int(data.quoted_cost_minor) <= 0
+		)
+	):
 		return "Rented campaign work requires one explicit service commitment and no internal staff reservation."
 	if data.mode == "rented_service" and data.commitment_ids[0] != commitment_id(data.id):
 		return "Campaign rented-service commitment identity is not deterministic."
 	return ""
 
+
 static func _integrity_error(data: Dictionary) -> String:
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) \
-			or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign work order integrity check failed."
 	return ""
+
 
 static func _seal(data: Dictionary) -> void:
 	data.erase("digest")

@@ -4,6 +4,7 @@ extends RefCounted
 const KINDS = ["factory_work", "event_duty", "commercial", "travel", "training", "leave"]
 const STATUSES = ["active", "cancelled"]
 
+
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
 	var data = {
 		"id": input.get("id"),
@@ -20,6 +21,7 @@ static func build(input: Dictionary, created_slot: int) -> Dictionary:
 	_seal(data)
 	return data if validate(data).is_empty() else {}
 
+
 static func cancel(current: Dictionary, cancellation_slot: int) -> Dictionary:
 	var error = validate(current)
 	if not error.is_empty():
@@ -31,6 +33,7 @@ static func cancel(current: Dictionary, cancellation_slot: int) -> Dictionary:
 	data.cancellation_slot = cancellation_slot
 	_seal(data)
 	return data if validate(data).is_empty() else {}
+
 
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
@@ -50,34 +53,53 @@ static func validate(data: Variant) -> String:
 		return error
 	return _integrity_error(data)
 
+
 static func overlaps(left: Dictionary, right: Dictionary) -> bool:
-	return int(left.start_slot) < int(right.end_slot) \
-		and int(right.start_slot) < int(left.end_slot)
+	return int(left.start_slot) < int(right.end_slot) and int(right.start_slot) < int(left.end_slot)
+
 
 static func _timing_error(data: Dictionary) -> String:
-	if not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS) \
-			or not RaceCheckpoint.integral(data.get("start_slot"), int(data.created_slot), CampaignClock.MAX_ELAPSED_SLOTS) \
-			or not RaceCheckpoint.integral(data.get("end_slot"), int(data.start_slot) + 1, CampaignClock.MAX_ELAPSED_SLOTS):
+	if (
+		not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS)
+		or not RaceCheckpoint.integral(
+			data.get("start_slot"), int(data.created_slot), CampaignClock.MAX_ELAPSED_SLOTS
+		)
+		or not RaceCheckpoint.integral(
+			data.get("end_slot"), int(data.start_slot) + 1, CampaignClock.MAX_ELAPSED_SLOTS
+		)
+	):
 		return "Campaign availability reservation has invalid timing."
-	if not RaceCheckpoint.integral(data.get("cancellation_slot"), -1, CampaignClock.MAX_ELAPSED_SLOTS):
+	if not RaceCheckpoint.integral(
+		data.get("cancellation_slot"), -1, CampaignClock.MAX_ELAPSED_SLOTS
+	):
 		return "Campaign availability reservation has invalid cancellation timing."
 	return ""
+
 
 static func _status_error(data: Dictionary) -> String:
 	if data.status == "active" and int(data.cancellation_slot) != -1:
 		return "Active campaign availability reservation has cancellation evidence."
-	if data.status == "cancelled" and (int(data.cancellation_slot) < int(data.created_slot) \
-			or int(data.cancellation_slot) > int(data.start_slot)):
+	if (
+		data.status == "cancelled"
+		and (
+			int(data.cancellation_slot) < int(data.created_slot)
+			or int(data.cancellation_slot) > int(data.start_slot)
+		)
+	):
 		return "Cancelled campaign availability reservation has invalid evidence."
 	return ""
+
 
 static func _integrity_error(data: Dictionary) -> String:
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) \
-			or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign availability reservation integrity check failed."
 	return ""
+
 
 static func _seal(data: Dictionary) -> void:
 	data.erase("digest")
