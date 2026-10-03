@@ -97,5 +97,9 @@
   {"id":"toolbox_weekend_tests","script":"tests/toolbox_weekend_tests.gd","native":false,"layout":"minimal","timeout":900,"reports":["toolbox-weekend-tests.json"]},
   {"id":"toolbox_protocol_tests","script":"tests/toolbox_protocol_tests.gd","native":false,"layout":"minimal","timeout":900,"reports":["toolbox-protocol-tests.json"]},
   {"id":"toolbox_track_tests","script":"tests/toolbox_track_tests.gd","native":false,"layout":"minimal","timeout":900,"reports":["toolbox-track-tests.json"]},
-  {"id":"toolbox_campaign_tests","script":"tests/toolbox_campaign_tests.gd","native":false,"layout":"minimal","timeout":900,"reports":["toolbox-campaign-tests.json"]}
+  {"id":"toolbox_campaign_tests","script":"tests/toolbox_campaign_tests.gd","native":false,"layout":"minimal","timeout":900,"reports":["toolbox-campaign-tests.json"]},
+  {"id":"race_physics_balance_tests","script":"tests/race_physics_balance_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["race-physics-balance-tests.json"]},
+  {"id":"content_planning_balance_tests","script":"tests/content_planning_balance_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["content-planning-balance-tests.json"]},
+  {"id":"balance_campaign_presentation_tests","script":"tests/balance_campaign_presentation_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["balance-campaign-presentation-tests.json"]},
+  {"id":"balance_config_validation_tests","script":"tests/balance_config_validation_tests.gd","native":false,"layout":"minimal","timeout":360,"reports":["balance-config-validation-tests.json"]}
 ]

@@ -56,6 +56,7 @@ func validation(catalog: ContentCatalog) -> void:
 	original_tables.erase("environment")
 	original_tables.erase("operations")
 	original_tables.erase("competition")
+	original_tables.erase("balance")
 	check(
 		standard != null and original_tables == LegacyRaceTuning.VALUES,
 		"External defaults exactly preserve the compatibility coefficient tables"

@@ -10,6 +10,9 @@ var operations: Dictionary:
 var competition: Dictionary:
 	get:
 		return _competition
+var balance: Dictionary:
+	get:
+		return _balance
 var fuel: Dictionary:
 	get:
 		return _values.fuel
@@ -34,6 +37,7 @@ var _values: Dictionary = {}
 var _environment: Dictionary = RaceStateValue.read_only(LegacyEnvironment.VALUES)
 var _operations: Dictionary = RaceStateValue.read_only(LegacyOperations.VALUES)
 var _competition: Dictionary = RaceStateValue.read_only(LegacyCompetition.VALUES)
+var _balance: Dictionary = GameBalanceSchema.legacy_values()
 var _fingerprint: String = "legacy-path-race-v1"
 
 
@@ -65,6 +69,8 @@ static func from_record(record: Variant) -> RaceTuningDefinition:
 		return null
 	if not _physical_bounds(record):
 		return null
+	if record.has("balance") and not GameBalanceSchema.semantic_errors(record.balance).is_empty():
+		return null
 	var value = RaceTuningDefinition.new()
 	value._record = RaceStateValue.read_only(record)
 	var tables: Dictionary = {}
@@ -77,6 +83,8 @@ static func from_record(record: Variant) -> RaceTuningDefinition:
 		value._operations = RaceStateValue.read_only(record.operations)
 	if record.has("competition"):
 		value._competition = RaceStateValue.read_only(record.competition)
+	if record.has("balance"):
+		value._balance = RaceStateValue.read_only(record.balance)
 	value._fingerprint = RaceStateValue.fingerprint(record)
 	return value
 
@@ -97,6 +105,8 @@ func view() -> Dictionary:
 		result.operations = _operations.duplicate(true)
 	if _record.has("competition"):
 		result.competition = _competition.duplicate(true)
+	if _record.has("balance"):
+		result.balance = _balance.duplicate(true)
 	return result
 
 
@@ -139,6 +149,13 @@ static func operations_values(snapshot: Dictionary) -> Dictionary:
 
 static func competition_values(snapshot: Dictionary) -> Dictionary:
 	return forecast_values(snapshot).get("competition", LegacyCompetition.VALUES)
+
+
+static func balance_values(snapshot: Dictionary) -> Dictionary:
+	var values = forecast_values(snapshot)
+	if values.has("balance"):
+		return values.balance
+	return GameBalanceSchema.legacy_values()
 
 
 static func _physical_bounds(record: Dictionary) -> bool:
