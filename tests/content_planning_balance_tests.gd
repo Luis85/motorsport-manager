@@ -137,7 +137,7 @@ func practice_and_drafts() -> void:
 		26,
 		"Autonomous practice timing uses selected coefficients"
 	)
-	var draft = RaceViewToolsQuery.new(sim).strategy_draft(sim.cars[3].to_record(), sim.laps)
+	var draft = RaceViewQuery.new(sim).strategy_draft(sim.cars[3].to_record(), sim.laps)
 	check(
 		draft.stops[0].from_lap == 7 and draft.tyre_reserve == 35 and draft.fuel_reserve == 1,
 		"Production draft query uses frozen strategy defaults"
