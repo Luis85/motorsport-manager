@@ -558,116 +558,139 @@
           "additionalProperties": false,
           "properties": {
             "advisory_core_excess_c": {
+              "description": "Celsius delta: Report core heat above the fitted compound optimum plus this margin.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "advisory_tread_percent": {
+              "description": "tread percent: Report a low-tread advisory below this observed fitted-wheel life.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_base": {
+              "description": "points: Starting current-demand score at Normal or Push pace.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_calm_base": {
+              "description": "points: Starting current-demand score at Calm pace.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_damage_max": {
+              "description": "points: Maximum current-demand contribution from observed car damage.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_damage_per_percent": {
+              "description": "points/damage percent: Convert observed car damage into current demand before the damage cap.",
               "maximum": 10.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_high": {
+              "description": "points: Current-demand score at or above which the High observation band starts.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_puncture": {
+              "description": "points: Added current demand for a fitted puncture instead of the ordinary tread contribution.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_push": {
+              "description": "points: Added current demand when Push pace is selected.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_raised": {
+              "description": "points: Current-demand score at or above which the Raised observation band starts.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_recovery": {
+              "description": "points: Added current demand while the car has observed incident recovery time remaining.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_traffic_distance_m": {
+              "description": "metres: Along-route proximity inside which another live track car adds current demand.",
               "maximum": 1000.0,
               "minimum": 1.0,
               "type": "number"
             },
             "demand_traffic_points": {
+              "description": "points: Maximum traffic demand at zero along-route separation, falling to zero at the distance threshold.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_tread_points": {
+              "description": "points: Maximum low-tread demand contribution at zero fitted tread life.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_tread_threshold_percent": {
+              "description": "tread percent: Below this fitted life, add demand scaled by the proportion of tread lost.",
               "maximum": 100.0,
               "minimum": 0.1,
               "type": "number"
             },
             "demand_water_points": {
+              "description": "points: Wet-track demand at a water fraction of one; smaller fractions scale the contribution.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "demand_water_threshold": {
+              "description": "fraction: Above this local surface-water fraction, include wet-track current demand.",
               "maximum": 1.0,
               "minimum": 0.0,
               "type": "number"
             },
             "low_tread_percent": {
+              "description": "tread percent: Warn when the limiting fitted wheel is at or below this tread life.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "moment_tread_critical_percent": {
+              "description": "tread percent: Fitted tread at or below which the critical check-in band starts.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "moment_tread_low_percent": {
+              "description": "tread percent: Fitted tread at or below which the first low-tread check-in band starts.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
             "moment_water_high": {
+              "description": "fraction: Average observed water at or above which the highest wet check-in band starts.",
               "maximum": 1.0,
               "minimum": 0.0,
               "type": "number"
             },
             "moment_water_raised": {
+              "description": "fraction: Average observed water at or above which the first wet check-in band starts.",
               "maximum": 1.0,
               "minimum": 0.0,
               "type": "number"
             },
             "practice_reuse_tread_percent": {
+              "description": "tread percent: Minimum fitted-set life for practice reuse when its compound is preferred.",
               "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"

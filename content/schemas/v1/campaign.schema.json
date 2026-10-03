@@ -698,19 +698,19 @@
           "additionalProperties": false,
           "properties": {
             "bridge_fee_bps": {
-              "description": "Fee added to bridge principal, in basis points (1000 bps = 10 percent); repayment rounds to integer minor units.",
+              "description": "basis points: Fee added to bridge principal (1000 bps = 10 percent); repayment rounds to integer minor units.",
               "maximum": 10000,
               "minimum": 0,
               "type": "integer"
             },
             "bridge_maturity_days": {
-              "description": "Days from agreement creation until the bridge repayment is due.",
+              "description": "days: Days from agreement creation until the bridge repayment is due.",
               "maximum": 3660,
               "minimum": 1,
               "type": "integer"
             },
             "distress_forecast_days": {
-              "description": "Days ahead included in the committed-cash distress forecast.",
+              "description": "days: Days ahead included in the committed-cash distress forecast.",
               "maximum": 3660,
               "minimum": 1,
               "type": "integer"
