@@ -4,6 +4,12 @@ const E=require('./ecs.js'),A=require('./actor-ecs.js');
 const results=[];function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error('FAIL',name,error.message);}}
 const close=(a,b)=>assert(Math.abs(a-b)<1e-9,`${a} != ${b}`);
 test('Queries are deterministic and independent of entity insertion order',()=>{const w=new E.World();for(const id of['c3','c1','c2']){w.create(id);w.set(id,'Needs',{});}assert.deepEqual(w.query(['Needs']),['c1','c2','c3']);});
+test('Equal-order system IDs use locale-independent ordinal order',()=>{
+ const w=new E.World();w.create('c1');w.set('c1','Needs',{});const visits=[],scheduler=new E.Scheduler();
+ for(const id of ['zeta','alpha','Zeta','Alpha'])scheduler.register({id,phase:'simulate',order:1,query:['Needs'],update(){visits.push(id);}});
+ scheduler.step(w,.1);assert.deepEqual(visits,['Alpha','Zeta','alpha','zeta']);
+ assert.deepEqual(scheduler.systems.map(system=>system.id),visits);
+});
 test('Systems cannot make structural changes during a query',()=>{const w=new E.World();w.create('c1');w.set('c1','Needs',{});const s=new E.Scheduler().register({id:'guard',phase:'simulate',order:1,query:['Needs'],update(world){assert.throws(()=>world.create('c2'),/deferred/);world.defer('create','c2');}});s.step(w,.1);assert(w.entities.has('c2'));});
 test('Components reject behavior, accessors, class instances and non-finite values',()=>{
  const w=new E.World();w.create('c1');

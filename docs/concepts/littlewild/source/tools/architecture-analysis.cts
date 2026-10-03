@@ -139,6 +139,8 @@ export function analyzeRuntime(file: string, text: string): RuntimeAnalysis {
       if (callee.kind === ts.SyntaxKind.ImportKeyword || ts.isIdentifier(callee) && loaders.has(callee.text)) {
         result.dependencies.push(literal(node.arguments[0]));
       }
+      const clock = qualified(callee)?.replace(/^(?:globalThis|global|root|self|window)\./, '');
+      if (clock === 'Date' || clock === 'Date.call' || clock === 'Date.apply' || clock === 'Date.bind') result.platform.push('Date()');
       const access = member(callee);
       if (access?.name === 'require' && (qualified(access.owner) === 'module' || rootExpression(access.owner))) {
         result.dependencies.push(literal(node.arguments[0]));
@@ -148,7 +150,7 @@ export function analyzeRuntime(file: string, text: string): RuntimeAnalysis {
         result.composition.push(access.name);
       }
     }
-    if (ts.isNewExpression(node) && qualified(node.expression) === 'Date') result.platform.push('new Date');
+    if (ts.isNewExpression(node) && qualified(node.expression)?.replace(/^(?:globalThis|global|root|self|window)\./, '') === 'Date') result.platform.push('new Date');
     if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
       reference(node);
       const access = member(node);

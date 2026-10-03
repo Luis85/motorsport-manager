@@ -40,7 +40,7 @@
  const facadeRoot=root.LW;
  if(!facadeRoot?.Engine)throw Error('Engine composition requires the base engine.');
  const L:LittlewildFacade=facadeRoot,Facade:DynamicConstructor=L.Engine;
- const specs=new Map<string,Readonly<LayerSpec>>(),classes=new Map<string,DynamicConstructor>(),instances=new WeakSet<object>(),THROUGH=Symbol('littlewild.engine.through');
+ const specs=new Map<string,Readonly<LayerSpec>>(),classes=new Map<string,DynamicConstructor>(),instances=new WeakMap<object,'initializing'|'ready'|'failed'>(),THROUGH=Symbol('littlewild.engine.through');
  let ordered:Readonly<LayerSpec>[]=[],finalized=false;
  const forbiddenStatic=new Set(['length','name','prototype','arguments','caller']);
  const copyDescriptor=(target:object,name:PropertyKey,descriptor:PropertyDescriptor):void=>{Object.defineProperty(target,name,descriptor);};
@@ -94,7 +94,7 @@
   if(!Array.isArray(ids)||ids.length!==specs.size)throw Error('Composition root must name every engine layer exactly once.');
   const seen=new Set<string>();
   const proposed=ids.map(id=>{if(seen.has(id)||!specs.has(id))throw Error('Unknown or duplicate engine layer: '+id);seen.add(id);return specs.get(id)!;});
-  const sorted=[...proposed].sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id));
+  const sorted=[...proposed].sort((a,b)=>a.order-b.order||(a.id<b.id?-1:a.id>b.id?1:0));
   if(sorted.some((spec,index)=>spec!==proposed[index]))throw Error('Composition root order does not match declared layer order.');
   const prior=ordered,prototypeDescriptors=Object.getOwnPropertyDescriptors(Facade.prototype),
    staticDescriptors=Object.getOwnPropertyDescriptors(Facade),facadeDescriptors=Object.getOwnPropertyDescriptors(L);
@@ -128,12 +128,23 @@
   return value;
  }
  function initialize(instance:EngineInstance,state:unknown,options:CompositionOptions={}):EngineInstance{
-  if(!finalized||instances.has(instance))return instance;
-  instances.add(instance);const count=limit(options),active=ordered.slice(0,count);
-  instance.state=instance.s;
-  for(const spec of active)if(spec.initialize)spec.initialize(instance,state,options);
-  const layers=Object.freeze(active.map(spec=>spec.id));
-  Object.defineProperty(instance,'composition',{configurable:false,enumerable:false,value:Object.freeze({layers,state:instance.state})});
+  if(!finalized)return instance;
+  // Validate the requested boundary before changing the instance or its lifecycle.
+  const count=limit(options),status=instances.get(instance);
+  if(status==='ready')return instance;
+  if(status==='initializing')throw Error('Engine initialization is already in progress.');
+  if(status==='failed')throw Error('Engine initialization previously failed; discard the partial instance.');
+  const active=ordered.slice(0,count);instances.set(instance,'initializing');
+  try{
+   instance.state=instance.s;
+   for(const spec of active)if(spec.initialize)spec.initialize(instance,state,options);
+   const layers=Object.freeze(active.map(spec=>spec.id));
+   Object.defineProperty(instance,'composition',{configurable:false,enumerable:false,value:Object.freeze({layers,state:instance.state})});
+   instances.set(instance,'ready');
+  }catch(error){
+   // Hooks may have external side effects; a partial instance cannot be retried safely.
+   instances.set(instance,'failed');throw error;
+  }
   return instance;
  }
  function constructThrough(id:string,state?:unknown,options:CompositionOptions={}):EngineInstance{

@@ -92,7 +92,7 @@
                 if (typeof node.id !== 'string' || !ID.test(node.id) || ids.has(node.id))
                     throw Error('Behavior node IDs must be unique.');
                 ids.add(node.id);
-                if (typeof node.name !== 'string' || !node.name.trim() || node.name.length > 100)
+                if (typeof node.name !== 'string' || !node.name.trim() || [...node.name].length > 100)
                     throw Error('A behavior node needs a short name.');
 
                 if (node.type === 'action') {

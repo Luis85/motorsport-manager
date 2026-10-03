@@ -36,4 +36,104 @@ test('Economy boundary validates real stat, chapter and actor identities',()=>{
  const invalid={...a,id:'bad id'};assert.throws(()=>ecs.settle(s,invalid,{id:'bad:actor',guide:1}),/actor identity/);
 });
 
+function changed(registry,mechanical=true){
+ const doc=registry.export();
+ if(mechanical)doc.components.recipes[0].time+=1;
+ else doc.components.items[0].name+=' reviewed';
+ return registry.prepare(doc);
+}
+test('Content commits require an unchanged registry-issued review',()=>{
+ const registry=new C.Registry(),before=registry.export(),hash=registry.hash;
+ for(const edit of [
+  p=>p.diff.mechanics=0,
+  p=>p.diff.fields[0].kind='presentation',
+  p=>{p.candidate=C.copy(p.candidate);p.candidate.components.recipes[0].time+=1;},
+  p=>p.fingerprint='fabricated'
+ ]){const preview=changed(registry);assert(preview.ok);edit(preview);assert.throws(()=>registry.commit(preview),/review changed/i);assert.equal(registry.hash,hash);assert.deepEqual(registry.export(),before);}
+ const preview=changed(registry);
+ for(const forged of [C.copy(preview),{...preview},new C.Registry().prepare(preview.candidate)])assert.throws(()=>registry.commit(forged),/review.*again/i);
+ assert.equal(registry.hash,hash);
+ assert.equal(registry.commit(preview),preview.fingerprint);
+ assert.throws(()=>registry.commit(preview),/review.*again/i);
+});
+test('Modified review descriptors reject accessor fields without invoking them',()=>{
+ const registry=new C.Registry(),before=registry.hash;
+ for(const target of [p=>p,p=>p.diff,p=>p.candidate]){
+  const preview=changed(registry);let reads=0;
+  // The candidate is frozen; replace it with detached data before tampering.
+  preview.candidate=C.copy(preview.candidate);const object=target(preview),key=Object.keys(object)[0];
+  Object.defineProperty(object,key,{enumerable:true,get(){reads++;return true;}});
+  assert.throws(()=>registry.commit(preview),/review changed/i);assert.equal(reads,0);assert.equal(registry.hash,before);
+ }
+});
+test('Review envelopes retain valid content near the document complexity budget',()=>{
+ const registry=new C.Registry(),original=registry.export(),doc=registry.export();
+ // These values fit the library node/byte limits; a mechanical diff duplicates the authored array.
+ doc.components.items[0].extensions={samples:Array(25000).fill(1)};
+ const first=registry.prepare(doc);assert(first.ok,JSON.stringify(first.errors));registry.commit(first);
+ const next=registry.export();next.components.items[0].extensions.samples.fill(2);
+ const preview=registry.prepare(next);assert(preview.ok,JSON.stringify(preview.errors));
+ assert.equal(registry.commit(preview),preview.fingerprint);
+ assert.notDeepEqual(registry.export(),original);
+});
+test('Content reviews expire after intervening commits even if the original hash returns',()=>{
+ const registry=new C.Registry(),original=registry.export(),pending=changed(registry);
+ registry.commit(changed(registry));registry.commit(registry.prepare(original));
+ assert.equal(registry.hash,pending.baseFingerprint);
+ assert.throws(()=>registry.commit(pending),/review.*again/i);
+});
+test('Temporary content validation preserves reviewed persistent revisions',()=>{
+ const registry=new C.Registry(),preview=changed(registry),before=registry.hash;
+ registry.withLibrary(preview.candidate,()=>assert.equal(registry.hash,preview.fingerprint));
+ assert.equal(registry.hash,before);assert.equal(registry.commit(preview),preview.fingerprint);
+});
+const L=require('./simulation.cjs'),S=require('./story-codec.js');
+test('Edited or fabricated content reviews cannot bypass committed-work policy',()=>{
+ const registry=C.registry,engine=new L.Engine(),story=engine.export(),base=registry.export(),hash=registry.hash;
+ engine.creatures[0].orders.push({kind:'build'});const committed=engine.export();assert(S.committed(engine));
+ const preview=changed(registry);assert.equal(S.currentStoryPolicy(preview,engine).ok,false);
+ assert.throws(()=>S.applyContent(preview,engine),/committed work/);
+ preview.diff.mechanics=0;
+ assert.equal(S.currentStoryPolicy(preview,engine).ok,false);
+ assert.throws(()=>S.applyContent(preview,engine),/review changed/i);
+ assert.throws(()=>S.applyContent({...changed(registry)},engine,true),/review.*again/i);
+ assert.equal(registry.hash,hash);assert.deepEqual(registry.export(),base);assert.deepEqual(engine.export(),committed);
+ assert.notDeepEqual(committed,story);
+});
+test('Valid content applies preserve presentation and deterministic mechanical continuation',()=>{
+ const registry=C.registry,base=registry.export(),engine=new L.Engine();
+ try{
+  const text=changed(registry,false),next=S.applyContent(text,engine);assert.strictEqual(next,engine);assert.equal(registry.hash,text.fingerprint);
+  const mechanical=changed(registry),expected=registry.withLibrary(mechanical.candidate,()=>L.Engine.import(engine.export()));
+  const continued=S.applyContent(mechanical,engine);assert.notStrictEqual(continued,engine);
+  continued.advance(5);expected.advance(5);assert.deepEqual(continued.export(),expected.export());
+ }finally{registry.commit(registry.prepare(base));}
+});
+test('New stories permit reviewed mechanical edits around committed work',()=>{
+ const registry=C.registry,base=registry.export(),engine=new L.Engine();engine.creatures[0].orders.push({kind:'build'});
+ try{const preview=changed(registry),next=S.applyContent(preview,engine,true);assert.notStrictEqual(next,engine);assert.equal(registry.hash,preview.fingerprint);assert.equal(S.committed(next),false);}
+ finally{registry.commit(registry.prepare(base));}
+});
+test('Public content text limits count Unicode code points consistently with JSON Schema',()=>{
+ const Ajv=require('ajv/dist/2020').default,ajv=new Ajv({strict:false}),X=require('./scenario-runtime.js');
+ const fixtures=[
+  ['Base',C.registry.export(),C.SCHEMA,90,d=>d.library,input=>C.registry.prepare(input).ok],
+  ['Adventure',global.LWAdventure.content,require('./content/adventure.schema.json'),80,d=>d.equipment[0],input=>global.LWAdventure.validate(input).ok],
+  ['World',global.LWWorldContent.content,global.LWWorldContent.schema,100,d=>d,input=>global.LWWorldContent.validate(input).ok],
+  ['Growth',global.LWGrowth.content,global.LWGrowth.schema,500,d=>d,input=>global.LWGrowth.validate(input).ok],
+  ['Scenario',X.builtins()[0],require('./content/scenario.schema.json'),80,d=>d,input=>X.validate(input).ok],
+  ['Simulation',global.LWSimulationProfile.defaults,require('./content/simulation.schema.json'),100,d=>d,input=>{try{global.LWSimulationProfile.validate(input);return true;}catch{return false;}}]
+ ];
+ for(const [label,base,schema,limit,target,accepts] of fixtures){
+  const validate=ajv.compile(schema);
+  for(const count of [limit,limit+1]){const input=C.copy(base);target(input).name='🌱'.repeat(count);const expected=count===limit;
+   assert.equal(validate(input),expected,label+' schema at '+count);assert.equal(accepts(input),expected,label+' runtime at '+count);
+  }
+ }
+ // The generic data boundary follows the same unit for metadata without a tighter schema cap.
+ assert.doesNotThrow(()=>C.copy({text:'🌱'.repeat(10000)}));assert.throws(()=>C.copy({text:'🌱'.repeat(10001)}),/10,000/);
+ const behavior=C.copy(global.LWAdventure.content);behavior.behaviorTree.name='🌱'.repeat(100);assert(global.LWAdventure.validate(behavior).ok);
+ behavior.behaviorTree.name+='🌱';assert.equal(global.LWAdventure.validate(behavior).ok,false);
+});
+
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/content-boundary-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} content-boundary checks passed`);if(passed!==results.length)process.exitCode=1;

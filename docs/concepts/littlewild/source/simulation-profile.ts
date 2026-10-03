@@ -135,8 +135,8 @@
   const raw=C.parse(input,MAX_BYTES);
   exact(raw,['format','schemaVersion','id','version','name','description','rules','archetype'],'simulation profile');
   if(raw.format!=='littlewild-simulation-profile'||raw.schemaVersion!==1||raw.version!==1||!identity(raw.id)||
-   typeof raw.name!=='string'||!raw.name.trim()||raw.name.length>100||
-   typeof raw.description!=='string'||!raw.description.trim()||raw.description.length>500)
+   typeof raw.name!=='string'||!raw.name.trim()||[...raw.name].length>100||
+   typeof raw.description!=='string'||!raw.description.trim()||[...raw.description].length>500)
    throw Error('Invalid simulation profile identity.');
 
   const rules=raw.rules;

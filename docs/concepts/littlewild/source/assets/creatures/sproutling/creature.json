@@ -350,5 +350,17 @@
         "field": "inventory"
       }
     ]
+  },
+  "visualAsset": "sproutling",
+  "physiology": {
+    "food": 1,
+    "water": 1,
+    "energy": 1,
+    "comfort": 1,
+    "joy": 1,
+    "fatigue": 1,
+    "recovery": 1,
+    "social": 1,
+    "anger": 1
   }
 }

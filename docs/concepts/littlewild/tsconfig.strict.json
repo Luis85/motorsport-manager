@@ -57,7 +57,16 @@
     "source/canvas-buildings.ts",
     "source/canvas-ground.ts",
     "source/canvas-scene.ts",
-    "source/canvas-ports.d.ts"
+    "source/canvas-ports.d.ts",
+    "source/developer-contracts.d.ts",
+    "source/developer-data.ts",
+    "source/developer-commands.ts",
+    "source/developer-session.ts",
+    "source/developer-toolbox.ts",
+    "source/developer-sdk.cts",
+    "source/test-developer-toolbox.cts",
+    "source/tools/developer-example.cts",
+    "source/asset-catalog.ts"
   ],
   "include": []
 }

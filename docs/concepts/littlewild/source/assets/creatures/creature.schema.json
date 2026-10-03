@@ -15,7 +15,9 @@
     "movement",
     "rng",
     "state",
-    "ecs"
+    "ecs",
+    "visualAsset",
+    "physiology"
   ],
   "properties": {
     "format": {
@@ -74,7 +76,7 @@
       "properties": {
         "baseSpeed": {
           "type": "number",
-          "exclusiveMinimum": 0,
+          "minimum": 0.05,
           "maximum": 8
         },
         "bondThreshold": {
@@ -125,7 +127,8 @@
           "items": {
             "type": "string",
             "pattern": "^[A-Za-z][A-Za-z0-9_]{0,60}$"
-          }
+          },
+          "maxItems": 96
         },
         "defaults": {
           "type": "object",
@@ -198,7 +201,74 @@
                 "pattern": "^[A-Za-z][A-Za-z0-9_]{0,60}$"
               }
             }
-          }
+          },
+          "maxItems": 32
+        }
+      }
+    },
+    "visualAsset": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+    },
+    "physiology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "food",
+        "water",
+        "energy",
+        "comfort",
+        "joy",
+        "fatigue",
+        "recovery",
+        "social",
+        "anger"
+      ],
+      "properties": {
+        "food": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "water": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "energy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "comfort": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "joy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "fatigue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "recovery": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "social": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "anger": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
         }
       }
     }

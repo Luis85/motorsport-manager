@@ -44,6 +44,18 @@ test("Source identity detects content, rename and deletion but ignores generated
     fs.rmSync(path.join(temp,"source","renamed.ts"));assert.notEqual(sourceIdentity(temp),before);
   } finally { fs.rmSync(temp,{recursive:true,force:true}); }
 });
+test("Compiler configuration additions, edits and deletion invalidate source evidence", () => {
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),"littlewild-compiler-identity-"));
+  try {
+    for(const directory of ["source","vendor","examples"])fs.mkdirSync(path.join(temp,directory));
+    for(const file of ["package.json","package-lock.json","tsconfig.json","tsconfig.strict.json"])fs.writeFileSync(path.join(temp,file),"{}");
+    const baseline=sourceIdentity(temp),sdk=path.join(temp,"tsconfig.sdk.json");
+    fs.writeFileSync(sdk,'{"compilerOptions":{"declaration":true}}');const added=sourceIdentity(temp);assert.notEqual(added,baseline);
+    fs.writeFileSync(sdk,'{"compilerOptions":{"declaration":false}}');const edited=sourceIdentity(temp);assert.notEqual(edited,added);
+    fs.rmSync(sdk);assert.equal(sourceIdentity(temp),baseline);
+    fs.rmSync(path.join(temp,"tsconfig.strict.json"));assert.throws(()=>sourceIdentity(temp),/Required compiler configuration/);
+  } finally {fs.rmSync(temp,{recursive:true,force:true});}
+});
 test("Release rejects literal legacy executable extensions in nested authored folders", () => {
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),"littlewild-release-"));
   try {

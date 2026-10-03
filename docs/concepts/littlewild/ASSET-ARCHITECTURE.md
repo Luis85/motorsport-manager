@@ -14,9 +14,16 @@ source/assets/
 │   └── <building-id>/asset.json
 ├── items/
 │   └── <item-or-prop-id>/asset.json
-└── actors/
-    └── <actor-id>/asset.json
+└── creatures/
+    ├── catalog.json
+    ├── catalog.schema.json
+    ├── creature.schema.json
+    └── <creature-id>/
+        ├── creature.json
+        └── asset.json
 ```
+
+Creature gameplay and visual manifests share one assets folder; gameplay uses `visualAsset` to select a bundled actor asset independently of the archetype ID. `creatures/catalog.json` selects the default archetype. The visual runtime category remains `actor`.
 
 The folder name is the stable model ID. The manifest must repeat that identity and category. The build rejects missing manifests or a path/identity mismatch.
 
@@ -44,7 +51,7 @@ Primitive nodes support groups, boxes, low-poly balls, soft/tiny spheres, cones,
 
 `world-3d.ts` owns the camera, scene, terrain surface, batching, transient selection/path/build-plan helpers, world placement and animation scheduling. It no longer owns building/resource/actor/equipment model construction.
 
-`world-fidelity.ts` owns **behavior**, not geometry: gait, breathing, blinking, facial pose, carried-item choice, care gestures and attaching equipment to data-authored sockets. The Sproutling body and sockets are defined in `actors/sproutling/asset.json`.
+`world-fidelity.ts` owns **behavior**, not geometry: gait, breathing, blinking, facial pose, carried-item choice, care gestures and attaching equipment to data-authored sockets. The Sproutling body and sockets are defined in `creatures/sproutling/asset.json`.
 
 The software renderer consumes the same Three.js scene. There is no separate low-fidelity model catalog.
 

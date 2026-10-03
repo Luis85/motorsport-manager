@@ -8,12 +8,12 @@ Creatures are authored as data, instantiated by an application service, simulate
 
 | Concern | Owner | Persistent? |
 | --- | --- | --- |
-| Archetype identity, supported personalities, names, movement tuning, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/creatures/<id>/creature.json` | Definition data |
+| Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/assets/creatures/<id>/creature.json` | Definition data |
 | Personality traits, attributes and preferences | Adventure content | Definition data |
 | Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks, interaction events/cooldowns | Creature actor record | Yes |
 | `Creature`, `Activity`, `Intent` ECS projections | `actor-ecs.ts` | No |
 | Construction of a new mutable actor from immutable definitions | `creature-factory.ts` | Application service |
-| Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/actors/<id>/asset.json` | Presentation data |
+| Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/creatures/<id>/asset.json` | Presentation data |
 | Animation algorithm and Three.js attachment behavior | `world-fidelity.ts` | No |
 | Recruitment, social/quest orchestration and use-case sequencing | `colony.ts` | Application orchestration |
 
@@ -57,18 +57,67 @@ Persistent actor objects are the source of truth. The ECS owns deterministic pro
 
 Definition-bound components are declared by each creature manifest. The engine-required baseline is `Transform`, `Needs`, `Learning`, `Feelings` and `Inventory`; an archetype may add more object-valued components. `Creature`, `Activity` and `Intent` are transient engine projections. `Creature` carries the explicit archetype/personality pair used by systems, while persistent actor records remain the source of truth.
 
-The ECS caches component references and reuses transient `Activity` records to avoid avoidable per-tick allocations while still detecting actor-record replacement by reference. All bundled archetypes currently implement one shared actor-scoped field contract because `LWActorStateView` presents a stable application facade across the roster; archetypes may vary their ECS-bound object components without hiding persistent defaults in consuming systems.
+The ECS caches component references and reuses transient `Activity` records to avoid avoidable per-tick allocations while still detecting actor-record replacement by reference. Every archetype implements the required core actor fields and stable bindings (`Transform → creature`, `Needs → needs`, `Learning → learning`, `Feelings → feelings`, `Inventory → inventory`). An archetype may declare additional owned fields and object components. The catalog publishes the union of owned field names to the actor-scoped facade; it does not add absent extra fields to other archetypes or their saves. Extra fields cannot shadow shared world state. Binding an extra component does not register a new system.
+
+## Folder discovery and defaults
+
+`source/assets/creatures/<id>/` co-locates gameplay and presentation manifests.
+Their schema boundaries remain separate; visual manifests retain category `actor`.
+`tools/bundled-assets.cts` discovers both collections for the build and regressions.
+Every creature folder requires both manifests, matching folder IDs and a selected
+visual asset supporting all declared personalities. No source registry branch is
+needed to add a package.
+
+`assets/creatures/catalog.json` (validated by `catalog.schema.json` and runtime)
+selects `defaultArchetype` explicitly. Sorting new folders never changes the
+legacy default. The catalog configuration and creature definitions are frozen.
+Changing this value changes newly created story founders; saved identities remain
+explicit and recruitment accepts any supported pair.
 
 ## Adding another creature
 
-1. Add `source/creatures/<id>/creature.json` using `creature.schema.json`.
-2. Select one or more personality IDs defined in Adventure content. Personality definitions are reusable across creature archetypes; the actor’s explicit archetype ID disambiguates its species/model contract.
-3. Define all actor-scoped defaults and founder/arrival overrides.
-4. Declare ECS component bindings. Do not add callbacks or system names as executable behavior.
-5. Add `source/assets/actors/<id>/asset.json` with the shared creature ID.
-6. Provide the engine rig/socket contract, an appearance for every supported personality, expression thresholds and animation tuning.
-7. Run `npm run typecheck`, `npm run architecture` and `npm run verify`.
+1. Copy `source/assets/creatures/sproutling/` to a new safe lowercase ID.
+2. Set `creature.json.id`, `state.defaults.archetype`, `asset.json.id` and normally
+   `visualAsset` to that ID. Keep `asset.json.category` as `actor`.
+3. Select supported personality IDs from Adventure content and set a supported
+   `defaultPersonality` and matching default state. Personalities supply shared
+   traits, attributes and preferences independently of species.
+4. Edit the name pool, deterministic `rng.base`/`stride`, founder/arrival state and
+   movement tuning. Keep all required persistent fields and component bindings.
+5. Tune `physiology` multipliers (0–4) for food, water, energy, comfort, joy,
+   fatigue, recovery, social and anger. Multipliers scale the existing authored
+   actor rules; 1 preserves existing behavior and 0 disables the corresponding
+   rate. No random calls or system order are added.
+6. Add optional actor-owned defaults through `state.personalFields`; bind extra
+   object state through `ecs.components` when useful. This creates reference-bound
+   data, not an executable system. Every existing archetype keeps its own defaults.
+7. Edit geometry/materials and appearance profiles in `asset.json`. Keep required
+   rig/socket handles valid in every selected model. The same compiled fidelity
+   layer renders world actors and portraits using explicit archetype/personality.
+8. To swap visuals, change `visualAsset` to another bundled package's asset ID.
+   Its appearances must cover every supported personality. Gameplay ID, balances,
+   state and saved identity remain the creature definition's ID.
+9. To select this species for new story founders, change
+   `assets/creatures/catalog.json.defaultArchetype`. Recruitment automatically
+   exposes all valid pairs and `purchaseCreature(personality, archetype)` accepts
+   an explicit species; existing gameplay prerequisites still apply.
+10. Run `npm run typecheck`, `npm run architecture` and `npm run verify`.
+
+The isolated second-archetype regression stages a Brookling package and uses the
+actual discovery helper and untouched compiled modules. It verifies name/RNG and
+arrival tuning, physiology, an extra Habitat ECS component, mesh identity, visual
+reuse, recruitment, story encode/inspect/commit and deterministic continued ticks.
+Changing the catalog default also creates a Brookling founder. Existing Sproutling
+actors roundtrip without acquiring the optional Habitat field.
 
 ## Intentional constraints
 
 Creature archetypes and visual assets are bundled trusted application content. Scenario packs may select/tune supported simulation content but cannot inject new creature code, systems or renderer assets. Native actor state carries an explicit `{archetype, personality}` identity: archetype selects the creature contract and visual asset, while personality selects reusable Adventure traits, attributes and preferences. A personality may therefore be supported by multiple archetypes without coupling species identity to temperament.
+
+
+New AI actions, handlers, morphology/animation programs and component systems still
+require compiled engine capabilities and their regression coverage. Creature
+packages configure the supported game rather than injecting arbitrary mechanics.
+Removing or renaming an archetype used by a saved story is a compatibility change;
+retain stable IDs or provide an explicit migration. Definition edits tune future
+creation; saved mutable defaults are not retroactively rewritten on reload.

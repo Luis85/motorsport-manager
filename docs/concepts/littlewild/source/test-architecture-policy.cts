@@ -39,9 +39,16 @@ test('Architecture resolves a long comma-declared ambient alias chain', () => {
 test('Architecture finds bracket exports', () => assert.deepEqual(analyze("root['LWUI']={};").globals, [{ name: 'LWUI', write: true }]));
 test('Architecture rejects computed ambient globals', () => assert.equal(analyze('const env=globalThis; env[key].run();').dynamicGlobals, 1));
 for (const code of [
+  'Date();', 'const Clock=Date; Clock();', 'const Clock=globalThis.Date; Clock();',
+  'const {Date: Clock}=globalThis; Clock();', '(function(Clock){Clock();})(Date);',
+  'const env=globalThis; env["Date"]();', 'const Clock=Date; new Clock();',
+  'new globalThis.Date();', 'Date.call(null);', 'const clock=Date; clock.apply(null,[]);',
   'Math ["random"] ();', 'const now=Date.now; now();', 'const {now}=performance; now();',
   'const env=globalThis; env.document.body;', 'new Date();', 'crypto["getRandomValues"](buffer);'
 ]) test('Architecture detects platform alias: ' + code, () => assert(analyze(code).platform.length > 0));
+test('Architecture permits deterministic Date parsers and explicit UTC conversion',()=>{
+ assert.deepEqual(analyze("Date.parse('2026-01-01'); Date.UTC(2026,0,1);").platform,[]);
+});
 test('Architecture ignores comments strings and erased contracts', () => {
   const analysis=analyze("// require('./world-ui.js') document.body\nconst message='Math.random()'; interface Port {document:string;} type Sample=any;");
   assert.deepEqual(analysis.dependencies,[]);assert.deepEqual(analysis.globals,[]);assert.deepEqual(analysis.platform,[]);

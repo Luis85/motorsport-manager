@@ -39,7 +39,10 @@ export function sourceIdentity(root: string): string {
       hash.update(new Uint8Array(bytes));
     }
   }
-  for (const input of ["source", "vendor", "examples", "package.json", "package-lock.json", "tsconfig.json", "tsconfig.strict.json"]) visit(input);
+  const compilerConfigs=fs.readdirSync(root).filter(name=>/^tsconfig.*\.json$/.test(name)).sort();
+  for(const required of ["tsconfig.json","tsconfig.strict.json"])
+    if(!compilerConfigs.includes(required))throw new Error(`Required compiler configuration is missing: ${required}`);
+  for (const input of ["source", "vendor", "examples", "package.json", "package-lock.json", ...compilerConfigs]) visit(input);
   return hash.digest("hex");
 }
 

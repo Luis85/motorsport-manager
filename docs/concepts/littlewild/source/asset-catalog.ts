@@ -1,118 +1,170 @@
 /* Immutable catalog for bundled visual assets. Scenario/import JSON cannot register assets. */
-(function(root){'use strict';
- const categories=new Set(['building','item','actor']);
- const primitives=new Set(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground']);
+(function(inputRoot:unknown){
+ 'use strict';
+ type Plain=Record<string,unknown>;
+ type Category='building'|'item'|'actor';
+ interface Definition {
+  readonly format:'littlewild-3d-asset';readonly schemaVersion:1;
+  readonly category:Category;readonly id:string;readonly name:string;
+  readonly materials:Readonly<Plain>;
+  readonly models:Readonly<Record<string,Readonly<{nodes:readonly unknown[]}>>>;
+  readonly metadata:Readonly<Plain>;readonly behaviors?:Readonly<Plain>;readonly rig?:unknown;
+ }
+ interface Api {
+  readonly revision:number;
+  all():readonly Definition[];
+  get(category:Category,id:string):Definition|null;
+  building(id:string):Definition|null;item(id:string):Definition|null;actor(id:string):Definition|null;
+  hasModel(category:Category,id:string,name:string):boolean;
+  validate(input:unknown):Definition;
+ }
+ interface Root {LWAssetDefinitions?:unknown;LWAssets?:Api;}
+ const root=inputRoot as Root;
+ const categories=new Set<string>(['building','item','actor']);
+ const primitives=new Set<string>(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground']);
  const safeId=/^[a-z0-9][a-z0-9_-]{0,79}$/;
  const safeRole=/^[A-Za-z][A-Za-z0-9_-]{0,79}$/;
- const color=v=>typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v);
- const vec=(v,n=3)=>Array.isArray(v)&&v.length===n&&v.every(Number.isFinite);
- const plain=v=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
- const copy=v=>JSON.parse(JSON.stringify(v));
- function deepFreeze(v){if(!v||typeof v!=='object'||Object.isFrozen(v))return v;Object.freeze(v);for(const x of Object.values(v))deepFreeze(x);return v;}
- function fail(message){throw Error('3D asset: '+message);}
- function dataOnly(value){
-  const ancestors=new Set(),forbidden=new Set(['__proto__','constructor','prototype','script','callback','execute','eval','sourceCode','modulePath','handler','command']);let count=0;
-  function visit(v,depth){
+ const color=(value:unknown):value is string=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
+ const finite=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value);
+ const vec=(value:unknown,n=3):boolean=>Array.isArray(value)&&value.length===n&&value.every(finite);
+ const plain=(value:unknown):value is Plain=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.getPrototypeOf(value)===Object.prototype;
+ const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
+ function deepFreeze<T>(value:T):T{
+  if(!value||typeof value!=='object'||Object.isFrozen(value))return value;
+  Object.freeze(value);for(const child of Object.values(value))deepFreeze(child);return value;
+ }
+ function fail(message:string):never{throw Error('3D asset: '+message);}
+ const record=(value:unknown,path:string):Plain=>plain(value)?value:fail(path+' must be an object');
+ const list=(value:unknown,path:string):unknown[]=>Array.isArray(value)?value:fail(path+' must be a list');
+ function dataOnly(value:unknown):void{
+  const ancestors=new Set<object>(),forbidden=new Set(['__proto__','constructor','prototype','script','callback','execute','eval','sourceCode','modulePath','handler','command']);let count=0;
+  function visit(entry:unknown,depth:number):void{
    if(++count>100000||depth>32)fail('definition exceeds supported complexity');
-   if(v===null||typeof v==='boolean'||typeof v==='string'||Number.isFinite(v))return;
-   if(!Array.isArray(v)&&!plain(v))fail('definition must contain only JSON data');
-   if(ancestors.has(v)||Object.getOwnPropertySymbols(v).length)fail('definition must contain only JSON data');
-   ancestors.add(v);
-   const descriptors=Object.getOwnPropertyDescriptors(v);
-   if(Array.isArray(v)&&Object.keys(descriptors).length!==v.length+1)fail('arrays must be dense JSON lists');
+   if(entry===null||typeof entry==='boolean'||typeof entry==='string'||finite(entry))return;
+   if(!Array.isArray(entry)&&!plain(entry))fail('definition must contain only JSON data');
+   const object=entry as object;
+   if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)fail('definition must contain only JSON data');
+   ancestors.add(object);
+   const descriptors=Object.getOwnPropertyDescriptors(object);
+   if(Array.isArray(entry)){
+    if(Object.keys(descriptors).length!==entry.length+1)fail('arrays must be dense JSON lists');
+    for(let i=0;i<entry.length;i++)if(!Object.hasOwn(descriptors,String(i)))fail('arrays must contain every own numeric index');
+   }
    for(const [key,descriptor] of Object.entries(descriptors)){
-    if(Array.isArray(v)&&key==='length')continue;
+    if(Array.isArray(entry)&&key==='length')continue;
     if(forbidden.has(key)||!descriptor.enumerable||descriptor.get||descriptor.set)fail('invalid data field '+key);
     visit(descriptor.value,depth+1);
    }
-   ancestors.delete(v);
+   ancestors.delete(object);
   }
   visit(value,0);
  }
- function fields(value,allowed,path){if(!plain(value)||Object.keys(value).some(key=>!allowed.includes(key)))fail(path+' has unknown fields');}
- function materialProps(value,path,requiredColor=false){
-  fields(value,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness'],path);
+ function fields(value:unknown,allowed:readonly string[],path:string):Plain{
+  const out=record(value,path);
+  if(Object.keys(out).some(key=>!allowed.includes(key)))fail(path+' has unknown fields');
+  return out;
+ }
+ function materialProps(input:unknown,path:string,requiredColor=false):void{
+  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness'],path);
   if(requiredColor&&!color(value.color))fail(path+' invalid color');
   for(const key of ['color','emissive'])if(value[key]!==undefined&&!color(value[key]))fail(path+' invalid '+key);
   for(const key of ['transparent','depthWrite'])if(value[key]!==undefined&&typeof value[key]!=='boolean')fail(path+' invalid '+key);
-  for(const key of ['opacity','roughness','metalness'])if(value[key]!==undefined&&(!Number.isFinite(value[key])||value[key]<0||value[key]>1))fail(path+' invalid '+key);
-  if(value.emissiveIntensity!==undefined&&(!Number.isFinite(value.emissiveIntensity)||value.emissiveIntensity<0))fail(path+' invalid emissive intensity');
+  for(const key of ['opacity','roughness','metalness']){const amount=value[key];if(amount!==undefined&&(!finite(amount)||amount<0||amount>1))fail(path+' invalid '+key);}
+  const emissive=value.emissiveIntensity;
+  if(emissive!==undefined&&(!finite(emissive)||emissive<0))fail(path+' invalid emissive intensity');
  }
- function nodeIds(nodes,materials,seen,path){
-  if(!Array.isArray(nodes))fail(path+' nodes must be an array');
-  for(const n of nodes){if(!plain(n)||!primitives.has(n.primitive))fail(path+' invalid node');
-   fields(n,['primitive','id','position','rotation','scale','material','materialProps','visible','castShadow','receiveShadow','children'],path);
-   if(n.id!==undefined){if(typeof n.id!=='string'||!safeId.test(n.id)||seen.has(n.id))fail(path+' invalid/duplicate node id');seen.add(n.id);}
-   if(n.position!==undefined&&!vec(n.position))fail(path+' invalid position');
-   if(n.rotation!==undefined&&!vec(n.rotation))fail(path+' invalid rotation');
-   if(n.scale!==undefined&&!vec(n.scale))fail(path+' invalid scale');
-   for(const key of ['visible','castShadow','receiveShadow'])if(n[key]!==undefined&&typeof n[key]!=='boolean')fail(path+' invalid '+key);
-   if(n.materialProps!==undefined)materialProps(n.materialProps,path+' material properties');
-   if(n.primitive!=='group'&&(typeof n.material!=='string'||(!Object.hasOwn(materials,n.material)&&!/^#[0-9a-f]{6}$/i.test(n.material))))fail(path+' invalid material');
-   if(n.children!==undefined)nodeIds(n.children,materials,seen,path+'/'+(n.id||n.primitive));
+ function nodeIds(input:unknown,materials:Plain,seen:Set<string>,path:string):void{
+  for(const entry of list(input,path+' nodes')){
+   const node=fields(entry,['primitive','id','position','rotation','scale','material','materialProps','visible','castShadow','receiveShadow','children'],path);
+   if(typeof node.primitive!=='string'||!primitives.has(node.primitive))fail(path+' invalid node');
+   if(node.id!==undefined){if(typeof node.id!=='string'||!safeId.test(node.id)||seen.has(node.id))fail(path+' invalid/duplicate node id');seen.add(node.id);}
+   for(const key of ['position','rotation','scale'])if(node[key]!==undefined&&!vec(node[key]))fail(path+' invalid '+key);
+   for(const key of ['visible','castShadow','receiveShadow'])if(node[key]!==undefined&&typeof node[key]!=='boolean')fail(path+' invalid '+key);
+   if(node.materialProps!==undefined)materialProps(node.materialProps,path+' material properties');
+   if(node.primitive!=='group'&&(typeof node.material!=='string'||(!Object.hasOwn(materials,node.material)&&!/^#[0-9a-f]{6}$/i.test(node.material))))fail(path+' invalid material');
+   if(node.children!==undefined)nodeIds(node.children,materials,seen,path+'/'+(node.id||node.primitive));
   }
  }
- function validate(raw){
-  dataOnly(raw);
-  fields(raw,['format','schemaVersion','category','id','name','materials','models','metadata','behaviors','rig'],'asset');
-  if(!plain(raw)||raw.format!=='littlewild-3d-asset'||raw.schemaVersion!==1||!categories.has(raw.category)||typeof raw.id!=='string'||!safeId.test(raw.id)||typeof raw.name!=='string'||raw.name.length<1||raw.name.length>120)fail('invalid identity');
-  if(!plain(raw.materials)||!plain(raw.models)||!Object.keys(raw.models).length)fail(raw.id+' missing materials/models');
-  for(const [key,value] of Object.entries(raw.materials)){if(!safeRole.test(key)||!(color(value)||plain(value)))fail(raw.id+' invalid material '+key);if(plain(value))materialProps(value,raw.id+' material '+key,true);}
-  if(!plain(raw.metadata))fail(raw.id+' missing metadata');
-  for(const key of ['radius','hitHeight','worldHitHeight'])if(raw.metadata[key]!==undefined&&(!Number.isFinite(raw.metadata[key])||raw.metadata[key]<=0))fail(raw.id+' invalid metadata '+key);
-  const modelNodes=new Map();
-  for(const [name,model] of Object.entries(raw.models)){if(!safeId.test(name)||!plain(model)||!Array.isArray(model.nodes))fail(raw.id+' invalid model '+name);fields(model,['nodes'],raw.id+'/'+name);const ids=new Set();nodeIds(model.nodes,raw.materials,ids,raw.id+'/'+name);modelNodes.set(name,ids);}
-  const ids=modelNodes.get('world')||new Set();
-  const behavior=raw.behaviors===undefined?{}:raw.behaviors;
-  if(!plain(behavior))fail(raw.id+' invalid behaviors');
-  if(raw.category!=='actor')fields(behavior,['door','rotors','smoke'],raw.id+' behaviors');
-  if(behavior.door!==undefined&&(!plain(behavior.door)||!ids.has(behavior.door.node)||!Number.isFinite(behavior.door.openDelta)))fail(raw.id+' invalid door node/angle');
-  if(behavior.rotors!==undefined&&!Array.isArray(behavior.rotors))fail(raw.id+' rotors must be a list');
-  for(const rotor of behavior.rotors||[])if(!plain(rotor)||!ids.has(rotor.node)||!['x','y','z'].includes(rotor.axis)||!Number.isFinite(rotor.speed))fail(raw.id+' invalid rotor');
-  if(raw.category==='building'&&!raw.models.world)fail(raw.id+' building needs world model');
-  if(behavior.smoke!==undefined&&(!plain(behavior.smoke)||!vec(behavior.smoke.position)||typeof behavior.smoke.always!=='boolean') )fail(raw.id+' invalid smoke behavior');
-  if(raw.category==='actor'){
-   const actorBehaviorKeys=['sockets','animation','expression','appearances'],rigKeys=['body','torso','bib','head','ears','tail','feet','arms','eyes','brows','mouth','carry','care','snack','cup'],socketKeys=['head','body','back','feet','tool','charm','carry'];
-   if(!raw.models.world||!plain(raw.rig)||!plain(behavior.sockets)||!plain(behavior.animation)||!plain(behavior.expression)||!plain(behavior.appearances)||!Object.keys(behavior.appearances).length)fail(raw.id+' actor needs world model, rig, sockets, animation, expression and appearances');
-   if(Object.keys(behavior).length!==actorBehaviorKeys.length||actorBehaviorKeys.some(key=>!Object.hasOwn(behavior,key)))fail(raw.id+' invalid actor behavior contract');
-   if(Object.keys(raw.rig).length!==rigKeys.length||rigKeys.some(key=>!Object.hasOwn(raw.rig,key)))fail(raw.id+' invalid actor rig contract');
-   if(Object.keys(behavior.sockets).length!==socketKeys.length||socketKeys.some(key=>!Object.hasOwn(behavior.sockets,key)))fail(raw.id+' invalid actor socket contract');
-   const references=[];
-   const pairKeys=['ears','feet','arms','eyes','brows'];
-   for(const [key,value] of Object.entries(raw.rig))if(pairKeys.includes(key)?!Array.isArray(value)||value.length!==2:typeof value!=='string')fail(raw.id+' invalid rig shape '+key);
-   for(const [key,value] of Object.entries(behavior.sockets))if(key==='feet'?!Array.isArray(value)||value.length!==2:typeof value!=='string')fail(raw.id+' invalid socket shape '+key);
-   for(const value of [...Object.values(raw.rig),...Object.values(behavior.sockets)])Array.isArray(value)?references.push(...value):references.push(value);
-   for(const [modelName,modelIds] of modelNodes)if(modelName==='world'||modelName.startsWith('world-')){
-    for(const id of references)if(typeof id!=='string'||!modelIds.has(id))fail(raw.id+' invalid rig/socket node '+id+' in '+modelName);
-   }
-   const animationKeys=['bodyBob','breath','earSway','tailSway','footLift','footStride','walkArmSwing','workArmBase','workArmSwing','blinkThreshold','idleHeadYaw','idleHeadRoll'];
-   if(Object.keys(behavior.animation).length!==animationKeys.length||animationKeys.some(key=>!Object.hasOwn(behavior.animation,key)||!Number.isFinite(behavior.animation[key])))fail(raw.id+' invalid animation tuning');
-   if(behavior.animation.blinkThreshold<.8||behavior.animation.blinkThreshold>=1||Math.abs(behavior.animation.workArmBase)>2)fail(raw.id+' animation tuning outside bounds');
-   const expressionKeys=['angerAt','tiredEnergyBelow','concernFoodBelow','concernWaterBelow','happyJoyAbove'];
-   if(Object.keys(behavior.expression).length!==expressionKeys.length||expressionKeys.some(key=>!Object.hasOwn(behavior.expression,key)||!Number.isFinite(behavior.expression[key])||behavior.expression[key]<0||behavior.expression[key]>100))fail(raw.id+' invalid expression tuning');
-   for(const [profile,appearance] of Object.entries(behavior.appearances)){
-    const appearanceKeys=['model','scale','labelHeight','contextHeight','bubbleHeight','materials'];
-    if(!safeId.test(profile)||!plain(appearance)||Object.keys(appearance).length!==appearanceKeys.length||appearanceKeys.some(key=>!Object.hasOwn(appearance,key))||typeof appearance.model!=='string'||!modelNodes.has(appearance.model)||!vec(appearance.scale)||!Number.isFinite(appearance.labelHeight)||appearance.labelHeight<.5||appearance.labelHeight>3||!Number.isFinite(appearance.contextHeight)||appearance.contextHeight<.2||appearance.contextHeight>2||!Number.isFinite(appearance.bubbleHeight)||appearance.bubbleHeight<.5||appearance.bubbleHeight>3||!plain(appearance.materials))fail(raw.id+' invalid appearance '+profile);
-    for(const id of references)if(!modelNodes.get(appearance.model).has(id))fail(raw.id+' invalid appearance rig/socket node '+id+' in '+appearance.model);
-    for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(raw.materials,role)||typeof value!=='string'||!/^#[0-9a-f]{6}$/i.test(value))fail(raw.id+' invalid appearance material '+profile+'/'+role);
-   }
+ function reference(value:unknown,ids:ReadonlySet<string>):boolean{return typeof value==='string'&&ids.has(value);}
+ function validateShape(input:unknown):asserts input is Definition{
+  dataOnly(input);
+  const raw=fields(input,['format','schemaVersion','category','id','name','materials','models','metadata','behaviors','rig'],'asset');
+  if(raw.format!=='littlewild-3d-asset'||raw.schemaVersion!==1||typeof raw.category!=='string'||!categories.has(raw.category)||typeof raw.id!=='string'||!safeId.test(raw.id)||typeof raw.name!=='string'||[...raw.name].length<1||[...raw.name].length>120)fail('invalid identity');
+  const id=raw.id,materials=record(raw.materials,id+' materials'),models=record(raw.models,id+' models');
+  if(!Object.keys(models).length)fail(id+' missing materials/models');
+  for(const [key,value] of Object.entries(materials)){
+   if(!safeRole.test(key)||!(color(value)||plain(value)))fail(id+' invalid material '+key);
+   if(plain(value))materialProps(value,id+' material '+key,true);
   }
-  return deepFreeze(copy(raw));
+  const metadata=record(raw.metadata,id+' metadata');
+  for(const key of ['radius','hitHeight','worldHitHeight']){const value=metadata[key];if(value!==undefined&&(!finite(value)||value<=0))fail(id+' invalid metadata '+key);}
+  const modelNodes=new Map<string,Set<string>>();
+  for(const [name,inputModel] of Object.entries(models)){
+   if(!safeId.test(name))fail(id+' invalid model '+name);
+   const model=fields(inputModel,['nodes'],id+'/'+name),ids=new Set<string>();
+   const nodes=list(model.nodes,id+'/'+name+' nodes');
+   nodeIds(nodes,materials,ids,id+'/'+name);modelNodes.set(name,ids);
+  }
+  const ids=modelNodes.get('world')||new Set<string>(),behavior=raw.behaviors===undefined?{}:record(raw.behaviors,id+' behaviors');
+  if(raw.category!=='actor')fields(behavior,['door','rotors','smoke'],id+' behaviors');
+  if(behavior.door!==undefined){const door=record(behavior.door,id+' door');if(!reference(door.node,ids)||!finite(door.openDelta))fail(id+' invalid door node/angle');}
+  if(behavior.rotors!==undefined)for(const inputRotor of list(behavior.rotors,id+' rotors')){
+   const rotor=record(inputRotor,id+' rotor');
+   if(!reference(rotor.node,ids)||typeof rotor.axis!=='string'||!['x','y','z'].includes(rotor.axis)||!finite(rotor.speed))fail(id+' invalid rotor');
+  }
+  if(raw.category==='building'&&!models.world)fail(id+' building needs world model');
+  if(behavior.smoke!==undefined){const smoke=record(behavior.smoke,id+' smoke');if(!vec(smoke.position)||typeof smoke.always!=='boolean')fail(id+' invalid smoke behavior');}
+  if(raw.category==='actor')validateActor(raw,behavior,models,materials,modelNodes,id);
+ }
+ /** Detached immutable validation; this never registers or replaces an active asset. */
+ function validate(input:unknown):Definition{
+  validateShape(input);
+  return deepFreeze(copy(input));
+ }
+ function validateActor(raw:Plain,behavior:Plain,models:Plain,materials:Plain,modelNodes:ReadonlyMap<string,ReadonlySet<string>>,id:string):void{
+  const actorBehaviorKeys=['sockets','animation','expression','appearances'],rigKeys=['body','torso','bib','head','ears','tail','feet','arms','eyes','brows','mouth','carry','care','snack','cup'],socketKeys=['head','body','back','feet','tool','charm','carry'];
+  if(!models.world||!plain(raw.rig)||!plain(behavior.sockets)||!plain(behavior.animation)||!plain(behavior.expression)||!plain(behavior.appearances)||!Object.keys(behavior.appearances).length)fail(id+' actor needs world model, rig, sockets, animation, expression and appearances');
+  const rig=raw.rig,sockets=behavior.sockets,animation=behavior.animation,expression=behavior.expression,appearances=behavior.appearances;
+  if(Object.keys(behavior).length!==actorBehaviorKeys.length||actorBehaviorKeys.some(key=>!Object.hasOwn(behavior,key)))fail(id+' invalid actor behavior contract');
+  if(Object.keys(rig).length!==rigKeys.length||rigKeys.some(key=>!Object.hasOwn(rig,key)))fail(id+' invalid actor rig contract');
+  if(Object.keys(sockets).length!==socketKeys.length||socketKeys.some(key=>!Object.hasOwn(sockets,key)))fail(id+' invalid actor socket contract');
+  const references:unknown[]=[],pairKeys=['ears','feet','arms','eyes','brows'];
+  for(const [key,value] of Object.entries(rig))if(pairKeys.includes(key)?!Array.isArray(value)||value.length!==2:typeof value!=='string')fail(id+' invalid rig shape '+key);
+  for(const [key,value] of Object.entries(sockets))if(key==='feet'?!Array.isArray(value)||value.length!==2:typeof value!=='string')fail(id+' invalid socket shape '+key);
+  for(const value of [...Object.values(rig),...Object.values(sockets)])Array.isArray(value)?references.push(...value):references.push(value);
+  for(const [modelName,modelIds] of modelNodes)if(modelName==='world'||modelName.startsWith('world-')){
+   for(const node of references)if(!reference(node,modelIds))fail(id+' invalid rig/socket node '+String(node)+' in '+modelName);
+  }
+  const animationKeys=['bodyBob','breath','earSway','tailSway','footLift','footStride','walkArmSwing','workArmBase','workArmSwing','blinkThreshold','idleHeadYaw','idleHeadRoll'];
+  if(Object.keys(animation).length!==animationKeys.length||animationKeys.some(key=>!Object.hasOwn(animation,key)||!finite(animation[key])))fail(id+' invalid animation tuning');
+  const blink=animation.blinkThreshold,work=animation.workArmBase;
+  if(!finite(blink)||!finite(work)||blink<.8||blink>=1||Math.abs(work)>2)fail(id+' animation tuning outside bounds');
+  const expressionKeys=['angerAt','tiredEnergyBelow','concernFoodBelow','concernWaterBelow','happyJoyAbove'];
+  if(Object.keys(expression).length!==expressionKeys.length||expressionKeys.some(key=>{const value=expression[key];return !Object.hasOwn(expression,key)||!finite(value)||value<0||value>100;}))fail(id+' invalid expression tuning');
+  for(const [profile,inputAppearance] of Object.entries(appearances)){
+   const appearance=record(inputAppearance,id+' appearance '+profile),appearanceKeys=['model','scale','labelHeight','contextHeight','bubbleHeight','materials'];
+   const label=appearance.labelHeight,context=appearance.contextHeight,bubble=appearance.bubbleHeight,model=appearance.model;
+   if(!safeId.test(profile)||Object.keys(appearance).length!==appearanceKeys.length||appearanceKeys.some(key=>!Object.hasOwn(appearance,key))||typeof model!=='string'||!modelNodes.has(model)||!vec(appearance.scale)||!finite(label)||label<.5||label>3||!finite(context)||context<.2||context>2||!finite(bubble)||bubble<.5||bubble>3||!plain(appearance.materials))fail(id+' invalid appearance '+profile);
+   const appearanceIds=modelNodes.get(model);
+   if(!appearanceIds)fail(id+' invalid appearance '+profile);
+   for(const node of references)if(!reference(node,appearanceIds))fail(id+' invalid appearance rig/socket node '+String(node)+' in '+model);
+   for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(materials,role)||!color(value))fail(id+' invalid appearance material '+profile+'/'+role);
+  }
  }
  const raw=root.LWAssetDefinitions;
  if(!Array.isArray(raw))fail('bundled definition list is missing');
- const defs=Object.freeze(raw.map(validate)),index=new Map();
- for(const a of defs){const key=a.category+':'+a.id;if(index.has(key))fail('duplicate '+key);index.set(key,a);}
- const revision=defs.reduce((h,a)=>{for(const ch of JSON.stringify(a))h=(h*33+ch.charCodeAt(0))>>>0;return h;},5381);
- const api=Object.freeze({
-  revision,
-  all:()=>defs,
-  get:(category,id)=>index.get(category+':'+id)||null,
-  building:id=>index.get('building:'+id)||null,
-  item:id=>index.get('item:'+id)||null,
-  actor:id=>index.get('actor:'+id)||null,
-  hasModel:(category,id,name)=>!!index.get(category+':'+id)?.models?.[name]
+ dataOnly(raw);
+ const defs:readonly Definition[]=Object.freeze(list(raw,'bundled definitions').map(validate)),index=new Map<string,Definition>();
+ for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
+ const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
+ const api:Api=Object.freeze({
+  revision,validate,all:()=>defs,
+  get:(category:Category,id:string)=>index.get(category+':'+id)||null,
+  building:(id:string)=>index.get('building:'+id)||null,
+  item:(id:string)=>index.get('item:'+id)||null,
+  actor:(id:string)=>index.get('actor:'+id)||null,
+  hasModel:(category:Category,id:string,name:string)=>!!index.get(category+':'+id)?.models[name]
  });
  root.LWAssets=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
-})(typeof globalThis!=='undefined'?globalThis:this);
+})(globalThis);

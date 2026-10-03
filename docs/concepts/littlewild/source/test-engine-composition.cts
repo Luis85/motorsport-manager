@@ -65,6 +65,37 @@ test('A failed factory installation rolls back factory replacements and publishe
  broken=false;C.finalize(['first']);assert.equal(facade.create(),'replacement');assert.equal(new Facade().chain(),'base:first');
 });
 
+test('A failed initializer never publishes ready metadata and cannot silently retry',()=>{
+ const {composition:C,Facade}=isolatedComposition(),calls=[];let partial;
+ C.register({id:'first',order:10,define:Base=>class extends Base{},initialize:instance=>{partial=instance;calls.push('first');instance.partial=true;}});
+ C.register({id:'second',order:20,define:Base=>class extends Base{},initialize:()=>{calls.push('second');throw Error('initializer failed');}});
+ C.finalize(['first','second']);assert.throws(()=>new Facade(),/initializer failed/);
+ assert.equal(partial.partial,true);assert.equal(Object.hasOwn(partial,'composition'),false);
+ assert.throws(()=>C.initialize(partial,partial.s),/previously failed/);assert.deepEqual(calls,['first','second']);
+});
+test('Initializer reentry fails closed without rerunning hooks',()=>{
+ const {composition:C,Facade}=isolatedComposition();let partial,calls=0;
+ C.register({id:'first',order:10,define:Base=>class extends Base{},initialize:instance=>{partial=instance;calls++;C.initialize(instance,instance.s);}});
+ C.finalize(['first']);assert.throws(()=>new Facade(),/already in progress/);
+ assert.equal(calls,1);assert.equal(Object.hasOwn(partial,'composition'),false);assert.throws(()=>C.initialize(partial,partial.s),/previously failed/);
+});
+test('Invalid initialization boundaries reject before state or lifecycle mutation',()=>{
+ const {composition:C,Facade}=isolatedComposition();let settings,calls=0;
+ C.register({id:'first',order:10,define:Base=>class extends Base{},prepare:(state,options)=>{settings=options;return state;},initialize:()=>{calls++;}});
+ C.finalize(['first']);C.constructThrough('first');const boundary=Reflect.ownKeys(settings).find(key=>typeof key==='symbol');
+ const target=Object.assign(Object.create(Facade.prototype),{s:{seed:3}});
+ assert.throws(()=>C.initialize(target,target.s,{[boundary]:'missing'}),/Unknown engine composition boundary/);
+ assert.equal(Object.hasOwn(target,'state'),false);assert.equal(Object.hasOwn(target,'composition'),false);assert.equal(calls,1);
+ C.initialize(target,target.s);assert.equal(calls,2);assert.deepEqual(Array.from(target.composition.layers),['first']);
+ C.initialize(target,target.s);assert.equal(calls,2);
+});
+test('Composition metadata publication failure leaves the instance failed',()=>{
+ const {composition:C}=isolatedComposition();let calls=0;
+ C.register({id:'first',order:10,define:Base=>class extends Base{},initialize:()=>{calls++;}});C.finalize(['first']);
+ const target={s:{}};Object.defineProperty(target,'composition',{value:'occupied',configurable:false});
+ assert.throws(()=>C.initialize(target,target.s),/redefine/);assert.equal(calls,1);assert.throws(()=>C.initialize(target,target.s),/previously failed/);assert.equal(calls,1);
+});
+
 test('One explicit composition root publishes the complete deterministic layer order',()=>{
  assert.deepEqual(L.Engine.composition.layers,layers);
  assert.deepEqual(L.EngineComposition.describe().layers,layers.map((id,index)=>({id,order:(index+1)*10})));

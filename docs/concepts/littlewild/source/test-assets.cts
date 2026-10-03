@@ -11,7 +11,7 @@ function load(){
 }
 global.LWAssetDefinitions=load();const A=require('./asset-catalog.js');
 test('Asset catalog loads every isolated asset folder',()=>assert.equal(A.all().length,global.LWAssetDefinitions.length));
-test('Asset identities are unique and folder aligned',()=>{const ids=new Set();for(const d of global.LWAssetDefinitions){const key=d.category+':'+d.id;assert(!ids.has(key),key);ids.add(key);const file=path.join(assetRoot,d.category+'s',d.id,'asset.json');assert(fs.existsSync(file),file);}});
+test('Asset identities are unique and folder aligned',()=>{const ids=new Set();for(const d of global.LWAssetDefinitions){const key=d.category+':'+d.id;assert(!ids.has(key),key);ids.add(key);const file=path.join(assetRoot,d.category==='actor'?'creatures':d.category+'s',d.id,'asset.json');assert(fs.existsSync(file),file);}});
 test('Every gameplay building has a world model',()=>{const lib=JSON.parse(fs.readFileSync(path.join(source,'content','default-library.json')));for(const b of lib.components.buildings){assert(A.building(b.id),b.id);assert(A.hasModel('building',b.id,'world'),b.id);}});
 test('Every gameplay item has a carry or world model',()=>{const lib=JSON.parse(fs.readFileSync(path.join(source,'content','default-library.json')));for(const i of lib.components.items){const a=A.item(i.id);assert(a,i.id);assert(a.models.carry||a.models.world,i.id);}});
 test('Every equipment definition has an equipped model',()=>{const lib=JSON.parse(fs.readFileSync(path.join(source,'content','adventure-library.json')));for(const i of lib.equipment)assert(A.hasModel('item',i.id,'equipped'),i.id);});
@@ -49,4 +49,45 @@ test('Asset data preflight rejects getters, cycles, sparse lists and reserved ke
   assert.throws(()=>vm.runInNewContext(script,sandbox),/3D asset:/);assert.equal(sandbox.reads,0);
  }
 });
+test('Public validation returns detached immutable data without registering assets or executing input',()=>{
+ const base=JSON.parse(JSON.stringify(global.LWAssetDefinitions.find(d=>d.id==='cottage'))),before=JSON.stringify(A.all()),revision=A.revision;
+ base.id='toolbox-cottage';const expected=JSON.stringify(base),validated=A.validate(base);
+ assert.equal(JSON.stringify(validated),expected);assert(Object.isFrozen(validated));assert(Object.isFrozen(validated.models.world.nodes));
+ base.name='Later edit';base.models.world.nodes.pop();assert.equal(JSON.stringify(validated),expected);assert.equal(A.building('toolbox-cottage'),null);
+ for(const edit of [
+  d=>d.models.world.nodes[0].position=[0,NaN,0],
+  d=>{const position=Array(3);position.a=0;position.b=0;position.c=0;d.models.world.nodes[0].position=position;},
+  d=>d.callback=()=>true
+ ]){const invalid=JSON.parse(expected);edit(invalid);assert.throws(()=>A.validate(invalid),/3D asset:/);}
+ let reads=0;const accessor=JSON.parse(expected);Object.defineProperty(accessor,'name',{enumerable:true,get(){reads++;return 'Injected';}});
+ assert.throws(()=>A.validate(accessor),/3D asset:/);assert.equal(reads,0);assert.equal(A.revision,revision);assert.equal(JSON.stringify(A.all()),before);
+});
+test('Catalog rejects substituted array indexes and malformed own properties without publishing',()=>{
+ const vm=require('node:vm'),base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),code=fs.readFileSync(__dirname+'/asset-catalog.js','utf8');
+ const setups=[
+  'd.models.world.nodes[0].position=Array(3);d.models.world.nodes[0].position.a=0;d.models.world.nodes[0].position.b=0;d.models.world.nodes[0].position.c=0;',
+  'const nodes=d.models.world.nodes;delete nodes[0];nodes.substitute={primitive:"group"};',
+  'd.models.world.nodes.extra={primitive:"group"};',
+  'Object.defineProperty(d.models.world.nodes,"0",{enumerable:true,get(){globalThis.reads++;return {};}});',
+  'Object.defineProperty(d.models.world.nodes,"0",{value:d.models.world.nodes[0],enumerable:false});',
+  'const defs=globalThis.LWAssetDefinitions;delete defs[0];defs.substitute=d;',
+  'globalThis.LWAssetDefinitions.extra=d;',
+  'Object.defineProperty(globalThis.LWAssetDefinitions,"0",{enumerable:true,get(){globalThis.reads++;return d;}});',
+  'Object.defineProperty(globalThis.LWAssetDefinitions,"0",{value:d,enumerable:false});',
+  'globalThis.LWAssetDefinitions[Symbol("asset")]=d;'
+ ];
+ for(const setup of setups){
+  const sandbox={reads:0},script='const d=JSON.parse('+JSON.stringify(JSON.stringify(base))+');globalThis.LWAssetDefinitions=[d];'+setup+code;
+  assert.throws(()=>vm.runInNewContext(script,sandbox),/3D asset:/);assert.equal(sandbox.reads,0);assert.equal(sandbox.LWAssets,undefined);
+ }
+ assert.equal(A.get(base.category,base.id).id,base.id);
+});
+test('Asset identity text accepts Unicode at the schema limit and rejects beyond it',()=>{
+ const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),schema=JSON.parse(fs.readFileSync(path.join(assetRoot,'asset.schema.json')));
+ const Ajv=require('ajv/dist/2020').default,validate=new Ajv({strict:false}).compile(schema);
+ for(const count of [120,121]){const d=JSON.parse(JSON.stringify(base));d.name='🌱'.repeat(count);assert.equal(validate(d),count===120);
+  if(count===120)assert.equal(accepts([d]).building(d.id).name,d.name);else assert.throws(()=>accepts([d]),/invalid identity/);
+ }
+});
+
 const passed=results.filter(r=>r.passed).length,report={passed,total:results.length,assets:A.all().length,results};fs.writeFileSync(__dirname+'/asset-catalog-results.json',JSON.stringify(report,null,2));console.log(passed+'/'+results.length);if(passed!==results.length)process.exitCode=1;

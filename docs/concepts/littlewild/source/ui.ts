@@ -1,6 +1,8 @@
 /* Application shell. Only explicit user actions write state; the simulation owns every movement decision. */
 (function () {
     'use strict';
+    // The player host owns the process-global context for this document's lifetime.
+    LWDeveloperSession.claimHost();
     const { Engine, SKILLS, BUILDINGS, RES, RECIPES, CONTRACTS, threshold, terrain, clamp } = LW;
     const $ = id => document.getElementById(id), esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const icon = (name, cls = '') => `<svg class="icon ${cls}" aria-hidden="true"><use href="#i-${esc(name)}"/></svg>`;

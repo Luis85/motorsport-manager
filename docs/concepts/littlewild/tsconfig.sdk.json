@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.strict.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "files": ["source/developer-sdk.cts", "source/developer-contracts.d.ts"],
+  "include": []
+}

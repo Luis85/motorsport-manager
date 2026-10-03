@@ -159,6 +159,23 @@
         "canvas-scene.ts",
         "colony-hud.ts"
       ]
+    },
+    {
+      "id": "developer-application",
+      "layer": "application",
+      "files": [
+        "developer-data.ts",
+        "developer-commands.ts",
+        "developer-session.ts"
+      ]
+    },
+    {
+      "id": "developer-composition",
+      "layer": "presentation",
+      "files": [
+        "developer-toolbox.ts",
+        "developer-sdk.cts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -183,6 +200,7 @@
     "LWGrowth",
     "LWDefaultProfile",
     "LWScenarioShape",
+    "LWCreatureConfig",
     "LWCreatureDefinitions",
     "LWCreatures",
     "LWWorldProduction",
@@ -205,6 +223,7 @@
     "LWScenarioSchema",
     "LWScenarioPacks",
     "LWAssetDefinitions",
+    "LWCreatureConfig",
     "LWCreatureDefinitions"
   ],
   "strictTypingDebt": {

@@ -61,6 +61,7 @@ const suites: Suite[] = [
   ["ecs-core", ["node", generated("test-ecs.cjs")], generated("ecs-results.json"), 120],
   ["simulation-profile", ["node", generated("test-simulation-profile.cjs")], generated("simulation-profile-results.json"), 120],
   ["simulation-profile-integration", ["node", generated("test-simulation-profile-integration.cjs")], generated("simulation-profile-integration-results.json"), 180],
+  ["developer-toolbox", ["node", generated("test-developer-toolbox.cjs")], generated("developer-toolbox-results.json"), 180],
   ["engine-composition", ["node", generated("test-engine-composition.cjs")], generated("engine-composition-results.json"), 180],
   ["ecs-activity", ["node", generated("test-ecs-activity.cjs")], generated("ecs-activity-results.json"), 120],
   ["ecs-world", ["node", generated("test-ecs-world.cjs")], generated("ecs-world-results.json"), 120],

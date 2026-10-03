@@ -31,7 +31,7 @@
     if(!Array.isArray(v)){errors.push(p+': expected an array');return;}
     if(v.length<(s.minItems||0)||v.length>(s.maxItems||Infinity))errors.push(p+': unsupported count');v.forEach((x,i)=>walk(x,s.items,p+'/'+i));
    }else if(t==='string'){
-    if(typeof v!=='string'||v.length<(s.minLength||0)||v.length>(s.maxLength||Infinity)||s.pattern&&!new RegExp(s.pattern).test(v))errors.push(p+': invalid text');
+    if(typeof v!=='string'||[...v].length<(s.minLength||0)||[...v].length>(s.maxLength||Infinity)||s.pattern&&!new RegExp(s.pattern).test(v))errors.push(p+': invalid text');
    }else if(t==='boolean'){if(typeof v!=='boolean')errors.push(p+': expected a boolean');}
    else if(t==='integer'||t==='number'){if(typeof v!=='number'||!Number.isFinite(v)||t==='integer'&&!Number.isInteger(v)||v<s.minimum||v>s.maximum)errors.push(p+': invalid number');}
   }

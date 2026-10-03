@@ -12,19 +12,38 @@
  const identity=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9._:-]{0,95}$/.test(s);
  const quantity=(inv,id)=>own(inv,id)?inv[id]:0;
  const total=inv=>Object.values(inv||{}).reduce((sum,n)=>sum+n,0);
+ const compareId=(a,b)=>a<b?-1:a>b?1:0;
+ function writable(record,keys,label){
+  for(const key of keys){
+   const descriptor=Object.getOwnPropertyDescriptor(record,key);
+   if(descriptor){
+    if(!own(descriptor,'value')||!descriptor.writable)throw Error('Invalid '+label+' write target.');
+   }else{
+    if(!Object.isExtensible(record))throw Error('Invalid '+label+' write target.');
+    for(let prototype=Object.getPrototypeOf(record);prototype;prototype=Object.getPrototypeOf(prototype)){
+     const inherited=Object.getOwnPropertyDescriptor(prototype,key);
+     if(inherited&&(!own(inherited,'value')||!inherited.writable))throw Error('Invalid '+label+' write target.');
+    }
+   }
+  }
+ }
  function inventory(inv,label){
   if(!plain(inv))throw Error('Invalid '+label+' inventory.');
-  for(const [id,n]of Object.entries(inv))if(!identity(id)||!integer(n))throw Error('Invalid '+label+' inventory quantity.');
+  for(const [id,descriptor]of Object.entries(Object.getOwnPropertyDescriptors(inv))){
+   if(!own(descriptor,'value')||!descriptor.enumerable||!identity(id)||!integer(descriptor.value))throw Error('Invalid '+label+' inventory quantity.');
+   writable(inv,[id],label+' inventory');
+  }
   return inv;
  }
  function transaction(spec,kind){if(!plain(spec)||!identity(spec.id))throw Error('Invalid '+kind+' transaction.');return spec;}
  function create(){
   const world=new E.World(),scheduler=new E.Scheduler(),completed=new Set();let serial=0;
   const result=(state,extra={})=>Object.assign({ok:state==='settled',state,amount:0},extra);
-  function component(entityId,type,data){
-   if(!identity(entityId))throw Error('Invalid physical entity ID.');
-   if(!world.entities.has(entityId))world.create(entityId);
-   return world.set(entityId,type,data);
+  function component(entityId,type,data,target=world){
+   // Command entities own tx:; native physical bindings must never occupy that namespace.
+   if(!identity(entityId)||entityId.startsWith('tx:'))throw Error('Invalid physical entity ID.');
+   if(!target.entities.has(entityId))target.create(entityId);
+   return target.set(entityId,type,data);
   }
   const bindInventory=(id,items)=>component(id,'Inventory',{items:inventory(items,id)});
   const bindDeposit=(id,record,resource,finite)=>{
@@ -101,12 +120,15 @@
    if(typeof s.message==='string')st.lastMessage=s.message;
    const finished=job;st.job=null;jobComponent.record=null;completed.add(s.id);x.result=result('settled',{amount:finished.amount,job:finished,success:true});
   }});
-  function prepare(type,s){
-   if(type==='CarrierTask'){bindInventory(s.sourceId,s.source);bindInventory(s.destinationId,s.destination);}
-   else if(type==='HarvestTask'){bindDeposit(s.depositId,s.deposit,s.resource,s.finite);bindInventory(s.destinationId,s.destination);}
+  function prepare(type,s,target=world){
+   if(type==='CarrierTask'){component(s.sourceId,'Inventory',{items:s.source},target);component(s.destinationId,'Inventory',{items:s.destination},target);}
+   else if(type==='HarvestTask'){component(s.depositId,'ResourceDeposit',{record:s.deposit,resource:s.resource,finite:s.finite},target);component(s.destinationId,'Inventory',{items:s.destination},target);}
    else if(type==='ProductionReservation'){
-    bindWorksite(s.worksiteId,s.storage);if(s.depositId)bindDeposit(s.depositId,s.deposit,s.substrateResource,s.substrateFinite);
-   }else if(type==='ProductionJobUpdate'||type==='ProductionSettlement')bindWorksite(s.worksiteId,s.storage);
+    prepare('ProductionJobUpdate',s,target);
+    if(s.depositId)component(s.depositId,'ResourceDeposit',{record:s.deposit,resource:s.substrateResource,finite:s.substrateFinite},target);
+   }else if(type==='ProductionJobUpdate'||type==='ProductionSettlement'){
+    component(s.worksiteId,'Worksite',{storage:s.storage},target);component(s.worksiteId,'ProductionJob',{record:s.storage.job||null},target);
+   }
   }
   function validateJob(job){
    if(!plain(job)||!identity(job.id)||!identity(job.output)||!integer(job.amount,1)||
@@ -157,13 +179,14 @@
    return s;
   }
   function stage(type,spec){
-   validateTask(type,spec);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+   preflight(type,[spec]);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
    world.create(id);const command={spec,result:null};
    try{world.set(id,type,command);scheduler.step(world,.1,{entityId:id});return command.result;}finally{world.destroy(id);}
   }
   function batch(type,specs){
-   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[],ordered=specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id))),bindings=new Map();
-   for(const spec of ordered){validateTask(type,spec);for(const[id,record]of[[spec.sourceId,spec.source],[spec.destinationId,spec.destination]])if(id){if(bindings.has(id)&&bindings.get(id)!==record)throw Error('Conflicting physical entity binding.');bindings.set(id,record);}}
+   if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');
+   preflight(type,specs);
+   const records=[],ordered=specs.slice().sort((a,b)=>compareId(a.id,b.id));
    try{
     for(const spec of ordered){
      prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
@@ -171,6 +194,41 @@
     }
     scheduler.step(world,.1);return records.map(x=>({id:x.spec.id,...x.command.result}));
    }finally{for(const x of records)world.destroy(x.id);}
+  }
+  function preflight(type,specs){
+   if(world.running||world.pendingStructural)throw Error('Invalid physical transaction boundary.');
+   const preview=new E.World(),bindings=new Map();
+   // Validate complete component graphs before inspecting or binding any live record.
+   for(let index=0;index<specs.length;index++){
+    const id='preflight:'+index;preview.create(id);
+    try{preview.set(id,type,{spec:specs[index],result:null});}
+    catch(error){throw Error('Invalid '+type.replace(/([a-z])([A-Z])/g,'$1 $2').toLowerCase()+': '+error.message);}
+   }
+   for(const spec of specs){
+    validateTask(type,spec);writeTargets(type,spec);
+    for(const[id,record]of[[spec.sourceId,spec.source],[spec.destinationId,spec.destination]])if(id){
+     if(bindings.has(id)&&bindings.get(id)!==record)throw Error('Conflicting physical entity binding.');bindings.set(id,record);
+    }
+    prepare(type,spec,preview);
+   }
+  }
+  function writeTargets(type,s){
+   if(type==='CarrierTask'){
+    writable(s.source,[s.resource],'source inventory');writable(s.destination,[s.resource],'destination inventory');
+   }else if(type==='HarvestTask'){
+    writable(s.destination,[s.resource],'destination inventory');if(s.finite)writable(s.deposit,['stock'],'deposit');
+   }else if(type==='ProductionReservation'){
+    writable(s.storage.input,Object.keys(s.recipe.cost),'worksite input');writable(s.storage,['job'],'worksite');
+    if(s.substrateFinite&&s.depositId)writable(s.deposit,['stock'],'deposit');
+   }else{
+    const job=s.storage.job;if(!job)return;
+    if(type==='ProductionJobUpdate')writable(job,s.action==='claim'?['workerId']:s.action==='release'?['progress','workerId']:['progress'],'production job');
+    else{
+     writable(job,s.success?['attempts']:['attempts','progress','workerId'],'production job');
+     if(s.success){writable(s.storage.output,[job.output],'worksite output');writable(s.storage,['lastOutput','completed','job'],'worksite');}
+     if(typeof s.message==='string')writable(s.storage,['lastMessage'],'worksite');
+    }
+   }
   }
   return Object.freeze({world,scheduler,bindInventory,bindDeposit,bindWorksite,
    transfer:spec=>stage('CarrierTask',spec),transfers:specs=>batch('CarrierTask',specs),

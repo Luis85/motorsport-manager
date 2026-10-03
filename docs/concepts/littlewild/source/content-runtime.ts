@@ -69,7 +69,7 @@
       if (++count > MAX_NODES || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
       if (v === null || typeof v === 'boolean') return;
       if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return; }
-      if (typeof v === 'string') { if (v.length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return; }
+      if (typeof v === 'string') { if ([...v].length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return; }
       if (typeof v !== 'object') invalid(path, 'Only JSON data is accepted; functions and undefined values are not content.');
       if (!Array.isArray(v) && ![Object.prototype, null].includes(Object.getPrototypeOf(v))) throw new ContentError([diagnostic('PLAIN_OBJECT', path, 'Only plain JSON objects are accepted.')]);
       if (ancestors.has(v)) invalid(path, 'Cyclic object graphs are not JSON content.');
@@ -222,10 +222,26 @@
     }
   }
   const TABLE_MAP = {items:'RES',recipes:'RECIPES',skills:'SKILLS',buildings:'BUILDINGS',drills:'DRILLS',disciplines:'DISCIPLINES',teachingStyles:'STYLES',buildingApproaches:'APPROACHES',studies:'STUDIES',paths:'PATHS'};
+  // Compare against a trusted tree via own descriptors, without reading caller accessors.
+  // Review envelopes duplicate validated document values and do not use the document node budget.
+  function matchesReview(value, reviewed) {
+    if (value === reviewed) return true;
+    if (!value || typeof value !== 'object' || !reviewed || typeof reviewed !== 'object') return false;
+    if (Array.isArray(value) !== Array.isArray(reviewed) || Object.getOwnPropertySymbols(value).length) return false;
+    if (!Array.isArray(value) && ![Object.prototype, null].includes(Object.getPrototypeOf(value))) return false;
+    const actual = Object.getOwnPropertyDescriptors(value), expected = Object.getOwnPropertyDescriptors(reviewed);
+    if (Object.keys(actual).length !== Object.keys(expected).length) return false;
+    return Object.entries(expected).every(([key, descriptor]) => own(actual, key) &&
+      own(actual[key], 'value') && actual[key].enumerable === descriptor.enumerable &&
+      matchesReview(actual[key].value, descriptor.value));
+  }
+  // The registry owns review evidence and persistent revisions; public preview data is detached.
+  const registryReviews = new WeakMap();
   class Registry {
     constructor(defaults = DEFAULT) {
       this.tables = Object.fromEntries([...Object.values(TABLE_MAP), 'SPECIALIZATIONS'].map(key => [key, {}]));
       this.tables.QUESTS = []; this.tables.CONTRACTS = [];
+      registryReviews.set(this, {revision: 0, previews: new WeakMap()});
       this._default = freeze(copy(defaults)); this._activate(canonical(defaults));
     }
     get current() { return this._current; }
@@ -257,14 +273,26 @@
         if (errors.length) return {ok:false,errors,warnings:[],baseFingerprint};
         candidate = canonical(candidate); const changes = diff(this.current, candidate), warnings = [];
         if (changes.components.length && candidate.library.version === this.current.library.version) warnings.push(diagnostic('SAME_VERSION','/library/version','Definitions changed without a library version change.','Bump the version in your authoring tool for a clearer history.','warning'));
-        return {ok:true,errors:[],warnings,kind:doc.kind,baseFingerprint,fingerprint:fingerprint(candidate),candidate:freeze(candidate),diff:changes,counts:Object.fromEntries(Object.entries(candidate.components).map(([k,arr])=>[k,arr.length]))};
+        const preview = {ok:true,errors:[],warnings,kind:doc.kind,baseFingerprint,fingerprint:fingerprint(candidate),candidate:freeze(candidate),diff:changes,counts:Object.fromEntries(Object.entries(candidate.components).map(([k,arr])=>[k,arr.length]))};
+        const state = registryReviews.get(this);
+        state.previews.set(preview, {revision:state.revision, data:freeze(cloneJson(preview))});
+        return preview;
       } catch (error) { return {ok:false,errors:error.issues || [diagnostic('INVALID_CONTENT','/',error.message)],warnings:[],baseFingerprint}; }
     }
+    /** Return immutable registry-owned evidence only for an unchanged, current review. */
+    reviewed(preview) {
+      const state = registryReviews.get(this), review = preview && state.previews.get(preview);
+      if (!review || review.revision !== state.revision || review.data.baseFingerprint !== this.hash)
+        throw new ContentError([diagnostic('STALE_PREVIEW','/','Review this library revision again before applying.')]);
+      if (!matchesReview(preview, review.data))
+        throw new ContentError([diagnostic('CHANGED_PREVIEW','/','Content review changed; review again before applying.')]);
+      return review.data;
+    }
     commit(preview) {
-      if (!preview?.ok || preview.baseFingerprint !== this.hash) throw new ContentError([diagnostic('STALE_PREVIEW','/','The library changed after this preview. Validate again before applying.')]);
-      const checked = this.prepare(preview.candidate);
-      if (!checked.ok) throw new ContentError(checked.errors);
-      this._activate(checked.candidate); return this.hash;
+      const reviewed = this.reviewed(preview);
+      this._activate(reviewed.candidate);
+      registryReviews.get(this).revision++;
+      return this.hash;
     }
     /** Synchronous sandbox for validating save state against another library, always rolled back. */
     withLibrary(candidate, work) {

@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { creatureDefinitions, assetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
 
 type InsertKind = "style" | "script";
 type Insert = readonly [marker: string, file: string, kind: InsertKind];
@@ -67,6 +68,9 @@ const INSERTS: readonly Insert[] = [
   ["SCENARIO_SHAPE", "scenario-shape.js", "script"],
   ["SCENARIOS", "scenario-runtime.js", "script"],
   ["SCENARIO_STORY", "scenario-story.js", "script"],
+  ["DEVELOPER_DATA", "developer-data.js", "script"],
+  ["DEVELOPER_COMMANDS", "developer-commands.js", "script"],
+  ["DEVELOPER_SESSION", "developer-session.js", "script"],
   ["STORAGE", "story-storage.js", "script"],
   ["FILES", "file-io.js", "script"],
   ["CANVAS_ART", "canvas-art.js", "script"],
@@ -86,6 +90,7 @@ const INSERTS: readonly Insert[] = [
   ["QUALITY_CSS", "quality.css", "style"],
   ["THREE", "../vendor/three.js", "script"],
   ["ASSET_CATALOG", "asset-catalog.js", "script"],
+  ["DEVELOPER_TOOLBOX", "developer-toolbox.js", "script"],
   ["ASSET_RENDERER", "asset-renderer.js", "script"],
   ["SOFTWARE_3D", "software-3d.js", "script"],
   ["WORLD_INPUT", "world-input.js", "script"],
@@ -135,64 +140,35 @@ function compile(): void {
     stdio: "inherit", timeout: 120000, killSignal: "SIGKILL"
   });
   if (result.error || result.status !== 0) throw new Error("TypeScript compilation failed." + (result.error ? " " + result.error.message : ""));
+  const sdkTypes = spawnSync(process.execPath, [TSC, "-p", path.join(PROJECT, "tsconfig.sdk.json")], {
+    cwd: PROJECT, stdio: "inherit", timeout: 30000, killSignal: "SIGKILL"
+  });
+  if (sdkTypes.error || sdkTypes.status !== 0) throw new Error("Developer SDK declaration generation failed.");
+  fs.copyFileSync(path.join(ROOT, "developer-contracts.d.ts"), path.join(GENERATED, "developer-contracts.d.ts"));
+  const declaration = path.join(GENERATED, "developer-sdk.d.cts");
+  fs.writeFileSync(declaration, fs.readFileSync(declaration, "utf8").replace(
+    /<reference path="[^"]*developer-contracts\.d\.ts"/, '<reference path="./developer-contracts.d.ts"'));
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
-  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions()));
+  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT)));
+  fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT)));
+  fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT)));
 }
 
 function json(file: string): unknown {
   return JSON.parse(fs.readFileSync(path.join(ROOT, "content", file), "utf8"));
 }
 
-function creatureDefinitions(): unknown[] {
-  const creatureRoot = path.join(ROOT, "creatures");
-  const out: Array<Record<string,unknown>> = [];
-  for (const entry of fs.readdirSync(creatureRoot, { withFileTypes: true }).filter(entry => entry.isDirectory())) {
-    const file = path.join(creatureRoot, entry.name, "creature.json");
-    if (!fs.existsSync(file)) throw new Error(`Creature folder is missing creature.json: ${entry.name}`);
-    const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string,unknown>;
-    if (parsed.format !== "littlewild-creature" || parsed.schemaVersion !== 1 || parsed.id !== entry.name) {
-      throw new Error(`Creature identity/path mismatch: ${entry.name}`);
-    }
-    out.push(parsed);
-  }
-  if (!out.length) throw new Error("At least one creature definition is required.");
-  return out.sort((a,b) => String(a.id).localeCompare(String(b.id)));
-}
-
-interface AssetFile {
-  format: string;
-  schemaVersion: number;
-  category: string;
-  id: string;
-  [key: string]: unknown;
-}
-function assetDefinitions(): AssetFile[] {
-  const assetRoot = path.join(ROOT, "assets");
-  const out: AssetFile[] = [];
-  for (const category of fs.readdirSync(assetRoot, { withFileTypes: true }).filter(entry => entry.isDirectory())) {
-    for (const model of fs.readdirSync(path.join(assetRoot, category.name), { withFileTypes: true }).filter(entry => entry.isDirectory())) {
-      const file = path.join(assetRoot, category.name, model.name, "asset.json");
-      if (!fs.existsSync(file)) throw new Error(`Asset folder is missing asset.json: ${category.name}/${model.name}`);
-      const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as AssetFile;
-      if (parsed.format !== "littlewild-3d-asset" || parsed.schemaVersion !== 1 || parsed.category + "s" !== category.name || parsed.id !== model.name) {
-        throw new Error(`Asset identity/path mismatch: ${category.name}/${model.name}`);
-      }
-      out.push(parsed);
-    }
-  }
-  return out.sort((a,b) => (a.category + ":" + a.id).localeCompare(b.category + ":" + b.id));
-}
-
 function inlineData(packPath: string | null): string {
   const declarations: Array<[string, unknown]> = [
     ["LWDefaultLibrary", json("default-library.json")],
     ["LWContentSchema", json("library.schema.json")],
-    ["LWCreatureDefinitions", creatureDefinitions()],
+    ["LWCreatureDefinitions", creatureDefinitions(ROOT)],
+    ["LWCreatureConfig", creatureConfig(ROOT)],
     ["LWDefaultAdventure", json("adventure-library.json")],
     ["LWAdventureSchema", json("adventure.schema.json")],
     ["LWDefaultWorld", json("world-library.json")],
@@ -205,7 +181,7 @@ function inlineData(packPath: string | null): string {
     ["LWGrowthSchema", json("growth.schema.json")],
     ["LWDefaultProfile", json("default-profile.json")],
     ["LWScenarioSchema", json("scenario.schema.json")],
-    ["LWAssetDefinitions", assetDefinitions()]
+    ["LWAssetDefinitions", assetDefinitions(ROOT)]
   ];
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]
@@ -245,14 +221,34 @@ function parseArgs(argv: readonly string[]): { packPath: string | null; outputPa
   return { packPath, outputPath };
 }
 
+/** Resolve existing ancestors, including symlinked parents, before checking output ownership. */
+function canonicalDestination(destination: string): string {
+  let ancestor = path.resolve(destination);
+  const suffix: string[] = [];
+  while (true) {
+    try { fs.lstatSync(ancestor); }
+    catch (error) {
+      if (!(error instanceof Error) || !("code" in error) || error.code !== "ENOENT") throw error;
+      const parent = path.dirname(ancestor);
+      if (parent === ancestor) throw error;
+      suffix.unshift(path.basename(ancestor));ancestor = parent;
+      continue;
+    }
+    // Existing dangling symlinks fail here rather than being treated as missing directories.
+    return path.join(fs.realpathSync(ancestor), ...suffix);
+  }
+}
+
 function build(packPath: string | null, outputPath: string): void {
+  const canonicalOutput = canonicalDestination(outputPath);
   for (const protectedRoot of [ROOT, path.join(PROJECT, "vendor"), GENERATED]) {
-    const relative = path.relative(protectedRoot, outputPath);
+    const relative = path.relative(canonicalDestination(protectedRoot), canonicalOutput);
     if (relative === "" || (!relative.startsWith(".." + path.sep) && relative !== ".." && !path.isAbsolute(relative))) {
       throw new Error("Build output must be outside authored and generated source directories.");
     }
   }
-  if (packPath && (outputPath === packPath || (fs.existsSync(outputPath) && fs.existsSync(packPath) && fs.realpathSync(outputPath) === fs.realpathSync(packPath)))) {
+  if (packPath && (canonicalOutput === canonicalDestination(packPath) ||
+    (fs.existsSync(outputPath) && fs.existsSync(packPath) && fs.statSync(outputPath).dev === fs.statSync(packPath).dev && fs.statSync(outputPath).ino === fs.statSync(packPath).ino))) {
     throw new Error("Build output must not overwrite the input pack.");
   }
   compile();

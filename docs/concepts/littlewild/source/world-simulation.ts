@@ -211,7 +211,7 @@
    return h;
   }
   workplaceTask(){
-   const buildings=this.s.buildings.filter(b=>b.storage?.enabled).sort((a,b)=>b.storage.priority-a.storage.priority||a.storage.lastOutput-b.storage.lastOutput||a.id.localeCompare(b.id));
+   const buildings=this.s.buildings.filter(b=>b.storage?.enabled).sort((a,b)=>b.storage.priority-a.storage.priority||a.storage.lastOutput-b.storage.lastOutput||(a.id<b.id?-1:a.id>b.id?1:0));
    // Pending jobs survive interruptions; another qualified creature can finish the same paid batch.
    for(const b of buildings){if(b.storage.job){const t=this.productionTask(b,b.storage.job.recipe);if(t)return t;}}
    for(const b of buildings){for(const r of this.buildingRecipes(b)){if(!this.s.skills[r.skill])continue;const request=b.storage.requests[r.id]||0,target=b.storage.targets[r.id]||0;
@@ -223,7 +223,7 @@
    const candidates=this.s.buildings.filter(b=>b.storage&&this.reachable(b)).sort((a,b)=>b.storage.priority-a.storage.priority||a.storage.lastOutput-b.storage.lastOutput);
    for(const b of candidates){const st=b.storage;
     if(st.emptyInputs){const pair=Object.entries(st.input).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1])[0];if(pair){const amount=Math.min(pair[1],W.content.logistics.batch,this.room(pair[0]));if(amount>0)return this.transferTask('emptybuilding',b,pair[0],amount,null,{forDelivery:true});}else st.emptyInputs=false;}
-    const pair=Object.entries(st.output).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0];
+    const pair=Object.entries(st.output).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:a[0]>b[0]?1:0))[0];
     if(pair&&(sum(st.output)>=this.capacity(b,'output')*.65||this.s.simTime-st.lastOutput>=W.content.logistics.outputAge||st.flushOutput))return this.collectTask(b,pair[0],pair[1],null,true);
    }return null;
   }

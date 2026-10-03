@@ -36,7 +36,7 @@
   {id:'research-skill',method:'research',scope:'actor',maxArgs:1,away:false},
   {id:'teach-skill',method:'teach',scope:'actor',maxArgs:2,away:false},
   {id:'practice-skill',method:'practice',scope:'actor',maxArgs:2,away:false},
-  {id:'cancel-lesson',method:'cancelLesson',scope:'actor',maxArgs:0,away:false},
+  {id:'cancel-lesson',method:'cancelLesson',scope:'actor',maxArgs:1,away:false},
   {id:'set-learning-style',method:'setLearningStyle',scope:'actor',maxArgs:1,away:false},
   {id:'pause-learning',method:'pauseLearning',scope:'actor',maxArgs:0,away:false},
   {id:'choose-specialization',method:'chooseSpecialization',scope:'actor',maxArgs:2,away:false},

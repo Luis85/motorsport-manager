@@ -52,12 +52,44 @@ try {
     const fixture=spawnSync(process.execPath,["-e",`const L=require(${JSON.stringify(path.join(__dirname,"simulation.cjs"))}),S=require(${JSON.stringify(path.join(__dirname,"story-codec.js"))});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`],{cwd:ROOT,encoding:"utf8",timeout:15000});assert.equal(fixture.status,0,fixture.stderr);
     const story=path.join(temp,"large-story.json"),output=path.join(temp,"captured.pack.json");fs.writeFileSync(story,fixture.stdout+" ".repeat(4*1024*1024));const captured=cli("scenario-cli",["capture",story,output]);assert.equal(captured.status,0);assert.equal(captured.payload.ok,true);assert.equal(JSON.parse(fs.readFileSync(output,"utf8")).schemaVersion,2);
   });
+  test("Content CLI text bounds match Unicode code-point limits",()=>{
+    const fixtures:Array<[string,string,number,(d:any)=>any]>=[
+      ["content-cli","default-library.json",90,d=>d.library],
+      ["adventure-cli","adventure-library.json",80,d=>d.equipment[0]],
+      ["world-cli","world-library.json",100,d=>d],
+      ["growth-cli","growth-library.json",500,d=>d],
+      ["scenario-cli","littlewild.pack.json",80,d=>d],
+      ["simulation-profile-cli","simulation-profile.json",100,d=>d]
+    ];
+    for(const [tool,fixture,limit,target] of fixtures)for(const count of [limit,limit+1]){
+      const doc=JSON.parse(fs.readFileSync(path.join(ROOT,"source/content",fixture),"utf8"));target(doc).name="🌱".repeat(count);
+      const input=path.join(temp,tool+"-unicode.json");fs.writeFileSync(input,JSON.stringify(doc));
+      const result=cli(tool,["validate",input]);assert.equal(result.status,count===limit?0:1,tool+" at "+count);assert.equal(result.payload.ok,count===limit);
+    }
+  });
   test("Build help and usage failure do not compile or rewrite output",()=>{
     const artifact=path.join(ROOT,"littlewild.html"),before=fs.existsSync(artifact)?fs.readFileSync(artifact):null;
     const run=(args:string[])=>spawnSync(process.execPath,["--import","tsx",path.join(ROOT,"source/build.ts"),...args],{cwd:ROOT,encoding:"utf8",timeout:15000});
     assert.equal(run(["--help"]).status,0);
     for(const args of [["--unknown"],["--output","--pack"],["--output","one","--output","two"],["--output","source/style.css"],["--pack","source/content/littlewild.pack.json","--output","source/content/littlewild.pack.json"]]){const r=run(args);assert.equal(r.status,1);assert.match(r.stderr,/Build failed:/);assert.doesNotMatch(r.stderr,/at parseArgs/);}
     if(before)assert.deepEqual(fs.readFileSync(artifact),before);
+  });
+  test("Build rejects symlinked protected parents before compiling or writing",()=>{
+    const run=(args:string[])=>spawnSync(process.execPath,["--import","tsx",path.join(ROOT,"source/build.ts"),...args],{cwd:ROOT,encoding:"utf8",timeout:15000});
+    const buildProject=path.dirname(fs.realpathSync(path.join(ROOT,"source")));
+    const generated=path.join(buildProject,".generated","engine.js"),before=fs.readFileSync(generated);
+    for(const [name,target] of [["authored","source"],["vendor","vendor"],["generated",".generated"]]){
+      const alias=path.join(temp,name!);fs.symlinkSync(path.join(buildProject,target!),alias,"dir");
+      const output=path.join(alias,"uncreated","rejected-output.html");const result=run(["--output",output]);
+      assert.equal(result.status,1);assert.match(result.stderr,/outside authored and generated/);assert.equal(fs.existsSync(path.dirname(output)),false);
+    }
+    const nested=path.join(temp,"nested");fs.symlinkSync(path.join(temp,"authored"),nested,"dir");
+    assert.equal(run(["--output",path.join(nested,"content","rejected-output.html")]).status,1);
+    const alias=path.join(temp,"style-alias.css");const original=fs.readFileSync(path.join(ROOT,"source/style.css"));fs.symlinkSync(path.join(ROOT,"source/style.css"),alias);
+    assert.equal(run(["--output",alias]).status,1);assert.deepEqual(fs.readFileSync(path.join(ROOT,"source/style.css")),original);
+    const pack=path.join(temp,"input.json"),packAlias=path.join(temp,"input-link.json"),hardAlias=path.join(temp,"input-hard.json");fs.writeFileSync(pack,"retain input");fs.symlinkSync(pack,packAlias);fs.linkSync(pack,hardAlias);
+    for(const output of [packAlias,hardAlias]){const result=run(["--pack",pack,"--output",output]);assert.equal(result.status,1);assert.match(result.stderr,/overwrite the input pack/);assert.equal(fs.readFileSync(pack,"utf8"),"retain input");}
+    assert.deepEqual(fs.readFileSync(generated),before);
   });
   test("Gate help and rejected flags preserve existing verification evidence",()=>{
     const evidence=path.join(ROOT,"verification","v15","gate-results.json"),before=fs.existsSync(evidence)?fs.readFileSync(evidence):null;

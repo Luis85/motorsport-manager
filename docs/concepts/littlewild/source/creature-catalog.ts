@@ -10,6 +10,8 @@
   schemaVersion:1;
   id:string;
   name:string;
+  visualAsset:string;
+  physiology:Readonly<Record<'food'|'water'|'energy'|'comfort'|'joy'|'fatigue'|'recovery'|'social'|'anger',number>>;
   description:string;
   defaultPersonality:string;
   personalities:readonly string[];
@@ -20,6 +22,7 @@
   ecs:Readonly<{components:readonly Binding[]}>;
  }
  interface Api{
+  readonly configuration:Readonly<{format:'littlewild-creature-catalog';schemaVersion:1;defaultArchetype:string}>;
   readonly revision:number;
   readonly defaultArchetype:string;
   readonly defaultPersonality:string;
@@ -32,16 +35,19 @@
   seed(archetype:string,personality:string,mode:Mode,sequence:number):Plain;
   validate(input:unknown):Definition;
  }
- interface Root{LWCreatureDefinitions?:unknown;LWCreatures?:Api;}
+ interface Root{LWCreatureConfig?:unknown;LWCreatureDefinitions?:unknown;LWCreatures?:Api;}
 
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const source:unknown=root.LWCreatureDefinitions??(node?require('./creature-definitions.json'):undefined);
+ const configSource:unknown=root.LWCreatureConfig??(node?require('./creature-config.json'):undefined);
  const safeId=/^[a-z][a-z0-9_-]{0,60}$/;
  const safeField=/^[A-Za-z][A-Za-z0-9_]{0,60}$/;
  const safeComponent=/^[A-Z][A-Za-z0-9]{0,60}$/;
  const forbidden=new Set(['script','callback','execute','eval','sourceCode','modulePath','handler','command']);
- const requiredComponents=['Transform','Needs','Learning','Feelings','Inventory'] as const;
+ const requiredComponents={Transform:'creature',Needs:'needs',Learning:'learning',Feelings:'feelings',Inventory:'inventory'} as const;
+ const sharedFields=new Set(['id','version','seed','simTime','day','hour','started','speed','paused','player','rp','buildings','nodes','log','completedQuests','contractIndex','settings','ledger','nextId','colony','world','estate','progression','market','planning','atlas']);
+ const physiologyKeys=['food','water','energy','comfort','joy','fatigue','recovery','social','anger'] as const;
  const requiredDefaults=['archetype','name','personality','creature','bond','needs','inventory','allowance','skills','researched','training','orders','task','focus','cooldowns','memory','stats','stockTargets','practice','memories','wish','daily','learning','specializations','fieldStudies','buildPolicy','metrics','traits','rpg','equipment','equipQueue','questPlan','activeQuest','questHistory','needsDeposit','feelings','behavior','lastRoll','careVisual','salvage','eventInteractions','interactionCooldowns'] as const;
 
  const plain=(value:unknown):value is Plain=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
@@ -57,8 +63,9 @@
   if(!Array.isArray(value)||value.length<min||value.length>max)return fail(label+' must be a list of '+min+'–'+max+' entries');
   return value;
  };
+ const scalarText=(value:string):boolean=>{for(let i=0;i<value.length;i++){const unit=value.charCodeAt(i);if(unit>=0xd800&&unit<=0xdbff){const next=value.charCodeAt(++i);if(!(next>=0xdc00&&next<=0xdfff))return false;}else if(unit>=0xdc00&&unit<=0xdfff)return false;}return true;};
  const textValue=(value:unknown,label:string,max:number,pattern?:RegExp):string=>{
-  if(typeof value!=='string'||!value.trim()||value.length>max||(pattern&&!pattern.test(value)))return fail('invalid '+label);
+  if(typeof value!=='string'||!value.trim()||!scalarText(value)||[...value].length>max||(pattern&&!pattern.test(value)))return fail('invalid '+label);
   return value;
  };
  const numberValue=(value:unknown,label:string,low:number,high:number,whole=false):number=>{
@@ -75,15 +82,17 @@
   const ancestors=new Set<object>();let count=0;
   function visit(entry:unknown,label:string,depth:number):void{
    if(++count>20000||depth>16)fail(label+' exceeds supported complexity');
+   if(typeof entry==='string'&&!scalarText(entry))fail(label+' contains invalid Unicode');
    if(entry===null||typeof entry==='string'||typeof entry==='boolean'||(typeof entry==='number'&&Number.isFinite(entry)))return;
    if(!Array.isArray(entry)&&!plain(entry))fail(label+' contains a non-JSON value');
    const object=entry as object;
    if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)fail(label+' contains non-JSON properties or a cycle');
    const descriptors=Object.getOwnPropertyDescriptors(object);
-   if(Array.isArray(entry)&&Object.keys(descriptors).length!==entry.length+1)fail(label+' must be a dense JSON list');
+   if(Array.isArray(entry)&&(Object.keys(descriptors).length!==entry.length+1||Array.from({length:entry.length},(_,i)=>i).some(i=>!Object.hasOwn(descriptors,String(i)))))fail(label+' must be a dense JSON list');
    ancestors.add(object);
    for(const [key,descriptor] of Object.entries(descriptors)){
     if(Array.isArray(entry)&&key==='length')continue;
+    if(!scalarText(key))fail(label+' contains invalid Unicode');
     if(forbidden.has(key)||['__proto__','constructor','prototype'].includes(key))fail(label+'/'+key+' is executable-shaped or reserved');
     if(!descriptor.enumerable||descriptor.get||descriptor.set)fail(label+'/'+key+' contains a non-JSON property');
     visit(descriptor.value,label+'/'+key,depth+1);
@@ -106,17 +115,21 @@
  function validate(input:unknown):Definition{
   dataOnly(input,'definition');
   const raw=record(input,'creature definition');
-  const rootKeys=['format','schemaVersion','id','name','description','defaultPersonality','personalities','names','movement','rng','state','ecs'];
+  const rootKeys=['format','schemaVersion','id','name','description','defaultPersonality','personalities','names','movement','rng','state','ecs','visualAsset','physiology'];
   if(Object.keys(raw).length!==rootKeys.length||rootKeys.some(key=>!Object.hasOwn(raw,key)))fail('invalid root schema');
   if(raw.format!=='littlewild-creature'||raw.schemaVersion!==1)fail('invalid format/version');
 
   const id=textValue(raw.id,'creature ID',61,safeId);
   const name=textValue(raw.name,id+' name',80);
+  const visualAsset=textValue(raw.visualAsset,id+' visual asset',61,safeId);
+  const physiologySource=exact(raw.physiology,id+' physiology',physiologyKeys);
+  const physiology={} as Record<typeof physiologyKeys[number],number>;
+  for(const key of physiologyKeys)physiology[key]=numberValue(physiologySource[key],id+' physiology/'+key,0,4);
   const description=textValue(raw.description,id+' description',500);
   const personalities=stringList(raw.personalities,id+' personalities',1,32,value=>safeId.test(value));
   const defaultPersonality=textValue(raw.defaultPersonality,id+' default personality',61,safeId);
   if(!personalities.includes(defaultPersonality))fail(id+' default personality is not supported');
-  const names=stringList(raw.names,id+' names',1,64,value=>value.trim().length>0&&value.length<=24);
+  const names=stringList(raw.names,id+' names',1,64,value=>value.trim().length>0&&[...value].length<=24);
 
   const movementSource=exact(raw.movement,id+' movement',['baseSpeed','bondThreshold','bondedSpeedBonus']);
   const movement=Object.freeze({
@@ -132,6 +145,7 @@
 
   const stateSource=exact(raw.state,id+' state',['personalFields','defaults','modes']);
   const personalFields=stringList(stateSource.personalFields,id+' personal fields',1,96,value=>safeField.test(value));
+  if(personalFields.some(field=>sharedFields.has(field)))fail(id+' actor field conflicts with shared world state');
   const defaults=record(stateSource.defaults,id+' defaults');
   const modesSource=exact(stateSource.modes,id+' modes',['founder','arrival']);
   const founder=record(modesSource.founder,id+' founder mode'),arrival=record(modesSource.arrival,id+' arrival mode');
@@ -154,7 +168,7 @@
    if(!Object.hasOwn(defaults,field)||!plain(defaults[field]))fail(id+' ECS field '+field+' must reference an object default');
    types.add(componentType);fields.add(field);components.push({type:componentType,field});
   }
-  for(const type of requiredComponents)if(!types.has(type))fail(id+' missing ECS component '+type);
+  for(const [type,field] of Object.entries(requiredComponents))if(!components.some(binding=>binding.type===type&&binding.field===field))fail(id+' missing or invalid ECS component '+type+'/'+field);
   for(const [mode,override] of [['founder',founder],['arrival',arrival]] as const){
    const state=merge(defaults,override);
    if(!plain(state.rpg))fail(id+' '+mode+' RPG state must be an object');
@@ -166,23 +180,27 @@
     if(binding.type==='Inventory')for(const [key,quantity] of Object.entries(component))numberValue(quantity,id+' '+mode+' inventory/'+key,0,Number.MAX_SAFE_INTEGER,true);
    }
   }
-  const value:Definition={format:'littlewild-creature',schemaVersion:1,id,name,description,defaultPersonality,
+  const value:Definition={format:'littlewild-creature',schemaVersion:1,id,name,visualAsset,physiology:Object.freeze(physiology),description,defaultPersonality,
    personalities:Object.freeze(personalities),names:Object.freeze(names),movement,rng,
    state:Object.freeze({personalFields:Object.freeze(personalFields),defaults:clone(defaults),modes:Object.freeze({founder:clone(founder),arrival:clone(arrival)})}),
    ecs:Object.freeze({components:Object.freeze(components)})};
   deepFreeze(value);return value;
  }
 
+ dataOnly(source,'bundled creature definitions');
+ dataOnly(configSource,'catalog configuration');
+ const config=exact(configSource,'catalog configuration',['format','schemaVersion','defaultArchetype']);
+ if(config.format!=='littlewild-creature-catalog'||config.schemaVersion!==1)fail('invalid catalog format/version');
+ const defaultArchetype=textValue(config.defaultArchetype,'default archetype',61,safeId);
+ const configuration=Object.freeze({format:'littlewild-creature-catalog' as const,schemaVersion:1 as const,defaultArchetype});
  const sources=list(source,'bundled creature definitions',1,32);
  const definitions:readonly Definition[]=Object.freeze(sources.map(validate));
  const byId=new Map<string,Definition>();
  for(const definition of definitions){if(byId.has(definition.id))fail('duplicate creature '+definition.id);byId.set(definition.id,definition);}
- const first=definitions[0]??fail('no creature definitions');
- const fieldContract=JSON.stringify([...first.state.personalFields].sort());
- for(const definition of definitions)if(JSON.stringify([...definition.state.personalFields].sort())!==fieldContract)fail(definition.id+' must implement the shared actor-scoped field contract');
- const personalFields:readonly string[]=first.state.personalFields;
+ const first=byId.get(defaultArchetype)??fail('unknown default creature '+defaultArchetype);
+ const personalFields:readonly string[]=Object.freeze([...new Set(definitions.flatMap(definition=>[...definition.state.personalFields]))]);
  const personalities:readonly string[]=Object.freeze([...new Set(definitions.flatMap(definition=>[...definition.personalities]))]);
- let revision=2166136261;for(const ch of JSON.stringify(definitions)){revision^=ch.charCodeAt(0);revision=Math.imul(revision,16777619);}revision>>>=0;
+ let revision=2166136261;for(const ch of JSON.stringify([configuration,definitions])){revision^=ch.charCodeAt(0);revision=Math.imul(revision,16777619);}revision>>>=0;
 
  function all():readonly Definition[]{return definitions;}
  function get(id:string):Definition|null{return byId.get(id)||null;}
@@ -198,6 +216,6 @@
   const rpg=record(state.rpg,def.id+' RPG state');rpg.rng=(def.rng.base+Math.imul(sequence,def.rng.stride))>>>0;
   return state;
  }
- const api:Api=Object.freeze({revision,defaultArchetype:first.id,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,supports,componentBindings,seed,validate});
+ const api:Api=Object.freeze({configuration,revision,defaultArchetype:first.id,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,supports,componentBindings,seed,validate});
  root.LWCreatures=api;if(node)module.exports=api;
 })(globalThis);

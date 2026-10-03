@@ -4,6 +4,15 @@ An offline autonomous-creature simulation showcase with compact world-facing UI 
 
 The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves use envelope 10; obsolete story envelopes and scenario schema versions are rejected. See `ECS-ARCHITECTURE.md`.
 
+## Developer toolbox
+
+The typed Node SDK and browser `LWDeveloper` global expose validated commands,
+fixed-step session ownership, detached inspection, scenario/story review and
+asset/creature discovery. After `npm run build`, run `npm run toolbox -- --seconds 5`.
+See [DEVELOPER-TOOLBOX.md](DEVELOPER-TOOLBOX.md) for the API and coding-agent guide,
+and [EXCALIBUR-TOOLBOX-REVIEW.md](EXCALIBUR-TOOLBOX-REVIEW.md) for the source review
+that informed the interface.
+
 ## Play
 
 Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.

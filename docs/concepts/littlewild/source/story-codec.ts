@@ -98,7 +98,7 @@
         return next;
     }
     function committed(engine) { return engine.s.market?.orders.some(o=>!['done','cancelled'].includes(o.status)) || engine.s.buildings.some(b=>b.storage?.job || Object.values(b.storage?.requests||{}).some(n=>n>0)) || engine.creatures.some(c => c.training || c.learning.queue.length || c.orders.length || c.questPlan || c.activeQuest || c.equipQueue.length || !['idle', 'rest', 'reflect'].includes(c.task?.kind || 'idle')); }
-    function currentStoryPolicy(preview, engine) {
+    function trustedStoryPolicy(preview, engine) {
         if (!preview?.ok)
             return { ok: false, reason: 'Resolve validation errors before applying.' };
         if (preview.baseFingerprint !== registry.hash)
@@ -113,15 +113,18 @@
         }
         return { ok: true, reason: 'Every creature’s saved state is compatible with these definitions.' };
     }
+    function currentStoryPolicy(preview, engine) {
+        try { return trustedStoryPolicy(registry.reviewed(preview), engine); }
+        catch (error) { return {ok:false, reason:error.message}; }
+    }
     function applyContent(preview, engine, newStory = false) {
-        if (!preview?.ok || preview.baseFingerprint !== registry.hash)
-            throw Error('This content preview is stale. Validate again.');
+        const reviewed = registry.reviewed(preview);
         if (!newStory) {
-            const policy = currentStoryPolicy(preview, engine);
+            const policy = trustedStoryPolicy(reviewed, engine);
             if (!policy.ok)
                 throw Error(policy.reason);
         }
-        const next = registry.withLibrary(preview.candidate, () => newStory ? new L.Engine() : preview.diff.mechanics ? L.Engine.import(engine.export()) : engine);
+        const next = registry.withLibrary(reviewed.candidate, () => newStory ? new L.Engine() : reviewed.diff.mechanics ? L.Engine.import(engine.export()) : engine);
         registry.commit(preview);
         return next;
     }

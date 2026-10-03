@@ -21,7 +21,7 @@
             };
             const num = (v, a, b) => typeof v === 'number' && Number.isFinite(v) && v >= a && v <= b;
             const integer = (v, a, b) => num(v, a, b) && Number.isInteger(v);
-            const text = (v, n) => typeof v === 'string' && v.length > 0 && v.length <= n;
+            const text = (v, n) => typeof v === 'string' && [...v].length > 0 && [...v].length <= n;
             const object = o => o && typeof o === 'object' && !Array.isArray(o);
             check(p.format === 'littlewild-adventure-content' && p.schemaVersion === 1, 'Unsupported adventure content format.');
             check(text(p.revision, 50), 'A revision is required.');

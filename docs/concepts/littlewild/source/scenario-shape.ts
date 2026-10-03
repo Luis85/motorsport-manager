@@ -77,7 +77,7 @@
       }
       if (typeof v === 'number' && (!Number.isFinite(v) || v < (s.minimum ?? -Infinity) || v > (s.maximum ?? Infinity)))
         fail('outside supported bounds');
-      if (typeof v === 'string' && (v.length < (s.minLength ?? 0) || v.length > (s.maxLength ?? Infinity) ||
+      if (typeof v === 'string' && ([...v].length < (s.minLength ?? 0) || [...v].length > (s.maxLength ?? Infinity) ||
         (s.pattern !== undefined && !new RegExp(s.pattern, 'u').test(v)))) fail('invalid text');
       if (Array.isArray(v)) {
         if (v.length < (s.minItems ?? 0) || v.length > (s.maxItems ?? Infinity)) fail('unsupported entry count');

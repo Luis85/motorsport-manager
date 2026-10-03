@@ -228,7 +228,7 @@
             });
             this.#records.push(record);
             this.#records.sort((a, b) => PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase) ||
-                a.order - b.order || a.id.localeCompare(b.id));
+                a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
             return this;
         }
 

@@ -52,4 +52,75 @@ test('Rejected batch staging discards earlier commands before the next valid bat
  assert.throws(()=>ecs.transfer({...transfer('single-invalid',source,next,'wood',1,1),callback:()=>true}),/behavior-free/);
  assert.equal([...ecs.world.entities].some(id=>id.startsWith('tx:')),false);
 });
+test('Inventory write preflight rejects immutable targets without binding or receipts',()=>{
+ const locked=value=>Object.defineProperty({wood:value},'wood',{writable:false});
+ for(const [source,destination] of [
+  [{wood:5},Object.freeze({wood:1})],[Object.freeze({wood:5}),{wood:1}],
+  [{wood:5},locked(1)],[locked(5),{wood:1}],[{wood:5},Object.seal({})]
+ ]){
+  const ecs=W.create(),spec=transfer('immutable',source,destination,'wood',2,2),before=JSON.stringify([source,destination]);
+  assert.throws(()=>ecs.transfer(spec),/write target/);
+  assert.equal(JSON.stringify([source,destination]),before);assert.equal(ecs.hasSettled(spec.id),false);
+  assert.equal(ecs.world.entities.size,0);assert.equal(ecs.world.stores.size,0);
+ }
+});
+test('Accessor inventories reject without executing getters or modifying existing ECS bindings',()=>{
+ for(const accessorSide of ['source','destination']){
+  const ecs=W.create(),original={wood:9};ecs.bindInventory('inventory:source',original);
+  const binding=ecs.world.get('inventory:source','Inventory'),source={wood:5},destination={wood:1};let reads=0;
+  Object.defineProperty(accessorSide==='source'?source:destination,'wood',{enumerable:true,get(){reads++;return 5;}});
+  const spec=transfer('accessor',source,destination,'wood',2,2),entities=[...ecs.world.entities],stores=[...ecs.world.stores.keys()];
+  assert.throws(()=>ecs.transfer(spec),/behavior-free/);assert.equal(reads,0);assert.equal(ecs.hasSettled(spec.id),false);
+  assert.deepEqual([...ecs.world.entities],entities);assert.deepEqual([...ecs.world.stores.keys()],stores);
+  assert.equal(ecs.world.get('inventory:source','Inventory'),binding);assert.deepEqual(original,{wood:9});
+  if(accessorSide==='destination')assert.equal(source.wood,5);else assert.equal(destination.wood,1);
+ }
+});
+test('Every batch command is prepared before any transfer or receipt is accepted',()=>{
+ for(const patch of [spec=>({...spec,destination:Object.freeze({wood:0})}),spec=>({...spec,metadata:{late:()=>true}})]){
+  const ecs=W.create(),source={wood:5},first={},second={},a=transfer('a-first',source,first,'wood',1,1);
+  const b=patch(transfer('b-second',source,second,'wood',1,1)),before=JSON.stringify([source,first,b.destination]);
+  assert.throws(()=>ecs.transfers([a,b]),/write target|behavior-free/);
+  assert.equal(JSON.stringify([source,first,b.destination]),before);assert.equal(ecs.hasSettled(a.id),false);assert.equal(ecs.hasSettled(b.id),false);
+  assert.equal(ecs.world.entities.size,0);assert.equal(ecs.world.stores.size,0);
+  assert.equal(ecs.transfer(transfer('retry',source,second,'wood',1,1)).amount,1);assert.equal(source.wood,4);
+ }
+});
+test('Contested IDs use codepoint ordering and preserve input order for equal IDs',()=>{
+ const ecs=W.create(),source={wood:1},lower={},upper={},first={},second={};
+ const out=ecs.transfers([transfer('i',source,lower,'wood',1,1),transfer('I',source,upper,'wood',1,1)]);
+ assert.deepEqual(out.map(x=>[x.id,x.amount]),[['I',1],['i',0]]);assert.deepEqual(upper,{wood:1});assert.deepEqual(lower,{});
+ const shared={wood:1},a={...transfer('same',shared,first,'wood',1,1),destinationId:'inventory:first'},b={...transfer('same',shared,second,'wood',1,1),destinationId:'inventory:second'};
+ const tied=ecs.transfers([a,b]);assert.equal(tied[0].state,'settled');assert.equal(tied[1].state,'duplicate');assert.deepEqual(first,{wood:1});assert.deepEqual(second,{});
+});
+test('Harvest and production write targets reject before any resource debit',()=>{
+ const ecs=W.create(),deposit=Object.freeze({stock:5}),destination={wood:0};
+ assert.throws(()=>ecs.harvest({id:'locked-harvest',depositId:'deposit:locked',deposit,finite:true,destinationId:'inventory:locked',destination,resource:'wood',requested:2,destinationLimit:2}),/write target/);
+ assert.deepEqual(destination,{wood:0});assert.equal(ecs.world.entities.size,0);
+ const storage=Object.freeze({input:{wood:2},output:{},job:null}),job={id:'locked-production',output:'planks',amount:1,duration:10,progress:0,attempts:0,workerId:'c1'},substrate={stock:5};
+ assert.throws(()=>ecs.reserveProduction(reservation('locked-production',storage,substrate,job)),/write target/);
+ assert.deepEqual(storage.input,{wood:2});assert.equal(substrate.stock,5);assert.equal(storage.job,null);
+ assert.equal(ecs.hasSettled('reserve:locked-production'),false);assert.equal(ecs.world.entities.size,0);
+});
+test('Internal transaction entity collisions reject before single or batch projections change',()=>{
+ for(const mode of ['single','first','late'])for(const reference of ['sourceId','destinationId']){
+  const ecs=W.create(),original={wood:9},source={wood:5},a={},b={};ecs.bindInventory('inventory:source',original);
+  const specs=mode==='single'?[transfer('collision',source,a,'wood',1,1)]:[transfer('a-collision',source,a,'wood',1,1),transfer('b-collision',source,b,'wood',1,1)];
+  const index=mode==='late'?1:0;specs[index][reference]='tx:'+String(index+1).padStart(10,'0')+':'+specs[index].id;
+  const entities=[...ecs.world.entities],stores=ecs.world.stores,before=JSON.stringify([original,source,a,b]);
+  assert.throws(()=>mode==='single'?ecs.transfer(specs[0]):ecs.transfers(specs),/Invalid physical entity ID/);
+  assert.equal(JSON.stringify([original,source,a,b]),before);assert.deepEqual([...ecs.world.entities],entities);
+  assert.deepEqual([...ecs.world.stores.keys()],[...stores.keys()]);
+  for(const [type,store]of stores){assert.equal(ecs.world.stores.get(type).size,store.size);for(const [id,data]of store)assert.equal(ecs.world.get(id,type),data);}
+  for(const spec of specs)assert.equal(ecs.hasSettled(spec.id),false);
+  const allowed=transfer('tx:receipt',source,b,'wood',1,1);assert.equal(ecs.transfer(allowed).state,'settled');assert.equal(ecs.hasSettled(allowed.id),true);
+ }
+});
+test('All public physical bindings reserve the internal transaction entity namespace',()=>{
+ const ecs=W.create(),items={wood:5},deposit={stock:5},storage={input:{wood:2},output:{},job:null};
+ for(const bind of [()=>ecs.bindInventory('tx:inventory',items),()=>ecs.bindDeposit('tx:deposit',deposit,'wood',true),()=>ecs.bindWorksite('tx:worksite',storage)]){
+  assert.throws(bind,/Invalid physical entity ID/);assert.equal(ecs.world.entities.size,0);assert.equal(ecs.world.stores.size,0);
+ }
+ assert.deepEqual(items,{wood:5});assert.deepEqual(deposit,{stock:5});assert.deepEqual(storage,{input:{wood:2},output:{},job:null});
+});
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/ecs-world-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} ECS world checks passed`);if(passed!==results.length)process.exitCode=1;
