@@ -397,7 +397,7 @@
             document.getElementById('portrait')?.setAttribute('aria-label', c ? c.name + ' and their worn equipment' : 'No creature selected');
             const sub = document.querySelector('.buddy-sub');
             if (sub)
-                sub.textContent = c ? L.colony.profile(c.personality).name + ' · ' + (Creatures.forPersonality(c.personality)?.name || 'Companion') : 'Each companion has a life of their own';
+                sub.textContent = c ? L.colony.profile(c.personality).name + ' · ' + (Creatures.get(c.archetype)?.name || 'Companion') : 'Each companion has a life of their own';
             if (c?.activeQuest) {
                 const q = c.activeQuest;
                 document.getElementById('task-label').textContent = q.status === 'returning' ? 'On the way home' : 'Beyond the glade';
