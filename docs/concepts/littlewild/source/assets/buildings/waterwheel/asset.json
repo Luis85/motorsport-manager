@@ -1,0 +1,373 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "building",
+  "id": "waterwheel",
+  "name": "Waterwheel",
+  "materials": {
+    "stone": "#b4baa7",
+    "wood": "#947653",
+    "roof": "#668d89",
+    "light": "#b1956c"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "well-wall",
+          "position": [
+            0,
+            0.24,
+            0
+          ],
+          "scale": [
+            0.43,
+            0.48,
+            0.43
+          ],
+          "material": "stone"
+        },
+        {
+          "primitive": "box",
+          "id": "post-left",
+          "position": [
+            -0.4,
+            0.82,
+            0
+          ],
+          "scale": [
+            0.08,
+            0.88,
+            0.08
+          ],
+          "material": "wood"
+        },
+        {
+          "primitive": "box",
+          "id": "post-right",
+          "position": [
+            0.4,
+            0.82,
+            0
+          ],
+          "scale": [
+            0.08,
+            0.88,
+            0.08
+          ],
+          "material": "wood"
+        },
+        {
+          "primitive": "roof",
+          "id": "roof",
+          "position": [
+            0,
+            1.15,
+            0
+          ],
+          "scale": [
+            1.02,
+            0.64,
+            0.72
+          ],
+          "material": "roof"
+        },
+        {
+          "primitive": "group",
+          "id": "rotor",
+          "position": [
+            -0.63,
+            0.66,
+            0
+          ],
+          "children": [
+            {
+              "primitive": "ring",
+              "id": "wheel",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                0.62,
+                0.62,
+                0.62
+              ],
+              "material": "wood",
+              "rotation": [
+                0,
+                1.5707963267948966,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-0",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-0",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-1",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-1",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                0.7853981633974483,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-2",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-2",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                1.5707963267948966,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-3",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-3",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                2.356194490192345,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-4",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-4",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                3.141592653589793,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-5",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-5",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                3.9269908169872414,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-6",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-6",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                4.71238898038469,
+                0,
+                0
+              ]
+            },
+            {
+              "primitive": "group",
+              "id": "paddle-arm-7",
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "primitive": "box",
+                  "id": "paddle-7",
+                  "position": [
+                    0,
+                    0.54,
+                    0
+                  ],
+                  "scale": [
+                    0.27,
+                    0.14,
+                    0.24
+                  ],
+                  "material": "light"
+                }
+              ],
+              "rotation": [
+                5.497787143782138,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "orientation": "none",
+    "indoor": false,
+    "hitHeight": 1.52,
+    "radius": 1.15
+  },
+  "behaviors": {
+    "rotors": [
+      {
+        "node": "rotor",
+        "axis": "x",
+        "speed": 0.32
+      }
+    ]
+  }
+}

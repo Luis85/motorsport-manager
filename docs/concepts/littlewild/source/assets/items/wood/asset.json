@@ -1,0 +1,372 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "wood",
+  "name": "Wood",
+  "materials": {
+    "trunk": "#8c6847",
+    "end": "#ddb37c",
+    "leafA": "#628d6d",
+    "leafB": "#82a66d",
+    "leafC": "#acc080",
+    "pineA": "#5f876f",
+    "pineB": "#759b7b",
+    "pineC": "#8fae88",
+    "amberA": "#ad9256",
+    "amberB": "#c0a862",
+    "amberC": "#d3b977"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "trunk",
+          "position": [
+            0,
+            0.62,
+            0
+          ],
+          "scale": [
+            0.1,
+            1.18,
+            0.1
+          ],
+          "material": "trunk"
+        },
+        {
+          "primitive": "cylinder",
+          "id": "branch-l",
+          "position": [
+            -0.15,
+            0.78,
+            0
+          ],
+          "scale": [
+            0.035,
+            0.38,
+            0.035
+          ],
+          "material": "trunk",
+          "rotation": [
+            0,
+            0,
+            0.72
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "branch-r",
+          "position": [
+            0.15,
+            0.82,
+            0
+          ],
+          "scale": [
+            0.035,
+            0.4,
+            0.035
+          ],
+          "material": "trunk",
+          "rotation": [
+            0,
+            0,
+            -0.72
+          ]
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-a",
+          "position": [
+            -0.24,
+            1.35,
+            0.05
+          ],
+          "scale": [
+            0.54,
+            0.49,
+            0.49
+          ],
+          "material": "leafA"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-b",
+          "position": [
+            0.27,
+            1.48,
+            -0.1
+          ],
+          "scale": [
+            0.55,
+            0.58,
+            0.56
+          ],
+          "material": "leafB"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-c",
+          "position": [
+            -0.08,
+            1.67,
+            -0.04
+          ],
+          "scale": [
+            0.48,
+            0.45,
+            0.49
+          ],
+          "material": "leafC"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-d",
+          "position": [
+            0.13,
+            1.35,
+            0.32
+          ],
+          "scale": [
+            0.4,
+            0.36,
+            0.38
+          ],
+          "material": "leafB"
+        }
+      ]
+    },
+    "world-pine": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "trunk",
+          "position": [
+            0,
+            0.7,
+            0
+          ],
+          "scale": [
+            0.09,
+            1.36,
+            0.09
+          ],
+          "material": "trunk"
+        },
+        {
+          "primitive": "cone",
+          "id": "pine-low",
+          "position": [
+            0,
+            0.82,
+            0
+          ],
+          "scale": [
+            0.7,
+            0.78,
+            0.68
+          ],
+          "material": "pineA"
+        },
+        {
+          "primitive": "cone",
+          "id": "pine-mid",
+          "position": [
+            0.02,
+            1.28,
+            0
+          ],
+          "scale": [
+            0.56,
+            0.72,
+            0.55
+          ],
+          "material": "pineB"
+        },
+        {
+          "primitive": "cone",
+          "id": "pine-high",
+          "position": [
+            -0.01,
+            1.68,
+            0
+          ],
+          "scale": [
+            0.4,
+            0.62,
+            0.4
+          ],
+          "material": "pineC"
+        }
+      ]
+    },
+    "world-amber": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "trunk",
+          "position": [
+            0,
+            0.62,
+            0
+          ],
+          "scale": [
+            0.1,
+            1.18,
+            0.1
+          ],
+          "material": "trunk"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-a",
+          "position": [
+            -0.24,
+            1.35,
+            0.05
+          ],
+          "scale": [
+            0.54,
+            0.49,
+            0.49
+          ],
+          "material": "amberA"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-b",
+          "position": [
+            0.27,
+            1.48,
+            -0.1
+          ],
+          "scale": [
+            0.55,
+            0.58,
+            0.56
+          ],
+          "material": "amberB"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-c",
+          "position": [
+            -0.08,
+            1.67,
+            -0.04
+          ],
+          "scale": [
+            0.48,
+            0.45,
+            0.49
+          ],
+          "material": "amberC"
+        },
+        {
+          "primitive": "soft",
+          "id": "crown-d",
+          "position": [
+            0.13,
+            1.35,
+            0.32
+          ],
+          "scale": [
+            0.4,
+            0.36,
+            0.38
+          ],
+          "material": "amberB"
+        }
+      ]
+    },
+    "carry": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "log-a",
+          "position": [
+            0,
+            0.09,
+            -0.09
+          ],
+          "scale": [
+            0.055,
+            0.42,
+            0.055
+          ],
+          "material": "trunk",
+          "rotation": [
+            0,
+            0,
+            1.5707963267948966
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "log-b",
+          "position": [
+            0,
+            0.09,
+            0.08
+          ],
+          "scale": [
+            0.055,
+            0.42,
+            0.055
+          ],
+          "material": "trunk",
+          "rotation": [
+            0,
+            0,
+            1.5707963267948966
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "log-c",
+          "position": [
+            0,
+            0.2,
+            0
+          ],
+          "scale": [
+            0.055,
+            0.42,
+            0.055
+          ],
+          "material": "trunk",
+          "rotation": [
+            0,
+            0,
+            1.5707963267948966
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "end",
+          "position": [
+            0.215,
+            0.2,
+            0
+          ],
+          "scale": [
+            0.041,
+            0.008,
+            0.041
+          ],
+          "material": "end",
+          "rotation": [
+            0,
+            0,
+            1.5707963267948966
+          ]
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6,
+    "worldHitHeight": 2
+  }
+}

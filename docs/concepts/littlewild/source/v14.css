@@ -1,0 +1,20 @@
+/* World labels are spatial anchors, not animated UI buttons. Never transition
+   their transform: that would create a second, delayed motion system. */
+.v10-labels{contain:layout style;isolation:isolate}
+.v14-creature-label{transition:background-color .12s,border-color .12s!important;will-change:transform;min-height:30px;max-width:216px;font-size:11px!important;line-height:1.35;padding:5px 10px!important;border-radius:7px!important;touch-action:manipulation;contain:layout style;box-shadow:0 2px 4px #243e311f!important}
+.v14-creature-label>span{display:block;overflow:hidden;text-overflow:ellipsis;max-width:194px}
+.v14-creature-label::after{content:'';width:1px;height:var(--label-stem,5px);left:50%;top:100%;bottom:auto;border:0;background:#506e58;transform:translateX(-50%);pointer-events:none;opacity:.68}
+.v14-creature-label.selected::after{background:#315e45}
+.v14-creature-label.selected{border-width:2px!important;padding:4px 9px!important}
+.v14-creature-label.selected>span::before{content:'◆';font-size:7px;margin-right:5px;vertical-align:1px;color:#f4de9b}
+.v14-creature-label:focus-visible{outline:3px solid #b99545;outline-offset:3px}
+.v14-creature-label[hidden]{display:none!important}
+#creature-context{transition:none!important;will-change:transform}
+#context-link{pointer-events:none;contain:strict}
+#context-link-path{stroke:#6d8265;stroke-width:1.2;stroke-dasharray:3 5}
+.v14-context-location{display:flex;align-items:center;gap:8px;border-top:1px solid #dbe2cf;margin:9px 0 0;padding:8px 0 0;font:11px/1.45 Arial;color:#52684e}
+.v14-context-location>span{flex:1;min-width:0}
+.v14-context-location button{min-height:32px;border:1px solid #bbc9ac;background:#f7f7e9;color:#315a43;border-radius:7px;font-size:11px;padding:5px 9px;white-space:nowrap}
+.v14-selection-help{font-size:12px;color:#53684f;line-height:1.65;border-left:3px solid #b3c69b;padding:8px 12px;margin:14px 0;background:#edf1e3}
+@media(max-width:700px){.v14-creature-label{min-height:30px}.v14-context-location{font-size:10px}.v14-context-location button{min-height:34px}}
+@media(prefers-reduced-motion:reduce){.v14-creature-label{transition:none!important}}

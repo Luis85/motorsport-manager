@@ -1,0 +1,8 @@
+{
+  "content/default-library.json": "7522df4ac54421c3740ea4804549a737b0b35f9591b744f043786acddd17b3c3",
+  "content/library.schema.json": "e88b945c7f3f77e7b657e44359ab5ee97860d11f792dd7edc42468c461bfa506",
+  "content/adventure-library.json": "af4544866024998a530fcc592dd3b639a641026a8a1272ff2194d19a3028edb5",
+  "content/adventure.schema.json": "b6f44e0d2462678a617b62bd6fddc56d93bcb990cde18eb68ae281831b45118f",
+  "content/world-library.json": "fd622345d07077e6dbeca083025ab2a2ef38e31b362b8029f10514a9595d04b0",
+  "content/world.schema.json": "c5483b134c5254cd1bc659b36cc0b47986b2ed66cdd0c3c2ae638f5b947f8c9e"
+}

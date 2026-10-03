@@ -1,0 +1,19 @@
+{
+  "format": "littlewild-economy-rules",
+  "schemaVersion": 1,
+  "xp": {
+    "base": 28,
+    "perLevel": 8,
+    "playerResearchPerLevel": 2,
+    "actorBondPerLevel": 2
+  },
+  "income": {
+    "pocketShare": 0.3
+  },
+  "limits": {
+    "balance": 1000000000000,
+    "delta": 1000000000,
+    "level": 1000000,
+    "stat": 1000000000000
+  }
+}

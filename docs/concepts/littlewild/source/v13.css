@@ -1,0 +1,21 @@
+/* Fidelity and pace are independent presentation choices. */
+.v13-atmosphere{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 42% 33%,#fff4d109 15%,transparent 52%,#315e5510 100%);z-index:1}
+.v10-labels{z-index:2}
+.v13-time-setting{padding:18px 20px;border:1px solid #becbad;border-radius:12px;background:#eef0e1;margin:0 0 22px;color:#365440}
+.v13-time-setting h3{font:23px Georgia,serif;margin:0 0 15px!important}
+.v13-time-setting label{display:flex;gap:12px;align-items:flex-start;cursor:pointer;line-height:1.5}
+.v13-time-setting input{accent-color:#3e6b53;width:21px;height:21px;flex:none;margin:1px 0 0}
+.v13-time-setting strong{display:block;font-size:14px}
+.v13-time-setting small{display:block;font-size:12px;line-height:1.6;color:#52684e;margin-top:5px}
+.v13-time-setting p{font-size:12px!important;margin:12px 0 5px!important;line-height:1.6}
+.v13-live-strip{display:flex;align-items:center;gap:10px;border-bottom:1px solid #d5ddc9;background:#edf1e3;padding:9px 25px;flex:none;font:12px/1.4 Arial,sans-serif;color:#435e45}
+.v13-live-strip>span{flex:1;min-width:0}
+.v13-live-strip button{border:1px solid #bac8ab;border-radius:6px;background:#faf8ee;color:#36583d;min-height:32px;padding:6px 10px;font-size:11px;flex:none}
+.world-live-panel .v13-live-strip{background:#e4efdf;border-left:3px solid #628d66}
+.world-live-panel #overlay{background:#284c393b;backdrop-filter:none}
+.world-live-panel .modal{background:#fbf9effc}
+.w7-roster-portrait,#context-portrait,#portrait{image-rendering:auto!important}
+.v10-creature-label{border-radius:9px!important;padding:5px 9px!important}
+[data-time-label]{font-variant-numeric:tabular-nums}
+@media(max-width:600px){.v13-live-strip{padding:8px 13px;flex-wrap:wrap;gap:7px}.v13-live-strip>span{flex-basis:100%}.v13-live-strip button{min-height:35px;flex:1}.v13-time-setting{padding:15px}.v13-time-setting label small{font-size:12px}}
+@media(max-height:550px){.v13-live-strip{padding:5px 12px;gap:6px}.v13-live-strip>span{flex-basis:auto}.v13-live-strip button{min-height:28px;padding:4px 8px}}

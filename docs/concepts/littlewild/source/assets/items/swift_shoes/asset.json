@@ -1,0 +1,60 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "swift_shoes",
+  "name": "Swift shoes",
+  "materials": {
+    "primary": "#607887",
+    "light": "#e7d3a5",
+    "dark": "#7d674f",
+    "metal": "#a5b1aa",
+    "glow": {
+      "color": "#e7bd73",
+      "emissive": "#d99d49",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "models": {
+    "equipped": {
+      "nodes": [
+        {
+          "primitive": "soft",
+          "id": "boot",
+          "position": [
+            0,
+            0.02,
+            0.04
+          ],
+          "scale": [
+            0.11,
+            0.09,
+            0.15
+          ],
+          "material": "primary"
+        },
+        {
+          "primitive": "box",
+          "id": "sole",
+          "position": [
+            0,
+            -0.03,
+            0.06
+          ],
+          "scale": [
+            0.13,
+            0.025,
+            0.18
+          ],
+          "material": "dark"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "equipment": true,
+    "slot": "feet",
+    "visual": "boots",
+    "radius": 0.45
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "fiber",
+  "name": "Fiber",
+  "materials": {
+    "leaf": "#8aa071",
+    "light": "#b5bd8d",
+    "stem": "#7c8d63"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "stem-0",
+          "position": [
+            -0.17,
+            0.24,
+            0
+          ],
+          "scale": [
+            0.018,
+            0.46,
+            0.018
+          ],
+          "material": "stem"
+        },
+        {
+          "primitive": "soft",
+          "id": "leaf-0",
+          "position": [
+            -0.17,
+            0.37,
+            0.02
+          ],
+          "scale": [
+            0.13,
+            0.17,
+            0.08
+          ],
+          "material": "leaf"
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-1",
+          "position": [
+            0,
+            0.24,
+            0
+          ],
+          "scale": [
+            0.018,
+            0.46,
+            0.018
+          ],
+          "material": "stem"
+        },
+        {
+          "primitive": "soft",
+          "id": "leaf-1",
+          "position": [
+            0,
+            0.37,
+            0.02
+          ],
+          "scale": [
+            0.13,
+            0.17,
+            0.08
+          ],
+          "material": "light"
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-2",
+          "position": [
+            0.17,
+            0.24,
+            0
+          ],
+          "scale": [
+            0.018,
+            0.46,
+            0.018
+          ],
+          "material": "stem"
+        },
+        {
+          "primitive": "soft",
+          "id": "leaf-2",
+          "position": [
+            0.17,
+            0.37,
+            0.02
+          ],
+          "scale": [
+            0.13,
+            0.17,
+            0.08
+          ],
+          "material": "leaf"
+        }
+      ]
+    },
+    "carry": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "stem-a",
+          "position": [
+            -0.07,
+            0.14,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.38,
+            0.025
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0.18
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-b",
+          "position": [
+            0.02,
+            0.16,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.42,
+            0.025
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            -0.1
+          ]
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-c",
+          "position": [
+            0.09,
+            0.13,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.35,
+            0.025
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0.09
+          ]
+        },
+        {
+          "primitive": "box",
+          "id": "tie",
+          "position": [
+            0.01,
+            0.08,
+            0
+          ],
+          "scale": [
+            0.22,
+            0.04,
+            0.06
+          ],
+          "material": "light"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6,
+    "worldHitHeight": 0.62
+  }
+}

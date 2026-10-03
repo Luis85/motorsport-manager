@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Littlewild Creature Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "defaultArchetype"
+  ],
+  "properties": {
+    "format": {
+      "const": "littlewild-creature-catalog"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "defaultArchetype": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+    }
+  }
+}

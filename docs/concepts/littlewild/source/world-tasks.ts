@@ -1,0 +1,38 @@
+/* Detached physical-task proposals. A proposal describes intent; transaction services
+ * still preflight the active task, position, stock, skill and capacity before settlement. */
+(function(inputRoot: unknown) {
+  'use strict';
+  interface Building { id: string; x: number; y: number; }
+  interface Recipe { kind: string; output: string; time: number; }
+  interface Job { id: string; duration: number; progress: number; }
+  interface Names { item: string; building: string; }
+  interface Task {
+    kind: string; buildingId: string; resource: string; orderId: string | null;
+    target: { x: number; y: number }; duration: number;
+    label: string; reason: string; thought: string;
+  }
+  interface TransferTask extends Task { amount: number; }
+  interface WorkTask extends Task { buffered: boolean; jobId: string | null; elapsed: number; }
+  const root = inputRoot as { LWWorldTasks?: typeof api };
+
+  function transfer(kind: string, building: Building, resource: string, amount: number,
+    orderId: string | null, names: Names, extra: Record<string, unknown> = {}): TransferTask {
+    const verb = kind === 'stockbuilding' ? 'Bringing ' : kind === 'emptybuilding' ? 'Reclaiming ' : 'Collecting ';
+    return { kind, buildingId: building.id, resource, amount: Math.max(1, amount), orderId,
+      target: { x: building.x, y: building.y }, duration: 1.5,
+      label: verb + names.item.toLowerCase() + (kind === 'stockbuilding' ? ' to ' : ' from ') + names.building.toLowerCase(),
+      reason: 'Goods travel in a creature’s satchel. This transfer settles only at the building.',
+      thought: kind === 'stockbuilding' ? 'A few supplies, exactly where they belong.' : 'I’ll carry these to where they can help.', ...extra };
+  }
+  function work(building: Building, recipe: Recipe, job: Job | null | undefined, orderId: string | null, names: Names): WorkTask {
+    return { kind: recipe.kind, resource: recipe.output, buildingId: building.id, buffered: true,
+      jobId: job?.id || null, orderId, target: { x: building.x, y: building.y },
+      duration: job?.duration || recipe.time, elapsed: job?.progress || 0,
+      label: (recipe.kind === 'produce' ? 'Tending ' : 'Making ') + names.item.toLowerCase() + ' · ' + names.building,
+      reason: 'The ingredients are at this building. Finished goods wait in its output tray for collection.',
+      thought: 'Supplies in. Patient work. Something useful out.' };
+  }
+  const api = { transfer, work };
+  root.LWWorldTasks = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(globalThis);

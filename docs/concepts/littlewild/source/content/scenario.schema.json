@@ -1,0 +1,860 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:living-worlds:pack:2",
+  "title": "Living Worlds scenario pack v1–v2",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "living-worlds-pack"
+    },
+    "schemaVersion": {
+      "const": 2
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+    },
+    "presentation": {
+      "$ref": "#/$defs/presentation"
+    },
+    "simulation": {
+      "$ref": "#/$defs/simulationProfile"
+    },
+    "worlds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/world"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scene"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "tutorial": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/step"
+      },
+      "minItems": 1,
+      "maxItems": 31
+    },
+    "libraries": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "object"
+        },
+        "adventure": {
+          "type": "object"
+        },
+        "world": {
+          "type": "object"
+        },
+        "growth": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "base",
+        "adventure",
+        "world",
+        "growth"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "id",
+    "version",
+    "name",
+    "description",
+    "presentation",
+    "worlds",
+    "scenes",
+    "tutorial",
+    "libraries",
+    "simulation"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "world": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "terrain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[.~]{19}$"
+          },
+          "minItems": 19,
+          "maxItems": 19
+        },
+        "biomeNames": {
+          "type": "object",
+          "properties": {
+            "Meadow": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Pinewood": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Amber grove": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            },
+            "Stonegarden": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            }
+          },
+          "required": [
+            "Meadow",
+            "Pinewood",
+            "Amber grove",
+            "Stonegarden"
+          ],
+          "additionalProperties": false
+        },
+        "resourceCounts": {
+          "type": "object",
+          "properties": {
+            "wood": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "berries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "fiber": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "stone": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "clay": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "ore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "herbs": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "grain": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "wood",
+            "berries",
+            "fiber",
+            "stone",
+            "clay",
+            "ore",
+            "herbs",
+            "grain"
+          ],
+          "additionalProperties": false
+        },
+        "fixedSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 18
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 18
+              }
+            },
+            "required": [
+              "kind",
+              "x",
+              "y"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "groundColors": {
+          "type": "object",
+          "properties": {
+            "Meadow": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Pinewood": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Amber grove": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "Stonegarden": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "Meadow",
+            "Pinewood",
+            "Amber grove",
+            "Stonegarden"
+          ],
+          "additionalProperties": false
+        },
+        "materialColors": {
+          "type": "object",
+          "maxProperties": 128,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        },
+        "placementPolicy": {
+          "enum": [
+            "legacy",
+            "reserved-sites"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "terrain",
+        "biomeNames",
+        "resourceCounts",
+        "fixedSites",
+        "groundColors",
+        "materialColors",
+        "placementPolicy"
+      ],
+      "additionalProperties": false
+    },
+    "presentation": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "tagline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "worldSubtitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "paper": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "ink": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      },
+      "required": [
+        "title",
+        "tagline",
+        "worldSubtitle",
+        "accent",
+        "paper",
+        "ink"
+      ],
+      "additionalProperties": false
+    },
+    "scene": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "worldId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "initialState": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "worldId",
+        "initialState"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 700,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "action": {
+          "enum": [
+            "select",
+            "care",
+            "learn",
+            "home",
+            "planner",
+            "research",
+            "quests",
+            "growth",
+            "market",
+            "save",
+            "map"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "body",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "simulationProfile": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-simulation-profile"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "version": {
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "actor": {
+              "$ref": "#/$defs/actorRules"
+            },
+            "economy": {
+              "$ref": "#/$defs/economyRules"
+            }
+          },
+          "required": [
+            "actor",
+            "economy"
+          ],
+          "additionalProperties": false
+        },
+        "archetype": {
+          "$ref": "#/$defs/compositionArchetype"
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "id",
+        "version",
+        "name",
+        "description",
+        "rules",
+        "archetype"
+      ],
+      "additionalProperties": false
+    },
+    "actorRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-actor-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "learning": {
+          "type": "object",
+          "properties": {
+            "playfulFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "standardFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoveryRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoverAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "limitAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "playfulFatigue",
+            "standardFatigue",
+            "recoveryRate",
+            "recoverAt",
+            "limitAt"
+          ],
+          "additionalProperties": false
+        },
+        "feelings": {
+          "type": "object",
+          "properties": {
+            "socialRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "socialPreferenceRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "angerRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "socialRate",
+            "socialPreferenceRate",
+            "angerRate"
+          ],
+          "additionalProperties": false
+        },
+        "needs": {
+          "type": "object",
+          "properties": {
+            "workingKinds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,50}$"
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "foodWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "foodIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "walkLoadFactor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortWithoutShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "joyRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "workingKinds",
+            "foodWork",
+            "foodIdle",
+            "waterWork",
+            "waterIdle",
+            "energyWork",
+            "energyIdle",
+            "walkLoadFactor",
+            "comfortShelter",
+            "comfortWithoutShelter",
+            "joyRate"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "learning",
+        "feelings",
+        "needs"
+      ],
+      "additionalProperties": false
+    },
+    "economyRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-economy-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "xp": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "perLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "playerResearchPerLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "actorBondPerLevel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "base",
+            "perLevel",
+            "playerResearchPerLevel",
+            "actorBondPerLevel"
+          ],
+          "additionalProperties": false
+        },
+        "income": {
+          "type": "object",
+          "properties": {
+            "pocketShare": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "pocketShare"
+          ],
+          "additionalProperties": false
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "balance": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "delta": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "stat": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "balance",
+            "delta",
+            "level",
+            "stat"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "xp",
+        "income",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "compositionArchetype": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "living-world-v1"
+        },
+        "version": {
+          "const": 1
+        },
+        "engineLayers": {
+          "const": [
+            "systems",
+            "colony",
+            "world-simulation",
+            "village",
+            "planner",
+            "cartography"
+          ]
+        },
+        "simulationPipeline": {
+          "const": [
+            "clock",
+            "world",
+            "quest-board",
+            "actor-daily",
+            "actor-quest",
+            "actor-simulation"
+          ]
+        },
+        "actorDynamics": {
+          "const": [
+            "practice-day",
+            "learning-fatigue",
+            "social-decay",
+            "needs-decay"
+          ]
+        },
+        "actorActivity": {
+          "const": [
+            "task-intent",
+            "task-movement",
+            "task-work-progress",
+            "task-intent-result"
+          ]
+        },
+        "worldTransactions": {
+          "const": [
+            "inventory-transfer",
+            "resource-harvest",
+            "production-reserve",
+            "production-job-update",
+            "production-settlement"
+          ]
+        },
+        "economyTransactions": {
+          "const": [
+            "settlement-plan",
+            "wallet-settlement",
+            "shared-research-settlement",
+            "xp-progression",
+            "prestige-settlement",
+            "stat-settlement",
+            "chapter-settlement",
+            "settlement-outbox"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "engineLayers",
+        "simulationPipeline",
+        "actorDynamics",
+        "actorActivity",
+        "worldTransactions",
+        "economyTransactions"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

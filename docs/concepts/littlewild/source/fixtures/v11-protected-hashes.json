@@ -1,0 +1,43 @@
+{
+  "care-and-rpg": {
+    "engine.js": "65ea53979623292a407e738da48c6c4463abf04430c8b993fff5804dba82abe8",
+    "systems.js": "e228b95a174858ef6f6c4743166deae2e3b963eb7b26fa9fff9d115f1dd96598",
+    "rpg.js": "1b5c12364f8ea9fe9040d2e486d13a218ee567871bcd73c02bff6a3f0dee557f",
+    "behavior-tree.js": "f019502f8fc8a58be3e8ec519eee20927492b876b09f76246e8d3d02044f9667",
+    "colony.js": "ca8a760209737fdcea2663c9c924e6a4135857c2c923098de6c3816beae95475",
+    "colony-policies.js": "97a242feff48abb4e0f85edd4c5e7fbd2ce4a185e39f352cb547c18b3d0fcf7d"
+  },
+  "logistics-and-navigation": {
+    "world-simulation.js": "266f3e4cba99922e50f0049c7da06a7cc4b39c45ae5c0154d274bf4fca272cb9",
+    "island-geometry.js": "a03fb70586b4d39ba4afeb69e3bec6e78a774c2f9660cc6f3a3eb4ba22c00787",
+    "navigation.js": "9161cdb76640979539cadee616b89032c41d57c2122173869fa016d24bbf6c51",
+    "world-integrity.js": "07ba132c5c8808275381101bb4117cdac354f64dd0f48c28b145dbbb6c3643c0"
+  },
+  "progression-and-planning": {
+    "village-systems.js": "d09b25a3c1372e16e1e4a359a0f43db1dde7964dc423dcbe9246675195c223d7",
+    "planner.js": "76bc92d42508f2c19103806a85d36d0e168358dc1ee5a7e659f4f9cacfeec2db",
+    "cartography.js": "7ec015ecaa70110a1ef62155ec39be174db2622b5aa70e17f6b4a8672a782018",
+    "validation-village.js": "3de6a77afa9d70fbf5a9ad2c47f391c14eff130e71e9b4e84801b6761ae3455e"
+  },
+  "persistence-and-definitions": {
+    "story-codec.js": "059c826d8725c0bfea4233c1321f6f5f60ea9f4f35f657be1db7bb36252e28ac",
+    "story-storage.js": "908166bce5dd2303cb6aec31bb744c8dc11c3850c1857f8aed39c2999c2e4aef",
+    "simulation-clock.js": "3f34e4732c6c831bb42cb6508b7a96741f84f2ab092495d4e7c30593b431a439",
+    "content-runtime.js": "285f3c60bfb0c69949d10aeebc548a7d48186e9a6ac6917ff109effacadad029",
+    "adventure-content.js": "501ab4c99422ff08718addad4e151cbb6d841bd9d3dd632cb14a96c922efe5b2",
+    "world-content.js": "2349367ce9cbb3345f2cc68304eae8c978e62ec2155d601f35a3792e3077544b",
+    "growth-content.js": "940f7f4e50e3385ba92f9ecff6d328f0411bd68ddd3913daba4dacf59a3c50d9",
+    "simulation.cjs": "61897f92a66d41cb4712991825f7b9ed5c13abd3c5a57be5cfebf764584fc4c2"
+  },
+  "content-libraries-and-schemas": {
+    "content/growth-library.json": "92e549ac4b09ef5af599f07273b4b9fff3f53ad477233ae559ececa1243c0df6",
+    "content/adventure.schema.json": "b6f44e0d2462678a617b62bd6fddc56d93bcb990cde18eb68ae281831b45118f",
+    "content/world-library.json": "fd622345d07077e6dbeca083025ab2a2ef38e31b362b8029f10514a9595d04b0",
+    "content/world.schema.json": "c5483b134c5254cd1bc659b36cc0b47986b2ed66cdd0c3c2ae638f5b947f8c9e",
+    "content/default-library.json": "80d8e3a16467e3f320dbf664ea7f3e741a92bac66bd6478e11b1da18a6dffd6c",
+    "content/adventure-library.json": "af4544866024998a530fcc592dd3b639a641026a8a1272ff2194d19a3028edb5",
+    "content/library.schema.json": "43446e70584c1b395284ceb5520fc644ff20c1fd32a41248a62e33e3fccd5017",
+    "content/growth.schema.json": "7cc244f3b66495ad59894edc31b10524f7158c5948cbb07ea1cfb4211af05975",
+    "content/adventure-example.json": "c68643d7aacf2439cb593334abda0cb6850a5a041f722db8fada7ce51904dda1"
+  }
+}

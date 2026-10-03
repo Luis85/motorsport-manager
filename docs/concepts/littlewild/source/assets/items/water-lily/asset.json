@@ -1,0 +1,50 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "water-lily",
+  "name": "Water lily",
+  "materials": {
+    "leaf": "#94b381",
+    "flower": "#e7ddbd"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "leaf",
+          "position": [
+            0,
+            0.012,
+            0
+          ],
+          "scale": [
+            0.14,
+            0.012,
+            0.14
+          ],
+          "material": "leaf"
+        },
+        {
+          "primitive": "ball",
+          "id": "flower",
+          "position": [
+            0.03,
+            0.035,
+            -0.02
+          ],
+          "scale": [
+            0.035,
+            0.025,
+            0.035
+          ],
+          "material": "flower"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6
+  }
+}

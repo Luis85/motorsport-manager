@@ -1,0 +1,1707 @@
+{
+  "format": "littlewild-growth-content",
+  "schemaVersion": 2,
+  "revision": "11.0.0",
+  "name": "A Well-Charted Home — shore picnic example",
+  "rules": {
+    "maxSlots": 6,
+    "initialSlots": 1,
+    "slotPrestigeBase": 12,
+    "slotGrowth": 1.7,
+    "slotLevelBase": 2,
+    "slotLevelStep": 1,
+    "questPrestigeBase": 4,
+    "questPrestigePerTier": 3,
+    "landLevel": 4,
+    "landCoinsBase": 180,
+    "landPrestigeBase": 12,
+    "landGrowth": 1.65,
+    "maxIslands": 25,
+    "marketBatch": 4,
+    "marketCapacity": 24,
+    "marketSeconds": 4
+  },
+  "homes": {
+    "shelter": {
+      "places": 1,
+      "perLevel": 1
+    },
+    "cottage": {
+      "places": 3,
+      "perLevel": 1
+    }
+  },
+  "features": [
+    {
+      "id": "making",
+      "name": "Making & workshops",
+      "maxRank": 4
+    },
+    {
+      "id": "homestead",
+      "name": "Homes & gardens",
+      "maxRank": 4
+    },
+    {
+      "id": "community",
+      "name": "Community & trade",
+      "maxRank": 4
+    },
+    {
+      "id": "discovery",
+      "name": "Adventures & discovery",
+      "maxRank": 4
+    }
+  ],
+  "requirements": {
+    "buildings": {
+      "shelter": {
+        "playerLevel": 1,
+        "features": {},
+        "research": "blueprint-shelter"
+      },
+      "bench": {
+        "playerLevel": 1,
+        "features": {},
+        "research": "blueprint-bench"
+      },
+      "fire": {
+        "playerLevel": 1,
+        "features": {
+          "homestead": 1
+        },
+        "research": "blueprint-fire"
+      },
+      "garden": {
+        "playerLevel": 1,
+        "features": {
+          "homestead": 1
+        },
+        "research": "blueprint-garden"
+      },
+      "market": {
+        "playerLevel": 2,
+        "features": {
+          "community": 2
+        },
+        "research": "blueprint-market"
+      },
+      "well": {
+        "playerLevel": 2,
+        "features": {
+          "homestead": 2
+        },
+        "research": "blueprint-well"
+      },
+      "cottage": {
+        "playerLevel": 3,
+        "features": {
+          "homestead": 3
+        },
+        "research": "blueprint-cottage"
+      },
+      "study": {
+        "playerLevel": 3,
+        "features": {
+          "discovery": 3
+        },
+        "research": "blueprint-study"
+      },
+      "circle": {
+        "playerLevel": 1,
+        "features": {
+          "discovery": 1
+        },
+        "research": "blueprint-circle"
+      },
+      "grainplot": {
+        "playerLevel": 1,
+        "features": {
+          "homestead": 1
+        },
+        "research": "blueprint-grainplot"
+      },
+      "loom": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "blueprint-loom"
+      },
+      "kiln": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "blueprint-kiln"
+      },
+      "herbarium": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "blueprint-herbarium"
+      },
+      "workshop": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "blueprint-workshop"
+      },
+      "smelter": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "blueprint-smelter"
+      },
+      "mill": {
+        "playerLevel": 3,
+        "features": {
+          "homestead": 3
+        },
+        "research": "blueprint-mill"
+      },
+      "bakery": {
+        "playerLevel": 3,
+        "features": {
+          "homestead": 3
+        },
+        "research": "blueprint-bakery"
+      },
+      "greenhouse": {
+        "playerLevel": 3,
+        "features": {
+          "homestead": 3
+        },
+        "research": "blueprint-greenhouse"
+      },
+      "storehouse": {
+        "playerLevel": 1,
+        "features": {},
+        "research": "blueprint-storehouse"
+      },
+      "waterwheel": {
+        "playerLevel": 4,
+        "features": {
+          "making": 4
+        },
+        "research": "blueprint-waterwheel"
+      },
+      "orchard": {
+        "playerLevel": 4,
+        "features": {
+          "homestead": 4
+        },
+        "research": "blueprint-orchard"
+      },
+      "observatory": {
+        "playerLevel": 4,
+        "features": {
+          "discovery": 4
+        },
+        "research": "blueprint-observatory"
+      },
+      "map_table": {
+        "playerLevel": 3,
+        "features": {
+          "discovery": 2
+        },
+        "research": "blueprint-map-table"
+      }
+    },
+    "recipes": {
+      "planks": {
+        "playerLevel": 1,
+        "features": {},
+        "research": "recipe-planks"
+      },
+      "meals": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "recipe-meals"
+      },
+      "rope": {
+        "playerLevel": 1,
+        "features": {},
+        "research": "recipe-rope"
+      },
+      "cloth": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "recipe-cloth"
+      },
+      "charcoal": {
+        "playerLevel": 1,
+        "features": {
+          "making": 1
+        },
+        "research": "recipe-charcoal"
+      },
+      "bricks": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "recipe-bricks"
+      },
+      "pots": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "recipe-pots"
+      },
+      "beams": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "recipe-beams"
+      },
+      "iron": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "recipe-iron"
+      },
+      "tools": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "recipe-tools"
+      },
+      "flour": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "recipe-flour"
+      },
+      "bread": {
+        "playerLevel": 3,
+        "features": {
+          "making": 3
+        },
+        "research": "recipe-bread"
+      },
+      "balm": {
+        "playerLevel": 2,
+        "features": {
+          "making": 2
+        },
+        "research": "recipe-balm"
+      },
+      "glass": {
+        "playerLevel": 4,
+        "features": {
+          "making": 4
+        },
+        "research": "recipe-glass"
+      }
+    },
+    "items": {
+      "wood": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "stone": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "fiber": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "berries": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "water": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "planks": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "meat": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "meals": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "clay": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "ore": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "herbs": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "grain": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "rope": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "cloth": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "charcoal": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "bricks": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "pots": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "beams": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "iron": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "tools": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "flour": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "bread": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "balm": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "glass": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "trail_cap": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "rain_cape": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "walking_boots": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "gathering_axe": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "hand_hammer": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "walking_staff": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "field_satchel": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "friendship_charm": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "stargazer_hat": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "woodland_vest": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "swift_shoes": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "lantern": {
+        "playerLevel": 3,
+        "features": {}
+      }
+    },
+    "features": {
+      "quests": {
+        "playerLevel": 2,
+        "features": {
+          "discovery": 1
+        },
+        "research": "feature-quests"
+      },
+      "trade": {
+        "playerLevel": 2,
+        "features": {
+          "community": 1
+        },
+        "research": "feature-trade"
+      },
+      "recruitment": {
+        "playerLevel": 2,
+        "features": {
+          "community": 1
+        },
+        "research": "feature-recruitment"
+      },
+      "prestige-shop": {
+        "playerLevel": 2,
+        "features": {
+          "community": 1
+        },
+        "research": "feature-prestige-shop"
+      },
+      "land": {
+        "playerLevel": 4,
+        "features": {
+          "discovery": 2
+        },
+        "research": "feature-land"
+      }
+    },
+    "skills": {
+      "woodcraft": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "shelter": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "stonework": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "firekeeping": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "gardening": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "woodwork": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "cooking": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "tracking": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "commerce": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "masonry": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "architecture": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "invention": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "fiberwork": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "claywork": {
+        "playerLevel": 1,
+        "features": {}
+      },
+      "weaving": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "pottery": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "herbalism": {
+        "playerLevel": 2,
+        "features": {}
+      },
+      "joinery": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "metalwork": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "horticulture": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "milling": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "baking": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "logistics": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "mentorship": {
+        "playerLevel": 3,
+        "features": {}
+      },
+      "engineering": {
+        "playerLevel": 4,
+        "features": {}
+      },
+      "glassmaking": {
+        "playerLevel": 4,
+        "features": {}
+      },
+      "stewardship": {
+        "playerLevel": 4,
+        "features": {}
+      },
+      "scholarship": {
+        "playerLevel": 4,
+        "features": {}
+      }
+    }
+  },
+  "research": [
+    {
+      "id": "making-1",
+      "name": "Making & workshops · 1",
+      "description": "Understand the next making & workshops techniques. Opens new research choices, not free materials.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 4,
+      "grants": {
+        "feature": "making",
+        "rank": 1
+      },
+      "unlocks": []
+    },
+    {
+      "id": "making-2",
+      "name": "Making & workshops · 2",
+      "description": "Understand the next making & workshops techniques. Opens new research choices, not free materials.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 1
+      },
+      "cost": 6,
+      "grants": {
+        "feature": "making",
+        "rank": 2
+      },
+      "unlocks": []
+    },
+    {
+      "id": "making-3",
+      "name": "Making & workshops · 3",
+      "description": "Understand the next making & workshops techniques. Opens new research choices, not free materials.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 2
+      },
+      "cost": 8,
+      "grants": {
+        "feature": "making",
+        "rank": 3
+      },
+      "unlocks": []
+    },
+    {
+      "id": "making-4",
+      "name": "Making & workshops · 4",
+      "description": "Understand the next making & workshops techniques. Opens new research choices, not free materials.",
+      "playerLevel": 4,
+      "requires": {
+        "making": 3
+      },
+      "cost": 10,
+      "grants": {
+        "feature": "making",
+        "rank": 4
+      },
+      "unlocks": []
+    },
+    {
+      "id": "homestead-1",
+      "name": "Homes & gardens · 1",
+      "description": "Understand the next homes & gardens techniques. Opens new research choices, not free materials.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 4,
+      "grants": {
+        "feature": "homestead",
+        "rank": 1
+      },
+      "unlocks": []
+    },
+    {
+      "id": "homestead-2",
+      "name": "Homes & gardens · 2",
+      "description": "Understand the next homes & gardens techniques. Opens new research choices, not free materials.",
+      "playerLevel": 2,
+      "requires": {
+        "homestead": 1
+      },
+      "cost": 6,
+      "grants": {
+        "feature": "homestead",
+        "rank": 2
+      },
+      "unlocks": []
+    },
+    {
+      "id": "homestead-3",
+      "name": "Homes & gardens · 3",
+      "description": "Understand the next homes & gardens techniques. Opens new research choices, not free materials.",
+      "playerLevel": 3,
+      "requires": {
+        "homestead": 2
+      },
+      "cost": 8,
+      "grants": {
+        "feature": "homestead",
+        "rank": 3
+      },
+      "unlocks": []
+    },
+    {
+      "id": "homestead-4",
+      "name": "Homes & gardens · 4",
+      "description": "Understand the next homes & gardens techniques. Opens new research choices, not free materials.",
+      "playerLevel": 4,
+      "requires": {
+        "homestead": 3
+      },
+      "cost": 10,
+      "grants": {
+        "feature": "homestead",
+        "rank": 4
+      },
+      "unlocks": []
+    },
+    {
+      "id": "community-1",
+      "name": "Community & trade · 1",
+      "description": "Understand the next community & trade techniques. Opens new research choices, not free materials.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 4,
+      "grants": {
+        "feature": "community",
+        "rank": 1
+      },
+      "unlocks": []
+    },
+    {
+      "id": "community-2",
+      "name": "Community & trade · 2",
+      "description": "Understand the next community & trade techniques. Opens new research choices, not free materials.",
+      "playerLevel": 2,
+      "requires": {
+        "community": 1
+      },
+      "cost": 6,
+      "grants": {
+        "feature": "community",
+        "rank": 2
+      },
+      "unlocks": []
+    },
+    {
+      "id": "community-3",
+      "name": "Community & trade · 3",
+      "description": "Understand the next community & trade techniques. Opens new research choices, not free materials.",
+      "playerLevel": 3,
+      "requires": {
+        "community": 2
+      },
+      "cost": 8,
+      "grants": {
+        "feature": "community",
+        "rank": 3
+      },
+      "unlocks": []
+    },
+    {
+      "id": "community-4",
+      "name": "Community & trade · 4",
+      "description": "Understand the next community & trade techniques. Opens new research choices, not free materials.",
+      "playerLevel": 4,
+      "requires": {
+        "community": 3
+      },
+      "cost": 10,
+      "grants": {
+        "feature": "community",
+        "rank": 4
+      },
+      "unlocks": []
+    },
+    {
+      "id": "discovery-1",
+      "name": "Adventures & discovery · 1",
+      "description": "Understand the next adventures & discovery techniques. Opens new research choices, not free materials.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 4,
+      "grants": {
+        "feature": "discovery",
+        "rank": 1
+      },
+      "unlocks": []
+    },
+    {
+      "id": "discovery-2",
+      "name": "Adventures & discovery · 2",
+      "description": "Understand the next adventures & discovery techniques. Opens new research choices, not free materials.",
+      "playerLevel": 2,
+      "requires": {
+        "discovery": 1
+      },
+      "cost": 6,
+      "grants": {
+        "feature": "discovery",
+        "rank": 2
+      },
+      "unlocks": []
+    },
+    {
+      "id": "discovery-3",
+      "name": "Adventures & discovery · 3",
+      "description": "Understand the next adventures & discovery techniques. Opens new research choices, not free materials.",
+      "playerLevel": 3,
+      "requires": {
+        "discovery": 2
+      },
+      "cost": 8,
+      "grants": {
+        "feature": "discovery",
+        "rank": 3
+      },
+      "unlocks": []
+    },
+    {
+      "id": "discovery-4",
+      "name": "Adventures & discovery · 4",
+      "description": "Understand the next adventures & discovery techniques. Opens new research choices, not free materials.",
+      "playerLevel": 4,
+      "requires": {
+        "discovery": 3
+      },
+      "cost": 10,
+      "grants": {
+        "feature": "discovery",
+        "rank": 4
+      },
+      "unlocks": []
+    },
+    {
+      "id": "blueprint-shelter",
+      "name": "Leaf shelter blueprint",
+      "description": "A safe little nest. Better sleep and comfort.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 0,
+      "grants": null,
+      "unlocks": [
+        "buildings:shelter"
+      ],
+      "initial": true
+    },
+    {
+      "id": "blueprint-bench",
+      "name": "Workbench blueprint",
+      "description": "A place to turn resources into possibilities.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 0,
+      "grants": null,
+      "unlocks": [
+        "buildings:bench"
+      ],
+      "initial": true
+    },
+    {
+      "id": "blueprint-fire",
+      "name": "Campfire blueprint",
+      "description": "Warm paws. Stories. A light to come home to.",
+      "playerLevel": 1,
+      "requires": {
+        "homestead": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "buildings:fire"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-garden",
+      "name": "Berry garden blueprint",
+      "description": "A little care today. A little food tomorrow.",
+      "playerLevel": 1,
+      "requires": {
+        "homestead": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "buildings:garden"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-market",
+      "name": "Market stall blueprint",
+      "description": "Open your clearing to a world of neighbors.",
+      "playerLevel": 2,
+      "requires": {
+        "community": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:market"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-well",
+      "name": "Stone well blueprint",
+      "description": "Bring fresh water closer to home.",
+      "playerLevel": 2,
+      "requires": {
+        "homestead": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:well"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-cottage",
+      "name": "Woodland cottage blueprint",
+      "description": "From a little clearing to a proper home.",
+      "playerLevel": 3,
+      "requires": {
+        "homestead": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:cottage"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-study",
+      "name": "Study nook blueprint",
+      "description": "A quiet corner for bright little ideas.",
+      "playerLevel": 3,
+      "requires": {
+        "discovery": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:study"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-circle",
+      "name": "Learning circle blueprint",
+      "description": "A ring of cushions, an open notebook, and permission to get it wrong.",
+      "playerLevel": 1,
+      "requires": {
+        "discovery": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "buildings:circle"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-grainplot",
+      "name": "Grain patch blueprint",
+      "description": "A small patch of golden stalks. Tomorrow starts here.",
+      "playerLevel": 1,
+      "requires": {
+        "homestead": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "buildings:grainplot"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-loom",
+      "name": "Weaving loom blueprint",
+      "description": "Soft comforts and sturdy cloth begin with a patient shuttle.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:loom"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-kiln",
+      "name": "Clay kiln blueprint",
+      "description": "An earthy little oven for making things that last.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:kiln"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-herbarium",
+      "name": "Herbarium blueprint",
+      "description": "Hang a few leaves. Label a few jars. Care can be crafted.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:herbarium"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-workshop",
+      "name": "Timber workshop blueprint",
+      "description": "A sheltered place for the ambitious, slightly crooked first attempt.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:workshop"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-smelter",
+      "name": "Little smelter blueprint",
+      "description": "A contained, careful fire for big new possibilities.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:smelter"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-mill",
+      "name": "Windmill blueprint",
+      "description": "The breeze lends a hand. Pip still decides when to make flour.",
+      "playerLevel": 3,
+      "requires": {
+        "homestead": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:mill"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-bakery",
+      "name": "Glade bakery blueprint",
+      "description": "A warm doorway and something good cooling on the sill.",
+      "playerLevel": 3,
+      "requires": {
+        "homestead": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:bakery"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-greenhouse",
+      "name": "Growing house blueprint",
+      "description": "A woven shade-house before the glade learns to make glass.",
+      "playerLevel": 3,
+      "requires": {
+        "homestead": 3
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "buildings:greenhouse"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-storehouse",
+      "name": "Storehouse blueprint",
+      "description": "Every useful thing has a place; every trip can be a little shorter.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 0,
+      "grants": null,
+      "unlocks": [
+        "buildings:storehouse"
+      ],
+      "initial": true
+    },
+    {
+      "id": "blueprint-waterwheel",
+      "name": "Waterwheel blueprint",
+      "description": "Quiet power from the spring, shared with nearby workshops.",
+      "playerLevel": 4,
+      "requires": {
+        "making": 4
+      },
+      "cost": 10,
+      "grants": null,
+      "unlocks": [
+        "buildings:waterwheel"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-orchard",
+      "name": "Bramble orchard blueprint",
+      "description": "A promise of shade, fruit and many unhurried afternoons.",
+      "playerLevel": 4,
+      "requires": {
+        "homestead": 4
+      },
+      "cost": 10,
+      "grants": null,
+      "unlocks": [
+        "buildings:orchard"
+      ],
+      "initial": false
+    },
+    {
+      "id": "blueprint-observatory",
+      "name": "Stargazer’s nook blueprint",
+      "description": "A little lens, a wide sky, and someone to share the question with.",
+      "playerLevel": 4,
+      "requires": {
+        "discovery": 4
+      },
+      "cost": 10,
+      "grants": null,
+      "unlocks": [
+        "buildings:observatory"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-planks",
+      "name": "Make Planks",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 0,
+      "grants": null,
+      "unlocks": [
+        "recipes:planks"
+      ],
+      "initial": true
+    },
+    {
+      "id": "recipe-meals",
+      "name": "Make Hearty meals",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "recipes:meals"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-rope",
+      "name": "Make Rope",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 1,
+      "requires": {},
+      "cost": 0,
+      "grants": null,
+      "unlocks": [
+        "recipes:rope"
+      ],
+      "initial": true
+    },
+    {
+      "id": "recipe-cloth",
+      "name": "Make Cloth",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "recipes:cloth"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-charcoal",
+      "name": "Make Charcoal",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 1,
+      "requires": {
+        "making": 1
+      },
+      "cost": 3,
+      "grants": null,
+      "unlocks": [
+        "recipes:charcoal"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-bricks",
+      "name": "Make Bricks",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "recipes:bricks"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-pots",
+      "name": "Make Clay pots",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "recipes:pots"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-beams",
+      "name": "Make Timber beams",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 5,
+      "grants": null,
+      "unlocks": [
+        "recipes:beams"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-iron",
+      "name": "Make Iron",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 5,
+      "grants": null,
+      "unlocks": [
+        "recipes:iron"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-tools",
+      "name": "Make Tools",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 5,
+      "grants": null,
+      "unlocks": [
+        "recipes:tools"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-flour",
+      "name": "Make Flour",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 5,
+      "grants": null,
+      "unlocks": [
+        "recipes:flour"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-bread",
+      "name": "Make Fresh bread",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 3,
+      "requires": {
+        "making": 3
+      },
+      "cost": 5,
+      "grants": null,
+      "unlocks": [
+        "recipes:bread"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-balm",
+      "name": "Make Soothing balm",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 2,
+      "requires": {
+        "making": 2
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "recipes:balm"
+      ],
+      "initial": false
+    },
+    {
+      "id": "recipe-glass",
+      "name": "Make Glass",
+      "description": "Learn the production method. A trained creature, ingredients and the correct workplace are still required.",
+      "playerLevel": 4,
+      "requires": {
+        "making": 4
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "recipes:glass"
+      ],
+      "initial": false
+    },
+    {
+      "id": "feature-quests",
+      "name": "Paths beyond home",
+      "description": "Send prepared creatures on adventures. Successful returns earn prestige.",
+      "playerLevel": 2,
+      "requires": {
+        "discovery": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "features:quests"
+      ]
+    },
+    {
+      "id": "feature-trade",
+      "name": "Meet the neighbors",
+      "description": "Queue warehouse goods for physical hauling to a market stall. Coins arrive only after a stall sale.",
+      "playerLevel": 2,
+      "requires": {
+        "community": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "features:trade"
+      ]
+    },
+    {
+      "id": "feature-recruitment",
+      "name": "A growing community",
+      "description": "Spend prestige and meet level requirements to unlock companion slots. A free bed is also needed.",
+      "playerLevel": 2,
+      "requires": {
+        "community": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "features:recruitment"
+      ]
+    },
+    {
+      "id": "feature-prestige-shop",
+      "name": "The reputation exchange",
+      "description": "Exchange prestige for provisions and equipment delivered into the warehouse.",
+      "playerLevel": 2,
+      "requires": {
+        "community": 1
+      },
+      "cost": 4,
+      "grants": null,
+      "unlocks": [
+        "features:prestige-shop"
+      ]
+    },
+    {
+      "id": "feature-land",
+      "name": "Beyond the shore",
+      "description": "Purchase adjacent islands with coins and prestige. Bridges connect every shared owned edge.",
+      "playerLevel": 4,
+      "requires": {
+        "discovery": 2
+      },
+      "cost": 8,
+      "grants": null,
+      "unlocks": [
+        "features:land"
+      ]
+    },
+    {
+      "id": "blueprint-map-table",
+      "name": "Shared cartography",
+      "description": "Learn to build a map table. Completing it opens the world map; buying land is a separate discovery.",
+      "playerLevel": 3,
+      "requires": {
+        "discovery": 2
+      },
+      "cost": 6,
+      "grants": null,
+      "unlocks": [
+        "buildings:map_table"
+      ]
+    }
+  ],
+  "shop": [
+    {
+      "id": "pantry",
+      "name": "Trail provisions",
+      "prestige": 4,
+      "playerLevel": 2,
+      "items": {
+        "berries": 6,
+        "water": 6
+      }
+    },
+    {
+      "id": "boots",
+      "name": "Walking boots",
+      "prestige": 14,
+      "playerLevel": 2,
+      "items": {
+        "walking_boots": 1
+      }
+    },
+    {
+      "id": "charm",
+      "name": "Friendship charm",
+      "prestige": 18,
+      "playerLevel": 3,
+      "items": {
+        "friendship_charm": 1
+      }
+    },
+    {
+      "id": "craft",
+      "name": "Artisan supplies",
+      "prestige": 10,
+      "playerLevel": 3,
+      "items": {
+        "planks": 6,
+        "rope": 4,
+        "cloth": 2
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "id": "feed",
+      "label": "Share a snack",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "berries",
+      "handler": "care",
+      "action": "feed",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "water",
+      "label": "Offer water",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "water",
+      "handler": "care",
+      "action": "water",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "bond",
+      "label": "Time together",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "heart",
+      "handler": "care",
+      "action": "bond",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "praise",
+      "label": "Praise effort",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "star",
+      "handler": "care",
+      "action": "praise",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "soothe",
+      "label": "Reassure",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "heart",
+      "handler": "care",
+      "action": "soothe",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "space",
+      "label": "Give space",
+      "description": "A personal moment. Only carried supplies can be used.",
+      "icon": "leaf",
+      "handler": "care",
+      "action": "space",
+      "eventOnly": false,
+      "cooldown": 0,
+      "cost": {},
+      "effects": {}
+    },
+    {
+      "id": "quest-story",
+      "label": "Hear the adventure",
+      "description": "Listen to the story of a recent successful expedition.",
+      "icon": "compass",
+      "handler": "moment",
+      "eventOnly": true,
+      "cooldown": 60,
+      "cost": {},
+      "effects": {
+        "bond": 3,
+        "joy": 5,
+        "anger": -5
+      }
+    },
+    {
+      "id": "settle-in",
+      "label": "Make yourself at home",
+      "description": "A quiet welcome after assigning a new home.",
+      "icon": "home",
+      "handler": "moment",
+      "eventOnly": true,
+      "cooldown": 60,
+      "cost": {},
+      "effects": {
+        "bond": 2,
+        "joy": 6,
+        "anger": -4
+      }
+    },
+    {
+      "id": "breathe",
+      "label": "Breathe together",
+      "description": "An event-created chance to settle after frustration.",
+      "icon": "leaf",
+      "handler": "moment",
+      "eventOnly": true,
+      "cooldown": 90,
+      "cost": {},
+      "effects": {
+        "bond": 1,
+        "joy": 3,
+        "anger": -10
+      }
+    },
+    {
+      "id": "shore-picnic",
+      "label": "Share a shore picnic",
+      "description": "Mark a new island with a little food and company.",
+      "icon": "berries",
+      "handler": "moment",
+      "eventOnly": true,
+      "cooldown": 120,
+      "cost": {
+        "berries": 1
+      },
+      "effects": {
+        "bond": 3,
+        "joy": 6,
+        "anger": -3
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "home-welcome",
+      "trigger": "home-assigned",
+      "interaction": "settle-in",
+      "seconds": 180
+    },
+    {
+      "id": "quest-welcome",
+      "trigger": "quest-success",
+      "interaction": "quest-story",
+      "seconds": 240
+    },
+    {
+      "id": "temper-support",
+      "trigger": "temper",
+      "interaction": "breathe",
+      "seconds": 120
+    },
+    {
+      "id": "new-shore-picnic",
+      "trigger": "island-purchased",
+      "interaction": "shore-picnic",
+      "seconds": 300
+    }
+  ],
+  "extensions": {},
+  "cartography": {
+    "tableBuilding": "map_table",
+    "distanceLevelStep": 1,
+    "cooldown": 120,
+    "eventChance": 0.65,
+    "guaranteedAfterMisses": 2,
+    "biomes": [
+      {
+        "id": "Meadow",
+        "minimumLevel": 4,
+        "description": "Open grassland, berries and fertile ground. A gentle place to grow.",
+        "questIds": [
+          "meadow",
+          "brook"
+        ]
+      },
+      {
+        "id": "Pinewood",
+        "minimumLevel": 5,
+        "description": "Wooded trails, fibers and timber, with invitations from the forest.",
+        "questIds": [
+          "woodland",
+          "ruins"
+        ]
+      },
+      {
+        "id": "Amber grove",
+        "minimumLevel": 4,
+        "description": "A warm grove with herbs and fruit, and quiet paths worth following.",
+        "questIds": [
+          "brook",
+          "meadow",
+          "stars"
+        ]
+      },
+      {
+        "id": "Stonegarden",
+        "minimumLevel": 6,
+        "description": "Rocky clearings and mineral deposits. Prepare for longer expeditions.",
+        "questIds": [
+          "ridge",
+          "ruins",
+          "stars"
+        ]
+      }
+    ]
+  }
+}

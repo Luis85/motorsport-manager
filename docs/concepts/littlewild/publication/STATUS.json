@@ -1,0 +1,11 @@
+{
+  "status": "installed-and-rebuilt",
+  "transportSha256": "cba1683fbbeefbd471d7d4b8016d6d69c068f9efc6ac92b7e15ea1a72146c484",
+  "htmlSha256": "acaf00f6163cb8ca3539370ed8b89e2afd844491ae7ee1c1bb70a321b0543032",
+  "vendorSha256": "a998daec49b9df4d7fbb55eb23cf7c908479d3983ff92d165ea403361b7c2bd2",
+  "transportFiles": 181,
+  "sourceArchiveSha256": "8793552fbf1776823018e61913d2b6641856480d0f4c4c4c343c8145f8b82b77",
+  "triggerCommit": "842d4a5992ac2a650506b12e5ea44466408ffcd5",
+  "nativeGameChanged": false,
+  "fullGameGateRerunByWorkflow": false
+}

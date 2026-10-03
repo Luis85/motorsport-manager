@@ -1,0 +1,75 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "trail_cap",
+  "name": "Trail cap",
+  "materials": {
+    "primary": "#597665",
+    "light": "#e7d3a5",
+    "dark": "#7d674f",
+    "metal": "#a5b1aa",
+    "glow": {
+      "color": "#e7bd73",
+      "emissive": "#d99d49",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "models": {
+    "equipped": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "crown",
+          "position": [
+            0,
+            0.03,
+            0
+          ],
+          "scale": [
+            0.3,
+            0.06,
+            0.26
+          ],
+          "material": "primary"
+        },
+        {
+          "primitive": "soft",
+          "id": "cap",
+          "position": [
+            0,
+            0.1,
+            -0.01
+          ],
+          "scale": [
+            0.23,
+            0.12,
+            0.19
+          ],
+          "material": "primary"
+        },
+        {
+          "primitive": "box",
+          "id": "brim",
+          "position": [
+            0,
+            0.06,
+            0.17
+          ],
+          "scale": [
+            0.3,
+            0.045,
+            0.13
+          ],
+          "material": "primary"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "equipment": true,
+    "slot": "head",
+    "visual": "cap",
+    "radius": 0.45
+  }
+}

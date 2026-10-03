@@ -1,0 +1,8 @@
+{
+  "milestone": "M6",
+  "sha256": "73f37d9eaf1a20ef3363f840fdb80db3c212ce8cf914c6b7370bd37a600bd521",
+  "scope": "simulation-profile-schema-manifest-v1",
+  "files": 28,
+  "evidenceStatus": "historical M6 checkpoint; not the current-source verification digest",
+  "currentEvidence": "verification/v15/gate-results.json"
+}

@@ -1,0 +1,125 @@
+{
+  "format": "littlewild-3d-asset",
+  "schemaVersion": 1,
+  "category": "item",
+  "id": "reed",
+  "name": "Reed",
+  "materials": {
+    "stem": "#819a71",
+    "tip": "#b9aa78"
+  },
+  "models": {
+    "world": {
+      "nodes": [
+        {
+          "primitive": "cylinder",
+          "id": "stem-0",
+          "position": [
+            -0.08,
+            0.14,
+            0
+          ],
+          "scale": [
+            0.012,
+            0.28,
+            0.012
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            -0.11
+          ]
+        },
+        {
+          "primitive": "soft",
+          "id": "tip-0",
+          "position": [
+            -0.08,
+            0.29,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.07,
+            0.025
+          ],
+          "material": "tip"
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-1",
+          "position": [
+            0,
+            0.14,
+            0
+          ],
+          "scale": [
+            0.012,
+            0.28,
+            0.012
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "primitive": "soft",
+          "id": "tip-1",
+          "position": [
+            0,
+            0.29,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.07,
+            0.025
+          ],
+          "material": "tip"
+        },
+        {
+          "primitive": "cylinder",
+          "id": "stem-2",
+          "position": [
+            0.08,
+            0.14,
+            0
+          ],
+          "scale": [
+            0.012,
+            0.28,
+            0.012
+          ],
+          "material": "stem",
+          "rotation": [
+            0,
+            0,
+            0.11
+          ]
+        },
+        {
+          "primitive": "soft",
+          "id": "tip-2",
+          "position": [
+            0.08,
+            0.29,
+            0
+          ],
+          "scale": [
+            0.025,
+            0.07,
+            0.025
+          ],
+          "material": "tip"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "radius": 0.6
+  }
+}
