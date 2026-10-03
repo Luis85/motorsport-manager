@@ -4,7 +4,10 @@ extends RefCounted
 ## Edit this catalog for NEW sessions. Running sessions cannot hot-swap rule providers.
 const ORDER: Array[String] = ["strategy", "weather", "recovery", "practice"]
 
-static func build(profile: String, selection: MechanicProfileDefinition = null) -> Array[RaceMechanic]:
+
+static func build(
+	profile: String, selection: MechanicProfileDefinition = null
+) -> Array[RaceMechanic]:
 	if selection != null:
 		return selection.providers(profile)
 	var providers: Array[RaceMechanic] = []
@@ -15,11 +18,16 @@ static func build(profile: String, selection: MechanicProfileDefinition = null) 
 		providers.append(registered(identity))
 	return providers
 
+
 static func registered(identity: String) -> RaceMechanic:
 	# Only engine-reviewed providers. Never interpret a content string as a path.
 	match identity:
-		"strategy": return StrategyMechanic.new()
-		"weather": return WeatherMechanic.new()
-		"recovery": return RecoveryMechanic.new()
-		"practice": return PracticeMechanic.new()
+		"strategy":
+			return StrategyMechanic.new()
+		"weather":
+			return WeatherMechanic.new()
+		"recovery":
+			return RecoveryMechanic.new()
+		"practice":
+			return PracticeMechanic.new()
 	return null

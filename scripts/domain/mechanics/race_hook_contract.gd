@@ -70,11 +70,13 @@ const HOOKS: Array[String] = [
 	"plan_pit_gate",
 ]
 
+
 static func methods(value: Object) -> Dictionary:
 	var result: Dictionary = {}
 	for method in value.get_method_list():
 		result[str(method.name)] = method
 	return result
+
 
 static func validate(owner: RaceSim, provider: RaceMechanic, hooks: Array) -> String:
 	var exposed = methods(owner)
@@ -87,16 +89,29 @@ static func validate(owner: RaceSim, provider: RaceMechanic, hooks: Array) -> St
 		var target: Dictionary = exposed[hook]
 		var method: Dictionary = implemented[hook]
 		if method.args.size() != target.args.size() + 1:
-			return "Hook '%s' requires the simulation followed by %d arguments; found %d." % [hook, target.args.size(), method.args.size()]
+			return (
+				"Hook '%s' requires the simulation followed by %d arguments; found %d."
+				% [hook, target.args.size(), method.args.size()]
+			)
 		var first: Dictionary = method.args[0]
-		if int(first.type) != TYPE_NIL and (int(first.type) != TYPE_OBJECT or str(first.class_name) not in ["", "RaceSim", "RefCounted", "Object"]):
+		if (
+			int(first.type) != TYPE_NIL
+			and (
+				int(first.type) != TYPE_OBJECT
+				or str(first.class_name) not in ["", "RaceSim", "RefCounted", "Object"]
+			)
+		):
 			return "Hook '%s' must accept RaceSim as its first argument." % hook
 		for index in range(target.args.size()):
 			if not accepts(method.args[index + 1], target.args[index]):
-				return "Hook '%s' argument %d disagrees with the aggregate contract." % [hook, index + 1]
+				return (
+					"Hook '%s' argument %d disagrees with the aggregate contract."
+					% [hook, index + 1]
+				)
 		if not accepts(target["return"], method["return"]):
 			return "Hook '%s' return type disagrees with the aggregate contract." % hook
 	return ""
+
 
 static func accepts(receiver: Dictionary, supplied: Dictionary) -> bool:
 	# Variant intentionally permits a dynamic value. Typed built-ins and typed

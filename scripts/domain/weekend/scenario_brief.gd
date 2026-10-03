@@ -8,42 +8,84 @@ const GOALS = {
 	"mor_top_six": "Finish Moreau in the top six",
 }
 
+
 static func defaults() -> Dictionary:
-	return {"version": 1, "title": "A different decision", "briefing": "Compare a deliberate hold with an alternative strategy from this checkpoint.",
+	return {
+		"version": 1,
+		"title": "A different decision",
+		"briefing": "Compare a deliberate hold with an alternative strategy from this checkpoint.",
 		"approaches": ["Keep the current plan", "Change one decision and observe the cost"],
-		"hint": "Compare completed laps as well as positions. Different decisions can change traffic, exposure and rival responses.", "goal": "observe"}
+		"hint":
+		"Compare completed laps as well as positions. Different decisions can change traffic, exposure and rival responses.",
+		"goal": "observe"
+	}
+
 
 static func validate(data: Variant) -> String:
-	if not data is Dictionary or not RaceCheckpoint.integral(data.get("version"), 1, 1): return "Unsupported scenario brief."
+	if not data is Dictionary or not RaceCheckpoint.integral(data.get("version"), 1, 1):
+		return "Unsupported scenario brief."
 	for key in ["title", "briefing", "hint"]:
 		var value = data.get(key)
-		if not value is String or value.strip_edges().is_empty() or value.length() > (80 if key == "title" else 600):
-			return "Enter a nonempty %s (at most %d characters)." % [key, 80 if key == "title" else 600]
-	if not data.get("approaches") is Array or data.approaches.size() != 2: return "Describe two approaches."
+		if (
+			not value is String
+			or value.strip_edges().is_empty()
+			or value.length() > (80 if key == "title" else 600)
+		):
+			return (
+				"Enter a nonempty %s (at most %d characters)."
+				% [key, 80 if key == "title" else 600]
+			)
+	if not data.get("approaches") is Array or data.approaches.size() != 2:
+		return "Describe two approaches."
 	for value in data.approaches:
-		if not value is String or value.strip_edges().is_empty() or value.length() > 240: return "Each approach needs 1–240 characters."
-	if data.approaches[0].strip_edges() == data.approaches[1].strip_edges(): return "Describe two different approaches; their viability still needs testing."
-	if data.get("goal") not in GOALS: return "Choose a supported observed goal."
+		if not value is String or value.strip_edges().is_empty() or value.length() > 240:
+			return "Each approach needs 1–240 characters."
+	if data.approaches[0].strip_edges() == data.approaches[1].strip_edges():
+		return "Describe two different approaches; their viability still needs testing."
+	if data.get("goal") not in GOALS:
+		return "Choose a supported observed goal."
 	return ""
 
+
 static func assessment(data: Dictionary, sim: RaceSim) -> String:
-	if not validate(data).is_empty(): return "Scenario goal unavailable."
-	if data.goal == "observe": return "Observation only · compare the actual outcomes; no score or reward."
-	if sim.phase != "results": return "Goal pending · assessed only at final classification."
+	if not validate(data).is_empty():
+		return "Scenario goal unavailable."
+	if data.goal == "observe":
+		return "Observation only · compare the actual outcomes; no score or reward."
+	if sim.phase != "results":
+		return "Goal pending · assessed only at final classification."
 	var achieved = sim.player_ids().all(func(id): return sim.cars[id].finished)
 	if data.goal in ["mer_top_six", "mor_top_six"]:
 		var target = named_target(data.goal, sim.roster_definition)
-		if target < 0: return "Goal unavailable · the named driver is not entered for the player team."
+		if target < 0:
+			return "Goal unavailable · the named driver is not entered for the player team."
 		var car = sim.cars[target]
 		achieved = car.finished and sim.standings().find(car) < 6
-	return ("Goal met" if achieved else "Goal not met") + " · observed sandbox result; no campaign reward."
+	return (
+		("Goal met" if achieved else "Goal not met")
+		+ " · observed sandbox result; no campaign reward."
+	)
+
 
 static func describe(data: Dictionary) -> String:
-	return "%s\n%s\nA: %s\nB: %s\nGoal: %s\nHint: %s" % [data.title, data.briefing, data.approaches[0], data.approaches[1], GOALS[data.goal], data.hint]
+	return (
+		"%s\n%s\nA: %s\nB: %s\nGoal: %s\nHint: %s"
+		% [
+			data.title,
+			data.briefing,
+			data.approaches[0],
+			data.approaches[1],
+			GOALS[data.goal],
+			data.hint
+		]
+	)
+
 
 static func named_target(goal: String, roster: RosterDefinition = null) -> int:
 	var target = "core.driver.mercer" if goal == "mer_top_six" else "core.driver.moreau"
-	if roster == null: return 3 if goal == "mer_top_six" else 6
+	if roster == null:
+		return 3 if goal == "mer_top_six" else 6
 	for id in roster.player_ids():
-		if roster.entrant(id).driver_id == target: return id
+		if roster.entrant(id).driver_id == target:
+			return id
 	return -1
