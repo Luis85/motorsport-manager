@@ -199,7 +199,10 @@ func _destination_conflicts(request_path: String, response_path: String) -> bool
 	var output: String = _absolute_path(response_path)
 	if _path_has_links(input) or _path_has_links(output):
 		return true
-	if OS.has_feature("windows"):
+	var windows: bool = OS.has_feature("windows")
+	input = _normalized_path(input, windows)
+	output = _normalized_path(output, windows)
+	if windows:
 		input = input.to_lower()
 		output = output.to_lower()
 	# Atomic storage owns its temporary and backup names as well as the destination.
@@ -208,12 +211,15 @@ func _destination_conflicts(request_path: String, response_path: String) -> bool
 
 func _absolute_path(path: String) -> String:
 	var windows: bool = OS.has_feature("windows")
-	var globalized: String = ProjectSettings.globalize_path(_normalized_path(path, windows))
+	# Preserve every component until the link check. Resolving '..' first can hide
+	# a symlink whose actual parent differs from its lexical parent.
+	var separated: String = path.replace("\\", "/") if windows else path
+	var globalized: String = ProjectSettings.globalize_path(separated)
 	if globalized.is_relative_path():
 		var directory: DirAccess = DirAccess.open(".")
 		if directory != null:
 			globalized = directory.get_current_dir().path_join(globalized)
-	return _normalized_path(globalized, windows)
+	return globalized.replace("\\", "/") if windows else globalized
 
 
 func _normalized_path(path: String, windows: bool) -> String:

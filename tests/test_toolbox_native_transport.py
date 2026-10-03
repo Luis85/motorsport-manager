@@ -177,6 +177,54 @@ class NativeToolboxTransportTests(unittest.TestCase):
                 self.assertEqual(original, physical_request.read_bytes())
                 self.assertEqual(before, response.read_bytes() if response.exists() else None)
 
+    def test_parent_segments_cannot_hide_a_link_to_the_request_in_reserved_temporary_path(self):
+        target = self.folder / "reserved-target"
+        child = target / "child"
+        child.mkdir(parents=True)
+        link = self.project / "transport-link"
+        link.symlink_to(child, target_is_directory=True)
+        request = target / "reserved-request.json.tmp"
+        response = target / "reserved-request.json"
+        backup = target / "reserved-request.json.bak"
+        original = json.dumps(self.request()).encode()
+        retained = {request: original, response: b"previous response", backup: b"previous backup"}
+        aliases = [
+            str(link) + "/../reserved-request.json",
+            "res://transport-link/../reserved-request.json",
+            "transport-link/../reserved-request.json",
+        ]
+        for alias in aliases:
+            with self.subTest(output=alias):
+                for path, content in retained.items():
+                    path.write_bytes(content)
+                self.assertTrue(
+                    os.path.samefile(request, str(link) + "/../reserved-request.json.tmp")
+                )
+                frames, ready = self.execute(
+                    ["--toolbox-request=" + str(request), "--toolbox-response=" + alias]
+                )
+                self.assertEqual([], ready)
+                self.assertEqual(1, len(frames))
+                self.assertFalse(frames[0]["ok"])
+                self.assertEqual("INVALID_ARGUMENT", frames[0]["error"]["code"])
+                self.assertEqual(retained, {path: path.read_bytes() for path in retained})
+                self.assertFalse((self.project / "reserved-request.json").exists())
+                self.assertEqual([], list(child.iterdir()))
+        regular = self.project / "regular-directory"
+        regular.mkdir()
+        destination = self.project / "distinct-response.json"
+        frames, ready = self.execute(
+            [
+                "--toolbox-request=" + str(request),
+                "--toolbox-response=" + str(regular) + "/../distinct-response.json",
+            ]
+        )
+        self.assertEqual([], ready)
+        self.assertEqual(1, len(frames))
+        self.assertTrue(frames[0]["ok"])
+        self.assertEqual(frames[0], json.loads(destination.read_bytes()))
+        self.assertEqual(original, request.read_bytes())
+
     def test_windows_path_normalization_uses_native_separator_and_dot_rules_on_all_hosts(self):
         cases = [
             [
