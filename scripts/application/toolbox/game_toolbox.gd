@@ -204,7 +204,10 @@ func _descriptor(operation: String) -> Dictionary:
 			required = ["requests"]
 		"content.list", "content.schemas":
 			description = "Read authored content definitions or their schemas."
-			properties = {"kind": {"type": "string", "enum": ContentSchema.KINDS + [""]}}
+			var kinds: Array = ContentSchema.KINDS + [""]
+			if operation == "content.schemas":
+				kinds.append("pack")
+			properties = {"kind": {"type": "string", "enum": kinds}}
 		"content.inspect":
 			description = "Read a detached content definition and provenance."
 			properties = {"id": {"type": "string", "minLength": 1}}

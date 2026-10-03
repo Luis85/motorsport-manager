@@ -52,11 +52,12 @@ func _inspect(arguments: Dictionary) -> Dictionary:
 
 func _schemas(arguments: Dictionary) -> Dictionary:
 	var kind: Variant = arguments.get("kind", "")
-	if not kind is String or (kind != "" and kind not in ContentSchema.KINDS):
+	var kinds: Array = ["pack"] + ContentSchema.KINDS
+	if not kind is String or (kind != "" and kind not in kinds):
 		return DeveloperToolResult.failure("INVALID_ARGUMENT", "Expected a known content kind.")
 	if kind != "":
-		return DeveloperToolResult.success(ContentSchema.definition(kind))
+		return DeveloperToolResult.success(ContentSchema.document(kind))
 	var schemas: Dictionary = {}
-	for selected in ContentSchema.KINDS:
-		schemas[selected] = ContentSchema.definition(selected)
+	for selected in kinds:
+		schemas[selected] = ContentSchema.document(selected)
 	return DeveloperToolResult.success(schemas)
