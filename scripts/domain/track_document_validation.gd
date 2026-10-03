@@ -62,7 +62,7 @@ static func _point_shape_errors(n: Variant, vals: Array) -> Array[String]:
 
 static func _pit_errors(raw: Dictionary) -> Array[String]:
 	for p in raw.get("pits", []):
-		if not p is Dictionary or not p.get("nodes", []) is Array:
+		if not p is Dictionary or not p.get("nodes") is Array:
 			return ["Invalid pit lane."]
 		for key in ["entry", "exit"]:
 			var v = p.get(key, -1)

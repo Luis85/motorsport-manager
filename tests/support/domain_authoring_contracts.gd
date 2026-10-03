@@ -52,6 +52,7 @@ func blank_race(g: TrackGeometry, options: Dictionary = {}) -> RaceSim:
 func test_authoring() -> void:
 	var d = TrackDocument.normalize(tracks[7])
 	var before = TrackGeometry.new(d)
+	test_pit_nodes_import(before.document)
 	var i = 2
 	var t = 0.37
 	var a = d.nodes[i]
@@ -125,6 +126,47 @@ func test_authoring() -> void:
 		0.33,
 		0.001,
 		"Silverstone sectors respect rotated start/finish"
+	)
+
+
+func test_pit_nodes_import(document: Dictionary) -> void:
+	var editor = TrackEditorSession.new(document)
+	var original = editor.read_document()
+	var revision = editor.revision
+	var history = editor.history()
+	var cases: Array = [{"entry": 0.1, "exit": 0.2}]
+	for nodes in [null, false, 0, "wrong", {}]:
+		cases.append({"entry": 0.1, "exit": 0.2, "nodes": nodes})
+	for pit in cases:
+		var imported = document.duplicate(true)
+		imported.pits = [pit]
+		var fingerprint = RaceStateValue.fingerprint(imported)
+		check(
+			TrackDocument.validate(imported) == ["Invalid pit lane."],
+			"Imported pit lane requires an explicit point array"
+		)
+		check(
+			TrackDocument.publication_errors(imported) == ["Invalid pit lane."],
+			"Malformed pit points cannot reach publication or geometry compilation"
+		)
+		check(not editor.replace(imported), "Malformed pit import is rejected by the editor")
+		check(
+			(
+				editor.read_document() == original
+				and editor.revision == revision
+				and editor.history() == history
+			),
+			"Rejected pit import retains the document, revision and undo history"
+		)
+		check(
+			RaceStateValue.fingerprint(imported) == fingerprint,
+			"Pit validation and rejected import preserve the caller's input"
+		)
+	var empty_lane = document.duplicate(true)
+	empty_lane.pits = [{"entry": 0.1, "exit": 0.2, "nodes": []}]
+	check(
+		TrackDocument.validate(empty_lane).is_empty(),
+		"An explicit empty pit-point array retains the supported direct-join lane"
 	)
 
 
