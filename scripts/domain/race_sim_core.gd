@@ -42,7 +42,7 @@ func _base_step() -> void:
 	clock += STEP
 	total_time += STEP
 	if phase == "lights":
-		if clock >= 6.0:
+		if clock >= tuning.balance.procedure.lights_seconds:
 			transition("race")
 			race_time = 0.0
 			for c in cars:
@@ -213,8 +213,8 @@ func _step_car(c: RaceCar, old: Array) -> void:
 		return
 	c.ai_clock -= STEP
 	if c.ai_clock <= 0:
-		c.ai_clock = 1.5
-		TyreInventory.cool_spares(c, 1.5)
+		c.ai_clock = tuning.balance.procedure.autonomous_review_seconds
+		TyreInventory.cool_spares(c, tuning.balance.procedure.autonomous_review_seconds)
 		engineer(c)
 	if c.route == "garage":
 		var stored_set = TyreInventory.find(c, c.set_id)
@@ -225,7 +225,7 @@ func _step_car(c: RaceCar, old: Array) -> void:
 			phase == "qualifying"
 			and not qual_closed
 			and c.auto
-			and c.qual_runs < 2
+			and c.qual_runs < tuning.balance.procedure.qualifying_maximum_runs
 			and clock >= c.next_qual
 		):
 			leave_garage(c)
