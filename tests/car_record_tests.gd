@@ -90,6 +90,7 @@ func run() -> void:
 	cycle.clear()
 	codec_partition_tests(car, cloned)
 	checkpoint_preparation_tests(geometry)
+	preload("res://tests/support/race_restore_validation_contracts.gd").run(geometry, check)
 	finish()
 
 

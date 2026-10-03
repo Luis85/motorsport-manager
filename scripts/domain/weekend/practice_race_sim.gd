@@ -22,6 +22,8 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 		return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, TacticalDuels.CHECKPOINT_VERSION):
 		return null
+	if not _valid_profile_inputs(data):
+		return null
 	var native = int(data.version) >= 9
 	var native_styles = int(data.version) >= PRACTICE_CHECKPOINT_VERSION
 	var native_duels = (
@@ -29,13 +31,6 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 		in [TacticalDuels.LEGACY_CHECKPOINT_VERSION, TacticalDuels.CHECKPOINT_VERSION]
 	)
 	var profiles = data.get("performance_profiles", [])
-	if (
-		data.has("performance_profiles")
-		and not (
-			RacePerformanceProfile.validate_set(profiles, data.get("cars", []).size()).is_empty()
-		)
-	):
-		return null
 	if not native_duels and data.has("duel_state"):
 		return null
 	if not native and data.get("phase") in ["practice", "practice_results"]:
@@ -102,3 +97,16 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 	if native_duels:
 		sim.duel_state = data.duel_state.duplicate(true)
 	return sim
+
+
+static func _valid_profile_inputs(data: Dictionary) -> bool:
+	if not data.get("cars") is Array:
+		return false
+	return (
+		not data.has("performance_profiles")
+		or (
+			RacePerformanceProfile
+			. validate_set(data.performance_profiles, data.cars.size())
+			. is_empty()
+		)
+	)

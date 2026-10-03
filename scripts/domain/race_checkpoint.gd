@@ -118,10 +118,43 @@ static func _prepare_legacy_inventory(data: Dictionary, compounds: Dictionary) -
 			if c.get("pit_stage") == "service" and c.get("service_set_id", "").is_empty():
 				if not c.get("service_compound") in compounds:
 					return false
+				if not _valid_legacy_service_inventory(c, compounds):
+					return false
 				var item = TyreInventory.choose_from(
 					c.tyre_sets, c.set_id, c.service_compound, true
 				)
 				c.service_set_id = item.get("id", "")
+	return true
+
+
+static func _valid_legacy_service_inventory(car: Dictionary, compounds: Dictionary) -> bool:
+	if not car.get("tyre_sets") is Array or not car.get("set_id") is String:
+		return false
+	for item in car.tyre_sets:
+		if not item is Dictionary or not item.get("id") is String:
+			return false
+		if (
+			item.get("compound") not in compounds
+			or not number(item.get("life"), 0, 100)
+			or not integral(item.get("mounts"), 0, 100000)
+		):
+			return false
+		if item.has("wheels") and not _valid_legacy_service_wheels(item.wheels):
+			return false
+	return true
+
+
+static func _valid_legacy_service_wheels(wheels: Variant) -> bool:
+	if not wheels is Dictionary:
+		return false
+	for key in WheelTyres.KEYS:
+		var wheel = wheels.get(key)
+		if (
+			not wheel is Dictionary
+			or not wheel.get("punctured") is bool
+			or not number(wheel.get("life"), 0, 100)
+		):
+			return false
 	return true
 
 
