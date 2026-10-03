@@ -5,6 +5,7 @@ func run(harness) -> void:
 	h = harness
 	test_wheels()
 	test_setup()
+	test_continuation_comparison()
 	test_continuation()
 	test_selection()
 	test_sketch()

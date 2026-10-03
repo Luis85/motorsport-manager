@@ -196,6 +196,53 @@ func test_setup() -> void:
 	)
 
 
+func continuation_equivalent(a: Variant, b: Variant) -> bool:
+	return preload("res://tests/support/state_comparison.gd").equivalent(
+		a, b, 0.0000001, true, true
+	)
+
+
+func test_continuation_comparison() -> void:
+	check(
+		continuation_equivalent(0, 0.0000001) and continuation_equivalent(0, 0.0),
+		"continuation accepts mixed numeric types at the inclusive original tolerance"
+	)
+	check(
+		continuation_equivalent(0.0, 0.00000005) and not continuation_equivalent(0.0, 0.0000002),
+		"continuation retains its original numeric boundary"
+	)
+	check(
+		continuation_equivalent(
+			{"rows": [{"state": "race", "fuel": 0}]},
+			{"rows": [{"state": "race", "fuel": 0.0000001}]}
+		),
+		"continuation applies numeric tolerance recursively"
+	)
+	check(
+		not continuation_equivalent({"rows": [{"state": "race"}]}, {"rows": [{"state": &"race"}]}),
+		"continuation rejects equal-text values of different nonnumeric types recursively"
+	)
+	check(
+		(
+			not continuation_equivalent([0], [0, 0])
+			and not continuation_equivalent({"fuel": 0}, {"tyre": 0})
+		),
+		"continuation rejects changed collection shape and keys"
+	)
+	var sim = h.blank_race(h.geometries[7])
+	var original = sim.cars[3]
+	var restored = original.detached_copy()
+	check(
+		original != restored and continuation_equivalent([original], [restored]),
+		"continuation compares detached entrants by serialized state"
+	)
+	restored.fuel += 1.0
+	check(
+		not continuation_equivalent([original], [restored]),
+		"continuation rejects a sporting difference in detached entrants"
+	)
+
+
 func test_continuation() -> void:
 	var sim = h.blank_race(h.geometries[7], {"laps": 6, "intensity": "calm"})
 	h.ticks(sim, 250)
@@ -209,9 +256,7 @@ func test_continuation() -> void:
 		h.ticks(restored, 150)
 		check(
 			(
-				preload("res://tests/support/state_comparison.gd").equivalent(
-					sim.cars, restored.cars
-				)
+				continuation_equivalent(sim.cars, restored.cars)
 				and sim.rng_state == restored.rng_state
 			),
 			"per-wheel JSON continuation preserves numeric tolerance and RNG"
