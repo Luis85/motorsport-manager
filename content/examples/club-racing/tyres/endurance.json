@@ -1,0 +1,25 @@
+{
+  "kind": "tyre",
+  "schema_version": 1,
+  "id": "local.club.tyre.endurance",
+  "name": "Club Endurance",
+  "description": "Reference fictional compound; wear in percentage points per reference lap.",
+  "short": "CE",
+  "color": "dfc777",
+  "family": "slick",
+  "grip": 0.99,
+  "wear": 2.7,
+  "optimum_c": 88.0,
+  "thermal_profile_id": "core.tyre_thermal.four_wheel",
+  "surface_response": {
+    "dry_floor": 0.4,
+    "dry_onset": 0.07,
+    "dry_loss": 0.85,
+    "inter_base": 0.88,
+    "inter_gain": 0.2,
+    "inter_peak": 0.72,
+    "inter_loss": 0.7,
+    "wet_base": 0.77,
+    "wet_gain": 0.33
+  }
+}

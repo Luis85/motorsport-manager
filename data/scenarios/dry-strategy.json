@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "title": "Strategy, not scripted victories",
+  "description": "Dry calibration scenarios begin at briefing with disclosed approved plans. You can change them. All twelve cars retain normal resources and rules; calm incident mode is disclosed, not a hidden advantage.",
   "notice": "Calibration scenarios, not a claim of balanced or guaranteed outcomes. Ordinary tyre, fuel, pit and driving rules; dry weather; calm (low-incident) mode.",
   "scenarios": [
     {
@@ -11,8 +13,22 @@
       "objective": "Bring both cars home; compare an earlier stop with a longer first stint.",
       "hint": "The starting plans are approved, not forced. Read the rejoin estimate before either window opens; change or clear the plan explicitly.",
       "plans": [
-        {"driver_id": 3, "starting": "M2", "replacement": "H1", "first": 10, "last": 11, "objective": "balanced"},
-        {"driver_id": 6, "starting": "M2", "replacement": "H1", "first": 14, "last": 15, "objective": "protect_finish"}
+        {
+          "driver_id": 3,
+          "starting": "M2",
+          "replacement": "H1",
+          "first": 10,
+          "last": 11,
+          "objective": "balanced"
+        },
+        {
+          "driver_id": 6,
+          "starting": "M2",
+          "replacement": "H1",
+          "first": 14,
+          "last": 15,
+          "objective": "protect_finish"
+        }
       ]
     },
     {
@@ -24,8 +40,22 @@
       "objective": "Complete both races while managing shared-box exposure.",
       "hint": "Both approved windows overlap on purpose. Stagger a window, split plans, or accept a physical queue. Priority cannot teleport cars.",
       "plans": [
-        {"driver_id": 3, "starting": "M2", "replacement": "H1", "first": 12, "last": 13, "objective": "balanced"},
-        {"driver_id": 6, "starting": "M2", "replacement": "H1", "first": 12, "last": 13, "objective": "balanced"}
+        {
+          "driver_id": 3,
+          "starting": "M2",
+          "replacement": "H1",
+          "first": 12,
+          "last": 13,
+          "objective": "balanced"
+        },
+        {
+          "driver_id": 6,
+          "starting": "M2",
+          "replacement": "H1",
+          "first": 12,
+          "last": 13,
+          "objective": "balanced"
+        }
       ]
     },
     {
@@ -37,8 +67,19 @@
       "objective": "Bring both cars home and compare a legal no-stop with a tyre offset.",
       "hint": "The no-stop car begins on hard tyres. The other car has an approved stop. The geometry and actual race, not the scenario text, determine which works.",
       "plans": [
-        {"driver_id": 3, "starting": "H1", "objective": "protect_finish"},
-        {"driver_id": 6, "starting": "M2", "replacement": "S1", "first": 7, "last": 8, "objective": "chase_position"}
+        {
+          "driver_id": 3,
+          "starting": "H1",
+          "objective": "protect_finish"
+        },
+        {
+          "driver_id": 6,
+          "starting": "M2",
+          "replacement": "S1",
+          "first": 7,
+          "last": 8,
+          "objective": "chase_position"
+        }
       ]
     },
     {
@@ -50,8 +91,19 @@
       "objective": "Bring both cars home; decide whether the late stop can repay its full loss.",
       "hint": "A late stop is deliberately proposed for MOR. It is not guaranteed to be worthwhile. Compare with a no-stop draft and approve the approach you prefer.",
       "plans": [
-        {"driver_id": 3, "starting": "H1", "objective": "protect_finish"},
-        {"driver_id": 6, "starting": "M2", "replacement": "S1", "first": 10, "last": 10, "objective": "chase_position"}
+        {
+          "driver_id": 3,
+          "starting": "H1",
+          "objective": "protect_finish"
+        },
+        {
+          "driver_id": 6,
+          "starting": "M2",
+          "replacement": "S1",
+          "first": 10,
+          "last": 10,
+          "objective": "chase_position"
+        }
       ]
     }
   ]

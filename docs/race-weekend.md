@@ -1,5 +1,7 @@
 # Grand Prix weekend
 
+> **Historical original weekend guide.** Later native releases added practice, tactical systems and then the shipping Minimal screen. This document retains its period-specific mechanics for reference, including an obsolete “no practice” description. Start with [Current native project status](current-state.md) and the active [Minimal weekend guide](race-weekend-minimal.md) for current player-facing behavior.
+
 ## Session contract
 
 | Phase | Player action / exit condition |

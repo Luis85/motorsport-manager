@@ -1,0 +1,113 @@
+class_name TrackEditorContent
+extends RefCounted
+## Read-only editor content and native guide copy.
+var content_catalog: ContentCatalog
+
+
+func vehicle_choices() -> Array:
+	if content_catalog != null:
+		return content_catalog.entries("vehicle").map(func(v): return {"id": v.id, "name": v.name})
+	return VehicleDefinition.LEGACY.keys().map(func(id): return {"id": id, "name": id})
+
+
+func editor_profile() -> EditorProfileDefinition:
+	if content_catalog == null:
+		return null
+	return content_catalog.editor_profile(EditorProfileDefinition.DEFAULT_ID)
+
+
+func placement_choices() -> Array:
+	var profile = editor_profile()
+	if profile != null:
+		return profile.placements()
+	return [
+		{"id": "tree", "name": "Tree", "object_type": "tree", "scale": 1.0, "rotation_deg": 0.0},
+		{
+			"id": "grandstand",
+			"name": "Grandstand",
+			"object_type": "grandstand",
+			"scale": 1.0,
+			"rotation_deg": 0.0
+		},
+		{
+			"id": "garage",
+			"name": "Garage",
+			"object_type": "garage",
+			"scale": 1.0,
+			"rotation_deg": 0.0
+		},
+		{"id": "tower", "name": "Tower", "object_type": "tower", "scale": 1.0, "rotation_deg": 0.0},
+		{"id": "yacht", "name": "Yacht", "object_type": "yacht", "scale": 1.0, "rotation_deg": 0.0},
+		{"id": "water", "name": "Water", "object_type": "water", "scale": 1.0, "rotation_deg": 0.0},
+		{"id": "tent", "name": "Tent", "object_type": "tent", "scale": 1.0, "rotation_deg": 0.0},
+		{"id": "cafe", "name": "Cafe", "object_type": "cafe", "scale": 1.0, "rotation_deg": 0.0},
+	]
+
+
+func placement_help() -> String:
+	var profile = editor_profile()
+	if profile != null:
+		return profile.to_record().placement_help
+	return (
+		"Choose a preset, then click the canvas to place it. Return to Select "
+		+ "/ move to select and drag existing objects; Point exposes rotation, "
+		+ "size and position."
+	)
+
+
+func guide_steps() -> Array:
+	var profile = editor_profile()
+	if profile != null:
+		return profile.guide_steps()
+	return [
+		{
+			"key": "shape",
+			"title": "Select, then shape",
+			"body":
+			(
+				"Click road points to expose their handles. Shift-click extends a "
+				+ "selection; drag empty space for a marquee. A drag is one undo step; "
+				+ "Escape cancels it."
+			)
+		},
+		{
+			"key": "scenery",
+			"title": "Arrange scenery together",
+			"body":
+			(
+				"Select scenery with S. Shift-click adds objects. Group, duplicate, "
+				+ "rotate, scale, align and distribute from the contextual selection "
+				+ "controls. Locks protect content."
+			)
+		},
+		{
+			"key": "trace",
+			"title": "Trace without overwriting",
+			"body":
+			(
+				"Draw connected freehand strokes or use Pen. Close the loop, preview "
+				+ "the generated road, then explicitly Replace. The existing circuit "
+				+ "stays untouched before confirmation."
+			)
+		},
+		{
+			"key": "checks",
+			"title": "Review before driving",
+			"body":
+			(
+				"Checks points out crossings and pit/timing issues. Click a finding to "
+				+ "focus that location. Decorative bridges are not a guarantee of "
+				+ "geometric clearance."
+			)
+		},
+		{
+			"key": "handoff",
+			"title": "One circuit, two workspaces",
+			"body":
+			(
+				"Save to the shared library or use Test weekend. The live race "
+				+ "receives an independent circuit snapshot. Unapplied trace drafts must "
+				+ "be applied or cleared before testing."
+			)
+		},
+	]

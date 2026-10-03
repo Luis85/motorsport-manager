@@ -1,0 +1,35 @@
+{
+  "kind": "motorsport-manager-content-pack",
+  "schema_version": 1,
+  "id": "local.club",
+  "version": "1.0.0",
+  "runtime_contract": 1,
+  "dependencies": [
+    {
+      "id": "core",
+      "version": "1.0.0"
+    }
+  ],
+  "files": [
+    "vehicles/sport.json",
+    "teams/workshop.json",
+    "drivers/ash.json",
+    "drivers/riv.json",
+    "rosters/expanded.json",
+    "teams/seventh.json",
+    "drivers/driver0.json",
+    "drivers/driver1.json",
+    "rosters/privateer.json",
+    "tyres/endurance.json",
+    "tyre_allocations/endurance.json",
+    "setups/club.json",
+    "rosters/obsidian-expanded.json",
+    "race_tuning/sprint.json",
+    "weekends/sprint.json",
+    "weekends/strategy-sprint.json",
+    "circuits/training.json",
+    "styles/autumn.json",
+    "scenarios/first-weekend.json"
+  ],
+  "overrides": []
+}

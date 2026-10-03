@@ -1,0 +1,31 @@
+name: Content export toolchain
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/content-export-toolchain.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  templates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Download pinned official export templates
+        env:
+          GODOT_VERSION: 4.7.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/templates.tpz
+          echo "f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011  /tmp/templates.tpz" | sha256sum --check
+          mkdir -p /tmp/content-export-toolchain
+          unzip -j /tmp/templates.tpz 'templates/linux_debug.x86_64' 'templates/linux_release.x86_64' 'templates/version.txt' -d /tmp/content-export-toolchain
+          sha256sum /tmp/templates.tpz > /tmp/content-export-toolchain/archive-sha256.txt
+          printf '%s\n' "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" > /tmp/content-export-toolchain/source.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-export-toolchain-linux
+          path: /tmp/content-export-toolchain/
+          if-no-files-found: error
+          retention-days: 1

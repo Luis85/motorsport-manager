@@ -11,10 +11,12 @@ var primary_button: Button
 var continue_button: Button
 var preview: TrackCanvas
 
+
 func configure(context: Dictionary, options: Dictionary, track: TrackGeometry) -> void:
 	data = context.duplicate(true)
 	preferences = options.duplicate(true)
 	geometry = track
+
 
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -27,15 +29,33 @@ func _ready() -> void:
 	var title = UI.label("Make the next call.", 29)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	menu.add_child(title)
-	menu.add_child(UI.paragraph("Choose a circuit, prepare your two drivers, then manage the race. Building your own track is optional."))
-	primary_button = _action(menu, "GRAND PRIX WEEKEND\nConfigure · Practice · Qualify · Race", "weekend", true)
+	menu.add_child(
+		UI.paragraph(
+			(
+				"Choose a circuit, prepare your two drivers, then manage the race. Building your "
+				+ "own track is optional."
+			)
+		)
+	)
+	primary_button = _action(
+		menu, "GRAND PRIX WEEKEND\nConfigure · Practice · Qualify · Race", "weekend", true
+	)
 	primary_button.custom_minimum_size.y = 58
 	continue_button = _action(menu, "CONTINUE WEEKEND\nResume your saved pit wall", "continue")
 	continue_button.custom_minimum_size.y = 52
 	continue_button.disabled = not data.get("can_continue", false)
-	continue_button.tooltip_text = "Resume your checkpoint, including the final classification." if not continue_button.disabled else "No saved weekend yet. Start a Grand Prix to create one."
+	continue_button.tooltip_text = (
+		"Resume your checkpoint, including the final classification."
+		if not continue_button.disabled
+		else "No saved weekend yet. Start a Grand Prix to create one."
+	)
 	if continue_button.disabled:
 		menu.add_child(UI.paragraph("No saved weekend yet. Start a Grand Prix above."))
+	var campaign_label = "CONTINUE TEAM PRINCIPAL CAMPAIGN\nDirector's Desk · Championship · Team"
+	if not data.get("can_continue_campaign", false):
+		campaign_label = "TEAM PRINCIPAL CAMPAIGN\nFour-event management career"
+	var campaign_button = _action(menu, campaign_label, "campaign", true)
+	campaign_button.custom_minimum_size.y = 58
 	var editor_button = _action(menu, "TRACK EDITOR\nCreate or edit a circuit", "editor")
 	editor_button.custom_minimum_size.y = 52
 	if preferences.get("pitwall_layout", "minimal") != "minimal":
@@ -47,7 +67,9 @@ func _ready() -> void:
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu.add_child(spacer)
-	menu.add_child(UI.paragraph("LOCAL-FIRST · NO ACCOUNT\nTracks and checkpoints stay on this device."))
+	menu.add_child(
+		UI.paragraph("LOCAL-FIRST · NO ACCOUNT\nTracks and checkpoints stay on this device.")
+	)
 	if not str(data.get("warnings", "")).is_empty():
 		menu.add_child(UI.paragraph("Library needs attention: " + data.warnings, UI.DANGER))
 	var showcase = UI.vbox(self, true)
@@ -60,12 +82,22 @@ func _ready() -> void:
 		preview.set_track(geometry)
 		showcase.add_child(preview)
 		preview.call_deferred("fit")
-	showcase.add_child(UI.paragraph("01  CONFIGURE   →   02  PRACTICE   →   03  QUALIFY   →   04  RACE", UI.ACCENT))
-	showcase.add_child(UI.paragraph("You approve each new session. Play controls time; Send out releases the selected driver."))
+	showcase.add_child(
+		UI.paragraph("01  CONFIGURE   →   02  PRACTICE   →   03  QUALIFY   →   04  RACE", UI.ACCENT)
+	)
+	showcase.add_child(
+		UI.paragraph(
+			(
+				"You approve each new session. Play controls time; Send out releases the "
+				+ "selected driver."
+			)
+		)
+	)
 	var scale = float(preferences.get("pitwall_text_scale", 1.0))
 	set_meta("pitwall_text_scale", scale)
 	PitwallDesign.scale_controls(self, scale)
 	PitwallDesign.focus_later(continue_button if not continue_button.disabled else primary_button)
+
 
 func _action(parent: Node, text: String, action: String, primary: bool = false) -> Button:
 	var button = UI.button(text, func(): action_requested.emit(action), primary)
@@ -73,13 +105,16 @@ func _action(parent: Node, text: String, action: String, primary: bool = false) 
 	parent.add_child(button)
 	return button
 
+
 func _build_development_menu(parent: Node) -> void:
 	var scenarios = MenuButton.new()
 	scenarios.text = "Scenario challenges"
 	scenarios.flat = false
 	scenarios.focus_mode = Control.FOCUS_ALL
 	parent.add_child(scenarios)
-	for title in ["Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"]:
+	for title in [
+		"Dry strategy", "Weather", "Recovery", "Practice", "Rival styles", "Strategic duels"
+	]:
 		scenarios.get_popup().add_item(title)
 	scenarios.get_popup().id_pressed.connect(func(index): scenario_requested.emit(index))
 	var replays = MenuButton.new()

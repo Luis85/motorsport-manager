@@ -3,14 +3,17 @@ extends SceneTree
 var checks = 0
 var failures: Array[String] = []
 
+
 func _initialize() -> void:
 	call_deferred("run")
+
 
 func check(value: bool, message: String) -> void:
 	checks += 1
 	if not value:
 		failures.append(message)
 		push_error(message)
+
 
 func run() -> void:
 	var read = Storage.read_json("res://data/tracks/hillside.json")
@@ -37,20 +40,58 @@ func run() -> void:
 	var count = record.inputs.size()
 	var accepted = commands.execute("speed", {"value": 3})
 	trace.note_attempt("speed", {"value": 3}, accepted, commands.last_error)
-	check(not accepted and before == RaceStateValue.fingerprint(sim.snapshot()), "Rejected attempt preserves complete sporting state")
+	check(
+		not accepted and before == RaceStateValue.fingerprint(sim.snapshot()),
+		"Rejected attempt preserves complete sporting state"
+	)
 	check(record.inputs.size() == count, "Rejected diagnostics are not accepted replay history")
 	var bundle = trace.seal({"invariant": "No uncommanded fuel change", "test_defect": true})
-	check(RaceReproduction.validate(bundle).is_empty(), "The failure bundle retains a valid existing replay")
+	check(
+		RaceReproduction.validate(bundle).is_empty(),
+		"The failure bundle retains a valid existing replay"
+	)
 	var result = RaceReproduction.diagnose(bundle)
 	check(result.ok and not result.matched, "A fresh replay detects the injected defect")
-	check(result.first_divergence.get("step") == 5, "The first differing fixed step is recorded, not guessed")
-	check(result.first_divergence.get("path") == "cars[3].fuel", "The first meaningful value names the affected field")
-	check(not result.first_divergence.is_empty() and absf(float(result.first_divergence.get("observed", 0)) - float(result.first_divergence.get("expected", 0)) - 0.125) < 0.000001, "Expected and observed are actual recorded values")
-	check(bundle.attempts.size() == 1 and not bundle.attempts[0].accepted, "Rejected input remains solely in the diagnostic sidecar")
-	check(Storage.write_json("res://reports/reproduction-defect.json", bundle).is_empty(), "The developer failure bundle is independently readable")
+	check(
+		result.first_divergence.get("step") == 5,
+		"The first differing fixed step is recorded, not guessed"
+	)
+	check(
+		result.first_divergence.get("path") == "cars[3].fuel",
+		"The first meaningful value names the affected field"
+	)
+	check(
+		(
+			not result.first_divergence.is_empty()
+			and (
+				absf(
+					(
+						float(result.first_divergence.get("observed", 0))
+						- float(result.first_divergence.get("expected", 0))
+						- 0.125
+					)
+				)
+				< 0.000001
+			)
+		),
+		"Expected and observed are actual recorded values"
+	)
+	check(
+		bundle.attempts.size() == 1 and not bundle.attempts[0].accepted,
+		"Rejected input remains solely in the diagnostic sidecar"
+	)
+	check(
+		Storage.write_json("res://reports/reproduction-defect.json", bundle).is_empty(),
+		"The developer failure bundle is independently readable"
+	)
 	var decoded = Storage.read_json("res://reports/reproduction-defect.json")
 	var isolated = RaceReproduction.diagnose(decoded.data)
-	check(RaceRecord.equivalent(isolated.get("first_divergence", {}), result.get("first_divergence", {})), "JSON round-trip reproduces identical first-divergence evidence")
+	check(
+		RaceRecord.equivalent(
+			isolated.get("first_divergence", {}), result.get("first_divergence", {})
+		),
+		"JSON round-trip reproduces identical first-divergence evidence"
+	)
 	trace.detach()
 	sim.fixed_step_completed.disconnect(defect)
 	record.detach()
@@ -62,22 +103,48 @@ func run() -> void:
 	for index in range(70):
 		trace.note_attempt("unknown", {}, false, "Unknown command")
 	var bounded = trace.seal({})
-	check(bounded.boundaries.size() <= RaceReproduction.MAX_BOUNDARIES and bounded.dropped_boundaries > 0, "Observation windows disclose truncation")
-	check(bounded.attempts.size() == RaceReproduction.MAX_ATTEMPTS and bounded.dropped_attempts == 6, "Rejected-input diagnostics are bounded")
-	check(RaceReproduction.diagnose(bounded).matched, "Healthy continuation matches even when earlier diagnostics were dropped")
+	check(
+		(
+			bounded.boundaries.size() <= RaceReproduction.MAX_BOUNDARIES
+			and bounded.dropped_boundaries > 0
+		),
+		"Observation windows disclose truncation"
+	)
+	check(
+		bounded.attempts.size() == RaceReproduction.MAX_ATTEMPTS and bounded.dropped_attempts == 6,
+		"Rejected-input diagnostics are bounded"
+	)
+	check(
+		RaceReproduction.diagnose(bounded).matched,
+		"Healthy continuation matches even when earlier diagnostics were dropped"
+	)
 	var cycle: Array = []
 	cycle.append(cycle)
 	trace.note_attempt("speed", {"value": cycle}, false, "Invalid input")
-	check(not trace.seal({}).attempts.back().payload_retained, "Cyclic rejected payloads are described without unsafe copying")
+	check(
+		not trace.seal({}).attempts.back().payload_retained,
+		"Cyclic rejected payloads are described without unsafe copying"
+	)
 	cycle.clear()
 	var invalid = bounded.duplicate(true)
 	invalid.boundaries.append(invalid.boundaries.back())
-	check(not RaceReproduction.validate(invalid).is_empty(), "Malformed diagnostic windows fail closed")
-	check(StateDivergence.first({"x": null}, {}).expected_present, "Missing fields are distinguished from null")
+	check(
+		not RaceReproduction.validate(invalid).is_empty(),
+		"Malformed diagnostic windows fail closed"
+	)
+	check(
+		StateDivergence.first({"x": null}, {}).expected_present,
+		"Missing fields are distinguished from null"
+	)
 	trace.detach()
 	record.detach()
-	var report = {"passed": failures.is_empty(), "checks": checks, "failures": failures,
-		"defect_evidence": result, "bundle": "reproduction-defect.json"}
+	var report = {
+		"passed": failures.is_empty(),
+		"checks": checks,
+		"failures": failures,
+		"defect_evidence": result,
+		"bundle": "reproduction-defect.json"
+	}
 	Storage.write_json("res://reports/reproduction-tests.json", report)
 	print("REPRODUCTION_TESTS ", JSON.stringify(report))
 	quit(0 if failures.is_empty() else 1)

@@ -1,27 +1,31 @@
 # Motorsport Manager documentation
 
+**Start with [Current native project status](current-state.md).** It records the merged PR #27 campaign first slice, subsequent PR #28/#29 data-ownership and quality work, default/optional/diagnostic interface separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
+
 ## Current architecture — 0.19.0
 
 - [Architecture and ownership map](architecture-refactor.md)
 - [Developing and testing mechanics](developing-mechanics.md)
+- [Developer toolbox: native API, Python/JSON and explicit clocks](developer-toolbox.md)
+- [Toolbox model, state-space map and source adoption decisions](design/developer-toolbox-adoption.md)
 - [Composed rule profiles](composable-mechanics.md)
 - [Editor transactions and complete weekend flow](editor-and-weekend-boundaries.md)
 
-## Minimal UI contracts retained from 0.17.2
+## Current interface contracts
 
-- [Current pitwall, driver instruments and stress estimate](driver-instruments.md)
-- [Prior UI polish, driver cards and timing integrity](minimal-ui-polish.md)
-- [Visible contract, session flows and architecture](race-weekend-minimal.md)
-- [Executed checks and remaining validation](minimal-verification.md)
+- [UI pages, layouts and component catalog](components/README.md) — individual source-backed references with intent, user goals, composition, interactions and navigation links, based on PR #28.
+- [Current Minimal pitwall, driver instruments and stress estimate](driver-instruments.md)
+- [Prior Minimal UI polish, driver cards and timing integrity](minimal-ui-polish.md)
+- [Minimal visible contract, session flows, interface-selection boundary and architecture](race-weekend-minimal.md)
+- [Executed Minimal checks and remaining validation](minimal-verification.md)
 
-The documents below describe retained historical implementations. Their advanced menus and workspaces are not exposed in the minimal player UI.
+Minimal is the default race interface. Settings can select Advanced and choose Race Director or Engineering as its starting surface. Both presentations mount over the same authoritative weekend; the selector does not issue commands, advance time or create a second simulation. The documents below describe the retained advanced implementations and their historical delivery evidence. Their original version claims remain historical even though the corresponding workspaces are now optionally player-selectable.
 
-## Historical Race Director — 0.16.0
+## Retained Advanced Race Director — historical implementation docs
 
 - [Research, audit and design decisions](design/race-director-research.md)
 - [Native behavior and compatibility](race-director.md)
 - [Verification and acceptance boundaries](race-director-verification.md)
-
 
 Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 
@@ -52,10 +56,10 @@ Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 | [Race-weekend strategy handoff](race-weekend-implementation.md) | Historical 0.5 milestone; retained strategy controls, ownership and forecast assumptions |
 | [Getting started](getting-started.md) | Open the project and exercise the playable workflows |
 | [Iteration 4](iteration-4.md) | Delivered racecraft, editor and interaction changes |
-| [Feature parity](feature-parity.md) | Source-to-native status, adaptations and explicit gaps |
+| [Feature parity](feature-parity.md) | Historical source-to-native status, adaptations and explicit gaps |
 | [Interaction design](interaction-design.md) | Observation, drafts, commands, guides and error recovery |
 | [Architecture](architecture.md) | Ownership, modules and extension boundaries |
-| [Race weekend](race-weekend.md) | Sessions, pit-wall decisions, timing and classification |
+| [Race weekend](race-weekend.md) | Historical sessions, pit-wall decisions, timing and classification handoff |
 | [Simulation](simulation.md) | Fixed step, geometry, traffic, tyres and conditions |
 | [Tyres and strategy](tyres-and-strategy.md) | Finite sets, four-wheel condition and physical stop planning |
 | [Track editor](track-editor.md) | Authoring, selection, trace, calibration and validation |
@@ -63,7 +67,7 @@ Current native implementation: **0.19.0** · **Godot 4.7.2 Standard**.
 | [Graphics](graphics.md) | Cozy illustration, dots, preferences and caching |
 | [Persistence](persistence.md) | Retained notebook/session/scenario storage; the 0.15 handoff supersedes native v10-only statements |
 | [Verification](verification.md) | Automated checks, reports and environment boundaries |
-| [Port status](port-status.md) | Current acceptance scope and unimplemented systems |
+| [Port status](port-status.md) | Historical acceptance scope and then-unimplemented systems |
 
 [Iteration 2](iteration-2.md) and [Iteration 3](iteration-3.md) are historical release records. Their old version numbers and then-unimplemented features should not be read as current state. Prototype behavior is the source reference; new native UI/algorithm decisions and simplifications are documented as adaptations, not silently described as source parity.
 
@@ -71,13 +75,15 @@ The 0.15 handoff supersedes the current tactical model and v11 statements. The 0
 
 The 0.7 weather, 0.6 battle/team, 0.5 strategy and 0.4 editor/system documents remain useful for retained behavior except where later handoffs explicitly supersede their UI, model or checkpoint-version statements. No stage is declared human-playtest complete solely because automated checks pass.
 
-The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. Earlier recordings retain `race-weekend-0.12-v1` and checkpoint v10. New tactical recordings use `race-weekend-0.15-duels-v1` and checkpoint v11, with no silent conversion of the original rules. A goal is observed evidence, not an automatic reward.
+The 0.13 authoring handoff governs the optional scenario/brief v1 envelope, observed goals and strengthened validation. The 0.12 handoff remains authoritative for independent replay, native sandbox/save isolation and standalone result receipts; neither implements campaign settlement. Earlier recordings retain `race-weekend-0.12-v1` and checkpoint v10. Historical tactical recordings retain `race-weekend-0.15-duels-v1` and checkpoint v11. New weekends carrying frozen per-car performance profiles use checkpoint v12 and `race-weekend-0.20-performance-v1`; old records are not silently converted. A goal is observed evidence, not an automatic reward.
 
 The 0.14 notebook handoff governs opt-in run history, guarded personal interpretations and remembered challenge outcomes. The 0.12–0.14 work and PR #12 native workspaces are merged into main. All retained suites remain mandatory. Historical handoff counts describe their named revisions; consult the current feature PR and its exact-head `reports/verification.json` for new integration evidence.
 
 ## Current architecture increment
 
 [0.19.0 simulation/presentation boundaries](architecture-refactor.md) supersedes older descriptions of UI-owned simulation scheduling and domain-owned recording/catalog I/O.
+
+Current campaign implementation: [state/clock/storage](campaign/state-clock-storage.md), [weekend boundary](campaign/weekend-boundary.md), [season lifecycle](campaign/season-lifecycle.md), [finance commitments](campaign/finance-commitments-forecast.md), [people/contracts/availability](campaign/people-contracts-availability.md), [facilities/capacity/services](campaign/facilities-capacity-services.md), [engineering/physical parts/race profile](campaign/engineering-parts-race-profile.md), [event readiness/departure](campaign/event-readiness-departure.md), [sponsorship/commercial](campaign/sponsorship-commercial.md), [delegation mandates](campaign/delegation-mandates.md), [Director Desk/first loop](campaign/director-desk-first-loop.md), [rival organizations](campaign/rival-organizations.md), [result corrections](campaign/result-corrections.md), [recruitment/development](campaign/people-development-recruitment.md), [multi-season progression](campaign/multi-season-progression.md), [operational depth](campaign/operational-depth.md), and [group/era/dynasty](campaign/group-era-dynasty.md). TM-01 through TM-16 plus explicit correction form the closed PR #27 implementation roadmap. The four-event Director Desk route is the current player-facing slice; later authorities are not a claim of complete specialist UI or human validation.
 
 ## System contract hardening
 

@@ -12,27 +12,70 @@ var panel: PanelContainer
 var actions: HFlowContainer
 var rival: Label
 
+
 func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details: Callable) -> void:
-	panel = host; controls = existing
-	var body = host.get_child(0); body.add_theme_constant_override("separation", 3)
-	for key in ["heading", "summary", "detail", "battle"]: controls[key].visible = false
-	var header = UI.hbox(body); body.move_child(header, 0)
-	var emblem=RaceDriverEmblem.new();emblem.number=car.number;emblem.tint=Color(car.color);header.add_child(emblem)
-	position = UI.label("P—", PitwallDesign.TYPE.position, UI.INK); position.custom_minimum_size.x = 50; header.add_child(position)
-	name_label = UI.button(car.name, details); name_label.add_theme_font_size_override("font_size", PitwallDesign.TYPE.driver); name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT; name_label.clip_text = true; name_label.custom_minimum_size.x = 80; name_label.add_theme_stylebox_override("normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL; header.add_child(name_label)
-	status = UI.label("", 12, PitwallDesign.MUTED); status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(status); body.move_child(status, 1)
-	var metrics = UI.hbox(body); body.move_child(metrics, 2)
+	panel = host
+	controls = existing
+	var body = host.get_child(0)
+	body.add_theme_constant_override("separation", 3)
+	for key in ["heading", "summary", "detail", "battle"]:
+		controls[key].visible = false
+	var header = UI.hbox(body)
+	body.move_child(header, 0)
+	var emblem = RaceDriverEmblem.new()
+	emblem.number = car.number
+	emblem.tint = Color(car.color)
+	header.add_child(emblem)
+	position = UI.label("P—", PitwallDesign.TYPE.position, UI.INK)
+	position.custom_minimum_size.x = 50
+	header.add_child(position)
+	name_label = UI.button(car.name, details)
+	name_label.add_theme_font_size_override("font_size", PitwallDesign.TYPE.driver)
+	name_label.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_label.clip_text = true
+	name_label.custom_minimum_size.x = 80
+	name_label.add_theme_stylebox_override(
+		"normal", UI.action_box(Color.TRANSPARENT, Color.TRANSPARENT)
+	)
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(name_label)
+	status = UI.label("", 12, PitwallDesign.MUTED)
+	status.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	body.add_child(status)
+	body.move_child(status, 1)
+	var metrics = UI.hbox(body)
+	body.move_child(metrics, 2)
 	for text in ["FITTED TYRE", "FINISH FUEL · EST.", "NEXT STOP"]:
-		var column = UI.vbox(metrics); column.add_theme_constant_override("separation", 1); column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var column = UI.vbox(metrics)
+		column.add_theme_constant_override("separation", 1)
+		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_child(UI.label(text, 11, PitwallDesign.MUTED))
-		var value = UI.label("—", 13); value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; column.add_child(value); facts.append(value)
-	rival = UI.label("", 11, UI.MUTED); rival.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS; body.add_child(rival); body.move_child(rival, 3)
-	issue = UI.label("", 12); issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; issue.custom_minimum_size.y = 30; body.add_child(issue); body.move_child(issue, 4)
+		var value = UI.label("—", 13)
+		value.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		column.add_child(value)
+		facts.append(value)
+	rival = UI.label("", 11, UI.MUTED)
+	rival.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	body.add_child(rival)
+	body.move_child(rival, 3)
+	issue = UI.label("", 12)
+	issue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	issue.custom_minimum_size.y = 30
+	body.add_child(issue)
+	body.move_child(issue, 4)
 	var old_actions = controls.compare.get_parent()
-	actions = HFlowContainer.new(); actions.add_theme_constant_override("h_separation", 5); actions.add_theme_constant_override("v_separation", 4); body.add_child(actions)
-	for child in old_actions.get_children(): child.reparent(actions)
+	actions = HFlowContainer.new()
+	actions.add_theme_constant_override("h_separation", 5)
+	actions.add_theme_constant_override("v_separation", 4)
+	body.add_child(actions)
+	for child in old_actions.get_children():
+		child.reparent(actions)
 	old_actions.queue_free()
-	details_button = name_label; details_button.tooltip_text = car.name + ": read this driver's full issue, deadline, control ownership and available actions."
+	details_button = name_label
+	details_button.tooltip_text = (
+		car.name
+		+ ": read this driver's full issue, deadline, control ownership and available actions."
+	)
 	for button in actions.get_children():
 		button.custom_minimum_size.y = 32
 		button.add_theme_font_size_override("font_size", 12)
@@ -42,11 +85,15 @@ func build(host: PanelContainer, existing: Dictionary, car: Dictionary, details:
 		# from the comparison above. Clone once, never mutate shared theme styles.
 		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
 			var style = button.get_theme_stylebox(state).duplicate()
-			style.content_margin_left = 4; style.content_margin_right = 4
+			style.content_margin_left = 4
+			style.content_margin_right = 4
 			button.add_theme_stylebox_override(state, style)
 
+
 func refresh(model: RaceViewQuery, id: int) -> void:
-	var car = model.car(id); var policy = model.policy(id); var decision = controls.card
+	var car = model.car(id)
+	var policy = model.policy(id)
+	var decision = controls.card
 	var order = model.standings(model.phase in ["qualifying", "qualifying_results"])
 	var rank = order.find(car)
 	if model.phase in ["qualifying", "qualifying_results"]:
@@ -55,43 +102,120 @@ func refresh(model: RaceViewQuery, id: int) -> void:
 		rival.text = "Measured practice · no classified position"
 	elif rank > 0 and not car.finished and not car.dnf:
 		var ahead = order[rank - 1]
-		rival.text = "Ahead · %s · ~%.1fs" % [ahead.short, maxf(0, ahead.distance - car.distance) / maxf(15, car.speed)]
+		rival.text = (
+			"Ahead · %s · ~%.1fs"
+			% [ahead.short, maxf(0, ahead.distance - car.distance) / maxf(15, car.speed)]
+		)
 	else:
 		rival.text = "Final result" if car.finished or car.dnf else "Leading the field"
 	rival.tooltip_text = rival.text + ". Live gap is distance-derived, not a gate measurement."
-	position.text = "OUT" if car.dnf else ("—" if model.phase in ["practice", "practice_results"] or model.phase in ["qualifying", "qualifying_results"] and car.qual_best <= 0 else "P%d" % (rank + 1))
+	position.text = (
+		"OUT"
+		if car.dnf
+		else (
+			"—"
+			if (
+				model.phase in ["practice", "practice_results"]
+				or model.phase in ["qualifying", "qualifying_results"] and car.qual_best <= 0
+			)
+			else "P%d" % (rank + 1)
+		)
+	)
 	name_label.text = car.name
 	var pace_owner = "You" if policy.owners.pace == "player" else "Engineer"
-	status.text = "FINISHED" if car.finished else ("RETIRED" if car.dnf else ("PIT ORDER · " + ("You" if policy.owners.pit == "player" else "Engineer") if car.pit_order else (["Conserve", "Balanced", "Push"][car.pace] + " · " + pace_owner)))
+	status.text = (
+		"FINISHED"
+		if car.finished
+		else (
+			"RETIRED"
+			if car.dnf
+			else (
+				"PIT ORDER · " + ("You" if policy.owners.pit == "player" else "Engineer")
+				if car.pit_order
+				else (["Conserve", "Balanced", "Push"][car.pace] + " · " + pace_owner)
+			)
+		)
+	)
 	if not car.finished and not car.dnf and not car.pit_order and policy.overrides.has("engine"):
 		status.text = ["Save fuel", "Standard engine", "Engine attack"][car.engine] + " · You"
 	status.tooltip_text = status.text + ". " + StrategyPlan.ownership_text(policy)
-	facts[2].get_parent().get_child(0).text = "PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
+	facts[2].get_parent().get_child(0).text = (
+		"PITS · " + ("YOU" if policy.owners.pit == "player" else "ENGINEER")
+	)
 	var fitted = TyreInventory.find_in(car.tyre_sets, car.set_id)
 	var minimum = 100.0
 	var punctures: Array[String] = []
 	for wheel_id in fitted.get("wheels", {}):
 		var wheel = fitted.wheels[wheel_id]
 		minimum = minf(minimum, float(wheel.get("life", 100)))
-		if wheel.get("punctured", false): punctures.append(wheel_id)
-	facts[0].text = "%s · %.0f%% min" % [car.set_id.get_slice("-", 1), minimum]
-	if not punctures.is_empty(): facts[0].text = "%s · %s puncture" % [car.set_id.get_slice("-", 1), "/".join(punctures)]
-	facts[0].tooltip_text = controls.summary.tooltip_text + "\nInspect Car / Wheels for individual limiting conditions."
+		if wheel.get("punctured", false):
+			punctures.append(wheel_id)
+	facts[0].text = "%s · %.0f%% min" % [model.set_label(car, car.set_id), minimum]
+	if not punctures.is_empty():
+		facts[0].text = "%s · %s puncture" % [model.set_label(car, car.set_id), "/".join(punctures)]
+	facts[0].tooltip_text = (
+		controls.summary.tooltip_text + "\nInspect Car / Wheels for individual limiting conditions."
+	)
 	facts[1].text = "%+.1f laps" % model.race_forecaster_fuel_margin(car)
-	facts[1].tooltip_text = "Estimated finish margin in lap-equivalent units under the current engine policy. Not litres or a guaranteed result."
+	facts[1].tooltip_text = (
+		"Estimated finish margin in lap-equivalent units under the current engine "
+		+ "policy. Not litres or a guaranteed result."
+	)
 	var next = int(policy.next_stop)
 	var stops = policy.plan.get("stops", [])
-	facts[2].text = "Committed" if car.route == "pit" else ("Ordered" if car.pit_order else ("L%d–%d" % [stops[next].from_lap, stops[next].to_lap] if next < stops.size() else ("No stop planned" if policy.plan.is_empty() else "To finish")))
-	facts[2].tooltip_text = "A planned window is not a physical order. Inspect Strategy / Plan for approval and stock."
-	issue.text = decision.get("title", "Plan active" if not policy.plan.is_empty() else "No approved plan · compare options")
-	if decision.is_empty() and not controls.battle.text.ends_with("Clear running"): issue.text = controls.battle.text.trim_prefix("Team & battles: ")
+	facts[2].text = (
+		"Committed"
+		if car.route == "pit"
+		else (
+			"Ordered"
+			if car.pit_order
+			else (
+				"L%d–%d" % [stops[next].from_lap, stops[next].to_lap]
+				if next < stops.size()
+				else ("No stop planned" if policy.plan.is_empty() else "To finish")
+			)
+		)
+	)
+	facts[2].tooltip_text = (
+		"A planned window is not a physical order. Inspect Strategy / Plan for approval "
+		+ "and stock."
+	)
+	issue.text = decision.get(
+		"title",
+		"Plan active" if not policy.plan.is_empty() else "No approved plan · compare options"
+	)
+	if decision.is_empty() and not controls.battle.text.ends_with("Clear running"):
+		issue.text = controls.battle.text.trim_prefix("Team & battles: ")
 	if not decision.is_empty() and decision.get("deadline", -1) >= 0:
-		issue.text += " · ~%.0f s sim%s" % [decision.deadline, " (paused)" if model.paused else " / %.1f s at %dx" % [decision.deadline / model.speed, model.speed]]
-	issue.tooltip_text = controls.heading.tooltip_text + "\n" + controls.detail.text + "\n" + controls.battle.tooltip_text
-	if car.route == "pit": issue.text = "In pit lane · frozen service plan and physical queue"
-	if car.finished or car.dnf: issue.text = "Race complete · open Review / Debrief for measured outcomes"
-	var key = "warning" if decision.get("priority", 0) >= 90 else ("selected" if model.selected_id == id else "normal")
+		issue.text += (
+			" · ~%.0f s sim%s"
+			% [
+				decision.deadline,
+				(
+					" (paused)"
+					if model.paused
+					else " / %.1f s at %dx" % [decision.deadline / model.speed, model.speed]
+				)
+			]
+		)
+	issue.tooltip_text = (
+		controls.heading.tooltip_text
+		+ "\n"
+		+ controls.detail.text
+		+ "\n"
+		+ controls.battle.tooltip_text
+	)
+	if car.route == "pit":
+		issue.text = "In pit lane · frozen service plan and physical queue"
+	if car.finished or car.dnf:
+		issue.text = "Race complete · open Review / Debrief for measured outcomes"
+	var key = (
+		"warning"
+		if decision.get("priority", 0) >= 90
+		else ("selected" if model.selected_id == id else "normal")
+	)
 	UI.race_card_state(panel, key)
+
 
 func set_stacked(stacked: bool) -> void:
 	var body = panel.get_child(0)
@@ -99,4 +223,5 @@ func set_stacked(stacked: bool) -> void:
 	var destination = body if stacked else header
 	if status.get_parent() != destination:
 		status.reparent(destination)
-		if stacked: body.move_child(status, 1)
+		if stacked:
+			body.move_child(status, 1)

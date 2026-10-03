@@ -1,7 +1,9 @@
 # Maintainability pass after PR #19
 
 PR: https://github.com/Luis85/motorsport-manager/pull/20
-Branch: `refactor/race-system-maintainability`, targeting `main`.
+Historical branch: `refactor/race-system-maintainability`, merged into `main` on 28 September 2026 as `cfe351b0054f72c3e504c5e9c8c00f3ada82d5b7`.
+
+This is the archived PR #20 assessment and handoff. Its pending checkboxes, unavailable local engine and deferred scope describe that session; they are not the current backlog. Later PR #24, #27 and #28/#29 work added exports, campaign authorities and cohesive movement/presentation/validation collaborators. See [current project status](current-state.md), [current verification](verification.md) and [quality closure](maintenance/data-driven-code-review.md) for the current contracts. The historical measurements below remain unchanged; no paired performance improvement or human acceptance is inferred from those later changes.
 
 ## Source and reproducible baseline
 
@@ -120,7 +122,7 @@ cache would need explicit invalidation for pause, phase, restore, driver selecti
 and disposal. No live references were exposed to avoid copy cost. The new editor
 measurement is diagnostic, has no timing assertion and does not imply a speedup.
 
-## Verification and current handoff
+## Archived verification handoff
 
 Implementation checklist:
 
@@ -167,7 +169,7 @@ measurements; `ui_polish_tests`, `workspace_performance` and `replay_performance
 retain their distinct read/simulation/rendering workloads. Verify the 24 pinned
 checkpoints and exact six-shard aggregate before declaring full completion.
 
-## Deliberately deferred
+## Deferred at the PR #20 handoff
 
 No hot swapping, script discovery, ECS, untrusted-mod sandbox, new context
 framework, bulk entity conversion, broad command API rewrite, geometry/racing-line

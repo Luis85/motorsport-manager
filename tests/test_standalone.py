@@ -1,9 +1,13 @@
 """Launcher contracts complement, never replace, native exported-app acceptance."""
+
+import copy
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -22,17 +26,136 @@ class StandaloneContracts(unittest.TestCase):
         pack = self.package / "Motorsport Manager.pck"
         binary.write_bytes(b"test executable")
         pack.write_bytes(b"test pack")
-        self.manifest = {"binary": binary.name, "target": "linux", "mode": "release",
-                         "source_revision": "test revision", "source_digest": "test digest",
-                         "engine": build.ENGINE,
-                         "artifacts": {p.name: build.digest(p) for p in (binary, pack)}}
+        self.manifest = {
+            "binary": binary.name,
+            "target": "linux",
+            "mode": "release",
+            "source_revision": "test revision",
+            "source_digest": "a" * 64,
+            "engine": build.ENGINE,
+            "engine_sha256": build.ENGINE_SHA256,
+            "templates": {
+                name: value for name, value in build.TEMPLATES.items() if name.startswith("linux_")
+            },
+            "clean_import": True,
+            "runtime_verified": False,
+            "artifacts": {p.name: build.digest(p) for p in (binary, pack)},
+        }
         self.write_manifest()
 
     def write_manifest(self):
-        (self.package / "build-manifest.json").write_text(json.dumps(self.manifest), encoding="utf-8")
+        (self.package / "build-manifest.json").write_text(
+            json.dumps(self.manifest), encoding="utf-8"
+        )
 
     def test_real_hashes_identify_pack(self):
         self.assertEqual(smoke.validate_package(self.package), self.manifest)
+
+    def test_manifest_provenance_and_approval_flags_fail_closed(self):
+        for field, value in [
+            ("mode", "unknown"),
+            ("target", "mac"),
+            ("source_revision", True),
+            ("source_revision", " "),
+            ("source_digest", "named-but-not-hashed"),
+            ("engine", "foreign"),
+            ("engine_sha256", "b" * 64),
+            ("templates", {}),
+            ("runtime_verified", True),
+            ("runtime_verified", 0),
+            ("clean_import", 1),
+        ]:
+            with self.subTest(field=field, value=value):
+                original = self.manifest[field]
+                self.manifest[field] = value
+                self.write_manifest()
+                with self.assertRaises(ValueError):
+                    smoke.validate_package(self.package)
+                self.manifest[field] = original
+        (self.package / "build-manifest.json").write_text("[]")
+        with self.assertRaisesRegex(ValueError, "object"):
+            smoke.validate_package(self.package)
+
+    @unittest.skipUnless(os.name == "posix", "Portable package rejects POSIX symlink fixture")
+    def test_equal_hash_symlink_is_not_an_owned_packaged_artifact(self):
+        pack = self.package / "Motorsport Manager.pck"
+        foreign = self.root / "foreign.pck"
+        pack.rename(foreign)
+        pack.symlink_to(foreign)
+        with self.assertRaisesRegex(ValueError, "owned regular"):
+            smoke.validate_package(self.package)
+
+    def stage_report(self):
+        return {
+            "passed": True,
+            "checks": 3,
+            "failures": [],
+            "stage": "create",
+            "build": copy.deepcopy(self.manifest),
+            "debug_build": False,
+            "user_directory": str(self.root / "user"),
+        }
+
+    def test_stage_evidence_requires_exact_checks_stage_identity_and_user_directory(self):
+        user = self.root / "user"
+        smoke.validate_stage_report(self.stage_report(), "create", self.manifest, user)
+        for field, value in [
+            ("checks", True),
+            ("checks", "3"),
+            ("checks", 0),
+            ("checks", -1),
+            ("stage", "resume"),
+            ("failures", ["defect"]),
+            ("debug_build", 0),
+            ("user_directory", str(self.root / "foreign")),
+        ]:
+            with self.subTest(field=field, value=value):
+                report = self.stage_report()
+                report[field] = value
+                with self.assertRaises(ValueError):
+                    smoke.validate_stage_report(report, "create", self.manifest, user)
+        for field in smoke.IDENTITY_FIELDS:
+            report = self.stage_report()
+            report["build"][field] = 0 if field == "runtime_verified" else "foreign"
+            with self.assertRaisesRegex(ValueError, "another source or toolchain"):
+                smoke.validate_stage_report(report, "create", self.manifest, user)
+
+    def test_previous_stage_report_is_rejected_before_launch(self):
+        (self.package / "create.json").write_text(json.dumps(self.stage_report()))
+        with patch.object(smoke.subprocess, "Popen") as process:
+            with self.assertRaisesRegex(ValueError, "fresh"):
+                smoke.run_stage(
+                    self.root / "binary",
+                    self.root,
+                    self.root / "user",
+                    self.package,
+                    "create",
+                    {"DISPLAY": ":fixture"},
+                )
+            process.assert_not_called()
+
+    def test_real_interruption_marker_cannot_hide_engine_errors(self):
+        marker = self.root / "replacement-paused"
+        marker.write_text("temp", encoding="utf-8")
+        log = self.root / "interrupted.log"
+        log.write_text("SCRIPT ERROR: save journey failed\n", encoding="utf-8")
+        process = SimpleNamespace(poll=lambda: None)
+        with patch.object(smoke, "stop") as stopped:
+            with self.assertRaisesRegex(RuntimeError, "engine errors"):
+                smoke.interrupt_at_boundary(process, marker, "interrupt-temp", log)
+            stopped.assert_called_once_with(process)
+        marker.write_text("backup", encoding="utf-8")
+        with self.assertRaisesRegex(RuntimeError, "boundary was not reached"):
+            smoke.interrupt_at_boundary(process, marker, "interrupt-temp", log)
+
+    def test_matching_version_cannot_hide_different_editor_bytes(self):
+        engine = self.root / "engine"
+        engine.write_bytes(b"counterfeit editor with matching version")
+        with patch.object(
+            build.subprocess, "run", return_value=SimpleNamespace(stdout=build.ENGINE)
+        ):
+            with self.assertRaisesRegex(ValueError, "editor bytes"):
+                build.build(engine, self.root, self.root / "out", "linux", "release", "source")
 
     def test_changed_pack_is_not_accepted(self):
         (self.package / "Motorsport Manager.pck").write_bytes(b"changed")
@@ -71,7 +194,9 @@ class StandaloneContracts(unittest.TestCase):
     def test_target_selects_only_matching_templates(self):
         for name in build.TEMPLATES:
             (self.root / name).write_bytes(b"not an actual template")
-        with patch.object(build, "digest", side_effect=lambda path: build.TEMPLATES[path.name]) as hashed:
+        with patch.object(
+            build, "digest", side_effect=lambda path: build.TEMPLATES[path.name]
+        ) as hashed:
             result = build.validate_templates(self.root, "windows")
         self.assertEqual(len(result), 2)
         self.assertEqual(hashed.call_count, 2)
@@ -93,15 +218,57 @@ class StandaloneContracts(unittest.TestCase):
 
     def test_build_rejects_unsupported_mode(self):
         with self.assertRaisesRegex(ValueError, "Unsupported"):
-            build.build(self.root / "engine", self.root, self.root / "out", "linux", "other", "revision")
+            build.build(
+                self.root / "engine", self.root, self.root / "out", "linux", "other", "revision"
+            )
 
     def test_smoke_rejects_mixed_evidence(self):
         with patch.object(smoke.platform, "system", return_value="Linux"):
             with self.assertRaisesRegex(ValueError, "empty"):
                 smoke.smoke(self.package, self.package)
 
+    @unittest.skipIf(smoke.os.name == "nt", "Xvfb driver applies to Linux native smoke")
+    def test_smoke_vsync_override_reaches_engine_before_user_arguments(self):
+        report = {"passed": True, "checks": 1, "failures": [], "stage": "launch"}
+
+        def complete_stage(timeout):
+            self.assertEqual(timeout, 180)
+            # The child publishes fresh evidence after launch, as the native player does.
+            (self.root / "launch.json").write_text(json.dumps(report), encoding="utf-8")
+            return 0
+
+        with (
+            patch.object(smoke.shutil, "which", return_value="/bin/xvfb-run"),
+            patch.object(smoke.subprocess, "Popen") as launch,
+        ):
+            launch.return_value.wait.side_effect = complete_stage
+            launch.return_value.poll.return_value = 0
+            self.assertEqual(
+                smoke.run_stage(
+                    self.package / self.manifest["binary"],
+                    self.package,
+                    self.root / "user",
+                    self.root,
+                    "launch",
+                    {},
+                ),
+                report,
+            )
+        command = launch.call_args.args[0]
+        self.assertEqual(command.count("--disable-vsync"), 2)
+        self.assertLess(command.index("--disable-vsync"), command.index("--"))
+        driver = command.index("--rendering-driver")
+        self.assertLess(driver, command.index("--"))
+        self.assertEqual(command[driver + 1], "opengl3_es")
+        self.assertEqual(
+            command[command.index("--") + 1 :], ["--disable-vsync", "--standalone-smoke=launch"]
+        )
+
     def test_runtime_target_is_not_cross_build_success(self):
         self.manifest["target"] = "windows"
+        self.manifest["templates"] = {
+            name: value for name, value in build.TEMPLATES.items() if name.startswith("windows_")
+        }
         self.manifest["binary"] = "Motorsport Manager.exe"
         (self.package / "Motorsport Manager.x86_64").rename(self.package / self.manifest["binary"])
         old = self.manifest["artifacts"].pop("Motorsport Manager.x86_64")

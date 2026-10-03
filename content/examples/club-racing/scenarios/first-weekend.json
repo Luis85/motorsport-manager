@@ -1,0 +1,20 @@
+{
+  "kind": "scenario",
+  "schema_version": 1,
+  "id": "local.club.scenario.first-weekend",
+  "name": "Your first club weekend",
+  "description": "Compare deliberate approaches without a scripted outcome.",
+  "circuit_id": "local.club.circuit.training",
+  "weekend_id": "local.club.weekend.sprint",
+  "brief": {
+    "version": 1,
+    "title": "Your first club weekend",
+    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+    "approaches": [
+      "Preserve a set and stay out longer",
+      "Spend a set to create a tyre offset"
+    ],
+    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+    "goal": "finish_both"
+  }
+}

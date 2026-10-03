@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.reinhardt",
+  "name": "Felix Reinhardt",
+  "description": "Default fictional driver.",
+  "short": "REI",
+  "skill": 88,
+  "consistency": 95,
+  "wet_skill": 81,
+  "reliability": 91
+}

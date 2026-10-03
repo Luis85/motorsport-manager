@@ -1,5 +1,7 @@
 # Integrated component catalog
 
+For the complete PR #28 UI inventory, including Minimal, campaign, editor, shell-built screens and retained tools, see the [individual component references](../../components/README.md). This page retains the earlier Advanced integration map.
+
 All new components below are constructed by the production scene stack. No feature flag or separate demo is needed.
 
 | File under `scripts/ui/race_weekend/` | Responsibility / host |

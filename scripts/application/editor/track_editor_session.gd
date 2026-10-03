@@ -1,13 +1,16 @@
 class_name TrackEditorSession
-extends RefCounted
+extends TrackEditorContent
 ## Owns the committed authoring aggregate and bounded transaction history.
 ## Pointer drafts and reference previews are disposable copies, never shared authority.
 const HISTORY_LIMIT: int = 50
-var _revision: int = 0
 var revision: int:
-	get: return _revision
+	get:
+		return _revision
 var last_error: String = ""
 var compile_usec: int = 0
+var preview: TrackPreviewHandle
+
+var _revision: int = 0
 var _document: Dictionary = {}
 var _past: Array = []
 var _future: Array = []
@@ -15,11 +18,13 @@ var _saved_signature: String = ""
 var _transaction_revision: int = -1
 var _saving: bool = false
 var _preview = TrackReferencePreview.new()
-var preview: TrackPreviewHandle = TrackPreviewHandle.new(_preview)
+
 
 func _init(document: Dictionary = {}) -> void:
+	preview = TrackPreviewHandle.new(_preview)
 	if not document.is_empty():
 		replace(document)
+
 
 static func blank_document() -> Dictionary:
 	var nodes: Array = []
@@ -30,25 +35,34 @@ static func blank_document() -> Dictionary:
 		TrackDocument.smooth_node(value, index)
 	return value
 
+
 func read_document() -> Dictionary:
 	return _document.duplicate(true)
+
 
 func history() -> Dictionary:
 	return {"past": _past.duplicate(true), "future": _future.duplicate(true)}
 
+
 func saved_signature() -> String:
 	return _saved_signature
 
+
 func restore_saved_signature(signature: String) -> void:
 	_saved_signature = signature
+
 
 func begin() -> void:
 	if _transaction_revision < 0:
 		_transaction_revision = _revision
 
+
 func commit(draft: Dictionary, expected_revision: int) -> bool:
 	last_error = ""
-	if expected_revision != _revision or (_transaction_revision >= 0 and _transaction_revision != _revision):
+	if (
+		expected_revision != _revision
+		or (_transaction_revision >= 0 and _transaction_revision != _revision)
+	):
 		last_error = "The editing transaction is stale. Start from the current document."
 		return false
 	var errors = TrackDocument.draft_errors(draft)
@@ -67,9 +81,11 @@ func commit(draft: Dictionary, expected_revision: int) -> bool:
 	_preview.stop()
 	return true
 
+
 func cancel() -> Dictionary:
 	_transaction_revision = -1
 	return read_document()
+
 
 func undo() -> Dictionary:
 	_transaction_revision = -1
@@ -80,6 +96,7 @@ func undo() -> Dictionary:
 		_preview.stop()
 	return read_document()
 
+
 func redo() -> Dictionary:
 	_transaction_revision = -1
 	if not _future.is_empty():
@@ -88,6 +105,7 @@ func redo() -> Dictionary:
 		_revision += 1
 		_preview.stop()
 	return read_document()
+
 
 func replace(value: Dictionary, saved: bool = true) -> bool:
 	# Legacy imports use positional nodes; validate those before normalizing.
@@ -110,20 +128,18 @@ func replace(value: Dictionary, saved: bool = true) -> bool:
 	_preview.stop()
 	return true
 
+
 func _mark_saved(value: Dictionary) -> void:
 	_document = value.duplicate(true)
 	_saved_signature = JSON.stringify(_document)
 	_transaction_revision = -1
 	_revision += 1
 
+
 func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> Dictionary:
-	if _saving:
-		return {"ok": false, "error": "A track save is already in progress."}
-	var errors = TrackDocument.publication_errors(draft)
-	if not errors.is_empty():
-		return {"ok": false, "error": "\n".join(errors)}
-	if port == null:
-		return {"ok": false, "error": "No track repository is available."}
+	var preflight = _save_preflight(port, draft)
+	if not preflight.is_empty():
+		return {"ok": false, "error": preflight}
 	if not commit(draft, expected_revision):
 		return {"ok": false, "error": last_error}
 	var saving_revision = _revision
@@ -133,45 +149,103 @@ func save(port: TrackEditorPort, draft: Dictionary, expected_revision: int) -> D
 	_saving = false
 	if result.get("ok") != true:
 		return result
-	if not result.get("document") is Dictionary or not TrackDocument.draft_errors(result.document).is_empty():
-		return {"ok": false, "error": "The track repository returned invalid saved data."}
-	# A repository may assign local identity, not silently change the authored road.
-	var returned: Dictionary = result.document.duplicate(true)
-	for key in ["id", "builtin"]:
-		if submitted.has(key): returned[key] = submitted[key]
-		else: returned.erase(key)
-	if returned != submitted:
-		return {"ok": false, "error": "The track repository changed the submitted authoring document."}
+	var returned_error = _saved_document_error(result, submitted)
+	if not returned_error.is_empty():
+		return {"ok": false, "error": returned_error}
 	if _revision != saving_revision:
-		return {"ok": false, "saved": true, "error": "The earlier revision was saved. Your newer edits are still unsaved and have been retained."}
+		return {
+			"ok": false,
+			"saved": true,
+			"error":
+			(
+				"The earlier revision was saved. Your newer edits are still unsaved "
+				+ "and have been retained."
+			)
+		}
 	_mark_saved(result.document)
 	return result.duplicate(true)
 
-func compile_draft(draft: Dictionary, vehicle: String = "Formula", fast: bool = false) -> TrackGeometry:
-	if vehicle not in TrackGeometry.PRESETS or not TrackDocument.draft_errors(draft).is_empty() or draft.nodes.size() < 4:
+
+func compile_draft(
+	draft: Dictionary, vehicle: String = "Formula", fast: bool = false
+) -> TrackGeometry:
+	var definition: VehicleDefinition
+	if content_catalog != null:
+		definition = content_catalog.vehicle(
+			vehicle if "." in vehicle else "core.vehicle." + vehicle.to_lower()
+		)
+	if (
+		(content_catalog != null and definition == null)
+		or (content_catalog == null and vehicle not in VehicleDefinition.LEGACY)
+	):
+		return null
+	if not TrackDocument.draft_errors(draft).is_empty() or draft.nodes.size() < 4:
 		return null
 	var started = Time.get_ticks_usec()
-	var geometry = TrackGeometry.new(draft.duplicate(true), vehicle, fast)
+	var geometry = TrackGeometry.new(draft.duplicate(true), vehicle, fast, definition)
 	compile_usec = Time.get_ticks_usec() - started
 	return geometry
+
 
 func diagnostics(geometry: TrackGeometry) -> Array:
 	return TrackDiagnostics.inspect(geometry) if geometry else []
 
+
 func advance_preview(elapsed: float) -> void:
 	_preview.advance(elapsed)
+
 
 func export_authoring(port: TrackEditorPort, path: String, draft: Dictionary) -> String:
 	var errors = TrackDocument.publication_errors(draft)
 	if not errors.is_empty():
 		return "\n".join(errors)
-	return port.export_value(path, draft.duplicate(true)) if port else "No track repository is available."
+	return (
+		port.export_value(path, draft.duplicate(true))
+		if port
+		else "No track repository is available."
+	)
 
-func export_runtime(port: TrackEditorPort, path: String, draft: Dictionary, vehicle: String) -> String:
+
+func export_runtime(
+	port: TrackEditorPort, path: String, draft: Dictionary, vehicle: String
+) -> String:
 	var errors = TrackDocument.publication_errors(draft)
 	if not errors.is_empty():
 		return "\n".join(errors)
 	var geometry = compile_draft(draft, vehicle)
 	if geometry == null or TrackDiagnostics.blocking(diagnostics(geometry)):
 		return "Resolve the circuit's blocking checks before exporting runtime data."
-	return port.export_value(path, geometry.runtime_export()) if port else "No track repository is available."
+	return (
+		port.export_value(path, geometry.runtime_export())
+		if port
+		else "No track repository is available."
+	)
+
+
+func _saved_document_error(result: Dictionary, submitted: Dictionary) -> String:
+	if (
+		not result.get("document") is Dictionary
+		or not TrackDocument.draft_errors(result.document).is_empty()
+	):
+		return "The track repository returned invalid saved data."
+	# A repository may assign local identity, not silently change the authored road.
+	var returned: Dictionary = result.document.duplicate(true)
+	for key in ["id", "builtin"]:
+		if submitted.has(key):
+			returned[key] = submitted[key]
+		else:
+			returned.erase(key)
+	if returned != submitted:
+		return "The track repository changed the submitted authoring document."
+	return ""
+
+
+func _save_preflight(port: TrackEditorPort, draft: Dictionary) -> String:
+	if _saving:
+		return "A track save is already in progress."
+	var errors = TrackDocument.publication_errors(draft)
+	if not errors.is_empty():
+		return "\n".join(errors)
+	if port == null:
+		return "No track repository is available."
+	return ""

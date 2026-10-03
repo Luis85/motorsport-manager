@@ -2,100 +2,10 @@ class_name RaceCar
 extends RefCounted
 ## Authoritative entrant state owned by one RaceSim aggregate.
 ## Rules receive this type; saves and read models receive detached records instead.
-## Numerical units and serialized names remain compatible with checkpoint versions 4–11.
+## Numerical units and serialized names remain compatible with checkpoint versions 4–12.
 
-var id: int = 0
-var short: String = ""
-var name: String = ""
-var team: String = ""
-var color: String = ""
-var skill: float = 0.0
-var consistency: float = 0.0
-var wet_skill: float = 0.0
-var reliability: float = 0.0
-var number: int = 0
-var player: bool = false
-var grid: int = 0
-var distance: float = 0.0
-var previous_distance: float = 0.0
-var speed: float = 0.0
-var lane: float = 0.0
-var route: String = ""
-var pace: int = 0
-var engine: int = 0
-var auto: bool = false
-var compound: String = ""
-var tyre: float = 0.0
-var temperature: float = 0.0
-var fuel: float = 0.0
-var health: float = 0.0
-var damage: float = 0.0
-var qual_state: String = ""
-var qual_runs: int = 0
-var next_qual: float = 0.0
-var qual_best: float = 0.0
-var qual_laps: int = 0
-var hot_start: float = 0.0
-var hot_valid: bool = false
-var lap_start: float = 0.0
-var last_lap: float = 0.0
-var best_lap: float = 0.0
-var completed: int = 0
-var sectors: Array = []
-var sector_start: float = 0.0
-var pit_order: bool = false
-var next_compound: String = ""
-var repair: bool = false
-var pit_d: float = 0.0
-var pit_cycle: int = 0
-var pit_stage: String = ""
-var pit_timer: float = 0.0
-var pit_stops: int = 0
-var box_d: float = 0.0
-var loss: float = 0.0
-var dnf: bool = false
-var retire_reason: String = ""
-var finished: bool = false
-var finish_position: int = 0
-var finish_time: float = 0.0
-var formation_done: bool = false
-var blue: bool = false
-var ai_clock: float = 0.0
-var intent: String = ""
-var history: Array = []
-var setup: int = 0
-var telemetry: Array = []
-var last_trace: float = 0.0
-var pit_gate: float = 0.0
-var crossed_at: float = 0.0
-var previous_pit_d: float = 0.0
-var previous_lane: float = 0.0
-var previous_route: String = ""
-var yield_to: int = 0
-var yield_side: float = 0.0
-var yield_clock: float = 0.0
-var qual_history: Array = []
-var qual_sectors: Array = []
-var qual_sector_start: float = 0.0
-var invalid_reason: String = ""
-var throttle: float = 0.0
-var braking: float = 0.0
-var pit_deferred: bool = false
-var pit_lap: bool = false
-var service_compound: String = ""
-var service_repair: bool = false
-var tyre_sets: Array = []
-var set_id: String = ""
-var next_set_id: String = ""
-var service_set_id: String = ""
-var scheduled_lap: int = 0
-var stints: Array = []
-var car_setup: Dictionary = {}
-var battle_mode: String = ""
-var engine_temperature: float = 0.0
-var brake_temperature: float = 0.0
-var tyre_event_clock: float = 0.0
-
+## Frozen session inputs are not part of the per-car 91-field serialized codec.
+## The enclosing checkpoint validates and rebinds them; detached copies share them.
 const FIELDS: Array[String] = [
 	"id",
 	"short",
@@ -189,6 +99,107 @@ const FIELDS: Array[String] = [
 	"brake_temperature",
 	"tyre_event_clock",
 ]
+
+var setup_definition: SetupDefinition = SetupDefinition.legacy()
+var tyre_rules: RaceTyreRules = RaceTyreRules.legacy()
+var entry_definition: EntrantDefinition
+
+var id: int = 0
+var short: String = ""
+var name: String = ""
+var team: String = ""
+var color: String = ""
+var skill: float = 0.0
+var consistency: float = 0.0
+var wet_skill: float = 0.0
+var reliability: float = 0.0
+var number: int = 0
+var player: bool = false
+var grid: int = 0
+var distance: float = 0.0
+var previous_distance: float = 0.0
+var speed: float = 0.0
+var lane: float = 0.0
+var route: String = ""
+var pace: int = 0
+var engine: int = 0
+var auto: bool = false
+var compound: String = ""
+var tyre: float = 0.0
+var temperature: float = 0.0
+var fuel: float = 0.0
+var health: float = 0.0
+var damage: float = 0.0
+var qual_state: String = ""
+var qual_runs: int = 0
+var next_qual: float = 0.0
+var qual_best: float = 0.0
+var qual_laps: int = 0
+var hot_start: float = 0.0
+var hot_valid: bool = false
+var lap_start: float = 0.0
+var last_lap: float = 0.0
+var best_lap: float = 0.0
+var completed: int = 0
+var sectors: Array = []
+var sector_start: float = 0.0
+var pit_order: bool = false
+var next_compound: String = ""
+var repair: bool = false
+var pit_d: float = 0.0
+var pit_cycle: int = 0
+var pit_stage: String = ""
+var pit_timer: float = 0.0
+var pit_stops: int = 0
+var box_d: float = 0.0
+var loss: float = 0.0
+var dnf: bool = false
+var retire_reason: String = ""
+var finished: bool = false
+var finish_position: int = 0
+var finish_time: float = 0.0
+var formation_done: bool = false
+var blue: bool = false
+var ai_clock: float = 0.0
+var intent: String = ""
+var history: Array = []
+var setup: int = 0
+var telemetry: Array = []
+var last_trace: float = 0.0
+var pit_gate: float = 0.0
+var crossed_at: float = 0.0
+var previous_pit_d: float = 0.0
+var previous_lane: float = 0.0
+var previous_route: String = ""
+var yield_to: int = 0
+var yield_side: float = 0.0
+var yield_clock: float = 0.0
+var qual_history: Array = []
+var qual_sectors: Array = []
+var qual_sector_start: float = 0.0
+var invalid_reason: String = ""
+var throttle: float = 0.0
+var braking: float = 0.0
+var pit_deferred: bool = false
+var pit_lap: bool = false
+var service_compound: String = ""
+var service_repair: bool = false
+var tyre_sets: Array = []
+var set_id: String = ""
+var next_set_id: String = ""
+var service_set_id: String = ""
+var scheduled_lap: int = 0
+var stints: Array = []
+var car_setup: Dictionary = {}
+var battle_mode: String = ""
+var engine_temperature: float = 0.0
+var brake_temperature: float = 0.0
+var tyre_event_clock: float = 0.0
+
+
+func team_identity() -> String:
+	return entry_definition.team_id if entry_definition != null else team
+
 
 func to_record() -> Dictionary:
 	return {
@@ -285,8 +296,14 @@ func to_record() -> Dictionary:
 		"tyre_event_clock": tyre_event_clock,
 	}
 
+
 func detached_copy() -> RaceCar:
-	return from_record(to_record())
+	var result = from_record(to_record())
+	result.entry_definition = entry_definition
+	result.tyre_rules = tyre_rules
+	result.setup_definition = setup_definition
+	return result
+
 
 static func from_record(record: Dictionary) -> RaceCar:
 	# The enclosing checkpoint validates domain ranges, route invariants and stock.
@@ -310,6 +327,7 @@ static func from_record(record: Dictionary) -> RaceCar:
 		else:
 			return null
 	return car
+
 
 static func records(cars: Array[RaceCar]) -> Array:
 	var result: Array = []

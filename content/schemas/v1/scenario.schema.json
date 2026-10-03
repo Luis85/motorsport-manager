@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "brief": {
+      "additionalProperties": false,
+      "properties": {
+        "approaches": {
+          "items": {
+            "maxLength": 240,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "briefing": {
+          "maxLength": 600,
+          "minLength": 1,
+          "type": "string"
+        },
+        "goal": {
+          "enum": [
+            "observe",
+            "finish_both",
+            "mer_top_six",
+            "mor_top_six"
+          ]
+        },
+        "hint": {
+          "maxLength": 600,
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "version": {
+          "enum": [
+            1
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "title",
+        "briefing",
+        "approaches",
+        "hint",
+        "goal"
+      ],
+      "type": "object"
+    },
+    "circuit_id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "scenario"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    },
+    "weekend_id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "circuit_id",
+    "weekend_id",
+    "brief"
+  ],
+  "title": "Motorsport Manager scenario v1",
+  "type": "object"
+}

@@ -1,0 +1,97 @@
+name: Content and exported runtime
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: content-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  content:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GODOT_VERSION: 4.7.2
+      LP_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Capture the exact tested source for offline reproduction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/content-verification-source
+          git rev-parse HEAD > /tmp/content-verification-source/commit.txt
+          git rev-parse 'HEAD^{tree}' > /tmp/content-verification-source/tree.txt
+          git archive --format=tar.gz --output=/tmp/content-verification-source/source.tar.gz HEAD
+          (cd /tmp/content-verification-source && sha256sum source.tar.gz > source.sha256)
+      - name: Retain source snapshot independently of test success
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-verification-source
+          path: /tmp/content-verification-source/
+          if-no-files-found: error
+          retention-days: 2
+      - name: Install the repository-pinned engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
+          chmod +x /tmp/godot/Godot_*
+          sudo ln -s /tmp/godot/Godot_* /usr/local/bin/godot
+          godot --version | tee /tmp/godot-version.txt
+          sha256sum /tmp/godot.zip > /tmp/godot-sha256.txt
+      - name: Install matching Linux export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/templates.tpz
+          echo "f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011  /tmp/templates.tpz" | sha256sum --check
+          mkdir -p /tmp/linux-export-templates "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          unzip -j /tmp/templates.tpz templates/linux_debug.x86_64 templates/linux_release.x86_64 templates/version.txt -d /tmp/linux-export-templates
+          sha256sum /tmp/templates.tpz > /tmp/linux-export-templates/archive-sha256.txt
+          cp /tmp/linux-export-templates/linux_* "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+      - name: Test authoring commands against the production compiler
+        env:
+          GODOT_BINARY: /usr/local/bin/godot
+          VERIFICATION_TEST_GODOT: /usr/local/bin/godot
+        run: |
+          python3 -m unittest discover -s tests -p 'test_content*.py' -v
+          python3 -m unittest discover -s tests -p 'test_json_number_fixtures.py' -v
+      - name: Check generated authoring schemas
+        run: python3 scripts/content.py schemas --check --godot /usr/local/bin/godot
+      - name: Verify content and serialized boundaries
+        run: python3 scripts/verify.py --godot /usr/local/bin/godot --suite mechanics_tests --suite car_record_tests --suite content_tests --suite content_pack_tests --suite content_tyre_tests --suite content_tuning_tests --suite content_environment_tests --suite content_operations_tests --suite content_competition_tests --suite content_persistence_tests --suite content_catalog_tests --suite content_mechanic_profile_tests --suite content_wheel_operating_tests --suite scenario_catalog_tests --suite content_editor_profile_tests
+      - name: Execute debug and release exports with file-only expansions
+        run: python3 scripts/verify_content_export.py --godot /usr/local/bin/godot --output reports/content-export
+      - name: Retain exact toolchain for offline reproduction
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-verification-toolchain-linux
+          path: |
+            /tmp/godot.zip
+            /tmp/godot-version.txt
+            /tmp/godot-sha256.txt
+          if-no-files-found: error
+          retention-days: 1
+      - name: Retain Linux export toolchain
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-export-templates-linux
+          path: /tmp/linux-export-templates/
+          if-no-files-found: error
+          retention-days: 1
+      - name: Retain source-bound evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-verification
+          path: reports/
+          if-no-files-found: error
+          retention-days: 14

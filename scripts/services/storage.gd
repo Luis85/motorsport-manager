@@ -3,13 +3,18 @@ extends RefCounted
 ## JSON decoding and recoverable replacement. Domain validators own schema acceptance.
 const MAX_BYTES = 16000000
 
+
 class FileOperations:
 	extends RefCounted
+
 	## Narrow local filesystem seam. Tests inject failures without changing policy.
 	func read_text(path: String, maximum_bytes: int) -> Dictionary:
 		var file = FileAccess.open(path, FileAccess.READ)
 		if file == null:
-			return {"ok": false, "error": "Cannot open %s (%s)." % [path, error_string(FileAccess.get_open_error())]}
+			return {
+				"ok": false,
+				"error": "Cannot open %s (%s)." % [path, error_string(FileAccess.get_open_error())]
+			}
 		if file.get_length() > maximum_bytes:
 			file.close()
 			return {"ok": false, "error": "File exceeds 16 MB."}
@@ -42,34 +47,89 @@ class FileOperations:
 	func rename(source: String, destination: String) -> Error:
 		return DirAccess.rename_absolute(source, destination)
 
+
 static func read_json(path: String, files: FileOperations = null) -> Dictionary:
-	if files == null: files = FileOperations.new()
+	if files == null:
+		files = FileOperations.new()
 	var result = files.read_text(path, MAX_BYTES)
-	if not result.ok: return result
+	if not result.ok:
+		return result
 	var parser = JSON.new()
 	var err = parser.parse(result.text)
-	if err != OK: return {"ok": false, "error": "JSON line %d: %s" % [parser.get_error_line(), parser.get_error_message()]}
+	if err != OK:
+		return {
+			"ok": false,
+			"error": "JSON line %d: %s" % [parser.get_error_line(), parser.get_error_message()]
+		}
+	if (
+		parser.data is Dictionary
+		and (
+			parser.data.get("kind")
+			in [
+				"motorsport-manager-session",
+				"motorsport-manager-replay",
+				"motorsport-manager-weekend",
+				"motorsport-manager-scenario",
+				"motorsport-manager-reproduction",
+				"motorsport-manager-weekend-result",
+				"motorsport-manager-circuit-notebook",
+				"motorsport-manager-result-receipts",
+				"motorsport-manager-campaign-checkpoint"
+			]
+		)
+	):
+		# Preserve the exact decimal values written by full-precision serialization.
+		# Legacy content/track import keeps its original numerical contract. Neither
+		# live values nor existing integrity hashes are quantized or rewritten.
+		var precise = ContentJson.parse(result.text, true)
+		if not precise.ok:
+			return {"ok": false, "error": "JSON line %d: %s" % [precise.line, precise.error]}
+		return {"ok": true, "data": precise.data}
 	return {"ok": true, "data": parser.data}
+
 
 static func write_json(path: String, data: Variant, files: FileOperations = null) -> String:
 	# Complete serialization before any filesystem mutation. No schema migration here.
 	var text = JSON.stringify(data, "\t", false, true)
-	if text.to_utf8_buffer().size() > MAX_BYTES: return "Export exceeds 16 MB. Reduce retained evidence or reference-image size."
-	if files == null: files = FileOperations.new()
+	if text.to_utf8_buffer().size() > MAX_BYTES:
+		return "Export exceeds 16 MB. Reduce retained evidence or reference-image size."
+	return _replace_text(path, text, files)
+
+
+static func write_compact_json(
+	path: String, data: Variant, maximum_bytes: int, files: FileOperations = null
+) -> String:
+	# Explicit transport publication uses the same compact full-precision bytes as
+	# its framed response. The ordinary save format and its 16 MB limit stay intact.
+	if maximum_bytes <= 0:
+		return "Compact JSON requires a positive byte limit."
+	var text: String = JSON.stringify(data, "", true, true)
+	if text.to_utf8_buffer().size() > maximum_bytes:
+		return "Export exceeds the explicit %d-byte limit." % maximum_bytes
+	return _replace_text(path, text, files)
+
+
+static func _replace_text(path: String, text: String, files: FileOperations) -> String:
+	if files == null:
+		files = FileOperations.new()
 	var absolute = ProjectSettings.globalize_path(path)
 	var temporary = absolute + ".tmp"
 	var backup = absolute + ".bak"
 	var err = files.make_directory(absolute.get_base_dir())
-	if err != OK: return "Cannot create destination folder: " + error_string(err)
+	if err != OK:
+		return "Cannot create destination folder: " + error_string(err)
 	var write_error = files.write_text(temporary, text)
-	if not write_error.is_empty(): return write_error
+	if not write_error.is_empty():
+		return write_error
 	var preserved_current = false
 	if files.exists(absolute):
 		if files.exists(backup):
 			err = files.remove(backup)
-			if err != OK: return "Could not remove previous backup: " + error_string(err)
+			if err != OK:
+				return "Could not remove previous backup: " + error_string(err)
 		err = files.rename(absolute, backup)
-		if err != OK: return "Could not preserve previous file: " + error_string(err)
+		if err != OK:
+			return "Could not preserve previous file: " + error_string(err)
 		preserved_current = true
 	err = files.rename(temporary, absolute)
 	if err != OK:
@@ -78,23 +138,45 @@ static func write_json(path: String, data: Variant, files: FileOperations = null
 		if preserved_current:
 			var recovery_error = files.rename(backup, absolute)
 			if recovery_error != OK:
-				return message + ". Rollback failed: %s. Previous saved data remains at %s; do not delete it." % [error_string(recovery_error), backup]
+				return (
+					message
+					+ (
+						(
+							". Rollback failed: %s. Previous saved data remains at %s; do not "
+							+ "delete it."
+						)
+						% [error_string(recovery_error), backup]
+					)
+				)
 		return message
 	return ""
 
+
 static func read_catalog() -> Dictionary:
 	var manifest = read_json("res://data/tracks/catalog.json")
-	if not manifest.ok: return manifest
+	if not manifest.ok:
+		return manifest
 	var data = manifest.data
-	if not data is Dictionary or data.get("kind") != "motorsport-manager-track-catalog" or data.get("version") != 1:
+	if (
+		not data is Dictionary
+		or data.get("kind") != "motorsport-manager-track-catalog"
+		or data.get("version") != 1
+	):
 		return {"ok": false, "error": "Unsupported bundled track catalog."}
 	if not data.get("files") is Array or data.files.is_empty() or data.files.size() > 64:
 		return {"ok": false, "error": "Bundled catalog must list 1–64 track files."}
 	var tracks: Array = []
 	for name in data.files:
-		if not name is String or not name.ends_with(".json") or name.contains("/") or name.contains("\\") or name.contains(".."):
+		if (
+			not name is String
+			or not name.ends_with(".json")
+			or name.contains("/")
+			or name.contains("\\")
+			or name.contains("..")
+		):
 			return {"ok": false, "error": "Invalid bundled track filename."}
 		var result = read_json("res://data/tracks/" + name)
-		if not result.ok: return result
+		if not result.ok:
+			return result
 		tracks.append(result.data)
 	return {"ok": true, "data": tracks}

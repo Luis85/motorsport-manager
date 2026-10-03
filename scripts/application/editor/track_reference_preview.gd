@@ -7,6 +7,7 @@ var _distance: float = 0.0
 var _elapsed: float = 0.0
 var _laps: int = 0
 
+
 func toggle(track: TrackGeometry) -> void:
 	if _running:
 		stop()
@@ -19,8 +20,10 @@ func toggle(track: TrackGeometry) -> void:
 	_laps = 0
 	_running = true
 
+
 func stop() -> void:
 	_running = false
+
 
 func advance(elapsed: float) -> void:
 	if not _running or not is_finite(elapsed) or elapsed <= 0:
@@ -32,6 +35,7 @@ func advance(elapsed: float) -> void:
 	while _distance >= _track.length:
 		_distance -= _track.length
 		_laps += 1
+
 
 func capture() -> Dictionary:
 	return {"running": _running, "distance": _distance, "elapsed": _elapsed, "laps": _laps}

@@ -1,0 +1,12 @@
+{
+  "kind": "driver",
+  "schema_version": 1,
+  "id": "core.driver.mercer",
+  "name": "Daniel Mercer",
+  "description": "Default fictional driver.",
+  "short": "MER",
+  "skill": 88,
+  "consistency": 96,
+  "wet_skill": 85,
+  "reliability": 91
+}

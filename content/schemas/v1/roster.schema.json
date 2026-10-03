@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "maxLength": 2048,
+      "minLength": 0,
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "maxLength": 6,
+            "minLength": 0,
+            "pattern": "^(?:[0-9a-fA-F]{6})?$",
+            "type": "string"
+          },
+          "driver_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          },
+          "number": {
+            "maximum": 999,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "team_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "driver_id",
+          "team_id",
+          "number",
+          "color"
+        ],
+        "type": "object"
+      },
+      "maxItems": 24,
+      "minItems": 2,
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "roster"
+      ]
+    },
+    "name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "type": "string"
+    },
+    "pit_assignments": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "fraction": {
+            "maximum": 0.9,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "team_id": {
+            "maxLength": 96,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "fraction"
+        ],
+        "type": "object"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "type": "array"
+    },
+    "player_team_id": {
+      "maxLength": 96,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z0-9_-]+)+$",
+      "type": "string"
+    },
+    "schema_version": {
+      "enum": [
+        1
+      ]
+    }
+  },
+  "required": [
+    "kind",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "player_team_id",
+    "entries",
+    "pit_assignments"
+  ],
+  "title": "Motorsport Manager roster v1",
+  "type": "object"
+}
