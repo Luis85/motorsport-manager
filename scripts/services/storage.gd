@@ -93,6 +93,23 @@ static func write_json(path: String, data: Variant, files: FileOperations = null
 	var text = JSON.stringify(data, "\t", false, true)
 	if text.to_utf8_buffer().size() > MAX_BYTES:
 		return "Export exceeds 16 MB. Reduce retained evidence or reference-image size."
+	return _replace_text(path, text, files)
+
+
+static func write_compact_json(
+	path: String, data: Variant, maximum_bytes: int, files: FileOperations = null
+) -> String:
+	# Explicit transport publication uses the same compact full-precision bytes as
+	# its framed response. The ordinary save format and its 16 MB limit stay intact.
+	if maximum_bytes <= 0:
+		return "Compact JSON requires a positive byte limit."
+	var text: String = JSON.stringify(data, "", true, true)
+	if text.to_utf8_buffer().size() > maximum_bytes:
+		return "Export exceeds the explicit %d-byte limit." % maximum_bytes
+	return _replace_text(path, text, files)
+
+
+static func _replace_text(path: String, text: String, files: FileOperations) -> String:
 	if files == null:
 		files = FileOperations.new()
 	var absolute = ProjectSettings.globalize_path(path)

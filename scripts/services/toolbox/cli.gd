@@ -127,7 +127,9 @@ func _rejected(code: String, message: String, details: Dictionary = {}) -> Dicti
 
 func _publish(response: Dictionary) -> void:
 	if not _stdio and not _response_path.is_empty():
-		var error: String = Storage.write_json(_response_path, response)
+		var error: String = Storage.write_compact_json(
+			_response_path, response, GameToolbox.MAX_RESPONSE_BYTES
+		)
 		if not error.is_empty():
 			response = _rejected("RESPONSE_WRITE", error)
 	_emit(response)
