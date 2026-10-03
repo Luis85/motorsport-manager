@@ -13,3 +13,7 @@ Building assets own their complete world mesh plus door/rotor/smoke anchors. Ite
 These files are build-time bundled content. Scenario/story imports cannot add, replace, or execute 3D assets.
 
 Creature packages also own gameplay definition data. `creatures/catalog.json` explicitly selects the founder default; `visualAsset` chooses reusable actor geometry. See `creatures/README.md` for adding, editing and swapping a package.
+
+Interaction definitions and autonomous trigger rules live in `interactions/`.
+They use their own validated data catalog and schema, independently of visual
+asset definitions. See [Creature interactions](../../CREATURE-INTERACTIONS.md).

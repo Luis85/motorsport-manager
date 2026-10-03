@@ -61,6 +61,12 @@ const suites: Suite[] = [
   ["ecs-core", ["node", generated("test-ecs.cjs")], generated("ecs-results.json"), 120],
   ["simulation-profile", ["node", generated("test-simulation-profile.cjs")], generated("simulation-profile-results.json"), 120],
   ["simulation-profile-integration", ["node", generated("test-simulation-profile-integration.cjs")], generated("simulation-profile-integration-results.json"), 180],
+  ["scene-environment", ["node", generated("test-scene-environment.cjs")], generated("scene-environment-results.json"), 60],
+  ["office-scenario", ["node", generated("test-office-scenario.cjs")], generated("office-scenario-results.json"), 120],
+  ["game-settings", ["node", generated("test-game-settings.cjs")], generated("game-settings-results.json"), 120],
+  ["game-settings-ui", ["node", generated("test-game-settings-ui.cjs")], generated("game-settings-ui-results.json"), 60],
+  ["creature-interactions", ["node", generated("test-interactions.cjs")], generated("interaction-results.json"), 120],
+  ["interaction-ui", ["node", generated("test-interaction-ui.cjs")], generated("interaction-ui-results.json"), 60],
   ["developer-toolbox", ["node", generated("test-developer-toolbox.cjs")], generated("developer-toolbox-results.json"), 180],
   ["engine-composition", ["node", generated("test-engine-composition.cjs")], generated("engine-composition-results.json"), 180],
   ["ecs-activity", ["node", generated("test-ecs-activity.cjs")], generated("ecs-activity-results.json"), 120],
@@ -82,7 +88,10 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"office-browser", command:["node", generated("verification/office-browser.js")], result:"verification/v15/office-browser-results.json", timeout:180 },
+    { name:"game-settings-browser", command:["node", generated("verification/game-settings-browser.js")], result:"verification/v15/game-settings-browser-results.json", timeout:180 },
     { name:"browser", command:["node", generated("verification/browser.js")], result:"verification/v15/browser-results.json", timeout:300 },
+    { name:"interactions-browser", command:["node", generated("verification/interactions-browser.js")], result:"verification/v15/interactions-browser-results.json", timeout:180 },
     { name:"browser-contracts", command:["node", generated("verification/browser-contracts.js")], result:"verification/v15/browser-contract-results.json", timeout:240 }
   );
 }

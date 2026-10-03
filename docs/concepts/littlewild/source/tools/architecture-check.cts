@@ -109,6 +109,17 @@ check("Domain runtime globals are explicitly allowlisted", () => {
   assert(violations.length === 0, "Domain module reaches undeclared runtime global: " + violations.join("; "));
 });
 
+check("Portable asset catalog stays a pure inward data boundary", () => {
+  const owner=DOMAIN_MAP.contexts.find(context=>context.files.includes("asset-catalog.ts"));
+  assert(owner?.layer==="domain", "Asset catalog must remain domain-owned.");
+  const catalog=analyses.get("asset-catalog.ts")!;
+  assert(catalog.platform.length===0, "Asset catalog must not use DOM or platform APIs.");
+  assert(catalog.dependencies.every(request=>request?.endsWith(".json")), "Asset catalog cannot depend on a renderer or other executable adapter.");
+  const hostile=analyzeRuntime("asset-catalog.ts", "const bad=document.createElement('canvas'); require('./world-3d.js');");
+  assert(hostile.platform.includes("document"), "DOM regression probe must be detected.");
+  assert(hostile.dependencies.includes("./world-3d.js"), "Presentation dependency regression probe must be detected.");
+});
+
 check("Domain modules do not register application composition hooks", () => {
   const violations: string[] = [];
   for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain")) for (const file of context.files) {
@@ -182,7 +193,7 @@ check("All domain/application modules avoid ambient randomness and wall clock", 
 });
 
 check("External simulation and scenario data contains no executable payload fields", () => {
-  const files = ["simulation-profile.json", "littlewild.pack.json", "emberworks.pack.json"];
+  const files = ["simulation-profile.json", "littlewild.pack.json", "emberworks.pack.json", "office.pack.json"];
   const forbidden = new Set(["script", "callback", "execute", "eval", "sourceCode", "modulePath"]);
   const violations: string[] = [];
   const visit = (value: unknown, location: string): void => {
@@ -205,7 +216,7 @@ check("Strict TypeScript compiler contract is hardened", () => {
   };
   const options=config.compilerOptions??{};
   for (const [key,value] of Object.entries({
-    noCheck:false,strict:true,noEmit:true,noImplicitOverride:true,noUncheckedIndexedAccess:true,
+    noCheck:false,strict:true,skipLibCheck:false,noEmit:true,noImplicitOverride:true,noUncheckedIndexedAccess:true,
     exactOptionalPropertyTypes:true,noImplicitReturns:true,noFallthroughCasesInSwitch:true
   })) assert(options[key]===value,`Strict compiler option ${key} must be ${String(value)}.`);
   assert(Array.isArray(config.files)&&config.files.length>0,"Strict TypeScript file list is missing.");

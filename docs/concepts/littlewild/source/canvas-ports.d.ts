@@ -1,3 +1,4 @@
+/// <reference path="./scene-environment-ports.d.ts" />
 /* Scoped read and presentation-state ports for the isometric canvas renderer. */
 declare namespace LWCanvasPorts {
   type Pair = readonly [number, number];
@@ -5,15 +6,15 @@ declare namespace LWCanvasPorts {
   interface Transform extends Point { dir: number; }
   interface Task { kind: string; phase: string; path: Point[]; elapsed: number; duration: number; }
   interface Actor {
-    id: string; name: string; personality: string; creature: Transform; activeQuest?: unknown;
+    id: string; name: string; personality: string; creature: Transform; archetype?:string; activeQuest?: {questId?:string;name?:string;status?:string};
     task: Task | null; equipment: Record<string, string>; inventory: Record<string, number>;
     worldSupply?: unknown; needsDeposit?: boolean;
   }
   interface Node extends Point { id: string; kind: string; stock: number; }
   interface Storage { input: Record<string, number>; output: Record<string, number>; }
-  interface Building extends Point { id: string; kind: string; level: number; storage?: Storage; }
+  interface Building extends Point { id: string; kind: string; level: number; storage?: Storage; door?:{dx:number;dy:number}; }
   interface Order extends Point { id: string; type: string; kind: string; paused: boolean; paid: boolean; stage: number; }
-  interface State {
+  interface State extends LWEnvironmentPorts.RoleState {
     settings: { reducedMotion: boolean; follow: boolean }; nodes: Node[]; buildings: Building[];
     creature: Transform; task: Task | null; hour: number;
   }
@@ -41,6 +42,8 @@ declare namespace LWCanvasPorts {
     showPath: boolean; time: number; bubble: Bubble | null; particles: Particle[]; effects: Effect[];
     resourceLens?: boolean; landSelected?: { type: string; id: string; x: number; y: number } | null | undefined;
     contextChoosing?: boolean; nameTargets: Target[]; landTargets: Target[];
+    environmentKey?:string;
+    makeGround():void;
     project(x: number, y: number): Point; transform(): Camera; toScreen(x: number, y: number): Point;
   }
   type SceneObject = (Node & { obj: 'node' }) | (Building & { obj: 'building' }) |
@@ -78,5 +81,7 @@ declare namespace LWCanvasPorts {
   interface Root {
     LW: Facade; LWWorldContent: WorldContent; LWCanvasArt: Art; LWCanvasBuildings: Buildings;
     LWCanvasGround: Ground; LWCanvasScene: Scene; LWArt?: unknown;
+    LWSceneEnvironment?:LWEnvironmentPorts.Api;
+    LWCanvasAssets?:{draw(c:CanvasRenderingContext2D,category:'building'|'item'|'actor',id:string,x:number,y:number,tw:number,th:number,options?:{rotation?:number;model?:string;scale?:number}):boolean;actor(c:CanvasRenderingContext2D,actor:Actor,x:number,y:number,tw:number,th:number):boolean};
   }
 }

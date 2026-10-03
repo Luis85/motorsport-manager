@@ -15,6 +15,7 @@ npm run typecheck
 npm run build
 npm run toolbox -- --scenario littlewild --scene charted-home --seconds 5
 npm run toolbox -- --scenario emberworks --seconds 2 --story-output /tmp/workshop.story.json
+npm run toolbox -- --scenario office --scene operations-shift --seconds 120
 ```
 
 The example is authored in `source/tools/developer-example.cts` and compiled by
@@ -131,8 +132,7 @@ validated asset ID discovered from `assets.list('actor')`, and run typecheck/bui
 and the registered asset/creature verification suites. Asset definitions live in
 `source/assets/<family>/<id>/asset.json`; adding a folder follows the documented
 build discovery contract. `assets.validate()` validates the asset's own model/rig
-contract; the build also validates cross-catalog references. There is no arbitrary
-runtime code loader or mutable renderer registration API.
+contract; the build also validates cross-catalog references. Complete scenarios can instead carry their own validated visual and creature catalogs under `resources`, using the same model/rig grammar. Activation installs an isolated snapshot atomically and the session detects external catalog drift. There is no arbitrary runtime code loader or executable renderer registration API. See [Office scenario authoring](OFFICE-SCENARIO.md) for editable roles, indoor presentation and full export/import examples.
 
 ```ts
 const actorAssets = toolbox.assets.list('actor');
@@ -185,3 +185,15 @@ ownership, host blocking, command validation, actual lesson cancellation,
 fixed-step continuation, disposal, registry drift, detached projections,
 scenario/story reviews and both Node/browser globals. The source review informing
 these adaptations is [EXCALIBUR-TOOLBOX-REVIEW.md](EXCALIBUR-TOOLBOX-REVIEW.md).
+
+## Creature interactions
+
+Use `toolbox.interactions()` and `game.interactionDefinitions()` for detached
+bundled/session discovery, `game.interactionOptions(sourceId,{scope,id})` for
+availability, and `game.interactions()` for requests, duel rounds, rule clocks
+and seek intents. Typed commands cover generic requests, consent, cancellation,
+encouragement, exact-pair staging and validated library replacement.
+`game.settings()` reads independent duel/quest flags; `set-game-settings`
+updates a Boolean patch, including a state-pure empty patch.
+See [Creature interactions and authoring](CREATURE-INTERACTIONS.md) for profiles,
+declarative triggers, physical gathering, persistence and rules limits.

@@ -51,6 +51,28 @@ test('Historical composition boundaries run only their own state lifecycles',()=
  calls.length=0;const base=C.constructThrough('base');assert.deepEqual(calls,[]);assert.deepEqual(Array.from(base.composition.layers),[]);
  assert.throws(()=>C.constructThrough('missing'),/Unknown engine composition boundary/);
 });
+test('Full-boundary construction uses current application adapters while earlier snapshots keep predecessor behavior',()=>{
+ const {composition:C,Facade}=isolatedComposition();
+ C.register({id:'first',order:10,define:Base=>class extends Base{chain(){return super.chain()+':first';}}});
+ C.register({id:'second',order:20,define:Base=>class extends Base{chain(){return super.chain()+':second';}}});
+ C.finalize(['first','second']);const predecessor=Facade.prototype.chain;
+ Facade.prototype.chain=function(){return predecessor.call(this)+':application-guard';};
+ const full=C.constructThrough('second'),historical=C.constructThrough('first');
+ assert.strictEqual(Object.getPrototypeOf(full),Facade.prototype);assert.equal(full.chain(),'base:first:second:application-guard');
+ assert.equal(historical.chain(),'base:first');assert.deepEqual(Array.from(full.composition.layers),['first','second']);
+});
+test('New, demo, native and portable fully composed engines retain paired interaction command guards',()=>{
+ const portable=require('./scenario-story.js'),demo=L.createWorldDemo(),fresh=new L.Engine(demo.export().state);
+ for(const origin of [fresh,demo]){
+  origin.selectCreature('c1');const request=origin.requestInteraction('friendly-duel','c1',{scope:'creature',id:'c2'});assert(request.ok,request.reason);
+  assert(origin.dispatchCommand({id:'respond-interaction',actorId:'c2',args:[request.interactionId,true]}).ok);
+  const native=L.Engine.import(origin.export()),story=portable.commit(portable.inspect(portable.encode(origin)));
+  for(const e of [origin,native,story]){
+   const before=canonical(e);e.withActor(e.creatures[0],()=>{assert.equal(e.care('feed').ok,false);assert.equal(e.startTask({kind:'idle'}),false);assert.equal(e.depart(),false);assert.equal(e.suggestSocial('c3').ok,false);});
+   assert.equal(canonical(e),before);
+  }
+ }
+});
 test('A failed layer definition rolls back predecessor methods before retry',()=>{
  const {composition:C,Facade}=isolatedComposition();let broken=true;
  C.register({id:'first',order:10,define:Base=>class extends Base{chain(){return super.chain()+':first';}}});

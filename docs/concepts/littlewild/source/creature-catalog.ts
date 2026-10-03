@@ -24,6 +24,9 @@
  interface Api{
   readonly configuration:Readonly<{format:'littlewild-creature-catalog';schemaVersion:1;defaultArchetype:string}>;
   readonly revision:number;
+  readonly defaults:{configuration:Api['configuration'];definitions:readonly Definition[]};
+  replace(input:unknown):void;
+  withDefinitions<T>(input:unknown,work:()=>T):T;
   readonly defaultArchetype:string;
   readonly defaultPersonality:string;
   readonly personalFields:readonly string[];
@@ -187,25 +190,33 @@
   deepFreeze(value);return value;
  }
 
- dataOnly(source,'bundled creature definitions');
- dataOnly(configSource,'catalog configuration');
- const config=exact(configSource,'catalog configuration',['format','schemaVersion','defaultArchetype']);
- if(config.format!=='littlewild-creature-catalog'||config.schemaVersion!==1)fail('invalid catalog format/version');
- const defaultArchetype=textValue(config.defaultArchetype,'default archetype',61,safeId);
- const configuration=Object.freeze({format:'littlewild-creature-catalog' as const,schemaVersion:1 as const,defaultArchetype});
- const sources=list(source,'bundled creature definitions',1,32);
- const definitions:readonly Definition[]=Object.freeze(sources.map(validate));
- const byId=new Map<string,Definition>();
- for(const definition of definitions){if(byId.has(definition.id))fail('duplicate creature '+definition.id);byId.set(definition.id,definition);}
- const first=byId.get(defaultArchetype)??fail('unknown default creature '+defaultArchetype);
- const personalFields:readonly string[]=Object.freeze([...new Set(definitions.flatMap(definition=>[...definition.state.personalFields]))]);
- const personalities:readonly string[]=Object.freeze([...new Set(definitions.flatMap(definition=>[...definition.personalities]))]);
- let revision=2166136261;for(const ch of JSON.stringify([configuration,definitions])){revision^=ch.charCodeAt(0);revision=Math.imul(revision,16777619);}revision>>>=0;
-
- function all():readonly Definition[]{return definitions;}
- function get(id:string):Definition|null{return byId.get(id)||null;}
- function definition(id:string):Definition{return byId.get(id)??fail('unknown creature archetype '+id);}
- function supports(archetype:string,personality:string):boolean{return !!byId.get(archetype)?.personalities.includes(personality);}
+ function prepare(input:unknown):{configuration:Api['configuration'];definitions:readonly Definition[];byId:Map<string,Definition>;revision:number}{
+  dataOnly(input,'creature catalog');const snapshot=exact(input,'creature catalog',['configuration','definitions']);
+  const config=exact(snapshot.configuration,'catalog configuration',['format','schemaVersion','defaultArchetype']);
+  if(config.format!=='littlewild-creature-catalog'||config.schemaVersion!==1)fail('invalid catalog format/version');
+  const defaultArchetype=textValue(config.defaultArchetype,'default archetype',61,safeId);
+  const configuration=Object.freeze({format:'littlewild-creature-catalog' as const,schemaVersion:1 as const,defaultArchetype});
+  const definitions:readonly Definition[]=Object.freeze(list(snapshot.definitions,'creature definitions',1,32).map(validate)),byId=new Map<string,Definition>();
+  for(const definition of definitions){if(byId.has(definition.id))fail('duplicate creature '+definition.id);byId.set(definition.id,definition);}
+  if(!byId.has(defaultArchetype))fail('unknown default creature '+defaultArchetype);
+  let revision=2166136261;for(const ch of JSON.stringify([configuration,definitions])){revision^=ch.charCodeAt(0);revision=Math.imul(revision,16777619);}revision>>>=0;
+  return {configuration,definitions,byId,revision};
+ }
+ let active=prepare({configuration:configSource,definitions:source});
+ const defaults=clone({configuration:active.configuration,definitions:active.definitions});deepFreeze(defaults);
+ const personalFields:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
+ const personalities:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.personalities]))]);
+ function replace(input:unknown):void{
+  const next=prepare(input);
+  // Existing actor proxies and their compiled persistence/creation contract keep these fields.
+  for(const def of next.definitions)if(def.state.personalFields.some(field=>!personalFields.includes(field))||personalFields.some(field=>!def.state.personalFields.includes(field)))fail('scenario creatures must retain the supported personal fields');
+  active=next;
+ }
+ function withDefinitions<T>(input:unknown,work:()=>T):T{const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Creature scope must be synchronous.');return result;}finally{active=previous;}}
+ function all():readonly Definition[]{return active.definitions;}
+ function get(id:string):Definition|null{return active.byId.get(id)||null;}
+ function definition(id:string):Definition{return active.byId.get(id)??fail('unknown creature archetype '+id);}
+ function supports(archetype:string,personality:string):boolean{return !!active.byId.get(archetype)?.personalities.includes(personality);}
  function componentBindings(archetype:string):readonly Binding[]{return definition(archetype).ecs.components;}
  function seed(archetype:string,personality:string,mode:Mode,sequence:number):Plain{
   if(mode!=='founder'&&mode!=='arrival')fail('invalid creature mode');
@@ -216,6 +227,8 @@
   const rpg=record(state.rpg,def.id+' RPG state');rpg.rng=(def.rng.base+Math.imul(sequence,def.rng.stride))>>>0;
   return state;
  }
- const api:Api=Object.freeze({configuration,revision,defaultArchetype:first.id,defaultPersonality:first.defaultPersonality,personalFields,personalities,all,get,supports,componentBindings,seed,validate});
+ const api:Api=Object.freeze({get configuration(){return active.configuration;},get revision(){return active.revision;},defaults,
+  get defaultArchetype(){return active.configuration.defaultArchetype;},get defaultPersonality(){return definition(active.configuration.defaultArchetype).defaultPersonality;},
+  personalFields,personalities,all,get,supports,componentBindings,seed,validate,replace,withDefinitions});
  root.LWCreatures=api;if(node)module.exports=api;
 })(globalThis);

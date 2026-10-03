@@ -99,6 +99,6 @@ A new visual variation should normally be an asset/model/material edit. A render
 
 ## Import and trust boundary
 
-The catalog is bundled at build time. Scenario packs and portable stories do **not** carry asset manifests and cannot register renderer behaviors or executable loaders. This preserves PR25's existing data-only import boundary.
+The default catalog is bundled at build time. Scenario packs and portable stories can carry complete validated asset and creature catalogs as an isolated context. Review stages both catalogs reversibly, validates gameplay/visual/profile references and restores the prior context on failure. Activation switches their immutable definitions and revisions together with the libraries and profiles. Renderer caches observe those revisions. No pack can register executable renderer behavior or loaders.
 
-Supporting third-party asset packs later requires an explicit versioning, size/performance, compatibility and trust policy. It should not be implemented by relaxing scenario JSON validation.
+Portable definitions use the same versioned primitive/material/model/rig grammar and bounded validators as bundled assets. Supported actor persistence fields and ECS capabilities remain fixed; callbacks, source code, URLs and unknown fields are rejected. See [Office](OFFICE-SCENARIO.md) for embedded furniture and a complete scenario export.

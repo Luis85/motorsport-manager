@@ -44,7 +44,7 @@
    this.staticTriangles.forEach((t,id)=>{t.id=id;for(let x=Math.floor(t.minX/4);x<=Math.floor(t.maxX/4);x++)for(let y=Math.floor(t.minY/4);y<=Math.floor(t.maxY/4);y++){const key=x+','+y;if(!this.staticIndex.has(key))this.staticIndex.set(key,[]);this.staticIndex.get(key).push(id);}});
   }
   staticRegion(k,cx,cy,w,h){const ids=new Set();for(let x=Math.floor(-cx/k/4);x<=Math.floor((w-cx)/k/4);x++)for(let y=Math.floor(-cy/k/4);y<=Math.floor((h-cy)/k/4);y++)for(const id of this.staticIndex.get(x+','+y)||[])ids.add(id);return [...ids].map(id=>this.staticTriangles[id]);}
-  background(w,h){this.depth.fill(-Infinity);const packed=new Uint32Array(this.image.data.buffer);packed.fill(0xffc8c6a1);}
+  background(w,h){this.depth.fill(-Infinity);const packed=new Uint32Array(this.image.data.buffer);const authored=this.owner.environment?.background;if(authored){const value=parseInt(authored.slice(1),16);packed.fill((0xff000000|(value&255)<<16|(value>>8&255)<<8|value>>16&255)>>>0);}else packed.fill(0xffc8c6a1);}
   base(k,cx,cy,w,h){let c=this.staticSurface,dx=c?cx-c.cx:0,dy=c?cy-c.cy:0;
    if(!c||c.k!==k||c.w!==w||c.h!==h||Math.abs(dx)>c.pad||Math.abs(dy)>c.pad){
     // Zoom needs the visible rectangle, not off-screen padding. Preserve allocations

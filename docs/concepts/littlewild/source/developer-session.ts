@@ -6,6 +6,9 @@
  type Session=LittlewildDeveloper.Session;
  interface Engine {
   s:{started:boolean;paused:boolean;simTime:number};
+  interactionOptions(sourceId:string,target:LittlewildDeveloper.InteractionTarget):LittlewildDeveloper.InteractionOption[];
+  gameSettings():LittlewildDeveloper.GameSettings;
+  interactionState():unknown;interactionDefinitions():unknown;
   step(dt:number):void;export():unknown;dispatchCommand(command:LittlewildDeveloper.Command):unknown;
  }
  interface ScenarioPort {
@@ -19,7 +22,9 @@
   LWDeveloperCommands:{validate(input:unknown,scope:'actor'|'world'):LittlewildDeveloper.Command};
   LWCommandRouter:{manifest:readonly LittlewildDeveloper.CommandDefinition[]};
   LWScenarios:ScenarioPort;LWStory:StoryPort;
-  LWCreatures:{all():unknown[];validate(input:unknown):unknown};
+  LWInteractions:{all():unknown[];definition(input:unknown):unknown;validate(input:unknown):unknown};
+  LWAssets:{readonly revision:number};
+  LWCreatures:{readonly revision:number;all():unknown[];validate(input:unknown):unknown};
   LWContent:{registry:{hash:string}};LWAdventure:{hash:string};LWWorldContent:{hash:string};LWGrowth:{hash:string};
   LWSimulationProfile:{hash:string};LWWorldProfile:{hash:string};
   LWDeveloperSession?:unknown;
@@ -37,7 +42,7 @@
   return Object.freeze({dispose(){if(!disposed){disposed=true;hostActive=false;}}});
  }
  const signature=():string=>[root.LWContent.registry.hash,root.LWAdventure.hash,root.LWWorldContent.hash,
-  root.LWGrowth.hash,root.LWSimulationProfile.hash,root.LWWorldProfile.hash].join('|');
+  root.LWGrowth.hash,root.LWSimulationProfile.hash,root.LWWorldProfile.hash,root.LWAssets.revision,root.LWCreatures.revision].join('|');
  const info=(envelope:Document):{scenarioId:string|null;sceneId:string|null}=>{
   const context=envelope.experience;
   if(!context||typeof context!=='object'||Array.isArray(context))return {scenarioId:null,sceneId:null};
@@ -111,6 +116,13 @@
     const reason=record&&typeof record.reason==='string'?record.reason:undefined;
     return reason===undefined?{ok,data}:{ok,reason,data};
    },
+   interactionOptions(sourceId:string,target:LittlewildDeveloper.InteractionTarget){
+    const owned=guard(),id=D.text(sourceId,'Interaction initiator'),data=D.record(target);
+    if(Object.keys(data).length!==2||!Object.hasOwn(data,'scope')||!Object.hasOwn(data,'id')||!['creature','building','node'].includes(String(data.scope)))fail('invalid-input','Invalid interaction target.');
+    D.text(data.id,'Target ID');return owned.interactionOptions(id,data as unknown as LittlewildDeveloper.InteractionTarget).map(value=>D.record(value) as unknown as LittlewildDeveloper.InteractionOption);
+   },
+   settings(){return D.record(guard().gameSettings()) as unknown as LittlewildDeveloper.GameSettings;},
+   interactions(){return D.record(guard().interactionState());},interactionDefinitions(){return D.record(guard().interactionDefinitions());},
    step,advance(seconds:number){
     guard();const count=Math.round(seconds*10);
     if(typeof seconds!=='number'||!Number.isFinite(seconds)||seconds<0||seconds>3600||Math.abs(count/10-seconds)>1e-9)
@@ -161,6 +173,9 @@
   version:1,fixedStep:.1,maxSteps:36000,scenarios,
   commands:()=>root.LWCommandRouter.manifest.map(({id,scope,maxArgs,away})=>({id,scope,maxArgs,away})),
   create,validateScenario,createScenario,reviewStory,openStory,
+  interactions:()=>root.LWInteractions.all().map(D.record),
+  validateInteraction:(input:unknown)=>validation(()=>root.LWInteractions.definition(D.record(input))),
+  validateInteractionLibrary:(input:unknown)=>validation(()=>root.LWInteractions.validate(D.record(input))),
   creatures:()=>root.LWCreatures.all().map(D.record),validateCreature:(input:unknown)=>validation(()=>root.LWCreatures.validate(D.record(input))),claimHost
  });
  root.LWDeveloperSession=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;

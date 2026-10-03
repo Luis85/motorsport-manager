@@ -24,7 +24,9 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_UI_CSS", "world-ui.css", "style"],
   ["CONTENT_RUNTIME", "content-runtime.js", "script"],
   ["CREATURE_CATALOG", "creature-catalog.js", "script"],
+  ["ASSET_CATALOG", "asset-catalog.js", "script"],
   ["WORLD_PROFILE", "world-profile.js", "script"],
+  ["SCENE_ENVIRONMENT", "scene-environment.js", "script"],
   ["GEOGRAPHY", "island-geometry.js", "script"],
   ["NAVIGATION", "navigation.js", "script"],
   ["ENGINE_TASK_PLANNING", "engine-task-planning.js", "script"],
@@ -54,12 +56,22 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_INTEGRITY", "world-integrity.js", "script"],
   ["WORLD_TASKS", "world-tasks.js", "script"],
   ["WORLD_PRODUCTION", "world-production.js", "script"],
+  ["WORLD_STATE_VALIDATION", "world-state-validation.js", "script"],
   ["WORLD_SIMULATION", "world-simulation.js", "script"],
   ["GROWTH_CONTENT", "growth-content.js", "script"],
   ["VILLAGE_SYSTEMS", "village-systems.js", "script"],
   ["VILLAGE_VALIDATION", "validation-village.js", "script"],
   ["PLANNER", "planner.js", "script"],
   ["CARTOGRAPHY", "cartography.js", "script"],
+  ["INTERACTION_CATALOG", "interaction-catalog.js", "script"],
+  ["INTERACTION_DUEL_RULES", "interaction-duel-rules.js", "script"],
+  ["INTERACTION_STATE", "interaction-state.js", "script"],
+  ["INTERACTION_RUNTIME", "interaction-runtime.js", "script"],
+  ["INTERACTION_TRIGGERS", "interaction-triggers.js", "script"],
+  ["GAME_SETTINGS", "game-settings.js", "script"],
+  ["SCENARIO_RESOURCES", "scenario-resources.js", "script"],
+  ["SCENARIO_WORKFLOW", "scenario-workflow.js", "script"],
+  ["INTERACTION_INTEGRATION", "interaction-integration.js", "script"],
   ["COMMAND_ROUTER", "command-router.js", "script"],
   ["ENGINE_COMPOSITION_ROOT", "engine-composition-root.js", "script"],
   ["WORLD_EXPLORER", "world-explorer.js", "script"],
@@ -76,6 +88,7 @@ const INSERTS: readonly Insert[] = [
   ["CANVAS_ART", "canvas-art.js", "script"],
   ["CANVAS_BUILDINGS", "canvas-buildings.js", "script"],
   ["CANVAS_GROUND", "canvas-ground.js", "script"],
+  ["CANVAS_ASSETS", "canvas-assets.js", "script"],
   ["CANVAS_SCENE", "canvas-scene.js", "script"],
   ["WORLD", "world.js", "script"],
   ["PROGRESSION_UI", "progression-ui.js", "script"],
@@ -89,7 +102,6 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_UI", "world-ui.js", "script"],
   ["QUALITY_CSS", "quality.css", "style"],
   ["THREE", "../vendor/three.js", "script"],
-  ["ASSET_CATALOG", "asset-catalog.js", "script"],
   ["DEVELOPER_TOOLBOX", "developer-toolbox.js", "script"],
   ["ASSET_RENDERER", "asset-renderer.js", "script"],
   ["SOFTWARE_3D", "software-3d.js", "script"],
@@ -101,6 +113,8 @@ const INSERTS: readonly Insert[] = [
   ["V12_CSS", "v12.css", "style"],
   ["VILLAGE_CSS", "village.css", "style"],
   ["CARTOGRAPHY_CSS", "cartography.css", "style"],
+  ["INTERACTION_UI", "interaction-ui.js", "script"],
+  ["INTERACTIONS_CSS", "interactions.css", "style"],
   ["VILLAGE_UI", "village-ui.js", "script"],
   ["V14_CSS", "v14.css", "style"],
   ["BUILD_PANEL", "build-panel.js", "script"],
@@ -154,6 +168,7 @@ function compile(): void {
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
+  fs.copyFileSync(path.join(ROOT, "assets", "interactions", "catalog.json"), path.join(GENERATED, "interaction-library.json"));
   fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT)));
   fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT)));
   fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT)));
@@ -167,6 +182,7 @@ function inlineData(packPath: string | null): string {
   const declarations: Array<[string, unknown]> = [
     ["LWDefaultLibrary", json("default-library.json")],
     ["LWContentSchema", json("library.schema.json")],
+    ["LWInteractionLibrary", JSON.parse(fs.readFileSync(path.join(ROOT,"assets","interactions","catalog.json"),"utf8"))],
     ["LWCreatureDefinitions", creatureDefinitions(ROOT)],
     ["LWCreatureConfig", creatureConfig(ROOT)],
     ["LWDefaultAdventure", json("adventure-library.json")],
@@ -185,7 +201,7 @@ function inlineData(packPath: string | null): string {
   ];
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]
-    : [json("littlewild.pack.json"), json("emberworks.pack.json")];
+    : [json("littlewild.pack.json"), json("emberworks.pack.json"), json("office.pack.json")];
   declarations.push(["LWScenarioPacks", packs]);
   return declarations
     .map(([name, value]) => `window.${name} = ${JSON.stringify(value)};`)

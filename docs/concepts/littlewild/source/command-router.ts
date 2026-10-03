@@ -31,6 +31,14 @@
 
  const L=root.LW;if(!L)throw Error('Littlewild facade missing.');
  const definitions: readonly CommandDefinition[] = Object.freeze([
+  {id:'seek-duel',method:'seekDuel',scope:'world',maxArgs:3,away:false},
+  {id:'cancel-duel-seek',method:'cancelDuelSeek',scope:'world',maxArgs:1,away:false},
+  {id:'stage-duel',method:'stageDuel',scope:'world',maxArgs:3,away:false},
+  {id:'set-game-settings',method:'setGameSettings',scope:'world',maxArgs:1,away:false},
+  {id:'request-interaction',method:'requestInteraction',scope:'world',maxArgs:3,away:false},
+  {id:'respond-interaction',method:'respondInteraction',scope:'actor',maxArgs:2,away:true},
+  {id:'cancel-interaction',method:'cancelInteraction',scope:'world',maxArgs:1,away:false},
+  {id:'set-interaction-library',method:'setInteractionLibrary',scope:'world',maxArgs:1,away:false},
   {id:'select-creature',method:'selectCreature',scope:'world',maxArgs:1,away:false},
   {id:'care',method:'care',scope:'actor',maxArgs:1,away:false},
   {id:'research-skill',method:'research',scope:'actor',maxArgs:1,away:false},

@@ -1,5 +1,11 @@
 # PR #25 — TypeScript, Clean Architecture, DDD, ECS and data-driven review
 
+This is the historical review of the source-pinned checkpoint below. Its typing
+backlog and grandfathered module inventory describe that checkpoint. The later
+quality pass completed the fifteen inventoried strict migrations and removed all
+module-size exceptions; see `QUALITY-AUDIT.md` and the executable architecture map
+for current boundaries, and `VERIFICATION.md` for current-source evidence.
+
 ## Scope
 
 - Repository: `Luis85/motorsport-manager`

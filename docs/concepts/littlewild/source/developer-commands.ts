@@ -7,6 +7,9 @@
  const root=inputRoot as {LWDeveloperData:DataApi;LWDeveloperCommands?:unknown};
  const D=root.LWDeveloperData;
  const contracts:Readonly<Record<LittlewildDeveloper.CommandId,readonly [number,string]>>={
+  'seek-duel':[1,'sSS'],'cancel-duel-seek':[1,'s'],'stage-duel':[3,'sss'],'set-game-settings':[1,'j'],
+  'request-interaction':[3,'ssj'],'respond-interaction':[2,'sb'],
+  'cancel-interaction':[1,'s'],'set-interaction-library':[1,'j'],
   'select-creature':[1,'s'],'care':[1,'s'],'research-skill':[1,'s'],'teach-skill':[1,'s'],
   'practice-skill':[1,'sn'],'cancel-lesson':[1,'s'],'set-learning-style':[1,'s'],
   'pause-learning':[0,''],'choose-specialization':[2,'ss'],'start-study':[1,'s'],'pause-study':[0,''],
@@ -42,6 +45,16 @@
    const actorId=D.text(envelope.actorId,'Actor ID');
    if(!/^c[1-9][0-9]*$/.test(actorId))fail('Actor ID must be a stable c1, c2, … identity.');
   }else if(envelope.actorId!==undefined)fail(id+' does not accept actorId.');
+  if(id==='request-interaction'){
+   const target=D.record(args[2]);
+   if(Object.keys(target).length!==2||!Object.hasOwn(target,'scope')||!Object.hasOwn(target,'id')||!['creature','building','node'].includes(String(target.scope)))fail('Expected an interaction target {scope, id}.');
+   D.text(target.id,'Interaction target ID');
+  }
+  if(id==='set-game-settings'){
+   const patch=D.record(args[0]);
+   if(Object.entries(patch).some(([key,value])=>!['duels','quests'].includes(key)||typeof value!=='boolean'))fail('Game settings require duels/quests Boolean fields.');
+  }
+  if(id==='set-interaction-library')D.record(args[0]);
   if(id==='configure-building'){
    const action=args[1],value=args[2];
    if(['flush','reclaim','clear'].includes(String(action))){if(args.length!==2)fail('This building action takes no value.');}

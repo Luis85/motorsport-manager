@@ -57,9 +57,12 @@
  interface ContentApi {
   fingerprint(value:unknown):string;
   copy<T>(value:T):T;
+  stable(value:unknown):string|undefined;
   parse(input:unknown,limit:number):unknown;
  }
+ interface ResourceApi {withResources<T>(input:unknown,work:()=>T):T;checkBindings(input:unknown,libraries:unknown):void;}
  interface LittlewildRoot {
+  LWScenarioResources?:ResourceApi;
   LWStory?:NativeStoryApi;
   LWScenarios?:ScenarioApi;
   LWWorldProfile?:WorldProfileApi;
@@ -70,6 +73,7 @@
  const node=typeof module!=='undefined'&&module.exports;
  const story=(node?require('./story-codec.js'):root.LWStory) as NativeStoryApi|undefined;
  const scenarios=(node?require('./scenario-runtime.js'):root.LWScenarios) as ScenarioApi|undefined;
+ const resources=root.LWScenarioResources!;
  const profiles=root.LWSimulationProfile,worldProfiles=root.LWWorldProfile,content=root.LWContent;
  if(!story||!scenarios||!profiles||!worldProfiles||!content)throw Error('Scenario story dependencies are missing.');
  const S:NativeStoryApi=story,X:ScenarioApi=scenarios,Profiles:ProfileApi=profiles,P:WorldProfileApi=worldProfiles,C:ContentApi=content;
@@ -90,6 +94,8 @@
    throw Error('Experience simulation does not match the engine profile; capture a scenario with the original context before saving.');
   if(engine.scenarioContext){
    const ctx=X.checkContext(engine.scenarioContext);
+   const nativeState=asRecord(doc.state,'Native story state');
+   if(nativeState.scenarioResources&&C.stable(nativeState.scenarioResources)!==C.stable(ctx.resources))throw Error('Story resources must match the complete experience catalogs.');
    doc.version=10;
    doc.experience=C.copy(ctx);
    doc.experienceFingerprint=X.hash(doc.experience);
@@ -108,9 +114,11 @@
    const worldEnvelope=asRecord(doc.world,'World story envelope');
    X.checkWorld(ctx.world,worldEnvelope.library);
   }
-  const preview=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,
-   ()=>native.inspect(doc))) as StoryPreview;
-  if(ctx)preview.engine.scenarioContext=ctx;
+  const savedState=asRecord(doc.state,'Native story state');
+  if(savedState.scenarioResources&&C.stable(savedState.scenarioResources)!==C.stable(ctx?.resources))throw Error('Story resources must match the complete experience catalogs.');
+  const preview=resources.withResources(ctx?.resources,()=>Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,
+   ()=>native.inspect(doc)))) as StoryPreview;
+  if(ctx){resources.checkBindings(ctx.resources,{base:preview.library,adventure:preview.adventure,world:preview.world,growth:preview.growth});preview.engine.scenarioContext=ctx;}
   preview.experience=ctx;
   preview.experienceFingerprint=ctx?X.hash(ctx):null;
   preview.simulationFingerprint=ctx?Profiles.fingerprint(ctx.simulation):Profiles.fingerprint(Profiles.defaults);
@@ -124,7 +132,7 @@
   const ctx=preview.experience?X.checkContext(preview.experience):null;
   if(ctx&&Profiles.fingerprint(ctx.simulation)!==preview.simulationFingerprint)throw Error('Simulation profile review is stale');
   return X.transaction(()=>{
-   const engine=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,()=>native.commit(preview)));
+   const engine=resources.withResources(ctx?.resources,()=>Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,()=>native.commit(preview))));
    if(ctx)engine.scenarioContext=ctx;
    X.activate(engine);return engine;
   });

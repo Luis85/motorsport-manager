@@ -2,15 +2,18 @@
 
 ## Product boundary
 
-The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting and its authored starts. **Littlewild is a bundled showcase**, alongside Emberworks.
+The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting and its authored starts. **Littlewild is a bundled showcase**, alongside Emberworks and the indoor Office scenario.
 
-The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. **Bundled 3D model geometry, material roles, actor rig sockets and building animation anchors are declarative asset data under `source/assets/`.** Animation programs, world lighting, island dimensions and certain legacy narrative strings remain compiled.
+The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. **3D model geometry, material roles, actor rig sockets and building animation anchors are declarative asset data.** Full scenario snapshots can carry validated visual and creature catalogs. The Office pack selects an indoor floor, room palette and camera; animation executors, island dimensions and some legacy narrative strings remain compiled.
 
 ## Supported configuration
 
 | Concern | JSON location | Runtime effect |
 |---|---|---|
 | Identity | `id`, `name`, `version`, `presentation` | Window/brand title, tagline, world subtitle, selected UI accent/paper/ink |
+| Complete catalogs | `resources.assets`, `resources.creatures` | Scoped validated visual/creature definitions, including nonbundled compatible bindings |
+| Indoor setting | `worlds[].environment`, `nodePolicy` | Room geometry, floor/walls/background/camera and profile-only resource context |
+| Role workflows | `scenes[].initialState.scenarioWorkflow` | Role-owned supply work and successful quest facts → customer demand → physical dispatch |
 | Terrain | `worlds[].terrain` | Actual 19×19 land/water cells used by drawing and navigation |
 | Regions | `biomeNames` | Names shown for the existing four biome roles |
 | Resources | `resourceCounts`, `fixedSites` | New-island harvesting distribution and exact authored sites |
@@ -48,7 +51,7 @@ node .generated/tools/simulation-profile-cli.cjs export my-profile.json
 npm run build -- --pack my-setting.pack.json --output my-setting.html
 ```
 
-TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, discovers and validates every `source/assets/{buildings,items,actors}/<id>/asset.json`, and bundles the chosen pack, immutable asset catalog, runtime, compatibility libraries and Three.js into one offline HTML file. No runtime file server is required.
+TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, discovers and validates visual manifests under `source/assets/{buildings,items,actors,creatures}/<id>/asset.json`, and validates creature gameplay definitions in the co-located `creature.json` files. Authored interaction definitions live under `source/assets/interactions/`. The selected pack, immutable catalogs, runtime, compatibility libraries and Three.js are bundled into one offline HTML file. No runtime file server is required.
 
 3D assets are a **build-time bundled catalog**, not part of scenario schema 2 or portable stories. This keeps user-imported world/scenario JSON data-only and prevents an imported pack from registering renderer behavior or executable asset loaders. See `ASSET-ARCHITECTURE.md`.
 
@@ -79,9 +82,17 @@ Validate the resulting file. A change to a name is not a change to an identity. 
 
 Allowed actions: `select`, `care`, `learn`, `home`, `planner`, `research`, `quests`, `growth`, `market`, `save`, `map`. They route to existing interfaces. They do not grant inventory, bypass research or mark a real task complete. One to 31 authored steps are supported. Tutorial progress is positional in the existing story field; changing/reordering a guide is safest as a new scene/pack version, not a live history rewrite.
 
+## Activity settings
+
+Settings includes independent **Friendly duels** and **Quests** controls. Both are enabled by default. Their saved Boolean flags are `state.settings.duels` and `state.settings.quests`; current-format legacy states without either flag retain the enabled default and their existing audio, motion, contrast, and camera preferences. Native and portable story imports reject present nonboolean flags before hydration. They also reject contradictory disabled flags with retained duel locks/seeking or a quest that has not entered its recalled return.
+
+Turning Friendly duels off cancels pending and active paired interactions through the normal cancellation authority, releases both creatures, and clears duel-seeking intents. It also blocks direct requests, staging, seeking, and autonomous rules. Ordinary care and physical world interactions remain available. Turning Quests off blocks new invitations, acceptance, preparations, and departure. Existing plans wait; away creatures are recalled through the existing timed return. Recall spends the configured recall energy once; packed provisions stay spent, finds remain carried, and recalled trips earn no completion reward or prestige.
+
+These controls work while paused and do not advance time or roll dice. Enabling a flag does not immediately start an activity. Empty patches and repeated values leave state unchanged. External tools use the typed `session.settings()` query and `set-game-settings` command with a patch such as `{ "duels": false }`; controls and tools invoke the same validated application service.
+
 ## Safety and persistence
 
-Packs are at most 8 MiB, bounded in count and string length, and cannot contain executable scripts. A simulation profile is separately bounded to 256 KiB. The bundled schemas validate shape and exact compiled archetype arrays; actor/economy validators check numerical relationships; existing library/native validators check mechanics and references. Staging temporarily installs validated data only within synchronous reversible scopes. Failed validation restores all registries, the world profile and the simulation profile. Imports populate a read-only catalog; scene replacement requires a separate confirmation.
+Packs are at most 8 MiB, bounded in count and string length, and cannot contain executable scripts. A simulation profile is separately bounded to 256 KiB. The bundled schemas validate shape and exact compiled archetype arrays; actor/economy validators check numerical relationships; existing library/native validators check mechanics and references. Staging temporarily installs validated data only within synchronous reversible scopes. Failed validation restores all libraries, visual/creature catalogs, the world profile and the simulation profile. Imports populate a read-only catalog; scene replacement requires a separate confirmation.
 
 Scenario schema **2** requires an explicit `simulation` profile. Schema-1 packs are obsolete and rejected; import requires a complete current-format pack. The canonical profile is `littlewild-simulation-profile` schema 1. Its `living-world-v1` archetype is a declaration of known compiled order, not a plug-in mechanism.
 
@@ -91,7 +102,7 @@ Fingerprints detect accidental changes and stale reviews. They are opaque non-cr
 
 ## Still required for a fully general framework
 
-A complete setting-neutral runtime would additionally need configurable capability/role bindings, arbitrary content-ID catalogs, extracted mechanics constants and narrative vocabulary, a supported external asset-pack/import policy, and richer topologies. The renderer/rig descriptor foundation itself now exists for bundled assets. This release provides tested world/scene repurposing within the current systems. It does not advertise unimplemented external asset ingestion or a visual world editor.
+The current runtime supports validated role workflows and portable visual/creature catalogs through existing compiled capabilities. A fully general framework would still need arbitrary mechanic-ID catalogs, new executable capability registration, further extracted mechanics/narrative vocabulary and richer topologies. This release provides tested indoor/outdoor scenario repurposing within the existing grid, asset and actor contracts; it does not provide a visual world editor. See [Office scenario authoring and portability](OFFICE-SCENARIO.md) for a complete working example.
 
 ## Simulation profiles and ECS boundaries
 

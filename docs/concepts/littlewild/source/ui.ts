@@ -92,6 +92,10 @@
         document.querySelector('.brand-sub').textContent=p.tagline;
         document.title=p.title+' · Living Worlds v15';
         const sub=document.querySelector('.location-sub');if(sub)sub.textContent=p.worldSubtitle;
+        const location=engine.s.estate?.islands?.[0]?.name||engine.scenarioContext?.world?.name||'Mossmeadow';
+        document.querySelector('.location-title').textContent=location;
+        document.querySelector('.center').setAttribute('aria-label',location+' and interaction controls');
+        $('world').setAttribute('aria-label',location+'. Select a creature to interact. Drag or use arrow keys to pan. Plus and minus zoom. B opens building plans. Creatures move independently.');
     }
     function showGuideTarget(action){
         const routes={learn:'training',home:'construction',planner:'plans',research:'v10-research',quests:'adventures',growth:'v10-homes',market:'v10-market',save:'settings',map:'v10-land'};

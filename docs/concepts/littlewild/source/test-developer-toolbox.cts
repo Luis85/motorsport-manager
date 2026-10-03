@@ -22,8 +22,8 @@ const runtime=globalThis as unknown as {
 const clone=(value:unknown):unknown=>JSON.parse(JSON.stringify(value)) as unknown;
 
 test('Scenario and command discovery publish detached useful contracts',()=>{
- const scenarios=toolbox.scenarios();assert.deepEqual(scenarios.map(p=>p.id),['littlewild','emberworks']);
- assert(scenarios.every(pack=>pack.scenes.length===2));
+ const scenarios=toolbox.scenarios();assert.deepEqual(scenarios.map(p=>p.id),['littlewild','emberworks','office']);
+ assert(scenarios.filter(pack=>pack.id!=='office').every(pack=>pack.scenes.length===2));assert(scenarios.find(pack=>pack.id==='office')?.scenes.length);
  assert.equal(toolbox.commands().find(c=>c.id==='cancel-lesson')?.maxArgs,1);
  const first=scenarios[0];assert(first);(first as {name:string}).name='changed';
  assert.notEqual(toolbox.scenarios()[0]?.name,'changed');
@@ -162,16 +162,16 @@ test('Browser global composes the same toolbox without CommonJS or player UI',()
   LWEconomyRules:'economy-rules.json',LWDefaultSimulationProfile:'simulation-profile.json',LWSimulationSchema:'simulation.schema.json',
   LWDefaultGrowth:'growth-library.json',LWGrowthSchema:'growth.schema.json',LWDefaultProfile:'default-profile.json',LWScenarioSchema:'scenario.schema.json'};
  for(const [name,file] of Object.entries(globals))vm.runInContext(name+'='+fs.readFileSync(path.join(__dirname,'content',file),'utf8'),context);
- for(const [name,file] of [['LWCreatureDefinitions','creature-definitions.json'],['LWCreatureConfig','creature-config.json'],['LWAssetDefinitions','asset-definitions.json']])
+ for(const [name,file] of [['LWCreatureDefinitions','creature-definitions.json'],['LWCreatureConfig','creature-config.json'],['LWAssetDefinitions','asset-definitions.json'],['LWInteractionLibrary','interaction-library.json']])
   vm.runInContext(name+'='+fs.readFileSync(path.join(__dirname,file!),'utf8'),context);
- vm.runInContext('LWScenarioPacks=['+['littlewild.pack.json','emberworks.pack.json'].map(file=>fs.readFileSync(path.join(__dirname,'content',file),'utf8')).join(',')+']',context);
+ vm.runInContext('LWScenarioPacks=['+['littlewild.pack.json','emberworks.pack.json','office.pack.json'].map(file=>fs.readFileSync(path.join(__dirname,'content',file),'utf8')).join(',')+']',context);
  const composition=fs.readFileSync(path.join(__dirname,'simulation.cjs'),'utf8');
  vm.runInContext("LWAssetDefinitions[0].name='🌱'.repeat(120)",context);
  const modules=[...composition.matchAll(/require\('\.\/([^']+)\.js'\)/g)].map(match=>match[1]!);
- for(const name of [...modules,'story-codec','scenario-shape','scenario-runtime','scenario-story','asset-catalog','developer-data','developer-commands','developer-session','developer-toolbox'])
+ for(const name of [...modules,'story-codec','scenario-shape','scenario-runtime','scenario-story','developer-data','developer-commands','developer-session','developer-toolbox'])
   vm.runInContext(fs.readFileSync(path.join(__dirname,name+'.js'),'utf8'),context,{filename:name+'.js'});
  const outcome=vm.runInContext(`(()=>{const t=LWDeveloper,s=t.create({scenarioId:'littlewild'});s.start();const advanced=s.advance(.3).advancedSeconds;s.dispose();const lease=LWDeveloperSession.claimHost();let blocked=false;try{t.create({scenarioId:'emberworks'});}catch(e){blocked=e.code==='session-active';}const count=t.scenarios().length;lease.dispose();return {advanced,blocked,count,astral:t.assets.list()[0].name};})()`,context) as {advanced:number;blocked:boolean;count:number;astral:string};
- assert(Math.abs(outcome.advanced-.3)<1e-9);assert(outcome.blocked);assert.equal(outcome.count,2);assert.equal([...outcome.astral].length,120);
+ assert(Math.abs(outcome.advanced-.3)<1e-9);assert(outcome.blocked);assert.equal(outcome.count,3);assert.equal([...outcome.astral].length,120);
 });
 test('Generated SDK types accept valid intent and reject unavailable capabilities',()=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-sdk-types-'));

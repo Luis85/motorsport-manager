@@ -121,3 +121,7 @@ Each migration has an executable regression gate and a baseline trace for old-ve
 ## Do not claim yet
 
 M1–M6 do **not** make imported JSON executable or convert every mature mechanic method into a small standalone system. AI decision providers, quest/market history, construction consequences, narration, and presentation remain domain adapters on the stable facade. Direct command methods remain compatibility aliases while callers migrate to the explicit router. The migration also does not guarantee cross-platform bitwise float equality or provide a live multiplayer simulation.
+
+## Paired interaction orchestration
+
+`interaction-runtime.ts` coordinates paired invitations and nonlethal duels at the end of the existing `actor-simulation` phase; the six public phase identities remain unchanged. Locked participants still run their actor ECS physiology, while ordinary decisions and work assignment wait for settlement. The interaction service delegates physical gathering to the existing task/logistics authority and social intentions to colony social tasks. Catalog validation and opposed-roll ranking are inward pure domain modules; trigger scheduling, consent, cooldowns and paired checkpoints are application services. Presentation and the developer SDK observe detached data through the same command boundary.

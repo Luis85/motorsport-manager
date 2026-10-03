@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import {spawnSync} from 'node:child_process';
 import { analyzeRuntime, resolveRuntimeDependency, physicalCodeLines } from './tools/architecture-analysis.cjs';
 
 const Production = require('./world-production.js');
@@ -62,6 +64,37 @@ test('Architecture resolves runtime paths without basename collisions or escapes
   assert.equal(resolveRuntimeDependency('engine.ts','../world-ui.js',owned),null);
 });
 test('Architecture catches composition accessed with brackets', () => assert(analyze("const composition=root.LW['EngineComposition']; composition.register({});").composition.includes('EngineComposition')));
+
+test('The actual architecture policy rejects asset-catalog DOM/platform and presentation dependencies',()=>{
+ const project=path.resolve(__dirname,'..'),fixture=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-asset-policy-'));
+ interface PolicyResult {passed:number;total:number;results:{name:string;passed:boolean;error?:string}[];}
+ try{
+  // Run the real checker against an isolated source tree and its actual ownership map.
+  fs.cpSync(path.join(project,'source'),path.join(fixture,'source'),{recursive:true});
+  fs.copyFileSync(path.join(project,'tsconfig.strict.json'),path.join(fixture,'tsconfig.strict.json'));
+  fs.symlinkSync(path.join(project,'node_modules'),path.join(fixture,'node_modules'),'junction');
+  const tools=path.join(fixture,'.generated','tools');fs.mkdirSync(tools,{recursive:true});
+  for(const file of ['architecture-check.cjs','architecture-analysis.cjs'])fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
+  const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
+  assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
+  const run=():{status:number|null;report:PolicyResult}=>{
+   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:15000});
+   assert.ifError(process.error);assert.equal(process.signal,null,process.stderr);
+   return {status:process.status,report:JSON.parse(fs.readFileSync(path.join(fixture,'.generated','typescript-architecture-results.json'),'utf8')) as PolicyResult};
+  };
+  const baseline=run();assert.equal(baseline.status,0);assert.equal(baseline.report.passed,baseline.report.total);
+  const catalog=path.join(fixture,'source','asset-catalog.ts'),original=fs.readFileSync(catalog,'utf8');
+  for(const [injection,reason] of [
+   ['const device=globalThis; device.document.body; device.fetch("/asset");','asset-catalog.ts: platform/nondeterministic API'],
+   ['require("./world-ui.js");','asset-catalog.ts -> world-ui.ts (presentation)'],
+   ['globalThis.LWSceneEnvironment.current();','asset-catalog.ts (domain) -> LWSceneEnvironment / scene-environment.ts (presentation)']
+  ]){
+   fs.writeFileSync(catalog,original+'\n'+injection+'\n');const failure=run();
+   assert.equal(failure.status,1);assert(failure.report.results.some(result=>!result.passed&&result.error?.includes(reason!)),JSON.stringify(failure.report));
+   assert(failure.report.results.find(result=>result.name==='DDD domain map owns every runtime module exactly once')?.passed);
+  }
+ }finally{fs.rmSync(fixture,{recursive:true,force:true});}
+});
 
 test('Physical code accounting excludes trivia and preserves runtime string lines', () => {
   assert.equal(physicalCodeLines('fixture.ts','// header\n/* prose\n * prose */\n\n'),0);

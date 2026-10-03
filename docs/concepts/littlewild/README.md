@@ -15,7 +15,11 @@ that informed the interface.
 
 ## Play
 
-Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
+Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or **Office**, or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
+
+Office runs indoors: Phil wins customer deals, Marty supplies the warehouse, and Angela packs and ships orders through physical production and delivery tasks. Whole scenario exports include the content libraries, creature and visual catalogs, environment, roles, workflows, interaction rules, settings, and captured state. See [OFFICE-SCENARIO.md](OFFICE-SCENARIO.md) for editing and programmatic import/export.
+
+Creature interactions include autonomous friendly duels, authored trigger rules, and player controls to seek or stage a duel. **More → Settings** independently enables duels and quests. See [CREATURE-INTERACTIONS.md](CREATURE-INTERACTIONS.md) and [RULES.md](RULES.md) for the supported rules and extension points.
 
 **Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 
@@ -40,7 +44,7 @@ npm run verify
 npm run verify -- --no-browser
 ```
 
-`typecheck` runs the strict TypeScript gate for the architecture kernel. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
+`typecheck` runs strict TypeScript checks, including shared declarations and dependencies. The former 15-module compatibility typing debt inventory is empty. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
 
 ## Documentation
 
@@ -54,7 +58,7 @@ npm run verify -- --no-browser
 - `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
 - `CREATURE-ARCHITECTURE.md`: creature archetype data, factory/ECS ownership, visual asset boundary and extension workflow.
 
-This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions and animation algorithms remain compiled capabilities. **Creature defaults, spawn modes, movement/physiology tuning, visual asset selection, ECS bindings, 3D geometry, appearance profiles, expression thresholds, animation tuning, rig node names/sockets and building animation anchors are bundled data**; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+Stable mechanic executors, handlers, island dimensions and animation algorithms remain compiled capabilities. Creature defaults, spawn modes, movement/physiology tuning, visual selection, ECS bindings, geometry, appearance profiles, expression thresholds, animation tuning, rig sockets and building anchors are validated data. External scenario packs can carry complete creature and visual manifest catalogs using the supported geometry and rig grammar. Imported data cannot register executable code or new engine primitives. Littlewild, Emberworks and Office demonstrate the supported configuration surface.
 
 ## ECS refactor on PR #25
 

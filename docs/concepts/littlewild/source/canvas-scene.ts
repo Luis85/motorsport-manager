@@ -9,6 +9,9 @@
     function draw(this: LWCanvasPorts.View, time: number, dt: number) {
             this.time = time;
             const c = this.c, w = this.canvas.width, h = this.canvas.height, s = this.engine.s, reduced = s.settings.reducedMotion, t = reduced ? 1 : time;
+            const environment=root.LWSceneEnvironment?.read(),present=(actor:LWCanvasPorts.Actor)=>!actor.activeQuest||!!root.LWSceneEnvironment?.onsite(s,actor);
+            if(environment||this.environmentKey){const key=root.LWSceneEnvironment?.key()||'';if(key!==this.environmentKey){this.makeGround();this.environmentKey=key;}}
+            if(environment)root.LWSceneEnvironment!.backdropCanvas(c,w,h,environment);else{
             c.fillStyle = '#e3eadd';
             c.fillRect(0, 0, w, h);
             const grd = c.createRadialGradient(w * .5, h * .4, 10, w * .5, h * .5, Math.max(w, h) * .68);
@@ -25,6 +28,7 @@
                 rect(c, x + 33, y - 13, 25, 8, '#ffffff');
             }
             c.globalAlpha = 1;
+            }
             if (this.engine.selected&&!this.engine.selected.activeQuest&&s.settings.follow && !this.contextChoosing && s.task?.phase === 'walk') {
                 const p = this.project(s.creature.x, s.creature.y);
                 this.camera.x += (clamp(-p.x * this.camera.z, -w * .2, w * .2) - this.camera.x) * .035;
@@ -34,6 +38,7 @@
             c.translate(Math.round(tr.x), Math.round(tr.y));
             c.scale(tr.z, tr.z);
             c.drawImage(this.ground, -this.ground.width / 2, -85);
+            if(!environment){
             // Pond light and lilies.
             for (let i = 0; i < 7; i++) {
                 const p = this.project(13.5 + (i % 3) * .65, 3.8 + Math.floor(i / 3) * 1.15);
@@ -45,6 +50,7 @@
                 let p = this.project(d.x, d.y);
                 diamond(c, p.x + 4, p.y, 11, 5, '#83a87b');
                 rect(c, p.x + 5, p.y - 3, 3, 3, '#ead7b3');
+            }
             }
             if (this.engine.selected&&!this.engine.selected.activeQuest&&this.showPath && s.task?.phase === 'walk') {
                 c.globalAlpha = .5;
@@ -84,7 +90,7 @@
                 }
                 if (o.paid || o.stage>0) {
                     c.globalAlpha = .25 + .65 * this.engine.projectProgress(o);
-                    building(c, p.x, p.y, o.kind, t);
+                    if(environment)root.LWCanvasAssets?.draw(c,'building',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH);else building(c, p.x, p.y, o.kind, t);
                 }
                 c.restore();
             }
@@ -94,15 +100,15 @@
                     c.globalAlpha = .6;
                     diamond(c, p.x, p.y, 46, 24, ok ? '#f5edb7' : '#d88b77');
                     c.globalAlpha = 1;
-                    building(c, p.x, p.y, this.placement, t, true);
+                    if(environment){c.save();c.globalAlpha=.45;root.LWCanvasAssets?.draw(c,'building',this.placement,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH);c.restore();}else building(c, p.x, p.y, this.placement, t, true);
                 }
             }
-            const objects: LWCanvasPorts.SceneObject[] = s.nodes.filter(n => n.kind !== 'water'&&!s.buildings.some(b=>b.x===n.x&&b.y===n.y)).map(n => ({ ...n, obj: 'node' as const }));
+            const objects: LWCanvasPorts.SceneObject[] = s.nodes.filter(n => (environment||n.kind !== 'water')&&!s.buildings.some(b=>b.x===n.x&&b.y===n.y)).map(n => ({ ...n, obj: 'node' as const }));
             for (const b of s.buildings)
                 objects.push({ ...b, obj: 'building' });
-            for(const actor of this.engine.creatures.filter(a=>!a.activeQuest))objects.push({x:actor.creature.x,y:actor.creature.y,obj:'pip',actor});
-            objects.push({ x: 7, y: 10, obj: 'basket' });
-            if (this.engine.has('market')) {
+            for(const actor of this.engine.creatures.filter(present))objects.push({x:actor.creature.x,y:actor.creature.y,obj:'pip',actor});
+            if(!environment)objects.push({ x: 7, y: 10, obj: 'basket' });
+            if (!environment&&this.engine.has('market')) {
                 const m = s.buildings.find(b => b.kind === 'market')!;
                 objects.push({ x: m.x + .4, y: m.y + .9, obj: 'visitor' });
             }
@@ -111,7 +117,8 @@
                 const p = this.project(o.x, o.y);
                 if (o.obj === 'node') {
                     c.save();if(LWWorldContent.node(o.kind)?.mode==='finite'&&o.stock===0)c.globalAlpha=.32;
-                    if (o.kind === 'wood')
+                    if(environment)root.LWCanvasAssets?.draw(c,'item',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:LWWorldContent.node(o.kind)?.mode==='finite'&&o.stock===0?'depleted':'world'});
+                    else if (o.kind === 'wood')
                         tree(c, p.x, p.y, Number(o.id.slice(1)), o.stock < 1);
                     else if (o.kind === 'berries')
                         bush(c, p.x, p.y, o.stock);
@@ -135,7 +142,7 @@
                     c.restore();
                 }
                 else if (o.obj === 'building') {
-                    building(c, p.x, p.y, o.kind, t);
+                    if(environment){const d=o.door||{dx:0,dy:1};root.LWCanvasAssets?.draw(c,'building',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{rotation:d.dx===1?Math.PI/2:d.dx===-1?-Math.PI/2:d.dy===-1?Math.PI:0});}else building(c, p.x, p.y, o.kind, t);
                     if(o.storage){const si=LW.WorldSystem.sum(o.storage.input),so=LW.WorldSystem.sum(o.storage.output);if(si){box(c,p.x-23,p.y+2,9,6,6,'#bba574','#998053','#83734c');rect(c,p.x-20,p.y-3,2,8,'#ddd0a0');}if(so){box(c,p.x+16,p.y+7,10,7,7,'#cbb68c','#a48f63','#8b7855');rect(c,p.x+19,p.y-2,4,2,'#f2dfa7');if(so>6)box(c,p.x+19,p.y,8,6,5,'#d0bc90','#ae9664','#907d54');}}
                     if(o.level>1){for(let i=0;i<o.level;i++)rect(c,p.x-6+i*5,p.y+12,3,3,'#ead4a1');}
                     const improvement=this.engine.allOrders().find(a=>a.type==='upgrade'&&a.kind===o.kind);
@@ -162,7 +169,7 @@
                         diamond(c, p.x, p.y, 35, 16, '#f5e7a8');
                         c.globalAlpha = 1;
                     }
-                    pip(c, p.x, p.y, 1.15, t, this.engine.mood(a), s.creature.dir, s.task?.phase === 'work' ? (s.task!.kind==='practice'?'train':s.task!.kind==='reflect'?'rest':s.task!.kind) : 'idle', !reduced && s.task?.phase === 'walk', a);
+                    if(!environment||!root.LWCanvasAssets?.actor(c,a,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH))pip(c, p.x, p.y, 1.15, t, this.engine.mood(a), s.creature.dir, s.task?.phase === 'work' ? (s.task!.kind==='practice'?'train':s.task!.kind==='reflect'?'rest':s.task!.kind) : 'idle', !reduced && s.task?.phase === 'walk', a);
                     if((s.task&&['stockbuilding','deposit','emptybuilding'].includes(s.task.kind)||a.worldSupply||a.needsDeposit)&&Object.values(a.inventory).some(q=>q>0)){box(c,p.x+8,p.y-5,9,6,7,'#d2b581','#ac895b','#906f45');rect(c,p.x+10,p.y-11,2,8,'#ead49e');}
                     if (s.task?.kind === 'rest' && s.task.phase === 'work') {
                         c.fillStyle = '#456e60';
@@ -180,7 +187,7 @@
                 rect(c, p.x + 1, p.y - 17, 3, 2, i % 2 ? '#f1de9c' : '#b1caca');
             }
             c.restore();
-            if (s.hour > 18 || s.hour < 6) {
+            if (!environment&&(s.hour > 18 || s.hour < 6)) {
                 const darkness = s.hour > 18 ? Math.min(.3, (s.hour - 18) * .055) : .3;
                 c.fillStyle = `rgba(38,61,87,${darkness})`;
                 c.fillRect(0, 0, w, h);
@@ -223,10 +230,10 @@
             }
             // A small activity badge keeps Pip visible among the trees, without a dashboard over the world.
             this.nameTargets=[];
-            for(const a of this.engine.creatures.filter(a=>!a.activeQuest).sort((a,b)=>(b.id===this.engine.selected?.id?1:0)-(a.id===this.engine.selected?.id?1:0))){
+            for(const a of this.engine.creatures.filter(present).sort((a,b)=>(b.id===this.engine.selected?.id?1:0)-(a.id===this.engine.selected?.id?1:0))){
                 if(this.contextChoosing&&a.id!==this.engine.selected?.id)continue;
                 if(this.bubble?.actorId===a.id&&this.bubble.time>time)continue;
-                const p = this.toScreen(a.creature.x, a.creature.y), task = a.task, caption = a.name + (task?.phase === 'walk' ? ' · on my way' : task?.kind === 'rest' ? ' · resting' : task?.kind === 'build' ? ' · building' : task?.kind === 'gather' ? ' · gathering' : task&&['craft','gearcraft'].includes(task.kind) ? ' · making' : task?.kind==='produce'?' · tending':task?.kind==='stockbuilding'?' · stocking':task?.kind==='collectbuilding'||task?.kind==='emptybuilding'?' · collecting' : task&&['train','practice'].includes(task.kind) ? ' · learning' : task?.kind === 'shop' ? ' · shopping' : task?.kind==='social'?' · together':task?.kind==='calmdown'?' · taking space':task?.kind==='withdraw'?' · collecting':task?.kind==='deposit'?' · unloading':'');
+                const p = this.toScreen(a.creature.x, a.creature.y), task = a.task, role=root.LWSceneEnvironment?.role(s,a.id), caption = a.name + (role?' · '+role:'') + (a.activeQuest?' · '+(a.activeQuest.name||a.activeQuest.status||'Onsite work'):task?.phase === 'walk' ? ' · on my way' : task?.kind === 'rest' ? ' · resting' : task?.kind === 'build' ? ' · building' : task?.kind === 'gather' ? ' · gathering' : task&&['craft','gearcraft'].includes(task.kind) ? ' · making' : task?.kind==='produce'?' · tending':task?.kind==='stockbuilding'?' · stocking':task?.kind==='collectbuilding'||task?.kind==='emptybuilding'?' · collecting' : task&&['train','practice'].includes(task.kind) ? ' · learning' : task?.kind === 'shop' ? ' · shopping' : task?.kind==='social'?' · together':task?.kind==='calmdown'?' · taking space':task?.kind==='withdraw'?' · collecting':task?.kind==='deposit'?' · unloading':'');
                 c.font = '600 11px system-ui';
                 if(p.x<-30||p.x>w+30||p.y<0||p.y>h+50)continue;
                 const bw = Math.min(190, c.measureText(caption).width + 20), xx = clamp(p.x - bw / 2, 8, w - bw - 8);

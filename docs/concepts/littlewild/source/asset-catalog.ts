@@ -1,4 +1,4 @@
-/* Immutable catalog for bundled visual assets. Scenario/import JSON cannot register assets. */
+/* Validated visual data catalog. Scenario scopes install JSON definitions atomically. */
 (function(inputRoot:unknown){
  'use strict';
  type Plain=Record<string,unknown>;
@@ -12,6 +12,9 @@
  }
  interface Api {
   readonly revision:number;
+  readonly defaults:readonly Definition[];
+  replace(input:unknown):void;
+  withDefinitions<T>(input:unknown,work:()=>T):T;
   all():readonly Definition[];
   get(category:Category,id:string):Definition|null;
   building(id:string):Definition|null;item(id:string):Definition|null;actor(id:string):Definition|null;
@@ -151,19 +154,28 @@
    for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(materials,role)||!color(value))fail(id+' invalid appearance material '+profile+'/'+role);
   }
  }
- const raw=root.LWAssetDefinitions;
+ const raw=root.LWAssetDefinitions??(typeof module!=='undefined'&&module.exports?require('./asset-definitions.json'):undefined);
  if(!Array.isArray(raw))fail('bundled definition list is missing');
  dataOnly(raw);
- const defs:readonly Definition[]=Object.freeze(list(raw,'bundled definitions').map(validate)),index=new Map<string,Definition>();
- for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
- const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
+ function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
+  dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
+  const defs=Object.freeze(entries.map(validate)),index=new Map<string,Definition>();
+  for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
+  const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
+  return {defs,index,revision};
+ }
+ let active=prepare(raw);const defaults=active.defs;
+ function replace(input:unknown):void{active=prepare(input);}
+ function withDefinitions<T>(input:unknown,work:()=>T):T{
+  const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}
+ }
  const api:Api=Object.freeze({
-  revision,validate,all:()=>defs,
-  get:(category:Category,id:string)=>index.get(category+':'+id)||null,
-  building:(id:string)=>index.get('building:'+id)||null,
-  item:(id:string)=>index.get('item:'+id)||null,
-  actor:(id:string)=>index.get('actor:'+id)||null,
-  hasModel:(category:Category,id:string,name:string)=>!!index.get(category+':'+id)?.models[name]
+  get revision(){return active.revision;},defaults,validate,replace,withDefinitions,all:()=>active.defs,
+  get:(category:Category,id:string)=>active.index.get(category+':'+id)||null,
+  building:(id:string)=>active.index.get('building:'+id)||null,
+  item:(id:string)=>active.index.get('item:'+id)||null,
+  actor:(id:string)=>active.index.get('actor:'+id)||null,
+  hasModel:(category:Category,id:string,name:string)=>!!active.index.get(category+':'+id)?.models[name]
  });
  root.LWAssets=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;

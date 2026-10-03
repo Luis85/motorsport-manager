@@ -1,9 +1,9 @@
 /// <reference path="./developer-contracts.d.ts" preserve="true" />
 /** Node composition entry: the same toolbox and validated bundled data used by the browser. */
-require('./scenario-story.js');
-const runtime=globalThis as unknown as {LWAssetDefinitions:unknown};
-runtime.LWAssetDefinitions=require('./asset-definitions.json') as unknown;
+require('./content-runtime.js');
+require('./creature-catalog.js');
 require('./asset-catalog.js');
+require('./scenario-story.js');
 require('./developer-data.js');
 require('./developer-commands.js');
 require('./developer-session.js');
@@ -23,3 +23,7 @@ export type Json=LittlewildDeveloper.Json;
 export type Document=LittlewildDeveloper.Document;
 export type ActorSnapshot=LittlewildDeveloper.ActorSnapshot;
 export type AssetCategory=LittlewildDeveloper.AssetCategory;
+
+export type InteractionTarget=LittlewildDeveloper.InteractionTarget;
+export type InteractionOption=LittlewildDeveloper.InteractionOption;
+export type GameSettings=LittlewildDeveloper.GameSettings;

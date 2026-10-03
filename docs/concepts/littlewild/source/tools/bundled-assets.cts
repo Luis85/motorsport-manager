@@ -29,6 +29,7 @@ export function assetDefinitions(source:string):Manifest[] {
  const directory=path.join(source,'assets'),definitions:Manifest[]=[];
  const categories:Readonly<Record<string,string>>={buildings:'building',items:'item',creatures:'actor'};
  for(const family of folders(directory)){
+  if(family==='interactions')continue; // Data interactions are compiled separately from visual assets.
   const category=categories[family];
   if(!category)throw Error('Unknown asset family: '+family);
   for(const id of folders(path.join(directory,family))){

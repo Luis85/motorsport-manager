@@ -13,6 +13,10 @@
   }
   interface TransferTask extends Task { amount: number; }
   interface WorkTask extends Task { buffered: boolean; jobId: string | null; elapsed: number; }
+  interface GatherTask {
+    kind:string;resource:string;nodeId:string;orderId:string|null;
+    target:{x:number;y:number};duration:number;label:string;reason:string;thought:string;worldGather:true;
+  }
   const root = inputRoot as { LWWorldTasks?: typeof api };
 
   function transfer(kind: string, building: Building, resource: string, amount: number,
@@ -32,7 +36,13 @@
       reason: 'The ingredients are at this building. Finished goods wait in its output tray for collection.',
       thought: 'Supplies in. Patient work. Something useful out.' };
   }
-  const api = { transfer, work };
+  function gather(node:Building&{stock:number},rule:{id:string;resource:string;mode:string;seconds:number},names:{item:string},orderId:string|null=null):GatherTask {
+    return {kind:rule.id==='hunt'?'hunt':'gather',resource:rule.resource,nodeId:node.id,orderId,
+      target:{x:node.x,y:node.y},duration:rule.seconds,label:'Gathering '+names.item.toLowerCase(),
+      reason:rule.mode==='finite'?'This deposit has '+node.stock+' units left. Gathering removes only what I carry away.':'A sustainable source. Each trip still takes time and carrying space.',
+      thought:'A little from the land, a little closer to home.',worldGather:true};
+  }
+  const api = { transfer, work, gather };
   root.LWWorldTasks = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(globalThis);

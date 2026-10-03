@@ -31,7 +31,7 @@ check("Independent profile schema rejects reordered engine layers",()=>invalid(s
 const unknown=copy(defaultProfile);unknown.execute="alert(1)";
 check("Independent profile schema rejects unknown behavior-shaped fields",()=>invalid(simulationSchema,unknown));
 
-for(const name of ["littlewild","emberworks"]){
+for(const name of ["littlewild","emberworks","office"]){
  const file=path.join(CONTENT,name+".pack.json"),document=JSON.parse(fs.readFileSync(file,"utf8"));
  check(name+" publishes scenario schema 2",()=>assert.equal(document.schemaVersion,2));
  check(name+" embeds a valid simulation profile",()=>valid(simulationSchema,document.simulation));

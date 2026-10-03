@@ -3,6 +3,36 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),L=require('./si
 const C=global.LWGrowth,G=global.LWGeography,P=global.LWPlanner,A=global.LWAdventure,W=global.LWWorldContent,results=[];
 const test=(name,fn)=>{const start=performance.now();try{fn();results.push({name,passed:true,ms:performance.now()-start});}catch(e){results.push({name,passed:false,error:e.stack});console.error('FAIL',name,e.message);}};
 const copy=v=>JSON.parse(JSON.stringify(v)), snap=e=>JSON.stringify(e.export());
+test('RPG checks require three owned ordinary dice values',()=>{
+ const R=global.LWRPG,sparse=Array(3),inherited=Array(3),accessor=[1,2,3];
+ Object.setPrototypeOf(inherited,{0:1,1:1,2:1});let reads=0;
+ Object.defineProperty(accessor,'0',{get(){reads++;return 1;}});
+ for(const dice of [sparse,inherited,accessor,[1,2],[1,2,7],[1,2,NaN]])assert.throws(()=>R.resolve(12,dice),/three six-sided dice/);
+ assert.equal(reads,0);assert.equal(R.resolve(12,[1,1,1]).outcome,'critical-success');
+ assert.equal(R.resolve(16,[5,6,6]).outcome,'failure');assert.equal(R.resolve(15,[5,6,6]).outcome,'critical-failure');
+});
+test('RPG resolution ignores caller array methods and returns detached dice',()=>{
+ const R=global.LWRPG,dice=[5,5,5];let calls=0;
+ Object.defineProperty(dice,'reduce',{value(){calls++;return 0;}});
+ Object.defineProperty(dice,Symbol.iterator,{value(){calls++;throw Error('Caller iterator must not execute.');}});
+ const result=R.resolve(10,dice);assert.equal(result.total,15);assert.equal(result.margin,-5);
+ assert.equal(result.outcome,'failure');assert.deepEqual(result.dice,[5,5,5]);assert.equal(calls,0);
+ result.dice[0]=1;assert.equal(dice[0],5);
+});
+test('RPG probabilities reject invalid targets and cannot be poisoned through the cache',()=>{
+ const R=global.LWRPG;for(const target of [NaN,Infinity,-Infinity])assert.throws(()=>R.odds(target),/finite target/);
+ const before={...R.odds(12)},odds=R.odds(12);assert(Object.isFrozen(odds));assert.throws(()=>{odds.success=0;},TypeError);
+ assert.deepEqual(R.odds(12),before);assert.equal(R.odds(2).success,0);
+});
+test('RPG arithmetic rejects invalid points, seeds and overflowing carried loads',()=>{
+ const R=global.LWRPG;for(const points of [-1,NaN,Infinity]){assert.throws(()=>R.rank(points),/points/);assert.throws(()=>R.nextCost(points),/points/);}
+ for(const seed of [-1,.5,NaN,Infinity,4294967296])assert.throws(()=>R.next(seed),/32-bit seed/);
+ assert.deepEqual(R.next(0),R.next(0));assert(Number.isFinite(R.next(4294967295).value));
+ for(const strength of [1e308,Number.MIN_VALUE])assert.throws(()=>R.encumbrance(strength,1000),/finite/);
+ assert.throws(()=>R.nextCost(Number.MAX_VALUE),/finite positive cost/);
+ assert.throws(()=>R.skillLevel(Number.MAX_VALUE,'E',Number.MAX_VALUE),/finite/);
+ assert(R.encumbrance(10,100000).overloaded);assert.equal(R.rank(1),0);assert.equal(R.nextCost(1),1);
+});
 function clean(){const e=L.createWorldDemo();e.s.started=true;e.s.paused=false;e.selectCreature('c1');for(const c of e.creatures){c.task=null;c.orders=[];c.training=null;c.learning.queue=[];c.learning.paused=false;c.equipQueue=[];c.questPlan=null;c.activeQuest=null;c.stockTargets={};c.worldPickup=null;c.worldSupply=null;c.needsDeposit=false;c.socialIntent=null;c.unpackIntent=false;c.feelings.anger=0;c.feelings.coolingUntil=0;c.feelings.social=90;for(const k in c.needs)c.needs[k]=95;}for(const b of e.s.buildings)if(b.storage)Object.assign(b.storage,{input:{},output:{},job:null,requests:{},targets:{},enabled:true});return e;}
 function rich(e){e.s.player.level=20;e.s.player.coins=1e7;e.s.progression.prestige=e.s.progression.earnedPrestige=1e7;openAll(e);return e;}
 function ticks(e,secs){for(let i=0;i<Math.ceil(secs*10);i++)e.step(.1);}

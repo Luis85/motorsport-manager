@@ -3,7 +3,7 @@
 'use strict';
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 const args=process.argv.slice(2),[command,input,output]=args;
-const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export littlewild output.pack.json';
+const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export <scenario-id> output.pack.json';
 try{
   if(helpRequested(args)){emit({ok:true,usage});process.exit(0);}
   if(!['validate','capture','export'].includes(command)||args.length!==(command==='validate'?2:3))throw Error('Usage: '+usage);

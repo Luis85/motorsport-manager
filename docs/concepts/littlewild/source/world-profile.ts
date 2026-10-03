@@ -5,6 +5,8 @@
 
   interface FixedSite { kind: string; x: number; y: number; }
   interface WorldProfile {
+    nodePolicy?:'profile-only';
+    environment?:LWContentPorts.Environment;
     id: string;
     name: string;
     description: string;

@@ -74,3 +74,15 @@ Additional focused checks executed during the review included JavaScript syntax 
 - Large historical modules remain protected by compatibility fixtures instead of being mechanically split in this review.
 - Hardware WebGL, physical devices, screen readers, representative-device performance, game balance, and human usability require separate validation.
 - Native Godot gameplay was not modified by PR 25; its six-shard runtime gate is not evidence for this isolated HTML concept and is not substituted by the Littlewild gate.
+
+## Interactions and portable Office scenario follow-up
+
+The sections above record the earlier pre-TypeScript review. Current release counts and identities are in `VERIFICATION.md`; the old module-size and typing debt statements do not describe the current source inventory.
+
+Parallel implementation added authored interaction definitions, duel profiles and trigger rules, independent persistent duel/quest settings, complete scenario resource catalogs, and a generic role/workflow boundary. Office exercises these boundaries through Phil's customer calls, Marty's physical supply transfers, and Angela's packing and dispatch. The scene selects indoor presentation through environment data rather than a scenario-name branch.
+
+Independent integration review reproduced three persistence defects and verified their fixes: market cleanup discarded physical sales still referenced by customer orders; bounded completion markers evicted facts for live orders; and portable stories accepted conflicting native and experience resource catalogs. Regression coverage now checks retention, coherent catalogs, reversible failed imports, and exact native/portable continuation through normal simulation.
+
+The interaction review also corrected target cooldown enforcement, terminal-history validation, complete catalog fingerprints, current composition guards, and large bounded history imports. Root review hardened 3d6 input ownership, immutable probability caches, finite derived arithmetic, and release coverage for every shipped scenario. All 15 inventoried compatibility modules now receive strict semantic checking with declarations checked; architecture has no line-budget or typing-debt exceptions.
+
+The supported duel resolver is the existing GURPS-inspired 3d6 subset with nonlethal authored scoring. New executable behaviors still require reviewed engine code. Process-global catalogs remain a single-active-context compatibility boundary, enforced by host/session ownership and revision guards. Full browser/release evidence and device, hardware and human-validation limits remain explicit in the delivery records.

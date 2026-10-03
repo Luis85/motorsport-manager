@@ -35,7 +35,7 @@
         resize() { const box = this.canvas.getBoundingClientRect(); if (!box.width || !box.height)
             return; this.canvas.width = Math.round(box.width); this.canvas.height = Math.round(box.height); this.c.imageSmoothingEnabled = false; if (!this.manual)
             this.home(); }
-        home() { const w = this.canvas.width, h = this.canvas.height; this.camera.z = clamp(Math.min((w - 40) / (SIZE * TW + 20), (h - 92) / (SIZE * TH + 75)), .42, 1.8); this.camera.x = 0; this.camera.y = 18; this.manual = false; }
+        home() { const w = this.canvas.width, h = this.canvas.height; this.camera.z = clamp(Math.min((w - 40) / (SIZE * TW + 20), (h - 92) / (SIZE * TH + 75)), .42, 1.8); this.camera.x = 0; this.camera.y = 18; this.manual = false;const camera=root.LWSceneEnvironment?.read()?.camera;if(camera){this.camera.z=clamp(this.camera.z*camera.zoom,.3,3);const p=this.toScreen(camera.center[0],camera.center[1]);this.camera.x+=w/2-p.x;this.camera.y+=h*.5-p.y;} }
         zoom(factor: number) { this.zoomAt(factor, this.canvas.width / 2, this.canvas.height / 2); }
         zoomAt(factor: number, x: number, y: number) {
             const before = this.transform(), px = (x - before.x) / before.z, py = (y - before.y) / before.z;
@@ -49,9 +49,10 @@
         limitCamera() { this.camera.x = clamp(this.camera.x, -this.canvas.width * .85, this.canvas.width * .85); this.camera.y = clamp(this.camera.y, -this.canvas.height * .75, this.canvas.height * .75); }
         hitTest(x: number, y: number) {
             // Nameplates are explicit selectable targets, not only painted decoration.
-            for(const target of (this.nameTargets||[]).slice().reverse())if(this.engine.creatures.some(a=>a.id===target.id&&!a.activeQuest)&&x>=target.x&&x<=target.x+target.w&&y>=target.y&&y<=target.y+target.h){const a=this.engine.creatures.find(a=>a.id===target.id)!;return {x:Math.round(a.creature.x),y:Math.round(a.creature.y),objectType:'pip',actorId:a.id};}
+            const present=(a:LWCanvasPorts.Actor)=>!a.activeQuest||!!root.LWSceneEnvironment?.onsite(this.engine.s,a);
+            for(const target of (this.nameTargets||[]).slice().reverse())if(this.engine.creatures.some(a=>a.id===target.id&&present(a))&&x>=target.x&&x<=target.x+target.w&&y>=target.y&&y<=target.y+target.h){const a=this.engine.creatures.find(a=>a.id===target.id)!;return {x:Math.round(a.creature.x),y:Math.round(a.creature.y),objectType:'pip',actorId:a.id};}
             for(const t of (this.landTargets||[]).slice().reverse())if(x>=t.x&&x<=t.x+t.w&&y>=t.y&&y<=t.y+t.h){const n=this.engine.s.nodes.find(n=>n.id===t.id);if(n)return{x:n.x,y:n.y,objectType:n.kind,objectId:n.id};}
-            const s = this.engine.s, objects: (LWCanvasPorts.Point & { kind: string; id?: string; actorId?: string })[] = [...s.nodes.filter(n => !s.buildings.some(b=>b.x===n.x&&b.y===n.y)), ...s.buildings, ...this.engine.allOrders().filter(o => o.type === 'build'), ...this.engine.creatures.filter(a=>!a.activeQuest).map(a=>({...a.creature,kind:'pip',actorId:a.id}))];
+            const s = this.engine.s, objects: (LWCanvasPorts.Point & { kind: string; id?: string; actorId?: string })[] = [...s.nodes.filter(n => !s.buildings.some(b=>b.x===n.x&&b.y===n.y)), ...s.buildings, ...this.engine.allOrders().filter(o => o.type === 'build'), ...this.engine.creatures.filter(present).map(a=>({...a.creature,kind:'pip',actorId:a.id}))];
             objects.sort((a, b) => (b.x + b.y) - (a.x + a.y));
             for (const o of objects) {
                 const p = this.toScreen(o.x, o.y), width = o.kind === 'pip' ? Math.max(22,22*this.camera.z) : (o.kind === 'wood' ? 24 : BUILDINGS[o.kind] ? 29 : 14) * this.camera.z, height = (o.kind === 'pip' ? 42 : o.kind === 'wood' ? 64 : BUILDINGS[o.kind] ? 55 : 20) * this.camera.z;

@@ -49,6 +49,17 @@
         updateUI();
         save();
     }
+    else if (el.id === 'duels-setting' || el.id === 'quests-setting') {
+        const setting = el.id === 'duels-setting' ? 'duels' : 'quests';
+        const r = shell.engine.setGameSettings({[setting]:el.checked});
+        if (!r.ok) {
+            el.checked = shell.engine.gameSettings()[setting];
+            toast(r.reason, true);
+            return;
+        }
+        updateUI(true);
+        save();
+    }
     else if (el.id === 'focus-select') {
         shell.engine.s.focus = el.value;
         toast('A little encouragement toward ' + ({ balanced: 'balance', cozy: 'self-care', builder: 'building', curious: 'curiosity' }[el.value]) + '.');

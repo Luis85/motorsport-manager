@@ -5,6 +5,12 @@ declare namespace LittlewildDeveloper {
  type ErrorCode = 'invalid-input' | 'session-active' | 'session-disposed' | 'review-invalid' | 'operation-failed';
  interface DeveloperError extends Error { readonly code:ErrorCode; }
  interface CommandArgs {
+  'seek-duel':[actorId:string,definitionId?:string|null,ruleId?:string|null];
+  'cancel-duel-seek':[actorId:string]; 'stage-duel':[definitionId:string,actorA:string,actorB:string];
+  'set-game-settings':[patch:Partial<GameSettings>];
+  'request-interaction':[definitionId:string,sourceId:string,target:InteractionTarget];
+  'respond-interaction':[requestId:string,accept:boolean];
+  'cancel-interaction':[requestId:string]; 'set-interaction-library':[library:Document];
   'select-creature':[actorId:string]; 'care':[action:string];
   'research-skill':[skillId:string]; 'teach-skill':[skillId:string];
   'practice-skill':[skillId:string,count?:number]; 'cancel-lesson':[skillId:string];
@@ -32,7 +38,7 @@ declare namespace LittlewildDeveloper {
    | [saleId:string,action:'assign',value:string|null];
  }
  type CommandId=keyof CommandArgs;
- type WorldCommandId='select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
+ type WorldCommandId='seek-duel'|'cancel-duel-seek'|'stage-duel'|'set-game-settings'|'request-interaction'|'cancel-interaction'|'set-interaction-library'|'select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
  type Command={ [Id in CommandId]:{id:Id;args:CommandArgs[Id]} &
   (Id extends WorldCommandId ? {actorId?:never} : {actorId:string}) }[CommandId];
  interface CommandResult { readonly ok:boolean; readonly reason?:string; readonly data:Json; }
@@ -50,6 +56,9 @@ declare namespace LittlewildDeveloper {
   readonly actors:readonly ActorSnapshot[];readonly buildings:readonly Document[];readonly nodes:readonly Document[];
   readonly player:Document;readonly scenarioId:string|null;readonly sceneId:string|null;
  }
+ interface GameSettings {readonly duels:boolean;readonly quests:boolean;}
+ interface InteractionTarget {readonly scope:'creature'|'building'|'node';readonly id:string;}
+ interface InteractionOption {readonly id:string;readonly label:string;readonly description:string;readonly available:boolean;readonly reason:string|null;}
  interface StepResult {readonly steps:number;readonly advancedSeconds:number;readonly simTime:number;}
  interface Session {
   readonly disposed:boolean;
@@ -59,6 +68,8 @@ declare namespace LittlewildDeveloper {
   step(count?:number):StepResult;
   /** Seconds must be an exact multiple of 0.1, between 0 and 3600. */
   advance(seconds:number):StepResult;
+  interactionOptions(sourceId:string,target:InteractionTarget):readonly InteractionOption[];
+  interactions():Document;interactionDefinitions():Document;settings():GameSettings;
   inspect():Snapshot;save():Document;story():Document;captureScenario():Document;
   dispose():void;
  }
@@ -72,6 +83,7 @@ declare namespace LittlewildDeveloper {
   validateScenario(input:unknown):Validation;
   createScenario(input:unknown,sceneId:string):Session;
   reviewStory(input:unknown):StoryReview;openStory(review:StoryReview):Session;
+  interactions():readonly Document[];validateInteraction(input:unknown):Validation;validateInteractionLibrary(input:unknown):Validation;
   creatures():readonly Document[];validateCreature(input:unknown):Validation;
  }
  type AssetCategory='actor'|'building'|'item';

@@ -136,4 +136,46 @@ test('Public content text limits count Unicode code points consistently with JSO
  behavior.behaviorTree.name+='🌱';assert.equal(global.LWAdventure.validate(behavior).ok,false);
 });
 
+test('Typed content boundaries preserve nullable grants and reject malformed nested definitions',()=>{
+ const Growth=global.LWGrowth,Adventure=global.LWAdventure,World=global.LWWorldContent;
+ const before={growth:Growth.hash,adventure:Adventure.hash,world:World.hash};
+ const growth=C.copy(Growth.content);const withoutGrant=growth.research.find(r=>!r.grants);assert(withoutGrant);withoutGrant.grants=null;
+ assert.equal(Growth.validate(growth).ok,true,'null means no granted rank');
+ for(const mutate of [d=>d.equipment[0].slot=['head'],d=>d.skillRules.woodcraft.attribute=['ST'],d=>d.equipment[0].recipe=null,d=>d.equipment[0].recipe.skill=['woodcraft'],d=>d.equipment[0].color=['#abcdef'],d=>d.quests[0].steps[0].skill=['ST'],d=>d.quests[0].loot[0].item=['wood'],d=>d.quests[0].steps=[null],d=>d.quests[0].loot=[null]]){
+  const input=C.copy(Adventure.content);mutate(input);const checked=Adventure.validate(input);
+  assert.equal(checked.ok,false);assert(checked.errors.length);
+ }
+ const world=C.copy(World.content);world.buildings[0].production={output:'wood',amount:1,cost:[],seconds:1,skill:'woodcraft',depletion:0};
+ assert.equal(World.validate(world).ok,false);
+ assert.deepEqual({growth:Growth.hash,adventure:Adventure.hash,world:World.hash},before);
+});
+
+test('Adventure definition rejection cannot install corrupt attribute or extension values',()=>{
+ const Adventure=global.LWAdventure,engine=new L.Engine();engine.actor.rpg.cp=40;
+ const before=engine.export(),hash=Adventure.hash;
+ const changes=[
+  ...['bad',null,false,[],10,Infinity].map(value=>d=>d.personalities[0].attributes.corrupt=value),
+  d=>d.personalities[0].attributes.ST='ten',d=>d.personalities[0].preferences.social='quick',
+  ...[null,false,0,'',[],['metadata']].map(value=>d=>d.extensions=value),
+  d=>d.equipment[0].extensions=false
+ ];
+ for(const change of changes){const doc=C.copy(Adventure.content);change(doc);
+  const result=Adventure.validate(doc);assert.equal(result.ok,false);assert(result.errors.length);
+  assert.throws(()=>Adventure.replace(doc));assert.equal(Adventure.hash,hash);
+  assert.deepEqual(engine.export(),before);
+ }
+ assert.equal(engine.spendPoint('corrupt').ok,false);assert.equal(engine.actor.rpg.cp,40);
+ assert.deepEqual(engine.export(),before);
+ assert(Object.values(engine.actor.rpg.attributes).every(value=>typeof value==='number'&&Number.isFinite(value)));
+ const valid=C.copy(Adventure.content);valid.extensions={author:{notes:['safe JSON metadata']}};
+ assert.equal(Adventure.validate(valid).ok,true);
+});
+test('Typed content helpers retain absent-value and invalid-ID diff compatibility',()=>{
+ assert.equal(C.stable(undefined),undefined);assert.equal(C.stable([undefined]),'[]');
+ const invalid=global.LWGrowth.validate('{');assert.equal(invalid.ok,false);
+ assert.equal(Object.hasOwn(invalid,'content'),true);assert.equal(invalid.content,undefined);
+ const changes=global.LWWorldContent.diff([{id:1,name:'old'}],[{id:1,name:'new'}]);
+ assert.deepEqual(changes,[{path:'/1/name',before:'old',after:'new'}]);
+});
+
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/content-boundary-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} content-boundary checks passed`);if(passed!==results.length)process.exitCode=1;

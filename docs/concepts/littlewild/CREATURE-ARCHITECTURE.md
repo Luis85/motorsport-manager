@@ -11,6 +11,7 @@ Creatures are authored as data, instantiated by an application service, simulate
 | Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/assets/creatures/<id>/creature.json` | Definition data |
 | Personality traits, attributes and preferences | Adventure content | Definition data |
 | Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks, interaction events/cooldowns | Creature actor record | Yes |
+| Paired invitations, duel rounds/history, catalog identity, participant cooldowns, trigger clocks and seek intents | Root `state.creatureInteractions` via `interaction-runtime.ts` and `interaction-triggers.ts` | Yes |
 | `Creature`, `Activity`, `Intent` ECS projections | `actor-ecs.ts` | No |
 | Construction of a new mutable actor from immutable definitions | `creature-factory.ts` | Application service |
 | Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/creatures/<id>/asset.json` | Presentation data |
@@ -20,7 +21,7 @@ Creatures are authored as data, instantiated by an application service, simulate
 ## Core patterns
 
 1. **Immutable definitions, mutable state.** Catalog entries are deeply frozen. A factory always returns detached mutable state.
-2. **Data-only trust boundary.** Creature manifests reject executable-shaped fields and unknown schema fields. Imported scenarios cannot register creature archetypes or assets.
+2. **Data-only trust boundary.** Creature manifests reject executable-shaped fields and unknown schema fields. Portable scenarios may carry validated creature and asset definitions in a scoped resource context; they cannot register executable capabilities.
 3. **Reference-bound ECS.** Persistent component data remains owned by the actor record. ECS stores the same object references; transient projections never enter save data.
 4. **Compiled systems, authored tuning.** JSON selects and tunes known capabilities. JSON never supplies arbitrary behavior code or system order.
 5. **Presentation isolation.** Domain creature data never imports Three.js or asset code. Visual assets never own gameplay balances or progression.
@@ -121,3 +122,7 @@ packages configure the supported game rather than injecting arbitrary mechanics.
 Removing or renaming an archetype used by a saved story is a compatibility change;
 retain stable IDs or provide an explicit migration. Definition edits tune future
 creation; saved mutable defaults are not retroactively rewritten on reload.
+
+## Shared interactions
+
+Player care, creature social intentions and exact-node gathering use the same interaction discovery/request boundary while delegating settlement to their established services. Authored friendly duel profiles and declarative trigger rules reserve both participants, obtain creature consent and run bounded actor-seeded 3d6 rounds. Paired state belongs to the world so a single lock and checkpoint covers both actors; their physiology and seeded RPG streams stay actor-owned. See [CREATURE-INTERACTIONS.md](CREATURE-INTERACTIONS.md) for authoring, settings, SDK requests and continuation guarantees.

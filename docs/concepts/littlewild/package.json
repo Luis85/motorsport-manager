@@ -11,7 +11,7 @@
     "toolbox": "node .generated/tools/developer-example.cjs"
   },
   "devDependencies": {
-    "@types/node": "22.0.0",
+    "@types/node": "22.20.5",
     "ajv": "8.20.0",
     "playwright": "1.63.0",
     "tsx": "4.20.0",

@@ -41,7 +41,13 @@ CI exposed an unanchored verification ignore rule that hid four new source helpe
 
 Focused modules preserve one authoritative engine and the existing facade/record contracts. Extractions retain task order, receiver/predecessor behavior, persisted fields, random draws and presentation timing. The machine-readable ownership map registers every runtime module. New services and infrastructure use explicit strict TypeScript ports.
 
-The strict-typing debt ratchet still makes any compatibility module without complete semantic typing visible. Removing a size exception is not evidence that a module is fully typed. Process-global content registries remain an explicit compatibility boundary rather than being described as per-engine dependency injection.
+All fifteen inventoried legacy domain/application modules now pass the integrated strict compiler through explicit content, actor, inventory, job, persistence, and application capability contracts. The architecture inventory has no remaining strict-typing debt, and its budget is zero. No `any`, TypeScript suppression, or size exception replaces the former debt. Pure world save validation is a focused service; prototype-installed services declare their actual typed methods and fields. This coverage does not claim strict semantic checking for every presentation module.
+
+Additional boundary regressions reject sparse, inherited, accessor, and callback-shaped dice; protect cached probability results; reject nonfinite arithmetic; and preserve scenario capture and current interaction commitments. `RULES.md` documents the implemented RPG arithmetic and the friendly-duel rules boundary. Process-global content registries remain an explicit compatibility boundary rather than being described as per-engine dependency injection.
+
+Independent contract review also exposed malformed Adventure attributes that could spend character points and write `NaN`; complete attribute/preference validation rejects those definitions before replacement. Reviewed declaration ports now describe stripped registry tables, nullable captured profiles, actual predecessor return values, and persisted personal actor fields. Activity settings use one saved preference object and the existing duel-cancellation and timed quest-recall authorities. Registered settings regressions cover independent flags, paused updates, state-pure no-ops, malformed input/imports, persistence, locks, and preserved provisions/finds.
+
+The pinned Node declaration package is `@types/node` 22.20.5, compatible with TypeScript 5.9. The strict gate now checks dependency and authored declaration files with `skipLibCheck: false`; the previous three third-party Buffer declaration errors are resolved without suppression. The dependency audit remains clear.
 
 ## Verification
 

@@ -15,6 +15,7 @@
  interface ResourceNode { stock:number; max:number; regen:number; kind:string; }
  interface Building { kind:string; regen:number; stock:number; level?:number; }
  interface Creature {
+  id:string;
   daily:{day:number;bonded:number};
   allowance:{given:number;auto?:boolean};
   activeQuest?:unknown;
@@ -40,6 +41,9 @@
   topUp:(automatic?:boolean)=>unknown;
   stepQuest:(dt:number)=>void;
   stepActor:(dt:number)=>void;
+  interactionBusy?:(id:string)=>boolean;
+  stepInteractionActor?:(dt:number)=>void;
+  stepInteractions?:()=>void;
  }
  interface LittlewildFacade {
   CROP_RES:Record<string,unknown>;
@@ -120,8 +124,11 @@
       if(creature.allowance.auto&&!creature.activeQuest)engine.topUp(true);
      }
      if(creature.activeQuest){engine.stepQuest(dt);continue;}
-     engine.stepActor(dt);
+     if(engine.interactionBusy?.(creature.id)&&engine.stepInteractionActor)engine.stepInteractionActor(dt);
+     else engine.stepActor(dt);
     }
+    // Paired interaction settlement closes the actor-simulation phase after actor-major physiology.
+    engine.stepInteractions?.();
    }finally{engine._actor=previous;engine._simulating=false;}
   }
   return Object.freeze({schedule,step});

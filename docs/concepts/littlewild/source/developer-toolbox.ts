@@ -31,8 +31,8 @@
   }
  });
  const {version,fixedStep,maxSteps,scenarios,commands,create,validateScenario,createScenario,
-  reviewStory,openStory,creatures,validateCreature}=root.LWDeveloperSession;
+  reviewStory,openStory,creatures,validateCreature,interactions,validateInteraction,validateInteractionLibrary}=root.LWDeveloperSession;
  const api:LittlewildDeveloper.Toolbox=Object.freeze({version,fixedStep,maxSteps,scenarios,commands,
-  create,validateScenario,createScenario,reviewStory,openStory,creatures,validateCreature,assets});
+  create,validateScenario,createScenario,reviewStory,openStory,creatures,validateCreature,interactions,validateInteraction,validateInteractionLibrary,assets});
  root.LWDeveloper=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

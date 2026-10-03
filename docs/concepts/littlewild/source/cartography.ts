@@ -2,34 +2,65 @@
  * The map is a read model; purchases and expeditions cross this domain boundary.
  * No DOM, wall-clock time, remote inventory access, or presentation-driven dice.
  */
-(function (root) {
+/// <reference path="./application-records.d.ts" />
+/// <reference path="./content-contracts.d.ts" />
+(function (inputRoot: unknown) {
   'use strict';
+  type State=LWApplication.State;type Actor=LWApplication.Actor;
+  interface Quote {coins:number;prestige:number;level:number;islandId?:string;name?:string;token?:string;}
+  interface Result {ok:boolean;reason?:string;quote?:Quote;}
+  interface Region {name:string;biome:string;ix:number;iy:number;id:string;description:string;minimumLevel:number;questIds:string[];}
+  interface BaseHost extends LWApplication.StoryEngine {
+    actor:Actor;
+    allOrders():LWApplication.Order[];gateIssue(category:string,id:string):string|null;
+    landQuote(ix?:number,iy?:number):Quote;buyIsland(ix:number,iy:number):Result;
+    placementIssue(id:string,x:number,y:number):string|null;
+    addOffer(id:string,source:string,islandId?:string):boolean;
+    updateQuestBoard():void;interactionIssue():string|null;acceptQuest(id:string):Result;
+    depart():boolean;returnQuest():boolean;emit(type:string,text:string):void;
+  }
+  interface Host extends BaseHost {
+    initializeIsland(id:string):void;islandProfile(ix:number,iy:number):Region;
+    mapTable():LWApplication.Building|null;offerForIsland(id:string,guaranteed?:boolean):boolean;
+  }
+  type Constructor={new():BaseHost;prototype:BaseHost};
+  interface Composition {register(spec:{id:string;order:number;define(Base:Constructor):Constructor;initialize(host:Host):void;installFactories():void}):void;constructThrough(id:string,state:State):Host;}
+  const root=inputRoot as {
+    LW:{EngineComposition:Composition;WorldSystem:{validateState(state:unknown):void};Village:{validate(state:unknown):void};createWorldDemo():Host;createColonyDemo():Host;createWorkshopDemo():Host};
+    LWGrowth:LWContentPorts.GrowthApi;LWAdventure:LWContentPorts.AdventureApi;LWContent:LWContentPorts.ContentApi;
+    LWGeography:{key(ix:number,iy:number):string;describe(ix:number,iy:number):{name:string;biome:string};grid(state:State):{approach(point:LWApplication.Point):unknown};frontier(state:State):{ix:number;iy:number}[]};
+    LWVillageValidation:{validate(state:unknown):void};LWCartography?:typeof api;
+  };
   const L = root.LW, Composition = L.EngineComposition, G = root.LWGeography;
   const C = root.LWGrowth, A = root.LWAdventure, B = root.LWContent;
-  const copy = C.clone, fail = reason => ({ok: false, reason});
-  const whole = (v, lo, hi) => Number.isSafeInteger(v) && v >= lo && v <= hi;
-  const finite = (v, lo, hi) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
-  const coords = id => typeof id === 'string' && /^-?\d+,-?\d+$/.test(id) ? id.split(',').map(Number) : null;
-  const islandKey = i => G.key(i.ix, i.iy);
-  function seedFor(id) {
+  const copy = C.clone, fail = (reason:string):Result => ({ok: false, reason});
+  const whole = (v:unknown, lo:number, hi:number):v is number => typeof v==='number'&&Number.isSafeInteger(v) && v >= lo && v <= hi;
+  const finite = (v:unknown, lo:number, hi:number):v is number => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
+  const coords = (id:unknown):[number,number]|null => {
+    if(typeof id!=='string'||! /^-?\d+,-?\d+$/.test(id))return null;
+    const [ix,iy]=id.split(',').map(Number);return [ix!,iy!];
+  };
+  const islandKey = (i:{ix:number;iy:number}) => G.key(i.ix, i.iy);
+  function seedFor(id:string) {
     let value = 2166136261;
     for (const letter of 'littlewild-island-quests:' + id) value = Math.imul(value ^ letter.charCodeAt(0), 16777619);
     return value >>> 0 || 1;
   }
-  function draw(clock) {
+  function draw(clock:State['atlas']['clocks'][string]) {
     let x = clock.rng; x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
     clock.rng = x >>> 0 || 1;
     return clock.rng / 4294967296;
   }
-  function metadata(engine, id, questId) {
-    const p = coords(id) || [0, 0], region = engine.islandProfile(...p);
+  function metadata(engine:Host, id:string, questId:string) {
+    const p = coords(id) || [0, 0] as [number,number], region = engine.islandProfile(...p);
     const quest = A.content.quests.find(q => q.id === questId);
     return {islandId: G.key(...p), islandName: region.name,
       playerLevel: Math.max(quest?.tier || 1, region.minimumLevel), creatureLevel: quest?.tier || 1};
   }
   /** Reject invalid current-format records. */
-  function validateAtlas(s) {
-    const bad = text => { throw Error('World map save: ' + text); };
+  function validateAtlas(input:unknown) {
+    const s=input as State;
+    const bad = (text:string):never => { throw Error('World map save: ' + text); };
     const a = s.atlas;
     if (!a || a.version !== 1 || !a.clocks || Array.isArray(a.clocks) || !Array.isArray(a.history) || a.history.length > 256) bad('invalid island director.');
     const owned = new Set(s.estate.islands.map(islandKey));
@@ -37,9 +68,9 @@
     for (const [id, clock] of Object.entries(a.clocks)) {
       if (!owned.has(id) || !clock || !finite(clock.nextAt, 0, 1e10) || !whole(clock.misses, 0, 100) || !whole(clock.rng, 1, 4294967295)) bad('invalid clock or island reference.');
     }
-    const activeIds = new Set(), receiptIds = new Set();
+    const activeIds = new Set<string>(), receiptIds = new Set<string>();
     let largest = 0;
-    function reference(q, active) {
+    function reference(q:LWApplication.Origin, active:boolean) {
       if (!q || !owned.has(q.islandId) || typeof q.islandName !== 'string' || q.islandName.length > 100 ||
           !whole(q.playerLevel, 1, 100) || !whole(q.creatureLevel, 1, 100) ||
           typeof q.offerId !== 'string' || !/^offer\d+$/.test(q.offerId)) bad('invalid expedition origin.');
@@ -70,7 +101,7 @@
     }
     if (s.colony.board.sequence < largest) bad('invitation sequence would reuse an identity.');
   }
-  function initializeCartography(self) {
+  function initializeCartography(self:Host) {
     if (!self.s.atlas) {
       self.s.atlas = {version: 1, clocks: {}, history: []};
       for (const island of self.s.estate.islands) self.initializeIsland(islandKey(island));
@@ -79,12 +110,12 @@
     }
     self.s.version = 8;
   }
-  function defineLayer(Base){return class CartographyLayer extends Base {
-    initializeIsland(id) {
+  function defineLayer(Base:Constructor){return class CartographyLayer extends Base {
+    initializeIsland(id:string) {
       this.s.atlas.clocks[id] = {nextAt: this.s.simTime + C.content.cartography.cooldown, misses: 0, rng: seedFor(id)};
     }
-    islandProfile(ix, iy) {
-      const desc = G.describe(ix, iy), profile = C.content.cartography.biomes.find(b => b.id === desc.biome);
+    islandProfile(ix:number, iy:number) {
+      const desc = G.describe(ix, iy), profile = C.content.cartography.biomes.find(b => b.id === desc.biome)!;
       const distance = Math.abs(ix) + Math.abs(iy);
       return {...desc, ix, iy, id: G.key(ix, iy), description: profile.description,
         minimumLevel: distance === 0 ? 1 : Math.min(100, Math.max(C.content.rules.landLevel, profile.minimumLevel) + Math.max(0, distance - 1) * C.content.cartography.distanceLevelStep),
@@ -102,17 +133,17 @@
         ? 'Research Shared cartography in Discoveries, then build a map table to open the world map.'
         : 'The blueprint is known. Assign a companion to build the map table.';
     }
-    landQuote(ix, iy) {
+    override landQuote(ix?:number, iy?:number):Quote {
       const q = super.landQuote();
       if (ix === undefined && iy === undefined) return q; // aggregate next-price summary
-      const region = this.islandProfile(ix, iy);
+      const region = this.islandProfile(ix!, iy!);
       return {...q, level: region.minimumLevel, islandId: region.id, name: region.name,
         token: B.fingerprint({schemaVersion: 1, library: {id: C.hash}, components: {
           island: region.id, purchases: this.s.estate.purchases,
           owned: this.s.estate.islands.map(islandKey).sort(), tables: this.s.buildings.filter(b => b.kind === 'map_table').map(b => b.id).sort()
         }})};
     }
-    islandPurchaseIssue(ix, iy) {
+    islandPurchaseIssue(ix:unknown, iy:unknown) {
       if (!whole(ix, -48, 48) || !whole(iy, -48, 48)) return 'Choose a valid island coordinate.';
       const gate = this.mapAccessIssue() || this.gateIssue('features', 'land');
       if (gate) return gate;
@@ -123,20 +154,20 @@
       if (this.s.player.coins < q.coins || this.s.progression.prestige < q.prestige) return 'Need ' + q.coins + ' coins and ' + q.prestige + ' prestige.';
       return null;
     }
-    buyIsland(ix, iy, reviewedQuote = null) {
+    override buyIsland(ix:number, iy:number, reviewedQuote:Quote|null = null) {
       const issue = this.islandPurchaseIssue(ix, iy);
       if (issue) return fail(issue);
       const q = this.landQuote(ix, iy);
       if (reviewedQuote && B.stable(reviewedQuote) !== B.stable(q)) return fail('This island review is stale. Review its requirements and price again.');
       const result = super.buyIsland(ix, iy);
       if (!result.ok) return result;
-      this.initializeIsland(q.islandId);
-      this.offerForIsland(q.islandId, true);
+      this.initializeIsland(q.islandId!);
+      this.offerForIsland(q.islandId!, true);
       result.quote = q;
       return result;
     }
     /** A colony quest board may show the same template from different islands. */
-    addOffer(questId, source, islandId = '0,0') {
+    override addOffer(questId:string, source:string, islandId = '0,0') {
       if (!this.s.atlas) return super.addOffer(questId, source);
       const board = this.s.colony.board;
       if (!A.content.quests.some(q => q.id === questId) || !this.s.atlas.clocks[islandId] ||
@@ -147,27 +178,28 @@
         ...metadata(this, islandId, questId), created: this.s.simTime, expires: this.s.simTime + A.content.rules.questOfferLife});
       return true;
     }
-    offerForIsland(id, guaranteed = false) {
+    offerForIsland(id:string, guaranteed = false) {
       const clock = this.s.atlas.clocks[id];
       if (!clock || this.s.colony.board.offers.some(o => o.islandId === id) ||
           this.creatures.some(c => (c.questPlan || c.activeQuest)?.islandId === id)) return false;
-      const profile = this.islandProfile(...coords(id));
+      const position=coords(id);if(!position)return false;
+      const profile = this.islandProfile(...position);
       const available = profile.questIds.filter(id => A.content.quests.some(q => q.id === id));
       const roll = draw(clock);
       if (!guaranteed && roll >= C.content.cartography.eventChance && clock.misses < C.content.cartography.guaranteedAfterMisses) { clock.misses++; return false; }
       if (!available.length) return false;
-      const questId = available[Math.floor(draw(clock) * available.length)];
+      const questId = available[Math.floor(draw(clock) * available.length)]!;
       const added = this.addOffer(questId, 'An invitation from ' + profile.name, id);
       if (added) clock.misses = 0;
       return added;
     }
-    updateQuestBoard() {
+    override updateQuestBoard() {
       if (!this.s.atlas) return super.updateQuestBoard();
       const board = this.s.colony.board, now = this.s.simTime;
       board.offers = board.offers.filter(o => o.expires > now);
       let added = 0;
       for (const id of Object.keys(this.s.atlas.clocks).sort()) {
-        const clock = this.s.atlas.clocks[id];
+        const clock = this.s.atlas.clocks[id]!;
         if (now < clock.nextAt) continue;
         clock.nextAt = now + C.content.cartography.cooldown;
         if (this.offerForIsland(id)) added++;
@@ -175,39 +207,39 @@
       board.nextAt = Math.min(...Object.values(this.s.atlas.clocks).map(c => c.nextAt));
       if (added) this.emit('notice', added === 1 ? 'An island invitation arrived. Open Quests to review its origin and requirements.' : added + ' island invitations arrived.');
     }
-    questPlanIssue(q, c = this.actor) {
+    questPlanIssue(q:(LWApplication.Origin&{questId:string})|null|undefined, c = this.actor) {
       if (!q || !A.content.quests.some(d => d.id === q.questId)) return 'This expedition is unavailable.';
       if (!this.s.atlas.clocks[q.islandId]) return 'This expedition belongs to an island you do not own.';
       if (this.s.player.level < q.playerLevel) return 'Guide level ' + q.playerLevel + ' required for this island expedition.';
       if (c.creature.level < q.creatureLevel) return c.name + ' needs creature level ' + q.creatureLevel + ' for this expedition.';
       return this.gateIssue('features', 'quests');
     }
-    questOfferIssue(offerId, c = this.actor) {
+    questOfferIssue(offerId:string, c:Actor|null = this.actor) {
       if (!c) return 'Select a creature.';
       if (c.activeQuest || c.questPlan) return c.name + ' already has an adventure planned.';
       const q = this.s.colony.board.offers.find(o => o.id === offerId);
       if (!q || q.expires <= this.s.simTime) return 'That invitation is no longer available.';
       return this.questPlanIssue(q, c);
     }
-    acceptQuest(id) {
+    override acceptQuest(id:string) {
       const issue = this.interactionIssue() || this.questOfferIssue(id);
       if (issue) return fail(issue);
-      const offer = copy(this.s.colony.board.offers.find(o => o.id === id));
+      const offer = copy(this.s.colony.board.offers.find(o => o.id === id)!);
       const result = super.acceptQuest(id);
-      if (result.ok) Object.assign(this.actor.questPlan, {offerId: offer.id, islandId: offer.islandId,
+      if (result.ok) Object.assign(this.actor.questPlan!, {offerId: offer.id, islandId: offer.islandId,
         islandName: offer.islandName, playerLevel: offer.playerLevel, creatureLevel: offer.creatureLevel});
       return result;
     }
-    depart() {
+    override depart() {
       const plan = this.actor.questPlan;
       if (!plan || this.questPlanIssue(plan)) return false;
       const snapshot = copy(plan);
       const result = super.depart();
-      if (result) Object.assign(this.actor.activeQuest, {offerId: snapshot.offerId, islandId: snapshot.islandId,
+      if (result) Object.assign(this.actor.activeQuest!, {offerId: snapshot.offerId, islandId: snapshot.islandId,
         islandName: snapshot.islandName, playerLevel: snapshot.playerLevel, creatureLevel: snapshot.creatureLevel});
       return result;
     }
-    returnQuest() {
+    override returnQuest() {
       const q = this.actor.activeQuest;
       // Timer/checkpoint completion, not a UI callback, authorizes settlement.
       if (!q || q.status !== 'returning' || q.returnRemaining > 0 ||
@@ -215,7 +247,7 @@
           this.s.atlas.history.some(r => r.offerId === q.offerId)) return false;
       const result = super.returnQuest();
       if (result) {
-        const report = this.actor.questHistory[0];
+        const report = this.actor.questHistory[0]!;
         this.s.atlas.history.unshift({offerId: q.offerId, questId: q.questId, islandId: q.islandId,
           islandName: q.islandName, playerLevel: q.playerLevel, creatureLevel: q.creatureLevel,
           actorId: this.actor.id, finished: this.s.simTime, outcome: q.aborted ? 'recalled' : q.successes >= q.required ? 'completed' : 'partial',
@@ -224,16 +256,17 @@
       }
       return result;
     }
-    export() { const doc = super.export(); doc.version = 8; doc.state.version = 8; return doc; }
-    static import(input) {
-      if (input?.app !== 'littlewild' || input.version !== 8 || !input.state)
+    override export() { const doc = super.export(); doc.version = 8; doc.state.version = 8; return doc; }
+    static import(input:unknown) {
+      const document=input as Partial<LWApplication.EngineDocument>|null;
+      if (document?.app !== 'littlewild' || document.version !== 8 || !document.state)
         throw Error('Only the current Littlewild engine state (v8) is supported.');
-      const raw = copy(input);
+      const raw = copy(document);
       validateAtlas(raw.state);
       L.WorldSystem.validateState(raw.state);
       L.Village.validate(raw.state);
       root.LWVillageValidation.validate(raw.state);
-      const engine = Composition.constructThrough('cartography', raw.state);
+      const engine = Composition.constructThrough('cartography', raw.state!);
       const state = engine.export().state;
       validateAtlas(state);
       L.WorldSystem.validateState(state);
@@ -245,11 +278,11 @@
 
   // Authored scenario setup only.
   function installFactories(){
-    const scenarioNames = ['createWorldDemo', 'createColonyDemo', 'createWorkshopDemo'];
-    const original = Object.fromEntries(scenarioNames.map(name => [name, L[name]])), factories = {};
+    const scenarioNames = ['createWorldDemo', 'createColonyDemo', 'createWorkshopDemo'] as const;
+    const original = Object.fromEntries(scenarioNames.map(name => [name, L[name]])), factories:Partial<Record<typeof scenarioNames[number],()=>Host>> = {};
     for (const name of scenarioNames) factories[name] = () => {
       let previous;
-      try { Object.assign(L, original); previous = original[name](); }
+      try { Object.assign(L, original); previous = original[name]!(); }
       finally { Object.assign(L, factories); }
       const e = Composition.constructThrough('cartography',previous.export().state);
       if (name !== 'createWorldDemo') return e;
@@ -265,6 +298,6 @@
     Object.assign(L, factories);
   }
   Composition.register({id:'cartography',order:60,define:defineLayer,initialize:initializeCartography,installFactories});
-  root.LWCartography = {validate: validateAtlas, seedFor};
+  const api = {validate: validateAtlas, seedFor};root.LWCartography = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = L;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -150,7 +150,9 @@
  function constructThrough(id:string,state?:unknown,options:CompositionOptions={}):EngineInstance{
   if(!finalized)throw Error('Engine composition is not finalized.');
   if(id!=='base'&&!classes.has(id))throw Error('Unknown engine composition boundary: '+id);
-  const Target=id==='base'?Facade:classes.get(id)!;
+  // Fully composed instances use the current facade, including application adapters
+  // installed after finalization. Earlier historical boundaries retain their snapshots.
+  const Target=id==='base'||id===ordered.at(-1)?.id?Facade:classes.get(id)!;
   const settings:CompositionOptions={...options};
   Object.defineProperty(settings,THROUGH,{value:id,enumerable:false});
   return new Target(state,settings);

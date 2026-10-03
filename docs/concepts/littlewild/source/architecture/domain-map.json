@@ -50,7 +50,8 @@
         "adventure-content.ts",
         "growth-content.ts",
         "world-profile.ts",
-        "scenario-shape.ts"
+        "scenario-shape.ts",
+        "asset-catalog.ts"
       ]
     },
     {
@@ -101,7 +102,10 @@
         "cartography.ts",
         "engine-task-planning.ts",
         "engine-task-completion.ts",
-        "engine-companion.ts"
+        "engine-companion.ts",
+        "world-state-validation.ts",
+        "game-settings.ts",
+        "scenario-workflow.ts"
       ]
     },
     {
@@ -110,7 +114,8 @@
       "files": [
         "scenario-runtime.ts",
         "scenario-story.ts",
-        "story-codec.ts"
+        "story-codec.ts",
+        "scenario-resources.ts"
       ]
     },
     {
@@ -127,7 +132,6 @@
       "layer": "presentation",
       "files": [
         "asset-renderer.ts",
-        "asset-catalog.ts",
         "build-panel.ts",
         "colony-ui.ts",
         "content-ui.ts",
@@ -157,7 +161,10 @@
         "canvas-buildings.ts",
         "canvas-ground.ts",
         "canvas-scene.ts",
-        "colony-hud.ts"
+        "scene-environment.ts",
+        "canvas-assets.ts",
+        "colony-hud.ts",
+        "interaction-ui.ts"
       ]
     },
     {
@@ -175,6 +182,24 @@
       "files": [
         "developer-toolbox.ts",
         "developer-sdk.cts"
+      ]
+    },
+    {
+      "id": "interaction-definitions",
+      "layer": "domain",
+      "files": [
+        "interaction-catalog.ts",
+        "interaction-duel-rules.ts"
+      ]
+    },
+    {
+      "id": "creature-interactions",
+      "layer": "application",
+      "files": [
+        "interaction-state.ts",
+        "interaction-runtime.ts",
+        "interaction-integration.ts",
+        "interaction-triggers.ts"
       ]
     }
   ],
@@ -204,7 +229,12 @@
     "LWCreatureDefinitions",
     "LWCreatures",
     "LWWorldProduction",
-    "LWWorldTasks"
+    "LWWorldTasks",
+    "LWInteractions",
+    "LWInteractionLibrary",
+    "LWInteractionDuelRules",
+    "LWAssets",
+    "LWAssetDefinitions"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -224,25 +254,10 @@
     "LWScenarioPacks",
     "LWAssetDefinitions",
     "LWCreatureConfig",
-    "LWCreatureDefinitions"
+    "LWCreatureDefinitions",
+    "LWInteractionLibrary"
   ],
-  "strictTypingDebt": {
-    "world-ecs.ts": "Physical transaction services still expose broad resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",
-    "content-runtime.ts": "The mature content registry and JSON-Schema interpreter still use dynamic schema/data records; migrate around a typed schema AST and registry model.",
-    "adventure-content.ts": "Adventure definitions depend on the dynamic content registry and schema tables; migrate after the content-runtime contract is typed.",
-    "growth-content.ts": "Growth definitions depend on Adventure/content dynamic tables and extension records; migrate after the shared content contracts are typed.",
-    "colony-policies.ts": "Policy orchestration still consumes the dynamic Engine and Adventure facades; migrate after shared application/domain ports replace facade discovery.",
-    "world-content.ts": "World content adapts dynamic schema tables into runtime lookups; migrate after the content registry exposes typed world-definition ports.",
-    "engine.ts": "Stable broad facade and save/import boundary is intentionally retained during the strangler migration; decompose behind typed application ports.",
-    "systems.ts": "Progression orchestration still coordinates several broad domain capabilities; extract focused typed services around learning, construction and mastery use cases.",
-    "colony.ts": "Creature/community application orchestration still owns a broad facade surface; continue extracting focused actor and community use-case ports.",
-    "village-systems.ts": "Village/market orchestration spans several broad current state shapes; migrate after market and village domain contracts are extracted.",
-    "world-simulation.ts": "Physical-world application orchestration still bridges broad persisted world state and newer ECS services; migrate as typed logistics and production ports replace facade state discovery.",
-    "planner.ts": "Planner composition still consumes broad dynamic Engine/content facades; migrate after planner commands and read models receive explicit application ports.",
-    "cartography.ts": "Cartography composition still relies on dynamic atlas and Engine facade shapes; migrate after typed map/atlas domain contracts are extracted.",
-    "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and scenario activation boundaries; migrate after scenario/content ports are fully typed.",
-    "story-codec.ts": "Portable-story persistence still operates on broad dynamic current-format DTOs; migrate behind typed envelope and native-state contracts without reintroducing historical format adapters."
-  },
-  "strictTypingDebtBudget": 15,
+  "strictTypingDebt": {},
+  "strictTypingDebtBudget": 0,
   "moduleBudgetExceptions": {}
 }

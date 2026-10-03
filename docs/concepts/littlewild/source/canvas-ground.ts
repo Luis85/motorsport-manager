@@ -12,6 +12,8 @@
             if (!g) throw Error('Canvas ground rendering context is unavailable.');
             g.imageSmoothingEnabled = false;
             g.translate(c.width / 2, 85);
+            const environment=root.LWSceneEnvironment?.read();
+            if(environment){root.LWSceneEnvironment!.groundCanvas(g,root.LWCanvasArt,environment,SIZE,TW,TH);return {ground:c,decor:[],environmentKey:root.LWSceneEnvironment!.key()};}
             let rand = seeded(2718);
             const decor: LWCanvasPorts.Decoration[] = [];
             for (let d = 0; d < SIZE * 2; d++)
