@@ -9,6 +9,7 @@ import re
 PROTOCOL = "motorsport-manager-toolbox"
 VERSION = 1
 MAX_BYTES = 8 * 1024 * 1024
+MAX_RESPONSE_BYTES = 64 * 1024 * 1024
 IDENTITY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z")
 RUNNER = "res://scripts/services/toolbox/cli.gd"
 
@@ -41,7 +42,8 @@ def positive_timeout(value: float) -> float:
     return float(value)
 
 
-def encode(value: object) -> bytes:
+def encode(value: object, *, limit: int | None = None) -> bytes:
+    limit = MAX_BYTES if limit is None else limit
     try:
         string_keys(value)
         raw = json.dumps(value, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode(
@@ -49,8 +51,8 @@ def encode(value: object) -> bytes:
         )
     except (TypeError, ValueError, RecursionError) as error:
         raise ToolboxError("PROTOCOL_ERROR", "Request is not finite JSON") from error
-    if len(raw) > MAX_BYTES:
-        raise ToolboxError("PROTOCOL_ERROR", "Request exceeds 8 MiB")
+    if len(raw) > limit:
+        raise ToolboxError("PROTOCOL_ERROR", f"JSON frame exceeds {limit} bytes")
     return raw
 
 
@@ -65,7 +67,9 @@ def string_keys(value: object) -> None:
             string_keys(item)
 
 
-def decode(raw: bytes) -> object:
+def decode(raw: bytes, *, limit: int | None = None) -> object:
+    limit = MAX_BYTES if limit is None else limit
+
     def nonfinite(value: str) -> None:
         raise ValueError("Non-finite JSON number: " + value)
 
@@ -77,11 +81,11 @@ def decode(raw: bytes) -> object:
             result[key] = value
         return result
 
-    if len(raw) > MAX_BYTES:
-        raise ToolboxError("PROTOCOL_ERROR", "JSON frame exceeds 8 MiB")
+    if len(raw) > limit:
+        raise ToolboxError("PROTOCOL_ERROR", f"JSON frame exceeds {limit} bytes")
     try:
         value = json.loads(raw.decode("utf-8"), parse_constant=nonfinite, object_pairs_hook=unique)
-        encode(value)
+        encode(value, limit=limit)
         return value
     except (ValueError, UnicodeError, RecursionError) as error:
         raise ToolboxError("PROTOCOL_ERROR", "Malformed JSON frame") from error

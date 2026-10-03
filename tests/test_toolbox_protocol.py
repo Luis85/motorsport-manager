@@ -98,6 +98,23 @@ class ToolboxProtocolTests(unittest.TestCase):
             with self.assertRaises(protocol.ToolboxError):
                 protocol.encode("ΩΩΩΩΩ")
 
+    def test_response_budget_is_separate_and_still_rejects_nonfinite_json(self):
+        raw = b'{"snapshot":"' + b"x" * 100 + b'"}'
+        with patch.object(protocol, "MAX_BYTES", 64):
+            with self.assertRaises(protocol.ToolboxError):
+                protocol.decode(raw)
+            value = protocol.decode(raw, limit=128)
+            self.assertEqual(value["snapshot"], "x" * 100)
+            with self.assertRaises(protocol.ToolboxError):
+                protocol.encode(value)
+            self.assertEqual(protocol.encode(value, limit=128), raw)
+            for invalid in [b'{"n":1e999}', b'{"n":NaN}', b'{"n":1,"n":2}']:
+                with self.assertRaises(protocol.ToolboxError):
+                    protocol.decode(invalid, limit=128)
+        with self.assertRaises(protocol.ToolboxError):
+            protocol.decode(raw, limit=len(raw) - 1)
+        self.assertEqual(protocol.decode(raw, limit=len(raw)), value)
+
     def test_request_ids_and_versions_are_bounded_without_game_rule_validation(self):
         for field, value in [
             ("request_id", ""),

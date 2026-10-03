@@ -244,7 +244,8 @@ func _string_escape() -> bool:
 func _exact_numeric_value(token: String) -> Variant:
 	if _number_cache.has(token):
 		return _number_cache[token]
-	if token.is_valid_int():
+	# Preserve IEEE negative zero while retaining exact signed integers elsewhere.
+	if token != "-0" and token.is_valid_int():
 		return _integer_value(token)
 	var converted = JsonNumber.parse(token)
 	if not converted.ok:

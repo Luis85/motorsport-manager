@@ -9,7 +9,15 @@ import tempfile
 from pathlib import Path
 
 from toolbox_process import ToolProcess
-from toolbox_protocol import MAX_BYTES, RUNNER, ToolboxError, decode, encode, ready, response
+from toolbox_protocol import (
+    MAX_RESPONSE_BYTES,
+    RUNNER,
+    ToolboxError,
+    decode,
+    encode,
+    ready,
+    response,
+)
 from verification_run import source_digest
 
 
@@ -157,7 +165,11 @@ class ToolProject:
             ):
                 raise ToolboxError("ENGINE_ERROR", "Native file request did not produce a result")
             with response_path.open("rb") as stream:
-                value = response(decode(stream.read(MAX_BYTES + 1)), sent, self.identity)
+                value = response(
+                    decode(stream.read(MAX_RESPONSE_BYTES + 1), limit=MAX_RESPONSE_BYTES),
+                    sent,
+                    self.identity,
+                )
             results = 0
             while not process.frames.empty():
                 kind, emitted = process.frames.get_nowait()

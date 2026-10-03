@@ -13,7 +13,7 @@ import threading
 import time
 from pathlib import Path
 
-from toolbox_protocol import MAX_BYTES, ToolboxError, decode, positive_timeout
+from toolbox_protocol import MAX_RESPONSE_BYTES, ToolboxError, decode, positive_timeout
 from toolbox_windows import WindowsJob
 
 ENGINE_ERROR = re.compile(r"SCRIPT ERROR:|Parse Error:|(?:^|\s)ERROR:")
@@ -98,9 +98,11 @@ class ToolProcess:
 
     def _read(self, stream, name: str) -> None:
         try:
-            while raw := stream.readline(MAX_BYTES + 1):
-                if len(raw) > MAX_BYTES:
-                    self._fail("PROTOCOL_ERROR", "Native output line exceeds 8 MiB")
+            # The response limit excludes its marker and the Windows CRLF delimiter.
+            line_limit = MAX_RESPONSE_BYTES + len(b"TOOLBOX_RESULT ") + 2
+            while raw := stream.readline(line_limit + 1):
+                if len(raw) > line_limit:
+                    self._fail("PROTOCOL_ERROR", "Native output line exceeds 64 MiB")
                     return
                 line = raw.decode("utf-8", "replace").rstrip("\r\n")
                 with self.lock:
@@ -111,7 +113,8 @@ class ToolProcess:
                             if not raw.startswith((prefix + " ").encode()):
                                 self._fail("PROTOCOL_ERROR", "Malformed native marker")
                             else:
-                                self._frame(prefix, decode(raw[len(prefix) + 1 :]))
+                                payload = raw[len(prefix) + 1 :].rstrip(b"\r\n")
+                                self._frame(prefix, decode(payload, limit=MAX_RESPONSE_BYTES))
                             break
                     else:
                         if ENGINE_ERROR.search(line):
