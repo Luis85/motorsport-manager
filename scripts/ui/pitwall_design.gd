@@ -22,100 +22,167 @@ const RACE_DARK_3 = GameTheme.RAISED
 const GOLD = GameTheme.ACCENT
 const RACE_CREAM = GameTheme.PANEL
 const RACE_INK = GameTheme.BG
-const TYPE = {"display": 22, "heading": 18, "driver": 14, "position": 22, "metric": 15, "body": 13, "caption": 11}
+const TYPE = {
+	"display": 22,
+	"heading": 18,
+	"driver": 14,
+	"position": 22,
+	"metric": 15,
+	"body": 13,
+	"caption": 11
+}
 static var race_styles: Dictionary = {}
 static var nav_styles: Dictionary = {}
 static var popup_themes: Dictionary = {}
 
+
 static func navigation(button: Button, selected: bool) -> void:
-	if button.has_meta("pitwall_selected") and button.get_meta("pitwall_selected") == selected: return
+	if button.has_meta("pitwall_selected") and button.get_meta("pitwall_selected") == selected:
+		return
 	button.set_meta("pitwall_selected", selected)
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
 		var key = state + str(selected)
 		if not nav_styles.has(key):
-			var style = UI.action_box(UI.SELECTED if selected else (UI.HOVER if state == "hover" else UI.PANEL), Color.TRANSPARENT)
+			var style = UI.action_box(
+				UI.SELECTED if selected else (UI.HOVER if state == "hover" else UI.PANEL),
+				Color.TRANSPARENT
+			)
 			style.border_color = UI.PRIMARY if selected else Color.TRANSPARENT
-			style.set_border_width_all(0); style.border_width_bottom = 3 if selected else 0
+			style.set_border_width_all(0)
+			style.border_width_bottom = 3 if selected else 0
 			nav_styles[key] = style
 		button.add_theme_stylebox_override(state, nav_styles[key])
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
 		button.add_theme_color_override(state, UI.INK)
 
+
 static func scale_controls(root: Node, factor: float) -> void:
 	# Run on construction/preferences, not in refresh. Retain bases so repeated calls are idempotent.
 	if root is Control:
 		for key in ["font_size", "normal_font_size", "bold_font_size", "title_button_font_size"]:
-			if key != "font_size" and not (root is RichTextLabel or root is Tree): continue
+			if key != "font_size" and not (root is RichTextLabel or root is Tree):
+				continue
 			var meta = "pitwall_base_" + key
-			if not root.has_meta(meta): root.set_meta(meta, root.get_theme_font_size(key))
-			root.add_theme_font_size_override(key, maxi(1, roundi(float(root.get_meta(meta)) * factor)))
+			if not root.has_meta(meta):
+				root.set_meta(meta, root.get_theme_font_size(key))
+			root.add_theme_font_size_override(
+				key, maxi(1, roundi(float(root.get_meta(meta)) * factor))
+			)
 		if root is BaseButton or root is SpinBox or root is LineEdit:
-			if not root.has_meta("pitwall_base_height"): root.set_meta("pitwall_base_height", maxf(32, root.custom_minimum_size.y))
+			if not root.has_meta("pitwall_base_height"):
+				root.set_meta("pitwall_base_height", maxf(32, root.custom_minimum_size.y))
 			root.custom_minimum_size.y = ceilf(float(root.get_meta("pitwall_base_height")) * factor)
 	if root is OptionButton or root is MenuButton:
 		var base_size = float(root.get_meta("pitwall_base_font_size", GameTheme.BODY_SIZE))
 		var popup_key = str(base_size) + ":" + str(factor)
 		if not popup_themes.has(popup_key):
-			var popup_theme = UI.theme(); popup_theme.set_font_size("font_size", "PopupMenu", roundi(base_size * factor))
+			var popup_theme = UI.theme()
+			popup_theme.set_font_size("font_size", "PopupMenu", roundi(base_size * factor))
 			popup_themes[popup_key] = popup_theme
 		root.get_popup().theme = popup_themes[popup_key]
-	if root is SpinBox: scale_controls(root.get_line_edit(), factor)
+	if root is SpinBox:
+		scale_controls(root.get_line_edit(), factor)
 	if root is AcceptDialog:
-		scale_controls(root.get_ok_button(), factor); scale_controls(root.get_label(), factor)
-		if root is ConfirmationDialog: scale_controls(root.get_cancel_button(), factor)
+		scale_controls(root.get_ok_button(), factor)
+		scale_controls(root.get_label(), factor)
+		if root is ConfirmationDialog:
+			scale_controls(root.get_cancel_button(), factor)
 	# Internal native fields (including FileDialog) need the same scale.
-	for child in root.get_children(true): scale_controls(child, factor)
+	for child in root.get_children(true):
+		scale_controls(child, factor)
+
 
 static func linear_focus(controls: Array) -> void:
-	if controls.is_empty(): return
+	if controls.is_empty():
+		return
 	for i in range(controls.size()):
-		controls[i].focus_next = controls[i].get_path_to(controls[i + 1]) if i + 1 < controls.size() else NodePath()
-		controls[i].focus_previous = controls[i].get_path_to(controls[i - 1]) if i > 0 else NodePath()
+		controls[i].focus_next = (
+			controls[i].get_path_to(controls[i + 1]) if i + 1 < controls.size() else NodePath()
+		)
+		controls[i].focus_previous = (
+			controls[i].get_path_to(controls[i - 1]) if i > 0 else NodePath()
+		)
 		# Arrow navigation wraps within this group; Tab must be able to leave it.
-		controls[i].focus_neighbor_right = controls[i].get_path_to(controls[(i + 1) % controls.size()])
-		controls[i].focus_neighbor_left = controls[i].get_path_to(controls[posmod(i - 1, controls.size())])
+		controls[i].focus_neighbor_right = controls[i].get_path_to(
+			controls[(i + 1) % controls.size()]
+		)
+		controls[i].focus_neighbor_left = controls[i].get_path_to(
+			controls[posmod(i - 1, controls.size())]
+		)
+
 
 static func focus_later(control: Control) -> void:
 	# A view may close before the deferred focus request executes.
 	_restore_focus.call_deferred(weakref(control))
 
+
 static func _restore_focus(reference: WeakRef) -> void:
 	var control = reference.get_ref()
-	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree() and not control.is_queued_for_deletion(): control.grab_focus()
+	if (
+		is_instance_valid(control)
+		and control.is_inside_tree()
+		and control.is_visible_in_tree()
+		and not control.is_queued_for_deletion()
+	):
+		control.grab_focus()
+
 
 static func race_panel(dark: bool = true, padding: int = 10) -> PanelContainer:
 	var panel = PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UI.box(RACE_DARK_2 if dark else RACE_CREAM, GameTheme.LINE if dark else UI.LINE, 5, padding))
+	panel.add_theme_stylebox_override(
+		"panel",
+		UI.box(RACE_DARK_2 if dark else RACE_CREAM, GameTheme.LINE if dark else UI.LINE, 5, padding)
+	)
 	return panel
+
 
 static func race_label(text: String, size: int = 12, accent: bool = false) -> Label:
 	var l = UI.label(text, size, GOLD if accent else GameTheme.TEXT)
 	return l
 
+
 static func race_button(text: String, callback: Callable, selected: bool = false) -> Button:
 	var b = UI.button(text, callback)
-	b.add_theme_stylebox_override("normal", UI.action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else GameTheme.LINE))
-	b.add_theme_stylebox_override("hover", UI.action_box(GOLD.lightened(0.15) if selected else GameTheme.HOVER, GOLD))
-	for state in ["pressed", "hover_pressed"]: b.add_theme_stylebox_override(state, UI.action_box(GOLD, GOLD))
+	b.add_theme_stylebox_override(
+		"normal",
+		UI.action_box(GOLD if selected else RACE_DARK_3, GOLD if selected else GameTheme.LINE)
+	)
+	b.add_theme_stylebox_override(
+		"hover", UI.action_box(GOLD.lightened(0.15) if selected else GameTheme.HOVER, GOLD)
+	)
+	for state in ["pressed", "hover_pressed"]:
+		b.add_theme_stylebox_override(state, UI.action_box(GOLD, GOLD))
 	b.add_theme_stylebox_override("disabled", UI.action_box(RACE_DARK_2, GameTheme.LINE))
 	b.add_theme_color_override("font_disabled_color", GameTheme.MUTED)
-	var focus = UI.box(Color.TRANSPARENT, GOLD, 4, 0); focus.set_border_width_all(2); b.add_theme_stylebox_override("focus", focus)
+	var focus = UI.box(Color.TRANSPARENT, GOLD, 4, 0)
+	focus.set_border_width_all(2)
+	b.add_theme_stylebox_override("focus", focus)
 	for state in ["font_color", "font_hover_color", "font_focus_color"]:
 		b.add_theme_color_override(state, RACE_INK if selected else GameTheme.TEXT)
-	for state in ["font_pressed_color", "font_hover_pressed_color"]: b.add_theme_color_override(state, RACE_INK)
+	for state in ["font_pressed_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(state, RACE_INK)
 	return b
 
+
 static func race_card_state(panel: PanelContainer, state: String) -> void:
-	if panel.get_meta("race_card_state", "") == state: return
+	if panel.get_meta("race_card_state", "") == state:
+		return
 	var key = "race_card_" + state
 	if not race_styles.has(key):
-		var style = UI.box(GameTheme.SELECTED if state == "warning" else RACE_CREAM, UI.DANGER if state == "warning" else (GOLD if state == "selected" else UI.LINE), 5, 8)
+		var style = UI.box(
+			GameTheme.SELECTED if state == "warning" else RACE_CREAM,
+			UI.DANGER if state == "warning" else (GOLD if state == "selected" else UI.LINE),
+			5,
+			8
+		)
 		style.border_width_left = 3 if state in ["warning", "selected"] else 1
 		race_styles[key] = style
 	panel.add_theme_stylebox_override("panel", race_styles[key])
-	panel.set_meta("race_card_state", state); UI.style_assignments += 1
+	panel.set_meta("race_card_state", state)
+	UI.style_assignments += 1
 
 
 static func chart_surface() -> StyleBoxFlat:
-	if not race_styles.has("chart"): race_styles.chart = UI.box(RACE_CREAM,UI.LINE,RADIUS_MD,10)
+	if not race_styles.has("chart"):
+		race_styles.chart = UI.box(RACE_CREAM, UI.LINE, RADIUS_MD, 10)
 	return race_styles.chart

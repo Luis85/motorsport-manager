@@ -3,6 +3,7 @@ extends RefCounted
 ## UI-only painters: no editor mutations, no scheduling and no live race entities.
 ## TrackCanvas retains overlay lifetimes, geometry cache and presentation invalidation.
 
+
 static func surface_geometry(geometry: TrackGeometry) -> Array:
 	# Geometry remains immutable within a weekend; overlay observations stay live.
 	var compiled: Array = []
@@ -23,14 +24,23 @@ static func surface_geometry(geometry: TrackGeometry) -> Array:
 	return compiled
 
 
-static func paint_surface(target: Control, segments: Array, values: Array, surface_channel: String,
-		inspected_fraction: float, geometry: TrackGeometry, zoom: float,
-		legend_style: StyleBox, screen: Callable) -> void:
+static func paint_surface(
+	target: Control,
+	segments: Array,
+	values: Array,
+	surface_channel: String,
+	inspected_fraction: float,
+	geometry: TrackGeometry,
+	zoom: float,
+	legend_style: StyleBox,
+	screen: Callable
+) -> void:
 	for i in range(RaceVisualPort.SURFACE_STATIONS):
 		for lane in range(RaceVisualPort.SURFACE_LANES):
 			var value: float = values[i][lane]
 			var color = (
-				Color("4a97b4") if surface_channel == "water"
+				Color("4a97b4")
+				if surface_channel == "water"
 				else (Color("629162") if surface_channel == "grip" else Color("a77641"))
 			)
 			color.a = clampf(value, 0, 1) * 0.68
@@ -67,10 +77,12 @@ static func paint_profile(target: Control, geometry: TrackGeometry, size: Vector
 		high = maxf(high, value)
 	var line = PackedVector2Array()
 	for i in range(geometry.heights.size()):
-		line.append(Vector2(
-			r.position.x + 8 + (r.size.x - 16) * i / geometry.heights.size(),
-			r.end.y - 8 - (r.size.y - 30) * (geometry.heights[i] - low) / maxf(1, high - low)
-		))
+		line.append(
+			Vector2(
+				r.position.x + 8 + (r.size.x - 16) * i / geometry.heights.size(),
+				r.end.y - 8 - (r.size.y - 30) * (geometry.heights[i] - low) / maxf(1, high - low)
+			)
+		)
 	target.draw_polyline(line, CircuitPalette.GOOD, 2, true)
 	target.draw_string(
 		ThemeDB.fallback_font,
@@ -83,9 +95,19 @@ static func paint_profile(target: Control, geometry: TrackGeometry, size: Vector
 	)
 
 
-static func paint_cars(target: Control, geometry: TrackGeometry, show_preview: bool,
-		preview_distance: float, visual_frame: Dictionary, zoom: float, dot_scale: float,
-		show_labels: bool, size: Vector2, label_style: StyleBox, screen: Callable) -> void:
+static func paint_cars(
+	target: Control,
+	geometry: TrackGeometry,
+	show_preview: bool,
+	preview_distance: float,
+	visual_frame: Dictionary,
+	zoom: float,
+	dot_scale: float,
+	show_labels: bool,
+	size: Vector2,
+	label_style: StyleBox,
+	screen: Callable
+) -> void:
 	if geometry == null:
 		return
 	if show_preview:
@@ -93,7 +115,9 @@ static func paint_cars(target: Control, geometry: TrackGeometry, show_preview: b
 		var p = screen.call(sample.p + sample.n * sample.line)
 		target.draw_circle(p, 8, Color("fcf3d8"), true, -1, true)
 		target.draw_circle(p, 5, Color("466d52"), true, -1, true)
-		target.draw_style_box(UI.box(CircuitPalette.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55)))
+		target.draw_style_box(
+			UI.box(CircuitPalette.PANEL), Rect2(Vector2(16, 16), Vector2(268, 55))
+		)
 		target.draw_string(
 			ThemeDB.fallback_font,
 			Vector2(28, 39),
@@ -115,7 +139,6 @@ static func paint_cars(target: Control, geometry: TrackGeometry, show_preview: b
 		return
 	if visual_frame.is_empty():
 		return
-	var font = ThemeDB.fallback_font
 	var occupied: Array[Rect2] = []
 	var display_cars = visual_frame.cars.duplicate()
 	display_cars.sort_custom(
@@ -137,34 +160,7 @@ static func paint_cars(target: Control, geometry: TrackGeometry, show_preview: b
 		target.draw_circle(p, radius + 1.6, Color("fff7df"), true, -1, true)
 		target.draw_circle(p, radius, color, true, -1, true)
 		if show_labels:
-			for offset in [
-				Vector2(radius + 5, -radius - 3),
-				Vector2(-40, -radius - 3),
-				Vector2(radius + 5, radius + 15),
-				Vector2(-40, radius + 15),
-				Vector2(0, -radius - 24)
-			]:
-				var text_pos = p + offset
-				var rect = Rect2(text_pos - Vector2(1, 12), Vector2(35, 15))
-				var available = true
-				for previous in occupied:
-					if rect.intersects(previous):
-						available = false
-						break
-				if not available or not Rect2(Vector2(3, 3), size - Vector2(6, 6)).encloses(rect):
-					continue
-				occupied.append(rect)
-				target.draw_style_box(label_style, rect.grow(2))
-				target.draw_string(
-					font,
-					text_pos,
-					c.short,
-					HORIZONTAL_ALIGNMENT_LEFT,
-					-1,
-					11,
-					Color("294934")
-				)
-				break
+			_paint_car_label(target, c, p, radius, occupied, size, label_style)
 		if c.blue:
 			target.draw_circle(p + Vector2(-radius - 3, -radius - 3), 3, Color("619acc"))
 	if visual_frame.phase == "lights":
@@ -173,15 +169,19 @@ static func paint_cars(target: Control, geometry: TrackGeometry, show_preview: b
 		target.draw_style_box(UI.box(Color("091116")), Rect2(Vector2(x - 24, 32), Vector2(250, 64)))
 		for i in range(5):
 			target.draw_circle(
-				Vector2(x + i * 48, 64),
-				17,
-				Color("d96858") if i < count else Color("392929")
+				Vector2(x + i * 48, 64), 17, Color("d96858") if i < count else Color("392929")
 			)
 
 
-static func paint_selection(target: Control, document: Dictionary, selection_kind: String,
-		selection_ids: Array[int], marquee_start: Vector2, marquee_end: Vector2,
-		screen: Callable) -> void:
+static func paint_selection(
+	target: Control,
+	document: Dictionary,
+	selection_kind: String,
+	selection_ids: Array[int],
+	marquee_start: Vector2,
+	marquee_end: Vector2,
+	screen: Callable
+) -> void:
 	if selection_ids.size() > 1:
 		var items: Array = document.nodes if selection_kind == "road" else document.objects
 		var rect = Rect2()
@@ -191,10 +191,7 @@ static func paint_selection(target: Control, document: Dictionary, selection_kin
 				continue
 			var p = screen.call(TrackDocument.point(items[index]))
 			target.draw_rect(
-				Rect2(p - Vector2(8, 8), Vector2(16, 16)),
-				CircuitPalette.ACCENT,
-				false,
-				1.5
+				Rect2(p - Vector2(8, 8), Vector2(16, 16)), CircuitPalette.ACCENT, false, 1.5
 			)
 			if first:
 				rect = Rect2(p, Vector2.ZERO)
@@ -213,9 +210,43 @@ static func paint_selection(target: Control, document: Dictionary, selection_kin
 				CircuitPalette.INK
 			)
 	if marquee_start != Vector2.INF:
-		var rectangle = Rect2(
-			screen.call(marquee_start),
-			screen.call(marquee_end) - screen.call(marquee_start)
-		).abs()
+		var rectangle = (
+			Rect2(screen.call(marquee_start), screen.call(marquee_end) - screen.call(marquee_start))
+			. abs()
+		)
 		target.draw_rect(rectangle, Color("ac965329"))
 		target.draw_rect(rectangle, CircuitPalette.ACCENT, false, 1.5)
+
+
+static func _paint_car_label(
+	target: Control,
+	c: Dictionary,
+	p: Vector2,
+	radius: float,
+	occupied: Array[Rect2],
+	size: Vector2,
+	label_style: StyleBox
+) -> void:
+	var font = ThemeDB.fallback_font
+	for offset in [
+		Vector2(radius + 5, -radius - 3),
+		Vector2(-40, -radius - 3),
+		Vector2(radius + 5, radius + 15),
+		Vector2(-40, radius + 15),
+		Vector2(0, -radius - 24)
+	]:
+		var text_pos = p + offset
+		var rect = Rect2(text_pos - Vector2(1, 12), Vector2(35, 15))
+		var available = true
+		for previous in occupied:
+			if rect.intersects(previous):
+				available = false
+				break
+		if not available or not Rect2(Vector2(3, 3), size - Vector2(6, 6)).encloses(rect):
+			continue
+		occupied.append(rect)
+		target.draw_style_box(label_style, rect.grow(2))
+		target.draw_string(
+			font, text_pos, c.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("294934")
+		)
+		break

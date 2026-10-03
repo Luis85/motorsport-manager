@@ -11,36 +11,56 @@ const FOCUS_BINDINGS = {
 }
 var host
 
+
 func configure(value: Control) -> void:
 	host = value
 	# Engine defaults are not guaranteed to include joypad events. Keep keyboard
 	# mappings and any custom bindings, and install each all-device event once.
 	for action in FOCUS_BINDINGS:
-		if not InputMap.has_action(action): InputMap.add_action(action)
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
 		var binding = InputEventJoypadButton.new()
 		binding.device = -1
 		binding.button_index = FOCUS_BINDINGS[action]
 		if not InputMap.action_has_event(action, binding):
 			InputMap.action_add_event(action, binding)
 
+
 func _input(event: InputEvent) -> void:
-	if host == null or not host.is_visible_in_tree() or not event is InputEventJoypadButton or not event.pressed: return
+	if (
+		host == null
+		or not host.is_visible_in_tree()
+		or not event is InputEventJoypadButton
+		or not event.pressed
+	):
+		return
 	for window in host.get_viewport().get_embedded_subwindows():
-		if window.visible: return
+		if window.visible:
+			return
 	match event.button_index:
 		JOY_BUTTON_START:
-			if host.sim.phase in RaceViewQuery.ACTIVE: host.dispatch("pause")
+			if host.sim.phase in RaceViewQuery.ACTIVE:
+				host.dispatch("pause")
 		JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER:
 			host.select_driver(host.sim.teammate_id(host.sim.selected_id))
 		JOY_BUTTON_Y:
 			host.show_navigator()
 		JOY_BUTTON_X:
-			host.open_decision(host.sim.selected_id if host.sim.selected_id in host.sim.player_ids() else host.sim.player_ids()[0])
+			host.open_decision(
+				(
+					host.sim.selected_id
+					if host.sim.selected_id in host.sim.player_ids()
+					else host.sim.player_ids()[0]
+				)
+			)
 		JOY_BUTTON_B:
-			if is_instance_valid(host.full_workspace) and host.full_workspace.visible: host.close_session_workspace()
-			else: host.close_detail()
+			if is_instance_valid(host.full_workspace) and host.full_workspace.visible:
+				host.close_session_workspace()
+			else:
+				host.close_detail()
 		_:
 			# A and D-pad continue through Godot's normal focus and GUI handling.
-			if host.get_viewport().gui_get_focus_owner() == null: PitwallDesign.focus_later(host.watch_button)
+			if host.get_viewport().gui_get_focus_owner() == null:
+				PitwallDesign.focus_later(host.watch_button)
 			return
 	host.get_viewport().set_input_as_handled()

@@ -3,6 +3,7 @@ extends RefCounted
 ## Thin host adapter for TrackCanvas' cache and detached presentation state.
 ## Drawing calculations live in TrackCanvasOverlays; this class owns no state.
 
+
 static func build_surface_geometry(host: TrackCanvas) -> void:
 	if host._surface_geometry == host.geometry:
 		return
