@@ -119,6 +119,14 @@ headless-only or partial run is not accepted as complete verification.
 
 Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility, typed-car records and scheduler-free view handles.
 
+The [developer toolbox](docs/developer-toolbox.md) exposes real weekend, campaign
+and track operations through a native Godot API and JSON/Python interface.
+Discover supported actions, run explicit bounded steps, inspect detached state
+and export snapshots in isolated tool sessions. Both interfaces use the same
+application owners; tools do not launch `App` or write player saves. The
+[adoption study](docs/design/developer-toolbox-adoption.md) explains the game model
+and the Excalibur documentation, source and tests used to inform the design.
+
 ## Coherent interface and advisory quality
 
 Menus, configuration, Settings, the editor, weekend entry, both race interfaces and final classification share `GameTheme`. The illustrated circuit keeps its own readable map palette. Settings preview changes before Apply, protect unsaved departures, preserve edits on save failure, and expose advanced-only preferences only when Advanced is staged. Interface text scaling also reaches the editor and native dialogs; the Minimal five driver actions are unchanged and Strategy remains read only.

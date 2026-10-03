@@ -103,11 +103,12 @@ vehicle, compound, setup, tuning and weekend values without rebuilding, rejects
 invalid content, removes the pack, and requires exact saved-session restoration.
 Other platforms require separate execution evidence.
 
-This increment does **not** claim that every game parameter is external. Weather
-process coefficients, most rival/racecraft policies, incident and neutralization
-thresholds, wheel-model coefficients, track-object/presentation catalogs and
-provider-composition authoring still need their planned migrations. New executable
-mechanics, command permissions and simulation algorithms remain code by design.
+The subsequent content migrations implemented authored weather/surface,
+reliability/control, AI/racecraft, wheel operating coefficients, supported circuit
+styles and registered-provider selection. See the family guides below and the
+[consumer inventory](consumer-inventory.md) for their exact fields and owners.
+Structural and safety bounds, executable mechanics, command permissions and
+simulation algorithms remain code-owned; authored values cannot relax them.
 
 ## Weather and surface extension
 
@@ -116,5 +117,10 @@ reference, compatibility policy and unchanged safety boundaries are described in
 [Weather and surface authoring](weather-and-surface.md).
 
 Supported reliability, incident and virtual-control coefficients are documented in
-[reliability and control](reliability-and-control.md). General mechanic-provider
-selection and the remaining AI/racecraft tuning are still separate unfinished work.
+[reliability and control](reliability-and-control.md). Registered-provider selection
+is described in [mechanic profiles](mechanic-profiles.md), AI/racecraft tuning in
+[competition and AI](competition-and-ai.md), wheel coefficients in
+[tyres and setup](tyres-and-setup.md), and supported circuit styles in
+[circuits and scenarios](circuits-and-scenarios.md). New executable provider
+implementations still require code registration, versioned readers and regression
+checks.

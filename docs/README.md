@@ -6,6 +6,8 @@
 
 - [Architecture and ownership map](architecture-refactor.md)
 - [Developing and testing mechanics](developing-mechanics.md)
+- [Developer toolbox: native API, Python/JSON and explicit clocks](developer-toolbox.md)
+- [Toolbox model, state-space map and source adoption decisions](design/developer-toolbox-adoption.md)
 - [Composed rule profiles](composable-mechanics.md)
 - [Editor transactions and complete weekend flow](editor-and-weekend-boundaries.md)
 

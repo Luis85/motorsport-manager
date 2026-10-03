@@ -107,6 +107,22 @@ than being hidden behind a baseline. New work should meet the budget; report and
 explain any exception in the PR. No time-based enforcement ratchet is enabled.
 Do not make these checks blocking without an explicit policy decision.
 
+## Developer toolbox and coding agents
+
+Read `docs/developer-toolbox.md` before scripting game operations. Use
+`GameToolbox`'s named facets or the JSON/Python client; discover actual supported
+actions rather than calling arbitrary aggregate methods. Domain validators remain
+authoritative. Tool sessions own their application runners and advance only on
+explicit clock requests. Exact race ticks remain 0.05 seconds; campaign dated
+slots are a separate clock. Queries, event drains and navigation cannot tick.
+Keep command intentions, estimates and observed facts distinct. Campaign
+settlement consumes the owned finished record and publishes one whole checkpoint.
+Do not bypass manifests, fabricate receipts or write player saves from a recipe.
+Close sessions/client processes, keep experiment bounds finite, and report actual
+execution identity and completed steps. A bounded run is not human or balance
+validation. The Minimal and Advanced interfaces retain their existing shared
+command/query boundaries; tool-only clock capabilities must not reach widgets.
+
 ## Local checks
 
 ```sh
