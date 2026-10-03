@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "locally-verified; inspect current-head GitHub checks for hosted CI",
+  "status": "reviewed pipeline fix; complete final-source verification in progress",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
     "authoredTypeScriptFiles": 329,
@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "d5eba5743991a7b50c917c5b97cc4073c08240d908f47a6899422fbc268a597c",
+      "identity": "3084091dd08a1b7e30a66725e77984c3962a36e0c26e2e1f3f8b5e2d2cbfb3e9",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -74,7 +74,8 @@
     "SYSTEMIC-DESIGN.md",
     "EXCALIBUR-TOOLBOX-REVIEW.md",
     "DEVELOPER-TOOLBOX.md",
-    "PR25-FINAL-AUTHORING-REVIEW.md"
+    "PR25-FINAL-AUTHORING-REVIEW.md",
+    "PR25-POSTPUSH-REVIEW.md"
   ],
   "verification": {
     "authoritativeCommands": [
@@ -93,32 +94,14 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "status": "passed",
-      "passed": 1523,
-      "total": 1523,
-      "browserIncluded": true,
-      "sourceSha256": "e6dcff3d24fa9a2d4067b89517d959b946b5dba7c92a537873019f79306ec371",
-      "startedAt": "2026-10-03T21:09:58.831Z",
-      "environment": {
-        "node": "v24.19.0",
-        "platform": "linux",
-        "architecture": "x64",
-        "chromium": "/usr/bin/chromium"
-      },
-      "htmlSha256": "feb63a408193509adfc771e6c520594ce40724aaa57bb5b58fdf547630f1c201",
-      "htmlBytes": 18761164,
-      "finishedAt": "2026-10-03T21:37:49.428Z",
-      "suites": 75,
-      "browserSuites": 20,
-      "browserChecks": 332,
-      "verifiedSourceCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
-      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
-      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "status": "pending-complete-final-source-gate",
+      "sourceCheckpoint": "a1bc95db62d9a31f6d97c979a335b9dfa17b6117",
+      "sourceSha256": "6ba2e108553c2cd1d7b74f9ba522370b58d1b1f4a5778dd55152adc65e833049",
+      "htmlSha256": "0f205d483b1dcc1ac17311b034d262f54355f0308518701b1ea377cf8078e007",
+      "htmlBytes": 18761160,
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "d5eba5743991a7b50c917c5b97cc4073c08240d908f47a6899422fbc268a597c",
-      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
-      "publicationBaseCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
-      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0"
+      "engineSourceIdentity": "3084091dd08a1b7e30a66725e77984c3962a36e0c26e2e1f3f8b5e2d2cbfb3e9",
+      "rule": "The previous complete gate and unchanged runtime proof do not replace the new final-source gate."
     },
     "historicalPreAuthoringExpansion": {
       "status": "historical-before-authoring-expansion",
@@ -199,6 +182,57 @@
         "analysisComplete": true
       },
       "scope": "Merged-main native companion checks; not the Littlewild full gate or the registered native runtime shard gate."
+    },
+    "historicalPreWhitespacePolish": {
+      "status": "passed",
+      "passed": 1523,
+      "total": 1523,
+      "browserIncluded": true,
+      "sourceSha256": "e6dcff3d24fa9a2d4067b89517d959b946b5dba7c92a537873019f79306ec371",
+      "startedAt": "2026-10-03T21:09:58.831Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "feb63a408193509adfc771e6c520594ce40724aaa57bb5b58fdf547630f1c201",
+      "htmlBytes": 18761164,
+      "finishedAt": "2026-10-03T21:37:49.428Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 332,
+      "verifiedSourceCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "d5eba5743991a7b50c917c5b97cc4073c08240d908f47a6899422fbc268a597c",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete pre-whitespace-polish baseline."
+    },
+    "historicalPreCapturePolicy": {
+      "status": "passed",
+      "passed": 1523,
+      "total": 1523,
+      "browserIncluded": true,
+      "sourceSha256": "805258bd0a0002f8edabdb75a66e03d047e512fdcaea6b415b8a87026d655339",
+      "startedAt": "2026-10-03T22:01:55.154Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "0f205d483b1dcc1ac17311b034d262f54355f0308518701b1ea377cf8078e007",
+      "htmlBytes": 18761160,
+      "finishedAt": "2026-10-03T22:28:19.811Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 332,
+      "verifiedSourceCommit": "ddb3d836859f5e3b78c5fa68467bc9cdc09936c8",
+      "scope": "Complete whitespace-polished local gate before the verifier-only capture-policy fix."
     }
   },
   "github": {

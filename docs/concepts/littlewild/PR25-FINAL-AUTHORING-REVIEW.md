@@ -1,5 +1,7 @@
 # Independent cumulative Littlewild review — 6664900
 
+This report retains its original source-pinned scope. The later post-push review and current release acceptance are recorded in `PR25-POSTPUSH-REVIEW.md` and `VERIFICATION.md`.
+
 No outstanding actionable finding remains in this independent scoped review. Final-checkpoint native, typed consumer, browser and visual checks pass. Root owns the broader release/native gates, push and subsequent exact PR-head/CI review.
 
 ## Identity and evidence boundaries
