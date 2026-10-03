@@ -7,6 +7,7 @@ import { launchBrowser, monitorContext } from "./browser-harness";
 interface Result{name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,"../.."),OUT=path.join(ROOT,"verification","v15");
 fs.mkdirSync(OUT,{recursive:true});const results:Result[]=[];
+let diagnostics:ReturnType<typeof monitorContext>;
 fs.rmSync(path.join(OUT,"browser-contract-results.json"),{force:true});
 async function check(name:string,action:()=>unknown|Promise<unknown>):Promise<void>{try{assert.notEqual(await action(),false);results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error instanceof Error?error.message:String(error)});process.stderr.write("FAIL "+name+" "+String(error)+"\n");}}
 const eq=(a:unknown,b:unknown)=>assert.deepEqual(a,b);
@@ -14,7 +15,7 @@ const eq=(a:unknown,b:unknown)=>assert.deepEqual(a,b);
 async function main():Promise<void>{
  const browser=await launchBrowser();
  try {
- const context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ const context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context);
  let page=await context.newPage();
  await page.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});await page.waitForFunction(() => !!(window as any).Littlewild);
  await page.locator("[data-act=land-demo]").click();await page.waitForTimeout(200);
@@ -84,7 +85,7 @@ async function main():Promise<void>{
  await check("No console warnings or errors across both pack workflows",()=>eq(diagnostics.consoleProblems,[]));
  await check("No HTTP/HTTPS requests across both pack workflows",()=>eq(diagnostics.requests,[]));
  } finally { await browser.close(); }
- const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
+ const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results,...diagnostics};
  fs.writeFileSync(path.join(OUT,"browser-contract-results.json"),JSON.stringify(report,null,2)+"\n");process.stdout.write(`${report.passed}/${report.total}\n`);if(report.failed)process.exitCode=1;
 }
 main().catch(error=>{process.stderr.write(String(error)+"\n");process.exitCode=1;});

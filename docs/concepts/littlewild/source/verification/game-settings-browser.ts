@@ -17,6 +17,7 @@ const ROOT=path.resolve(__dirname,'../..');
 const ARTIFACT=process.env.LITTLEWILD_GAME_SETTINGS_HTML||path.join(ROOT,'littlewild.html');
 const OUT=process.env.LITTLEWILD_GAME_SETTINGS_OUT||path.join(ROOT,'verification','v15');
 const results:Result[]=[];
+let diagnostics:ReturnType<typeof monitorContext>;
 async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void>{
  try{await work();results.push({name,passed:true});}
  catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
@@ -25,7 +26,7 @@ async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void
 async function main():Promise<void>{
  const browser=await launchBrowser();
  const context=await browser.newContext();
- const diagnostics=monitorContext(context);
+ diagnostics=monitorContext(context);
  try{
   const html=fs.readFileSync(ARTIFACT,'utf8');
   for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
@@ -144,7 +145,7 @@ async function main():Promise<void>{
 fs.mkdirSync(OUT,{recursive:true});
 main().catch(error=>{results.push({name:'Settings browser execution',passed:false,error:String(error)});console.error(error);}).finally(()=>{
  const passed=results.filter(result=>result.passed).length;
- fs.writeFileSync(path.join(OUT,'game-settings-browser-results.json'),JSON.stringify({passed,total:results.length,results},null,2)+'\n');
+ fs.writeFileSync(path.join(OUT,'game-settings-browser-results.json'),JSON.stringify({passed,total:results.length,results,...diagnostics},null,2)+'\n');
  console.log(`Settings browser: ${passed}/${results.length} passed.`);
  if(passed!==results.length)process.exitCode=1;
 });

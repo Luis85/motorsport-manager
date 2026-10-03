@@ -26,13 +26,14 @@ const PROJECT=path.resolve(__dirname,'../..');
 const ARTIFACT=process.env.LITTLEWILD_CONSTRUCTION_HTML||path.join(PROJECT,'littlewild.html');
 const OUT=process.env.LITTLEWILD_CONSTRUCTION_OUT||path.join(PROJECT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
+let diagnostics:ReturnType<typeof monitorContext>;
 async function check(name:string,work:()=>Promise<void>):Promise<void>{
  try{await work();results.push({name,passed:true});}
  catch(error){results.push({name,passed:false,error:String(error)});}
 }
 async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});
- const browser=await launchBrowser(),context=await browser.newContext(),diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext();diagnostics=monitorContext(context);
  try{
   for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
    const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(7000);
@@ -111,7 +112,9 @@ async function main():Promise<void>{
    await page.close();
   }
   results.push({name:'No page errors during designer interactions',passed:diagnostics.errors.length===0,...(diagnostics.errors.length?{error:diagnostics.errors.join('\n')}:{})});
+  await check('No console warnings or errors during designer interactions',async()=>{assert.deepEqual(diagnostics.consoleProblems,[]);});
+  await check('No HTTP/HTTPS requests during designer interactions',async()=>{assert.deepEqual(diagnostics.requests,[]);});
  }finally{await browser.close();}
- const report={passed:results.filter(result=>result.passed).length,total:results.length,results};fs.writeFileSync(path.join(OUT,'construction-editor-browser-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(report.passed!==report.total)process.exitCode=1;
+ const report={passed:results.filter(result=>result.passed).length,total:results.length,results,...diagnostics};fs.writeFileSync(path.join(OUT,'construction-editor-browser-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(report.passed!==report.total)process.exitCode=1;
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
