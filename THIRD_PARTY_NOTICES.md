@@ -2,7 +2,7 @@
 
 ## Geographic circuit outlines
 
-The seven geographic circuits in `data/tracks/catalog.json` were migrated from the user's **Circuit Atelier v0.4** prototype. That prototype derived their geographic plan outlines from **Tomislav Bacinger / f1-circuits**:
+The seven geographic circuits in `config/circuits/catalog.json` were migrated from the user's **Circuit Atelier v0.4** prototype. That prototype derived their geographic plan outlines from **Tomislav Bacinger / f1-circuits**:
 
 - Repository: https://github.com/bacinger/f1-circuits
 - License: https://github.com/bacinger/f1-circuits/blob/master/LICENSE.md

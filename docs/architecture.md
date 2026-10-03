@@ -50,8 +50,8 @@ scripts/ui/
   circuit_world.gd              Cached world-space circuit illustration
   weekend.gd                   Timing tower, pit-wall controls, telemetry and log
 scripts/verify.py               Import/domain/rendered-UI verification harness
-data/tracks/catalog.json       Ordered catalog manifest
-data/tracks/*.json             Individual bundled authoring circuits
+config/circuits/catalog.json       Ordered catalog manifest
+config/circuits/*.json             Individual bundled authoring circuits
 ```
 
 `TrackDocument`, `TrackGeometry`, and `RaceSim` are `RefCounted` domain classes. They do not query the scene tree or the `App` singleton. Native UI nodes translate user actions into model commands and display model state. Domain tests instantiate the same classes without creating a game scene.

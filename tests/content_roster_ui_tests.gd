@@ -44,13 +44,13 @@ func inside(control: Control) -> bool:
 
 func run() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Load authored privateer fixture")
 	if not loaded.ok:
 		finish()
 		return
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	document.grid.count = 14
 	var launch = WeekendLaunch.new(loaded.catalog)
 	check(

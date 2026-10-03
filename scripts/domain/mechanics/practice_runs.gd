@@ -19,6 +19,7 @@ func record_practice(sim: RaceSim, action: String, id: int, evidence: Dictionary
 func launch_run(sim: RaceSim, id: int, plan: Dictionary) -> void:
 	var c = sim.cars[id]
 	var d = sim.practice_driver(id)
+	var rules: Dictionary = sim.tuning.balance.practice
 	var run = {
 		"id": "P%d-%d" % [id, d.runs.size() + 1],
 		"objective": plan.objective,
@@ -30,13 +31,15 @@ func launch_run(sim: RaceSim, id: int, plan: Dictionary) -> void:
 		(
 			c.pace
 			if plan.get("manual_modes", false) == true
-			else (2 if plan.objective == "qualifying" else 1)
+			else (rules.qualifying_pace if plan.objective == "qualifying" else rules.default_pace)
 		),
 		"engine":
 		(
 			c.engine
 			if plan.get("manual_modes", false) == true
-			else (2 if plan.objective == "qualifying" else 1)
+			else (
+				rules.qualifying_engine if plan.objective == "qualifying" else rules.default_engine
+			)
 		),
 		"previous_pace": c.pace,
 		"previous_engine": c.engine,
@@ -167,8 +170,14 @@ func qualifying_crossings(sim: RaceSim, c: RaceCar, before: float, after: float)
 			and c.pace == run.pace
 			and c.engine == run.engine
 			and c.hot_valid
-			and absf(observed.water - a.anchor.water) < 0.10
-			and absf(observed.damage - a.anchor.damage) < 0.001
+			and (
+				absf(observed.water - a.anchor.water)
+				< sim.tuning.balance.practice.sample_water_tolerance
+			)
+			and (
+				absf(observed.damage - a.anchor.damage)
+				< sim.tuning.balance.practice.sample_damage_tolerance
+			)
 		)
 		var sample = {
 			"time": at,
@@ -272,7 +281,10 @@ func _practice_step(sim: RaceSim) -> void:
 			)
 			d.active = {}
 			d.revision += 1
-		elif c.fuel < 1.1 or not WheelTyres.usable(TyreInventory.find(c, c.set_id)):
+		elif (
+			c.fuel < sim.tuning.balance.practice.fuel_return_reserve_laps
+			or not WheelTyres.usable(TyreInventory.find(c, c.set_id))
+		):
 			d.active.returning = true
 			d.active.tainted = true
 			c.qual_state = "inlap"
@@ -303,7 +315,7 @@ func _prepare_practice_step(sim: RaceSim) -> void:
 			)
 			var plan = {
 				"objective": "tyre_life",
-				"laps": 2,
+				"laps": sim.tuning.balance.practice.autonomous_laps,
 				"set_id": item.get("id", ""),
 				"baseline": "current"
 			}
@@ -322,5 +334,11 @@ func _prepare_practice_step(sim: RaceSim) -> void:
 				if other.id == c.id or other.route != "track" or other.dnf:
 					continue
 				var gap = fposmod(other.distance - c.distance, sim.track.length)
-				if gap < maxf(25, c.speed * 1.5):
+				if (
+					gap
+					< maxf(
+						sim.tuning.balance.practice.clean_traffic_distance_m,
+						c.speed * sim.tuning.balance.practice.clean_traffic_headway_seconds
+					)
+				):
 					d.active.tainted = true

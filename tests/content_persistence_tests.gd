@@ -84,11 +84,11 @@ func numbers() -> void:
 func run() -> void:
 	numbers()
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Production packs load")
 	if loaded.ok:
-		var track = Storage.read_json("res://data/tracks/hillside.json").data
+		var track = Storage.read_json("res://config/circuits/hillside.json").data
 		track.grid.count = 14
 		var launch = WeekendLaunch.new(loaded.catalog)
 		check(

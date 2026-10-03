@@ -40,7 +40,7 @@ func check(value: bool, description: String) -> void:
 
 
 func run() -> void:
-	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	var sim = PracticeRaceSim.new(track, {"scenario": "dry", "seed": 7314})
 	var original = RaceStateValue.fingerprint(sim.snapshot())
 	check(

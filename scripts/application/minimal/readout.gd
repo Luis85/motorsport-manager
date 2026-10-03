@@ -8,6 +8,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 	if id < 0 or id >= sim.cars.size() or not sim.cars[id].player:
 		return {}
 	var car = sim.cars[id]
+	var presentation: Dictionary = sim.tuning.balance.presentation
 	var fitted = TyreInventory.find(car, car.set_id)
 	var punctured = false
 	var wheels: Array = []
@@ -41,7 +42,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 		if punctured:
 			detail = "Puncture · " + ", ".join(punctures)
 			issue = true
-		elif life <= 25:
+		elif life <= presentation.low_tread_percent:
 			detail = "Low tread · " + limiting
 			issue = true
 	var fuel = maxf(0, float(car.fuel))
@@ -49,7 +50,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 	var fuel_issue = false
 	if sim.phase == "race" and not car.dnf and not car.finished:
 		var remaining = maxf(0, sim.laps - maxf(0, car.distance) / sim.track.length)
-		var margin = fuel - remaining * [0.84, 1.0, 1.14][car.engine]
+		var margin = fuel - remaining * sim.tuning.fuel.engine_rates[car.engine]
 		fuel_detail = "~%+.1f to finish" % margin
 		fuel_issue = margin < 0
 	elif car.finished or car.dnf:
@@ -86,7 +87,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 		"health": "%.0f%%" % floorf(health),
 		"health_value": health,
 		"car_detail": "Damage %.0f%%" % ceilf(damage) if damage > 0 else "No damage",
-		"car_issue": health < 65 or damage > 0,
+		"car_issue": health < sim.tuning.condition.health_reference or damage > 0,
 		"retire_reason": car.retire_reason if car.dnf else "",
 		"color": car.color,
 		"tyre_title": tyre_title,
@@ -109,7 +110,7 @@ static func capture(sim: RaceSim, id: int) -> Dictionary:
 			% [["Calm", "Normal", "Push"][car.pace], ["Save", "Standard", "Power"][car.engine]]
 		),
 		"engine_temp": "Engine %.0f°C" % car.engine_temperature,
-		"engine_hot": car.engine_temperature > 115,
+		"engine_hot": car.engine_temperature > sim.tuning.condition.heat_reference_c,
 		"speed": "%.0f km/h" % (maxf(0, car.speed) * 3.6),
 		"stops": car.pit_stops
 	}

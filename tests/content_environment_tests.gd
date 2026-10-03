@@ -29,7 +29,7 @@ func near(a: float, b: float, description: String) -> void:
 
 
 func run() -> void:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check(loaded.ok, "Bundled environment validates through the production loader")
 	if not loaded.ok:
 		print(JSON.stringify(loaded))
@@ -37,7 +37,7 @@ func run() -> void:
 		return
 	var catalog: ContentCatalog = loaded.catalog
 	var record = catalog.record(CORE)
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	var track = TrackGeometry.new(document)
 	validation(record)
 	characterization(track, record)

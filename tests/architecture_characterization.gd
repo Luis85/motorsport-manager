@@ -60,7 +60,7 @@ func compare_case(row: Dictionary, baseline: Variant, recipe: Dictionary) -> voi
 
 
 func exercise(recipe: Dictionary) -> Dictionary:
-	var read = Storage.read_json("res://data/tracks/%s.json" % recipe.track)
+	var read = Storage.read_json("res://config/circuits/%s.json" % recipe.track)
 	var sim = (
 		PracticeRaceSim
 		. new(

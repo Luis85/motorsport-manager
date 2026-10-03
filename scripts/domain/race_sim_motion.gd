@@ -27,22 +27,47 @@ func _base_move_car(c: RaceCar, old: Array) -> void:
 		for key in RacePerformanceProfile.KEYS:
 			limits[key] *= _performance_factor(c, key)
 	var grade = (track.sample(c.distance + 10).h - track.sample(c.distance - 10).h) / 20.0
-	var accel = maxf(1.0, limits.accel * g * effects.traction - 9.81 * grade)
-	var brake = maxf(2.0, limits.brake * g * effects.brake + 9.81 * grade)
+	var accel = maxf(
+		tuning.balance.motion.minimum_acceleration_mps2,
+		limits.accel * g * effects.traction - 9.81 * grade
+	)
+	var brake = maxf(
+		tuning.balance.motion.minimum_braking_mps2, limits.brake * g * effects.brake + 9.81 * grade
+	)
 	var must_pit = phase == "race" and c.pit_order or is_run_session() and c.qual_state == "inlap"
 	if must_pit:
 		if c.pit_gate <= c.distance:
 			plan_pit_gate(c)
 		desired = minf(
-			desired, sqrt(track.pit_limit ** 2 + 2.0 * brake * maxf(0, c.pit_gate - c.distance - 5))
+			desired,
+			sqrt(
+				(
+					track.pit_limit ** 2
+					+ (
+						2.0
+						* brake
+						* maxf(
+							0, c.pit_gate - c.distance - tuning.balance.motion.pit_approach_margin_m
+						)
+					)
+				)
+			)
 		)
 	# A wet/worn car must brake *before* the corner, not chase a dry envelope through it.
-	var lookahead = minf(300, c.speed * c.speed / (2 * brake) + 25)
+	var lookahead = minf(
+		300, c.speed * c.speed / (2 * brake) + tuning.balance.motion.braking_anticipation_m
+	)
 	var scan = 15.0
 	while scan <= lookahead:
 		var future = track.sample(c.distance + scan / s.path_scale)
 		var corner_speed = minf(
-			limits.top, sqrt(maxf(3, limits.lat * g) / maxf(0.00001, absf(future.curvature)))
+			limits.top,
+			sqrt(
+				(
+					maxf(tuning.balance.motion.minimum_lateral_mps2, limits.lat * g)
+					/ maxf(0.00001, absf(future.curvature))
+				)
+			)
 		)
 		desired = minf(desired, sqrt(corner_speed * corner_speed + 2 * brake * scan))
 		scan += 20

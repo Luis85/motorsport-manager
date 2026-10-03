@@ -2,6 +2,992 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "balance": {
+      "additionalProperties": false,
+      "properties": {
+        "courtesy": {
+          "additionalProperties": false,
+          "properties": {
+            "acquire_distance_m": {
+              "description": "metres: Maximum distance behind for courtesy target acquisition.",
+              "maximum": 1000.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "arrival_seconds": {
+              "description": "seconds: Maximum estimated arrival time for acquiring a courtesy target.",
+              "maximum": 60.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "clear_ahead_distance_m": {
+              "description": "metres: Release a courtesy target after it clears ahead.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "immediate_distance_m": {
+              "description": "metres: Gap allowing courtesy without a time-to-arrival test.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lapped_distance_fraction": {
+              "description": "lap fraction: Unwrapped progress advantage indicating a blue-flag priority car.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "minimum_closing_mps": {
+              "description": "metres/second: Minimum relative speed for acquiring a courtesy target.",
+              "maximum": 10.0,
+              "minimum": -10.0,
+              "type": "number"
+            },
+            "release_behind_distance_m": {
+              "description": "metres: Release a courtesy target that falls this far behind.",
+              "maximum": 1000.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "timeout_seconds": {
+              "description": "seconds: Maximum duration of a courtesy target.",
+              "maximum": 120.0,
+              "minimum": 0.05,
+              "type": "number"
+            }
+          },
+          "required": [
+            "clear_ahead_distance_m",
+            "release_behind_distance_m",
+            "acquire_distance_m",
+            "immediate_distance_m",
+            "timeout_seconds",
+            "lapped_distance_fraction",
+            "minimum_closing_mps",
+            "arrival_seconds"
+          ],
+          "type": "object"
+        },
+        "forecast": {
+          "additionalProperties": false,
+          "properties": {
+            "base_uncertainty": {
+              "description": "fraction: Baseline ordinary remaining-time uncertainty.",
+              "maximum": 0.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "damage_limit": {
+              "description": "damage points: Coarse forecast damage input cap.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extend_laps": {
+              "description": "laps: Ordinary extension-comparison horizon.",
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "high_risk_tread": {
+              "description": "tread percent: High remaining-stint risk threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "maximum_age_seconds": {
+              "description": "seconds: Advice age inside the existing five-second command bound.",
+              "maximum": 5.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "measured_wear_maximum_factor": {
+              "description": "multiplier: Maximum observed-race wear adjustment.",
+              "maximum": 5.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "measured_wear_minimum_factor": {
+              "description": "multiplier: Minimum observed-race wear adjustment.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "measured_wear_minimum_laps": {
+              "description": "laps: Minimum distance before observed stint wear is used.",
+              "maximum": 10.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "minimum_lap_speed_factor": {
+              "description": "multiplier: Lower coarse lap-speed divisor clamp.",
+              "maximum": 1.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "minimum_performance_factor": {
+              "description": "multiplier: Minimum coarse profile capability divisor.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "minimum_uncertainty_seconds": {
+              "description": "seconds: Minimum ordinary remaining-time uncertainty.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "moderate_risk_tread": {
+              "description": "tread percent: Moderate remaining-stint risk threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "observed_lap_samples": {
+              "description": "samples: Public rival-lap averaging within its original three-sample work bound.",
+              "maximum": 3,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "performance_accel_weight": {
+              "description": "fraction: Coarse acceleration capability weight.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "performance_brake_weight": {
+              "description": "fraction: Coarse braking capability weight.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "performance_lat_weight": {
+              "description": "fraction: Coarse lateral capability weight.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "performance_top_weight": {
+              "description": "fraction: Coarse top-speed capability weight.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "rejoin_traffic_ahead_seconds": {
+              "description": "seconds: Projected traffic ahead of a rejoin station.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "rejoin_traffic_behind_m": {
+              "description": "metres: Projected traffic behind a rejoin station.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "repair_payback_minimum_gain_seconds": {
+              "description": "seconds/lap: Smallest repair gain displayed as payback.",
+              "maximum": 10.0,
+              "minimum": 1e-05,
+              "type": "number"
+            },
+            "traffic_seconds_per_car": {
+              "description": "seconds/car: Ordinary and tactical traffic allowance.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "maximum_age_seconds",
+            "traffic_seconds_per_car",
+            "base_uncertainty",
+            "minimum_uncertainty_seconds",
+            "high_risk_tread",
+            "moderate_risk_tread",
+            "rejoin_traffic_behind_m",
+            "rejoin_traffic_ahead_seconds",
+            "minimum_lap_speed_factor",
+            "damage_limit",
+            "measured_wear_minimum_laps",
+            "measured_wear_minimum_factor",
+            "measured_wear_maximum_factor",
+            "observed_lap_samples",
+            "extend_laps",
+            "repair_payback_minimum_gain_seconds",
+            "performance_top_weight",
+            "performance_accel_weight",
+            "performance_lat_weight",
+            "performance_brake_weight",
+            "minimum_performance_factor"
+          ],
+          "type": "object"
+        },
+        "model": {
+          "enum": [
+            "game-balance-v1"
+          ]
+        },
+        "motion": {
+          "additionalProperties": false,
+          "properties": {
+            "braking_anticipation_m": {
+              "description": "metres: Additional braking-envelope lookahead.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "corner_blend_curvature_scale": {
+              "description": "metres: Curvature scale blending straight and corner handling.",
+              "maximum": 1000.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "formation_lane_distance_m": {
+              "description": "metres: Distance before the formation endpoint to align in grid lanes.",
+              "maximum": 500.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "maximum_grip": {
+              "description": "multiplier: Upper modeled grip clamp.",
+              "maximum": 1.1,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "minimum_acceleration_mps2": {
+              "description": "metres/second squared: Minimum on-track acceleration.",
+              "maximum": 20.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "minimum_braking_mps2": {
+              "description": "metres/second squared: Minimum on-track braking.",
+              "maximum": 30.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "minimum_grip": {
+              "description": "multiplier: Lower modeled grip clamp.",
+              "maximum": 1.1,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "minimum_lateral_mps2": {
+              "description": "metres/second squared: Minimum corner braking-envelope lateral acceleration.",
+              "maximum": 30.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "pit_approach_margin_m": {
+              "description": "metres: Pit approach stopping allowance.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "minimum_grip",
+            "maximum_grip",
+            "corner_blend_curvature_scale",
+            "minimum_acceleration_mps2",
+            "minimum_braking_mps2",
+            "minimum_lateral_mps2",
+            "braking_anticipation_m",
+            "pit_approach_margin_m",
+            "formation_lane_distance_m"
+          ],
+          "type": "object"
+        },
+        "pit_motion": {
+          "additionalProperties": false,
+          "properties": {
+            "acceleration_mps2": {
+              "description": "metres/second squared: Pit-lane acceleration.",
+              "maximum": 30.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "braking_mps2": {
+              "description": "metres/second squared: Pit-lane braking and box stopping envelope.",
+              "maximum": 30.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "entry_braking_factor": {
+              "description": "multiplier: Effective vehicle braking used to schedule safe pit entry.",
+              "maximum": 1.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "entry_braking_margin_m": {
+              "description": "metres: Additional pit entry braking allowance.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "exit_ahead_distance_m": {
+              "description": "metres: Desired pit exit gap to a car ahead; the eight-metre safety floor remains code-owned.",
+              "maximum": 100.0,
+              "minimum": 8.0,
+              "type": "number"
+            },
+            "exit_approach_distance_m": {
+              "description": "metres: Desired pit exit approach gap; the fifteen-metre safety floor remains code-owned.",
+              "maximum": 500.0,
+              "minimum": 15.0,
+              "type": "number"
+            },
+            "exit_headway_seconds": {
+              "description": "seconds: Desired pit exit gap to an approaching car.",
+              "maximum": 10.0,
+              "minimum": 0.1,
+              "type": "number"
+            }
+          },
+          "required": [
+            "acceleration_mps2",
+            "braking_mps2",
+            "entry_braking_factor",
+            "entry_braking_margin_m",
+            "exit_headway_seconds",
+            "exit_approach_distance_m",
+            "exit_ahead_distance_m"
+          ],
+          "type": "object"
+        },
+        "practice": {
+          "additionalProperties": false,
+          "properties": {
+            "autonomous_laps": {
+              "description": "laps: Requested measured laps in the autonomous run.",
+              "maximum": 4,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "clean_traffic_distance_m": {
+              "description": "metres: Traffic exclusion distance for clean evidence.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "clean_traffic_headway_seconds": {
+              "description": "seconds: Traffic exclusion headway for clean evidence.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "default_engine": {
+              "description": "mode index: Ordinary practice engine mode.",
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "default_laps": {
+              "description": "laps: Preview choice when a request omits measured laps.",
+              "maximum": 4,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "default_pace": {
+              "description": "mode index: Ordinary practice pace.",
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "fuel_return_reserve_laps": {
+              "description": "fuel-laps: Practice physical-return threshold.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "matching_damage_tolerance": {
+              "description": "damage points: Damage tolerance for matching prior observations.",
+              "maximum": 1000.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "matching_health_tolerance": {
+              "description": "health points: Health tolerance for matching prior observations.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "matching_water_tolerance": {
+              "description": "fraction: Water tolerance for matching prior observations.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "prior_base_uncertainty": {
+              "description": "fraction: Uncertainty floor with few matching samples.",
+              "maximum": 0.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "prior_maximum_lap_factor": {
+              "description": "multiplier: Maximum measured lap-time adjustment.",
+              "maximum": 2.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "prior_maximum_wear_factor": {
+              "description": "multiplier: Maximum measured wear adjustment.",
+              "maximum": 5.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "prior_minimum_lap_factor": {
+              "description": "multiplier: Minimum measured lap-time adjustment.",
+              "maximum": 1.0,
+              "minimum": 0.5,
+              "type": "number"
+            },
+            "prior_minimum_wear_factor": {
+              "description": "multiplier: Minimum measured wear adjustment.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "prior_reliable_samples": {
+              "description": "samples: Count for the narrower uncertainty floor.",
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "prior_reliable_uncertainty": {
+              "description": "fraction: Uncertainty floor with enough matching samples.",
+              "maximum": 0.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "prior_sample_weight": {
+              "description": "samples: Baseline weight in the bounded measured blend.",
+              "maximum": 100.0,
+              "minimum": 0.01,
+              "type": "number"
+            },
+            "prior_spread_allowance": {
+              "description": "fraction: Additional uncertainty beyond observed spread.",
+              "maximum": 0.5,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "qualifying_engine": {
+              "description": "mode index: Qualifying-preparation practice engine mode.",
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "qualifying_pace": {
+              "description": "mode index: Qualifying-preparation practice pace.",
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "release_offset_seconds": {
+              "description": "seconds: Initial autonomous practice release delay.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "release_spacing_seconds": {
+              "description": "seconds/entry: Autonomous practice release spacing.",
+              "maximum": 60.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "run_return_allowance_seconds": {
+              "description": "seconds: Practice preview return allowance.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "run_transit_factor": {
+              "description": "multiplier: Coarse practice run-duration speed factor.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "sample_damage_tolerance": {
+              "description": "damage points: Largest damage change for a clean measured lap.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "sample_water_tolerance": {
+              "description": "fraction: Largest water change for a clean measured lap.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "release_offset_seconds",
+            "release_spacing_seconds",
+            "autonomous_laps",
+            "default_laps",
+            "default_pace",
+            "default_engine",
+            "qualifying_pace",
+            "qualifying_engine",
+            "run_transit_factor",
+            "run_return_allowance_seconds",
+            "fuel_return_reserve_laps",
+            "sample_water_tolerance",
+            "sample_damage_tolerance",
+            "matching_water_tolerance",
+            "matching_health_tolerance",
+            "matching_damage_tolerance",
+            "prior_sample_weight",
+            "prior_minimum_wear_factor",
+            "prior_maximum_wear_factor",
+            "prior_minimum_lap_factor",
+            "prior_maximum_lap_factor",
+            "prior_reliable_samples",
+            "prior_reliable_uncertainty",
+            "prior_base_uncertainty",
+            "prior_spread_allowance",
+            "clean_traffic_distance_m",
+            "clean_traffic_headway_seconds"
+          ],
+          "type": "object"
+        },
+        "presentation": {
+          "additionalProperties": false,
+          "properties": {
+            "advisory_core_excess_c": {
+              "description": "Celsius delta: Report core heat above the fitted compound optimum plus this margin.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "advisory_tread_percent": {
+              "description": "tread percent: Report a low-tread advisory below this observed fitted-wheel life.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_base": {
+              "description": "points: Starting current-demand score at Normal or Push pace.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_calm_base": {
+              "description": "points: Starting current-demand score at Calm pace.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_damage_max": {
+              "description": "points: Maximum current-demand contribution from observed car damage.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_damage_per_percent": {
+              "description": "points/damage percent: Convert observed car damage into current demand before the damage cap.",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_high": {
+              "description": "points: Current-demand score at or above which the High observation band starts.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_puncture": {
+              "description": "points: Added current demand for a fitted puncture instead of the ordinary tread contribution.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_push": {
+              "description": "points: Added current demand when Push pace is selected.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_raised": {
+              "description": "points: Current-demand score at or above which the Raised observation band starts.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_recovery": {
+              "description": "points: Added current demand while the car has observed incident recovery time remaining.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_traffic_distance_m": {
+              "description": "metres: Along-route proximity inside which another live track car adds current demand.",
+              "maximum": 1000.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "demand_traffic_points": {
+              "description": "points: Maximum traffic demand at zero along-route separation, falling to zero at the distance threshold.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_tread_points": {
+              "description": "points: Maximum low-tread demand contribution at zero fitted tread life.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_tread_threshold_percent": {
+              "description": "tread percent: Below this fitted life, add demand scaled by the proportion of tread lost.",
+              "maximum": 100.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "demand_water_points": {
+              "description": "points: Wet-track demand at a water fraction of one; smaller fractions scale the contribution.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "demand_water_threshold": {
+              "description": "fraction: Above this local surface-water fraction, include wet-track current demand.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "low_tread_percent": {
+              "description": "tread percent: Warn when the limiting fitted wheel is at or below this tread life.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "moment_tread_critical_percent": {
+              "description": "tread percent: Fitted tread at or below which the critical check-in band starts.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "moment_tread_low_percent": {
+              "description": "tread percent: Fitted tread at or below which the first low-tread check-in band starts.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "moment_water_high": {
+              "description": "fraction: Average observed water at or above which the highest wet check-in band starts.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "moment_water_raised": {
+              "description": "fraction: Average observed water at or above which the first wet check-in band starts.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "practice_reuse_tread_percent": {
+              "description": "tread percent: Minimum fitted-set life for practice reuse when its compound is preferred.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "low_tread_percent",
+            "practice_reuse_tread_percent",
+            "advisory_tread_percent",
+            "advisory_core_excess_c",
+            "demand_base",
+            "demand_calm_base",
+            "demand_push",
+            "demand_puncture",
+            "demand_tread_threshold_percent",
+            "demand_tread_points",
+            "demand_damage_max",
+            "demand_damage_per_percent",
+            "demand_water_threshold",
+            "demand_water_points",
+            "demand_recovery",
+            "demand_traffic_distance_m",
+            "demand_traffic_points",
+            "demand_raised",
+            "demand_high",
+            "moment_water_raised",
+            "moment_water_high",
+            "moment_tread_low_percent",
+            "moment_tread_critical_percent"
+          ],
+          "type": "object"
+        },
+        "procedure": {
+          "additionalProperties": false,
+          "properties": {
+            "autonomous_review_seconds": {
+              "description": "seconds: Classic engineer review and spare-tyre cooling cadence.",
+              "maximum": 120.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "formation_braking_mps2": {
+              "description": "metres/second squared: Formation stopping envelope.",
+              "maximum": 30.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "garage_turnaround_seconds": {
+              "description": "seconds: Garage turnaround before another qualifying release.",
+              "maximum": 300.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "grid_lane_hold_seconds": {
+              "description": "seconds: Maintain starting grid lanes after lights out.",
+              "maximum": 60.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lights_seconds": {
+              "description": "seconds: Standing-start lights phase duration.",
+              "maximum": 60.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "qualifying_maximum_runs": {
+              "description": "runs: Maximum autonomous qualifying departures.",
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualifying_outlap_speed_factor": {
+              "description": "multiplier: Coarse qualifying outlap speed for release feasibility.",
+              "maximum": 1.0,
+              "minimum": 0.1,
+              "type": "number"
+            },
+            "qualifying_release_margin_seconds": {
+              "description": "seconds: Required qualifying release forecast margin.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "qualifying_release_transit_seconds": {
+              "description": "seconds: Coarse qualifying pit transit allowance.",
+              "maximum": 60.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "unavailable_set_retry_seconds": {
+              "description": "seconds: Delay before retrying a departure without a usable set.",
+              "maximum": 300.0,
+              "minimum": 0.05,
+              "type": "number"
+            }
+          },
+          "required": [
+            "lights_seconds",
+            "grid_lane_hold_seconds",
+            "formation_braking_mps2",
+            "garage_turnaround_seconds",
+            "qualifying_maximum_runs",
+            "qualifying_release_transit_seconds",
+            "qualifying_outlap_speed_factor",
+            "qualifying_release_margin_seconds",
+            "unavailable_set_retry_seconds",
+            "autonomous_review_seconds"
+          ],
+          "type": "object"
+        },
+        "strategy_defaults": {
+          "additionalProperties": false,
+          "properties": {
+            "balanced_stop_fraction": {
+              "description": "race fraction: Suggested balanced-template stop.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "extended_stop_fraction": {
+              "description": "race fraction: Suggested alternative-template stop.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "fuel_reserve_laps": {
+              "description": "fuel-laps: Default approved strategy and tactic reserve.",
+              "maximum": 3.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "tyre_reserve": {
+              "description": "tread percent: Default approved-plan reserve.",
+              "maximum": 50.0,
+              "minimum": 5.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "balanced_stop_fraction",
+            "extended_stop_fraction",
+            "tyre_reserve",
+            "fuel_reserve_laps"
+          ],
+          "type": "object"
+        },
+        "tactical_policy": {
+          "additionalProperties": false,
+          "properties": {
+            "extend_window_laps": {
+              "description": "laps: Suggested extend-tactic window width.",
+              "maximum": 10,
+              "minimum": 2,
+              "type": "integer"
+            },
+            "initial_stop_fraction": {
+              "description": "race fraction: Initial pre-race tactical stop suggestion.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "maximum_water": {
+              "description": "fraction: Highest observed water inside the dry tactical envelope.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "queue_seconds": {
+              "description": "seconds: Maximum queue before an avoid-traffic tactic waits.",
+              "maximum": 30.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "review_seconds": {
+              "description": "seconds: Tactical review interval inside the saved-state bound.",
+              "maximum": 1.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "tyre_floor": {
+              "description": "tread percent: Default dry-tactic resource floor.",
+              "maximum": 50.0,
+              "minimum": 5.0,
+              "type": "number"
+            },
+            "undercut_window_laps": {
+              "description": "laps: Suggested undercut-tactic window width.",
+              "maximum": 10,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "wait_laps": {
+              "description": "laps: Suggested extension within the existing two-entry contract.",
+              "maximum": 2,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "initial_stop_fraction",
+            "extend_window_laps",
+            "undercut_window_laps",
+            "wait_laps",
+            "tyre_floor",
+            "maximum_water",
+            "review_seconds",
+            "queue_seconds"
+          ],
+          "type": "object"
+        },
+        "tyre_incidents": {
+          "additionalProperties": false,
+          "properties": {
+            "assertive_lockup_factor": {
+              "description": "multiplier: Assertive cold lock-up exposure.",
+              "maximum": 10.0,
+              "minimum": 1.0,
+              "type": "number"
+            },
+            "check_interval_seconds": {
+              "description": "seconds: Physical tyre incident check cadence.",
+              "maximum": 120.0,
+              "minimum": 0.05,
+              "type": "number"
+            },
+            "guaranteed_puncture_tread": {
+              "description": "tread percent: Life at or below this value punctures without a random draw.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lockup_braking_threshold": {
+              "description": "fraction: Required braking demand for a cold lock-up check.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lockup_core_threshold_c": {
+              "description": "Celsius: Maximum average core temperature for a cold lock-up check.",
+              "maximum": 200.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lockup_damage": {
+              "description": "tread points: Flat-spot damage applied by the existing wheel model.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "lockup_probability": {
+              "description": "probability/check: Base cold lock-up probability.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "puncture_probability_per_tread": {
+              "description": "probability/tread point/check: Hazard below the tread threshold.",
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            "puncture_tread_threshold": {
+              "description": "tread percent: Below this life puncture exposure is checked.",
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "puncture_tread_threshold",
+            "guaranteed_puncture_tread",
+            "puncture_probability_per_tread",
+            "lockup_braking_threshold",
+            "lockup_core_threshold_c",
+            "lockup_probability",
+            "assertive_lockup_factor",
+            "lockup_damage",
+            "check_interval_seconds"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "model",
+        "tyre_incidents",
+        "procedure",
+        "courtesy",
+        "pit_motion",
+        "motion",
+        "practice",
+        "strategy_defaults",
+        "tactical_policy",
+        "forecast",
+        "presentation"
+      ],
+      "type": "object"
+    },
     "competition": {
       "additionalProperties": false,
       "properties": {

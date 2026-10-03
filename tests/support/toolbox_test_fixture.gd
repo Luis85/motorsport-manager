@@ -17,7 +17,7 @@ func check(value: bool, label: String) -> void:
 
 
 func prepare() -> bool:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check(loaded.ok, "SDK fixtures load the sealed production core catalog")
 	if loaded.ok:
 		catalog = loaded.catalog

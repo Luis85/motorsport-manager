@@ -28,8 +28,8 @@ func source(path: String) -> Dictionary:
 
 
 func catalog_with_override() -> ContentCatalog:
-	var vehicle = source("res://content/packs/core/vehicles/formula.json")
-	var original = source("res://content/packs/core/editor_profiles/default.json")
+	var vehicle = source("res://config/vehicles/formula.json")
+	var original = source("res://config/editor_profiles/default.json")
 	var changed = original.duplicate(true)
 	changed.placements[0].name = "Paddock canopy"
 	changed.placements[0].object_type = "tent"

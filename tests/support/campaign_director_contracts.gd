@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func run(check: Callable) -> void:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check.call(loaded.ok, "Starter fixture loads the validated core content pack")
 	if not loaded.ok:
 		return
@@ -12,7 +12,7 @@ static func run(check: Callable) -> void:
 	check.call(campaign != null, "Core content exposes one default Team Principal campaign")
 	if campaign == null:
 		return
-	var track = Storage.read_json("res://data/tracks/hillside.json").data
+	var track = Storage.read_json("res://config/circuits/hillside.json").data
 	var record = _record(track, loaded.catalog, campaign)
 	check.call(record != null, "Starter fixture creates a recorded authored race entry")
 	if record == null:

@@ -135,7 +135,7 @@ static func _fixture() -> Dictionary:
 	var profiles: Array = []
 	for _id in range(12):
 		profiles.append(RacePerformanceProfile.baseline())
-	var track_doc = Storage.read_json("res://data/tracks/hillside.json").data
+	var track_doc = Storage.read_json("res://config/circuits/hillside.json").data
 	var geometry = TrackGeometry.new(track_doc, "Formula")
 	var sim = PracticeRaceSim.new(
 		geometry,

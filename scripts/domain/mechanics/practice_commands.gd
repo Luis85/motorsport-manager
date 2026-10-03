@@ -112,7 +112,7 @@ func _approve_practice_run(sim: RaceSim, payload: Dictionary, id: int) -> bool:
 		return sim.fail("The run assumptions changed. Review the draft before release.")
 	if (
 		not RaceCheckpoint.number(payload.get("time"), 0, sim.total_time)
-		or sim.total_time - payload.time > RaceForecaster.MAX_AGE
+		or sim.total_time - payload.time > sim.tuning.balance.forecast.maximum_age_seconds
 	):
 		return sim.fail("The release estimate expired. Review the current session time.")
 	sim.launch_run(id, plan)

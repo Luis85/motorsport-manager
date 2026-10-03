@@ -5,6 +5,7 @@ extends "res://scripts/domain/weekend/race_forecast_physics.gd"
 static func evaluate_candidate(
 	s: Dictionary, id: String, title: String, stops: Array
 ) -> Dictionary:
+	var rules: Dictionary = RaceTuningDefinition.balance_values(s).forecast
 	var current = set_by_id(s, s.own.starting_set)
 	if current.is_empty():
 		return {
@@ -47,7 +48,7 @@ static func evaluate_candidate(
 			var pit = pit_prediction(s, stops[index].at * s.length)
 			pit_cost += pit.loss
 			warmup += pit.warmup
-			traffic_cost += pit.traffic.size() * 0.8
+			traffic_cost += pit.traffic.size() * rules.traffic_seconds_per_car
 			index += 1
 		var step = minf(0.5, s.laps - progress)
 		if index < stops.size():
@@ -58,7 +59,7 @@ static func evaluate_candidate(
 		minimum_life = minf(minimum_life, limiting_life(current, life))
 		progress += step
 	seconds += pit_cost + warmup + traffic_cost
-	var confidence = 0.06
+	var confidence = rules.base_uncertainty
 	var priors = s.get("model_context", {}).get("practice", {})
 	var matched = priors.get(set_by_id(s, s.own.starting_set).get("compound", ""), {})
 	if not matched.is_empty():
@@ -67,18 +68,18 @@ static func evaluate_candidate(
 			confidence = maxf(
 				confidence,
 				priors.get(set_by_id(s, stop.set_id).get("compound", ""), {}).get(
-					"uncertainty", 0.06
+					"uncertainty", rules.base_uncertainty
 				)
 			)
 	var uncertainty = (
-		maxf(3, seconds * confidence)
+		maxf(rules.minimum_uncertainty_seconds, seconds * confidence)
 		+ stops.size() * RaceTuningDefinition.forecast_values(s).service.uncertainty_seconds
 		+ traffic_cost
 	)
 	var risk = (
 		"high"
-		if minimum_life < 10 or s.fuel_margin < 0
-		else ("moderate" if minimum_life < 25 else "lower")
+		if minimum_life < rules.high_risk_tread or s.fuel_margin < 0
+		else ("moderate" if minimum_life < rules.moderate_risk_tread else "lower")
 	)
 	return {
 		"id": id,
@@ -98,6 +99,7 @@ static func evaluate_candidate(
 
 
 static func evaluate(s: Dictionary) -> Dictionary:
+	var rules: Dictionary = RaceTuningDefinition.balance_values(s).forecast
 	var planned: Array = []
 	var progress = maxf(0, s.own.distance / s.length) if s.phase == "race" else 0.0
 	if s.own.pit_order:
@@ -145,7 +147,9 @@ static func evaluate(s: Dictionary) -> Dictionary:
 		and s.own.route == "track"
 	):
 		var now = s.gate.distance / s.length
-		var later = minf(s.laps - 2 + s.pit_entry / s.length, now + 2)
+		var later = minf(
+			s.laps - rules.extend_laps + s.pit_entry / s.length, now + rules.extend_laps
+		)
 		var box_stops: Array = [{"at": now, "set_id": replacement_set.id}]
 		var extend_stops: Array = [{"at": later, "set_id": replacement_set.id}]
 		# Compare a revised first stop, preserving subsequent authorized stints.
@@ -156,7 +160,18 @@ static func evaluate(s: Dictionary) -> Dictionary:
 				extend_stops.append(planned[i])
 		options.append(evaluate_candidate(s, "box", "Stop at next safe entry", box_stops))
 		if later > now:
-			options.append(evaluate_candidate(s, "extend", "Extend two laps", extend_stops))
+			options.append(
+				evaluate_candidate(
+					s,
+					"extend",
+					(
+						"Extend two laps"
+						if rules.extend_laps == 2
+						else "Extend %d laps" % rules.extend_laps
+					),
+					extend_stops
+				)
+			)
 	for option in options:
 		if option.available:
 			option.gain = options[0].get("seconds", option.seconds) - option.seconds

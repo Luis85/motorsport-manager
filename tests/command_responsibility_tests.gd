@@ -30,7 +30,7 @@ func rejected(sim: RaceSim, action: String, payload: Dictionary, message: String
 
 
 func run() -> void:
-	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	for profile in ["base", "practice"]:
 		var sim = RaceSim.new(track) if profile == "base" else PracticeRaceSim.new(track)
 		# The outer mechanic profile can own additional policy. These common target

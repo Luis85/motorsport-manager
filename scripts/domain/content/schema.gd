@@ -99,6 +99,9 @@ static func definition(kind: String) -> Dictionary:
 		properties.environment = EnvironmentTuningSchema.definition()
 		properties.operations = OperationsTuningSchema.definition()
 		properties.competition = CompetitionTuningSchema.definition()
+		properties.balance = object(GameBalanceSchema.fields())
+	if kind == "campaign":
+		properties.tuning = CampaignDefinition.tuning_fields()
 	return object(properties, required)
 
 

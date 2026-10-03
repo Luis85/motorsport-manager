@@ -77,7 +77,11 @@ func _performance_line_factor(car: RaceCar, curvature: float) -> float:
 		return 1.0
 	var straight = (_performance_factor(car, "top") + _performance_factor(car, "accel")) * 0.5
 	var corner = (_performance_factor(car, "lat") + _performance_factor(car, "brake")) * 0.5
-	return lerpf(straight, corner, clampf(absf(curvature) * 100.0, 0.0, 1.0))
+	return lerpf(
+		straight,
+		corner,
+		clampf(absf(curvature) * tuning.balance.motion.corner_blend_curvature_scale, 0.0, 1.0)
+	)
 
 
 func random_value() -> float:
@@ -140,7 +144,7 @@ func depart_on_planned_set(c: RaceCar) -> void:
 	# Shared physical departure; eligibility is owned by the session orchestrator.
 	var item = TyreInventory.planned(c)
 	if item.is_empty():
-		c.next_qual = clock + 60
+		c.next_qual = clock + tuning.balance.procedure.unavailable_set_retry_seconds
 		c.intent = "No usable tyre set; choose a replacement"
 		return
 	TyreInventory.mount(c, item.id)
@@ -216,6 +220,7 @@ func strategy_advice(c: RaceCar) -> String:
 
 func check_tyre_incident(c: RaceCar) -> void:
 	# Conditional damage uses the race PRNG only. Visual updates never call this path.
+	var rules: Dictionary = tuning.balance.tyre_incidents
 	var item = TyreInventory.find(c, c.set_id)
 	if item.is_empty():
 		return
@@ -224,7 +229,19 @@ func check_tyre_incident(c: RaceCar) -> void:
 			return
 	for key in WheelTyres.KEYS:
 		var w = item.wheels[key]
-		if w.life < 8 and (w.life <= 0.5 or random_value() < (8 - w.life) * 0.004):
+		if (
+			w.life < rules.puncture_tread_threshold
+			and (
+				w.life <= rules.guaranteed_puncture_tread
+				or (
+					random_value()
+					< (
+						(rules.puncture_tread_threshold - w.life)
+						* rules.puncture_probability_per_tread
+					)
+				)
+			)
+		):
 			w.punctured = true
 			post(
 				"tyre",
@@ -236,12 +253,18 @@ func check_tyre_incident(c: RaceCar) -> void:
 			return
 	if (
 		intensity != "calm"
-		and c.braking > 0.75
-		and WheelTyres.average(item, "core") < 68
-		and random_value() < 0.01 * (1.12 if c.battle_mode == "assertive" else 1.0)
+		and c.braking > rules.lockup_braking_threshold
+		and WheelTyres.average(item, "core") < rules.lockup_core_threshold_c
+		and (
+			random_value()
+			< (
+				rules.lockup_probability
+				* (rules.assertive_lockup_factor if c.battle_mode == "assertive" else 1.0)
+			)
+		)
 	):
 		var key = WheelTyres.lockup(
-			item, c.car_setup.bias / 100.0, 4.0, tyre_rules.spec(c.compound)
+			item, c.car_setup.bias / 100.0, rules.lockup_damage, tyre_rules.spec(c.compound)
 		)
 		c.temperature = item.temperature
 		c.tyre = item.life

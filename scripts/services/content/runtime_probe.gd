@@ -134,7 +134,7 @@ static func _stage(
 			if launch.stage_circuit(str(selection.circuit_id), options, vehicle)
 			else launch.last_error
 		)
-	var read = Storage.read_json("res://data/tracks/hillside.json")
+	var read = Storage.read_json("res://config/circuits/hillside.json")
 	if not read.ok:
 		return read.error
 	# Retained legacy probe only. File-authored circuits never receive auto-repairs.

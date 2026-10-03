@@ -117,6 +117,11 @@ headless-only or partial run is not accepted as complete verification.
 
 ## Systems and mechanics development
 
+Shipped game parameters live in [`config/`](config/README.md). Use
+`python3 scripts/balance.py inspect race_tuning/default.json /balance` to inspect
+the tuning surface, and the [balancing guide](docs/balancing.md) for validated
+edits, dry runs and configuration comparisons.
+
 Use `python3 scripts/mechanics.py list` to inspect providers and `python3 scripts/mechanics.py hooks` to inspect extension signatures. The [developer guide](docs/developing-mechanics.md) covers inactive scaffolding, explicit profile registration, state compatibility, typed-car records and scheduler-free view handles.
 
 The [developer toolbox](docs/developer-toolbox.md) exposes real weekend, campaign

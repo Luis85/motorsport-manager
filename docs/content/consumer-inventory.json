@@ -1069,9 +1069,237 @@
             "scripts/domain/content/competition_tuning_schema.gd"
           ],
           "note": "Rival/racecraft/competition policy tuning."
+        },
+        {
+          "prefix": "/balance/tyre_incidents",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/race_sim_core.gd"
+          ],
+          "note": "Physical tyre incident exposure and check cadence."
+        },
+        {
+          "prefix": "/balance/procedure",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/race_sim_core.gd",
+            "scripts/domain/race_sim_operations.gd",
+            "scripts/domain/weekend/race_forecaster.gd"
+          ],
+          "note": "Standing-start, qualifying and autonomous review timing."
+        },
+        {
+          "prefix": "/balance/courtesy",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/race_sim_movement_intent.gd"
+          ],
+          "note": "Courtesy target acquisition and release distances."
+        },
+        {
+          "prefix": "/balance/pit_motion",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/race_sim_motion.gd",
+            "scripts/domain/race/pit_service.gd",
+            "scripts/domain/weekend/race_forecast_physics.gd"
+          ],
+          "note": "Pit movement dynamics and shared entry forecast allowances."
+        },
+        {
+          "prefix": "/balance/motion",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/race_sim_motion.gd",
+            "scripts/domain/race/performance_profile.gd"
+          ],
+          "note": "Grip, acceleration, braking and shared corner profile calibration."
+        },
+        {
+          "prefix": "/balance/practice",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/weekend/practice_evidence.gd",
+            "scripts/domain/mechanics/practice_runs.gd",
+            "scripts/domain/mechanics/practice_mechanic.gd"
+          ],
+          "note": "Practice defaults, driver priors and measured evidence estimation."
+        },
+        {
+          "prefix": "/balance/strategy_defaults",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/weekend/strategy_plan.gd",
+            "scripts/domain/mechanics/strategy_execution.gd"
+          ],
+          "note": "Default strategy drafting and reserves."
+        },
+        {
+          "prefix": "/balance/tactical_policy",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/weekend/tactical_duel_execution.gd"
+          ],
+          "note": "Autonomous tactical review, stop windows and readiness thresholds."
+        },
+        {
+          "prefix": "/balance/forecast",
+          "classification": "simulation",
+          "consumers": [
+            "scripts/domain/weekend/race_forecaster.gd",
+            "scripts/domain/weekend/tactical_forecast.gd",
+            "scripts/application/queries/race_view_tools_query.gd"
+          ],
+          "note": "Forecast uncertainty, capability weights, risk bands and bounded freshness."
+        },
+        {
+          "prefix": "/balance/presentation",
+          "classification": "presentation",
+          "consumers": [
+            "scripts/application/minimal/readout.gd",
+            "scripts/application/minimal/controls.gd",
+            "scripts/application/moment_director.gd",
+            "scripts/domain/race_sim_operations.gd"
+          ],
+          "note": "Detached player demand, warnings and observed moment thresholds; wheel warnings share the selected limits."
+        },
+        {
+          "prefix": "/balance/model",
+          "classification": "contract",
+          "consumers": [
+            "scripts/domain/content/game_balance_schema.gd"
+          ],
+          "note": "Versioned balance semantics; legacy omission preserves the original record and hash."
         }
       ],
       "expected_leaves": [
+        "/balance/courtesy/acquire_distance_m",
+        "/balance/courtesy/arrival_seconds",
+        "/balance/courtesy/clear_ahead_distance_m",
+        "/balance/courtesy/immediate_distance_m",
+        "/balance/courtesy/lapped_distance_fraction",
+        "/balance/courtesy/minimum_closing_mps",
+        "/balance/courtesy/release_behind_distance_m",
+        "/balance/courtesy/timeout_seconds",
+        "/balance/forecast/base_uncertainty",
+        "/balance/forecast/damage_limit",
+        "/balance/forecast/extend_laps",
+        "/balance/forecast/high_risk_tread",
+        "/balance/forecast/maximum_age_seconds",
+        "/balance/forecast/measured_wear_maximum_factor",
+        "/balance/forecast/measured_wear_minimum_factor",
+        "/balance/forecast/measured_wear_minimum_laps",
+        "/balance/forecast/minimum_lap_speed_factor",
+        "/balance/forecast/minimum_performance_factor",
+        "/balance/forecast/minimum_uncertainty_seconds",
+        "/balance/forecast/moderate_risk_tread",
+        "/balance/forecast/observed_lap_samples",
+        "/balance/forecast/performance_accel_weight",
+        "/balance/forecast/performance_brake_weight",
+        "/balance/forecast/performance_lat_weight",
+        "/balance/forecast/performance_top_weight",
+        "/balance/forecast/rejoin_traffic_ahead_seconds",
+        "/balance/forecast/rejoin_traffic_behind_m",
+        "/balance/forecast/repair_payback_minimum_gain_seconds",
+        "/balance/forecast/traffic_seconds_per_car",
+        "/balance/model",
+        "/balance/motion/braking_anticipation_m",
+        "/balance/motion/corner_blend_curvature_scale",
+        "/balance/motion/formation_lane_distance_m",
+        "/balance/motion/maximum_grip",
+        "/balance/motion/minimum_acceleration_mps2",
+        "/balance/motion/minimum_braking_mps2",
+        "/balance/motion/minimum_grip",
+        "/balance/motion/minimum_lateral_mps2",
+        "/balance/motion/pit_approach_margin_m",
+        "/balance/pit_motion/acceleration_mps2",
+        "/balance/pit_motion/braking_mps2",
+        "/balance/pit_motion/entry_braking_factor",
+        "/balance/pit_motion/entry_braking_margin_m",
+        "/balance/pit_motion/exit_ahead_distance_m",
+        "/balance/pit_motion/exit_approach_distance_m",
+        "/balance/pit_motion/exit_headway_seconds",
+        "/balance/practice/autonomous_laps",
+        "/balance/practice/clean_traffic_distance_m",
+        "/balance/practice/clean_traffic_headway_seconds",
+        "/balance/practice/default_engine",
+        "/balance/practice/default_laps",
+        "/balance/practice/default_pace",
+        "/balance/practice/fuel_return_reserve_laps",
+        "/balance/practice/matching_damage_tolerance",
+        "/balance/practice/matching_health_tolerance",
+        "/balance/practice/matching_water_tolerance",
+        "/balance/practice/prior_base_uncertainty",
+        "/balance/practice/prior_maximum_lap_factor",
+        "/balance/practice/prior_maximum_wear_factor",
+        "/balance/practice/prior_minimum_lap_factor",
+        "/balance/practice/prior_minimum_wear_factor",
+        "/balance/practice/prior_reliable_samples",
+        "/balance/practice/prior_reliable_uncertainty",
+        "/balance/practice/prior_sample_weight",
+        "/balance/practice/prior_spread_allowance",
+        "/balance/practice/qualifying_engine",
+        "/balance/practice/qualifying_pace",
+        "/balance/practice/release_offset_seconds",
+        "/balance/practice/release_spacing_seconds",
+        "/balance/practice/run_return_allowance_seconds",
+        "/balance/practice/run_transit_factor",
+        "/balance/practice/sample_damage_tolerance",
+        "/balance/practice/sample_water_tolerance",
+        "/balance/presentation/advisory_core_excess_c",
+        "/balance/presentation/advisory_tread_percent",
+        "/balance/presentation/demand_base",
+        "/balance/presentation/demand_calm_base",
+        "/balance/presentation/demand_damage_max",
+        "/balance/presentation/demand_damage_per_percent",
+        "/balance/presentation/demand_high",
+        "/balance/presentation/demand_puncture",
+        "/balance/presentation/demand_push",
+        "/balance/presentation/demand_raised",
+        "/balance/presentation/demand_recovery",
+        "/balance/presentation/demand_traffic_distance_m",
+        "/balance/presentation/demand_traffic_points",
+        "/balance/presentation/demand_tread_points",
+        "/balance/presentation/demand_tread_threshold_percent",
+        "/balance/presentation/demand_water_points",
+        "/balance/presentation/demand_water_threshold",
+        "/balance/presentation/low_tread_percent",
+        "/balance/presentation/moment_tread_critical_percent",
+        "/balance/presentation/moment_tread_low_percent",
+        "/balance/presentation/moment_water_high",
+        "/balance/presentation/moment_water_raised",
+        "/balance/presentation/practice_reuse_tread_percent",
+        "/balance/procedure/autonomous_review_seconds",
+        "/balance/procedure/formation_braking_mps2",
+        "/balance/procedure/garage_turnaround_seconds",
+        "/balance/procedure/grid_lane_hold_seconds",
+        "/balance/procedure/lights_seconds",
+        "/balance/procedure/qualifying_maximum_runs",
+        "/balance/procedure/qualifying_outlap_speed_factor",
+        "/balance/procedure/qualifying_release_margin_seconds",
+        "/balance/procedure/qualifying_release_transit_seconds",
+        "/balance/procedure/unavailable_set_retry_seconds",
+        "/balance/strategy_defaults/balanced_stop_fraction",
+        "/balance/strategy_defaults/extended_stop_fraction",
+        "/balance/strategy_defaults/fuel_reserve_laps",
+        "/balance/strategy_defaults/tyre_reserve",
+        "/balance/tactical_policy/extend_window_laps",
+        "/balance/tactical_policy/initial_stop_fraction",
+        "/balance/tactical_policy/maximum_water",
+        "/balance/tactical_policy/queue_seconds",
+        "/balance/tactical_policy/review_seconds",
+        "/balance/tactical_policy/tyre_floor",
+        "/balance/tactical_policy/undercut_window_laps",
+        "/balance/tactical_policy/wait_laps",
+        "/balance/tyre_incidents/assertive_lockup_factor",
+        "/balance/tyre_incidents/check_interval_seconds",
+        "/balance/tyre_incidents/guaranteed_puncture_tread",
+        "/balance/tyre_incidents/lockup_braking_threshold",
+        "/balance/tyre_incidents/lockup_core_threshold_c",
+        "/balance/tyre_incidents/lockup_damage",
+        "/balance/tyre_incidents/lockup_probability",
+        "/balance/tyre_incidents/puncture_probability_per_tread",
+        "/balance/tyre_incidents/puncture_tread_threshold",
         "/competition/battle/acquire_distance_m",
         "/competition/battle/assertive_preparation_seconds",
         "/competition/battle/assertive_speed_advantage_mps",
@@ -2072,6 +2300,15 @@
             "scripts/application/campaign/starter.gd"
           ],
           "note": "Explicit departure, participation and classified-position financial policy."
+        },
+        {
+          "prefix": "/tuning/finance",
+          "classification": "sporting",
+          "consumers": [
+            "scripts/domain/content/campaign_finance_balance.gd",
+            "scripts/application/campaign/distress_transaction.gd"
+          ],
+          "note": "Frozen distress forecast horizon and bridge maturity/fee; existing commitments keep their contracted amounts and due slots."
         }
       ],
       "expected_leaves": [
@@ -2159,6 +2396,9 @@
         "/supply_policy/observation_gain_bps",
         "/supply_policy/spread_floor_bps",
         "/supply_policy/spread_scale_bps",
+        "/tuning/finance/bridge_fee_bps",
+        "/tuning/finance/bridge_maturity_days",
+        "/tuning/finance/distress_forecast_days",
         "/weekend_id"
       ]
     }
@@ -2325,6 +2565,30 @@
       "symbol": "LEGACY",
       "classification": "contract",
       "note": "Frozen pre-content supply-evidence tuning used only when a checkpoint has no authored campaign policy."
+    },
+    {
+      "file": "scripts/domain/content/race_physics_balance.gd",
+      "symbol": "VALUES",
+      "classification": "contract",
+      "note": "Legacy physical balance defaults for snapshots without a versioned balance block."
+    },
+    {
+      "file": "scripts/domain/content/race_planning_balance.gd",
+      "symbol": "TABLES",
+      "classification": "contract",
+      "note": "Schema and legacy defaults for optional planning balance; authored runs consume the selected frozen record."
+    },
+    {
+      "file": "scripts/domain/content/race_presentation_balance.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Legacy observational presentation defaults."
+    },
+    {
+      "file": "scripts/domain/content/campaign_finance_balance.gd",
+      "symbol": "LEGACY",
+      "classification": "contract",
+      "note": "Legacy finance terms used only when old campaign definitions omit tuning."
     }
   ]
 }

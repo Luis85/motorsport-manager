@@ -107,7 +107,7 @@ func _initialize() -> void:
 
 
 func run() -> void:
-	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	construction_value_contracts(track)
 	var raw = RaceSim.new(track)
 	var probe = Probe.new()

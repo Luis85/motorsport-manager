@@ -44,7 +44,7 @@ func candidate(id: String, replacement: Dictionary) -> ContentCatalog:
 
 func contracts() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Shared loader accepts core and authored catalog")
 	if not loaded.ok:
@@ -70,9 +70,9 @@ func contracts() -> void:
 			campaign.to_record().career.opening_cash_minor == 150000,
 			"Campaign definitions are detached projections rather than mutable authority"
 		)
-	var manifest = Storage.read_json("res://data/tracks/catalog.json").data
+	var manifest = Storage.read_json("res://config/circuits/catalog.json").data
 	for filename in manifest.files:
-		var source = Storage.read_json("res://data/tracks/" + filename).data
+		var source = Storage.read_json("res://config/circuits/" + filename).data
 		var definition = catalog.circuit("core.circuit." + source.id)
 		check(definition != null, "Existing track receives a catalog identity: " + source.id)
 		if definition == null:

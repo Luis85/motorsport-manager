@@ -274,7 +274,7 @@ func planning_contracts() -> void:
 
 func scenario_contracts() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Addon scenario resolves against the production core catalog")
 	if not loaded.ok:

@@ -22,7 +22,7 @@ static func update_pit(sim: RaceSimPort, car: RaceCar, old: Array = []) -> void:
 		if sim.is_run_session():
 			car.route = "garage"
 			car.qual_state = "garage"
-			car.next_qual = sim.clock + 18
+			car.next_qual = sim.clock + sim.tuning.balance.procedure.garage_turnaround_seconds
 			car.pit_stage = ""
 			sim.post(sim.phase, car.short + " back in the garage.")
 			return
@@ -44,10 +44,15 @@ static func update_pit(sim: RaceSimPort, car: RaceCar, old: Array = []) -> void:
 			sim.pit_boxes.erase(car.team_identity())
 			sim.post("pit", "%s serviced · %s tyres." % [car.short, car.compound])
 		return
+	var motion: Dictionary = sim.tuning.balance.pit_motion
 	var target = sim.track.pit_limit
 	if car.pit_stage == "entry":
-		target = minf(target, sqrt(2 * 8 * maxf(0, car.box_d - car.pit_d)))
-	car.speed = move_toward(car.speed, target, RaceSimPort.STEP * (5 if target > car.speed else 8))
+		target = minf(target, sqrt(2 * motion.braking_mps2 * maxf(0, car.box_d - car.pit_d)))
+	car.speed = move_toward(
+		car.speed,
+		target,
+		RaceSimPort.STEP * (motion.acceleration_mps2 if target > car.speed else motion.braking_mps2)
+	)
 	var next = minf(sim.track.pit_length, car.pit_d + car.speed * RaceSimPort.STEP)
 	if car.pit_stage == "entry":
 		next = minf(next, car.box_d)
@@ -62,7 +67,16 @@ static func update_pit(sim: RaceSimPort, car: RaceCar, old: Array = []) -> void:
 				and not other.finished
 			):
 				var behind = fposmod(sim.track.pit_exit - other.distance, sim.track.length)
-				if behind < maxf(15, other.speed * 1.2) or sim.track.length - behind < 8:
+				if (
+					(
+						behind
+						< maxf(
+							maxf(15, motion.exit_approach_distance_m),
+							other.speed * motion.exit_headway_seconds
+						)
+					)
+					or sim.track.length - behind < maxf(8, motion.exit_ahead_distance_m)
+				):
 					safe = false
 		if not safe:
 			car.speed = 0.0
@@ -127,9 +141,13 @@ static func plan_pit_gate(sim: RaceSimPort, car: RaceCar) -> void:
 	var stopping = (
 		(
 			maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2)
-			/ (2 * sim.track.vehicle_definition.braking_mps2 * 0.5)
+			/ (
+				2
+				* sim.track.vehicle_definition.braking_mps2
+				* sim.tuning.balance.pit_motion.entry_braking_factor
+			)
 		)
-		+ 8
+		+ sim.tuning.balance.pit_motion.entry_braking_margin_m
 	)
 	if car.pit_gate - car.distance < stopping:
 		car.pit_gate += sim.track.length

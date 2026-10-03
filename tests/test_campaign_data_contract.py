@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CAMPAIGN = ROOT / "content/packs/core/campaigns/team-principal.json"
-PACK = ROOT / "content/packs/core/pack.json"
+CAMPAIGN = ROOT / "config/campaigns/team-principal.json"
+PACK = ROOT / "config/pack.json"
 STARTER = ROOT / "scripts/application/campaign/starter.gd"
 RIVALS = ROOT / "scripts/domain/campaign/rivals.gd"
 SCREENS = ROOT / "scripts/composition/campaign_screens.gd"

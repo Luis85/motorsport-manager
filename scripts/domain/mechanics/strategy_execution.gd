@@ -31,7 +31,7 @@ func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> vo
 				- c.distance / sim.track.length
 			)
 		)
-	var reserve = float(plan.get("tyre_reserve", 22.0))
+	var reserve = float(plan.get("tyre_reserve", sim.tuning.balance.strategy_defaults.tyre_reserve))
 	if StrategyPlan.owns(p, "pace") and only_channel in ["", "pace"]:
 		var wear = c.tyre_rules.spec(c.compound).wear * sim.tuning.pace.forecast_wear_factor
 		c.pace = (
@@ -50,7 +50,14 @@ func manage_resources(sim: RaceSim, c: RaceCar, only_channel: String = "") -> vo
 			0
 			if (
 				emergency
-				or margin < float(plan.get("fuel_reserve", 0.35))
+				or (
+					margin
+					< float(
+						plan.get(
+							"fuel_reserve", sim.tuning.balance.strategy_defaults.fuel_reserve_laps
+						)
+					)
+				)
 				or c.engine_temperature > sim.tuning.condition.heat_reference_c
 			)
 			else 1

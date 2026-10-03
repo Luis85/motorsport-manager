@@ -16,7 +16,7 @@ func check(value: bool, message: String) -> void:
 
 
 func source_record() -> Dictionary:
-	var loaded = Storage.read_json("res://content/packs/core/editor_profiles/default.json")
+	var loaded = Storage.read_json("res://config/editor_profiles/default.json")
 	check(loaded.ok and loaded.data is Dictionary, "Core editor profile is a readable JSON object")
 	return loaded.data if loaded.ok and loaded.data is Dictionary else {}
 
@@ -79,7 +79,7 @@ func run() -> void:
 			"Executable or unsupported object types cannot become placement data"
 		)
 
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check(loaded.ok, "Core pack compiles with the editor profile")
 	if loaded.ok:
 		var session = TrackEditorSession.new(TrackEditorSession.blank_document())

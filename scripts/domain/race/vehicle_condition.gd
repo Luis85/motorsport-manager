@@ -72,7 +72,7 @@ static func wear_car(
 		1 - exp(-RaceSimPort.STEP * tuning.condition.brake_response_per_second)
 	)
 	if sim.phase == "race" and not sim.neutral(car) and sim.total_time >= car.tyre_event_clock:
-		car.tyre_event_clock = sim.total_time + 2.0
+		car.tyre_event_clock = sim.total_time + tuning.balance.tyre_incidents.check_interval_seconds
 		sim.check_tyre_incident(car)
 	var fuel_rate = (
 		tuning.fuel.reduced_rate

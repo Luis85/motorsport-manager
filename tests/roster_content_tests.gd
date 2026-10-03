@@ -24,7 +24,7 @@ func check(value: bool, message: String) -> void:
 
 func run() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Data-only expanded catalog validates")
 	if not loaded.ok:
@@ -38,7 +38,7 @@ func run() -> void:
 		"Fourteen entries, including explicit final-slot player identities"
 	)
 	var document: Dictionary = TrackDocument.normalize(
-		Storage.read_json("res://data/tracks/hillside.json").data
+		Storage.read_json("res://config/circuits/hillside.json").data
 	)
 	var launch = WeekendLaunch.new(catalog)
 	var options = {

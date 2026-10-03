@@ -16,7 +16,7 @@ func check(value: bool, description: String) -> void:
 
 
 func run() -> void:
-	var geometry = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var geometry = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	var source = RaceSim.new(geometry).snapshot().cars[3]
 	var expected = RaceStateValue.fingerprint(source)
 	var car = RaceCar.from_record(source)
