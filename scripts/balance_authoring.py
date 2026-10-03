@@ -13,6 +13,7 @@ import stat
 import tempfile
 from pathlib import Path
 
+from balance_windows import windows_root_lock
 from content_operations import difference, finite_float, reject_constant
 
 MAX_BYTES = 1_048_576
@@ -271,10 +272,13 @@ def edited(snapshot: Snapshot, name: str, pointer: str, literal: str) -> tuple[b
 
 @contextlib.contextmanager
 def root_lock(root: Path):
-    """Cooperating Linux writers lock the directory inode without creating files."""
-    if os.name != "posix":
-        yield
+    """Serialize cooperating writers without adding anything to the config root."""
+    if os.name == "nt":
+        with windows_root_lock(root):
+            yield
         return
+    if os.name != "posix":
+        raise ValueError("This platform has no supported config publication lock.")
     import fcntl
 
     handle = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
@@ -337,6 +341,8 @@ def publish_portable(snapshot: Snapshot, name: str, raw: bytes, path: Path) -> N
             dir=path.parent, prefix=".balance-", delete=False
         ) as stream:
             temporary = Path(stream.name)
+            if hasattr(os, "fchmod"):
+                os.fchmod(stream.fileno(), stat.S_IMODE(snapshot.identities[name][2]))
             owned = Snapshot._identity(temporary)
             stream.write(raw)
             stream.flush()
@@ -345,5 +351,9 @@ def publish_portable(snapshot: Snapshot, name: str, raw: bytes, path: Path) -> N
         os.replace(temporary, path)
         temporary = None
     finally:
-        if temporary is not None and Snapshot._identity(temporary) == owned:
-            temporary.unlink()
+        if temporary is not None:
+            try:
+                if Snapshot._identity(temporary) == owned:
+                    temporary.unlink()
+            except FileNotFoundError:
+                pass

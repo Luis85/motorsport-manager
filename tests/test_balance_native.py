@@ -2,19 +2,34 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
+import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
+import balance
 from balance_authoring import Snapshot
-from balance_native import NativeProject, clean_result, field_metadata
+from balance_native import NativeProject, clean_result, executable, field_metadata
+from build_standalone import ENGINE
+from toolbox_project import private_windows_editor
 
 
 class BalanceNativeTests(unittest.TestCase):
+    def setUp(self):
+        # Mocked transport fixtures do not carry real Windows editor binaries.
+        editor = patch(
+            "balance_native.private_windows_editor", side_effect=lambda executable, home: executable
+        )
+        editor.start()
+        self.addCleanup(editor.stop)
+
     def test_clean_result_cannot_hide_native_errors_or_exit_mismatch(self):
         for run in (
             subprocess.CompletedProcess(
@@ -89,7 +104,7 @@ class BalanceNativeTests(unittest.TestCase):
             def run(command, **kwargs):
                 commands.append((command, kwargs))
                 if "--version" in command:
-                    return subprocess.CompletedProcess(command, 0, "4.7.2.stable.native\n", "")
+                    return subprocess.CompletedProcess(command, 0, ENGINE + "\n", "")
                 if "rev-parse" in command:
                     return subprocess.CompletedProcess(command, 0, "fixture-revision\n", "")
                 if "--import" in command:
@@ -112,7 +127,7 @@ class BalanceNativeTests(unittest.TestCase):
                         self.assertFalse((native.project / name).exists())
                     result = native.validate()
                     self.assertTrue(result["engine_executed"])
-                    self.assertEqual(result["metadata"]["engine_version"], "4.7.2.stable.native")
+                    self.assertEqual(result["metadata"]["engine_version"], ENGINE)
                     self.assertEqual(result["metadata"]["source_revision"], "fixture-revision")
                     self.assertEqual(len(result["metadata"]["source_digest"]), 64)
                     for command, kwargs in commands:
@@ -135,15 +150,129 @@ class BalanceNativeTests(unittest.TestCase):
             (config / "value.json").write_text("{}")
             with patch("balance_native.executable", return_value="godot"):
                 native = NativeProject(root, Snapshot(config), None)
-            with patch.object(
-                native,
-                "run",
-                return_value=subprocess.CompletedProcess([], 0, "", "Parse Error: failed"),
+            with (
+                patch(
+                    "balance_native.subprocess.run",
+                    return_value=subprocess.CompletedProcess([], 0, ENGINE + "\n", ""),
+                ),
+                patch.object(
+                    native,
+                    "run",
+                    return_value=subprocess.CompletedProcess([], 0, "", "Parse Error: failed"),
+                ),
             ):
                 with self.assertRaisesRegex(ValueError, "import failed"):
                     with native:
                         self.fail("failed native project must not enter")
             self.assertFalse(native.home.exists())
+
+    def test_unpinned_engine_rejects_before_import_or_source_copy(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config"
+            config.mkdir()
+            original = b'{"value":1}'
+            (config / "value.json").write_bytes(original)
+            with patch("balance_native.executable", return_value="godot"):
+                native = NativeProject(root, Snapshot(config), None)
+            with (
+                patch(
+                    "balance_native.subprocess.run",
+                    return_value=subprocess.CompletedProcess([], 0, "4.6.3.stable.official\n", ""),
+                ),
+                patch.object(native, "run") as import_run,
+            ):
+                with self.assertRaisesRegex(ValueError, "Expected pinned Godot"):
+                    with native:
+                        self.fail("Unpinned engine cannot enter native validation")
+                import_run.assert_not_called()
+            self.assertFalse(native.home.exists())
+            self.assertEqual((config / "value.json").read_bytes(), original)
+
+    def test_unconfigured_path_engine_is_never_selected_implicitly(self):
+        with patch("balance_native.os.environ", {}), patch("balance_native.shutil.which") as which:
+            self.assertIsNone(executable(None))
+            which.assert_not_called()
+
+    def test_missing_git_still_reports_actual_staged_source_digest(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config"
+            config.mkdir()
+            (config / "value.json").write_text("{}")
+            with patch("balance_native.executable", return_value="godot"):
+                native = NativeProject(root, Snapshot(config), None)
+            with (
+                patch("balance_native.shutil.which", return_value=None),
+                patch(
+                    "balance_native.subprocess.run",
+                    return_value=subprocess.CompletedProcess([], 0, ENGINE + "\n", ""),
+                ),
+                patch.object(
+                    native, "run", return_value=subprocess.CompletedProcess([], 0, "", "")
+                ),
+            ):
+                with native:
+                    self.assertEqual(native.identity["source_revision"], "")
+                    self.assertEqual(len(native.identity["source_digest"]), 64)
+
+    def test_native_timeout_or_crash_reports_started_execution_and_preserves_source(self):
+        for failure in (
+            subprocess.TimeoutExpired("godot", 120),
+            subprocess.CompletedProcess([], 1, "SCRIPT ERROR: native failed", ""),
+        ):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temporary:
+                config = Path(temporary)
+                target = config / "value.json"
+                original = b'{"value":1}'
+                target.write_bytes(original)
+                with patch("balance_native.executable", return_value="godot"):
+                    native = NativeProject(config, Snapshot(config), None)
+                native.identity = {"engine_version": ENGINE, "source_digest": "actual-stage"}
+                output = io.StringIO()
+                with (
+                    patch.object(balance, "NativeProject", return_value=native),
+                    patch.object(native, "prepare"),
+                    patch.object(native, "run", side_effect=[failure]),
+                    contextlib.redirect_stdout(output),
+                ):
+                    status = balance.main(
+                        ["--config-dir", str(config), "set", "value.json", "/value", "2"]
+                    )
+                result = json.loads(output.getvalue())
+                self.assertEqual(status, 1)
+                self.assertFalse(result["ok"])
+                self.assertTrue(result["engine_executed"])
+                self.assertEqual(result["metadata"]["engine_version"], ENGINE)
+                self.assertEqual(target.read_bytes(), original)
+
+    def test_windows_missing_console_companion_returns_json_without_publication(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            config = Path(temporary) / "config"
+            config.mkdir()
+            target = config / "value.json"
+            original = b'{"value":1}'
+            target.write_bytes(original)
+            console = Path(temporary) / "Godot_console.exe"
+            console.write_bytes(b"fixture, never executed")
+            windows_os = Mock(wraps=os)
+            windows_os.name = "nt"
+            windows_os.environ = os.environ
+            output = io.StringIO()
+            with (
+                patch("balance_native.executable", return_value=str(console)),
+                patch("balance_native.os", windows_os),
+                patch("balance_native.private_windows_editor", wraps=private_windows_editor),
+                contextlib.redirect_stdout(output),
+            ):
+                status = balance.main(
+                    ["--config-dir", str(config), "set", "value.json", "/value", "2"]
+                )
+            result = json.loads(output.getvalue())
+            self.assertEqual(status, 1)
+            self.assertFalse(result["engine_executed"])
+            self.assertIn("editor companion", result["error"])
+            self.assertEqual(target.read_bytes(), original)
 
     def test_schema_metadata_comes_from_declared_native_fields(self):
         schemas = {

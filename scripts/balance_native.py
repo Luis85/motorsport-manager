@@ -9,7 +9,9 @@ import tempfile
 from pathlib import Path
 
 from balance_authoring import Snapshot, decode
+from build_standalone import ENGINE
 from toolbox_project import private_windows_editor
+from toolbox_protocol import ToolboxError
 from verification_run import source_digest
 
 EXCLUDED = {
@@ -33,8 +35,8 @@ EXCLUDED = {
 
 
 def executable(godot: str | None) -> str | None:
-    selected = godot or os.environ.get("GODOT_BINARY") or "godot"
-    return shutil.which(selected)
+    selected = godot or os.environ.get("GODOT_BINARY") or os.environ.get("VERIFICATION_TEST_GODOT")
+    return shutil.which(selected) if selected else None
 
 
 def clean_result(run: subprocess.CompletedProcess) -> dict:
@@ -82,8 +84,15 @@ class NativeProject:
             path.mkdir(exist_ok=True)
             self.env[key] = str(path)
         self.env.update(GODOT_SILENCE_ROOT_WARNING="1", LP_NUM_THREADS="2")
-        if os.name == "nt":
-            self.godot = private_windows_editor(self.godot, self.home)
+        try:
+            if os.name == "nt":
+                self.godot = private_windows_editor(self.godot, self.home)
+        except ToolboxError as error:
+            self.close()
+            raise ValueError(str(error)) from error
+        except BaseException:
+            self.close()
+            raise
         self.identity: dict = {}
 
     def __enter__(self):
@@ -110,6 +119,17 @@ class NativeProject:
         )
 
     def prepare(self) -> None:
+        version = subprocess.run(
+            [self.godot, "--version"],
+            text=True,
+            capture_output=True,
+            timeout=15,
+            env=self.env,
+        )
+        if version.returncode or version.stdout.strip() != ENGINE:
+            raise ValueError(
+                f"Expected pinned Godot {ENGINE}; received {version.stdout.strip()!r}. No validation was executed."
+            )
         shutil.copytree(
             self.root,
             self.project,
@@ -122,54 +142,65 @@ class NativeProject:
             marker in log for marker in ("SCRIPT ERROR:", "Parse Error:", "ERROR:")
         ):
             raise ValueError("Godot import failed; validation was not executed. " + log[-3000:])
-        version = subprocess.run(
-            [self.godot, "--version"],
-            text=True,
-            capture_output=True,
-            timeout=15,
-            env=self.env,
-        )
-        if version.returncode or not version.stdout.strip():
-            raise ValueError("Godot could not report its actual engine identity.")
-        revision = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=self.root,
-            text=True,
-            capture_output=True,
-            timeout=10,
-            check=False,
+        git = shutil.which("git")
+        revision = (
+            subprocess.run(
+                [git, "rev-parse", "HEAD"],
+                cwd=self.root,
+                text=True,
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+            if git
+            else None
         )
         self.identity = {
             "engine_version": version.stdout.strip(),
-            "source_revision": revision.stdout.strip() if revision.returncode == 0 else "",
+            "source_revision": revision.stdout.strip()
+            if revision and revision.returncode == 0
+            else "",
             "source_digest": source_digest(self.project),
             "config_digest": self.snapshot.digest.hexdigest(),
         }
 
     def invoke(self, action: str) -> dict:
-        result = clean_result(
-            self.run(
-                [
-                    "--script",
-                    "res://scripts/services/content/cli.gd",
-                    "--",
-                    "--action=" + action,
-                ]
+        try:
+            result = clean_result(
+                self.run(
+                    [
+                        "--script",
+                        "res://scripts/services/content/cli.gd",
+                        "--",
+                        "--action=" + action,
+                    ]
+                )
             )
-        )
+        except (ValueError, OSError, subprocess.TimeoutExpired) as error:
+            self.executed_error(error)
+            raise
         result.update(engine_executed=True, metadata=self.identity)
         return result
+
+    def executed_error(self, error: Exception) -> Exception:
+        error.engine_executed = True
+        error.metadata = self.identity
+        return error
 
     def validate(self) -> dict:
         result = self.invoke("balance-validate")
         if result.get("ok") and result.get("config_validated") is not True:
-            raise ValueError("Native validator did not confirm complete config acceptance.")
+            raise self.executed_error(
+                ValueError("Native validator did not confirm complete config acceptance.")
+            )
         return result
 
     def schemas(self) -> dict:
         result = self.invoke("schemas")
         if not result.get("ok") or not isinstance(result.get("schemas"), dict):
-            raise ValueError("Native validator did not return generated schemas.")
+            raise self.executed_error(
+                ValueError("Native validator did not return generated schemas.")
+            )
         return result["schemas"]
 
 

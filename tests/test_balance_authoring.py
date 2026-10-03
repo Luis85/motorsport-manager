@@ -61,6 +61,7 @@ class BalanceAuthoringTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "config"
         self.root.mkdir()
+        (self.root / "pack.json").write_text('{"id":"core","version":"1.0.0"}')
         self.path = self.root / "families/race_tuning/default.json"
         self.path.parent.mkdir(parents=True)
         self.original = b'{\n "kind":"race_tuning", "id":"core.race.default",\n "knobs": {"pace": 1.0, "enabled": true, "a/b~c": 4}, "label":"human"\n}\n'
@@ -274,15 +275,16 @@ class BalanceAuthoringTests(unittest.TestCase):
                     balance.execute(self.args("set", name, "/value", "4"))
                 native.assert_not_called()
 
-    def test_symlink_file_parent_root_and_hardlink_reject(self):
+    def test_symlink_file_parent_and_root_reject(self):
         outside = self.root.parent / "outside.json"
         outside.write_text("{}")
         link = self.root / "linked.json"
-        link.symlink_to(outside)
-        with self.assertRaises(ValueError):
-            authoring.Snapshot(self.root)
-        link.unlink()
-        os.link(outside, link)
+        try:
+            link.symlink_to(outside)
+        except OSError as error:
+            if getattr(error, "winerror", None) == 1314:
+                self.skipTest("Windows runner lacks symbolic-link privilege")
+            raise
         with self.assertRaises(ValueError):
             authoring.Snapshot(self.root)
         link.unlink()
@@ -295,6 +297,16 @@ class BalanceAuthoringTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             authoring.Snapshot(self.root)
         self.assertEqual(outside.read_bytes(), b"{}")
+
+    def test_hardlinked_file_rejects_without_changing_either_name(self):
+        outside = self.root.parent / "outside.json"
+        outside.write_text("{}")
+        link = self.root / "linked.json"
+        os.link(outside, link)
+        with self.assertRaises(ValueError):
+            authoring.Snapshot(self.root)
+        self.assertEqual(outside.read_bytes(), b"{}")
+        self.assertEqual(link.read_bytes(), b"{}")
 
     def test_duplicate_nonfinite_and_excessive_raw_configs_reject(self):
         for data in (
@@ -309,7 +321,7 @@ class BalanceAuthoringTests(unittest.TestCase):
                 authoring.Snapshot(self.root)
             self.assertEqual(self.path.read_bytes(), self.original)
 
-    def test_whole_root_resource_limits_and_case_collisions_preflight(self):
+    def test_whole_root_resource_limits_preflight(self):
         cases = (
             ("MAX_FILES", 1, "file limit"),
             ("MAX_ENTRIES", 1, "entry limit"),
@@ -321,7 +333,11 @@ class BalanceAuthoringTests(unittest.TestCase):
             with self.subTest(setting=setting), patch.object(authoring, setting, limit):
                 with self.assertRaisesRegex(ValueError, message):
                     authoring.Snapshot(self.root)
+
+    def test_case_collision_rejects_on_case_sensitive_filesystem(self):
         upper = self.root / "OTHER.json"
+        if upper.exists():
+            self.skipTest("Filesystem prevents distinct case-colliding names")
         upper.write_text("{}")
         with self.assertRaisesRegex(ValueError, "case collision"):
             authoring.Snapshot(self.root)
@@ -333,7 +349,7 @@ class BalanceAuthoringTests(unittest.TestCase):
             inspected = balance.execute(self.args("inspect", self.name, "/knobs/pace"))
             compared = balance.execute(self.args("diff", str(self.root)))
         self.assertFalse(result["engine_executed"])
-        self.assertEqual(len(result["files"]), 2)
+        self.assertEqual(len(result["files"]), 3)
         self.assertEqual(inspected["value"], 1.0)
         self.assertFalse(inspected["engine_executed"])
         self.assertTrue(compared["equal"])
