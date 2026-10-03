@@ -6,14 +6,30 @@ extends RefCounted
 static func success(value: Variant) -> Dictionary:
 	if not RaceStateValue.serializable(value):
 		return failure("INVALID_RESULT", "Operation returned a non-JSON value.")
-	return {"ok": true, "result": RaceStateValue.copy(value)}
+	return {"ok": true, "result": _json_copy(value)}
 
 
 static func failure(code: String, message: String, details: Dictionary = {}) -> Dictionary:
 	var safe_details: Dictionary = {}
 	if RaceStateValue.serializable(details):
-		safe_details = details.duplicate(true)
+		safe_details = _json_copy(details)
 	return {"ok": false, "error": {"code": code, "message": message, "details": safe_details}}
+
+
+static func _json_copy(value: Variant) -> Variant:
+	# Native authored documents use StringName keys; the public JSON contract uses strings.
+	# Keep exact integers and floating-point values, unlike a stringify/parse round trip.
+	if value is Dictionary:
+		var result: Dictionary = {}
+		for key in value:
+			result[str(key)] = _json_copy(value[key])
+		return result
+	if value is Array:
+		var result: Array = []
+		for item in value:
+			result.append(_json_copy(item))
+		return result
+	return str(value) if typeof(value) == TYPE_STRING_NAME else value
 
 
 static func identifier(value: Variant) -> bool:
