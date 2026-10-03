@@ -1,5 +1,6 @@
 extends "res://tests/support/toolbox_test_fixture.gd"
 ## Complete campaign checkpoints publish through the original dated transaction owners.
+const Nested = preload("res://tests/support/toolbox_campaign_nested.gd")
 const Journey = preload("res://tests/support/toolbox_weekend_journey.gd")
 var weekends: DeveloperWeekends
 var campaigns: DeveloperCampaigns
@@ -13,6 +14,7 @@ func run() -> void:
 	var files = player_files()
 	weekends = DeveloperWeekends.new(catalog)
 	campaigns = DeveloperCampaigns.new(catalog, weekends)
+	Nested.run(self, GameToolbox.new(catalog))
 	create_and_read_contracts()
 	dated_transaction_contracts()
 	depart_and_return_contracts()

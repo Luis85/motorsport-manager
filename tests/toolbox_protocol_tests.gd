@@ -1,5 +1,6 @@
 extends "res://tests/support/toolbox_test_fixture.gd"
 ## JSON-decoded requests use the identical native capabilities and correlated responses.
+const Budget = preload("res://tests/support/toolbox_response_budget.gd")
 var toolbox: GameToolbox
 var next_request: int = 0
 
@@ -17,6 +18,7 @@ func run() -> void:
 	weekend_parity()
 	request_rejections()
 	batch_contracts()
+	Budget.run(self)
 	close_contracts()
 	same(player_files(), files, "Protocol dispatch has no implicit player persistence")
 	finish("toolbox-protocol-tests")
@@ -148,13 +150,17 @@ func discovery_contracts() -> void:
 	if not accepted(response, "Discover native capabilities"):
 		return
 	check(
-		response.result.limits == {"batch": 128, "sessions_per_facet": 32},
+		(
+			response.result.limits
+			== {"batch": 128, "sessions_per_facet": 32, "response_bytes": 67108864}
+		),
 		"Discovery exposes real bounds"
 	)
 	check(
 		(
 			typeof(response.result.limits.batch) == TYPE_INT
 			and typeof(response.result.limits.sessions_per_facet) == TYPE_INT
+			and typeof(response.result.limits.response_bytes) == TYPE_INT
 		),
 		"Disclosed limits preserve exact integer types on the wire"
 	)
