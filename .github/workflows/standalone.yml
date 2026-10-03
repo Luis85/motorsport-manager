@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Download and verify matching desktop templates
         shell: bash
         run: |
@@ -36,7 +36,7 @@ jobs:
           PY
           printf '%s\n' "$url" > toolchain/origin.txt
           curl --fail --location --retry 3 https://raw.githubusercontent.com/godotengine/godot/4.7.2-stable/LICENSE.txt -o toolchain/LICENSE.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pinned-desktop-export-templates
           path: toolchain/
@@ -52,12 +52,13 @@ jobs:
         target: [linux, windows]
         mode: [debug, release]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: pinned-desktop-export-templates
           path: ${{ runner.temp }}/templates
       - name: Install pinned export editor
@@ -85,13 +86,13 @@ jobs:
         run: >-
           tar -czf "${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz"
           -C "builds/${{ matrix.target }}-${{ matrix.mode }}" .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: standalone-${{ matrix.target }}-${{ matrix.mode }}
           path: ${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz
           if-no-files-found: error
           retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: standalone-build-failure-${{ matrix.target }}-${{ matrix.mode }}
@@ -119,12 +120,13 @@ jobs:
             runner: windows-2022
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          digest-mismatch: error
           name: standalone-${{ matrix.target }}-${{ matrix.mode }}
           path: ${{ runner.temp }}/transport
       - name: Extract the same permission-preserving archive distributed to players
@@ -140,7 +142,7 @@ jobs:
           python scripts/smoke_standalone.py
           --package "${{ runner.temp }}/package"
           --output "reports/standalone-${{ matrix.target }}-${{ matrix.mode }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: standalone-evidence-${{ matrix.target }}-${{ matrix.mode }}

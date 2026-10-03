@@ -15,7 +15,7 @@ jobs:
       GODOT_VERSION: 4.7.2
       LP_NUM_THREADS: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Capture the exact tested source for offline reproduction
         shell: bash
         run: |
@@ -26,7 +26,7 @@ jobs:
           git archive --format=tar.gz --output=/tmp/content-verification-source/source.tar.gz HEAD
           (cd /tmp/content-verification-source && sha256sum source.tar.gz > source.sha256)
       - name: Retain source snapshot independently of test success
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: content-verification-source
           path: /tmp/content-verification-source/
@@ -66,7 +66,7 @@ jobs:
         run: python3 scripts/verify_content_export.py --godot /usr/local/bin/godot --output reports/content-export
       - name: Retain exact toolchain for offline reproduction
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: content-verification-toolchain-linux
           path: |
@@ -77,7 +77,7 @@ jobs:
           retention-days: 1
       - name: Retain Linux export toolchain
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: content-export-templates-linux
           path: /tmp/linux-export-templates/
@@ -85,7 +85,7 @@ jobs:
           retention-days: 1
       - name: Retain source-bound evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: content-verification
           path: reports/

@@ -21,7 +21,7 @@ jobs:
           unzip -j /tmp/templates.tpz 'templates/linux_debug.x86_64' 'templates/linux_release.x86_64' 'templates/version.txt' -d /tmp/content-export-toolchain
           sha256sum /tmp/templates.tpz > /tmp/content-export-toolchain/archive-sha256.txt
           printf '%s\n' "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" > /tmp/content-export-toolchain/source.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: content-export-toolchain-linux
           path: /tmp/content-export-toolchain/
