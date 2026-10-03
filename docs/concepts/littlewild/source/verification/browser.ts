@@ -29,7 +29,7 @@ async function main():Promise<void>{
  p.on("pageerror",error=>errors.push(String(error)));
  p.on("request",request=>{if(/^https?:/.test(request.url()))requests.push(request.url());});
  await p.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});
- await p.waitForFunction("!!window.Littlewild");await p.waitForTimeout(250);
+ await p.waitForFunction(() => !!(window as any).Littlewild);await p.waitForTimeout(250);
  await check("Application identifies the new implementation",async()=>equal(await p.evaluate("Littlewild.version"),"15.0.0"));
  await p.locator("[data-act=begin]").click();await p.waitForTimeout(250);
  await check("Fresh start launches an authored scene",async()=>equal(await p.evaluate("Littlewild.engine.scenarioContext.sceneId"),"first-morning"));
