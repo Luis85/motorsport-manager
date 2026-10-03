@@ -44,7 +44,7 @@ func _initialize() -> void:
 
 
 func run() -> void:
-	var source = Storage.read_json("res://data/tracks/hillside.json").data
+	var source = Storage.read_json("res://config/circuits/hillside.json").data
 	var options = {
 		"laps": 6,
 		"qual_duration": 240,

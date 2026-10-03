@@ -26,7 +26,7 @@ func check(value: bool, label: String) -> void:
 
 func run() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Core and expansion resolve their cross-file references")
 	if not loaded.ok:
@@ -44,7 +44,7 @@ func run() -> void:
 		definition.player_ids() == [12, 13], "Ownership is explicit, not fixed slots or team names"
 	)
 	var altered = invalid_roster_records(definition)
-	var track: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var track: Dictionary = Storage.read_json("res://config/circuits/hillside.json").data
 	for invalid_count in [true, 14.5, -1, 65, "14"]:
 		var bad_track = track.duplicate(true)
 		bad_track.grid.count = invalid_count
@@ -241,7 +241,7 @@ func run() -> void:
 
 
 func default_parity(catalog: ContentCatalog) -> void:
-	var track: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var track: Dictionary = Storage.read_json("res://config/circuits/hillside.json").data
 	var geometry = TrackGeometry.new(track)
 	var standard = catalog.roster("core.roster.default")
 	var settings = {

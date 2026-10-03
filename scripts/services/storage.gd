@@ -153,7 +153,7 @@ static func _replace_text(path: String, text: String, files: FileOperations) -> 
 
 
 static func read_catalog() -> Dictionary:
-	var manifest = read_json("res://data/tracks/catalog.json")
+	var manifest = read_json("res://config/circuits/catalog.json")
 	if not manifest.ok:
 		return manifest
 	var data = manifest.data
@@ -175,7 +175,7 @@ static func read_catalog() -> Dictionary:
 			or name.contains("..")
 		):
 			return {"ok": false, "error": "Invalid bundled track filename."}
-		var result = read_json("res://data/tracks/" + name)
+		var result = read_json("res://config/circuits/" + name)
 		if not result.ok:
 			return result
 		tracks.append(result.data)

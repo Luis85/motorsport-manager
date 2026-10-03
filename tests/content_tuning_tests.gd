@@ -1,6 +1,6 @@
 extends SceneTree
 ## Frozen authored inputs, real commands and isolated model probes. No golden rewrites.
-const ROOTS = ["res://content/packs/core", "res://content/examples/club-racing"]
+const ROOTS = ["res://config", "res://content/examples/club-racing"]
 const PRESET = "local.club.weekend.sprint"
 const TUNING = "local.club.race_tuning.sprint"
 var checks = 0
@@ -39,7 +39,7 @@ func run() -> void:
 		finish()
 		return
 	var catalog: ContentCatalog = loaded.catalog
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	var track = TrackGeometry.new(document)
 	validation(catalog)
 	default_equivalence(catalog, track)

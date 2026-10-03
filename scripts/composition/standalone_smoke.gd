@@ -91,7 +91,7 @@ func guard() -> bool:
 	)
 	for filename in ["dry-strategy", "weather-strategy", "recovery", "strategic-duels"]:
 		check(
-			Storage.read_json("res://data/scenarios/" + filename + ".json").ok,
+			Storage.read_json("res://config/scenarios/" + filename + ".json").ok,
 			"Scenario JSON included: " + filename
 		)
 	return failures.is_empty()

@@ -16,7 +16,7 @@ func check(value: bool, message: String) -> void:
 
 
 func run() -> void:
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	var raw = PracticeRaceSim.new(
 		TrackGeometry.new(document), {"laps": 6, "seed": 7314, "intensity": "calm"}
 	)

@@ -35,7 +35,7 @@ func reset() -> void:
 
 
 func load_pack() -> Dictionary:
-	return ContentPackLoader.new().load_packs(["res://content/packs/core", ROOT])
+	return ContentPackLoader.new().load_packs(["res://config", ROOT])
 
 
 func invalid(code: String, label: String) -> void:

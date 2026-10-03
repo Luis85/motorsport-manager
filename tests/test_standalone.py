@@ -157,6 +157,53 @@ class StandaloneContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "editor bytes"):
                 build.build(engine, self.root, self.root / "out", "linux", "release", "source")
 
+    def test_build_stages_the_complete_config_without_old_content_homes(self):
+        engine = self.root / "engine"
+        engine.write_bytes(b"fixture engine")
+        names = [name for name in build.TEMPLATES if name.startswith("linux_")]
+        for name in names:
+            (self.root / name).write_bytes(b"fixture template")
+        real_digest = build.digest
+        stages = []
+
+        def fixture_digest(path):
+            if path == engine:
+                return build.ENGINE_SHA256
+            if path.name in names:
+                return build.TEMPLATES[path.name]
+            return real_digest(path)
+
+        def fixture_run(arguments, log, cwd):
+            stages.append(cwd)
+            source = build.ROOT / "config"
+            files = sorted(path.relative_to(source) for path in source.rglob("*.json"))
+            staged = cwd / "config"
+            self.assertEqual(
+                files, sorted(path.relative_to(staged) for path in staged.rglob("*.json"))
+            )
+            for relative in files:
+                self.assertEqual((source / relative).read_bytes(), (staged / relative).read_bytes())
+            self.assertFalse((cwd / "data").exists())
+            self.assertFalse((cwd / "content/packs/core").exists())
+            if "--export-release" in arguments:
+                binary = Path(arguments[-1])
+                binary.write_bytes(b"fixture executable")
+                binary.with_suffix(".pck").write_bytes(b"fixture packed config")
+
+        with (
+            patch.object(
+                build.subprocess, "run", return_value=SimpleNamespace(stdout=build.ENGINE)
+            ),
+            patch.object(build, "digest", side_effect=fixture_digest),
+            patch.object(build, "run", side_effect=fixture_run),
+        ):
+            result = build.build(
+                engine, self.root, self.root / "out", "linux", "release", "fixture"
+            )
+        self.assertEqual(2, len(stages))
+        self.assertTrue(result["clean_import"])
+        self.assertFalse(result["runtime_verified"])
+
     def test_changed_pack_is_not_accepted(self):
         (self.package / "Motorsport Manager.pck").write_bytes(b"changed")
         with self.assertRaisesRegex(ValueError, "hash differs"):

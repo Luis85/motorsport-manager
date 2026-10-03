@@ -287,7 +287,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func run() -> void:
-	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	var reference = {profile_class}.new(track)
 	var candidate = RaceSim.new(track)
 	var providers = RaceMechanicProfiles.build("{profile}")

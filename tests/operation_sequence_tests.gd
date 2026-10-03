@@ -30,7 +30,7 @@ func run() -> void:
 	if input_path.is_empty():
 		for seed_value in [1709, 2719, 7919]:
 			var sim = PracticeRaceSim.new(
-				TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data),
+				TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data),
 				{"seed": 7314, "scenario": "dry", "intensity": "calm", "laps": 6}
 			)
 			var initial = sim.snapshot()
@@ -209,7 +209,8 @@ func transition_sequence() -> void:
 	# Empty sessions isolate approval sequencing. Physical full-weekend acceptance
 	# is retained separately; this is explicitly not a substitute for driving laps.
 	var sim = PracticeRaceSim.new(
-		TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data), {"seed": 7314}
+		TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data),
+		{"seed": 7314}
 	)
 	var operations: Array = [
 		{"op": "stage"},

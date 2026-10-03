@@ -97,7 +97,7 @@ def build(
         stage = Path(temporary) / "project"
         stage.mkdir()
         # No checkout/import cache or local reports enter the export staging project.
-        for directory in ("scripts", "scenes", "data", "content"):
+        for directory in ("scripts", "scenes", "config", "content"):
             shutil.copytree(
                 root / directory,
                 stage / directory,

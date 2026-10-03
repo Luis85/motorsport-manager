@@ -59,7 +59,7 @@ func _initialize() -> void:
 
 
 func run() -> void:
-	var source = Storage.read_json("res://data/tracks/hillside.json").data
+	var source = Storage.read_json("res://config/circuits/hillside.json").data
 	var session = TrackEditorSession.new(source)
 	var original = session.read_document()
 	draft_contract_tests(original)

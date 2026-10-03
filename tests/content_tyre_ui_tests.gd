@@ -29,7 +29,7 @@ func run() -> void:
 	app = root.get_node("App")
 	await settle()
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Native tyre fixture uses the production validator")
 	if not loaded.ok:

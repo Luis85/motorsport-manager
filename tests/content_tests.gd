@@ -59,7 +59,7 @@ func syntax() -> void:
 func run() -> void:
 	syntax()
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Core and example packs validate")
 	if not loaded.ok:
@@ -83,7 +83,7 @@ func run() -> void:
 	check(catalog.explain(definition.id).source.file == "vehicles/sport.json", "Value provenance")
 	check(not catalog.add(definition.to_record(), {}).is_empty(), "Published catalog is sealed")
 	var document: Dictionary = TrackDocument.normalize(
-		Storage.read_json("res://data/tracks/hillside.json").data
+		Storage.read_json("res://config/circuits/hillside.json").data
 	)
 	var editor = TrackEditorSession.new(document)
 	editor.content_catalog = catalog

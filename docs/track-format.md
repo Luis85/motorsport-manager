@@ -57,7 +57,7 @@ Before runtime export or weekend entry, `TrackDiagnostics` also checks sampled c
 
 ## Bundled catalog
 
-`data/tracks/catalog.json` is an ordered manifest (`kind: motorsport-manager-track-catalog`, version 1) listing the eight adjacent circuit JSON filenames. Each circuit is an independent authoring document, so geometry changes stay reviewable per track. `Storage.read_catalog()` resolves only adjacent JSON filenames, preserving the library order; imported user tracks do not control this manifest.
+`config/circuits/catalog.json` is an ordered manifest (`kind: motorsport-manager-track-catalog`, version 1) listing the eight adjacent circuit JSON filenames. Each circuit is an independent authoring document, so geometry changes stay reviewable per track. `Storage.read_catalog()` resolves only adjacent JSON filenames, preserving the library order; imported user tracks do not control this manifest.
 
 ## Additive visual metadata (0.3.0)
 

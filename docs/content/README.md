@@ -22,6 +22,13 @@ See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring p
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
 
+The built-in `core` pack lives in `config/`: its manifest and family JSON files,
+bundled circuits in `config/circuits/`, and diagnostic collections in
+`config/scenarios/` are the authoritative shipped values. Schemas and external
+examples remain under `content/`. Editing built-in source files affects newly
+created sessions and careers after validation; existing saves retain their frozen
+content.
+
 ## Author a vehicle without rebuilding
 
 Copy `content/examples/club-racing` outside the source tree. Keep `pack.json` and

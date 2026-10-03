@@ -7,7 +7,7 @@ func _initialize() -> void:
 
 
 func run() -> void:
-	var roots: Array = ["res://content/packs/core"]
+	var roots: Array = [ContentPackLoader.BUILTIN_ROOT]
 	var action = "validate"
 	var identity = ""
 	var output = ""

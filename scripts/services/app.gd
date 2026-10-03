@@ -266,7 +266,7 @@ func clear_weekend_checkpoint() -> void:
 
 
 func reload_content(roots: Array) -> bool:
-	var result = ContentPackLoader.new().load_packs(["res://content/packs/core"] + roots)
+	var result = ContentPackLoader.new().load_packs([ContentPackLoader.BUILTIN_ROOT] + roots)
 	content_diagnostics = result.diagnostics
 	if not result.ok:
 		return false
