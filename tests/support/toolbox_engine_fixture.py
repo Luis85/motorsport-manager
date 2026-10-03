@@ -49,6 +49,10 @@ def make_response(sent, metadata, count, mode):
         response["request_id"] = "foreign"
     if mode == "wrong-source":
         response["metadata"] = dict(metadata, source_digest="b" * 64)
+    if mode == "error-text":
+        response["result"] = {
+            "name": "SCRIPT ERROR: authored text; Parse Error: notes; ERROR: label"
+        }
     return response
 
 

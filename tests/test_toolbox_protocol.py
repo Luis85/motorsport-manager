@@ -103,6 +103,8 @@ class ToolboxProtocolTests(unittest.TestCase):
             ("request_id", ""),
             ("request_id", "r" * 65),
             ("request_id", "space id"),
+            ("request_id", "a/b"),
+            ("session", "a/b"),
             ("session", "../valid-as-process-id"),
             ("version", True),
             ("arguments", []),

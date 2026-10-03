@@ -9,7 +9,7 @@ import re
 PROTOCOL = "motorsport-manager-toolbox"
 VERSION = 1
 MAX_BYTES = 8 * 1024 * 1024
-IDENTITY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_./-]{0,63}\Z")
+IDENTITY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z")
 RUNNER = "res://scripts/services/toolbox/cli.gd"
 
 

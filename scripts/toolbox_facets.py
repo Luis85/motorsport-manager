@@ -10,9 +10,6 @@ class Facet:
     def call(self, method: str, session: str, **arguments):
         return self.client.call(self.name + "." + method, session, arguments)
 
-    def restore(self, session: str, snapshot: dict):
-        return self.call("restore", session, snapshot=snapshot)
-
     def snapshot(self, session: str):
         return self.call("snapshot", session)
 
@@ -21,6 +18,9 @@ class Facet:
 
 
 class Weekends(Facet):
+    def restore(self, session: str, snapshot: dict):
+        return self.call("restore", session, snapshot=snapshot)
+
     def create(self, session: str, configuration: dict):
         return self.call("create", session, configuration=configuration)
 
@@ -48,6 +48,9 @@ class Weekends(Facet):
 
 
 class Campaigns(Facet):
+    def restore(self, session: str, snapshot: dict):
+        return self.call("restore", session, snapshot=snapshot)
+
     def create(self, session: str, campaign_id: str):
         return self.call("create", session, campaign_id=campaign_id)
 

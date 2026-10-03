@@ -8,6 +8,7 @@ import queue
 import re
 import signal
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -44,6 +45,13 @@ class ToolProcess:
         self.lock = threading.Lock()
         self.closed = False
         self.job = WindowsJob() if os.name == "nt" else None
+        if self.job is not None:
+            command = [
+                sys.executable,
+                "-u",
+                str(Path(__file__).with_name("toolbox_bootstrap.py")),
+                *command,
+            ]
         options = (
             {"start_new_session": True}
             if os.name == "posix"
@@ -61,6 +69,8 @@ class ToolProcess:
             )
             if self.job is not None:
                 self.job.assign(self.process)
+                self.process.stdin.write(b"\0")
+                self.process.stdin.flush()
         except BaseException:
             if hasattr(self, "process"):
                 self.process.kill()
@@ -95,8 +105,6 @@ class ToolProcess:
                 line = raw.decode("utf-8", "replace").rstrip("\r\n")
                 with self.lock:
                     self.diagnostics.append(name + ": " + line[:2048])
-                if ENGINE_ERROR.search(line):
-                    self._fail("ENGINE_ERROR", "Native engine emitted an error: " + line[:2048])
                 if name == "stdout":
                     for prefix in ("TOOLBOX_READY", "TOOLBOX_RESULT"):
                         if line.startswith(prefix):
@@ -105,6 +113,13 @@ class ToolProcess:
                             else:
                                 self._frame(prefix, decode(raw[len(prefix) + 1 :]))
                             break
+                    else:
+                        if ENGINE_ERROR.search(line):
+                            self._fail(
+                                "ENGINE_ERROR", "Native engine emitted an error: " + line[:2048]
+                            )
+                elif ENGINE_ERROR.search(line):
+                    self._fail("ENGINE_ERROR", "Native engine emitted an error: " + line[:2048])
         except ToolboxError as error:
             self._fail(error.code, error.message)
         except (OSError, ValueError) as error:

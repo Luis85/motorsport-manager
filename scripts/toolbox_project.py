@@ -13,6 +13,26 @@ from toolbox_protocol import MAX_BYTES, RUNNER, ToolboxError, decode, encode, re
 from verification_run import source_digest
 
 
+def private_windows_editor(executable: str, home: Path) -> str:
+    """Official self-contained mode keeps Windows known-folder editor state private."""
+    source = Path(executable).resolve()
+    folder = home / "editor"
+    folder.mkdir()
+    shutil.copy2(source, folder / source.name)
+    if source.name.endswith("_console.exe"):
+        companion = source.with_name(source.name.removesuffix("_console.exe") + ".exe")
+        if not companion.is_file():
+            raise ToolboxError(
+                "TRANSPORT_ERROR", "Godot console wrapper needs its editor companion"
+            )
+    else:
+        companion = source.with_name(source.stem + "_console.exe")
+    if companion.is_file():
+        shutil.copy2(companion, folder / companion.name)
+    (folder / "_sc_").touch()
+    return str(folder / source.name)
+
+
 class ToolProject:
     """One copied project, import cache and owned user-data lifetime per client."""
 
@@ -59,6 +79,8 @@ class ToolProject:
         self.packs = [str(Path(pack).resolve()) for pack in packs]
         for name in ("user", "cache", "config"):
             (self.home / name).mkdir()
+        if os.name == "nt":
+            self.godot = private_windows_editor(self.godot, self.home)
 
     def prepare(self) -> None:
         shutil.copytree(
