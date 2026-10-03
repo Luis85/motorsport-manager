@@ -162,8 +162,8 @@
  }
  const portraits=new Map();
  root.LWArt.pip=function(ctx,x,y,scale=1,dir,mood,phase,task,reduced,c){
-  c ||= {id:'c1',personality:'curious',equipment:{},inventory:{}};
-  const key=JSON.stringify([c.id,c.personality,c.equipment,root.LWFidelity.revision(),root.LWFidelity.mood(c),c.careVisual]);let image=portraits.get(key);
+  c ||= {id:'c1',archetype:root.LWCreatures.defaultArchetype,personality:root.LWCreatures.defaultPersonality,equipment:{},inventory:{}};
+  const key=JSON.stringify([c.id,c.archetype,c.personality,c.equipment,root.LWFidelity.revision(),root.LWFidelity.mood(c),c.careVisual]);let image=portraits.get(key);
   if(!image){image=document.createElement('canvas');image.width=80;image.height=94;const scene=new T.Scene(),figure=creature(scene,c);figure.root.position.set(9,0,9);figure.body.rotation.y=.55;figure.carry.visible=false;const owner={camera:{x:0,y:26,z:1.75}};const renderer=new root.LWSoftware3D(image,owner);renderer.last=-Infinity;renderer.render(scene);portraits.set(key,image);if(portraits.size>48)portraits.delete(portraits.keys().next().value);}
   ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(image,x-22*scale,y-48*scale,44*scale,52*scale);ctx.restore();
  };
