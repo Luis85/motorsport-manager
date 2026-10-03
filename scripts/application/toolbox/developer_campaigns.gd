@@ -69,7 +69,8 @@ func query(session: String, view: String = "overview", parameters: Dictionary = 
 	)
 	if not error.is_empty():
 		return error
-	var value = DeveloperCampaignQueries.query(_sessions[session], view, parameters)
+	var canonical: Dictionary = DeveloperToolResult.success(parameters).result
+	var value = DeveloperCampaignQueries.query(_sessions[session], view, canonical)
 	if not value.get("ok", true):
 		return _rejected(value)
 	return DeveloperToolResult.success(value)
@@ -84,7 +85,8 @@ func command(session: String, action: String, payload: Dictionary = {}) -> Dicti
 	var error = DeveloperFacetValues.argument_error(payload, schema)
 	if not error.is_empty():
 		return error
-	return _publish(session, DeveloperCampaignPlanning.apply(_sessions[session], action, payload))
+	var canonical: Dictionary = DeveloperToolResult.success(payload).result
+	return _publish(session, DeveloperCampaignPlanning.apply(_sessions[session], action, canonical))
 
 
 func advance(session: String) -> Dictionary:

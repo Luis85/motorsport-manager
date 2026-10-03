@@ -19,7 +19,8 @@ func create(session: String, configuration: Dictionary = {}) -> Dictionary:
 	)
 	if not error.is_empty():
 		return error
-	var resolved = _document(configuration)
+	var canonical: Dictionary = DeveloperToolResult.success(configuration).result
+	var resolved = _document(canonical)
 	if not resolved.ok:
 		return resolved
 	var document: Dictionary = resolved.result
@@ -76,7 +77,12 @@ func commit(session: String, document: Dictionary, expected_revision: int) -> Di
 	var editor = _editor(session)
 	if editor == null:
 		return _missing()
-	if not editor.commit(document, expected_revision):
+	if not RaceStateValue.serializable(document):
+		return DeveloperToolResult.failure(
+			"INVALID_ARGUMENT", "Use a bounded finite JSON document."
+		)
+	var canonical: Dictionary = DeveloperToolResult.success(document).result
+	if not editor.commit(canonical, expected_revision):
 		return DeveloperToolResult.failure("DOMAIN_REJECTED", editor.last_error)
 	return read(session)
 
@@ -96,7 +102,8 @@ func edit(
 	var error = DeveloperFacetValues.argument_error(parameters, DeveloperTrackEdits.schema(action))
 	if not error.is_empty():
 		return error
-	var edited = DeveloperTrackEdits.apply(editor.read_document(), action, parameters)
+	var canonical: Dictionary = DeveloperToolResult.success(parameters).result
+	var edited = DeveloperTrackEdits.apply(editor.read_document(), action, canonical)
 	if not edited.ok:
 		return DeveloperToolResult.failure("DOMAIN_REJECTED", edited.error)
 	return commit(session, edited.document, expected_revision)
