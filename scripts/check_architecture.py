@@ -57,6 +57,8 @@ PRESENTATION_AUTHORITY = {
     "DeveloperWeekendSession",
     "DeveloperWeekendDispatch",
     "CampaignWeekendWorkflow",
+    "DeveloperCampaignSnapshots",
+    "RecordedWeekendContinuation",
     "DeveloperCampaigns",
     "DeveloperTracks",
     "TrackReferencePreview",

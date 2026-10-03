@@ -265,6 +265,8 @@ class ToolboxArchitectureTests(unittest.TestCase):
         "DeveloperWeekendSession": "scripts/application/toolbox/developer_weekend_session.gd",
         "DeveloperWeekendDispatch": "scripts/application/toolbox/developer_weekend_dispatch.gd",
         "CampaignWeekendWorkflow": "scripts/application/campaign/weekend_workflow.gd",
+        "DeveloperCampaignSnapshots": "scripts/application/toolbox/developer_campaign_snapshots.gd",
+        "RecordedWeekendContinuation": "scripts/application/replay/recorded_weekend_continuation.gd",
         "DeveloperCampaigns": "scripts/application/toolbox/developer_campaigns.gd",
         "DeveloperTracks": "scripts/application/toolbox/developer_tracks.gd",
         "GameToolboxFactory": "scripts/services/toolbox/factory.gd",
@@ -309,6 +311,20 @@ class ToolboxArchitectureTests(unittest.TestCase):
         ):
             with self.subTest(source=source):
                 self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_ui_cannot_reconstruct_and_advance_live_recorded_weekends(self):
+        for helper, method in (
+            ("DeveloperCampaignSnapshots", "prepare"),
+            ("RecordedWeekendContinuation", "restore_session"),
+        ):
+            source = (
+                "func restore(snapshot):\n"
+                f"\tvar world = {helper}.{method}(snapshot)\n"
+                '\tworld.get("weekend", world).get("simulation", world.get("sim")).step()\n'
+            )
+            with self.subTest(helper=helper):
+                self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+                self.assertEqual([], self.scan_consumer(source, "scripts/composition/tools.gd"))
 
     def test_detached_campaign_candidate_transforms_remain_available(self):
         for name in (
@@ -359,7 +375,15 @@ class ToolboxArchitectureTests(unittest.TestCase):
         self.assertEqual([], self.scan_consumer(source, "scripts/composition/tools.gd"))
 
     def test_detached_queries_and_value_helpers_remain_available_to_ui(self):
-        names = ("RaceViewHandle", "RaceViewQuery", "CampaignFinanceQuery", "DeveloperToolResult")
+        names = (
+            "RaceViewHandle",
+            "RaceViewQuery",
+            "CampaignFinanceQuery",
+            "DeveloperToolResult",
+            "DeveloperWeekendQueries",
+            "DeveloperWeekendPlanningQueries",
+            "DeveloperCatalogQueries",
+        )
         for name in names:
             self.write(f"scripts/application/{name}.gd", f"class_name {name}\nextends RefCounted\n")
         source = "\n".join(f"var query_{index}: {name}" for index, name in enumerate(names))
