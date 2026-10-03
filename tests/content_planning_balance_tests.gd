@@ -48,6 +48,7 @@ func run() -> void:
 	geometry = TrackGeometry.new(loaded.data)
 	validation()
 	baseline()
+	qualifying_release_contract()
 	practice_and_drafts()
 	forecast_inputs()
 	frozen_continuation()
@@ -122,6 +123,58 @@ func baseline() -> void:
 	check(
 		RaceRecord.equivalent(original.snapshot(), authored),
 		"Complete default balance preserves five hundred physical steps and RNG exactly"
+	)
+
+
+func qualifying_release_contract() -> void:
+	var sim = RaceSim.new(geometry, {"tuning_definition": tuning_record()})
+	check(sim.command("qualify"), "Release-label regression enters real qualifying")
+	var default_release = RaceForecaster.qualifying_release(sim, sim.cars[3])
+	check(
+		default_release.get("can_start_hotlap", false),
+		"Default qualifying release returns its start capability without a formatting error"
+	)
+	near(
+		default_release.get("required_seconds", -1),
+		(
+			maxf(0, geometry.pit_length - sim.cars[3].box_d) / geometry.pit_limit
+			+ 3
+			+ geometry.estimate / 0.76
+			+ 5
+		),
+		"Default qualifying release retains its transit, outlap and five-second margin"
+	)
+	check(
+		(
+			default_release.get("label", "")
+			== "Estimate includes pit transit, an out-lap and 5s margin; traffic may delay release."
+		),
+		"Supported margin formatting preserves the original default release label"
+	)
+	var record = tuning_record()
+	record.balance.procedure.qualifying_release_margin_seconds = 7.25
+	var changed = RaceSim.new(geometry, {"tuning_definition": record})
+	check(changed.command("qualify"), "Custom margin enters real qualifying")
+	var custom_release = RaceForecaster.qualifying_release(changed, changed.cars[3])
+	check(custom_release.get("can_start_hotlap", false), "Custom release retains start capability")
+	near(
+		custom_release.get("required_seconds", -1) - default_release.get("required_seconds", -1),
+		2.25,
+		"Selected margin changes the physical release-time requirement"
+	)
+	check(
+		(
+			custom_release.get("label", "")
+			== "Estimate includes pit transit, an out-lap and 7.25s margin; traffic may delay release."
+		),
+		"Supported formatting displays a fractional selected release margin"
+	)
+	changed.clock = changed.qual_duration - 1
+	check(
+		not RaceForecaster.qualifying_release(changed, changed.cars[3]).get(
+			"can_start_hotlap", true
+		),
+		"A late release still returns an explicit rejected start capability"
 	)
 
 

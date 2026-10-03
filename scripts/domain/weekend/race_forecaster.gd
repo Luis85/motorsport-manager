@@ -292,7 +292,7 @@ static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 		),
 		"label":
 		(
-			"Estimate includes pit transit, an out-lap and %gs margin; traffic may delay release."
-			% rules.qualifying_release_margin_seconds
+			"Estimate includes pit transit, an out-lap and %ss margin; traffic may delay release."
+			% String.num(rules.qualifying_release_margin_seconds, 2)
 		)
 	}
