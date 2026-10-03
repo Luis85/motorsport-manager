@@ -159,7 +159,7 @@
     }
     else {
         engine.s.started = true;
-        const creatureName = LWCreatures.forPersonality(engine.actor.personality)?.name?.toLowerCase() || 'companion';
+        const creatureName = LWCreatures.get(engine.actor.archetype)?.name?.toLowerCase() || 'companion';
         engine.log('A little ' + creatureName + ' found a place in the glade. And a friend in you.', 'leaf');
     } closeModal(); save(); world.say(demo ? 'I’ll pick up a little water.' : 'Hi. I think we’ll be good friends.', 'heart'); updateUI(true); }
     function storyMarkup() { const s = engine.s, q = engine.quest(); if (!q) {
