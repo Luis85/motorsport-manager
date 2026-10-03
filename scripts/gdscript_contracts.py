@@ -38,6 +38,15 @@ def mask(source: str) -> str:
     return TOKEN.sub(lambda m: "".join("\n" if c == "\n" else " " for c in m[0]), source)
 
 
+def bounded_resource_path(target: str) -> str | None:
+    """Return the exact canonical project path; aliases cannot change its layer."""
+    if not target.startswith("res://") or any(
+        part in ("", ".", "..") for part in target[6:].split("/")
+    ):
+        return None
+    return target[6:]
+
+
 def global_classes(sources: dict[str, str]) -> dict[str, str]:
     """Resolve one unambiguous project registry for repeated inheritance walks."""
     classes = {}
@@ -66,7 +75,7 @@ def inheritance_sources(
         visited.add(entry)
         source = sources[entry]
         result.append((entry, source))
-        header = re.search(r"^extends\b", mask(source), re.M)
+        header = re.search(r"^(?:class_name\s+\w+\s+)?extends\b", mask(source), re.M)
         if not header:
             break
         declaration = source[header.end() :].split("\n", 1)[0]
@@ -75,11 +84,10 @@ def inheritance_sources(
             raise ValueError(f"Cannot resolve explicit script inheritance: {entry}")
         if parent[2]:
             target = parent[2]
-            if not target.startswith("res://") or any(
-                part in ("", ".", "..") for part in target[6:].split("/")
-            ):
+            resolved = bounded_resource_path(target)
+            if resolved is None:
                 raise ValueError(f"Inherited script must name a bounded resource path: {entry}")
-            entry = target.removeprefix("res://")
+            entry = resolved
         else:
             name = parent[3]
             if name not in classes and name not in NATIVE_BASES:

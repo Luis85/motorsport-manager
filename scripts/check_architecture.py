@@ -15,7 +15,13 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from gdscript_contracts import aggregate_dispatch_sources, global_classes, inheritance_sources, mask
+from gdscript_contracts import (
+    aggregate_dispatch_sources,
+    bounded_resource_path,
+    global_classes,
+    inheritance_sources,
+    mask,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
@@ -26,6 +32,7 @@ ALLOWED = {
     "composition": {"domain", "application", "services", "ui", "composition"},
 }
 ENGINE_AUTHORITY = {
+    "ClassDB",
     "Node",
     "Node2D",
     "Node3D",
@@ -102,23 +109,32 @@ def _inspect_identifiers(
             fail(path, match.start(), "detached-renderer", name)
 
 
+def _inspect_literal(path: str, target: str, pos: int, authority_paths: set[str], fail) -> None:
+    if not target.endswith(".gd"):
+        return
+    own = layer(path)
+    resolved = bounded_resource_path(target)
+    if resolved is None:
+        fail(path, pos, "unbounded-script-path", target)
+        return
+    if layer(resolved) not in ALLOWED[own]:
+        fail(path, pos, "literal-dependency", resolved)
+    if own == "ui" and resolved in authority_paths:
+        fail(path, pos, "detached-renderer", f"Literal authority reference: {resolved}")
+
+
 def _inspect_loads(path: str, text: str, source: str, authority_paths: set[str], fail) -> None:
     own = layer(path)
     # Positions are preserved by mask(), so literals can be recovered without
     # matching "load(...)" inside comments or documentation strings.
     for match in re.finditer(r"\b(load|preload)\s*\(|\bextends\b", text):
         literal = re.match(r"\s*([\'\"])([^\'\"]+)\1", source[match.end() :])
+        if literal and match[1]:
+            trailing = text[match.end() + literal.end() :]
+            if not re.match(r"\s*,?\s*\)", trailing):
+                literal = None  # A literal prefix is still a computed dependency.
         if literal:
-            target = literal[2].removeprefix("res://")
-            if target.endswith(".gd") and layer(target) not in ALLOWED[own]:
-                fail(path, match.start(), "literal-dependency", target)
-            if own == "ui" and target in authority_paths:
-                fail(
-                    path,
-                    match.start(),
-                    "detached-renderer",
-                    f"Literal authority reference: {target}",
-                )
+            _inspect_literal(path, literal[2], match.start(), authority_paths, fail)
         elif own in {"domain", "application"} and match[1]:
             fail(
                 path,

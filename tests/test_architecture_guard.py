@@ -37,6 +37,22 @@ class ArchitectureGuardTests(unittest.TestCase):
         ]:
             self.assertIn("literal-dependency", [v.rule for v in self.scan(expression)])
 
+    def test_script_path_aliases_cannot_change_the_declared_dependency_layer(self):
+        for path in (
+            "res://scripts/domain/../ui/widget.gd",
+            "res://scripts/domain/./../ui/widget.gd",
+            "res://scripts//ui/widget.gd",
+            "scripts/domain/value.gd",
+            "user://scripts/domain/value.gd",
+        ):
+            for owner in ("domain", "application", "ui"):
+                for expression in (f'load("{path}")', f'preload("{path}")'):
+                    with self.subTest(path=path, owner=owner, expression=expression):
+                        self.assertIn(
+                            "unbounded-script-path",
+                            [v.rule for v in self.scan(expression, f"scripts/{owner}/probe.gd")],
+                        )
+
     def test_no_false_edges_from_documentation(self):
         self.assertEqual(
             [], self.scan('extends RefCounted\n# Widget.new()\nvar copy = "Store App Time Node"\n')
@@ -49,6 +65,21 @@ class ArchitectureGuardTests(unittest.TestCase):
         )
         self.assertIn(
             "domain-wall-clock", [v.rule for v in self.scan("func run():\n\tTime.get_ticks_usec()")]
+        )
+
+    def test_domain_static_factory_cannot_construct_engine_nodes_indirectly(self):
+        source = (
+            "extends RefCounted\nstatic func create() -> Object:\n"
+            '\treturn ClassDB.instantiate("Node")\n'
+        )
+        self.assertIn("domain-engine-authority", [v.rule for v in self.scan(source)])
+        self.assertEqual([], self.scan(source, "scripts/composition/native_factory.gd"))
+        self.assertEqual(
+            [],
+            self.scan(
+                'extends RefCounted\n# ClassDB.instantiate("Node")\n'
+                'var example = "ClassDB.instantiate(\\"Node\\")"\n'
+            ),
         )
 
     def test_domain_compilers_have_no_wall_clock_exception(self):
@@ -129,6 +160,29 @@ class ArchitectureGuardTests(unittest.TestCase):
         self.assertIn(
             "dynamic-load", [v.rule for v in self.scan("func build(path):\n\treturn load(path)")]
         )
+
+    def test_literal_prefix_does_not_disguise_a_computed_load_argument(self):
+        for layer in ("domain", "application"):
+            for argument in (
+                '"res://" + path',
+                '"res://%s" % path',
+                '"res://" + "scripts/ui/widget.gd"',
+            ):
+                source = f"extends RefCounted\nfunc build(path):\n\treturn load({argument})\n"
+                with self.subTest(layer=layer, argument=argument):
+                    self.assertIn(
+                        "dynamic-load",
+                        [v.rule for v in self.scan(source, f"scripts/{layer}/probe.gd")],
+                    )
+
+    def test_complete_literal_load_allows_native_whitespace_comments_and_trailing_comma(self):
+        for trailing in ("", ",", " # bound dependency\n", ", # bound dependency\n"):
+            source = (
+                "extends RefCounted\nfunc build():\n"
+                f'\treturn load("res://scripts/domain/value.gd"{trailing})\n'
+            )
+            with self.subTest(trailing=trailing):
+                self.assertEqual([], self.scan(source))
 
     def test_application_no_infrastructure_dependency(self):
         self.assertIn(

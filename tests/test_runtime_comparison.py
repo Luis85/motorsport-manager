@@ -12,6 +12,8 @@ from paired_runtime import IDENTITY, summarize, validate_pair
 def report():
     value = {key: "same" for key in IDENTITY}
     value.update(
+        renderer="gl_compatibility",
+        rendering_driver="opengl3",
         passed=True,
         checks=10,
         controlled=[
@@ -51,6 +53,57 @@ class RuntimeComparisonTests(unittest.TestCase):
             candidate[key] = "different"
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_pair(report(), candidate)
+
+    def test_same_renderer_method_does_not_make_gl_and_gles_comparable(self):
+        base, candidate = report(), report()
+        candidate["rendering_driver"] = "opengl3_es"
+        candidate["timings"][0]["median_us"] = 75
+        self.assertEqual(base["renderer"], candidate["renderer"])
+        self.assertEqual(base["adapter"], candidate["adapter"])
+        with self.assertRaisesRegex(ValueError, "Non-comparable benchmark rendering_driver"):
+            summarize([{"baseline": base, "candidate": candidate}])
+
+    def test_backend_cannot_change_between_individually_comparable_pairs(self):
+        pairs = [{"baseline": report(), "candidate": report()} for _ in range(2)]
+        for value in pairs[1].values():
+            value["rendering_driver"] = "opengl3_es"
+        for pair in pairs:
+            validate_pair(pair["baseline"], pair["candidate"])
+        with self.assertRaisesRegex(ValueError, "across pairs: rendering_driver"):
+            summarize(pairs)
+
+    def test_homogeneous_pairs_accept_elapsed_variation(self):
+        pairs = [{"baseline": report(), "candidate": report()} for _ in range(3)]
+        for pair, before, after in zip(pairs, (100, 120, 110), (70, 90, 80), strict=True):
+            pair["baseline"]["timings"][0]["median_us"] = before
+            pair["candidate"]["timings"][0]["median_us"] = after
+        result = summarize(pairs)[0]
+        self.assertEqual(result["baseline_median_us"], 110)
+        self.assertEqual(result["candidate_median_us"], 80)
+        self.assertEqual(
+            result["paired_medians_us"], {"baseline": [100, 120, 110], "candidate": [70, 90, 80]}
+        )
+
+    def test_legacy_reports_without_driver_metadata_cannot_establish_comparability(self):
+        for roles in (("baseline",), ("candidate",), ("baseline", "candidate")):
+            pair = {"baseline": report(), "candidate": report()}
+            for role in roles:
+                pair[role].pop("rendering_driver")
+            with (
+                self.subTest(roles=roles),
+                self.assertRaisesRegex(ValueError, "identity is incomplete"),
+            ):
+                summarize([pair])
+
+    def test_identically_invalid_rendering_driver_is_not_evidence(self):
+        for driver in (None, True, 1, "", " "):
+            base, candidate = report(), report()
+            base["rendering_driver"] = candidate["rendering_driver"] = driver
+            with (
+                self.subTest(driver=driver),
+                self.assertRaisesRegex(ValueError, "rendering_driver"),
+            ):
+                validate_pair(base, candidate)
 
     def test_changed_outcome_is_not_a_speedup(self):
         candidate = report()

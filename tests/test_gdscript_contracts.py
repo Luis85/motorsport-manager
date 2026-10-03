@@ -50,6 +50,33 @@ class InheritedContractTests(unittest.TestCase):
             ["scripts/domain/race_sim.gd", "scripts/domain/dispatch.gd"],
         )
 
+    def test_inline_global_class_parent_preserves_mechanics_and_authority(self):
+        self.sources["scripts/domain/dispatch.gd"] = (
+            "class_name Dispatch\n" + self.sources["scripts/domain/dispatch.gd"]
+        )
+        for parent in ("Dispatch", '"res://scripts/domain/dispatch.gd"'):
+            self.sources["scripts/domain/race_sim.gd"] = (
+                f"class_name RaceSim extends {parent} # inline inheritance\n"
+            )
+            self.sources["scripts/application/alias.gd"] = "class_name HiddenRace extends RaceSim\n"
+            self.sources["scripts/ui/probe.gd"] = "var live = HiddenRace.new()\n"
+            self.write_sources()
+            with self.subTest(parent=parent):
+                self.assertEqual(hook_contracts(self.root), {"step": ("", "void")})
+                self.assertIn(
+                    "detached-renderer",
+                    [v.rule for v in inspect(self.root)[0] if v.path == "scripts/ui/probe.gd"],
+                )
+
+    def test_inline_detached_value_inheritance_remains_legal(self):
+        self.sources["scripts/domain/value.gd"] = "class_name DetachedValue extends RefCounted\n"
+        self.sources["scripts/application/value.gd"] = (
+            "class_name DisplayValue extends DetachedValue\n"
+        )
+        self.sources["scripts/ui/probe.gd"] = "var value = DisplayValue.new()\n"
+        self.write_sources()
+        self.assertEqual(inspect(self.root)[0], [])
+
     def test_named_inherited_authority_cannot_bypass_ui_boundary(self):
         self.sources["scripts/domain/dispatch.gd"] = (
             "class_name Dispatch\n" + self.sources["scripts/domain/dispatch.gd"]

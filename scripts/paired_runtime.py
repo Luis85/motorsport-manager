@@ -23,6 +23,9 @@ IDENTITY = (
     "engine",
     "cpu",
     "renderer",
+    # Legacy reports must supply this exact backend; the rendering method alone
+    # cannot establish desktop GL versus GLES comparability.
+    "rendering_driver",
     "adapter",
     "viewport",
     "text_scale",
@@ -47,6 +50,9 @@ def _validate_report(label: str, report: dict) -> None:
         raise ValueError(f"{label} benchmark failed or has no checks")
     if any(key not in report for key in IDENTITY):
         raise ValueError(f"{label} benchmark identity is incomplete")
+    driver = report["rendering_driver"]
+    if not isinstance(driver, str) or not driver.strip():
+        raise ValueError(f"{label} benchmark rendering_driver is missing or invalid")
     if (
         not isinstance(report.get("controlled"), list)
         or not report["controlled"]
@@ -143,8 +149,12 @@ def validate_pair(base: dict, candidate: dict) -> None:
 def summarize(pairs: list[dict]) -> list[dict]:
     if not pairs:
         raise ValueError("No completed baseline/candidate pairs")
+    reference = pairs[0]["baseline"]
     for pair in pairs:
         validate_pair(pair["baseline"], pair["candidate"])
+        for key in IDENTITY:
+            if pair["baseline"][key] != reference[key]:
+                raise ValueError(f"Non-comparable benchmark across pairs: {key}")
     names = [row["workload"] for row in pairs[0]["baseline"]["timings"]]
     result = []
     for name in names:
