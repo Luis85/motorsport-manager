@@ -232,65 +232,16 @@ func _prepare_campaign_departure() -> Dictionary:
 
 
 func _prepare_campaign_race(document: Dictionary) -> Dictionary:
-	var mappings = CampaignStarter.mappings(App.campaign_checkpoint)
-	var profiles = CampaignEngineeringQuery.race_profiles(App.campaign_checkpoint, mappings)
-	if not profiles.ok:
-		UI.notify(host, "Departure unavailable", profiles.error)
+	var candidate = CampaignWeekendWorkflow.depart(App.campaign_checkpoint, document)
+	if not candidate.ok:
+		UI.notify(host, "Departure blocked", candidate.error)
 		return {}
-	var options = CampaignStarter.race_options(App.campaign_checkpoint)
-	options["performance_profiles"] = profiles.profiles
-	var authored_vehicle = CampaignStarter.vehicle_definition(App.campaign_checkpoint)
-	var vehicle_definition = (
-		VehicleDefinition.from_record(authored_vehicle) if not authored_vehicle.is_empty() else null
-	)
-	var geometry = TrackGeometry.new(
-		document, CampaignStarter.vehicle(App.campaign_checkpoint), false, vehicle_definition
-	)
-	var simulation = PracticeRaceSim.new(geometry, options)
-	if not simulation.last_error.is_empty():
-		UI.notify(host, "Departure unavailable", simulation.last_error)
-		return {}
-	var record = RaceRecord.new()
-	record.attach(simulation)
-	var departed = CampaignDepartureTransaction.depart(
-		App.campaign_checkpoint,
-		CampaignStarter.next_event_context(App.campaign_checkpoint),
-		record,
-		mappings,
-		CampaignStarter.event_assignments(App.campaign_checkpoint),
-		CampaignStarter.event_cost_minor(App.campaign_checkpoint)
-	)
-	if not departed.ok:
-		UI.notify(host, "Departure blocked", departed.error)
-		return {}
-	return {"departed": departed, "simulation": simulation, "record": record}
+	return candidate
 
 
-func _prepare_campaign_settlement(manifest: Dictionary) -> Dictionary:
-	var factual = WeekendResult.build(App.recording)
-	if factual.is_empty():
-		UI.notify(
-			host,
-			"Campaign settlement blocked",
-			"The completed weekend could not produce factual result evidence."
-		)
+func _prepare_campaign_settlement(_manifest: Dictionary) -> Dictionary:
+	var candidate = CampaignWeekendWorkflow.settle(App.campaign_checkpoint, App.recording)
+	if not candidate.ok:
+		UI.notify(host, "Campaign settlement blocked", candidate.error)
 		return {}
-	var policy = CampaignStarter.weekend_policy(App.campaign_checkpoint)
-	if policy.is_empty():
-		UI.notify(
-			host,
-			"Campaign settlement blocked",
-			"The campaign could not resolve its frozen weekend policy."
-		)
-		return {}
-	var staged = CampaignWeekendTransaction.stage(
-		App.campaign_checkpoint, manifest, factual, policy
-	)
-	if not staged.ok:
-		UI.notify(host, "Campaign settlement blocked", staged.error)
-		return {}
-	var follow = CampaignDirectorTransaction.after_weekend(staged.checkpoint)
-	if not follow.ok:
-		UI.notify(host, "Campaign follow-up blocked", follow.error)
-		return {}
-	return follow
+	return candidate
