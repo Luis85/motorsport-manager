@@ -92,6 +92,10 @@ def read_only(snapshot: Snapshot, args, root: Path) -> dict:
             equal=not changes, changes=changes[:MAX_DIFFS], truncated=len(changes) > MAX_DIFFS
         )
         return result
+    if args.action == "inspect":
+        # Reject invalid selection before starting native work so its failure
+        # report truthfully records that no engine validation was executed.
+        inspect(snapshot, args, {})
     schemas = published_schemas(root)
     if executable(args.godot):
         with NativeProject(root, snapshot, args.godot) as native:

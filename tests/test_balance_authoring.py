@@ -355,6 +355,26 @@ class BalanceAuthoringTests(unittest.TestCase):
         self.assertTrue(compared["equal"])
         self.assertEqual(self.path.read_bytes(), self.original)
 
+    def test_invalid_inspection_selection_rejects_before_native_execution(self):
+        for filename, pointer in (("missing.json", "/value"), (self.name, "/knobs/missing")):
+            output = io.StringIO()
+            with (
+                self.subTest(filename=filename, pointer=pointer),
+                patch.object(balance, "NativeProject") as native,
+                patch.object(balance, "executable", return_value="godot"),
+                contextlib.redirect_stdout(output),
+            ):
+                status = balance.main(
+                    ["--config-dir", str(self.root), "inspect", filename, pointer]
+                )
+            native.assert_not_called()
+            result = json.loads(output.getvalue())
+            self.assertEqual(status, 1)
+            self.assertFalse(result["ok"])
+            self.assertFalse(result["engine_executed"])
+            self.assertNotIn("metadata", result)
+            self.assertEqual(self.path.read_bytes(), self.original)
+
     def test_options_before_or_after_command_and_json_error_stdout(self):
         args = balance.parser().parse_args(["inspect", self.name, "--config-dir", str(self.root)])
         self.assertEqual(args.config_dir, self.root)
