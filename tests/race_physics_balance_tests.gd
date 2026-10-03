@@ -30,13 +30,13 @@ func make(changes: Dictionary = {}) -> RaceSim:
 
 
 func run() -> void:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs([ContentPackLoader.BUILTIN_ROOT])
 	check(loaded.ok, "Production core pack provides complete balance input")
 	if not loaded.ok:
 		finish()
 		return
 	source = loaded.catalog.tuning("core.race_tuning.default").to_record()
-	track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	frozen_and_legacy()
 	tyre_probes()
 	procedure_probes()
@@ -73,7 +73,9 @@ func frozen_and_legacy() -> void:
 	check(tuning.balance.is_read_only(), "Balance root is read-only")
 	for group in RacePhysicsBalance.defaults():
 		check(tuning.balance[group].is_read_only(), "Physical group is read-only: " + group)
-	var before = RaceSim.new(track, {"tuning_definition": old_record, "seed": 7314})
+	var before = RaceSim.new(
+		track, {"tuning_definition": old_record, "scenario": "dry", "seed": 7314}
+	)
 	var after = make()
 	for sim in [before, after]:
 		check(sim.command("qualify"), "Baseline qualifying command accepted")
