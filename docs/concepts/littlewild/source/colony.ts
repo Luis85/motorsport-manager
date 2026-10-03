@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Multiple independent actors in one authoritative world.
  * Existing learning/construction services read a scoped actor view (s.*).
  * Only this module advances the shared clock, nodes, crops and quest director.
@@ -6,6 +7,7 @@
 (function (inputRoot:unknown) {
     'use strict';
     const root=inputRoot as LWColonyPorts.Root;
+ const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     type Actor=LWColonyPorts.Actor;type Host=LWColonyPorts.Host;
     if (typeof module !== 'undefined' && module.exports && !root.LWColonyAdventures) require('./colony-adventures.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWColonyActivity) require('./colony-activity.js');
@@ -171,16 +173,16 @@
             }
             for (const t of this.traitEffects(c))
                 add(t.name, matches(t.bonuses));
-            if (c.needs.energy < 30)
-                add('Tired', -2);
-            else if (c.needs.energy < 45)
-                add('Low energy', -1);
-            if (c.needs.food < 25 || c.needs.water < 25)
-                add('Needs attention', -1);
-            if (c.feelings.anger >= 60)
-                add('Angry', -2);
-            else if (c.feelings.anger >= 30)
-                add('Frustrated', -1);
+            if (c.needs.energy < B.forEngine(this).modifiers.tiredEnergy)
+                add('Tired', B.forEngine(this).modifiers.tiredPenalty);
+            else if (c.needs.energy < B.forEngine(this).modifiers.lowEnergy)
+                add('Low energy', B.forEngine(this).modifiers.lowPenalty);
+            if (c.needs.food < B.forEngine(this).modifiers.needGate || c.needs.water < B.forEngine(this).modifiers.needGate)
+                add('Needs attention', B.forEngine(this).modifiers.needPenalty);
+            if (c.feelings.anger >= B.forEngine(this).modifiers.angerGate)
+                add('Angry', B.forEngine(this).modifiers.angerPenalty);
+            else if (c.feelings.anger >= B.forEngine(this).modifiers.frustratedGate)
+                add('Frustrated', B.forEngine(this).modifiers.frustratedPenalty);
             if (attr === 'DX')
                 add('Encumbrance', -this.load(c).level);
             return { attribute: attr, mods };
@@ -235,19 +237,19 @@
             if (issue)
                 return fail(issue);
             if (['soothe', 'space'].includes(kind)) {
-                this.s.cooldowns[kind] = this.s.simTime + 25;
+                this.s.cooldowns[kind] = this.s.simTime + B.forEngine(this).care.soothingCooldown;
                 if (kind === 'space') {
-                    this.actor.feelings.coolingUntil = this.s.simTime + 14;
+                    this.actor.feelings.coolingUntil = this.s.simTime + B.forEngine(this).care.spaceCooling;
                     if (!this.s.task?.need) {
                         this.releaseSocial(this.s.task);
                         this.s.task = null;
                     }
-                    this.changeFeeling('Room to breathe', 5, -12);
+                    this.changeFeeling('Room to breathe', B.forEngine(this).care.spaceJoy, B.forEngine(this).care.spaceAnger);
                     this.emit('heart', 'Thank you for giving me a little room.');
                 }
                 else {
-                    this.changeFeeling('A reassuring moment', 8, -18);
-                    this.s.bond = clamp(this.s.bond + 1, 0, 100);
+                    this.changeFeeling('A reassuring moment', B.forEngine(this).care.sootheJoy, B.forEngine(this).care.sootheAnger);
+                    this.s.bond = clamp(this.s.bond + B.forEngine(this).care.sootheBond, 0, 100);
                     this.emit('heart', 'We can take this one little step at a time.');
                 }
                 this.visual(kind);
@@ -255,7 +257,7 @@
             }
             const r = super.care(kind);
             if (r.ok) {
-                this.changeFeeling(kind === 'praise' ? 'My effort was noticed' : kind === 'bond' ? 'Time with my guide' : 'A caring moment', 5, -5);
+                this.changeFeeling(kind === 'praise' ? 'My effort was noticed' : kind === 'bond' ? 'Time with my guide' : 'A caring moment', B.forEngine(this).care.careJoy, B.forEngine(this).care.careAnger);
                 this.visual(kind);
             }
             return r;
@@ -266,7 +268,7 @@
             const n = c.needs, f = c.feelings;
             if (!f)
                 return super.mood();
-            return f.anger >= 60 ? 'Angry' : f.anger >= 30 ? 'Frustrated' : n.energy < 25 ? 'Sleepy' : n.food < 25 ? 'Hungry' : n.water < 25 ? 'Thirsty' : f.social < 25 ? 'Lonely' : n.joy >= 85 && c.bond >= 50 ? 'Delighted' : n.joy >= 58 ? 'Content' : n.joy < 35 ? 'Low spirits' : 'Thoughtful';
+            return f.anger >= B.forEngine(this).modifiers.angerGate ? 'Angry' : f.anger >= B.forEngine(this).modifiers.frustratedGate ? 'Frustrated' : n.energy < B.forEngine(this).mood.needGate ? 'Sleepy' : n.food < B.forEngine(this).mood.needGate ? 'Hungry' : n.water < B.forEngine(this).mood.needGate ? 'Thirsty' : f.social < B.forEngine(this).mood.socialLow ? 'Lonely' : n.joy >= B.forEngine(this).mood.delightedJoy && c.bond >= B.forEngine(this).mood.delightedBond ? 'Delighted' : n.joy >= B.forEngine(this).mood.contentJoy ? 'Content' : n.joy < B.forEngine(this).mood.sadJoy ? 'Low spirits' : 'Thoughtful';
         }
         purchasePrice() { return Math.ceil(A.content.rules.purchaseBase * Math.pow(A.content.rules.purchaseGrowth, this.s.colony.purchased - 1)); }
         purchaseCreature(personality:string, archetype = Creatures.defaultArchetype) {

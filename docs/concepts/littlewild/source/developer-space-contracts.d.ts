@@ -9,6 +9,7 @@ declare namespace LittlewildDeveloper {
  interface InteriorLayout {id:string;label:string;floors:InteriorFloor[];}
  interface InteriorActor extends InteriorPoint {id:string;name:string;archetype:string;visualAsset:string;floorId:string;stationId:string|null;action:string;mood:string;progress:number|null;remainingSeconds:number|null;moving:boolean;direction:number;cargo:string;transfer:boolean;}
  interface BuildingInteriorSnapshot {
+  sceneProps?:{floorId:string;props:SceneProp[]};
   fixtureAsset:string;fixtureModel:string;buildingId:string;buildingName:string;kind:string;floors:InteriorFloor[];actors:InteriorActor[];time:number;
   status:{label:string;kind:string;detail:string};input:Record<string,number>;output:Record<string,number>;
   recipes:{id:string;name:string;amount:number;time:number;cost:Record<string,number>;skill:string;queued:number}[];
@@ -28,7 +29,7 @@ declare namespace LittlewildDeveloper {
  interface TerraformSnapshot {revision:number;tiles:Record<string,TerrainTile>;plants:Record<string,TerrainPlant>;choices:{kind:string;label:string;models:string[]}[];}
  type TerraformPreview={ok:true;revision:number;tiles:TerrainTileEdit[];plants:TerrainPlantEdit[]}|LWRuntime.Failure;
  type RendererCapability='camera'|'hit-test'|'terrain-preview'|'construction-preview'|'resource-lens'|'interiors';
- interface RendererMetadata {readonly id:string;readonly name:string;readonly description:string;readonly capabilities:readonly RendererCapability[];}
+ interface RendererMetadata {readonly id:string;readonly name:string;readonly description:string;readonly capabilities:readonly RendererCapability[];readonly dimensions?:readonly ('2d'|'3d')[];}
  interface RendererValidation {readonly ok:boolean;readonly errors:readonly string[];readonly data:RendererMetadata|null;}
  interface RendererDiscovery {list():readonly RendererMetadata[];validate(input:unknown):RendererValidation;}
 

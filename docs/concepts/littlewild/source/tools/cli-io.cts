@@ -3,7 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 /** Bound the actual bytes read, not merely an earlier stat that can race a writer. */
-export function readJsonFile(file: string, maxBytes: number): string {
+export function readBytesFile(file: string, maxBytes: number): Uint8Array {
   const descriptor = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK ?? 0));
   try {
     const stat = fs.fstatSync(descriptor);
@@ -16,8 +16,12 @@ export function readJsonFile(file: string, maxBytes: number): string {
       bytes += count;
     }
     if (bytes > maxBytes) throw new Error(`JSON file exceeds ${maxBytes} bytes: ${file}`);
-    return Buffer.from(buffer.subarray(0, bytes)).toString("utf8");
+    return buffer.subarray(0, bytes);
   } finally { fs.closeSync(descriptor); }
+}
+
+export function readJsonFile(file: string, maxBytes: number): string {
+  return new TextDecoder("utf-8", { fatal: true }).decode(readBytesFile(file, maxBytes));
 }
 
 /** Unique, exclusively created temporaries belong to this attempt; cleanup cannot delete another writer's file. */

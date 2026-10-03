@@ -3,9 +3,11 @@
 'use strict';
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 const args=process.argv.slice(2),[command,input,output]=args;
-const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export <scenario-id> output.pack.json';
+const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export <scenario-id> output.pack.json | external-export pack.json scene-id tiled|ldtk|gltf|canvas|advanced-canvas output | external-import external-file output.pack.json [mapping-options.json] | engine-export pack.json scene-id output.engine.json | engine-export-validate engine.json';
 try{
   if(helpRequested(args)){emit({ok:true,usage});process.exit(0);}
+  if(command==='engine-export'||command==='engine-export-validate'){require('./engine-export-cli.cjs').run(args).catch(error=>{emit({ok:false,errors:[error.message]});process.exitCode=2;});}else if(command==='external-export'||command==='external-import'){require('./external-editor-cli.cjs').run(args);}
+  else {
   if(!['validate','capture','export'].includes(command)||args.length!==(command==='validate'?2:3))throw Error('Usage: '+usage);
   const X=require('../scenario-runtime.js'),S=require('../scenario-story.js');
   if(command==='validate'){
@@ -22,4 +24,5 @@ try{
     const pack=X.builtins().find(p=>p.id===input);if(!pack)throw Error('Unknown built-in pack: '+input+'. Choose '+X.builtins().map(p=>p.id).join(', ')+'.');
     writeJsonFile(output,pack);emit({ok:true,pack:pack.id,output});
   }else throw Error('Usage: '+usage);
+  }
 }catch(error){emit({ok:false,errors:[error.message]});process.exitCode=2;}

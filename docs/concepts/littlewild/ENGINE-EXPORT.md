@@ -1,0 +1,27 @@
+# Complete engine input for code generation
+
+`littlewild-engine-export` version1 is a separate, inert JSON format. It contains a validated complete native scenario pack, every canonical owner checkpoint, libraries/balancing/configuration, primitive assets, model variants, rigs and schemas; an ordered ECS/command/persistence/determinism manifest; a Godot binding plan; and the exact gate-covered authoritative TypeScript/type/build sources, offline renderer vendors, licenses, matching p5 source archive and installed TypeScript compiler and Node/Undici declarations plus exact locked dependency metadata. No source string is evaluated, imported into the engine, or accepted as playable scenario data.
+
+This gives a code generator complete source and data inputs. It does not automatically translate TypeScript to GDScript or guarantee Godot gameplay parity. The mapping identifies the semantic work needed for systems, commands, receipts, save continuation, rendering and platform UI. Godot uses native x/y on its x/z ground plane and elevation on y, with one meter per grid unit; the19-cell islands/23-cell stride and actual interior floors remain canonical. Primitive trees and local rig/socket transforms preserve Three intrinsic XYZ rotation semantics, rather than blindly copying Euler triples. Timeline tracks map to AnimationPlayer;2D/3D embeds map to SubViewport/CanvasLayer adapters. JSON custom animation IDs reference compiled presets; extension source and a reviewed manual port are required for custom drawing capabilities.
+
+The developer World & Scene Editor has a closed “Engine and code generator export” disclosure. Select a scene in a complete validated draft and download engine JSON. Export captures detached draft data before asynchronous source inflation. A changed/closed draft discards a pending download. Native state, active engine, history and host lease stay unchanged. Export a pack captured from a native story to include progressed paid jobs and exact continuation state; dormant scene owners remain in the full pack.
+
+```ts
+// Browser LWDeveloper or Node require('./.generated/developer-sdk.cjs').toolbox:
+const result = await toolbox.engineExport.export(pack, sceneId);
+const checked = await toolbox.engineExport.validate(result);
+// checked is {ok:true,document,errors:[]} or {ok:false,errors:[...]}; no runtime importer.
+```
+
+```sh
+node .generated/tools/scenario-cli.cjs engine-export pack.json scene-id output.engine.json
+node .generated/tools/scenario-cli.cjs engine-export-validate output.engine.json
+```
+
+The CLI writes an exclusive temporary file and atomically renames it, protects input aliases, prints structured JSON diagnostics and uses exit0 for success,1 for integrity rejection,2 for usage/IO/export errors. Runtime bootstrap failures also return one JSON diagnostic and retain the requested output; scenario CLI help is available without loading gameplay defaults. Source integrity validation checks original byte lengths/SHA-256 hashes, unique bounded relative paths, canonical inventory order/identity, completeness against the same trusted build bundle, and derived manifest consistency with the canonical pack. Binary archives use explicit base64 encoding and hashes over their original bytes. Ordinary object key ordering has no semantic effect.
+
+`source/tools/engine-export-bundle.cts` inventories source/vendor/package/lock/tsconfig inputs covered by release source identity. Project release reports, delivery manifests, PR prose and external manuals are excluded to avoid artifact-hash fixed points; the exclusions are recorded. Tests/browser evidence are excluded; schemas and conformance fixtures may remain as inert data. The copied MIT engine license is checked against the repository license when available. Vendor provenance/license/rebuild files and matching preferred source are included. The actual build-inserts registry supplies browser load order; local import/require/reference dependencies are syntax-discovered without evaluation. Exact dependency pins and lockfile remain available alongside compiler/type text; the payload does not claim a complete offline npm rebuild toolchain for tsx, Ajv, esbuild or every platform binary.
+
+The complete source bundle is gzip/base64 in the standalone HTML and only inflates on export/validation. The Node bundle is the byte-identical decoded JSON. Inflation stops before accumulating beyond the declared size or64MiB; individual text is capped at16MiB, JSON values at250,000 and depth40. Descriptor preflight rejects accessors, hidden fields, custom prototypes, functions, sparse arrays and unsafe keys. Textual duplicate keys and malformed UTF-8/JSON reject. Source paths cannot be absolute, contain traversal or executable URI schemes; the API never extracts files or fetches URLs. Inline build JSON escapes `<`, `>` and `&`, while hashes continue to cover original source bytes.
+
+Focused regressions check complete inventory/hashes including the p5 archive, source-loader/Node identity, all manifest capabilities, malformed/tampered/incomplete input, inert text/no accessor execution, actual CLI atomic behavior, browser file downloads/offline behavior, and a progressed native paid job with exact one-second continuation after export. Final measured sizes and source identity belong in the release evidence because the bundle regenerates after all authored sources freeze.

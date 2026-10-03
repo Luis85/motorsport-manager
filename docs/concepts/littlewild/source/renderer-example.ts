@@ -24,6 +24,7 @@
       const cells=floor.cells||Array.from({length:floor.width*floor.height},(_,index)=>({x:index%floor.width,y:Math.floor(index/floor.width)}));
       c.fillStyle='#d6dadd';for(const cell of cells)c.fillRect(left+cell.x*unit,top+cell.y*unit,unit-1,unit-1);
       c.fillStyle='#aa9269';for(const station of floor.stations)c.fillRect(left+station.x*unit+2,top+station.y*unit+2,unit-5,unit-5);
+      if(room.sceneProps?.floorId===floor.id)for(const prop of room.sceneProps.props){c.fillStyle=prop.category==='building'?'#aa9269':'#d0b768';c.fillRect(left+(prop.x+.15)*unit,top+(prop.y+.15)*unit,unit*.7,unit*.7);c.fillStyle='#294336';c.font='12px sans-serif';c.fillText(prop.name,left+prop.x*unit,top+prop.y*unit-2);}
       for(const actor of room.actors.filter(actor=>actor.floorId===floor.id)){c.fillStyle='#577588';c.beginPath();c.arc(left+(actor.x+.5)*unit,top+(actor.y+.5)*unit,Math.max(6,unit*.12),0,Math.PI*2);c.fill();c.fillStyle='#294336';c.fillText(actor.name+' · '+actor.action,left,top+floor.height*unit+16);}
       context.canvas.dataset.interiorFloor=floor.id;context.canvas.dataset.interiorActors=String(room.actors.filter(actor=>actor.floorId===floor.id).length);context.canvas.dataset.scene='interior';return;
      }else{delete context.canvas.dataset.interiorFloor;delete context.canvas.dataset.interiorActors;context.canvas.dataset.scene='world';}
@@ -31,6 +32,7 @@
      for(const tile of frame.tiles){const p=project(tile,frame);c.fillStyle=tile.ground==='water'?'#a2c4c5':'#9cb681';c.fillRect(p.x-size/2,p.y-size/2,size,size);c.strokeRect(p.x-size/2,p.y-size/2,size,size);}
      for(const object of frame.nodes){const p=project(object,frame);c.fillStyle=object.kind==='water'?'#577588':'#526f57';c.beginPath();c.arc(p.x,p.y,7*frame.camera.z,0,Math.PI*2);c.fill();}
      for(const object of frame.buildings){const p=project(object,frame);c.fillStyle='#aa9269';c.fillRect(p.x-size*.4,p.y-size*.4,size*.8,size*.8);}
+     for(const prop of frame.props){const p=project(prop,frame);c.fillStyle=prop.category==='building'?'#aa9269':'#d0b768';c.fillRect(p.x-size*.3,p.y-size*.3,size*.6,size*.6);c.fillStyle='#294336';c.font='12px sans-serif';c.textAlign='center';c.fillText(prop.name,p.x,p.y-size*.4);}
      const preview=record(frame.presentation.terraformPreview);
      if(Array.isArray(preview?.tiles))for(const value of preview.tiles as unknown[]){const tile=record(value);if(!tile||typeof tile.x!=='number'||typeof tile.y!=='number')continue;const p=project({x:tile.x,y:tile.y},frame);c.strokeStyle='#f4e4a9';c.lineWidth=3;c.strokeRect(p.x-size/2,p.y-size/2,size,size);}
      for(const actor of frame.actors.filter(actor=>!actor.away)){const p=project(actor,frame);c.fillStyle=actor.selected?'#f4e4a9':'#577588';c.beginPath();c.arc(p.x,p.y,10,0,Math.PI*2);c.fill();c.fillStyle='#294336';c.font='14px sans-serif';c.textAlign='center';c.fillText(actor.name,p.x,p.y-16);}

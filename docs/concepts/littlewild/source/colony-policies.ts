@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Read-only colony policies shared by the simulation and presentation.
  * These functions never issue commands, consume RNG, transfer goods or mutate an actor.
  * The owning engine provides definitions and actor context explicitly. */
@@ -9,6 +10,7 @@
     interface Storage { input: LWTaskPorts.Numbers; output: LWTaskPorts.Numbers; job?: { cost: LWTaskPorts.Numbers } | null; }
     interface Building extends LWTaskPorts.Place { storage?: Storage; }
     interface Host {
+        simulationProfile?: LWContentPorts.SimulationProfile | null | undefined;
         s: { colony: { warehouse: { inventory: LWTaskPorts.Numbers } }; buildings: Building[] };
         creatures: Actor[];
         has(id: string): boolean;
@@ -25,6 +27,7 @@
         LWPolicies?: typeof api;
     };
     const L = root.LW;
+    const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     const food = ['meals', 'bread', 'berries', 'meat'];
     function equipmentStatus(engine: Host, actor: Actor, id: string) {
         const gear = L.colony.definition(id);
@@ -56,7 +59,7 @@
     function questReadiness(engine: Host, actor: Actor, quest: LWTaskPorts.QuestDefinition) {
         const forecast = engine.questForecast(quest, actor);
         const equipment = actor.equipQueue.map(id => ({ id, ...equipmentStatus(engine, actor, id) }));
-        const energyNeeded = quest.energy + 15;
+        const energyNeeded = quest.energy + B.forEngine(engine).quest.energyReserve;
         return {
             forecast, equipment, energyNeeded,
             energyReady: actor.needs.energy >= energyNeeded,
@@ -110,12 +113,12 @@
         if (actor.activeQuest)
             return { kind: 'away', label: actor.activeQuest.status === 'returning' ? 'Returning home' : 'On a quest', panel: 'adventures' };
         const needs: [keyof LWTaskPorts.Needs, string][] = [['water', 'Thirsty'], ['food', 'Hungry'], ['energy', 'Needs rest']];
-        const urgent = needs.filter(([key]) => actor.needs[key]! < 25).sort((a, b) => actor.needs[a[0]]! - actor.needs[b[0]]!)[0];
+        const urgent = needs.filter(([key]) => actor.needs[key]! < B.forEngine(engine).policy.urgentNeed).sort((a, b) => actor.needs[a[0]]! - actor.needs[b[0]]!)[0];
         if (urgent)
             return { kind: 'need', label: urgent[1], panel: 'satchel' };
         if (actor.needsDeposit)
             return { kind: 'cargo', label: 'Bringing finds home', panel: 'satchel' };
-        if (actor.feelings.anger >= 30)
+        if (actor.feelings.anger >= B.forEngine(engine).policy.angerAttention)
             return { kind: 'mood', label: engine.mood(actor), panel: 'feelings' };
         if (actor.questPlan)
             return { kind: 'preparing', label: 'Preparing a quest', panel: 'adventures' };
@@ -135,7 +138,7 @@
         const carried = carriers.reduce((sum, c) => sum + c.quantity, 0);
         const workplaces=engine.s.buildings.filter(b=>(b.storage?.input[id]||0)+(b.storage?.output[id]||0)+(b.storage?.job?.cost[id]||0)>0).map(b=>({id:b.id,name:L.BUILDINGS[b.kind]!.name,input:b.storage!.input[id]||0,output:b.storage!.output[id]||0,reserved:b.storage!.job?.cost[id]||0}));
         const atWorkplaces=workplaces.reduce((n,b)=>n+b.input+b.output+b.reserved,0);
-        const price = Math.max(1, Math.floor(definition.price * .65));
+        const price = Math.max(1, Math.floor(definition.price * B.forEngine(engine).policy.sellFraction));
         return { id, name: definition.name, weight: definition.weight, stored, carried, carriers, workplaces, atWorkplaces, price, food: food.includes(id) || id === 'water' };
     }
     const api = { equipmentStatus, questReadiness, protectedInventory, attention, inventoryRow };

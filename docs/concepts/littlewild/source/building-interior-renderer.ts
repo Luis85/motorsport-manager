@@ -8,7 +8,7 @@
     interface Root {
         LWCanvasArt: LWCanvasPorts.Art;
         LWCanvasAssets?: {
-            draw(c:CanvasRenderingContext2D,category:'building',id:string,x:number,y:number,tw:number,th:number,options:{model:string}):boolean;
+            draw(c:CanvasRenderingContext2D,category:'building'|'item',id:string,x:number,y:number,tw:number,th:number,options:{model:string}):boolean;
             actor(c: CanvasRenderingContext2D, actor: { archetype?: string }, x: number, y: number, tw: number, th: number): boolean;
         };
         LWBuildingInteriorRenderer?: { create(canvas: HTMLCanvasElement): LWInterior.Renderer };
@@ -186,6 +186,7 @@
             const entryStation = floor.stations.some(station => station.x === floor.door.x && station.y === floor.door.y);
             entry(c, floor.door, entryStation ? '' : floor.id === snapshot.floors[0]?.id ? 'Door to outside' : 'Landing');
             for (const stairs of floor.stairs) staircase(c, stairs);
+            for(const prop of snapshot.sceneProps?.floorId===floorId?snapshot.sceneProps.props:[]){const point=project(prop.x,prop.y);root.LWCanvasAssets?.draw(c,prop.category,prop.assetId,point.x,point.y,tileWidth,tileHeight,{model:prop.model});}
             const objects: ({ depth: number; station: LWInterior.Station } | { depth: number; actor: LWInterior.ActorView })[] = [
                 ...floor.stations.map(station => ({ depth: station.x + station.y, station })),
                 ...actors.map(actor => ({ depth: actor.x + actor.y + .01, actor }))

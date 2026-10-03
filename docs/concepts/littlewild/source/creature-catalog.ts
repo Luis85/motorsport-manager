@@ -42,8 +42,10 @@
 
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
- const source:unknown=root.LWCreatureDefinitions??(node?require('./creature-definitions.json'):undefined);
- const configSource:unknown=root.LWCreatureConfig??(node?require('./creature-config.json'):undefined);
+ const authored:Api['defaults']={configuration:(root.LWCreatureConfig??(node?require('./creature-config.json'):undefined)) as Api['configuration'],definitions:(root.LWCreatureDefinitions??(node?require('./creature-definitions.json'):undefined)) as Definition[]};
+ const balancer=(node?require('./creature-balancing.js'):(globalThis as unknown as {LWCreatureBalancing:unknown}).LWCreatureBalancing) as {merge(base:Api['defaults'],overlay:unknown):Api['defaults']};
+ const overlay=node?require('./content/balancing.json').creatures:(globalThis as unknown as {LWDefaultBalancing:{creatures:unknown}}).LWDefaultBalancing.creatures;
+ const balanced=balancer.merge(authored,overlay),source:unknown=balanced.definitions,configSource:unknown=balanced.configuration;
  const safeId=/^[a-z][a-z0-9_-]{0,60}$/;
  const safeField=/^[A-Za-z][A-Za-z0-9_]{0,60}$/;
  const safeComponent=/^[A-Z][A-Za-z0-9]{0,60}$/;

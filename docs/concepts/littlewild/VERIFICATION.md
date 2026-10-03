@@ -1,10 +1,12 @@
 # Littlewild verification
 
-Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run verify`. The full gate includes strict TypeScript, architecture, compilation, deterministic domain/CLI/release tests and two browser suites. `--no-browser` creates partial evidence only.
+Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run verify`. The full gate includes strict TypeScript, architecture, compilation, deterministic domain/CLI/release tests and all registered browser suites. `--no-browser` creates partial evidence only.
 
-## Current local evidence
+The expanded source is undergoing its final combined gate. The earlier counts below are retained as historical checkpoints and do not certify the newly added editors, storytelling, renderers, animation, balancing or engine export.
 
-Complete gate: **915/915 checks across 32 suites**, completed `2026-10-03T10:15:23.783Z`.
+## Historical local evidence before the authoring expansion
+
+Historical complete gate: **915/915 checks across 32 suites**, completed `2026-10-03T10:15:23.783Z`.
 
 - Authored input SHA-256: `8413d557b50496c2c3397d0e42723ff708aa517ff714e67a32d9aa5decb073ba`
 - Standalone SHA-256: `b8535879a86ada692dbc57a398c0dd4e115014394d78c84f15b2fd8e4da4dccf`
@@ -52,14 +54,14 @@ Complete gate: **915/915 checks across 32 suites**, completed `2026-10-03T10:15:
 
 The gate clears previous suite results, requires explicit unique successful checks, bounds child processes, preserves failure logs, and rejects source/artifact changes during verification. All browser pages are monitored for warnings, errors, uncaught exceptions and network requests. Tests run against the rebuilt standalone under its production CSP. Historical result counts and milestone hashes are historical evidence only.
 
-## Independent review and developer acceptance
+## Historical independent review and developer acceptance
 
 Independent review of committed source `c93a91d68b67dda94fd2764b52914942e6d80500` found no remaining actionable blockers after fixes. The complete gate ran from a clean git archive of that commit. Supplementary actual shipping-browser SDK checks passed **3/3**: discovery, asset validation and host activation rejection preserve registry and engine state, with clean page/console/network diagnostics. SDK Node/browser-global integration and positive/negative TypeScript consumers are included in the registered gate.
 
 ## Additional repository checks
 
-Native Python tooling regressions: **106/106**. Native architecture scan: **190 scripts**, no violations. A complete local registered Godot run is additionally in progress against immutable checkpoint `0a82de68d0505542f524033cd087c03d5b843fcc`; its final result is recorded separately when complete. Native gameplay source has not changed since that checkpoint. PR CI verifies the pushed head. Shared official actions are pinned to supported immutable versions.
+Merged-main native Python tooling tests completed **292 tests**, with one expected Windows Job Object skip on Linux. Native architecture scanning covered **447 scripts**, with zero violations. Advisory quality scanned **667 files** across five tools and reported zero findings. The complete registered six-shard native gate is running in a clean archive of `e3d184d` plus the browser application `.gdignore` boundary; its identity and final result are recorded separately. PR CI must verify the newly pushed head. Shared official actions remain pinned to supported immutable versions.
 
 ## Limits
 
-Headless Chromium does not establish hardware GPU performance, physical touch interaction, Firefox/Safari compatibility, screen-reader conformance, localization, human comprehension or balance. The native repository advisory report contains pre-existing findings outside Littlewild; policy and findings remain visible. See `QUALITY-AUDIT.md` for the fix inventory and typing/compatibility boundaries.
+Headless Chromium does not establish hardware GPU performance, physical touch interaction, Firefox/Safari compatibility, screen-reader conformance, localization, human comprehension or balance. The current merged-main native advisory report has zero findings; historical reports remain available. See `QUALITY-AUDIT.md` for the fix inventory and typing/compatibility boundaries.

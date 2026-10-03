@@ -1,4 +1,4 @@
-> **v15 integration note:** This retained reference describes the four existing content libraries. For schema-2 worlds/scenes, versioned simulation profiles, envelope 10 and explicit envelope-9 migration, read `CONFIGURATION.md`. Native state and ordinary legacy stories remain version 8.
+> **Current integration note:** This retained reference describes the four content libraries and their introduction. For schema-2 worlds/scenes, complete scenario resource catalogs and envelope 10, read `CONFIGURATION.md`. Obsolete envelope-9 stories are rejected; native state and ordinary compatible stories remain version 8. Historical bundled-only asset statements below describe the earlier release, not current pack portability.
 
 > V14 compatibility note: these mechanics, content formats and pause rules are retained unchanged. See README.md, CHANGELOG.md and VERIFICATION.md for the current presentation changes and release evidence.
 

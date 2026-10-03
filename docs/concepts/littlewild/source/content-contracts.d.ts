@@ -1,3 +1,7 @@
+/// <reference path="./balancing-contracts.d.ts" />
+/// <reference path="./storytelling-data-contracts.d.ts" />
+/// <reference path="./scene-graph-contracts.d.ts" />
+/// <reference path="./canvas-authoring-contracts.d.ts" />
 /** Data and ports at the four authored-content boundaries. JSON stays unknown until validation. */
 declare namespace LWContentPorts {
  type Json = null | boolean | number | string | Json[] | { [key:string]:Json };
@@ -78,16 +82,16 @@ declare namespace LWContentPorts {
  interface Environment {camera?:{center:[number,number];zoom:number};mode:'indoor';background:string;floor:string;alternateFloor:string;wall:string;trim:string;}
  interface Resources {assets:unknown[];creatures:{configuration:unknown;definitions:unknown[]};}
  interface WorldProfile {nodePolicy?:'profile-only';environment?:Environment;id:string;name:string;description:string;terrain:string[];biomeNames:Record<string,string>;resourceCounts:QuantityMap;fixedSites:{kind:string;x:number;y:number}[];groundColors:Record<string,string[]>;materialColors:Record<string,string>;placementPolicy:string;}
- interface SimulationProfile {format:string;schemaVersion:number;id:string;version:number;name:string;description:string;rules:{actor:unknown;economy:unknown};archetype:{id:string;version:number;engineLayers:string[];simulationPipeline:string[];actorDynamics:string[];actorActivity:string[];worldTransactions:string[];economyTransactions:string[]};}
+ interface SimulationProfile {format:string;schemaVersion:number;id:string;version:number;name:string;description:string;rules:{actor:unknown;economy:unknown;gameplay?:LWBalanceRules.Rules|undefined};archetype:{id:string;version:number;engineLayers:string[];simulationPipeline:string[];actorDynamics:string[];actorActivity:string[];worldTransactions:string[];economyTransactions:string[]};}
  interface Libraries {base:Library;adventure:Adventure;world:World;growth:Growth;}
  interface Presentation {title:string;tagline:string;worldSubtitle:string;accent:string;paper:string;ink:string;}
  interface Tutorial {id:string;title:string;body:string;action:string;}
- interface Scene {id:string;name:string;description:string;worldId:string;initialState:Record<string,unknown>;}
- interface ScenarioPack {format:'living-worlds-pack';schemaVersion:2;id:string;version:string;name:string;description:string;resources?:Resources;presentation:Presentation;simulation:SimulationProfile;worlds:WorldProfile[];scenes:Scene[];tutorial:Tutorial[];libraries:Libraries;}
- interface ExperienceContext {resources?:Resources;schemaVersion:2;packId:string;name:string;version:string;sceneId:string;sceneName:string;worldId:string;presentation:Presentation;simulation:SimulationProfile;world:WorldProfile;tutorial:Tutorial[];}
+ interface Scene {graph?:LWSceneGraph.Metadata;id:string;name:string;description:string;worldId:string;initialState:Record<string,unknown>;}
+ interface ScenarioPack {storytelling?:LWStorytelling.Data;canvasAuthoring?:LWCanvasAuthoring.Authoring;format:'living-worlds-pack';schemaVersion:2;id:string;version:string;name:string;description:string;resources?:Resources;presentation:Presentation;simulation:SimulationProfile;worlds:WorldProfile[];scenes:Scene[];tutorial:Tutorial[];libraries:Libraries;}
+ interface ExperienceContext {journey?:LWSceneGraph.Journey;resources?:Resources;schemaVersion:2;packId:string;name:string;version:string;sceneId:string;sceneName:string;worldId:string;presentation:Presentation;simulation:SimulationProfile;world:WorldProfile;tutorial:Tutorial[];}
  interface ScenarioEngine {scenarioContext?:ExperienceContext;simulationProfile?:SimulationProfile;export():{state:Record<string,unknown>};s?:{scenarioResources?:Resources};}
  type PackValidation={ok:true;errors:string[];pack:ScenarioPack;fingerprint:string;sceneCount:number}|{ok:false;errors:string[]};
- interface ScenePreview {ok:true;errors:string[];pack:ScenarioPack;fingerprint:string;sceneCount:number;sceneId:string;engine:ScenarioEngine;context:ExperienceContext;}
- interface ScenarioApi {validate(input:unknown):PackValidation;prepareScene(pack:unknown,id:string):ScenePreview;commitScene(preview:ScenePreview):ScenarioEngine;activate(engine:ScenarioEngine):void;capture(engine:ScenarioEngine):ScenarioPack;checkContext(input:unknown):ExperienceContext;checkWorld(world:WorldProfile,library:World):void;hash(value:unknown):string;withLibraries<T>(libraries:Libraries,work:()=>T):T;withRuntime<T>(libraries:Libraries,simulation:SimulationProfile,work:()=>T):T;transaction<T>(work:()=>T):T;readonly schema:Schema;builtins():ScenarioPack[];defaultTutorial():Tutorial[];defaultPresentation():Presentation;defaultSimulation():SimulationProfile;}
+ interface ScenePreview {messages:string[];ok:true;errors:string[];pack:ScenarioPack;fingerprint:string;sceneCount:number;sceneId:string;engine:ScenarioEngine;context:ExperienceContext;}
+ interface ScenarioApi {validate(input:unknown):PackValidation;prepareScene(pack:unknown,id:string,entryState?:Record<string,unknown>,connectionEvents?:LWSceneGraph.Event[]):ScenePreview;commitScene(preview:ScenePreview):ScenarioEngine;activate(engine:ScenarioEngine):void;capture(engine:ScenarioEngine):ScenarioPack;checkContext(input:unknown):ExperienceContext;checkWorld(world:WorldProfile,library:World):void;hash(value:unknown):string;withLibraries<T>(libraries:Libraries,work:()=>T):T;withRuntime<T>(libraries:Libraries,simulation:SimulationProfile,work:()=>T):T;transaction<T>(work:()=>T):T;readonly schema:Schema;builtins():ScenarioPack[];defaultTutorial():Tutorial[];defaultPresentation():Presentation;defaultSimulation():SimulationProfile;}
 
 }

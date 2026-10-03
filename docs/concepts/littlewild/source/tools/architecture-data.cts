@@ -1,11 +1,12 @@
 /** Compiled validator capabilities and plain-data ownership checks, shared by policy/tests. */
 export const validatorRoles=Object.freeze({
+ balancing:'balancing-tools.ts:validate',balancingInventory:'balancing-inventory.ts:validate',
  base:'content-runtime.ts:Registry.prepare',adventure:'adventure-content.ts:validate',world:'world-content.ts:validate',
  growth:'growth-content.ts:validate',scenario:'scenario-runtime.ts:validate',simulation:'simulation-profile.ts:validate',
  actorRules:'actor-ecs.ts:validateRules',economyRules:'economy-ecs.ts:validateRules',
  geography:'scenario-runtime.ts:checkWorld',assets:'asset-catalog.ts:validate',creatures:'creature-catalog.ts:validate',
  creatureCatalog:'creature-catalog.ts:prepare',interactions:'interaction-catalog.ts:validate',
- interiors:'building-interior-catalog.ts:validate',schema:'verification/schema-checks.ts:makeValidator'
+ creatureEditorFields:'creature-editor-fields.ts:validate',interiors:'building-interior-catalog.ts:validate',schema:'verification/schema-checks.ts:makeValidator'
 });
 export interface DataOwner {id:string;pattern:string;owner:string;kind:'definitions'|'rules'|'scenario'|'schema';validatorRole:keyof typeof validatorRoles;embeddedGlobal?:string;}
 export interface DataManifest {format:string;schemaVersion:number;entries:DataOwner[];historicalFixtures:{path:string;reason:string}[];}

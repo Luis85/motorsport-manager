@@ -1,0 +1,1710 @@
+{
+  "format": "littlewild-balancing-inventory",
+  "schemaVersion": 1,
+  "tuners": [
+    {
+      "path": "/simulation/rules/gameplay/autonomy/comfortComfort",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.comfortComfort",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/comfortEnergy",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.comfortEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/comfortNeed",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.comfortNeed",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/coolAnger",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.coolAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/coolDuration",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.coolDuration",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/cozyBonus",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.cozyBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/socialCooldown",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.socialCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/socialDuration",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.socialDuration",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/socialEnergy",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.socialEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/socialFood",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.socialFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/socialWater",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.socialWater",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/urgentEnergy",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.urgentEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/autonomy/urgentNeed",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).autonomy.urgentNeed",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/energyReserve",
+      "source": "colony-activity.ts",
+      "consumer": "B.forEngine(this).quest.energyReserve",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/abortedActorXp",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.abortedActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/actorXp",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.actorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/energyReserve",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.energyReserve",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/foodRate",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.foodRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/guaranteedAfterMisses",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.guaranteedAfterMisses",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/loadTimeFactor",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.loadTimeFactor",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/partialActorXp",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.partialActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/playerXp",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.playerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/requiredFraction",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.requiredFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/travelCap",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.travelCap",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/waterRate",
+      "source": "colony-adventures.ts",
+      "consumer": "B.forEngine(this).quest.waterRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/policy/sellFraction",
+      "source": "colony-logistics.ts",
+      "consumer": "B.forEngine(this).policy.sellFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/policy/angerAttention",
+      "source": "colony-policies.ts",
+      "consumer": "B.forEngine(engine).policy.angerAttention",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/policy/sellFraction",
+      "source": "colony-policies.ts",
+      "consumer": "B.forEngine(engine).policy.sellFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/policy/urgentNeed",
+      "source": "colony-policies.ts",
+      "consumer": "B.forEngine(engine).policy.urgentNeed",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/energyReserve",
+      "source": "colony-policies.ts",
+      "consumer": "B.forEngine(engine).quest.energyReserve",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/affinityFailure",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.affinityFailure",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/affinityGate",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.affinityGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/affinitySuccess",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.affinitySuccess",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/breakthroughAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.breakthroughAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/breakthroughJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.breakthroughJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/buildDifficulty",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.buildDifficulty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/buildRetryFraction",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.buildRetryFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/criticalSetbackAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.criticalSetbackAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/defaultDifficulty",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.defaultDifficulty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/gatherDifficulty",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.gatherDifficulty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/gearActorXp",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.gearActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/gearPlayerXp",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.gearPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/practiceDifficulty",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.practiceDifficulty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/quietAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.quietAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/quietJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.quietJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/restAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.restAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/setbackActorXp",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.setbackActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/setbackAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.setbackAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/setbackJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.setbackJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/socialFailureAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.socialFailureAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/socialFailureJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.socialFailureJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/socialSuccessAnger",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.socialSuccessAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/socialSuccessJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.socialSuccessJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/sourceSocial",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.sourceSocial",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/targetJoy",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.targetJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/targetSocial",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.targetSocial",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/trainDifficulty",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.trainDifficulty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/trainingRetryFraction",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.trainingRetryFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/trustFailure",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.trustFailure",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/task/trustSuccess",
+      "source": "colony-task-completion.ts",
+      "consumer": "B.forEngine(this).task.trustSuccess",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/careAnger",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.careAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/careJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.careJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/sootheAnger",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.sootheAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/sootheBond",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.sootheBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/sootheJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.sootheJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/soothingCooldown",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.soothingCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/spaceAnger",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.spaceAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/spaceCooling",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.spaceCooling",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/spaceJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).care.spaceJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/angerGate",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.angerGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/angerPenalty",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.angerPenalty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/frustratedGate",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.frustratedGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/frustratedPenalty",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.frustratedPenalty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/lowEnergy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.lowEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/lowPenalty",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.lowPenalty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/needGate",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.needGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/needPenalty",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.needPenalty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/tiredEnergy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.tiredEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/modifiers/tiredPenalty",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).modifiers.tiredPenalty",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/contentJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.contentJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/delightedBond",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.delightedBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/delightedJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.delightedJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/needGate",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.needGate",
+      "occurrences": 3
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/sadJoy",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.sadJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/socialLow",
+      "source": "colony.ts",
+      "consumer": "B.forEngine(this).mood.socialLow",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/cellSeconds",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.cellSeconds",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/doorPlanks",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.doorPlanks",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/edgeSeconds",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.edgeSeconds",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/finishFraction",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.finishFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/foundationFraction",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.foundationFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/improvementWood",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.improvementWood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/stairPlanks",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.stairPlanks",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/stationFiberDivisor",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.stationFiberDivisor",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/stoneCellDivisor",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.stoneCellDivisor",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/structureFraction",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.structureFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/wallWood",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.wallWood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/windowGlass",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.windowGlass",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/woodCellDivisor",
+      "source": "construction-designs.ts",
+      "consumer": "B.forEngine(engine).construction.woodCellDivisor",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/bondCooldown",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.bondCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/bondEnergyGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.bondEnergyGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/bondFoodGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.bondFoodGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/bondJoy",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.bondJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/bondWaterGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.bondWaterGate",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/feedBerry",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.feedBerry",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/feedBond",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.feedBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/feedCooldown",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.feedCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/feedJoy",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.feedJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/feedMeal",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.feedMeal",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/freshBondCount",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.freshBondCount",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/fullGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.fullGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/praiseAge",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.praiseAge",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/praiseBond",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.praiseBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/praiseCooldown",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.praiseCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/praiseJoy",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.praiseJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/waterAmount",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.waterAmount",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/waterBond",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.waterBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/waterCooldown",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.waterCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/care/waterFullGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).care.waterFullGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/comfortLow",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.comfortLow",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/contentEnergy",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.contentEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/contentFood",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.contentFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/contentWater",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.contentWater",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/friendFour",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.friendFour",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/friendOne",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.friendOne",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/friendThree",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.friendThree",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/friendTwo",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.friendTwo",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/joyLow",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.joyLow",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/lovedBond",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.lovedBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/lovedJoy",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.lovedJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/mood/needGate",
+      "source": "engine-companion.ts",
+      "consumer": "B.forEngine(this).mood.needGate",
+      "occurrences": 3
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/berryFood",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.berryFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.buildActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildBond",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.buildBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildJoy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.buildJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildPlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.buildPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/cottageEnergy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.cottageEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/craftActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.craftActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/craftPlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.craftPlayerXp",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/deliverActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.deliverActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/deliverPlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.deliverPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/drinkWater",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.drinkWater",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/exploreActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.exploreActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/exploreCooldown",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.exploreCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/exploreGuideCoins",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.exploreGuideCoins",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/explorePlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.explorePlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/explorePocketCoins",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.explorePocketCoins",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/exploreResearch",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.exploreResearch",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/gatherActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.gatherActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/gatherPlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.gatherPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/gatherResearchEvery",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.gatherResearchEvery",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/huntActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.huntActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/huntEnergy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.huntEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/mealFood",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.mealFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/meatFood",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.meatFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/outsideComfort",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.outsideComfort",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/outsideEnergy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.outsideEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/playEnergy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.playEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/playJoy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.playJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/researchCooldown",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.researchCooldown",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/shelterComfort",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.shelterComfort",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/shelterEnergy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.shelterEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/shopActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.shopActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainActorXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.trainActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainBond",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.trainBond",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainJoy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.trainJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainPlayerXp",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.trainPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/warmComfort",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.warmComfort",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/warmJoy",
+      "source": "engine-task-completion.ts",
+      "consumer": "B.forEngine(this).completion.warmJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/clock/hourRate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).clock.hourRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/bondGate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.bondGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/bondSpeedBonus",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.bondSpeedBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/cottageComfortRate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.cottageComfortRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/energyIdle",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.energyIdle",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/energyWork",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.energyWork",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/foodIdle",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.foodIdle",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/foodWork",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.foodWork",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/joyRate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.joyRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/outsideComfortRate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.outsideComfortRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/shelterComfortRate",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.shelterComfortRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/speed",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.speed",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/urgentEnergy",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.urgentEnergy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/urgentNeed",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.urgentNeed",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/waterIdle",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.waterIdle",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/legacy/waterWork",
+      "source": "engine.ts",
+      "consumer": "B.forEngine(this).legacy.waterWork",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/clock/hourRate",
+      "source": "simulation-pipeline.ts",
+      "consumer": "B.forEngine(engine).clock.hourRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildActorXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.buildActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildBond",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.buildBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildJoy",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.buildJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildPlayerXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.buildPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/buildResearch",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.buildResearch",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/cropActorXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.cropActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/cropPlayerXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.cropPlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/practiceActorXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.practiceActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/practicePlayerXp",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.practicePlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainBond",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.trainBond",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/trainJoy",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).completion.trainJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropGatherAmount",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).production.cropGatherAmount",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropInitialStock",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).production.cropInitialStock",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/gathererBonus",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).production.gathererBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/balmComfort",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.balmComfort",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/balmJoy",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.balmJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/breadFood",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.breadFood",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/breadJoy",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.breadJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/comfortSpecialist",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.comfortSpecialist",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/homePerLevel",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.homePerLevel",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/reflectFatigue",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.reflectFatigue",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/reflectJoy",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).recovery.reflectJoy",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/explorerResearch",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.explorerResearch",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/fatigueResumeGate",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.fatigueResumeGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/firstPracticeResearch",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.firstPracticeResearch",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/freshPracticePoints",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.freshPracticePoints",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/mentorPracticePoints",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.mentorPracticePoints",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/observatoryResearch",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.observatoryResearch",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/practiceFreshCount",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.practiceFreshCount",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/repeatedPracticePoints",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.repeatedPracticePoints",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/thinkerResearch",
+      "source": "systems-completions.ts",
+      "consumer": "B.forEngine(engine).work.thinkerResearch",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropLevelRate",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).production.cropLevelRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/marketPerLevel",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).production.marketPerLevel",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/recovery/homePerLevel",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).recovery.homePerLevel",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/baseRateCap",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.baseRateCap",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/circleBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.circleBonus",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/circlePerLevel",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.circlePerLevel",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/comfortLearningBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.comfortLearningBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/comfortableGate",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.comfortableGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/efficientBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.efficientBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/explorerBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.explorerBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/globalPerLevel",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.globalPerLevel",
+      "occurrences": 4
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/makerBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.makerBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/maximumRate",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.maximumRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/mentorLearningBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.mentorLearningBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/observatoryLearningBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.observatoryLearningBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/practiceCircleBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.practiceCircleBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/qualityBaseline",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.qualityBaseline",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/qualityDivisor",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.qualityDivisor",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/stationCap",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.stationCap",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/stationPerLevel",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.stationPerLevel",
+      "occurrences": 4
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/stewardBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.stewardBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/storehouseBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.storehouseBonus",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/supportRadius",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.supportRadius",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/waterwheelBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.waterwheelBonus",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/workshopBonus",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.workshopBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/workshopRadius",
+      "source": "systems-work-rates.ts",
+      "consumer": "B.forEngine(engine).work.workshopRadius",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/beautifulQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.beautifulQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/builderQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.builderQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/comfortableQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.comfortableQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/dependableQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.dependableQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/finishFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.finishFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/finisherQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.finisherQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/foundationFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.foundationFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/minimumQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.minimumQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/qualityBase",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.qualityBase",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/qualityPerRank",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.qualityPerRank",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/refundCompletedFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.refundCompletedFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/structureFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.structureFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/upgradeLevelThreeFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.upgradeLevelThreeFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/upgradeLevelTwoFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.upgradeLevelTwoFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/upgradeTimeFraction",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.upgradeTimeFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/construction/wellMadeQuality",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).construction.wellMadeQuality",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropLevelRate",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.cropLevelRate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropSeconds",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.cropSeconds",
+      "occurrences": 2
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropStockCap",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.cropStockCap",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/cropYield",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.cropYield",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/greenhouseBonus",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.greenhouseBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/marketPerLevel",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.marketPerLevel",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/merchantBonus",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.merchantBonus",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/orchardYield",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).production.orchardYield",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/comfortableGate",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.comfortableGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/fatigueRecoverGate",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.fatigueRecoverGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/fatigueResumeGate",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.fatigueResumeGate",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/idleFatigue",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.idleFatigue",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/independentFatigue",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.independentFatigue",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/playfulFatigue",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.playfulFatigue",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/work/togetherFatigue",
+      "source": "systems.ts",
+      "consumer": "B.forEngine(this).work.togetherFatigue",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/saleActorXp",
+      "source": "village-systems.ts",
+      "consumer": "B.forEngine(this).completion.saleActorXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/completion/salePlayerXp",
+      "source": "village-systems.ts",
+      "consumer": "B.forEngine(this).completion.salePlayerXp",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/policy/sellFraction",
+      "source": "village-systems.ts",
+      "consumer": "B.forEngine(this).policy.sellFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/recallAnger",
+      "source": "village-systems.ts",
+      "consumer": "B.forEngine(this).quest.recallAnger",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/quest/recallJoy",
+      "source": "village-systems.ts",
+      "consumer": "B.forEngine(this).quest.recallJoy",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/collectFraction",
+      "source": "world-simulation.ts",
+      "consumer": "B.forEngine(this).production.collectFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/retryFraction",
+      "source": "world-simulation.ts",
+      "consumer": "B.forEngine(this).production.retryFraction",
+      "occurrences": 1
+    },
+    {
+      "path": "/simulation/rules/gameplay/production/transferSeconds",
+      "source": "world-simulation.ts",
+      "consumer": "B.forEngine(this).production.transferSeconds",
+      "occurrences": 1
+    }
+  ],
+  "invariants": [
+    {
+      "source": "rpg.ts",
+      "reason": "GURPS 3d6 distribution, critical thresholds and dice arithmetic are the compiled mathematical rules."
+    },
+    {
+      "source": "colony-task-completion.ts",
+      "reason": "1000 grams per kg, clamping normalized needs/relationships, finite history bounds and physical reach guards are representation/algorithm contracts."
+    },
+    {
+      "source": "terraform-runtime.ts",
+      "reason": "Terrain coordinates, revision/sequence caps and topology guards are save and bounded algorithm contracts; plants use World node authored yield."
+    },
+    {
+      "source": "planner.ts",
+      "reason": "History ceilings and deterministic ordering are bounded algorithm contracts; plan costs/durations use authored libraries."
+    }
+  ]
+}

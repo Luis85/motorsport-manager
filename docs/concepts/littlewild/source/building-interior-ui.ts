@@ -2,7 +2,7 @@
 /* Player visits are presentation state. Creature visits and orders emit compiled domain commands. */
 (function(inputRoot:unknown){
  'use strict';
- interface World {camera:{x:number;y:number;z:number};manual:boolean;canvas:HTMLCanvasElement;invalidate():void;setInteriorView?(id:string|null,floorId?:string,surface?:{x:number;y:number;width:number;height:number}):void;rendererId?:string;capabilities?:string[];}
+ interface World {camera:{x:number;y:number;z:number};manual:boolean;canvas:HTMLCanvasElement;invalidate():void;setInteriorView?(id:string|null,floorId?:string,surface?:{x:number;y:number;width:number;height:number}):void;rendererId?:string;hasDetachedPresentation?:boolean;capabilities?:string[];}
  interface Host {engine():LWInterior.Engine;world():World;esc(value:unknown):string;save():void;refresh():void;closeContexts():void;}
  const root=inputRoot as {LWBuildingInteriorProjector:{snapshot(e:LWInterior.Engine,id:string):LWInterior.Snapshot|null};LWBuildingInteriorRenderer:{create(canvas:HTMLCanvasElement):LWInterior.Renderer};LWBuildingInteriorUI?:unknown;LWConstructionEditor?:{open(id:string):boolean}};
  function create(h:Host){
@@ -21,7 +21,7 @@
   }
   function update():void{
    if(!state.buildingId)return;if(state.source!==h.engine()){close(false);return;}const snapshot=root.LWBuildingInteriorProjector.snapshot(h.engine(),state.buildingId);if(!snapshot){close();return;}
-   const custom=h.world().rendererId!=='basic'&&!!h.world().capabilities?.includes('interiors');panel.classList.toggle('custom-interior-renderer',custom);h.world().canvas.inert=true;
+   const custom=(h.world().rendererId!=='basic'||h.world().hasDetachedPresentation===true)&&!!h.world().capabilities?.includes('interiors');panel.classList.toggle('custom-interior-renderer',custom);h.world().canvas.inert=true;
    const roomBounds=panel.querySelector<HTMLElement>('.building-interior-stage')!.getBoundingClientRect(),mapBounds=h.world().canvas.getBoundingClientRect(),scaleX=h.world().canvas.width/mapBounds.width,scaleY=h.world().canvas.height/mapBounds.height;if(mapBounds.width&&mapBounds.height)h.world().setInteriorView?.(state.buildingId,state.floorId,{x:(roomBounds.x-mapBounds.x)*scaleX,y:(roomBounds.y-mapBounds.y)*scaleY,width:roomBounds.width*scaleX,height:roomBounds.height*scaleY});
    title.textContent=snapshot.buildingName;const floor=snapshot.floors.find(f=>f.id===state.floorId)||snapshot.floors[0]!;state.floorId=floor.id;
    const focusedFloor=(document.activeElement as HTMLElement)?.dataset.floor;const floorMarkup=snapshot.floors.map(f=>`<button type="button" data-interior="floor" data-floor="${e(f.id)}" aria-pressed="${f.id===state.floorId}">${e(f.label)} <span>${snapshot.actors.filter(a=>a.floorId===f.id).length} inside</span></button>`).join('');if(floors.innerHTML!==floorMarkup){floors.innerHTML=floorMarkup;if(focusedFloor)floors.querySelector<HTMLButtonElement>('[data-floor="'+focusedFloor+'"]')?.focus({preventScroll:true});}

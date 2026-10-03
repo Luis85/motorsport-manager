@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /// <reference path="./legacy-task-contracts.d.ts" />
 /* Actor decisions, social task pairing and ECS activity orchestration. */
 (function (inputRoot: unknown) {
@@ -36,6 +37,7 @@
         LWColonyActivity?: Api;
     }
     const root = inputRoot as Root;
+    const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     function install(target: object, predecessor: object, dependencies: LWTaskPorts.ColonyDependencies): void {
         const { RES, SKILLS, STYLES } = root.LW!;
         const A = root.LWAdventure, R = root.LWRPG;
@@ -57,20 +59,20 @@
             },
             socialTask() {
                 const c = this.actor;
-                let others = this.creatures.filter(o => o !== c && !o.activeQuest && !o.task && o.needs.food > 30 && o.needs.water > 30 && o.needs.energy > 25 && this.s.simTime - o.feelings.lastSocial > 50);
+                let others = this.creatures.filter(o => o !== c && !o.activeQuest && !o.task && o.needs.food > B.forEngine(this).autonomy.socialFood && o.needs.water > B.forEngine(this).autonomy.socialWater && o.needs.energy > B.forEngine(this).autonomy.socialEnergy && this.s.simTime - o.feelings.lastSocial > B.forEngine(this).autonomy.socialCooldown);
                 if (c.socialIntent)
                     others = others.filter(o => o.id === c.socialIntent);
                 const other = others.sort((a, b) => this.relationship(c.id, b.id).affinity - this.relationship(c.id, a.id).affinity)[0]!;
                 if (!other)
                     return null;
-                return { kind: 'social', otherId: other.id, target: { x: Math.round(other.creature.x), y: Math.round(other.creature.y) }, duration: 6, label: 'Spending time with ' + other.name, reason: 'We can get to know each other without our guide directing every step.', thought: 'There is room for another friend.' };
+                return { kind: 'social', otherId: other.id, target: { x: Math.round(other.creature.x), y: Math.round(other.creature.y) }, duration: B.forEngine(this).autonomy.socialDuration, label: 'Spending time with ' + other.name, reason: 'We can get to know each other without our guide directing every step.', thought: 'There is room for another friend.' };
             },
             handlers() {
                 const start = (t: LWTaskPorts.Draft | null): string => t && this.startTask(t) ? 'running' : 'failure';
                 return {
                     essential: () => {
                         const n = this.s.needs;
-                        for (const k of ['water', 'food', 'energy'].filter(k => n[k]! < (k === 'energy' ? 15 : 20)).sort((a, b) => n[a]! - n[b]!)) {
+                        for (const k of ['water', 'food', 'energy'].filter(k => n[k]! < (k === 'energy' ? B.forEngine(this).autonomy.urgentEnergy : B.forEngine(this).autonomy.urgentNeed)).sort((a, b) => n[a]! - n[b]!)) {
                             const r = start(this.needTask(k));
                             if (r !== 'failure')
                                 return r;
@@ -80,13 +82,13 @@
                     homecoming: () => this.actor.needsDeposit ? start(this.depositTask('Bringing expedition finds home')) : 'failure',
                     overburdened: () => this.load().level >= 2 ? start(this.depositTask('Lightening a heavy satchel')) : 'failure',
                     feelings: () => {
-                        if (this.actor.feelings.coolingUntil > this.s.simTime || this.actor.feelings.anger >= 60)
-                            return start({ kind: 'calmdown', target: { x: 8, y: 10 }, duration: 9, label: 'Taking a little breathing space', reason: 'My temper is running high. A quiet pause helps me settle.', thought: 'A little space. Then I can try again.' });
+                        if (this.actor.feelings.coolingUntil > this.s.simTime || this.actor.feelings.anger >= B.forEngine(this).autonomy.coolAnger)
+                            return start({ kind: 'calmdown', target: { x: 8, y: 10 }, duration: B.forEngine(this).autonomy.coolDuration, label: 'Taking a little breathing space', reason: 'My temper is running high. A quiet pause helps me settle.', thought: 'A little space. Then I can try again.' });
                         return 'failure';
                     },
                     comfort: () => {
                         const n = this.s.needs;
-                        for (const k of Object.keys(n).filter(k => n[k]! < (k === 'energy' ? 28 : k === 'comfort' ? 26 : 35) + (this.s.focus === 'cozy' ? 12 : 0)).sort((a, b) => n[a]! - n[b]!)) {
+                        for (const k of Object.keys(n).filter(k => n[k]! < (k === 'energy' ? B.forEngine(this).autonomy.comfortEnergy : k === 'comfort' ? B.forEngine(this).autonomy.comfortComfort : B.forEngine(this).autonomy.comfortNeed) + (this.s.focus === 'cozy' ? B.forEngine(this).autonomy.cozyBonus : 0)).sort((a, b) => n[a]! - n[b]!)) {
                             const r = start(this.needTask(k));
                             if (r !== 'failure')
                                 return r;
@@ -113,7 +115,7 @@
                         for (const [r, n] of Object.entries(q.cost))
                             if ((this.s.inventory[r]! || 0) < n)
                                 return start(this.resourceTask(r, null, false, n));
-                        if (this.s.needs.energy < q.energy + 15)
+                        if (this.s.needs.energy < q.energy + B.forEngine(this).quest.energyReserve)
                             return start(this.needTask('energy'));
                         if (this.depart())
                             return 'running';

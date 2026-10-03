@@ -3,6 +3,8 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LW:{BUILDINGS:Record<string,{cost:Record<string,number>;time:number}>;RES:Record<string,unknown>};LWInteriors:LWInterior.CatalogApi;LWContent:{parse(input:unknown,limit:number):unknown};LWConstructionDesigns?:LWConstruction.DesignsApi};
+ const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const profile=()=>({simulationProfile:(globalThis as unknown as {LWSimulationProfile:{current:LWContentPorts.SimulationProfile}}).LWSimulationProfile.current});
  const copy=<T>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
  const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
  function bad(message:string):never{throw Error('Building design: '+message);}
@@ -34,25 +36,25 @@
    const cells=target.cells;if(cells){const original=f.cells||Array.from({length:f.width*f.height},(_,i)=>({x:i%f.width,y:Math.floor(i/f.width)}));if(original.some(p=>!cells.some(q=>q.x===p.x&&q.y===p.y)))return 'Keep existing floor tiles supported.';}
   }return null;
  }
- function cost(design:LWConstruction.Design):Record<string,number>{
+ function cost(design:LWConstruction.Design,engine:LWBalanceRules.Owner=profile()):Record<string,number>{
   const out={...root.LW.BUILDINGS[design.kind]!.cost};
   const add=(id:string,n:number):void=>{if(n&&Object.hasOwn(root.LW.RES,id))out[id]=(out[id]||0)+n;};
   for(const floor of design.layout.floors){
    const cells=floor.cells?.length||floor.width*floor.height,edges=floor.edges||[];
-   add('wood',Math.ceil(cells/8)+edges.filter(e=>e.kind==='wall').length);
-   add('stone',Math.ceil(cells/16));add('glass',edges.filter(e=>e.kind==='window').length);
-   add('planks',edges.filter(e=>e.kind==='door').length+floor.stairs.length*2);
-   add('fiber',Math.ceil(floor.stations.length/2));
+   add('wood',Math.ceil(cells/B.forEngine(engine).construction.woodCellDivisor)+edges.filter(e=>e.kind==='wall').length*B.forEngine(engine).construction.wallWood);
+   add('stone',Math.ceil(cells/B.forEngine(engine).construction.stoneCellDivisor));add('glass',edges.filter(e=>e.kind==='window').length*B.forEngine(engine).construction.windowGlass);
+   add('planks',edges.filter(e=>e.kind==='door').length*B.forEngine(engine).construction.doorPlanks+floor.stairs.length*B.forEngine(engine).construction.stairPlanks);
+   add('fiber',Math.ceil(floor.stations.length/B.forEngine(engine).construction.stationFiberDivisor));
   }
   return out;
  }
- function improvementCost(previous:LWConstruction.Design,next:LWConstruction.Design):Record<string,number>{
-  const old=cost(previous),out:Record<string,number>={};for(const [id,n]of Object.entries(cost(next)))if(n>(old[id]||0))out[id]=n-(old[id]||0);out.wood=(out.wood||0)+2;return out;
+ function improvementCost(previous:LWConstruction.Design,next:LWConstruction.Design,engine:LWBalanceRules.Owner=profile()):Record<string,number>{
+  const old=cost(previous,engine),out:Record<string,number>={};for(const [id,n]of Object.entries(cost(next,engine)))if(n>(old[id]||0))out[id]=n-(old[id]||0);out.wood=(out.wood||0)+B.forEngine(engine).construction.improvementWood;return out;
  }
- function phases(design:LWConstruction.Design):LWConstruction.Phase[]{
-  const seconds=root.LW.BUILDINGS[design.kind]!.time+design.layout.floors.reduce((n,f)=>n+(f.cells?.length||f.width*f.height)*.25+(f.edges?.length||0)*.5,0);
-  const rows:LWConstruction.Phase[]=['Lay the designed foundation','Raise floors and walls','Fit windows, doors and stations'].map((name,i)=>({name,cost:{},time:seconds*[.25,.45,.3][i]!}));
-  for(const [id,n]of Object.entries(cost(design))){const stage=['stone','clay','bricks'].includes(id)?0:['wood','planks','beams','iron','rope'].includes(id)?1:2;rows[stage]!.cost[id]=n;}
+ function phases(design:LWConstruction.Design,engine:LWBalanceRules.Owner=profile()):LWConstruction.Phase[]{
+  const seconds=root.LW.BUILDINGS[design.kind]!.time+design.layout.floors.reduce((n,f)=>n+(f.cells?.length||f.width*f.height)*B.forEngine(engine).construction.cellSeconds+(f.edges?.length||0)*B.forEngine(engine).construction.edgeSeconds,0);
+  const rows:LWConstruction.Phase[]=['Lay the designed foundation','Raise floors and walls','Fit windows, doors and stations'].map((name,i)=>({name,cost:{},time:seconds*[B.forEngine(engine).construction.foundationFraction,B.forEngine(engine).construction.structureFraction,B.forEngine(engine).construction.finishFraction][i]!}));
+  for(const [id,n]of Object.entries(cost(design,engine))){const stage=['stone','clay','bricks'].includes(id)?0:['wood','planks','beams','iron','rope'].includes(id)?1:2;rows[stage]!.cost[id]=n;}
   return rows;
  }
  root.LWConstructionDesigns=Object.freeze({validate,preserve,cost,improvementCost,phases,copy});if(typeof module!=='undefined'&&module.exports)module.exports=root.LWConstructionDesigns;

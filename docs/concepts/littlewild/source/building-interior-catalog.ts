@@ -31,7 +31,7 @@
   if(typeof input.fallback!=='string'||!layoutIds.has(input.fallback))bad('missing fallback layout');for(const [kind,layout]of Object.entries(input.bindings))if(!id(kind)||typeof layout!=='string'||!layoutIds.has(layout))bad('invalid binding');
   return copy(input as unknown as LWInterior.Catalog);
  }
- const defaults=validate(root.LWInteriorDefinitions??require('./content/building-interiors.json'));
+ const defaults=validate(root.LWInteriorDefinitions??require('./content/balancing.json').interiors);
  function freeze(value:unknown):void{if(value&&typeof value==='object'){Object.freeze(value);for(const child of Object.values(value))freeze(child);}}
  freeze(defaults);
  const layout=(catalog:LWInterior.Catalog,kind:string):LWInterior.Layout=>catalog.layouts.find(l=>l.id===(catalog.bindings[kind]||catalog.fallback))!;

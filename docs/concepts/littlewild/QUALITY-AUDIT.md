@@ -6,7 +6,7 @@ This work starts from PR #25 commit `78ca533a3be2722de09c8efccba83e3838aa8b9b`. 
 
 GitHub reported no open repository issues and no unresolved PR #25 review threads at the start of this pass. The existing Littlewild M1–M6 implementation remains in place. Green historical workflows do not replace verification of this implementation.
 
-The current source audit covers simulation transactions, component/task validation, deterministic continuation, library/catalog imports, composition lifecycle, navigation, persistence, command-line tools, architecture enforcement, source/module budgets, release output, and both browser workflows. Each new correctness fix has a focused regression in the registered gate.
+The current source audit covers simulation transactions, component/task validation, deterministic continuation, library/catalog imports, composition lifecycle, navigation, persistence, command-line tools, architecture enforcement, source/module budgets, release output, and all registered browser workflows. Each new correctness fix has a focused regression in the registered gate.
 
 ## Defects resolved
 
@@ -49,14 +49,20 @@ Independent contract review also exposed malformed Adventure attributes that cou
 
 The pinned Node declaration package is `@types/node` 22.20.5, compatible with TypeScript 5.9. The strict gate now checks dependency and authored declaration files with `skipLibCheck: false`; the previous three third-party Buffer declaration errors are resolved without suppression. The dependency audit remains clear.
 
+## Expansion review findings
+
+The expansion adds world/scene and creature editors, third-party editor exchange, storyboard/timeline playback, p5 animation, complete engine source export and centralized balancing. Review findings have focused regressions: timestamped cues fire at their boundary; equal-time cue tails survive cancelled admission; journey ledgers and scene cameras persist without leaking between stories; active duels and paid work reject conflicting balance changes; scene-specific balance edits preserve other native owners; complete source exports initialize safely from a cold CLI; and large CLI warning documents flush fully under pipe backpressure. Presentation admission rejects unavailable renderers before installing native state. Actual browser checks exercise Three.js, PixiJS, Excalibur and p5 under the unchanged offline CSP.
+
+Balancing defaults are validated before publishing a rebuilt artifact, including every shipped effective pack and an audit of declared settings against their consumers. An isolated build proof changes canonical JSON and an asset-folder creature, verifies actual Node/browser effects, then confirms malformed defaults preserve the previous artifact.
+
 ## Verification
 
 Final integrated and independent-review results are recorded in `VERIFICATION.md` and `delivery-manifest.json`. The authoritative machine evidence is the fresh `verification/v15/gate-results.json`, with authored source digest, runtime/browser identity, suite results and standalone hash. `--no-browser` produces explicitly partial evidence.
 
-Repository tooling regression tests passed **106/106** using the pinned Godot toolchain, and native architecture scanning passed for **190 scripts**. These checks complement the native CI workflows; they are not a claim that the full local six-shard native gate was executed.
+After integrating current main at `e3d184d`, native Python tooling tests completed **292 tests**, with one expected Windows Job Object skip on Linux. The native architecture scan covered **447 scripts** with zero violations. A clean native archive uses the pinned Godot 4.7.2 toolchain; the full registered six-shard checkpoint is recorded separately on completion. Littlewild has a `.gdignore` boundary because its npm packages and browser assets are not native Godot resources.
 
 ## Limits retained honestly
 
-The native Motorsport Manager advisory report contains thousands of existing findings outside Littlewild. They remain visible; no baseline exclusion, warning suppression or advisory-policy change is introduced. Workflow runtime warnings are addressed by upgrading official actions, while native gameplay changes remain outside this audit.
+The merged-main native advisory scan covered **667 files** and reported **zero findings** across all five analyzers. Earlier native findings are historical evidence, not a description of the current main checkout. No warning suppression or advisory-policy weakening was introduced. Workflow runtime warnings are addressed with supported, immutable official actions. The dependency audit reports zero vulnerabilities.
 
 Headless Chromium does not establish hardware WebGL performance, physical touch-device behavior, Safari/Firefox compatibility, screen-reader conformance, localization, human comprehension or game balance. Those require their own validation. Historical milestone hash/verification documents are identified as historical records, not current-source evidence.

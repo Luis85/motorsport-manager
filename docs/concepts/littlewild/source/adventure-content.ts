@@ -8,7 +8,7 @@
     if(!contentApi)throw Error('Content runtime is missing.');
     const C=contentApi;
     const copy = C.copy;
-    const defaults = (node ? require('./content/adventure-library.json') : root.LWDefaultAdventure) as LWContentPorts.Adventure|undefined;
+    const defaults = (node ? require('./content/balancing.json').libraries.adventure : root.LWDefaultAdventure) as LWContentPorts.Adventure|undefined;
     if(!defaults)throw Error('Default adventure content is missing.');
     const defaultContent=defaults;
     const base = C.tables;

@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Versioned, data-only ECS rule profiles and compiled composition archetypes.
  * JSON may tune validated numeric rules and select a known compiled schedule. It cannot
  * register components, systems, handlers, commands, callbacks, modules or source code.
@@ -22,7 +23,7 @@
   version:number;
   name:string;
   description:string;
-  rules:{actor:unknown;economy:unknown};
+  rules:{actor:unknown;economy:unknown;gameplay?:LWBalanceRules.Rules|undefined};
   archetype:Archetype;
  }
  interface RuntimeWithScheduler {scheduler:{systems:readonly {id:string}[]};}
@@ -81,11 +82,12 @@
  const worldModule=(node?require('./world-ecs.js'):root.LWWorldECS) as WorldModule|undefined;
  const economyModule=(node?require('./economy-ecs.js'):root.LWEconomyECS) as EconomyModule|undefined;
  const pipeline=(node?require('./simulation-pipeline.js'):root.LWSimulationPipeline) as PipelineApi|undefined;
- const defaultSource=(node?require('./content/simulation-profile.json'):root.LWDefaultSimulationProfile) as unknown;
+ const defaultSource=(node?require('./content/balancing.json').simulation:root.LWDefaultSimulationProfile) as unknown;
  if(!content||!actorModule||!worldModule||!economyModule||!pipeline||defaultSource===undefined)
   throw Error('Simulation profile dependencies are missing.');
  const C:ContentApi=content,Actor:ActorModule=actorModule,World:WorldModule=worldModule,Economy:EconomyModule=economyModule,Pipeline:PipelineApi=pipeline;
  const DEFAULT=defaultSource;
+ const Balance=(node?require('./balancing-rules.js'): (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const MAX_BYTES=256*1024;
  const own=(object:Record<string,unknown>,key:string):boolean=>Object.prototype.hasOwnProperty.call(object,key);
  const plain=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&
@@ -140,7 +142,8 @@
    throw Error('Invalid simulation profile identity.');
 
   const rules=raw.rules;
-  exact(rules,['actor','economy'],'simulation rule profile');
+  if(!plain(rules)||!own(rules,'actor')||!own(rules,'economy')||Object.keys(rules).some(key=>!['actor','economy','gameplay'].includes(key)))throw Error('Invalid simulation rule profile.');
+  const gameplay=rules.gameplay===undefined?undefined:Balance.validate(rules.gameplay);
   const actor=Actor.validateRules(rules.actor),economy=Economy.validateRules(rules.economy);
   const sourceArchetype=raw.archetype;
   exact(sourceArchetype,['id','version','engineLayers','simulationPipeline','actorDynamics','actorActivity','worldTransactions','economyTransactions'],'composition archetype');
@@ -167,7 +170,7 @@
    version:raw.version,
    name:raw.name,
    description:raw.description,
-   rules:freeze({actor,economy}),
+   rules:freeze({actor,economy,...(gameplay?{gameplay}:{})}),
    archetype:freeze(archetype)
   });
  }

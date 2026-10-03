@@ -23,7 +23,17 @@ Creature interactions include autonomous friendly duels, authored trigger rules,
 
 Visit a completed building to see its interior, select floors and request item or equipment production at a workstation. Companions travel through the same saved rooms and stairs while carrying out their work. The building designer supports custom floors, walls, windows, doors and staged improvements; companions source materials and build them. **More → Terraform this world** edits grass, water, height and living resource sources through a validated preview. These features persist in whole scenario exports. See [building interiors](BUILDING-INTERIORS.md), [freeform construction](FREEFORM-BUILDING.md) and [terrain editing](TERRAFORM.md).
 
-Developers can register a renderer factory and select it programmatically through the browser renderer host. The current **basic** renderer remains the default. Plugins receive detached scene data and validated command ports. See [RENDERERS.md](RENDERERS.md) for the lifecycle contract and runnable example.
+**More → Worlds & scenarios → Open World & Scene Editor** opens a separate revisioned pack draft. Its world/scene tree, placement grid and inspectors edit worlds, child levels, canonical creatures, buildings, item quantities, props, entry rules and connections. Connections can cross worlds within the pack; visiting a connected level checkpoints unfinished work for a later return. Worlds share the pack's content catalogs and have their own terrain and environment settings. Building floors and islands reference their existing native state. See [WORLD-SCENE-EDITOR.md](WORLD-SCENE-EDITOR.md) and [WORLD-SCENE-RUNTIME.md](WORLD-SCENE-RUNTIME.md) for authoring, transition and persistence contracts.
+
+Developers can register a renderer factory and select it programmatically through the browser renderer host. The current **basic** renderer remains the default. Scenes select 2D or 3D; actual PixiJS and ExcaliburJS are additional 2D options. A 3D scene may display another 2D scene as an observational minimap or panel. Plugins receive detached scene data and validated command ports. See [RENDERERS.md](RENDERERS.md) for the lifecycle contract and runnable example.
+
+The **3D Creature Editor** edits appearance, body parts, archetype tuning, future companion defaults and current character values in a detached draft, with JSON import/export and reviewed application. The World & Scene Editor exchanges files with **Tiled, LDtk, Blender/Godot via glTF/GLB, Obsidian Canvas and Advanced Canvas**. See [CREATURE-EDITOR.md](CREATURE-EDITOR.md) and [EXTERNAL-EDITORS.md](EXTERNAL-EDITORS.md) for programmatic APIs and supported format limits.
+
+**Storyboards & timelines** keeps ordered story notes beside normal scenes and cutscenes across worlds. Cutscenes animate scene entities and cameras in a detached 2D/3D preview. Scene entry rules, timed cues and completion events can request reviewed scene changes or play another cutscene. Pinned **p5.js** supplies deterministic presentation presets through a replaceable, typed animation registry driven by the existing application clock. See [STORYTELLING-EDITOR.md](STORYTELLING-EDITOR.md), [STORYTELLING.md](STORYTELLING.md) and [p5 provenance and source](vendor/P5-VENDOR.md).
+
+The developer toolbox also exports a complete **engine JSON document**: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and an explicit Godot mapping manifest. This supplies input for a code generator; gameplay systems still require a semantic port and continuation tests in Godot. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md).
+
+Edit [source/content/balancing.json](source/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
 
 **Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 
@@ -31,7 +41,7 @@ The existing **Pause when opening panels** device preference also covers these p
 
 ## Build and verify
 
-Littlewild's authored executable source is TypeScript. JavaScript under `.generated/` is disposable compiler output; the bundled `vendor/three.js` is third-party distribution code.
+Littlewild's authored executable source is TypeScript. JavaScript under `.generated/` is disposable compiler output; the pinned distributions under `vendor/` are third-party code.
 
 ```sh
 npm ci --no-audit --no-fund
@@ -63,13 +73,21 @@ npm run verify -- --no-browser
 - `CREATURE-ARCHITECTURE.md`: creature archetype data, factory/ECS ownership, visual asset boundary and extension workflow.
 - `BUILDING-INTERIORS.md`, `FREEFORM-BUILDING.md`, `TERRAFORM.md`: spatial authority, physical work and authoring interfaces.
 - `RENDERERS.md`: programmatic renderer registration, replacement, observations and cleanup.
+- `WORLD-SCENE-EDITOR.md` and `WORLD-SCENE-RUNTIME.md`: visual pack authoring, nested levels, cross-world links and persistent scene journeys.
+- `CREATURE-EDITOR.md`: 3D character authoring, current values, appearance and package exchange.
+- `EXTERNAL-EDITORS.md`: standard editor formats, conversion APIs, CLI commands and limits.
+- `STORYTELLING-EDITOR.md` and `STORYTELLING.md`: storyboards, timeline editing, presentation playback and reviewed scene events.
+- `ENGINE-EXPORT.md`: complete code-generator JSON, source integrity and Godot conversion boundaries.
+- `BALANCING.md`: central gameplay tuning, reviewed edits, seeded probes and bounded sweeps.
 
 Stable mechanic executors, handlers, island dimensions and animation algorithms remain compiled capabilities. Creature defaults, spawn modes, movement/physiology tuning, visual selection, ECS bindings, geometry, appearance profiles, expression thresholds, animation tuning, rig sockets and building anchors are validated data. External scenario packs can carry complete creature and visual manifest catalogs using the supported geometry and rig grammar. Imported data cannot register executable code or new engine primitives. Littlewild, Emberworks and Office demonstrate the supported configuration surface.
 
 ## ECS refactor on PR #25
 
-The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine current-format rejection, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
+The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The simulation section of `source/content/balancing.json` combines validated actor/economy/gameplay rule data with the exact compiled `living-world-v1` composition archetype; the earlier individual profile file is a reference mirror. Schema-2 packs may tune supported values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine current-format rejection, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
 
 - [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.
 
 Architecture sources and the implemented plan: [research](ARCHITECTURE-RESEARCH.md), [systemic design](SYSTEMIC-DESIGN.md), [Excalibur adaptations](EXCALIBUR-TOOLBOX-REVIEW.md), [improvement plan](RESEARCH-IMPROVEMENT-PLAN.md).
+
+Central default tuning, the balancing workshop, CLI experiments and captured-value semantics are documented in [BALANCING.md](BALANCING.md).

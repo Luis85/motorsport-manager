@@ -2,7 +2,7 @@
 /// <reference path="./legacy-task-records.d.ts" />
 /** Narrow application capabilities consumed by companion and task services. */
 declare namespace LWTaskPorts {
-    interface BaseHost {
+    interface BaseHost extends LWBalanceRules.Owner {
         s: State;
         has(id: string): boolean;
         walkable(x: number, y: number): boolean;

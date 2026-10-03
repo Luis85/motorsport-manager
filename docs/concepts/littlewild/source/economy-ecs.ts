@@ -66,7 +66,7 @@
  const node=typeof module!=='undefined'&&module.exports;
  const ecs=(node?require('./ecs.js'):root.LWECS) as EcsApi|undefined;
  const content=(node?require('./content-runtime.js'):root.LWContent) as ContentApi|undefined;
- const DEFAULT=node?require('./content/economy-rules.json') as unknown:root.LWEconomyRules;
+ const DEFAULT=node?require('./content/balancing.json').simulation.rules.economy as unknown:root.LWEconomyRules;
  if(!ecs||!content||DEFAULT===undefined)throw Error('Economy ECS dependencies are missing.');
  const E:EcsApi=ecs,C:ContentApi=content;
  const own=(object:object,key:PropertyKey):boolean=>Object.prototype.hasOwnProperty.call(object,key);

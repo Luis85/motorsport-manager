@@ -83,6 +83,13 @@ and makes all retained operation handles reject with `session-disposed`.
 | --- | --- |
 | `toolbox.scenarios()` | Detached built-in IDs, names and scenes. |
 | `toolbox.commands()` | Compiled command IDs, scopes, argument ceilings and away permission. |
+| `toolbox.externalEditors` | Discover Tiled, LDtk, glTF/GLB and both Canvas formats; exchange detached scene packs with conversion diagnostics. |
+| `toolbox.createCreatureEditor(pack, selection)` | Detached archetype, appearance and current-instance draft; package exchange and undo/redo. |
+| `toolbox.validateCreaturePackage(input, context?)` | Validate a package independently or against its complete scenario and selection. |
+| `toolbox.createSceneEditor(pack)` | Detached typed pack draft, bounded undo/redo and canonical entity editing. |
+| `game.sceneConnections()` | Authored links and current admission reasons through the scene authority. |
+| `game.reviewScene(id)` / `game.enterScene(review)` | Observational review followed by trusted replacement within the same session lease. |
+| `game.sceneTarget()` / `game.sceneProps()` | Detached canonical island/floor target and current scene scenery. |
 | `game.inspect()` | Detached time/control flags, actors, positions, needs, tasks, inventories, buildings, nodes and player values. |
 | `game.save()` | Detached native engine state (format 8), for comparison or a native integration. |
 | `game.story()` | Detached portable story (envelope 10), including libraries/context and fingerprints. |
@@ -222,3 +229,61 @@ Browser plugins use the typed `LWRenderers` factory registry and
 `LWRendererHost.player().selectRenderer(id)`. Read [RENDERERS.md](RENDERERS.md)
 before implementing lifecycle methods, input handlers or resource cleanup.
 Simulation steps and persistent state remain owned by the engine.
+
+## World and scene authoring
+
+`toolbox.createSceneEditor(pack)` creates a detached revision history without taking
+an active-session lease. Its typed `snapshot`, `export`, `entities`, `place`,
+`setEntity`, world/scene creation, `addProp`, `undo` and `redo` methods operate on the
+complete scenario pack. `validate()` reports draft errors; `export()` requires a
+valid pack. Entity edits use native creature, building and resource records.
+Bound interior positions remain owned by authored building layouts and visits.
+Props reference validated building/item asset models and add cosmetic scenery.
+
+An owned session discovers authored connections and their current eligibility
+with `game.sceneConnections()`. Review and enter through the same session:
+
+```ts
+const link = game.sceneConnections().find(link => link.available);
+if (link) {
+  const review = game.reviewScene(link.id);
+  console.log(review.sceneName, review.messages, review.target);
+  game.enterScene(review);
+}
+```
+
+Review is observational. Enter requires the original review object, rejects stale
+state and replaces the session's private engine only after admission succeeds.
+The review exposes detached names, messages and a presentation target. No engine
+or internal preview is returned. Other scenes retain dormant native checkpoints;
+revisits and portable stories continue their saved RNG and physical work.
+`sceneTarget()` returns the actual bound island or building floor;
+`sceneProps()` returns detached active-scene scenery. Custom renderer frames expose
+exterior `props` and bound room `sceneProps` through the existing frozen queries.
+
+`toolbox.externalEditors.formats()` discovers the compiled interchange codecs.
+`export(pack, sceneId, format)` returns a detached document and warnings;
+`import(document, options?)` returns a validated pack or conversion errors.
+Binary GLB input is accepted as a `Uint8Array`. Conversion preserves the active
+session and its context. Apply an accepted conversion explicitly to a draft:
+
+```ts
+const exported = toolbox.externalEditors.export(draft.export(), sceneId, 'tiled');
+const converted = toolbox.externalEditors.import(exported.document);
+if (converted.ok) draft.replace(converted.pack);
+else console.log(converted.errors);
+```
+
+Generic imports require a canonical pack/scene and explicit entity or template
+mappings. Conversion warnings describe unsupported foreign features; downloaded
+textures, scripts and new executable gameplay authorities are excluded.
+
+Creature editing uses `toolbox.createCreatureEditor(pack, {sceneId, archetypeId, instanceId})`. Edit definition defaults with `updateDefinition`, visual data with `updateAppearance`, and current companion values with `updateInstance`. `exportPackage()` produces a standalone creature package; `exportScenario()` preserves the complete world for the ordinary reviewed scenario apply route. Drafts and validation do not replace an active session.
+
+Central default tuning, the balancing workshop, CLI experiments and captured-value semantics are documented in [BALANCING.md](BALANCING.md).
+
+`toolbox.storytelling.createEditor(pack)` shares the ordinary scene draft and its undo history with timeline/storyboard authoring. `createPlayback(pack, clipId)` exposes supplied-time playback controls and detached status/sample queries; only application composition advances time or dispatches events. See [STORYTELLING.md](STORYTELLING.md).
+
+`toolbox.animations.list()` discovers compiled presets and provenance; `validate(descriptors)` checks bounded authored animation data. A trusted browser renderer can use the exported `AnimationHost` port from `LWRendererHost.player()` to call `setAnimations(descriptors)` or clear with `null`. Its `snapshot()` and `project(point)` observations are detached; it exposes no native engine. Rendering uses the existing host frame cadence. Node discovery initializes no canvas or simulation clock.
+
+`toolbox.engineExport.export(pack, sceneId)` asynchronously produces the complete inert engine/source mapping document; `validate(document)` verifies its archive admission and hashes. This format is separate from runnable scenario packs and never executes its source strings. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md).

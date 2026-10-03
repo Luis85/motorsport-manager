@@ -1,7 +1,7 @@
 /* Ordered canvas frame composition; reads domain projections and mutates presentation state only. */
 (function (inputRoot: unknown) {
     'use strict';
-    const root = inputRoot as LWCanvasPorts.Root;
+    const root = inputRoot as LWCanvasPorts.Root & {LWSceneProps?:{exterior(engine:unknown):LWSceneGraph.Prop[]}};
     const { terrain, clamp } = root.LW;
     const LW = root.LW, LWWorldContent = root.LWWorldContent;
     const { poly, rect, diamond, shadow, tree, bush, stone, fiber, pip, box } = root.LWCanvasArt;
@@ -66,6 +66,10 @@
                     diamond(c, sp.x, sp.y, 5, 3, '#f5efcf');
                 }
                 c.globalAlpha = 1;
+            }
+            for(const prop of root.LWSceneProps?.exterior(this.engine)??[]){
+                const point=this.project(prop.x,prop.y);
+                root.LWCanvasAssets?.draw(c,prop.category,prop.assetId,point.x,point.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:prop.model});
             }
             // Resource lenses follow authoritative tiles; the renderer never changes stock.
             for(const n of s.nodes){

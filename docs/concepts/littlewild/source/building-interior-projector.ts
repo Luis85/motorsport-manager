@@ -2,7 +2,7 @@
 /* Detached display values; observing a room never creates locations or ticks the colony. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LWInteriors:LWInterior.CatalogApi;LWWorkflowVenues:LWWorkflowVenue.Api;LW:{BUILDINGS:Record<string,{name:string}>;colony:{item(id:string):{name:string}}};LWBuildingInteriorProjector?:unknown;LWWorldProfile:{current:{environment?:{mode:string}}};LWAssets:{hasModel(category:string,id:string,model:string):boolean};LWCreatures:{get(id:string):{visualAsset:string}}};
+ const root=inputRoot as {LWSceneProps?:{room(engine:unknown,buildingId:string):{floorId:string;props:LWSceneGraph.Prop[]}|null};LWInteriors:LWInterior.CatalogApi;LWWorkflowVenues:LWWorkflowVenue.Api;LW:{BUILDINGS:Record<string,{name:string}>;colony:{item(id:string):{name:string}}};LWBuildingInteriorProjector?:unknown;LWWorldProfile:{current:{environment?:{mode:string}}};LWAssets:{hasModel(category:string,id:string,model:string):boolean};LWCreatures:{get(id:string):{visualAsset:string}}};
  const C=root.LWInteriors;
  function snapshot(e:LWInterior.Engine,buildingId:string):LWInterior.Snapshot|null{
   const b=e.s.buildings.find(b=>b.id===buildingId);if(!b)return null;
@@ -15,7 +15,8 @@
   });
   const st=b.storage;
   const fixtureModel=root.LWWorldProfile.current.environment?.mode==='indoor'?'world':root.LWAssets.hasModel('building',b.kind,'interior')?'interior':'';
-  return C.copy({fixtureAsset:fixtureModel?b.kind:'',fixtureModel,buildingId:b.id,buildingName:(b.designId&&e.s.construction?.designs[b.designId]?.name)||root.LW.BUILDINGS[b.kind]?.name||b.kind,kind:b.kind,floors:layout.floors,actors,time:e.s.simTime,status:e.buildingStatus(b),input:st?.input||{},output:st?.output||{},recipes:e.buildingRecipes(b).filter(r=>!e.gateIssue(r.kind==='craft'?'recipes':'items',r.id)).map(r=>({id:r.id,name:root.LW.colony.item(r.output).name,amount:r.amount,time:r.time,cost:r.cost,skill:r.skill,queued:st?.requests[r.id]||0})),transfers});
+  const sceneProps=root.LWSceneProps?.room(e,buildingId);
+  return C.copy({...(sceneProps?{sceneProps}:{}),fixtureAsset:fixtureModel?b.kind:'',fixtureModel,buildingId:b.id,buildingName:(b.designId&&e.s.construction?.designs[b.designId]?.name)||root.LW.BUILDINGS[b.kind]?.name||b.kind,kind:b.kind,floors:layout.floors,actors,time:e.s.simTime,status:e.buildingStatus(b),input:st?.input||{},output:st?.output||{},recipes:e.buildingRecipes(b).filter(r=>!e.gateIssue(r.kind==='craft'?'recipes':'items',r.id)).map(r=>({id:r.id,name:root.LW.colony.item(r.output).name,amount:r.amount,time:r.time,cost:r.cost,skill:r.skill,queued:st?.requests[r.id]||0})),transfers});
  }
  root.LWBuildingInteriorProjector=Object.freeze({snapshot});if(typeof module!=='undefined'&&module.exports)module.exports=root.LWBuildingInteriorProjector;
 })(globalThis);

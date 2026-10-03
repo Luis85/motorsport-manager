@@ -52,7 +52,7 @@
         "$ref": "#/$defs/scene"
       },
       "minItems": 1,
-      "maxItems": 8
+      "maxItems": 64
     },
     "tutorial": {
       "type": "array",
@@ -124,6 +124,43 @@
           }
         }
       }
+    },
+    "canvasAuthoring": {
+      "type": "object",
+      "required": [
+        "version",
+        "nodes",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "nodes": {
+          "type": "object",
+          "maxProperties": 256,
+          "additionalProperties": {
+            "type": "object",
+            "maxProperties": 64
+          }
+        },
+        "edges": {
+          "type": "object",
+          "maxProperties": 512,
+          "additionalProperties": {
+            "type": "object",
+            "maxProperties": 64
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "maxProperties": 64
+        }
+      }
+    },
+    "storytelling": {
+      "$ref": "#/$defs/storytelling"
     }
   },
   "required": [
@@ -509,6 +546,9 @@
         },
         "initialState": {
           "type": "object"
+        },
+        "graph": {
+          "$ref": "#/$defs/sceneGraph"
         }
       },
       "required": [
@@ -599,6 +639,9 @@
             },
             "economy": {
               "$ref": "#/$defs/economyRules"
+            },
+            "gameplay": {
+              "type": "object"
             }
           },
           "required": [
@@ -957,6 +1000,953 @@
         "actorActivity",
         "worldTransactions",
         "economyTransactions"
+      ],
+      "additionalProperties": false
+    },
+    "sceneRequirement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "player-level"
+            },
+            "minimum": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "type",
+            "minimum"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "quest-complete"
+            },
+            "questId": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            }
+          },
+          "required": [
+            "type",
+            "questId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "item"
+            },
+            "itemId": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "type",
+            "itemId",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "building"
+            },
+            "kind": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            }
+          },
+          "required": [
+            "type",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "sceneEvent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "message"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+            }
+          },
+          "required": [
+            "type",
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pause"
+            },
+            "paused": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "paused"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "play-cutscene"
+            },
+            "cutsceneId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+            },
+            "once": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "cutsceneId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "scene-switch"
+            },
+            "connectionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+            }
+          },
+          "required": [
+            "type",
+            "connectionId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "sceneGraph": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "level",
+            "island",
+            "interior",
+            "dungeon"
+          ]
+        },
+        "parentId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "bounds": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": -960,
+              "maximum": 960
+            },
+            "y": {
+              "type": "integer",
+              "minimum": -960,
+              "maximum": 960
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 960
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 960
+            }
+          },
+          "required": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ],
+          "additionalProperties": false
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sceneRequirement"
+          },
+          "maxItems": 16
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sceneEvent"
+          },
+          "maxItems": 16
+        },
+        "connections": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,63}$"
+              },
+              "targetSceneId": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,63}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/sceneRequirement"
+                },
+                "maxItems": 16
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/sceneEvent"
+                },
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "id",
+              "targetSceneId",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "binding": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "island"
+                },
+                "sourceSceneId": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                },
+                "ix": {
+                  "type": "integer",
+                  "minimum": -48,
+                  "maximum": 48
+                },
+                "iy": {
+                  "type": "integer",
+                  "minimum": -48,
+                  "maximum": 48
+                }
+              },
+              "required": [
+                "type",
+                "sourceSceneId",
+                "ix",
+                "iy"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "interior"
+                },
+                "sourceSceneId": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                },
+                "buildingId": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+                },
+                "floorId": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,47}$"
+                }
+              },
+              "required": [
+                "type",
+                "sourceSceneId",
+                "buildingId",
+                "floorId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "props": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "category",
+              "assetId",
+              "model",
+              "x",
+              "y"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "category": {
+                "enum": [
+                  "building",
+                  "item"
+                ]
+              },
+              "assetId": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              "model": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": -1104,
+                "maximum": 1104
+              },
+              "y": {
+                "type": "integer",
+                "minimum": -1104,
+                "maximum": 1104
+              }
+            }
+          }
+        },
+        "rendering": {
+          "type": "object",
+          "required": [
+            "dimension",
+            "rendererId"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "dimension": {
+              "enum": [
+                "2d",
+                "3d"
+              ]
+            },
+            "rendererId": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            },
+            "embeds": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "sceneId",
+                  "role"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                  },
+                  "sceneId": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                  },
+                  "role": {
+                    "enum": [
+                      "minimap",
+                      "panel"
+                    ]
+                  },
+                  "bounds": {
+                    "type": "object",
+                    "required": [
+                      "anchor",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "anchor": {
+                        "enum": [
+                          "top-left",
+                          "top-right",
+                          "bottom-left",
+                          "bottom-right"
+                        ]
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 800
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 600
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "triggers": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+              },
+              "requirements": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 16,
+                "items": {
+                  "$ref": "#/$defs/sceneRequirement"
+                }
+              },
+              "events": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 16,
+                "items": {
+                  "$ref": "#/$defs/sceneEvent"
+                }
+              },
+              "once": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "requirements",
+              "events"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "cinematicKey": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "value": {
+          "type": "number",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "easing": {
+          "enum": [
+            "linear",
+            "step"
+          ]
+        }
+      },
+      "required": [
+        "time",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "cinematicTrack": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "enum": [
+                    "creatures",
+                    "buildings",
+                    "nodes",
+                    "props"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+                }
+              },
+              "required": [
+                "category",
+                "id"
+              ],
+              "additionalProperties": false
+            },
+            "property": {
+              "enum": [
+                "x",
+                "y",
+                "height",
+                "rotation",
+                "scale",
+                "opacity",
+                "pose"
+              ]
+            },
+            "keyframes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cinematicKey"
+              },
+              "maxItems": 256,
+              "minItems": 1
+            }
+          },
+          "required": [
+            "id",
+            "target",
+            "property",
+            "keyframes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "const": "camera"
+                }
+              },
+              "required": [
+                "category"
+              ],
+              "additionalProperties": false
+            },
+            "property": {
+              "enum": [
+                "x",
+                "y",
+                "zoom"
+              ]
+            },
+            "keyframes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cinematicKey"
+              },
+              "maxItems": 256,
+              "minItems": 1
+            }
+          },
+          "required": [
+            "id",
+            "target",
+            "property",
+            "keyframes"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "cutscene": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "sceneId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 3600
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cinematicTrack"
+          },
+          "maxItems": 128
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+              },
+              "time": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3600
+              },
+              "event": {
+                "$ref": "#/$defs/sceneEvent"
+              }
+            },
+            "required": [
+              "id",
+              "time",
+              "event"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 64
+        },
+        "onFinish": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sceneEvent"
+          },
+          "maxItems": 64
+        },
+        "skipPolicy": {
+          "enum": [
+            "finish",
+            "cancel"
+          ]
+        },
+        "animations": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/cinematicAnimation"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sceneId",
+        "duration",
+        "tracks",
+        "skipPolicy"
+      ],
+      "additionalProperties": false
+    },
+    "storyboardShot": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "sceneId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "cutsceneId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "narrative": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sceneId",
+        "narrative"
+      ],
+      "additionalProperties": false
+    },
+    "storytelling": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "cutscenes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cutscene"
+          },
+          "maxItems": 64
+        },
+        "storyboards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "shots": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/storyboardShot"
+                },
+                "maxItems": 128
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "shots"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        },
+        "progress": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "once": {
+              "type": "array",
+              "maxItems": 1024,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 129,
+                "pattern": "^[a-zA-Z0-9_.:-]+\\|[a-zA-Z0-9_.:-]+$"
+              }
+            },
+            "triggers": {
+              "type": "array",
+              "maxItems": 1024,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 129,
+                "pattern": "^[a-zA-Z0-9_.:-]+\\|[a-zA-Z0-9_.:-]+$"
+              }
+            },
+            "completed": {
+              "type": "array",
+              "maxItems": 1024,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 129,
+                "pattern": "^[a-zA-Z0-9_.:-]+\\|[a-zA-Z0-9_.:-]+$"
+              }
+            }
+          },
+          "required": [
+            "version",
+            "once",
+            "triggers",
+            "completed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "cutscenes",
+        "storyboards"
+      ],
+      "additionalProperties": false
+    },
+    "cinematicAnimation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "presetId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0.001,
+          "maximum": 3600
+        },
+        "x": {
+          "type": "number",
+          "minimum": -10000,
+          "maximum": 10000
+        },
+        "y": {
+          "type": "number",
+          "minimum": -10000,
+          "maximum": 10000
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[a-fA-F0-9]{6}([a-fA-F0-9]{2})?$"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "id",
+        "presetId",
+        "start",
+        "duration",
+        "x",
+        "y",
+        "radius",
+        "color",
+        "count"
       ],
       "additionalProperties": false
     }

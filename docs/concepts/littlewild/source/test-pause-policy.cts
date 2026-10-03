@@ -15,6 +15,7 @@ for(const on of[true,false]){
  test('No open view restores time on '+on,()=>assert.equal(P.evaluate(state,{},on).running,true));
  test('Closing views preserves explicit pause on '+on,()=>assert.equal(P.evaluate({...state,paused:true},{},on).running,false));
 }
+test('Cinematic hold suspends native time with inspection off and preserves manual pause',()=>{const s={...state};assert.equal(P.evaluate(s,{cinematic:true},false).kind,'cinematic');assert.deepEqual(s,state);assert.equal(P.evaluate({...s,paused:true},{cinematic:true},false).kind,'manual');assert.equal(P.evaluate(s,{},false).running,true);assert(P.safetyView('storytelling-transition'));});
 test('Nested views do not release another view hold',()=>{assert(!P.evaluate(state,{modal:false,planner:true},true).running);assert(P.evaluate(state,{},true).running);});
 test('Not-started story never advances',()=>assert.equal(P.evaluate({...state,started:false},{},false).running,false));
 for(const modal of['import-preview','content-preview','adventure-review','world-import','v10-growth-preview','reset','recover'])test('Safety policy recognizes '+modal,()=>assert(P.safetyView(modal)));

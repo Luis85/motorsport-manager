@@ -62,6 +62,7 @@
  }
  interface ResourceApi {withResources<T>(input:unknown,work:()=>T):T;checkBindings(input:unknown,libraries:unknown):void;}
  interface LittlewildRoot {
+  LWSceneNavigation:LWSceneNavigation.NavigationApi;
   LWScenarioResources?:ResourceApi;
   LWStory?:NativeStoryApi;
   LWScenarios?:ScenarioApi;
@@ -87,18 +88,27 @@
  const reviewOf=(preview:StoryPreview):string=>reviewHash({experience:preview.experience,
   experienceFingerprint:preview.experienceFingerprint,simulationFingerprint:preview.simulationFingerprint});
 
+ function checkJourneyLibraries(doc:DataRecord,ctx:ExperienceContext):void{
+  if(!ctx.journey)return;const journey=ctx.journey as LWSceneGraph.Journey;
+  const envelopes=[['content','base'],['adventure','adventure'],['world','world'],['growth','growth']] as const;
+  for(const [field,key]of envelopes)if(C.stable(asRecord(doc[field],'Story '+field+' envelope').library)!==C.stable(journey.pack.libraries[key]))throw Error('Story libraries must match the complete journey pack.');
+ }
  S.encode=(engine:EngineLike,savedAt:string|null=null):DataRecord=>{
   const doc=native.encode(engine,savedAt);
   const simulation=engine.scenarioContext?.simulation??Profiles.defaults;
   if(engine.simulationProfile&&Profiles.fingerprint(engine.simulationProfile)!==Profiles.fingerprint(simulation))
    throw Error('Experience simulation does not match the engine profile; capture a scenario with the original context before saving.');
   if(engine.scenarioContext){
-   const ctx=X.checkContext(engine.scenarioContext);
+   const rawContext=C.copy(engine.scenarioContext);
+   if(rawContext.journey)rawContext.journey=root.LWSceneNavigation.checkpoint(engine as unknown as LWContentPorts.ScenarioEngine);
+   const ctx=X.checkContext(rawContext);
    const nativeState=asRecord(doc.state,'Native story state');
    if(nativeState.scenarioResources&&C.stable(nativeState.scenarioResources)!==C.stable(ctx.resources))throw Error('Story resources must match the complete experience catalogs.');
    doc.version=10;
+   checkJourneyLibraries(doc,ctx);
    doc.experience=C.copy(ctx);
-   doc.experienceFingerprint=X.hash(doc.experience);
+   if(ctx.journey)delete (doc.experience as ExperienceContext).resources;
+   doc.experienceFingerprint=X.hash(ctx);
    doc.simulationFingerprint=Profiles.fingerprint(ctx.simulation);
   }
   return doc;
@@ -114,7 +124,13 @@
    const worldEnvelope=asRecord(doc.world,'World story envelope');
    X.checkWorld(ctx.world,worldEnvelope.library);
   }
+  if(ctx)checkJourneyLibraries(doc,ctx);
   const savedState=asRecord(doc.state,'Native story state');
+  if(ctx?.journey){
+   const journey=ctx.journey as LWSceneGraph.Journey;
+   const current=journey.pack.scenes.find(scene=>scene.id===ctx.sceneId)!;
+   if(C.stable(journey.checkpoints[current.graph?.binding?.sourceSceneId??current.id])!==C.stable(root.LWSceneNavigation.normalizeState(savedState)))throw Error('Active scene checkpoint does not match native story state.');
+  }
   if(savedState.scenarioResources&&C.stable(savedState.scenarioResources)!==C.stable(ctx?.resources))throw Error('Story resources must match the complete experience catalogs.');
   const preview=resources.withResources(ctx?.resources,()=>Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,
    ()=>native.inspect(doc)))) as StoryPreview;
@@ -141,6 +157,7 @@
  for(const name of ['applyContent','applyAdventure','applyWorld','applyGrowth'] as const){
   const operation=S[name] as (pack:unknown,engine:EngineLike,newStory?:boolean)=>EngineLike;
   S[name]=(pack:unknown,engine:EngineLike,newStory=false):EngineLike=>{
+   if(engine.scenarioContext?.journey)throw Error('Edit the complete journey pack in the World & Scene Editor and review a new scene before changing its catalogs.');
    const profile=engine.scenarioContext?.simulation??Profiles.defaults;
    const next=Profiles.withProfile(profile,()=>operation(pack,engine,newStory));
    if(engine.scenarioContext)next.scenarioContext=C.copy(engine.scenarioContext);

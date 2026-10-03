@@ -48,6 +48,19 @@ fs.mkdirSync(OUT, { recursive: true });
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["engine-export-cli", ["node", generated("test-engine-export-cli.cjs")], generated("engine-export-cli-results.json"), 240],
+  ["engine-export", ["node", generated("test-engine-export.cjs")], generated("engine-export-results.json"), 240],
+  ["animations", ["node", generated("test-animations.cjs")], generated("animations-results.json"), 120],
+  ["balancing-cli", ["node", generated("test-balancing-cli.cjs")], generated("balancing-cli-results.json"), 240],
+  ["balancing", ["node", generated("test-balancing.cjs")], generated("balancing-results.json"), 240],
+  ["storytelling", ["node", generated("test-storytelling.cjs")], generated("storytelling-results.json"), 180],
+  ["external-editor-cli", ["node", generated("test-external-editor-cli.cjs")], generated("external-editor-cli-results.json"), 180],
+  ["external-canvas", ["node", generated("test-external-canvas.cjs")], generated("external-canvas-results.json"), 180],
+  ["creature-editor", ["node", generated("test-creature-editor.cjs")], generated("creature-editor-results.json"), 240],
+  ["external-editors", ["node", generated("test-external-editors.cjs")], generated("external-editors-results.json"), 240],
+  ["renderer-scene-2d", ["node", generated("test-renderer-scene-2d.cjs")], generated("renderer-scene-2d-results.json"), 120],
+  ["scene-editor", ["node", generated("test-scene-editor.cjs")], generated("scene-editor-results.json"), 120],
+  ["scene-navigation", ["node", generated("test-scene-navigation.cjs")], generated("scene-navigation-results.json"), 180],
   ["architecture-extensions", ["node", generated("test-architecture-extensions.cjs")], generated("architecture-extensions-results.json"), 120],
   ["building-interiors", ["node", generated("test-building-interiors.cjs")], generated("building-interiors-results.json"), 120],
   ["construction", ["node", generated("test-construction.cjs")], generated("construction-results.json"), 120],
@@ -93,6 +106,17 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"external-editors-browser", command:["node", generated("verification/external-editors-browser.js")], result:"verification/v15/external-editors-browser-results.json", timeout:240 },
+    { name:"external-canvas-browser", command:["node", generated("verification/external-canvas-browser.js")], result:"verification/v15/external-canvas-browser-results.json", timeout:240 },
+    { name:"creature-editor-browser", command:["node", generated("verification/creature-editor-browser.js")], result:"verification/v15/creature-editor-browser-results.json", timeout:300 },
+    { name:"balancing-defaults-browser", command:["node", generated("verification/balancing-defaults-browser.js")], result:"verification/v15/balancing-defaults-browser-results.json", timeout:300 },
+    { name:"balancing-browser", command:["node", generated("verification/balancing-browser.js")], result:"verification/v15/balancing-browser-results.json", timeout:300 },
+    { name:"storytelling-browser", command:["node", generated("verification/storytelling-browser.js")], result:"verification/v15/storytelling-browser-results.json", timeout:300 },
+    { name:"engine-export-browser", command:["node", generated("verification/engine-export-browser.js")], result:"verification/v15/engine-export-browser-results.json", timeout:300 },
+    { name:"renderer-storytelling", command:["node", generated("verification/renderers-storytelling-browser.js")], result:"verification/v15/renderers-storytelling-browser-results.json", timeout:300 },
+    { name:"storytelling-player-browser", command:["node", generated("verification/storytelling-player-browser.js")], result:"verification/v15/storytelling-player-browser-results.json", timeout:300 },
+    { name:"renderer-libraries", command:["node", generated("verification/renderers-libraries-browser.js")], result:"verification/v15/renderers-libraries-browser-results.json", timeout:240 },
+    { name:"scene-editor-browser", command:["node", generated("verification/scene-editor-browser.js")], result:"verification/v15/scene-editor-browser-results.json", timeout:180 },
     { name:"building-interiors-browser", command:["node", generated("verification/building-interiors-browser.js")], result:"verification/v15/building-interiors-browser.json", timeout:180 },
     { name:"construction-editor-browser", command:["node", generated("verification/construction-editor-browser.js")], result:"verification/v15/construction-editor-browser-results.json", timeout:180 },
     { name:"terraform-browser", command:["node", generated("verification/terraform-browser.js")], result:"verification/v15/terraform-browser-results.json", timeout:180 },

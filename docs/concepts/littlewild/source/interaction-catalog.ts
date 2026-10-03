@@ -8,7 +8,7 @@
  };
  const C=root.LWContent;
  const node=typeof module!=='undefined'&&module.exports;
- const seed=node?require('./interaction-library.json') as unknown:root.LWInteractionLibrary;
+ const seed=node?require('./content/balancing.json').interactions as unknown:root.LWInteractionLibrary;
  const copy=<T>(value:T):T=>C.parse(value,2*1024*1024) as T;
  function object(value:unknown,keys:readonly string[],label:string):Record<string,unknown>{
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid '+label+'.');

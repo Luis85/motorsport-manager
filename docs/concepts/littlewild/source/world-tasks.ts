@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Detached physical-task proposals. A proposal describes intent; transaction services
  * still preflight the active task, position, stock, skill and capacity before settlement. */
 (function(inputRoot: unknown) {
@@ -20,10 +21,10 @@
   const root = inputRoot as { LWWorldTasks?: typeof api };
 
   function transfer(kind: string, building: Building, resource: string, amount: number,
-    orderId: string | null, names: Names, extra: Record<string, unknown> = {}): TransferTask {
+    orderId: string | null, names: Names, extra: Record<string, unknown> = {},duration=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules.defaults.production.transferSeconds): TransferTask {
     const verb = kind === 'stockbuilding' ? 'Bringing ' : kind === 'emptybuilding' ? 'Reclaiming ' : 'Collecting ';
     return { kind, buildingId: building.id, resource, amount: Math.max(1, amount), orderId,
-      target: { x: building.x, y: building.y }, duration: 1.5,
+      target: { x: building.x, y: building.y }, duration,
       label: verb + names.item.toLowerCase() + (kind === 'stockbuilding' ? ' to ' : ' from ') + names.building.toLowerCase(),
       reason: 'Goods travel in a creature’s satchel. This transfer settles only at the building.',
       thought: kind === 'stockbuilding' ? 'A few supplies, exactly where they belong.' : 'I’ll carry these to where they can help.', ...extra };

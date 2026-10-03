@@ -1,4 +1,6 @@
+require('./balancing-rules.js');
 require('./content-runtime.js');
+require('./creature-balancing.js');
 require('./creature-catalog.js');
 require('./asset-catalog.js');
 require('./workflow-venues.js');
@@ -13,6 +15,8 @@ require('./runtime-results.js');
 require('./engine.js');
 require('./engine-composition.js');
 require('./actor-state-view.js');
+require('./systems-work-rates.js');
+require('./systems-completions.js');
 require('./systems.js');
 require('./rpg.js');
 require('./behavior-tree.js');

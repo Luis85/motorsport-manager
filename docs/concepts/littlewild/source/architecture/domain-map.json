@@ -54,7 +54,15 @@
         "world-profile.ts",
         "scenario-shape.ts",
         "asset-catalog.ts",
-        "workflow-venues.ts"
+        "workflow-venues.ts",
+        "scene-graph.ts",
+        "canvas-authoring.ts",
+        "storytelling-validation.ts",
+        "balancing-rules.ts",
+        "animation-catalog.ts",
+        "balancing-inventory.ts",
+        "creature-balancing.ts",
+        "renderer-catalog.ts"
       ]
     },
     {
@@ -117,7 +125,9 @@
         "world-state-validation.ts",
         "game-settings.ts",
         "scenario-workflow.ts",
-        "application-adapters.ts"
+        "application-adapters.ts",
+        "systems-work-rates.ts",
+        "systems-completions.ts"
       ]
     },
     {
@@ -127,7 +137,28 @@
         "scenario-runtime.ts",
         "scenario-story.ts",
         "story-codec.ts",
-        "scenario-resources.ts"
+        "scenario-resources.ts",
+        "scene-navigation.ts",
+        "scene-editor.ts",
+        "scene-props.ts",
+        "external-editor-core.ts",
+        "external-editor-tiled.ts",
+        "external-editor-ldtk.ts",
+        "external-editor-gltf.ts",
+        "external-editors.ts",
+        "external-editor-canvas-data.ts",
+        "external-editor-canvas.ts",
+        "creature-editor-fields.ts",
+        "creature-editor.ts",
+        "external-editor-canvas-story.ts",
+        "storytelling-director.ts",
+        "storytelling-editor.ts",
+        "storytelling.ts",
+        "balancing-tools.ts",
+        "balancing-probes.ts",
+        "engine-export-data.ts",
+        "engine-export-manifest.ts",
+        "engine-export.ts"
       ]
     },
     {
@@ -185,7 +216,31 @@
         "renderer-frame.ts",
         "renderer-basic-adapter.ts",
         "renderer-host.ts",
-        "renderer-example.ts"
+        "renderer-example.ts",
+        "scene-editor-view.ts",
+        "scene-editor-ui.ts",
+        "renderer-scene-2d.ts",
+        "renderer-pixi.ts",
+        "renderer-excalibur.ts",
+        "scene-rendering.ts",
+        "renderer-compositor.ts",
+        "external-editor-ui.ts",
+        "creature-editor-preview.ts",
+        "creature-editor-view.ts",
+        "creature-editor-ui.ts",
+        "storytelling-preview.ts",
+        "storytelling-projection.ts",
+        "storytelling-player.ts",
+        "storytelling-view.ts",
+        "storytelling-ui.ts",
+        "storytelling-editor-preview.ts",
+        "engine-export-ui.ts",
+        "balancing-ui.ts",
+        "renderer-animations.ts",
+        "renderer-observer.ts",
+        "storytelling-renderer.ts",
+        "renderer-animation-example.ts",
+        "scene-renderer-admission.ts"
       ]
     },
     {
@@ -194,7 +249,10 @@
       "files": [
         "developer-data.ts",
         "developer-commands.ts",
-        "developer-session.ts"
+        "developer-session.ts",
+        "developer-scenes.ts",
+        "developer-creatures.ts",
+        "developer-storytelling.ts"
       ]
     },
     {
@@ -281,7 +339,19 @@
     "LWInteriors",
     "LWConstructionFootprints",
     "LWWorkflowVenues",
-    "LWInteractionSpace"
+    "LWInteractionSpace",
+    "LWSceneGraph",
+    "LWCanvasAuthoring",
+    "LWStorytellingValidation",
+    "LWScenarioSchema",
+    "LWBalanceRules",
+    "LWDefaultBalancing",
+    "LWAnimationCatalog",
+    "LWAnimationCatalogRecords",
+    "LWBalancingInventory",
+    "LWCreatureBalancing",
+    "LWRendererCatalog",
+    "LWRendererCatalogRecords"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -303,7 +373,10 @@
     "LWCreatureConfig",
     "LWCreatureDefinitions",
     "LWInteractionLibrary",
-    "LWInteriorDefinitions"
+    "LWInteriorDefinitions",
+    "LWCreatureEditorFieldDefinitions",
+    "LWDefaultBalancing",
+    "LWEngineSourceLoader"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

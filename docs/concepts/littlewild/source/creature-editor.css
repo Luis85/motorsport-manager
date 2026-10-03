@@ -1,0 +1,28 @@
+/* Inherit Littlewild's existing paper, woodland ink and accessible controls. */
+.modal:has(.creature-editor) {width:min(1360px,calc(100vw - 24px));max-width:none}
+.creature-editor {color:var(--experience-ink);font:13px/1.5 Arial,sans-serif;overflow:auto;scrollbar-color:var(--experience-accent) var(--experience-paper)}
+.creature-editor ::selection {background:var(--experience-accent);color:var(--experience-paper)}
+.modal:has(.creature-editor) :is(.workspace-nav,.v6-workspace-context) {display:none}
+.creature-toolbar {display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px}
+.creature-toolbar span {margin-left:auto;color:var(--experience-ink);font-size:13px;font-variant-numeric:tabular-nums}
+.creature-workspace {display:grid;grid-template-columns:minmax(230px,.85fr) minmax(260px,1.1fr) minmax(250px,1fr);gap:24px;align-items:start}
+.creature-workspace h3 {margin:0 0 8px;font:700 23px Georgia,serif}
+.creature-workspace p {line-height:1.5}
+.creature-preview-column {position:sticky;top:0}
+#creature-editor-preview {display:block;width:100%;height:320px;background:var(--experience-paper);border-radius:12px;touch-action:none;cursor:grab}
+#creature-editor-preview:active {cursor:grabbing}
+.creature-editor label {display:grid;gap:6px;margin:10px 0;font-weight:600;font-size:13px}
+.creature-editor input,.creature-editor select,.creature-editor textarea {width:100%;min-width:0;min-height:38px;padding:8px;border:1px solid color-mix(in srgb,var(--experience-accent) 30%,var(--experience-paper));border-radius:7px;color:var(--experience-ink);background:var(--experience-paper);font:14px Arial,sans-serif;caret-color:var(--experience-ink)}
+.creature-editor textarea {resize:vertical;font:12px/1.5 monospace;tab-size:2}
+.creature-editor input[type=color] {padding:4px;height:42px}
+.creature-workspace details {border-top:1px solid color-mix(in srgb,var(--experience-accent) 30%,var(--experience-paper));padding:12px 0}
+.creature-workspace summary {cursor:pointer;font-weight:700;line-height:1.5}
+.creature-workspace form {margin-bottom:14px}
+.creature-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.creature-field-json {grid-column:1/-1}
+.creature-fields fieldset {grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:1px solid color-mix(in srgb,var(--experience-accent) 30%,var(--experience-paper));padding:8px}
+.creature-control-pair {display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.creature-notice {padding:10px 0;color:var(--experience-ink)}
+.creature-editor :focus-visible {outline:3px solid var(--experience-accent);outline-offset:3px}
+@media(max-width:1050px){.creature-workspace{grid-template-columns:minmax(240px,.9fr) minmax(280px,1.1fr)}.creature-appearance{grid-column:2}.creature-preview-column{grid-row:1/3}}
+@media(max-width:650px){.creature-workspace{display:block}.creature-preview-column{position:static;margin-bottom:28px}#creature-editor-preview{height:280px}.creature-appearance{margin-top:28px}.creature-toolbar .btn,.creature-workspace .btn,.creature-editor input,.creature-editor select,.creature-workspace summary{min-height:44px}.creature-toolbar span{margin-left:0;width:100%}.creature-fields{grid-template-columns:1fr}.creature-control-pair{gap:8px}}

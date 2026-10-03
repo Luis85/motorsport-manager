@@ -4,8 +4,8 @@ import fs from 'node:fs';
 interface Result {name:string;passed:boolean;error?:string;}
 const results:Result[]=[];
 function test(name:string,work:()=>void):void {try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
-const root=globalThis as unknown as {LWRenderers:LittlewildRenderer.Registry;LWRendererFrame:{create(engine:unknown,options:unknown):LittlewildRenderer.Frame}};
-for(const file of ['developer-data','renderer-registry','renderer-frame'])require('./'+file+'.js');
+const root=globalThis as unknown as {LWRenderers:LittlewildRenderer.Registry;LWRendererCatalog:LittlewildRenderer.Catalog;LWRendererFrame:{create(engine:unknown,options:unknown):LittlewildRenderer.Frame}};
+for(const file of ['developer-data','renderer-catalog','renderer-registry','renderer-frame'])require('./'+file+'.js');
 const registry=root.LWRenderers!;
 function metadata(id='test'){return JSON.parse(JSON.stringify({id,name:'Test',description:'A test renderer.',capabilities:['hit-test']})) as LittlewildRenderer.Metadata;}
 const instance:LittlewildRenderer.Instance={mount(){},resize(){},draw(){},dispose(){}};
@@ -13,6 +13,11 @@ test('Registry exposes default metadata and accepts trusted factories separately
  assert.equal(registry.list()[0]!.id,'basic');const dispose=registry.register(metadata(),()=>instance);
  assert.equal(registry.list().length,2);assert(Object.isFrozen(registry.list()));assert(Object.isFrozen(registry.list()[1]!.capabilities));
  assert.throws(()=>registry.register(metadata(),()=>instance),/already registered/);dispose();dispose();assert.equal(registry.list().length,1);
+});
+test('Trusted renderer metadata is published to the pure catalog and withdrawn with its factory',()=>{
+ const release=registry.register({...metadata('custom-3d'),dimensions:['3d']},()=>instance),entry=root.LWRendererCatalog.list().find(row=>row.id==='custom-3d');
+ assert.deepEqual(entry?.dimensions,['3d']);assert(Object.isFrozen(entry));assert(Object.isFrozen(entry?.dimensions));assert.equal('factory' in entry!,false);assert.equal('create' in root.LWRendererCatalog,false);
+ release();assert.equal(root.LWRendererCatalog.list().some(row=>row.id==='custom-3d'),false);
 });
 test('Authored JSON cannot install executable renderer code',()=>{
  const data=metadata();assert.equal(registry.validate(data).ok,true);
@@ -64,5 +69,16 @@ test('Custom frames retain venue-bound quest actors and hide remote quest actors
  const frame=root.LWRendererFrame.create(world,options);assert.deepEqual(frame.actors.map(actor=>actor.away),[false,true]);assert.equal(JSON.stringify(world),before);
  state.scenarioWorkflow.deals[0]!.venueBuildingId='';assert.deepEqual(root.LWRendererFrame.create(world,options).actors.map(actor=>actor.away),[true,true]);
 });
-const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
-fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
+test('Dimension metadata is bounded detached data and executes no inherited caller behavior',()=>{
+ const valid=registry.validate({...metadata(),dimensions:['2d','3d']});assert(valid.ok);assert.deepEqual(valid.data?.dimensions,['2d','3d']);assert(Object.isFrozen(valid.data?.dimensions));
+ for(const dimensions of [[],['4d'],['2d','2d'],['2d','3d','2d']])assert(!registry.validate({...metadata(),dimensions}).ok);
+ let reads=0;const dimensions=['2d'];Object.defineProperty(dimensions,'0',{get(){reads++;return '2d';},enumerable:true});assert(!registry.validate({...metadata(),dimensions}).ok);
+ const inherited=['2d'];Object.setPrototypeOf(inherited,Object.create(Array.prototype,{[Symbol.iterator]:{value(){reads++;throw Error('No caller iterator');}}}));assert(!registry.validate({...metadata(),dimensions:inherited}).ok);assert.equal(reads,0);
+});
+async function finish():Promise<void>{
+ const name='Asynchronous factories remain separate from synchronous creation without requiring browser globals';
+ try{let calls=0;const release=registry.registerAsync(metadata('async-test'),async()=>{calls++;return instance;});assert.throws(()=>registry.create('async-test',{} as LittlewildRenderer.Context),/selectRendererAsync/);assert.equal(calls,0);assert.equal(await registry.prepare('async-test',{} as LittlewildRenderer.Context),instance);assert.equal(calls,1);release();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});}
+ const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
+ fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
+}
+finish().catch(error=>{console.error(error);process.exitCode=1;});

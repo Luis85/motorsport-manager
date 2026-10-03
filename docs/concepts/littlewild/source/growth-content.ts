@@ -6,7 +6,7 @@
  const contentApi=root.LWContent,adventureApi=root.LWAdventure;
  if(!contentApi||!adventureApi)throw Error('Growth content dependencies are missing.');
  const C=contentApi,A=adventureApi;
- const defaultGrowth=(node?require('./content/growth-library.json'):root.LWDefaultGrowth) as LWContentPorts.Growth|undefined;
+ const defaultGrowth=(node?require('./content/balancing.json').libraries.growth:root.LWDefaultGrowth) as LWContentPorts.Growth|undefined;
  if(!defaultGrowth)throw Error('Default growth content is missing.');
  const defaults=defaultGrowth;
  const growthSchema=(node?require('./content/growth.schema.json'):root.LWGrowthSchema) as LWContentPorts.Schema|undefined;

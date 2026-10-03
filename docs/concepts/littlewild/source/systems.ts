@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Littlewild content and progression layer.
  * The core engine still owns pathfinding, needs, time and movement. This module
  * adds paid learning queues, practical mastery, field evidence, production chains
@@ -5,8 +6,11 @@
  */
 /// <reference path="./engine-core-contracts.d.ts" />
 (function (inputRoot:unknown) {
+ const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
 'use strict';
 const root=inputRoot as LWCorePorts.Root & {LW:LWCorePorts.Facade;LWWorldProfile:{current:{nodePolicy?:string}}};
+const Work=(typeof module!=='undefined'&&module.exports?require('./systems-work-rates.js'):(globalThis as unknown as {LWSkillWorkRates:unknown}).LWSkillWorkRates) as {upgradeEffect(engine:LWCorePorts.SystemsEngine,building:LWApplication.Building,level:number):string;stationBonus(engine:LWCorePorts.SystemsEngine,kind:string):number;learningRate(engine:LWCorePorts.SystemsEngine,style?:string):number;workRate(engine:LWCorePorts.SystemsEngine,task:Task,baseRate:number):number};
+const Completions=(typeof module!=='undefined'&&module.exports?require('./systems-completions.js'):(globalThis as unknown as {LWSkillCompletions:unknown}).LWSkillCompletions) as {finish(engine:LWCorePorts.SystemsEngine,t:Task,finishBase:(task:Task)=>void):void};
 type Order=LWCorePorts.Order;
 type OrderView=LWCorePorts.OrderView;
 type Task=LWCorePorts.Task;
@@ -48,29 +52,9 @@ function defineLayer(BaseEngine:new()=>LWCorePorts.BaseEngine):new()=>LWCorePort
  }
  buildingLevel(kind:string){const b=this.s.buildings.find(b=>b.kind===kind);return b?(b.level||1):0;}
  specialization(id:string){return Object.values(this.s.specializations).includes(id);}
- stationBonus(kind:string){const b=this.s.buildings.find(b=>b.kind===kind);if(!b)return 0;let bonus=((b.level||1)-1)*.14+Math.max(0,(b.quality??60)-60)/400;
-  if(this.s.buildings.some(x=>x.kind==='storehouse'&&Math.abs(x.x-b.x)+Math.abs(x.y-b.y)<=4))bonus+=.12;
-  if(this.s.buildings.some(x=>x.kind==='waterwheel'&&Math.abs(x.x-b.x)+Math.abs(x.y-b.y)<=4))bonus+=.18;
-  return Math.min(.65,bonus);
- }
- learningRate(style=this.s.training?.style||this.s.learning.style){
-  const s=this.s;return STYLES[style!]!.rate*(1+(this.has('circle')?.12+.04*(this.buildingLevel('circle')-1):0)+(this.has('observatory')?.1:0)+(this.specialization('mentor')?.15:0)+(s.needs.comfort>=65?.08:0));
- }
- override workRate(t:Task){
-  if(t.kind==='train')return this.learningRate(t.style);
-  let rate=super.workRate(t);
-  const sk=this.taskSkill(t),discipline=SKILLS[sk!]!?.discipline;
-  if(t.kind==='craft'){
-   rate+=this.stationBonus(RECIPES[t.resource!]!.station);
-   if(discipline==='making'&&this.specialization('maker'))rate+=.15;
-   if(discipline==='craft'&&this.specialization('efficient'))rate+=.18;
-  }
-  if(t.kind==='build'&&this.s.buildings.some(b=>b.kind==='workshop'&&Math.abs(b.x-t.target!.x)+Math.abs(b.y-t.target!.y)<=3))rate+=.1;
-  if(t.kind==='practice')rate+=(this.has('circle')?.15:0);
-  if(t.kind==='explore'&&this.specialization('explorer'))rate+=.2;
-  if(t.stock&&this.specialization('steward'))rate+=.2;
-  return Math.min(2,Math.min(1.9,rate)+(t.kind==='craft'?Math.max(0,this.buildingLevel('waterwheel')-1)*.04:0)+(t.stock?Math.max(0,this.buildingLevel('storehouse')-1)*.04:0));
- }
+ stationBonus(kind:string){return Work.stationBonus(this,kind);}
+ learningRate(style?:string){return Work.learningRate(this,style);}
+ override workRate(t:Task){return Work.workRate(this,t,super.workRate(t));}
  override taskSkill(t:Task):string|null|undefined{
   if(t.kind==='practice')return t.skillId;
   if(t.kind==='build'){const o=this.s.orders.find(o=>o.id===t.orderId);return o?this.constructionSkill(o):null;}
@@ -149,19 +133,19 @@ function defineLayer(BaseEngine:new()=>LWCorePorts.BaseEngine):new()=>LWCorePort
  }
  totalCost(o:OrderView):Numbers{
   const b=BUILDINGS[o.kind!]!;if(o.type!=='upgrade')return b.cost;
-  const cost:Numbers={};for(const[r,n]of Object.entries(b.cost))cost[r]=Math.max(1,Math.ceil(n*(o.targetLevel===2?.5:.75)));
+  const cost:Numbers={};for(const[r,n]of Object.entries(b.cost))cost[r]=Math.max(1,Math.ceil(n*(o.targetLevel===2?B.forEngine(this).construction.upgradeLevelTwoFraction:B.forEngine(this).construction.upgradeLevelThreeFraction)));
   if(o.targetLevel===3){cost.tools=(cost.tools||0)+1;cost.beams=(cost.beams||0)+2;}
   return cost;
  }
  constructionPhases(o:OrderView):{name:string;cost:Numbers;time:number}[]{
-  const time=BUILDINGS[o.kind!]!.time*(o.type==='upgrade'?.8:1)*APPROACHES[o.approach||'balanced'!]!.time;
-  const phases=PHASE_NAMES.map((name,i)=>({name,cost:{} as Numbers,time:time*[.25,.45,.3][i]!}));
+  const time=BUILDINGS[o.kind!]!.time*(o.type==='upgrade'?B.forEngine(this).construction.upgradeTimeFraction:1)*APPROACHES[o.approach||'balanced'!]!.time;
+  const phases=PHASE_NAMES.map((name,i)=>({name,cost:{} as Numbers,time:time*[B.forEngine(this).construction.foundationFraction,B.forEngine(this).construction.structureFraction,B.forEngine(this).construction.finishFraction][i]!}));
   for(const [r,n]of Object.entries(this.totalCost(o))){let group=COST_GROUPS.findIndex(g=>g.includes(r));if(group<0)group=2;phases[group]!.cost[r]=n;}
   return phases;
  }
  projectProgress(o:OrderView){if(!['build','upgrade'].includes(o.type))return (o.done||0)/o.amount!;const ps=this.constructionPhases(o),total=ps.reduce((a,p)=>a+p.time,0);return clamp((ps.slice(0,o.stage||0).reduce((a,p)=>a+p.time,0)+(o.progress||0))/total,0,1);}
  remainingCost(o:OrderView):Numbers{const out:Numbers={};this.constructionPhases(o).forEach((p,i)=>{if(i<(o.stage||0)||(i===(o.stage||0)&&o.paid))return;for(const[r,n]of Object.entries(p.cost))out[r]=(out[r]||0)+n;});return out;}
- refundPreview(o:OrderView):Numbers{if(!['build','upgrade'].includes(o.type))return {};const out:Numbers={};const ps=this.constructionPhases(o);ps.forEach((p,i)=>{const factor=i<(o.stage||0)?.5:(i===(o.stage||0)&&o.paid)?1:0;for(const[r,n]of Object.entries(p.cost))out[r]=(out[r]||0)+n*factor;});return Object.fromEntries(Object.entries(out).map(([r,n]):[string,number]=>[r,Math.floor(n)]).filter(([,n])=>n>0));}
+ refundPreview(o:OrderView):Numbers{if(!['build','upgrade'].includes(o.type))return {};const out:Numbers={};const ps=this.constructionPhases(o);ps.forEach((p,i)=>{const factor=i<(o.stage||0)?B.forEngine(this).construction.refundCompletedFraction:(i===(o.stage||0)&&o.paid)?1:0;for(const[r,n]of Object.entries(p.cost))out[r]=(out[r]||0)+n*factor;});return Object.fromEntries(Object.entries(out).map(([r,n]):[string,number]=>[r,Math.floor(n)]).filter(([,n])=>n>0));}
  placementIssue(kind:string,x:number,y:number){if(BUILDINGS[kind!]!?.placement==='water'){let near=false;for(let a=0;a<SIZE;a++)for(let b=0;b<SIZE;b++)if(terrain(a,b)==='water'&&Math.abs(a-x)+Math.abs(b-y)<=3)near=true;if(!near)return 'The waterwheel needs a grass tile within 3 steps of the spring.';}return null;}
  override place(kind:string,x:number,y:number){
   if(!own(BUILDINGS,kind))return fail('Unknown blueprint.');
@@ -175,22 +159,9 @@ function defineLayer(BaseEngine:new()=>LWCorePorts.BaseEngine):new()=>LWCorePort
   const o={id:'o'+this.s.nextId++,type:'upgrade',kind:b.kind,targetLevel:b.level+1,x:b.x,y:b.y,progress:0,stage:0,paid:false,paused:false,priority:0,created:this.s.simTime,approach:this.s.buildPolicy.approach};
   this.s.orders.push(o);this.log('You planned level '+o.targetLevel+' for our '+BUILDINGS[b!.kind!]!.name.toLowerCase()+'. It stays usable during the work.','plan');return {ok:true,order:o};
  }
- upgradeEffect(b:LWApplication.Building,level=b.level+1){
-  const extra=level-1,cat=BUILDINGS[b!.kind!]!.category;
-  if(b.kind==='circle')return 'Lessons: +'+Math.round((.12+extra*.04)*100)+'% speed. Practice: +'+level+' points.';
-  if(['garden','grainplot','greenhouse','orchard'].includes(b.kind))return '+'+extra+' harvest yield; '+(extra*10)+'% faster regrowth.';
-  if(['shelter','cottage'].includes(b.kind))return '+'+(extra*8)+' energy and comfort per rest.';
-  if(b.kind==='study'||b.kind==='observatory')return '+'+extra+' research per experiment.';
-  if(b.kind==='well')return '+'+extra+' water per collection.';
-  if(b.kind==='market')return '+'+(extra*5)+'% shared trade income.';
-  if(b.kind==='fire')return '+'+(extra*8)+' comfort when warming; '+(extra*14)+'% station work speed.';
-  if(b.kind==='workshop')return (extra*14)+'% station work speed, in addition to quality and nearby support.';
-  if(b.kind==='storehouse')return '+'+(extra*4)+'% extra global reserve-work speed; the 12% nearby station bonus remains.';
-  if(b.kind==='waterwheel')return '+'+(extra*4)+'% extra global crafting speed; the 18% nearby station bonus remains.';
-  return (extra*14)+'% station work speed, in addition to quality and nearby support.';
- }
- buildQuality(o:OrderView){const m=this.mastery(this.constructionSkill(o));return clamp(Math.round(55+m.rank*7+APPROACHES[o.approach||'balanced'!]!.quality+(this.s.needs.comfort>=65?5:0)+(this.specialization('builder')?12:0)+(this.specialization('finisher')?10:0)),25,100);}
- qualityName(q:number){return q>=85?'Beautifully made':q>=65?'Well made':q>=45?'Dependable':'Simple & useful';}
+ upgradeEffect(b:LWApplication.Building,level=b.level+1){return Work.upgradeEffect(this,b,level);}
+ buildQuality(o:OrderView){const m=this.mastery(this.constructionSkill(o));return clamp(Math.round(B.forEngine(this).construction.qualityBase+m.rank*B.forEngine(this).construction.qualityPerRank+APPROACHES[o.approach||'balanced'!]!.quality+(this.s.needs.comfort>=B.forEngine(this).work.comfortableGate?B.forEngine(this).construction.comfortableQuality:0)+(this.specialization('builder')?B.forEngine(this).construction.builderQuality:0)+(this.specialization('finisher')?B.forEngine(this).construction.finisherQuality:0)),B.forEngine(this).construction.minimumQuality,100);}
+ qualityName(q:number){return q>=B.forEngine(this).construction.beautifulQuality?'Beautifully made':q>=B.forEngine(this).construction.wellMadeQuality?'Well made':q>=B.forEngine(this).construction.dependableQuality?'Dependable':'Simple & useful';}
  override orderName(o:Order){if(o.type==='practice')return 'Practice '+SKILLS[o.skillId!]!.short+' · '+o.amount+' '+(o.amount===1?'session':'sessions');if(o.type==='upgrade')return 'Improve '+BUILDINGS[o.kind!]!.name+' · level '+o.targetLevel;return super.orderName(o);}
  override missingSkill(r:string){const skill=RAW_SKILLS[r];if(skill&&!this.s.skills[skill])return skill;return super.missingSkill(r);}
  override assessResource(resource:string,amount:number,seen=new Set<string>()):Issue|null{
@@ -292,77 +263,21 @@ function defineLayer(BaseEngine:new()=>LWCorePorts.BaseEngine):new()=>LWCorePort
  recipeForecast(resource:string,quantity=1){
   const rec=RECIPES[resource!]!;if(!rec)return {rows:[],steps:[],issues:[]};return this.materialForecast({type:'craft',resource,amount:quantity,done:0,paused:false});
  }
- override finishTask(t:Task){
-  const s=this.s,o=s.orders.find(o=>o.id===t.orderId),sk=this.taskSkill(t);
-  if(t.kind==='build'&&o){
-   if(!o.paid){s.task=null;return;}
-   const phases=this.constructionPhases(o);this.practiceSkill(sk,1+(o.approach==='careful'?1:0));s.metrics.stages++;this.record('stage');s.memory.lastAchievement=s.simTime;
-   if((o.stage||0)<phases.length-1){o.stage!++;o.progress=0;o.paid=false;this.log(BUILDINGS[o.kind!]!.name+': '+phases[o.stage!-1]!.name.toLowerCase()+' complete. Next: '+phases[o.stage!]!.name.toLowerCase()+'.','plan');s.task=null;return;}
-   const quality=this.buildQuality(o);
-   if(o.type==='upgrade'){
-    const b=s.buildings.find(b=>b.kind===o.kind&&b.x===o.x&&b.y===o.y)!;b.level=o.targetLevel!;b!.quality=Math.max(b!.quality,quality);s.metrics.upgrades++;this.record('upgrade');
-    this.remember('upgrade-'+b.kind+'-'+b.level,'Our '+BUILDINGS[b!.kind!]!.name.toLowerCase()+' grew',this.upgradeEffect(b,b.level),'home');
-   }else{
-    const b={id:'b'+s.nextId++,kind:o.kind!,x:o.x!,y:o.y!,stock:CROP_RES[o.kind!]?4:0,regen:0,level:1,quality};s.buildings.push(b);s.stats.built++;this.record('build:'+o.kind);this.remember('build-'+o.kind,'Our '+BUILDINGS[o.kind!]!.name.toLowerCase(),'A '+this.qualityName(quality).toLowerCase()+' place, made together.',BUILDINGS[o.kind!]!.icon);
-   }
-   s.orders=s.orders.filter(x=>x.id!==o.id);this._blockedKey='';this.xp('creature',16);this.xp('player',12);this.researchGain(2);s.bond=clamp(s.bond+3,0,100);s.needs.joy=clamp(s.needs.joy+10,0,100);
-   this.log(this.orderName(o)+' completed. '+this.qualityName(quality)+' · '+quality+' quality.','home');this.emit('celebrate',this.orderName(o)+' completed!');s.task=null;return;
-  }
-  if(t.kind==='practice'&&o){
-   if(s.learning.practiceDay!==s.day){s.learning.practiceDay=s.day;s.learning.practicedToday={};}
-   const d=DRILLS[o.skillId!]!;if(Object.entries(d.cost).every(([r,n])=>s.inventory[r!]!>=n)){
-    for(const[r,n]of Object.entries(d.cost))s.inventory[r!]!-=n;
-    const repeated=s.learning.practicedToday[o.skillId!]||0,points=(repeated<2?4:2)+(this.has('circle')?this.buildingLevel('circle'):0)+(this.specialization('mentor')?2:0);
-    this.practiceSkill(o.skillId!,points);s.learning.practicedToday[o.skillId!]=repeated+1;s.metrics.practices[o.skillId!]=(s.metrics.practices[o.skillId!]||0)+1;this.record('practice:'+o.skillId);
-    if(!repeated)this.researchGain(1,'First '+SKILLS[o.skillId!]!.short+' drill today');this.xp('creature',5);this.xp('player',3);s.memory.lastAchievement=s.simTime;
-    o.done!++;o.progress=0;if(o.done!>=o.amount!)s.orders=s.orders.filter(x=>x.id!==o.id);this.log('A '+SKILLS[o.skillId!]!.short.toLowerCase()+' drill: +'+points+' practice. '+(repeated<2?'A fresh attempt.':'Repeating helps, but variety teaches more.'),'book');
-   }else o.progress=0;s.task=null;return;
-  }
-  if(t.kind==='reflect'){s.learning.fatigue=Math.max(0,s.learning.fatigue-35);s.learning.recovering=s.learning.fatigue>30;s.needs.joy=clamp(s.needs.joy+8,0,100);s.task=null;return;}
-  if(t.kind==='eatbread'){if(s.inventory.bread!>0){s.inventory.bread!--;s.needs.food=clamp(s.needs.food+40,0,100);s.needs.joy=clamp(s.needs.joy+3,0,100);}s.task=null;return;}
-  if(t.kind==='usebalm'){if(s.inventory.balm!>0){s.inventory.balm!--;s.needs.comfort=clamp(s.needs.comfort+38,0,100);s.needs.joy=clamp(s.needs.joy+6,0,100);}s.task=null;return;}
-  if(t.kind==='gather'&&t.nodeId?.startsWith('crop:')){
-   const b=s.buildings.find(b=>'crop:'+b.id===t.nodeId);let amount=Math.min(b?.stock||0,3+(b?.level||1)-1+(this.specialization('gatherer')?1:0));if(o?.type==='gather'&&o.resource===t.resource)amount=Math.min(amount,o.amount!-o.done!);
-   if(amount>0){b!.stock-=amount;s.inventory[t.resource!]!+=amount;s.stats.gathered+=amount;this.xp('creature',3);this.xp('player',1);this.practiceSkill('gardening');if(o?.type==='gather'&&o.resource===t.resource){o.done!+=amount;if(o.done!>=o.amount!)s.orders=s.orders.filter(x=>x.id!==o.id);}s.metrics.gathered[t.resource!]=(s.metrics.gathered[t.resource!]||0)+amount;this.record('gather:'+t.resource,amount);this.log('Harvested '+amount+' '+RES[t.resource!]!.name.toLowerCase()+' from our '+BUILDINGS[b!.kind!]!.name.toLowerCase()+'.','sprout');s.memory.lastAchievement=s.simTime;}s.task=null;return;
-  }
-  const beforeInv={...s.inventory},beforeCraft=s.stats.planksMade,beforeLevel=s.training?clone(s.training):null;
-  const naturalNode=t.kind==='gather'?s.nodes.find(n=>n.id===t.nodeId):null;
-  const hasCraftSupplies=t.kind==='craft'&&Object.entries(RECIPES[t.resource!]!.cost).every(([r,n])=>s.inventory[r!]!>=n);
-  super.finishTask(t);
-  if(t.kind==='train'&&beforeLevel&&s.skills[beforeLevel.id]){
-   const style=STYLES[beforeLevel.style||'together'!]!;this.practiceSkill(beforeLevel.id,style.practice);s.bond=clamp(s.bond+style.bond-2,0,100);s.needs.joy=clamp(s.needs.joy+style.joy-6,0,100);s.metrics.lessons++;this.record('lesson');
-   s.training=s.learning.queue.shift()||null;
-  }
-  if(t.kind==='craft'&&hasCraftSupplies){let amount=RECIPES[t.resource!]!.amount;if(['meals','bread'].includes(t.resource!)&&this.specialization('cook')){s.inventory[t.resource!]!++;amount++;}s.metrics.crafts[t.resource!]=(s.metrics.crafts[t.resource!]||0)+amount;this.record('craft:'+t.resource,amount);}
-  if(t.kind==='gather'){
-   let amount=s.inventory[t.resource!]!-beforeInv[t.resource!]!;
-   if(amount>0&&this.specialization('gatherer')&&naturalNode?.stock!>0&&(!o||o.type!=='gather'||o.done!<o.amount!)){s.inventory[t.resource!]!++;naturalNode!.stock--;amount++;s.stats.gathered++;if(o?.type==='gather'&&o.resource===t.resource){o.done!++;if(o.done!>=o.amount!)s.orders=s.orders.filter(x=>x.id!==o.id);}}
-   if(t.resource==='water'&&t.nodeId==='well'&&this.buildingLevel('well')>1){let extra=this.buildingLevel('well')-1;if(o?.type==='gather')extra=Math.max(0,Math.min(extra,o.amount!-o.done!));s.inventory.water!+=extra;amount+=extra;s.stats.gathered+=extra;if(o?.type==='gather'){o.done!+=extra;if(o.done!>=o.amount!)s.orders=s.orders.filter(x=>x.id!==o.id);}}
-   s.metrics.gathered[t.resource!]=(s.metrics.gathered[t.resource!]||0)+amount;if(amount>0)this.record('gather:'+t.resource,amount);
-  }
-  if(t.kind==='research'){const extra=(this.has('observatory')?2:0)+Math.max(0,this.buildingLevel('study')-1)+Math.max(0,this.buildingLevel('observatory')-1)+(this.specialization('thinker')?1:0);if(extra)this.researchGain(extra,'Improved research places');this.record('research');}
-  if(t.kind==='explore'&&this.specialization('explorer'))this.researchGain(1,'Field observer');
-  if(t.kind==='deliver'&&o?.done)this.record('deliver');
-  if(t.kind==='rest'||t.kind==='warm'){
-   const level=t.kind==='rest'?(this.has('cottage')?this.buildingLevel('cottage'):this.buildingLevel('shelter')):this.buildingLevel('fire');const extra=Math.max(0,level-1)*8;
-   s.needs.comfort=clamp(s.needs.comfort+extra+(this.specialization('comfort')?12:0),0,100);if(t.kind==='rest')s.needs.energy=clamp(s.needs.energy+extra,0,100);
-  }
-  if(t.kind==='play'&&this.has('orchard'))s.needs.joy=clamp(s.needs.joy+8,0,100);
- }
- override splitIncome(amount:number){return super.splitIncome(Math.round(amount*(1+(this.specialization('merchant')?.15:0)+Math.max(0,this.buildingLevel('market')-1)*.05)));}
+ override finishTask(t:Task){Completions.finish(this,t,task=>super.finishTask(task));}
+ override splitIncome(amount:number){return super.splitIncome(Math.round(amount*(1+(this.specialization('merchant')?B.forEngine(this).production.merchantBonus:0)+Math.max(0,this.buildingLevel('market')-1)*B.forEngine(this).production.marketPerLevel)));}
  override step(dt:number){
   const s=this.s;if(!s.started||s.paused)return;dt=clamp(dt,0,.25);const t=s.task;
   if(s.learning.practiceDay!==s.day){s.learning.practiceDay=s.day;s.learning.practicedToday={};}
   const studying=t&&['train','practice'].includes(t.kind)&&t.phase==='work';
-  s.learning.fatigue=clamp(s.learning.fatigue+dt*(studying?(t.style==='playful'?.45:t.style==='independent'?1.05:.7):-.13),0,100);
-  if(s.learning.fatigue>=70)s.learning.recovering=true;if(s.learning.fatigue<=30)s.learning.recovering=false;
+  s.learning.fatigue=clamp(s.learning.fatigue+dt*(studying?(t.style==='playful'?B.forEngine(this).work.playfulFatigue:t.style==='independent'?B.forEngine(this).work.independentFatigue:B.forEngine(this).work.togetherFatigue):B.forEngine(this).work.idleFatigue),0,100);
+  if(s.learning.fatigue>=B.forEngine(this).work.fatigueRecoverGate)s.learning.recovering=true;if(s.learning.fatigue<=B.forEngine(this).work.fatigueResumeGate)s.learning.recovering=false;
   if(studying&&s.learning.recovering){s.task=null;this.decide();return;}
   if(t?.kind==='practice'&&t.phase==='work'){const o=s.orders.find(o=>o.id===t.orderId);if(o)o.progress=Math.min(t.duration,t.elapsed+dt*this.workRate(t));}
   // The base engine grows the original garden; only the bonus time is added here.
   for(const b of s.buildings){b.level??=1;b.quality??=60;if(CROP_RES[b.kind]){
-   const extra=(b.level-1)*.1+(['garden','grainplot'].includes(b.kind)&&this.has('greenhouse')?.2:0);
+   const extra=(b.level-1)*B.forEngine(this).production.cropLevelRate+(['garden','grainplot'].includes(b.kind)&&this.has('greenhouse')?B.forEngine(this).production.greenhouseBonus:0);
    b.regen+=dt*((b.kind==='garden'?0:1)+extra);
-   if(b.regen>=80){b.regen-=80;b.stock=Math.min(12,b.stock+(b.kind==='orchard'?6:4)+(b.level-1));}
+   if(b.regen>=B.forEngine(this).production.cropSeconds){b.regen-=B.forEngine(this).production.cropSeconds;b.stock=Math.min(B.forEngine(this).production.cropStockCap,b.stock+(b.kind==='orchard'?B.forEngine(this).production.orchardYield:B.forEngine(this).production.cropYield)+(b.level-1));}
   }}
   super.step(dt);
   if(s.task?.kind==='train'&&s.training){const phase=this.learningPhase();s.task.label='Learning '+SKILLS[s.training.id!]!.short.toLowerCase()+' · '+phase!.label.toLowerCase();}

@@ -1,7 +1,9 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /// <reference path="./legacy-task-contracts.d.ts" />
 /* Personal inventory, equipment and physical warehouse supply commands. */
 (function (inputRoot: unknown) {
     'use strict';
+ const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     interface Host extends LWTaskPorts.ColonyHost {
         depositKeep(c?: LWTaskPorts.Actor): LWTaskPorts.Numbers;
         depositTask(reason?: string, all?: boolean): LWTaskPorts.Draft | null;
@@ -163,7 +165,7 @@
                 const w = this.s.colony.warehouse.inventory;
                 if ((w[id]! || 0) < qty)
                     return fail('Only goods already deposited in the warehouse can be sold.');
-                const total = Math.max(1, Math.floor(item(id).price * .65)) * qty;
+                const total = Math.max(1, Math.floor(item(id).price * B.forEngine(this).policy.sellFraction)) * qty;
                 w[id]! -= qty;
                 const settlement = this.settleEconomy({ id: this.economySettlementId('warehouse-sale'), guide: total }, 'Sold warehouse stock: ' + item(id).name);
                 if (!settlement.ok) {

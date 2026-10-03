@@ -220,6 +220,36 @@
       "owner": "interaction-definitions",
       "kind": "schema",
       "validatorRole": "schema"
+    },
+    {
+      "id": "creature-editor-fields",
+      "pattern": "assets/creatures/editor-fields.json",
+      "owner": "experience-application",
+      "kind": "definitions",
+      "validatorRole": "creatureEditorFields",
+      "embeddedGlobal": "LWCreatureEditorFieldDefinitions"
+    },
+    {
+      "id": "balancing",
+      "pattern": "content/balancing.json",
+      "owner": "experience-application",
+      "kind": "rules",
+      "validatorRole": "balancing",
+      "embeddedGlobal": "LWDefaultBalancing"
+    },
+    {
+      "id": "balancing-inventory",
+      "pattern": "content/balancing-inventory.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "balancingInventory"
+    },
+    {
+      "id": "balancing-schema",
+      "pattern": "content/balancing.schema.json",
+      "owner": "experience-application",
+      "kind": "schema",
+      "validatorRole": "schema"
     }
   ],
   "historicalFixtures": [
@@ -258,6 +288,14 @@
     {
       "path": "fixtures/v8-paid-work.json",
       "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/external-ldtk.schema.json",
+      "reason": "Pinned official LDtk exchange schema, used only by offline verification and never embedded as gameplay content."
+    },
+    {
+      "path": "fixtures/external-gltf.schema.json",
+      "reason": "Pinned official glTF exchange schema, used only by offline verification and never embedded as gameplay content."
     }
   ]
 }

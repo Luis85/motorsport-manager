@@ -89,6 +89,98 @@
     {
       "path": "workflow-venue-contracts.d.ts",
       "owner": "content-model"
+    },
+    {
+      "path": "scene-graph-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "scene-navigation-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "scene-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "scene-editor-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "developer-scene-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "external-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "canvas-authoring-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "external-editor-canvas-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "creature-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "creature-editor-preview-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "creature-editor-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-data-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "storytelling-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "storytelling-render-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "balancing-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "storytelling-player-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "engine-export-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "balancing-tools-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "animation-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-renderer-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "animation-data-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "renderer-data-contracts.d.ts",
+      "owner": "content-model"
     }
   ]
 }

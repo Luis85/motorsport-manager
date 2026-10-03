@@ -4,7 +4,7 @@
 
 The engine supplies autonomous agents, needs, learning, RPG resolution, quests, construction, production, physical logistics, relationships, housing, connected islands and progression. A **pack** supplies one setting and its authored starts. **Littlewild is a bundled showcase**, alongside Emberworks and the indoor Office scenario.
 
-The implementation separates data from execution, but does not claim that every former hardcoded constant is extracted. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable through the existing libraries; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. Some Adventure entries are extensible under that library's existing rules. **3D model geometry, material roles, actor rig sockets and building animation anchors are declarative asset data.** Full scenario snapshots can carry validated visual and creature catalogs. The Office pack selects an indoor floor, room palette and camera; animation executors, island dimensions and some legacy narrative strings remain compiled.
+Default gameplay tuning lives in [source/content/balancing.json](source/content/balancing.json); see [BALANCING.md](BALANCING.md) for its supported paths and experiments. Creature identity and discovery remain in the co-located asset folders, with a validated numeric tuning overlay. Complete packs explicitly override defaults, and engines retain captured values. Existing core item/skill/building IDs are mechanic roles. Their names, costs, recipes and supported settings are editable; arbitrarily removing/renaming those roles or adding a new executable handler is unsupported. **3D model geometry, material roles, actor rig sockets and building animation anchors are declarative asset data.** Full scenario snapshots can carry validated visual and creature catalogs. Animation executors, mathematical rules, grid dimensions and some legacy narrative strings remain compiled.
 
 ## Supported configuration
 
@@ -21,10 +21,11 @@ The implementation separates data from execution, but does not claim that every 
 | Starting scenes | `scenes[].initialState` | Actual creatures, holdings, buildings, needs, skills, orders, player progression and owned islands |
 | Guidance | `tutorial[]` | Ordered steps with supported real-workspace links |
 | Definitions | `libraries.base/adventure/world/growth` | Existing item, lesson, quest, world, progression and interaction definitions |
-| Simulation tuning | `simulation.rules.actor`, `simulation.rules.economy` | Bounded physiological, learning, social, level, income and settlement coefficients |
+| Simulation tuning | `simulation.rules.actor`, `simulation.rules.economy`, `simulation.rules.gameplay` | Bounded physiological, learning, social, work, construction, care, level, income and settlement coefficients |
+| Storytelling | `storytelling`, `scenes[].graph.events`, `triggers` | Storyboard shots, timeline tracks, p5 descriptors and validated story actions |
 | Composition contract | `simulation.archetype` | Must exactly equal the compiled `living-world-v1` engine, pipeline and transaction schedules |
 
-World profiles reuse the existing square-island lattice: 19×19 cells, stride 23, one crossing on each edge, connected purchased neighbors. Eight profiles and eight scenes per pack are supported; a scene selects one profile for its connected archipelago. This is not simultaneous different terrain templates per island or arbitrary scene-to-scene creature travel.
+World profiles reuse the existing square-island lattice: 19×19 cells, stride 23, one crossing on each edge, connected purchased neighbors. Eight worlds and up to 64 scenes per pack are supported. Root scenes own native checkpoints; bound interior and island scenes share their source authority. Reviewed connections can cross worlds within the pack and preserve dormant work. This does not transfer creatures arbitrarily between independent native owners or give each island an unrelated terrain topology.
 
 A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 traversable so existing bridge crossings remain valid. All land must be connected; blocking fixed nodes must not seal access. Node counts are bounded to 0–30 per existing harvest role. Counts describe generation requests, not a guarantee that dense/blocked terrain can accommodate every requested node.
 
@@ -39,7 +40,7 @@ A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 t
 5. For a dedicated distributable, compile with `--pack`.
 
 ```sh
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run build
 
 node .generated/tools/scenario-cli.cjs validate source/content/emberworks.pack.json
@@ -51,9 +52,9 @@ node .generated/tools/simulation-profile-cli.cjs export my-profile.json
 npm run build -- --pack my-setting.pack.json --output my-setting.html
 ```
 
-TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, discovers and validates visual manifests under `source/assets/{buildings,items,actors,creatures}/<id>/asset.json`, and validates creature gameplay definitions in the co-located `creature.json` files. Authored interaction definitions live under `source/assets/interactions/`. The selected pack, immutable catalogs, runtime, compatibility libraries and Three.js are bundled into one offline HTML file. No runtime file server is required.
+TypeScript under `source/` is authoritative. `npm run build` compiles it to ignored `.generated/` JavaScript, validates the selected pack through the compiled CLI, discovers and validates visual manifests under `source/assets/{buildings,items,actors,creatures}/<id>/asset.json`, and validates creature gameplay definitions in the co-located `creature.json` files. Authored interaction definitions live under `source/assets/interactions/`. The selected pack, immutable catalogs, runtime, compatibility libraries and pinned Three.js, PixiJS, ExcaliburJS and p5.js distributions are bundled into one offline HTML file. No runtime file server is required.
 
-3D assets are a **build-time bundled catalog**, not part of scenario schema 2 or portable stories. This keeps user-imported world/scenario JSON data-only and prevents an imported pack from registering renderer behavior or executable asset loaders. See `ASSET-ARCHITECTURE.md`.
+The default visual catalog is bundled at build time. Schema-2 packs and portable stories may carry complete validated visual and creature catalogs in `resources`. These definitions use the same bounded primitive/material/rig grammar as bundled assets. They cannot register renderer behavior, executable asset loaders or arbitrary remote media. See `ASSET-ARCHITECTURE.md`.
 
 ## Scene state is a precise snapshot
 
@@ -102,14 +103,16 @@ Fingerprints detect accidental changes and stale reviews. They are opaque non-cr
 
 ## Still required for a fully general framework
 
-The current runtime supports validated role workflows and portable visual/creature catalogs through existing compiled capabilities. A fully general framework would still need arbitrary mechanic-ID catalogs, new executable capability registration, further extracted mechanics/narrative vocabulary and richer topologies. This release provides tested indoor/outdoor scenario repurposing within the existing grid, asset and actor contracts; it does not provide a visual world editor. See [Office scenario authoring and portability](OFFICE-SCENARIO.md) for a complete working example.
+The current runtime supports validated role workflows and portable visual/creature catalogs through existing compiled capabilities. A fully general framework would still need arbitrary mechanic-ID catalogs, new executable capability registration, further extracted mechanics/narrative vocabulary and richer topologies. The World & Scene Editor provides visual pack authoring, nested levels, entry rules, cross-world connections and entity placement within the existing grid, asset and actor contracts. Scene rendering configuration selects 2D or 3D adapters and may embed observational 2D scenes in the UI. The 3D Creature Editor authors supported appearance and character values through the same reviewed draft boundary. External exchange supports Tiled, LDtk, glTF/GLB and Obsidian Canvas/Advanced Canvas with documented format-specific limits. See [Office scenario authoring and portability](OFFICE-SCENARIO.md) for a complete working example.
 
 ## Simulation profiles and ECS boundaries
 
-`source/content/simulation-profile.json` is the compatibility profile used by ordinary current-format stories. It contains complete validated copies of `actor-rules.json` and `economy-rules.json`, plus the exact compiled composition archetype. Engines capture a deeply frozen profile when constructed, so later catalog selection cannot retroactively change an existing engine.
+The simulation section of `source/content/balancing.json` supplies the default profile; `simulation-profile.json`, `actor-rules.json` and `economy-rules.json` remain reference mirrors. Profiles carry complete actor/economy rules and optional supported gameplay rules, plus the exact compiled composition archetype. Engines capture a deeply frozen profile when constructed, so later default-file or catalog edits cannot retroactively change an existing engine. Existing profiles without gameplay rules retain the documented compatible fallback.
 
 Supported profile edits are bounded data values accepted by the actor/economy validators, such as needs rates, learning fatigue/recovery, social decay, level thresholds, level-up bonuses, income sharing and settlement limits. Relationships between values still apply; for example, recovery thresholds and financial limits must remain coherent.
 
 The following remain compiled and must match exactly: engine feature layers, high-level fixed-step phases, actor-dynamics systems, actor-activity systems, world-transaction systems and economy-transaction systems. The schema and runtime both reject unknown, removed or reordered entries. Imported JSON cannot declare components, commands, callbacks, module paths, source text, behavior-tree handlers or executable systems.
 
 Use `simulation-profile-cli.cjs validate` before embedding a profile in a schema-2 pack. Use `fingerprint` to compare deterministic identities, `export` to obtain the compatibility profile and `schema` to inspect the standalone contract. The scenario schema embeds the same profile definitions and is checked for drift by the release gate.
+
+Central default tuning, the balancing workshop, CLI experiments and captured-value semantics are documented in [BALANCING.md](BALANCING.md).

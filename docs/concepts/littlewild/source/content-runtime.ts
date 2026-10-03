@@ -10,7 +10,7 @@
   type Component=LWContentPorts.DefinitionMap[Category];
   const isRecord=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
   const IS_NODE = typeof module !== 'undefined' && module.exports;
-  const defaultLibrary=(IS_NODE ? require('./content/default-library.json') : root.LWDefaultLibrary) as Library|undefined;
+  const defaultLibrary=(IS_NODE ? require('./content/balancing.json').libraries.base : root.LWDefaultLibrary) as Library|undefined;
   if(!defaultLibrary)throw Error('Default content library is missing.');
   const DEFAULT=defaultLibrary;
   const bundledSchema=(IS_NODE ? require('./content/library.schema.json') : root.LWContentSchema) as LWContentPorts.Schema|undefined;

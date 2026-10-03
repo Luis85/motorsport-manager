@@ -1,6 +1,12 @@
 /// <reference path="./runtime-contracts.d.ts" />
+/// <reference path="./developer-scene-contracts.d.ts" />
+/// <reference path="./external-editor-contracts.d.ts" />
 /// <reference path="./developer-space-contracts.d.ts" />
 /** Public data contracts shared by the browser global and the typed Node entry point. */
+/// <reference path="./engine-export-contracts.d.ts" />
+/// <reference path="./balancing-tools-contracts.d.ts" />
+/// <reference path="./storytelling-contracts.d.ts" />
+/// <reference path="./creature-editor-contracts.d.ts" />
 declare namespace LittlewildDeveloper {
  type Json = null | boolean | number | string | Json[] | { [key:string]:Json };
  type Document = { [key:string]:Json };
@@ -82,6 +88,8 @@ declare namespace LittlewildDeveloper {
   buildingDesign(buildingId:string):BuildingDesignDraft|null;
   interactionOptions(sourceId:string,target:InteractionTarget):readonly InteractionOption[];
   interactions():Document;interactionDefinitions():Document;settings():GameSettings;
+  sceneConnections():readonly SceneConnection[];sceneTarget():SceneTarget|null;sceneProps():readonly SceneProp[];
+  reviewScene(connectionId:string):SceneReview;enterScene(review:SceneReview):Snapshot;
   inspect():Snapshot;save():Document;story():Document;captureScenario():Document;
   dispose():void;
  }
@@ -91,6 +99,7 @@ declare namespace LittlewildDeveloper {
  interface SessionApi {
   readonly version:1;readonly fixedStep:0.1;readonly maxSteps:36000;
   scenarios():readonly ScenarioSummary[];commands():readonly CommandDefinition[];
+  createSceneEditor(input:unknown):SceneEditor;
   create(options:CreateOptions):Session;
   validateScenario(input:unknown):Validation;
   createScenario(input:unknown,sceneId:string):Session;
@@ -106,8 +115,21 @@ declare namespace LittlewildDeveloper {
   get(category:AssetCategory,id:string):Document|null;
   validate(input:unknown):Validation;
  }
+ interface StorytellingTools {
+  inspect(input:unknown):LWStorytelling.Data;
+  createEditor(input:unknown):{scene:SceneEditor;storytelling:LWStorytelling.Authoring};
+  createPlayback(input:unknown,id:string):CutscenePlayback;
+  sample(input:unknown,id:string,time:number):LWStorytelling.Sample;
+ }
+ interface AnimationValidation {readonly ok:boolean;readonly errors:readonly string[];readonly data:readonly LWAnimations.Descriptor[]|null;}
+ interface AnimationDiscovery {list():readonly LWAnimations.Metadata[];validate(input:unknown):AnimationValidation;}
  interface Toolbox extends SessionApi {
-  failureCodes():readonly LWRuntime.FailureCode[];readonly assets:AssetApi;readonly renderers:RendererDiscovery;}
+  readonly animations:AnimationDiscovery;
+  readonly engineExport:LWEngineExport.Api;readonly balancing:LWBalancing.Api;
+  readonly storytelling:StorytellingTools;
+  createCreatureEditor(input:unknown,selection:LWCreatureEditor.Selection):LWCreatureEditor.Session;
+  validateCreaturePackage(input:unknown,context?:{pack:LWContentPorts.ScenarioPack;selection:LWCreatureEditor.Selection}):LWCreatureEditor.Validation;
+  failureCodes():readonly LWRuntime.FailureCode[];readonly externalEditors:LWExternalEditors.Api;readonly assets:AssetApi;readonly renderers:RendererDiscovery;}
 }
 
 /** Globals supplied by the standalone/embedding composition, never by imported content. */

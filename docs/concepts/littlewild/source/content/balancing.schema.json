@@ -1,0 +1,2240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlewild.local/balancing.schema.json",
+  "title": "Littlewild complete balancing document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "libraries",
+    "simulation",
+    "world",
+    "creatures",
+    "interactions",
+    "interiors",
+    "startingScenes",
+    "sceneId"
+  ],
+  "properties": {
+    "format": {
+      "const": "littlewild-balancing"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "libraries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base",
+        "adventure",
+        "world",
+        "growth"
+      ],
+      "properties": {
+        "base": {
+          "$ref": "library.schema.json"
+        },
+        "adventure": {
+          "$ref": "adventure.schema.json"
+        },
+        "world": {
+          "$ref": "world.schema.json"
+        },
+        "growth": {
+          "$ref": "growth.schema.json"
+        }
+      }
+    },
+    "simulation": {
+      "$ref": "#/$defs/simulationProfile"
+    },
+    "world": {
+      "$ref": "scenario.schema.json#/$defs/world"
+    },
+    "creatures": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format",
+            "schemaVersion",
+            "definitions"
+          ],
+          "properties": {
+            "format": {
+              "const": "littlewild-creature-balancing"
+            },
+            "schemaVersion": {
+              "const": 1
+            },
+            "definitions": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "movement": {
+                    "type": "object"
+                  },
+                  "physiology": {
+                    "type": "object"
+                  },
+                  "rng": {
+                    "type": "object"
+                  },
+                  "state": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "configuration",
+            "definitions"
+          ],
+          "properties": {
+            "configuration": {
+              "type": "object"
+            },
+            "definitions": {
+              "type": "array"
+            }
+          }
+        }
+      ]
+    },
+    "interactions": {
+      "type": "object"
+    },
+    "interiors": {
+      "type": "object"
+    },
+    "startingScenes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "$ref": "scenario.schema.json#/$defs/scene"
+      }
+    },
+    "sceneId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    }
+  },
+  "$defs": {
+    "simulationProfile": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-simulation-profile"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "version": {
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "actor": {
+              "$ref": "#/$defs/actorRules"
+            },
+            "economy": {
+              "$ref": "#/$defs/economyRules"
+            },
+            "gameplay": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "task",
+                "quest",
+                "autonomy",
+                "production",
+                "policy",
+                "completion",
+                "work",
+                "construction",
+                "recovery",
+                "modifiers",
+                "care",
+                "legacy",
+                "mood",
+                "clock"
+              ],
+              "properties": {
+                "task": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "breakthroughAnger",
+                    "setbackAnger",
+                    "criticalSetbackAnger",
+                    "defaultDifficulty",
+                    "socialFailureAnger",
+                    "socialFailureJoy",
+                    "breakthroughJoy",
+                    "setbackJoy",
+                    "setbackActorXp",
+                    "practiceDifficulty",
+                    "buildDifficulty",
+                    "trainDifficulty",
+                    "gatherDifficulty",
+                    "socialSuccessAnger",
+                    "socialSuccessJoy",
+                    "quietJoy",
+                    "quietAnger",
+                    "affinityGate",
+                    "affinitySuccess",
+                    "affinityFailure",
+                    "trustSuccess",
+                    "trustFailure",
+                    "sourceSocial",
+                    "targetSocial",
+                    "targetJoy",
+                    "buildRetryFraction",
+                    "trainingRetryFraction",
+                    "restAnger",
+                    "gearActorXp",
+                    "gearPlayerXp"
+                  ],
+                  "properties": {
+                    "breakthroughAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "setbackAnger": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "criticalSetbackAnger": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "defaultDifficulty": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialFailureAnger": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialFailureJoy": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "breakthroughJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "setbackJoy": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "setbackActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "practiceDifficulty": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "buildDifficulty": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "trainDifficulty": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "gatherDifficulty": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialSuccessAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "socialSuccessJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "quietJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "quietAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "affinityGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "affinitySuccess": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "affinityFailure": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "trustSuccess": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "trustFailure": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "sourceSocial": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "targetSocial": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "targetJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "buildRetryFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "trainingRetryFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "restAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "gearActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "gearPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    }
+                  }
+                },
+                "quest": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "recallJoy",
+                    "recallAnger",
+                    "travelCap",
+                    "loadTimeFactor",
+                    "requiredFraction",
+                    "energyReserve",
+                    "foodRate",
+                    "waterRate",
+                    "abortedActorXp",
+                    "partialActorXp",
+                    "playerXp",
+                    "actorXp",
+                    "guaranteedAfterMisses"
+                  ],
+                  "properties": {
+                    "recallJoy": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "recallAnger": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "travelCap": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "loadTimeFactor": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "requiredFraction": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 1.0
+                    },
+                    "energyReserve": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "foodRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    },
+                    "waterRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    },
+                    "abortedActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "partialActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "playerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "actorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "guaranteedAfterMisses": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "autonomy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "socialFood",
+                    "socialWater",
+                    "socialEnergy",
+                    "socialCooldown",
+                    "socialDuration",
+                    "urgentEnergy",
+                    "urgentNeed",
+                    "coolAnger",
+                    "coolDuration",
+                    "comfortEnergy",
+                    "comfortComfort",
+                    "comfortNeed",
+                    "cozyBonus"
+                  ],
+                  "properties": {
+                    "socialFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialWater": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "socialDuration": {
+                      "type": "number",
+                      "minimum": 0.1,
+                      "maximum": 3600.0
+                    },
+                    "urgentEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "urgentNeed": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "coolAnger": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "coolDuration": {
+                      "type": "number",
+                      "minimum": 0.1,
+                      "maximum": 3600.0
+                    },
+                    "comfortEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortComfort": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortNeed": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cozyBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "production": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "gathererBonus",
+                    "cropInitialStock",
+                    "cropGatherAmount",
+                    "transferSeconds",
+                    "collectFraction",
+                    "retryFraction",
+                    "merchantBonus",
+                    "marketPerLevel",
+                    "cropLevelRate",
+                    "greenhouseBonus",
+                    "cropSeconds",
+                    "cropStockCap",
+                    "orchardYield",
+                    "cropYield"
+                  ],
+                  "properties": {
+                    "gathererBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropInitialStock": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropGatherAmount": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "transferSeconds": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "collectFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "retryFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "merchantBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "marketPerLevel": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropLevelRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    },
+                    "greenhouseBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropSeconds": {
+                      "type": "number",
+                      "minimum": 0.1,
+                      "maximum": 3600.0
+                    },
+                    "cropStockCap": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "orchardYield": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropYield": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "policy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "urgentNeed",
+                    "angerAttention",
+                    "sellFraction"
+                  ],
+                  "properties": {
+                    "urgentNeed": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "angerAttention": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "sellFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    }
+                  }
+                },
+                "completion": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "shopActorXp",
+                    "saleActorXp",
+                    "salePlayerXp",
+                    "cropPlayerXp",
+                    "cropActorXp",
+                    "practicePlayerXp",
+                    "practiceActorXp",
+                    "buildResearch",
+                    "gatherActorXp",
+                    "gatherPlayerXp",
+                    "gatherResearchEvery",
+                    "craftActorXp",
+                    "craftPlayerXp",
+                    "buildActorXp",
+                    "buildPlayerXp",
+                    "buildBond",
+                    "buildJoy",
+                    "trainActorXp",
+                    "trainPlayerXp",
+                    "trainBond",
+                    "trainJoy",
+                    "mealFood",
+                    "meatFood",
+                    "berryFood",
+                    "drinkWater",
+                    "cottageEnergy",
+                    "shelterEnergy",
+                    "outsideEnergy",
+                    "shelterComfort",
+                    "outsideComfort",
+                    "warmComfort",
+                    "warmJoy",
+                    "playJoy",
+                    "playEnergy",
+                    "exploreGuideCoins",
+                    "explorePocketCoins",
+                    "exploreResearch",
+                    "exploreActorXp",
+                    "explorePlayerXp",
+                    "exploreCooldown",
+                    "huntEnergy",
+                    "huntActorXp",
+                    "researchCooldown",
+                    "deliverActorXp",
+                    "deliverPlayerXp"
+                  ],
+                  "properties": {
+                    "shopActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "saleActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "salePlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cropActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "practicePlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "practiceActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "buildResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "gatherActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "gatherPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "gatherResearchEvery": {
+                      "type": "integer",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "craftActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "craftPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "buildActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "buildPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "buildBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "buildJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "trainActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "trainPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "trainBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "trainJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "mealFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "meatFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "berryFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "drinkWater": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cottageEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "shelterEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "outsideEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "shelterComfort": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "outsideComfort": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "warmComfort": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "warmJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "playJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "playEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "exploreGuideCoins": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "explorePocketCoins": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "exploreResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "exploreActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "explorePlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "exploreCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "huntEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "huntActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "researchCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "deliverActorXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    },
+                    "deliverPlayerXp": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 10000.0
+                    }
+                  }
+                },
+                "work": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "togetherFatigue",
+                    "thinkerResearch",
+                    "repeatedPracticePoints",
+                    "practiceFreshCount",
+                    "playfulFatigue",
+                    "observatoryResearch",
+                    "mentorPracticePoints",
+                    "independentFatigue",
+                    "idleFatigue",
+                    "freshPracticePoints",
+                    "firstPracticeResearch",
+                    "fatigueResumeGate",
+                    "fatigueRecoverGate",
+                    "explorerResearch",
+                    "stationPerLevel",
+                    "qualityDivisor",
+                    "storehouseBonus",
+                    "waterwheelBonus",
+                    "stationCap",
+                    "circleBonus",
+                    "circlePerLevel",
+                    "observatoryLearningBonus",
+                    "mentorLearningBonus",
+                    "comfortableGate",
+                    "comfortLearningBonus",
+                    "makerBonus",
+                    "efficientBonus",
+                    "workshopRadius",
+                    "workshopBonus",
+                    "practiceCircleBonus",
+                    "explorerBonus",
+                    "stewardBonus",
+                    "maximumRate",
+                    "baseRateCap",
+                    "globalPerLevel",
+                    "supportRadius",
+                    "qualityBaseline"
+                  ],
+                  "properties": {
+                    "togetherFatigue": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "thinkerResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "repeatedPracticePoints": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "practiceFreshCount": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "playfulFatigue": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "observatoryResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "mentorPracticePoints": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "independentFatigue": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "idleFatigue": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "freshPracticePoints": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "firstPracticeResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "fatigueResumeGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "fatigueRecoverGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "explorerResearch": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "stationPerLevel": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "qualityDivisor": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 10000.0
+                    },
+                    "storehouseBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterwheelBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "stationCap": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "circleBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "circlePerLevel": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "observatoryLearningBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "mentorLearningBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortableGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortLearningBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "makerBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "efficientBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "workshopRadius": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "workshopBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "practiceCircleBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "explorerBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "stewardBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "maximumRate": {
+                      "type": "number",
+                      "minimum": 0.1,
+                      "maximum": 10.0
+                    },
+                    "baseRateCap": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "globalPerLevel": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "supportRadius": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "qualityBaseline": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "construction": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "wellMadeQuality",
+                    "dependableQuality",
+                    "beautifulQuality",
+                    "woodCellDivisor",
+                    "stoneCellDivisor",
+                    "wallWood",
+                    "windowGlass",
+                    "doorPlanks",
+                    "stairPlanks",
+                    "stationFiberDivisor",
+                    "improvementWood",
+                    "cellSeconds",
+                    "edgeSeconds",
+                    "upgradeLevelTwoFraction",
+                    "upgradeLevelThreeFraction",
+                    "upgradeTimeFraction",
+                    "foundationFraction",
+                    "structureFraction",
+                    "finishFraction",
+                    "refundCompletedFraction",
+                    "qualityBase",
+                    "qualityPerRank",
+                    "comfortableQuality",
+                    "builderQuality",
+                    "finisherQuality",
+                    "minimumQuality"
+                  ],
+                  "properties": {
+                    "wellMadeQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "dependableQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "beautifulQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "woodCellDivisor": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "stoneCellDivisor": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "wallWood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "windowGlass": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "doorPlanks": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "stairPlanks": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "stationFiberDivisor": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "improvementWood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cellSeconds": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "edgeSeconds": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100.0
+                    },
+                    "upgradeLevelTwoFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "upgradeLevelThreeFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "upgradeTimeFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "foundationFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "structureFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "finishFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "refundCompletedFraction": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0
+                    },
+                    "qualityBase": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "qualityPerRank": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortableQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "builderQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "finisherQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "minimumQuality": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "recovery": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "reflectFatigue",
+                    "reflectJoy",
+                    "breadFood",
+                    "breadJoy",
+                    "balmComfort",
+                    "balmJoy",
+                    "homePerLevel",
+                    "comfortSpecialist"
+                  ],
+                  "properties": {
+                    "reflectFatigue": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "reflectJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "breadFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "breadJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "balmComfort": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "balmJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "homePerLevel": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortSpecialist": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "modifiers": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tiredEnergy",
+                    "lowEnergy",
+                    "needGate",
+                    "tiredPenalty",
+                    "lowPenalty",
+                    "needPenalty",
+                    "angerGate",
+                    "frustratedGate",
+                    "angerPenalty",
+                    "frustratedPenalty"
+                  ],
+                  "properties": {
+                    "tiredEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "lowEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "needGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "tiredPenalty": {
+                      "type": "integer",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "lowPenalty": {
+                      "type": "integer",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "needPenalty": {
+                      "type": "integer",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "angerGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "frustratedGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "angerPenalty": {
+                      "type": "integer",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "frustratedPenalty": {
+                      "type": "integer",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "care": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "soothingCooldown",
+                    "spaceCooling",
+                    "spaceJoy",
+                    "spaceAnger",
+                    "sootheJoy",
+                    "sootheAnger",
+                    "sootheBond",
+                    "careJoy",
+                    "careAnger",
+                    "fullGate",
+                    "waterFullGate",
+                    "bondFoodGate",
+                    "bondWaterGate",
+                    "bondEnergyGate",
+                    "praiseAge",
+                    "feedMeal",
+                    "feedBerry",
+                    "feedJoy",
+                    "feedBond",
+                    "feedCooldown",
+                    "waterAmount",
+                    "waterBond",
+                    "waterCooldown",
+                    "bondJoy",
+                    "freshBondCount",
+                    "bondCooldown",
+                    "praiseJoy",
+                    "praiseBond",
+                    "praiseCooldown"
+                  ],
+                  "properties": {
+                    "soothingCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "spaceCooling": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "spaceJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "spaceAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "sootheJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "sootheAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "sootheBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "careJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "careAnger": {
+                      "type": "number",
+                      "minimum": -100.0,
+                      "maximum": 100.0
+                    },
+                    "fullGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterFullGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "bondFoodGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "bondWaterGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "bondEnergyGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "praiseAge": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "feedMeal": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "feedBerry": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "feedJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "feedBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "feedCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "waterAmount": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "bondJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "freshBondCount": {
+                      "type": "integer",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "bondCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    },
+                    "praiseJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "praiseBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "praiseCooldown": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 3600.0
+                    }
+                  }
+                },
+                "legacy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "foodWork",
+                    "foodIdle",
+                    "waterWork",
+                    "waterIdle",
+                    "energyWork",
+                    "energyIdle",
+                    "cottageComfortRate",
+                    "shelterComfortRate",
+                    "outsideComfortRate",
+                    "joyRate",
+                    "urgentEnergy",
+                    "urgentNeed",
+                    "speed",
+                    "bondGate",
+                    "bondSpeedBonus"
+                  ],
+                  "properties": {
+                    "foodWork": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "foodIdle": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterWork": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "waterIdle": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "energyWork": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "energyIdle": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "cottageComfortRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "shelterComfortRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "outsideComfortRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "joyRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "urgentEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "urgentNeed": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "speed": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    },
+                    "bondGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "bondSpeedBonus": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    }
+                  }
+                },
+                "mood": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "needGate",
+                    "joyLow",
+                    "comfortLow",
+                    "lovedBond",
+                    "lovedJoy",
+                    "contentFood",
+                    "contentWater",
+                    "contentEnergy",
+                    "friendOne",
+                    "friendTwo",
+                    "friendThree",
+                    "friendFour",
+                    "socialLow",
+                    "delightedJoy",
+                    "delightedBond",
+                    "contentJoy",
+                    "sadJoy"
+                  ],
+                  "properties": {
+                    "needGate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "joyLow": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "comfortLow": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "lovedBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "lovedJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "contentFood": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "contentWater": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "contentEnergy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "friendOne": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "friendTwo": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "friendThree": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "friendFour": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "socialLow": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "delightedJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "delightedBond": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "contentJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    },
+                    "sadJoy": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 100.0
+                    }
+                  }
+                },
+                "clock": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "hourRate"
+                  ],
+                  "properties": {
+                    "hourRate": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 10.0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "actor",
+            "economy"
+          ],
+          "additionalProperties": false
+        },
+        "archetype": {
+          "$ref": "#/$defs/compositionArchetype"
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "id",
+        "version",
+        "name",
+        "description",
+        "rules",
+        "archetype"
+      ],
+      "additionalProperties": false
+    },
+    "actorRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-actor-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "learning": {
+          "type": "object",
+          "properties": {
+            "playfulFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "standardFatigue": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoveryRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "recoverAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "limitAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "playfulFatigue",
+            "standardFatigue",
+            "recoveryRate",
+            "recoverAt",
+            "limitAt"
+          ],
+          "additionalProperties": false
+        },
+        "feelings": {
+          "type": "object",
+          "properties": {
+            "socialRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "socialPreferenceRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "angerRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "socialRate",
+            "socialPreferenceRate",
+            "angerRate"
+          ],
+          "additionalProperties": false
+        },
+        "needs": {
+          "type": "object",
+          "properties": {
+            "workingKinds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,50}$"
+              },
+              "minItems": 1,
+              "maxItems": 32
+            },
+            "foodWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "foodIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "waterIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyWork": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "energyIdle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "walkLoadFactor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "comfortWithoutShelter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "joyRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "workingKinds",
+            "foodWork",
+            "foodIdle",
+            "waterWork",
+            "waterIdle",
+            "energyWork",
+            "energyIdle",
+            "walkLoadFactor",
+            "comfortShelter",
+            "comfortWithoutShelter",
+            "joyRate"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "learning",
+        "feelings",
+        "needs"
+      ],
+      "additionalProperties": false
+    },
+    "economyRules": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "littlewild-economy-rules"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "xp": {
+          "type": "object",
+          "properties": {
+            "base": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "perLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "playerResearchPerLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "actorBondPerLevel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "base",
+            "perLevel",
+            "playerResearchPerLevel",
+            "actorBondPerLevel"
+          ],
+          "additionalProperties": false
+        },
+        "income": {
+          "type": "object",
+          "properties": {
+            "pocketShare": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "pocketShare"
+          ],
+          "additionalProperties": false
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "balance": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "delta": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "stat": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "balance",
+            "delta",
+            "level",
+            "stat"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "xp",
+        "income",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "compositionArchetype": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "living-world-v1"
+        },
+        "version": {
+          "const": 1
+        },
+        "engineLayers": {
+          "const": [
+            "systems",
+            "colony",
+            "world-simulation",
+            "village",
+            "planner",
+            "cartography"
+          ]
+        },
+        "simulationPipeline": {
+          "const": [
+            "clock",
+            "world",
+            "quest-board",
+            "actor-daily",
+            "actor-quest",
+            "actor-simulation"
+          ]
+        },
+        "actorDynamics": {
+          "const": [
+            "practice-day",
+            "learning-fatigue",
+            "social-decay",
+            "needs-decay"
+          ]
+        },
+        "actorActivity": {
+          "const": [
+            "task-intent",
+            "task-movement",
+            "task-work-progress",
+            "task-intent-result"
+          ]
+        },
+        "worldTransactions": {
+          "const": [
+            "inventory-transfer",
+            "resource-harvest",
+            "production-reserve",
+            "production-job-update",
+            "production-settlement"
+          ]
+        },
+        "economyTransactions": {
+          "const": [
+            "settlement-plan",
+            "wallet-settlement",
+            "shared-research-settlement",
+            "xp-progression",
+            "prestige-settlement",
+            "stat-settlement",
+            "chapter-settlement",
+            "settlement-outbox"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "engineLayers",
+        "simulationPipeline",
+        "actorDynamics",
+        "actorActivity",
+        "worldTransactions",
+        "economyTransactions"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -39,7 +39,7 @@
 
   const node = typeof module !== 'undefined' && module.exports;
   const content = (node ? require('./content-runtime.js') : root.LWContent) as ContentApi | undefined;
-  const defaultProfile = (node ? require('./content/default-profile.json') : root.LWDefaultProfile) as WorldProfile | undefined;
+  const defaultProfile = (node ? require('./content/balancing.json').world : root.LWDefaultProfile) as WorldProfile | undefined;
   if (!content || !defaultProfile) throw Error('World profile dependencies are missing.');
   const C: ContentApi = content, defaults: WorldProfile = defaultProfile;
 

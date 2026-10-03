@@ -4,8 +4,8 @@
  'use strict';
  type Document=LittlewildDeveloper.Document;
  type Session=LittlewildDeveloper.Session;
- interface Engine {
-  s:{started:boolean;paused:boolean;simTime:number};
+ interface Engine extends LWContentPorts.ScenarioEngine {
+  s:{started:boolean;paused:boolean;simTime:number;scenarioResources?:LWContentPorts.Resources};
   terraformSnapshot():LittlewildDeveloper.TerraformSnapshot;
   terrainAt(x:number,y:number):string;terrainHeight(x:number,y:number):number;
   previewTerraform(input:unknown):LittlewildDeveloper.TerraformPreview;
@@ -16,7 +16,7 @@
   interactionOptions(sourceId:string,target:LittlewildDeveloper.InteractionTarget):LittlewildDeveloper.InteractionOption[];
   gameSettings():LittlewildDeveloper.GameSettings;
   interactionState():unknown;interactionDefinitions():unknown;
-  step(dt:number):void;export():unknown;dispatchCommand(command:LittlewildDeveloper.Command):unknown;
+  step(dt:number):void;export():{state:Record<string,unknown>};dispatchCommand(command:LittlewildDeveloper.Command):unknown;
  }
  interface ScenarioPort {
   builtins():unknown[];validate(input:unknown):{ok:boolean;errors:string[];pack?:unknown};
@@ -36,6 +36,8 @@
   LWDeveloperCommands:{validate(input:unknown,scope:'actor'|'world'):LittlewildDeveloper.Command};
   LWCommandRouter:{manifest:readonly LittlewildDeveloper.CommandDefinition[]};
   LWScenarios:ScenarioPort;LWStory:StoryPort;
+  LWDeveloperScenes:{create(input:unknown):LittlewildDeveloper.SceneEditor;connections(engine:Engine):LittlewildDeveloper.SceneConnection[];props(engine:Engine):LittlewildDeveloper.SceneProp[]};
+  LWSceneNavigation:{prepare(engine:Engine,connectionId:string):LWSceneNavigation.TransitionPreview;commit(engine:Engine,preview:LWSceneNavigation.TransitionPreview):Engine;target(engine:Engine):LittlewildDeveloper.SceneTarget|null};
   LWInteriors:{defaults:unknown;validate(input:unknown):unknown};
   LWConstructionDesigns:{validate(input:unknown):unknown};
   LWInteractions:{all():unknown[];definition(input:unknown):unknown;validate(input:unknown):unknown};
@@ -87,7 +89,8 @@
  }
  function session(initialEngine:Engine):Session {
   let engine:Engine|null=initialEngine;
-  const installed=signature();let disposed=false;
+  let installed=signature();let disposed=false;
+  const sceneReviews=new WeakMap<object,LWSceneNavigation.TransitionPreview>();
   function guard():Engine {
    if(disposed)fail('session-disposed','This session is disposed. Create or open a new session.');
    if(signature()!==installed)fail('operation-failed','Runtime registries changed outside this session. Save earlier checkpoints, dispose, and reopen in an isolated host.');
@@ -155,6 +158,23 @@
      fail('invalid-input','advance seconds must be a multiple of 0.1 from 0 to 3600.');
     return step(count);
    },inspect,save,story,
+   sceneConnections(){return root.LWDeveloperScenes.connections(guard());},
+   sceneTarget(){return root.LWSceneNavigation.target(guard());},sceneProps(){return root.LWDeveloperScenes.props(guard());},
+   reviewScene(connectionId:string){
+    const owned=guard();
+    try{const preview=root.LWSceneNavigation.prepare(owned,D.text(connectionId,'Connection ID'));
+     const review:LittlewildDeveloper.SceneReview=Object.freeze({format:'littlewild-scene-review',version:1,
+      connectionId:preview.connectionId,sourceSceneId:preview.sourceSceneId,sceneId:preview.sceneId,sceneName:preview.sceneName,
+      target:preview.target===null?null:Object.freeze({...preview.target}),messages:Object.freeze([...preview.messages])});
+     sceneReviews.set(review,preview);return review;
+    }catch(error){return fail('invalid-input',error instanceof Error?error.message:String(error));}
+   },
+   enterScene(review:LittlewildDeveloper.SceneReview){
+    const owned=guard(),preview=sceneReviews.get(review);
+    if(!preview)fail('review-invalid','Review a connected scene and pass its original review token.');
+    try{const next=root.LWSceneNavigation.commit(owned,preview);engine=next;installed=signature();sceneReviews.delete(review);return inspect();}
+    catch(error){return fail('review-invalid',error instanceof Error?error.message:String(error));}
+   },
    captureScenario(){return D.record(X.capture(guard()));},
    dispose(){if(disposed)return;disposed=true;engine=null;if(active===facade)active=null;}
   });
@@ -198,6 +218,7 @@
  const api:LittlewildDeveloper.SessionApi&{claimHost:typeof claimHost}=Object.freeze({
   version:1,fixedStep:.1,maxSteps:36000,scenarios,
   commands:()=>root.LWCommandRouter.manifest.map(({id,scope,maxArgs,away})=>({id,scope,maxArgs,away})),
+  createSceneEditor:(input:unknown)=>root.LWDeveloperScenes.create(input),
   create,validateScenario,createScenario,reviewStory,openStory,
   interiors:()=>D.record(root.LWInteriors.defaults),
   validateInteriorCatalog:(input:unknown)=>validation(()=>root.LWInteriors.validate(D.record(input))),

@@ -1,14 +1,18 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "research-improvements-and-developer-toolbox-reviewed; clean-checkout-verified",
+  "status": "expanded-source-checkpoint; final-release-evidence-pending",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 137,
-    "runtimeModules": 85,
+    "authoredTypeScriptFiles": 328,
+    "runtimeModules": 184,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
-      "vendor/three.js"
+      "vendor/three.js",
+      "vendor/pixi-8.22.0.min.js",
+      "vendor/pixi-csp-8.22.0.min.js",
+      "vendor/excalibur-0.32.0.min.js",
+      "vendor/p5-2.3.4.min.js"
     ],
     "generatedJavaScriptDirectory": ".generated/",
     "bundled3DAssets": {
@@ -52,7 +56,7 @@
     "sourceCodeLineBudget": 400,
     "testCodeLineBudget": 450,
     "moduleBudgetExceptions": {},
-    "strictTypingDebtModules": 15,
+    "strictTypingDebtModules": 0,
     "developerToolbox": "DEVELOPER-TOOLBOX.md: typed commands, bounded fixed steps, detached readouts, reviewed story activation and single-active context/host leases"
   },
   "reviews": [
@@ -83,7 +87,7 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "status": "passed",
+      "status": "historical-before-authoring-expansion",
       "passed": 915,
       "total": 915,
       "sourceSha256": "8413d557b50496c2c3397d0e42723ff708aa517ff714e67a32d9aa5decb073ba",
@@ -113,10 +117,10 @@
     "note": "Current local evidence is bound to source and standalone digests. Inspect PR checks for CI evidence on each pushed commit."
   },
   "deliberateDebt": [
-    "15 explicitly inventoried compatibility modules still lack complete strict semantic TypeScript checking; new extracted services use typed ports.",
     "The global LW facade and process-global content registries remain compatibility surfaces for the self-contained browser artifact.",
     "ECS structural changes are atomic; domain value transactions retain explicit preflight/rollback responsibility.",
-    "External scenario packs cannot replace bundled renderer assets or trusted code capabilities."
+    "Imported data uses compiled supported capabilities. Custom renderer and animation executors are trusted compiled extensions.",
+    "Not every presentation module has complete strict semantic TypeScript checking; all inventoried domain/application debt is closed."
   ],
   "limits": [
     "Hardware WebGL/GPU behavior is not verified by headless browser tests.",

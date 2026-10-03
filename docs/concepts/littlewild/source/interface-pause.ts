@@ -10,6 +10,7 @@
     if (state.paused) return { running: false, automatic: false, reason: 'Paused by you', kind: 'manual' };
     // A file replacement is not ordinary inspection. Do not simulate a different
     // state behind an atomic import/recovery preview. Closing never unpauses state.
+    if (views.cinematic) return { running:false, automatic:true, reason:'Playing a cutscene', kind:'cinematic' };
     if (views.safety) return { running: false, automatic: true, reason: 'Save / content safety review', kind: 'safety' };
     const reason = views.modal ? 'Reading a panel' : views.tile ? 'Choosing a tile action' :
       views.creature ? 'Choosing an interaction' : views.more ? 'Browsing world tools' :
@@ -18,7 +19,7 @@
     if (pauseOnOpen && reason) return { running: false, automatic: true, reason, kind: 'inspection' };
     return { running: true, automatic: false, reason: 'World running', kind: 'running' };
   }
-  function safetyView(name) { return !!name && (name === 'reset' || name === 'recover' || name === 'import-preview' || /(?:content-preview|adventure-review|world-import|growth-preview|scenario-preview)/.test(name)); }
+  function safetyView(name) { return !!name && (name === 'reset' || name === 'recover' || name === 'import-preview' || /(?:content-preview|adventure-review|world-import|growth-preview|scenario-preview|scene-transition|storytelling-transition)/.test(name)); }
   function create(storageProvider) {
     let pauseOnOpen = true, persisted = false, error = '';
     try {

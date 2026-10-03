@@ -1,0 +1,17 @@
+.balancing-select,.balancing-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:20px 0}
+.balancing-editor label{display:grid;gap:6px;font-weight:600}
+.balancing-editor input,.balancing-editor select,.balancing-editor textarea{width:100%;max-width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.balancing-editor textarea{font-family:monospace;font-size:14px;resize:vertical;margin:10px 0 16px}
+.balancing-editor :focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.balancing-table{overflow:auto;margin:14px 0 24px}
+.balancing-table table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.balancing-table th,.balancing-table td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere;min-width:90px}
+.balancing-table th:first-child{min-width:180px;max-width:360px}
+.balancing-editor section{margin-top:28px}
+/* Detached authoring follows the scene and creature editors' dedicated workspace. */
+.modal:has(.balancing-editor) :is(.workspace-nav,.v6-workspace-context){display:none}
+@media(max-width:600px){.balancing-select,.balancing-fields{grid-template-columns:1fr;gap:12px}.balancing-editor .scenario-tools{display:grid;grid-template-columns:1fr}.balancing-table th,.balancing-table td{padding:8px}}
+@media(max-width:600px){
+ .modal:has(:is(.balancing-editor,.scenario-review)) :is(.btn,.v13-live-strip button,.icon-btn){min-height:44px}
+ .modal:has(:is(.balancing-editor,.scenario-review)) .icon-btn{min-width:44px}
+}

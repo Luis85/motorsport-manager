@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* The Living Land: physical deposits, building-local buffers and creature logistics.
  * Domain only: no DOM, timers, I/O or rendering randomness. Public actions express intent;
  * transfers settle only beside their source/destination and recheck quantity and capacity.
@@ -5,6 +6,7 @@
 /// <reference path="./physical-world-contracts.d.ts" />
 (function(inputRoot:unknown){
  'use strict';
+ const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
  const root=inputRoot as {LWRuntimeResults:LWRuntime.ResultsApi;LW:LWPhysicalPorts.Facade;LWWorldContent:LWContentPorts.WorldApi;LWAdventure:LWContentPorts.AdventureApi;LWWorldIntegrity:LWPhysicalPorts.IntegrityApi;LWWorldProduction:LWPhysicalPorts.ProductionApi;LWWorldTasks:LWPhysicalPorts.TasksApi;LWWorldECS:LWPhysicalPorts.EcsPhysicalApi;LWWorldStateValidation:{validate(state:LWPhysicalPorts.State,taskKinds:readonly string[]):void}};
  const L=root.LW, Composition=L.EngineComposition, W=root.LWWorldContent, A=root.LWAdventure;
  const {RES,RECIPES,BUILDINGS,SKILLS,clamp,terrain,SIZE}=L;
@@ -33,6 +35,7 @@
   self.worldEcs=root.LWWorldECS.create();self._worldTransactionIds=new WeakMap();self._worldTransactionSequence=0;
  }
  function defineLayer(Base:new()=>LWPhysicalPorts.Engine):new()=>LWPhysicalPorts.WorldEngine{const WorldLayer=class WorldSimulationLayer extends Base {
+  declare simulationProfile:LWContentPorts.SimulationProfile|null|undefined;
   initWorld({demo=false}:LWPhysicalPorts.Options={}){
    const s=this.s;
    if(!s.world){
@@ -116,7 +119,7 @@
   outputRoom(b:LWPhysicalPorts.Building){const reserve=b.storage?.job?.amount||0;return this.capacity(b,'output')-sum(b.storage?.output)-reserve;}
   reachable(target:LWPhysicalPorts.Point){return this.findPath(target,true)!==null;}
   sourceBuilding(id:string){return this.nearest(this.s.buildings.filter((b):b is LWPhysicalPorts.Worksite=>(b.storage?.output[id]||0)>0&&this.reachable(b)));}
-  transferTask(kind:string,b:LWPhysicalPorts.Building,id:string,amount:number,orderId:string|null=null,extra:Partial<LWPhysicalPorts.Draft>={}):LWPhysicalPorts.Draft{return Tasks.transfer(kind,b,id,amount,orderId,{item:item(id).name,building:BUILDINGS[b.kind]!.name},extra);}
+  transferTask(kind:string,b:LWPhysicalPorts.Building,id:string,amount:number,orderId:string|null=null,extra:Partial<LWPhysicalPorts.Draft>={}):LWPhysicalPorts.Draft{return Tasks.transfer(kind,b,id,amount,orderId,{item:item(id).name,building:BUILDINGS[b.kind]!.name},extra,B.forEngine(this).production.transferSeconds);}
   collectTask(b:LWPhysicalPorts.Building,id:string,wanted=3,orderId:string|null=null,forDelivery=false):LWPhysicalPorts.Draft|null{
    const n=Math.min(b.storage!.output[id]||0,Math.max(1,wanted),this.room(id),W.content.logistics.batch);
    return n>0?this.transferTask('collectbuilding',b,id,n,orderId,{forDelivery}):this.depositTask('Making room to collect supplies');
@@ -226,7 +229,7 @@
    for(const b of candidates){const st=b.storage;
     if(st.emptyInputs){const pair=Object.entries(st.input).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1])[0];if(pair){const amount=Math.min(pair[1],W.content.logistics.batch,this.room(pair[0]));if(amount>0)return this.transferTask('emptybuilding',b,pair[0],amount,null,{forDelivery:true});}else st.emptyInputs=false;}
     const pair=Object.entries(st.output).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:a[0]>b[0]?1:0))[0];
-    if(pair&&(sum(st.output)>=this.capacity(b,'output')*.65||this.s.simTime-st.lastOutput>=W.content.logistics.outputAge||st.flushOutput))return this.collectTask(b,pair[0],pair[1],null,true);
+    if(pair&&(sum(st.output)>=this.capacity(b,'output')*B.forEngine(this).production.collectFraction||this.s.simTime-st.lastOutput>=W.content.logistics.outputAge||st.flushOutput))return this.collectTask(b,pair[0],pair[1],null,true);
    }return null;
   }
   override startTask(t:LWPhysicalPorts.Draft|null):boolean{
@@ -289,7 +292,7 @@
     const j=st.job!,r=this.recipe(b!,j.recipe);if(!r){c.task=null;return;}
     if(sum(st.output)+j.amount>this.capacity(b!,'output')){this.releaseProduction(b!,j.duration);c.task=null;return;}
     const roll=this.check(r.skill,2,t.label),attempt='attempt:'+j.id+':'+(j.attempts+1);
-    if(!roll.success){this.worldEcs.settleProduction({id:attempt,worksiteId:'worksite:'+b!.id,storage:st,jobId:j.id,success:false,retryProgress:j.duration*.4,outputCapacity:this.capacity(b!,'output'),time:this.s.simTime,message:'Setback · inputs stay reserved'});this.xp('creature',1);this.changeFeeling('A batch needs another careful attempt',-1,roll.critical?5:2);this.log(c.name+' will retry this batch. Its materials stay at '+BUILDINGS[b!.kind]!.name+'.','leaf');c.task=null;return;}
+    if(!roll.success){this.worldEcs.settleProduction({id:attempt,worksiteId:'worksite:'+b!.id,storage:st,jobId:j.id,success:false,retryProgress:j.duration*B.forEngine(this).production.retryFraction,outputCapacity:this.capacity(b!,'output'),time:this.s.simTime,message:'Setback · inputs stay reserved'});this.xp('creature',1);this.changeFeeling('A batch needs another careful attempt',-1,roll.critical?5:2);this.log(c.name+' will retry this batch. Its materials stay at '+BUILDINGS[b!.kind]!.name+'.','leaf');c.task=null;return;}
     const settled=this.worldEcs.settleProduction({id:attempt,worksiteId:'worksite:'+b!.id,storage:st,jobId:j.id,success:true,retryProgress:0,outputCapacity:this.capacity(b!,'output'),time:this.s.simTime,message:'Finished '+j.amount+' '+item(j.output).name});if(!settled.ok){c.task=null;return;}
     if(st.requests[j.recipe]!>0)st.requests[j.recipe]!--;
     const owner=this.creatures.find(c=>c.id===j.originId),o=owner?.orders.find(o=>o.id===(j.orderId||t.orderId));

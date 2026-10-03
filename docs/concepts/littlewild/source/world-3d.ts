@@ -106,6 +106,7 @@
     else if(['stone','ore','clay'].includes(n.kind)&&n.stock===0)model='depleted';
     if(root.LWAssets.item(n.kind)?.models?.[model])root.LWAssetRenderer.createItem(artKit,staging,n.kind,model,{position:[n.x,G.heightAt(s,n.x,n.y)*.4,n.y],rotation,scale,materials});
    }
+   for(const prop of root.LWSceneProps?.exterior(this.engine)??[])root.LWAssetRenderer.create(artKit,staging,prop.category,prop.assetId,prop.model,{position:[prop.x,G.heightAt(s,prop.x,prop.y)*.4,prop.y]});
    // Buildings remain separate small groups so working doors animate independently.
    for(const b of s.buildings){if(b.designId)for(const p of root.LWConstructionGeometry.cells(s,b))box(staging,p.x,G.heightAt(s,p.x,p.y)*.4+.015,p.y,.96,.04,.96,'#b0ac8b');const rendered=root.LWAssetRenderer.createBuilding(artKit,staging,b,this.doors,this.rotors);
     rendered.root.position.y+=G.heightAt(s,b.x,b.y)*.4;if(rendered.smoke){rendered.root.updateMatrixWorld(true);const origin=new T.Vector3(...rendered.smoke.position);rendered.root.localToWorld(origin);for(let j=0;j<3;j++){const smoke=piece(this.motionRoot,'ball',origin.x,origin.y+j*.18,origin.z,.08,.07,.08,'#edf0de',0,{transparent:true,opacity:.25,depthWrite:false});smoke.castShadow=false;this.smokeParticles.push({mesh:smoke,building:b,j,origin,always:!!rendered.smoke.always});}}
@@ -121,7 +122,7 @@
    for(const d of this.doors.values()){this.motionRoot.attach(d.group);d.closedAngle=d.group.rotation.y;}
    for(const r of this.rotors){this.motionRoot.attach(r.group);r.startAngle=r.group.rotation[r.axis];}
    this.staticRoot.add(batch(staging));this.staticRevision++;this.invalidate();
-   this.geometryKey=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,s.estate.islands,s.terraform?.revision||0,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);this.marker.visible=false;
+   this.geometryKey=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,root.LWSceneProps?.exterior(this.engine),s.estate.islands,s.terraform?.revision||0,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);this.marker.visible=false;
   }
   draw(time,dt){if(this.contextLost)return;const started=performance.now();this.time=time;this.expireResponses();const e=this.engine,s=e.s,reduced=s.settings.reducedMotion;
    if(this.lastState!==s){this.resetPresentation();this.lastState=s;}
@@ -129,7 +130,7 @@
    if(!this.running&&!this.forceDraw&&this.renderKey===frameKey){this.skippedFrames++;return;}
    this.forceDraw=false;this.renderKey=frameKey;if(this.running)this.visualTime+=Math.min(.10,Math.max(0,dt));const motion=this.visualTime;
    
-   const key=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,s.estate.islands,s.terraform?.revision||0,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);if(key!==this.geometryKey)this.rebuild();
+   const key=JSON.stringify([root.LWWorldProfile.hash,root.LWAssets.revision,root.LWSceneProps?.exterior(this.engine),s.estate.islands,s.terraform?.revision||0,s.buildings.map(b=>[b.id,b.kind,b.level,b.door]),s.nodes.filter(n=>['wood','ore','clay','stone'].includes(n.kind)).map(n=>[n.id,n.stock===0])]);if(key!==this.geometryKey)this.rebuild();
    if(s.settings.follow&&e.selected&&!e.selected.activeQuest&&!this.contextChoosing){const sample=this.motion.sample(e.selected,s.simTime,this.presentationAlpha,this.running),p=this.toScreen(sample.x,sample.z),ease=reduced?1:1-Math.exp(-Math.max(0,dt)*3);this.camera.x+=(this.canvas.width/2-p.x)*ease;this.camera.y+=(this.canvas.height*.50-p.y)*ease;}
    this.syncCamera();const indoorCounts=new Map(),labelEntries=[];this.actorAnchors.clear();for(const c of e.creatures){let v=this.actors.get(c.id),eq=JSON.stringify([c.personality,c.equipment,root.LWFidelity.revision()]);if(!v||v.key!==eq){if(v)this.dynamicRoot.remove(v.root);v=creature(this.dynamicRoot,c);this.actors.set(c.id,v);}v.root.visible=this.present(c);if(!v.root.visible)continue;
     const t=c.task,buildingId=!this.environment&&t?.phase==='work'&&(t.insideBuildingId||(t.target&&s.buildings.find(b=>e.isIndoor(b)&&b.x===t.target.x&&b.y===t.target.y)?.id)),b=buildingId&&s.buildings.find(b=>b.id===buildingId),inside=b?b.id:null;

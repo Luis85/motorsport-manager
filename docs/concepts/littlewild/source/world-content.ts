@@ -7,7 +7,7 @@
  const contentApi=(node?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi|undefined;
  if(!contentApi)throw Error('Content runtime is missing.');
  const C=contentApi;
- const defaultWorld=(node?require('./content/world-library.json'):root.LWDefaultWorld) as LWContentPorts.World|undefined;
+ const defaultWorld=(node?require('./content/balancing.json').libraries.world:root.LWDefaultWorld) as LWContentPorts.World|undefined;
  if(!defaultWorld)throw Error('Default world content is missing.');
  const defaults=defaultWorld;
  const worldSchema=(node?require('./content/world.schema.json'):root.LWWorldSchema) as LWContentPorts.Schema|undefined;

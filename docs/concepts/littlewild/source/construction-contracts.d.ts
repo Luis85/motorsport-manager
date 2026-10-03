@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./building-interior-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
@@ -12,7 +13,7 @@ declare namespace LWConstruction {
  interface Phase {name:string;cost:Record<string,number>;time:number;}
  type Preview={ok:true;design:Design;cost:Record<string,number>;phases:Phase[]}|{ok:false;reason:string};
  interface Options {types:{id:string;name:string}[];designs:Design[];buildings:{id:string;kind:string;name:string}[];}
- interface Engine {
+ interface Engine extends LWBalanceRules.Owner {
   s:World;actor:LWApplication.Actor;creatures:LWApplication.Actor[];
   allOrders():Order[];unlocked(category:'buildings',kind:string):boolean;
   interactionIssue():string|null;placementIssue(kind:string,x:number,y:number):string|null;
@@ -21,6 +22,6 @@ declare namespace LWConstruction {
   canBuild(x:number,y:number,kind?:string|null):boolean;place(kind:string,x:number,y:number):LWPhysicalPorts.ActionResult;
   log(text:string,icon?:string):void;export():unknown;
  }
- interface DesignsApi {preserve(previous:LWInterior.Layout,next:LWInterior.Layout):string|null;validate(input:unknown,id?:string):Design;cost(design:Design):Record<string,number>;improvementCost(previous:Design,next:Design):Record<string,number>;phases(design:Design):Phase[];copy<T>(v:T):T;}
+ interface DesignsApi {preserve(previous:LWInterior.Layout,next:LWInterior.Layout):string|null;validate(input:unknown,id?:string):Design;cost(design:Design,engine?:LWBalanceRules.Owner):Record<string,number>;improvementCost(previous:Design,next:Design,engine?:LWBalanceRules.Owner):Record<string,number>;phases(design:Design,engine?:LWBalanceRules.Owner):Phase[];copy<T>(v:T):T;}
  interface GeometryApi {cells(world:World,place:LWRuntime.Point & {designId?:string}):LWRuntime.Point[];blockers(world:World):LWRuntime.Point[];issue(engine:Engine,design:Design,x:number,y:number,replacing?:Building):string|null;topologyIssue(world:World):string|null;}
 }

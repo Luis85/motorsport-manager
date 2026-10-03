@@ -6,160 +6,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { creatureDefinitions, assetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
 
-type InsertKind = "style" | "script";
-type Insert = readonly [marker: string, file: string, kind: InsertKind];
+import { INSERTS, type InsertKind } from "./tools/build-inserts.cjs";
 
 const ROOT = __dirname;
 const PROJECT = path.resolve(ROOT, "..");
 const GENERATED = path.join(PROJECT, ".generated");
 const TSC = path.join(PROJECT, "node_modules", "typescript", "bin", "tsc");
 
-const INSERTS: readonly Insert[] = [
-  ["STYLE", "style.css", "style"],
-  ["POLISH", "polish.css", "style"],
-  ["COLONY_CSS", "colony.css", "style"],
-  ["REFINEMENT", "refinement.css", "style"],
-  ["WORLD_UI_CSS", "world-ui.css", "style"],
-  ["CONTENT_RUNTIME", "content-runtime.js", "script"],
-  ["CREATURE_CATALOG", "creature-catalog.js", "script"],
-  ["ASSET_CATALOG", "asset-catalog.js", "script"],
-  ["WORLD_PROFILE", "world-profile.js", "script"],
-  ["WORKFLOW_VENUES", "workflow-venues.js", "script"],
-  ["SCENE_ENVIRONMENT", "scene-environment.js", "script"],
-  ["CONSTRUCTION_FOOTPRINTS", "construction-footprints.js", "script"],
-  ["GEOGRAPHY", "island-geometry.js", "script"],
-  ["NAVIGATION", "navigation.js", "script"],
-  ["ENGINE_TASK_PLANNING", "engine-task-planning.js", "script"],
-  ["ENGINE_TASK_COMPLETION", "engine-task-completion.js", "script"],
-  ["ENGINE_COMPANION", "engine-companion.js", "script"],
-  ["RUNTIME_RESULTS", "runtime-results.js", "script"],
-  ["ENGINE", "engine.js", "script"],
-  ["ENGINE_COMPOSITION", "engine-composition.js", "script"],
-  ["ACTOR_STATE_VIEW", "actor-state-view.js", "script"],
-  ["SYSTEMS", "systems.js", "script"],
-  ["RPG", "rpg.js", "script"],
-  ["BEHAVIOR", "behavior-tree.js", "script"],
-  ["ADVENTURE", "adventure-content.js", "script"],
-  ["CREATURE_FACTORY", "creature-factory.js", "script"],
-  ["POLICIES", "colony-policies.js", "script"],
-  ["ECS", "ecs.js", "script"],
-  ["ACTOR_ECS", "actor-ecs.js", "script"],
-  ["WORLD_ECS", "world-ecs.js", "script"],
-  ["ECONOMY_ECS", "economy-ecs.js", "script"],
-  ["SIMULATION_PIPELINE", "simulation-pipeline.js", "script"],
-  ["SIMULATION_PROFILE", "simulation-profile.js", "script"],
-  ["COLONY_ADVENTURES", "colony-adventures.js", "script"],
-  ["COLONY_ACTIVITY", "colony-activity.js", "script"],
-  ["COLONY_LOGISTICS", "colony-logistics.js", "script"],
-  ["COLONY_TASK_COMPLETION", "colony-task-completion.js", "script"],
-  ["COLONY", "colony.js", "script"],
-  ["WORLD_CONTENT", "world-content.js", "script"],
-  ["WORLD_INTEGRITY", "world-integrity.js", "script"],
-  ["WORLD_TASKS", "world-tasks.js", "script"],
-  ["WORLD_PRODUCTION", "world-production.js", "script"],
-  ["WORLD_STATE_VALIDATION", "world-state-validation.js", "script"],
-  ["WORLD_SIMULATION", "world-simulation.js", "script"],
-  ["GROWTH_CONTENT", "growth-content.js", "script"],
-  ["VILLAGE_SYSTEMS", "village-systems.js", "script"],
-  ["VILLAGE_VALIDATION", "validation-village.js", "script"],
-  ["PLANNER", "planner.js", "script"],
-  ["CARTOGRAPHY", "cartography.js", "script"],
-  ["INTERACTION_CATALOG", "interaction-catalog.js", "script"],
-  ["INTERACTION_DUEL_RULES", "interaction-duel-rules.js", "script"],
-  ["INTERACTION_SPACE", "interaction-space.js", "script"],
-  ["INTERACTION_STATE", "interaction-state.js", "script"],
-  ["INTERACTION_RUNTIME", "interaction-runtime.js", "script"],
-  ["INTERACTION_TRIGGERS", "interaction-triggers.js", "script"],
-  ["GAME_SETTINGS", "game-settings.js", "script"],
-  ["SCENARIO_RESOURCES", "scenario-resources.js", "script"],
-  ["SCENARIO_WORKFLOW", "scenario-workflow.js", "script"],
-  ["INTERACTION_INTEGRATION", "interaction-integration.js", "script"],
-  ["BUILDING_INTERIOR_PATHS", "building-interior-paths.js", "script"],
-  ["BUILDING_INTERIOR_CATALOG", "building-interior-catalog.js", "script"],
-  ["CONSTRUCTION_DESIGNS", "construction-designs.js", "script"],
-  ["CONSTRUCTION_GEOMETRY", "construction-geometry.js", "script"],
-  ["CONSTRUCTION_STATE", "construction-state.js", "script"],
-  ["CONSTRUCTION_RUNTIME", "construction-runtime.js", "script"],
-  ["CONSTRUCTION_INTEGRATION", "construction-integration.js", "script"],
-  ["TERRAFORM_STATE", "terraform-state.js", "script"],
-  ["TERRAFORM_RUNTIME", "terraform-runtime.js", "script"],
-  ["TERRAFORM_INTEGRATION", "terraform-integration.js", "script"],
-  ["BUILDING_INTERIOR_STATE", "building-interior-state.js", "script"],
-  ["BUILDING_INTERIOR_RUNTIME", "building-interior-runtime.js", "script"],
-  ["BUILDING_INTERIOR_INTEGRATION", "building-interior-integration.js", "script"],
-  ["BUILDING_INTERIOR_PROJECTOR", "building-interior-projector.js", "script"],
-  ["APPLICATION_ADAPTERS", "application-adapters.js", "script"],
-  ["COMMAND_ROUTER", "command-router.js", "script"],
-  ["ENGINE_COMPOSITION_ROOT", "engine-composition-root.js", "script"],
-  ["BUILDING_INTERIOR_CSS", "building-interior.css", "style"],
-  ["WORLD_EXPLORER", "world-explorer.js", "script"],
-  ["WORLD_EXPLORER_CSS", "world-explorer.css", "style"],
-  ["STORY", "story-codec.js", "script"],
-  ["SCENARIO_SHAPE", "scenario-shape.js", "script"],
-  ["SCENARIOS", "scenario-runtime.js", "script"],
-  ["SCENARIO_STORY", "scenario-story.js", "script"],
-  ["DEVELOPER_DATA", "developer-data.js", "script"],
-  ["DEVELOPER_COMMANDS", "developer-commands.js", "script"],
-  ["DEVELOPER_SESSION", "developer-session.js", "script"],
-  ["STORAGE", "story-storage.js", "script"],
-  ["FILES", "file-io.js", "script"],
-  ["CANVAS_ART", "canvas-art.js", "script"],
-  ["CANVAS_BUILDINGS", "canvas-buildings.js", "script"],
-  ["CANVAS_GROUND", "canvas-ground.js", "script"],
-  ["CANVAS_ASSETS", "canvas-assets.js", "script"],
-  ["CANVAS_SCENE", "canvas-scene.js", "script"],
-  ["BUILDING_INTERIOR_RENDERER", "building-interior-renderer.js", "script"],
-  ["BUILDING_INTERIOR_UI", "building-interior-ui.js", "script"],
-  ["WORLD", "world.js", "script"],
-  ["PROGRESSION_UI", "progression-ui.js", "script"],
-  ["CONTENT_UI", "content-ui.js", "script"],
-  ["COLONY_HUD", "colony-hud.js", "script"],
-  ["COLONY_UI", "colony-ui.js", "script"],
-  ["CLOCK", "simulation-clock.js", "script"],
-  ["INTERFACE_PAUSE", "interface-pause.js", "script"],
-  ["V13_CSS", "v13.css", "style"],
-  ["WORLD_LAYOUT", "world-layout.js", "script"],
-  ["WORLD_UI", "world-ui.js", "script"],
-  ["QUALITY_CSS", "quality.css", "style"],
-  ["THREE", "../vendor/three.js", "script"],
-  ["DEVELOPER_TOOLBOX", "developer-toolbox.js", "script"],
-  ["ASSET_RENDERER", "asset-renderer.js", "script"],
-  ["SOFTWARE_3D", "software-3d.js", "script"],
-  ["WORLD_INPUT", "world-input.js", "script"],
-  ["FIDELITY", "world-fidelity.js", "script"],
-  ["PRESENTATION", "world-presentation.js", "script"],
-  ["WORLD_3D", "world-3d.js", "script"],
-  ["RENDERER_REGISTRY", "renderer-registry.js", "script"],
-  ["RENDERER_FRAME", "renderer-frame.js", "script"],
-  ["RENDERER_BASIC_ADAPTER", "renderer-basic-adapter.js", "script"],
-  ["RENDERER_HOST", "renderer-host.js", "script"],
-  ["RENDERER_EXAMPLE", "renderer-example.js", "script"],
-  ["TILE_CONTEXT", "tile-context.js", "script"],
-  ["V12_CSS", "v12.css", "style"],
-  ["VILLAGE_CSS", "village.css", "style"],
-  ["CARTOGRAPHY_CSS", "cartography.css", "style"],
-  ["INTERACTION_UI", "interaction-ui.js", "script"],
-  ["INTERACTIONS_CSS", "interactions.css", "style"],
-  ["VILLAGE_UI", "village-ui.js", "script"],
-  ["V14_CSS", "v14.css", "style"],
-  ["CONSTRUCTION_EDITOR", "construction-editor.js", "script"],
-  ["CONSTRUCTION_EDITOR_CSS", "construction-editor.css", "style"],
-  ["BUILD_PANEL", "build-panel.js", "script"],
-  ["GUIDE_PANEL", "guide-panel.js", "script"],
-  ["SCENARIO_UI", "scenario-ui.js", "script"],
-  ["V15_CSS", "v15.css", "style"],
-  ["UI_STATUS", "ui-status.js", "script"],
-  ["UI_STORY_PANELS", "ui-story-panels.js", "script"],
-  ["UI_MODAL_CONTENT", "ui-modal-content.js", "script"],
-  ["UI_MODAL", "ui-modal.js", "script"],
-  ["UI_ACTIONS", "ui-actions.js", "script"],
-  ["UI_INPUT", "ui-input.js", "script"],
-  ["TERRAFORM_UI", "terraform-ui.js", "script"],
-  ["TERRAFORM_UI_CSS", "terraform-ui.css", "style"],
-  ["UI", "ui.js", "script"]
-];
+
 
 function cleanGeneratedExecutables(directory: string): void {
   if (!fs.existsSync(directory)) return;
@@ -189,10 +46,10 @@ function compile(): void {
     cwd: PROJECT, stdio: "inherit", timeout: 30000, killSignal: "SIGKILL"
   });
   if (sdkTypes.error || sdkTypes.status !== 0) throw new Error("Developer SDK declaration generation failed.");
-  for (const file of ["developer-contracts.d.ts", "developer-space-contracts.d.ts", "runtime-contracts.d.ts"]) fs.copyFileSync(path.join(ROOT, file), path.join(GENERATED, file));
+  for (const file of ["developer-contracts.d.ts", "developer-space-contracts.d.ts", "runtime-contracts.d.ts", "developer-scene-contracts.d.ts", "content-contracts.d.ts", "scene-graph-contracts.d.ts", "scene-editor-contracts.d.ts", "external-editor-contracts.d.ts", "animation-data-contracts.d.ts", "engine-export-contracts.d.ts", "balancing-contracts.d.ts", "balancing-tools-contracts.d.ts", "building-interior-data-contracts.d.ts", "interaction-contracts.d.ts", "storytelling-data-contracts.d.ts", "storytelling-contracts.d.ts", "storytelling-render-contracts.d.ts", "scene-navigation-contracts.d.ts", "renderer-contracts.d.ts", "renderer-data-contracts.d.ts", "canvas-authoring-contracts.d.ts", "external-editor-canvas-contracts.d.ts", "creature-editor-contracts.d.ts"]) fs.copyFileSync(path.join(ROOT, file), path.join(GENERATED, file));
   const declaration = path.join(GENERATED, "developer-sdk.d.cts");
   fs.writeFileSync(declaration, fs.readFileSync(declaration, "utf8").replace(
-    /<reference path="[^"]*developer-contracts\.d\.ts"/, '<reference path="./developer-contracts.d.ts"'));
+    /<reference path="(?:[^"]*\/)?([^/"]+\.d\.ts)"/g, '<reference path="./$1"'));
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
@@ -201,6 +58,7 @@ function compile(): void {
   }
   fs.copyFileSync(path.join(ROOT, "assets", "interactions", "catalog.json"), path.join(GENERATED, "interaction-library.json"));
   fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT)));
+  fs.copyFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), path.join(GENERATED, "creature-editor-fields.json"));
   fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT)));
   fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT)));
 }
@@ -210,24 +68,28 @@ function json(file: string): unknown {
 }
 
 function inlineData(packPath: string | null): string {
+  const balance = json("balancing.json") as {libraries:{base:unknown;adventure:unknown;world:unknown;growth:unknown};simulation:{rules:{actor:unknown;economy:unknown}};world:unknown;creatures:unknown;interactions:unknown;interiors:unknown};
   const declarations: Array<[string, unknown]> = [
-    ["LWDefaultLibrary", json("default-library.json")],
+    ["LWEngineSourceLoader", JSON.parse(fs.readFileSync(path.join(GENERATED, "engine-source-loader.json"), "utf8"))],
+    ["LWDefaultBalancing", balance],
+    ["LWDefaultLibrary", balance.libraries.base],
     ["LWContentSchema", json("library.schema.json")],
-    ["LWInteriorDefinitions", JSON.parse(fs.readFileSync(path.join(ROOT,"content","building-interiors.json"),"utf8"))],
-    ["LWInteractionLibrary", JSON.parse(fs.readFileSync(path.join(ROOT,"assets","interactions","catalog.json"),"utf8"))],
+    ["LWInteriorDefinitions", balance.interiors],
+    ["LWInteractionLibrary", balance.interactions],
     ["LWCreatureDefinitions", creatureDefinitions(ROOT)],
+    ["LWCreatureEditorFieldDefinitions", JSON.parse(fs.readFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), "utf8"))],
     ["LWCreatureConfig", creatureConfig(ROOT)],
-    ["LWDefaultAdventure", json("adventure-library.json")],
+    ["LWDefaultAdventure", balance.libraries.adventure],
     ["LWAdventureSchema", json("adventure.schema.json")],
-    ["LWDefaultWorld", json("world-library.json")],
+    ["LWDefaultWorld", balance.libraries.world],
     ["LWWorldSchema", json("world.schema.json")],
-    ["LWActorRules", json("actor-rules.json")],
-    ["LWEconomyRules", json("economy-rules.json")],
-    ["LWDefaultSimulationProfile", json("simulation-profile.json")],
+    ["LWActorRules", balance.simulation.rules.actor],
+    ["LWEconomyRules", balance.simulation.rules.economy],
+    ["LWDefaultSimulationProfile", balance.simulation],
     ["LWSimulationSchema", json("simulation.schema.json")],
-    ["LWDefaultGrowth", json("growth-library.json")],
+    ["LWDefaultGrowth", balance.libraries.growth],
     ["LWGrowthSchema", json("growth.schema.json")],
-    ["LWDefaultProfile", json("default-profile.json")],
+    ["LWDefaultProfile", balance.world],
     ["LWScenarioSchema", json("scenario.schema.json")],
     ["LWAssetDefinitions", assetDefinitions(ROOT)]
   ];
@@ -300,6 +162,11 @@ function build(packPath: string | null, outputPath: string): void {
     throw new Error("Build output must not overwrite the input pack.");
   }
   compile();
+  const defaults = spawnSync(process.execPath, [path.join(GENERATED, "tools", "build-validation.cjs")], {
+    cwd: PROJECT, stdio: "inherit", timeout: 120000, killSignal: "SIGKILL"
+  });
+  if (defaults.error || defaults.status !== 0) throw new Error("Bundled default validation failed." + (defaults.error ? " " + defaults.error.message : ""));
+  writeSourceBundle(PROJECT, GENERATED);
   if (packPath) {
     const cli = path.join(GENERATED, "tools", "scenario-cli.cjs");
     const validation = spawnSync(process.execPath, [cli, "validate", packPath], {

@@ -113,7 +113,7 @@ actors roundtrip without acquiring the optional Habitat field.
 
 ## Intentional constraints
 
-Creature archetypes and visual assets are bundled trusted application content. Scenario packs may select/tune supported simulation content but cannot inject new creature code, systems or renderer assets. Native actor state carries an explicit `{archetype, personality}` identity: archetype selects the creature contract and visual asset, while personality selects reusable Adventure traits, attributes and preferences. A personality may therefore be supported by multiple archetypes without coupling species identity to temperament.
+Default creature archetypes and visual assets are bundled application content. Scenario packs and portable stories can carry complete validated creature and visual catalogs. They cannot inject new creature code, systems, renderer algorithms or loaders. Native actor state carries an explicit `{archetype, personality}` identity: archetype selects the creature contract and visual asset, while personality selects reusable Adventure traits, attributes and preferences. A personality may therefore be supported by multiple archetypes without coupling species identity to temperament.
 
 
 New AI actions, handlers, morphology/animation programs and component systems still

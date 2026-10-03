@@ -21,6 +21,10 @@
  }
  function create(kit,parent,category,id,modelName='world',options={}){
   const asset=A.get(category,id);if(!asset)throw Error('Missing 3D asset '+category+':'+id);
+  return createFromDefinition(kit,parent,asset,modelName,options);
+ }
+ function createFromDefinition(kit,parent,input,modelName='world',options={}){
+  const asset=A.validate(input),category=asset.category,id=asset.id;
   const model=asset.models[modelName];if(!model)throw Error('Missing 3D model '+category+':'+id+'/'+modelName);
   const rootGroup=kit.group(parent),handles=new Map(),p=options.position||[0,0,0],r=options.rotation||[0,0,0],s=options.scale||[1,1,1];
   rootGroup.position.set(p[0],p[1],p[2]);rootGroup.rotation.set(r[0],r[1],r[2]);rootGroup.scale.set(s[0],s[1],s[2]);rootGroup.userData.asset=category+':'+id;rootGroup.userData.radius=asset.metadata?.radius||1;
@@ -39,6 +43,6 @@
  }
  function createItem(kit,parent,id,model='carry',options={}){return create(kit,parent,'item',id,model,options);}
  function createActor(kit,parent,id,model='world',options={}){if(!id)throw Error('Actor asset ID is required');return create(kit,parent,'actor',id,model,options);}
- root.LWAssetRenderer=Object.freeze({create,createBuilding,createItem,createActor});
+ root.LWAssetRenderer=Object.freeze({create,createFromDefinition,createBuilding,createItem,createActor});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWAssetRenderer;
 })(typeof globalThis!=='undefined'?globalThis:this);

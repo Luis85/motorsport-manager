@@ -1,3 +1,13 @@
+## PR 25 portable-world and authoring expansion
+
+Added a world/scene tree editor, nested building floors and connected levels, a 3D creature editor, freeform construction and terraforming, authored creature interactions and automatic friendly duels, independent duel/quest settings, and the indoor Office workflow. Scene checkpoints preserve dormant native work and captured data. All fifteen inventoried domain/application typing debts are closed.
+
+Added replaceable renderer registration, actual PixiJS and Excalibur 2D backends, 2D UI scenes embedded in 3D scenes, and deterministic p5.js animation layers. Storyboards and 2D/3D timeline cutscenes animate detached actors, props and cameras; authored events use the same reviewed scene-transition authority. Developers and coding agents can use the typed toolbox and bounded data contracts.
+
+Added Tiled, LDtk, glTF/GLB and Obsidian Canvas/Advanced Canvas exchange, plus a complete engine JSON export with exact editable sources, schemas, assets, licenses and Godot port metadata. Central `source/content/balancing.json` supplies default libraries, profiles, creature tuning and world/start data; the workshop and CLI validate, compare, review and run bounded deterministic experiments. Exported source supports a code-generator project; executable mechanics still require a semantic Godot port.
+
+Merged current main and retained the verified native CI/tooling contracts. Current release evidence is recorded in `VERIFICATION.md`; counts and hashes in the entries below are historical checkpoints.
+
 ## PR 25 comprehensive improvement and polishing pass
 
 Closed the remaining TypeScript/architecture/ECS/data-boundary and verification gaps after the first hardening pass. Runtime ECS collections now use real private storage with read-only snapshots; deferred component batches revalidate payloads before commit; command envelopes reject getters, symbols, cycles, sparse/hidden array data and prototype-shaped input; behavior-tree JSON has exact typed schemas and prototype-safe cooldown memory; Base/Adventure/Growth/World/rule/profile inputs share a fail-closed JSON-only boundary; compatibility globals are checked for inward dependency direction; generated builds are one-pass/preflighted and stale output/evidence is cleared before verification. CI is lockfile-driven with `npm ci`, duplicate Littlewild runs were removed, architecture failures print explicit diagnostics, and browser tests use real Playwright callbacks with screenshot capture separated from the functional gate.

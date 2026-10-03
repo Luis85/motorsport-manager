@@ -6,8 +6,8 @@
  const D=root.LWConstructionDesigns,G=root.LWConstructionGeometry;
  const fail=(reason:string):LWPhysicalPorts.ActionResult=>({ok:false,reason});
  const empty=():LWConstruction.State=>({version:1,sequence:1,designs:{}});
- function preview(input:unknown):LWConstruction.Preview{
-  try{const design=D.validate(input);return {ok:true,design,cost:D.cost(design),phases:D.phases(design)};}catch(error){return {ok:false,reason:error instanceof Error?error.message:String(error)};}
+ function preview(input:unknown,engine?:LWBalanceRules.Owner):LWConstruction.Preview{
+  try{const design=D.validate(input);return {ok:true,design,cost:D.cost(design,engine),phases:D.phases(design,engine)};}catch(error){return {ok:false,reason:error instanceof Error?error.message:String(error)};}
  }
  function buildingDesign(e:LWConstruction.Engine,id:unknown):LWConstruction.Draft|null{
   const b=e.s.buildings.find(b=>b.id===id);if(!b)return null;
@@ -21,8 +21,8 @@
  }
  function submit(e:LWConstruction.Engine,input:unknown,x:unknown,y:unknown,replacing?:LWConstruction.Building):LWPhysicalPorts.ActionResult{
   const prior=replacing?buildingDesign(e,replacing.id):null;
-  const initial=preview(input);if(!initial.ok)return initial;
-  const checked=prior?preview({name:initial.design.name,kind:initial.design.kind,layout:initial.design.layout,mapUnit:prior.mapUnit}):initial;if(!checked.ok)return checked;
+  const initial=preview(input,e);if(!initial.ok)return initial;
+  const checked=prior?preview({name:initial.design.name,kind:initial.design.kind,layout:initial.design.layout,mapUnit:prior.mapUnit},e):initial;if(!checked.ok)return checked;
   const design=checked.design;
   if(typeof x!=='number'||typeof y!=='number')return fail('Choose integer map coordinates.');
   const issue=e.interactionIssue();if(issue)return fail(issue);
@@ -45,10 +45,10 @@
   e.actor.orders.push(order);e.log(e.actor.name+' will build '+design.name+' in three physical stages.','plan');return {ok:true};
  }
  function previewImprovement(e:LWConstruction.Engine,input:unknown,id:unknown):LWConstruction.Preview{
-  let checked=preview(input);if(!checked.ok)return checked;const b=e.s.buildings.find(b=>b.id===id),old=b&&buildingDesign(e,id);if(!b||!old)return {ok:false,reason:'This building is no longer here.'};
-  checked=preview({name:checked.design.name,kind:checked.design.kind,layout:checked.design.layout,mapUnit:old.mapUnit});if(!checked.ok)return checked;
+  let checked=preview(input,e);if(!checked.ok)return checked;const b=e.s.buildings.find(b=>b.id===id),old=b&&buildingDesign(e,id);if(!b||!old)return {ok:false,reason:'This building is no longer here.'};
+  checked=preview({name:checked.design.name,kind:checked.design.kind,layout:checked.design.layout,mapUnit:old.mapUnit},e);if(!checked.ok)return checked;
   if(b.kind!==checked.design.kind)return {ok:false,reason:'Keep the existing building type.'};const mismatch=D.preserve(old.layout,checked.design.layout);if(mismatch)return {ok:false,reason:mismatch};
-  const cost=D.improvementCost(D.validate(old),checked.design),phases=checked.phases.map(p=>({...p,cost:{} as Record<string,number>}));for(const [resource,n]of Object.entries(cost))phases[['stone','clay','bricks'].includes(resource)?0:['wood','planks','beams','iron','rope'].includes(resource)?1:2]!.cost[resource]=n;
+  const cost=D.improvementCost(D.validate(old),checked.design,e),phases=checked.phases.map(p=>({...p,cost:{} as Record<string,number>}));for(const [resource,n]of Object.entries(cost))phases[['stone','clay','bricks'].includes(resource)?0:['wood','planks','beams','iron','rope'].includes(resource)?1:2]!.cost[resource]=n;
   return {...checked,cost,phases};
  }
  function construct(e:LWConstruction.Engine,input:unknown,x:unknown,y:unknown):LWPhysicalPorts.ActionResult{return submit(e,input,x,y);}

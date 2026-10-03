@@ -1,0 +1,78 @@
+/// <reference path="./storytelling-renderer-contracts.d.ts" />
+/// <reference path="./renderer-scene-2d.ts" />
+/* Detached primitive scenes: actual Three rendering with no engine or replacement catalog. */
+(function(inputRoot:unknown){
+ 'use strict';
+ interface Vector {x:number;y:number;z:number;set(x:number,y:number,z:number):void;}
+ interface Object3D {position:Vector;rotation:Vector;scale:Vector;visible:boolean;userData:Record<string,unknown>;add(...objects:Object3D[]):void;remove(object:Object3D):void;traverse(work:(object:Object3D)=>void):void;material?:Material;}
+ interface Kit {group(parent:Object3D):Object3D;piece(parent:Object3D,kind:string,x:number,y:number,z:number,sx:number,sy:number,sz:number,color:string,rotation:number,extra:Record<string,unknown>):Object3D;}
+ interface Geometry {dispose():void;setAttribute(name:string,value:unknown):void;setIndex(values:number[]):void;computeVertexNormals():void;translate(x:number,y:number,z:number):void;}
+ interface Material {dispose():void;opacity:number;transparent:boolean;}
+ interface Camera extends Object3D {left:number;right:number;top:number;bottom:number;lookAt(x:number,y:number,z:number):void;updateProjectionMatrix():void;}
+ interface Scene extends Object3D {background:unknown;}
+ interface Renderer {setViewport?(x:number,y:number,width:number,height:number):void;setScissor?(x:number,y:number,width:number,height:number):void;setScissorTest?(enabled:boolean):void;setSize(width:number,height:number,style?:boolean):void;render(scene:Scene,camera?:Camera):void;dispose():void;forceContextLoss?():void;}
+ interface Three {Vector3:new(x:number,y:number,z:number)=>Vector&{project(camera:Camera):Vector};Group:new()=>Object3D;Scene:new()=>Scene;Color:new(value:string)=>unknown;Mesh:new(geometry:Geometry,material:Material)=>Object3D;MeshStandardMaterial:new(options:Record<string,unknown>)=>Material;BoxGeometry:new(x:number,y:number,z:number)=>Geometry;IcosahedronGeometry:new(radius:number,detail:number)=>Geometry;SphereGeometry:new(radius:number,width:number,height:number)=>Geometry;ConeGeometry:new(radius:number,height:number,segments:number)=>Geometry;CylinderGeometry:new(top:number,bottom:number,height:number,segments:number)=>Geometry;TorusGeometry:new(radius:number,tube:number,radial:number,tubular:number)=>Geometry;BufferGeometry:new()=>Geometry;Float32BufferAttribute:new(values:number[],size:number)=>unknown;Shape:new()=>{moveTo(x:number,y:number):void;lineTo(x:number,y:number):void;closePath():void};ExtrudeGeometry:new(shape:unknown,options:Record<string,unknown>)=>Geometry;OrthographicCamera:new(left:number,right:number,top:number,bottom:number,near:number,far:number)=>Camera;HemisphereLight:new(sky:string,ground:string,intensity:number)=>Object3D;DirectionalLight:new(color:string,intensity:number)=>Object3D;WebGLRenderer:new(options:Record<string,unknown>)=>Renderer;}
+
+ const root=inputRoot as {THREE:Three;LWSoftware3D:new(canvas:HTMLCanvasElement,owner:unknown)=>Renderer;LWAssetRenderer:{createFromDefinition(kit:Kit,parent:Object3D,asset:unknown,model:string,options:Record<string,unknown>):{root:Object3D;handles:Map<string,Object3D>}};LWRendererScene2D:LittlewildRenderer2D.Api;LWRendererObserver?:unknown};
+ const record=(value:unknown):Readonly<Record<string,unknown>>=>value&&typeof value==='object'&&!Array.isArray(value)?value as Readonly<Record<string,unknown>>:{};
+ function create2D(context:LittlewildRenderer.Context):LittlewildRenderer.Instance {
+  const canvas=context.canvas,c=canvas.getContext('2d');if(!c)throw Error('Detached Canvas context is unavailable.');let disposed=false;
+  const painter:LittlewildRenderer2D.Painter={polygon(points,color,opacity=1){if(!points.length)return;c.globalAlpha=opacity;c.fillStyle=color;c.beginPath();points.forEach((p,index)=>index?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();c.fill();c.globalAlpha=1;},circle(x,y,r,color){c.fillStyle=color;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();},text(value,x,y,color,size){c.fillStyle=color;c.font=size+'px sans-serif';c.textAlign='center';c.fillText(value,x,y);}};
+  return{mount(){},draw(frame){if(disposed)return;root.LWRendererScene2D.draw(frame,context,painter);},resize(viewport){canvas.width=viewport.width;canvas.height=viewport.height;},dispose(){disposed=true;},project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
+ }
+ function create3D(context:LittlewildRenderer.Context):LittlewildRenderer.Instance {
+  const canvas=context.canvas,T=root.THREE,scene=new T.Scene(),camera=new T.OrthographicCamera(-10,10,8,-8,.01,1000),geometries=new Map<string,Geometry>(),materials:Material[]=[];
+  const terrain=new T.Group(),objects=new T.Group();scene.add(terrain,objects);
+  const owner={camera:{x:0,y:0,z:1},environment:{background:'#e3eadd'}};let disposed=false,terrainStamp='',renderer:Renderer;
+  try{const gl=canvas.getContext('webgl2',{antialias:false,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('Software rendering');renderer=new T.WebGLRenderer({canvas,context:gl,antialias:false,alpha:false,preserveDrawingBuffer:true});}catch{renderer=new root.LWSoftware3D(canvas,owner);}
+  scene.add(new T.HemisphereLight('#fff2d4','#75968a',2));const light=new T.DirectionalLight('#ffe3b0',2.7);light.position.set(-3,25,15);scene.add(light);
+  const figures=new Map<string,{root:Object3D;signature:string;materials:Material[];handles:Map<string,Object3D>}>();
+  function geometry(kind:string):Geometry {
+   const cached=geometries.get(kind);if(cached)return cached;let made:Geometry;
+   if(kind==='box')made=new T.BoxGeometry(1,1,1);else if(kind==='ball')made=new T.IcosahedronGeometry(1,0);else if(kind==='soft'||kind==='tiny')made=new T.SphereGeometry(1,kind==='tiny'?6:10,kind==='tiny'?4:7);else if(kind==='cone')made=new T.ConeGeometry(1,1,7);else if(kind==='cylinder')made=new T.CylinderGeometry(1,1,1,8);else if(kind==='ring')made=new T.TorusGeometry(1,.07,4,16);else if(kind==='roof'){const shape=new T.Shape();shape.moveTo(-.5,0);shape.lineTo(.5,0);shape.lineTo(0,.62);shape.closePath();made=new T.ExtrudeGeometry(shape,{depth:1,bevelEnabled:false});made.translate(0,0,-.5);}else if(kind==='ground'){made=new T.BufferGeometry();made.setAttribute('position',new T.Float32BufferAttribute([-.5,0,-.5,-.5,0,.5,.5,0,.5,.5,0,-.5],3));made.setIndex([0,1,2,0,2,3]);made.computeVertexNormals();}else throw Error('Unsupported preview primitive '+kind);geometries.set(kind,made);return made;
+  }
+  const kit:Kit={group(parent){const group=new T.Group();parent.add(group);return group;},piece(parent,kind,x,y,z,sx,sy,sz,color,rotation,extra){const material=new T.MeshStandardMaterial({color,roughness:.98,flatShading:true,...extra});materials.push(material);const mesh=new T.Mesh(geometry(kind),material);mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.rotation.y=rotation;parent.add(mesh);return mesh;}};
+
+  function roomStructure(floor:NonNullable<LittlewildRenderer.Frame['room']>['floors'][number]){
+   for(const edge of floor.edges??[]){
+    const horizontal=edge.side==='n'||edge.side==='s',x=edge.x+(edge.side==='w'?-.5:edge.side==='e'?.5:0),z=edge.y+(edge.side==='n'?-.5:edge.side==='s'?.5:0),height=edge.side==='s'||edge.side==='e'?.35:1.4;
+    const part=(offset:number,y:number,length:number,tall:number,color:string,extra:Record<string,unknown>={})=>kit.piece(terrain,'box',x+(horizontal?offset:0),y,z+(horizontal?0:offset),horizontal?length:.08,tall,horizontal?.08:length,color,0,extra);
+    if(edge.kind==='wall')part(0,height/2,1,height,'#c0cebc');
+    else if(edge.kind==='door'){part(-.46,.65,.08,1.3,'#bca678');part(.46,.65,.08,1.3,'#bca678');part(0,1.3,1,.12,'#bca678');}
+    else{part(0,.14,1,.28,'#c0cebc');part(0,.8,1,.12,'#c0cebc');part(-.46,.48,.08,.55,'#c0cebc');part(.46,.48,.08,.55,'#c0cebc');part(0,.48,.84,.55,'#9bb6af',{transparent:true,opacity:.6});}
+   }
+   for(const stair of floor.stairs)for(let step=0;step<4;step++)kit.piece(terrain,'box',stair.x,step*.06+.03,stair.y-.3+step*.2,.7,.06,.2,'#b49d6d',0,{});
+   kit.piece(terrain,'box',floor.door.x,.012,floor.door.y,.8,.03,.8,'#a2ba8d',0,{});
+  }
+  function clear(group:Object3D){for(const child of [...figures.values()])if(group===objects){objects.remove(child.root);child.materials.forEach(material=>material.dispose());}if(group===objects)figures.clear();}
+  function figure(key:string,category:'actor'|'building'|'item',id:string,model:string,options:Record<string,unknown>={}):Object3D|null {
+   const asset=context.query.asset(category,id);if(!asset)return null;const models=record(asset.models);if(!models[model])model='world';if(!models[model])return null;
+   const signature=JSON.stringify([asset,model,options]),old=figures.get(key);if(old?.signature===signature)return old.root;
+   if(old){objects.remove(old.root);old.materials.forEach(material=>material.dispose());figures.delete(key);}
+   const start=materials.length,instance=root.LWAssetRenderer.createFromDefinition(kit,objects,asset,model,options),owned=materials.splice(start);
+   figures.set(key,{root:instance.root,signature,materials:owned,handles:instance.handles});return instance.root;
+  }
+  function pose(object:Object3D,value:LittlewildRenderer.Point&LittlewildRenderer.Pose&{height?:number},baseScale:readonly number[]=[1,1,1]){object.position.set(value.x,(value.height??0)*.25,value.y);object.rotation.y=value.rotation??0;object.scale.set((value.scale??1)*(baseScale[0]??1),(value.scale??1)*(baseScale[1]??1),(value.scale??1)*(baseScale[2]??1));object.visible=(value.opacity??1)>0;object.traverse(node=>{if(node.material){if(node.userData.authorOpacity===undefined)node.userData.authorOpacity=node.material.opacity;node.material.opacity=(value.opacity??1)*Number(node.userData.authorOpacity);node.material.transparent=node.material.opacity<1;}});}
+  function draw(frame:LittlewildRenderer.Frame){
+   if(disposed)return;const seen=new Set<string>(),room=frame.room?.floors.find(f=>f.id===frame.interiorView?.floorId),tiles=room?(room.cells??Array.from({length:room.width*room.height},(_,i)=>({x:i%room.width,y:Math.floor(i/room.width)}))).map(tile=>({...tile,height:0,ground:'room'})):frame.tiles;
+   const box=room&&frame.scene?.kind!=='interior'?null:frame.scene?.bounds,inside=(p:LittlewildRenderer.Point)=>!box||p.x>=box.x&&p.y>=box.y&&p.x<box.x+box.width&&p.y<box.y+box.height;
+   const visible=tiles.filter(inside),stamp=JSON.stringify([visible,room?.edges,room?.stairs,room?.door]);if(stamp!==terrainStamp){terrainStamp=stamp;scene.remove(terrain);terrain.traverse(node=>node.material?.dispose());const children=record(terrain).children;if(Array.isArray(children))for(const child of [...children])terrain.remove(child as Object3D);for(const tile of visible)kit.piece(terrain,'box',tile.x,tile.height*.25-.07,tile.y,.98,.14,.98,tile.ground==='water'?'#90b9b5':tile.ground==='room'?'#e6d9b6':(tile.x+tile.y)%2?'#b6c8a0':'#bed0a9',0,{});if(room)roomStructure(room);scene.add(terrain);materials.length=0;}
+   const actors=room?frame.room!.actors.filter(a=>a.floorId===room.id):frame.actors.filter(a=>!a.away);
+   for(const actor of actors){if(!inside(actor))continue;const key='actor:'+actor.id,asset=context.query.asset('actor',actor.visualAsset),appearance=record(record(record(asset?.behaviors).appearances)[actor.personality??'']);const made=figure(key,'actor',actor.visualAsset,String(appearance.model??'world'),{materials:record(appearance.materials)});if(made){seen.add(key);pose(made,actor,Array.isArray(appearance.scale)?appearance.scale as number[]:[1,1,1]);const entry=figures.get(key)!;const rig=record(asset?.rig),gesture=Math.sin((actor.pose??0)*Math.PI*2);if(Array.isArray(rig.arms))for(const id of rig.arms){const arm=entry.handles.get(String(id));if(arm){if(arm.userData.authoredRotationX===undefined)arm.userData.authoredRotationX=arm.rotation.x;arm.rotation.x=Number(arm.userData.authoredRotationX)+gesture*1.1;}}if(typeof rig.head==='string'){const head=entry.handles.get(rig.head);if(head){if(head.userData.authoredRotationX===undefined)head.userData.authoredRotationX=head.rotation.x;head.rotation.x=Number(head.userData.authoredRotationX)+gesture*.15;}}}}
+   const rows=room?[]:[...frame.nodes.map(value=>({value,category:'item' as const})),...frame.buildings.map(value=>({value,category:'building' as const}))];
+   for(const {value,category} of rows){if(!inside(value))continue;const key=category+':'+value.id,made=figure(key,category,String(value.details.assetId??value.kind),String(value.details.model??'world'));if(made){seen.add(key);pose(made,value);}}
+   const props=room&&frame.room!.sceneProps?.floorId===room.id?frame.room!.sceneProps.props:frame.props;
+   for(const prop of props){if(!inside(prop))continue;const key='prop:'+prop.id,made=figure(key,prop.category,prop.assetId,prop.model);if(made){seen.add(key);pose(made,prop);}}
+   if(room)for(const station of room.stations){const key='station:'+station.id,made=frame.room!.fixtureAsset?figure(key,'building',frame.room!.fixtureAsset,frame.room!.fixtureModel):null;if(made){seen.add(key);pose(made,station);}}
+   for(const [key,entry] of figures)if(!seen.has(key)){objects.remove(entry.root);entry.materials.forEach(material=>material.dispose());figures.delete(key);}
+   const xs=visible.map(t=>t.x),ys=visible.map(t=>t.y),cx=box?box.x+box.width/2:xs.length?(Math.min(...xs)+Math.max(...xs))/2:9,cy=box?box.y+box.height/2:ys.length?(Math.min(...ys)+Math.max(...ys))/2:9;
+   const extent=box?Math.max(box.width,box.height):Math.max(xs.length?Math.max(...xs)-Math.min(...xs)+1:19,ys.length?Math.max(...ys)-Math.min(...ys)+1:19),zoom=frame.camera.z;
+   const surface=room?frame.interiorView?.surface:null,width=surface?.width??frame.viewport.width,height=surface?.height??frame.viewport.height,half=Math.max(2,extent*.62)/zoom;camera.left=-half*width/height;camera.right=-camera.left;camera.top=half;camera.bottom=-half;camera.updateProjectionMatrix();
+   const px=frame.camera.x/width*half*2,py=frame.camera.y/height*half*2;camera.position.set(cx+22-px,25+py,cy+22-px);camera.lookAt(cx-px,py,cy-px);
+   renderer.setViewport?.(surface?.x??0,surface?frame.viewport.height-surface.y-surface.height:0,width,height);renderer.setScissor?.(surface?.x??0,surface?frame.viewport.height-surface.y-surface.height:0,width,height);renderer.setScissorTest?.(!!surface);owner.camera={...frame.camera};const background=typeof frame.environment?.background==='string'?frame.environment.background:'#e3eadd';owner.environment.background=background;scene.background=new T.Color(background);renderer.render(scene,camera);
+  }
+  function release(){if(disposed)return;disposed=true;clear(objects);terrain.traverse(node=>node.material?.dispose());materials.forEach(material=>material.dispose());geometries.forEach(geometry=>geometry.dispose());renderer.dispose();renderer.forceContextLoss?.();}
+  context.onDispose(release);return{mount(){},draw,resize(viewport){renderer.setSize(viewport.width,viewport.height,false);},dispose:release,project(point,frame){const vector=new T.Vector3(point.x,(frame.tiles.find(tile=>tile.x===Math.round(point.x)&&tile.y===Math.round(point.y))?.height??0)*.25,point.y);vector.project(camera);const surface=frame.room?frame.interiorView?.surface:null;return{x:(surface?.x??0)+(vector.x+1)*(surface?.width??frame.viewport.width)/2,y:(surface?.y??0)+(1-vector.y)*(surface?.height??frame.viewport.height)/2};}};
+ }
+ root.LWRendererObserver={create(context:LittlewildRenderer.Context,dimension:LittlewildRenderer.Dimension){return dimension==='3d'?create3D(context):create2D(context);}};
+})(globalThis);

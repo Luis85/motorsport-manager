@@ -38,7 +38,7 @@
  const ecs=(node?require('./ecs.js'):root.LWECS) as EcsApi|undefined;
  const content=(node?require('./content-runtime.js'):root.LWContent) as ContentApi|undefined;
  const creatures=(node?require('./creature-catalog.js'):root.LWCreatures) as CreatureCatalog|undefined;
- const DEFAULT=node?require('./content/actor-rules.json') as unknown:root.LWActorRules;
+ const DEFAULT=node?require('./content/balancing.json').simulation.rules.actor as unknown:root.LWActorRules;
  if(!ecs||!content||!creatures||DEFAULT===undefined)throw Error('Actor ECS dependencies are missing.');
  const E:EcsApi=ecs,C:ContentApi=content,Creatures:CreatureCatalog=creatures;
  const clamp=(value:number):number=>Math.max(0,Math.min(100,value));

@@ -40,6 +40,9 @@
             },
             "economy": {
               "$ref": "#/$defs/economyRules"
+            },
+            "gameplay": {
+              "type": "object"
             }
           },
           "required": [

@@ -1,3 +1,4 @@
+/// <reference path="./scene-graph-contracts.d.ts" />
 /// <reference path="./physical-world-contracts.d.ts" />
 /// <reference path="./building-interior-data-contracts.d.ts" />
 /// <reference path="./workflow-venue-contracts.d.ts" />
@@ -22,6 +23,6 @@ declare namespace LWInterior {
   buildingStatus(b:LWPhysicalPorts.Building):{label:string;kind:string;detail:string};
  }
  interface ActorView extends Point {archetype:string;visualAsset:string;id:string;name:string;floorId:string;stationId:string|null;action:string;mood:string;progress:number|null;remainingSeconds:number|null;moving:boolean;direction:number;cargo:string;transfer:boolean;}
- interface Snapshot {fixtureAsset:string;fixtureModel:string;buildingId:string;buildingName:string;kind:string;floors:Floor[];actors:ActorView[];time:number;status:{label:string;kind:string;detail:string};input:Record<string,number>;output:Record<string,number>;recipes:{id:string;name:string;amount:number;time:number;cost:Record<string,number>;skill:string;queued:number}[];transfers:{actorId:string;name:string;direction:string;resource:string;amount:number;time:number}[];}
+ interface Snapshot {sceneProps?:{floorId:string;props:LWSceneGraph.Prop[]};fixtureAsset:string;fixtureModel:string;buildingId:string;buildingName:string;kind:string;floors:Floor[];actors:ActorView[];time:number;status:{label:string;kind:string;detail:string};input:Record<string,number>;output:Record<string,number>;recipes:{id:string;name:string;amount:number;time:number;cost:Record<string,number>;skill:string;queued:number}[];transfers:{actorId:string;name:string;direction:string;resource:string;amount:number;time:number}[];}
  interface Renderer {draw(snapshot:Snapshot,floorId:string,presentationTime:number):void;resize():void;destroy():void;}
 }

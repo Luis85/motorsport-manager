@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /// <reference path="./legacy-task-contracts.d.ts" />
 /* Companion care, skill practice, learning and shared milestone commands. */
 (function (inputRoot: unknown) {
@@ -128,6 +129,7 @@
         install(target: object): void;
     }
     const root = inputRoot as Root;
+ const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     function install(target: object): void {
         const { RES, SKILLS, BUILDINGS, RECIPES, QUESTS } = root.LWContent.tables;
         const clamp = (n: number, a: number, b: number): number => Math.max(a, Math.min(b, n));
@@ -198,39 +200,39 @@
                 const s = this.s, n = s.needs, wait = Math.max(0, Math.ceil((s.cooldowns[kind]! || 0) - s.simTime));
                 if (wait)
                     return 'Enjoying that moment · ' + wait + 's';
-                if (kind === 'feed' && n.food >= 94)
+                if (kind === 'feed' && n.food >= B.forEngine(this).care.fullGate)
                     return 'A full tummy already. Save that snack for later.';
-                if (kind === 'water' && n.water >= 94)
+                if (kind === 'water' && n.water >= B.forEngine(this).care.waterFullGate)
                     return 'Not thirsty right now. Thank you for checking.';
                 if (kind === 'feed' && !s.inventory.meals && !s.inventory.berries)
                     return 'No snack in the pantry. Pip can forage for berries.';
                 if (kind === 'water' && !s.inventory.water)
                     return 'No stored water. Pip can collect more at the spring.';
-                if (kind === 'bond' && (n.food < 16 || n.water < 16 || n.energy < 12))
+                if (kind === 'bond' && (n.food < B.forEngine(this).care.bondFoodGate || n.water < B.forEngine(this).care.bondWaterGate || n.energy < B.forEngine(this).care.bondEnergyGate))
                     return 'Pip needs food, water or rest before play.';
-                if (kind === 'praise' && (s.memory.lastAchievement <= s.memory.lastPraise || s.simTime - s.memory.lastAchievement > 90))
+                if (kind === 'praise' && (s.memory.lastAchievement <= s.memory.lastPraise || s.simTime - s.memory.lastAchievement > B.forEngine(this).care.praiseAge))
                     return 'Notice a recent effort: gathering, learning, crafting or building.';
                 return null;
             },
             mood() {
                 const s = this.s, n = s.needs;
-                if (n.water < 25)
+                if (n.water < B.forEngine(this).mood.needGate)
                     return 'Thirsty';
-                if (n.food < 25)
+                if (n.food < B.forEngine(this).mood.needGate)
                     return 'Hungry';
-                if (n.energy < 25)
+                if (n.energy < B.forEngine(this).mood.needGate)
                     return 'Sleepy';
-                if (n.joy < 32)
+                if (n.joy < B.forEngine(this).mood.joyLow)
                     return 'Lonely';
-                if (n.comfort < 28)
+                if (n.comfort < B.forEngine(this).mood.comfortLow)
                     return 'Unsettled';
-                if (s.bond >= 65 && n.joy > 65)
+                if (s.bond >= B.forEngine(this).mood.lovedBond && n.joy > B.forEngine(this).mood.lovedJoy)
                     return 'Loved';
-                if (n.food > 70 && n.water > 65 && n.energy > 55)
+                if (n.food > B.forEngine(this).mood.contentFood && n.water > B.forEngine(this).mood.contentWater && n.energy > B.forEngine(this).mood.contentEnergy)
                     return 'Content';
                 return s.task?.kind === 'train' ? 'Curious' : s.task?.kind === 'build' ? 'Determined' : 'Feeling good';
             },
-            friendship() { const b = this.s.bond; return b < 30 ? 'Getting to know you' : b < 45 ? 'Little companions' : b < 65 ? 'Trusted buddies' : b < 85 ? 'Best of friends' : 'A bond for life'; },
+            friendship() { const b = this.s.bond; return b < B.forEngine(this).mood.friendOne ? 'Getting to know you' : b < B.forEngine(this).mood.friendTwo ? 'Little companions' : b < B.forEngine(this).mood.friendThree ? 'Trusted buddies' : b < B.forEngine(this).mood.friendFour ? 'Best of friends' : 'A bond for life'; },
             quest() { return QUESTS.find(q => !this.s.completedQuests.includes(q.id)) || null; },
             claimQuest() {
                 let q = this.quest();
@@ -256,11 +258,11 @@
                     if (!s.inventory[resource]!)
                         return { ok: false, reason: 'Our pantry is empty. Suggest foraging, or let Pip find a snack.' };
                     s.inventory[resource]!--;
-                    n.food = clamp(n.food + (resource === 'meals' ? 46 : 24), 0, 100);
-                    n.joy = clamp(n.joy + 4, 0, 100);
-                    s.bond = clamp(s.bond + 1.8, 0, 100);
+                    n.food = clamp(n.food + (resource === 'meals' ? B.forEngine(this).care.feedMeal : B.forEngine(this).care.feedBerry), 0, 100);
+                    n.joy = clamp(n.joy + B.forEngine(this).care.feedJoy, 0, 100);
+                    s.bond = clamp(s.bond + B.forEngine(this).care.feedBond, 0, 100);
                     s.stats.fed++;
-                    s.cooldowns.feed = s.simTime + 8;
+                    s.cooldowns.feed = s.simTime + B.forEngine(this).care.feedCooldown;
                     this.xp('player', 3);
                     this.log('You shared ' + (resource === 'meals' ? 'a warm meal' : 'a berry snack') + ' with ' + s.name + '.', 'berries');
                     this.emit('heart', 'For me? Thank you!');
@@ -269,25 +271,25 @@
                     if (s.inventory.water < 1)
                         return { ok: false, reason: 'No water in the pantry. Pip can collect more at the spring.' };
                     s.inventory.water--;
-                    n.water = clamp(n.water + 32, 0, 100);
-                    s.bond = clamp(s.bond + 1.2, 0, 100);
+                    n.water = clamp(n.water + B.forEngine(this).care.waterAmount, 0, 100);
+                    s.bond = clamp(s.bond + B.forEngine(this).care.waterBond, 0, 100);
                     s.stats.watered++;
-                    s.cooldowns.water = s.simTime + 8;
+                    s.cooldowns.water = s.simTime + B.forEngine(this).care.waterCooldown;
                     this.xp('player', 3);
                     this.log('A cool drink and a little kindness.', 'water');
                     this.emit('heart', 'Just what I needed.');
                 }
                 else if (kind === 'bond') {
-                    if (n.water < 16 || n.food < 16 || n.energy < 12) {
+                    if (n.water < B.forEngine(this).care.bondWaterGate || n.food < B.forEngine(this).care.bondFoodGate || n.energy < B.forEngine(this).care.bondEnergyGate) {
                         this.log(s.name + ' would love to play, but needs care first.', 'heart');
                         return { ok: false, reason: s.name + ' needs food, water or rest first. Friendship also means listening.' };
                     }
                     s.stats.bonded++;
-                    n.joy = clamp(n.joy + 23, 0, 100);
+                    n.joy = clamp(n.joy + B.forEngine(this).care.bondJoy, 0, 100);
                     s.daily.bonded++;
-                    s.bond = clamp(s.bond + (s.daily.bonded <= 3 ? 4 : 1), 0, 100);
-                    s.cooldowns.bond = s.simTime + 28;
-                    if (s.daily.bonded <= 3) {
+                    s.bond = clamp(s.bond + (s.daily.bonded <= B.forEngine(this).care.freshBondCount ? 4 : 1), 0, 100);
+                    s.cooldowns.bond = s.simTime + B.forEngine(this).care.bondCooldown;
+                    if (s.daily.bonded <= B.forEngine(this).care.freshBondCount) {
                         this.xp('player', 4);
                         this.xp('creature', 2);
                     }
@@ -295,12 +297,12 @@
                     this.emit('heart', 'This is my favorite kind of afternoon.');
                 }
                 else if (kind === 'praise') {
-                    if (s.memory.lastAchievement <= s.memory.lastPraise || s.simTime - s.memory.lastAchievement > 90)
+                    if (s.memory.lastAchievement <= s.memory.lastPraise || s.simTime - s.memory.lastAchievement > B.forEngine(this).care.praiseAge)
                         return { ok: false, reason: 'Praise follows effort. Wait for Pip to gather, build, learn or discover something.' };
                     s.memory.lastPraise = s.memory.lastAchievement;
-                    n.joy = clamp(n.joy + 12, 0, 100);
-                    s.bond = clamp(s.bond + 3, 0, 100);
-                    s.cooldowns.praise = s.simTime + 12;
+                    n.joy = clamp(n.joy + B.forEngine(this).care.praiseJoy, 0, 100);
+                    s.bond = clamp(s.bond + B.forEngine(this).care.praiseBond, 0, 100);
+                    s.cooldowns.praise = s.simTime + B.forEngine(this).care.praiseCooldown;
                     this.xp('player', 2);
                     this.log('You noticed ' + s.name + '’s effort. Being seen feels good.', 'star');
                     this.emit('heart', 'You saw what I did!');

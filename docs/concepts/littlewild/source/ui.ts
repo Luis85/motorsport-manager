@@ -62,7 +62,7 @@
     const colonyUI = LWColonyUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>{if(ui.modal)renderModal(true);},toast,backup:backupStory,setEngine,save,close:closeModal,result});
     const preferences=LWInterfacePause.create(()=>localStorage);
     let terraform=null, buildingInterior=null, tileMenu=null, buildPanel=null, guidePanel=null, scenarioUI=null, placementActor=null, placementApproach=null;
-    function pauseStatus(){return preferences.status(engine.s,{hidden:document.hidden,modal:ui.modal,safety:LWInterfacePause.safetyView(ui.modal),placement:!!world.placement,creature:!!worldUI.state.actorId,more:!!worldUI.state.menu,world:!!buildPanel?.designer?.isOpen()||!!terraform?.state.open||!!worldExplorer.pauseReason()||!!buildPanel?.state.open||!!(guidePanel?.state.open&&!guidePanel.state.minimized),tile:!!tileMenu?.isOpen(),planner:!!villageUI.state.open});}
+    function pauseStatus(){return preferences.status(engine.s,{hidden:document.hidden,cinematic:!!scenarioUI?.storytelling?.isPresenting(),modal:ui.modal,safety:LWInterfacePause.safetyView(ui.modal),placement:!!world.placement,creature:!!worldUI.state.actorId,more:!!worldUI.state.menu,world:!!buildPanel?.designer?.isOpen()||!!terraform?.state.open||!!worldExplorer.pauseReason()||!!buildPanel?.state.open||!!(guidePanel?.state.open&&!guidePanel.state.minimized),tile:!!tileMenu?.isOpen(),planner:!!villageUI.state.open});}
     function pauseToggleMarkup(){return `<section class="v13-time-setting"><h3>Time & attention</h3><label><input type="checkbox" data-pause-on-open ${preferences.pauseOnOpen?'checked':''}><span><strong>Pause when opening panels</strong><small>Include creature cards, tile menus, the planner, world map, and blueprint placement. Turn off to keep the world running while you browse.</small></span></label><p>Manual pause is always respected. Save/content replacement previews and hidden tabs still pause safely. This preference stays on this device, separately from your story.</p><small data-preference-status>${esc(preferences.error||'Preference saved on this device.')}</small></section>`;}
     function syncTimeLabels(){const p=pauseStatus();document.body.classList.toggle('world-live-panel',!!ui.modal&&p.running);document.querySelectorAll('[data-pause-on-open]').forEach(el=>{if(el.checked!==preferences.pauseOnOpen)el.checked=preferences.pauseOnOpen;});document.querySelectorAll('[data-time-label]').forEach(el=>{el.textContent=p.running?'World running · '+timeLabel(engine.s.hour):p.kind==='manual'?'Paused by you':p.reason+' · paused';});text('world-status-label',p.running?'Life in the glade':p.reason+' · paused');text('v10-planner-clock',p.running?'World running':p.kind==='manual'?'Paused by you':'Planner · paused');document.querySelectorAll('[data-manual-time]').forEach(el=>{el.textContent=engine.s.paused?(preferences.pauseOnOpen?'Release manual pause':'Resume time'):'Pause time';el.setAttribute('aria-pressed',String(engine.s.paused));});$('pause-badge').classList.toggle('show',!p.running&&engine.s.started&&!ui.modal);text('pause-text',p.reason);$('pause-button').innerHTML=icon(p.running?'pause':'play');$('pause-button').setAttribute('aria-label',p.running?'Pause':p.kind==='manual'?'Resume':'Continue world');const tip=document.querySelector('#tile-context footer');if(tip)tip.innerHTML=(p.running?'World running':p.kind==='manual'?'Paused by you':'Paused while choosing')+' · <kbd>Esc</kbd> to close';const paused=$('modal').querySelector('.workspace-pause');if(paused)paused.textContent=p.running?'World running':'World paused';}
 
@@ -83,8 +83,20 @@
     buildingInterior=LWBuildingInteriorUI.create({engine:()=>engine,world:()=>world,esc,save,refresh:()=>updateUI(true),closeContexts:()=>{terraform?.close(false);closeModal();tileMenu?.close(false);worldUI.clear({restore:false});worldExplorer.clear();buildPanel?.close(false);buildPanel?.designer?.close(false);guidePanel?.minimize();if(villageUI.state.open)villageUI.toggle(false);}});
     buildPanel=LWBuildPanel.create(panelContext);
     guidePanel=LWGuidePanel.create({...panelContext,show:showGuideTarget});
-    scenarioUI=LWScenarioUI.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave});
+    scenarioUI=LWScenarioUI.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
+    applySceneRendering();
     const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);
+    function presentScene(target,camera){
+        if(camera){Object.assign(world.camera,camera);world.manual=true;world.invalidate();}
+        if(target?.type==='island')world.focus(target.ix*23+9,target.iy*23+9);
+        if(target?.type==='interior'&&buildingInterior.open(target.buildingId))document.querySelector('[data-interior="floor"][data-floor="'+target.floorId+'"]')?.click();
+    }
+    function applySceneRendering(){
+        if(!world.selectSceneRendering)return;
+        const source=engine,context=source.scenarioContext,scene=context?.journey?.pack.scenes.find(scene=>scene.id===context.sceneId);
+        const rendering=scene?.graph?.rendering||{dimension:'3d',rendererId:'basic'};
+        world.selectSceneRendering(rendering).then(result=>{if(source===engine&&!result.ok)toast(result.reason||'The selected renderer could not open.',true);}).catch(error=>{if(source===engine)toast(error.message,true);});
+    }
     function applyPresentation(){
         const p=engine.scenarioContext?.presentation||LWScenarios.defaultPresentation();
         document.body.dataset.experience=engine.scenarioContext?.packId||'littlewild';
@@ -169,7 +181,7 @@
         else ui.backupStatus='';
         return kept;
     }
-    function setEngine(newEngine) { terraform?.reset(); buildingInterior?.reset(); buildPanel?.reset();guidePanel?.reset();scenarioUI?.reset();placementActor=null;placementApproach=null;LWScenarios.activate(newEngine);tileMenu?.close(false); if(newEngine===engine){ui.dockSignature='';updateUI(true);return;} storage.allowReplacement();loadWarning='';cancelPendingReads();clock.reset();last=performance.now();worldUI.reset(); worldExplorer.reset(); engine = newEngine; applyPresentation(); world.setEngine(engine); world.resetPresentation?.(); world.placement = null; world.selected = null; world.hover = null; world.bubble = null; world.particles = []; world.home(); ui.inspectUntil = 0; $('tile-tip').classList.remove('show'); $('toasts').innerHTML = ''; ui.tab = 'care'; updateUI(true); renderDock(); }
+    function setEngine(newEngine,options={}) { terraform?.reset(); buildingInterior?.reset(); buildPanel?.reset();guidePanel?.reset();scenarioUI?.reset({preserveCameras:options.sceneTransition===true});placementActor=null;placementApproach=null;LWScenarios.activate(newEngine);tileMenu?.close(false); if(newEngine===engine){ui.dockSignature='';updateUI(true);return;} storage.allowReplacement();loadWarning='';cancelPendingReads();clock.reset();last=performance.now();worldUI.reset(); worldExplorer.reset(); engine = newEngine; applyPresentation(); world.setEngine(engine); world.resetPresentation?.(); world.placement = null; world.selected = null; world.hover = null; world.bubble = null; world.particles = []; world.home(); ui.inspectUntil = 0; $('tile-tip').classList.remove('show'); $('toasts').innerHTML = ''; ui.tab = 'care'; updateUI(true); renderDock();if(!options.sceneTransition)presentScene(LWSceneNavigation.target(engine));applySceneRendering(); }
     function start(demo = false) { storage.allowReplacement();loadWarning=''; if (demo)
         backupStory(); if (demo) {
         const e = new Engine(), s = e.s;
@@ -305,6 +317,7 @@
         const dt = Math.max(0, Math.min((now - last) / 1000, .1));
         last = now;
         if (!document.hidden) {
+            scenarioUI?.storytelling.draw(dt);
             const running = pauseStatus().running;
             if (running) {
                 clock.advance(dt, engine.s.speed, step => { world.motion.begin(engine.creatures); engine.step(step); world.motion.end(engine.creatures, engine.s.simTime); });
@@ -320,6 +333,8 @@
                 buildingInterior?.paint();
                 tileMenu.position();
             }
+            scenarioUI?.creatureEditor.draw();
+            scenarioUI?.editor.storytelling?.draw(dt);
             paintTimer += dt;
             saveTimer += dt;
             if (paintTimer >= .25) {
@@ -342,6 +357,7 @@
         requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
+    if(engine.s.started)presentScene(LWSceneNavigation.target(engine));
     // A small, explicit read/test surface for this prototype. The UI never uses direct movement commands.
     window.Littlewild = { version: '15.0.0', scenarios:LWScenarios, terraform, interiors:buildingInterior, scenarioUI, buildPanel, guidePanel, preferences, pauseStatus, tileMenu, village:villageUI, planner:LWPlanner, land: worldExplorer, get engine() { return engine; }, get world() { return world; }, get ui() { return { tab: ui.tab, modal: ui.modal, context:worldUI.state }; }, setEngine, snapshot: () => LWStory.encode(engine), content: {export:(category,id)=>LWContent.registry.export(category,id),validate:input=>LWContent.registry.prepare(input),schema:()=>LWContent.copy(LWContent.SCHEMA),get fingerprint(){return LWContent.registry.hash;}}, advance: seconds => { engine.advance(clamp(seconds, 0, 3600)); updateUI(true); processEvents(); }, refresh: () => updateUI(true), open: (panel, id) => openModal(panel, id), save, diagnostics: () => ({ offline: true, simulationStep: clock.step, nodes: engine.s.nodes.length, buildings: engine.s.buildings.length, orders: engine.s.orders.length, localSaving: saveAvailable }) };
 })();

@@ -1,3 +1,4 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Deterministic high-level simulation schedule.
  * This module owns orchestration only: domain methods and ECS systems own mutations.
  * Actor-major order and the fixed-step clock remain compatibility contracts.
@@ -29,7 +30,7 @@
   nodes:ResourceNode[];
   buildings:Building[];
  }
- interface EngineLike {
+ interface EngineLike extends LWBalanceRules.Owner {
   s:SimulationState;
   _simulating?:boolean|undefined;
   _actor?:Creature|undefined;
@@ -60,6 +61,7 @@
  }
  interface LittlewildRoot { LW?:LittlewildFacade; LWSimulationPipeline?:SimulationPipelineApi; }
  const root=inputRoot as LittlewildRoot;
+ const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
  const facade=root.LW;if(!facade)throw Error('Littlewild facade missing.');
  const L:LittlewildFacade=facade;
 
@@ -113,7 +115,7 @@
    dt=L.clamp(dt,0,.25);if(!dt)return;
    engine._simulating=true;const previous=engine._actor;
    try{
-    state.simTime+=dt;state.hour+=dt*.05;let newDay=false;
+    state.simTime+=dt;state.hour+=dt*B.forEngine(engine).clock.hourRate;let newDay=false;
     if(state.hour>=24){state.hour-=24;state.day++;newDay=true;}
     if(engine.stepWorld)engine.stepWorld(dt);else fallbackWorld(engine,dt);
     engine.updateQuestBoard();engine.ecs.sync(engine.creatures);

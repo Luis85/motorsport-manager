@@ -10,6 +10,7 @@
   LWDeveloperData:{record(value:unknown):Document;text(value:unknown,label:string):string;DeveloperError:new(code:LittlewildDeveloper.ErrorCode,message:string)=>LittlewildDeveloper.DeveloperError};
   LWRuntimeResults:LWRuntime.ResultsApi;
   LWRenderers:{list():readonly LittlewildDeveloper.RendererMetadata[];validate(input:unknown):LittlewildDeveloper.RendererValidation};
+  LWAnimations:{list():readonly LWAnimations.Metadata[];validate(input:unknown):readonly LWAnimations.Descriptor[]};LWEngineExport:LWEngineExport.Api;LWBalancing:LWBalancing.Api;LWDeveloperStorytelling:LittlewildDeveloper.StorytellingTools;LWDeveloperCreatures:LWCreatureEditor.Api;LWContent:LWContentPorts.ContentApi;LWExternalEditors:LWExternalEditors.Api;
   LWAssets:AssetPort;LWDeveloper?:LittlewildDeveloper.Toolbox;
  };
  const D=root.LWDeveloperData;
@@ -33,15 +34,22 @@
   }
  });
  const renderers:LittlewildDeveloper.RendererDiscovery=Object.freeze({
-  list:()=>root.LWRenderers.list().map(value=>({...value,capabilities:[...value.capabilities]})),
+  list:()=>root.LWRenderers.list().map(value=>({...value,capabilities:[...value.capabilities],...(value.dimensions?{dimensions:[...value.dimensions]}:{})})),
   validate(input:unknown){
-   try{const checked=root.LWRenderers.validate(D.record(input));return {...checked,errors:[...checked.errors],data:checked.data===null?null:{...checked.data,capabilities:[...checked.data.capabilities]}};}
+   try{const checked=root.LWRenderers.validate(D.record(input));return {...checked,errors:[...checked.errors],data:checked.data===null?null:{...checked.data,capabilities:[...checked.data.capabilities],...(checked.data.dimensions?{dimensions:[...checked.data.dimensions]}:{})}};}
    catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)],data:null};}
   }
  });
+ const animations:LittlewildDeveloper.AnimationDiscovery=Object.freeze({list:()=>root.LWContent.copy(root.LWAnimations.list()),validate(input:unknown){try{return {ok:true,errors:[],data:root.LWContent.copy(root.LWAnimations.validate(input))};}catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)],data:null};}}});
+ const externalEditors:LWExternalEditors.Api=Object.freeze({
+  formats:()=>root.LWContent.copy(root.LWExternalEditors.formats()),
+  detect:(input:unknown)=>root.LWExternalEditors.detect(input),
+  export:(pack:unknown,sceneId:string,format:LWExternalEditors.Format)=>root.LWContent.copy(root.LWExternalEditors.export(pack,sceneId,format)),
+  import:(input:unknown,options?:LWExternalEditors.Options)=>root.LWContent.copy(root.LWExternalEditors.import(input,options))
+ });
  const {version,fixedStep,maxSteps,scenarios,commands,create,validateScenario,createScenario,
-  reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary}=root.LWDeveloperSession;
- const api:LittlewildDeveloper.Toolbox=Object.freeze({failureCodes:()=>[...root.LWRuntimeResults.codes],version,fixedStep,maxSteps,scenarios,commands,
-  create,validateScenario,createScenario,reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary,assets,renderers});
+  createSceneEditor,reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary}=root.LWDeveloperSession;
+ const api:LittlewildDeveloper.Toolbox=Object.freeze({animations,engineExport:Object.freeze({export:root.LWEngineExport.export,validate:root.LWEngineExport.validate,maxBytes:root.LWEngineExport.maxBytes}),balancing:Object.freeze(root.LWBalancing),storytelling:Object.freeze({inspect:root.LWDeveloperStorytelling.inspect,createEditor:root.LWDeveloperStorytelling.createEditor,createPlayback:root.LWDeveloperStorytelling.createPlayback,sample:root.LWDeveloperStorytelling.sample}),createCreatureEditor:root.LWDeveloperCreatures.create,validateCreaturePackage:root.LWDeveloperCreatures.validatePackage,failureCodes:()=>[...root.LWRuntimeResults.codes],version,fixedStep,maxSteps,scenarios,commands,
+  create,validateScenario,createScenario,createSceneEditor,reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary,assets,renderers,externalEditors});
  root.LWDeveloper=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

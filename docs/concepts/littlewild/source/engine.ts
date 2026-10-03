@@ -1,8 +1,10 @@
+/// <reference path="./balancing-contracts.d.ts" />
 /* Littlewild — pure simulation. No DOM, dependencies, network, or wall-clock catch-up. */
 /// <reference path="./engine-core-contracts.d.ts" />
 (function (inputRoot:unknown) {
     'use strict';
     const root=inputRoot as LWCorePorts.Root;
+ const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
     if (typeof module !== 'undefined' && module.exports && !root.LWNavigation) require('./navigation.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWCreatures) require('./creature-catalog.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWEngineTaskPlanning) require('./engine-task-planning.js');
@@ -16,23 +18,14 @@
         return 'void'; const edge = (x === 0 && y < 3) || (y === 0 && x < 3) || (x > 16 && y > 16) || (x === 18 && y < 2) || (y === 18 && x < 2); if (edge)
         return 'void'; if ((x >= 13 && x <= 16 && y >= 3 && y <= 7) && !((x === 13 || x === 16) && (y === 3 || y === 7)))
         return 'water'; return 'grass'; }
-    function makeNodes() {
-        const n:LWCorePorts.State['nodes'] = [];
-        let id = 0;
-        function add(kind:string, x:number, y:number, stock:number) { n.push({ id: 'n' + id++, kind, x, y, stock, max: stock, regen: 0 }); }
-        ([[2, 3], [3, 6], [1, 10], [3, 13], [5, 15], [7, 16], [12, 16], [16, 13], [17, 10], [10, 2], [6, 2], [2, 16], [15, 15], [16, 2], [8, 4], [11, 14]] as const).forEach(([x, y]) => add('wood', x, y, 6));
-        ([[4, 5], [5, 11], [12, 11], [10, 15], [7, 3], [16, 9]] as const).forEach(([x, y]) => add('berries', x, y, 6));
-        ([[5, 4], [2, 8], [6, 14], [14, 12], [11, 3], [15, 10]] as const).forEach(([x, y]) => add('fiber', x, y, 8));
-        ([[9, 3], [11, 5], [15, 14], [3, 15], [16, 12]] as const).forEach(([x, y]) => add('stone', x, y, 8));
-        add('water', 13, 5, 999);
-        add('hunt', 17, 15, 999);
-        return n;
-    }
+    const canonical=(typeof module!=='undefined'&&module.exports?require('./content/balancing.json'):(globalThis as unknown as {LWDefaultBalancing:unknown}).LWDefaultBalancing) as {libraries:{world:{sites:{id:string}[]}};startingScenes:{initialState:{seed:number;player:LWCorePorts.State['player'];rp:number;nodes:LWCorePorts.State['nodes']}}[];simulation:{rules:{economy:{xp:{base:number;perLevel:number}}}}};
+    const starter=canonical.startingScenes[0]!.initialState;
+    function makeNodes():LWCorePorts.State['nodes'] {return root.LWContent.copy(starter.nodes.filter(node=>!canonical.libraries.world.sites.some(site=>site.id===node.id)));}
     function initial():LWCorePorts.State {
         const personal = root.LWCreatures.seed(root.LWCreatures.defaultArchetype, root.LWCreatures.defaultPersonality, 'founder', 0) as LWCorePorts.Personal;
-        return { version: VERSION, ...personal, seed: 2718, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, player: { level: 1, xp: 0, coins: 86 }, rp: 10, buildings: [], nodes: makeNodes(), log: [], completedQuests: [], contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, ledger: [], nextId: 1 };
+        return { version: VERSION, ...personal, seed: starter.seed, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, player: root.LWContent.copy(starter.player), rp: starter.rp, buildings: [], nodes: makeNodes(), log: [], completedQuests: [], contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, ledger: [], nextId: 1 };
     }
-    function threshold(level:number) { return 28 + level * 8; }
+    function threshold(level:number) { const rules=(root.LWSimulationProfile?.current.rules.economy??canonical.simulation.rules.economy) as {xp:{base:number;perLevel:number}};return rules.xp.base + level * rules.xp.perLevel; }
     function clamp(n:number, a:number, b:number) { return Math.max(a, Math.min(b, n)); }
     function owns(table:object, key:unknown):key is string { return typeof key === 'string' && Object.prototype.hasOwnProperty.call(table, key); }
     interface Engine extends LWCorePorts.EngineFields,LWCorePorts.InstalledMethods {}
@@ -257,13 +250,13 @@
         splitIncome(amount:number) { const income = this.economyRuntime().splitIncome(amount); return this.settleEconomy({ id: this.economySettlementId('income'), ...income, stats: { earned: amount } }, 'Shared trade income'); }
         trade(resource:string, mode:string, qty = 1) { const s = this.s; if (!this.has('market'))
             return { ok: false, reason: 'Build a market stall to welcome traders.' }; if (!owns(RES, resource) || !['buy', 'sell'].includes(mode) || !Number.isInteger(qty) || qty < 1 || qty > 99)
-            return { ok: false, reason: 'Invalid trade.' }; const price = mode === 'sell' ? Math.max(1, Math.floor(RES[resource]!.price * .65)) : RES[resource]!.price; const total = price * qty; if (mode === 'sell') {
+            return { ok: false, reason: 'Invalid trade.' }; const price = mode === 'sell' ? Math.max(1, Math.floor(RES[resource]!.price * (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules.forEngine(this).policy.sellFraction)) : RES[resource]!.price; const total = price * qty; if (mode === 'sell') {
             if (s.inventory[resource]! < qty)
                 return { ok: false, reason: 'Not enough in our pantry.' };
             const settlement = this.splitIncome(total);
             if (!settlement.ok) return { ok: false, reason: 'The sale could not be settled.' };
             s.inventory[resource]! -= qty;
-            this.log('Sold ' + qty + ' ' + RES[resource]!.name.toLowerCase() + ' for ' + total + ' coins. Earnings shared 70/30.', 'coin');
+            this.log('Sold ' + qty + ' ' + RES[resource]!.name.toLowerCase() + ' for ' + total + ' coins. Earnings shared according to this world’s income rules.', 'coin');
         }
         else {
             if (s.player.coins < total)
@@ -279,7 +272,7 @@
                 return;
             dt = clamp(dt, 0, .25);
             s.simTime += dt;
-            s.hour += dt * .05;
+            s.hour += dt * B.forEngine(this).clock.hourRate;
             if (s.hour >= 24) {
                 s.hour -= 24;
                 s.day++;
@@ -311,11 +304,11 @@
             this.checkWish();
             const n = s.needs, t = s.task;
             const working = t && ['build', 'gather', 'craft', 'hunt', 'practice'].includes(t.kind);
-            n.food = clamp(n.food - dt * (working ? .105 : .075), 0, 100);
-            n.water = clamp(n.water - dt * (working ? .14 : .105), 0, 100);
-            n.energy = clamp(n.energy - dt * (working ? .12 : .055), 0, 100);
-            n.comfort = clamp(n.comfort - dt * (this.has('cottage') ? .008 : this.has('shelter') ? .025 : .055), 0, 100);
-            n.joy = clamp(n.joy - dt * .05, 0, 100);
+            n.food = clamp(n.food - dt * (working ? B.forEngine(this).legacy.foodWork : B.forEngine(this).legacy.foodIdle), 0, 100);
+            n.water = clamp(n.water - dt * (working ? B.forEngine(this).legacy.waterWork : B.forEngine(this).legacy.waterIdle), 0, 100);
+            n.energy = clamp(n.energy - dt * (working ? B.forEngine(this).legacy.energyWork : B.forEngine(this).legacy.energyIdle), 0, 100);
+            n.comfort = clamp(n.comfort - dt * (this.has('cottage') ? B.forEngine(this).legacy.cottageComfortRate : this.has('shelter') ? B.forEngine(this).legacy.shelterComfortRate : B.forEngine(this).legacy.outsideComfortRate), 0, 100);
+            n.joy = clamp(n.joy - dt * B.forEngine(this).legacy.joyRate, 0, 100);
             if ((n.food < 8 || n.water < 8) && s.simTime - s.memory.lastGentleWarning > 45) {
                 s.memory.lastGentleWarning = s.simTime;
                 this.emit('notice', s.name + ' needs a little care. No one gets left behind.');
@@ -325,7 +318,7 @@
                 return;
             }
             // Interrupt long work only for a critical need, keeping construction/training progress.
-            const emergencies = ['water', 'food', 'energy'].filter(k => n[k]! < (k === 'energy' ? 10 : 12)).sort((a, b) => n[a]! - n[b]!);
+            const emergencies = ['water', 'food', 'energy'].filter(k => n[k]! < (k === 'energy' ? B.forEngine(this).legacy.urgentEnergy : B.forEngine(this).legacy.urgentNeed)).sort((a, b) => n[a]! - n[b]!);
             if (emergencies.length && !t.need && !['eat', 'drink', 'rest'].includes(t.kind)) {
                 s.task = null;
                 this.decide();
@@ -342,7 +335,7 @@
                     t.phase = 'work';
                     return;
                 }
-                const c = s.creature, dx = p.x - c.x, dy = p.y - c.y, dist = Math.hypot(dx, dy), speed = (1.65 + (s.bond >= 65 ? .15 : 0)) * dt;
+                const c = s.creature, dx = p.x - c.x, dy = p.y - c.y, dist = Math.hypot(dx, dy), speed = (B.forEngine(this).legacy.speed + (s.bond >= B.forEngine(this).legacy.bondGate ? B.forEngine(this).legacy.bondSpeedBonus : 0)) * dt;
                 if (dx !== 0)
                     c.dir = dx > 0 ? 1 : -1;
                 if (dist <= speed) {
