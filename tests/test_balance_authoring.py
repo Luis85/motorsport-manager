@@ -67,7 +67,7 @@ class BalanceAuthoringTests(unittest.TestCase):
         self.original = b'{\n "kind":"race_tuning", "id":"core.race.default",\n "knobs": {"pace": 1.0, "enabled": true, "a/b~c": 4}, "label":"human"\n}\n'
         self.path.write_bytes(self.original)
         self.other = self.root / "other.json"
-        self.other.write_text('{"kind":"vehicle","value":7}\n')
+        self.other.write_bytes(b'{"kind":"vehicle","value":7}\n')
         self.name = self.path.relative_to(self.root).as_posix()
 
     def args(self, *arguments):
@@ -97,6 +97,13 @@ class BalanceAuthoringTests(unittest.TestCase):
         )
         self.assertEqual(self.other.read_bytes(), b'{"kind":"vehicle","value":7}\n')
         self.assertEqual(sorted(p.name for p in self.path.parent.iterdir()), ["default.json"])
+
+    def test_scalar_edit_preserves_original_crlf_bytes(self):
+        original = self.original.replace(b"\n", b"\r\n")
+        self.path.write_bytes(original)
+        with patch.object(balance, "NativeProject", AcceptedNative):
+            self.edit()
+        self.assertEqual(self.path.read_bytes(), original.replace(b'"pace": 1.0', b'"pace": 1.25'))
 
     def test_native_rejection_and_crash_never_publish(self):
         for failure in (
