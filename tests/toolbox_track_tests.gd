@@ -85,6 +85,28 @@ func history_contracts() -> void:
 	)
 	draft.nodes[0].x += 500.0
 	same(read("history"), changed, "Committed authoring values do not alias the caller")
+	for invalid in [float(changed.revision) + 0.5, true, null, NAN, INF, "2"]:
+		var revision: Variant = invalid
+		rejected(
+			tracks.commit("history", initial.document, revision),
+			"Non-integral native commit revision",
+			"INVALID_ARGUMENT"
+		)
+		rejected(
+			tracks.edit("history", "transform", {"selected": [0]}, revision),
+			"Non-integral native edit revision",
+			"INVALID_ARGUMENT"
+		)
+		same(
+			read("history"),
+			changed,
+			"Revision preflight preserves data, history and current revision"
+		)
+	accepted(
+		tracks.commit("history", changed.document, float(changed.revision)),
+		"Integral native JSON-style revision remains accepted"
+	)
+	same(read("history"), changed, "Integral no-op commit retains history and revision")
 	rejected(
 		tracks.commit("history", initial.document, initial.revision),
 		"Stale commit",
