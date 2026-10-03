@@ -193,8 +193,8 @@ func _validated_options(options: Dictionary) -> Dictionary:
 
 
 func _destination_conflicts(request_path: String, response_path: String) -> bool:
-	var input: String = ProjectSettings.globalize_path(request_path).simplify_path()
-	var output: String = ProjectSettings.globalize_path(response_path).simplify_path()
+	var input: String = _absolute_path(request_path)
+	var output: String = _absolute_path(response_path)
 	if _path_has_links(input) or _path_has_links(output):
 		return true
 	if OS.has_feature("windows"):
@@ -202,6 +202,15 @@ func _destination_conflicts(request_path: String, response_path: String) -> bool
 		output = output.to_lower()
 	# Atomic storage owns its temporary and backup names as well as the destination.
 	return input in [output, output + ".tmp", output + ".bak"]
+
+
+func _absolute_path(path: String) -> String:
+	var globalized: String = ProjectSettings.globalize_path(path)
+	if globalized.is_relative_path():
+		var directory: DirAccess = DirAccess.open(".")
+		if directory != null:
+			globalized = directory.get_current_dir().path_join(globalized)
+	return globalized.simplify_path()
 
 
 func _path_has_links(path: String) -> bool:
