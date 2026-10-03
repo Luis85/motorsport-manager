@@ -229,13 +229,19 @@ class StandaloneContracts(unittest.TestCase):
 
     @unittest.skipIf(smoke.os.name == "nt", "Xvfb driver applies to Linux native smoke")
     def test_smoke_vsync_override_reaches_engine_before_user_arguments(self):
-        report = {"passed": True, "checks": 1}
-        (self.root / "launch.json").write_text(json.dumps(report), encoding="utf-8")
+        report = {"passed": True, "checks": 1, "failures": [], "stage": "launch"}
+
+        def complete_stage(timeout):
+            self.assertEqual(timeout, 180)
+            # The child publishes fresh evidence after launch, as the native player does.
+            (self.root / "launch.json").write_text(json.dumps(report), encoding="utf-8")
+            return 0
+
         with (
             patch.object(smoke.shutil, "which", return_value="/bin/xvfb-run"),
             patch.object(smoke.subprocess, "Popen") as launch,
         ):
-            launch.return_value.wait.return_value = 0
+            launch.return_value.wait.side_effect = complete_stage
             launch.return_value.poll.return_value = 0
             self.assertEqual(
                 smoke.run_stage(
