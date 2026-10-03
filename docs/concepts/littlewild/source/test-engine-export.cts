@@ -11,6 +11,13 @@ const results:{name:string;passed:boolean;error?:string}[]=[];
 async function test(name:string,fn:()=>Promise<void>|void):Promise<void>{try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,String(error));}}
 async function main():Promise<void>{
  const pack=X.builtins().find(value=>value.id==='office')!,before=JSON.stringify(pack),exchanged=await E.export(pack,pack.scenes[0]!.id),source=exchanged.sources;
+ await test('Ignored generated suite evidence cannot change the source bundle or its metadata',()=>{
+  const builder=require('./tools/engine-export-bundle.cjs') as {createSourceBundle(project:string):LWEngineExport.SourceBundle};
+  const project=path.resolve(__dirname,'..'),evidence=path.join(project,'source/engine-export-audit-results.json');
+  assert.equal(fs.existsSync(evidence),false);const original=builder.createSourceBundle(project);
+  try{fs.writeFileSync(evidence,JSON.stringify({passed:1,total:1,results:[{name:'Prior run',passed:true}]}));const rebuilt=builder.createSourceBundle(project);assert.deepEqual(rebuilt,original);assert.equal(rebuilt.files.some(file=>file.path==='source/engine-export-audit-results.json'),false);}
+  finally{fs.rmSync(evidence,{force:true});}
+ });
  await test('Complete versioned inert input preserves native pack/checkpoints and has cryptographic inventory',async()=>{
   assert.equal(exchanged.format,'littlewild-engine-export');assert.deepEqual(exchanged.pack,pack);assert.equal(JSON.stringify(pack),before);assert(source.files.length>300);assert.equal(source.identity,exchanged.sourceIdentity);assert.equal(new Set(source.files.map(file=>file.path)).size,source.files.length);assert.deepEqual(source.inventory.included,source.files.map(file=>file.path));assert((await E.validate(exchanged)).ok);
   for(const required of ['source/engine.ts','source/physical-ecs-contracts.d.ts','source/storytelling-player.ts','source/content/balancing.json','source/content/balancing-inventory.json','source/assets/creatures/sproutling/asset.json','package-lock.json','vendor/p5-source-2.3.4.tar.gz','toolchain/typescript/lib/typescript.js','toolchain/@types/node/index.d.ts'])assert(source.files.some(file=>file.path===required),required);

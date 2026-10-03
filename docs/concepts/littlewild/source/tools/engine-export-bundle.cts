@@ -21,8 +21,14 @@ function dependencies(text:string,file:string):string[]{
 }
 function role(file:string):LWEngineExport.SourceFile['role']{if(/\.(zip|tgz|gz)$/i.test(file))return 'source-archive';if(/LICENSE|COPYING/i.test(file))return 'license';if(file.startsWith('toolchain/'))return 'toolchain';if(file.startsWith('vendor/'))return 'vendor';if(file.endsWith('.d.ts'))return 'contract';if(file.includes('.schema.json')||file.includes('/schemas/'))return 'schema';if(file.endsWith('.json'))return file.startsWith('source/')?'data':'configuration';if(file.endsWith('.md'))return 'documentation';return 'source';}
 export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
- const candidates:{file:string;relative:string}[]=[],excluded:string[]=['*.md outside source/vendor (manuals and release evidence distributed separately)','generated artifacts, browser verification evidence, credentials and repository internals'];
- for(const file of walk(path.join(project,'source'))){const relative=path.relative(project,file).replaceAll(path.sep,'/');if(/(^|\/)test[^/]*\.|\/verification\//.test(relative)){excluded.push(relative);continue;}candidates.push({file,relative});}
+ const candidates:{file:string;relative:string}[]=[],excluded:string[]=['*.md outside source/vendor (manuals and release evidence distributed separately)','generated artifacts and suite-result evidence, credentials and repository internals'];
+ for(const file of walk(path.join(project,'source'))){
+  const relative=path.relative(project,file).replaceAll(path.sep,'/');
+  // Match the gate's ignored suite outputs; their presence cannot change an artifact.
+  if(/^source\/[^/]+-results\.json$/.test(relative))continue;
+  if(/(^|\/)test[^/]*\.|\/verification\//.test(relative)){excluded.push(relative);continue;}
+  candidates.push({file,relative});
+ }
  for(const file of walk(path.join(project,'vendor')))candidates.push({file,relative:path.relative(project,file).replaceAll(path.sep,'/')});
  for(const name of fs.readdirSync(project).sort()){if(/^(package(-lock)?\.json|tsconfig[^/]*\.json)$/.test(name))candidates.push({file:path.join(project,name),relative:name});}
  const repositoryLicense=path.resolve(project,'../../..','LICENSE');if(fs.existsSync(repositoryLicense)&&fs.readFileSync(repositoryLicense,'utf8')!==fs.readFileSync(path.join(project,'source/ENGINE-LICENSE.txt'),'utf8'))throw Error('Update the gate-covered engine license copy before rebuilding.');
@@ -32,7 +38,7 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
  const architecture:Record<string,unknown>={projectLicense:{spdx:'MIT',copyright:'Copyright (c) 2026 Luis Mendez',source:'source/ENGINE-LICENSE.txt',provenance:'../../../LICENSE; build verifies matching text when repository root is present'}};for(const file of files.filter(file=>file.path.startsWith('source/architecture/')&&file.path.endsWith('.json')))architecture[path.basename(file.path,'.json')]=JSON.parse(file.text) as unknown;
  const browserOrder=INSERTS.filter(insert=>insert[2]==='script').map(insert=>insert[1]);
  const packageData=JSON.parse(source('package.json')) as {dependencies?:Record<string,unknown>;devDependencies?:Record<string,unknown>};
- return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, offline vendors, gate-covered source/vendor documentation and installed TypeScript compiler/Node/Undici declarations; other build dependencies remain exact locked metadata; excludes tests and browser verification evidence, generated artifacts, node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/typescript/lib/tsc.js',dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
+ return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, offline vendors, gate-covered source/vendor documentation and installed TypeScript compiler/Node/Undici declarations; other build dependencies remain exact locked metadata; excludes tests, generated suite results and browser verification evidence, generated artifacts, node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/typescript/lib/tsc.js',dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
 }
 export function writeSourceBundle(project:string,generated:string):LWEngineExport.SourceLoader{
  const bundle=createSourceBundle(project),text=JSON.stringify(bundle),compressed=gzipSync(text,{level:9});
