@@ -1,11 +1,14 @@
 class_name RaceCommands
 extends RefCounted
 ## Explicit application command boundary; never returned from a read-only query.
-var _source: WeakRef
 var last_error: String = ""
+
+var _source: WeakRef
+
 
 func _init(simulation: RaceSim) -> void:
 	_source = weakref(simulation)
+
 
 func execute(action: String, payload: Dictionary = {}) -> bool:
 	var source: RaceSim = _source.get_ref()
@@ -15,6 +18,7 @@ func execute(action: String, payload: Dictionary = {}) -> bool:
 	var accepted = source.command(action, payload)
 	last_error = source.last_error
 	return accepted
+
 
 func select_driver(id: int) -> bool:
 	var source: RaceSim = _source.get_ref()

@@ -8,8 +8,14 @@ const MAX_ENTRANTS = CampaignWeekendReceipt.MAX_ENTRANTS
 const MAX_POINTS = 1000000
 const MAX_MINOR = 1000000000000
 
-static func build(context: Dictionary, points_by_position: Array, eligible_people: Array,
-		account_people: Array, finance: Dictionary) -> Dictionary:
+
+static func build(
+	context: Dictionary,
+	points_by_position: Array,
+	eligible_people: Array,
+	account_people: Array,
+	finance: Dictionary
+) -> Dictionary:
 	var data = {
 		"kind": KIND,
 		"version": VERSION,
@@ -27,6 +33,7 @@ static func build(context: Dictionary, points_by_position: Array, eligible_peopl
 	}
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
+
 
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
@@ -59,9 +66,13 @@ static func validate(data: Variant) -> String:
 			return "Campaign weekend policy has an invalid " + key + "."
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign weekend policy integrity check failed."
 	return ""
+
 
 static func receipt_error(policy: Dictionary, receipt: Dictionary) -> String:
 	var policy_error = validate(policy)
@@ -84,15 +95,18 @@ static func receipt_error(policy: Dictionary, receipt: Dictionary) -> String:
 			return "Campaign account participant is outside the weekend."
 	return ""
 
+
 static func points_for(policy: Dictionary, position: int) -> int:
 	if position < 1 or position > policy.points_by_position.size():
 		return 0
 	return int(policy.points_by_position[position - 1])
 
+
 static func bonus_for(policy: Dictionary, position: int) -> int:
 	if position < 1 or position > policy.position_bonus_minor.size():
 		return 0
 	return int(policy.position_bonus_minor[position - 1])
+
 
 static func _integer_array_error(value: Variant, low: int, high: int, allow_empty: bool) -> String:
 	if not value is Array or value.size() > MAX_ENTRANTS or (value.is_empty() and not allow_empty):
@@ -101,6 +115,7 @@ static func _integer_array_error(value: Variant, low: int, high: int, allow_empt
 		if not RaceCheckpoint.integral(item, low, high):
 			return "contains a non-integral or out-of-range value."
 	return ""
+
 
 static func _identity_array_error(value: Variant, allow_empty: bool) -> String:
 	if not value is Array or value.size() > MAX_ENTRANTS or (value.is_empty() and not allow_empty):

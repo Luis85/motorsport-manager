@@ -12,6 +12,7 @@ const MAX_EVENTS = 32
 const MAX_POINTS = CampaignWeekendPolicy.MAX_POINTS
 const CLASSIFICATION_POLICY = "final_only"
 
+
 static func build(input: Dictionary) -> Dictionary:
 	var data = {
 		"kind": KIND,
@@ -30,6 +31,7 @@ static func build(input: Dictionary) -> Dictionary:
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
 
+
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign series rules exceed serialized-value limits."
@@ -39,28 +41,44 @@ static func validate(data: Variant) -> String:
 		return "Unsupported campaign series-rules version."
 	if not CampaignIdentity.valid(data.get("series_id")):
 		return "Campaign series rules have an invalid identity."
-	if not data.get("name") is String or data.name.is_empty() or data.name.length() > MAX_NAME_LENGTH:
+	if (
+		not data.get("name") is String
+		or data.name.is_empty()
+		or data.name.length() > MAX_NAME_LENGTH
+	):
 		return "Campaign series rules have an invalid display name."
 	if not RaceCheckpoint.integral(data.get("cars_per_entrant"), 1, MAX_CARS_PER_ENTRANT):
 		return "Campaign series rules have an invalid cars-per-entrant limit."
-	if not RaceCheckpoint.integral(data.get("min_entrants"), 1, MAX_ENTRANTS) \
-			or not RaceCheckpoint.integral(data.get("max_entrants"), int(data.min_entrants), MAX_ENTRANTS):
+	if (
+		not RaceCheckpoint.integral(data.get("min_entrants"), 1, MAX_ENTRANTS)
+		or not RaceCheckpoint.integral(
+			data.get("max_entrants"), int(data.min_entrants), MAX_ENTRANTS
+		)
+	):
 		return "Campaign series rules have invalid entrant limits."
-	if not RaceCheckpoint.integral(data.get("min_events"), 1, MAX_EVENTS) \
-			or not RaceCheckpoint.integral(data.get("max_events"), int(data.min_events), MAX_EVENTS):
+	if (
+		not RaceCheckpoint.integral(data.get("min_events"), 1, MAX_EVENTS)
+		or not RaceCheckpoint.integral(data.get("max_events"), int(data.min_events), MAX_EVENTS)
+	):
 		return "Campaign series rules have invalid event limits."
 	if data.get("classification_policy") != CLASSIFICATION_POLICY:
 		return "Campaign series rules use an unsupported classification policy."
-	if not RaceCheckpoint.integral(data.get("countback_depth"), 1, CampaignWeekendReceipt.MAX_ENTRANTS):
+	if not RaceCheckpoint.integral(
+		data.get("countback_depth"), 1, CampaignWeekendReceipt.MAX_ENTRANTS
+	):
 		return "Campaign series rules have an invalid countback depth."
 	var points_error = _points_error(data.get("points_by_position"))
 	if not points_error.is_empty():
 		return points_error
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign series-rules integrity check failed."
 	return ""
+
 
 static func _points_error(value: Variant) -> String:
 	if not value is Array or value.is_empty() or value.size() > CampaignWeekendReceipt.MAX_ENTRANTS:

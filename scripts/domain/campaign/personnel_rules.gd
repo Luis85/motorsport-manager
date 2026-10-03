@@ -2,6 +2,7 @@ class_name CampaignPersonnelRules
 extends RefCounted
 ## Cross-record validation for contracts, roles and exclusive availability.
 
+
 static func validate_collections(data: Dictionary) -> String:
 	var error = _contract_reference_error(data)
 	if not error.is_empty():
@@ -23,6 +24,7 @@ static func validate_collections(data: Dictionary) -> String:
 		return error
 	return _reservation_overlap_error(data)
 
+
 static func _contract_reference_error(data: Dictionary) -> String:
 	for person in data.people.values():
 		if int(person.created_slot) < int(data.authority_from_slot):
@@ -30,10 +32,13 @@ static func _contract_reference_error(data: Dictionary) -> String:
 	for contract in data.contracts.values():
 		if not data.people.has(contract.person_id) or contract.account_id != data.organization_id:
 			return "Campaign employment contract references an unknown person or account."
-		if int(contract.signed_slot) < int(data.people[contract.person_id].created_slot) \
-				or int(contract.signed_slot) < int(data.authority_from_slot):
+		if (
+			int(contract.signed_slot) < int(data.people[contract.person_id].created_slot)
+			or int(contract.signed_slot) < int(data.authority_from_slot)
+		):
 			return "Campaign employment contract predates its person record or personnel authority."
 	return ""
+
 
 static func _contract_lineage_error(data: Dictionary) -> String:
 	for contract_id in data.contracts:
@@ -50,29 +55,38 @@ static func _contract_lineage_error(data: Dictionary) -> String:
 				return error
 	return ""
 
-static func _predecessor_error(data: Dictionary, contract_id: String,
-		contract: Dictionary, predecessor_id: String) -> String:
+
+static func _predecessor_error(
+	data: Dictionary, contract_id: String, contract: Dictionary, predecessor_id: String
+) -> String:
 	if not data.contracts.has(predecessor_id):
 		return "Campaign contract predecessor is missing."
 	var predecessor: Dictionary = data.contracts[predecessor_id]
-	if predecessor.person_id != contract.person_id \
-			or predecessor.account_id != contract.account_id \
-			or predecessor.successor_contract_id != contract_id \
-			or int(predecessor.end_slot) != int(contract.start_slot):
+	if (
+		predecessor.person_id != contract.person_id
+		or predecessor.account_id != contract.account_id
+		or predecessor.successor_contract_id != contract_id
+		or int(predecessor.end_slot) != int(contract.start_slot)
+	):
 		return "Campaign contract renewal chain is inconsistent."
 	return ""
 
-static func _successor_error(data: Dictionary, contract_id: String,
-		contract: Dictionary, successor_id: String) -> String:
+
+static func _successor_error(
+	data: Dictionary, contract_id: String, contract: Dictionary, successor_id: String
+) -> String:
 	if not data.contracts.has(successor_id):
 		return "Campaign contract successor is missing."
 	var successor: Dictionary = data.contracts[successor_id]
-	if successor.predecessor_contract_id != contract_id \
-			or successor.person_id != contract.person_id \
-			or successor.account_id != contract.account_id \
-			or int(successor.start_slot) != int(contract.end_slot):
+	if (
+		successor.predecessor_contract_id != contract_id
+		or successor.person_id != contract.person_id
+		or successor.account_id != contract.account_id
+		or int(successor.start_slot) != int(contract.end_slot)
+	):
 		return "Campaign contract successor chain is inconsistent."
 	return ""
+
 
 static func _contract_overlap_error(data: Dictionary) -> String:
 	var by_person = {}
@@ -91,22 +105,30 @@ static func _contract_overlap_error(data: Dictionary) -> String:
 					return "Campaign person has overlapping employment contracts."
 	return ""
 
+
 static func _assignment_reference_error(data: Dictionary) -> String:
 	for assignment in data.assignments.values():
-		if not data.people.has(assignment.person_id) or not data.contracts.has(assignment.contract_id):
+		if (
+			not data.people.has(assignment.person_id)
+			or not data.contracts.has(assignment.contract_id)
+		):
 			return "Campaign role assignment references an unknown person or contract."
 		var person: Dictionary = data.people[assignment.person_id]
 		var contract: Dictionary = data.contracts[assignment.contract_id]
 		var contract_status = CampaignEmploymentContract.status_at(
-			contract, int(assignment.created_slot))
-		if contract.person_id != assignment.person_id \
-				or assignment.role_id not in person.eligible_roles \
-				or int(assignment.created_slot) < int(contract.signed_slot) \
-				or contract_status in ["unknown", "terminated", "expired"] \
-				or int(assignment.start_slot) < int(contract.start_slot) \
-				or int(assignment.end_slot) > int(contract.end_slot):
+			contract, int(assignment.created_slot)
+		)
+		if (
+			contract.person_id != assignment.person_id
+			or assignment.role_id not in person.eligible_roles
+			or int(assignment.created_slot) < int(contract.signed_slot)
+			or contract_status in ["unknown", "terminated", "expired"]
+			or int(assignment.start_slot) < int(contract.start_slot)
+			or int(assignment.end_slot) > int(contract.end_slot)
+		):
 			return "Campaign role assignment is outside its person, eligibility or contract terms."
 	return ""
+
 
 static func _assignment_capacity_error(data: Dictionary) -> String:
 	var by_contract = {}
@@ -125,6 +147,7 @@ static func _assignment_capacity_error(data: Dictionary) -> String:
 			return error
 	return ""
 
+
 static func _duplicate_role_error(contract: Dictionary, assignments: Array) -> String:
 	var effective_end = CampaignEmploymentContract.effective_end(contract)
 	for left_index in range(assignments.size()):
@@ -133,10 +156,13 @@ static func _duplicate_role_error(contract: Dictionary, assignments: Array) -> S
 		for right_index in range(left_index + 1, assignments.size()):
 			var right: Dictionary = assignments[right_index]
 			var right_end = mini(int(right.end_slot), effective_end)
-			if left.role_id == right.role_id \
-					and CampaignRoleAssignment.overlaps(left, right, left_end, right_end):
+			if (
+				left.role_id == right.role_id
+				and CampaignRoleAssignment.overlaps(left, right, left_end, right_end)
+			):
 				return "Campaign person has duplicate overlapping responsibility for one role."
 	return ""
+
 
 static func _allocation_error(contract: Dictionary, assignments: Array) -> String:
 	var boundaries: Array = []
@@ -156,21 +182,25 @@ static func _allocation_error(contract: Dictionary, assignments: Array) -> Strin
 			return "Campaign role allocations exceed the person's contracted capacity."
 	return ""
 
+
 static func _reservation_reference_error(data: Dictionary) -> String:
 	for reservation in data.reservations.values():
 		if not data.assignments.has(reservation.assignment_id):
 			return "Campaign availability reservation references an unknown assignment."
 		var assignment: Dictionary = data.assignments[reservation.assignment_id]
-		if assignment.person_id != reservation.person_id \
-				or int(reservation.created_slot) < int(assignment.created_slot) \
-				or int(reservation.start_slot) < int(assignment.start_slot) \
-				or int(reservation.end_slot) > int(assignment.end_slot):
+		if (
+			assignment.person_id != reservation.person_id
+			or int(reservation.created_slot) < int(assignment.created_slot)
+			or int(reservation.start_slot) < int(assignment.start_slot)
+			or int(reservation.end_slot) > int(assignment.end_slot)
+		):
 			return "Campaign availability reservation is outside its role assignment."
 		if reservation.status == "active":
 			var contract: Dictionary = data.contracts[assignment.contract_id]
 			if int(reservation.end_slot) > CampaignEmploymentContract.effective_end(contract):
 				return "Active campaign availability extends beyond effective employment."
 	return ""
+
 
 static func _reservation_overlap_error(data: Dictionary) -> String:
 	var active_by_person = {}
@@ -184,6 +214,7 @@ static func _reservation_overlap_error(data: Dictionary) -> String:
 		for left_index in range(reservations.size()):
 			for right_index in range(left_index + 1, reservations.size()):
 				if CampaignAvailabilityReservation.overlaps(
-						reservations[left_index], reservations[right_index]):
+					reservations[left_index], reservations[right_index]
+				):
 					return "Campaign person is assigned to overlapping work, travel, training or leave."
 	return ""

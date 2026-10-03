@@ -1,27 +1,31 @@
 """Ordered pack selection, transaction failures and real compiler integration."""
+
 from __future__ import annotations
 
 import contextlib
 import io
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
-import content
 import content_operations
+
+import content
 
 
 class MultiPackTests(unittest.TestCase):
     def test_dependency_order_and_implicit_core_are_preserved(self):
         core = content.ROOT / "content/packs/core"
         result = content.pack_arguments(Path("last"), [core, Path("first"), Path("second")])
-        self.assertEqual(result, ["--pack=" + str(Path(name).resolve()) for name in ["first", "second", "last"]])
+        self.assertEqual(
+            result, ["--pack=" + str(Path(name).resolve()) for name in ["first", "second", "last"]]
+        )
         self.assertEqual(content.pack_arguments(core), [])
 
     def test_aliases_are_not_silently_loaded_twice(self):
@@ -39,28 +43,73 @@ class MultiPackTests(unittest.TestCase):
                 elif command == "test":
                     argv += ["--scenario", "child.scenario.one"]
                 result = {"ok": True, "definitions": [], "kinds": [], "snapshot": {"records": {}}}
-                with patch.object(content, "invoke_engine", return_value=result) as invoke, contextlib.redirect_stdout(io.StringIO()):
+                with (
+                    patch.object(content, "invoke_engine", return_value=result) as invoke,
+                    contextlib.redirect_stdout(io.StringIO()),
+                ):
                     self.assertEqual(content.main(argv), 0)
                 selected = [x for x in invoke.call_args.args[0] if x.startswith("--pack=")]
-                self.assertEqual(selected, content.pack_arguments(Path("child"), [Path("dependency-a"), Path("dependency-b")]))
+                self.assertEqual(
+                    selected,
+                    content.pack_arguments(
+                        Path("child"), [Path("dependency-a"), Path("dependency-b")]
+                    ),
+                )
 
     def test_diff_supports_common_and_side_specific_dependencies(self):
         result = {"ok": True, "snapshot": {"records": {}}}
-        with patch.object(content, "invoke_engine", return_value=result) as invoke, contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(content.main(["diff", "old", "new", "--pack", "common",
-                                           "--before-pack", "old-base", "--after-pack", "new-base"]), 0)
+        with (
+            patch.object(content, "invoke_engine", return_value=result) as invoke,
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(
+                content.main(
+                    [
+                        "diff",
+                        "old",
+                        "new",
+                        "--pack",
+                        "common",
+                        "--before-pack",
+                        "old-base",
+                        "--after-pack",
+                        "new-base",
+                    ]
+                ),
+                0,
+            )
         calls = [call.args[0] for call in invoke.call_args_list]
-        self.assertEqual(calls[0], ["--action=export", *content.pack_arguments(Path("old"), [Path("common"), Path("old-base")])])
-        self.assertEqual(calls[1], ["--action=export", *content.pack_arguments(Path("new"), [Path("common"), Path("new-base")])])
+        self.assertEqual(
+            calls[0],
+            [
+                "--action=export",
+                *content.pack_arguments(Path("old"), [Path("common"), Path("old-base")]),
+            ],
+        )
+        self.assertEqual(
+            calls[1],
+            [
+                "--action=export",
+                *content.pack_arguments(Path("new"), [Path("common"), Path("new-base")]),
+            ],
+        )
 
     def test_clone_forwards_dependencies_before_its_destination(self):
         with tempfile.TemporaryDirectory() as temporary:
             pack = Path(temporary) / "child"
             content.initialize(pack, "child")
-            result = {"ok": True, "definitions": [], "inspection": {"definition": {"kind": "vehicle", "id": "base.vehicle.one"}}}
+            result = {
+                "ok": True,
+                "definitions": [],
+                "inspection": {"definition": {"kind": "vehicle", "id": "base.vehicle.one"}},
+            }
             with patch.object(content, "invoke_engine", return_value=result) as invoke:
-                content.clone_definition(pack, "base.vehicle.one", "child.vehicle.copy", None, [Path("base")])
-            self.assertEqual(invoke.call_args.args[0][2:], content.pack_arguments(pack, [Path("base")]))
+                content.clone_definition(
+                    pack, "base.vehicle.one", "child.vehicle.copy", None, [Path("base")]
+                )
+            self.assertEqual(
+                invoke.call_args.args[0][2:], content.pack_arguments(pack, [Path("base")])
+            )
             self.assertTrue((pack / "vehicles/child.vehicle.copy.json").is_file())
 
     def test_clone_rejects_a_manifest_modified_during_validation(self):
@@ -74,7 +123,11 @@ class MultiPackTests(unittest.TestCase):
             def validate(*_):
                 self.assertTrue((pack / ".content-author.lock").exists())
                 manifest.write_text(content.encode(changed))
-                return {"ok": True, "definitions": [], "inspection": {"definition": {"kind": "vehicle"}}}
+                return {
+                    "ok": True,
+                    "definitions": [],
+                    "inspection": {"definition": {"kind": "vehicle"}},
+                }
 
             with patch.object(content, "invoke_engine", side_effect=validate):
                 with self.assertRaisesRegex(ValueError, "changed during validation"):
@@ -87,7 +140,9 @@ class MultiPackTests(unittest.TestCase):
             pack = Path(temporary) / "child"
             content.initialize(pack, "child")
             with patch.object(content, "invoke_engine", return_value={"ok": False}):
-                self.assertFalse(content.clone_definition(pack, "missing.item", "child.vehicle.copy", None)["ok"])
+                self.assertFalse(
+                    content.clone_definition(pack, "missing.item", "child.vehicle.copy", None)["ok"]
+                )
             self.assertEqual([p.name for p in pack.iterdir()], ["pack.json"])
 
     def test_cooperating_writer_lock_is_never_removed_by_a_failed_acquisition(self):
@@ -103,7 +158,13 @@ class MultiPackTests(unittest.TestCase):
             self.assertEqual(lock.read_text(), "owner")
 
     def test_schema_check_has_no_directory_side_effects(self):
-        with tempfile.TemporaryDirectory() as temporary, patch.object(content, "ROOT", Path(temporary)), patch.object(content, "invoke_engine", return_value={"ok": True, "schemas": {"vehicle": {}}}):
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            patch.object(content, "ROOT", Path(temporary)),
+            patch.object(
+                content, "invoke_engine", return_value={"ok": True, "schemas": {"vehicle": {}}}
+            ),
+        ):
             self.assertFalse(content.schemas(None, True)["ok"])
             self.assertEqual(list(Path(temporary).iterdir()), [])
 
@@ -153,21 +214,34 @@ class MultiPackTests(unittest.TestCase):
         self.assertEqual(content_operations.difference({"v": [1, 2.0]}, {"v": [1.0, 2]}), [])
 
     def test_bare_godot_command_uses_path_lookup(self):
-        runs = [subprocess.CompletedProcess([], 0, "", ""), subprocess.CompletedProcess([], 0, 'CONTENT_RESULT {"ok":true}\n', "")]
-        with patch.object(content.shutil, "which", return_value="/tools/godot"), patch.object(content.subprocess, "run", side_effect=runs) as run:
+        runs = [
+            subprocess.CompletedProcess([], 0, "", ""),
+            subprocess.CompletedProcess([], 0, 'CONTENT_RESULT {"ok":true}\n', ""),
+        ]
+        with (
+            patch.object(content.shutil, "which", return_value="/tools/godot"),
+            patch.object(content.subprocess, "run", side_effect=runs) as run,
+        ):
             self.assertTrue(content.invoke_engine([], "godot")["ok"])
             self.assertEqual(run.call_args.args[0][0], "/tools/godot")
 
     def test_invalid_engine_result_envelopes_fail_cleanly(self):
         for value in [[], None, True, {"ok": "true"}, {"ok": 1}, {}]:
-            executed = subprocess.CompletedProcess([], 0, "CONTENT_RESULT " + json.dumps(value) + "\n", "")
+            executed = subprocess.CompletedProcess(
+                [], 0, "CONTENT_RESULT " + json.dumps(value) + "\n", ""
+            )
             imported = subprocess.CompletedProcess([], 0, "", "")
-            with self.subTest(value=value), patch.object(content.subprocess, "run", side_effect=[imported, executed]):
+            with (
+                self.subTest(value=value),
+                patch.object(content.subprocess, "run", side_effect=[imported, executed]),
+            ):
                 with self.assertRaisesRegex(ValueError, "explicit Boolean"):
                     content.invoke_engine([], "/fake/godot")
 
 
-@unittest.skipUnless(os.environ.get("VERIFICATION_TEST_GODOT"), "requires the pinned production engine")
+@unittest.skipUnless(
+    os.environ.get("VERIFICATION_TEST_GODOT"), "requires the pinned production engine"
+)
 class NativeMultiPackTests(unittest.TestCase):
     def test_real_dependencies_clone_list_export_diff_and_rejection(self):
         godot = os.environ["VERIFICATION_TEST_GODOT"]
@@ -185,16 +259,27 @@ class NativeMultiPackTests(unittest.TestCase):
             manifest = json.loads((child / "pack.json").read_text())
             manifest["dependencies"].append({"id": "local.base", "version": "1.0.0"})
             (child / "pack.json").write_text(content.encode(manifest))
-            failure = content.invoke_engine(["--action=validate", *content.pack_arguments(child)], godot)
+            failure = content.invoke_engine(
+                ["--action=validate", *content.pack_arguments(child)], godot
+            )
             self.assertFalse(failure["ok"])
             self.assertEqual(failure["diagnostics"][0]["code"], "CONTENT_DEPENDENCY")
-            cloned = content.clone_definition(child, vehicle["id"], "local.child.vehicle.copy", godot, [base])
+            cloned = content.clone_definition(
+                child, vehicle["id"], "local.child.vehicle.copy", godot, [base]
+            )
             self.assertTrue(cloned["ok"])
             for argv in [
                 ["validate", str(child), "--pack", str(base)],
                 ["list", str(child), "--pack", str(base), "--kind", "vehicle"],
                 ["inspect", str(child), "--pack", str(base), "--id", "local.child.vehicle.copy"],
-                ["export", str(child), "--pack", str(base), "--output", str(Path(temporary) / "resolved.json")],
+                [
+                    "export",
+                    str(child),
+                    "--pack",
+                    str(base),
+                    "--output",
+                    str(Path(temporary) / "resolved.json"),
+                ],
                 ["diff", str(child), str(child), "--pack", str(base)],
             ]:
                 with self.subTest(command=argv[0]), contextlib.redirect_stdout(io.StringIO()):

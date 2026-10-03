@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 """Compare complete advisory inventories without hiding debt or creating a gate."""
+
 from __future__ import annotations
 
 import argparse
-from collections import defaultdict
-from copy import deepcopy
 import html
 import json
-from pathlib import Path
 import sys
+from collections import defaultdict
+from copy import deepcopy
+from pathlib import Path
 
 
 def identity(report: dict) -> dict:
-    return {key: report.get(key) for key in (
-        "commit", "source_sha256", "analysis_complete", "analyzer_sha256", "tool_versions"
-    )}
+    return {
+        key: report.get(key)
+        for key in (
+            "commit",
+            "source_sha256",
+            "analysis_complete",
+            "analyzer_sha256",
+            "tool_versions",
+        )
+    }
 
 
 def validate(report: object) -> dict:
@@ -43,18 +51,29 @@ def compare(base: dict, candidate: dict) -> dict:
         if not report.get("source_sha256") or not report.get("commit"):
             reasons.append(f"{label} source identity is missing")
         versions = report.get("tool_versions", {})
-        if not isinstance(versions, dict) or not all(isinstance(key, str) and isinstance(value, str) for key, value in versions.items()):
+        if not isinstance(versions, dict) or not all(
+            isinstance(key, str) and isinstance(value, str) for key, value in versions.items()
+        ):
             reasons.append(f"{label} tool provenance is malformed")
         elif "unavailable" in versions.values():
             reasons.append(f"{label} tool versions are unavailable")
     for key in ("policy", "analyzer_sha256", "tool_versions"):
         if base.get(key) != candidate.get(key):
             reasons.append(f"{key} differs; inventories are not directly comparable")
-    result = {"schema_version": 1, "mode": "advisory", "comparable": not reasons,
-              "reasons": reasons, "base": identity(base), "candidate": identity(candidate),
-              "base_findings": len(base["findings"]), "candidate_findings": len(candidate["findings"]),
-              "new": [], "resolved": [], "unchanged": [],
-              "matching": "Multiset of exact path, rule and message; line movement alone is not new debt. Renames/message changes are new/resolved findings, not inferred equivalence."}
+    result = {
+        "schema_version": 1,
+        "mode": "advisory",
+        "comparable": not reasons,
+        "reasons": reasons,
+        "base": identity(base),
+        "candidate": identity(candidate),
+        "base_findings": len(base["findings"]),
+        "candidate_findings": len(candidate["findings"]),
+        "new": [],
+        "resolved": [],
+        "unchanged": [],
+        "matching": "Multiset of exact path, rule and message; line movement alone is not new debt. Renames/message changes are new/resolved findings, not inferred equivalence.",
+    }
     if reasons:
         # Never turn an unavailable tool or changed policy into 'resolved' debt.
         return result
@@ -72,23 +91,39 @@ def compare(base: dict, candidate: dict) -> dict:
     for key in sorted(before.keys() | after.keys()):
         old, new = before[key], after[key]
         count = min(len(old), len(new))
-        result["unchanged"].extend({"base": a, "candidate": b}
-                                   for a, b in zip(old[:count], new[:count]))
+        result["unchanged"].extend(
+            {"base": a, "candidate": b} for a, b in zip(old[:count], new[:count], strict=True)
+        )
         result["resolved"].extend(old[count:])
         result["new"].extend(new[count:])
     return result
 
 
 def markdown(delta: dict) -> str:
-    lines = ["# Advisory findings comparison", "", "The complete base and candidate inventories remain retained. This comparison is not a blocking gate.", "",
-             f"Base: `{html.escape(str(delta['base']['commit']))}`; candidate: `{html.escape(str(delta['candidate']['commit']))}`.", ""]
+    lines = [
+        "# Advisory findings comparison",
+        "",
+        "The complete base and candidate inventories remain retained. This comparison is not a blocking gate.",
+        "",
+        f"Base: `{html.escape(str(delta['base']['commit']))}`; candidate: `{html.escape(str(delta['candidate']['commit']))}`.",
+        "",
+    ]
     if not delta["comparable"]:
-        lines += ["**Not comparable. No resolved-debt claim is made.**", "",
-                  "; ".join(html.escape(reason) for reason in delta["reasons"])]
+        lines += [
+            "**Not comparable. No resolved-debt claim is made.**",
+            "",
+            "; ".join(html.escape(reason) for reason in delta["reasons"]),
+        ]
     else:
-        lines += ["| New | Resolved | Unchanged |", "|---:|---:|---:|",
-                  f"| {len(delta['new'])} | {len(delta['resolved'])} | {len(delta['unchanged'])} |", "",
-                  delta["matching"], "", "Location changes are retained in each unchanged finding's base/candidate pair."]
+        lines += [
+            "| New | Resolved | Unchanged |",
+            "|---:|---:|---:|",
+            f"| {len(delta['new'])} | {len(delta['resolved'])} | {len(delta['unchanged'])} |",
+            "",
+            delta["matching"],
+            "",
+            "Location changes are retained in each unchanged finding's base/candidate pair.",
+        ]
     return "\n".join(lines) + "\n"
 
 
@@ -103,7 +138,9 @@ def main(argv: list[str] | None = None) -> int:
         candidate = json.loads(args.candidate_report.read_text(encoding="utf-8"))
         delta = compare(base, candidate)
         args.output.mkdir(parents=True, exist_ok=True)
-        (args.output / "delta.json").write_text(json.dumps(delta, indent=2) + "\n", encoding="utf-8")
+        (args.output / "delta.json").write_text(
+            json.dumps(delta, indent=2) + "\n", encoding="utf-8"
+        )
         (args.output / "delta.md").write_text(markdown(delta), encoding="utf-8")
         print(markdown(delta))
         return 0  # Incomparability is explicit evidence, never a covert blocking ratchet.

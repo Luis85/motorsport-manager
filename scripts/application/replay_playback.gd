@@ -6,6 +6,7 @@ var player: RaceReplay
 var playing = false
 var budget = 16
 
+
 func advance() -> void:
 	if not playing or player == null:
 		return

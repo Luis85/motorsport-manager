@@ -13,7 +13,8 @@ const ROWS = [
 	["DAR", "Alex Darcy", "Kestrel", "ac98c0", 83, 80, 81, 82, 14],
 	["KIE", "Jonas Kiefer", "Aster", "d5d6c8", 81, 92, 79, 92, 7],
 	["COS", "Rafael Costa", "Veridian", "69a283", 82, 85, 89, 86, 15],
-	["HAR", "Theo Hart", "Kestrel", "ac98c0", 79, 74, 76, 81, 16]]
+	["HAR", "Theo Hart", "Kestrel", "ac98c0", 79, 74, 76, 81, 16]
+]
 const TEAMS = ["Volpe", "Aster", "Veridian", "Obsidian", "Nordstar", "Kestrel"]
 
 const PLAYER_IDS = [3, 6]

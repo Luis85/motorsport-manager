@@ -7,15 +7,26 @@ const CASES = [
 	{"track": "monza", "scenario": "changeable", "seed": 942, "intensity": "volatile"},
 ]
 
+
 func _initialize() -> void:
 	call_deferred("run")
 
+
 func exercise(recipe: Dictionary) -> Dictionary:
 	var read = Storage.read_json("res://data/tracks/%s.json" % recipe.track)
-	var sim = PracticeRaceSim.new(TrackGeometry.new(read.data), {
-		"laps": 6, "scenario": recipe.scenario, "seed": recipe.seed,
-		"intensity": recipe.intensity, "tactical_duels": true,
-	})
+	var sim = (
+		PracticeRaceSim
+		. new(
+			TrackGeometry.new(read.data),
+			{
+				"laps": 6,
+				"scenario": recipe.scenario,
+				"seed": recipe.seed,
+				"intensity": recipe.intensity,
+				"tactical_duels": true,
+			}
+		)
+	)
 	var states: Array = []
 	var accepted: Array = []
 	accepted.append(sim.command("prepare_race"))
@@ -40,17 +51,23 @@ func exercise(recipe: Dictionary) -> Dictionary:
 		if (index + 1) % 500 == 0:
 			states.append(RaceRecord.fingerprint(RaceRecord.sporting(sim.snapshot())))
 	return {
-		"recipe": recipe, "formation_steps": formation_steps,
-		"commands_accepted": accepted, "hashes": states,
-		"pits": sim.stats.pits, "rng_state": sim.rng_state,
+		"recipe": recipe,
+		"formation_steps": formation_steps,
+		"commands_accepted": accepted,
+		"hashes": states,
+		"pits": sim.stats.pits,
+		"rng_state": sim.rng_state,
 	}
+
 
 func run() -> void:
 	var rows: Array = []
 	for recipe in CASES:
 		rows.append(exercise(recipe))
 		print("CHARACTERIZATION_CASE ", JSON.stringify(rows.back()))
-	var actual = {"baseline_sha": BASELINE_SHA, "engine": Engine.get_version_info().string, "cases": rows}
+	var actual = {
+		"baseline_sha": BASELINE_SHA, "engine": Engine.get_version_info().string, "cases": rows
+	}
 	var expected = Storage.read_json("res://tests/fixtures/architecture-reference.json")
 	var passed = expected.ok and RaceRecord.equivalent(actual, expected.data)
 	var report = {"passed": passed, "checks": rows.size() * 8, "actual": actual}

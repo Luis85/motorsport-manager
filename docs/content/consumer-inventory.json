@@ -2267,19 +2267,19 @@
       "note": "Supported field-size bound used by content schemas."
     },
     {
-      "file": "scripts/domain/track_document.gd",
+      "file": "scripts/domain/track_document_validation.gd",
       "symbol": "MAX_NODES",
       "classification": "safety",
       "note": "Track authoring/resource bound; not race balance."
     },
     {
-      "file": "scripts/domain/track_document.gd",
+      "file": "scripts/domain/track_document_validation.gd",
       "symbol": "MAX_GRID_PLACES",
       "classification": "safety",
       "note": "Track-format upper bound; actual roster/scenario capacity is validated separately."
     },
     {
-      "file": "scripts/domain/race_checkpoint.gd",
+      "file": "scripts/domain/race_checkpoint_validation.gd",
       "symbol": "MAX_SPEED_MPS",
       "classification": "safety",
       "note": "Checkpoint validation ceiling, not a vehicle performance preset."

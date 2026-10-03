@@ -15,10 +15,10 @@ jobs:
     timeout-minutes: 20
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
       - name: Install pinned development tools
@@ -38,6 +38,7 @@ jobs:
         continue-on-error: true
         run: python scripts/quality.py --annotations
       - name: Compare full inventory with base revision
+        id: comparison
         if: always()
         continue-on-error: true
         env:
@@ -56,11 +57,17 @@ jobs:
           TOOLS_OUTCOME: ${{ steps.tools.outcome }}
           REPORT_OUTCOME: ${{ steps.report.outcome }}
           SELF_TEST_OUTCOME: ${{ steps.self_tests.outcome }}
+          COMPARISON_OUTCOME: ${{ steps.comparison.outcome }}
         run: |
           if [ "$SELF_TEST_OUTCOME" != success ]; then
             echo '::warning title=Quality checker tests failed::Checker regression tests did not pass. Inspect self-tests.log; a successful advisory job is not proof of a working checker.'
             echo '## Quality checker regression tests failed' >> "$GITHUB_STEP_SUMMARY"
             echo 'Inspect self-tests.log in the quality-report artifact.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$COMPARISON_OUTCOME" != success ] || [ ! -f reports/quality/comparison/delta.json ]; then
+            echo '::warning title=Quality comparison unavailable::The base/candidate inventory comparison did not complete. Inspect the comparison step; no resolved-debt claim is made.'
+            echo '## Advisory comparison unavailable' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No complete base/candidate comparison was produced.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ "$TOOLS_OUTCOME" != success ]; then
             echo '::warning title=Quality tools unavailable::Tool installation did not complete. Analysis may be incomplete; this is not a clean result.'
@@ -70,7 +77,7 @@ jobs:
             echo '## Advisory quality unavailable' >> "$GITHUB_STEP_SUMMARY"
             echo 'The advisory runner did not complete. No clean result is claimed.' >> "$GITHUB_STEP_SUMMARY"
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         continue-on-error: true
         with:

@@ -16,7 +16,7 @@ jobs:
       LP_NUM_THREADS: 2
       MOTORSPORT_SOURCE_REVISION: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install and identify the pinned reproduction engine
         shell: bash
         run: |
@@ -57,7 +57,7 @@ jobs:
           PY
       - name: Retain diagnostic evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-confidence-evidence
           path: reports/
@@ -65,7 +65,7 @@ jobs:
           retention-days: 14
       - name: Retain exact developer reproduction toolchain
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pinned-linux-reproduction-toolchain
           path: |

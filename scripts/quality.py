@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Read-only, warning-only quality checks. --strict is an explicit local opt-in."""
+
 from __future__ import annotations
 
 import argparse
 import hashlib
-from importlib import metadata
 import json
 import re
 import subprocess
 import sys
+from importlib import metadata
 from pathlib import Path
 
 from quality_loc import measure
@@ -23,27 +24,63 @@ def finding(rule: str, message: str, path: str = "", line: int = 1) -> dict:
 
 def inventory(root: Path, policy: dict) -> list[Path]:
     # Includes untracked, nonignored work during local authoring; only tracked CI checkout otherwise.
-    result = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-                            cwd=root, capture_output=True, check=True, timeout=30)
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=root,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
     paths = {Path(name.decode("utf-8")) for name in result.stdout.split(b"\0") if name}
-    return sorted(path for path in paths if path.suffix in policy["extensions"]
-                  and not set(path.parts).intersection(policy["excluded_directories"]))
+    return sorted(
+        path
+        for path in paths
+        if path.suffix in policy["extensions"]
+        and not set(path.parts).intersection(policy["excluded_directories"])
+    )
 
 
-def execute(name: str, command: list[str], root: Path, output: Path, timeout: int) -> tuple[dict, str]:
+def execute(
+    name: str, command: list[str], root: Path, output: Path, timeout: int
+) -> tuple[dict, str]:
     log = output / f"{name}.log"
     try:
         # Tool output is an artifact, never forwarded as untrusted Actions commands.
         with log.open("w", encoding="utf-8") as stream:
-            result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
-                                    timeout=timeout, check=False, text=True)
+            result = subprocess.run(
+                command,
+                cwd=root,
+                stdout=stream,
+                stderr=subprocess.STDOUT,
+                timeout=timeout,
+                check=False,
+                text=True,
+            )
         text = log.read_text(encoding="utf-8", errors="replace")
-        return {"name": name, "command": command, "exit_code": result.returncode,
-                "status": "clean" if result.returncode == 0 else "findings", "log": log.name}, text
+        return {
+            "name": name,
+            "command": command,
+            "exit_code": result.returncode,
+            "status": "clean" if result.returncode == 0 else "findings",
+            "log": log.name,
+        }, text
     except (OSError, subprocess.TimeoutExpired) as error:
         with log.open("a", encoding="utf-8") as stream:
             stream.write(f"\n{type(error).__name__}: {error}\n")
         return {"name": name, "command": command, "status": "unavailable", "log": log.name}, ""
+
+
+def _ruff_findings(text: str, root: Path) -> list[dict]:
+    records = []
+    items = json.loads(text)
+    if not isinstance(items, list):
+        raise ValueError("Expected a JSON array of Ruff diagnostics")
+    for item in items:
+        path = Path(item["filename"]).relative_to(root).as_posix()
+        records.append(
+            finding("ruff/" + str(item["code"]), item["message"], path, item["location"]["row"])
+        )
+    return records
 
 
 def tool_findings(tool: dict, text: str, root: Path, complexity: int) -> list[dict]:
@@ -53,11 +90,11 @@ def tool_findings(tool: dict, text: str, root: Path, complexity: int) -> list[di
     records = []
     try:
         if name == "ruff":
-            for item in json.loads(text):
-                path = Path(item["filename"]).relative_to(root).as_posix()
-                records.append(finding("ruff/" + str(item["code"]), item["message"], path, item["location"]["row"]))
+            records.extend(_ruff_findings(text, root))
         elif name == "gdlint":
-            for match in re.finditer(r"^(.+\.gd):(\d+):(?:\d+:)? (?:Error|Warning): (.+)$", text, re.M):
+            for match in re.finditer(
+                r"^(.+\.gd):(\d+):(?:\d+:)? (?:Error|Warning): (.+)$", text, re.M
+            ):
                 records.append(finding("gdlint", match[3], match[1], int(match[2])))
         elif name == "gdradon":
             path = ""
@@ -66,9 +103,21 @@ def tool_findings(tool: dict, text: str, root: Path, complexity: int) -> list[di
                     path = line.strip()
                 match = re.search(r"\b[FCM] (\d+):\d+ (.+) - [A-F] \((\d+)\)", line)
                 if match and int(match[3]) > complexity:
-                    records.append(finding("complexity", f"{match[2]}: complexity {match[3]} exceeds {complexity}.", path, int(match[1])))
+                    records.append(
+                        finding(
+                            "complexity",
+                            f"{match[2]}: complexity {match[3]} exceeds {complexity}.",
+                            path,
+                            int(match[1]),
+                        )
+                    )
         elif tool["exit_code"] == 1:
-            records.append(finding(name, f"Formatting changes recommended. See {tool['log']}; no files were changed."))
+            records.append(
+                finding(
+                    name,
+                    f"Formatting changes recommended. See {tool['log']}; no files were changed.",
+                )
+            )
         if tool["exit_code"] not in (0, 1) or (tool["exit_code"] == 1 and not records):
             raise ValueError("Unexpected tool failure/output; no reliable findings parsed")
         if name == "gdradon" and ("Traceback" in text or not re.search(r"\b[FCM] \d+:\d+", text)):
@@ -96,8 +145,16 @@ def provenance() -> dict:
 
 def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
     policy = json.loads((root / "quality-policy.json").read_text(encoding="utf-8"))
-    report = {"schema_version": 1, "mode": "advisory", "analysis_complete": True,
-              "policy": policy, "files": [], "findings": [], "tools": [], **provenance()}
+    report = {
+        "schema_version": 1,
+        "mode": "advisory",
+        "analysis_complete": True,
+        "policy": policy,
+        "files": [],
+        "findings": [],
+        "tools": [],
+        **provenance(),
+    }
     paths = inventory(root, policy)
     if not paths:
         raise ValueError("No source files found; refusing an empty quality report")
@@ -112,22 +169,39 @@ def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
             item = measure(path, data.decode("utf-8-sig"), policy)
             report["files"].append(item)
             if item["over_limit"]:
-                report["findings"].append(finding("code-lines", f"{item['code_lines']} code lines; "
-                    f"{item['category']} limit is {item['limit']}. Split by responsibility, not arbitrary line count.",
-                    item["path"], item["line"]))
+                report["findings"].append(
+                    finding(
+                        "code-lines",
+                        f"{item['code_lines']} code lines; "
+                        f"{item['category']} limit is {item['limit']}. Split by responsibility, not arbitrary line count.",
+                        item["path"],
+                        item["line"],
+                    )
+                )
         except (OSError, ValueError, SyntaxError) as error:
             report["analysis_complete"] = False
-            report["findings"].append(finding("measurement-unavailable", str(error), path.as_posix()))
+            report["findings"].append(
+                finding("measurement-unavailable", str(error), path.as_posix())
+            )
     report["source_sha256"] = digest.hexdigest()
-    report["commit"] = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, text=True,
-                                      capture_output=True, timeout=10, check=True).stdout.strip()
+    report["commit"] = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        timeout=10,
+        check=True,
+    ).stdout.strip()
     output.mkdir(parents=True, exist_ok=True)
     gd = [p.as_posix() for p in paths if p.suffix == ".gd"]
     py = [p.as_posix() for p in paths if p.suffix == ".py"]
-    commands = [("ruff", ["ruff", "check", "--no-fix", "--output-format=json", *py]),
-                ("ruff-format", ["ruff", "format", "--check", *py]),
-                ("gdlint", ["gdlint", *gd]), ("gdformat", ["gdformat", "--check", *gd]),
-                ("gdradon", ["gdradon", "cc", *gd])]
+    commands = [
+        ("ruff", ["ruff", "check", "--no-fix", "--output-format=json", *py]),
+        ("ruff-format", ["ruff", "format", "--check", *py]),
+        ("gdlint", ["gdlint", *gd]),
+        ("gdformat", ["gdformat", "--check", *gd]),
+        ("gdradon", ["gdradon", "cc", *gd]),
+    ]
     for name, command in commands:
         if run_tools:
             tool, text = execute(name, command, root, output, policy["tool_timeout_seconds"])
@@ -142,17 +216,29 @@ def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=ROOT, help="Read-only checkout to scan using this analyzer")
+    parser.add_argument(
+        "--root", type=Path, default=ROOT, help="Read-only checkout to scan using this analyzer"
+    )
     parser.add_argument("--output", type=Path, default=ROOT / "reports" / "quality")
-    parser.add_argument("--loc-only", action="store_true", help="Explicit partial report without external tools")
+    parser.add_argument(
+        "--loc-only", action="store_true", help="Explicit partial report without external tools"
+    )
     parser.add_argument("--annotations", action="store_true")
-    parser.add_argument("--strict", action="store_true", help="Opt-in local failure on warnings/incomplete analysis")
+    parser.add_argument(
+        "--strict", action="store_true", help="Opt-in local failure on warnings/incomplete analysis"
+    )
     args = parser.parse_args(argv)
     try:
         report = collect(args.root.resolve(), args.output.resolve(), not args.loc_only)
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
-        report = {"schema_version": 1, "mode": "advisory", "analysis_complete": False,
-                  "files": [], "tools": [], "findings": [finding("quality-runner", str(error))]}
+        report = {
+            "schema_version": 1,
+            "mode": "advisory",
+            "analysis_complete": False,
+            "files": [],
+            "tools": [],
+            "findings": [finding("quality-runner", str(error))],
+        }
     publish(report, args.output, args.annotations, 30)
     return int(args.strict and (bool(report["findings"]) or not report["analysis_complete"]))
 

@@ -4,11 +4,15 @@ extends RefCounted
 var playback: ReplayPlayback
 var view: ReplayViewSession
 var _player: RaceReplay
+
+
 func _init(player: RaceReplay) -> void:
 	_player = player
 	playback = ReplayPlayback.new()
 	playback.player = player
 	view = ReplayViewSession.new(player, playback)
+
+
 func branch_session() -> Dictionary:
 	var candidate = _player.branch()
 	if candidate == null:

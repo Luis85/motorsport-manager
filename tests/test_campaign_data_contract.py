@@ -1,9 +1,10 @@
 """Regression checks for the authored campaign/content boundary."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CAMPAIGN = ROOT / "content/packs/core/campaigns/team-principal.json"
@@ -24,8 +25,15 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertEqual(150000, campaign["career"]["opening_cash_minor"])
         self.assertEqual(60000, campaign["career"]["reserve_minor"])
         self.assertEqual(4, len(campaign["calendar"]))
-        self.assertEqual(["core.circuit.hillside", "core.circuit.monza", "core.circuit.silverstone", "core.circuit.spa"],
-                         [event["circuit_id"] for event in campaign["calendar"]])
+        self.assertEqual(
+            [
+                "core.circuit.hillside",
+                "core.circuit.monza",
+                "core.circuit.silverstone",
+                "core.circuit.spa",
+            ],
+            [event["circuit_id"] for event in campaign["calendar"]],
+        )
         self.assertEqual(5, len(campaign["rivals"]))
         self.assertEqual("core.team.obsidian", campaign["player"]["roster_team_id"])
         self.assertEqual(5, len({row["roster_team_id"] for row in campaign["rivals"]}))
@@ -42,9 +50,15 @@ class CampaignDataContractTests(unittest.TestCase):
     def test_starter_interprets_data_instead_of_redeclaring_it(self):
         source = STARTER.read_text(encoding="utf-8")
         forbidden = [
-            "const EVENT_COST_MINOR", "const CAMPAIGN_ID", "const ORGANIZATION_ID",
-            "const SEASON_ID", "const SERIES_ID", '"opening_cash_minor": 150000',
-            '"laps": 6', "9500 + index * 150", "App.library[mini(7",
+            "const EVENT_COST_MINOR",
+            "const CAMPAIGN_ID",
+            "const ORGANIZATION_ID",
+            "const SEASON_ID",
+            "const SERIES_ID",
+            '"opening_cash_minor": 150000',
+            '"laps": 6',
+            "9500 + index * 150",
+            "App.library[mini(7",
         ]
         for token in forbidden:
             with self.subTest(token=token):
@@ -70,10 +84,16 @@ class CampaignDataContractTests(unittest.TestCase):
         self.assertNotIn("float(spend) / 200.0", source)
 
     def test_people_and_supply_algorithms_consume_policy(self):
-        people = (ROOT / "scripts/domain/campaign/people_development.gd").read_text(encoding="utf-8")
+        people = (ROOT / "scripts/domain/campaign/people_development.gd").read_text(
+            encoding="utf-8"
+        )
         supply = (ROOT / "scripts/domain/campaign/supply_network.gd").read_text(encoding="utf-8")
-        people_tx = (ROOT / "scripts/application/campaign/people_transaction.gd").read_text(encoding="utf-8")
-        supply_tx = (ROOT / "scripts/application/campaign/supply_transaction.gd").read_text(encoding="utf-8")
+        people_tx = (ROOT / "scripts/application/campaign/people_transaction.gd").read_text(
+            encoding="utf-8"
+        )
+        supply_tx = (ROOT / "scripts/application/campaign/supply_transaction.gd").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("CampaignPeoplePolicy.normalized", people)
         self.assertIn("_people_policy(restored)", people_tx)
         self.assertNotIn("ratio >= 0.85", people)

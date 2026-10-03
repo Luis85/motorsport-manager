@@ -13,6 +13,7 @@ var _maximum_depth = MAX_DEPTH
 var _exact_numbers = false
 var _number_cache: Dictionary = {}
 
+
 static func parse(text: String, saved_session: bool = false) -> Dictionary:
 	var reader = ContentJson.new()
 	reader._text = text
@@ -28,13 +29,16 @@ static func parse(text: String, saved_session: bool = false) -> Dictionary:
 	if reader._error.is_empty() and reader._position != text.length():
 		reader._error = "Unexpected text after JSON value."
 	if not reader._error.is_empty():
-		return {"ok": false, "error": reader._error,
-			"line": text.left(reader._position).count("\n") + 1}
+		return {
+			"ok": false, "error": reader._error, "line": text.left(reader._position).count("\n") + 1
+		}
 	return {"ok": true, "data": value}
+
 
 func _space() -> void:
 	while _position < _text.length() and _text[_position] in [" ", "\t", "\n", "\r"]:
 		_position += 1
+
 
 func _take(token: String) -> bool:
 	_space()
@@ -43,10 +47,12 @@ func _take(token: String) -> bool:
 	_position += token.length()
 	return true
 
+
 func _fail(message: String) -> Variant:
 	if _error.is_empty():
 		_error = message
 	return null
+
 
 func _value(depth: int) -> Variant:
 	_values += 1
@@ -56,15 +62,30 @@ func _value(depth: int) -> Variant:
 	if _position >= _text.length():
 		return _fail("Expected a JSON value.")
 	match _text[_position]:
-		"{": return _object(depth + 1)
-		"[": return _array(depth + 1)
-		"\"": return _string()
+		"{":
+			return _object(depth + 1)
+		"[":
+			return _array(depth + 1)
+		'"':
+			return _string()
+	return _primitive()
+
+
+func _primitive() -> Variant:
+	match _text[_position]:
 		"t":
-			if _take("true"): return true
+			if _take("true"):
+				return true
 		"f":
-			if _take("false"): return false
+			if _take("false"):
+				return false
 		"n":
-			if _take("null"): return null
+			if _take("null"):
+				return null
+	return _numeric_value()
+
+
+func _numeric_value() -> Variant:
 	var found = _number.search(_text, _position)
 	if found == null or found.get_start() != _position:
 		return _fail("Expected a JSON value; comments and trailing commas are not supported.")
@@ -75,50 +96,52 @@ func _value(depth: int) -> Variant:
 	if token.length() > 100:
 		return _fail("JSON numeric token exceeds 100 characters.")
 	var exponent = token.to_lower().split("e")
-	if exponent.size() == 2 and (exponent[1].length() > 4 or absf(exponent[1].to_float()) > (500 if _exact_numbers else 100)):
+	if (
+		exponent.size() == 2
+		and (
+			exponent[1].length() > 4
+			or absf(exponent[1].to_float()) > (500 if _exact_numbers else 100)
+		)
+	):
 		return _fail("JSON exponent is outside the supported range.")
 	if _exact_numbers:
-		if _number_cache.has(token):
-			return _number_cache[token]
-		var converted = JsonNumber.parse(token)
-		if not converted.ok:
-			return _fail(converted.error)
-		if _number_cache.size() < 4096:
-			_number_cache[token] = converted.value
-		return converted.value
+		return _exact_numeric_value(token)
 	var result = token.to_float()
 	if not is_finite(result):
 		return _fail("JSON numbers must be finite.")
 	return result
 
+
 func _object(depth: int) -> Variant:
 	_position += 1
 	var result: Dictionary = {}
-	if _take("}"): return result
+	if _take("}"):
+		return result
 	while _error.is_empty():
-		_space()
-		if _position >= _text.length() or _text[_position] != "\"":
-			return _fail("Expected a quoted object key.")
-		var key = _string()
-		if not _error.is_empty(): return null
-		if result.has(key): return _fail("Duplicate object key: " + str(key))
-		if not _take(":"): return _fail("Expected ':' after the object key.")
-		result[key] = _value(depth)
-		if not _error.is_empty(): return null
-		if _take("}"): return result
-		if not _take(","): return _fail("Expected ',' or '}' in the object.")
+		if not _object_member(result, depth):
+			return null
+		if _take("}"):
+			return result
+		if not _take(","):
+			return _fail("Expected ',' or '}' in the object.")
 	return null
+
 
 func _array(depth: int) -> Variant:
 	_position += 1
 	var result: Array = []
-	if _take("]"): return result
+	if _take("]"):
+		return result
 	while _error.is_empty():
 		result.append(_value(depth))
-		if not _error.is_empty(): return null
-		if _take("]"): return result
-		if not _take(","): return _fail("Expected ',' or ']' in the array.")
+		if not _error.is_empty():
+			return null
+		if _take("]"):
+			return result
+		if not _take(","):
+			return _fail("Expected ',' or ']' in the array.")
 	return null
+
 
 func _hex_quad() -> int:
 	var token = _text.substr(_position, 4)
@@ -128,34 +151,23 @@ func _hex_quad() -> int:
 	_position += 4
 	return token.hex_to_int()
 
+
 func _string() -> Variant:
 	var start = _position
 	_position += 1
 	while _position < _text.length():
 		var character = _text[_position]
 		_position += 1
-		if character == "\"":
+		if character == '"':
 			return JSON.parse_string(_text.substr(start, _position - start))
 		if character.unicode_at(0) < 32:
 			return _fail("Unescaped control character in string.")
-		if character != "\\": continue
-		if _position >= _text.length(): return _fail("Unfinished string escape.")
-		var escape = _text[_position]
-		_position += 1
-		if escape in ["\"", "\\", "/", "b", "f", "n", "r", "t"]: continue
-		if escape != "u": return _fail("Unsupported string escape.")
-		var point = _hex_quad()
-		if point < 0: return null
-		if point >= 0xdc00 and point <= 0xdfff:
-			return _fail("Unicode low surrogate has no high surrogate.")
-		if point < 0xd800 or point > 0xdbff: continue
-		if _text.substr(_position, 2) != "\\u":
-			return _fail("Unicode high surrogate requires a low surrogate.")
-		_position += 2
-		point = _hex_quad()
-		if point < 0xdc00 or point > 0xdfff:
-			return _fail("Invalid Unicode surrogate pair.")
+		if character != "\\":
+			continue
+		if not _string_escape():
+			return null
 	return _fail("Unterminated string.")
+
 
 static func valid_utf8(bytes: PackedByteArray) -> bool:
 	## Check before Godot's decoder, which otherwise emits engine errors for bad bytes.
@@ -163,22 +175,98 @@ static func valid_utf8(bytes: PackedByteArray) -> bool:
 	while index < bytes.size():
 		var first = bytes[index]
 		index += 1
-		if first <= 0x7f: continue
+		if first <= 0x7f:
+			continue
 		var count = 0
 		var point = 0
 		var minimum = 0
 		if first >= 0xc2 and first <= 0xdf:
-			count = 1; point = first & 0x1f; minimum = 0x80
+			count = 1
+			point = first & 0x1f
+			minimum = 0x80
 		elif first >= 0xe0 and first <= 0xef:
-			count = 2; point = first & 0x0f; minimum = 0x800
+			count = 2
+			point = first & 0x0f
+			minimum = 0x800
 		elif first >= 0xf0 and first <= 0xf4:
-			count = 3; point = first & 0x07; minimum = 0x10000
-		else: return false
-		if index + count > bytes.size(): return false
+			count = 3
+			point = first & 0x07
+			minimum = 0x10000
+		else:
+			return false
+		if index + count > bytes.size():
+			return false
 		for offset in range(count):
 			var continuation = bytes[index]
 			index += 1
-			if continuation < 0x80 or continuation > 0xbf: return false
+			if continuation < 0x80 or continuation > 0xbf:
+				return false
 			point = (point << 6) | (continuation & 0x3f)
-		if point < minimum or point > 0x10ffff or (point >= 0xd800 and point <= 0xdfff): return false
+		if point < minimum or point > 0x10ffff or (point >= 0xd800 and point <= 0xdfff):
+			return false
+	return true
+
+
+func _object_member(result: Dictionary, depth: int) -> bool:
+	_space()
+	if _position >= _text.length() or _text[_position] != '"':
+		_fail("Expected a quoted object key.")
+		return false
+	var key = _string()
+	if not _error.is_empty():
+		return false
+	if result.has(key):
+		_fail("Duplicate object key: " + str(key))
+		return false
+	if not _take(":"):
+		_fail("Expected ':' after the object key.")
+		return false
+	result[key] = _value(depth)
+	if not _error.is_empty():
+		return false
+	return true
+
+
+func _string_escape() -> bool:
+	if _position >= _text.length():
+		_fail("Unfinished string escape.")
+		return false
+	var escape = _text[_position]
+	_position += 1
+	if escape in ['"', "\\", "/", "b", "f", "n", "r", "t"]:
+		return true
+	if escape != "u":
+		_fail("Unsupported string escape.")
+		return false
+	return _unicode_escape()
+
+
+func _exact_numeric_value(token: String) -> Variant:
+	if _number_cache.has(token):
+		return _number_cache[token]
+	var converted = JsonNumber.parse(token)
+	if not converted.ok:
+		return _fail(converted.error)
+	if _number_cache.size() < 4096:
+		_number_cache[token] = converted.value
+	return converted.value
+
+
+func _unicode_escape() -> bool:
+	var point = _hex_quad()
+	if point < 0:
+		return false
+	if point >= 0xdc00 and point <= 0xdfff:
+		_fail("Unicode low surrogate has no high surrogate.")
+		return false
+	if point < 0xd800 or point > 0xdbff:
+		return true
+	if _text.substr(_position, 2) != "\\u":
+		_fail("Unicode high surrogate requires a low surrogate.")
+		return false
+	_position += 2
+	point = _hex_quad()
+	if point < 0xdc00 or point > 0xdfff:
+		_fail("Invalid Unicode surrogate pair.")
+		return false
 	return true

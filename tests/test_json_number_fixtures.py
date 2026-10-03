@@ -1,14 +1,15 @@
 """Verify the independent numerical corpus without credential-like field names."""
+
 from __future__ import annotations
 
 import hashlib
 import json
 import math
-from pathlib import Path
 import re
 import struct
 import sys
 import unittest
+from pathlib import Path
 
 FIXTURE = Path(__file__).parent / "fixtures" / "json_number_cases.json"
 DECIMAL = re.compile(r"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\Z")

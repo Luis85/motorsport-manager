@@ -4,7 +4,8 @@ extends RefCounted
 ## Ordinary tuning comes from the selected pack, never by editing this compatibility input.
 const VALUES = {
 	"model": "weather-surface-v1",
-	"weather": {
+	"weather":
+	{
 		"initial_cloud_dry": 0.18,
 		"initial_cloud_wet": 0.94,
 		"initial_cloud_changeable_base": 0.32,
@@ -23,7 +24,8 @@ const VALUES = {
 		"rain_cloud_gain": 2.5,
 		"rain_response_per_second": 0.008
 	},
-	"training": {
+	"training":
+	{
 		"wet_heavy_rain": 0.65,
 		"wet_eased_rain": 0.18,
 		"wet_ease_seconds": 170.0,
@@ -36,8 +38,10 @@ const VALUES = {
 		"changeable_light_end": 0.7,
 		"minimum_race_seconds": 120.0
 	},
-	"surface": {
-		"initial": {
+	"surface":
+	{
+		"initial":
+		{
 			"dry_water": 0.0,
 			"wet_water": 0.6,
 			"rubber": 0.12,
@@ -48,7 +52,8 @@ const VALUES = {
 			"wet_temperature_c": 20.0,
 			"dry_temperature_c": 29.0
 		},
-		"grip": {
+		"grip":
+		{
 			"base": 0.96,
 			"rubber_gain": 0.17,
 			"wet_rubber_threshold": 0.2,
@@ -62,12 +67,10 @@ const VALUES = {
 			"minimum": 0.3,
 			"maximum": 1.14
 		},
-		"runoff": {
-			"diffusion_per_second": 0.02,
-			"camber_factor": 0.2,
-			"advection_per_second": 0.08
-		},
-		"evolution": {
+		"runoff":
+		{"diffusion_per_second": 0.02, "camber_factor": 0.2, "advection_per_second": 0.08},
+		"evolution":
+		{
 			"rain_base": 0.85,
 			"rain_amplitude": 0.3,
 			"rain_station_radians": 0.077,
@@ -95,7 +98,8 @@ const VALUES = {
 			"dry_temperature_c": 32.0,
 			"temperature_response": 0.006
 		},
-		"contact": {
+		"contact":
+		{
 			"width_strips": 0.65,
 			"rubber_deposit": 0.009,
 			"wet_water_clearance": 0.021,
@@ -108,14 +112,11 @@ const VALUES = {
 			"outside_marbles": 0.004,
 			"push_marbles_factor": 1.4
 		},
-		"incident": {
-			"debris": 0.2,
-			"adjacent_debris_factor": 0.35,
-			"oil": 0.42,
-			"oil_health_threshold": 50.0
-		}
+		"incident":
+		{"debris": 0.2, "adjacent_debris_factor": 0.35, "oil": 0.42, "oil_health_threshold": 50.0}
 	},
-	"outlook": {
+	"outlook":
+	{
 		"condition_dry": 0.08,
 		"condition_damp": 0.24,
 		"condition_wet": 0.68,
@@ -144,7 +145,8 @@ const VALUES = {
 		"arrival_high_factor": 2.0,
 		"arrival_high_margin_seconds": 30.0
 	},
-	"weather_policy": {
+	"weather_policy":
+	{
 		"slick_warning_water": 0.3,
 		"wet_warning_water": 0.15,
 		"rain_warning_water": 0.24,

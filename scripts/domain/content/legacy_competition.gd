@@ -3,7 +3,8 @@ extends RefCounted
 ## Immutable pre-extraction values for old saves and direct compatibility APIs only.
 const VALUES = {
 	"model": "race-competition-v1",
-	"policy": {
+	"policy":
+	{
 		"conserve_tread": 30.0,
 		"fuel_reserve_factor": 1.03,
 		"stop_remaining_laps": 0.8,
@@ -21,7 +22,8 @@ const VALUES = {
 		"pit_loss_gain_factor": 0.12,
 		"traffic_queue_seconds": 1.0
 	},
-	"rivals": {
+	"rivals":
+	{
 		"nearby_gap_seconds": 2.5,
 		"traffic_seconds_per_car": 0.8,
 		"observation_age_seconds": 40.0,
@@ -45,7 +47,8 @@ const VALUES = {
 		"duel_queue_seconds": 1.0,
 		"duel_cover_score": 2.0
 	},
-	"battle": {
+	"battle":
+	{
 		"resolved_cooldown_seconds": 2.0,
 		"recovery_cooldown_seconds": 3.0,
 		"acquire_distance_m": 120.0,
@@ -64,7 +67,8 @@ const VALUES = {
 		"assertive_speed_advantage_mps": 0.1,
 		"patient_maximum_water": 0.5
 	},
-	"movement": {
+	"movement":
+	{
 		"wet_skill_reference": 85.0,
 		"wet_skill_factor": 0.004,
 		"straight_curvature_per_m": 0.005,
@@ -85,7 +89,8 @@ const VALUES = {
 		"following_response_per_second": 0.7,
 		"lateral_speed_mps": 1.8
 	},
-	"team": {
+	"team":
+	{
 		"yield_maximum_gap_m": 120.0,
 		"yield_execution_gap_m": 65.0,
 		"yield_width_m": 8.0,
@@ -97,58 +102,41 @@ const VALUES = {
 		"priority_tread": 18.0,
 		"priority_queue_margin_seconds": 2.0
 	},
-	"profiles": [
+	"profiles":
+	[
 		{
 			"id": "position",
 			"label": "Track-position protector",
-			"summary": "Usually keeps a place rather than paying for a marginal tyre offset; may cover a threatening observed stop.",
-			"weights": [
-				2.4,
-				0.4,
-				0.3,
-				-0.2,
-				2.2,
-				1.5
-			]
+			"summary":
+			(
+				"Usually keeps a place rather than paying for a marginal tyre offset; "
+				+ "may cover a threatening observed stop."
+			),
+			"weights": [2.4, 0.4, 0.3, -0.2, 2.2, 1.5]
 		},
 		{
 			"id": "undercut",
 			"label": "Opportunistic undercutter",
-			"summary": "Looks for a feasible early stop when traffic and its own tyre offset make clear air worthwhile.",
-			"weights": [
-				0.1,
-				2.0,
-				1.7,
-				0.8,
-				1.3,
-				0.5
-			]
+			"summary":
+			"Looks for a feasible early stop when traffic and its own tyre offset make clear air worthwhile.",
+			"weights": [0.1, 2.0, 1.7, 0.8, 1.3, 0.5]
 		},
 		{
 			"id": "conserve",
 			"label": "Long-stint conservator",
-			"summary": "Usually extends usable tyres and avoids an expensive rejoin; emergencies still take priority.",
-			"weights": [
-				2.0,
-				0.4,
-				-0.5,
-				-2.5,
-				0.5,
-				1.5
-			]
+			"summary":
+			"Usually extends usable tyres and avoids an expensive rejoin; emergencies still take priority.",
+			"weights": [2.0, 0.4, -0.5, -2.5, 0.5, 1.5]
 		},
 		{
 			"id": "adaptive",
 			"label": "Adaptive risk-taker",
-			"summary": "Accepts a bounded, uncertain opportunity even without traffic ahead; still rejects unsafe or unaffordable options.",
-			"weights": [
-				0.2,
-				1.2,
-				0.7,
-				-0.3,
-				1.0,
-				0.0
-			]
+			"summary":
+			(
+				"Accepts a bounded, uncertain opportunity even without traffic ahead; "
+				+ "still rejects unsafe or unaffordable options."
+			),
+			"weights": [0.2, 1.2, 0.7, -0.3, 1.0, 0.0]
 		}
 	]
 }

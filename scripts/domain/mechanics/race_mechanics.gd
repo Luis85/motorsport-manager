@@ -2,6 +2,7 @@ class_name RaceMechanics
 extends RefCounted
 ## Ordered, construction-time composition. No runtime code loading or mutable global registry.
 ## Providers receive the aggregate for one call; this dispatcher never owns its lifetime.
+var last_error: String = ""
 var _source: WeakRef
 var _providers: Array[RaceMechanic] = []
 var _definitions: Array = []
@@ -9,10 +10,11 @@ var _hooks: Dictionary = {}
 var _configured: bool = false
 var _installed: bool = false
 var _configuring: bool = false
-var last_error: String = ""
+
 
 func _init(simulation: RaceSim) -> void:
 	_source = weakref(simulation)
+
 
 static func validate(definitions: Array) -> Array[String]:
 	var errors: Array[String] = []
@@ -24,7 +26,15 @@ static func validate(definitions: Array) -> Array[String]:
 			continue
 		# Validate before recursively detaching metadata: extra fields are values too.
 		if not RaceStateValue.serializable(value):
-			errors.append("Mechanic definition must contain finite serialized values within the record bounds: " + value.id)
+			(
+				errors
+				. append(
+					(
+						"Mechanic definition must contain finite serialized values within the record bounds: "
+						+ value.id
+					)
+				)
+			)
 			continue
 		if whitespace.search(value.id) != null:
 			errors.append("Mechanic identity must not contain whitespace: " + value.id)
@@ -50,6 +60,7 @@ static func validate(definitions: Array) -> Array[String]:
 		known.append(value.id)
 	return errors
 
+
 func configure(providers: Array) -> bool:
 	if _configured or _configuring:
 		last_error = "Mechanics are already configured or configuration is in progress."
@@ -59,7 +70,11 @@ func configure(providers: Array) -> bool:
 	var proposed: Array[RaceMechanic] = []
 	for index in range(providers.size()):
 		var provider = providers[index]
-		if not provider is Object or not is_instance_valid(provider) or not provider is RaceMechanic:
+		if (
+			not provider is Object
+			or not is_instance_valid(provider)
+			or not provider is RaceMechanic
+		):
 			return _configuration_failed("Provider %d must extend RaceMechanic." % index)
 		proposed.append(provider)
 		definitions.append(provider.definition())
@@ -69,13 +84,9 @@ func configure(providers: Array) -> bool:
 	var owner: RaceSim = _source.get_ref()
 	if owner == null:
 		return _configuration_failed("The owning simulation has been released.")
-	for index in range(proposed.size()):
-		var contract_error = RaceHookContract.validate(owner, proposed[index], definitions[index].hooks)
-		if not contract_error.is_empty():
-			return _configuration_failed("%s: %s" % [definitions[index].id, contract_error])
-		for hook in definitions[index].hooks:
-			if not proposed[index].has_method(hook):
-				return _configuration_failed("%s declares missing hook: %s" % [definitions[index].id, hook])
+	var contract_error = _provider_contract_error(owner, proposed, definitions)
+	if not contract_error.is_empty():
+		return _configuration_failed(contract_error)
 	# Publish the plan only after EVERY provider and definition is validated.
 	_providers = proposed
 	_definitions = RaceStateValue.read_only(definitions)
@@ -89,10 +100,12 @@ func configure(providers: Array) -> bool:
 	last_error = ""
 	return true
 
+
 func _configuration_failed(message: String) -> bool:
 	last_error = message
 	_configuring = false
 	return false
+
 
 func install(geometry: TrackGeometry, options: Dictionary) -> bool:
 	if not _configured or _installed:
@@ -108,18 +121,24 @@ func install(geometry: TrackGeometry, options: Dictionary) -> bool:
 		return false
 	_installed = true
 	for provider in _providers:
-		provider.install(simulation, geometry.detached_copy() if geometry else null, options.duplicate(true))
+		provider.install(
+			simulation, geometry.detached_copy() if geometry else null, options.duplicate(true)
+		)
 	last_error = ""
 	return true
+
 
 func has_mechanic(identity: String) -> bool:
 	return _definitions.any(func(item): return item.id == identity)
 
+
 func describe() -> Array:
 	return _definitions.duplicate(true)
 
+
 func invoke(hook: String, arguments: Array) -> Variant:
 	return _invoke_before(_providers.size(), hook, arguments)
+
 
 func before(identity: String, hook: String, arguments: Array) -> Variant:
 	for index in range(_definitions.size()):
@@ -131,6 +150,7 @@ func before(identity: String, hook: String, arguments: Array) -> Variant:
 			return _invoke_before(index, hook, arguments)
 	last_error = "Unknown mechanic predecessor: " + identity
 	return null
+
 
 func _invoke_before(limit: int, hook: String, arguments: Array) -> Variant:
 	var simulation = _source.get_ref()
@@ -145,3 +165,18 @@ func _invoke_before(limit: int, hook: String, arguments: Array) -> Variant:
 	if simulation.has_method(fallback):
 		return simulation.callv(fallback, arguments)
 	return null
+
+
+func _provider_contract_error(
+	owner: RaceSim, proposed: Array[RaceMechanic], definitions: Array
+) -> String:
+	for index in range(proposed.size()):
+		var contract_error = RaceHookContract.validate(
+			owner, proposed[index], definitions[index].hooks
+		)
+		if not contract_error.is_empty():
+			return "%s: %s" % [definitions[index].id, contract_error]
+		for hook in definitions[index].hooks:
+			if not proposed[index].has_method(hook):
+				return "%s declares missing hook: %s" % [definitions[index].id, hook]
+	return ""

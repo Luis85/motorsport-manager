@@ -1,4 +1,5 @@
 """Adversarial fixtures for advisory measurement, reporting and process outcomes."""
+
 from __future__ import annotations
 
 import contextlib
@@ -17,9 +18,14 @@ from quality import execute, inventory, main, tool_findings
 from quality_loc import gdscript_lines, measure, python_lines
 from quality_report import annotation, publish
 
-POLICY = {"limits": {"source": 400, "tests": 450}, "extensions": [".py", ".gd"],
-          "test_roots": ["tests"], "excluded_directories": ["vendor", "reports"],
-          "complexity_limit": 15, "tool_timeout_seconds": 5}
+POLICY = {
+    "limits": {"source": 400, "tests": 450},
+    "extensions": [".py", ".gd"],
+    "test_roots": ["tests"],
+    "excluded_directories": ["vendor", "reports"],
+    "complexity_limit": 15,
+    "tool_timeout_seconds": 5,
+}
 
 
 class QualityMeasurementTests(unittest.TestCase):
@@ -34,15 +40,17 @@ class QualityMeasurementTests(unittest.TestCase):
                     self.assertEqual(row["line"], limit + 3 if count > limit else 1)
 
     def test_gd_hashes_quotes_escapes_and_multiline_strings(self):
-        source = '# ignore\nvar x = "#code" # ignore\nvar y = "escaped \\" #still"\n' \
-                 'var z = """long\n# runtime content\n\nend""" # ignore\n'
+        source = (
+            '# ignore\nvar x = "#code" # ignore\nvar y = "escaped \\" #still"\n'
+            'var z = """long\n# runtime content\n\nend""" # ignore\n'
+        )
         self.assertEqual(gdscript_lines(source), {2, 3, 4, 5, 7})
         # Godot permits newline-containing double-quoted literals too.
         self.assertEqual(gdscript_lines('var s = "a\n# data\nb"\n'), {1, 2, 3})
         self.assertEqual(gdscript_lines("var s = '#value' # note\r\n\t# note\r\n"), {1})
 
     def test_python_docstrings_not_runtime_strings(self):
-        source = '\"\"\"module docs\nmore docs\"\"\"\n# note\ndef f():\n    "docs"\n    return "# code"\n'
+        source = '"""module docs\nmore docs"""\n# note\ndef f():\n    "docs"\n    return "# code"\n'
         self.assertEqual(python_lines(source), {4, 6})
         self.assertEqual(python_lines('x = """data\n# runtime\n\nend"""\n'), {1, 2, 4})
         self.assertEqual(python_lines('"docs"; x = 1 # still code\n'), {1})
@@ -58,23 +66,35 @@ class QualityMeasurementTests(unittest.TestCase):
 
     def test_documentation_does_not_change_budget(self):
         baseline = "extends Node\nvar value = 4\n"
-        self.assertEqual(len(gdscript_lines(baseline)), len(gdscript_lines(
-            "# long explanation\n\n" + baseline + "\n# more context\n")))
+        self.assertEqual(
+            len(gdscript_lines(baseline)),
+            len(gdscript_lines("# long explanation\n\n" + baseline + "\n# more context\n")),
+        )
 
 
 class QualityReportingTests(unittest.TestCase):
     def test_actions_escaping_and_bounded_report(self):
-        warning = {"rule": "A,B", "message": "bad%\n::error::injection", "path": "a,b.gd", "line": 2}
+        warning = {
+            "rule": "A,B",
+            "message": "bad%\n::error::injection",
+            "path": "a,b.gd",
+            "line": 2,
+        }
         text = annotation(warning)
         self.assertNotIn("\n", text)
         self.assertIn("a%2Cb.gd", text)
         self.assertIn("bad%25%0A", text)
         report = {"files": [], "findings": [warning] * 9, "tools": [], "analysis_complete": True}
-        with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stdout(io.StringIO()) as stream:
+        with (
+            tempfile.TemporaryDirectory() as temp,
+            contextlib.redirect_stdout(io.StringIO()) as stream,
+        ):
             with patch.dict(os.environ, {}, clear=True):
                 publish(report, Path(temp), True, 3)
             self.assertEqual(len(stream.getvalue().splitlines()), 4)
-            self.assertEqual(len(json.loads((Path(temp) / "quality.json").read_text())["findings"]), 9)
+            self.assertEqual(
+                len(json.loads((Path(temp) / "quality.json").read_text())["findings"]), 9
+            )
 
     def test_missing_and_timed_out_tool_is_not_clean(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -95,9 +115,20 @@ class QualityReportingTests(unittest.TestCase):
         self.assertEqual(tool["status"], "unavailable")
         self.assertEqual(rows[0]["rule"], "tool-unavailable")
 
+    def test_empty_object_is_not_valid_ruff_evidence(self):
+        tool = {"name": "ruff", "status": "clean", "exit_code": 0, "log": "ruff.log"}
+        rows = tool_findings(tool, "{}", Path("/repo"), 15)
+        self.assertEqual(tool["status"], "unavailable")
+        self.assertEqual(rows[0]["rule"], "tool-unavailable")
+
     def test_complexity_threshold(self):
         tool = {"name": "gdradon", "status": "clean", "exit_code": 0, "log": "cc.log"}
-        rows = tool_findings(tool, "scripts/a.gd\n    F 4:0 fine - C (15)\n    F 20:0 large - C (16)\n", Path("/repo"), 15)
+        rows = tool_findings(
+            tool,
+            "scripts/a.gd\n    F 4:0 fine - C (15)\n    F 20:0 large - C (16)\n",
+            Path("/repo"),
+            15,
+        )
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["line"], 20)
 
@@ -106,7 +137,9 @@ class QualityReportingTests(unittest.TestCase):
             with patch("quality.collect", side_effect=ValueError("broken configuration")):
                 self.assertEqual(main(["--output", temp]), 0)
                 self.assertEqual(main(["--output", temp, "--strict"]), 1)
-                self.assertFalse(json.loads((Path(temp) / "quality.json").read_text())["analysis_complete"])
+                self.assertFalse(
+                    json.loads((Path(temp) / "quality.json").read_text())["analysis_complete"]
+                )
 
     def test_inventory_ignores_vendor_and_reports_without_hiding_tests(self):
         with tempfile.TemporaryDirectory() as temp:

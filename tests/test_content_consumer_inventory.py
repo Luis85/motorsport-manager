@@ -1,15 +1,25 @@
 """Machine-check published content fields against their declared production owners."""
+
 from __future__ import annotations
 
 import json
+import unittest
 from copy import deepcopy
 from pathlib import Path
-import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "docs/content/consumer-inventory.json"
 SCHEMAS = ROOT / "content/schemas/v1"
-ALLOWED = {"contract", "identity", "presentation", "reference", "authoring", "sporting", "simulation", "safety"}
+ALLOWED = {
+    "contract",
+    "identity",
+    "presentation",
+    "reference",
+    "authoring",
+    "sporting",
+    "simulation",
+    "safety",
+}
 
 
 def leaves(node: dict, path: str = "") -> list[str]:
@@ -24,7 +34,11 @@ def leaves(node: dict, path: str = "") -> list[str]:
 
 
 def covers(prefix: str, leaf: str) -> bool:
-    return leaf == prefix or leaf.startswith(prefix + "/") or ("/*" in leaf and leaf.split("/*", 1)[0] == prefix)
+    return (
+        leaf == prefix
+        or leaf.startswith(prefix + "/")
+        or ("/*" in leaf and leaf.split("/*", 1)[0] == prefix)
+    )
 
 
 class ContentConsumerInventoryTests(unittest.TestCase):
@@ -47,17 +61,27 @@ class ContentConsumerInventoryTests(unittest.TestCase):
                 self.assertTrue(schema_path.is_file(), schema_path)
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
                 leaf_paths = leaves(schema)
-                self.assertEqual(sorted(set(leaf_paths)), spec["expected_leaves"],
-                                 f"published {family} schema leaf paths changed; review each nested field before updating ownership")
+                self.assertEqual(
+                    sorted(set(leaf_paths)),
+                    spec["expected_leaves"],
+                    f"published {family} schema leaf paths changed; review each nested field before updating ownership",
+                )
                 prefixes = [entry["prefix"] for entry in spec["coverage"]]
                 self.assertEqual(len(prefixes), len(set(prefixes)), "duplicate inventory prefix")
                 for leaf in leaf_paths:
                     matches = [entry for entry in spec["coverage"] if covers(entry["prefix"], leaf)]
                     self.assertTrue(matches, f"{family} has no consumer classification for {leaf}")
                     longest = max(len(entry["prefix"]) for entry in matches)
-                    self.assertEqual(1, sum(len(entry["prefix"]) == longest for entry in matches), f"ambiguous owner for {family}{leaf}")
+                    self.assertEqual(
+                        1,
+                        sum(len(entry["prefix"]) == longest for entry in matches),
+                        f"ambiguous owner for {family}{leaf}",
+                    )
                 for entry in spec["coverage"]:
-                    self.assertTrue(any(covers(entry["prefix"], leaf) for leaf in leaf_paths), f"stale inventory prefix {family}{entry['prefix']}")
+                    self.assertTrue(
+                        any(covers(entry["prefix"], leaf) for leaf in leaf_paths),
+                        f"stale inventory prefix {family}{entry['prefix']}",
+                    )
 
     def test_nested_schema_addition_requires_explicit_inventory_review(self):
         spec = self.data["families"]["tyre_thermal"]
