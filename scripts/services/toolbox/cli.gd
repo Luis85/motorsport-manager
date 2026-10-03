@@ -105,7 +105,8 @@ func _rejected(code: String, message: String) -> Dictionary:
 
 
 func _emit(response: Dictionary) -> void:
-	print("TOOLBOX_RESULT ", JSON.stringify(response))
+	# Preserve checkpoint floating-point continuation and exact int64 JSON numbers.
+	print("TOOLBOX_RESULT ", JSON.stringify(response, "", true, true))
 
 
 func _options(arguments: PackedStringArray) -> Dictionary:
