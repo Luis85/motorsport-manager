@@ -45,7 +45,11 @@ static func reachable_gate(sim: RaceSim, car: RaceCar) -> Dictionary:
 		sim.performance_profile(car), sim.track.vehicle_definition
 	)
 	var stopping = (
-		maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2) / (2 * float(limits.brake) * 0.5) + 8
+		(
+			maxf(0, car.speed ** 2 - sim.track.pit_limit ** 2)
+			/ (2 * float(limits.brake) * sim.tuning.balance.pit_motion.entry_braking_factor)
+		)
+		+ sim.tuning.balance.pit_motion.entry_braking_margin_m
 	)
 	var deferred = gate - car.distance < stopping
 	if deferred:
@@ -161,10 +165,15 @@ static func capture(
 		var stint = c.stints.back()
 		var travelled = c.distance / sim.track.length - float(stint.get("from", 0))
 		# Actual aggregate depletion is useful after enough running; tiny samples amplify noise.
-		if travelled > 0.5 and stint.has("start_life"):
+		if (
+			travelled > sim.tuning.balance.forecast.measured_wear_minimum_laps
+			and stint.has("start_life")
+		):
 			own.measured_race_wear = true
 			own.wear = clampf(
-				(stint.start_life - c.tyre) / travelled, own.wear * 0.5, own.wear * 2.5
+				(stint.start_life - c.tyre) / travelled,
+				own.wear * sim.tuning.balance.forecast.measured_wear_minimum_factor,
+				own.wear * sim.tuning.balance.forecast.measured_wear_maximum_factor
 			)
 	var public: Array = []
 	var teammate: Dictionary = {}
@@ -174,7 +183,13 @@ static func capture(
 		var lap_seconds = sim.track.estimate
 		var sum = 0.0
 		var count = 0
-		for i in range(other.history.size() - 1, maxi(-1, other.history.size() - 4), -1):
+		for i in range(
+			other.history.size() - 1,
+			maxi(
+				-1, other.history.size() - 1 - int(sim.tuning.balance.forecast.observed_lap_samples)
+			),
+			-1
+		):
 			var lap = other.history[i]
 			if not lap.get("pit_lap", false) and lap.time > 0:
 				sum += lap.time
@@ -246,19 +261,25 @@ static func stale(sim: RaceSim, forecast: Dictionary, revision: int = 0) -> bool
 	if forecast.is_empty():
 		return true
 	return (
-		sim.total_time - forecast.time > MAX_AGE
+		sim.total_time - forecast.time > sim.tuning.balance.forecast.maximum_age_seconds
 		or forecast.key != material_key(sim, int(forecast.driver_id), revision)
 	)
 
 
 static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
-	var transit = maxf(0, sim.track.pit_length - car.box_d) / sim.track.pit_limit + 3
+	var rules: Dictionary = sim.tuning.balance.procedure
+	var transit = (
+		maxf(0, sim.track.pit_length - car.box_d) / sim.track.pit_limit
+		+ rules.qualifying_release_transit_seconds
+	)
 	var outlap = (
 		sim.track.estimate
-		* RacePerformanceProfile.forecast_lap_factor(sim.performance_profile(car))
-		/ 0.76
+		* RacePerformanceProfile.forecast_lap_factor(
+			sim.performance_profile(car), sim.tuning.balance.forecast
+		)
+		/ rules.qualifying_outlap_speed_factor
 	)
-	var needed = transit + outlap + 5
+	var needed = transit + outlap + rules.qualifying_release_margin_seconds
 	return {
 		"required_seconds": needed,
 		"latest_release": sim.qual_duration - needed,
@@ -270,5 +291,8 @@ static func qualifying_release(sim: RaceSim, car: RaceCar) -> Dictionary:
 			and sim.clock + needed < sim.qual_duration
 		),
 		"label":
-		"Estimate includes pit transit, an out-lap and 5s margin; traffic may delay release."
+		(
+			"Estimate includes pit transit, an out-lap and %gs margin; traffic may delay release."
+			% rules.qualifying_release_margin_seconds
+		)
 	}

@@ -48,7 +48,14 @@ static func evaluate(source: Dictionary, observed: Dictionary) -> Dictionary:
 		reason = "No repairable scalar damage is present; health loss is not repaired in the pit lane."
 	elif s.phase != "race" or s.own.route != "track":
 		reason = "Recovery pit calls require a car racing on track."
-	var payback = pit.loss / gain_per_lap if gain_per_lap > 0.01 else -1.0
+	var payback = (
+		pit.loss / gain_per_lap
+		if (
+			gain_per_lap
+			> RaceTuningDefinition.balance_values(s).forecast.repair_payback_minimum_gain_seconds
+		)
+		else -1.0
+	)
 	return {
 		"version": VERSION,
 		"driver_id": int(s.own.id),

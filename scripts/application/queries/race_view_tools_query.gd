@@ -77,7 +77,12 @@ func strategy_draft(
 	record: Dictionary, laps_value: int, template: String = "balanced"
 ) -> Dictionary:
 	var car = _draft_entrant(record)
-	return StrategyPlan.draft(car, laps_value, template) if car != null else {}
+	var source: RaceSim = _source.get_ref()
+	return (
+		StrategyPlan.draft(car, laps_value, template, source.tuning.balance.strategy_defaults)
+		if car != null and source != null
+		else {}
+	)
 
 
 func strategy_plan_error(

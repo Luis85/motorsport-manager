@@ -28,7 +28,11 @@ static func policy(car: RaceCar) -> Dictionary:
 	}
 
 
-static func draft(car: RaceCar, laps: int, template: String = "balanced") -> Dictionary:
+static func draft(
+	car: RaceCar, laps: int, template: String = "balanced", rules: Dictionary = {}
+) -> Dictionary:
+	if rules.is_empty():
+		rules = RacePlanningBalance.defaults().strategy_defaults
 	var starting = TyreInventory.planned(car)
 	if starting.is_empty():
 		starting = TyreInventory.find(car, car.set_id)
@@ -39,7 +43,18 @@ static func draft(car: RaceCar, laps: int, template: String = "balanced") -> Dic
 		)
 		if not replacement.is_empty() and replacement.id != starting.id:
 			var middle = clampi(
-				roundi(laps * (0.46 if template == "balanced" else 0.62)), 2, laps - 1
+				roundi(
+					(
+						laps
+						* (
+							rules.balanced_stop_fraction
+							if template == "balanced"
+							else rules.extended_stop_fraction
+						)
+					)
+				),
+				2,
+				laps - 1
 			)
 			stops.append(
 				{"from_lap": middle, "to_lap": mini(laps - 1, middle + 1), "set_id": replacement.id}
@@ -51,8 +66,8 @@ static func draft(car: RaceCar, laps: int, template: String = "balanced") -> Dic
 		"starting_set": starting.id,
 		"stops": stops,
 		"branches": ["avoid_traffic"],
-		"tyre_reserve": 22.0,
-		"fuel_reserve": 0.35,
+		"tyre_reserve": rules.tyre_reserve,
+		"fuel_reserve": rules.fuel_reserve_laps,
 		"allow_emergency": true
 	}
 

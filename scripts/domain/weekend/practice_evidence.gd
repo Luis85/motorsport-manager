@@ -22,7 +22,11 @@ static func setup_for(car: RaceCar, baseline: String) -> Dictionary:
 	return result
 
 
-static func create(cars: Array, duration: float, status: String = "available") -> Dictionary:
+static func create(
+	cars: Array, duration: float, status: String = "available", rules: Dictionary = {}
+) -> Dictionary:
+	if rules.is_empty():
+		rules = RacePlanningBalance.defaults().practice
 	var drivers: Array = []
 	for car in cars:
 		drivers.append(
@@ -31,7 +35,8 @@ static func create(cars: Array, duration: float, status: String = "available") -
 				"revision": 0,
 				"runs": [],
 				"active": {},
-				"next_release": 4.0 + car.id * 9.0
+				"next_release":
+				rules.release_offset_seconds + car.id * rules.release_spacing_seconds
 			}
 		)
 	return {
@@ -78,7 +83,11 @@ static func observation(sim: RaceSim, car: RaceCar) -> Dictionary:
 	}
 
 
-static func prior(state: Dictionary, car: RaceCar, water: float) -> Dictionary:
+static func prior(
+	state: Dictionary, car: RaceCar, water: float, rules: Dictionary = {}
+) -> Dictionary:
+	if rules.is_empty():
+		rules = RacePlanningBalance.defaults().practice
 	# Never pool a rival's private measurements, nor transfer a teammate's skill/setup residual.
 	var result: Dictionary = {}
 	for compound in car.tyre_rules.compounds():
@@ -94,9 +103,9 @@ static func prior(state: Dictionary, car: RaceCar, water: float) -> Dictionary:
 			for lap in run.samples:
 				if (
 					lap.clean
-					and absf(lap.water - water) <= 0.10
-					and absf(lap.health - car.health) <= 12
-					and absf(lap.damage - car.damage) <= 3
+					and absf(lap.water - water) <= rules.matching_water_tolerance
+					and absf(lap.health - car.health) <= rules.matching_health_tolerance
+					and absf(lap.damage - car.damage) <= rules.matching_damage_tolerance
 				):
 					samples.append(lap)
 		if samples.is_empty():
@@ -111,12 +120,30 @@ static func prior(state: Dictionary, car: RaceCar, water: float) -> Dictionary:
 		var spread = 0.0
 		for lap in samples:
 			spread = maxf(spread, absf(lap.model_ratio - pace))
-		var weight = float(samples.size()) / (samples.size() + 4.0)
+		var weight = float(samples.size()) / (samples.size() + rules.prior_sample_weight)
 		result[compound] = {
 			"samples": samples.size(),
-			"wear_factor": lerpf(1, clampf(wear, 0.5, 2.5), weight),
-			"lap_factor": lerpf(1, clampf(pace, 0.9, 1.2), weight),
-			"uncertainty": maxf(0.045 if samples.size() >= 3 else 0.06, spread + 0.025),
+			"wear_factor":
+			lerpf(
+				1,
+				clampf(wear, rules.prior_minimum_wear_factor, rules.prior_maximum_wear_factor),
+				weight
+			),
+			"lap_factor":
+			lerpf(
+				1,
+				clampf(pace, rules.prior_minimum_lap_factor, rules.prior_maximum_lap_factor),
+				weight
+			),
+			"uncertainty":
+			maxf(
+				(
+					rules.prior_reliable_uncertainty
+					if samples.size() >= rules.prior_reliable_samples
+					else rules.prior_base_uncertainty
+				),
+				spread + rules.prior_spread_allowance
+			),
 			"label":
 			(
 				"%d matching measured practice laps; bounded blend, not calibrated confidence"

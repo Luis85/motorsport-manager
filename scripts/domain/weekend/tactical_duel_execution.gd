@@ -11,7 +11,7 @@ static func review(sim, c: RaceCar) -> bool:
 		return true
 	if sim.total_time < r.next_review:
 		return true
-	r.next_review = sim.total_time + 1.0
+	r.next_review = sim.total_time + sim.tuning.balance.tactical_policy.review_seconds
 	var plan = r.plan
 	var rival = sim.cars[int(plan.target_id)]
 	if rival.dnf or rival.finished:
@@ -84,7 +84,13 @@ static func review(sim, c: RaceCar) -> bool:
 			"The remaining-stint estimate is high risk. The tactic did not authorize this exposure; review the plan."
 		)
 		return true
-	if plan.avoid_traffic and (not preview.pit.traffic.is_empty() or preview.pit.queue > 1.0):
+	if (
+		plan.avoid_traffic
+		and (
+			not preview.pit.traffic.is_empty()
+			or preview.pit.queue > sim.tuning.balance.tactical_policy.queue_seconds
+		)
+	):
 		if safe.lap >= plan.to_lap:
 			finish(
 				sim,
@@ -273,7 +279,7 @@ static func _observe_duel_cycle(
 				"Another authorized pit transaction took precedence. Its accepted order remains unchanged."
 			)
 			return
-		if sim.average(sim.water) > 0.15:
+		if sim.average(sim.water) > sim.tuning.balance.tactical_policy.maximum_water:
 			finish(
 				sim,
 				id,
@@ -290,7 +296,7 @@ static func _observe_duel_cycle(
 			)
 			return
 		if r.plan.authority == "recommend" and sim.total_time >= r.next_review:
-			r.next_review = sim.total_time + 1.0
+			r.next_review = sim.total_time + sim.tuning.balance.tactical_policy.review_seconds
 			if r.plan.kind == "undercut" and r.plan.rival_first and r.target_entry >= 0:
 				finish(
 					sim,
