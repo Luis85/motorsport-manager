@@ -10,6 +10,25 @@ var monitored_steps: int = 0
 var monitored_queries: int = 0
 
 
+func display_settings_contracts() -> void:
+	check(
+		OS.get_cmdline_user_args().has("--disable-vsync"),
+		"Native runner forwards consumed engine VSync override to the application"
+	)
+	app.restore_settings({"vsync": true})
+	check(app.settings.vsync, "Restore the saved enabled VSync preference")
+	check(app.save_settings().is_empty(), "Save display preferences under the launch override")
+	var saved = Storage.read_json("user://settings.json")
+	check(saved.ok and saved.data.vsync, "Launch override preserves enabled VSync on disk")
+	for repetition in range(3):
+		app.apply_settings()
+		check(
+			DisplayServer.window_get_vsync_mode() == DisplayServer.VSYNC_DISABLED,
+			"Repeated settings application honors disabled engine VSync"
+		)
+		check(app.settings.vsync, "Repeated application retains the stored enabled preference")
+
+
 func measure(name: String, operation: Callable, count: int = 24) -> void:
 	for warmup in range(4):
 		operation.call()
@@ -259,7 +278,9 @@ func run() -> void:
 	root.add_child(game)
 	app = root.get_node("App")
 	await settle()
-	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	display_settings_contracts()
+	if DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED:
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 120
 	if not await start_weekend(24):
 		quit(1)
@@ -329,6 +350,7 @@ func run() -> void:
 		"engine": Engine.get_version_info().string,
 		"cpu": OS.get_processor_name(),
 		"renderer": RenderingServer.get_current_rendering_method(),
+		"rendering_driver": RenderingServer.get_current_rendering_driver_name(),
 		"adapter": RenderingServer.get_video_adapter_name(),
 		"viewport": "1440x900",
 		"text_scale": 1.0,

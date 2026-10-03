@@ -224,11 +224,14 @@ def _execute_suite(suite: dict, base: list[str], env: dict, evidence: Path, outp
         shutil.rmtree(target)
     target.mkdir()
     verify.REPORTS = target
-    command = base + (["--audio-driver", "Dummy"] if suite["native"] else ["--headless"])
+    command = base + (
+        ["--audio-driver", "Dummy", "--disable-vsync"] if suite["native"] else ["--headless"]
+    )
     command += ["--script", "res://" + suite["script"]]
     if suite["native"]:
-        command += ["--", "--pitwall-layout=" + suite["layout"]]
+        command += ["--", "--disable-vsync", "--pitwall-layout=" + suite["layout"]]
         if sys.platform.startswith("linux") and shutil.which("xvfb-run"):
+            command[1:1] = ["--rendering-driver", "opengl3_es"]
             command = [
                 shutil.which("xvfb-run"),
                 "-a",

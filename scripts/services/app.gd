@@ -86,16 +86,22 @@ func restore_settings(data: Dictionary) -> void:
 
 func apply_settings() -> void:
 	if DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_mode(
-			(
-				DisplayServer.WINDOW_MODE_FULLSCREEN
-				if settings.fullscreen
-				else DisplayServer.WINDOW_MODE_WINDOWED
-			)
+		var mode = (
+			DisplayServer.WINDOW_MODE_FULLSCREEN
+			if settings.fullscreen
+			else DisplayServer.WINDOW_MODE_WINDOWED
 		)
-		DisplayServer.window_set_vsync_mode(
-			DisplayServer.VSYNC_ENABLED if settings.vsync else DisplayServer.VSYNC_DISABLED
+		if DisplayServer.window_get_mode() != mode:
+			DisplayServer.window_set_mode(mode)
+		# Godot consumes its flag; native launchers forward it after -- for the app.
+		# This explicit launch override leaves the stored preference intact.
+		var vsync = (
+			DisplayServer.VSYNC_ENABLED
+			if settings.vsync and not OS.get_cmdline_user_args().has("--disable-vsync")
+			else DisplayServer.VSYNC_DISABLED
 		)
+		if DisplayServer.window_get_vsync_mode() != vsync:
+			DisplayServer.window_set_vsync_mode(vsync)
 
 
 func save_settings() -> String:

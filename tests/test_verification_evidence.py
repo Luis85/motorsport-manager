@@ -71,6 +71,40 @@ class SuiteEvidenceTests(unittest.TestCase):
             result = runner._execute_suite(self.suite, ["godot"], {}, self.evidence, self.output)
         self.assertFalse(result["passed"])
 
+    def test_native_vsync_override_reaches_engine_before_user_arguments(self):
+        self.suite.update(native=True, layout="minimal")
+        with (
+            patch.object(runner.sys, "platform", "linux"),
+            patch.object(runner.shutil, "which", return_value="/bin/xvfb-run"),
+            patch.object(verify, "run_phase") as phase,
+        ):
+            runner._execute_suite(self.suite, ["godot"], {}, self.evidence, self.output)
+        command = phase.call_args.args[1]
+        self.assertEqual(command.count("--disable-vsync"), 2)
+        self.assertLess(command.index("--disable-vsync"), command.index("--"))
+        driver = command.index("--rendering-driver")
+        self.assertLess(driver, command.index("--"))
+        self.assertEqual(command[driver + 1], "opengl3_es")
+        self.assertEqual(
+            command[command.index("--") + 1 :], ["--disable-vsync", "--pitwall-layout=minimal"]
+        )
+
+    def test_native_real_display_preserves_configured_renderer(self):
+        self.suite.update(native=True, layout="minimal")
+        with (
+            patch.object(runner.shutil, "which", return_value=None),
+            patch.object(verify, "run_phase") as phase,
+        ):
+            runner._execute_suite(self.suite, ["godot"], {}, self.evidence, self.output)
+        self.assertNotIn("--rendering-driver", phase.call_args.args[1])
+
+    def test_headless_suite_does_not_request_display_settings(self):
+        with patch.object(verify, "run_phase") as phase:
+            runner._execute_suite(self.suite, ["godot"], {}, self.evidence, self.output)
+        command = phase.call_args.args[1]
+        self.assertIn("--headless", command)
+        self.assertNotIn("--disable-vsync", command)
+
 
 if __name__ == "__main__":
     unittest.main()

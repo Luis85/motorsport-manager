@@ -112,6 +112,37 @@ class StandaloneContracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "empty"):
                 smoke.smoke(self.package, self.package)
 
+    @unittest.skipIf(smoke.os.name == "nt", "Xvfb driver applies to Linux native smoke")
+    def test_smoke_vsync_override_reaches_engine_before_user_arguments(self):
+        report = {"passed": True, "checks": 1}
+        (self.root / "launch.json").write_text(json.dumps(report), encoding="utf-8")
+        with (
+            patch.object(smoke.shutil, "which", return_value="/bin/xvfb-run"),
+            patch.object(smoke.subprocess, "Popen") as launch,
+        ):
+            launch.return_value.wait.return_value = 0
+            launch.return_value.poll.return_value = 0
+            self.assertEqual(
+                smoke.run_stage(
+                    self.package / self.manifest["binary"],
+                    self.package,
+                    self.root / "user",
+                    self.root,
+                    "launch",
+                    {},
+                ),
+                report,
+            )
+        command = launch.call_args.args[0]
+        self.assertEqual(command.count("--disable-vsync"), 2)
+        self.assertLess(command.index("--disable-vsync"), command.index("--"))
+        driver = command.index("--rendering-driver")
+        self.assertLess(driver, command.index("--"))
+        self.assertEqual(command[driver + 1], "opengl3_es")
+        self.assertEqual(
+            command[command.index("--") + 1 :], ["--disable-vsync", "--standalone-smoke=launch"]
+        )
+
     def test_runtime_target_is_not_cross_build_success(self):
         self.manifest["target"] = "windows"
         self.manifest["binary"] = "Motorsport Manager.exe"

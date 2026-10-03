@@ -406,6 +406,7 @@ func run() -> void:
 		"debug_build": OS.is_debug_build(),
 		"user_directory": OS.get_user_data_dir(),
 		"renderer": RenderingServer.get_current_rendering_method(),
+		"rendering_driver": RenderingServer.get_current_rendering_driver_name(),
 		"adapter": RenderingServer.get_video_adapter_name(),
 		"scope":
 		(

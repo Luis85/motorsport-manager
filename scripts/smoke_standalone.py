@@ -71,7 +71,12 @@ def stop(process: subprocess.Popen) -> None:
 def run_stage(
     binary: Path, directory: Path, user: Path, output: Path, stage: str, env: dict[str, str]
 ) -> dict:
-    arguments = [str(binary), "--audio-driver", "Dummy", "--", f"--standalone-smoke={stage}"]
+    arguments = [
+        str(binary),
+        "--audio-driver",
+        "Dummy",
+        "--disable-vsync",
+    ]
     if os.name != "nt":
         xvfb = shutil.which("xvfb-run")
         if not xvfb and not env.get("DISPLAY"):
@@ -79,7 +84,9 @@ def run_stage(
                 "Native smoke requires a real display or xvfb-run; headless is not equivalent"
             )
         if xvfb:
+            arguments += ["--rendering-driver", "opengl3_es"]
             arguments = [xvfb, "-a", "-s", "-screen 0 2000x1200x24", *arguments]
+    arguments += ["--", "--disable-vsync", f"--standalone-smoke={stage}"]
     interrupted = stage.startswith("interrupt-")
     marker = user / "replacement-paused"
     if interrupted and marker.exists():
