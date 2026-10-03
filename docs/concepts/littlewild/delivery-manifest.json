@@ -1,11 +1,11 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "quality-improvements-verified; independent-review-and-research-polish-in-progress",
+  "status": "research-improvements-and-developer-toolbox-reviewed; clean-checkout-verified",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 128,
-    "runtimeModules": 80,
+    "authoredTypeScriptFiles": 137,
+    "runtimeModules": 85,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
       "vendor/three.js"
@@ -17,6 +17,12 @@
       "items": 42,
       "actors": 1,
       "root": "source/assets/"
+    },
+    "creaturePackages": {
+      "root": "source/assets/creatures/",
+      "defaultCatalog": "source/assets/creatures/catalog.json",
+      "definition": "<id>/creature.json",
+      "visualManifest": "<id>/asset.json"
     }
   },
   "architecture": {
@@ -46,13 +52,19 @@
     "sourceCodeLineBudget": 400,
     "testCodeLineBudget": 450,
     "moduleBudgetExceptions": {},
-    "strictTypingDebtModules": 15
+    "strictTypingDebtModules": 15,
+    "developerToolbox": "DEVELOPER-TOOLBOX.md: typed commands, bounded fixed steps, detached readouts, reviewed story activation and single-active context/host leases"
   },
   "reviews": [
     "PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md",
     "PR25-REVIEW-AND-POLISH.md",
     "ECS-M6-REVIEW-AND-POLISH.md",
-    "QUALITY-AUDIT.md"
+    "QUALITY-AUDIT.md",
+    "ARCHITECTURE-RESEARCH.md",
+    "RESEARCH-IMPROVEMENT-PLAN.md",
+    "SYSTEMIC-DESIGN.md",
+    "EXCALIBUR-TOOLBOX-REVIEW.md",
+    "DEVELOPER-TOOLBOX.md"
   ],
   "verification": {
     "authoritativeCommands": [
@@ -72,13 +84,13 @@
     },
     "current": {
       "status": "passed",
-      "passed": 853,
-      "total": 853,
-      "sourceSha256": "9ab2e6734dfbd4d1b6dd79c62f68a94a2f013f407d83a522f38d031a33b2c269",
-      "htmlSha256": "fcebf3a38c92d5c8329cf4ec5ae7784e9029c5785e95cdcbb93c38092b92648a",
-      "htmlBytes": 4161545,
-      "startedAt": "2026-10-03T09:31:04.883Z",
-      "finishedAt": "2026-10-03T09:32:52.691Z",
+      "passed": 915,
+      "total": 915,
+      "sourceSha256": "8413d557b50496c2c3397d0e42723ff708aa517ff714e67a32d9aa5decb073ba",
+      "htmlSha256": "b8535879a86ada692dbc57a398c0dd4e115014394d78c84f15b2fd8e4da4dccf",
+      "htmlBytes": 4195034,
+      "startedAt": "2026-10-03T10:13:13.638Z",
+      "finishedAt": "2026-10-03T10:15:23.783Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
@@ -86,9 +98,12 @@
         "chromium": "/usr/bin/chromium"
       },
       "browserIncluded": true,
-      "suites": 31,
+      "suites": 32,
       "browserChecks": 114,
-      "evidence": "verification/v15/gate-results.json (generated locally and by CI; ignored source artifact)"
+      "evidence": "verification/v15/gate-results.json (generated locally and by CI; ignored source artifact)",
+      "verifiedSourceCommit": "c93a91d68b67dda94fd2764b52914942e6d80500",
+      "checkout": "Clean git archive of the committed source; exact pinned dependency lock; system Chromium",
+      "additionalShippingBrowserSdkChecks": 3
     }
   },
   "github": {

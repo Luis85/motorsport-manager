@@ -29,6 +29,14 @@ The current source audit covers simulation transactions, component/task validati
 | Architecture and release | Regex scans missed aliased/imported outward dependencies; a release filename regex missed authored JavaScript. Syntax analysis and recursive release scanning reject those paths. | Architecture policy and release |
 | Browser diagnostics | Additional pages were unobserved and console warnings were ignored. All pages are monitored for uncaught errors, console warnings/errors and external requests. Deprecated shadow-map selection is removed. | Browser and browser contracts |
 
+## Research follow-up and developer surface
+
+The separate research-informed plan in `RESEARCH-IMPROVEMENT-PLAN.md` closes mutable content-review policy bypass, unwritable inventory/batch targets, locale-dependent settlement, partial initialization, Unicode discrepancies, callable wall-clock detection, canonical output paths and decorated sparse catalog arrays. Independent review additionally identified internal transaction-ID collisions and SDK Unicode discovery; both are covered by regressions.
+
+Creature definitions and visuals are co-located under `source/assets/creatures/<id>/`; explicit defaults/visual references/physiology/extra owned components are data. A nondefault archetype is exercised through real recruitment, rendering, story roundtrip and deterministic continuation. The typed developer toolbox exposes validated intent and detached observations with explicit session/host ownership. Sources, systemic state map, Excalibur adaptations and authoring examples are in the linked research/toolbox documents.
+
+CI exposed an unanchored verification ignore rule that hid four new source helpers. Anchoring generated `/verification/` and tracking authored helpers corrected the clean-checkout failure; the final full gate ran from a committed git archive.
+
 ## Refactoring and typing
 
 Focused modules preserve one authoritative engine and the existing facade/record contracts. Extractions retain task order, receiver/predecessor behavior, persisted fields, random draws and presentation timing. The machine-readable ownership map registers every runtime module. New services and infrastructure use explicit strict TypeScript ports.

@@ -4,11 +4,11 @@ Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run
 
 ## Current local evidence
 
-Complete gate: **853/853 checks across 31 suites**, completed `2026-10-03T09:32:52.691Z`.
+Complete gate: **915/915 checks across 32 suites**, completed `2026-10-03T10:15:23.783Z`.
 
-- Authored input SHA-256: `9ab2e6734dfbd4d1b6dd79c62f68a94a2f013f407d83a522f38d031a33b2c269`
-- Standalone SHA-256: `fcebf3a38c92d5c8329cf4ec5ae7784e9029c5785e95cdcbb93c38092b92648a`
-- Standalone bytes: 4161545
+- Authored input SHA-256: `8413d557b50496c2c3397d0e42723ff708aa517ff714e67a32d9aa5decb073ba`
+- Standalone SHA-256: `b8535879a86ada692dbc57a398c0dd4e115014394d78c84f15b2fd8e4da4dccf`
+- Standalone bytes: 4195034
 - Runtime: `v24.19.0` on `linux/x64`
 - Chromium: `/usr/bin/chromium`
 - Machine evidence: `verification/v15/gate-results.json`; CI uploads fresh evidence for each PR run.
@@ -16,21 +16,22 @@ Complete gate: **853/853 checks across 31 suites**, completed `2026-10-03T09:32:
 | Suite | Passed / total |
 | --- | ---: |
 | canvas-renderer | 29 / 29 |
-| architecture-policy | 41 / 41 |
+| architecture-policy | 52 / 52 |
 | storage-clock | 15 / 15 |
-| gate-integrity | 20 / 20 |
-| cli-contracts | 21 / 21 |
+| gate-integrity | 21 / 21 |
+| cli-contracts | 23 / 23 |
 | typescript-architecture | 15 / 15 |
 | behavior-tree | 7 / 7 |
-| content-boundary | 6 / 6 |
-| assets | 12 / 12 |
-| creatures | 18 / 18 |
-| ecs-core | 18 / 18 |
+| content-boundary | 15 / 15 |
+| assets | 15 / 15 |
+| creatures | 23 / 23 |
+| ecs-core | 19 / 19 |
 | simulation-profile | 19 / 19 |
 | simulation-profile-integration | 17 / 17 |
-| engine-composition | 24 / 24 |
+| developer-toolbox | 19 / 19 |
+| engine-composition | 28 / 28 |
 | ecs-activity | 9 / 9 |
-| ecs-world | 17 / 17 |
+| ecs-world | 24 / 24 |
 | ecs-economy | 15 / 15 |
 | ecs-integration | 7 / 7 |
 | ecs-world-integration | 6 / 6 |
@@ -51,9 +52,13 @@ Complete gate: **853/853 checks across 31 suites**, completed `2026-10-03T09:32:
 
 The gate clears previous suite results, requires explicit unique successful checks, bounds child processes, preserves failure logs, and rejects source/artifact changes during verification. All browser pages are monitored for warnings, errors, uncaught exceptions and network requests. Tests run against the rebuilt standalone under its production CSP. Historical result counts and milestone hashes are historical evidence only.
 
+## Independent review and developer acceptance
+
+Independent review of committed source `c93a91d68b67dda94fd2764b52914942e6d80500` found no remaining actionable blockers after fixes. The complete gate ran from a clean git archive of that commit. Supplementary actual shipping-browser SDK checks passed **3/3**: discovery, asset validation and host activation rejection preserve registry and engine state, with clean page/console/network diagnostics. SDK Node/browser-global integration and positive/negative TypeScript consumers are included in the registered gate.
+
 ## Additional repository checks
 
-Native Python tooling regressions: **106/106**. Native architecture scan: **190 scripts**, no violations. The complete local six-shard Godot gate was not run; PR CI owns that verification. Shared official actions are pinned to supported immutable versions.
+Native Python tooling regressions: **106/106**. Native architecture scan: **190 scripts**, no violations. A complete local registered Godot run is additionally in progress against immutable checkpoint `0a82de68d0505542f524033cd087c03d5b843fcc`; its final result is recorded separately when complete. Native gameplay source has not changed since that checkpoint. PR CI verifies the pushed head. Shared official actions are pinned to supported immutable versions.
 
 ## Limits
 

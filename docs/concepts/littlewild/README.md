@@ -54,10 +54,12 @@ npm run verify -- --no-browser
 - `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
 - `CREATURE-ARCHITECTURE.md`: creature archetype data, factory/ECS ownership, visual asset boundary and extension workflow.
 
-This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions and animation algorithms remain compiled capabilities. **Creature defaults, spawn modes, movement tuning, ECS bindings, 3D geometry, appearance profiles, expression thresholds, animation tuning, rig node names/sockets and building animation anchors are bundled data**; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
+This is not yet an unrestricted game engine. Stable mechanic roles, handlers, island dimensions and animation algorithms remain compiled capabilities. **Creature defaults, spawn modes, movement/physiology tuning, visual asset selection, ECS bindings, 3D geometry, appearance profiles, expression thresholds, animation tuning, rig node names/sockets and building animation anchors are bundled data**; external scenario packs still cannot inject executable code or arbitrary runtime assets. Littlewild and Emberworks demonstrate what is configurable now, not unsupported settings or new mechanics.
 
 ## ECS refactor on PR #25
 
 The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine current-format rejection, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
 
 - [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.
+
+Architecture sources and the implemented plan: [research](ARCHITECTURE-RESEARCH.md), [systemic design](SYSTEMIC-DESIGN.md), [Excalibur adaptations](EXCALIBUR-TOOLBOX-REVIEW.md), [improvement plan](RESEARCH-IMPROVEMENT-PLAN.md).
