@@ -98,7 +98,7 @@ def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
 
 def pack_arguments(path: Path | None, dependencies: Iterable[Path] = ()) -> list[str]:
     """Keep dependency order and load the positional root last; reject duplicate paths."""
-    core = (ROOT / "content/packs/core").resolve()
+    core = (ROOT / "config").resolve()
     seen: set[str] = set()
     result: list[str] = []
     for value in list(dependencies or []) + ([path] if path is not None else []):

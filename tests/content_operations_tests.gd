@@ -3,7 +3,7 @@ extends "res://tests/support/content_operations_contracts.gd"
 
 func run() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "All bundled and example operations definitions validate")
 	if not loaded.ok:
@@ -12,7 +12,7 @@ func run() -> void:
 		return
 	var catalog: ContentCatalog = loaded.catalog
 	var record = catalog.record(CORE)
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	geometry = TrackGeometry.new(document)
 	validation(record)
 	characterization(record)

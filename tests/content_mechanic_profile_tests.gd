@@ -23,7 +23,7 @@ func check(value: bool, label: String) -> void:
 
 
 func run() -> void:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check(loaded.ok, "Core catalog resolves registered mechanic plans")
 	if not loaded.ok:
 		finish()
@@ -64,7 +64,7 @@ func run() -> void:
 		"A new profile is ordinary content"
 	)
 	check(candidate.seal().is_empty(), "Added content seals without engine changes")
-	var document: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var document: Dictionary = Storage.read_json("res://config/circuits/hillside.json").data
 	var launch = WeekendLaunch.new(candidate)
 	check(
 		launch.stage_preset("core.weekend.quick", document, {"mechanic_profile_id": changed.id}),
@@ -190,7 +190,7 @@ func run() -> void:
 
 func external_weekends() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "External pre-profile content remains loadable")
 	if not loaded.ok:
@@ -202,7 +202,7 @@ func external_weekends() -> void:
 		not original.has("mechanic_profile_id"),
 		"Regression fixture omits the optional profile reference"
 	)
-	var document: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var document: Dictionary = Storage.read_json("res://config/circuits/hillside.json").data
 	document.grid.count = catalog.roster(original.roster_id).count
 	var launch = WeekendLaunch.new(catalog)
 	check(

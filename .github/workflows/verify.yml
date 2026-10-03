@@ -52,7 +52,7 @@ jobs:
           retention-days: 14
   verify:
     name: verify
-    if: always()
+    if: always() && !cancelled()
     needs: shards
     runs-on: ubuntu-24.04
     timeout-minutes: 5

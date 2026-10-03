@@ -21,7 +21,7 @@ import content
 
 class MultiPackTests(unittest.TestCase):
     def test_dependency_order_and_implicit_core_are_preserved(self):
-        core = content.ROOT / "content/packs/core"
+        core = content.ROOT / "config"
         result = content.pack_arguments(Path("last"), [core, Path("first"), Path("second")])
         self.assertEqual(
             result, ["--pack=" + str(Path(name).resolve()) for name in ["first", "second", "last"]]
@@ -250,7 +250,7 @@ class NativeMultiPackTests(unittest.TestCase):
             child = Path(temporary) / "child"
             content.initialize(base, "local.base")
             content.initialize(child, "local.child")
-            vehicle = json.loads((content.ROOT / "content/packs/core/vehicles/gt.json").read_text())
+            vehicle = json.loads((content.ROOT / "config/vehicles/gt.json").read_text())
             vehicle["id"] = "local.base.vehicle.gt"
             content.write_new(base / "vehicle.json", vehicle)
             manifest = json.loads((base / "pack.json").read_text())

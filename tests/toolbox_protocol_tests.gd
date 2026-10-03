@@ -217,7 +217,7 @@ func schema_contracts() -> void:
 			"Schema document exposes its dialect and title"
 		)
 		same(schemas[kind], document, "Combined schema discovery matches the individual document")
-	var manifest = Storage.read_json("res://content/packs/core/pack.json").data
+	var manifest = Storage.read_json("res://config/pack.json").data
 	check(
 		ContentValidation.check(manifest, schemas.pack).is_empty(),
 		"Published pack schema validates the actual bundled manifest"

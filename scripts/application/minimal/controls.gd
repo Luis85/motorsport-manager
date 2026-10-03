@@ -17,7 +17,7 @@ func replacement(id: int, exclude_mounted: bool) -> Dictionary:
 			_simulation.phase == "practice"
 			and not exclude_mounted
 			and fitted.compound == compound
-			and fitted.life >= 40
+			and fitted.life >= _simulation.tuning.balance.presentation.practice_reuse_tread_percent
 			and WheelTyres.usable(fitted)
 		):
 			return fitted.duplicate(true)

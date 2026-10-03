@@ -35,7 +35,10 @@ func definition() -> Dictionary:
 
 func install(sim: RaceSim, geometry: TrackGeometry = null, options: Dictionary = {}) -> void:
 	sim.practice_state = PracticeEvidence.create(
-		sim.cars, sim.tuning.practice_duration(sim.track.estimate if geometry != null else 0)
+		sim.cars,
+		sim.tuning.practice_duration(sim.track.estimate if geometry != null else 0),
+		"available",
+		sim.tuning.balance.practice
 	)
 
 	sim.rival_styles = RivalStyles.create(
@@ -60,7 +63,9 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 		or sim.practice_state.status in ["available", "skipped", "legacy"]
 	):
 		return result
-	var prior = PracticeEvidence.prior(sim.practice_state, sim.cars[id], sim.average(sim.water))
+	var prior = PracticeEvidence.prior(
+		sim.practice_state, sim.cars[id], sim.average(sim.water), sim.tuning.balance.practice
+	)
 	result.practice = prior
 	result.key = (
 		result.get("key", []).duplicate()
@@ -72,12 +77,13 @@ func forecast_parameters(sim: RaceSim, id: int) -> Dictionary:
 func run_preview(sim: RaceSim, id: int, plan: Dictionary) -> Dictionary:
 	var c = sim.cars[id]
 	var d = sim.practice_driver(id)
-	var lap_count = plan.get("laps", 2)
+	var rules: Dictionary = sim.tuning.balance.practice
+	var lap_count = plan.get("laps", rules.default_laps)
 	var valid_laps = RaceCheckpoint.integral(lap_count, 1, PracticeEvidence.MAX_LAPS)
 	var duration = (
-		(sim.track.estimate / 0.70) * (int(lap_count) + 2 if valid_laps else 4)
+		(sim.track.estimate / rules.run_transit_factor) * (int(lap_count) + 2 if valid_laps else 4)
 		+ sim.track.pit_length / sim.track.pit_limit
-		+ 12.0
+		+ rules.run_return_allowance_seconds
 	)
 	var reason = ""
 	if sim.phase != "practice" or sim.practice_state.closed:
@@ -158,7 +164,7 @@ func car_advisories(sim: RaceSim, c: RaceCar) -> Array[String]:
 			messages.append(key + " tread low; recall or retain remaining laps for later sessions.")
 	if c.engine_temperature > sim.tuning.condition.heat_reference_c:
 		messages.append("Engine hot; recall to cool before committing another run.")
-	if c.route != "garage" and c.fuel < 1.1:
+	if c.route != "garage" and c.fuel < sim.tuning.balance.practice.fuel_return_reserve_laps:
 		messages.append("Run fuel reserve low; physical return requested.")
 	return messages
 
@@ -238,7 +244,7 @@ func engineer(sim: RaceSim, c: RaceCar) -> void:
 			and c.damage <= sim.tuning.environment.weather_policy.fallback_damage
 			and sound
 			and sim.average(sim.water) <= sim.tuning.environment.weather_policy.dry_fallback_water
-			and sim.rain < 0.08
+			and sim.rain < sim.tuning.environment.outlook.rain_visible
 			and not c.tyre_rules.wet(c.compound)
 			and (
 				RaceReliability.stage(

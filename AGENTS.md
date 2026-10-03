@@ -109,6 +109,12 @@ Do not make these checks blocking without an explicit policy decision.
 
 ## Developer toolbox and coding agents
 
+Shipped editable gameplay values belong in `config/`. Read `docs/balancing.md`
+before tuning them. Keep generated schemas and field ownership current; validate
+the whole catalog through `scripts/balance.py validate`. Runtime construction
+freezes selected settings, and restoring a save must use its retained rules.
+Keep fixed clocks, serialization contracts and safety/resource limits in code.
+
 Read `docs/developer-toolbox.md` before scripting game operations. Use
 `GameToolbox`'s named facets or the JSON/Python client; discover actual supported
 actions rather than calling arbitrary aggregate methods. Domain validators remain

@@ -170,6 +170,7 @@ func _base_snapshot() -> Dictionary:
 
 func _base_update_yield(c: RaceCar, old: Array) -> float:
 	# Hysteresis keeps a courtesy manoeuvre stable until the priority car has cleared.
+	var courtesy_rules: Dictionary = tuning.balance.courtesy
 	if neutral(c) or c.route != "track":
 		c.yield_to = -1
 	if c.yield_to >= 0:
@@ -182,14 +183,14 @@ func _base_update_yield(c: RaceCar, old: Array) -> float:
 			other.dnf
 			or other.finished
 			or old[other.id].route != "track"
-			or signed_gap > 18
-			or signed_gap < -220
-			or total_time - c.yield_clock > 20
+			or signed_gap > courtesy_rules.clear_ahead_distance_m
+			or signed_gap < -courtesy_rules.release_behind_distance_m
+			or total_time - c.yield_clock > courtesy_rules.timeout_seconds
 			or is_run_session() and old[other.id].qual_state != "hotlap"
 		):
 			c.yield_to = -1
 	if c.yield_to < 0 and not neutral(c):
-		var closest = 150.0
+		var closest: float = courtesy_rules.acquire_distance_m
 		for other in cars:
 			if other.id == c.id or other.dnf or other.finished or old[other.id].route != "track":
 				continue
@@ -201,15 +202,21 @@ func _base_update_yield(c: RaceCar, old: Array) -> float:
 			)
 			var lapped = (
 				phase == "race"
-				and old[other.id].distance - old[c.id].distance > track.length * 0.65
+				and (
+					old[other.id].distance - old[c.id].distance
+					> track.length * courtesy_rules.lapped_distance_fraction
+				)
 			)
 			var closing: float = old[other.id].speed - old[c.id].speed
 			if (
 				gap > 0.01
 				and gap < closest
 				and (courtesy or lapped)
-				and closing > -0.5
-				and (gap < 45 or gap / maxf(0.1, closing) < 7)
+				and closing > courtesy_rules.minimum_closing_mps
+				and (
+					gap < courtesy_rules.immediate_distance_m
+					or gap / maxf(0.1, closing) < courtesy_rules.arrival_seconds
+				)
 			):
 				closest = gap
 				c.yield_to = other.id
@@ -234,9 +241,15 @@ func _base_car_advisories(c: RaceCar) -> Array[String]:
 		var wheel = item.wheels[key]
 		if wheel.punctured:
 			messages.append("%s PUNCTURE · plan a replacement and box" % key)
-		elif wheel.life < 15:
+		elif wheel.life < tuning.balance.presentation.advisory_tread_percent:
 			messages.append("%s tread low · %.0f%% remaining" % [key, wheel.life])
-		elif wheel.core > tyre_rules.spec(c.compound).optimum + 20:
+		elif (
+			wheel.core
+			> (
+				tyre_rules.spec(c.compound).optimum
+				+ tuning.balance.presentation.advisory_core_excess_c
+			)
+		):
 			messages.append("%s core hot · conserve pace" % key)
 	if c.engine_temperature > tuning.condition.heat_reference_c:
 		messages.append("Engine hot · reduce engine mode")

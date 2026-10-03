@@ -81,24 +81,30 @@ static func limits(profile: Dictionary, vehicle: VehicleDefinition) -> Dictionar
 	}
 
 
-static func line_factor(profile: Dictionary, curvature: float) -> float:
+static func line_factor(profile: Dictionary, curvature: float, motion: Dictionary = {}) -> float:
+	if motion.is_empty():
+		motion = RacePhysicsBalance.defaults().motion
 	if not validate(profile).is_empty():
 		return 1.0
 	var straight = (_factor(profile, "top") + _factor(profile, "accel")) * 0.5
 	var corner = (_factor(profile, "lat") + _factor(profile, "brake")) * 0.5
-	return lerpf(straight, corner, clampf(absf(curvature) * 100.0, 0.0, 1.0))
+	return lerpf(
+		straight, corner, clampf(absf(curvature) * motion.corner_blend_curvature_scale, 0.0, 1.0)
+	)
 
 
-static func forecast_lap_factor(profile: Dictionary) -> float:
+static func forecast_lap_factor(profile: Dictionary, rules: Dictionary = {}) -> float:
+	if rules.is_empty():
+		rules = RacePlanningBalance.defaults().forecast
 	if not validate(profile).is_empty():
 		return 1.0
 	var capability = (
-		0.30 * _factor(profile, "top")
-		+ 0.20 * _factor(profile, "accel")
-		+ 0.35 * _factor(profile, "lat")
-		+ 0.15 * _factor(profile, "brake")
+		rules.performance_top_weight * _factor(profile, "top")
+		+ rules.performance_accel_weight * _factor(profile, "accel")
+		+ rules.performance_lat_weight * _factor(profile, "lat")
+		+ rules.performance_brake_weight * _factor(profile, "brake")
 	)
-	return 1.0 / maxf(0.85, capability)
+	return 1.0 / maxf(rules.minimum_performance_factor, capability)
 
 
 static func _factor(profile: Dictionary, key: String) -> float:

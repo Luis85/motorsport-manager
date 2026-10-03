@@ -6,7 +6,7 @@ extends RefCounted
 
 
 static func load_into(loader: ContentPackLoader, catalog: ContentCatalog, version: String) -> Array:
-	var root = "res://data/tracks"
+	var root = "res://config/circuits"
 	var index = loader._read(root, "catalog.json")
 	if not index.ok:
 		return index.diagnostics

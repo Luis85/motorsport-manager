@@ -23,10 +23,11 @@ static func target_for(sim: RaceSim, id: int) -> int:
 
 static func draft(sim: RaceSim, id: int, kind: String = "undercut") -> Dictionary:
 	var c = sim.cars[id]
+	var rules: Dictionary = sim.tuning.balance.tactical_policy
 	var first = (
 		RaceForecaster.reachable_gate(sim, c).lap
 		if sim.phase == "race"
-		else maxi(2, int(sim.laps * 0.4))
+		else maxi(2, int(sim.laps * rules.initial_stop_fraction))
 	)
 	var source = RaceForecaster.capture(sim, id)
 	var item = RaceForecaster.replacement(source)
@@ -35,11 +36,15 @@ static func draft(sim: RaceSim, id: int, kind: String = "undercut") -> Dictionar
 		"target_id": target_for(sim, id),
 		"set_id": item.get("id", ""),
 		"from_lap": first,
-		"to_lap": mini(sim.laps - 1, first + (3 if kind == "extend" else 1)),
-		"wait_laps": 2,
+		"to_lap":
+		mini(
+			sim.laps - 1,
+			first + (rules.extend_window_laps if kind == "extend" else rules.undercut_window_laps)
+		),
+		"wait_laps": rules.wait_laps,
 		"authority": "recommend",
-		"fuel_reserve": 0.35,
-		"tyre_floor": 15.0,
+		"fuel_reserve": sim.tuning.balance.strategy_defaults.fuel_reserve_laps,
+		"tyre_floor": rules.tyre_floor,
 		"avoid_traffic": true,
 		"rival_first": true
 	}
@@ -121,7 +126,10 @@ static func preview(sim: RaceSim, id: int, plan: Dictionary) -> Dictionary:
 		result.reason = "The rival is already in the pits; an undercut cannot be started against this entry."
 		return result
 	var s = RaceForecaster.capture(sim, id, sim.active_plan(id), int(sim.policy(id).revision))
-	if s.water > 0.15 or RaceForecaster.weather_family(s, c.compound) != "dry":
+	if (
+		s.water > sim.tuning.balance.tactical_policy.maximum_water
+		or RaceForecaster.weather_family(s, c.compound) != "dry"
+	):
 		result.reason = "These are dry-race tactics. Use the weather comparison in crossover conditions."
 		return result
 	var item = TyreInventory.find(c, plan.set_id)
@@ -196,8 +204,21 @@ static func team_compare(sim: RaceSim) -> String:
 				var pit = RaceForecaster.pit_prediction(s, choice.stops[0].at * s.length)
 				arrivals.append(
 					{
-						"at": pit.entry_eta + s.own.box_d / s.pit_limit + 1.5,
-						"service": 3.75 + (s.own.damage * 0.14 if s.own.repair else 0),
+						"at":
+						(
+							pit.entry_eta
+							+ s.own.box_d / s.pit_limit
+							+ sim.tuning.service.arrival_allowance_seconds
+						),
+						"service":
+						(
+							RaceTuningDefinition.mean_service(sim.tuning.service, false)
+							+ (
+								s.own.damage * sim.tuning.service.repair_seconds_per_damage
+								if s.own.repair
+								else 0
+							)
+						),
 						"existing_queue": pit.queue
 					}
 				)
@@ -277,7 +298,14 @@ static func rival_cases(
 			+ "shorten the useful fresh-tyre interval; waiting can lengthen it. No numerical cycle margin is shown."
 		)
 	var advantage = target.lap_seconds - RaceForecaster.lap_time(source, item, item.life)
-	var cost = pit.warmup + pit.queue + pit.traffic.size() * 0.8
+	var cost = (
+		pit.warmup
+		+ pit.queue
+		+ (
+			pit.traffic.size()
+			* RaceTuningDefinition.balance_values(source).forecast.traffic_seconds_per_car
+		)
+	)
 	return (
 		(
 			"RIVAL RESPONSE CASES · conditional model, not a winning prediction\nCovers one lap "

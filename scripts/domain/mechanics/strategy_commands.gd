@@ -83,7 +83,10 @@ func _pit_forecast_preflight(
 		if (
 			payload.get("forecast_key") != RaceForecaster.material_key(sim, id, int(p.revision))
 			or not RaceCheckpoint.number(payload.get("forecast_time"), 0, sim.total_time)
-			or sim.total_time - float(payload.forecast_time) > RaceForecaster.MAX_AGE
+			or (
+				sim.total_time - float(payload.forecast_time)
+				> sim.tuning.balance.forecast.maximum_age_seconds
+			)
 		):
 			return _command_failure(
 				"The pit forecast is stale. Compare the updated options before committing."

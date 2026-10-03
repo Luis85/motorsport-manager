@@ -79,7 +79,9 @@ static func build(recipe: Dictionary, library: Array) -> StrategyRaceSim:
 	)
 	for entry in recipe.plans:
 		var id = int(entry.driver_id)
-		var plan = StrategyPlan.draft(sim.cars[id], sim.laps, "no_stop")
+		var plan = StrategyPlan.draft(
+			sim.cars[id], sim.laps, "no_stop", sim.tuning.balance.strategy_defaults
+		)
 		plan.starting_set = "%d-%s" % [id, entry.starting]
 		plan.objective = entry.objective
 		if entry.has("replacement"):

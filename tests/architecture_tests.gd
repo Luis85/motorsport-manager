@@ -258,7 +258,7 @@ func test_observed_progression() -> void:
 
 
 func run() -> void:
-	var data = Storage.read_json("res://data/tracks/hillside.json")
+	var data = Storage.read_json("res://config/circuits/hillside.json")
 	geometry = TrackGeometry.new(data.data)
 	test_geometry_and_restore()
 	test_signals()

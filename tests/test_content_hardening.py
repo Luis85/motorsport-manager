@@ -24,9 +24,7 @@ class ContentHardeningTests(unittest.TestCase):
             first = Path(temporary) / "dependency"
             second = Path(temporary) / "extension"
             expected = ["--pack=" + str(first), "--pack=" + str(second)]
-            actual = content.pack_arguments(
-                second, [content.ROOT / "content/packs/core", first / "."]
-            )
+            actual = content.pack_arguments(second, [content.ROOT / "config", first / "."])
             self.assertEqual(expected, actual)
 
     def test_every_read_command_accepts_repeated_packs(self):

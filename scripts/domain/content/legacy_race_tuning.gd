@@ -1,7 +1,7 @@
 class_name LegacyRaceTuning
 extends RefCounted
 ## Immutable pre-externalization values for old saves and direct compatibility APIs.
-## New authored sessions resolve content/packs/core/race_tuning/default.json instead.
+## New authored sessions resolve config/race_tuning/default.json instead.
 const VALUES = {
 	"fuel":
 	{

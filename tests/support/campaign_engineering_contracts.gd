@@ -164,7 +164,7 @@ static func _race_profile_contract(
 	)
 	if not projected.ok:
 		return
-	var track_doc = Storage.read_json("res://data/tracks/hillside.json").data
+	var track_doc = Storage.read_json("res://config/circuits/hillside.json").data
 	var geometry = TrackGeometry.new(track_doc, "Formula")
 	var enhanced = PracticeRaceSim.new(
 		geometry,

@@ -25,12 +25,12 @@ const RECIPE_FIELDS = {
 	"rivals": ["id", "title", "track", "seed", "laps", "life", "grid", "objective", "hint"],
 }
 const PATHS = {
-	"dry": "res://data/scenarios/dry-strategy.json",
-	"weather": "res://data/scenarios/weather-strategy.json",
-	"recovery": "res://data/scenarios/recovery.json",
-	"duels": "res://data/scenarios/strategic-duels.json",
-	"practice": "res://data/scenarios/practice.json",
-	"rivals": "res://data/scenarios/rivals.json",
+	"dry": "res://config/scenarios/dry-strategy.json",
+	"weather": "res://config/scenarios/weather-strategy.json",
+	"recovery": "res://config/scenarios/recovery.json",
+	"duels": "res://config/scenarios/strategic-duels.json",
+	"practice": "res://config/scenarios/practice.json",
+	"rivals": "res://config/scenarios/rivals.json",
 }
 
 

@@ -27,7 +27,7 @@ func check(value: bool, label: String) -> void:
 
 
 func run() -> void:
-	var track = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	var track = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	var profiles: Array = [
 		RaceSim.new(track),
 		StrategyRaceSim.new(track),

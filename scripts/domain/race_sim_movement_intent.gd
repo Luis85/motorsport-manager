@@ -13,7 +13,9 @@ func grip(c: RaceCar, _cell: int, local: Dictionary = {}) -> float:
 	match_factor = TyreSurfaceResponse.factor(tyre_rules.spec(c.compound), wet)
 	var wheel_factor = WheelTyres.grip(TyreInventory.find(c, c.set_id), tyre_rules.spec(c.compound))
 	return clampf(
-		local.grip * tyre_rules.spec(c.compound).grip * match_factor * wheel_factor, 0.16, 1.1
+		local.grip * tyre_rules.spec(c.compound).grip * match_factor * wheel_factor,
+		tuning.balance.motion.minimum_grip,
+		tuning.balance.motion.maximum_grip
 	)
 
 
@@ -22,7 +24,11 @@ func _desired_speed(
 ) -> float:
 	var handling = (
 		(1.0 + (c.skill - tuning.pace.skill_reference) * tuning.pace.skill_factor)
-		* lerpf(1.0, effects.corner, clampf(absf(s.curvature) * 100, 0, 1))
+		* lerpf(
+			1.0,
+			effects.corner,
+			clampf(absf(s.curvature) * tuning.balance.motion.corner_blend_curvature_scale, 0, 1)
+		)
 	)
 	handling *= (
 		1.0
@@ -79,8 +85,10 @@ func _session_movement(c: RaceCar, s: Dictionary, desired: float) -> Dictionary:
 		)
 		var goal = track.length - (c.grid - 1) * track.grid_spacing
 		var remaining = maxf(0, goal - c.distance)
-		desired = minf(desired, sqrt(2 * 6 * remaining))
-		if remaining < 100:
+		desired = minf(
+			desired, sqrt(2 * tuning.balance.procedure.formation_braking_mps2 * remaining)
+		)
+		if remaining < tuning.balance.motion.formation_lane_distance_m:
 			target_lane = (-1 if c.grid % 2 else 1) * 2.0
 		if clock < (c.grid - 1) * tuning.competition.movement.formation_release_seconds:
 			desired = 0.0
@@ -97,7 +105,7 @@ func _session_movement(c: RaceCar, s: Dictionary, desired: float) -> Dictionary:
 		)
 	):
 		desired = 0.0
-	if phase == "race" and clock < 3.0:
+	if phase == "race" and clock < tuning.balance.procedure.grid_lane_hold_seconds:
 		target_lane = (-1 if c.grid % 2 else 1) * 2.0
 	return {"desired": desired, "lane": target_lane}
 

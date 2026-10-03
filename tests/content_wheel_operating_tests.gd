@@ -39,7 +39,7 @@ func inputs() -> Dictionary:
 
 
 func run() -> void:
-	var loaded = ContentPackLoader.new().load_packs(["res://content/packs/core"])
+	var loaded = ContentPackLoader.new().load_packs(["res://config"])
 	check(loaded.ok, "Core operating limits compile")
 	if not loaded.ok:
 		finish()
@@ -125,7 +125,7 @@ func run() -> void:
 	var authored = frozen.duplicate(true)
 	authored.thermal_profiles[0].operating.maximum_pressure = 1.1
 	var geometry = TrackGeometry.new(
-		Storage.read_json("res://data/tracks/hillside.json").data, "Formula"
+		Storage.read_json("res://config/circuits/hillside.json").data, "Formula"
 	)
 	var sim = PracticeRaceSim.new(geometry, {"laps": 4, "tyre_definition": authored})
 	check(

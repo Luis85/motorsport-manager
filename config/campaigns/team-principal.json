@@ -223,5 +223,12 @@
       0,
       0
     ]
+  },
+  "tuning": {
+    "finance": {
+      "distress_forecast_days": 30,
+      "bridge_maturity_days": 30,
+      "bridge_fee_bps": 1000
+    }
   }
 }

@@ -691,6 +691,44 @@
       ],
       "type": "object"
     },
+    "tuning": {
+      "additionalProperties": false,
+      "properties": {
+        "finance": {
+          "additionalProperties": false,
+          "properties": {
+            "bridge_fee_bps": {
+              "description": "basis points: Fee added to bridge principal (1000 bps = 10 percent); repayment rounds to integer minor units.",
+              "maximum": 10000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "bridge_maturity_days": {
+              "description": "days: Days from agreement creation until the bridge repayment is due.",
+              "maximum": 3660,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "distress_forecast_days": {
+              "description": "days: Days ahead included in the committed-cash distress forecast.",
+              "maximum": 3660,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "distress_forecast_days",
+            "bridge_maturity_days",
+            "bridge_fee_bps"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "finance"
+      ],
+      "type": "object"
+    },
     "weekend_id": {
       "maxLength": 96,
       "minLength": 1,

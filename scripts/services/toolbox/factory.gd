@@ -5,7 +5,7 @@ extends RefCounted
 
 static func create(pack_roots: Array = [], metadata: Dictionary = {}) -> Dictionary:
 	var loaded: Dictionary = ContentPackLoader.new().load_packs(
-		["res://content/packs/core"] + pack_roots
+		[ContentPackLoader.BUILTIN_ROOT] + pack_roots
 	)
 	if not loaded.ok:
 		return DeveloperToolResult.failure(

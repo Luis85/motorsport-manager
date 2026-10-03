@@ -42,6 +42,8 @@ jobs:
           New-Item -ItemType Directory -Force reports/toolbox-windows | Out-Null
           python -m unittest discover -s tests -p 'test_toolbox*.py' -v *> reports/toolbox-windows/contracts.log
           if ($LASTEXITCODE -ne 0) { Get-Content reports/toolbox-windows/contracts.log; exit $LASTEXITCODE }
+          python -m unittest discover -s tests -p 'test_balance*.py' -v *> reports/toolbox-windows/balancing.log
+          if ($LASTEXITCODE -ne 0) { Get-Content reports/toolbox-windows/balancing.log; exit $LASTEXITCODE }
       - name: Retain exact-source Windows SDK evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

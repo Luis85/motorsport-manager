@@ -49,7 +49,10 @@ static func restore_practice(data: Dictionary) -> PracticeRaceSim:
 		data.get("practice_state")
 		if native
 		else PracticeEvidence.create(
-			base.cars, base.tuning.practice_duration(base.track.estimate), "legacy"
+			base.cars,
+			base.tuning.practice_duration(base.track.estimate),
+			"legacy",
+			base.tuning.balance.practice
 		)
 	)
 	if (

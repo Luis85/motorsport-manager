@@ -24,7 +24,7 @@ The existing 16 MB limit and temporary/backup write behavior apply to these enve
 
 **0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
 
-Managed continuation, settings, library and notebook files use Godot's `user://` directory, displayed in **Settings → Local data**. Explicit exports use the destination chosen in the native file dialog. The application never automatically saves back into packaged `res://data`.
+Managed continuation, settings, library and notebook files use Godot's `user://` directory, displayed in **Settings → Local data**. Explicit exports use the destination chosen in the native file dialog. The application never automatically saves back into packaged `res://config`.
 
 | Path | Contents |
 |---|---|

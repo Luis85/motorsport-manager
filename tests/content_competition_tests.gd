@@ -43,7 +43,7 @@ func fresh(record: Dictionary = {}) -> PracticeRaceSim:
 
 func run() -> void:
 	var loaded = ContentPackLoader.new().load_packs(
-		["res://content/packs/core", "res://content/examples/club-racing"]
+		["res://config", "res://content/examples/club-racing"]
 	)
 	check(loaded.ok, "Core and data-only proof pack validate")
 	if not loaded.ok:
@@ -52,7 +52,7 @@ func run() -> void:
 		return
 	var catalog: ContentCatalog = loaded.catalog
 	var record = catalog.record("core.race_tuning.default")
-	geometry = TrackGeometry.new(Storage.read_json("res://data/tracks/hillside.json").data)
+	geometry = TrackGeometry.new(Storage.read_json("res://config/circuits/hillside.json").data)
 	validation(record)
 	baseline(record)
 	consumers(record, catalog)
@@ -272,7 +272,7 @@ func consumers(record: Dictionary, catalog: ContentCatalog) -> void:
 		PracticeRaceSim.restore_practice(bad) == null,
 		"A saved authored style cannot rewrite its frozen weights"
 	)
-	var document = Storage.read_json("res://data/tracks/hillside.json").data
+	var document = Storage.read_json("res://config/circuits/hillside.json").data
 	document.grid.count = 14
 	var launch = WeekendLaunch.new(catalog)
 	var weekend_id = "local.club.weekend.strategy_sprint"

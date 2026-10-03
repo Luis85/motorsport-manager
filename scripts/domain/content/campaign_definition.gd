@@ -146,6 +146,10 @@ static func fields() -> Dictionary:
 	}
 
 
+static func tuning_fields() -> Dictionary:
+	return ContentSchema.object({"finance": CampaignFinanceBalance.fields()})
+
+
 static func from_record(record: Variant) -> CampaignDefinition:
 	if (
 		not record is Dictionary

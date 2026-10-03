@@ -8,7 +8,10 @@ static func evaluate(checkpoint: Dictionary) -> Dictionary:
 		return r
 	var horizon = mini(
 		CampaignClock.MAX_ELAPSED_SLOTS,
-		r.state.clock.elapsed_slots + 30 * CampaignClock.SLOTS_PER_DAY
+		(
+			r.state.clock.elapsed_slots
+			+ int(_finance(r).distress_forecast_days) * CampaignClock.SLOTS_PER_DAY
+		)
 	)
 	var f = CampaignFinanceQuery.cash_forecast(checkpoint, r.state.organization_id, horizon)
 	if not f.ok:
@@ -31,6 +34,14 @@ static func bridge_financing(checkpoint: Dictionary, amount_minor: int) -> Dicti
 	if not RaceCheckpoint.integral(amount_minor, 1, CampaignEconomy.MAX_MINOR / 2):
 		return _reject("Bridge amount is invalid.", checkpoint)
 	var slot = r.state.clock.elapsed_slots
+	var finance = _finance(r)
+	var repayment = CampaignFinanceBalance.repayment(amount_minor, int(finance.bridge_fee_bps))
+	if not RaceCheckpoint.integral(repayment, 1, CampaignEconomy.MAX_MINOR):
+		return _reject("Bridge repayment exceeds the economy bounds.", checkpoint)
+	var due_slot = mini(
+		CampaignClock.MAX_ELAPSED_SLOTS,
+		slot + int(finance.bridge_maturity_days) * CampaignClock.SLOTS_PER_DAY
+	)
 	var economy = r.economy
 	for input in [
 		{
@@ -45,9 +56,8 @@ static func bridge_financing(checkpoint: Dictionary, amount_minor: int) -> Dicti
 			"id": "bridge.repayment." + str(slot),
 			"account_id": r.state.organization_id,
 			"source_id": "bridge." + str(slot),
-			"due_slot":
-			mini(CampaignClock.MAX_ELAPSED_SLOTS, slot + 30 * CampaignClock.SLOTS_PER_DAY),
-			"amount_minor": -int(round(amount_minor * 1.10)),
+			"due_slot": due_slot,
+			"amount_minor": -repayment,
 			"category": "financing"
 		}
 	]:
@@ -62,6 +72,14 @@ static func bridge_financing(checkpoint: Dictionary, amount_minor: int) -> Dicti
 		r.management.distress, "bridge_financing", amount_minor, slot
 	)
 	return _publish(r, changed, settled.economy, checkpoint)
+
+
+static func _finance(restored: Dictionary) -> Dictionary:
+	# Restore has validated this frozen envelope. Never consult the active catalog.
+	var definition: Dictionary = restored.management.get("campaign_content", {}).get(
+		"definition", {}
+	)
+	return CampaignFinanceBalance.for_definition(definition)
 
 
 static func _restore(checkpoint: Dictionary) -> Dictionary:

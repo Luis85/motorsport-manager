@@ -63,7 +63,7 @@ static func command(sim, action: String, payload: Dictionary) -> bool:
 		if (
 			payload.get("key") != preview.key
 			or not RaceCheckpoint.number(payload.get("time"), 0, sim.total_time)
-			or sim.total_time - payload.time > RaceForecaster.MAX_AGE
+			or sim.total_time - payload.time > sim.tuning.balance.forecast.maximum_age_seconds
 		):
 			return sim.fail("The tactical comparison is stale. Refresh it before approval.")
 		if (

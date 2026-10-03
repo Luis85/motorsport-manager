@@ -39,12 +39,16 @@ static func replacement(s: Dictionary) -> Dictionary:
 
 static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 	var tuning = RaceTuningDefinition.forecast_values(s).service
+	var rules: Dictionary = RaceTuningDefinition.balance_values(s).forecast
 	var own = s.own
 	if gate < 0:
 		gate = s.gate.distance
 	var context = s.get("model_context", {})
 	var profile_lap = (
-		s.reference_lap * RacePerformanceProfile.forecast_lap_factor(s.own.performance_profile)
+		s.reference_lap
+		* RacePerformanceProfile.forecast_lap_factor(
+			s.own.performance_profile, RaceTuningDefinition.balance_values(s).forecast
+		)
 	)
 	var running_lap = profile_lap / float(context.get("neutral_factor", 1.0))
 	var mean_speed = s.length / maxf(10, running_lap)
@@ -102,8 +106,8 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 			upper_position += 1
 		if (
 			not other.finished
-			and projected >= exit_station - 30
-			and projected < exit_station + velocity * 2.5
+			and projected >= exit_station - rules.rejoin_traffic_behind_m
+			and projected < exit_station + velocity * rules.rejoin_traffic_ahead_seconds
 		):
 			traffic.append(other.short)
 	return {
@@ -131,6 +135,7 @@ static func pit_prediction(s: Dictionary, gate: float = -1) -> Dictionary:
 
 static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 	var tuning = RaceTuningDefinition.forecast_values(s)
+	var rules: Dictionary = RaceTuningDefinition.balance_values(s).forecast
 	var compound = item.compound
 	var wet = s.water
 	var spec = tyre_spec(s, compound)
@@ -156,17 +161,20 @@ static func lap_time(s: Dictionary, item: Dictionary, life: float) -> float:
 		float(context.get("health_factor", 1.0)) * float(context.get("thermal_factor", 1.0))
 	)
 	var profile_lap = (
-		s.reference_lap * RacePerformanceProfile.forecast_lap_factor(s.own.performance_profile)
+		s.reference_lap
+		* RacePerformanceProfile.forecast_lap_factor(
+			s.own.performance_profile, RaceTuningDefinition.balance_values(s).forecast
+		)
 	)
 	var lap = (
 		profile_lap
 		* fuel_mass
 		/ maxf(
-			0.2,
+			rules.minimum_lap_speed_factor,
 			(
 				sqrt(grip)
 				* handling
-				* (1 - minf(200, s.own.damage) * tuning.condition.damage_speed_loss)
+				* (1 - minf(rules.damage_limit, s.own.damage) * tuning.condition.damage_speed_loss)
 				* operation
 			)
 		)

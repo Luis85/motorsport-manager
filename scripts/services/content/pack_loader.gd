@@ -1,6 +1,7 @@
 class_name ContentPackLoader
 extends RefCounted
 ## Folder packs only. All paths are relative, bounded and non-executable.
+const BUILTIN_ROOT = "res://config"
 const MAX_FILE_BYTES = 1048576
 const MAX_TOTAL_BYTES = 16777216
 const MAX_PACKS = 32
@@ -79,7 +80,7 @@ func _pack(root: String, candidate: ContentCatalog, versions: Dictionary) -> Dic
 		return definitions
 	var overrides: Dictionary = definitions.overrides
 	var seen_ids: Dictionary = definitions.seen_ids
-	if root == "res://content/packs/core":
+	if root == BUILTIN_ROOT:
 		errors = BundledContentDocuments.load_into(self, candidate, manifest.version)
 		if not errors.is_empty():
 			return _context(errors, root, "pack.json")

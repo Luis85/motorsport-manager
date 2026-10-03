@@ -30,7 +30,7 @@ class MultiPackIntegrationTests(unittest.TestCase):
         self.event = self.root / "event"
         self.after = self.root / "after"
         self.addon = self.root / "addon"
-        self.core = content.ROOT / "content/packs/core"
+        self.core = content.ROOT / "config"
         vehicle = json.loads((self.core / "vehicles/gt.json").read_text(encoding="utf-8"))
         vehicle.update(id="local.base.vehicle.gt", name="ERROR: is allowed in an authored label")
         self.pack(self.base, "local.base", {"vehicle.json": vehicle})

@@ -38,7 +38,7 @@ records cannot claim the same document identity. `content.py clone` assigns a
 new document ID when cloning a circuit. The visible circuit name comes from
 `document.name`; the outer name labels the authoring definition.
 
-The core catalog wraps the existing files named by `data/tracks/catalog.json` as
+The core catalog wraps the existing files named by `config/circuits/catalog.json` as
 `core.circuit.<document-id>`. Those original JSON files remain the single source
 of truth. Only the trusted built-in adapter can read that resource directory;
 external pack paths remain confined to their selected folder.

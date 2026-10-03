@@ -158,12 +158,22 @@ func facts() -> Dictionary:
 	return result
 
 
-static func water_band(value: float) -> int:
-	return 2 if value >= 0.45 else (1 if value >= 0.15 else 0)
+func water_band(value: float) -> int:
+	var thresholds: Dictionary = model.tuning.balance.presentation
+	return (
+		2
+		if value >= thresholds.moment_water_high
+		else (1 if value >= thresholds.moment_water_raised else 0)
+	)
 
 
-static func tyre_band(value: float) -> int:
-	return 2 if value <= 10.0 else (1 if value <= 25.0 else 0)
+func tyre_band(value: float) -> int:
+	var thresholds: Dictionary = model.tuning.balance.presentation
+	return (
+		2
+		if value <= thresholds.moment_tread_critical_percent
+		else (1 if value <= thresholds.moment_tread_low_percent else 0)
+	)
 
 
 func _after_step() -> void:
@@ -189,8 +199,14 @@ func _after_step() -> void:
 		stop(
 			"Track conditions changed",
 			(
-				"Observed average water crossed a 15% or 45% band. These are check-in "
-				+ "thresholds, not a tyre recommendation or forecast."
+				(
+					"Observed average water crossed a %.0f%% or %.0f%% band. These are "
+					+ "check-in thresholds, not a tyre recommendation or forecast."
+				)
+				% [
+					model.tuning.balance.presentation.moment_water_raised * 100,
+					model.tuning.balance.presentation.moment_water_high * 100
+				]
 			)
 		)
 		return
@@ -254,7 +270,14 @@ func _safety_changed(current: Dictionary) -> bool:
 				name + " tyres need a decision",
 				(
 					"Fitted tread crossed "
-					+ ("10%" if now.tyre == 2 else "25%")
+					+ (
+						"%.0f%%"
+						% (
+							model.tuning.balance.presentation.moment_tread_critical_percent
+							if now.tyre == 2
+							else model.tuning.balance.presentation.moment_tread_low_percent
+						)
+					)
 					+ ". Inspect the limiting wheel and compare stopping with staying out."
 				),
 				id
