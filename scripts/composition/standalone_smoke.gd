@@ -24,32 +24,6 @@ var identity: Dictionary = {}
 var completed: bool = false
 
 
-class InterruptedFiles:
-	extends Storage.FileOperations
-	var boundary: String
-
-	func pause_process() -> void:
-		# The external launcher kills this process only after a real flushed stage.
-		var file = FileAccess.open("user://replacement-paused", FileAccess.WRITE)
-		file.store_string(boundary)
-		file.flush()
-		file.close()
-		while true:
-			OS.delay_msec(50)
-
-	func write_text(path: String, text: String) -> String:
-		var error = super.write_text(path, text)
-		if error.is_empty() and boundary == "temp" and path.ends_with("atomic.json.tmp"):
-			pause_process()
-		return error
-
-	func rename(source: String, destination: String) -> Error:
-		var error = super.rename(source, destination)
-		if error == OK and boundary == "backup" and destination.ends_with("atomic.json.bak"):
-			pause_process()
-		return error
-
-
 func start(owner: Control, requested_stage: String) -> void:
 	game = owner
 	stage = requested_stage
@@ -314,7 +288,7 @@ func reload_circuit() -> void:
 func interrupt(boundary: String) -> void:
 	write("user://recovery/atomic.json", OLD)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://recovery/atomic.json.bak"))
-	var files = InterruptedFiles.new()
+	var files = StandaloneSmokeFiles.new()
 	files.boundary = boundary
 	Storage.write_json("user://recovery/atomic.json", NEW, files)
 	check(false, "External launcher should have interrupted the real replacement stage")
