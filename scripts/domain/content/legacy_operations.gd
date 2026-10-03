@@ -3,7 +3,8 @@ extends RefCounted
 ## Immutable pre-extraction compatibility data. New sessions use authored tuning instead.
 const VALUES = {
 	"model": "race-operations-v1",
-	"reliability": {
+	"reliability":
+	{
 		"damage_warning": 5.0,
 		"damage_degraded": 20.0,
 		"damage_critical": 55.0,
@@ -39,7 +40,8 @@ const VALUES = {
 		"default_repair_budget_seconds": 12.0,
 		"repair_minimum_tread": 10.0
 	},
-	"control": {
+	"control":
+	{
 		"virtual_pace_factor": 0.6,
 		"ending_seconds": 8.0,
 		"local_yellow_speed_mps": 25.0,
@@ -48,7 +50,8 @@ const VALUES = {
 		"retired_car_seconds": 38.0,
 		"legacy_mechanical_seconds": 22.0
 	},
-	"incidents": {
+	"incidents":
+	{
 		"base_exposure_per_second": 1.8e-05,
 		"consistency_factor": 0.055,
 		"reliability_factor": 0.015,

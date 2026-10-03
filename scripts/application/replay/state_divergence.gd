@@ -3,6 +3,7 @@ extends RefCounted
 ## Diagnostic comparison only. Uses the established replay numeric tolerance.
 ## Missing values are distinguished from recorded nulls; no causal attribution.
 
+
 static func first(expected: Variant, observed: Variant, path: String = "") -> Dictionary:
 	if expected is Dictionary and observed is Dictionary:
 		var keys = expected.keys()
@@ -13,8 +14,9 @@ static func first(expected: Variant, observed: Variant, path: String = "") -> Di
 		for key in keys:
 			var next = str(key) if path.is_empty() else path + "." + str(key)
 			if not expected.has(key) or not observed.has(key):
-				return _difference(next, expected.get(key), observed.get(key),
-					expected.has(key), observed.has(key))
+				return _difference(
+					next, expected.get(key), observed.get(key), expected.has(key), observed.has(key)
+				)
 			var result = first(expected[key], observed[key], next)
 			if not result.is_empty():
 				return result
@@ -31,8 +33,18 @@ static func first(expected: Variant, observed: Variant, path: String = "") -> Di
 		return {}
 	return _difference(path, expected, observed)
 
-static func _difference(path: String, expected: Variant, observed: Variant,
-		expected_present: bool = true, observed_present: bool = true) -> Dictionary:
-	return {"path": path, "expected": RaceStateValue.copy(expected),
-		"observed": RaceStateValue.copy(observed), "expected_present": expected_present,
-		"observed_present": observed_present}
+
+static func _difference(
+	path: String,
+	expected: Variant,
+	observed: Variant,
+	expected_present: bool = true,
+	observed_present: bool = true
+) -> Dictionary:
+	return {
+		"path": path,
+		"expected": RaceStateValue.copy(expected),
+		"observed": RaceStateValue.copy(observed),
+		"expected_present": expected_present,
+		"observed_present": observed_present
+	}

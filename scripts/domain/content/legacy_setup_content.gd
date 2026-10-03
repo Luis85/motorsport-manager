@@ -3,36 +3,14 @@ extends RefCounted
 ## Immutable values for pre-content saves and direct legacy APIs.
 const DEFAULTS = {"wing": 5, "balance": 0, "suspension": 5, "cooling": 5, "bias": 56}
 const SPECS = {
-	"wing": [
-		1,
-		9,
-		"Wing level",
-		"More cornering support; less straight-line speed."
-	],
-	"balance": [
-		-3,
-		3,
-		"Aero balance",
-		"Forward balance helps turn-in; rearward balance supports traction."
-	],
-	"suspension": [
-		1,
-		9,
-		"Suspension",
-		"Firm supports dry corners; soft tolerates wet and uneven loading."
-	],
-	"cooling": [
-		1,
-		9,
-		"Cooling aperture",
-		"More airflow reduces engine heat at a drag cost."
-	],
-	"bias": [
-		52,
-		62,
-		"Front brake bias %",
-		"Moves braking load between axles. Adjustable during the race."
-	]
+	"wing": [1, 9, "Wing level", "More cornering support; less straight-line speed."],
+	"balance":
+	[-3, 3, "Aero balance", "Forward balance helps turn-in; rearward balance supports traction."],
+	"suspension":
+	[1, 9, "Suspension", "Firm supports dry corners; soft tolerates wet and uneven loading."],
+	"cooling": [1, 9, "Cooling aperture", "More airflow reduces engine heat at a drag cost."],
+	"bias":
+	[52, 62, "Front brake bias %", "Moves braking load between axles. Adjustable during the race."]
 }
 const EFFECTS = {
 	"wing_centre": 5.0,
@@ -61,25 +39,7 @@ const EFFECTS = {
 }
 const INITIAL = {"engine_c": 85.0, "brake_c": 140.0}
 const BASELINES = {
-	"balanced": {
-		"wing": 5,
-		"balance": 0,
-		"suspension": 5,
-		"cooling": 5,
-		"bias": 56
-	},
-	"low_drag": {
-		"wing": 2,
-		"balance": 0,
-		"suspension": 5,
-		"cooling": 4,
-		"bias": 56
-	},
-	"stable_wet": {
-		"wing": 7,
-		"balance": 0,
-		"suspension": 3,
-		"cooling": 6,
-		"bias": 56
-	}
+	"balanced": {"wing": 5, "balance": 0, "suspension": 5, "cooling": 5, "bias": 56},
+	"low_drag": {"wing": 2, "balance": 0, "suspension": 5, "cooling": 4, "bias": 56},
+	"stable_wet": {"wing": 7, "balance": 0, "suspension": 3, "cooling": 6, "bias": 56}
 }
