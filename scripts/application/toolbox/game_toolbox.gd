@@ -4,20 +4,32 @@ extends RefCounted
 const PROTOCOL: String = "motorsport-manager-toolbox"
 const VERSION: int = 1
 const MAX_BATCH: int = 128
+const MAX_RESPONSE_BYTES: int = 67108864
+const MIN_RESPONSE_BYTES: int = 4096
 var weekends: DeveloperWeekends
 var campaigns: DeveloperCampaigns
 var tracks: DeveloperTracks
 var _catalog_queries: DeveloperCatalogQueries
 var _metadata: Dictionary
 var _closed: bool = false
+var _response_limit: int = MAX_RESPONSE_BYTES
 
 
-func _init(catalog: ContentCatalog, metadata: Dictionary = {}) -> void:
+func _init(
+	catalog: ContentCatalog,
+	metadata: Dictionary = {},
+	response_limit_bytes: int = MAX_RESPONSE_BYTES
+) -> void:
+	_response_limit = (
+		response_limit_bytes
+		if response_limit_bytes >= MIN_RESPONSE_BYTES and response_limit_bytes <= MAX_RESPONSE_BYTES
+		else MAX_RESPONSE_BYTES
+	)
 	_metadata = {
 		"engine_executed": true,
 		"engine": Engine.get_version_info().string,
-		"source_revision": str(metadata.get("source_revision", "")),
-		"source_digest": str(metadata.get("source_digest", ""))
+		"source_revision": _source_identity(metadata.get("source_revision", "")),
+		"source_digest": _source_identity(metadata.get("source_digest", ""))
 	}
 	weekends = DeveloperWeekends.new(catalog)
 	campaigns = DeveloperCampaigns.new(catalog, weekends)
@@ -25,40 +37,59 @@ func _init(catalog: ContentCatalog, metadata: Dictionary = {}) -> void:
 	_catalog_queries = DeveloperCatalogQueries.new(catalog)
 
 
+func _source_identity(value: Variant) -> String:
+	var identity: String = str(value)
+	return identity if identity.length() <= 128 else ""
+
+
 func metadata() -> Dictionary:
 	return _metadata.duplicate(true)
 
 
 func execute(request: Dictionary) -> Dictionary:
+	var execution: Dictionary = _execute(request)
+	return _bounded(request, execution.response, execution.executed)
+
+
+func _execute(request: Dictionary) -> Dictionary:
 	var rejected: Dictionary = _validate(request)
 	if not rejected.is_empty():
-		return _respond(request, rejected)
+		return {"response": _respond(request, rejected), "executed": false}
+	if _closed and request.operation != "toolbox.close":
+		return {
+			"response":
+			_respond(request, DeveloperToolResult.failure("CLOSED", "The toolbox is closed.")),
+			"executed": false
+		}
+	if request.operation == "toolbox.batch":
+		return {"response": _batch(request), "executed": true}
+	return {"response": _respond(request, _operation(request)), "executed": true}
+
+
+func _operation(request: Dictionary) -> Dictionary:
 	var operation: String = request.operation
-	var session: String = request.get("session", "")
 	var arguments: Dictionary = request.get("arguments", {})
-	if _closed and operation != "toolbox.close":
-		return _respond(request, DeveloperToolResult.failure("CLOSED", "The toolbox is closed."))
-	var result: Dictionary
 	match operation:
 		"toolbox.discover":
-			result = DeveloperToolResult.success(
+			return DeveloperToolResult.success(
 				{
 					"protocol": PROTOCOL,
 					"version": VERSION,
 					"operations": describe(),
-					"limits": {"batch": MAX_BATCH, "sessions_per_facet": 32}
+					"limits":
+					{
+						"batch": MAX_BATCH,
+						"sessions_per_facet": 32,
+						"response_bytes": _response_limit
+					}
 				}
 			)
 		"toolbox.close":
 			close()
-			result = DeveloperToolResult.success({"closed": true})
-		"toolbox.batch":
-			result = _batch(arguments)
+			return DeveloperToolResult.success({"closed": true})
 		"content.list", "content.inspect", "content.schemas", "mechanics.list":
-			result = _catalog_queries.dispatch(operation, arguments)
-		_:
-			result = _facet(operation, session, arguments)
-	return _respond(request, result)
+			return _catalog_queries.dispatch(operation, arguments)
+	return _facet(operation, request.get("session", ""), arguments)
 
 
 func close() -> void:
@@ -142,33 +173,102 @@ func _facet(operation: String, session: String, arguments: Dictionary) -> Dictio
 	return DeveloperToolResult.failure("UNKNOWN_OPERATION", "The operation is not registered.")
 
 
-func _batch(arguments: Dictionary) -> Dictionary:
+func _batch(request: Dictionary) -> Dictionary:
+	var arguments: Dictionary = request.get("arguments", {})
 	var requests: Variant = arguments.get("requests")
 	var stop_on_error: Variant = arguments.get("stop_on_error", true)
 	if not requests is Array or requests.is_empty() or requests.size() > MAX_BATCH:
-		return DeveloperToolResult.failure("INVALID_ARGUMENT", "Expected 1..128 ordered requests.")
+		return _respond(
+			request,
+			DeveloperToolResult.failure("INVALID_ARGUMENT", "Expected 1..128 ordered requests.")
+		)
 	if not stop_on_error is bool:
-		return DeveloperToolResult.failure("INVALID_ARGUMENT", "stop_on_error must be a boolean.")
-	var results: Array = []
-	var stopped: bool = false
+		return _respond(
+			request,
+			DeveloperToolResult.failure("INVALID_ARGUMENT", "stop_on_error must be a boolean.")
+		)
+	var receipts: Array = []
 	for item in requests:
-		var request: Dictionary = item if item is Dictionary else {}
-		var result: Dictionary
+		# Reserve a complete limit receipt for every future request before any dispatch.
+		receipts.append(_limit_response(_request_value(item), 9223372036854775807, false))
+	var response: Dictionary = _respond(
+		request, {"ok": true, "result": {"responses": receipts, "stopped": false, "atomic": false}}
+	)
+	var budget: DeveloperResponseBudget = DeveloperResponseBudget.new(response, _response_limit)
+	if not budget.fits():
+		return _limit_response(request, budget.bytes, false)
+	return _run_batch(requests, stop_on_error, response, budget)
+
+
+func _run_batch(
+	requests: Array, stop_on_error: bool, response: Dictionary, budget: DeveloperResponseBudget
+) -> Dictionary:
+	var stopped: bool = false
+	var limit_reached: bool = false
+	for index in requests.size():
+		var request: Dictionary = _request_value(requests[index])
 		if stopped:
-			result = _respond(
-				request, DeveloperToolResult.failure("SKIPPED", "An earlier request failed.")
+			var reason: String = (
+				"The batch response budget was exhausted."
+				if limit_reached
+				else "An earlier request failed."
 			)
-		elif not item is Dictionary or request.get("operation") == "toolbox.batch":
-			result = _respond(
+			budget.replace(
+				index,
+				_respond(
+					request, DeveloperToolResult.failure("SKIPPED", reason, {"executed": false})
+				)
+			)
+			continue
+		var execution: Dictionary = _batch_item(requests[index], request)
+		if not budget.replace(index, execution.response):
+			budget.replace(
+				index,
+				_limit_response(
+					request, budget.required_bytes(index, execution.response), execution.executed
+				)
+			)
+			limit_reached = true
+			stopped = true
+		elif not execution.response.ok and stop_on_error:
+			stopped = true
+	response.result.stopped = stopped
+	return response
+
+
+func _batch_item(item: Variant, request: Dictionary) -> Dictionary:
+	if not item is Dictionary or request.get("operation") == "toolbox.batch":
+		return {
+			"response":
+			_respond(
 				request,
 				DeveloperToolResult.failure("INVALID_REQUEST", "Nested batches are not supported.")
-			)
-		else:
-			result = execute(request)
-		results.append(result)
-		if not result.ok and stop_on_error:
-			stopped = true
-	return DeveloperToolResult.success({"responses": results, "stopped": stopped, "atomic": false})
+			),
+			"executed": false
+		}
+	return _execute(request)
+
+
+func _request_value(item: Variant) -> Dictionary:
+	return item if item is Dictionary else {}
+
+
+func _bounded(request: Dictionary, response: Dictionary, executed: bool) -> Dictionary:
+	var required: int = DeveloperResponseBudget.size_of(response)
+	if required <= _response_limit:
+		return response
+	return _limit_response(request, required, executed)
+
+
+func _limit_response(request: Dictionary, required: int, executed: bool) -> Dictionary:
+	return _respond(
+		request,
+		DeveloperToolResult.failure(
+			"RESPONSE_LIMIT",
+			"The operation response exceeds the available response budget.",
+			{"executed": executed, "limit_bytes": _response_limit, "required_bytes": required}
+		)
+	)
 
 
 func _respond(request: Dictionary, result: Dictionary) -> Dictionary:

@@ -68,7 +68,11 @@ factory result intentionally contains the facade for composition, while operatio
 results contain detached values only.
 
 `GameToolbox.execute(request)` handles a protocol request, `describe()` returns
-operation descriptors, and `close()` releases all facet sessions. The factory is
+operation descriptors, and `close()` releases all facet sessions. Native composition
+may pass a third constructor argument to impose a smaller response budget, bounded
+to 4 KiB–64 MiB; an out-of-range value selects the default 64 MiB. Discovery
+reports that instance's actual limit. Native metadata identities longer than
+128 characters become empty (unknown), preserving valid source hashes whole. The factory is
 a service composition boundary; it does not supply time from `App`.
 
 The table is an orientation to the public facets. Discovery is the executable
@@ -353,8 +357,24 @@ with `stop_on_error`. It runs in order. Successful prefix operations remain
 applied; failed and skipped outcomes are explicit. A batch is not atomic.
 The outer batch result confirms batch execution; inspect each entry of
 `result.responses` for its own `ok` value. An outer success and CLI exit 0 do not
-mean every nested operation succeeded. Requests are bounded to 8 MiB; request
-IDs use the same 64-character identifier syntax as session IDs.
+mean every nested operation succeeded. Requests are bounded to 8 MiB; compact
+UTF-8 JSON responses are bounded to 64 MiB, including the complete response
+envelope. Discovery publishes `limits.response_bytes`; the native default is
+`GameToolbox.MAX_RESPONSE_BYTES`. Request IDs use the same 64-character identifier
+syntax as session IDs.
+
+If a response cannot fit, its correlated receipt reports `RESPONSE_LIMIT` with
+`error.details.executed`, `limit_bytes` and `required_bytes`. `executed: true`
+means the operation was dispatched; its effects may already have applied even
+though its complete result could not be returned. Actual values are never
+partially truncated. For a batch, space is reserved for every remaining receipt
+before execution. Accepted prefix receipts stay complete, the overflowing current
+receipt reports `RESPONSE_LIMIT`, and all later receipts report `SKIPPED` with
+`executed: false`, regardless of `stop_on_error`. The batch then reports
+`stopped: true` and remains non-atomic. If even the reserved batch envelope cannot
+fit, no child operation executes and the outer failure reports `executed: false`.
+For batch failures, `required_bytes` includes the envelope and reserved future
+receipts. The persistent client remains usable after a bounded limit response.
 
 The production runner is `res://scripts/services/toolbox/cli.gd`. Persistent
 stdio mode emits one `TOOLBOX_READY` JSON marker after startup, then one
