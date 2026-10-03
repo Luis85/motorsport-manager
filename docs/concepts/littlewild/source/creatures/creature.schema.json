@@ -128,7 +128,29 @@
           }
         },
         "defaults": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "archetype",
+            "personality",
+            "eventInteractions",
+            "interactionCooldowns"
+          ],
+          "properties": {
+            "archetype": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "personality": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+            },
+            "eventInteractions": {
+              "type": "array"
+            },
+            "interactionCooldowns": {
+              "type": "object"
+            }
+          }
         },
         "modes": {
           "type": "object",
