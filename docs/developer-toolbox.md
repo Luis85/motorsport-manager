@@ -102,8 +102,11 @@ toolbox.close()
 ```
 
 This checks bounded clock behavior. It does not claim a measured practice run or
-completed weekend. A standalone `SceneTree` script should defer its body until
-initialization and call `quit()` after closing the toolbox.
+completed weekend. For a standalone headless script, put its body in a
+`MainLoop._initialize()` override and return `true` from `_process(delta)` after
+it completes. This follows the production toolbox runner and avoids `SceneTree`
+autoloads, including `App`. Existing native application composition can call the
+API directly without creating a second loop.
 
 ## Python quickstart
 
