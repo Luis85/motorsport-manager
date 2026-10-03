@@ -1,5 +1,7 @@
 name: Runtime confidence
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -8,6 +10,46 @@ concurrency:
   group: runtime-confidence-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  toolbox-windows:
+    name: Native toolbox SDK (Windows)
+    runs-on: windows-2022
+    timeout-minutes: 20
+    env:
+      PYTHONUTF8: '1'
+      TOOLBOX_NATIVE_REQUIRED: '1'
+      TOOLBOX_EVIDENCE_ROOT: reports/toolbox-windows/native
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install checksum-verified pinned Windows editor
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'godot-win64.zip'
+          Invoke-WebRequest 'https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_win64.exe.zip' -OutFile $archive
+          $digest = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+          if ($digest -ne '731980f9608d61333e5baf54a2ef17210acc7a538446c0cb9969f002aca1e953') { throw 'Pinned Windows editor archive digest differs' }
+          $folder = Join-Path $env:RUNNER_TEMP 'godot-win64'
+          Expand-Archive $archive -DestinationPath $folder
+          $editor = Join-Path $folder 'Godot_v4.7.2-stable_win64_console.exe'
+          & $editor --version
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned Windows editor cannot execute' }
+          "VERIFICATION_TEST_GODOT=$editor" >> $env:GITHUB_ENV
+      - name: Exercise native SDK, strict transport and process-family cleanup
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force reports/toolbox-windows | Out-Null
+          python -m unittest discover -s tests -p 'test_toolbox*.py' -v *> reports/toolbox-windows/contracts.log
+          if ($LASTEXITCODE -ne 0) { Get-Content reports/toolbox-windows/contracts.log; exit $LASTEXITCODE }
+      - name: Retain exact-source Windows SDK evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: toolbox-windows-evidence
+          path: reports/toolbox-windows/
+          if-no-files-found: error
+          retention-days: 14
   reproduction:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -15,8 +57,10 @@ jobs:
       GODOT_VERSION: 4.7.2
       LP_NUM_THREADS: 2
       MOTORSPORT_SOURCE_REVISION: ${{ github.sha }}
+      TOOLBOX_NATIVE_REQUIRED: '1'
+      TOOLBOX_EVIDENCE_ROOT: reports/toolbox-linux/native
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install and identify the pinned reproduction engine
         shell: bash
         run: |
@@ -25,6 +69,7 @@ jobs:
           url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           curl --fail --location --retry 3 "$url" -o /tmp/godot.zip
           unzip -q /tmp/godot.zip -d /tmp/godot
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
           chmod +x /tmp/godot/Godot_*
           sudo ln -s /tmp/godot/Godot_* /usr/local/bin/godot
           printf '%s\n' "$url" > reports/toolchain/origin.txt
@@ -57,7 +102,7 @@ jobs:
           PY
       - name: Retain diagnostic evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-confidence-evidence
           path: reports/
@@ -65,7 +110,7 @@ jobs:
           retention-days: 14
       - name: Retain exact developer reproduction toolchain
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pinned-linux-reproduction-toolchain
           path: |

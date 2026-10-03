@@ -1,5 +1,7 @@
 class_name RaceObservationWorkspace
 extends HBoxContainer
+
+
 ## Race and qualifying share the spatial observation surface, not their session controls.
 func _ready() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL

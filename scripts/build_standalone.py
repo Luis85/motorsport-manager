@@ -1,4 +1,5 @@
 """Build named desktop exports with an identified source and matching pinned templates."""
+
 from __future__ import annotations
 
 import argparse
@@ -13,6 +14,7 @@ from verification_run import source_digest
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = "4.7.2.stable.official.ed1daf0bf"
+ENGINE_SHA256 = "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
 TEMPLATES = {
     "linux_debug.x86_64": "1a291d3d15e4180b60b0af96cf6458f11fe143636d76575ddf1e23d1a3f24f2e",
     "linux_release.x86_64": "d9f79ab89b5ae369aeed11c6052d402e8218cd503bf85b4a235f9c30c46a7c63",
@@ -28,8 +30,9 @@ def digest(path: Path) -> str:
 
 
 def validate_templates(folder: Path, target: str) -> dict[str, str]:
-    selected = {name: expected for name, expected in TEMPLATES.items()
-                if name.startswith(target + "_")}
+    selected = {
+        name: expected for name, expected in TEMPLATES.items() if name.startswith(target + "_")
+    }
     for name, expected in selected.items():
         path = folder / name
         if not path.is_file() or digest(path) != expected:
@@ -38,56 +41,99 @@ def validate_templates(folder: Path, target: str) -> dict[str, str]:
 
 
 def run(arguments: list[str], log: Path, cwd: Path) -> None:
-    result = subprocess.run(arguments, cwd=cwd, capture_output=True, text=True,
-                            encoding="utf-8", errors="replace", timeout=180)
+    result = subprocess.run(
+        arguments,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=180,
+    )
     output = result.stdout + result.stderr
     log.write_text(output, encoding="utf-8")
     if result.returncode or "SCRIPT ERROR:" in output or "ERROR:" in output:
         raise RuntimeError(f"Export command failed; inspect {log}")
 
 
-def build(godot: Path, templates: Path, output: Path, target: str, mode: str,
-          revision: str, root: Path = ROOT) -> dict:
+def build(
+    godot: Path,
+    templates: Path,
+    output: Path,
+    target: str,
+    mode: str,
+    revision: str,
+    root: Path = ROOT,
+) -> dict:
     """Use a clean import, then retain only a relocatable executable/PCK and provenance."""
-    if not revision.strip():
+    if not isinstance(revision, str) or not revision.strip():
         raise ValueError("Provide the actual source revision; disclose any uncommitted changes")
     if target not in ("linux", "windows") or mode not in ("debug", "release"):
         raise ValueError("Unsupported target or build mode")
     if output.exists() and any(output.iterdir()):
         raise ValueError("Output must be empty; do not mix artifacts from different builds")
     godot = godot.resolve()
-    version = subprocess.run([str(godot), "--version"], check=True, capture_output=True,
-                             text=True, timeout=15).stdout.strip()
+    version = subprocess.run(
+        [str(godot), "--version"], check=True, capture_output=True, text=True, timeout=15
+    ).stdout.strip()
     if version != ENGINE:
         raise ValueError(f"Expected {ENGINE}, received {version}")
+    engine_hash = digest(godot)
+    if engine_hash != ENGINE_SHA256:
+        raise ValueError("Export editor bytes differ from the pinned toolchain")
     selected = validate_templates(templates.resolve(), target)
     output.mkdir(parents=True, exist_ok=True)
-    identity = {"source_revision": revision, "source_digest": source_digest(root),
-                "engine": version, "engine_sha256": digest(godot), "templates": selected,
-                "target": target, "mode": mode, "runtime_verified": False}
+    identity = {
+        "source_revision": revision,
+        "source_digest": source_digest(root),
+        "engine": version,
+        "engine_sha256": engine_hash,
+        "templates": selected,
+        "target": target,
+        "mode": mode,
+        "runtime_verified": False,
+    }
     with tempfile.TemporaryDirectory(prefix="motorsport-export-") as temporary:
         stage = Path(temporary) / "project"
         stage.mkdir()
         # No checkout/import cache or local reports enter the export staging project.
         for directory in ("scripts", "scenes", "data", "content"):
-            shutil.copytree(root / directory, stage / directory,
-                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            shutil.copytree(
+                root / directory,
+                stage / directory,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
         for name in ("project.godot", "export_presets.cfg"):
             shutil.copy2(root / name, stage / name)
         (stage / ".export-templates").mkdir()
         for name in selected:
             shutil.copy2(templates / name, stage / ".export-templates" / name)
-        (stage / "build-identity.json").write_text(json.dumps(identity, indent=2) + "\n",
-                                                   encoding="utf-8")
-        run([str(godot), "--headless", "--path", str(stage), "--editor", "--import"],
-            output / "import.log", stage)
+        (stage / "build-identity.json").write_text(
+            json.dumps(identity, indent=2) + "\n", encoding="utf-8"
+        )
+        run(
+            [str(godot), "--headless", "--path", str(stage), "--editor", "--import"],
+            output / "import.log",
+            stage,
+        )
         if source_digest(root) != identity["source_digest"]:
             raise RuntimeError("Source changed during staging; rebuild a stable source tree")
         suffix = ".exe" if target == "windows" else ".x86_64"
         binary = output / ("Motorsport Manager" + suffix)
         preset = "Windows Desktop" if target == "windows" else "Linux Desktop"
-        run([str(godot), "--headless", "--path", str(stage), f"--export-{mode}",
-             preset, str(binary.resolve())], output / "export.log", stage)
+        run(
+            [
+                str(godot),
+                "--headless",
+                "--path",
+                str(stage),
+                f"--export-{mode}",
+                preset,
+                str(binary.resolve()),
+            ],
+            output / "export.log",
+            stage,
+        )
         pack = binary.with_suffix(".pck")
         if not binary.is_file() or not pack.is_file() or not pack.stat().st_size:
             raise RuntimeError("Export did not produce an executable and a non-empty PCK")
@@ -97,8 +143,9 @@ def build(godot: Path, templates: Path, output: Path, target: str, mode: str,
     for license_name in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
         shutil.copy2(root / license_name, output / license_name)
     identity["clean_import"] = True
-    (output / "build-manifest.json").write_text(json.dumps(identity, indent=2) + "\n",
-                                                encoding="utf-8")
+    (output / "build-manifest.json").write_text(
+        json.dumps(identity, indent=2) + "\n", encoding="utf-8"
+    )
     return identity
 
 
@@ -112,8 +159,9 @@ def main() -> int:
     parser.add_argument("--revision", required=True)
     args = parser.parse_args()
     try:
-        result = build(args.godot, args.templates, args.output.resolve(), args.target,
-                       args.mode, args.revision)
+        result = build(
+            args.godot, args.templates, args.output.resolve(), args.target, args.mode, args.revision
+        )
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         parser.exit(2, f"Build failed: {error}\n")
     print(json.dumps(result, indent=2))

@@ -1,16 +1,19 @@
 # Motorsport Manager documentation
 
-**Start with [Current native project status](current-state.md).** It records the 30 September 2026 merged post-PR24 capabilities, default/optional/diagnostic interface separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
+**Start with [Current native project status](current-state.md).** It records the merged PR #27 campaign first slice, subsequent PR #28/#29 data-ownership and quality work, default/optional/diagnostic interface separation, acceptance evidence and outstanding work. Dated guides below remain useful **historical implementation handoffs**, not competing current-release descriptions; for full verification use the latest exact-source CI artifacts and `scripts/verification_suites.json`.
 
 ## Current architecture — 0.19.0
 
 - [Architecture and ownership map](architecture-refactor.md)
 - [Developing and testing mechanics](developing-mechanics.md)
+- [Developer toolbox: native API, Python/JSON and explicit clocks](developer-toolbox.md)
+- [Toolbox model, state-space map and source adoption decisions](design/developer-toolbox-adoption.md)
 - [Composed rule profiles](composable-mechanics.md)
 - [Editor transactions and complete weekend flow](editor-and-weekend-boundaries.md)
 
 ## Current interface contracts
 
+- [UI pages, layouts and component catalog](components/README.md) — individual source-backed references with intent, user goals, composition, interactions and navigation links, based on PR #28.
 - [Current Minimal pitwall, driver instruments and stress estimate](driver-instruments.md)
 - [Prior Minimal UI polish, driver cards and timing integrity](minimal-ui-polish.md)
 - [Minimal visible contract, session flows, interface-selection boundary and architecture](race-weekend-minimal.md)

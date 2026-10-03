@@ -6,7 +6,10 @@ Status: vehicles, rosters, tyres/allocations, setup, shared race tuning, named
 weekends, weather/surface calibration, scalar reliability, incidents and supported
 virtual race-control settings, shared AI/racecraft tuning and externally named rival
 profiles are implemented. The catalog also accepts file-authored circuits, supported
-illustration styles and complete-weekend scenario briefs. Built-in tracks use their
+illustration styles, complete-weekend scenario briefs and bounded Team Principal
+campaign profiles. Campaign profiles author the starting organization, series,
+calendar, contracts, facilities, rival organizations, weekend reference and
+numerical campaign policies; executable algorithms and safety envelopes remain code-owned. Built-in tracks use their
 original files, not a duplicated track format. The authoring CLI provides listing,
 resolved inspection export, comparison and bounded scenario execution.
 
@@ -14,7 +17,7 @@ Wheel operating coefficients and registered provider selection are now authored.
 The six shipped developer diagnostic collections are also bounded file-backed resources;
 practice and rival recipes no longer live as executable GDScript tables, and every
 collection owns its bounded gallery title/description. Circuit Atelier placement presets
-and its contextual-guide copy are now a bounded authoring-only editor profile. The merged PR #24 adds a machine-checked consumer inventory for all 16 published schema families and completed exact-source CI, including six-shard Godot verification and Linux/Windows exported-runtime acceptance. This is not proof of gameplay balance, human usability or a same-hardware paired performance improvement. See [current-state inventory](../current-state.md) for the authoritative post-merge capability boundary.
+and its contextual-guide copy are now a bounded authoring-only editor profile. The merged PR #24 introduced the machine-checked consumer inventory; it now covers every published schema family, including campaign profiles and completed exact-source CI, including six-shard Godot verification and Linux/Windows exported-runtime acceptance. This is not proof of gameplay balance, human usability or a same-hardware paired performance improvement. See [current-state inventory](../current-state.md) for the authoritative post-merge capability boundary.
 See [weekends and shared tuning](weekends-and-tuning.md) for the new authoring path.
 See [tyres and setup](tyres-and-setup.md) and [teams, drivers and rosters](rosters.md) for external field authoring and limits.
 The reference program is native Godot 4.7.2. No browser runtime is introduced.
@@ -62,8 +65,11 @@ be changed by a content pack. The numeric parser bounds token length/exponents;
 individual schemas impose tighter game-specific ranges.
 
 Vehicle and entrant definitions are typed/frozen at compilation. The session checkpoint and
-replay identity retain their exact definition. Editing/removing a source pack
-cannot change that continuation. Old saves/direct APIs still use the frozen
+replay identity retain their exact definition. Team Principal careers now freeze
+their resolved campaign definition plus effective weekend/vehicle/roster/tyre/setup/
+tuning/mechanic closure into the campaign management envelope at creation. Editing,
+removing or overriding the source pack therefore affects new careers only; an
+existing career never rereads live tuning at settlement or departure. Old saves/direct APIs still use the frozen
 legacy four-preset and twelve-driver adapters. A new preset is not a new sporting format.
 
 `python3 scripts/verify_content_export.py --godot /path/to/godot` exports Linux

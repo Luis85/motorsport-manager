@@ -4,6 +4,7 @@ Blank lines, comments, and Python documentation strings are excluded. Runtime
 strings (including GDScript triple-quoted strings) are code, even when they
 contain a #. Syntax/tokenization failures must be reported, never counted as 0.
 """
+
 from __future__ import annotations
 
 import ast
@@ -21,8 +22,15 @@ def python_lines(text: str) -> set[int]:
                 value = node.body[0].value
                 if isinstance(value, ast.Constant) and isinstance(value.value, str):
                     docs.add((value.lineno, value.col_offset))
-    ignored = {tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT,
-               tokenize.DEDENT, tokenize.ENDMARKER, tokenize.ENCODING}
+    ignored = {
+        tokenize.COMMENT,
+        tokenize.NL,
+        tokenize.NEWLINE,
+        tokenize.INDENT,
+        tokenize.DEDENT,
+        tokenize.ENDMARKER,
+        tokenize.ENCODING,
+    }
     source = text.splitlines()
     lines = set()
     for token in tokenize.generate_tokens(io.StringIO(text).readline):
@@ -74,6 +82,11 @@ def measure(path: Path, text: str, policy: dict) -> dict:
         raise ValueError(f"Unsupported source extension: {path.suffix}")
     code = sorted(readers[path.suffix](text))
     limit = policy["limits"][category]
-    return {"path": path.as_posix(), "category": category, "code_lines": len(code),
-            "limit": limit, "over_limit": len(code) > limit,
-            "line": code[limit] if len(code) > limit else 1}
+    return {
+        "path": path.as_posix(),
+        "category": category,
+        "code_lines": len(code),
+        "limit": limit,
+        "over_limit": len(code) > limit,
+        "line": code[limit] if len(code) > limit else 1,
+    }

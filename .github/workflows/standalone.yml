@@ -1,15 +1,20 @@
 name: Standalone application
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: standalone-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   toolchain:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Download and verify matching desktop templates
         shell: bash
         run: |
@@ -36,7 +41,7 @@ jobs:
           PY
           printf '%s\n' "$url" > toolchain/origin.txt
           curl --fail --location --retry 3 https://raw.githubusercontent.com/godotengine/godot/4.7.2-stable/LICENSE.txt -o toolchain/LICENSE.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pinned-desktop-export-templates
           path: toolchain/
@@ -44,6 +49,9 @@ jobs:
           retention-days: 7
   build:
     needs: toolchain
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
@@ -52,14 +60,18 @@ jobs:
         target: [linux, windows]
         mode: [debug, release]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/download-artifact@v4
-        with:
-          name: pinned-desktop-export-templates
-          path: ${{ runner.temp }}/templates
+      - name: Download digest-verified templates from this exact run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python scripts/download_artifacts.py
+          --repository "${{ github.repository }}" --run-id "${{ github.run_id }}"
+          --source "${{ github.event.pull_request.head.sha || github.sha }}"
+          --name pinned-desktop-export-templates --output "${{ runner.temp }}/templates"
       - name: Install pinned export editor
         shell: bash
         run: |
@@ -85,13 +97,13 @@ jobs:
         run: >-
           tar -czf "${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz"
           -C "builds/${{ matrix.target }}-${{ matrix.mode }}" .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: standalone-${{ matrix.target }}-${{ matrix.mode }}
           path: ${{ runner.temp }}/standalone-${{ matrix.target }}-${{ matrix.mode }}.tar.gz
           if-no-files-found: error
           retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: standalone-build-failure-${{ matrix.target }}-${{ matrix.mode }}
@@ -100,6 +112,9 @@ jobs:
           retention-days: 14
   native-smoke:
     needs: build
+    permissions:
+      contents: read
+      actions: read
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -119,14 +134,26 @@ jobs:
             runner: windows-2022
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install the native virtual-display and OpenGL ES runtime
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends xvfb xauth libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/download-artifact@v4
-        with:
-          name: standalone-${{ matrix.target }}-${{ matrix.mode }}
-          path: ${{ runner.temp }}/transport
+      - name: Download digest-verified player archive from this exact run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python scripts/download_artifacts.py
+          --repository "${{ github.repository }}" --run-id "${{ github.run_id }}"
+          --source "${{ github.event.pull_request.head.sha || github.sha }}"
+          --name standalone-${{ matrix.target }}-${{ matrix.mode }}
+          --output "${{ runner.temp }}/transport"
       - name: Extract the same permission-preserving archive distributed to players
         shell: bash
         working-directory: ${{ runner.temp }}
@@ -140,7 +167,7 @@ jobs:
           python scripts/smoke_standalone.py
           --package "${{ runner.temp }}/package"
           --output "reports/standalone-${{ matrix.target }}-${{ matrix.mode }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: standalone-evidence-${{ matrix.target }}-${{ matrix.mode }}

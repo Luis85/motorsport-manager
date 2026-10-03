@@ -3,6 +3,7 @@ extends RefCounted
 ## Cross-envelope rule: factual cash and administrative finance history cannot
 ## be dated after the campaign state that contains them. Open due dates may.
 
+
 static func validate(value: Variant, elapsed_slot: int) -> String:
 	var error = CampaignEconomy.validate(value)
 	if not error.is_empty():

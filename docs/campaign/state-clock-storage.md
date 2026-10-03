@@ -1,6 +1,6 @@
 # Campaign state, clock and storage foundation
 
-Status: implemented contract foundation on PR #27. This is not yet a playable company-management campaign or headquarters UI.
+Status: implemented campaign state/persistence authority, introduced in PR #27 and retained by PR #28/#29. The bounded playable route is [Director Desk and first Team Principal loop](director-desk-first-loop.md); this guide describes its underlying contracts, not a complete specialist headquarters interface.
 
 ## Purpose
 
@@ -22,7 +22,7 @@ The clock does not run automatically in this slice. Time changes only through an
 
 ## Campaign state and commands
 
-A campaign starts with stable `campaign_id`, `organization_id` and `principal_id`, an initial clock point and a bounded daily intervention-energy capacity. The initial tuning seed is six points; this is a versioned game value, not a real-world claim.
+A campaign starts with stable `campaign_id`, `organization_id` and `principal_id`, an initial clock point and a bounded daily intervention-energy capacity. The legacy default is six points; new careers receive validated authored campaign configuration. This is a versioned game value, not a real-world claim.
 
 The first command set is intentionally narrow:
 
@@ -33,9 +33,9 @@ Rejected, stale, malformed, duplicate, unaffordable and calendar-overflow comman
 
 The accepted command journal is authoritative evidence. A snapshot restores by recreating the initial state and replaying every accepted command in order. Sequence numbers, before/after slots, resulting state and integrity digest must all agree. Recomputing an outer digest cannot conceal a history that no longer reproduces the saved state.
 
-## Checkpoint version 4
+## Current checkpoint version 6
 
-`CampaignCheckpoint` version 4 contains:
+`CampaignCheckpoint` version 6 contains:
 
 - campaign identity;
 - the complete replay-validated `CampaignState` snapshot;
@@ -45,10 +45,12 @@ The accepted command journal is authoritative evidence. A snapshot restores by r
 - `CampaignEconomy` accounts, commitments, reserve policy and postings;
 - `CampaignInventory` dated exact returned-resource records;
 - `CampaignPersonnel` people, contracts, role assignments and availability;
-- `CampaignOperations` facilities, work orders and capacity reservations; and
+- `CampaignOperations` facilities, work orders and capacity reservations;
+- `CampaignEngineering` designs, projects and physical part inventory;
+- `CampaignManagement` commercial, delegation, rivals, people, season-plan, supply and founder-group authorities plus the frozen authored campaign closure; and
 - an integrity digest over the complete envelope.
 
-All consequence projections belong to the same campaign and contain the same complete settled-event set. Their result and policy digests must agree with the factual receipt. An event cannot be both active and settled.
+Competition, economy and returned-inventory consequence projections belong to the same campaign and contain the same complete settled-event set. Their result and policy digests must agree with the factual receipt. An event cannot be both active and settled.
 
 The checkpoint also validates cross-projection time and authority:
 
@@ -64,7 +66,9 @@ The checkpoint also validates cross-projection time and authority:
 
 Version-one checkpoints remain accepted and migrate deterministically with empty campaign projections. Migration does not guess points, money, inventory or personnel history.
 
-Version-two checkpoints preserve competition, economy and inventory exactly and gain empty personnel authority at the restored campaign slot. Existing payroll commitments are placed in an explicit legacy-payroll index. Version-three checkpoints preserve personnel and gain empty operations authority at the restored campaign slot; existing `facility` commitments are placed in an explicit legacy-facility index. These migrations preserve recorded obligations without inventing people, employment terms, facilities or work orders.
+Version-two checkpoints preserve factual competition, cash/obligations and inventory and gain empty personnel authority at the restored campaign slot. A legacy version-one economy is normalized losslessly before later cross-authority validation. Existing payroll commitments are placed in an explicit legacy-payroll index. Version-three checkpoints preserve personnel and gain empty operations authority at the restored campaign slot; existing `facility` commitments are placed in an explicit legacy-facility index. These migrations preserve recorded obligations without inventing people, employment terms, facilities or work orders.
+
+Version-four checkpoints gain empty engineering authority and explicit legacy-development indexes. Version-five checkpoints gain management authority at the restored slot; old management-v1 envelopes remain readable with isolated legacy defaults. Migration does not invent projects, parts, commercial agreements, mandates or authored campaign history. Current management-v2 freezes validated campaign and runtime definitions rather than rereading the live catalog.
 
 The campaign checkpoint schema remains independent from race-weekend checkpoint versions.
 
@@ -74,7 +78,7 @@ The campaign checkpoint schema remains independent from race-weekend checkpoint 
 
 Campaign checkpoints use the precise numeric JSON path so integral slots, command revisions, minor monetary units, capacity basis points and dated personnel records survive round-trip without type drift.
 
-The storage adapter accepts complete candidates from campaign competition, finance, personnel, operations and weekend transactions. It does not calculate campaign rules itself.
+The storage adapter accepts complete candidates from the campaign transaction layers, including engineering, management and weekend transactions. It does not calculate campaign rules itself.
 
 ## Transaction layers
 
@@ -83,16 +87,18 @@ The checkpoint is the publication boundary for:
 - `CampaignCompetitionTransaction` — series, season, entry and cancellation administration;
 - `CampaignFinanceTransaction` — commitments, reserve policy and due settlement;
 - `CampaignPersonnelTransaction` — people, contracts, roles and availability;
-- `CampaignOperationsTransaction` — facilities, internal work and rented services; and
+- `CampaignOperationsTransaction` — facilities, internal work and rented services;
+- `CampaignEngineeringTransaction` — gate work, designs and physical parts;
+- management transactions — readiness, commercial, delegation, rivals, people, supply, multi-season and founder-group changes; and
 - `CampaignWeekendTransaction` — elapsed weekend time, standings, inventory, event cash, due commitments and factual receipt.
 
 Each transaction restores the whole checkpoint, stages detached values and returns one valid complete candidate or the exact caller checkpoint. No projection is published independently.
 
 ## Deliberate limits
 
-This foundation does **not** implement automatic campaign time flow, staff productivity, engineering designs/parts/materials, rivals, campaign randomness, recruitment UI, management navigation, correction deltas or balanced rewards. Daily energy currently governs only explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
+The clock and persistence authority do not implement automatic real-time campaign progression, hidden staff productivity or balanced rewards. Daily energy governs explicit principal-intervention reservations; it is not an organization-wide action budget and cannot affect race commands.
 
-TM-06 now provides explicit staff/facility capacity and rented services. The next dependency is TM-07: engineering development and physical part inventory, consuming those reservations rather than adding another scheduler or hidden progress resource.
+Implemented consumers include [engineering and physical parts](engineering-parts-race-profile.md), [rival organizations](rival-organizations.md), [people development/recruitment](people-development-recruitment.md), [operational depth](operational-depth.md), [final-result correction](result-corrections.md) and the [Director Desk](director-desk-first-loop.md). These consume the same complete checkpoint. Dedicated specialist management screens, human usability and balance remain separate work.
 
 ## Verification
 

@@ -1,6 +1,6 @@
 # Campaign series, entries and season lifecycle
 
-Status: implemented domain/application foundation on PR #27. This is not yet a playable campaign UI or a claim of balanced championship rules.
+Status: implemented sporting authority, introduced in PR #27 and used by the bounded [Director Desk first loop](director-desk-first-loop.md). This is not a claim of comprehensive or balanced championship rules.
 
 ## Authority and scope
 
@@ -12,7 +12,7 @@ The first supported series policy is intentionally narrow:
 - one frozen ordered points table;
 - successive finishing-position countback;
 - final classifications only; and
-- no fastest-lap bonus, penalties, provisional payouts, promotion or correction deltas.
+- no fastest-lap bonus, penalties or provisional payouts in the ordinary series-scoring path. Promotion and final-result correction have separate implemented transaction owners.
 
 Those omissions are explicit. They are not approximated from unrelated race fields.
 
@@ -98,7 +98,7 @@ Version-one `CampaignCompetition` projections remain valid inside modern campaig
 
 An identical already-applied legacy event remains an exact no-op. Adding a new event to non-empty legacy history requires a future explicit migration with real calendar and entry evidence.
 
-The surrounding `CampaignCheckpoint` schema is version 3. Its cross-projection rules require competition, economy and inventory to reference the same complete event set, result digest and policy where applicable; personnel remains a separate organization authority in the same atomic envelope.
+The current surrounding `CampaignCheckpoint` schema is version 6. Its cross-projection rules require competition, economy and inventory to reference the same complete event set, result digest and policy where applicable; personnel remains a separate organization authority in the same atomic envelope.
 
 ## Registered contracts
 
@@ -121,8 +121,8 @@ The mandatory campaign suite covers:
 
 Additional registered contracts cover globally unique event identities, atomic checkpoint publication, unchanged rejected checkpoints, active-weekend administration freeze, storage round-trip, and cancellation without sporting or financial consequences. The atomic weekend transaction additionally settles a registered event together with time, inventory, event cash, due obligations, personnel preservation and the exactly-once receipt.
 
-## Deliberate next work
+## Implemented integrations and remaining limits
 
-This milestone does not implement provisional classifications, stewarding corrections, reversible prize postings, season prize distribution, entry eligibility from employment/licenses, roster effective-date registration, promotion, rivals or campaign screens.
+[Readiness/departure](event-readiness-departure.md) checks accepted entries against required player driver/crew availability before freezing the manifest. [Multi-season progression](multi-season-progression.md) adds dated season prizes, explicit promotion choices and a coherent second season. [Final-result correction](result-corrections.md), [rivals](rival-organizations.md) and the [Director Desk](director-desk-first-loop.md) consume the same sporting authority.
 
-TM-06 adds capacity, facilities and rented services. Later TM-08 readiness must bind accepted season entries to available contracted people before generating the immutable race manifest.
+Live provisional classification, steward adjudication, license-derived eligibility and roster effective-date registration remain outside this bounded final-only series contract. There is no claim of comprehensive championship regulation or calibrated balance.

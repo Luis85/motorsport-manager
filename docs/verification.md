@@ -1,6 +1,6 @@
 # Verification and acceptance
 
-**0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
+This is the current verification entry point. `scripts/verification_suites.json` owns suite registration, native/headless requirements, timeouts and required reports. Historical iteration evidence below describes its original source. New weekends use native checkpoint v12 with frozen performance profiles; race v10/v11 histories keep their original model identities. Campaign checkpoint v6 and management v2 are separate contracts. See [current project status](current-state.md) and [the review ledger](maintenance/data-driven-code-review.md).
 
 ## One command
 
@@ -8,13 +8,13 @@
 python3 scripts/verify.py --godot /path/to/godot
 ```
 
-The verifier performs a headless editor import, deterministic domain tests, and rendered native UI tests. Tests use a fresh temporary project copy with a unique application name and isolated user-data environment; generated evidence is copied back to `reports/`. It checks exit codes, rejects script/parse/runtime errors in logs, requires fresh passing JSON reports, and writes `reports/verification.json`. Stale reports are removed before a run. Linux without a display needs `xvfb-run` and `xauth`; UI rendering uses software OpenGL and the Dummy audio driver. A driver warning that VSync cannot change under the virtual display is non-fatal.
+The verifier performs a headless editor import, deterministic domain tests, and rendered native UI tests. Tests use a fresh temporary project copy with a unique application name and isolated user-data environment; generated evidence is copied back to `reports/`. It checks exit codes, rejects script/parse/runtime errors in logs, requires fresh passing JSON reports, and writes `reports/verification.json`. Stale reports are removed before a run. Linux without a display needs `xvfb-run` and `xauth`; Xvfb verification and standalone smoke explicitly use Godot's supported `opengl3_es` driver (OpenGL ES through EGL), software Mesa and the Dummy audio driver. This avoids the unsupported swap-control request made by Godot's desktop GLX backend at window creation. Normal shipping launches retain their configured rendering driver. Native verification and smoke pass `--disable-vsync` before `--` to the engine and after it to the application, since Godot consumes its flag. The application preserves the saved VSync preference and skips redundant native setters. These software-rendered native runs do not replace target-GPU acceptance.
 
 `--headless-only` is available for domain-only environments and records that explicitly; it is not equivalent to full verification. In CI, the full command is mandatory and verification evidence is uploaded even on failure.
 
 ## Automated coverage
 
-The suite includes the original 404 assertions plus the targeted scenarios in `tests/foundation_tests.gd` and `tests/iteration3_tests.gd`. Exact totals are emitted in each run’s JSON report. Counts include repeated per-car/per-step invariants, not independent user scenarios. It covers:
+The complete registry includes the original domain/iteration suites and later mechanic, replay, content, campaign, application-boundary and rendered native UI contracts. Exact suite/check totals are emitted in each run’s JSON report; the original 404-assertion milestone is historical. Counts include repeated per-car/per-step invariants, not independent user scenarios. It covers:
 
 - All eight bundled layouts: bounded geometry, lengths, continuity, native round trip, sector/pit compilation and runtime export.
 - Exact cubic subdivision, automatic-handle migration, malformed documents, preset differences, snapshot isolation and persistence errors/backups.
@@ -30,11 +30,17 @@ New domain checks cover candidate-time fallback, cheap preview bakes, continuous
 
 Native UI checks deliver actual mouse-button/motion events to the canvas, verify selection does not clear redo, drag uses the cheap preview, Escape rolls back the transaction, and release commits once. They cover reference calibration without moving the road, persistent timing TreeItems, selected-driver retention, follow-camera cancellation, synchronized speed/delegation controls, visible pit actions in all tabs and at the smaller viewport, and non-modal ordinary commands. These are scripted native integration checks, not a claim of exhaustive manual playtesting.
 
+## Source-bound aggregate and artifacts
+
+CI runs six shards and aggregates them against the exact current registry. Every shard must provide passing, finite, well-formed suite evidence, fresh required reports and the same expected source digest; duplicate, missing, stale or foreign-source reports fail. Downloaded artifacts require digest integrity. A successful subset, a headless-only run or a green advisory-quality job is not the aggregate gate.
+
+Functional verification is accompanied by generated-schema/content/exported-runtime checks, Python unit and architecture checks, runtime confidence, and Linux/Windows debug/release builds plus packaged native smoke. The maintained Actions are pinned; workflow success and the complete quality findings remain different observations. Read the [PR #29 checks](https://github.com/Luis85/motorsport-manager/pull/29/checks) and the final integrated [PR #28 checks](https://github.com/Luis85/motorsport-manager/pull/28/checks) with their source IDs. This document does not manufacture a final-head pass from earlier evidence.
+
 ## Reproducible artifacts
 
 `reports/` is generated and ignored by Git. A successful full run produces import/domain/UI logs, `domain-tests.json`, `ui-smoke.json`, `verification.json`, `bake-performance.json`, `race-matrix.json`, and numbered screenshots. GitHub Actions exposes these as the `verification-evidence` artifact. Actual counts/durations are taken from the report, not hard-coded into the pass criteria.
 
-The implementation was verified with **Godot 4.7.2 standard on Linux**, using software OpenGL for native UI capture. No Windows/macOS export, touch-device session, or target-GPU performance claim follows from these tests. Reference lap estimates are not compared against real qualifying records as a correctness test.
+The original iteration evidence used **Godot 4.7.2 standard on Linux** and software OpenGL for native UI capture. Later workflows add Linux/Windows packaged builds and smoke gates; their exact-source artifacts establish only those covered environments. No macOS export, touch-device session, representative-GPU performance or human playtest follows from these tests. Reference lap estimates are not compared against real qualifying records as a correctness test.
 
 ## Manual acceptance pass
 

@@ -5,14 +5,18 @@ extends RefCounted
 const SURFACE_STATIONS = 96
 const SURFACE_LANES = 7
 
+
 func capture() -> Dictionary:
 	return {}
+
 
 func surface_values(_channel: String) -> Array:
 	return []
 
+
 func rejoin(_forecast: Dictionary) -> Dictionary:
 	return {}
+
 
 func detached_track() -> TrackGeometry:
 	return null

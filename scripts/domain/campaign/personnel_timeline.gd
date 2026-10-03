@@ -3,6 +3,7 @@ extends RefCounted
 ## Personnel history cannot be dated after the campaign state that contains it.
 ## Effective starts, endings and future reservations may remain ahead of time.
 
+
 static func validate(personnel: Dictionary, elapsed_slot: int) -> String:
 	var error = CampaignPersonnel.validate(personnel)
 	if not error.is_empty():

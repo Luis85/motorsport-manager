@@ -60,228 +60,60 @@ const PARAMETERS = {
 	"wet_dry_wear_multiplier": 2.2
 }
 const BOUNDS = {
-	"cold_c": [
-		0.0,
-		100.0
-	],
-	"ambient_c": [
-		0.0,
-		100.0
-	],
-	"working_band_c": [
-		0.0,
-		112.0
-	],
-	"surface_grip_loss_per_c": [
-		0.0,
-		1.0
-	],
-	"core_grip_offset_c": [
-		0.0,
-		152.0
-	],
-	"core_grip_loss_per_c": [
-		0.0,
-		1.0
-	],
-	"minimum_thermal_grip": [
-		0.05,
-		1.0
-	],
-	"tread_loss_per_percent": [
-		0.0,
-		1.0
-	],
-	"tread_cliff_percent": [
-		0.0,
-		100.0
-	],
-	"tread_cliff_quadratic": [
-		0.0,
-		1.0
-	],
-	"minimum_tread_grip": [
-		0.05,
-		1.0
-	],
-	"grain_grip_loss": [
-		0.0,
-		1.0
-	],
-	"blister_grip_loss": [
-		0.0,
-		1.0
-	],
-	"flat_grip_loss": [
-		0.0,
-		1.0
-	],
-	"minimum_damage_grip": [
-		0.05,
-		1.0
-	],
-	"puncture_grip": [
-		0.05,
-		1.0
-	],
-	"corner_acceleration_scale_mps2": [
-		1.0,
-		100.0
-	],
-	"lateral_load_gain": [
-		0.0,
-		1.76
-	],
-	"brake_bias_load_gain": [
-		0.0,
-		24.0
-	],
-	"brake_load_gain": [
-		0.0,
-		1.2
-	],
-	"throttle_load_gain": [
-		0.0,
-		1.0
-	],
-	"brake_slide_gain": [
-		0.0,
-		1.0
-	],
-	"throttle_slide_gain": [
-		0.0,
-		1.0
-	],
-	"cold_slide_offset_c": [
-		0.0,
-		120.0
-	],
-	"cold_slide_gain": [
-		0.0,
-		1.0
-	],
-	"neutral_target_c": [
-		0.0,
-		100.0
-	],
-	"moving_target_c": [
-		0.0,
-		100.0
-	],
-	"corner_heat_gain": [
-		0.0,
-		152.0
-	],
-	"pace_heat_gain": [
-		0.0,
-		112.0
-	],
-	"slide_heat_gain": [
-		0.0,
-		184.0
-	],
-	"brake_heat_gain": [
-		0.0,
-		96.0
-	],
-	"throttle_heat_gain": [
-		0.0,
-		64.0
-	],
-	"water_cooling_gain": [
-		0.0,
-		192.0
-	],
-	"moving_surface_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"stopped_surface_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"core_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"pressure_gain_per_c": [
-		0.0,
-		1.0
-	],
-	"grain_offset_c": [
-		0.0,
-		96.0
-	],
-	"grain_rate": [
-		0.0,
-		1.0
-	],
-	"care_grain_gain": [
-		0.0,
-		1.0
-	],
-	"clean_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"clean_lower_offset_c": [
-		0.0,
-		136.0
-	],
-	"clean_upper_offset_c": [
-		0.0,
-		144.0
-	],
-	"blister_offset_c": [
-		0.0,
-		160.0
-	],
-	"blister_rate": [
-		0.0,
-		1.0
-	],
-	"grain_wear_gain": [
-		0.0,
-		1.0
-	],
-	"blister_wear_gain": [
-		0.0,
-		1.0
-	],
-	"flat_wear_gain": [
-		0.0,
-		1.0
-	],
-	"puncture_wear_per_lap": [
-		0.0,
-		160.0
-	],
-	"heat_cycle_offset_c": [
-		0.0,
-		96.0
-	],
-	"heat_cycle_reset_c": [
-		0.0,
-		100.0
-	],
-	"spare_surface_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"spare_core_rate_per_s": [
-		0.0,
-		1.0
-	],
-	"lockup_heat_c": [
-		0.0,
-		64.0
-	],
-	"wet_dry_water_threshold": [
-		0.0,
-		1.0
-	],
-	"wet_dry_wear_multiplier": [
-		0.1,
-		8.0
-	]
+	"cold_c": [0.0, 100.0],
+	"ambient_c": [0.0, 100.0],
+	"working_band_c": [0.0, 112.0],
+	"surface_grip_loss_per_c": [0.0, 1.0],
+	"core_grip_offset_c": [0.0, 152.0],
+	"core_grip_loss_per_c": [0.0, 1.0],
+	"minimum_thermal_grip": [0.05, 1.0],
+	"tread_loss_per_percent": [0.0, 1.0],
+	"tread_cliff_percent": [0.0, 100.0],
+	"tread_cliff_quadratic": [0.0, 1.0],
+	"minimum_tread_grip": [0.05, 1.0],
+	"grain_grip_loss": [0.0, 1.0],
+	"blister_grip_loss": [0.0, 1.0],
+	"flat_grip_loss": [0.0, 1.0],
+	"minimum_damage_grip": [0.05, 1.0],
+	"puncture_grip": [0.05, 1.0],
+	"corner_acceleration_scale_mps2": [1.0, 100.0],
+	"lateral_load_gain": [0.0, 1.76],
+	"brake_bias_load_gain": [0.0, 24.0],
+	"brake_load_gain": [0.0, 1.2],
+	"throttle_load_gain": [0.0, 1.0],
+	"brake_slide_gain": [0.0, 1.0],
+	"throttle_slide_gain": [0.0, 1.0],
+	"cold_slide_offset_c": [0.0, 120.0],
+	"cold_slide_gain": [0.0, 1.0],
+	"neutral_target_c": [0.0, 100.0],
+	"moving_target_c": [0.0, 100.0],
+	"corner_heat_gain": [0.0, 152.0],
+	"pace_heat_gain": [0.0, 112.0],
+	"slide_heat_gain": [0.0, 184.0],
+	"brake_heat_gain": [0.0, 96.0],
+	"throttle_heat_gain": [0.0, 64.0],
+	"water_cooling_gain": [0.0, 192.0],
+	"moving_surface_rate_per_s": [0.0, 1.0],
+	"stopped_surface_rate_per_s": [0.0, 1.0],
+	"core_rate_per_s": [0.0, 1.0],
+	"pressure_gain_per_c": [0.0, 1.0],
+	"grain_offset_c": [0.0, 96.0],
+	"grain_rate": [0.0, 1.0],
+	"care_grain_gain": [0.0, 1.0],
+	"clean_rate_per_s": [0.0, 1.0],
+	"clean_lower_offset_c": [0.0, 136.0],
+	"clean_upper_offset_c": [0.0, 144.0],
+	"blister_offset_c": [0.0, 160.0],
+	"blister_rate": [0.0, 1.0],
+	"grain_wear_gain": [0.0, 1.0],
+	"blister_wear_gain": [0.0, 1.0],
+	"flat_wear_gain": [0.0, 1.0],
+	"puncture_wear_per_lap": [0.0, 160.0],
+	"heat_cycle_offset_c": [0.0, 96.0],
+	"heat_cycle_reset_c": [0.0, 100.0],
+	"spare_surface_rate_per_s": [0.0, 1.0],
+	"spare_core_rate_per_s": [0.0, 1.0],
+	"lockup_heat_c": [0.0, 64.0],
+	"wet_dry_water_threshold": [0.0, 1.0],
+	"wet_dry_wear_multiplier": [0.1, 8.0]
 }

@@ -6,16 +6,74 @@ const CASES = [
 	{"track": "monaco", "scenario": "wet", "seed": 2026, "intensity": "standard"},
 	{"track": "monza", "scenario": "changeable", "seed": 942, "intensity": "volatile"},
 ]
+var checks: int = 0
+var errors: Array[String] = []
+
 
 func _initialize() -> void:
 	call_deferred("run")
 
+
+func check(condition: bool, label: String) -> void:
+	checks += 1
+	if not condition:
+		errors.append(label)
+		print("CHARACTERIZATION_FAILURE ", label)
+
+
+func compare_checkpoints(rows: Array, baseline: Variant) -> void:
+	var shaped = baseline is Dictionary and baseline.get("cases") is Array
+	check(shaped, "Baseline supplies an explicit array of characterization cases")
+	if not shaped:
+		return
+	var reference: Array = baseline.cases
+	check(reference.size() == CASES.size(), "Baseline retains all three declared case recipes")
+	if reference.size() != CASES.size():
+		return
+	for index in range(CASES.size()):
+		compare_case(rows[index], reference[index], CASES[index])
+
+
+func compare_case(row: Dictionary, baseline: Variant, recipe: Dictionary) -> void:
+	var label = "%s/%s seed %d" % [recipe.track, recipe.scenario, recipe.seed]
+	var shaped = (
+		baseline is Dictionary
+		and baseline.get("recipe") is Dictionary
+		and baseline.get("hashes") is Array
+	)
+	check(shaped, label + " baseline supplies a recipe and checkpoint array")
+	if not shaped:
+		return
+	var matching = RaceRecord.equivalent(recipe, baseline.recipe)
+	check(matching, label + " baseline identifies the same complete recipe")
+	if not matching:
+		return
+	var hashes: Array = baseline.hashes
+	check(hashes.size() == 8, label + " baseline retains eight declared checkpoint hashes")
+	if hashes.size() != 8:
+		return
+	for index in range(8):
+		check(
+			row.hashes[index] == hashes[index],
+			"%s tick %d matches the unchanged baseline fingerprint" % [label, (index + 1) * 500]
+		)
+
+
 func exercise(recipe: Dictionary) -> Dictionary:
 	var read = Storage.read_json("res://data/tracks/%s.json" % recipe.track)
-	var sim = PracticeRaceSim.new(TrackGeometry.new(read.data), {
-		"laps": 6, "scenario": recipe.scenario, "seed": recipe.seed,
-		"intensity": recipe.intensity, "tactical_duels": true,
-	})
+	var sim = (
+		PracticeRaceSim
+		. new(
+			TrackGeometry.new(read.data),
+			{
+				"laps": 6,
+				"scenario": recipe.scenario,
+				"seed": recipe.seed,
+				"intensity": recipe.intensity,
+				"tactical_duels": true,
+			}
+		)
+	)
 	var states: Array = []
 	var accepted: Array = []
 	accepted.append(sim.command("prepare_race"))
@@ -40,20 +98,31 @@ func exercise(recipe: Dictionary) -> Dictionary:
 		if (index + 1) % 500 == 0:
 			states.append(RaceRecord.fingerprint(RaceRecord.sporting(sim.snapshot())))
 	return {
-		"recipe": recipe, "formation_steps": formation_steps,
-		"commands_accepted": accepted, "hashes": states,
-		"pits": sim.stats.pits, "rng_state": sim.rng_state,
+		"recipe": recipe,
+		"formation_steps": formation_steps,
+		"commands_accepted": accepted,
+		"hashes": states,
+		"pits": sim.stats.pits,
+		"rng_state": sim.rng_state,
 	}
+
 
 func run() -> void:
 	var rows: Array = []
 	for recipe in CASES:
 		rows.append(exercise(recipe))
 		print("CHARACTERIZATION_CASE ", JSON.stringify(rows.back()))
-	var actual = {"baseline_sha": BASELINE_SHA, "engine": Engine.get_version_info().string, "cases": rows}
+	var actual = {
+		"baseline_sha": BASELINE_SHA, "engine": Engine.get_version_info().string, "cases": rows
+	}
 	var expected = Storage.read_json("res://tests/fixtures/architecture-reference.json")
-	var passed = expected.ok and RaceRecord.equivalent(actual, expected.data)
-	var report = {"passed": passed, "checks": rows.size() * 8, "actual": actual}
+	check(
+		expected.ok and RaceRecord.equivalent(actual, expected.data),
+		"The complete characterization manifest matches the unchanged baseline"
+	)
+	compare_checkpoints(rows, expected.data if expected.ok else null)
+	var passed = errors.is_empty()
+	var report = {"passed": passed, "checks": checks, "errors": errors, "actual": actual}
 	Storage.write_json("res://reports/architecture-characterization.json", report)
 	print("ARCHITECTURE_CHARACTERIZATION ", JSON.stringify(report))
 	quit(0 if passed else 1)

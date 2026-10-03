@@ -2,11 +2,11 @@
 
 Status: TM-06 first-slice implementation contract.
 
-This milestone adds schedulable organizational capacity without introducing a second work clock, a passive facility performance bonus, or the engineering/part pipeline planned for TM-07. Campaign time remains the dated 15-minute `CampaignClock`; people remain owned by `CampaignPersonnel`; binding cash remains owned by `CampaignEconomy`.
+This milestone adds schedulable organizational capacity without introducing a second work clock, a passive facility performance bonus, or a second engineering/part authority. The implemented [TM-07 engineering pipeline](engineering-parts-race-profile.md) consumes these work orders. Campaign time remains the dated 15-minute `CampaignClock`; people remain owned by `CampaignPersonnel`; binding cash remains owned by `CampaignEconomy`.
 
 ## First-slice facility families
 
-TM-06 supports three deliberately bounded capability families:
+TM-06 introduced three deliberately bounded capability families (TM-15 [operational depth](operational-depth.md) adds fabrication, race operations, staff development, commercial operations and academy capacity):
 
 - `preparation_workshop` — workshop/bay capacity used by preparation work;
 - `design_office` — internal design/coordination capacity; and
@@ -61,9 +61,9 @@ A generic personnel or finance action cannot silently tear down one side of an a
 
 The query does not reserve people, capacity, cash or campaign time. A busy internal workshop can therefore be compared with an available rented service before the player makes a binding commitment.
 
-## Checkpoint version 4
+## Checkpoint integration
 
-`CampaignCheckpoint` version 4 adds the `operations` projection alongside campaign state, settlements, competition, economy, inventory and personnel.
+Version 4 introduced the `operations` projection. Current `CampaignCheckpoint` version 6 also carries engineering and management, preserving the same people/capacity/economy links.
 
 Cross-envelope validation requires:
 
@@ -95,6 +95,6 @@ The registered campaign suite covers:
 
 ## Deliberate limits
 
-TM-06 does not yet implement facility construction, commissioning, condition/maintenance, recurring operating costs, materials, manufactured parts, design knowledge, project progress, output quantities, race-performance effects or campaign UI. Those responsibilities remain downstream.
+Facility construction, commissioning, facility condition/maintenance and recurring operating costs remain separate depth. [Engineering](engineering-parts-race-profile.md) now consumes explicit work/capacity for designs and physical parts; [operational depth](operational-depth.md) adds material stock, uncertainty and part wear/repair. Director Desk summaries expose bounded organization work; dedicated facility specialist screens remain future presentation.
 
-TM-07 may consume these work/capacity reservations for the small engineering and physical-part pipeline. It must not bypass them with an abstract progress slot or add a race performance rating that has no tested race-model pathway.
+Capacity itself never grants a passive performance bonus. Installed engineering parts affect the race only through the versioned, frozen and tested performance-profile seam.

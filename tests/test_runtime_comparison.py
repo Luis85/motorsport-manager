@@ -1,8 +1,9 @@
 """Reject timing comparisons which do not establish comparable work and outcomes."""
-from copy import deepcopy
-from pathlib import Path
+
 import sys
 import unittest
+from copy import deepcopy
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from paired_runtime import IDENTITY, summarize, validate_pair
@@ -10,9 +11,31 @@ from paired_runtime import IDENTITY, summarize, validate_pair
 
 def report():
     value = {key: "same" for key in IDENTITY}
-    value.update(passed=True, checks=10, controlled=[{"speed": 16, "fixed_steps": 100, "outcome_hash": "same"}],
-                 simulation={"steps": 1000, "simulated_seconds": 50, "outcome_hash": "same"},
-                 timings=[{"workload": "save", "median_us": 100, "samples": 24, "warmup_calls": 4}])
+    value.update(
+        renderer="gl_compatibility",
+        rendering_driver="opengl3",
+        passed=True,
+        checks=10,
+        controlled=[
+            {
+                "speed": 16,
+                "input_frames": 120,
+                "fixed_steps": 100,
+                "frame_cap_discarded_seconds": 1.5,
+                "outcome_hash": "same",
+            }
+        ],
+        simulation={"steps": 1000, "simulated_seconds": 50, "outcome_hash": "same"},
+        timings=[
+            {
+                "workload": "save",
+                "median_us": 100,
+                "samples": 24,
+                "warmup_calls": 4,
+                "measured_calls": 24,
+            }
+        ],
+    )
     return value
 
 
@@ -20,7 +43,9 @@ class RuntimeComparisonTests(unittest.TestCase):
     def test_same_work_accepts_different_elapsed_time(self):
         base, candidate = report(), report()
         candidate["timings"][0]["median_us"] = 75
-        self.assertEqual(summarize([{"baseline": base, "candidate": candidate}])[0]["reduction_percent"], 25)
+        self.assertEqual(
+            summarize([{"baseline": base, "candidate": candidate}])[0]["reduction_percent"], 25
+        )
 
     def test_changed_hardware_or_fixture_is_not_a_speedup(self):
         for key in IDENTITY:
@@ -28,6 +53,57 @@ class RuntimeComparisonTests(unittest.TestCase):
             candidate[key] = "different"
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_pair(report(), candidate)
+
+    def test_same_renderer_method_does_not_make_gl_and_gles_comparable(self):
+        base, candidate = report(), report()
+        candidate["rendering_driver"] = "opengl3_es"
+        candidate["timings"][0]["median_us"] = 75
+        self.assertEqual(base["renderer"], candidate["renderer"])
+        self.assertEqual(base["adapter"], candidate["adapter"])
+        with self.assertRaisesRegex(ValueError, "Non-comparable benchmark rendering_driver"):
+            summarize([{"baseline": base, "candidate": candidate}])
+
+    def test_backend_cannot_change_between_individually_comparable_pairs(self):
+        pairs = [{"baseline": report(), "candidate": report()} for _ in range(2)]
+        for value in pairs[1].values():
+            value["rendering_driver"] = "opengl3_es"
+        for pair in pairs:
+            validate_pair(pair["baseline"], pair["candidate"])
+        with self.assertRaisesRegex(ValueError, "across pairs: rendering_driver"):
+            summarize(pairs)
+
+    def test_homogeneous_pairs_accept_elapsed_variation(self):
+        pairs = [{"baseline": report(), "candidate": report()} for _ in range(3)]
+        for pair, before, after in zip(pairs, (100, 120, 110), (70, 90, 80), strict=True):
+            pair["baseline"]["timings"][0]["median_us"] = before
+            pair["candidate"]["timings"][0]["median_us"] = after
+        result = summarize(pairs)[0]
+        self.assertEqual(result["baseline_median_us"], 110)
+        self.assertEqual(result["candidate_median_us"], 80)
+        self.assertEqual(
+            result["paired_medians_us"], {"baseline": [100, 120, 110], "candidate": [70, 90, 80]}
+        )
+
+    def test_legacy_reports_without_driver_metadata_cannot_establish_comparability(self):
+        for roles in (("baseline",), ("candidate",), ("baseline", "candidate")):
+            pair = {"baseline": report(), "candidate": report()}
+            for role in roles:
+                pair[role].pop("rendering_driver")
+            with (
+                self.subTest(roles=roles),
+                self.assertRaisesRegex(ValueError, "identity is incomplete"),
+            ):
+                summarize([pair])
+
+    def test_identically_invalid_rendering_driver_is_not_evidence(self):
+        for driver in (None, True, 1, "", " "):
+            base, candidate = report(), report()
+            base["rendering_driver"] = candidate["rendering_driver"] = driver
+            with (
+                self.subTest(driver=driver),
+                self.assertRaisesRegex(ValueError, "rendering_driver"),
+            ):
+                validate_pair(base, candidate)
 
     def test_changed_outcome_is_not_a_speedup(self):
         candidate = report()
@@ -40,18 +116,91 @@ class RuntimeComparisonTests(unittest.TestCase):
             validate_pair(report(), candidate)
 
     def test_missing_failed_or_duplicate_work_is_rejected(self):
-        for change in (lambda x: x.update(passed=False), lambda x: x.pop("controlled"),
-                       lambda x: x["timings"].append(deepcopy(x["timings"][0])),
-                       lambda x: x["timings"][0].update(samples=1),
-                       lambda x: x["timings"][0].update(median_us=0)):
+        for change in (
+            lambda x: x.update(passed=False),
+            lambda x: x.pop("controlled"),
+            lambda x: x["timings"].append(deepcopy(x["timings"][0])),
+            lambda x: x["timings"][0].update(samples=1),
+            lambda x: x["timings"][0].update(median_us=0),
+        ):
             candidate = report()
             change(candidate)
             with self.assertRaises(ValueError):
                 validate_pair(report(), candidate)
 
+    def test_identically_invalid_work_is_not_comparable_evidence(self):
+        for change in (
+            lambda x: x.update(checks=True),
+            lambda x: x.update(checks=-1),
+            lambda x: x.update(timings=[]),
+            lambda x: x.update(timings=[None]),
+            lambda x: x.update(controlled="same"),
+            lambda x: x.update(simulation=None),
+            lambda x: x["timings"][0].update(samples=-1),
+            lambda x: x["timings"][0].update(measured_calls=True),
+            lambda x: x["timings"][0].update(warmup_calls=-1),
+            lambda x: x["timings"][0].update(workload=[]),
+        ):
+            base, candidate = report(), report()
+            change(base)
+            change(candidate)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                validate_pair(base, candidate)
+
     def test_no_pairs_is_not_evidence(self):
         with self.assertRaises(ValueError):
             summarize([])
+
+    def test_missing_simulation_work_cannot_produce_a_speedup(self):
+        for field in ("steps", "simulated_seconds"):
+            base, candidate = report(), report()
+            for value in (base, candidate):
+                value["simulation"].pop(field)
+            candidate["timings"][0]["median_us"] = 75
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                summarize([{"baseline": base, "candidate": candidate}])
+
+    def test_identically_malformed_controlled_records_are_rejected(self):
+        for rows in ([None], [{}], [dict(report()["controlled"][0], outcome_hash=True)]):
+            base, candidate = report(), report()
+            base["controlled"] = candidate["controlled"] = rows
+            with self.subTest(rows=rows), self.assertRaises(ValueError):
+                validate_pair(base, candidate)
+
+    def test_missing_or_invalid_deterministic_work_is_not_comparable(self):
+        domains = {
+            "controlled": {
+                "speed": (False, 0, float("inf")),
+                "input_frames": (True, 0, 120.0),
+                "fixed_steps": (True, 0, -1),
+                "frame_cap_discarded_seconds": (True, -1, float("nan")),
+                "outcome_hash": (False, "", " "),
+            },
+            "simulation": {
+                "steps": (True, 0, 1000.0),
+                "simulated_seconds": (True, 0, float("inf")),
+                "outcome_hash": (False, "", " "),
+            },
+        }
+        for domain, fields in domains.items():
+            for field, invalid in fields.items():
+                for bad in (None, *invalid):
+                    base, candidate = report(), report()
+                    for value in (base, candidate):
+                        target = value[domain][0] if domain == "controlled" else value[domain]
+                        if bad is None:
+                            target.pop(field)
+                        else:
+                            target[field] = bad
+                    with self.subTest(domain=domain, field=field, bad=bad):
+                        with self.assertRaises(ValueError):
+                            validate_pair(base, candidate)
+
+    def test_zero_discarded_frame_time_is_valid(self):
+        base, candidate = report(), report()
+        base["controlled"][0]["frame_cap_discarded_seconds"] = 0
+        candidate["controlled"][0]["frame_cap_discarded_seconds"] = 0.0
+        validate_pair(base, candidate)
 
 
 if __name__ == "__main__":

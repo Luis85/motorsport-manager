@@ -10,6 +10,7 @@ var _targets: Array = []
 var _offset: Vector2 = Vector2.ZERO
 var _origins: Dictionary = {}
 
+
 func begin(canvas: TrackCanvas, drag_kind: String, offset: Vector2) -> void:
 	cancel(canvas)
 	kind = drag_kind
@@ -26,18 +27,32 @@ func begin(canvas: TrackCanvas, drag_kind: String, offset: Vector2) -> void:
 	if canvas.reference_preview:
 		canvas.reference_preview.stop()
 
+
 func targets(canvas: TrackCanvas) -> Array:
-	return [canvas.mode, canvas.selection_kind, canvas.selection_ids.duplicate(),
-		canvas.selected, canvas.selected_pit, canvas.selected_object]
+	return [
+		canvas.mode,
+		canvas.selection_kind,
+		canvas.selection_ids.duplicate(),
+		canvas.selected,
+		canvas.selected_pit,
+		canvas.selected_object
+	]
+
 
 func current(canvas: TrackCanvas) -> bool:
-	return (revision == canvas.document_revision and is_same(_draft, canvas.document)
-		and _targets == targets(canvas) and canvas.layer_editable(layer(canvas)))
+	return (
+		revision == canvas.document_revision
+		and is_same(_draft, canvas.document)
+		and _targets == targets(canvas)
+		and canvas.layer_editable(layer(canvas))
+	)
+
 
 func layer(canvas: TrackCanvas) -> String:
 	if kind == "multi":
 		return canvas.selection_kind
 	return {"reference": "reference", "pit": "pits", "object": "scenery"}.get(kind, "road")
+
 
 func move(canvas: TrackCanvas, event: InputEventMouseMotion) -> void:
 	if kind.is_empty():
@@ -64,24 +79,29 @@ func move(canvas: TrackCanvas, event: InputEventMouseMotion) -> void:
 	if layer(canvas) in ["reference", "scenery"] and canvas.world_layer:
 		canvas.world_layer.queue_redraw()
 
+
 func movement(canvas: TrackCanvas, p: Vector2, relative: Vector2) -> Dictionary:
-	match kind:
-		"multi":
-			var positions: Dictionary = {}
-			for index in _origins:
-				positions[index] = _origins[index] + p
-			return TrackEdit.move_positions(canvas.document, canvas.selection_kind, positions)
-		"reference":
-			return TrackEdit.move_reference(canvas.document, relative)
-		"object":
-			return TrackEdit.move_positions(canvas.document, "scenery", {canvas.selected_object: p})
-		"pit":
-			return TrackEdit.move_positions(canvas.document, "pits", {canvas.selected_pit: p})
-		"node":
-			return TrackEdit.move_positions(canvas.document, "road", {canvas.selected: p})
-		"in", "out":
-			return TrackEdit.move_handle(canvas.document, canvas.selected, kind, p)
-	return TrackEdit.failure("Unknown pointer gesture.")
+	if kind == "multi":
+		var positions: Dictionary = {}
+		for index in _origins:
+			positions[index] = _origins[index] + p
+		return TrackEdit.move_positions(canvas.document, canvas.selection_kind, positions)
+	if kind == "reference":
+		return TrackEdit.move_reference(canvas.document, relative)
+	if kind in ["in", "out"]:
+		return TrackEdit.move_handle(canvas.document, canvas.selected, kind, p)
+	var target = (
+		{
+			"object": ["scenery", canvas.selected_object],
+			"pit": ["pits", canvas.selected_pit],
+			"node": ["road", canvas.selected]
+		}
+		. get(kind, [])
+	)
+	if target.is_empty():
+		return TrackEdit.failure("Unknown pointer gesture.")
+	return TrackEdit.move_positions(canvas.document, target[0], {target[1]: p})
+
 
 func commit(canvas: TrackCanvas) -> void:
 	if kind.is_empty():
@@ -99,6 +119,7 @@ func commit(canvas: TrackCanvas) -> void:
 		canvas.selection_changed.emit()
 	canvas.queue_redraw()
 
+
 func cancel(canvas: TrackCanvas) -> void:
 	var modified = changed
 	reset()
@@ -106,6 +127,7 @@ func cancel(canvas: TrackCanvas) -> void:
 	if modified:
 		canvas.edit_cancelled.emit()
 	canvas.queue_redraw()
+
 
 func reset() -> void:
 	kind = ""

@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Author external Motorsport Manager content using its production Godot validator."""
+
 from __future__ import annotations
 
 import argparse
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any, Iterable
 
 import content_operations
@@ -31,13 +32,23 @@ def write_new(path: Path, value: Any) -> None:
 def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
     executable = godot or os.environ.get("GODOT_BINARY") or shutil.which("godot")
     if not executable:
-        raise ValueError("Pass --godot /path/to/Godot or set GODOT_BINARY. No validation was executed.")
+        raise ValueError(
+            "Pass --godot /path/to/Godot or set GODOT_BINARY. No validation was executed."
+        )
     executable = shutil.which(executable) or str(Path(executable).expanduser().resolve())
     environment = {**os.environ, "GODOT_SILENCE_ROOT_WARNING": "1", "LP_NUM_THREADS": "2"}
     commands = [
         [executable, "--headless", "--editor", "--path", str(ROOT), "--import", "--quit"],
-        [executable, "--headless", "--path", str(ROOT), "--script",
-         "res://scripts/services/content/cli.gd", "--", *arguments],
+        [
+            executable,
+            "--headless",
+            "--path",
+            str(ROOT),
+            "--script",
+            "res://scripts/services/content/cli.gd",
+            "--",
+            *arguments,
+        ],
     ]
     result: dict[str, Any] | None = None
     for index, command in enumerate(commands):
@@ -45,21 +56,38 @@ def invoke_engine(arguments: list[str], godot: str | None) -> dict[str, Any]:
         log = run.stdout + "\n" + run.stderr
         # Valid author text may itself contain "ERROR:". Only diagnostic output
         # is an engine failure; never interpret fields in CONTENT_RESULT as logs.
-        diagnostic_log = "\n".join(line for line in run.stdout.splitlines()
-                                   if not line.startswith("CONTENT_RESULT ")) + "\n" + run.stderr
-        fatal = any(marker in diagnostic_log for marker in ["SCRIPT ERROR:", "Parse Error:", "ERROR:"])
+        diagnostic_log = (
+            "\n".join(
+                line for line in run.stdout.splitlines() if not line.startswith("CONTENT_RESULT ")
+            )
+            + "\n"
+            + run.stderr
+        )
+        fatal = any(
+            marker in diagnostic_log for marker in ["SCRIPT ERROR:", "Parse Error:", "ERROR:"]
+        )
         if index == 0:
             if run.returncode or fatal:
-                raise ValueError("Godot import failed; validation was not executed.\n" + log[-6000:])
+                raise ValueError(
+                    "Godot import failed; validation was not executed.\n" + log[-6000:]
+                )
             continue
-        payloads = [line.removeprefix("CONTENT_RESULT ") for line in run.stdout.splitlines()
-                    if line.startswith("CONTENT_RESULT ")]
+        payloads = [
+            line.removeprefix("CONTENT_RESULT ")
+            for line in run.stdout.splitlines()
+            if line.startswith("CONTENT_RESULT ")
+        ]
         if len(payloads) != 1 or fatal:
             raise ValueError("Validator failed to produce one clean result.\n" + log[-6000:])
-        result = json.loads(payloads[0], parse_constant=content_operations.reject_constant,
-                            parse_float=content_operations.finite_float)
+        result = json.loads(
+            payloads[0],
+            parse_constant=content_operations.reject_constant,
+            parse_float=content_operations.finite_float,
+        )
         if not isinstance(result, dict) or not isinstance(result.get("ok"), bool):
-            raise ValueError("Validator result must be an object with an explicit Boolean ok field.")
+            raise ValueError(
+                "Validator result must be an object with an explicit Boolean ok field."
+            )
         if run.returncode != (0 if result["ok"] else 1):
             raise ValueError("Validator exit status disagrees with its result.")
     if result is None:
@@ -90,12 +118,19 @@ def initialize(path: Path, identity: str) -> dict[str, Any]:
     path = path.expanduser()
     path.mkdir(parents=True, exist_ok=False)
     try:
-        write_new(path / "pack.json", {
-            "kind": "motorsport-manager-content-pack", "schema_version": 1,
-            "id": identity, "version": "1.0.0", "runtime_contract": 1,
-            "dependencies": [{"id": "core", "version": "1.0.0"}],
-            "files": [], "overrides": [],
-        })
+        write_new(
+            path / "pack.json",
+            {
+                "kind": "motorsport-manager-content-pack",
+                "schema_version": 1,
+                "id": identity,
+                "version": "1.0.0",
+                "runtime_contract": 1,
+                "dependencies": [{"id": "core", "version": "1.0.0"}],
+                "files": [],
+                "overrides": [],
+            },
+        )
     except BaseException:
         try:
             path.rmdir()  # Only our newly created empty directory, never parents.
@@ -106,10 +141,13 @@ def initialize(path: Path, identity: str) -> dict[str, Any]:
     return {"ok": True, "created": str(path / "pack.json"), "engine_executed": False}
 
 
-def clone_definition(path: Path, source: str, identity: str, godot: str | None,
-                     dependencies: Iterable[Path] = ()) -> dict[str, Any]:
+def clone_definition(
+    path: Path, source: str, identity: str, godot: str | None, dependencies: Iterable[Path] = ()
+) -> dict[str, Any]:
     if len(identity) > 96 or not IDENTITY.fullmatch(identity):
-        raise ValueError("Use a namespaced definition ID of at most 96 characters, for example local.club.vehicle.sport.")
+        raise ValueError(
+            "Use a namespaced definition ID of at most 96 characters, for example local.club.vehicle.sport."
+        )
     path = path.expanduser().resolve(strict=True)
     manifest_path = path / "pack.json"
     if manifest_path.is_symlink():
@@ -126,8 +164,9 @@ def clone_definition(path: Path, source: str, identity: str, godot: str | None,
             before = stream.read(1048577)
         if len(before) > 1048576:
             raise ValueError("The pack manifest exceeds the 1 MiB content limit.")
-        result = invoke_engine(["--action=inspect", "--id=" + source,
-                                *pack_arguments(path, dependencies)], godot)
+        result = invoke_engine(
+            ["--action=inspect", "--id=" + source, *pack_arguments(path, dependencies)], godot
+        )
         if not result.get("ok"):
             return result
         if manifest_path.is_symlink() or manifest_path.read_bytes() != before:
@@ -166,8 +205,13 @@ def clone_definition(path: Path, source: str, identity: str, godot: str | None,
         if temporary:
             Path(temporary).unlink(missing_ok=True)
         lock.unlink()
-    return {"ok": True, "created": str(filename), "source": source,
-            "engine_executed": True, "next": "Edit the new definition, then validate the pack."}
+    return {
+        "ok": True,
+        "created": str(filename),
+        "source": source,
+        "engine_executed": True,
+        "next": "Edit the new definition, then validate the pack.",
+    }
 
 
 def schemas(godot: str | None, check: bool) -> dict[str, Any]:
@@ -185,29 +229,50 @@ def schemas(godot: str | None, check: bool) -> dict[str, Any]:
             changed.append(str(path.relative_to(ROOT)))
             if not check:
                 path.write_text(text, encoding="utf-8")
-    return {"ok": not changed if check else True, "changed": changed,
-            "engine_executed": True, "check_only": check}
+    return {
+        "ok": not changed if check else True,
+        "changed": changed,
+        "engine_executed": True,
+        "check_only": check,
+    }
 
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="action", required=True)
-    initial = commands.add_parser("init", help="Create a new folder pack without overwriting files.")
+    initial = commands.add_parser(
+        "init", help="Create a new folder pack without overwriting files."
+    )
     initial.add_argument("path", type=Path)
     initial.add_argument("--id", required=True)
-    clone = commands.add_parser("clone", help="Copy an existing validated definition under a new ID.")
+    clone = commands.add_parser(
+        "clone", help="Copy an existing validated definition under a new ID."
+    )
     clone.add_argument("source")
     clone.add_argument("--as", dest="identity", required=True)
     clone.add_argument("--pack", type=Path, required=True)
     clone.add_argument("--godot")
-    clone.add_argument("--dependency", "--include-pack", dest="dependencies", type=Path, action="append", default=[],
-                       help="Load a dependency/source pack before the destination; repeat in dependency order.")
+    clone.add_argument(
+        "--dependency",
+        "--include-pack",
+        dest="dependencies",
+        type=Path,
+        action="append",
+        default=[],
+        help="Load a dependency/source pack before the destination; repeat in dependency order.",
+    )
     for action in ["validate", "inspect"]:
         command = commands.add_parser(action)
         command.add_argument("path", nargs="?", type=Path)
         command.add_argument("--godot")
-        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                             help="Dependency pack; repeat in dependency order before the optional positional pack.")
+        command.add_argument(
+            "--pack",
+            dest="packs",
+            type=Path,
+            action="append",
+            default=[],
+            help="Dependency pack; repeat in dependency order before the optional positional pack.",
+        )
         command.add_argument("--format", choices=["json", "text"], default="text")
         if action == "inspect":
             command.add_argument("--id", required=True)
@@ -215,8 +280,14 @@ def parser() -> argparse.ArgumentParser:
         command = commands.add_parser(action)
         command.add_argument("path", nargs="?", type=Path)
         command.add_argument("--godot")
-        command.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                             help="Dependency pack; repeat in dependency order before the optional positional pack.")
+        command.add_argument(
+            "--pack",
+            dest="packs",
+            type=Path,
+            action="append",
+            default=[],
+            help="Dependency pack; repeat in dependency order before the optional positional pack.",
+        )
         command.add_argument("--format", choices=["json", "text"], default="json")
         if action == "list":
             command.add_argument("--kind")
@@ -229,12 +300,28 @@ def parser() -> argparse.ArgumentParser:
     comparison.add_argument("before", type=Path)
     comparison.add_argument("after", type=Path)
     comparison.add_argument("--godot")
-    comparison.add_argument("--pack", dest="packs", type=Path, action="append", default=[],
-                            help="Shared dependency pack loaded before each compared pack; repeat in order.")
-    comparison.add_argument("--before-pack", type=Path, action="append", default=[],
-                            help="Before-side dependency loaded before BEFORE, after shared dependencies; repeat in order.")
-    comparison.add_argument("--after-pack", type=Path, action="append", default=[],
-                            help="After-side dependency loaded before AFTER, after shared dependencies; repeat in order.")
+    comparison.add_argument(
+        "--pack",
+        dest="packs",
+        type=Path,
+        action="append",
+        default=[],
+        help="Shared dependency pack loaded before each compared pack; repeat in order.",
+    )
+    comparison.add_argument(
+        "--before-pack",
+        type=Path,
+        action="append",
+        default=[],
+        help="Before-side dependency loaded before BEFORE, after shared dependencies; repeat in order.",
+    )
+    comparison.add_argument(
+        "--after-pack",
+        type=Path,
+        action="append",
+        default=[],
+        help="After-side dependency loaded before AFTER, after shared dependencies; repeat in order.",
+    )
     schema = commands.add_parser("schemas", help="Publish or check the generated JSON Schemas.")
     schema.add_argument("--godot")
     schema.add_argument("--check", action="store_true")
@@ -249,7 +336,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.action == "init":
             result = initialize(args.path, args.id)
         elif args.action == "clone":
-            result = clone_definition(args.pack, args.source, args.identity, args.godot, args.dependencies)
+            result = clone_definition(
+                args.pack, args.source, args.identity, args.godot, args.dependencies
+            )
         elif args.action == "schemas":
             result = schemas(args.godot, args.check)
         else:
@@ -262,14 +351,25 @@ def main(argv: list[str] | None = None) -> int:
     if getattr(args, "format", "json") == "text" and "diagnostics" in result:
         print("Content accepted." if result["ok"] else "Content rejected; nothing was activated.")
         for diagnostic in result["diagnostics"]:
-            print(f"{diagnostic['code']} {diagnostic.get('file', '')}{diagnostic['field']}: {diagnostic['message']}")
+            print(
+                f"{diagnostic['code']} {diagnostic.get('file', '')}{diagnostic['field']}: {diagnostic['message']}"
+            )
         if "inspection" in result:
             print(encode(result["inspection"]), end="")
         if args.action == "list":
             for item in result.get("definitions", []):
                 print(f"{item['kind']}  {item['id']}  {item['name']}")
         if args.action == "test":
-            print(encode({key: value for key, value in result.items() if key not in {"definitions", "kinds", "diagnostics"}}), end="")
+            print(
+                encode(
+                    {
+                        key: value
+                        for key, value in result.items()
+                        if key not in {"definitions", "kinds", "diagnostics"}
+                    }
+                ),
+                end="",
+            )
     else:
         print(encode(result), end="")
     return 0 if result.get("ok") else 1

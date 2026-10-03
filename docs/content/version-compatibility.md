@@ -25,3 +25,18 @@ legacy thermal records without `operating` use the original coefficients without
 being rewritten; old weekends without a mechanic-profile reference retain the
 existing construction contract. Save-game version readers remain independent of
 folder-pack version validation.
+
+
+## Campaign-content continuation
+
+New Team Principal careers freeze the validated campaign definition and its resolved
+race-content closure into the campaign checkpoint. Save-game compatibility remains
+independent from folder-pack versioning: `CampaignManagement` version 2 carries
+the optional frozen campaign-content slot, while version-1 management envelopes
+remain valid and use the isolated legacy policy adapter. A removed or edited pack
+cannot retroactively change calendar dates, finance, rival policy, people-development
+tuning, engineering-evidence tuning or weekend settings in an existing career.
+
+This compatibility path is read-only technical debt. New careers must originate
+from a validated `campaign` definition; compatibility constants are registered in
+the consumer inventory and must not become a second authoring authority.

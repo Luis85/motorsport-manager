@@ -2,6 +2,7 @@ class_name CampaignStandings
 extends RefCounted
 ## Deterministic driver/team totals and sporting countback rankings from event awards.
 
+
 static func build(season_id: String, events: Dictionary, rules: Dictionary) -> Dictionary:
 	var drivers = {}
 	var teams = {}
@@ -17,18 +18,26 @@ static func build(season_id: String, events: Dictionary, rules: Dictionary) -> D
 	return {
 		"drivers": drivers,
 		"teams": teams,
-		"rankings": {
+		"rankings":
+		{
 			"drivers": _rank(drivers, int(rules.countback_depth)),
 			"teams": _rank(teams, int(rules.countback_depth))
 		}
 	}
 
+
 static func shape_error(data: Dictionary) -> String:
-	if not data.get("drivers") is Dictionary or not data.get("teams") is Dictionary \
-			or not data.get("rankings") is Dictionary or data.rankings.size() != 2 \
-			or not data.rankings.get("drivers") is Array or not data.rankings.get("teams") is Array:
+	if (
+		not data.get("drivers") is Dictionary
+		or not data.get("teams") is Dictionary
+		or not data.get("rankings") is Dictionary
+		or data.rankings.size() != 2
+		or not data.rankings.get("drivers") is Array
+		or not data.rankings.get("teams") is Array
+	):
 		return "Campaign season standings have an unsupported shape."
 	return ""
+
 
 static func projection_error(data: Dictionary, expected: Dictionary) -> String:
 	for key in ["drivers", "teams", "rankings"]:
@@ -36,7 +45,10 @@ static func projection_error(data: Dictionary, expected: Dictionary) -> String:
 			return "Campaign season standings disagree with completed event awards."
 	return ""
 
-static func _accumulate(rows: Dictionary, identity: String, award: Dictionary, rules: Dictionary) -> void:
+
+static func _accumulate(
+	rows: Dictionary, identity: String, award: Dictionary, rules: Dictionary
+) -> void:
 	if not rows.has(identity):
 		var counts: Array = []
 		counts.resize(int(rules.countback_depth))
@@ -54,7 +66,10 @@ static func _accumulate(rows: Dictionary, identity: String, award: Dictionary, r
 	row.wins = int(row.wins) + (1 if int(award.position) == 1 else 0)
 	row.best_position = mini(int(row.best_position), int(award.position))
 	if int(award.position) <= row.finish_counts.size():
-		row.finish_counts[int(award.position) - 1] = int(row.finish_counts[int(award.position) - 1]) + 1
+		row.finish_counts[int(award.position) - 1] = (
+			int(row.finish_counts[int(award.position) - 1]) + 1
+		)
+
 
 static func _rank(rows: Dictionary, depth: int) -> Array:
 	var ordered: Array = []
@@ -72,19 +87,24 @@ static func _rank(rows: Dictionary, depth: int) -> Array:
 	var index = 0
 	while index < ordered.size():
 		var end = index + 1
-		while end < ordered.size() and _compare(rows[ordered[index]], rows[ordered[end]], depth) == 0:
+		while (
+			end < ordered.size() and _compare(rows[ordered[index]], rows[ordered[end]], depth) == 0
+		):
 			end += 1
 		var shared = end - index > 1
 		for member in range(index, end):
 			var identity = ordered[member]
-			result.append({
-				"identity": identity,
-				"position": index + 1,
-				"shared": shared,
-				"points": int(rows[identity].points)
-			})
+			result.append(
+				{
+					"identity": identity,
+					"position": index + 1,
+					"shared": shared,
+					"points": int(rows[identity].points)
+				}
+			)
 		index = end
 	return result
+
 
 static func _compare(left: Dictionary, right: Dictionary, depth: int) -> int:
 	if int(left.points) != int(right.points):

@@ -68,9 +68,11 @@ own validated presentation metadata, rather than a new executable external-pack 
 as an audit of every other subsystem. Windows native exported-runtime execution passed on the exact PR #24 head.
 Human playtesting is still a separate product-validation activity.
 
-New source/test files remain within the code-line budgets. Existing oversized
-files remain visible (including RaceSim, which receives frozen-profile plumbing);
-no blanket quality exclusions or adjusted sporting checkpoints are added.
+At the PR #24 milestone, oversized files including RaceSim remained visible.
+The subsequent PR #28/#29 responsibility splits and full quality remediation
+closed the source/test line-budget inventory without exclusions, changed budgets
+or adjusted sporting checkpoints. See [the review ledger](../maintenance/data-driven-code-review.md)
+for the dated baseline and complete-tool report; future edits require a fresh scan.
 
 ## Final hardening follow-up
 
@@ -86,3 +88,26 @@ place an obsolete renderer or stale transform. Registered native UI checks cover
 actual placements, single-step undo/redo, layer locks and long guide content at
 1440×900/1100×720 in normal and enlarged text. These are regression controls;
 they do not constitute a manual accessibility or playtesting sign-off.
+
+
+## Post-PR27 campaign data-driven closure
+
+A subsequent review found that the race/content side was externally authored while
+the initial Team Principal career still duplicated product content and balance
+coefficients in `CampaignStarter`, `CampaignRivals`, people development and
+engineering-evidence code. The follow-up refactor closes that split authority:
+
+- a versioned `campaign` content family owns starter identity/resources, series,
+  calendar, contracts, facilities, rivals, event finance and campaign tuning;
+- campaign launch reuses a validated authored `weekend` instead of a parallel
+  legacy race-options dictionary;
+- the resolved campaign and race-content closure is frozen into the career at
+  creation, so pack edits cannot rewrite an existing season;
+- rival, people-development and supply-evidence numerical coefficients are explicit
+  campaign policies; supported algorithms, state machines and safety bounds stay
+  code-owned;
+- compatibility constants are isolated and inventoried only for older checkpoints
+  and direct legacy-domain contracts.
+
+This is a data-ownership refactor, not a new scripting surface. External content
+still cannot load executable Godot code or change structural/safety limits.

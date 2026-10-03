@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 """Import the project and run domain plus native-rendered UI tests in isolated user data."""
+
 from __future__ import annotations
 
-import argparse
 import json
-import os
-from pathlib import Path
 import re
-import shutil
 import subprocess
-import sys
-import tempfile
 import time
 import uuid
+from pathlib import Path
 
 from verification_process import execute_process
 
@@ -44,10 +40,16 @@ def isolate_phase(name: str, command: list[str], env: dict[str, str]) -> dict[st
     safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", name)
     user_dir = Path(root) / "suite-users" / f"{safe_name}-{identity}"
     user_dir.mkdir(parents=True)
-    configuration.write_text(re.sub(
-        r'^config/name="MotorsportManagerVerification-[^"\n]+"$',
-        f'config/name="MotorsportManagerVerification-{safe_name}-{identity}"',
-        original, count=1, flags=re.M), encoding="utf-8")
+    configuration.write_text(
+        re.sub(
+            r'^config/name="MotorsportManagerVerification-[^"\n]+"$',
+            f'config/name="MotorsportManagerVerification-{safe_name}-{identity}"',
+            original,
+            count=1,
+            flags=re.M,
+        ),
+        encoding="utf-8",
+    )
     return dict(env, XDG_DATA_HOME=str(user_dir), APPDATA=str(user_dir), LOCALAPPDATA=str(user_dir))
 
 
@@ -82,6 +84,7 @@ def require_report(filename: str) -> dict:
 
 def main() -> int:
     from verification_run import main as run
+
     return run()
 
 

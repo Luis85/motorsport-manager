@@ -1,6 +1,6 @@
 # Campaign-to-weekend boundary
 
-Status: implemented contract foundation on PR #27. Deterministic campaign state, versioned checkpoint storage and atomic weekend consequence application now surround this boundary, but a playable season and management UI remain unimplemented.
+Status: implemented immutable campaign/weekend boundary, introduced in PR #27 and used by the [bounded Director Desk first loop](director-desk-first-loop.md). Current campaign checkpoint v6 surrounds the receipt with complete campaign authorities; this record itself owns only frozen entry and factual settlement evidence.
 
 ## Purpose
 
@@ -36,7 +36,7 @@ The manifest is not regenerated from a result. A mismatching track, roster, rule
 
 The receipt retains measured classification, aggregate health/damage, finite tyre identities and measured statistics. Race-local driver IDs are removed and replaced with stable campaign identities. The result's `points_eligibility` remains explicitly undefined by standalone rules.
 
-A changed classification after settlement requires an explicit correction workflow that posts a reviewed delta. It must never append a second ordinary settlement or pay rewards twice.
+A changed classification after settlement uses the explicit [final-result correction workflow](result-corrections.md), which atomically replaces the prior receipt and consequence projections under the original manifest/policy and retains correction evidence. It must never append a second ordinary settlement or pay rewards twice.
 
 ## Implemented consequence boundary
 
@@ -50,7 +50,7 @@ Before returning one candidate checkpoint, the transaction stages:
 - exact returned aggregate condition and tyre values by stable car identity; and
 - dated integer-minor-unit financial postings.
 
-The candidate uses `CampaignCheckpoint` version 2. Competition, economy and inventory projections must contain the same event set and agree with the receipt result digest; sporting and financial consequences must use the same policy digest. The active manifest is cleared only in the complete candidate.
+The complete candidate uses `CampaignCheckpoint` version 6. Competition, economy and inventory projections must contain the same event set and agree with the receipt result digest; sporting and financial consequences must use the same policy digest. The active manifest is cleared only in the complete candidate.
 
 A failed rule, identity, time, inventory, account, digest or projection check returns the caller's unchanged checkpoint. Reapplying the same result and policy after complete application is an exact no-op. A different result or policy produces a conflict and requires an explicit correction workflow.
 
@@ -78,6 +78,6 @@ The registered `weekend_launch_tests` suite covers:
 
 The suite uses a synthetic terminal classification after a real staged production launch. Full physical race completion remains covered by the existing native full-weekend suites. Human management-game validation and reward balance are not claimed.
 
-## Next implementation layer
+## Implemented surrounding authorities
 
-Build a small versioned series calendar and season lifecycle over these consequence records: scheduled event identity, entry states, final/provisional classifications, tie-breaking, season completion and a safe next-season transition. Financial commitments, due dates and minimum-cash forecasts remain a separate finance milestone. Neither belongs in `RaceSim`, `WeekendResult`, rendering or replay playback.
+[Season lifecycle](season-lifecycle.md) owns the calendar, accepted entries, final classification, countback and controlled transitions. [Finance](finance-commitments-forecast.md) owns cash commitments, due dates and detached forecasts; [multi-season progression](multi-season-progression.md) owns explicit season plans/prizes/promotion choices. [Correction](result-corrections.md) handles reviewed final-result replacement. Live provisional adjudication remains outside this final-only boundary. None belongs in `RaceSim`, `WeekendResult`, rendering or replay playback.

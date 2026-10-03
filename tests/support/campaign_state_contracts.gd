@@ -2,10 +2,13 @@ class_name CampaignStateContracts
 extends RefCounted
 ## Campaign contracts executed by the registered weekend_launch_tests suite.
 
+
 static func run(check: Callable) -> void:
 	CampaignIdentityClockContracts.run(check)
 	CampaignCommandContracts.run(check)
 	CampaignStorageContracts.run(check)
+	preload("res://tests/support/campaign_migration_contracts.gd").run(check)
+	preload("res://tests/support/campaign_projection_validation_contracts.gd").run(check)
 	CampaignSeasonContracts.run(check)
 	CampaignCompetitionIdentityContracts.run(check)
 	CampaignCompetitionTransactionContracts.run(check)

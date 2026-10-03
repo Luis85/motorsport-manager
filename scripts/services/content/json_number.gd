@@ -9,6 +9,7 @@ const MASK = BASE - 1
 const FRACTION_MASK = 0x000fffffffffffff
 const MAX_FINITE = 0x7fefffffffffffff
 
+
 static func parse(token: String) -> Dictionary:
 	var negative = token.begins_with("-")
 	var unsigned = token.substr(1) if negative else token
@@ -56,6 +57,77 @@ static func parse(token: String) -> Dictionary:
 		var part = clampi(remaining, -150, 150)
 		approximation *= pow(10.0, part)
 		remaining -= part
+	return _rounded_value(numerator, denominator, approximation, negative)
+
+
+static func _multiply_small(value: Array[int], factor: int, carry: int = 0) -> Array[int]:
+	var result: Array[int] = []
+	for limb in value:
+		var product = limb * factor + carry
+		result.append(product & MASK)
+		carry = product >> 15
+	while carry > 0:
+		result.append(carry & MASK)
+		carry >>= 15
+	return result
+
+
+static func _shift(value: Array[int], count: int) -> Array[int]:
+	var result: Array[int] = []
+	result.resize(count / 15)
+	result.fill(0)
+	result.append_array(_multiply_small(value, 1 << (count % 15)))
+	return result
+
+
+static func _multiply_integer(value: Array[int], factor: int) -> Array[int]:
+	var result: Array[int] = []
+	result.resize(value.size() + 4)
+	result.fill(0)
+	var offset = 0
+	while factor > 0:
+		var digit = factor & MASK
+		var carry = 0
+		for index in range(value.size()):
+			var product = result[index + offset] + value[index] * digit + carry
+			result[index + offset] = product & MASK
+			carry = product >> 15
+		result[value.size() + offset] = carry
+		offset += 1
+		factor >>= 15
+	while result.size() > 1 and result.back() == 0:
+		result.pop_back()
+	return result
+
+
+static func _compare(a: Array[int], b: Array[int]) -> int:
+	if a.size() != b.size():
+		return -1 if a.size() < b.size() else 1
+	for index in range(a.size() - 1, -1, -1):
+		if a[index] != b[index]:
+			return -1 if a[index] < b[index] else 1
+	return 0
+
+
+static func _compare_dyadic(
+	numerator: Array[int], denominator: Array[int], significand: int, exponent: int
+) -> int:
+	var right = _multiply_integer(denominator, significand)
+	if exponent >= 0:
+		return _compare(numerator, _shift(right, exponent))
+	return _compare(_shift(numerator, -exponent), right)
+
+
+static func _from_bits(bits: int, negative: bool) -> float:
+	var bytes = PackedByteArray()
+	bytes.resize(8)
+	bytes.encode_u64(0, bits | (1 << 63) if negative else bits)
+	return bytes.decode_double(0)
+
+
+static func _rounded_value(
+	numerator: Array[int], denominator: Array[int], approximation: float, negative: bool
+) -> Dictionary:
 	var bytes = PackedByteArray()
 	bytes.resize(8)
 	bytes.encode_double(0, absf(approximation))
@@ -84,7 +156,9 @@ static func parse(token: String) -> Dictionary:
 				high = bits - 1
 				bits -= 1
 				continue
-		var upper = _compare_dyadic(numerator, denominator, significand * 2 + 1, binary_exponent - 1)
+		var upper = _compare_dyadic(
+			numerator, denominator, significand * 2 + 1, binary_exponent - 1
+		)
 		if upper > 0 or (upper == 0 and odd):
 			if bits == MAX_FINITE:
 				return {"ok": false, "error": "JSON numbers must be finite."}
@@ -93,60 +167,3 @@ static func parse(token: String) -> Dictionary:
 			continue
 		return {"ok": true, "value": _from_bits(bits, negative)}
 	return {"ok": false, "error": "JSON number could not be rounded safely."}
-
-static func _multiply_small(value: Array[int], factor: int, carry: int = 0) -> Array[int]:
-	var result: Array[int] = []
-	for limb in value:
-		var product = limb * factor + carry
-		result.append(product & MASK)
-		carry = product >> 15
-	while carry > 0:
-		result.append(carry & MASK)
-		carry >>= 15
-	return result
-
-static func _shift(value: Array[int], count: int) -> Array[int]:
-	var result: Array[int] = []
-	result.resize(count / 15)
-	result.fill(0)
-	result.append_array(_multiply_small(value, 1 << (count % 15)))
-	return result
-
-static func _multiply_integer(value: Array[int], factor: int) -> Array[int]:
-	var result: Array[int] = []
-	result.resize(value.size() + 4)
-	result.fill(0)
-	var offset = 0
-	while factor > 0:
-		var digit = factor & MASK
-		var carry = 0
-		for index in range(value.size()):
-			var product = result[index + offset] + value[index] * digit + carry
-			result[index + offset] = product & MASK
-			carry = product >> 15
-		result[value.size() + offset] = carry
-		offset += 1
-		factor >>= 15
-	while result.size() > 1 and result.back() == 0:
-		result.pop_back()
-	return result
-
-static func _compare(a: Array[int], b: Array[int]) -> int:
-	if a.size() != b.size():
-		return -1 if a.size() < b.size() else 1
-	for index in range(a.size() - 1, -1, -1):
-		if a[index] != b[index]:
-			return -1 if a[index] < b[index] else 1
-	return 0
-
-static func _compare_dyadic(numerator: Array[int], denominator: Array[int], significand: int, exponent: int) -> int:
-	var right = _multiply_integer(denominator, significand)
-	if exponent >= 0:
-		return _compare(numerator, _shift(right, exponent))
-	return _compare(_shift(numerator, -exponent), right)
-
-static func _from_bits(bits: int, negative: bool) -> float:
-	var bytes = PackedByteArray()
-	bytes.resize(8)
-	bytes.encode_u64(0, bits | (1 << 63) if negative else bits)
-	return bytes.decode_double(0)

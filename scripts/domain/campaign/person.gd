@@ -4,7 +4,10 @@ extends RefCounted
 const MAX_NAME_LENGTH = 80
 const MAX_ROLES = 8
 
+
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
+	if not input.get("eligible_roles", []) is Array:
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"display_name": input.get("display_name"),
@@ -14,6 +17,7 @@ static func build(input: Dictionary, created_slot: int) -> Dictionary:
 	data["digest"] = RaceStateValue.fingerprint(data)
 	return data if validate(data).is_empty() else {}
 
+
 static func validate(data: Variant) -> String:
 	if not RaceStateValue.serializable(data):
 		return "Campaign person exceeds serialized-value limits."
@@ -21,13 +25,19 @@ static func validate(data: Variant) -> String:
 		return "Campaign person has an unsupported shape."
 	if not CampaignIdentity.valid(data.get("id")):
 		return "Campaign person has an invalid identity."
-	if not data.get("display_name") is String or data.display_name.strip_edges().is_empty() \
-			or data.display_name.length() > MAX_NAME_LENGTH:
+	if (
+		not data.get("display_name") is String
+		or data.display_name.strip_edges().is_empty()
+		or data.display_name.length() > MAX_NAME_LENGTH
+	):
 		return "Campaign person has an invalid display name."
 	if not RaceCheckpoint.integral(data.get("created_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS):
 		return "Campaign person has an invalid creation slot."
-	if not data.get("eligible_roles") is Array or data.eligible_roles.is_empty() \
-			or data.eligible_roles.size() > MAX_ROLES:
+	if (
+		not data.get("eligible_roles") is Array
+		or data.eligible_roles.is_empty()
+		or data.eligible_roles.size() > MAX_ROLES
+	):
 		return "Campaign person has an invalid role eligibility set."
 	var seen = {}
 	for role_id in data.eligible_roles:
@@ -36,7 +46,9 @@ static func validate(data: Variant) -> String:
 		seen[role_id] = true
 	var content = data.duplicate(true)
 	content.erase("digest")
-	if not CampaignIdentity.valid_hash(data.get("digest")) \
-			or data.digest != RaceStateValue.fingerprint(content):
+	if (
+		not CampaignIdentity.valid_hash(data.get("digest"))
+		or data.digest != RaceStateValue.fingerprint(content)
+	):
 		return "Campaign person integrity check failed."
 	return ""
