@@ -50,7 +50,7 @@ const generated = (name: string): string => path.join(".generated", name);
 const suites: Suite[] = [
   ["engine-export-cli", ["node", generated("test-engine-export-cli.cjs")], generated("engine-export-cli-results.json"), 240],
   ["engine-export", ["node", generated("test-engine-export.cjs")], generated("engine-export-results.json"), 240],
-  ["animations", ["node", generated("test-animations.cjs")], generated("animations-results.json"), 120],
+  ["animations", ["node", generated("test-animations.cjs")], "verification/v15/animations-results.json", 120],
   ["balancing-cli", ["node", generated("test-balancing-cli.cjs")], generated("balancing-cli-results.json"), 240],
   ["balancing", ["node", generated("test-balancing.cjs")], generated("balancing-results.json"), 240],
   ["storytelling", ["node", generated("test-storytelling.cjs")], generated("storytelling-results.json"), 180],
