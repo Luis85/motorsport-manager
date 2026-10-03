@@ -204,12 +204,25 @@ def select_suites(
     return chosen, "focused" if requested else ("headless-only" if headless_only else "full")
 
 
+def _report_checks(report: object) -> int:
+    if not isinstance(report, dict) or report.get("passed") is not True:
+        raise ValueError("Missing or failed primary report")
+    count = report.get("checks")
+    if type(count) is not int or count < 0:
+        raise ValueError("Primary report checks must be a non-negative integer")
+    return count
+
+
 def _execute_suite(suite: dict, base: list[str], env: dict, evidence: Path, output: Path) -> dict:
     for old in evidence.iterdir():
         if old.is_file() and not old.name.startswith("."):
             old.unlink()
     target = output / suite["id"]
-    target.mkdir(exist_ok=True)
+    if target.is_symlink():
+        raise ValueError("Suite evidence directory must not be a symlink")
+    if target.exists():
+        shutil.rmtree(target)
+    target.mkdir()
     verify.REPORTS = target
     command = base + (["--audio-driver", "Dummy"] if suite["native"] else ["--headless"])
     command += ["--script", "res://" + suite["script"]]
@@ -229,7 +242,7 @@ def _execute_suite(suite: dict, base: list[str], env: dict, evidence: Path, outp
         values = [json.loads((evidence / name).read_text()) for name in suite["reports"]]
         if any(not isinstance(v, dict) or v.get("passed") is not True for v in values):
             raise ValueError("Missing or failed primary/secondary report")
-        entry.update(passed=True, checks=values[0].get("checks", 0))
+        entry.update(passed=True, checks=_report_checks(values[0]))
     except (RuntimeError, ValueError, OSError) as error:
         entry["error"] = str(error)
     finally:
@@ -314,9 +327,7 @@ def execute(args: argparse.Namespace, records: list[dict]) -> int:
                 env,
             )
             script_load = json.loads((evidence / "script-load.json").read_text())
-            if script_load.get("passed") is not True:
-                raise ValueError("Production script loads failed")
-            report["script_loads"] = script_load.get("checks", 0)
+            report["script_loads"] = _report_checks(script_load)
             for suite in chosen:
                 report["suites"].append(_execute_suite(suite, base, env, evidence, output))
                 (output / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
