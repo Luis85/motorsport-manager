@@ -169,6 +169,11 @@ class BalanceNativeTests(unittest.TestCase):
         self.assertEqual(value["units"], "metres/second")
         self.assertEqual(field_metadata({"kind": "kind"}, schemas, ("unknown",)), {})
 
+    def test_numeric_object_keys_follow_properties_in_schema(self):
+        schemas = {"kind": {"properties": {"0": {"type": "number", "minimum": 1}}}}
+        value = field_metadata({"kind": "kind"}, schemas, ("0",))
+        self.assertEqual(value, {"type": "number", "minimum": 1})
+
 
 if __name__ == "__main__":
     unittest.main()

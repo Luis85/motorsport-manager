@@ -186,7 +186,7 @@ def field_metadata(document, schemas: dict, parts: tuple[str, ...]) -> dict:
     for part in parts:
         schema = (
             schema.get("items", {})
-            if part.isdigit()
+            if "items" in schema
             else schema.get("properties", {}).get(part, {})
         )
     result = {
