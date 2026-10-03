@@ -1,6 +1,6 @@
 /* Bounded, deterministic grid navigation. The cache is derived, never saved.
  * Every returned route is an independent array: consuming one cannot edit another.
- * See test-foundation-v9.cjs for parity against the original breadth-first search. */
+ * Domain tests cover route ownership, blocked targets and large-grid indexing. */
 (function(inputRoot: unknown){
  'use strict';
 
@@ -55,7 +55,7 @@
    const size=this.size,goals=new Set<number>();
    if(!adjacent&&this.pass(target.x,target.y))goals.add(target.y*size+target.x);
    for(const [dx,dy] of DIRECTIONS)if(this.pass(target.x+dx,target.y+dy))goals.add((target.y+dy)*size+target.x+dx);
-   const prev=new Int16Array(size*size).fill(-2),queue=new Int16Array(size*size);
+   const prev=new Int32Array(size*size).fill(-2),queue=new Int32Array(size*size);
    const origin=start.y*size+start.x;
    let head=0,tail=1,end=-1;
    queue[0]=origin;prev[origin]=-1;

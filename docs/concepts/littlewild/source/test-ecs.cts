@@ -89,4 +89,24 @@ test('Component lifecycle tracks a changing creature roster',()=>{
  assert(!ecs.world.entities.has('c2'));
 });
 test('Stable system order is phase then order then id',()=>{const w=new E.World();w.create('c1');w.set('c1','X',{});const log=[],s=new E.Scheduler();for(const [id,phase,order] of[['z','simulate',1],['b','pre',3],['a','pre',3],['p','post',0]])s.register({id,phase,order,query:['X'],update(){log.push(id);}});s.step(w,.1);assert.deepEqual(log,['a','b','z','p']);});
+test('A running scheduler cannot mutate its registration or reenter another world',()=>{
+ const first=new E.World(),second=new E.World();first.create('c1');second.create('c2');
+ const scheduler=new E.Scheduler();let calls=0;
+ scheduler.register({id:'guard',phase:'simulate',order:1,query:[],update(world){
+  calls++;assert.throws(()=>{world.running=false;},TypeError);
+  assert.throws(()=>world.create('c3'),/deferred/);
+  assert.throws(()=>scheduler.register({id:'late',phase:'post',order:1,query:[],update(){}}),/during an ECS step/);
+  assert.throws(()=>scheduler.step(second,.1),/Invalid ECS step/);
+ }});
+ scheduler.step(first,.1);assert.equal(calls,1);assert.equal(first.running,false);
+ scheduler.step(second,.1);assert.equal(calls,2);
+});
+test('Actor-scoped scheduling captures its target before systems mutate context',()=>{
+ const world=new E.World();world.create('c1');world.create('c2');const calls=[];
+ const scheduler=new E.Scheduler().register({id:'scope',phase:'pre',order:1,query:[],update(_world,id,_dt,context){calls.push(id);delete context.entityId;}})
+ .register({id:'observe',phase:'post',order:1,query:[],update(_world,id){calls.push(id);}});
+ scheduler.step(world,.1,{entityId:'c1'});assert.deepEqual(calls,['c1','c1']);
+ assert.throws(()=>scheduler.step(world,.1,{entityId:''}),/Unknown ECS step entity/);
+ assert.throws(()=>scheduler.step(world,.1,null),/Invalid ECS step context/);
+});
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/ecs-results.json',JSON.stringify({passed,total:results.length,results},null,2));console.log(`${passed}/${results.length} ECS checks passed`);if(passed!==results.length)process.exitCode=1;

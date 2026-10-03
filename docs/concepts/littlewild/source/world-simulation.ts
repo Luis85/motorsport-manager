@@ -12,7 +12,7 @@
  const item=L.colony.item, def=L.colony.definition;
  const CUSTOM=['stockbuilding','collectbuilding','emptybuilding','produce'];
  L.worldTaskKinds=CUSTOM;
- const PROFILE=id=>W.building(id), I=root.LWWorldIntegrity;
+ const PROFILE=id=>W.building(id), I=root.LWWorldIntegrity, Production=root.LWWorldProduction, Tasks=root.LWWorldTasks;
  const recordBlank=()=>({input:{},output:{},job:null,targets:{},requests:{},enabled:true,priority:1,emptyInputs:false,completed:0,lastOutput:0,lastMessage:'On demand'});
  function prepareWorld(state){
   const configuration=W.validate(W.content);if(!configuration.ok)throw Error(configuration.errors.join('\n'));
@@ -102,13 +102,8 @@
    this._placementKind=kind;
    try{return super.place(kind,x,y);}finally{this._placementKind=null;}
   }
-  capacity(b,which){const p=PROFILE(b.kind);return (p?.[which+'Capacity']||0)+((b.level||1)-1)*(which==='input'?4:6);}
-  buildingRecipes(b){
-   const out=[];for(const [id,r]of Object.entries(RECIPES))if(r.station===b.kind)out.push({id,output:id,cost:r.cost,amount:r.amount,time:r.time,skill:r.skill,kind:'craft',depletion:0});
-   for(const g of A.content.equipment)if(g.recipe?.station===b.kind)out.push({id:g.id,output:g.id,cost:g.recipe.cost,amount:1,time:g.recipe.time,skill:g.recipe.skill,kind:'gearcraft',depletion:0});
-   const p=PROFILE(b.kind)?.production;if(p)out.push({id:p.output,output:p.output,cost:p.cost,amount:p.amount,time:p.seconds,skill:p.skill,kind:'produce',depletion:p.depletion});
-   return out;
-  }
+  capacity(b,which){return Production.capacity(b,which,PROFILE(b.kind));}
+  buildingRecipes(b){return Production.recipes(b,RECIPES,A.content.equipment,PROFILE(b.kind));}
   recipe(b,id){return this.buildingRecipes(b).find(r=>r.id===id)||null;}
   buildingFor(id){return this.s.buildings.filter(b=>b.storage&&b.storage.enabled&&this.recipe(b,id));}
   outputTotal(id){return this.s.buildings.reduce((n,b)=>n+(b.storage?.output[id]||0),0);}
@@ -119,10 +114,7 @@
   outputRoom(b){const reserve=b.storage?.job?.amount||0;return this.capacity(b,'output')-sum(b.storage?.output)-reserve;}
   reachable(target){return this.findPath(target,true)!==null;}
   sourceBuilding(id){return this.nearest(this.s.buildings.filter(b=>(b.storage?.output[id]||0)>0&&this.reachable(b)));}
-  transferTask(kind,b,id,amount,orderId=null,extra={}){
-   const verb=kind==='stockbuilding'?'Bringing ':kind==='emptybuilding'?'Reclaiming ':'Collecting ';
-   return {kind,buildingId:b.id,resource:id,amount:Math.max(1,amount),orderId,target:{x:b.x,y:b.y},duration:1.5,label:verb+item(id).name.toLowerCase()+(kind==='stockbuilding'?' to ':' from ')+BUILDINGS[b.kind].name.toLowerCase(),reason:'Goods travel in a creature’s satchel. This transfer settles only at the building.',thought:kind==='stockbuilding'?'A few supplies, exactly where they belong.':'I’ll carry these to where they can help.',...extra};
-  }
+  transferTask(kind,b,id,amount,orderId=null,extra={}){return Tasks.transfer(kind,b,id,amount,orderId,{item:item(id).name,building:BUILDINGS[b.kind].name},extra);}
   collectTask(b,id,wanted=3,orderId=null,forDelivery=false){
    const n=Math.min(b.storage.output[id]||0,Math.max(1,wanted),this.room(id),W.content.logistics.batch);
    return n>0?this.transferTask('collectbuilding',b,id,n,orderId,{forDelivery}):this.depositTask('Making room to collect supplies');
@@ -171,7 +163,7 @@
    }
    return this.workTask(b,r,null,orderId);
   }
-  workTask(b,r,j,orderId){return {kind:r.kind,resource:r.output,buildingId:b.id,buffered:true,jobId:j?.id||null,orderId,target:{x:b.x,y:b.y},duration:j?.duration||r.time,elapsed:j?.progress||0,label:(r.kind==='produce'?'Tending ':'Making ')+item(r.output).name.toLowerCase()+' · '+BUILDINGS[b.kind].name,reason:'The ingredients are at this building. Finished goods wait in its output tray for collection.',thought:'Supplies in. Patient work. Something useful out.'};}
+  workTask(b,r,j,orderId){return Tasks.work(b,r,j,orderId,{item:item(r.output).name,building:BUILDINGS[b.kind].name});}
   assessResource(id,amount,seen=new Set()){
    if((this.s.inventory[id]||0)+(this.s.colony.warehouse.inventory[id]||0)+this.outputTotal(id)>=amount)return null;
    const work=this.buildingFor(id).find(b=>this.s.skills[this.recipe(b,id).skill]&&this.reachable(b)&&!I.substrateIssue(this,b,this.recipe(b,id)));if(work){const r=this.recipe(work,id);if(seen.has(id))return {text:'A production dependency loops.'};const next=new Set(seen);next.add(id);for(const [k,n]of Object.entries(r.cost)){const missing=Math.max(0,n-(work.storage.input[k]||0));if(missing){const issue=this.assessResource(k,missing,next);if(issue)return issue;}}return null;}
@@ -355,19 +347,15 @@
    return ok();
   }
   buildingStatus(b){
-   const st=b.storage,p=PROFILE(b.kind);if(!st)return {label:b.kind==='storehouse'?'Shared warehouse':'A place to belong',kind:'quiet',detail:b.kind==='storehouse'?'Only stock deposited here is sellable.':'No production inventory.'};
-   if(!st.enabled)return {label:'Paused',kind:'paused',detail:st.job?'The paid batch keeps its progress and reserved inputs.':'No new work or ingredient deliveries. Outputs can still be collected.'};
-   if(st.job&&this.originatingOrder(st.job)?.paused)return {label:'Plan paused',kind:'paused',detail:'The originating creature’s craft order is paused. Reserved supplies and progress stay here.'};
-   if(st.job){const worker=this.creatures.find(c=>c.id===st.job.workerId);return {label:worker?'Working':'Waiting for a creature',kind:'working',detail:worker?worker.name+' · '+Math.round(100*st.job.progress/st.job.duration)+'% of this attempt.':'A qualified creature can resume this paid batch.'};}
-   const n=p?.requiresNode?this.nodeAt(b.x,b.y):null;if(p?.requiresNode&&(!n||n.kind!==p.requiresNode||!this.nodeAvailable(n)))return {label:n?.stock===0?'Node exhausted':'Missing required node',kind:'blocked',detail:'This place cannot start another batch here. Stored output is still available.'};
-   const demand=this.buildingRecipes(b).filter(r=>(st.requests[r.id]||0)>0||(st.targets[r.id]||0)>this.demandStock(r.output));
-   if(!demand.length)return {label:sum(st.output)?'Ready for collection':'On demand',kind:sum(st.output)?'output':'quiet',detail:sum(st.output)?'Produced goods are here, not in the warehouse.':'Set a stock target or let a creature request a recipe.'};
-   const r=demand[0],substrate=I.substrateIssue(this,b,r);if(substrate)return {label:substrate,kind:'blocked',detail:'This recipe requires '+r.depletion+' units from its site. '+(n?this.remaining(n):0)+' remain; stored output is still available.'};
-   if(sum(st.output)+r.amount>this.capacity(b,'output'))return {label:'Output full',kind:'blocked',detail:'A creature must empty the output tray before production can continue.'};
-   const worker=this.creatures.some(c=>!c.activeQuest&&c.skills[r.skill]);if(!worker)return {label:'Needs a skilled creature',kind:'blocked',detail:'Learn '+SKILLS[r.skill].short+' or wait for a trained companion to return.'};
-   const missing=Object.entries(r.cost).filter(([id,q])=>(st.input[id]||0)<q);
-   if(missing.length)return {label:'Waiting for supplies',kind:'supply',detail:missing.map(([id,q])=>(q-(st.input[id]||0))+' '+item(id).name.toLowerCase()).join(', ')+' must arrive at this building.'};
-   return {label:'Ready to work',kind:'ready',detail:'Ingredients are in place. Creatures take care of urgent needs before working.'};
+   const queries={
+    creatures:this.creatures,
+    originatingOrder:job=>this.originatingOrder(job),nodeAt:(x,y)=>this.nodeAt(x,y),
+    nodeAvailable:node=>this.nodeAvailable(node),buildingRecipes:building=>this.buildingRecipes(building),
+    demandStock:id=>this.demandStock(id),substrateIssue:(building,recipe)=>I.substrateIssue(this,building,recipe),
+    remaining:node=>this.remaining(node),capacity:(building,which)=>this.capacity(building,which),
+    skillName:id=>SKILLS[id].short,itemName:id=>item(id).name
+   };
+   return Production.status(queries,b,PROFILE(b.kind));
   }
   export(){const out=super.export();out.version=6;out.state.version=6;return out;}
 

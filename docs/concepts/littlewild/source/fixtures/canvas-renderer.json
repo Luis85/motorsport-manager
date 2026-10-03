@@ -1,0 +1,124 @@
+{
+  "format": "littlewild-canvas-renderer-contract",
+  "schemaVersion": 1,
+  "sourceSha256": "92157556c4c29505fe1a59bc51e90fd724a94337cfa7d540347a10758366301e",
+  "numericPrecision": 1e-9,
+  "fixtures": {
+    "Cached terrain generation": {
+      "operations": 10617,
+      "sha256": "90b405cc5042380a16a45e76d04e8b767d4e7d51ea26f389812e9111bb0eb187"
+    },
+    "Day frame": {
+      "operations": 4990,
+      "sha256": "fdcd254a354b3aabb92007c257ba1ed89522f8da45655b7c780b00a4f71cadf4"
+    },
+    "Night frame": {
+      "operations": 5061,
+      "sha256": "f6b34653802c504aa9e7c9bdf9741a8bf90858be6e294be7b39d89ba6314d3b6"
+    },
+    "Reduced motion": {
+      "operations": 5061,
+      "sha256": "dde802ab3d4189cae6b33d242fc18f5133be8e3708b28f0f814b8aae34f5580d"
+    },
+    "Placement, resource lens and feedback": {
+      "operations": 5311,
+      "sha256": "74a789e32a42ab44e8ba868073ed70664fc50d7eb3ce6c03cb315268be8a4521"
+    },
+    "Building shelter": {
+      "operations": 85,
+      "sha256": "b716118d124534d9bcca39fdef77f2140fd687a47bf11714343fbd602d18bcd1"
+    },
+    "Building bench": {
+      "operations": 53,
+      "sha256": "430fe40ba3dd11c2c9c80ca787378ad8734310de0eaef7c2ec9d31732ec2a9ed"
+    },
+    "Building fire": {
+      "operations": 87,
+      "sha256": "2f45c1656a9667eee70b12a1f7a7e968cee80398b8727af21ab7c70755b0373f"
+    },
+    "Building garden": {
+      "operations": 146,
+      "sha256": "89a9d389c45f9a2e6ed3cc2ab3ca7699948e18a21c4a268fd74d726852b2916f"
+    },
+    "Building market": {
+      "operations": 99,
+      "sha256": "a5c87ba27fdb03f60a3bf1fc0f1f84a3a4c2992769aa37721a7b2597af7b8275"
+    },
+    "Building well": {
+      "operations": 75,
+      "sha256": "de21098e3a0a5dc5953f86fa8343de9ba0261a294b48d00daf1b7dab1e77456c"
+    },
+    "Building cottage": {
+      "operations": 130,
+      "sha256": "643b1f213ef2e5cf40009807282ca4013ef88dd020212e3c2af7954a645c4f64"
+    },
+    "Building study": {
+      "operations": 63,
+      "sha256": "6ca030e06b3466c0befcfdd8d782a2be3fb968ed9d49faeadaed50d63d318d7c"
+    },
+    "Building circle": {
+      "operations": 148,
+      "sha256": "38eb6bb2cf01c69b02c522abda13d7993d3811a321983539eb97caa47685b0f7"
+    },
+    "Building grainplot": {
+      "operations": 137,
+      "sha256": "49f018527ce6541e58600af4a336c78a86f9d3527cc57bd19863940ab243f7aa"
+    },
+    "Building loom": {
+      "operations": 81,
+      "sha256": "be773364a9f6d0f1b4438efbbf5217e2620e2044b2113e15cc50517bd900039b"
+    },
+    "Building kiln": {
+      "operations": 94,
+      "sha256": "824299c2970f904068c5be392a557398f35c08a3e56ef17bd9342269edd53e7d"
+    },
+    "Building herbarium": {
+      "operations": 83,
+      "sha256": "8b38fe29120ea371f146b6fd7304c978c8e8030a068da9ebaa6dbc8bdd199831"
+    },
+    "Building workshop": {
+      "operations": 103,
+      "sha256": "d98a7bc5f9189c62ddad87393c8e22d67555e47d7def95181335debfbe14ed55"
+    },
+    "Building smelter": {
+      "operations": 118,
+      "sha256": "ecda5938aa163dde58f599fa33d80a154490f858c78a9c71ae5bb0cc15811bcd"
+    },
+    "Building mill": {
+      "operations": 101,
+      "sha256": "cfd9360eb5f4439e858567a32357a70ecd9eaa53ec4051c25aac2e8121a59c2c"
+    },
+    "Building bakery": {
+      "operations": 107,
+      "sha256": "00fec71912c9244d8cbb8cfb13e8c2583084f0427f81a50f70453bc91975bb71"
+    },
+    "Building greenhouse": {
+      "operations": 90,
+      "sha256": "6f54b01ffbbb08f261e8269c08e82016dca8cfa9b254ab4044c31fe8939f7166"
+    },
+    "Building storehouse": {
+      "operations": 123,
+      "sha256": "ae99625cf02b8c8f15f5eb9f0eeaa4dc31eeebb4ca4ef66bd16fa13fac76c910"
+    },
+    "Building waterwheel": {
+      "operations": 144,
+      "sha256": "bd4180d3a5e4f0db7cd944bca6edd6d986e605baeb853db98be9fb662de022e8"
+    },
+    "Building orchard": {
+      "operations": 273,
+      "sha256": "8d590f63b578ea209f02e0b2227ba6be2386fb62e6327b8edd43839b4caf2fcf"
+    },
+    "Building observatory": {
+      "operations": 94,
+      "sha256": "6da676a6a05957c5ef7eaa872423c40c78218d7cf6bf1a17b4cb0263813bcce9"
+    },
+    "Building map_table": {
+      "operations": 15,
+      "sha256": "ce790ab794f6c30b9dcf54108b83888b369dfbae66e9963e6e2cbae9b076e5f3"
+    },
+    "Replaced engine frame": {
+      "operations": 5132,
+      "sha256": "5b6dccd8b812455cf8f7f001318302aed381487bfd9da7ef9967d170c6c27c97"
+    }
+  }
+}

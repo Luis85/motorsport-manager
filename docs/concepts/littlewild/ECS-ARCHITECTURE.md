@@ -2,7 +2,7 @@
 
 ## Goal
 
-Refactor the Littlewild simulation from a deep `Engine extends Engine` inheritance chain into an explicit entity-component-system runtime without giving up the existing JSON-authored content, deterministic fixed-step simulation, or native-v8 state compatibility. Scenario-aware envelope 9 stories migrate explicitly to envelope 10 with a versioned simulation profile.
+Refactor the Littlewild simulation from a deep `Engine extends Engine` inheritance chain into an explicit entity-component-system runtime without giving up the existing JSON-authored content, deterministic fixed-step simulation, or native-v8 state compatibility. Scenario-aware stories use envelope 10 with a versioned simulation profile; obsolete scenario/story formats are rejected.
 
 This migration is intentionally incremental. A rewrite would make it difficult to prove that movement, resource conservation, work, progression, and imported stories retained their behavior. Each slice therefore moves one authoritative rule into a system, adds parity tests, and then deletes the corresponding legacy rule.
 
@@ -76,7 +76,7 @@ M1 covers creature **Needs**, **Learning**, and **Feelings** updates. It also bi
 
 The adapter binds component stores to the exact nested actor objects already serialized today. There is no shadow component state and no ECS blob in exports. `Activity` is ephemeral, computed from current task plus an explicit, bounded snapshot of domain context. Existing `colony.ts` retains its actor command permissions, task decisions, mood and stochastic temper checks. Only the migrated numerical decay/fatigue rules are removed from that legacy loop.
 
-Authoritative compatibility values live in `source/content/simulation-profile.json`, which contains the validated actor and economy rule documents plus the exact compiled `living-world-v1` composition archetype. Scenario schema 2 requires a complete profile; schema 1 packs migrate explicitly to `classic-v1`. A profile may tune bounded actor/economy numbers, but its engine layers, fixed-step phases and transaction-system lists must exactly match the compiled runtime. JSON cannot add, remove, reorder or implement systems.
+Authoritative compatibility values live in `source/content/simulation-profile.json`, which contains the validated actor and economy rule documents plus the exact compiled `living-world-v1` composition archetype. Scenario schema 2 requires a complete profile; schema 1 packs are rejected. A profile may tune bounded actor/economy numbers, but its engine layers, fixed-step phases and transaction-system lists must exactly match the compiled runtime. JSON cannot add, remove, reorder or implement systems.
 
 Actor-major stepping and previous RNG call order remain unchanged: the existing shared-world loop visits the saved creature order and invokes ECS once for each present actor. System order within an actor is: daily practice reset; learning fatigue/hysteresis; social decay; needs decay. Legacy incident/decision/task code follows.
 
@@ -88,7 +88,7 @@ M4 adds `economy-ecs.ts` for atomic financial and progression settlement. Guide 
 
 M5 removes the runtime constructor-replacement chain. Feature modules register ordered descriptors with `engine-composition.ts`, and `engine-composition-root.ts` finalizes one stable facade in an explicit six-layer order. `actor-state-view.ts` resolves personal fields by actor identity without adding getters to serialized root state. `simulation-pipeline.ts` exposes the fixed-step world/actor phase order, while `command-router.ts` provides a compiled allowlist for application commands and rejects arbitrary method dispatch. Historical import stages and authored fixtures use explicit partial-construction boundaries rather than global load order.
 
-M6 adds `simulation-profile.ts` and `scenario-migrations.ts` as explicit content and migration boundaries. Scenario schema 2 carries a self-contained, fingerprinted simulation profile. Engines capture an immutable validated profile at construction, and actor/economy runtimes use that captured data rather than whichever profile is globally active later. Portable scenario stories use envelope 10 with context version 2 and an independent simulation fingerprint; envelope 9 imports migrate to `classic-v1` and re-export as 10. Native state remains version 8.
+M6 adds `simulation-profile.ts` as the explicit simulation content boundary. Scenario schema 2 carries a self-contained, fingerprinted simulation profile. Engines capture an immutable validated profile at construction, and actor/economy runtimes use that captured data rather than whichever profile is globally active later. Portable scenario stories use envelope 10 with context version 2 and an independent simulation fingerprint; envelope 9 imports are rejected. Native state remains version 8.
 
 ## Separation and ownership
 
@@ -102,11 +102,10 @@ M6 adds `simulation-profile.ts` and `scenario-migrations.ts` as explicit content
 | `simulation-pipeline.ts` | Fixed-step world/actor orchestration and visible phase order | Domain calculations, rendering, wall clock |
 | `command-router.ts` | Compiled command allowlist, envelope validation, explicit actor routing | Arbitrary method dispatch, imported executable handlers |
 | `simulation-profile.ts` | Strict bounded profile parsing, actor/economy rule validation, immutable profile identity, compiled-archetype parity | Dynamic modules, callbacks, handler registration, system insertion/reordering |
-| `scenario-migrations.ts` | Explicit schema-1→2 and context-1→2 migrations with review notes | Heuristic migration, silent behavior inference |
 | Actor state view and simulation adapters | Translate actor/root context; call ECS services; retain authorization, decision and presentation boundaries | Root-state accessors, duplicated migrated calculations or balances |
 | Existing content registries | Definition parsing, ID/reference validation, immutable read tables | Executing imported callbacks |
 | Application shell | Input/command dispatch, save/export orchestration, render scheduling | Authoritative gameplay calculations |
-| Persistence | Native v8 state, envelope 10 scenario context, explicit envelope-9 migration | Serialization of renderer objects or duplicated ECS caches |
+| Persistence | Native v8 state, envelope 10 scenario context, explicit obsolete-format rejection | Serialization of renderer objects or duplicated ECS caches |
 
 ## Migration sequence and exit gates
 
@@ -115,7 +114,7 @@ M6 adds `simulation-profile.ts` and `scenario-migrations.ts` as explicit content
 - **M3 — world simulation (implemented):** deposits, worksite inventories, production reservations/jobs, finite substrate use, carrier transfers, conservation, stable IDs and deterministic contention.
 - **M4 — economy, quests and progression (implemented):** atomic wallets, research, XP, prestige, statistics and chapter settlement; authorization, physical goods, histories, journaling and presentation remain separate adapters.
 - **M5 — composition cleanup (implemented):** one stable facade; explicit systems/colony/world/village/planner/cartography root; actor-scoped view over plain root data; fixed-step pipeline; compiled command router; no feature-module constructor replacement.
-- **M6 — content/schema evolution (implemented):** scenario schema 2 requires a versioned simulation profile; actor/economy rules are bounded data; `living-world-v1` arrays are exact compiled contracts; schema-1 packs and envelope-9 stories migrate deliberately to `classic-v1`; scenario saves emit envelope 10 with an independent profile fingerprint.
+- **M6 — content/schema evolution (implemented):** scenario schema 2 requires a versioned simulation profile; actor/economy rules are bounded data; `living-world-v1` arrays are exact compiled contracts; schema-1 packs and envelope-9 stories are rejected; scenario saves emit envelope 10 with an independent profile fingerprint.
 
 Each migration has an executable regression gate and a baseline trace for old-versus-new behavior, and must leave both Littlewild and Emberworks usable.
 

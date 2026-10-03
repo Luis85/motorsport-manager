@@ -144,7 +144,7 @@
   const actor=Actor.validateRules(rules.actor),economy=Economy.validateRules(rules.economy);
   const sourceArchetype=raw.archetype;
   exact(sourceArchetype,['id','version','engineLayers','simulationPipeline','actorDynamics','actorActivity','worldTransactions','economyTransactions'],'composition archetype');
-  if(!identity(sourceArchetype.id)||sourceArchetype.version!==1)throw Error('Invalid composition archetype identity.');
+  if(sourceArchetype.id!=='living-world-v1'||sourceArchetype.version!==1)throw Error('Unsupported composition archetype identity.');
 
   const archetype:Archetype={
    id:sourceArchetype.id,

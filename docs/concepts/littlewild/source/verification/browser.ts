@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
-import { chromium, type Page } from "playwright";
+import { type Page } from "playwright";
+import { launchBrowser, monitorContext } from "./browser-harness";
 
 interface Result { name:string; passed:boolean; error?:string; }
 
@@ -10,7 +11,9 @@ const OUTPUT=path.join(ROOT,"verification","v15");
 const SHOTS=path.join(ROOT,"screenshots","browser");
 const CAPTURE_SCREENSHOTS=process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==="1";
 fs.mkdirSync(OUTPUT,{recursive:true});if(CAPTURE_SCREENSHOTS)fs.mkdirSync(SHOTS,{recursive:true});
-const results:Result[]=[],errors:string[]=[],requests:string[]=[];
+const results:Result[]=[];
+fs.rmSync(path.join(OUTPUT,"browser-results.json"),{force:true});
+let diagnostics: ReturnType<typeof monitorContext>;
 
 async function check(name:string,fn:()=>unknown|Promise<unknown>):Promise<void>{
  try{const value=await fn();assert.notEqual(value,false,"Check returned false");results.push({name,passed:true});}
@@ -22,12 +25,11 @@ const expect=(value:unknown):void=>assert.ok(value);
 const screenshot=(page:Page,name:string)=>CAPTURE_SCREENSHOTS?page.screenshot({path:path.join(SHOTS,name),animations:"disabled"}):Promise.resolve();
 
 async function main():Promise<void>{
- const browser=await chromium.launch({headless:true,args:["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]});
+ const browser=await launchBrowser();
  try {
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
+ diagnostics=monitorContext(context);
  const p=await context.newPage();p.setDefaultTimeout(5000);
- p.on("pageerror",error=>errors.push(String(error)));
- p.on("request",request=>{if(/^https?:/.test(request.url()))requests.push(request.url());});
  await p.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});
  await p.waitForFunction(() => !!(window as any).Littlewild);await p.waitForTimeout(250);
  await check("Application identifies the new implementation",async()=>equal(await p.evaluate("Littlewild.version"),"15.0.0"));
@@ -155,11 +157,12 @@ async function main():Promise<void>{
   await check(tag+": guide footer remains reachable",async()=>expect(await p.locator("#guide-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await p.locator("[data-guide=close]").click();
  }
- await check("No uncaught browser errors in tested flows",()=>equal(errors,[]));
- await check("Game makes no HTTP/HTTPS requests",()=>equal(requests,[]));
+ await check("No uncaught browser errors in tested flows",()=>equal(diagnostics.errors,[]));
+ await check("No console warnings or errors in tested flows",()=>equal(diagnostics.consoleProblems,[]));
+ await check("Game makes no HTTP/HTTPS requests",()=>equal(diagnostics.requests,[]));
  } finally { await browser.close(); }
 
- const report={passed:results.filter(x=>x.passed).length,total:results.length,failed:results.filter(x=>!x.passed).length,results,errors,externalRequests:requests};
+ const report={passed:results.filter(x=>x.passed).length,total:results.length,failed:results.filter(x=>!x.passed).length,results,...diagnostics};
  fs.writeFileSync(path.join(OUTPUT,"browser-results.json"),JSON.stringify(report,null,2)+"\n");
  process.stdout.write(`${report.passed}/${report.total}\n`);
  if(report.failed)process.exitCode=1;

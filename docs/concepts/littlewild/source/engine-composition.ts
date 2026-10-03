@@ -44,6 +44,10 @@
  let ordered:Readonly<LayerSpec>[]=[],finalized=false;
  const forbiddenStatic=new Set(['length','name','prototype','arguments','caller']);
  const copyDescriptor=(target:object,name:PropertyKey,descriptor:PropertyDescriptor):void=>{Object.defineProperty(target,name,descriptor);};
+ function restoreDescriptors(target:object,before:PropertyDescriptorMap):void{
+  for(const name of Reflect.ownKeys(target))if(!Object.hasOwn(before,name))Reflect.deleteProperty(target,name);
+  Object.defineProperties(target,before);
+ }
  function assertId(id:unknown):asserts id is string{if(typeof id!=='string'||!/^[a-z][a-z0-9-]{1,47}$/.test(id))throw Error('Invalid engine layer ID.');}
  function register(spec:LayerSpec):LayerSpec{
   if(finalized)throw Error('Engine composition is already finalized.');
@@ -81,21 +85,31 @@
   if(spec.decorate)spec.decorate(Layer,Base,Facade);
   classes.set(spec.id,Layer);
   const instanceDescriptors=Object.getOwnPropertyDescriptors(Layer.prototype);
-  for(const [name,descriptor]of Object.entries(instanceDescriptors))if(name!=='constructor')copyDescriptor(Facade.prototype,name,descriptor);
+  for(const [name,descriptor]of Object.entries(instanceDescriptors))if(name!=='constructor')copyDescriptor(Facade.prototype,name,{...descriptor,configurable:true});
   const staticDescriptors=Object.getOwnPropertyDescriptors(Layer);
-  for(const [name,descriptor]of Object.entries(staticDescriptors))if(!forbiddenStatic.has(name))copyDescriptor(Facade,name,descriptor);
+  for(const [name,descriptor]of Object.entries(staticDescriptors))if(!forbiddenStatic.has(name))copyDescriptor(Facade,name,{...descriptor,configurable:true});
  }
  function finalize(ids:readonly string[]):DynamicConstructor{
   if(finalized)return Facade;
   if(!Array.isArray(ids)||ids.length!==specs.size)throw Error('Composition root must name every engine layer exactly once.');
   const seen=new Set<string>();
-  ordered=ids.map(id=>{if(seen.has(id)||!specs.has(id))throw Error('Unknown or duplicate engine layer: '+id);seen.add(id);return specs.get(id)!;});
-  const sorted=[...ordered].sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id));
-  if(sorted.some((spec,index)=>spec!==ordered[index]))throw Error('Composition root order does not match declared layer order.');
-  for(const spec of ordered)install(spec);
-  finalized=true;
-  for(const spec of ordered)if(spec.installFactories)spec.installFactories({L,Engine:Facade,composition:api});
-  Object.defineProperty(Facade,'composition',{configurable:false,enumerable:true,value:Object.freeze({layers:Object.freeze(ordered.map(spec=>spec.id))})});
+  const proposed=ids.map(id=>{if(seen.has(id)||!specs.has(id))throw Error('Unknown or duplicate engine layer: '+id);seen.add(id);return specs.get(id)!;});
+  const sorted=[...proposed].sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id));
+  if(sorted.some((spec,index)=>spec!==proposed[index]))throw Error('Composition root order does not match declared layer order.');
+  const prior=ordered,prototypeDescriptors=Object.getOwnPropertyDescriptors(Facade.prototype),
+   staticDescriptors=Object.getOwnPropertyDescriptors(Facade),facadeDescriptors=Object.getOwnPropertyDescriptors(L);
+  ordered=proposed;
+  try{
+   for(const spec of ordered)install(spec);
+   finalized=true;
+   for(const spec of ordered)if(spec.installFactories)spec.installFactories({L,Engine:Facade,composition:api});
+   Object.defineProperty(Facade,'composition',{configurable:false,enumerable:true,value:Object.freeze({layers:Object.freeze(ordered.map(spec=>spec.id))})});
+  }catch(error){
+   // A retry must start from the original facade, including predecessor methods and factories.
+   finalized=false;ordered=prior;classes.clear();
+   restoreDescriptors(Facade.prototype,prototypeDescriptors);restoreDescriptors(Facade,staticDescriptors);restoreDescriptors(L,facadeDescriptors);
+   throw error;
+  }
   return Facade;
  }
  function limit(options:CompositionOptions={}):number{

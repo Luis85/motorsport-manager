@@ -29,7 +29,7 @@
    let context=null;try{context=canvas.getContext('webgl2',{antialias:true,alpha:false,powerPreference:'default'});}catch(error){}
    if(context)this.renderer=new T.WebGLRenderer({canvas,context,antialias:true,alpha:false});else{this.renderer=new root.LWSoftware3D(canvas,this);this.mode='Software 3D · compatibility';}
 
-   this.renderer.setPixelRatio(1);this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.02;
+   this.renderer.setPixelRatio(1);this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.02;
    this.scene=new T.Scene();this.scene.background=new T.Color('#d5e4df');this.scene.fog=new T.Fog('#d5e4df',105,195);
    this.cam=new T.OrthographicCamera(-20,20,15,-15,.1,250);this.cam.position.set(69,60,69);this.cam.lookAt(9,0,9);
    this.scene.add(new T.HemisphereLight('#fff2d4','#75968a',2.0));this.sun=new T.DirectionalLight('#ffe3b0',2.7);this.sun.position.set(-12,34,18);this.sun.target.position.set(9,0,9);this.scene.add(this.sun,this.sun.target);this.sun.castShadow=true;this.sun.shadow.mapSize.set(2048,2048);Object.assign(this.sun.shadow.camera,{left:-25,right:25,top:25,bottom:-25,near:1,far:100});this.sun.shadow.bias=-.0015;this.sun.shadow.normalBias=.035;

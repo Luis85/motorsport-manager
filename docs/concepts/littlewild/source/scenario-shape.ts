@@ -89,7 +89,7 @@
         for (const key of s.required ?? []) if (!Object.hasOwn(v, key)) fail('missing ' + key);
         for (const [key, entry] of Object.entries(v)) {
           if (s.propertyNames) visit(key, s.propertyNames, path + '/' + key, out);
-          const next = s.properties?.[key] ?? s.additionalProperties;
+          const next = s.properties && Object.hasOwn(s.properties, key) ? s.properties[key] : s.additionalProperties;
           if (next === false) fail('unknown field ' + key);
           else if (isRecord(next)) visit(entry, next as JsonSchema, path + '/' + key, out);
         }

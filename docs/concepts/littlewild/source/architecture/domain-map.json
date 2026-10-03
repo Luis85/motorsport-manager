@@ -29,7 +29,9 @@
       "layer": "domain",
       "files": [
         "world-ecs.ts",
-        "island-geometry.ts"
+        "island-geometry.ts",
+        "world-production.ts",
+        "world-tasks.ts"
       ]
     },
     {
@@ -56,7 +58,11 @@
       "layer": "application",
       "files": [
         "colony-policies.ts",
-        "creature-factory.ts"
+        "creature-factory.ts",
+        "colony-adventures.ts",
+        "colony-activity.ts",
+        "colony-logistics.ts",
+        "colony-task-completion.ts"
       ]
     },
     {
@@ -92,7 +98,10 @@
         "command-router.ts",
         "simulation.cts",
         "planner.ts",
-        "cartography.ts"
+        "cartography.ts",
+        "engine-task-planning.ts",
+        "engine-task-completion.ts",
+        "engine-companion.ts"
       ]
     },
     {
@@ -137,7 +146,18 @@
         "world-layout.ts",
         "world-presentation.ts",
         "world-ui.ts",
-        "world.ts"
+        "world.ts",
+        "ui-status.ts",
+        "ui-modal-content.ts",
+        "ui-story-panels.ts",
+        "ui-modal.ts",
+        "ui-actions.ts",
+        "ui-input.ts",
+        "canvas-art.ts",
+        "canvas-buildings.ts",
+        "canvas-ground.ts",
+        "canvas-scene.ts",
+        "colony-hud.ts"
       ]
     }
   ],
@@ -164,7 +184,9 @@
     "LWDefaultProfile",
     "LWScenarioShape",
     "LWCreatureDefinitions",
-    "LWCreatures"
+    "LWCreatures",
+    "LWWorldProduction",
+    "LWWorldTasks"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -187,7 +209,6 @@
   ],
   "strictTypingDebt": {
     "world-ecs.ts": "Physical transaction services still expose broad resource, job and building state shapes; migrate around explicit transaction DTOs and typed ECS ports.",
-    "island-geometry.ts": "Topology helpers still consume dynamically authored world-profile records; migrate after a shared typed topology/profile contract is extracted.",
     "content-runtime.ts": "The mature content registry and JSON-Schema interpreter still use dynamic schema/data records; migrate around a typed schema AST and registry model.",
     "adventure-content.ts": "Adventure definitions depend on the dynamic content registry and schema tables; migrate after the content-runtime contract is typed.",
     "growth-content.ts": "Growth definitions depend on Adventure/content dynamic tables and extension records; migrate after the shared content contracts are typed.",
@@ -203,10 +224,6 @@
     "scenario-runtime.ts": "Scenario activation spans dynamic pack schemas, registries and scenario activation boundaries; migrate after scenario/content ports are fully typed.",
     "story-codec.ts": "Portable-story persistence still operates on broad dynamic current-format DTOs; migrate behind typed envelope and native-state contracts without reintroducing historical format adapters."
   },
-  "strictTypingDebtBudget": 16,
-  "moduleBudgetExceptions": {
-    "engine.ts": "Large application facade and current import boundary; decompose behind typed application services.",
-    "colony.ts": "Large actor/community application module; decompose into focused actor and community services.",
-    "world-simulation.ts": "Large physical-world application module; split logistics, production and world orchestration into focused services."
-  }
+  "strictTypingDebtBudget": 15,
+  "moduleBudgetExceptions": {}
 }

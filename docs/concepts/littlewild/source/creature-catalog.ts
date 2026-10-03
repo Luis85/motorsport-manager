@@ -71,11 +71,26 @@
   if(new Set(out).size!==out.length)return fail('duplicate '+label+' entry');
   return out;
  };
- function dataOnly(value:unknown,path:string,depth=0):void{
-  if(depth>16)fail(path+' exceeds maximum nesting');
-  if(Array.isArray(value)){value.forEach((entry,index)=>dataOnly(entry,path+'/'+index,depth+1));return;}
-  if(plain(value)){for(const [key,entry] of Object.entries(value)){if(forbidden.has(key))fail(path+'/'+key+' is executable-shaped');dataOnly(entry,path+'/'+key,depth+1);}return;}
-  if(value!==null&&typeof value!=='string'&&typeof value!=='boolean'&&!(typeof value==='number'&&Number.isFinite(value)))fail(path+' contains a non-JSON value');
+ function dataOnly(value:unknown,path:string):void{
+  const ancestors=new Set<object>();let count=0;
+  function visit(entry:unknown,label:string,depth:number):void{
+   if(++count>20000||depth>16)fail(label+' exceeds supported complexity');
+   if(entry===null||typeof entry==='string'||typeof entry==='boolean'||(typeof entry==='number'&&Number.isFinite(entry)))return;
+   if(!Array.isArray(entry)&&!plain(entry))fail(label+' contains a non-JSON value');
+   const object=entry as object;
+   if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)fail(label+' contains non-JSON properties or a cycle');
+   const descriptors=Object.getOwnPropertyDescriptors(object);
+   if(Array.isArray(entry)&&Object.keys(descriptors).length!==entry.length+1)fail(label+' must be a dense JSON list');
+   ancestors.add(object);
+   for(const [key,descriptor] of Object.entries(descriptors)){
+    if(Array.isArray(entry)&&key==='length')continue;
+    if(forbidden.has(key)||['__proto__','constructor','prototype'].includes(key))fail(label+'/'+key+' is executable-shaped or reserved');
+    if(!descriptor.enumerable||descriptor.get||descriptor.set)fail(label+'/'+key+' contains a non-JSON property');
+    visit(descriptor.value,label+'/'+key,depth+1);
+   }
+   ancestors.delete(object);
+  }
+  visit(value,path,0);
  }
  function deepFreeze(value:unknown):void{
   if(!value||typeof value!=='object')return;
@@ -89,6 +104,7 @@
  }
 
  function validate(input:unknown):Definition{
+  dataOnly(input,'definition');
   const raw=record(input,'creature definition');
   const rootKeys=['format','schemaVersion','id','name','description','defaultPersonality','personalities','names','movement','rng','state','ecs'];
   if(Object.keys(raw).length!==rootKeys.length||rootKeys.some(key=>!Object.hasOwn(raw,key)))fail('invalid root schema');
@@ -133,13 +149,23 @@
    const binding=record(inputBinding,id+' ECS binding');
    if(Object.keys(binding).length!==2)fail(id+' ECS binding has unknown fields');
    const componentType=textValue(binding.type,id+' component type',61,safeComponent),field=textValue(binding.field,id+' component field',61,safeField);
+   if(['Creature','Task','Activity','Intent'].includes(componentType))fail(id+' ECS binding conflicts with transient component '+componentType);
    if(types.has(componentType)||fields.has(field))fail(id+' duplicate ECS binding');
    if(!Object.hasOwn(defaults,field)||!plain(defaults[field]))fail(id+' ECS field '+field+' must reference an object default');
    types.add(componentType);fields.add(field);components.push({type:componentType,field});
   }
   for(const type of requiredComponents)if(!types.has(type))fail(id+' missing ECS component '+type);
-
-  dataOnly(raw,id);
+  for(const [mode,override] of [['founder',founder],['arrival',arrival]] as const){
+   const state=merge(defaults,override);
+   if(!plain(state.rpg))fail(id+' '+mode+' RPG state must be an object');
+   for(const binding of components){
+    const component=record(state[binding.field],id+' '+mode+' component '+binding.type);
+    const numericKeys=binding.type==='Transform'?['x','y']:binding.type==='Needs'?['food','water','energy','comfort','joy']:binding.type==='Learning'?['fatigue','practiceDay']:binding.type==='Feelings'?['social','anger']:[];
+    for(const key of numericKeys)numberValue(component[key],id+' '+mode+' '+binding.type+'/'+key,binding.type==='Transform'?-1000000:0,binding.type==='Transform'||key==='practiceDay'?1000000:100,key==='practiceDay');
+    if(binding.type==='Learning'&&(!plain(component.practicedToday)||typeof component.recovering!=='boolean'||Number(component.practiceDay)<1))fail(id+' '+mode+' invalid learning state');
+    if(binding.type==='Inventory')for(const [key,quantity] of Object.entries(component))numberValue(quantity,id+' '+mode+' inventory/'+key,0,Number.MAX_SAFE_INTEGER,true);
+   }
+  }
   const value:Definition={format:'littlewild-creature',schemaVersion:1,id,name,description,defaultPersonality,
    personalities:Object.freeze(personalities),names:Object.freeze(names),movement,rng,
    state:Object.freeze({personalFields:Object.freeze(personalFields),defaults:clone(defaults),modes:Object.freeze({founder:clone(founder),arrival:clone(arrival)})}),

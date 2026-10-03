@@ -97,9 +97,9 @@
  }
  function create(rules:unknown=DEFAULT):EconomyRuntime{
   const tuning=validateRules(rules),world=new E.World(),scheduler=new E.Scheduler(),completed=new Set<string>();let serial=0;
-  const threshold=(level:number):number=>tuning.xp.base+level*tuning.xp.perLevel;
+  const threshold=(level:number):number=>{if(!integer(level,1,tuning.limits.level))throw Error('Invalid economy level.');return tuning.xp.base+level*tuning.xp.perLevel;};
   const component=<T extends ComponentData>(id:string,type:string,data:T):T=>{
-   if(!world.entities.has(id))world.create(id);const current=world.get<T>(id,type);if(current){Object.assign(current,data);return current;}return world.set(id,type,data);
+   if(!world.entities.has(id))world.create(id);return world.set(id,type,data);
   };
   function records(stateInput:unknown,actorInput:unknown):{state:EconomyState;actor:ActorRecord|null;actorId:string;actorRecord:LevelRecord;actorStats:StatsRecord}{
    if(!plain(stateInput))throw Error('Invalid economy state.');
@@ -146,16 +146,21 @@
    out.plan={player,actor,shared,prestige,actorStats,values};out.state='planned';
   }});
   scheduler.register<SettlementContext>({id:'wallet-settlement',phase:'simulate',order:10,query:['Settlement','SettlementOutcome'],update(current,id){const out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;out.plan.player.coins=out.plan.values.guide;out.plan.actor.coins=out.plan.values.pocket;}});
-  scheduler.register<SettlementContext>({id:'shared-research-settlement',phase:'simulate',order:20,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;out.plan.shared.rp=out.plan.values.research;if(spec.deltas.research>0)out.plan.actorStats.researchEarned=(out.plan.actorStats.researchEarned||0)+spec.deltas.research;}});
+  function addStat(stats:StatsRecord,key:string,amount:number):void{
+   const value=stats[key]??0,next=value+amount;
+   if(!integer(value,-tuning.limits.stat,tuning.limits.stat)||!integer(next,-tuning.limits.stat,tuning.limits.stat))throw Error('Statistic limit exceeded.');
+   stats[key]=next;
+  }
+  scheduler.register<SettlementContext>({id:'shared-research-settlement',phase:'simulate',order:20,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;out.plan.shared.rp=out.plan.values.research;if(spec.deltas.research>0)addStat(out.plan.actorStats,'researchEarned',spec.deltas.research);}});
   scheduler.register<SettlementContext>({id:'xp-progression',phase:'simulate',order:30,query:['Settlement','SettlementOutcome'],update(current,id,_dt,ctx){
    const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;
-   const apply=(entityId:string,amount:number):number=>{const progress=required<LevelProgressComponent>(current,entityId,'LevelProgress'),record=progress.record;let levels=0;record.xp+=amount;while(record.xp>=threshold(record.level)){record.xp-=threshold(record.level);record.level++;levels++;if(record.level>tuning.limits.level)throw Error('Level limit exceeded.');out.levelUps.push({who:progress.who,level:record.level});}return levels;};
+   const apply=(entityId:string,amount:number):number=>{const progress=required<LevelProgressComponent>(current,entityId,'LevelProgress'),record=progress.record;let levels=0;if(!Number.isSafeInteger(record.xp+amount))throw Error('Experience limit exceeded.');record.xp+=amount;while(record.xp>=threshold(record.level)){record.xp-=threshold(record.level);record.level++;levels++;if(record.level>tuning.limits.level)throw Error('Level limit exceeded.');out.levelUps.push({who:progress.who,level:record.level});}return levels;};
    const playerLevels=apply('economy:player',spec.deltas.playerXp),actorLevels=apply(ctx.actorId,spec.deltas.actorXp);
-   if(playerLevels){const bonus=playerLevels*tuning.xp.playerResearchPerLevel;if(out.plan.shared.rp+bonus>tuning.limits.balance)throw Error('Research limit exceeded.');out.plan.shared.rp+=bonus;out.plan.actorStats.researchEarned=(out.plan.actorStats.researchEarned||0)+bonus;out.levelResearch=bonus;}
+   if(playerLevels){const bonus=playerLevels*tuning.xp.playerResearchPerLevel;if(out.plan.shared.rp+bonus>tuning.limits.balance)throw Error('Research limit exceeded.');out.plan.shared.rp+=bonus;addStat(out.plan.actorStats,'researchEarned',bonus);out.levelResearch=bonus;}
    if(actorLevels){const actorState=required<ActorStateComponent>(current,ctx.actorId,'ActorState').record;actorState.bond=Math.max(0,Math.min(100,actorState.bond+actorLevels*tuning.xp.actorBondPerLevel));if(current.has(ctx.actorId,'ActorRpg')){const rpg=required<ActorRpgComponent>(current,ctx.actorId,'ActorRpg').record,cp=actorLevels*spec.actorCpPerLevel;if(!integer((rpg.cp||0)+cp,0,tuning.limits.stat))throw Error('Character point limit exceeded.');rpg.cp=(rpg.cp||0)+cp;out.actorCp=cp;}}
   }});
   scheduler.register<SettlementContext>({id:'prestige-settlement',phase:'simulate',order:40,query:['Settlement','SettlementOutcome'],update(current,id){const out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan?.prestige)return;out.plan.prestige.prestige=out.plan.values.prestige;out.plan.prestige.earnedPrestige=out.plan.values.earnedPrestige;}});
-  scheduler.register<SettlementContext>({id:'stat-settlement',phase:'simulate',order:50,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;for(const[key,amount]of Object.entries(spec.stats))out.plan.actorStats[key]=(out.plan.actorStats[key]||0)+amount;}});
+  scheduler.register<SettlementContext>({id:'stat-settlement',phase:'simulate',order:50,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan)return;for(const[key,amount]of Object.entries(spec.stats))addStat(out.plan.actorStats,key,amount);}});
   scheduler.register<SettlementContext>({id:'chapter-settlement',phase:'simulate',order:60,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned'||!out.plan||!spec.chapterId)return;out.plan.shared.completedQuests.push(spec.chapterId);out.chapterAdded=spec.chapterId;}});
   scheduler.register<SettlementContext>({id:'settlement-outbox',phase:'post',order:10,query:['Settlement','SettlementOutcome'],update(current,id){const spec=required<SettlementComponent>(current,id,'Settlement').spec,out=required<SettlementOutcome>(current,id,'SettlementOutcome');if(out.state!=='planned')return;completed.add(spec.id);out.state='settled';out.ok=true;out.deltas={...spec.deltas};out.stats={...spec.stats};delete out.plan;}});
   function settle(stateInput:unknown,actorInput:unknown,input:unknown):SettlementOutcome{

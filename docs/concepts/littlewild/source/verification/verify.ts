@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { runCommand } from "./process-runner";
 import { performance } from "node:perf_hooks";
+import { acceptedCounts, parseGateArgs, sourceIdentity } from "./gate-integrity";
 
 interface Suite {
   name: string;
@@ -12,6 +13,8 @@ interface Suite {
 }
 interface SuiteResult extends Suite {
   exitCode: number;
+  signal?: string;
+  error?: string;
   seconds: number;
   passed?: number;
   total?: number;
@@ -22,6 +25,10 @@ interface GateReport {
   total: number;
   suites: SuiteResult[];
   browserIncluded: boolean;
+  sourceSha256: string;
+  startedAt: string;
+  finishedAt?: string;
+  environment: { node: string; platform: string; architecture: string; chromium: string };
   htmlSha256?: string;
   htmlBytes?: number;
   error?: string;
@@ -30,12 +37,22 @@ interface GateReport {
 const ROOT = path.resolve(__dirname, "../..");
 const GENERATED = path.join(ROOT, ".generated");
 const OUT = path.join(ROOT, "verification", "v15");
+let options: ReturnType<typeof parseGateArgs>;
+try { options = parseGateArgs(process.argv.slice(2)); }
+catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exit(2); }
+if (options.help) { console.log("Usage: npm run verify -- [--no-browser | --help]\n--no-browser produces partial evidence only."); process.exit(0); }
+const noBrowser = options.noBrowser;
+const initialSource = sourceIdentity(ROOT);
 fs.rmSync(OUT, { recursive:true, force:true });
 fs.mkdirSync(OUT, { recursive: true });
-const noBrowser = process.argv.includes("--no-browser");
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["canvas-renderer", ["node", generated("test-canvas-renderer.cjs")], generated("canvas-renderer-results.json"), 120],
+  ["architecture-policy", ["node", generated("test-architecture-policy.cjs")], generated("architecture-policy-results.json"), 60],
+  ["storage-clock", ["node", generated("test-storage-clock.cjs")], generated("storage-clock-results.json"), 60],
+  ["gate-integrity", ["node", generated("test-gate-integrity.cjs")], generated("gate-integrity-results.json"), 60],
+  ["cli-contracts", ["node", generated("test-cli-contracts.cjs")], generated("cli-contract-results.json"), 120],
   ["typescript-architecture", ["node", generated("tools/architecture-check.cjs")], generated("typescript-architecture-results.json"), 60],
   ["behavior-tree", ["node", generated("test-behavior-tree.cjs")], generated("behavior-tree-results.json"), 60],
   ["content-boundary", ["node", generated("test-content-boundary.cjs")], generated("content-boundary-results.json"), 60],
@@ -69,29 +86,22 @@ if (!noBrowser) {
   );
 }
 
-const report: GateReport = { status:"running", passed:0, total:0, suites:[], browserIncluded:!noBrowser };
+const report: GateReport = { status:"running", passed:0, total:0, suites:[], browserIncluded:!noBrowser, sourceSha256:initialSource, startedAt:new Date().toISOString(), environment:{node:process.version,platform:process.platform,architecture:process.arch,chromium:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? "playwright-bundled"} };
 const reportPath = path.join(OUT, "gate-results.json");
 const write = (): void => fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");
 
-function run(command: readonly string[], timeoutSeconds: number, capture = true) {
-  const result = spawnSync(command[0]!, command.slice(1), {
-    cwd: ROOT,
-    encoding: "utf8",
-    timeout: timeoutSeconds * 1000,
-    stdio: capture ? "pipe" : "inherit",
-    env: process.env
-  });
-  if (result.error) throw result.error;
-  return result;
-}
+const run = (command: readonly string[], timeoutSeconds: number, capture = true) => runCommand(command, ROOT, timeoutSeconds, capture);
 
 write();
 try {
+  const strict = run(["npm", "run", "typecheck", "--silent"], 120);
+  fs.writeFileSync(path.join(OUT, "typecheck.log"), (strict.stdout ?? "") + "\n" + (strict.stderr ?? ""));
+  if (strict.error || strict.status !== 0) throw new Error("Strict TypeScript preflight failed; see typecheck.log" + (strict.error ? ": " + strict.error.message : ""));
   const build = run(["npm", "run", "build", "--silent"], 120, false);
-  if (build.status !== 0) throw new Error("TypeScript build failed.");
+  if (build.error || build.status !== 0) throw new Error("TypeScript build failed." + (build.error ? " " + build.error.message : ""));
   const artifact = path.join(ROOT, "littlewild.html");
   const artifactBytes = fs.readFileSync(artifact);
-  report.htmlSha256 = crypto.createHash("sha256").update(artifactBytes).digest("hex");
+  report.htmlSha256 = crypto.createHash("sha256").update(new Uint8Array(artifactBytes)).digest("hex");
   report.htmlBytes = artifactBytes.length;
 
   for (const suite of suites) {
@@ -102,30 +112,33 @@ try {
     const runResult = run(suite.command, suite.timeout);
     fs.writeFileSync(path.join(OUT, suite.name + ".log"), (runResult.stdout ?? "") + "\n" + (runResult.stderr ?? ""));
     const entry: SuiteResult = { ...suite, exitCode:runResult.status ?? 1, seconds:Math.round((performance.now()-start)/10)/100 };
+    if (runResult.signal) entry.signal = runResult.signal;
+    if (runResult.error) entry.error = runResult.error.message;
     report.suites.push(entry);
-    if (runResult.status !== 0) throw new Error(`${suite.name} failed; see ${suite.name}.log`);
-    const data = JSON.parse(fs.readFileSync(resultPath, "utf8")) as {passed:number;total?:number;failed?:number;results?:Array<{passed?:boolean}>};
-    const passed = data.passed;
-    const total = data.total ?? data.results?.length ?? 0;
-    if (!Number.isInteger(passed) || !Number.isInteger(total) || total <= 0 || passed !== total) {
-      throw new Error(`${suite.name} returned incomplete counts`);
+    write();
+    if (runResult.error || runResult.status !== 0) throw new Error(`${suite.name} failed; see ${suite.name}.log${runResult.error ? ": " + runResult.error.message : ""}${runResult.signal ? " (" + runResult.signal + ")" : ""}`);
+    let counts: ReturnType<typeof acceptedCounts>;
+    try { counts = acceptedCounts(JSON.parse(fs.readFileSync(resultPath, "utf8"))); }
+    catch (error) {
+      entry.error = `${suite.name} invalid evidence (${suite.result}): ${error instanceof Error ? error.message : String(error)}`;
+      throw new Error(entry.error);
     }
-    if ((data.failed ?? 0) !== 0 || data.results?.some(test => test.passed === false)) {
-      throw new Error(`${suite.name} reports failures`);
-    }
+    const { passed, total } = counts;
     entry.passed=passed;entry.total=total;report.passed+=passed;report.total+=total;
     write();
     process.stdout.write(`PASS ${suite.name} ${passed}/${total}\n`);
   }
 
-  const finalHash=crypto.createHash("sha256").update(fs.readFileSync(path.join(ROOT,"littlewild.html"))).digest("hex");
+  const finalHash=crypto.createHash("sha256").update(new Uint8Array(fs.readFileSync(path.join(ROOT,"littlewild.html")))).digest("hex");
   if(finalHash!==report.htmlSha256)throw new Error("The artifact changed during verification");
+  if(sourceIdentity(ROOT)!==initialSource)throw new Error("Authored source changed during verification; rerun the gate");
   report.status=noBrowser?"partial-passed":"passed";
 } catch (error) {
   report.status="failed";
   report.error=error instanceof Error?error.message:String(error);
   process.stderr.write("FAILED "+report.error+"\n");
 } finally {
+  report.finishedAt = new Date().toISOString();
   write();
 }
 process.stdout.write(`${report.status} ${report.passed}/${report.total}\n`);

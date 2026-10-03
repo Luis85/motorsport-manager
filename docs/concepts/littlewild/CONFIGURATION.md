@@ -83,9 +83,9 @@ Allowed actions: `select`, `care`, `learn`, `home`, `planner`, `research`, `ques
 
 Packs are at most 8 MiB, bounded in count and string length, and cannot contain executable scripts. A simulation profile is separately bounded to 256 KiB. The bundled schemas validate shape and exact compiled archetype arrays; actor/economy validators check numerical relationships; existing library/native validators check mechanics and references. Staging temporarily installs validated data only within synchronous reversible scopes. Failed validation restores all registries, the world profile and the simulation profile. Imports populate a read-only catalog; scene replacement requires a separate confirmation.
 
-Scenario schema **2** requires an explicit `simulation` profile. Schema-1 packs remain importable only without that field and migrate additively to `classic-v1`; a schema-1 pack that already declares simulation behavior is rejected as ambiguous. The canonical profile is `littlewild-simulation-profile` schema 1. Its `living-world-v1` archetype is a declaration of known compiled order, not a plug-in mechanism.
+Scenario schema **2** requires an explicit `simulation` profile. Schema-1 packs are obsolete and rejected; import requires a complete current-format pack. The canonical profile is `littlewild-simulation-profile` schema 1. Its `living-world-v1` archetype is a declaration of known compiled order, not a plug-in mechanism.
 
-Scenario-aware portable saves use envelope **10**, containing context version 2, the exact simulation profile and an independent simulation fingerprint. Envelope-9 stories validate their original fingerprint, migrate explicitly to `classic-v1`, surface a migration note and re-export as 10. The native simulation payload remains version 8. Ordinary v8 stories use the compatibility profile. Device graphics and pause preferences remain separate from scene context.
+Scenario-aware portable saves use envelope **10**, containing context version 2, the exact simulation profile and an independent simulation fingerprint. Envelope-9 stories are obsolete and rejected. The native simulation payload remains version 8. Ordinary v8 stories use the compatibility profile. Device graphics and pause preferences remain separate from scene context.
 
 Fingerprints detect accidental changes and stale reviews. They are opaque non-cryptographic IDs, **not signatures, authentication or proof that a pack is trustworthy**. Rejected or delayed file reads cannot reopen a dismissed import. No network resources are loaded from packs.
 
@@ -95,7 +95,7 @@ A complete setting-neutral runtime would additionally need configurable capabili
 
 ## Simulation profiles and ECS boundaries
 
-`source/content/simulation-profile.json` is the compatibility profile used by ordinary stories and schema-1 migrations. It contains complete validated copies of `actor-rules.json` and `economy-rules.json`, plus the exact compiled composition archetype. Engines capture a deeply frozen profile when constructed, so later catalog selection cannot retroactively change an existing engine.
+`source/content/simulation-profile.json` is the compatibility profile used by ordinary current-format stories. It contains complete validated copies of `actor-rules.json` and `economy-rules.json`, plus the exact compiled composition archetype. Engines capture a deeply frozen profile when constructed, so later catalog selection cannot retroactively change an existing engine.
 
 Supported profile edits are bounded data values accepted by the actor/economy validators, such as needs rates, learning fatigue/recovery, social decay, level thresholds, level-up bonuses, income sharing and settlement limits. Relationships between values still apply; for example, recovery thresholds and financial limits must remain coherent.
 

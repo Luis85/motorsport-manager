@@ -36,7 +36,7 @@
   colony:{creatures:Creature[]};
   simTime:number;
   buildings:Building[];
-  market:{orders:MarketOrder[];history:MarketReceipt[]};
+  market:{sequence:number;orders:MarketOrder[];history:MarketReceipt[]};
   [key:string]:unknown;
  }
  interface GridLike { readonly cells:{size:number}; pass(x:number,y:number):boolean; flood(start:Point):Set<string>; }
@@ -70,7 +70,7 @@
    }
   }
   for(const history of s.planning.history){
-   if(!dict(history)||!Number.isFinite(history.time)||!safeText(history.key)||!safeText(history.name)||!safeText(history.action)||
+   if(!dict(history)||!Number.isFinite(history.time)||history.time<0||history.time>s.simTime+.001||!safeText(history.key)||!safeText(history.name)||!safeText(history.action)||
       (history.actorId!==undefined&&!creatures.some(creature=>creature.id===history.actorId)))fail('invalid planner history');
   }
   for(const creature of creatures){
@@ -111,8 +111,9 @@
   }
   const receiptIds=new Set<string>();
   for(const receipt of s.market.history){
-   if(!dict(receipt)||!safeText(receipt.id)||receiptIds.has(receipt.id)||!L.colony.item(receipt.item)||!whole(receipt.amount,1,99)||
-      !whole(receipt.coins,0,990000)||!Number.isFinite(receipt.time)||receipt.time>s.simTime+.001||!creatures.some(creature=>creature.id===receipt.actorId))fail('invalid market receipt');
+   if(!dict(receipt)||typeof receipt.id!=='string'||!/^sale-[1-9]\d*$/.test(receipt.id)||receiptIds.has(receipt.id)||!L.colony.item(receipt.item)||!whole(receipt.amount,1,99)||
+      !whole(receipt.coins,0,990000)||!Number.isFinite(receipt.time)||receipt.time<0||receipt.time>s.simTime+.001||!creatures.some(creature=>creature.id===receipt.actorId))fail('invalid market receipt');
+   if(!whole(Number(receipt.id.slice(5)),1,1e9)||s.market.sequence<=Number(receipt.id.slice(5)))fail('sale sequence collision');
    receiptIds.add(receipt.id);
   }
  }

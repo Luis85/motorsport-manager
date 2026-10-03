@@ -81,11 +81,12 @@
         return value;
     };
 
+    const activeWorlds = new WeakSet<World>();
     class World {
         readonly #entitySet = new Set<EntityId>();
         readonly #componentStores = new Map<ComponentType, Map<EntityId, ComponentData>>();
         readonly #structuralBuffer: StructuralCommand[] = [];
-        running = false;
+        get running(): boolean { return activeWorlds.has(this); }
 
         get entities(): ReadonlySet<EntityId> { return new Set(this.#entitySet); }
         get stores(): ReadonlyMap<ComponentType, ReadonlyMap<EntityId, ComponentData>> {
@@ -205,10 +206,12 @@
     const PHASES = Object.freeze(['pre', 'simulate', 'post'] as const);
     class Scheduler {
         readonly #records: SystemRecord[] = [];
+        #stepping = false;
 
         get systems(): readonly SystemRecord[] { return Object.freeze([...this.#records]); }
 
         register(spec: SystemSpec): this {
+            if (this.#stepping) throw Error('Systems cannot be registered during an ECS step.');
             if (!spec || typeof spec.update !== 'function' || !Array.isArray(spec.query))
                 throw Error('A system needs a query and an update function.');
             name(spec.id, 'system ID');
@@ -231,22 +234,27 @@
 
         step(world: World, dt: number, context: StepContext = {}): void {
             if (!(world instanceof World) || !Number.isFinite(dt) || dt <= 0 || dt > .25 ||
-                world.running || world.pendingStructural) throw Error('Invalid ECS step.');
-            if (context.entityId && !world.entities.has(context.entityId)) throw Error('Unknown ECS step entity.');
-            world.running = true;
+                this.#stepping || world.running || world.pendingStructural) throw Error('Invalid ECS step.');
+            if (!context || typeof context !== 'object') throw Error('Invalid ECS step context.');
+            const entityId = context.entityId;
+            if (entityId !== undefined && (typeof entityId !== 'string' || !world.entities.has(entityId)))
+                throw Error('Unknown ECS step entity.');
+            this.#stepping = true;
+            activeWorlds.add(world);
             try {
                 for (const system of this.#records) {
-                    const ids = context.entityId
-                        ? (world.has(context.entityId, ...system.query) ? [context.entityId] : [])
+                    const ids = entityId !== undefined
+                        ? (world.has(entityId, ...system.query) ? [entityId] : [])
                         : world.query(system.query);
                     for (const id of ids) system.update(world, id, dt, context);
                 }
             } catch (error) {
-                world.running = false;
+                activeWorlds.delete(world);
                 world.discardDeferred();
                 throw error;
             } finally {
-                world.running = false;
+                activeWorlds.delete(world);
+                this.#stepping = false;
             }
             world.flush();
         }

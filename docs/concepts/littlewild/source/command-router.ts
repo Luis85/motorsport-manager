@@ -118,7 +118,7 @@
   if(typeof id!=='string')return fail('Unknown command.');
   const definition=byId.get(id);if(!definition)return fail('Unknown command.');
   const actorId=descriptors.actorId?.value;
-  const rawArgs=descriptors.args?.value??[];
+  const rawArgs=descriptors.args?.value===undefined?[]:descriptors.args.value;
   if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs))
    return fail('Invalid command arguments.');
   const args=rawArgs as JsonValue[];

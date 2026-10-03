@@ -111,9 +111,24 @@
    },
    advanceActivity(actor:ActorRecord,dt:number,inputs:ActivityInputs):ActivityOutcome{
     if(!inputs||typeof inputs.walkable!=='function'||!Number.isFinite(inputs.moveRate)||inputs.moveRate<0||!Number.isFinite(inputs.workRate)||inputs.workRate<0||!Number.isFinite(dt)||dt<=0||dt>.25)throw Error('Invalid activity ECS inputs.');
-    bind(actor);const task=actor.task,outcome:ActivityOutcome={state:'idle',completed:false,progress:0,intent:null},id=actor.id;
+    if(!actor||typeof actor!=='object')throw Error('Invalid actor entity.');
+    const task=actor.task;
+    // Native records retain their identity, so validate changed task values before any system runs.
+    if(task){
+     if(!plain(task)||typeof task.kind!=='string'||!task.kind||
+      !['walk','work'].includes(task.phase)||!Number.isFinite(task.duration)||task.duration<0||
+      task.elapsed!==undefined&&(!Number.isFinite(task.elapsed)||task.elapsed<0)||
+      task.orderId!==undefined&&task.orderId!==null&&typeof task.orderId!=='string'||
+      task.style!==undefined&&typeof task.style!=='string'||
+      task.path!==undefined&&(!Array.isArray(task.path)||Array.from(task.path).some(point=>
+       !plain(point)||!Number.isFinite(point.x)||!Number.isFinite(point.y))))throw Error('Invalid actor task.');
+     const transform=actor.creature,point=task.phase==='walk'?task.path?.[0]:undefined;
+     if(!plain(transform)||!Number.isFinite(transform.x)||!Number.isFinite(transform.y)||
+      point&&(!Number.isFinite(point.x-transform.x)||!Number.isFinite(point.y-transform.y))||
+      !Number.isFinite((task.elapsed??0)+dt*inputs.workRate))throw Error('Invalid actor activity state.');
+    }
+    bind(actor);const outcome:ActivityOutcome={state:'idle',completed:false,progress:0,intent:null},id=actor.id;
     if(!task){if(world.has(id,'Task'))world.remove(id,'Task');if(world.has(id,'Intent'))world.remove(id,'Intent');return outcome;}
-    if(typeof task!=='object'||Array.isArray(task)||!Number.isFinite(task.duration)||task.duration<0)throw Error('Invalid actor task.');
     if(world.get(id,'Task')!==task)world.set(id,'Task',task);let intent=world.get<Intent>(id,'Intent');if(!intent){intent={kind:task.kind||'unknown',phase:task.phase||'work',orderId:task.orderId||null,status:'active'};world.set(id,'Intent',intent);}
     activity.step(world,dt,{entityId:id,walkable:inputs.walkable,moveRate:inputs.moveRate,workRate:inputs.workRate,outcome});return outcome;
    },

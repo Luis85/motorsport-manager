@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
+import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
 
@@ -53,16 +54,6 @@ check("All authored executable Littlewild code is TypeScript", () => {
   assert(legacy.length === 0, "Legacy executable source remains: " + legacy.map(file => path.relative(ROOT, file)).join(", "));
 });
 
-const coreModules = [
-  "ecs.ts", "actor-ecs.ts", "world-ecs.ts", "economy-ecs.ts", "engine-composition.ts",
-  "command-router.ts", "simulation-pipeline.ts", "simulation-profile.ts",
-  "scenario-runtime.ts", "scenario-story.ts"
-] as const;
-const forbiddenPlatform = [
-  "document.", "window.", "localStorage", "sessionStorage", "requestAnimationFrame",
-  "setTimeout(", "setInterval(", "fetch(", "XMLHttpRequest", "Date.now(", "new Date(", "performance.now("
-];
-
 check("DDD domain map owns every runtime module exactly once", () => {
   assert(DOMAIN_MAP.format === "littlewild-domain-map" && DOMAIN_MAP.schemaVersion === 1, "Invalid domain-map identity.");
   assert(JSON.stringify(DOMAIN_MAP.layers) === JSON.stringify(["domain","application","infrastructure","presentation"]), "Unexpected architecture layers.");
@@ -72,12 +63,18 @@ check("DDD domain map owns every runtime module exactly once", () => {
   assert(new Set(owned).size === owned.length, "A runtime file is owned by multiple bounded contexts.");
   const runtime = fs.readdirSync(SOURCE, { withFileTypes: true })
     .filter(entry => entry.isFile() && (
-      entry.name.endsWith(".ts") && entry.name !== "build.ts" ||
+      entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && entry.name !== "build.ts" ||
       entry.name.endsWith(".cts") && !entry.name.startsWith("test-")
     ))
     .map(entry => entry.name).sort();
   assert(JSON.stringify([...owned].sort()) === JSON.stringify(runtime), "Domain map/runtime mismatch. Owned: " + [...owned].sort().join(", ") + " Runtime: " + runtime.join(", "));
-  for (const file of owned) assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
+  for (const context of DOMAIN_MAP.contexts) {
+    assert(DOMAIN_MAP.layers.includes(context.layer), "Unknown bounded-context layer: " + context.layer);
+    for (const file of context.files) {
+      assert(/^[a-z0-9-]+\.(?:ts|cts)$/.test(file), "Runtime ownership must name a top-level source module: " + file);
+      assert(fs.existsSync(path.join(SOURCE, file)), "Mapped runtime file is missing: " + file);
+    }
+  }
 });
 
 check("Clean Code module budget and decomposition debt are explicit", () => {
@@ -99,30 +96,23 @@ check("Clean Code module budget and decomposition debt are explicit", () => {
   assert(oversized.length === 0, "New oversized domain/application module requires decomposition, not a silent exception: " + oversized.join(", "));
 });
 
+const analyses = new Map(DOMAIN_MAP.contexts.flatMap(context => context.files)
+  .map(file => [file, analyzeRuntime(file, source(file))] as const));
+
 check("Domain runtime globals are explicitly allowlisted", () => {
   assert(Array.isArray(DOMAIN_MAP.domainGlobals) && DOMAIN_MAP.domainGlobals.length > 0, "Domain global allowlist is missing.");
   assert(new Set(DOMAIN_MAP.domainGlobals).size === DOMAIN_MAP.domainGlobals.length, "Domain global allowlist contains duplicates.");
-  const allowed = new Set(DOMAIN_MAP.domainGlobals);
-  const domainFiles = DOMAIN_MAP.contexts.filter(context => context.layer === "domain").flatMap(context => context.files);
-  const violations: string[] = [];
-  for (const file of domainFiles) {
-    const text = source(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-    for (const match of text.matchAll(/\b(?:root|global)\.(LW[A-Za-z0-9_]*)/g)) {
-      const symbol = match[1]!;
-      if (!allowed.has(symbol)) violations.push(file + ": " + symbol);
-    }
+  const allowed = new Set(DOMAIN_MAP.domainGlobals), violations: string[] = [];
+  for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain")) for (const file of context.files) {
+    for (const global of analyses.get(file)!.globals) if (!allowed.has(global.name)) violations.push(file + ": " + global.name);
   }
   assert(violations.length === 0, "Domain module reaches undeclared runtime global: " + violations.join("; "));
 });
 
 check("Domain modules do not register application composition hooks", () => {
-  const domainFiles = DOMAIN_MAP.contexts.filter(context => context.layer === "domain").flatMap(context => context.files);
   const violations: string[] = [];
-  for (const file of domainFiles) {
-    const text = source(file).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-    for (const token of ["EngineComposition", "Composition.register(", "constructThrough(", "installFactories"]) {
-      if (text.includes(token)) violations.push(file + ": " + token);
-    }
+  for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain")) for (const file of context.files) {
+    for (const hook of analyses.get(file)!.composition) violations.push(file + ": " + hook);
   }
   assert(violations.length === 0, "Application composition leaked into domain ownership: " + violations.join("; "));
 });
@@ -131,102 +121,64 @@ check("Runtime globals obey bounded-context dependency direction", () => {
   assert(Array.isArray(DOMAIN_MAP.injectedDataGlobals), "Injected data-global allowlist is missing.");
   assert(new Set(DOMAIN_MAP.injectedDataGlobals).size === DOMAIN_MAP.injectedDataGlobals.length,
     "Injected data-global allowlist contains duplicates.");
-  const contextByFile = new Map<string, { id:string; layer:"domain"|"application"|"infrastructure"|"presentation" }>();
-  for (const context of DOMAIN_MAP.contexts)
-    for (const file of context.files) contextByFile.set(file,{id:context.id,layer:context.layer});
-  const rank = new Map([["domain",0],["application",1],["infrastructure",2],["presentation",3]]);
-  const exported = new Map<string,string>();
-  const violations: string[] = [];
-  const withoutComments = (text:string):string => text.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\/\/.*$/gm,"");
-  for (const file of contextByFile.keys()) {
-    const text=withoutComments(source(file));
-    for (const match of text.matchAll(/\broot\.(LW[A-Za-z0-9_]*)\s*=/g)) {
-      const symbol=match[1]!;
-      const prior=exported.get(symbol);
-      if (prior && prior!==file) violations.push("duplicate global "+symbol+": "+prior+" and "+file);
-      else exported.set(symbol,file);
+  const ownership = new Map(DOMAIN_MAP.contexts.flatMap(context => context.files.map(file => [file, context] as const)));
+  const rank = new Map([["domain", 0], ["application", 1], ["infrastructure", 2], ["presentation", 3]]);
+  const exported = new Map<string, string>(), violations: string[] = [];
+  for (const [file, analysis] of analyses) for (const global of analysis.globals.filter(global => global.write)) {
+    const prior = exported.get(global.name);
+    if (prior && prior !== file) violations.push("duplicate global " + global.name + ": " + prior + " and " + file);
+    else exported.set(global.name, file);
+  }
+  const injected = new Set(DOMAIN_MAP.injectedDataGlobals);
+  for (const [file, context] of ownership) {
+    const analysis = analyses.get(file)!;
+    if (analysis.dynamicGlobals) violations.push(file + ": unresolved computed runtime global");
+    for (const global of analysis.globals) {
+      const targetFile = exported.get(global.name);
+      if (targetFile && targetFile !== file) {
+        const target = ownership.get(targetFile)!;
+        if (rank.get(target.layer)! > rank.get(context.layer)!) {
+          violations.push(file + " (" + context.layer + ") -> " + global.name + " / " + targetFile + " (" + target.layer + ")");
+        }
+      } else if (!targetFile && !injected.has(global.name)) violations.push(file + " references undeclared runtime global " + global.name);
     }
   }
-  const injected=new Set(DOMAIN_MAP.injectedDataGlobals);
-  for (const [file,context] of contextByFile) {
-    const text=withoutComments(source(file));
-    for (const match of text.matchAll(/\b(?:root|global)\.(LW[A-Za-z0-9_]*)/g)) {
-      const symbol=match[1]!;
-      const targetFile=exported.get(symbol);
-      if (targetFile) {
-        if (targetFile===file) continue;
-        const target=contextByFile.get(targetFile)!;
-        if (rank.get(target.layer)! > rank.get(context.layer)!)
-          violations.push(file+" ("+context.layer+") -> "+symbol+" / "+targetFile+" ("+target.layer+")");
-      } else if (!injected.has(symbol)) {
-        violations.push(file+" references undeclared runtime global "+symbol);
-      }
-    }
-  }
-  assert(violations.length===0,"Runtime-global dependency violation: "+violations.join("; "));
+  assert(violations.length === 0, "Runtime-global dependency violation: " + violations.join("; "));
 });
 
 check("Clean Architecture dependency rules hold across mapped runtime layers", () => {
-  const ownership = new Map<string, "domain" | "application" | "infrastructure" | "presentation">();
-  for (const context of DOMAIN_MAP.contexts) for (const file of context.files) ownership.set(file, context.layer);
-  const rank = new Map([["domain",0],["application",1],["infrastructure",2],["presentation",3]]);
+  const ownership = new Map(DOMAIN_MAP.contexts.flatMap(context => context.files.map(file => [file, context.layer] as const)));
+  const runtime = new Set(ownership.keys());
+  const rank = new Map([["domain", 0], ["application", 1], ["infrastructure", 2], ["presentation", 3]]);
   const violations: string[] = [];
-  const withoutComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-  const targetFile = (request: string): string | null => {
-    const base = path.basename(request);
-    if (base.endsWith(".js")) return base.slice(0,-3) + ".ts";
-    if (base.endsWith(".cjs")) return base.slice(0,-4) + ".cts";
-    return null;
-  };
   for (const [file, layer] of ownership) {
-    const text = withoutComments(source(file));
+    const analysis = analyses.get(file)!;
     if (layer === "domain" || layer === "application") {
-      for (const token of forbiddenPlatform) if (text.includes(token)) violations.push(file + ": platform token " + token);
+      for (const api of analysis.platform) violations.push(file + ": platform/nondeterministic API " + api);
     }
-    for (const match of text.matchAll(/require\(['"]([^'"]+)['"]\)/g)) {
-      const target = targetFile(match[1] ?? "");
-      if (!target || !ownership.has(target)) continue;
+    for (const request of analysis.dependencies) {
+      if (request === null) { violations.push(file + ": unresolved dynamic executable dependency"); continue; }
+      if (request.endsWith(".json") && request.startsWith(".")) continue;
+      const target = resolveRuntimeDependency(file, request, runtime);
+      if (!target) {
+        if (layer === "domain" || layer === "application") violations.push(file + ": unmapped/platform dependency " + request);
+        continue;
+      }
       const targetLayer = ownership.get(target)!;
       if (rank.get(targetLayer)! > rank.get(layer)!) violations.push(file + " -> " + target + " (" + targetLayer + ")");
     }
   }
-  assert(violations.length === 0, "Architecture dependency violation: " + violations.join("; "));
-});
-
-check("Domain and application core is platform independent", () => {
-  const violations: string[] = [];
-  for (const file of coreModules) {
-    const text = source(file);
-    for (const token of forbiddenPlatform) if (text.includes(token)) violations.push(`${file}: ${token}`);
-  }
-  assert(violations.length === 0, "Platform dependency leaked into core: " + violations.join("; "));
+  assert(violations.length === 0, "Architecture dependency violation: " + [...new Set(violations)].join("; "));
 });
 
 check("All domain/application modules avoid ambient randomness and wall clock", () => {
   const violations: string[] = [];
-  const deterministicFiles = DOMAIN_MAP.contexts
-    .filter(context => context.layer === "domain" || context.layer === "application")
-    .flatMap(context => context.files);
-  const withoutComments = (text: string): string => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-  for (const file of deterministicFiles) {
-    const text = withoutComments(source(file));
-    for (const token of ["Math.random(", "crypto.random", "randomUUID(", "Date.now(", "new Date(", "performance.now("]) {
-      if (text.includes(token)) violations.push(`${file}: ${token}`);
+  for (const context of DOMAIN_MAP.contexts.filter(context => context.layer === "domain" || context.layer === "application")) {
+    for (const file of context.files) for (const api of analyses.get(file)!.platform) {
+      if (/^(?:Math\.random|crypto\.|Date|new Date|performance\.now)/.test(api)) violations.push(file + ": " + api);
     }
   }
-  assert(violations.length === 0, "Nondeterministic API found: " + violations.join("; "));
-});
-
-check("Core dependency direction excludes presentation and IO adapters", () => {
-  const forbidden = /(?:ui|panel|presentation|world-3d|world-input|file-io|story-storage)\.(?:js|cjs)$/;
-  const violations: string[] = [];
-  for (const file of coreModules) {
-    for (const match of source(file).matchAll(/require\(['"]([^'"]+)['"]\)/g)) {
-      const dependency = match[1] ?? "";
-      if (forbidden.test(dependency)) violations.push(`${file} -> ${dependency}`);
-    }
-  }
-  assert(violations.length === 0, "Dependency inversion violation: " + violations.join("; "));
+  assert(violations.length === 0, "Nondeterministic API found: " + [...new Set(violations)].join("; "));
 });
 
 check("External simulation and scenario data contains no executable payload fields", () => {
@@ -262,8 +214,9 @@ check("Strict TypeScript compiler contract is hardened", () => {
 check("Strict TypeScript coverage is an explicit domain/application ratchet", () => {
   const config = JSON.parse(fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8")) as {files?:string[]};
   const listed=config.files??[];
+  for (const file of listed) assert(/^source\/[a-z0-9-]+(?:\/[a-z0-9-]+)*\.(?:d\.ts|ts|cts)$/.test(file) && fs.existsSync(path.join(ROOT,file)), "Invalid or missing strict source path: " + file);
   assert(new Set(listed).size===listed.length,"Strict TypeScript file list contains duplicates.");
-  const strictFiles=new Set(listed.filter(file=>file.startsWith("source/")).map(file=>path.basename(file)));
+  const strictFiles=new Set(listed.filter(file=>/^source\/[^/]+$/.test(file)).map(file=>file.slice(7)));
   const owned=new Map<string,string>();
   for(const context of DOMAIN_MAP.contexts)for(const file of context.files)
     if(context.layer==="domain"||context.layer==="application")owned.set(file,context.layer);
@@ -280,12 +233,12 @@ check("Strict TypeScript coverage is an explicit domain/application ratchet", ()
     assert(typeof reason==="string"&&reason.trim().length>=40,"Typing debt needs a concrete migration reason: "+file);
   }
   const strictRuntime=[...owned.keys()].filter(file=>strictFiles.has(file));
-  assert(strictRuntime.length>=18,"Strict runtime coverage regressed below 18 modules: "+strictRuntime.length);
+  assert(strictRuntime.length>=30,"Strict runtime coverage regressed below 30 modules: "+strictRuntime.length);
 });
 
 check("Strict runtime modules contain no explicit any or TypeScript suppression", () => {
   const config = JSON.parse(fs.readFileSync(path.join(ROOT, "tsconfig.strict.json"), "utf8")) as {files?:string[]};
-  const strictFiles=new Set((config.files??[]).filter(file=>file.startsWith("source/")).map(file=>path.basename(file)));
+  const strictFiles=new Set((config.files??[]).filter(file=>/^source\/[^/]+$/.test(file)).map(file=>file.slice(7)));
   const runtime=new Set(DOMAIN_MAP.contexts
     .filter(context=>context.layer==="domain"||context.layer==="application")
     .flatMap(context=>context.files));

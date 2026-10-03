@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 
 type InsertKind = "style" | "script";
 type Insert = readonly [marker: string, file: string, kind: InsertKind];
@@ -25,6 +26,9 @@ const INSERTS: readonly Insert[] = [
   ["WORLD_PROFILE", "world-profile.js", "script"],
   ["GEOGRAPHY", "island-geometry.js", "script"],
   ["NAVIGATION", "navigation.js", "script"],
+  ["ENGINE_TASK_PLANNING", "engine-task-planning.js", "script"],
+  ["ENGINE_TASK_COMPLETION", "engine-task-completion.js", "script"],
+  ["ENGINE_COMPANION", "engine-companion.js", "script"],
   ["ENGINE", "engine.js", "script"],
   ["ENGINE_COMPOSITION", "engine-composition.js", "script"],
   ["ACTOR_STATE_VIEW", "actor-state-view.js", "script"],
@@ -40,9 +44,15 @@ const INSERTS: readonly Insert[] = [
   ["ECONOMY_ECS", "economy-ecs.js", "script"],
   ["SIMULATION_PIPELINE", "simulation-pipeline.js", "script"],
   ["SIMULATION_PROFILE", "simulation-profile.js", "script"],
+  ["COLONY_ADVENTURES", "colony-adventures.js", "script"],
+  ["COLONY_ACTIVITY", "colony-activity.js", "script"],
+  ["COLONY_LOGISTICS", "colony-logistics.js", "script"],
+  ["COLONY_TASK_COMPLETION", "colony-task-completion.js", "script"],
   ["COLONY", "colony.js", "script"],
   ["WORLD_CONTENT", "world-content.js", "script"],
   ["WORLD_INTEGRITY", "world-integrity.js", "script"],
+  ["WORLD_TASKS", "world-tasks.js", "script"],
+  ["WORLD_PRODUCTION", "world-production.js", "script"],
   ["WORLD_SIMULATION", "world-simulation.js", "script"],
   ["GROWTH_CONTENT", "growth-content.js", "script"],
   ["VILLAGE_SYSTEMS", "village-systems.js", "script"],
@@ -59,9 +69,14 @@ const INSERTS: readonly Insert[] = [
   ["SCENARIO_STORY", "scenario-story.js", "script"],
   ["STORAGE", "story-storage.js", "script"],
   ["FILES", "file-io.js", "script"],
+  ["CANVAS_ART", "canvas-art.js", "script"],
+  ["CANVAS_BUILDINGS", "canvas-buildings.js", "script"],
+  ["CANVAS_GROUND", "canvas-ground.js", "script"],
+  ["CANVAS_SCENE", "canvas-scene.js", "script"],
   ["WORLD", "world.js", "script"],
   ["PROGRESSION_UI", "progression-ui.js", "script"],
   ["CONTENT_UI", "content-ui.js", "script"],
+  ["COLONY_HUD", "colony-hud.js", "script"],
   ["COLONY_UI", "colony-ui.js", "script"],
   ["CLOCK", "simulation-clock.js", "script"],
   ["INTERFACE_PAUSE", "interface-pause.js", "script"],
@@ -87,6 +102,12 @@ const INSERTS: readonly Insert[] = [
   ["GUIDE_PANEL", "guide-panel.js", "script"],
   ["SCENARIO_UI", "scenario-ui.js", "script"],
   ["V15_CSS", "v15.css", "style"],
+  ["UI_STATUS", "ui-status.js", "script"],
+  ["UI_STORY_PANELS", "ui-story-panels.js", "script"],
+  ["UI_MODAL_CONTENT", "ui-modal-content.js", "script"],
+  ["UI_MODAL", "ui-modal.js", "script"],
+  ["UI_ACTIONS", "ui-actions.js", "script"],
+  ["UI_INPUT", "ui-input.js", "script"],
   ["UI", "ui.js", "script"]
 ];
 
@@ -111,9 +132,9 @@ function compile(): void {
   cleanGeneratedExecutables(GENERATED);
   const result = spawnSync(process.execPath, [TSC, "-p", path.join(PROJECT, "tsconfig.json")], {
     cwd: PROJECT,
-    stdio: "inherit"
+    stdio: "inherit", timeout: 120000, killSignal: "SIGKILL"
   });
-  if (result.status !== 0) throw new Error("TypeScript compilation failed.");
+  if (result.error || result.status !== 0) throw new Error("TypeScript compilation failed." + (result.error ? " " + result.error.message : ""));
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
@@ -207,11 +228,14 @@ function sourceFor(file: string, kind: InsertKind): string {
 function parseArgs(argv: readonly string[]): { packPath: string | null; outputPath: string } {
   let packPath: string | null = null;
   let outputPath = path.join(PROJECT, "littlewild.html");
+  const seen = new Set<string>();
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--pack" || arg === "--output") {
+      if (seen.has(arg)) throw new Error(`Duplicate build argument: ${arg}`);
+      seen.add(arg);
       const value = argv[++i];
-      if (!value) throw new Error(`Missing value for ${arg}.`);
+      if (!value || value.startsWith("--")) throw new Error(`Missing value for ${arg}.`);
       if (arg === "--pack") packPath = path.resolve(PROJECT, value);
       else outputPath = path.resolve(PROJECT, value);
     } else {
@@ -222,14 +246,23 @@ function parseArgs(argv: readonly string[]): { packPath: string | null; outputPa
 }
 
 function build(packPath: string | null, outputPath: string): void {
+  for (const protectedRoot of [ROOT, path.join(PROJECT, "vendor"), GENERATED]) {
+    const relative = path.relative(protectedRoot, outputPath);
+    if (relative === "" || (!relative.startsWith(".." + path.sep) && relative !== ".." && !path.isAbsolute(relative))) {
+      throw new Error("Build output must be outside authored and generated source directories.");
+    }
+  }
+  if (packPath && (outputPath === packPath || (fs.existsSync(outputPath) && fs.existsSync(packPath) && fs.realpathSync(outputPath) === fs.realpathSync(packPath)))) {
+    throw new Error("Build output must not overwrite the input pack.");
+  }
   compile();
   if (packPath) {
     const cli = path.join(GENERATED, "tools", "scenario-cli.cjs");
     const validation = spawnSync(process.execPath, [cli, "validate", packPath], {
       cwd: PROJECT,
-      stdio: "inherit"
+      stdio: "inherit", timeout: 90000, killSignal: "SIGKILL"
     });
-    if (validation.status !== 0) throw new Error("Scenario pack validation failed.");
+    if (validation.error || validation.status !== 0) throw new Error("Scenario pack validation failed." + (validation.error ? " " + validation.error.message : ""));
   }
 
   const template = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
@@ -262,9 +295,20 @@ function build(packPath: string | null, outputPath: string): void {
   if (html.includes("<!-- INLINE_")) throw new Error("Unresolved inline build marker.");
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, html, "utf8");
+  const temporary = outputPath + "." + randomUUID() + ".tmp";
+  let owned = false;
+  try {
+    const descriptor = fs.openSync(temporary, "wx"); owned = true;
+    try { fs.writeFileSync(descriptor, html, "utf8"); } finally { fs.closeSync(descriptor); }
+    fs.renameSync(temporary, outputPath); owned = false;
+  } finally { if (owned) fs.rmSync(temporary, {force:true}); }
   process.stdout.write(`Built ${outputPath} (${fs.statSync(outputPath).size.toLocaleString("en-US")} bytes)\n`);
 }
 
-const args = parseArgs(process.argv.slice(2));
-build(args.packPath, args.outputPath);
+const argv = process.argv.slice(2);
+if (argv.length === 1 && ["--help", "-h"].includes(argv[0]!)) {
+  process.stdout.write("Usage: npm run build -- [--pack pack.json] [--output artifact.html]\n");
+} else {
+  try { const args = parseArgs(argv); build(args.packPath, args.outputPath); }
+  catch (error) { process.stderr.write("Build failed: " + (error instanceof Error ? error.message : String(error)) + "\n"); process.exitCode = 1; }
+}

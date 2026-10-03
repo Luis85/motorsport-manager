@@ -46,8 +46,8 @@
  const at=(point:Point):string=>`${point.x},${point.y}`;
  const record=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
  function sameQuantities(a:unknown,b:unknown):boolean{
-  if(!record(a)||Array.isArray(a))return false;
-  const right=b as Record<string,unknown>;
+  if(!record(a)||!record(b))return false;
+  const right=b;
   const keys=Object.keys(a);
   return keys.length===Object.keys(right).length&&keys.every(key=>Object.hasOwn(right,key)&&a[key]===right[key]);
  }

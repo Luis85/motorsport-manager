@@ -7,7 +7,7 @@
  const node=typeof module!=='undefined'&&module.exports;
  const E=node?require('./ecs.js'):root.LWECS;
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
- const plain=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);
+ const plain=o=>o!==null&&typeof o==='object'&&!Array.isArray(o)&&[Object.prototype,null].includes(Object.getPrototypeOf(o));
  const integer=(n,min=0,max=1e9)=>Number.isInteger(n)&&n>=min&&n<=max;
  const identity=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9._:-]{0,95}$/.test(s);
  const quantity=(inv,id)=>own(inv,id)?inv[id]:0;
@@ -24,7 +24,6 @@
   function component(entityId,type,data){
    if(!identity(entityId))throw Error('Invalid physical entity ID.');
    if(!world.entities.has(entityId))world.create(entityId);
-   const existing=world.get(entityId,type);if(existing){Object.assign(existing,data);return existing;}
    return world.set(entityId,type,data);
   }
   const bindInventory=(id,items)=>component(id,'Inventory',{items:inventory(items,id)});
@@ -33,8 +32,7 @@
    return component(id,'ResourceDeposit',{record,resource,finite});
   };
   const bindWorksite=(id,storage)=>{
-   if(!plain(storage)||!plain(storage.input)||!plain(storage.output))throw Error('Invalid worksite.');
-   inventory(storage.input,'worksite input');inventory(storage.output,'worksite output');
+   validateStorage(storage);
    component(id,'Worksite',{storage});return component(id,'ProductionJob',{record:storage.job||null});
   };
   scheduler.register({id:'inventory-transfer',phase:'simulate',order:10,query:['CarrierTask'],update(w,id){
@@ -43,7 +41,7 @@
    const source=w.get(s.sourceId,'Inventory')?.items,destination=w.get(s.destinationId,'Inventory')?.items;
    if(!source||!destination||!identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
    const amount=Math.min(s.requested,quantity(source,s.resource),s.destinationLimit);
-   if(amount<=0){x.result=result('blocked');return;}
+   if(amount<=0||!integer(quantity(destination,s.resource)+amount)){x.result=result('blocked');return;}
    source[s.resource]=quantity(source,s.resource)-amount;destination[s.resource]=quantity(destination,s.resource)+amount;
    completed.add(s.id);x.result=result('settled',{amount});
   }});
@@ -53,7 +51,7 @@
    const deposit=w.get(s.depositId,'ResourceDeposit'),destination=w.get(s.destinationId,'Inventory')?.items;
    if(!deposit||!destination||deposit.resource!==s.resource||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid harvest request.');
    const available=deposit.finite?deposit.record.stock:s.requested,amount=Math.min(s.requested,available,s.destinationLimit);
-   if(amount<=0){x.result=result('blocked');return;}
+   if(amount<=0||!integer(quantity(destination,s.resource)+amount)){x.result=result('blocked');return;}
    destination[s.resource]=quantity(destination,s.resource)+amount;if(deposit.finite)deposit.record.stock-=amount;
    completed.add(s.id);x.result=result('settled',{amount});
   }});
@@ -65,10 +63,11 @@
    if(total(st.output)+s.outputAmount>s.outputCapacity||Object.entries(r.cost).some(([k,q])=>!identity(k)||!integer(q)||quantity(st.input,k)<q)){x.result=result('blocked');return;}
    const substrate=s.depositId?w.get(s.depositId,'ResourceDeposit'):null;
    if(s.depositId&&!substrate)throw Error('Missing production substrate.');
-   if(substrate?.finite&&substrate.record.stock<s.substrateDepletion){x.result=result('blocked');return;}
-   if(!integer(s.substrateDepletion||0))throw Error('Invalid substrate depletion.');
+   const depletion=s.substrateDepletion===undefined?0:s.substrateDepletion;
+   if(!integer(depletion))throw Error('Invalid substrate depletion.');
+   if(substrate?.finite&&substrate.record.stock<depletion){x.result=result('blocked');return;}
    for(const [k,q]of Object.entries(r.cost))st.input[k]=quantity(st.input,k)-q;
-   if(substrate?.finite)substrate.record.stock-=s.substrateDepletion;
+   if(substrate?.finite)substrate.record.stock-=depletion;
    st.job=s.job;jobComponent.record=s.job;completed.add(s.id);x.result=result('settled',{amount:s.outputAmount,job:st.job,created:true});
   }});
   scheduler.register({id:'production-job-update',phase:'simulate',order:40,query:['ProductionJobUpdate'],update(w,id){
@@ -91,6 +90,7 @@
    if(!job||job.id!==s.jobId){x.result=result('stale');return;}
    if(typeof s.success!=='boolean'||!integer(s.outputCapacity)||!Number.isFinite(s.time))throw Error('Invalid production settlement.');
    if(s.success&&total(st.output)+job.amount>s.outputCapacity){x.result=result('blocked',{job});return;}
+   if(!integer((job.attempts||0)+1)||s.success&&!integer((st.completed||0)+1))throw Error('Production count limit exceeded.');
    job.attempts=(job.attempts||0)+1;
    if(!s.success){
     if(!Number.isFinite(s.retryProgress)||s.retryProgress<0)throw Error('Invalid retry progress.');
@@ -108,8 +108,20 @@
     bindWorksite(s.worksiteId,s.storage);if(s.depositId)bindDeposit(s.depositId,s.deposit,s.substrateResource,s.substrateFinite);
    }else if(type==='ProductionJobUpdate'||type==='ProductionSettlement')bindWorksite(s.worksiteId,s.storage);
   }
+  function validateJob(job){
+   if(!plain(job)||!identity(job.id)||!identity(job.output)||!integer(job.amount,1)||
+    !Number.isFinite(job.duration)||job.duration<=0||!Number.isFinite(job.progress)||job.progress<0||job.progress>job.duration||
+    job.attempts!==undefined&&!integer(job.attempts)||job.workerId!==undefined&&job.workerId!==null&&!identity(job.workerId))throw Error('Invalid production job.');
+  }
+  function validateStorage(storage){
+   if(!plain(storage)||!plain(storage.input)||!plain(storage.output)||storage.input===storage.output)throw Error('Invalid worksite.');
+   inventory(storage.input,'worksite input');inventory(storage.output,'worksite output');
+   if(storage.job!==undefined&&storage.job!==null)validateJob(storage.job);
+   if(storage.completed!==undefined&&!integer(storage.completed))throw Error('Invalid completed production count.');
+  }
   function validateTask(type,s){
    transaction(s,type);
+   if(type.startsWith('Production'))validateStorage(s.storage);
    if(type==='CarrierTask'){
     if(!identity(s.sourceId)||!identity(s.destinationId)||s.sourceId===s.destinationId||s.source===s.destination||
      !identity(s.resource)||!integer(s.requested,1)||!integer(s.destinationLimit))throw Error('Invalid transfer request.');
@@ -122,9 +134,11 @@
    }else if(type==='ProductionReservation'){
     if(!identity(s.worksiteId)||!plain(s.storage)||!plain(s.storage.input)||!plain(s.storage.output)||
      !plain(s.recipe)||!plain(s.recipe.cost)||!plain(s.job)||!identity(s.job.id)||
-     !integer(s.outputCapacity)||!integer(s.outputAmount,1)||!integer(s.substrateDepletion||0)||
+     !integer(s.outputCapacity)||!integer(s.outputAmount,1)||!integer(s.substrateDepletion===undefined?0:s.substrateDepletion)||
      Object.entries(s.recipe.cost).some(([id,n])=>!identity(id)||!integer(n)))throw Error('Invalid production reservation.');
-    inventory(s.storage.input,'worksite input');inventory(s.storage.output,'worksite output');
+    validateJob(s.job);
+    if(s.job.amount!==s.outputAmount||s.recipe.output!==undefined&&s.recipe.output!==s.job.output)throw Error('Mismatched production output.');
+    if(s.job.cost!==undefined){inventory(s.job.cost,'reserved input');const keys=new Set([...Object.keys(s.recipe.cost),...Object.keys(s.job.cost)]);if([...keys].some(key=>quantity(s.recipe.cost,key)!==quantity(s.job.cost,key)))throw Error('Mismatched reserved production input.');}
     if(s.depositId&&(!identity(s.depositId)||!plain(s.deposit)||!identity(s.substrateResource)||
      typeof s.substrateFinite!=='boolean'||s.substrateFinite&&!integer(s.deposit.stock)))throw Error('Invalid production substrate.');
    }else if(type==='ProductionJobUpdate'){
@@ -144,17 +158,19 @@
   }
   function stage(type,spec){
    validateTask(type,spec);prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
-   world.create(id);const command={spec,result:null};world.set(id,type,command);
-   try{scheduler.step(world,.1,{entityId:id});return command.result;}finally{world.destroy(id);}
+   world.create(id);const command={spec,result:null};
+   try{world.set(id,type,command);scheduler.step(world,.1,{entityId:id});return command.result;}finally{world.destroy(id);}
   }
   function batch(type,specs){
    if(!Array.isArray(specs)||!specs.length)throw Error('Expected transactions.');const records=[],ordered=specs.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id))),bindings=new Map();
    for(const spec of ordered){validateTask(type,spec);for(const[id,record]of[[spec.sourceId,spec.source],[spec.destinationId,spec.destination]])if(id){if(bindings.has(id)&&bindings.get(id)!==record)throw Error('Conflicting physical entity binding.');bindings.set(id,record);}}
-   for(const spec of ordered){
-    prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
-    world.create(id);const command={spec,result:null};world.set(id,type,command);records.push({id,command,spec});
-   }
-   try{scheduler.step(world,.1);return records.map(x=>({id:x.spec.id,...x.command.result}));}finally{for(const x of records)world.destroy(x.id);}
+   try{
+    for(const spec of ordered){
+     prepare(type,spec);const id='tx:'+String(++serial).padStart(10,'0')+':'+spec.id;
+     world.create(id);const command={spec,result:null};records.push({id,command,spec});world.set(id,type,command);
+    }
+    scheduler.step(world,.1);return records.map(x=>({id:x.spec.id,...x.command.result}));
+   }finally{for(const x of records)world.destroy(x.id);}
   }
   return Object.freeze({world,scheduler,bindInventory,bindDeposit,bindWorksite,
    transfer:spec=>stage('CarrierTask',spec),transfers:specs=>batch('CarrierTask',specs),

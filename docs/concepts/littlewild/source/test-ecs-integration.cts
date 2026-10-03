@@ -19,16 +19,18 @@ test('All simulated creatures bind authoritative v8 component records',()=>{
 test('A world tick advances migrated actor dynamics once for every active actor',()=>{
  const e=L.createWorldDemo();e.s.started=true;e.s.paused=false;
  for(const c of e.creatures){c.needs={food:80,water:80,energy:80,comfort:80,joy:80};c.learning.fatigue=15;c.learning.recovering=false;c.task=null;}
- const before=e.creatures.map(c=>({id:c.id,food:c.needs.food,fatigue:c.learning.fatigue}));
+ const beforeTime=e.s.simTime;
  e.step(.1);
- for(const b of before){const c=e.creatures.find(a=>a.id===b.id);assert(c.needs.food<b.food);assert(c.learning.fatigue<=b.fatigue);}
+ near(e.s.simTime,beforeTime+.1);
+ for(const c of e.creatures){near(c.needs.food,79.993);near(c.needs.water,79.991);near(c.needs.energy,79.995);near(c.learning.fatigue,14.984);}
 });
 test('Story roundtrip resumes deterministic domain-plus-ECS stepping',()=>{
- const e=L.createWorldDemo();e.s.paused=false;e.s.started=true;e.advance(12);
+ const e=L.createWorldDemo();e.s.paused=false;e.s.started=true;const initial=e.s.simTime;e.advance(12);near(e.s.simTime,initial+12);
  const doc=S.encode(e),restored=S.commit(S.inspect(doc));
  assert.deepEqual(restored.export().state,e.export().state);
  assert(restored.ecs?.world instanceof E.World);
  e.advance(20);restored.advance(20);
+ near(e.s.simTime,initial+32);near(restored.s.simTime,initial+32);
  assert.deepEqual(restored.export().state,e.export().state);
 });
 test('ECS structural lifetime follows actor roster explicitly',()=>{

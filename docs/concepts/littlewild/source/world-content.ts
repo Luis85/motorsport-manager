@@ -25,7 +25,7 @@
     if(s.maxProperties&&Object.keys(v).length>s.maxProperties)errors.push(p+': too many fields');
     for(const [k,x]of Object.entries(v)){
      if(['__proto__','constructor','prototype'].includes(k)){errors.push(p+'/'+k+': unsafe key');continue;}
-     if(s.properties?.[k])walk(x,s.properties[k],p+'/'+k);else if(s.additionalProperties===false)errors.push(p+'/'+k+': unknown field');else if(typeof s.additionalProperties==='object')walk(x,s.additionalProperties,p+'/'+k);
+     if(s.properties&&own(s.properties,k))walk(x,s.properties[k],p+'/'+k);else if(s.additionalProperties===false)errors.push(p+'/'+k+': unknown field');else if(typeof s.additionalProperties==='object')walk(x,s.additionalProperties,p+'/'+k);
     }
    }else if(t==='array'){
     if(!Array.isArray(v)){errors.push(p+': expected an array');return;}

@@ -34,4 +34,52 @@ test('Keyboard focus receives priority over ordinary labels',()=>{const out=plac
 test('Long labels remain horizontally within viewport',()=>{for(const x of[10,320-10]){const out=placeLabels([{...entry('c1',x),width:216}],320,600)[0];assert(out.x-out.width/2>=7.99&&out.x+out.width/2<=312.01);}});
 for(const p of[null,{x:NaN,y:300},{x:-100,y:300},{x:2000,y:300},{x:300,y:5},{x:300,y:900}])test('Off-screen/invalid anchor cannot leave a misplaced floating name: '+JSON.stringify(p),()=>assert.equal(visibleAnchor(p,900,700),false));
 test('Layout and sampling consume no simulation randomness or resources',()=>{const e=L.createWorldDemo(),before=JSON.stringify(e.export()),m=new MotionSamples();m.begin(e.creatures);m.end(e.creatures,e.s.simTime);for(let i=0;i<50;i++){for(const c of e.creatures)m.sample(c,e.s.simTime,.5,true);placeLabels([entry('c1'),entry('c2')],900,700);}assert.equal(JSON.stringify(e.export()),before);});
-const report={passed:results.filter(r=>r.passed).length,total:results.length,results};fs.writeFileSync(__dirname+'/presentation-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
+const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+test('Status queries read the replacement engine and never change either story',()=>{
+ const old=L.createWorldDemo(),replacement=L.createWorldDemo();old.actor.name='Old friend';replacement.actor.name='<New friend>';replacement.s.allowance.limit=7;replacement.actor.creature.coins=23;old.workRate=()=>2;replacement.workRate=()=>5;
+ let current=old;const context={get engine(){return current;},esc:escape,icon:()=>'',ui:{}};
+ const status=require('./ui-status.js').create(context),before=[old.export(),replacement.export()];
+ assert(status.allowanceMarkup().includes('Old friend'));assert.equal(status.taskETA({phase:'work',duration:10,elapsed:0}),'5 sim seconds');
+ current=replacement;const rendered=status.allowanceMarkup();assert(rendered.includes('&lt;New friend&gt;'));assert(rendered.includes('>7</strong>'));assert(rendered.includes('>23</strong>'));assert(!rendered.includes('Old friend'));assert.equal(status.taskETA({phase:'work',duration:10,elapsed:0}),'2 sim seconds');
+ assert.deepEqual([old.export(),replacement.export()],before);
+});
+test('Modal cancellation restores focus and invalidates a delayed open callback',()=>{
+ const prior={document:global.document,requestAnimationFrame:global.requestAnimationFrame};const frames=[],calls={cancel:0,suspend:0,resume:0,title:0,invoker:0};
+ const classes=()=>({add(){},remove(){}}),body={classList:classes()},content={scrollTop:21},invoker={isConnected:true,offsetParent:{},focus(){calls.invoker++;global.document.activeElement=this;}};
+ const modal={querySelector:()=>content,querySelectorAll:()=>[],contains:()=>false},title={focus(){calls.title++;}},nodes={modal,'modal-title':title,toasts:{querySelectorAll:()=>[]},overlay:{classList:classes()},app:{inert:false},world:invoker};
+ const ui={modal:null,modalId:null,history:[],panelScroll:new Map(),focusRequest:0},engine=L.createWorldDemo(),before=engine.export();
+ const context={$:id=>nodes[id],ui,get engine(){return engine;},world:{placement:null,lastDrawAt:1},worldUI:{suspend(){calls.suspend++;},resume(){calls.resume++;}},contentUI:{view:{}},cancelPendingReads(){calls.cancel++;},renderModal(){},refreshPlacement(){},updateUI(){}};
+ try{
+  global.document={body,activeElement:invoker};global.requestAnimationFrame=callback=>frames.push(callback);
+  const view=require('./ui-modal.js').create(context);view.openModal('settings');assert.equal(nodes.app.inert,true);assert.equal(calls.suspend,1);
+  view.closeModal();assert.equal(nodes.app.inert,false);assert.equal(calls.invoker,1);assert.equal(calls.cancel,1);assert.equal(calls.resume,1);
+  frames.forEach(callback=>callback());assert.equal(calls.title,0);assert.equal(ui.modal,null);assert.equal(ui.panelScroll.get('settings:').body,21);assert.deepEqual(engine.export(),before);
+ }finally{Object.assign(global,prior);}
+});
+function listenerFixture(){
+ const listeners=[],importFile={value:'chosen',addEventListener(type,listener){this.listener=listener;}},overlay={addEventListener(){}};
+ return {listeners,importFile,document:{addEventListener(type,listener,options){listeners.push({type,listener,options});},querySelectorAll:()=>[]},window:{addEventListener(){}},$:id=>id==='import-file'?importFile:overlay};
+}
+async function asynchronousChecks(){
+ async function check(name,work){try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error(name,error.message);}}
+ await check('Click intents install once and dispatch to the current engine after replacement',async()=>{
+  const prior=global.document,fixture=listenerFixture(),calls=[];let current={interactionIssue:()=>null,care:id=>{calls.push('old:'+id);return{ok:true};}};
+  const passive={action:()=>false},context={get engine(){return current;},ui:{modal:null},villageUI:passive,worldExplorer:passive,worldUI:passive,colonyUI:passive,contentUI:passive,progressionUI:passive,result(){}};
+  try{global.document=fixture.document;require('./ui-actions.js').install(context);assert.deepEqual(fixture.listeners.map(entry=>entry.type),['click']);
+   current={interactionIssue:()=>null,care:id=>{calls.push('new:'+id);return{ok:true};}};const button={disabled:false,dataset:{act:'care',id:'feed'}};
+   await fixture.listeners[0].listener({target:{closest:()=>button}});assert.deepEqual(calls,['new:feed']);
+  }finally{global.document=prior;}
+ });
+ await check('A cancelled asynchronous story read cannot replace the current import review',async()=>{
+  const prior={document:global.document,window:global.window},fixture=listenerFixture(),ui={pendingImport:{marker:'retained review'}},opened=[];let sequence=0,release;
+  const context={$:fixture.$,ui,get storyReadId(){return sequence;},set storyReadId(value){sequence=value;},openModal:panel=>opened.push(panel)};
+  try{global.document=fixture.document;global.window=fixture.window;require('./story-codec.js');require('./ui-input.js').install(context);
+   const pending=fixture.importFile.listener({target:{value:'chosen',files:[{size:1,text:()=>new Promise(resolve=>release=resolve)}]}});sequence++;release('{}');await pending;
+   assert.deepEqual(ui.pendingImport,{marker:'retained review'});assert.deepEqual(opened,[]);
+   const story=global.LWStory.encode(L.createWorldDemo()),input={value:'chosen',files:[{size:1,text:async()=>JSON.stringify(story)}]};await fixture.importFile.listener({target:input});
+   assert.deepEqual(opened,['import-preview']);assert.equal(ui.pendingImport.engine.s.name,story.state.colony.creatures[0].name);assert.equal(input.value,'');
+  }finally{Object.assign(global,prior);}
+ });
+ const report={passed:results.filter(r=>r.passed).length,total:results.length,results};fs.writeFileSync(__dirname+'/presentation-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
+}
+asynchronousChecks().catch(error=>{console.error(error);process.exitCode=1;});

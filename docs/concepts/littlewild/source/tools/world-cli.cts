@@ -5,19 +5,19 @@
  * Exit 0: accepted; 1: validation failed; 2: invalid usage or I/O.
  * Schemas check shape; runtime validation also checks references and dependency cycles.
  */
-const fs = require('node:fs');
-require('../simulation.cjs');
-const W = require('../world-content.js');
+const {readJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 try {
-  const [command, filename, ...extra] = process.argv.slice(2);
+  const args=process.argv.slice(2);
+  if(helpRequested(args)){emit({ok:true,usage:'world-cli.cjs export | schema | validate <file> | diff <file>'});process.exit(0);}
+  const [command, filename, ...extra] = args;
   if (extra.length) throw Error('Unexpected extra arguments.');
+  if(!['export','schema','validate','diff'].includes(command)||(['export','schema'].includes(command)?!!filename:!filename))throw Error('Use export, schema, validate <file>, or diff <file>.');
+  require('../simulation.cjs');const W = require('../world-content.js');
   let result;
   if (command === 'export' && !filename) result = W.clone(W.content);
   else if (command === 'schema' && !filename) result = W.clone(W.schema);
   else if (['validate', 'diff'].includes(command) && filename) {
-    const stat = fs.statSync(filename);
-    if (!stat.isFile() || stat.size > 300000) throw Error('Choose a JSON file of at most 300 KB.');
-    const candidate = W.validate(fs.readFileSync(filename, 'utf8'));
+    const candidate = W.validate(readJsonFile(filename,300000));
     if (!candidate.ok) { result = candidate; process.exitCode = 1; }
     else {
       result = {ok:true, fingerprint:W.hashOf(candidate.content), nodeKinds:candidate.content.nodes.length,

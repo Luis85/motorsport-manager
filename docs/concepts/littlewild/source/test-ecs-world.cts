@@ -15,4 +15,41 @@ test('Production progress, release and takeover retain one paid job',()=>{const 
 test('Failed production attempt keeps reserved inputs and requires more work',()=>{const ecs=W.create(),job={id:'work-4',output:'planks',amount:1,duration:10,progress:10,attempts:0,workerId:'c1',cost:{wood:2}},storage={input:{},output:{},job,completed:0,lastOutput:0,lastMessage:''},base={worksiteId:'worksite:bench',storage,jobId:job.id,success:false,outputCapacity:8,time:20,message:'Setback'};const before=JSON.stringify(storage);assert.throws(()=>ecs.settleProduction({...base,id:'attempt:work-4:invalid',retryProgress:-1}),/Invalid production settlement/);assert.equal(JSON.stringify(storage),before);const r=ecs.settleProduction({...base,id:'attempt:work-4:1',retryProgress:4});assert.equal(r.success,false);assert.equal(storage.job,job);assert.equal(job.progress,4);assert.equal(job.attempts,1);assert.equal(job.workerId,null);assert.deepEqual(job.cost,{wood:2});});
 test('Successful production emits output and clears the job exactly once',()=>{const ecs=W.create(),job={id:'work-5',output:'planks',amount:2,duration:10,progress:10,attempts:0,workerId:'c1'},storage={input:{},output:{planks:1},job,completed:0,lastOutput:0,lastMessage:''};const spec={id:'attempt:work-5:1',worksiteId:'worksite:bench',storage,jobId:job.id,success:true,retryProgress:0,outputCapacity:8,time:30,message:'Finished'};const r=ecs.settleProduction(spec);assert.equal(r.amount,2);assert.equal(storage.output.planks,3);assert.equal(storage.completed,1);assert.equal(storage.lastOutput,30);assert.equal(storage.job,null);assert.equal(ecs.world.get('worksite:bench','ProductionJob').record,null);assert.equal(ecs.settleProduction(spec).state,'duplicate');assert.equal(storage.output.planks,3);});
 test('World settlement uses explicit components and the deterministic ECS scheduler',()=>{const ecs=W.create();assert(ecs.world instanceof E.World);assert(ecs.scheduler instanceof E.Scheduler);assert.deepEqual(ecs.scheduler.systems.map(s=>s.id),['inventory-transfer','resource-harvest','production-reserve','production-job-update','production-settlement']);});
+test('Transfers and harvests cannot overflow a validated inventory quantity',()=>{
+ const ecs=W.create(),source={wood:2},destination={wood:1e9},deposit={stock:2},before=JSON.stringify([source,destination,deposit]);
+ assert.equal(ecs.transfer(transfer('transfer:overflow',source,destination,'wood',1,1)).state,'blocked');
+ assert.equal(ecs.harvest({id:'harvest:overflow',depositId:'deposit:overflow',deposit,finite:true,destinationId:'inventory:overflow',destination,resource:'wood',requested:1,destinationLimit:1}).state,'blocked');
+ assert.equal(JSON.stringify([source,destination,deposit]),before);
+});
+test('Invalid production jobs and mismatched output reject before inputs are charged',()=>{
+ for(const patch of [{output:'bad output'},{amount:-1},{amount:2},{duration:NaN},{duration:0},{progress:-1},{attempts:-1},{cost:{wood:1}}]){
+  const ecs=W.create(),storage={input:{wood:2},output:{},job:null},deposit={stock:5},job={id:'preflight',output:'planks',amount:1,duration:10,progress:0,attempts:0,workerId:'c1',...patch};
+  const before=JSON.stringify([storage,deposit]);assert.throws(()=>ecs.reserveProduction(reservation('preflight',storage,deposit,job)),/production|reserved/);
+  assert.equal(JSON.stringify([storage,deposit]),before);assert.equal(ecs.hasSettled('reserve:preflight'),false);
+ }
+});
+test('Missing substrate depletion means zero and non-finite depletion is rejected',()=>{
+ const ecs=W.create(),storage={input:{wood:2},output:{},job:null},deposit={stock:5},job={id:'no-depletion',output:'planks',amount:1,duration:10,progress:0,attempts:0,workerId:'c1'},spec=reservation('no-depletion',storage,deposit,job);
+ spec.substrateDepletion=NaN;const before=JSON.stringify([storage,deposit]);assert.throws(()=>ecs.reserveProduction(spec),/Invalid production reservation/);assert.equal(JSON.stringify([storage,deposit]),before);
+ delete spec.substrateDepletion;assert.equal(ecs.reserveProduction(spec).state,'settled');assert.equal(deposit.stock,5);
+});
+test('Existing worksite bindings reject corrupt jobs without mutating production records',()=>{
+ const ecs=W.create(),job={id:'corrupt',output:'planks',amount:1,duration:10,progress:0,attempts:0,workerId:'c1'},storage={input:{},output:{},job};ecs.bindWorksite('worksite:corrupt',storage);
+ job.amount=-1;const before=JSON.stringify(storage);assert.throws(()=>ecs.settleProduction({id:'attempt:corrupt',worksiteId:'worksite:corrupt',storage,jobId:job.id,success:true,outputCapacity:8,time:1}),/Invalid production job/);assert.equal(JSON.stringify(storage),before);
+});
+test('Production counter overflow rejects before output, attempts or settlement markers change',()=>{
+ for(const counters of [{attempts:1e9,completed:0},{attempts:0,completed:1e9}]){
+  const ecs=W.create(),job={id:'counter',output:'planks',amount:1,duration:10,progress:10,attempts:counters.attempts,workerId:'c1'},storage={input:{},output:{},job,completed:counters.completed};
+  const spec={id:'attempt:counter',worksiteId:'worksite:counter',storage,jobId:job.id,success:true,outputCapacity:8,time:1},before=JSON.stringify(storage);
+  assert.throws(()=>ecs.settleProduction(spec),/Production count limit/);assert.equal(JSON.stringify(storage),before);assert.equal(ecs.hasSettled(spec.id),false);
+ }
+});
+test('Rejected batch staging discards earlier commands before the next valid batch',()=>{
+ const ecs=W.create(),source={wood:4},a={},b={},next={},first=transfer('a-staged',source,a,'wood',2,2),invalid={...transfer('b-invalid-data',source,b,'wood',1,1),callback:()=>true},before=JSON.stringify([source,a,b]);
+ assert.throws(()=>ecs.transfers([first,invalid]),/behavior-free/);assert.equal(JSON.stringify([source,a,b]),before);
+ assert.equal([...ecs.world.entities].some(id=>id.startsWith('tx:')),false);assert.equal(ecs.hasSettled(first.id),false);
+ assert.equal(ecs.transfers([transfer('c-next',source,next,'wood',1,1)])[0].amount,1);assert.equal(source.wood,3);assert.deepEqual(a,{});assert.deepEqual(b,{});
+ assert.throws(()=>ecs.transfer({...transfer('single-invalid',source,next,'wood',1,1),callback:()=>true}),/behavior-free/);
+ assert.equal([...ecs.world.entities].some(id=>id.startsWith('tx:')),false);
+});
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/ecs-world-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} ECS world checks passed`);if(passed!==results.length)process.exitCode=1;

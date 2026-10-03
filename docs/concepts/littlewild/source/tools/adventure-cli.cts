@@ -4,19 +4,19 @@
  * node tools/adventure-cli.cjs validate <file>
  * node tools/adventure-cli.cjs export | schema
  * stdout is always JSON. Exit 0 = valid, 1 = validation, 2 = usage/I/O. */
-const fs = require('node:fs');
-require('../simulation.cjs');
-const A = require('../adventure-content.js');
+const {readJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 try {
-  const [command, filename, ...extra] = process.argv.slice(2);
+  const args=process.argv.slice(2);
+  if(helpRequested(args)){emit({ok:true,usage:'adventure-cli.cjs export | schema | validate <file> | diff <file>'});process.exit(0);}
+  const [command, filename, ...extra] = args;
   if (extra.length) throw Error('Unexpected extra arguments.');
+  if(!['export','schema','validate','diff'].includes(command)||(['export','schema'].includes(command)?!!filename:!filename))throw Error('Use export, schema, validate <file>, or diff <file>.');
+  require('../simulation.cjs');const A = require('../adventure-content.js');
   let result;
   if (command === 'export' && !filename) result = A.copy(A.content);
   else if (command === 'schema' && !filename) result = require('../content/adventure.schema.json');
   else if (['validate', 'diff'].includes(command) && filename) {
-    const stat = fs.statSync(filename);
-    if (!stat.isFile() || stat.size > 1500000) throw Error('Choose a JSON file smaller than 1.5 MB.');
-    const validated = A.validate(fs.readFileSync(filename, 'utf8'));
+    const validated = A.validate(readJsonFile(filename,1500000));
     result = validated.ok ? { ok: true, fingerprint: A.hashOf(validated.content), ...validated.summary } : validated;
     if (!validated.ok) process.exitCode = 1;
     else if(command === 'diff') result = {ok:true,baseFingerprint:A.hash,candidateFingerprint:A.hashOf(validated.content),...A.diff(A.content, validated.content)};

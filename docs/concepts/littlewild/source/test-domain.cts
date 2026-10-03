@@ -84,6 +84,47 @@ test('Interaction costs use carried stock, not warehouse goods',()=>{const pack=
 test('Custom bounded event interaction is valid and actually appears',()=>{const pack=copy(C.content);pack.interactions.push({...copy(pack.interactions.find(d=>d.id==='settle-in')),id:'island-celebration',label:'Celebrate our new island'});pack.events.push({id:'new-shore',trigger:'island-purchased',interaction:'island-celebration',seconds:120});assert(C.validate(pack).ok);C.withLibrary(pack,()=>{const e=rich(clean());assert(e.buyIsland(1,0).ok);assert(e.interactions(e.actor).some(d=>d.id==='island-celebration'));});});
 
 // Import validation and registry safety.
+test('Quantity equivalence rejects non-record operands without throwing',()=>{
+ const I=global.LWWorldIntegrity;
+ for(const invalid of [null,undefined,[],1,'wood']){assert.equal(I.sameQuantities({wood:1},invalid),false);assert.equal(I.sameQuantities(invalid,{wood:1}),false);}
+ assert(I.sameQuantities({wood:2,stone:1},{stone:1,wood:2}));
+ assert.equal(I.sameQuantities({wood:2},{wood:2,stone:0}),false);assert.equal(I.sameQuantities({wood:2},{wood:3}),false);
+});
+test('Navigation returns deterministic routes with independent points and cache invalidation',()=>{
+ const N=global.LWNavigation,grid=new N.Grid(4,()=> 'grass',[{x:2,y:2}]);
+ const expected=[{x:1,y:0},{x:2,y:0},{x:2,y:1}],route=grid.path({x:0,y:0},{x:2,y:2},true);
+ assert.deepEqual(route,expected);route[0].x=99;route.pop();assert.deepEqual(grid.path({x:0,y:0},{x:2,y:2},true),expected);
+ assert.deepEqual(grid.path({x:1,y:2},{x:2,y:2},true),[]);assert.equal(grid.path({x:-1,y:0},{x:2,y:2}),null);
+ const wall=new N.Grid(3,()=> 'grass',[{x:1,y:0},{x:1,y:1},{x:1,y:2}]);assert.equal(wall.path({x:0,y:1},{x:2,y:1}),null);
+ const state={creature:{x:8,y:8},nodes:[],buildings:[]},initial=N.grid(state);
+ state.buildings.push({x:8,y:9});const changed=N.grid(state);assert.notStrictEqual(changed,initial);assert.equal(changed.pass(8,9),false);assert.strictEqual(N.grid(state),changed);
+ state.buildings=[];assert.equal(N.grid(state).pass(8,9),true);
+});
+test('Navigation indexes cells beyond the signed sixteen-bit boundary correctly',()=>{
+ const grid=new global.LWNavigation.Grid(182,()=> 'grass'),route=grid.path({x:181,y:181},{x:1,y:181});
+ assert(route);assert.equal(route.length,179);assert.deepEqual(route[0],{x:180,y:181});assert.deepEqual(route.at(-1),{x:2,y:181});
+ assert(route.every(point=>point.y===181&&point.x>=2&&point.x<=180));
+});
+test('Market receipt identity remains reserved after completed orders are pruned',()=>{
+ const e=marketFixture();marketStep(e);marketStep(e);marketStep(e);
+ const saved=S.encode(e);saved.state.market.orders=[];
+ assert.doesNotThrow(()=>S.inspect(saved));
+ const hash=C.hash,before=snap(e);saved.state.market.sequence=Number(saved.state.market.history[0].id.slice(5));
+ assert.throws(()=>S.inspect(saved),/sale sequence collision/);assert.equal(C.hash,hash);assert.equal(snap(e),before);
+});
+test('Planner history rejects negative and future simulation times without repairing input',()=>{
+ const e=clean();for(const time of [-1,e.s.simTime+1]){
+  const saved=S.encode(e);saved.state.planning.history=[{time,key:'order:c1:o1',name:'Wood plan',action:'Paused',actorId:'c1'}];
+  const before=JSON.stringify(saved);assert.throws(()=>S.inspect(saved),/invalid planner history/);assert.equal(JSON.stringify(saved),before);
+ }
+});
+test('Market receipts require a canonical sale identity and nonnegative simulation time',()=>{
+ const e=marketFixture();marketStep(e);marketStep(e);marketStep(e);const original=S.encode(e);
+ for(const mutate of [receipt=>receipt.time=-1,receipt=>receipt.id='',receipt=>receipt.id='sale-01',receipt=>receipt.id='other']){
+  const saved=copy(original);mutate(saved.state.market.history[0]);const before=JSON.stringify(saved);
+  assert.throws(()=>S.inspect(saved),/invalid market receipt/);assert.equal(JSON.stringify(saved),before);
+ }
+});
 test('Growth JSON defaults round-trip and preserve tool-owned metadata',()=>{const pack=copy(C.content);pack.extensions={externalTool:{revision:17,reviewed:true}};assert(C.validate(pack).ok);C.withLibrary(pack,()=>assert.deepEqual(C.content.extensions,pack.extensions));});
 test('Unknown interaction handler and unknown item cost are rejected',()=>{const pack=copy(C.content);pack.interactions[0].handler='eval';assert(!C.validate(pack).ok);pack.interactions[0].handler='care';pack.interactions[0].cost={missing:1};assert(!C.validate(pack).ok);});
 test('Current story format binds all four exact libraries',()=>{const e=clean(),save=S.encode(e);assert.equal(save.version,10);assert(save.growth?.library||save.growth?.content||save.growth);assert.deepEqual(S.commit(S.inspect(save)).export(),e.export());});

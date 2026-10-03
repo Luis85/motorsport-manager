@@ -10,7 +10,7 @@ const ROOT=path.resolve(__dirname,"../.."),CONTENT=path.join(ROOT,"source","cont
 const results:Result[]=[];
 const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value));
 function check(name:string,action:()=>void):void{try{action();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error instanceof Error?error.message:String(error)});}}
-function makeValidator(schema:any){const ajv=new Ajv2020({allErrors:true,strict:false});return {ajv,validate:ajv.compile(schema)};}
+function makeValidator(schema:any){const ajv=new Ajv2020({allErrors:true,strict:true});return {ajv,validate:ajv.compile(schema)};}
 const scenarioSchema=JSON.parse(fs.readFileSync(path.join(CONTENT,"scenario.schema.json"),"utf8"));
 const simulationSchema=JSON.parse(fs.readFileSync(path.join(CONTENT,"simulation.schema.json"),"utf8"));
 const defaultProfile=JSON.parse(fs.readFileSync(path.join(CONTENT,"simulation-profile.json"),"utf8"));

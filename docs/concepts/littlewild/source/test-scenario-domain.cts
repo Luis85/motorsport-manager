@@ -28,6 +28,19 @@ for(const p of all){
 }
 defaults();
 rejects('Reject unknown executable pack field',p=>p.script='alert(1)');
+rejects('Reject inherited Object field names at the pack boundary',p=>p.toString='ignored');
+rejects('Reject inherited Object field names in nested scenario data',p=>p.presentation.valueOf='ignored');
+test('Every definition importer rejects unsafe own keys at its supported boundary',()=>{
+ for(const [library,validate,target] of [
+  [all[0].libraries.base,input=>C.registry.prepare(input),input=>input.library],
+  [all[0].libraries.adventure,input=>A.validate(input),input=>input.weights],
+  [all[0].libraries.world,input=>W.validate(input),input=>input],
+  [all[0].libraries.growth,input=>G.validate(input),input=>input.rules]
+ ])for(const key of ['toString','valueOf','__proto__']){
+  const input=copy(library),before=active();Object.defineProperty(target(input),key,{value:'ignored',enumerable:true,writable:true});
+  const result=validate(input);assert.equal(result.ok,false,key);assert.equal(active(),before);
+ }
+});
 rejects('Reject unsupported schema version',p=>p.schemaVersion=99);
 rejects('Reject duplicate scene IDs',p=>p.scenes[1].id=p.scenes[0].id);
 rejects('Reject duplicate world IDs',p=>p.worlds.push(copy(p.worlds[0])));
@@ -75,6 +88,20 @@ test('Temporary world registry always rolls back on errors',()=>{const before=P.
  work=>W.withLibrary(W.content,work),work=>G.withLibrary(G.content,work)
 ])assert.throws(()=>scope(()=>Promise.resolve()),/synchronous/);assert.strictEqual(P.current,before);});
 test('Scene validation failure rolls back every staged library',()=>{const before=active(),p=copy(all[1]);p.scenes[1].initialState.colony.creatures[0].creature.x=999;assert(!X.validate(p).ok);assert.equal(active(),before);});
+test('Story activation failure rolls back all installed libraries and profiles and permits retry',()=>{
+ defaults();
+ // Encode the detached scene with its own matching definition snapshot.
+ const document=X.withRuntime(all[1].libraries,all[1].simulation,()=>S.encode(X.prepareScene(all[1],all[1].scenes[0].id).engine));
+ const preview=S.inspect(document),before=active(),activate=X.activate;let attempts=0;
+ X.activate=engine=>{activate(engine);attempts++;throw Error('Injected activation failure');};
+ try{assert.throws(()=>S.commit(preview),/Injected activation failure/);assert.equal(attempts,1);assert.equal(active(),before);}
+ finally{X.activate=activate;}
+ const restored=S.commit(preview);assert.equal(restored.scenarioContext.packId,all[1].id);assert.equal(R.hash,R.fingerprint(all[1].simulation));assert.equal(P.current.id,all[1].worlds[0].id);defaults();
+});
+test('Captures and portable saves reject context rules the engine never used',()=>{
+ const engine=X.commitScene(X.prepareScene(all[0],all[0].scenes[0].id)),before=active();engine.scenarioContext.simulation.rules.actor.needs.foodIdle+=.1;
+ assert.throws(()=>S.encode(engine),/does not match the engine profile/);assert.throws(()=>X.capture(engine),/does not match the engine profile/);assert.equal(active(),before);
+});
 test('Source setup can select a different player level and budget',()=>{const p=copy(all[0]);p.scenes[0].initialState.player.coins=321;p.scenes[0].initialState.player.level=4;const a=X.commitScene(X.prepareScene(p,p.scenes[0].id));assert.equal(a.s.player.coins,321);assert.equal(a.s.player.level,4);});
 test('Second setting changes actual building definitions',()=>{X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));assert.equal(L.BUILDINGS.bench.name,'Assembly bench');assert.equal(global.LWGeography.describe(0,0).name,'Copper Shore');});
 test('Second setting changes actual unowned-island node generation',()=>{defaults();let a=global.LWGeography.generatedNodes(1,0,W);X.commitScene(X.prepareScene(all[1],all[1].scenes[1].id));let b=global.LWGeography.generatedNodes(1,0,W);assert.notDeepEqual(a,b);assert(b.filter(n=>n.kind==='ore').length>a.filter(n=>n.kind==='ore').length);});

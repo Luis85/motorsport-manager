@@ -43,4 +43,18 @@ test('Activity input rejects hidden or non-finite authority',()=>{
  assert.throws(()=>ecs.advanceActivity(c,.1,{walkable:true,moveRate:1,workRate:1}),/inputs/);
  assert.throws(()=>ecs.advanceActivity(c,.1,{walkable:()=>true,moveRate:Infinity,workRate:1}),/inputs/);
 });
+test('Malformed or reused task state rejects before transform, intent or work mutation',()=>{
+ for(const patch of [{phase:'unexpected'},{elapsed:-1},{path:[{x:NaN,y:0}]},{path:[{x:1}]},{path:new Array(1)},{orderId:{}},{style:1},{duration:-1}]){
+  const c=actor({kind:'gather',phase:'walk',path:[{x:1,y:0}],duration:5,elapsed:0}),ecs=A.create();
+  ecs.advanceActivity(c,.1,{walkable:()=>true,moveRate:1,workRate:1});Object.assign(c.task,patch);const before=JSON.stringify(c),intent=JSON.stringify(ecs.world.get('c1','Intent'));let checked=0;
+  assert.throws(()=>ecs.advanceActivity(c,.1,{walkable:()=>{checked++;return true;},moveRate:1,workRate:1}),/Invalid actor task/);
+  assert.equal(JSON.stringify(c),before);assert.equal(JSON.stringify(ecs.world.get('c1','Intent')),intent);assert.equal(checked,0);
+ }
+});
+test('Finite activity inputs cannot overflow movement or accumulated work',()=>{
+ for(const c of [actor({kind:'rest',phase:'work',duration:Number.MAX_VALUE,elapsed:Number.MAX_VALUE}),actor({kind:'gather',phase:'walk',path:[{x:Number.MAX_VALUE,y:0}],duration:5,elapsed:0})]){
+  if(c.task.phase==='walk')c.creature.x=-Number.MAX_VALUE;
+  const before=JSON.stringify(c);assert.throws(()=>A.create().advanceActivity(c,.25,{walkable:()=>true,moveRate:1,workRate:Number.MAX_VALUE}),/Invalid actor activity state/);assert.equal(JSON.stringify(c),before);
+ }
+});
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/ecs-activity-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} ECS activity checks passed`);if(passed!==results.length)process.exitCode=1;

@@ -2,7 +2,7 @@
 
 An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
 
-The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves now use envelope 10; envelope 9 migrates explicitly to the compatibility profile. See `ECS-ARCHITECTURE.md`.
+The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves use envelope 10; obsolete story envelopes and scenario schema versions are rejected. See `ECS-ARCHITECTURE.md`.
 
 ## Play
 
@@ -17,7 +17,7 @@ The existing **Pause when opening panels** device preference also covers these p
 Littlewild's authored executable source is TypeScript. JavaScript under `.generated/` is disposable compiler output; the bundled `vendor/three.js` is third-party distribution code.
 
 ```sh
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 npm run typecheck
 npm run architecture
 
@@ -35,7 +35,9 @@ npm run verify -- --no-browser
 
 ## Documentation
 
-- `CONFIGURATION.md`: scenario-schema 2, simulation-profile authoring, world/scene configuration, migrations and engine boundaries.
+- `QUALITY-AUDIT.md`: current PR 25 correctness, test, refactoring and pipeline audit.
+
+- `CONFIGURATION.md`: scenario-schema 2, simulation-profile authoring, world/scene configuration, current formats and engine boundaries.
 - `UI-RESEARCH.md` and `UI-REVIEW.html`: research, observed baseline and actual captures.
 - `VERIFICATION.md`: this build's executed checks and limitations.
 - `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
@@ -47,6 +49,6 @@ This is not yet an unrestricted game engine. Stable mechanic roles, handlers, is
 
 ## ECS refactor on PR #25
 
-The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine migration, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
+The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The canonical `source/content/simulation-profile.json` combines validated actor/economy rule data with the exact compiled `living-world-v1` composition archetype. Schema-2 packs may tune bounded actor/economy values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine current-format rejection, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
 
 - [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.

@@ -17,4 +17,23 @@ test('Income split is deterministic and data driven',()=>{const ecs=E.create();a
 test('Settlement never writes presentation or journal records',()=>{const s=state(),a=actor(s);E.create().settle(s,a,{id:'reward:quiet',guide:1,research:1});assert.deepEqual(s.ledger,[]);assert.deepEqual(s.log,[]);});
 test('Failed system execution rolls every authoritative record back',()=>{const rules=JSON.parse(JSON.stringify(require('./content/economy-rules.json')));rules.limits.level=1;const s=state(),a=actor(s),before=JSON.stringify({s,a});s.player.xp=35;const expected=JSON.stringify({s,a});assert.throws(()=>E.create(rules).settle(s,a,{id:'rollback:level',guide:3,research:2,playerXp:2}),/limit/);assert.equal(JSON.stringify({s,a}),expected);});
 test('Actor wallets remain isolated while shared balances settle once',()=>{const s=state(),a=actor(s),b={id:'c2',creature:{level:1,xp:0,coins:9},bond:5,stats:{earned:0,researchEarned:0},rpg:{cp:0}},ecs=E.create();ecs.settle(s,a,{id:'actor:a',pocket:2,guide:1});ecs.settle(s,b,{id:'actor:b',pocket:3,research:1});assert.equal(a.creature.coins,7);assert.equal(b.creature.coins,12);assert.equal(s.player.coins,21);assert.equal(s.rp,4);});
+test('Research rewards and explicit stat deltas enforce one cumulative statistic limit',()=>{
+ const rules=JSON.parse(JSON.stringify(require('./content/economy-rules.json')));rules.limits.stat=5;
+ for(const spec of [{id:'research:overflow',research:2},{id:'research:level',playerXp:2},{id:'research:combined',research:1,stats:{researchEarned:1}}]){
+  const s=state(),a=actor(s),ecs=E.create(rules);a.stats.researchEarned=4;s.player.xp=35;const before=JSON.stringify({s,a});
+  assert.throws(()=>ecs.settle(s,a,spec),/Statistic limit/);assert.equal(JSON.stringify({s,a}),before);
+  a.stats.researchEarned=0;assert.equal(ecs.settle(s,a,spec).state,'settled');
+ }
+});
+test('Rebinding existing economy components preserves data-only validation',()=>{
+ const s=state(),a=actor(s),ecs=E.create();ecs.settle(s,a,{id:'binding:valid',guide:1});
+ a.stats={earned:0,researchEarned:0,callback:()=>true};const before=s.player.coins;
+ assert.throws(()=>ecs.settle(s,a,{id:'binding:invalid',guide:1}),/behavior-free/);assert.equal(s.player.coins,before);
+});
+test('Unsafe XP addition rolls back and level queries reject invalid levels',()=>{
+ const rules=JSON.parse(JSON.stringify(require('./content/economy-rules.json')));rules.limits.balance=Number.MAX_SAFE_INTEGER;rules.limits.delta=Number.MAX_SAFE_INTEGER;
+ const s=state(),a=actor(s),ecs=E.create(rules);s.player.xp=Number.MAX_SAFE_INTEGER;const before=JSON.stringify({s,a});
+ assert.throws(()=>ecs.settle(s,a,{id:'xp:unsafe',guide:1,playerXp:1}),/Experience limit/);assert.equal(JSON.stringify({s,a}),before);
+ for(const level of [0,-1,1.5,NaN,Infinity])assert.throws(()=>ecs.threshold(level),/Invalid economy level/);
+});
 const passed=results.filter(r=>r.passed).length;fs.writeFileSync(__dirname+'/economy-ecs-results.json',JSON.stringify({passed,total:results.length,failed:results.length-passed,results},null,2)+'\n');console.log(`${passed}/${results.length} economy ECS checks passed`);if(passed!==results.length)process.exitCode=1;

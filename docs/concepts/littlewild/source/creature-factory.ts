@@ -47,7 +47,7 @@
   return state;
  }
  function hydrate(base:Plain,options:Options):Plain{
-  if((options.mode!=='founder'&&options.mode!=='arrival')||!/^c[1-9][0-9]*$/.test(options.id)||typeof options.archetype!=='string'||typeof options.personality!=='string'||!Number.isSafeInteger(options.sequence)||options.sequence<0||!Number.isSafeInteger(options.day)||options.day<1||!Number.isFinite(options.simTime)||options.simTime<0)throw Error('Creature factory: invalid creation options');
+  if(!options||(options.mode!=='founder'&&options.mode!=='arrival')||typeof options.id!=='string'||!/^c[1-9][0-9]*$/.test(options.id)||typeof options.archetype!=='string'||typeof options.personality!=='string'||!Number.isSafeInteger(options.sequence)||options.sequence<0||!Number.isSafeInteger(options.day)||options.day<1||!Number.isFinite(options.simTime)||options.simTime<0)throw Error('Creature factory: invalid creation options');
   if(!Creatures.supports(options.archetype,options.personality))throw Error('Creature factory: unsupported archetype/personality pairing');
   return normalize(merge(Creatures.seed(options.archetype,options.personality,options.mode,options.sequence),base),options);
  }

@@ -1,11 +1,11 @@
 {
   "manifestVersion": 2,
-  "release": "Littlewild v15 — Worlds of Possibility",
-  "status": "typescript-architecture-review-complete; verified",
+  "release": "Littlewild v15 \u2014 Worlds of Possibility",
+  "status": "quality-improvements-verified; independent-review-and-research-polish-in-progress",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 104,
-    "runtimeModules": 59,
+    "authoredTypeScriptFiles": 128,
+    "runtimeModules": 80,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
       "vendor/three.js"
@@ -42,12 +42,17 @@
       "ECS component payloads are behavior-free plain data.",
       "Imported JSON cannot register executable systems, commands, callbacks, modules, or source code.",
       "Bundled 3D assets are immutable data manifests; model geometry and rig sockets do not live in renderer branches."
-    ]
+    ],
+    "sourceCodeLineBudget": 400,
+    "testCodeLineBudget": 450,
+    "moduleBudgetExceptions": {},
+    "strictTypingDebtModules": 15
   },
   "reviews": [
     "PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md",
     "PR25-REVIEW-AND-POLISH.md",
-    "ECS-M6-REVIEW-AND-POLISH.md"
+    "ECS-M6-REVIEW-AND-POLISH.md",
+    "QUALITY-AUDIT.md"
   ],
   "verification": {
     "authoritativeCommands": [
@@ -56,7 +61,7 @@
       "npm run verify"
     ],
     "evidence": "verification/v15/gate-results.json",
-    "rule": "The current branch is considered verified only when gate-results.json is freshly produced for the current PR head and reports status=passed.",
+    "rule": "Evidence is valid only when the complete gate freshly passes against unchanged inputs matching sourceSha256 and standalone htmlSha256. Documentation-only edits do not change this input digest.",
     "preTypeScriptBaseline": {
       "passed": 1006,
       "total": 1006,
@@ -66,33 +71,37 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "verifiedImplementationHead": "c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc",
-      "workflowRun": 37036136280,
       "status": "passed",
-      "passed": 1053,
-      "total": 1053,
+      "passed": 853,
+      "total": 853,
+      "sourceSha256": "9ab2e6734dfbd4d1b6dd79c62f68a94a2f013f407d83a522f38d031a33b2c269",
+      "htmlSha256": "fcebf3a38c92d5c8329cf4ec5ae7784e9029c5785e95cdcbb93c38092b92648a",
+      "htmlBytes": 4161545,
+      "startedAt": "2026-10-03T09:31:04.883Z",
+      "finishedAt": "2026-10-03T09:32:52.691Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "browserIncluded": true,
       "suites": 31,
-      "assetChecks": 8,
-      "browserChecks": 105,
-      "htmlSha256": "1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8",
-      "htmlBytes": 4140507,
-      "evidenceArtifact": "littlewild-ecs-verification",
-      "evidenceArtifactId": 11240382109
+      "browserChecks": 114,
+      "evidence": "verification/v15/gate-results.json (generated locally and by CI; ignored source artifact)"
     }
   },
   "github": {
     "repository": "Luis85/motorsport-manager",
     "branch": "concept/littlewild-v15-world-ui",
     "pullRequest": 25,
-    "reviewedCodeHead": "c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc",
-    "note": "The verified implementation head above passed the complete TypeScript/architecture/asset/domain/schema/release/browser gate. Later documentation-only commits do not change runtime behavior."
+    "note": "Current local evidence is bound to source and standalone digests. Inspect PR checks for CI evidence on each pushed commit."
   },
   "deliberateDebt": [
-    "Four large compatibility adapters remain and should be decomposed incrementally behind parity fixtures.",
-    "Strict semantic TypeScript checking is concentrated at architecture-critical seams; compatibility modules are migrated slice by slice.",
-    "The global LW facade and process-global registries remain compatibility surfaces for the self-contained browser artifact.",
-    "Generic ECS structural changes are atomic, while domain value transactions retain explicit preflight/rollback responsibility.",
-    "3D assets are build-time bundled and data-driven, but external scenario packs cannot yet import or replace asset manifests; that requires a separately designed trust/versioning policy."
+    "15 explicitly inventoried compatibility modules still lack complete strict semantic TypeScript checking; new extracted services use typed ports.",
+    "The global LW facade and process-global content registries remain compatibility surfaces for the self-contained browser artifact.",
+    "ECS structural changes are atomic; domain value transactions retain explicit preflight/rollback responsibility.",
+    "External scenario packs cannot replace bundled renderer assets or trusted code capabilities."
   ],
   "limits": [
     "Hardware WebGL/GPU behavior is not verified by headless browser tests.",

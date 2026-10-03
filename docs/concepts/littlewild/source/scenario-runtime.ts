@@ -59,6 +59,20 @@
   function withRuntime(libraries, simulation, work) {
     return Profiles.withProfile(simulation, () => withLibraries(libraries, work));
   }
+  // Profile activation and library installation form one synchronous transaction.
+  // Restoring only the native story libraries would leave a failed launch partially active.
+  function transaction(work) {
+    const previous = {base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content),simulation:copy(Profiles.current)}, priorWorld = P.current;
+    try {
+      const result = work();
+      if (result && ['object','function'].includes(typeof result) && typeof result.then === 'function')
+        throw Error('Scenario transaction callback must be synchronous.');
+      return result;
+    } catch (error) {
+      C.registry.commit(C.registry.prepare(previous.base)); A.replace(previous.adventure);
+      W.replace(previous.world); G.replace(previous.growth); Profiles.apply(previous.simulation); P.apply(priorWorld); throw error;
+    }
+  }
   function context(pack, scene) {
     return { schemaVersion: 2, packId: pack.id, name: pack.name, version: pack.version, sceneId: scene.id,
       sceneName: scene.name, worldId: scene.worldId, presentation: copy(pack.presentation), simulation: copy(pack.simulation),
@@ -147,15 +161,11 @@
       throw Error('Scenario preview changed; review again');
     const fresh = prepareScene(preview.pack, preview.sceneId), libs = fresh.pack.libraries;
     // All contracts, the simulation profile and the complete scene were accepted above. Install together.
-    const previous = {base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content),simulation:copy(Profiles.current)}, priorWorld = P.current;
-    try {
+    return transaction(() => {
       C.registry.commit(C.registry.prepare(libs.base)); A.replace(libs.adventure);
       W.replace(libs.world); G.replace(libs.growth); Profiles.apply(fresh.context.simulation); P.apply(fresh.context.world);
-    } catch (error) {
-      C.registry.commit(C.registry.prepare(previous.base)); A.replace(previous.adventure);
-      W.replace(previous.world); G.replace(previous.growth); Profiles.apply(previous.simulation); P.apply(priorWorld); throw error;
-    }
-    return fresh.engine;
+      return fresh.engine;
+    });
   }
   function activate(engine) {
     Profiles.apply(engine.scenarioContext?.simulation || Profiles.defaults);
@@ -164,13 +174,15 @@
   function capture(engine) {
     const ctx = engine.scenarioContext ? copy(engine.scenarioContext) : context(builtin[0], builtin[0].scenes[0]);
     if(!engine.scenarioContext){ctx.world=copy(P.defaults);ctx.simulation=copy(engine.simulationProfile||Profiles.current||Profiles.defaults);}
+    if(engine.simulationProfile&&Profiles.fingerprint(engine.simulationProfile)!==Profiles.fingerprint(ctx.simulation))
+      throw Error('Experience simulation does not match the engine profile; restore the original context before capturing.');
     return {format:'living-worlds-pack',schemaVersion:2,id:ctx.packId,version:ctx.version,name:ctx.name,
       description:'Editable scenario captured from this world. Launching creates a new story.',
       presentation:copy(ctx.presentation),simulation:copy(ctx.simulation),worlds:[copy(ctx.world)],tutorial:copy(ctx.tutorial),
       scenes:[{id:ctx.sceneId,name:ctx.sceneName,description:'Captured starting state',worldId:ctx.worldId,initialState:engine.export().state}],
       libraries:{base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content)}};
   }
-  const api = {validate,prepareScene,commitScene,activate,capture,checkContext,checkWorld,hash,withLibraries,withRuntime,schema,
+  const api = {validate,prepareScene,commitScene,activate,capture,checkContext,checkWorld,hash,withLibraries,withRuntime,transaction,schema,
     builtins: () => copy(builtin), defaultTutorial: () => copy(builtin[0].tutorial), defaultPresentation: () => copy(builtin[0].presentation),
     defaultSimulation:()=>copy(Profiles.defaults)};
   root.LWScenarios = api; if (node) module.exports = api;

@@ -8,6 +8,7 @@
  interface ExperienceContext extends DataRecord { simulation:unknown; world:unknown; }
  interface EngineLike {
   scenarioContext?:ExperienceContext;
+  simulationProfile?:unknown;
   export():{state:unknown;[key:string]:unknown};
   [key:string]:unknown;
  }
@@ -41,6 +42,7 @@
   checkWorld(world:unknown,library:unknown):void;
   hash(input:unknown):string;
   activate(engine:EngineLike):void;
+  transaction<T>(work:()=>T):T;
  }
  interface ProfileApi {
   readonly defaults:unknown;
@@ -83,6 +85,9 @@
 
  S.encode=(engine:EngineLike,savedAt:string|null=null):DataRecord=>{
   const doc=native.encode(engine,savedAt);
+  const simulation=engine.scenarioContext?.simulation??Profiles.defaults;
+  if(engine.simulationProfile&&Profiles.fingerprint(engine.simulationProfile)!==Profiles.fingerprint(simulation))
+   throw Error('Experience simulation does not match the engine profile; capture a scenario with the original context before saving.');
   if(engine.scenarioContext){
    const ctx=X.checkContext(engine.scenarioContext);
    doc.version=10;
@@ -118,9 +123,11 @@
   if(preview.experience&&X.hash(preview.experience)!==preview.experienceFingerprint)throw Error('Experience review is stale');
   const ctx=preview.experience?X.checkContext(preview.experience):null;
   if(ctx&&Profiles.fingerprint(ctx.simulation)!==preview.simulationFingerprint)throw Error('Simulation profile review is stale');
-  const engine=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,()=>native.commit(preview)));
-  if(ctx)engine.scenarioContext=ctx;
-  X.activate(engine);return engine;
+  return X.transaction(()=>{
+   const engine=Profiles.withProfile(ctx?.simulation??Profiles.defaults,()=>P.withProfile(ctx?.world??P.defaults,()=>native.commit(preview)));
+   if(ctx)engine.scenarioContext=ctx;
+   X.activate(engine);return engine;
+  });
  };
 
  for(const name of ['applyContent','applyAdventure','applyWorld','applyGrowth'] as const){
