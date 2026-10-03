@@ -45,3 +45,13 @@ AST comparison independently proves all **421 assertion expressions and their co
 The final input identity is `6ba2e108553c2cd1d7b74f9ba522370b58d1b1f4a5778dd55152adc65e833049`. This genuine pipeline change requires fresh default-mode browser verification, explicit-capture verification and its own complete final gate. Current acceptance is recorded in `VERIFICATION.md` and `delivery-manifest.json`, with hosted results kept separate.
 
 Fresh repaired external-editor verification passed **11/11 with capture unset**, emitting no PNG artifacts, and **11/11 with explicit capture enabled**, producing all four valid desktop/mobile PNGs. The previously interrupted Tiled cancellation and apply assertions completed. Both runs retain the original 15-second step and 240-second suite bounds and empty raw diagnostic arrays. The reviewer independently decoded and inspected the captures; no visual blocker remained. The complete final-source gate remains a separate acceptance step.
+
+## Final local acceptance
+
+The complete clean-checkout gate on `a1bc95db62d9a31f6d97c979a335b9dfa17b6117` passed **1,523/1,523 checks across 75 suites**, including all 20 browser suites (332 checks), completed `2026-10-03T22:58:43.467Z`. The standalone copied from this archive matches the source and artifact identities above. This complete gate supplements the independently reviewed byte-equivalence and 39 focused checks. No runtime or verification source changed after the frozen checkpoint. Final-head hosted checks remain separately observable on PR25.
+
+## Unchanged-input hosted navigation retry
+
+Hosted head `6e29af0` failed the non-browser scene-navigation suite at its unchanged 180-second bound (180.12 seconds, ETIMEDOUT/SIGKILL), before any browser suite ran. The artifact contains neither partial navigation results nor useful case progress, so it cannot identify the interrupted case. The original evidence is preserved under `reports/littlewild-pr25-quality/hosted-6e29af0-navigation-timeout/`.
+
+Navigation source and its compiled verifier are byte-identical to the earlier hosted checkpoint, which completed in 137.30 seconds; the final clean local run completed in 138.49 seconds. The thirteen preceding hosted suites were approximately 30% slower than the earlier hosted run. This supports a host-wide slowdown explanation, without proving the precise cause. Independent review recommends one fresh final-head run with the same source, assertions and time limits. A repeated timeout requires profiling the actual case costs before changing implementation or verification. This publication retries those unchanged inputs and preserves both prior failures separately.

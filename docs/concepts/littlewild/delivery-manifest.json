@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "reviewed pipeline fix; complete final-source verification in progress",
+  "status": "locally-verified; inspect current-head GitHub checks for hosted CI",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
     "authoredTypeScriptFiles": 329,
@@ -94,14 +94,33 @@
       "status": "historical regression baseline only"
     },
     "current": {
-      "status": "pending-complete-final-source-gate",
-      "sourceCheckpoint": "a1bc95db62d9a31f6d97c979a335b9dfa17b6117",
+      "status": "passed",
+      "passed": 1523,
+      "total": 1523,
+      "browserIncluded": true,
       "sourceSha256": "6ba2e108553c2cd1d7b74f9ba522370b58d1b1f4a5778dd55152adc65e833049",
+      "startedAt": "2026-10-03T22:33:19.273Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
       "htmlSha256": "0f205d483b1dcc1ac17311b034d262f54355f0308518701b1ea377cf8078e007",
       "htmlBytes": 18761160,
+      "finishedAt": "2026-10-03T22:58:43.467Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 332,
+      "verifiedSourceCommit": "a1bc95db62d9a31f6d97c979a335b9dfa17b6117",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
       "engineSourceFiles": 657,
       "engineSourceIdentity": "3084091dd08a1b7e30a66725e77984c3962a36e0c26e2e1f3f8b5e2d2cbfb3e9",
-      "rule": "The previous complete gate and unchanged runtime proof do not replace the new final-source gate."
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "a1bc95db62d9a31f6d97c979a335b9dfa17b6117",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete final-source local gate after whitespace polish and the verifier-only capture-policy fix; hosted PR-head checks remain separate."
     },
     "historicalPreAuthoringExpansion": {
       "status": "historical-before-authoring-expansion",
