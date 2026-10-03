@@ -51,7 +51,7 @@ static func run(harness, toolbox: GameToolbox) -> void:
 			}
 			var decoded = ContentJson.parse(JSON.stringify(request, "", false, true), true)
 			harness.check(decoded.ok, label + " strict transport document")
-			harness.rejected(toolbox.execute(decoded.value), label + " JSON", "DOMAIN_REJECTED")
+			harness.rejected(toolbox.execute(decoded.data), label + " JSON", "DOMAIN_REJECTED")
 			harness.same(
 				toolbox.campaigns.snapshot("nested").result, initial, label + " JSON atomic"
 			)
@@ -79,7 +79,7 @@ static func run(harness, toolbox: GameToolbox) -> void:
 		var decoded = ContentJson.parse(JSON.stringify(request, "", false, true), true)
 		harness.check(decoded.ok, "Malformed entry remains structurally valid JSON")
 		harness.rejected(
-			toolbox.execute(decoded.value), "Scalar entry restore JSON", "DOMAIN_REJECTED"
+			toolbox.execute(decoded.data), "Scalar entry restore JSON", "DOMAIN_REJECTED"
 		)
 		harness.same(
 			toolbox.campaigns.snapshot("nested").result, initial, "Rejected entry restore JSON"
