@@ -77,7 +77,7 @@ static func describe() -> Array:
 		),
 		_entry(
 			"query",
-			"Read a detached state, entrant, overview, weather, strategy or mechanics view.",
+			"Read detached state, evidence, planning drafts or current approval previews.",
 			"none",
 			{"view": "state"}
 		),
@@ -128,7 +128,7 @@ static func _entry(
 	method: String, description: String, clock: String, example: Dictionary
 ) -> Dictionary:
 	var operation = "weekend." + method
-	return {
+	var result = {
 		"operation": operation,
 		"method": method,
 		"description": description,
@@ -142,3 +142,6 @@ static func _entry(
 			else [{"operation": operation, "session": "weekend-a", "arguments": example}]
 		)
 	}
+	if method == "query":
+		result.views = DeveloperWeekendQueries.describe()
+	return result

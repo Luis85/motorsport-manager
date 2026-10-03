@@ -1,7 +1,32 @@
 class_name DeveloperWeekendQueries
 extends RefCounted
 ## Explicit read-model adapters. No reflective calls, retained car references or RNG draws.
-const VIEWS = ["state", "cars", "car", "overview", "weather", "strategy", "mechanics"]
+const VIEWS = (
+	["state", "cars", "car", "overview", "weather", "strategy", "mechanics"]
+	+ DeveloperWeekendPlanningQueries.VIEWS
+)
+
+
+static func describe() -> Array:
+	var result: Array = []
+	for view in VIEWS:
+		var schema: Dictionary
+		if view in DeveloperWeekendPlanningQueries.VIEWS:
+			schema = DeveloperWeekendPlanningQueries.schema(view)
+		else:
+			var properties = (
+				{"id": ContentSchema.integer(0, 23)}
+				if view in ["car", "weather", "strategy"]
+				else {}
+			)
+			schema = {
+				"type": "object",
+				"properties": properties,
+				"required": [],
+				"additionalProperties": false
+			}
+		result.append({"view": view, "parameters": schema})
+	return result
 
 
 static func capture(
@@ -9,6 +34,8 @@ static func capture(
 ) -> Dictionary:
 	if view not in VIEWS:
 		return DeveloperToolResult.failure("UNSUPPORTED_VIEW", "Unknown weekend view: " + view)
+	if view in DeveloperWeekendPlanningQueries.VIEWS:
+		return DeveloperWeekendPlanningQueries.capture(simulation, query, view, parameters)
 	var allowed = ["id"] if view in ["car", "weather", "strategy"] else []
 	for key in parameters:
 		if key not in allowed:
