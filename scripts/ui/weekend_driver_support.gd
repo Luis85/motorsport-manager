@@ -9,9 +9,13 @@ static func refresh_tyres(view, c: Dictionary, controllable: bool) -> void:
 	if view.tyre_buttons.is_empty():
 		return
 	var planned = view.sim.planned_set(c, view.sim.phase == "race")
-	for i in range(12):
-		var item = c.tyre_sets[i]
+	for i in range(view.tyre_buttons.size()):
 		var button = view.tyre_buttons[i]
+		button.visible = i < c.tyre_sets.size()
+		if not button.visible:
+			button.disabled = true
+			continue
+		var item = c.tyre_sets[i]
 		var mounted = item.id == c.set_id
 		var selected = not planned.is_empty() and item.id == planned.id
 		var state = (

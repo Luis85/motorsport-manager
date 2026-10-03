@@ -9,6 +9,18 @@ class Store:
 		return RaceRecord.validate(record.seal())
 
 
+class ShortStockQuery:
+	extends RaceViewQuery
+
+	# Adversarial detached projection: current v1 content gives all drivers equal stock.
+	# This fixture tests shorter driver readouts without removing real owned sets.
+	func car(id: int) -> Dictionary:
+		var result = super.car(id)
+		if id == 13:
+			result.tyre_sets = result.tyre_sets.slice(0, 10)
+		return result
+
+
 func run() -> void:
 	root.size = Vector2i(1440, 900)
 	root.content_scale_size = root.size
@@ -99,6 +111,7 @@ func run() -> void:
 	check(model.command("practice_finish"), "Briefing permits setup editing")
 	await reset()
 	view.select_driver(12)
+	await allocation_controls(10)
 	view.refresh()
 	await settle()
 	check(
@@ -160,7 +173,96 @@ func run() -> void:
 		"content-tyre-setup",
 		"Real staged setup controls and finite compound definitions; no synthetic race outcome"
 	)
+	# A synthetic authored closure goes through the same production compiler and
+	# constructor; it expands real owned stock, never the UI's detached projection.
+	var options = launch.session_options()
+	options.tyre_definition.allocation.sets.back().count += 6
+	check(
+		RaceTyreRules.from_snapshot(options.tyre_definition) != null,
+		"Sixteen-set authored allocation passes the production compiler"
+	)
+	model = PracticeRaceSim.new(launch.visual_track(), options)
+	check(model.last_error.is_empty(), "Larger allocation creates a legal real weekend")
+	if not model.last_error.is_empty():
+		finish_content()
+		return
+	await reset()
+	view.select_driver(12)
+	await allocation_controls(16)
+	# Isolate the allocation widget's defensive readout test from unrelated recovery
+	# presenters, whose valid observations require a complete same-sized inventory.
+	var binding = RaceViewSession.new(model)
+	binding.view.query = ShortStockQuery.new(model)
+	game.clear_screen("tyre_projection_fixture")
+	view = WeekendView.new()
+	view.configure(binding.view)
+	view.presentation_services = game.presentation_services
+	game.content.add_child(view)
+	view.set_process(false)
+	view.select_driver(13)
+	view.open_topic(3)
+	await settle()
+	var before = RaceRecord.fingerprint(model.snapshot())
+	check(
+		view.tyre_buttons.filter(func(button): return button.visible).size() == 10,
+		"Switching to a shorter detached driver allocation hides surplus controls"
+	)
+	check(
+		view.tyre_buttons[15].disabled and not view.tyre_buttons[15].visible,
+		"Surplus set cannot be activated for the shorter driver"
+	)
+	view.tyre_buttons[15].pressed.emit()
+	view.refresh()
+	check(
+		before == RaceRecord.fingerprint(model.snapshot()),
+		"Stale longer-allocation activation issues no command or stock mutation"
+	)
+	view.tyre_buttons[9].pressed.emit()
+	check(
+		model.cars[13].next_set_id == model.cars[13].tyre_sets[9].id,
+		"Shorter driver's final visible set binds its own identity"
+	)
+	view.select_driver(12)
+	view.refresh()
+	check(
+		view.tyre_buttons[15].visible and not view.tyre_buttons[15].disabled,
+		"Returning to larger stock restores all existing controls"
+	)
 	finish_content()
+
+
+func allocation_controls(expected: int) -> void:
+	var before = RaceRecord.fingerprint(model.snapshot())
+	view.open_topic(3)
+	for iteration in range(5):
+		view.refresh()
+	await settle()
+	check(
+		view.tyre_buttons.size() == expected,
+		"Allocation controls follow authored stock: " + str(expected)
+	)
+	check(
+		view.tyre_buttons.filter(func(button): return button.visible).size() == expected,
+		"Every owned set is visible in allocation: " + str(expected)
+	)
+	check(
+		before == RaceRecord.fingerprint(model.snapshot()),
+		"Allocation navigation/refresh leaves the real weekend unchanged: " + str(expected)
+	)
+	var car = model.cars[12]
+	var fitted = car.set_id
+	var identity = car.tyre_sets.back().id
+	var teammate_plan = model.cars[13].next_set_id
+	check(not view.tyre_buttons.back().disabled, "Last authored set is available to plan")
+	view.tyre_buttons.back().pressed.emit()
+	check(
+		car.next_set_id == identity and car.set_id == fitted,
+		"Last set plans its exact identity without fitting or creating stock: " + str(expected)
+	)
+	check(
+		car.tyre_sets.size() == expected and model.cars[13].next_set_id == teammate_plan,
+		"Selecting last set preserves finite stock and teammate plan: " + str(expected)
+	)
 
 
 func finish_content() -> void:

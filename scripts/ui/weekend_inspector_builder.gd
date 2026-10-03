@@ -99,13 +99,17 @@ static func _build_driver_tabs(view, wall: VBoxContainer) -> void:
 	var sets = GridContainer.new()
 	sets.columns = 3
 	stock.add_child(sets)
-	for index in range(12):
+	# Allocate controls from the frozen driver stock, including any larger teammate.
+	var set_count = 0
+	for car in view.sim.cars:
+		set_count = maxi(set_count, car.tyre_sets.size())
+	for index in range(set_count):
 		var button = UI.button(
 			"",
 			func():
-				view.dispatch(
-					"select_set", {"set_id": view.sim.car(view.sim.selected_id).tyre_sets[index].id}
-				),
+				var selected = view.sim.car(view.sim.selected_id)
+				if not selected.is_empty() and index < selected.tyre_sets.size():
+					view.dispatch("select_set", {"set_id": selected.tyre_sets[index].id}),
 		)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size = Vector2(74, 47)
