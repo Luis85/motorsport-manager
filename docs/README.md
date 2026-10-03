@@ -11,6 +11,7 @@
 
 ## Current interface contracts
 
+- [UI pages, layouts and component catalog](components/README.md) — individual source-backed references with intent, user goals, composition, interactions and navigation links, based on PR #28.
 - [Current Minimal pitwall, driver instruments and stress estimate](driver-instruments.md)
 - [Prior Minimal UI polish, driver cards and timing integrity](minimal-ui-polish.md)
 - [Minimal visible contract, session flows, interface-selection boundary and architecture](race-weekend-minimal.md)
