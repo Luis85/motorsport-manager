@@ -12,8 +12,9 @@ affects later selections and new runs; it does not retune an existing save.
 optional `balance` object with `model: "game-balance-v1"`. Its named groups
 cover `tyre_incidents`, `procedure`, `courtesy`, `pit_motion`, `motion`,
 `practice`, `strategy_defaults`, `tactical_policy`, `forecast` and
-`presentation`. Each leaf has a published description, unit and accepted
-minimum/maximum in the generated
+`presentation`. Together these groups expose 126 numeric tuning fields. Each
+leaf has a published description, unit and accepted minimum/maximum in the
+generated
 [`race_tuning` schema](../content/schemas/v1/race_tuning.schema.json). Inspect
 the field metadata before choosing a value; many coefficients are rates or
 multipliers, not percentages. The model string and group names are versioned
@@ -90,7 +91,7 @@ a globally invalid state.
 
 Keep the baseline and experiments in separate copied config directories. Apply
 the same authored edit and validate each copy before running the game with it.
-`diff` compares raw JSON content and is read-only; it works offline and returns
+`diff` compares JSON values and is read-only; it works offline and returns
 `engine_executed: false`.
 
 ```sh
@@ -107,7 +108,23 @@ python3 scripts/balance.py --config-dir /tmp/balance-a diff /tmp/balance-b
 Use the same game build, roster, circuit, scenario, seed and player command
 sequence for both runs, and retain both config copies with the run evidence.
 The comparison command only describes file differences; it does not run a
-simulation or decide whether a change improves play.
+simulation or decide whether a change improves play. `--config-dir` selects the
+catalog for this CLI only; the game loads `res://config`. To execute each
+variant, put its complete copied catalog in `config/` inside an isolated project
+copy, then run the same game or toolbox recipe from each copy with the same
+pinned engine. From the project root, the setup is:
+
+```sh
+cp -a . /tmp/balance-project-a
+cp -a . /tmp/balance-project-b
+cp -a /tmp/balance-a/. /tmp/balance-project-a/config/
+cp -a /tmp/balance-b/. /tmp/balance-project-b/config/
+```
+
+Run your existing native game or toolbox recipe against each project copy; the
+toolbox guide documents native, JSON and Python entry points. The configuration
+root is sealed by project composition, so the copied project determines which
+catalog a run selects.
 
 ## Inspecting actual game behavior
 
@@ -132,7 +149,8 @@ Keep those invariants intact when authoring a variant.
 
 At the native boundary, `RaceTuningDefinition` validates and freezes selected
 race tuning; `RacePhysicsBalance` owns physical balance fields and their bounds,
-`RacePresentationBalance` owns display/check-in thresholds, and
+`RacePlanningBalance` owns practice, strategy, forecast and tactical-policy
+inputs, `RacePresentationBalance` owns display/check-in thresholds, and
 `CampaignFinanceBalance` supplies frozen finance defaults and repayment policy.
 The generated JSON schemas expose their supported data contract to authoring
 tools. These APIs do not turn safety floors, serialization rules, or fixed-step

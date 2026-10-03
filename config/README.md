@@ -9,7 +9,7 @@ it. Start with `pack.json` for the catalog manifest and
 |---|---|
 | `race_tuning/` | Race model coefficients and optional `balance` policy |
 | `vehicles/`, `drivers/`, `teams/`, `rosters/` | Vehicle, driver, team and entrant definitions |
-| `tyres/`, `tyrethermals/`, `allocations/` | Tyre behavior, thermal rules and event allocations |
+| `tyres/`, `tyre_thermals/`, `tyre_allocations/` | Tyre behavior, thermal rules and event allocations |
 | `setups/`, `weekends/` | Setup definitions and weekend presets |
 | `campaigns/` | Campaign profiles, including finance forecast and bridge policy |
 | `mechanic_profiles/`, `editor_profiles/` | Workshop and editor defaults |
