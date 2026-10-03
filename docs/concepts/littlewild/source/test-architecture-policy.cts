@@ -154,6 +154,8 @@ test('Physical transfer proposals are detached and retain optional supply intent
   const building={id:'bench1',x:4,y:5},before=JSON.stringify(building);
   const task=Tasks.transfer('stockbuilding',building,'wood',0,null,{item:'Wood',building:'Workbench'},{recipeId:'planks'});
   assert.equal(task.amount,1);assert.equal(task.recipeId,'planks');assert.equal(task.label,'Bringing wood to workbench');
+  assert.equal(task.duration,require('./balancing-rules.js').defaults.production.transferSeconds);
+  assert.equal(Tasks.transfer('stockbuilding',building,'wood',1,null,{item:'Wood',building:'Workbench'},{},9).duration,9);
   task.target.x=10;assert.equal(JSON.stringify(building),before);
 });
 test('Physical production proposals preserve paid progress and newly proposed duration', () => {

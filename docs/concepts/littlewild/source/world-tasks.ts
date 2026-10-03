@@ -19,9 +19,11 @@
     target:{x:number;y:number};duration:number;label:string;reason:string;thought:string;worldGather:true;
   }
   const root = inputRoot as { LWWorldTasks?: typeof api };
+  const balance = (typeof module !== 'undefined' && module.exports ? require('./balancing-rules.js') :
+    (inputRoot as { LWBalanceRules: LWBalanceRules.Api }).LWBalanceRules) as LWBalanceRules.Api;
 
   function transfer(kind: string, building: Building, resource: string, amount: number,
-    orderId: string | null, names: Names, extra: Record<string, unknown> = {},duration=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules.defaults.production.transferSeconds): TransferTask {
+    orderId: string | null, names: Names, extra: Record<string, unknown> = {},duration=balance.defaults.production.transferSeconds): TransferTask {
     const verb = kind === 'stockbuilding' ? 'Bringing ' : kind === 'emptybuilding' ? 'Reclaiming ' : 'Collecting ';
     return { kind, buildingId: building.id, resource, amount: Math.max(1, amount), orderId,
       target: { x: building.x, y: building.y }, duration,
