@@ -5,13 +5,14 @@ xvfb-run, Xvfb and Godot; stopping the wrapper alone must not leak the engine.
 Windows currently guarantees cleanup of the direct child only. This is a test
 runner for trusted programs, not a sandbox against deliberate process escape.
 """
+
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import signal
 import subprocess
 import tempfile
+from pathlib import Path
 
 
 def _stop_family(process: subprocess.Popen) -> None:
@@ -24,8 +25,9 @@ def _stop_family(process: subprocess.Popen) -> None:
         pass  # The whole owned group already exited.
 
 
-def execute_process(command: list[str], *, cwd: Path, env: dict[str, str],
-                    timeout: float) -> subprocess.CompletedProcess:
+def execute_process(
+    command: list[str], *, cwd: Path, env: dict[str, str], timeout: float
+) -> subprocess.CompletedProcess:
     """Bound execution and clean up descendants even after a successful wrapper exit.
 
     Output goes to a file, not an inherited PIPE: a surviving grandchild cannot
@@ -34,9 +36,14 @@ def execute_process(command: list[str], *, cwd: Path, env: dict[str, str],
     if timeout <= 0:
         raise ValueError("Verification timeout must be positive")
     with tempfile.TemporaryFile() as output:
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
-                                   stderr=subprocess.STDOUT,
-                                   start_new_session=os.name == "posix")
+        process = subprocess.Popen(
+            command,
+            cwd=cwd,
+            env=env,
+            stdout=output,
+            stderr=subprocess.STDOUT,
+            start_new_session=os.name == "posix",
+        )
         timed_out = False
         try:
             process.wait(timeout=timeout)

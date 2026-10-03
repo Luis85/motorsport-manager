@@ -1,13 +1,14 @@
 """Exercise the same tar -> artifact ZIP -> tar transport used by the workflow."""
+
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 import zipfile
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from build_standalone import ENGINE, digest
@@ -27,9 +28,13 @@ class StandaloneArchiveTests(unittest.TestCase):
             pack = source / "Motorsport Manager.pck"
             pack.write_bytes(b"transport contract fixture, not a Godot pack")
             manifest = {
-                "binary": binary.name, "target": "linux", "mode": "release",
-                "source_revision": "transport-fixture", "source_digest": "fixture",
-                "engine": ENGINE, "artifacts": {p.name: digest(p) for p in (binary, pack)},
+                "binary": binary.name,
+                "target": "linux",
+                "mode": "release",
+                "source_revision": "transport-fixture",
+                "source_digest": "fixture",
+                "engine": ENGINE,
+                "artifacts": {p.name: digest(p) for p in (binary, pack)},
             }
             (source / "build-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             archive = root / "D:standalone-linux-release.tar.gz"
@@ -47,12 +52,17 @@ class StandaloneArchiveTests(unittest.TestCase):
             # As in CI, set the working directory through the process API and
             # give tar relative paths. This avoids both drive-colon remote-host
             # parsing and mixed-separator interpretation of its -C destination.
-            subprocess.run(["tar", "-xzf", str((download / archive.name).relative_to(root)),
-                            "-C", clean.name], cwd=root, check=True)
+            subprocess.run(
+                ["tar", "-xzf", str((download / archive.name).relative_to(root)), "-C", clean.name],
+                cwd=root,
+                check=True,
+            )
             self.assertEqual(validate_package(clean), manifest)
             executable = clean / binary.name
             self.assertTrue(executable.stat().st_mode & 0o100)
-            self.assertEqual(subprocess.run([str(executable)], cwd=clean, check=False).returncode, 0)
+            self.assertEqual(
+                subprocess.run([str(executable)], cwd=clean, check=False).returncode, 0
+            )
             self.assertFalse((clean / "project.godot").exists())
 
 

@@ -1,4 +1,5 @@
 """Launcher contracts complement, never replace, native exported-app acceptance."""
+
 import json
 import sys
 import tempfile
@@ -22,14 +23,21 @@ class StandaloneContracts(unittest.TestCase):
         pack = self.package / "Motorsport Manager.pck"
         binary.write_bytes(b"test executable")
         pack.write_bytes(b"test pack")
-        self.manifest = {"binary": binary.name, "target": "linux", "mode": "release",
-                         "source_revision": "test revision", "source_digest": "test digest",
-                         "engine": build.ENGINE,
-                         "artifacts": {p.name: build.digest(p) for p in (binary, pack)}}
+        self.manifest = {
+            "binary": binary.name,
+            "target": "linux",
+            "mode": "release",
+            "source_revision": "test revision",
+            "source_digest": "test digest",
+            "engine": build.ENGINE,
+            "artifacts": {p.name: build.digest(p) for p in (binary, pack)},
+        }
         self.write_manifest()
 
     def write_manifest(self):
-        (self.package / "build-manifest.json").write_text(json.dumps(self.manifest), encoding="utf-8")
+        (self.package / "build-manifest.json").write_text(
+            json.dumps(self.manifest), encoding="utf-8"
+        )
 
     def test_real_hashes_identify_pack(self):
         self.assertEqual(smoke.validate_package(self.package), self.manifest)
@@ -71,7 +79,9 @@ class StandaloneContracts(unittest.TestCase):
     def test_target_selects_only_matching_templates(self):
         for name in build.TEMPLATES:
             (self.root / name).write_bytes(b"not an actual template")
-        with patch.object(build, "digest", side_effect=lambda path: build.TEMPLATES[path.name]) as hashed:
+        with patch.object(
+            build, "digest", side_effect=lambda path: build.TEMPLATES[path.name]
+        ) as hashed:
             result = build.validate_templates(self.root, "windows")
         self.assertEqual(len(result), 2)
         self.assertEqual(hashed.call_count, 2)
@@ -93,7 +103,9 @@ class StandaloneContracts(unittest.TestCase):
 
     def test_build_rejects_unsupported_mode(self):
         with self.assertRaisesRegex(ValueError, "Unsupported"):
-            build.build(self.root / "engine", self.root, self.root / "out", "linux", "other", "revision")
+            build.build(
+                self.root / "engine", self.root, self.root / "out", "linux", "other", "revision"
+            )
 
     def test_smoke_rejects_mixed_evidence(self):
         with patch.object(smoke.platform, "system", return_value="Linux"):

@@ -1,20 +1,28 @@
 """Finding identities are review aids, never a suppression baseline."""
-from copy import deepcopy
+
 import json
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from copy import deepcopy
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import quality_delta
 
 
 def report(findings):
-    return {"schema_version": 1, "analysis_complete": True, "mode": "advisory",
-            "commit": "abc", "source_sha256": "source", "analyzer_sha256": "analyzer",
-            "tool_versions": {"ruff": "pinned", "gdtoolkit": "pinned"},
-            "policy": {"source_limit": 400}, "findings": findings}
+    return {
+        "schema_version": 1,
+        "analysis_complete": True,
+        "mode": "advisory",
+        "commit": "abc",
+        "source_sha256": "source",
+        "analyzer_sha256": "analyzer",
+        "tool_versions": {"ruff": "pinned", "gdtoolkit": "pinned"},
+        "policy": {"source_limit": 400},
+        "findings": findings,
+    }
 
 
 def finding(line=1, path="scripts/example.gd", message="Unclear branch"):
@@ -35,7 +43,9 @@ class QualityDeltaTests(unittest.TestCase):
         self.assertEqual(result["resolved"], [finding(8)])
 
     def test_message_change_and_rename_are_not_inferred_equivalent(self):
-        result = quality_delta.compare(report([finding()]), report([finding(path="new.gd", message="Other branch")]))
+        result = quality_delta.compare(
+            report([finding()]), report([finding(path="new.gd", message="Other branch")])
+        )
         self.assertEqual(len(result["new"]), 1)
         self.assertEqual(len(result["resolved"]), 1)
         self.assertEqual(len(result["unchanged"]), 0)
@@ -92,7 +102,16 @@ class QualityDeltaTests(unittest.TestCase):
             root = Path(directory)
             for name, value in (("base", report([])), ("candidate", report([finding()]))):
                 (root / f"{name}.json").write_text(json.dumps(value), encoding="utf-8")
-            code = quality_delta.main(["--base-report", str(root / "base.json"), "--candidate-report", str(root / "candidate.json"), "--output", str(root / "output")])
+            code = quality_delta.main(
+                [
+                    "--base-report",
+                    str(root / "base.json"),
+                    "--candidate-report",
+                    str(root / "candidate.json"),
+                    "--output",
+                    str(root / "output"),
+                ]
+            )
             self.assertEqual(code, 0)
             delta = json.loads((root / "output/delta.json").read_text())
             self.assertEqual(delta["new"], [finding()])
