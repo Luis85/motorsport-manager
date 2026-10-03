@@ -46,6 +46,7 @@ func run() -> void:
 	model_inputs(catalog, track)
 	repair_receipts(catalog, track)
 	launch_and_restore(catalog, document)
+	preload("res://tests/support/content_duration_contracts.gd").run(check, catalog, document)
 	finish()
 
 

@@ -71,6 +71,9 @@ static func restore(data: Dictionary) -> RaceSim:
 		TrackGeometry.new(data.track, data.get("vehicle", "Formula"), false, definition),
 		RaceContentSnapshot.options(data)
 	)
+	# The constructor applies the frozen preset's track-dependent qualifying floor.
+	if sim.weekend_definition != null and data.get("qual_duration") != sim.qual_duration:
+		return null
 	if not _valid_restored_cars(sim, data):
 		return null
 	if not _restore_aggregate_values(sim, data):
