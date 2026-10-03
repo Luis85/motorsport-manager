@@ -130,6 +130,20 @@ func execute(operation: String, session: String = "", arguments: Dictionary = {}
 
 
 func discovery_contracts() -> void:
+	var native = toolbox.weekends.describe()
+	var queries = native.filter(func(entry): return entry.method == "query")[0]
+	var tactical = queries.views.filter(func(entry): return entry.view == "tactical_draft")[0]
+	tactical.parameters.properties.kind.enum.append("external-mutation")
+	var fresh = toolbox.weekends.describe().filter(func(entry): return entry.method == "query")[0]
+	var retained = fresh.views.filter(func(entry): return entry.view == "tactical_draft")[0]
+	check(
+		"external-mutation" not in retained.parameters.properties.kind.enum,
+		"Native weekend discovery does not retain mechanic enum references"
+	)
+	check(
+		"external-mutation" not in TacticalForecast.KINDS,
+		"Editing detached discovery cannot change the actual mechanic's supported plans"
+	)
 	var response = execute("toolbox.discover")
 	if not accepted(response, "Discover native capabilities"):
 		return

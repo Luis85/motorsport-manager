@@ -14,7 +14,7 @@ func _init(catalog: ContentCatalog) -> void:
 
 ## Discover the actual supported native and transport operations.
 func describe() -> Array:
-	return DeveloperWeekendDescriptors.describe()
+	return DeveloperToolResult.success(DeveloperWeekendDescriptors.describe()).result
 
 
 ## Construct a validated authored weekend at its actual initial briefing phase.
