@@ -7,7 +7,7 @@ static func run(check: Callable) -> void:
 	check.call(loaded.ok, "Presentation balance fixture loads production tuning")
 	if not loaded.ok:
 		return
-	var record: Dictionary = loaded.catalog.race_tuning("core.race_tuning.default").to_record()
+	var record: Dictionary = loaded.catalog.tuning("core.race_tuning.default").to_record()
 	record.erase("balance")
 	var legacy = RaceTuningDefinition.from_record(record)
 	check.call(
@@ -24,7 +24,7 @@ static func run(check: Callable) -> void:
 		legacy.balance.presentation.is_read_only(),
 		"Presentation defaults cannot mutate legacy tuning"
 	)
-	record.balance = GameBalanceSchema.defaults()
+	record["balance"] = GameBalanceSchema.defaults()
 	var values: Dictionary = record.balance.presentation
 	values.low_tread_percent = 50.0
 	values.practice_reuse_tread_percent = 70.0
@@ -88,14 +88,23 @@ static func run(check: Callable) -> void:
 		RaceStateValue.fingerprint(sim.snapshot()) == before,
 		"Repeated authored observations consume no race ticks, RNG or authority"
 	)
-	var restored = PracticeRaceSim.restore_practice(sim.snapshot())
+	# Save a valid freshly constructed session; the race observations above use
+	# intentionally posed read-model states rather than a completed sporting journey.
+	var saved_session = PracticeRaceSim.new(
+		sim.track, {"laps": 6, "seed": 7314, "tuning_definition": tuning.to_record()}
+	)
+	var restored = PracticeRaceSim.restore_practice(saved_session.snapshot())
 	check.call(restored != null, "Authored observational policy restores with the session")
 	if restored == null:
 		return
+	var frozen_reading = MinimalDriverReadout.capture(restored, 3)
 	record.balance.presentation.low_tread_percent = 0.0
 	record.fuel.engine_rates = [1.0, 1.2, 1.4]
 	check.call(
-		MinimalDriverReadout.capture(restored, 3) == reading,
+		(
+			MinimalDriverReadout.capture(restored, 3) == frozen_reading
+			and restored.tuning.to_record() == tuning.to_record()
+		),
 		"Later source edits cannot change restored readout or demand policy"
 	)
 	_practice(tuning, check)
@@ -103,7 +112,9 @@ static func run(check: Callable) -> void:
 
 
 static func _simulation(tuning: RaceTuningDefinition) -> PracticeRaceSim:
-	var document: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var document: Dictionary = (
+		Storage.read_json(ContentPackLoader.BUILTIN_ROOT + "/circuits/hillside.json").data
+	)
 	var sim = PracticeRaceSim.new(
 		TrackGeometry.new(document),
 		{"laps": 6, "seed": 7314, "tuning_definition": tuning.to_record()}

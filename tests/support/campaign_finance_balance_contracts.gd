@@ -35,7 +35,7 @@ static func run(check: Callable) -> void:
 		),
 		"Legacy bridge retains float rounding and thirty-day contractual maturity"
 	)
-	source.tuning = {
+	source["tuning"] = {
 		"finance": {"distress_forecast_days": 3, "bridge_maturity_days": 7, "bridge_fee_bps": 2500}
 	}
 	var changed = _fixture(loaded.catalog, source)
@@ -162,7 +162,9 @@ static func _fixture(catalog: ContentCatalog, definition: Dictionary) -> Diction
 	var campaign = CampaignDefinition.from_record(definition)
 	if campaign == null:
 		return {}
-	var track: Dictionary = Storage.read_json("res://data/tracks/hillside.json").data
+	var track: Dictionary = (
+		Storage.read_json(ContentPackLoader.BUILTIN_ROOT + "/circuits/hillside.json").data
+	)
 	var record = CampaignDirectorContracts._record(track, catalog, campaign)
 	if record == null:
 		return {}
