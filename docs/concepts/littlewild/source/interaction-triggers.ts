@@ -4,10 +4,16 @@
  'use strict';
  const root=inputRoot as {
   LWInteractionRuntime:LWInteraction.Runtime;
+  LWRPG:{next(seed:number):{seed:number;value:number}};
   LWGameSettings?:{allowed(engine:LWInteraction.Engine,key:'duels'|'quests'):boolean};
   LWInteractionTriggers?:unknown;
  };
  const R=root.LWInteractionRuntime;
+ function decision(e:LWInteraction.Engine,state:LWInteraction.State):number{
+  // Independent scheduling entropy never advances quests/world or actor skill-roll streams.
+  const seed=state.rng??((e.s.colony.rng^0x9e3779b9)>>>0);
+  const next=root.LWRPG.next(seed);state.rng=next.seed;return next.value;
+ }
  function matches(c:LWInteraction.Creature,conditions:LWInteraction.Condition[]):boolean{
   return conditions.every(rule=>{
    const value=rule.metric==='idle'?(!c.task||['idle','explore'].includes(c.task.kind)):rule.metric==='trait'?c.traits:rule.metric==='personality'?c.personality:
@@ -56,7 +62,7 @@
    if(now<intent.nextSearchAt)continue;intent.nextSearchAt=now+1;
    const definition=s.library.definitions.find(d=>d.id===intent.definitionId)!,rule=intent.ruleId?s.library.triggers.find(r=>r.id===intent.ruleId)!:null;
    const choices=candidates(e,definition,rule,c.id);
-   if(choices.length){const selected=choices[Math.floor(e.random('world')*choices.length)]!;
+   if(choices.length){const selected=choices[Math.floor(decision(e,s)*choices.length)]!;
     if(R.request(e,definition.id,selected.sourceId,selected.target).ok)s.seeks=s.seeks.filter(v=>v!==intent);
    }
   }
@@ -67,8 +73,8 @@
    // Autonomous is an authored profile permission; explicit seek and staging remain available.
    if(!definition.autonomous||rule.chancePercent===0)continue;
    const choices=candidates(e,definition,rule,null);if(!choices.length)continue;
-   if(rule.chancePercent<100&&e.random('world')*100>=rule.chancePercent)continue;
-   const selected=choices[Math.floor(e.random('world')*choices.length)]!;R.request(e,definition.id,selected.sourceId,selected.target);
+   if(rule.chancePercent<100&&decision(e,s)*100>=rule.chancePercent)continue;
+   const selected=choices[Math.floor(decision(e,s)*choices.length)]!;R.request(e,definition.id,selected.sourceId,selected.target);
   }
  }
  const api=Object.freeze({matches,candidates,seek,cancelSeek,step});root.LWInteractionTriggers=api;

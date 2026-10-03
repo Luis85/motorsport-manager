@@ -23,7 +23,9 @@
  }
  function validate(input:unknown,world:unknown):LWInteraction.State|undefined{
   if(input===undefined)return undefined;
-  const data=C.copy(input);exact(data,['version','library','fingerprint','sequence','active','history','cooldowns','triggerAt','seeks'],'state');
+  const data=C.copy(input),keys=['version','library','fingerprint','sequence','active','history','cooldowns','triggerAt','seeks'];
+  if(plain(data)&&Object.hasOwn(data,'rng'))keys.push('rng');exact(data,keys,'state');
+  if(Object.hasOwn(data,'rng')&&!whole(data.rng,0,4294967295))fail('invalid decision RNG seed');
   if(!plain(world)||!finite(world.simTime,0,1e12)||!plain(world.colony)||!Array.isArray(world.colony.creatures))fail('invalid world context');
   const time=world.simTime,creatures=world.colony.creatures as {id:string;task:unknown;activeQuest?:unknown}[];
   const known=(id:unknown):id is string=>typeof id==='string'&&creatures.some(c=>c.id===id);
@@ -107,7 +109,7 @@
   const active=data.active.map(value=>record(value,true)),history=data.history.map(value=>record(value,false));
   if(data.sequence<=largest)fail('sequence collision');
   return {version:1,library,fingerprint:data.fingerprint as string,sequence:data.sequence,active,history,cooldowns:data.cooldowns as {[key:string]:number},
-   triggerAt:data.triggerAt as {[key:string]:number},seeks:data.seeks as unknown as LWInteraction.Seek[]};
+   triggerAt:data.triggerAt as {[key:string]:number},seeks:data.seeks as unknown as LWInteraction.Seek[],...(data.rng===undefined?{}:{rng:data.rng as number})};
  }
  root.LWInteractionState=Object.freeze({empty,target,validate});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWInteractionState;

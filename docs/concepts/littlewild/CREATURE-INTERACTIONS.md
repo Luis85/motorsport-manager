@@ -142,7 +142,7 @@ flags in older saves default to enabled.
 
 The engine owns optional root `creatureInteractions` state, with a complete
 per-engine library and fingerprint, unique sequence, bounded active/history
-records, cooldowns, per-rule schedules and search intents. Native saves,
+records, cooldowns, per-rule schedules, search intents and an independent decision RNG stream. Trigger chance and partner selection use the existing seeded `LWRPG.next` algorithm without advancing quest/world RNG or actor skill-roll RNG. Legacy checkpoints initialize this stream only when an eligible scheduling decision needs a draw; inactive catalogs do not gain state from queries. Native saves,
 portable stories and captured scenarios retain it and both existing RNG
 streams. Legacy saves without interaction state remain supported. Import checks
 record identity, referenced definitions, roll arithmetic, scores, settlement,

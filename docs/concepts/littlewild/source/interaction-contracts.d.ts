@@ -37,7 +37,7 @@ declare namespace LWInteraction {
   scores:[number,number];winnerId:string|null;reason:string|null;rounds:Round[];
  }
  interface State {
-  version:1;library:Library;fingerprint:string;sequence:number;
+  version:1;rng?:number;library:Library;fingerprint:string;sequence:number;
   active:Record[];history:Record[];cooldowns:{[key:string]:number};
   triggerAt:{[key:string]:number};seeks:Seek[];
  }
@@ -49,7 +49,7 @@ declare namespace LWInteraction {
   traits:string[];
  }
  interface Engine {
-  s:{simTime:number;started:boolean;paused:boolean;creatureInteractions?:State;
+  s:{colony:{rng:number};simTime:number;started:boolean;paused:boolean;creatureInteractions?:State;
    settings:{duels?:boolean;quests?:boolean};
    buildings:{id:string;kind:string;x:number;y:number}[];nodes:{id:string;kind:string;x:number;y:number;stock:number}[]};
   creatures:Creature[];actor:Creature;

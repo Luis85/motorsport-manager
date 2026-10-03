@@ -20,7 +20,7 @@ interface Native extends LWInteraction.Engine {
  requestInteraction(id:string,source:string,target:LWInteraction.Target):LWInteraction.Result;
  respondInteraction(id:string,accept:boolean):LWInteraction.Result;
  selectCreature(id:string):unknown;dispatchCommand(command:LittlewildDeveloper.Command):LWInteraction.Result;
- startTask(input:unknown):boolean;depart():boolean;step(dt:number):void;
+ stepInteractions():void;startTask(input:unknown):boolean;depart():boolean;step(dt:number):void;
 }
 const target=(id='c2'):LittlewildDeveloper.InteractionTarget=>({scope:'creature',id});
 const active=(g:Session):LWInteraction.Record[]=>g.interactions().active as unknown as LWInteraction.Record[];
@@ -78,6 +78,19 @@ test('A data-only definition extends creature and world interactions through eff
  assert(engine.requestInteraction('notice-nature','c1',{scope:'node',id:String(node.id)}).ok);
  assert.equal(engine.interactionState().history[0]!.target.scope,'node');assert.deepEqual(engine.creatures[0]!.inventory,inventory);
  assert(root.LW.Engine.import(engine.export()));
+}));
+test('Interaction scheduling owns a continued seed without consuming world or actor roll streams',()=>game(g=>{
+ const lib=library(g);(lib.definitions as Document[]).find(d=>d.id==='friendly-duel')!.autonomous=true;
+ assert(g.command({id:'set-interaction-library',args:[lib]}).ok);const native=root.LW.Engine.import(g.save());
+ native.s.started=true;native.s.paused=false;native.s.creatureInteractions!.triggerAt['friendly-neighbors']=native.s.simTime;
+ const before=native.export(),worldSeed=(before.state.colony as Document).rng;
+ const seeds=(doc:{state:Document})=>((doc.state.colony as Document).creatures as Document[]).map(c=>(c.rpg as Document).rng);
+ assert.equal(native.interactionState().rng,undefined);native.stepInteractions();const first=native.export();
+ assert.equal((first.state.colony as Document).rng,worldSeed);assert.deepEqual(seeds(first),seeds(before));
+ assert(native.interactionState().active.length);assert(Number.isInteger(native.interactionState().rng));
+ const restored=root.LW.Engine.import(first);assert.deepEqual(restored.export(),first);
+ const forged=clone(first);((forged.state as Document).creatureInteractions as Document).rng=-1;assert.throws(()=>root.LW.Engine.import(forged),/decision RNG seed/);
+ native.step(.1);restored.step(.1);assert.deepEqual(restored.export(),native.export());
 }));
 test('Pending invitations reserve both creatures, auto accept and finish without player round commands',()=>game(g=>{
  const r=request(g),before=g.save();assert.equal(g.command({id:'request-interaction',args:['friendly-duel','c3',target()]}).ok,false);assert.deepEqual(g.save(),before);
