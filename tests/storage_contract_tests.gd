@@ -81,6 +81,7 @@ func check(value: bool, label: String) -> void:
 func run() -> void:
 	json_value_contract()
 	memory_round_trip()
+	compact_response_contract()
 	failure_stages()
 	read_failures()
 	editor_failure_retention()
@@ -363,6 +364,37 @@ func editor_failure_retention() -> void:
 		not session.save(port, draft, observed_revision).ok and port.writes == writes,
 		"Successful publication invalidates the prior observed save revision"
 	)
+
+
+func compact_response_contract() -> void:
+	var path: String = ProjectSettings.globalize_path("user://storage-compact.json")
+	var document: Dictionary = {"z": 9007199254740993, "a": "Ω"}
+	var expected: String = '{"a":"Ω","z":9007199254740993}'
+	var limit: int = expected.to_utf8_buffer().size()
+	for bound in [0, limit - 1, expected.length()]:
+		var files := MemoryFiles.new()
+		files.entries[path] = "original"
+		check(
+			not Storage.write_compact_json(path, document, bound, files).is_empty(),
+			"Compact byte limit rejects before publication"
+		)
+		check(files.calls.is_empty(), "Rejected compact export performs no filesystem mutation")
+		check(files.entries == {path: "original"}, "Rejected compact export retains original")
+	var files := MemoryFiles.new()
+	files.entries[path] = "original"
+	check(
+		Storage.write_compact_json(path, document, limit, files).is_empty(),
+		"Compact export accepts the exact UTF-8 byte boundary"
+	)
+	check(files.entries[path] == expected, "Compact response preserves exact int64 and sorted JSON")
+	check(files.entries[path + ".bak"] == "original", "Compact response preserves prior backup")
+	files.calls.clear()
+	files.faults["rename:" + path + ".tmp"] = ERR_CANT_CREATE
+	check(
+		not Storage.write_compact_json(path, {"next": true}, limit, files).is_empty(),
+		"Compact response propagates replacement failure"
+	)
+	check(files.entries[path] == expected, "Compact response rolls back a failed replacement")
 
 
 func native_round_trip() -> void:
