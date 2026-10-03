@@ -52,15 +52,31 @@ func _process(_delta: float) -> bool:
 	if not _stdio:
 		_file_request()
 		return true
-	# fgets bounds the native allocation and consumes one line, including large snapshots.
-	var line: String = OS.read_string_from_stdin(MAX_REQUEST_BYTES + 2)
-	if line.is_empty():
+	var line: Dictionary = _read_line()
+	if line.eof:
 		return true
-	if line.to_utf8_buffer().size() > MAX_REQUEST_BYTES:
+	if line.bytes.size() > MAX_REQUEST_BYTES:
 		_emit(_rejected("REQUEST_LIMIT", "Request exceeds 8 MiB."))
 		return true
-	_emit(_execute_text(line))
+	if not ContentJson.valid_utf8(line.bytes):
+		_emit(_rejected("INVALID_JSON", "The request must contain UTF-8 JSON."))
+		return false
+	_emit(_execute_text(line.bytes.get_string_from_utf8()))
 	return false
+
+
+func _read_line() -> Dictionary:
+	# Byte reads preserve framing and validate encoding before the engine decoder.
+	# C stdio buffers the pipe; only this bounded line is retained by the runner.
+	var bytes: PackedByteArray = PackedByteArray()
+	while bytes.size() <= MAX_REQUEST_BYTES:
+		var next: PackedByteArray = OS.read_buffer_from_stdin(1)
+		if next.is_empty():
+			return {"eof": bytes.is_empty(), "bytes": bytes}
+		if next[0] == 10:
+			return {"eof": false, "bytes": bytes}
+		bytes.append(next[0])
+	return {"eof": false, "bytes": bytes}
 
 
 func _finalize() -> void:
