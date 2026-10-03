@@ -172,13 +172,46 @@ func _options(arguments: PackedStringArray) -> Dictionary:
 				return DeveloperToolResult.failure(
 					"INVALID_ARGUMENT", "Unknown transport argument: " + key
 				)
+	return _validated_options(options)
+
+
+func _validated_options(options: Dictionary) -> Dictionary:
 	if options.stdio:
 		if options.request != "" or options.response != "":
 			return DeveloperToolResult.failure(
 				"INVALID_ARGUMENT", "Choose stdio or request/response files."
 			)
-	elif options.request == "" or options.response == "" or options.request == options.response:
+	elif options.request == "" or options.response == "":
 		return DeveloperToolResult.failure(
 			"INVALID_ARGUMENT", "Choose distinct request and response files."
 		)
+	elif _destination_conflicts(options.request, options.response):
+		return DeveloperToolResult.failure(
+			"INVALID_ARGUMENT", "Request and response paths must be distinct and contain no links."
+		)
 	return DeveloperToolResult.success(options)
+
+
+func _destination_conflicts(request_path: String, response_path: String) -> bool:
+	var input: String = ProjectSettings.globalize_path(request_path).simplify_path()
+	var output: String = ProjectSettings.globalize_path(response_path).simplify_path()
+	if _path_has_links(input) or _path_has_links(output):
+		return true
+	if OS.has_feature("windows"):
+		input = input.to_lower()
+		output = output.to_lower()
+	# Atomic storage owns its temporary and backup names as well as the destination.
+	return input in [output, output + ".tmp", output + ".bak"]
+
+
+func _path_has_links(path: String) -> bool:
+	var cursor: String = path
+	while not cursor.is_empty():
+		var parent: String = cursor.get_base_dir()
+		var directory: DirAccess = DirAccess.open(parent)
+		if directory != null and directory.is_link(cursor.get_file()):
+			return true
+		if parent == cursor:
+			break
+		cursor = parent
+	return false
