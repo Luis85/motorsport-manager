@@ -1,8 +1,8 @@
 # Port status and boundaries
 
-> **Historical 0.4.0 baseline:** This document records the original native port and is *not* the latest implementation-state inventory. Subsequent 0.5–0.19 race-weekend work and merged PR #24 added practice, strategy/rival/replay foundations, Minimal shipping UI and data-driven content. See [Current native project status](current-state.md) and the dated handoffs in [Documentation](README.md). The campaign remains proposed.
+> **Historical 0.4.0 baseline:** This document records the original native port and is *not* the latest implementation-state inventory. Subsequent 0.5–0.19 race-weekend work and merged PR #24 added practice, strategy/rival/replay foundations, Minimal shipping UI and data-driven content. See [Current native project status](current-state.md) and the dated handoffs in [Documentation](README.md). At that milestone the campaign was proposed; merged PR #27 implemented the bounded Team Principal first slice and TM-01–TM-16 domain/application packages. Dedicated specialist management screens and deeper simulation remain distinct follow-up work.
 
-Current release: **0.4.0**. Read the explicit [feature-parity matrix](feature-parity.md) and [iteration-four notes](iteration-4.md). Earlier iteration documents are historical release records, not competing current specifications.
+Snapshot release: **0.4.0**. Read the explicit [feature-parity matrix](feature-parity.md) and [iteration-four notes](iteration-4.md). Earlier iteration documents are historical release records, not competing current specifications.
 
 The source baseline is the user's Circuit Atelier/Track Studio and top-down race-weekend prototype. Native source data, including the eight-circuit library and existing attribution, is retained. This is a native reimplementation, not JavaScript running inside Godot, and it does not promise identical simulation output to every prototype revision.
 

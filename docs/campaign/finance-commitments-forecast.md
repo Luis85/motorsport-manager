@@ -13,7 +13,7 @@ The implementation separates four concepts:
 3. **Reserve policy** is a planning floor; it is not a second account and does not reserve or create cash by itself.
 4. **Forecast assumptions** are detached conservative/optimistic inputs. They are never persisted as commitments or posted as cash.
 
-Operating result, assets/liabilities, eligible-series expenditure and accrual accounting remain future views. The game does not claim real-world accounting compliance.
+[Operational depth](operational-depth.md) adds a game-defined financial-position query for cash, operating result, receivables and payables/debt. Eligible-series accounting and full accrual reporting remain outside the model; the game does not claim real-world accounting compliance.
 
 ## Economy version 2
 
@@ -166,8 +166,8 @@ The mandatory campaign suite covers:
 - termination/replacement settlement and future-payroll cancellation; and
 - legacy payroll preservation without invented contracts.
 
-## Deliberate next work
+## Implemented consumers and remaining limits
 
-The implemented payroll model uses fixed complete installments. It does not yet include prorating, bonuses, buyouts, notice pay, release clauses, receivable earning, operating-result recognition, assets/liabilities, loans, distress remedies, season-prize schedules, sponsor agreements, budgets/envelopes, UI or autonomous spending mandates.
+The payroll model remains fixed complete installments; prorating, contractual buyouts, notice pay and release clauses are not inferred. [Engineering](engineering-parts-race-profile.md) and facilities use explicit commitments rather than hidden project-summary costs. [Commercial agreements](sponsorship-commercial.md), [delegation mandates](delegation-mandates.md), [season prizes](multi-season-progression.md), [procurement/financial pressure](operational-depth.md) and [founder transfers](group-era-dynasty.md) now use the same ledger.
 
-TM-06 now uses this ledger for rented/outsourced facility work: one service work order creates one dated `facility` commitment. The next dependency milestone is **TM-07: engineering development and physical part inventory**; external engineering/manufacturing payments must continue through explicit commitments rather than hidden project-summary costs.
+The game-defined position view and bridge financing remain bounded. Full accrual accounting, tax/depreciation, a lending market, insolvency proceedings and dedicated specialist Finance UI remain separate work. Forecast assumptions never become spendable cash.

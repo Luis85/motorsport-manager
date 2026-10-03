@@ -2,9 +2,9 @@
 
 > **Historical native 0.4.0 snapshot.** The table below preserves the original prototype-port comparison at that milestone; later 0.5–0.19 iterations implemented additional strategy, weather, recovery, practice, replay and content infrastructure. For today's shipping-versus-diagnostic status, use [Current native project status](current-state.md) rather than treating every historical “Not ported” row as a present absence.
 
-**0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The current native checkpoint is v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
+**Historical 0.11 update:** [Contextual rivals](race-weekend-rivals.md), [workspace specification](design/pitwall-workspace.md) and [verification evidence](rivals-verification.md) supersede older UI/checkpoint statements where noted. The checkpoint at that milestone was v10; old saves retain classic rivals. No new simulation/view inheritance layer or pressure mechanic is added.
 
-Current native release: **0.4.0**. Scope: **race weekend and track editor** only.
+Snapshot release: **0.4.0**. Scope at that milestone: **race weekend and track editor** only. The later four-event Team Principal route and campaign domain/application packages are recorded in [current project status](current-state.md); historical “Not ported” rows below remain period-specific comparisons.
 
 This is a behavior-level map, not a percentage score. “Adapted” means the decision or interaction exists natively, with a different implementation or explicitly reduced model. It does not claim identical lap times, complete compatibility with every embedded prototype revision, or compliance with real-series sporting rules.
 

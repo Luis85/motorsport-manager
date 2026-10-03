@@ -1,6 +1,6 @@
 # Atomic weekend consequence transaction
 
-Status: implemented foundation in PR #27. This contract extends the deterministic campaign checkpoint, registered season, commitment-aware economy, personnel authority and immutable weekend receipt; it is not a playable management UI or complete championship/economy.
+Status: implemented atomic consequence authority, introduced in PR #27 and used by the [bounded playable Director Desk route](director-desk-first-loop.md). This guide describes settlement over the complete campaign checkpoint, not comprehensive championship rules, accounting or specialist management UI.
 
 ## Purpose
 
@@ -31,7 +31,7 @@ The policy is explicit rules input. The race result does not infer championship 
 8. Settle every existing open commitment due no later than the frozen return slot. Each posts at its own contractual due slot and retains its commitment identity/terms digest. Employment payroll follows the same path.
 9. Require campaign time to still equal the frozen departure slot, then advance it to the return slot with one accepted campaign command.
 10. Preserve the complete personnel authority from departure. The race transaction does not hire, terminate, assign or reschedule people.
-11. Build and validate one version-three checkpoint with every consequence projection, finance/personnel timeline and factual receipt consistent.
+11. Build and validate one version-six checkpoint with every consequence projection, authority timeline and factual receipt consistent.
 12. Clear the active manifest only in the complete candidate.
 
 The storage adapter serializes and validates the complete candidate before temporary-file publication, backup preservation, replacement and rollback.
@@ -49,7 +49,7 @@ The storage adapter serializes and validates the complete candidate before tempo
 
 ### Competition
 
-`CampaignCompetition` version 2 stores rule packs, ordered season calendars, accepted fields and immutable per-event awards. It rebuilds driver/team points and successive finishing-position countback. Exact unresolved ties remain shared. Provisional classifications, corrections, season prizes and promotion remain later work.
+`CampaignCompetition` version 2 stores rule packs, ordered season calendars, accepted fields and immutable per-event awards. It rebuilds driver/team points and successive finishing-position countback. Exact unresolved ties remain shared. Live provisional classifications remain excluded. [Final-result correction](result-corrections.md) and [multi-season prizes/promotion](multi-season-progression.md) are explicit implemented transactions over these authorities.
 
 ### Economy
 
@@ -61,7 +61,7 @@ Employment payroll is not a separate weekend reward. It is an already binding co
 
 `CampaignPersonnel` is preserved unchanged through the weekend transaction. Its people, contracts, role assignments and availability remain campaign records. Payroll due inside the interval may change economy status/postings, but the immutable employment schedule remains the evidence for that movement.
 
-TM-05 does not yet create travel/event reservations automatically or validate race-entry staffing. Those responsibilities belong to event readiness.
+[Event readiness and departure](event-readiness-departure.md) validate the required player driver/crew availability and create explicit event-duty reservations before entry. Settlement preserves that personnel authority; it does not fabricate travel or staff work from race results.
 
 ### Inventory
 
@@ -88,8 +88,6 @@ The registered campaign suite covers:
 
 The tests establish domain/application behavior, not balanced scoring, a viable commercial model, human-readable management UI or a complete season experience.
 
-## Deliberate exclusions and next dependency
+## Owner boundaries and remaining limits
 
-This transaction does not implement provisional classifications, correction deltas, season prize distribution, automatic staffing/travel reservations, receivable earning, assets/liabilities, facilities, rivals, engineering or campaign UI.
-
-The next dependency milestone is **TM-06: capacity, three facility families and rented services**. It will use personnel availability and dated commitments while preserving this all-or-nothing weekend boundary.
+Ordinary weekend settlement remains final-only and factual: it cannot infer component diagnoses, consumed materials or travel. Correction, season prizes/promotion, facilities, rivals, engineering and the Director Desk are implemented by their explicit campaign owners; [current project status](../current-state.md) maps them. They share this complete publication boundary rather than adding race-side consequences. Live steward/provisional simulation, comprehensive accounting and broader specialist management UI remain separate work.

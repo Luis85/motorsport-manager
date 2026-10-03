@@ -52,7 +52,7 @@ The executable policy is 400 code lines for source. Exact review found five viol
 | `scripts/ui/pitwall_workspace.gd` | 419 | finishing-guide composition extracted |
 | `scripts/ui/race_weekend/minimal/workspace.gd` | 410 | timing-table presenter extracted |
 
-Post-split code-line counts are 258/64/130/255/93 for RaceSim/port/foundation/core/operations, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
+At the first PR #28 split, code-line counts were 258/64/130/255/93 for RaceSim/port/foundation/core/operations, 290/337 for WeekendView, 373 for the native shell, 395 for PitwallWorkspace and 381/42 for the Minimal workspace/presenter.
 
 The splits are responsibility-based; no assertions, comments or formatting were compressed to pass the metric.
 
@@ -97,3 +97,47 @@ Publication requires the exact PR head to pass the existing repository gates:
 - advisory quality comparison.
 
 Human usability, accessibility, campaign balance and representative-hardware performance remain product-validation activities; automated success is not evidence for those outcomes.
+
+
+## PR #29 comprehensive quality and compatibility closure
+
+Implementation reviewed at `0adb331ba47dadf4284f47004c7d28de2927166b`, stacked on PR #28's `c02b095`. The earlier green PR #28 source `c7d1e2c7de95e9bae91b935642e1c7d6967de8bb` is historical evidence: the later compatibility-removal commits broke consumers and cannot inherit its pass.
+
+### CR-06 — Removed campaign save paths broke storage — closed
+
+Restored `CampaignCheckpoint.upgrade`, legacy starter/frozen configuration, economy migration and explicit legacy payroll/facility/development indexes. Checkpoint migration normalizes a version-one economy before constructing later personnel/operations/engineering authorities, preserving factual cash and obligations without fabricated history. Registered contracts require lossless populated migration and caller nonmutation.
+
+### CR-07 — Nested malformed values could bypass guards — closed
+
+Campaign projection validators reject wrong collection-row types before dictionary access or typed construction. Frozen campaign race options now use the production roster, tyre, setup and tuning readers before reference checks; valid definition IDs alone cannot authorize malformed nested payloads. Imported pit lanes require an explicit point array: a missing `nodes` field previously raised an engine error and returned an empty validation result. Native regression cases cover exact rejection, retained editor state and input nonmutation while keeping explicit empty pit-point arrays supported.
+
+### CR-08 — Full quality inventory and tool assumptions — closed
+
+The recorded baseline contained 5,075 findings across 507 code files. Explicitly authorized formatting and cohesive responsibility extraction closed GDScript/Python lint, formatting, complexity and physical-line findings without suppressions, weakened assertions or policy changes. Production sources remain at most 400 physical code lines; tests at most 450; the complexity review ceiling remains 15. Race state, movement/session calculation order, accepted command order, RNG draws and save versions retain their existing owners.
+
+The complete strict local scan at the reviewed source reports **611 code files, zero findings and complete analysis**. Tooling now understands inherited/multiline GDScript contracts, retains malformed-output failures and validates fresh source-bound aggregate evidence. Workflow action pins and artifact-digest checks are maintained. All registered suites remain mandatory; extracted test helpers do not substitute a smaller gate.
+
+### CR-09 — Historical handoffs appeared to be live backlog — closed
+
+The documentation pass distinguishes archived PR #20/0.4 port notes from current contracts, updates campaign checkpoint v6 references, and links implemented TM-07–TM-16/correction owners instead of describing them as missing dependencies. TM-01–TM-16 implementation remains closed. Dedicated specialist management presentation, richer simulation, human playtesting, comprehensive accessibility, balance and controlled device/performance acceptance remain separate work. No hardware, human or balance sign-off is inferred.
+
+## Remote backlog inventory — observed 3 October 2026
+
+Read-only GitHub queries returned the following snapshot before documentation integration:
+
+| Inventory | Observed result | Interpretation |
+|---|---|---|
+| `repo:Luis85/motorsport-manager is:issue is:open` | No open issues returned | No named issue backlog was available from this search |
+| Inline review threads on PR #25, #28 and #29 | Empty thread lists | No unresolved inline review thread was returned on these PRs |
+| Open pull requests | #25, #28, #29 | PR #28/#29 are this native closure; PR #25 is concurrent Littlewild feature work |
+| Milestones | Zero open and zero closed | The [public GitHub milestones page](https://github.com/Luis85/motorsport-manager/milestones?state=open) returned an empty repository milestone inventory at 09:53 UTC |
+
+The connector did not support the milestone endpoint, so the read-only public-page fallback was checked. Its embedded payload identifies `Luis85/motorsport-manager`, reports `milestones.totalCount: 0` with empty edges, and reports both open and closed counts as zero.
+
+[PR #25](https://github.com/Luis85/motorsport-manager/pull/25) changes Littlewild concept sources and workflows, with no native `scripts/`, `tests/` or `data/` changes. Its five shared workflow diffs update Action pins; they identify no separate native gameplay defect for this pass. A future integration must preserve current artifact-integrity and source-evidence checks. This audit neither merges that feature nor closes remote work.
+
+## Final integration evidence
+
+Latest observed PR #29 source: `2f9251d2cbfaa5893ceda1312d4f5da308b3235b`. Its strict quality scan remains complete with 611 code files and zero findings; all 208 Python tests pass. Hosted Runtime confidence and Advisory code quality are green. The other required gates are still running at this observation, so a final hosted pass is not claimed.
+
+A zero-finding local quality report establishes the configured metric result for its named source. Final functional acceptance belongs to the exact merged/integrated source and fresh [PR #29](https://github.com/Luis85/motorsport-manager/pull/29/checks) and [PR #28](https://github.com/Luis85/motorsport-manager/pull/28/checks) workflows. Six-shard gameplay/native UI, content/exported runtime, runtime confidence and packaged smoke results must be read with their source IDs; this documentation pass does not reuse or invent a later final-head result.

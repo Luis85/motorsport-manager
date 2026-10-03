@@ -1,6 +1,6 @@
 # Campaign people, contracts and availability
 
-Status: implemented TM-05 domain/application foundation on PR #27. This is not a recruitment market, staff-development simulation, negotiation UI or complete Team screen.
+Status: implemented TM-05 personnel authority on PR #27. [TM-13 recruitment and development](people-development-recruitment.md) now consume these contracts; a dedicated complete Team/Person specialist screen remains presentation work.
 
 ## Authority and scope
 
@@ -11,11 +11,11 @@ Status: implemented TM-05 domain/application foundation on PR #27. This is not a
 - `CampaignCompetition`, which owns series entries and sporting identity; and
 - the race weekend, which consumes a frozen entry but does not hire, pay or schedule staff.
 
-The first slice establishes the invariants required before capacity, facilities and projects can use people. It does not yet evaluate skill, morale, trust, fatigue, role quality or performance effects.
+This authority establishes the invariants used by capacity, facilities and projects. Persistent attributes, morale/trust and development belong to TM-13 people records. Personnel itself does not calculate fatigue, shift productivity or hidden race-performance bonuses.
 
-## Checkpoint version 4
+## Current checkpoint version 6
 
-`CampaignCheckpoint` version 4 retains `CampaignPersonnel` and additionally binds TM-06 operations capacity to it. Personnel was introduced in version 3. A valid checkpoint now publishes together:
+`CampaignCheckpoint` version 6 retains personnel alongside operations, engineering and management authorities. Personnel was introduced in version 3 and operations in version 4. Its core publication contracts include:
 
 - replay-validated campaign state and time;
 - factual weekend receipts and optional active manifest;
@@ -49,7 +49,7 @@ The supported first-slice role vocabulary is:
 - department workforce; and
 - academy lead.
 
-Role eligibility is descriptive authority for assignment validation. It does not yet contain attributes, ratings, licenses, scouting confidence or performance modifiers.
+Role eligibility is descriptive authority for assignment validation. Attributes and confidence belong to the separate persistent candidate/people-development records; employment itself does not supply licenses or hidden performance modifiers.
 
 ## Employment contracts
 
@@ -185,7 +185,7 @@ Employment terms and reservations do not use the race clock. When a campaign wee
 - event cash and payroll remain separately sourced; and
 - the return checkpoint publishes time, sporting consequences, inventory, event cash, due payroll and personnel together.
 
-TM-05 does not yet generate race-travel reservations automatically or reject a race entry from missing staff. TM-08 event readiness will bind personnel availability to the immutable entry manifest.
+TM-08 [event readiness and departure](event-readiness-departure.md) now bind required player driver/crew availability to the immutable entry manifest and explicit event-duty reservations. This is not a general automatic travel or staff-scheduling model.
 
 ## Timeline and integrity rules
 
@@ -222,17 +222,8 @@ The mandatory campaign suite covers:
 
 These checks establish domain, application and persistence behavior. They do not establish believable staff markets, employment balance, legal realism, usability or player attachment.
 
-## Deliberate next work
+## Implemented consumers and remaining limits
 
-TM-05 does not implement:
+[Operations](facilities-capacity-services.md) and [engineering](engineering-parts-race-profile.md) consume the same people/facility reservations. [People development/recruitment](people-development-recruitment.md) adds persistent candidates, bounded negotiation, attributes, workload-based development, morale/trust and explicit promises. [Delegation](delegation-mandates.md) and [readiness](event-readiness-departure.md) retain their named authority boundaries.
 
-- candidate markets, scouting or negotiation exchanges;
-- person attributes, role quality or race-performance mappings;
-- bonuses, promises, buyouts or notice periods;
-- development, workload, fatigue, morale, trust or relationships;
-- department headcount or staff-planner AI;
-- automatic race-entry staffing;
-- mandates and delegated hiring; or
-- campaign Team/Person UI.
-
-TM-06 now consumes these role and availability records for internal facility work. The next dependency milestone is **TM-07: engineering development and physical part inventory**; project work must use these same people/facility reservations rather than creating hidden engineer hours.
+Richer scouting uncertainty, chemistry/fatigue, shift productivity, department headcount, staff-planner AI, comprehensive contractual buyouts/notice and dedicated Team/Person UI remain separate depth. None is inferred from an employment title or converted into a hidden race-pace modifier.

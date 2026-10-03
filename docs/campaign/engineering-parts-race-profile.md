@@ -60,7 +60,7 @@ Successful integration installs that exact instance onto the named stable campai
 - installation slot; and
 - integration work order.
 
-The first slice does not yet consume raw-material stock or model manufacturing scrap. The explicit material commitment is the current authoritative cost boundary.
+The engineering gate uses an explicit material commitment as its authoritative production-cost boundary. TM-15 [operational depth](operational-depth.md) separately adds suppliers, conserved raw-material stock and explicit consumption; production does not infer that consumption or manufacturing scrap from a completed design.
 
 ## Race-performance seam
 
@@ -91,25 +91,12 @@ The existing `RaceRecord` ruleset includes these frozen profiles, so the immutab
 
 ## Checkpoint and migration
 
-Campaign checkpoint schema version 5 adds the engineering projection. Version-4 operations checkpoints migrate with empty engineering authority beginning at the restored campaign slot. Existing generic `development` commitments are retained in an explicit legacy index rather than assigned invented projects. Migration does not invent historical research, designs, parts or fitted performance.
+Campaign checkpoint schema version 5 introduced the engineering projection; current version 6 retains it with management authority. Version-4 operations checkpoints migrate with empty engineering authority beginning at the restored campaign slot. Existing generic `development` commitments are retained in an explicit legacy index rather than assigned invented projects. Migration does not invent historical research, designs, parts or fitted performance.
 
 Every existing competition, finance, personnel, operations and weekend transaction must carry engineering forward unchanged unless it explicitly owns an engineering change.
 
-## Explicit exclusions
+## Implemented extensions and remaining limits
 
-TM-07 does not yet model:
+TM-15 [operational depth](operational-depth.md) adds persistent latent uncertainty/confidence evidence, raw-material procurement/explicit consumption and physical part wear/repair on the same instance. It does not silently reroll observations or diagnose individual components from aggregate race damage.
 
-- engineering uncertainty or failed prototypes;
-- accumulated organizational knowledge;
-- multiple physical copies of one design;
-- raw materials and supplier stock;
-- part wear or post-race component diagnosis;
-- homologation/regulatory approval;
-- repair/rebuild workflows;
-- production batches;
-- facility construction;
-- staff skill effects on quality or duration;
-- campaign engineering UI;
-- calibrated balance claims.
-
-Those belong to subsequent engineering/inventory and product-UI milestones. TM-07's purpose is to establish traceable, non-magical progression from scarce work capacity to a real fitted object with a tested race-model seam.
+Failed-prototype simulation, accumulated organizational knowledge, multiple production copies/batches, homologation, facility construction, staff-skill effects on quality/duration and dedicated engineering specialist UI remain separate depth. Calibrated balance is not established by automated profile-effect tests. The engineering authority retains traceable progression from reserved work to a real fitted object through the tested race-model seam.

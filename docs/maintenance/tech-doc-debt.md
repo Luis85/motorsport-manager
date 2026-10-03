@@ -1,8 +1,8 @@
 # Technical and documentation debt maintenance
 
-Status: in progress on `chore/tech-doc-debt-maintenance`. Base: `main` at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c` (merged PR #24).
+Status: PR #27 implementation roadmap completed and merged on 2 October 2026 as `2863adcd71f2c161e47bc8879c46e1eb8e9a970a`. Historical branch: `chore/tech-doc-debt-maintenance`, based on merged PR #24 at `66ab6f4e8e066f8abac649cd9ac3b98d42760a5c`. Subsequent PR #28/#29 data-driven, compatibility and full quality closure is recorded in [the review ledger](data-driven-code-review.md).
 
-This branch began as focused technical/documentation maintenance. It now also contains bounded follow-up product foundations requested on the same PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, atomic weekend consequences, versioned season authority, commitment-aware finance, people/contracts/availability, and facilities/capacity/rented services. None changes race physics, sporting arithmetic or the independently playable standalone weekend.
+The PR #27 branch began as focused technical/documentation maintenance. It also delivered bounded follow-up product foundations requested on that PR: a read-only Minimal forecast surface, selectable Advanced presentation, deterministic campaign state/storage, atomic weekend consequences, versioned season authority, commitment-aware finance, people/contracts/availability, and facilities/capacity/rented services. The maintenance refactors preserve sporting arithmetic/RNG order and the independently playable standalone weekend. TM-07 adds the explicitly versioned frozen performance-profile seam described below; it is not an undocumented recalibration.
 
 ## Scope and acceptance
 
@@ -14,7 +14,7 @@ This branch began as focused technical/documentation maintenance. It now also co
 
 ## Publication gate
 
-Keep the PR in draft until the exact final commit has green required CI and synchronized documentation. A successful advisory-quality job is not a clean lint or maintainability sign-off. Human playtesting and same-hardware performance measurement remain separate product-validation work.
+Keep each follow-up PR in draft until its exact final commit has green required CI and synchronized documentation. A successful advisory-quality job is not a clean lint or maintainability sign-off. Human playtesting and same-hardware performance measurement remain separate product-validation work.
 
 ## Implemented milestones
 
@@ -127,7 +127,7 @@ Keep the PR in draft until the exact final commit has green required CI and sync
 
 ## Preserved boundaries
 
-- No race-physics, race-RNG/arithmetic-order, race scoring, race checkpoint, content schema, mechanic provider or existing race-command change.
+- Responsibility-only maintenance retains race arithmetic/RNG order, scoring and existing commands. TM-07 deliberately introduced the documented versioned per-car performance-profile seam (race checkpoint v12); later content and campaign additions retain their own explicit schema/version boundaries.
 - Minimal and Advanced mount over the same authoritative weekend.
 - Campaign time, competition, economy, personnel and operations remain outside `RaceSim`, replay, rendering and the standalone result archive.
 - Cash, commitments, reserve policy and assumptions remain different values.
@@ -145,7 +145,7 @@ GitHub Actions executes independently for PR updates. Judge this branch only by 
 - Linux/Windows packaged build and native smoke; and
 - advisory quality comparison.
 
-A cancelled, superseded or intermediate run is not evidence for the final head. No local Godot runner is available in this maintenance execution environment. Source/tree, bounded static review, documentation consistency and line-budget checks do not replace executable acceptance.
+A cancelled, superseded or intermediate run is not evidence for the final head. The old PR #27 handoff lacked a local Godot runner; the PR #29 review uses the pinned native engine and complete quality tools. Source/tree, static review, documentation consistency and a clean advisory report still do not replace exact-source gameplay/export acceptance. See [verification](../verification.md) and the current PR checks for the relevant run and artifacts.
 
 ## Campaign data-authority review and closure
 
@@ -171,7 +171,7 @@ This follow-up closes the touched debt without rewriting unrelated race/UI syste
 ## Deliberately remaining debt
 
 - The previously oversized `race_sim.gd`, `weekend.gd`, `main.gd`, `pitwall_workspace.gd` and Minimal race workspace were closed in the data-driven review through cohesive responsibility extraction. Keep the 400-code-line budget closed for future changes; do not collapse the extracted authorities back into their facades.
-- Advisory findings are not a verified bug count. Responsibility extraction can appear as both resolved and new diagnostics; inspect the complete exact-head report.
+- The PR #29 complete-tool review closes the lint/formatting/complexity/line-budget inventory. Keep it closed with a fresh complete report; metric findings are not a verified bug count or a human usability sign-off.
 - Live provisional race adjudication remains outside the final-only settlement contract. Explicit post-result correction preview/application is implemented; a live steward simulation is not.
 - Dedicated specialist management screens for recruitment, engineering portfolio, facilities, commercial, finance, academy and dynasty remain future presentation work over the implemented authorities.
 - Richer role-quality effects, staff fatigue/chemistry, supplier disruption, engineering failure modes, academy competition, era-specific UI composition and real-world accounting semantics remain later depth rather than hidden first-slice assumptions.

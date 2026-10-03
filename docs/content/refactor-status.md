@@ -68,9 +68,11 @@ own validated presentation metadata, rather than a new executable external-pack 
 as an audit of every other subsystem. Windows native exported-runtime execution passed on the exact PR #24 head.
 Human playtesting is still a separate product-validation activity.
 
-New source/test files remain within the code-line budgets. Existing oversized
-files remain visible (including RaceSim, which receives frozen-profile plumbing);
-no blanket quality exclusions or adjusted sporting checkpoints are added.
+At the PR #24 milestone, oversized files including RaceSim remained visible.
+The subsequent PR #28/#29 responsibility splits and full quality remediation
+closed the source/test line-budget inventory without exclusions, changed budgets
+or adjusted sporting checkpoints. See [the review ledger](../maintenance/data-driven-code-review.md)
+for the dated baseline and complete-tool report; future edits require a fresh scan.
 
 ## Final hardening follow-up
 
