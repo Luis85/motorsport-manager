@@ -263,6 +263,8 @@ class ToolboxArchitectureTests(unittest.TestCase):
         "GameToolbox": "scripts/application/toolbox/game_toolbox.gd",
         "DeveloperWeekends": "scripts/application/toolbox/developer_weekends.gd",
         "DeveloperWeekendSession": "scripts/application/toolbox/developer_weekend_session.gd",
+        "DeveloperWeekendDispatch": "scripts/application/toolbox/developer_weekend_dispatch.gd",
+        "CampaignWeekendWorkflow": "scripts/application/campaign/weekend_workflow.gd",
         "DeveloperCampaigns": "scripts/application/toolbox/developer_campaigns.gd",
         "DeveloperTracks": "scripts/application/toolbox/developer_tracks.gd",
         "GameToolboxFactory": "scripts/services/toolbox/factory.gd",
@@ -298,6 +300,31 @@ class ToolboxArchitectureTests(unittest.TestCase):
             "var owner: DeveloperWeekendSession\nfunc refresh():\n\treturn owner.step_ticks(1)\n"
         )
         self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_ui_cannot_construct_live_campaign_weekend_or_dispatch_commands(self):
+        for source in (
+            "func depart(checkpoint):\n\treturn CampaignWeekendWorkflow.depart(checkpoint)\n",
+            "func execute(port):\n\treturn DeveloperWeekendDispatch.execute(\n"
+            '\t\tport, "weekend.step_ticks", "session", {"count": 1})\n',
+        ):
+            with self.subTest(source=source):
+                self.assertIn("detached-renderer", [v.rule for v in self.scan_consumer(source)])
+
+    def test_detached_campaign_candidate_transforms_remain_available(self):
+        for name in (
+            "DeveloperCampaignPlanning",
+            "DeveloperCampaignManagementActions",
+            "DeveloperCampaignOrganizationActions",
+            "DeveloperCampaignSeasonActions",
+            "DeveloperTrackEdits",
+        ):
+            self.write(
+                f"scripts/application/toolbox/{name}.gd",
+                f"class_name {name}\nextends RefCounted\n",
+            )
+            source = f"func candidate(value, action, payload):\n\treturn {name}.apply(value, action, payload)\n"
+            with self.subTest(name=name):
+                self.assertEqual([], self.scan_consumer(source))
 
     def test_named_subclasses_cannot_hide_live_toolbox_authority(self):
         for authority in self.AUTHORITIES:

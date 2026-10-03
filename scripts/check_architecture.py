@@ -55,6 +55,8 @@ PRESENTATION_AUTHORITY = {
     "GameToolboxFactory",
     "DeveloperWeekends",
     "DeveloperWeekendSession",
+    "DeveloperWeekendDispatch",
+    "CampaignWeekendWorkflow",
     "DeveloperCampaigns",
     "DeveloperTracks",
     "TrackReferencePreview",
