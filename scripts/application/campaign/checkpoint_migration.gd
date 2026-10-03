@@ -12,6 +12,12 @@ static func upgrade(data: Variant) -> Dictionary:
 	var state = CampaignState.restore(data.state)
 	if state == null:
 		return {}
+	if data.has("economy"):
+		var economy = CampaignEconomy.upgrade(data.economy, state.clock.elapsed_slots)
+		if economy.is_empty():
+			return {}
+		data = data.duplicate(true)
+		data.economy = economy
 	if int(data.version) == CampaignCheckpoint.ENGINEERING_VERSION:
 		var management = CampaignManagement.empty(
 			state.campaign_id, state.organization_id, state.clock.elapsed_slots

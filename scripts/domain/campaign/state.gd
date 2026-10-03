@@ -25,6 +25,8 @@ static func create(config: Dictionary) -> CampaignState:
 	for key in ["campaign_id", "organization_id", "principal_id"]:
 		if not CampaignIdentity.valid(config.get(key)):
 			return null
+	if not config.get("start", {}) is Dictionary:
+		return null
 	var initial_clock = CampaignClock.create(config.get("start", {}))
 	if (
 		initial_clock == null
