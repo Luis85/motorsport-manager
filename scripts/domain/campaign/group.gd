@@ -275,6 +275,8 @@ static func validate(data: Variant) -> String:
 
 
 static func _era(input: Dictionary, slot: int) -> Dictionary:
+	if not input.get("capabilities", []) is Array:
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"display_name": input.get("display_name"),

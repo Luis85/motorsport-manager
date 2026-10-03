@@ -16,8 +16,8 @@ static func submit(current: Dictionary, input: Dictionary, rules: Dictionary) ->
 	var record = {
 		"entrant_id": entrant_id,
 		"team_id": input.get("team_id"),
-		"person_ids": input.get("person_ids", []).duplicate(true),
-		"car_ids": input.get("car_ids", []).duplicate(true),
+		"person_ids": input.get("person_ids", []),
+		"car_ids": input.get("car_ids", []),
 		"status": "submitted"
 	}
 	var error = _entry_error(record, rules)
@@ -27,7 +27,7 @@ static func submit(current: Dictionary, input: Dictionary, rules: Dictionary) ->
 	if not error.is_empty():
 		return _reject(error, current)
 	var candidate = current.duplicate(true)
-	candidate[entrant_id] = record
+	candidate[entrant_id] = record.duplicate(true)
 	return {"ok": true, "status": "submitted", "error": "", "entries": candidate}
 
 
@@ -59,6 +59,8 @@ static func validate(value: Variant, rules: Dictionary) -> String:
 	var live_teams = {}
 	for entrant_id in value:
 		var entry = value[entrant_id]
+		if not entry is Dictionary:
+			return _entry_error(entry, rules)
 		if entrant_id != entry.get("entrant_id"):
 			return "Campaign entry key disagrees with its identity."
 		var error = _entry_error(entry, rules)

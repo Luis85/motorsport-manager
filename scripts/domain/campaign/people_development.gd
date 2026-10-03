@@ -297,6 +297,12 @@ static func validate(data: Variant) -> String:
 
 
 static func _candidate(input: Dictionary, created_slot: int) -> Dictionary:
+	if (
+		not input.get("eligible_roles", []) is Array
+		or not input.get("attributes", {}) is Dictionary
+		or not input.get("preferences", []) is Array
+	):
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"display_name": input.get("display_name"),

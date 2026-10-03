@@ -6,6 +6,8 @@ const MAX_ROLES = 8
 
 
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
+	if not input.get("eligible_roles", []) is Array:
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"display_name": input.get("display_name"),

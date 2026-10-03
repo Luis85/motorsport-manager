@@ -4,6 +4,8 @@ extends RefCounted
 
 ## Validated specification. It is knowledge/design evidence, not a physical part.
 static func build(project: Dictionary, validated_slot: int, work_order_id: String) -> Dictionary:
+	if not project.get("profile_delta", {}) is Dictionary:
+		return {}
 	var data = {
 		"id": project.get("design_id"),
 		"project_id": project.get("id"),
@@ -27,6 +29,7 @@ static func validate(data: Variant) -> String:
 		or not RaceCheckpoint.integral(
 			data.get("validated_slot"), 0, CampaignClock.MAX_ELAPSED_SLOTS
 		)
+		or not data.get("profile_delta", {}) is Dictionary
 		or RacePerformanceProfile.build(data.get("profile_delta", {})).is_empty()
 	):
 		return "Campaign engineering design has invalid validated capability evidence."

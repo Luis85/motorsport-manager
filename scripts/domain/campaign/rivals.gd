@@ -110,6 +110,12 @@ static func validate(data: Variant) -> String:
 
 
 static func _build_team(input: Dictionary, created_slot: int) -> Dictionary:
+	if (
+		not input.get("person_ids", []) is Array
+		or not input.get("car_ids", []) is Array
+		or (input.has("policy") and not input.policy is Dictionary)
+	):
+		return {}
 	var data = {
 		"team_id": input.get("team_id"),
 		"entrant_id": input.get("entrant_id"),

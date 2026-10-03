@@ -16,6 +16,8 @@ static func build(
 	account_people: Array,
 	finance: Dictionary
 ) -> Dictionary:
+	if not finance.get("position_bonus_minor", []) is Array:
+		return {}
 	var data = {
 		"kind": KIND,
 		"version": VERSION,

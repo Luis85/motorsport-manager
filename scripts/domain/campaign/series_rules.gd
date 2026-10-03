@@ -14,6 +14,8 @@ const CLASSIFICATION_POLICY = "final_only"
 
 
 static func build(input: Dictionary) -> Dictionary:
+	if not input.get("points_by_position", []) is Array:
+		return {}
 	var data = {
 		"kind": KIND,
 		"version": VERSION,

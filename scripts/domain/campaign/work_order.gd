@@ -7,6 +7,12 @@ const MAX_ASSIGNMENTS = 16
 
 
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
+	if (
+		not input.get("assignment_ids", []) is Array
+		or not input.get("personnel_reservation_ids", []) is Array
+		or not input.get("commitment_ids", []) is Array
+	):
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"mode": input.get("mode"),

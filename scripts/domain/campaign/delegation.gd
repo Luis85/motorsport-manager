@@ -122,6 +122,11 @@ static func validate(data: Variant) -> String:
 
 
 static func _build(input: Dictionary, created_slot: int) -> Dictionary:
+	if (
+		not input.get("allowed_categories", []) is Array
+		or not input.get("protected_ids", []) is Array
+	):
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"owner_person_id": input.get("owner_person_id"),

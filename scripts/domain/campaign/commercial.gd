@@ -147,6 +147,12 @@ static func guaranteed_commitments(agreement: Dictionary) -> Array:
 
 
 static func _build(input: Dictionary, signed_slot: int) -> Dictionary:
+	if (
+		not input.get("guaranteed_payments", []) is Array
+		or not input.get("appearances", []) is Array
+		or not input.get("bonus_terms", []) is Array
+	):
+		return {}
 	var data = {
 		"id": input.get("id"),
 		"sponsor_name": input.get("sponsor_name"),

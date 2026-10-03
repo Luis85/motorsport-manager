@@ -16,6 +16,8 @@ const MAX_TITLE = 100
 
 
 static func build(input: Dictionary, created_slot: int) -> Dictionary:
+	if not input.get("profile_delta", {}) is Dictionary:
+		return {}
 	var id = input.get("id")
 	var data = {
 		"id": id,
@@ -63,7 +65,10 @@ static func validate(data: Variant) -> String:
 		or data.get("stage") not in STAGES
 	):
 		return "Campaign engineering project has invalid timing or stage."
-	if RacePerformanceProfile.build(data.get("profile_delta", {})).is_empty():
+	if (
+		not data.get("profile_delta", {}) is Dictionary
+		or RacePerformanceProfile.build(data.get("profile_delta", {})).is_empty()
+	):
 		return "Campaign engineering project has an unsupported performance profile."
 	if not RaceCheckpoint.integral(data.get("material_cost_minor"), 1, CampaignEconomy.MAX_MINOR):
 		return "Campaign engineering project has an invalid material cost."
