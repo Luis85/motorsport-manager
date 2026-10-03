@@ -16,7 +16,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from gdscript_contracts import inheritance_sources, mask
+from gdscript_contracts import aggregate_dispatch_sources, mask
 
 ROOT = Path(__file__).resolve().parents[1]
 MECHANICS = Path("scripts/domain/mechanics")
@@ -59,7 +59,7 @@ def hook_contracts(root: Path) -> dict[str, tuple[str, str]]:
         for path in (root / "scripts").rglob("*.gd")
     }
     result = {}
-    for path, source in inheritance_sources(sources, "scripts/domain/race_sim.gd"):
+    for path, source in aggregate_dispatch_sources(sources, "scripts/domain/race_sim.gd"):
         declarations = _source_hook_contracts(source)
         duplicates = result.keys() & declarations.keys()
         if duplicates:

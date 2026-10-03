@@ -16,6 +16,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import mechanics
 import verify
+from gdscript_contracts import inheritance_sources
 
 
 class MechanicsToolTests(unittest.TestCase):
@@ -43,7 +44,7 @@ class MechanicsToolTests(unittest.TestCase):
             path.relative_to(self.root).as_posix(): path.read_text()
             for path in (self.root / "scripts").rglob("*.gd")
         }
-        for path, text in mechanics.inheritance_sources(sources, "scripts/domain/race_sim.gd"):
+        for path, text in inheritance_sources(sources, "scripts/domain/race_sim.gd"):
             if hook in mechanics._source_hook_contracts(text):
                 return self.root / path
         self.fail("Missing aggregate dispatch for " + hook)

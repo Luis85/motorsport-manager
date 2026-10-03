@@ -15,7 +15,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from gdscript_contracts import inheritance_sources, mask
+from gdscript_contracts import aggregate_dispatch_sources, global_classes, inheritance_sources, mask
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
@@ -85,7 +85,9 @@ def layer(path: str) -> str:
     return parts[1] if len(parts) > 2 and parts[0] == "scripts" else ""
 
 
-def _inspect_identifiers(path: str, text: str, classes: dict[str, str], fail) -> None:
+def _inspect_identifiers(
+    path: str, text: str, classes: dict[str, str], authority_paths: set[str], fail
+) -> None:
     own = layer(path)
     for match in re.finditer(r"\b[A-Za-z_]\w*\b", text):
         name = match[0]
@@ -96,7 +98,7 @@ def _inspect_identifiers(path: str, text: str, classes: dict[str, str], fail) ->
             fail(path, match.start(), "domain-engine-authority", name)
         if own == "domain" and name == "Time":
             fail(path, match.start(), "domain-wall-clock", name)
-        if own == "ui" and name in PRESENTATION_AUTHORITY:
+        if own == "ui" and (name in PRESENTATION_AUTHORITY or target in authority_paths):
             fail(path, match.start(), "detached-renderer", name)
 
 
@@ -147,25 +149,50 @@ def _inspect_presentation(path: str, text: str, fail) -> None:
             fail(path, match.start(), "ui-drives-simulation", match[1])
 
 
+def _authority_ancestry(
+    sources: dict[str, str], classes: dict[str, str]
+) -> tuple[set[str], list[Violation]]:
+    paths = set()
+    errors = []
+    for name, path in classes.items():
+        if name in PRESENTATION_AUTHORITY:
+            try:
+                paths.update(
+                    parent for parent, _ in inheritance_sources(sources, path, classes=classes)
+                )
+            except ValueError as error:
+                paths.add(path)
+                errors.append(Violation(path, 1, "authority-inheritance", str(error)))
+    # Descendants keep authority even without an explicit global name. Resolve
+    # full chains so aliases across layers or several subclasses cannot hide it.
+    roots = paths.copy()
+    for path in sources:
+        # Service and composition types are already forbidden to UI by direction;
+        # follow the layers where a renamed authority could otherwise be allowed.
+        if layer(path) not in ALLOWED["ui"]:
+            continue
+        try:
+            chain = {parent for parent, _ in inheritance_sources(sources, path, classes=classes)}
+        except ValueError as error:
+            if not any(existing.path == path for existing in errors):
+                errors.append(Violation(path, 1, "authority-inheritance", str(error)))
+            continue
+        if chain & roots:
+            paths.update(chain)
+    return paths, errors
+
+
 def inspect(root: Path) -> tuple[list[Violation], int]:
     sources = {
         p.relative_to(root).as_posix(): p.read_text(encoding="utf-8")
         for p in sorted((root / "scripts").rglob("*.gd"))
     }
     code = {path: mask(text) for path, text in sources.items()}
-    classes: dict[str, str] = {}
-    for path, text in code.items():
-        match = re.search(r"^class_name\s+(\w+)", text, re.M)
-        if match:
-            classes[match[1]] = path
-    authority_paths = set()
-    for name, path in classes.items():
-        if name in PRESENTATION_AUTHORITY:
-            try:
-                authority_paths.update(parent for parent, _ in inheritance_sources(sources, path))
-            except ValueError:
-                authority_paths.add(path)  # The hook/runtime checks report invalid inheritance.
-    errors: list[Violation] = []
+    try:
+        classes = global_classes(sources)
+    except ValueError as error:
+        return [Violation("scripts", 1, "script-global-class", str(error))], len(sources)
+    authority_paths, errors = _authority_ancestry(sources, classes)
 
     def fail(path: str, pos: int, rule: str, detail: str) -> None:
         errors.append(Violation(path, code[path][:pos].count("\n") + 1, rule, detail))
@@ -173,7 +200,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
     for path, text in code.items():
         if layer(path) not in ALLOWED:
             continue
-        _inspect_identifiers(path, text, classes, fail)
+        _inspect_identifiers(path, text, classes, authority_paths, fail)
         _inspect_loads(path, text, sources[path], authority_paths, fail)
         _inspect_presentation(path, text, fail)
     # Providers must declare actual dispatch hooks, never unrelated aggregate helpers.
@@ -182,7 +209,7 @@ def inspect(root: Path) -> tuple[list[Violation], int]:
     if aggregate_path in sources and contract_path in sources:
         dispatched = []
         try:
-            aggregate_sources = inheritance_sources(sources, aggregate_path)
+            aggregate_sources = aggregate_dispatch_sources(sources, aggregate_path)
         except ValueError as error:
             fail(aggregate_path, 0, "mechanic-hook-contract", str(error))
             aggregate_sources = []

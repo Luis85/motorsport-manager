@@ -54,11 +54,48 @@ def _validate_report(label: str, report: dict) -> None:
         or not report["simulation"].get("outcome_hash")
     ):
         raise ValueError(f"{label} deterministic outcome evidence is missing")
+    for row in report["controlled"]:
+        _validate_controlled(row)
+    simulation = report["simulation"]
+    _require_integer(simulation, "steps", 1)
+    _require_number(simulation, "simulated_seconds", positive=True)
+    _require_hash(simulation)
     timings = report.get("timings")
     if not isinstance(timings, list) or not timings:
         raise ValueError(f"{label} timing workloads are missing")
     for row in timings:
         _validate_timing(row)
+
+
+def _require_integer(record: dict, field: str, minimum: int) -> None:
+    if type(record.get(field)) is not int or record[field] < minimum:
+        raise ValueError(f"Invalid deterministic workload field: {field}")
+
+
+def _require_number(record: dict, field: str, *, positive: bool) -> None:
+    value = record.get(field)
+    if (
+        type(value) not in (int, float)
+        or not math.isfinite(value)
+        or (value <= 0 if positive else value < 0)
+    ):
+        raise ValueError(f"Invalid deterministic workload field: {field}")
+
+
+def _require_hash(record: dict) -> None:
+    value = record.get("outcome_hash")
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("Deterministic outcome hash must be a non-empty string")
+
+
+def _validate_controlled(row: dict) -> None:
+    if not isinstance(row, dict):
+        raise ValueError("Controlled frame evidence must contain workload records")
+    _require_number(row, "speed", positive=True)
+    _require_integer(row, "input_frames", 1)
+    _require_integer(row, "fixed_steps", 1)
+    _require_number(row, "frame_cap_discarded_seconds", positive=False)
+    _require_hash(row)
 
 
 def _validate_timing(row: dict) -> None:
