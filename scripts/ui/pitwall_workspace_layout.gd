@@ -23,6 +23,9 @@ static func adapt_layout(view) -> void:
 		return
 	view.race_workspace.show()
 	view.team_summary_label.show()
+	# Reserve the second urgent-action row and the help footer at enlarged text.
+	# The map keeps its normal minimum in taller windows and at ordinary text scale.
+	view.canvas.custom_minimum_size.y = 130 if view.text_scale > 1.15 and view.size.y < 790 else 170
 	if view.decision_queue:
 		view.decision_queue.visible = view.decision_queue.pending_count > 0 or view.size.y >= 790
 	var enlarged = view.text_scale > 1.0
@@ -44,6 +47,8 @@ static func adapt_layout(view) -> void:
 		and view.size.x >= 1360
 		and view.size.y >= 790
 		and view.text_scale <= 1.15
+		# Enlarged urgent cards need the paired row to preserve both command rows and the footer.
+		and (view.text_scale <= 1.0 or view.decision_queue.pending_count == 0)
 	)
 	if view.driver_rail:
 		view.driver_rail.custom_minimum_size.x = ceilf(340 * view.text_scale)
