@@ -29,29 +29,54 @@ static func stress(sim: RaceSim, car: RaceCar, tyre_life: float, punctured: bool
 			"factors": [],
 			"version": STRESS_VERSION
 		}
-	var score = 15.0
+	var demand: Dictionary = sim.tuning.balance.presentation
+	var score = demand.demand_base
 	var factors: Array = []
 	if car.pace == 2:
-		factors.append({"label": "Push", "points": 20.0})
+		factors.append({"label": "Push", "points": demand.demand_push})
 	elif car.pace == 0:
-		score = 7.0
+		score = demand.demand_calm_base
 	_append_traffic(sim, car, factors)
 	if punctured:
-		factors.append({"label": "Puncture", "points": 30.0})
-	elif tyre_life >= 0 and tyre_life < 40:
-		factors.append({"label": "Low tread", "points": 20.0 * (1.0 - tyre_life / 40.0)})
+		factors.append({"label": "Puncture", "points": demand.demand_puncture})
+	elif tyre_life >= 0 and tyre_life < demand.demand_tread_threshold_percent:
+		factors.append(
+			{
+				"label": "Low tread",
+				"points":
+				(
+					demand.demand_tread_points
+					* (1.0 - tyre_life / demand.demand_tread_threshold_percent)
+				)
+			}
+		)
 	if car.damage > 0:
-		factors.append({"label": "Damage", "points": minf(20, car.damage * 0.6)})
+		factors.append(
+			{
+				"label": "Damage",
+				"points":
+				minf(demand.demand_damage_max, car.damage * demand.demand_damage_per_percent)
+			}
+		)
 	if car.route == "track":
 		var water = float(sim.surface_at(car).get("water", 0))
-		if water > 0.15:
-			factors.append({"label": "Wet track", "points": minf(15, water * 15)})
+		if water > demand.demand_water_threshold:
+			factors.append(
+				{
+					"label": "Wet track",
+					"points": minf(demand.demand_water_points, water * demand.demand_water_points)
+				}
+			)
 	if car.loss > 0:
-		factors.append({"label": "Recovering", "points": 15.0})
+		factors.append({"label": "Recovering", "points": demand.demand_recovery})
 	for factor in factors:
 		score += factor.points
 	score = clampf(score, 0, 100)
-	var band = "High" if score >= 65 else ("Raised" if score >= 35 else "Low")
+	var band = (
+		"High"
+		if score >= demand.demand_high
+		else ("Raised" if score >= demand.demand_raised else "Low")
+	)
 	factors.sort_custom(func(a, b): return a.points > b.points)
 	var cause = (
 		str(factors[0].label)
@@ -75,7 +100,7 @@ static func stress(sim: RaceSim, car: RaceCar, tyre_life: float, punctured: bool
 				+ "history."
 			)
 			% [
-				7 if car.pace == 0 else 15,
+				demand.demand_calm_base if car.pace == 0 else demand.demand_base,
 				", ".join(evidence) if not evidence.is_empty() else "no added demand"
 			]
 		),
@@ -175,5 +200,15 @@ static func _append_traffic(sim: RaceSim, car: RaceCar, factors: Array) -> void:
 				)
 			)
 			nearest = minf(nearest, gap)
-		if nearest < 70:
-			factors.append({"label": "Traffic", "points": 24.0 * (1.0 - nearest / 70.0)})
+		var demand: Dictionary = sim.tuning.balance.presentation
+		if nearest < demand.demand_traffic_distance_m:
+			factors.append(
+				{
+					"label": "Traffic",
+					"points":
+					(
+						demand.demand_traffic_points
+						* (1.0 - nearest / demand.demand_traffic_distance_m)
+					)
+				}
+			)
