@@ -73,32 +73,34 @@ func validate(session: String, publication: bool = false) -> Dictionary:
 	)
 
 
-func commit(session: String, document: Dictionary, expected_revision: int) -> Dictionary:
+func commit(session: String, document: Dictionary, expected_revision: Variant) -> Dictionary:
 	var editor = _editor(session)
 	if editor == null:
 		return _missing()
+	var revision_error = _revision_error(expected_revision)
+	if not revision_error.is_empty():
+		return revision_error
 	if not RaceStateValue.serializable(document):
 		return DeveloperToolResult.failure(
 			"INVALID_ARGUMENT", "Use a bounded finite JSON document."
 		)
 	var canonical: Dictionary = DeveloperToolResult.success(document).result
-	if not editor.commit(canonical, expected_revision):
+	if not editor.commit(canonical, int(expected_revision)):
 		return DeveloperToolResult.failure("DOMAIN_REJECTED", editor.last_error)
 	return read(session)
 
 
 func edit(
-	session: String, action: String, parameters: Dictionary, expected_revision: int
+	session: String, action: String, parameters: Dictionary, expected_revision: Variant
 ) -> Dictionary:
 	var editor = _editor(session)
 	if editor == null:
 		return _missing()
 	if action not in DeveloperTrackEdits.ACTIONS:
 		return DeveloperToolResult.failure("UNKNOWN_COMMAND", "Choose a supported track edit.")
-	if editor.revision != expected_revision:
-		return DeveloperToolResult.failure(
-			"STALE_REVISION", "Start from the current document revision."
-		)
+	var revision_error = _edit_revision_error(editor, expected_revision)
+	if not revision_error.is_empty():
+		return revision_error
 	var error = DeveloperFacetValues.argument_error(parameters, DeveloperTrackEdits.schema(action))
 	if not error.is_empty():
 		return error
@@ -214,6 +216,23 @@ func dispatch(operation: String, session: String, arguments: Dictionary) -> Dict
 		"track.close":
 			result = close(session)
 	return result
+
+
+static func _revision_error(value: Variant) -> Dictionary:
+	if not DeveloperToolResult.integral(value, 0, 9007199254740991):
+		return DeveloperToolResult.failure("INVALID_ARGUMENT", "Use an integral document revision.")
+	return {}
+
+
+static func _edit_revision_error(editor: TrackEditorSession, value: Variant) -> Dictionary:
+	var error = _revision_error(value)
+	if not error.is_empty():
+		return error
+	if editor.revision != int(value):
+		return DeveloperToolResult.failure(
+			"STALE_REVISION", "Start from the current document revision."
+		)
+	return {}
 
 
 func _new_session_error(session: String) -> Dictionary:
