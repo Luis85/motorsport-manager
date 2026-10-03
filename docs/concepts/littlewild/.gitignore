@@ -2,6 +2,6 @@ __pycache__/
 *.pyc
 node_modules/
 .generated/
-verification/
+/verification/
 screenshots/
 source/*-results.json
