@@ -1,4 +1,6 @@
 /// <reference path="./renderer-contracts.d.ts" />
+/// <reference path="./storytelling-renderer-contracts.d.ts" />
+/// <reference path="./animation-contracts.d.ts" />
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 interface Result {name:string;passed:boolean;error?:string;}
@@ -75,9 +77,60 @@ test('Dimension metadata is bounded detached data and executes no inherited call
  let reads=0;const dimensions=['2d'];Object.defineProperty(dimensions,'0',{get(){reads++;return '2d';},enumerable:true});assert(!registry.validate({...metadata(),dimensions}).ok);
  const inherited=['2d'];Object.setPrototypeOf(inherited,Object.create(Array.prototype,{[Symbol.iterator]:{value(){reads++;throw Error('No caller iterator');}}}));assert(!registry.validate({...metadata(),dimensions:inherited}).ok);assert.equal(reads,0);
 });
+let previewApi:LWStorytellingRenderer.Api|null=null;
+async function previewContract(basic:boolean):Promise<void>{
+ const name=basic?'Paused Basic previews reuse immutable geometry and repaint every visual change':'Registered preview callbacks retain elapsed time, queries and disposal across cached frames';
+ const keys=['document','LWStorytellingPreview','LWRendererObserver','LWAnimations','LWStorytellingRenderer'],prior=new Map(keys.map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
+ let release=()=>{};
+ try{
+  require('./content-runtime.js');require('./storytelling-projection.js');
+  const base=root.LWRendererFrame.create(engine,options),frames:LittlewildRenderer.Frame[]=[],overlays:LittlewildRenderer.Frame[]=[];
+  let sourceFrames=0,disposals=0,rejectPaint=false,context:LittlewildRenderer.Context|null=null,resolve:(value:LittlewildRenderer.Instance)=>void=()=>{};
+  const canvas={dataset:{},style:{},width:800,height:600,isConnected:true,remove(){}};
+  const container={clientWidth:800,clientHeight:600,querySelector:()=>canvas,prepend(){},append(){}};
+  const backend:LittlewildRenderer.Instance={mount(){},resize(viewport){canvas.width=viewport.width;canvas.height=viewport.height;},draw(frame){if(rejectPaint){rejectPaint=false;throw Error('Injected paint failure');}frames.push(frame);},dispose(){disposals++;}};
+  const animation:LWAnimations.Layer={ready:Promise.resolve({ok:true}),looping:false,draw(frame){overlays.push(frame);},dispose(){}};
+  const status:LWStorytelling.Status={cutsceneId:'clip',sceneId:'scene',state:'paused',time:0,duration:5,completion:0,generation:0};
+  const playback:LWStorytelling.Playback={status:()=>({...status}),sample:()=>({cutsceneId:'clip',sceneId:'scene',time:status.time,duration:5,poses:[{target:{category:'creatures',id:'c1'},values:{x:status.time}}],camera:{},animations:[]}),
+   play(){status.state='playing';},pause(){status.state='paused';},resume(){status.state='playing';},stop(){status.time=0;status.state='stopped';},replay(){status.time=0;status.generation++;status.state='playing';},seek(time){status.time=time;},skip(){},advance(){},drainEvents:()=>[],dispose(){status.state='disposed';}};
+  Object.assign(globalThis,{document:{createElement:()=>({dataset:{},style:{},width:0,height:0,remove(){}})},
+   LWStorytellingPreview:{create:()=>({frame(value:{viewport:LittlewildRenderer.Viewport;time:number;delta:number;camera:LittlewildRenderer.Camera}){sourceFrames++;return {...base,...value};},asset:()=>null,definition:()=>null})},
+   LWRendererObserver:{create(value:LittlewildRenderer.Context){context=value;return backend;}},LWAnimations:{create:()=>animation}});
+  if(!basic)release=registry.registerAsync(metadata('preview-delta-test'),value=>{context=value;return new Promise<LittlewildRenderer.Instance>(accept=>{resolve=accept;});});
+  require('./storytelling-renderer.js');
+  const api=previewApi??=(globalThis as unknown as {LWStorytellingRenderer:LWStorytellingRenderer.Api}).LWStorytellingRenderer;
+  const rendering={dimension:'3d' as const,rendererId:basic?'basic':'preview-delta-test'};
+  const pack={scenes:[{id:'scene',graph:{rendering}}]} as unknown as LWContentPorts.ScenarioPack;
+  const preview=api.create(container as unknown as HTMLElement,pack,'scene',playback);
+  preview.draw(0,.1);assert.equal(frames.length,0,'Preparation must finish before painting');
+  rendering.rendererId=basic?'preview-delta-test':'basic';if(!basic)resolve(backend);
+  assert.equal((await preview.ready).ok,true);assert.equal(frames.length,1,'Ready must paint the initial bitmap');
+  const first=frames[0]!,built=sourceFrames;
+  preview.draw(0,.25);preview.draw(0,.5);
+  assert.equal(sourceFrames,built,'Paused geometry is immutable and reusable');assert.equal(frames.length,basic?1:3);
+  assert.equal(overlays.length,3,'p5 retains every host draw');assert(Object.isFrozen(overlays.at(-1)));assert.equal(overlays.at(-1)!.delta,.5);
+  const query=(context as unknown as LittlewildRenderer.Context).query.frame();assert.equal(query.delta,.5);assert(Object.isFrozen(query));assert.equal(query.actors,first.actors);
+  if(!basic){assert.equal(frames[1]!.delta,.25);assert.equal(frames[2]!.delta,.5);assert.notEqual(frames[1],frames[2]);}
+  let count=frames.length;
+  playback.seek(2);preview.draw(2,0);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.actors[0]!.x,2);assert.equal(first.actors[0]!.x,0);
+  playback.seek(0);preview.draw(0,0);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.actors[0]!.x,0);
+  container.clientWidth=900;preview.draw(0,.1);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.viewport.width,900);
+  container.clientHeight=650;preview.draw(0,.1);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.viewport.height,650);
+  playback.stop();preview.draw(0,0);assert.equal(frames.length,++count);
+  playback.replay();preview.draw(0,0);assert.equal(frames.length,++count);
+  playback.pause();preview.draw(0,0);assert.equal(frames.length,++count);
+  if(basic){playback.seek(3);rejectPaint=true;assert.throws(()=>preview.draw(3,0),/Injected paint failure/);assert.equal(frames.length,count);preview.draw(3,0);assert.equal(frames.length,++count,'A failed paint must remain eligible for retry');}
+  preview.dispose();preview.dispose();assert.equal(disposals,1);preview.draw(3,.1);assert.equal(frames.length,count);assert.throws(()=>preview.snapshot(),/disposed/);
+  // A pending factory must release its eventual instance when the preview closes.
+  if(!basic){context=null;const pending=api.create(container as unknown as HTMLElement,{...pack,scenes:[{id:'scene',graph:{rendering:{dimension:'3d',rendererId:'preview-delta-test'}}}]} as unknown as LWContentPorts.ScenarioPack,'scene',playback);pending.dispose();resolve(backend);assert.equal((await pending.ready).ok,false);await Promise.resolve();await Promise.resolve();assert.equal(disposals,2);assert.equal(frames.length,count);}
+  results.push({name,passed:true});
+ }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
+ finally{release();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
+}
 async function finish():Promise<void>{
  const name='Asynchronous factories remain separate from synchronous creation without requiring browser globals';
  try{let calls=0;const release=registry.registerAsync(metadata('async-test'),async()=>{calls++;return instance;});assert.throws(()=>registry.create('async-test',{} as LittlewildRenderer.Context),/selectRendererAsync/);assert.equal(calls,0);assert.equal(await registry.prepare('async-test',{} as LittlewildRenderer.Context),instance);assert.equal(calls,1);release();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});}
+ await previewContract(true);await previewContract(false);
  const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
  fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
 }
