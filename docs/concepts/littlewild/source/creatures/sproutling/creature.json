@@ -34,6 +34,7 @@
   },
   "state": {
     "personalFields": [
+      "archetype",
       "name",
       "personality",
       "creature",
@@ -79,9 +80,12 @@
       "lastTemperCheck",
       "homeId",
       "worldPickup",
-      "worldSupply"
+      "worldSupply",
+      "eventInteractions",
+      "interactionCooldowns"
     ],
     "defaults": {
+      "archetype": "sproutling",
       "name": "Pip",
       "personality": "curious",
       "creature": {
@@ -277,7 +281,9 @@
       "lastTemperCheck": null,
       "homeId": null,
       "worldPickup": null,
-      "worldSupply": null
+      "worldSupply": null,
+      "eventInteractions": [],
+      "interactionCooldowns": {}
     },
     "modes": {
       "founder": {

@@ -14,15 +14,16 @@
     function definition(id) { return A.content.equipment.find(x => x.id === id); }
     function item(id) { return RES[id] ? { id, ...RES[id], weight: A.content.weights[id] } : definition(id) || (id === 'wooden_chest' ? (A.content.chest || A.defaultContent.chest) : null); }
     function profile(id) { return A.content.personalities.find(x => x.id === id) || A.content.personalities[0]; }
-    function arrivalPoint(personality = Creatures.defaultPersonality) { const transform = Creatures.seed(personality, 'arrival', 0).creature; return { x: transform.x, y: transform.y }; }
+    function arrivalPoint(archetype = Creatures.defaultArchetype, personality = Creatures.defaultPersonality) { const transform = Creatures.seed(archetype, personality, 'arrival', 0).creature; return { x: transform.x, y: transform.y }; }
     function initializeColony(self) {
         self._simulating = false;
         self._actor = null;
         const state = self.s;
         if (!state.colony) {
             const base = Object.fromEntries(PERSONAL.filter(k => state[k] !== undefined).map(k => [k, state[k]]));
-            const personality = typeof base.personality === 'string' && Factory.supportsPersonality(base.personality) ? base.personality : Creatures.defaultPersonality;
-            const c = Factory.hydrate(base, { id: 'c1', personality, mode: 'founder', sequence: 0, day: state.day, simTime: state.simTime });
+            const archetype = base.archetype, personality = base.personality;
+            if (typeof archetype !== 'string' || typeof personality !== 'string' || !Factory.supportsPersonality(archetype, personality)) throw Error('Fresh creature identity is invalid.');
+            const c = Factory.hydrate(base, { id: 'c1', archetype, personality, mode: 'founder', sequence: 0, day: state.day, simTime: state.simTime });
             const warehouse = { inventory: { ...c.inventory }, transfers: [] };
             c.inventory = Object.fromEntries(Object.keys(RES).map(k => [k, 0]));
             for (const [r, n] of [['berries', 2], ['water', 2]]) {
@@ -139,7 +140,7 @@
         xp(who, amount) { return super.xp(who, amount); }
         random(stream = 'actor') { const holder = stream === 'world' ? this.s.colony : this.actor.rpg, key = stream === 'world' ? 'rng' : 'rng'; const next = R.next(holder[key]); holder[key] = next.seed; return next.value; }
         load(c = this.actor) { return R.encumbrance(c.rpg.attributes.ST, Object.entries(c.inventory).reduce((n, [id, q]) => n + (item(id)?.weight || 0) * q, 0)); }
-        creatureDefinition(c = this.actor) { const definition = Creatures.forPersonality(c.personality); if (!definition) throw Error('Unknown creature definition.'); return definition; }
+        creatureDefinition(c = this.actor) { return Factory.definitionFor(c); }
         movementRate(c = this.actor) { const movement = this.creatureDefinition(c).movement; return (movement.baseSpeed + (c.bond >= movement.bondThreshold ? movement.bondedSpeedBonus : 0)) * this.load(c).move; }
         traitEffects(c = this.actor) { return c.traits.map(id => A.content.traits.find(t => t.id === id)).filter(Boolean); }
         modifiers(skill, c = this.actor) {
@@ -254,16 +255,16 @@
             return f.anger >= 60 ? 'Angry' : f.anger >= 30 ? 'Frustrated' : n.energy < 25 ? 'Sleepy' : n.food < 25 ? 'Hungry' : n.water < 25 ? 'Thirsty' : f.social < 25 ? 'Lonely' : n.joy >= 85 && c.bond >= 50 ? 'Delighted' : n.joy >= 58 ? 'Content' : n.joy < 35 ? 'Low spirits' : 'Thoughtful';
         }
         purchasePrice() { return Math.ceil(A.content.rules.purchaseBase * Math.pow(A.content.rules.purchaseGrowth, this.s.colony.purchased - 1)); }
-        purchaseCreature(personality) {
-            if (!Factory.supportsPersonality(personality))
-                return fail('Choose an available creature personality.');
+        purchaseCreature(personality, archetype = Creatures.defaultArchetype) {
+            if (!Factory.supportsPersonality(archetype, personality))
+                return fail('Choose an available creature archetype and personality.');
             if (this.creatures.length >= A.content.rules.maxCreatures)
                 return fail('This prototype supports ' + A.content.rules.maxCreatures + ' creatures.');
             const price = this.purchasePrice();
             if (this.s.player.coins < price)
                 return fail('Need ' + price + ' guide coins to welcome another creature.');
             const id = 'c' + this.s.colony.nextCreatureId;
-            const c = Factory.create({ id, personality, mode: 'arrival', sequence: this.s.colony.purchased, day: this.s.day, simTime: this.s.simTime });
+            const c = Factory.create({ id, archetype, personality, mode: 'arrival', sequence: this.s.colony.purchased, day: this.s.day, simTime: this.s.simTime });
             const settlement = this.settleEconomy({ id: this.economySettlementId('welcome'), guide: -price }, 'Welcomed ' + c.name);
             if (!settlement.ok)
                 return fail('The welcome cost could not be settled.');
@@ -534,7 +535,7 @@
             c.questHistory = c.questHistory.slice(0, 15);
             c.activeQuest = null;
             c.needsDeposit = true;
-            const arrival = arrivalPoint(c.personality);
+            const arrival = arrivalPoint(c.archetype, c.personality);
             c.creature.x = arrival.x;
             c.creature.y = arrival.y;
             c.task = null;

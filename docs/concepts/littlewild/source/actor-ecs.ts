@@ -14,12 +14,12 @@
  type Task=ComponentData&{kind:string;phase:string;orderId?:string|null;path?:Point[];elapsed?:number;duration:number;style?:string};
  type Intent=ComponentData&{kind:string;phase:string;orderId:string|null;status:'active'|'blocked'|'completed'|'arrived'};
  type Activity=ComponentData&{studying:boolean;working:boolean;walking:boolean;style:string;socialPreference:number;loadLevel:number;hasShelter:boolean};
- type CreatureMarker=ComponentData&{definitionId:string;personality:string};
- interface ActorRecord{id:string;personality:string;creature:Transform;needs:Needs;learning:Learning;feelings:Feelings;task?:Task;[key:string]:unknown;}
+ type CreatureMarker=ComponentData&{archetype:string;personality:string};
+ interface ActorRecord{id:string;archetype:string;personality:string;creature:Transform;needs:Needs;learning:Learning;feelings:Feelings;task?:Task;[key:string]:unknown;}
  interface ActorRules{format:'littlewild-actor-rules';schemaVersion:1;learning:Readonly<{playfulFatigue:number;standardFatigue:number;recoveryRate:number;recoverAt:number;limitAt:number}>;feelings:Readonly<{socialRate:number;socialPreferenceRate:number;angerRate:number}>;needs:Readonly<{workingKinds:readonly string[];foodWork:number;foodIdle:number;waterWork:number;waterIdle:number;energyWork:number;energyIdle:number;walkLoadFactor:number;comfortShelter:number;comfortWithoutShelter:number;joyRate:number}>;}
  interface Binding{type:string;field:string;}
  interface CreatureDefinition{id:string;}
- interface CreatureCatalog{forPersonality(id:string):CreatureDefinition|null;componentBindings(personality:string):readonly Binding[];}
+ interface CreatureCatalog{get(id:string):CreatureDefinition|null;supports(archetype:string,personality:string):boolean;componentBindings(archetype:string):readonly Binding[];}
  interface StepInputs{day:number;socialPreference:number;loadLevel:number;hasShelter:boolean;}
  interface ActivityInputs{walkable(x:number,y:number):boolean;moveRate:number;workRate:number;}
  interface ActivityOutcome{state:'idle'|'arrived'|'blocked'|'walking'|'working';completed:boolean;progress:number;intent:Intent|null;}
@@ -78,16 +78,16 @@
   activity.register<ActivityContext>({id:'task-intent-result',phase:'post',order:10,query:['Creature','Intent'],update(w,id,_dt,ctx){const intent=required<Intent>(w,id,'Intent');if(ctx.outcome.state==='blocked')intent.status='blocked';else if(ctx.outcome.completed)intent.status='completed';else if(ctx.outcome.state==='arrived')intent.status='arrived';else intent.status='active';}});
 
   function componentBindings(actor:ActorRecord):readonly Binding[]{
-   if(typeof actor.personality!=='string'||!Creatures.forPersonality(actor.personality))throw Error('Unknown creature personality.');
-   return Creatures.componentBindings(actor.personality);
+   if(typeof actor.archetype!=='string'||typeof actor.personality!=='string'||!Creatures.get(actor.archetype)||!Creatures.supports(actor.archetype,actor.personality))throw Error('Unknown creature archetype/personality pairing.');
+   return Creatures.componentBindings(actor.archetype);
   }
   function bind(actor:ActorRecord):void{
    if(!actor||typeof actor.id!=='string'||!/^[A-Za-z][A-Za-z0-9_-]{0,79}$/.test(actor.id))throw Error('Invalid actor entity.');
-   const definition=Creatures.forPersonality(actor.personality);
-   if(!definition)throw Error('Unknown creature definition.');
+   const definition=Creatures.get(actor.archetype);
+   if(!definition||!Creatures.supports(actor.archetype,actor.personality))throw Error('Unknown creature definition.');
    if(!world.entities.has(actor.id))world.create(actor.id);
    let marker=markers.get(actor.id);
-   if(!marker||marker.definitionId!==definition.id||marker.personality!==actor.personality){marker={definitionId:definition.id,personality:actor.personality};markers.set(actor.id,marker);world.set(actor.id,'Creature',marker);}
+   if(!marker||marker.archetype!==definition.id||marker.personality!==actor.personality){marker={archetype:definition.id,personality:actor.personality};markers.set(actor.id,marker);world.set(actor.id,'Creature',marker);}
    const bindings=componentBindings(actor),next=new Set(bindings.map(binding=>binding.type)),prior=boundTypes.get(actor.id),refs=boundRefs.get(actor.id)||new Map<string,ComponentData>();
    if(prior)for(const type of prior)if(!next.has(type)){if(world.has(actor.id,type))world.remove(actor.id,type);refs.delete(type);}
    for(const binding of bindings){const value=actor[binding.field];if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing actor component: '+binding.type);const component=value as ComponentData;if(refs.get(binding.type)!==component){world.set(actor.id,binding.type,component);refs.set(binding.type,component);}}

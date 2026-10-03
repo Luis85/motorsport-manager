@@ -24,7 +24,7 @@
         return n;
     }
     function initial() {
-        const personal = root.LWCreatures.seed(root.LWCreatures.defaultPersonality, 'founder', 0);
+        const personal = root.LWCreatures.seed(root.LWCreatures.defaultArchetype, root.LWCreatures.defaultPersonality, 'founder', 0);
         return { version: VERSION, ...personal, seed: 2718, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, player: { level: 1, xp: 0, coins: 86 }, rp: 10, buildings: [], nodes: makeNodes(), log: [], completedQuests: [], contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, ledger: [], nextId: 1 };
     }
     function threshold(level) { return 28 + level * 8; }

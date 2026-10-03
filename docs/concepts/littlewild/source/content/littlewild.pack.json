@@ -1036,7 +1036,8 @@
               "worldPickup": null,
               "homeId": null,
               "eventInteractions": [],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             }
           ],
           "warehouse": {
@@ -2397,7 +2398,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             },
             {
               "name": "Fern",
@@ -2661,7 +2663,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             },
             {
               "name": "Mochi",
@@ -2919,7 +2922,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             }
           ],
           "warehouse": {

@@ -1042,7 +1042,8 @@
               "worldPickup": null,
               "homeId": null,
               "eventInteractions": [],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             }
           ],
           "warehouse": {
@@ -2403,7 +2404,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             },
             {
               "name": "Penny",
@@ -2667,7 +2669,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             },
             {
               "name": "Cinder",
@@ -2925,7 +2928,8 @@
                   "expires": 180
                 }
               ],
-              "interactionCooldowns": {}
+              "interactionCooldowns": {},
+              "archetype": "sproutling"
             }
           ],
           "warehouse": {
