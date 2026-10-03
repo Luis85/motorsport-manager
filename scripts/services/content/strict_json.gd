@@ -244,12 +244,30 @@ func _string_escape() -> bool:
 func _exact_numeric_value(token: String) -> Variant:
 	if _number_cache.has(token):
 		return _number_cache[token]
+	if token.is_valid_int():
+		return _integer_value(token)
 	var converted = JsonNumber.parse(token)
 	if not converted.ok:
 		return _fail(converted.error)
 	if _number_cache.size() < 4096:
 		_number_cache[token] = converted.value
 	return converted.value
+
+
+func _integer_value(token: String) -> Variant:
+	# Integer tokens must not pass through binary64: recordings and tool requests
+	# can carry exact int64 values above 2^53. Check bounds before engine conversion.
+	var negative: bool = token.begins_with("-")
+	var magnitude: String = token.substr(1) if negative else token
+	var maximum: String = "9223372036854775808" if negative else "9223372036854775807"
+	if (
+		magnitude.length() > maximum.length()
+		or (magnitude.length() == maximum.length() and magnitude > maximum)
+	):
+		return _fail("JSON integer is outside the signed 64-bit range.")
+	if negative and magnitude == "9223372036854775808":
+		return -9223372036854775807 - 1
+	return token.to_int()
 
 
 func _unicode_escape() -> bool:
