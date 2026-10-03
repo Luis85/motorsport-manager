@@ -116,7 +116,7 @@
   function checkSceneFields(state:Record<string,unknown>, path:string):void {
     const rootKeys = ['version','seed','simTime','day','hour','started','speed','paused',
       'player','rp','buildings','nodes','log','completedQuests','contractIndex','settings',
-      'ledger','nextId','colony','world','estate','progression','market','planning','atlas','creatureInteractions','scenarioWorkflow','scenarioResources'];
+      'ledger','nextId','colony','world','estate','progression','market','planning','atlas','creatureInteractions','interiors','construction','terraform','scenarioWorkflow','scenarioResources'];
     for (const key of Object.keys(state)) if (!rootKeys.includes(key))
       throw Error(path + '/' + key + ': unknown scene-state field');
     if (isRecord(state.player)) {

@@ -8,6 +8,8 @@
  const root=inputRoot as {
   LWDeveloperSession:LittlewildDeveloper.SessionApi;
   LWDeveloperData:{record(value:unknown):Document;text(value:unknown,label:string):string;DeveloperError:new(code:LittlewildDeveloper.ErrorCode,message:string)=>LittlewildDeveloper.DeveloperError};
+  LWRuntimeResults:LWRuntime.ResultsApi;
+  LWRenderers:{list():readonly LittlewildDeveloper.RendererMetadata[];validate(input:unknown):LittlewildDeveloper.RendererValidation};
   LWAssets:AssetPort;LWDeveloper?:LittlewildDeveloper.Toolbox;
  };
  const D=root.LWDeveloperData;
@@ -30,9 +32,16 @@
    catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)],data:null};}
   }
  });
+ const renderers:LittlewildDeveloper.RendererDiscovery=Object.freeze({
+  list:()=>root.LWRenderers.list().map(value=>({...value,capabilities:[...value.capabilities]})),
+  validate(input:unknown){
+   try{const checked=root.LWRenderers.validate(D.record(input));return {...checked,errors:[...checked.errors],data:checked.data===null?null:{...checked.data,capabilities:[...checked.data.capabilities]}};}
+   catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)],data:null};}
+  }
+ });
  const {version,fixedStep,maxSteps,scenarios,commands,create,validateScenario,createScenario,
-  reviewStory,openStory,creatures,validateCreature,interactions,validateInteraction,validateInteractionLibrary}=root.LWDeveloperSession;
- const api:LittlewildDeveloper.Toolbox=Object.freeze({version,fixedStep,maxSteps,scenarios,commands,
-  create,validateScenario,createScenario,reviewStory,openStory,creatures,validateCreature,interactions,validateInteraction,validateInteractionLibrary,assets});
+  reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary}=root.LWDeveloperSession;
+ const api:LittlewildDeveloper.Toolbox=Object.freeze({failureCodes:()=>[...root.LWRuntimeResults.codes],version,fixedStep,maxSteps,scenarios,commands,
+  create,validateScenario,createScenario,reviewStory,openStory,creatures,validateCreature,interiors,validateInteriorCatalog,validateBuildingDesign,interactions,validateInteraction,validateInteractionLibrary,assets,renderers});
  root.LWDeveloper=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

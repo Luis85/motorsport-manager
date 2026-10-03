@@ -1,0 +1,94 @@
+{
+  "format": "littlewild-contract-ownership",
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "application-records.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "building-interior-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "canvas-ports.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "colony-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "construction-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "content-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "developer-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "developer-space-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "engine-core-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "interaction-contracts.d.ts",
+      "owner": "interaction-definitions"
+    },
+    {
+      "path": "interaction-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "legacy-task-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "legacy-task-records.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "physical-world-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "renderer-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "runtime-contracts.d.ts",
+      "owner": "simulation-core"
+    },
+    {
+      "path": "scene-environment-ports.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "terraform-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "village-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "physical-ecs-contracts.d.ts",
+      "owner": "physical-world"
+    },
+    {
+      "path": "building-interior-data-contracts.d.ts",
+      "owner": "building-interior-definitions"
+    },
+    {
+      "path": "workflow-venue-contracts.d.ts",
+      "owner": "content-model"
+    }
+  ]
+}

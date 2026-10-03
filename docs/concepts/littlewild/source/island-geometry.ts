@@ -11,6 +11,7 @@
     estate?: { islands: Island[] };
     nodes: Node[];
     buildings: Point[];
+    terraform?: { revision:number;tiles:Record<string,{ground:'grass'|'water';height:number}> };
   }
   interface Profile {
     name: string;
@@ -25,7 +26,7 @@
   interface Bridge extends Island, Point { id: string; dx: number; dy: number; }
   interface IslandDescription { name: string; biome: string; }
   interface FrontierIsland extends Island, IslandDescription { id: string; }
-  interface Root { LWWorldProfile: ProfilePort; LWGeography?: typeof api; }
+  interface Root { LWWorldProfile: ProfilePort; LWGeography?: typeof api; LWConstructionFootprints?:{blockers(state:TopologyState):Point[]}; }
   const root = inputRoot as Root;
   if (typeof module !== 'undefined' && module.exports) require('./world-profile.js');
 
@@ -47,13 +48,24 @@
     return c.x < SIZE && c.y < SIZE ? islandTerrain(c.x, c.y) :
       ((c.y === 9 && c.x >= SIZE) || (c.x === 9 && c.y >= SIZE)) ? 'grass' : 'water';
   }
+  function terrainAt(state:TopologyState,x:number,y:number):'grass'|'water' {
+    return state.terraform?.tiles[key(x,y)]?.ground ?? terrain(x,y);
+  }
+  function heightAt(state:TopologyState,x:number,y:number):number {
+    return state.terraform?.tiles[key(Math.round(x),Math.round(y))]?.height ?? 0;
+  }
+  function ownedTile(state:TopologyState,x:number,y:number):boolean {
+    if(!Number.isInteger(x)||!Number.isInteger(y))return false;
+    const c=cell(x,y);
+    return c.x<SIZE&&c.y<SIZE&&islands(state).some(i=>i.ix===c.ix&&i.iy===c.iy);
+  }
   function ownedSet(state: TopologyState): Set<string> {
     return new Set(islands(state).map(i => key(i.ix, i.iy)));
   }
   function available(state: TopologyState, x: number, y: number): boolean {
     if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
     const c = cell(x, y), own = ownedSet(state);
-    if (c.x < SIZE && c.y < SIZE) return own.has(key(c.ix, c.iy)) && islandTerrain(c.x, c.y) === 'grass';
+    if (c.x < SIZE && c.y < SIZE) return own.has(key(c.ix, c.iy)) && terrainAt(state,x,y) === 'grass';
     if (c.y === 9 && c.x >= SIZE) return own.has(key(c.ix, c.iy)) && own.has(key(c.ix + 1, c.iy));
     if (c.x === 9 && c.y >= SIZE) return own.has(key(c.ix, c.iy)) && own.has(key(c.ix, c.iy + 1));
     return false;
@@ -135,18 +147,26 @@
   class Grid {
     readonly cells = new Set<string>();
     readonly routes = new Map<string, Point[] | null>();
+    readonly heights = new Map<string,number>();
     constructor(state: TopologyState, extra: Point[] = []) {
       for (const i of islands(state)) for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
-        if (islandTerrain(x, y) === 'grass') this.cells.add(key(x + i.ix * STRIDE, y + i.iy * STRIDE));
+        const wx=x+i.ix*STRIDE,wy=y+i.iy*STRIDE;
+        if (terrainAt(state,wx,wy) === 'grass') this.cells.add(key(wx,wy));
+        this.heights.set(key(wx,wy),heightAt(state,wx,wy));
       }
       for (const b of bridges(state)) for (let n = SIZE; n < STRIDE; n++) {
         this.cells.add(key(b.ix * STRIDE + (b.dx ? n : 9), b.iy * STRIDE + (b.dy ? n : 9)));
       }
-      for (const p of [...state.nodes.filter(n => ['wood', 'stone'].includes(n.kind)), ...state.buildings, ...extra]) {
+      const places=root.LWConstructionFootprints?.blockers(state)??state.buildings;
+      for (const p of [...state.nodes.filter(n => ['wood', 'stone'].includes(n.kind)), ...places, ...extra]) {
         this.cells.delete(key(p.x, p.y));
       }
     }
     pass(x: number, y: number): boolean { return this.cells.has(key(x, y)); }
+    canStep(from:Point,to:Point):boolean {
+      return this.pass(to.x,to.y)&&Math.abs(from.x-to.x)+Math.abs(from.y-to.y)===1&&
+        Math.abs((this.heights.get(key(from.x,from.y))??0)-(this.heights.get(key(to.x,to.y))??0))<=1;
+    }
     inside(x: number, y: number): boolean {
       return Number.isInteger(x) && Number.isInteger(y) && Math.abs(x) < 100000 && Math.abs(y) < 100000;
     }
@@ -162,7 +182,7 @@
         const p = q[h]!;
         for (const [dx, dy] of DIRS) {
           const x = p.x + dx, y = p.y + dy, k = key(x, y);
-          if (this.pass(x, y) && !seen.has(k)) { seen.add(k); q.push({ x, y }); }
+          if (this.canStep(p,{x,y}) && !seen.has(k)) { seen.add(k); q.push({ x, y }); }
         }
       }
       return seen;
@@ -184,7 +204,7 @@
         if (goals.has(k)) { end = k; break; }
         for (const [dx, dy] of DIRS) {
           const x = p.x + dx, y = p.y + dy, n = key(x, y);
-          if (this.pass(x, y) && !prev.has(n)) { prev.set(n, k); q.push({ x, y }); }
+          if (this.canStep(p,{x,y}) && !prev.has(n)) { prev.set(n, k); q.push({ x, y }); }
         }
       }
       let route: Point[] | null = null;
@@ -204,13 +224,13 @@
   const cache = new WeakMap<TopologyState, { sig: string; value: Grid }>();
   function grid(state: TopologyState): Grid {
     const sig = root.LWWorldProfile.hash + '|' + (state.estate?.islands || []).map(i => key(i.ix, i.iy)).join(';') +
-      '|' + state.buildings.map(b => key(b.x, b.y)).join(';') + '|' +
+      '|' + (root.LWConstructionFootprints?.blockers(state)??state.buildings).map(b => key(b.x, b.y)).join(';') + '|' + (state.terraform?.revision??0) + '|' +
       state.nodes.filter(n => ['wood', 'stone'].includes(n.kind)).map(n => key(n.x, n.y)).join(';');
     let v = cache.get(state);
     if (!v || v.sig !== sig) { v = { sig, value: new Grid(state) }; cache.set(state, v); }
     return v.value;
   }
-  const api = { SIZE, STRIDE, DIRS, key, cell, terrain, islandTerrain, available, bridges,
+  const api = { SIZE, STRIDE, DIRS, key, cell, terrain, terrainAt, heightAt, ownedTile, islandTerrain, available, bridges,
     frontier, describe, hash, generatedNodes, Grid, grid };
   root.LWGeography = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

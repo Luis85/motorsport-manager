@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
 /// <reference path="./content-contracts.d.ts" />
 /** Capabilities used by the village layer. Earlier layers retain ownership of
@@ -6,8 +7,8 @@ declare namespace LWVillagePorts {
  type Actor=LWApplication.Actor;type Building=LWApplication.Building;
  type State=LWApplication.State & {buildPolicy:Actor['buildPolicy']};
  type Draft=Partial<LWApplication.Task>&{kind:string};
- type Result={ok:true}|{ok:false;reason:string};
- type Purchase={ok:true;creature:Actor;price:number}|{ok:false;reason:string};
+ type Result=LWRuntime.ActionResult;
+ type Purchase=LWRuntime.ActionResult<{creature:Actor;price:number}>;
  type Category=LWContentPorts.RequirementCategory;
  interface BaseHost {
   s:State;actor:Actor;creatures:Actor[];selected:Actor|null|undefined;
@@ -20,7 +21,7 @@ declare namespace LWVillagePorts {
   configureBuilding(id:string,command:string,value?:unknown):Result;abortQuest():Result;
   questRewardSpec(quest:LWApplication.Quest,completed:boolean):LWTaskPorts.EconomySpec & {prestige?:number;earnedPrestige?:number};
   economySettlementId(scope:string,key?:string):string;
-  settleEconomy(spec:LWTaskPorts.EconomySpec & {prestige?:number;earnedPrestige?:number},label?:string):{ok:boolean};
+  settleEconomy(spec:LWTaskPorts.EconomySpec & {prestige?:number;earnedPrestige?:number},label?:string):LWRuntime.Result;
   purchaseCreature(personality:string,archetype?:string):Purchase;
   findPath(target:LWApplication.Point|null|undefined,adjacent?:boolean):LWApplication.Point[]|null;
   walkable(x:number,y:number):boolean;has(id:string):boolean;allOrders():LWApplication.Order[];
@@ -30,7 +31,7 @@ declare namespace LWVillagePorts {
   place(kind:string,x:number,y:number):Result;createNeedTask(which:string):Draft|null;
   releaseSocial(task:LWApplication.Task):void;releaseDetachedWork():void;
   startTask(task:Draft|null):boolean;stepWorld():void;finishTask(task:LWApplication.Task):void;
-  emit(type:string,text:string,extra?:{actorId?:string}):void;log(text:string,icon?:string):void;
+  emit(type:LWRuntime.EventKind,text:string,extra?:LWRuntime.EventPayload):void;log(text:string,icon?:string):void;
   careIssue(kind:string):string|null;care(kind:string):Result;changeFeeling(reason:string,joy:number,anger:number):void;
   visual(kind:string):void;warehouse():Building;depositKeep(actor?:Actor):LWApplication.Numbers;
   room(id:string):number;nearest<T extends LWApplication.Point>(places:T[]):T|undefined;reachable(point:LWApplication.Point):boolean;
@@ -47,7 +48,7 @@ declare namespace LWVillagePorts {
   generatedNodes(ix:number,iy:number,world:LWContentPorts.WorldApi):(LWTaskPorts.Place&{max:number})[];
   Grid:new(state:LWApplication.State,plans?:LWApplication.Point[])=>Grid;
  }
- interface Root {
+ interface Root {LWRuntimeResults:LWRuntime.ResultsApi;
   LW:{worldTaskKinds:string[];clamp(n:number,min:number,max:number):number;
    RES:LWContentPorts.Tables['RES'];RECIPES:Record<string,LWContentPorts.Recipe>;
    BUILDINGS:LWContentPorts.Tables['BUILDINGS'];colony:{item(id:string):{name:string;price:number}|null};

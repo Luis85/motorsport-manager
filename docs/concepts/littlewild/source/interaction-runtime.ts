@@ -3,6 +3,7 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
+  LWInteractionSpace:{distance(locations:unknown,a:LWInteraction.Creature,b:LWInteraction.Creature):number};
   LWInteractions:LWInteraction.Catalog;
   LWInteractionState:{empty(time:number):LWInteraction.State;target(input:unknown):LWInteraction.Target};
   LWWorldContent:{node(id:string):{id:string;resource:string;mode:string;seconds:number;skill:string|null;direct:boolean}|undefined};
@@ -24,6 +25,7 @@
  function position(e:LWInteraction.Engine,t:LWInteraction.Target):{x:number;y:number;kind?:string}|undefined{
   return t.scope==='creature'?creature(e,t.id)?.creature:t.scope==='building'?e.s.buildings.find(b=>b.id===t.id):e.s.nodes.find(n=>n.id===t.id);
  }
+ const distance=(e:LWInteraction.Engine,a:LWInteraction.Creature,b:LWInteraction.Creature):number=>root.LWInteractionSpace.distance(e.s.interiors?.locations,a,b);
  function eligibility(e:LWInteraction.Engine,d:LWInteraction.Definition,sourceId:string,t:LWInteraction.Target,ownId:string|null=null,consent=false):string|null{
   if(d.executor==='duel'&&root.LWGameSettings&&!root.LWGameSettings.allowed(e,'duels'))return 'Duels are disabled in Settings.';
   if(!d.sources.includes(sourceId==='player'?'player':'creature')||!d.targets.includes(t.scope))return 'This interaction does not support these participants.';
@@ -37,7 +39,8 @@
    if(d.executor!=='care'&&(c===source||consent)&&(c.needs.energy<d.minimumEnergy||c.feelings.anger>d.maximumAnger||c.needs.food<15||c.needs.water<15))return c.name+' needs care or a little rest first.';
    if(d.requireIdle&&!resting(c))return c.name+' is busy with another task.';
   }
-  if(source&&Math.hypot(source.creature.x-p.x,source.creature.y-p.y)>d.range)return 'Move within '+d.range+' tiles first.';
+  if(source&&target&&!Number.isFinite(distance(e,source,target)))return 'Meet on the same floor and finish indoor travel first.';
+  if(source&&(target?distance(e,source,target):Math.hypot(source.creature.x-p.x,source.creature.y-p.y))>d.range)return 'Move within '+d.range+' tiles first.';
   if((state(e).cooldowns[sourceId+':'+d.id]??0)>e.s.simTime)return 'Let the last moment settle before trying again.';
   if(d.executor==='duel'&&(state(e).cooldowns[t.id+':'+d.id]??0)>e.s.simTime)return 'Let this friend’s last duel settle before trying again.';
   if(source){
@@ -191,6 +194,6 @@
   s.triggerAt=Object.fromEntries(library.triggers.map(rule=>[rule.id,e.s.simTime+rule.intervalSeconds]));s.seeks=[];
   return {ok:true};
  }
- const api:LWInteraction.Runtime=Object.freeze({state,options,request,respond,cancel,step,busy,setLibrary,eligible:eligibility});
+ const api:LWInteraction.Runtime=Object.freeze({state,options,request,respond,cancel,step,busy,setLibrary,distance,eligible:eligibility});
  root.LWInteractionRuntime=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

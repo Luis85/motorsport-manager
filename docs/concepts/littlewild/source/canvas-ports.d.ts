@@ -17,6 +17,7 @@ declare namespace LWCanvasPorts {
   interface State extends LWEnvironmentPorts.RoleState {
     settings: { reducedMotion: boolean; follow: boolean }; nodes: Node[]; buildings: Building[];
     creature: Transform; task: Task | null; hour: number;
+    terraform?:{revision:number;tiles:Record<string,{ground:'grass'|'water';height:number}>;plants:Record<string,{kind:string;model:string}>};
   }
   interface Engine {
     s: State; selected: Actor | null; creatures: Actor[];
@@ -24,6 +25,7 @@ declare namespace LWCanvasPorts {
     canBuild(x: number, y: number, kind: string): boolean; placementIssue(kind: string, x: number, y: number): unknown;
     has(kind: string): boolean; mood(actor: Actor): string;
     buildingStatus(building: Building): { kind: string };
+    terrainAt?(x:number,y:number):string;terrainHeight?(x:number,y:number):number;
   }
   interface Hit extends Point { objectType?: string; objectId?: string | null; actorId?: string | null; }
   interface Target extends Point { id: string; w: number; h: number; }
@@ -43,6 +45,8 @@ declare namespace LWCanvasPorts {
     resourceLens?: boolean; landSelected?: { type: string; id: string; x: number; y: number } | null | undefined;
     contextChoosing?: boolean; nameTargets: Target[]; landTargets: Target[];
     environmentKey?:string;
+    terrainRevision?:number;
+    terraformPreview?:{tiles:(Point&{height?:number;ground?:'grass'|'water'})[];plants:(Point&{kind:string;model:string})[]}|null;
     makeGround():void;
     project(x: number, y: number): Point; transform(): Camera; toScreen(x: number, y: number): Point;
   }
@@ -76,7 +80,7 @@ declare namespace LWCanvasPorts {
       top?: string, front?: string, side?: string): void;
   }
   interface Buildings { building(c: CanvasRenderingContext2D, x: number, y: number, kind: string, time?: number, ghost?: boolean): void; }
-  interface Ground { create(createCanvas: () => HTMLCanvasElement): { ground: HTMLCanvasElement; decor: Decoration[] }; }
+  interface Ground { create(createCanvas: () => HTMLCanvasElement,engine?:Engine): { ground: HTMLCanvasElement; decor: Decoration[] }; }
   interface Scene { draw(this: View, time: number, dt: number): void; }
   interface Root {
     LW: Facade; LWWorldContent: WorldContent; LWCanvasArt: Art; LWCanvasBuildings: Buildings;

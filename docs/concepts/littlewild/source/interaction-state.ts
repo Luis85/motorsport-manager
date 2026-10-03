@@ -2,7 +2,7 @@
 /* Checkpoint integrity for the paired interaction lifecycle; no repair of recorded state. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LWInteractions:LWInteraction.Catalog;LWInteractionState?:unknown};
+ const root=inputRoot as {LWInteractionSpace:{distance(locations:unknown,a:{id:string;creature:LWRuntime.Point},b:{id:string;creature:LWRuntime.Point}):number};LWInteractions:LWInteraction.Catalog;LWInteractionState?:unknown};
  const C=root.LWInteractions;
  function empty(time:number):LWInteraction.State{
   const library=C.defaults;
@@ -27,7 +27,8 @@
   if(plain(data)&&Object.hasOwn(data,'rng'))keys.push('rng');exact(data,keys,'state');
   if(Object.hasOwn(data,'rng')&&!whole(data.rng,0,4294967295))fail('invalid decision RNG seed');
   if(!plain(world)||!finite(world.simTime,0,1e12)||!plain(world.colony)||!Array.isArray(world.colony.creatures))fail('invalid world context');
-  const time=world.simTime,creatures=world.colony.creatures as {id:string;task:unknown;activeQuest?:unknown}[];
+  const locations=plain(world.interiors)?world.interiors.locations:undefined;
+  const time=world.simTime,creatures=world.colony.creatures as {id:string;creature:LWRuntime.Point;task:unknown;activeQuest?:unknown}[];
   const known=(id:unknown):id is string=>typeof id==='string'&&creatures.some(c=>c.id===id);
   if(data.version!==1||!whole(data.sequence,1,1e9))fail('invalid sequence or version');
   const library=C.validate(data.library);
@@ -67,6 +68,7 @@
      const c=creatures.find(c=>c.id===id);if(!c||c.activeQuest||(value.status==='active'&&c.task))fail('unavailable locked creature');
     }
     if(t.scope!=='creature'||!known(value.sourceId))fail('invalid duel participants');
+    if(root.LWInteractionSpace.distance(locations,creatures.find(c=>c.id===value.sourceId)!,creatures.find(c=>c.id===t.id)!)>d.range)fail('active duel participants occupy incompatible spaces');
    }else if(!['completed','delegated','declined','cancelled','expired'].includes(String(value.status)))fail('invalid history status');
    if(!finite(value.created,0,time+.001)||!finite(value.respondAt,value.created,value.created+30)||!finite(value.expires,value.created,value.created+1000)||
     !finite(value.nextRoundAt,0,time+30+.001)||!whole(value.round,0,d.duel?.maxRounds??0)||!Array.isArray(value.scores)||value.scores.length!==2||value.scores.some(n=>!whole(n,0,value.round as number))||

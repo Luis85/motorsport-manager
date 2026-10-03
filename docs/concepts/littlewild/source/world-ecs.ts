@@ -2,7 +2,7 @@
  * Existing save records are bound by reference to explicit components; no ECS state is
  * serialized. Policy, skill rolls, rewards and presentation remain in the domain facade.
  */
-/// <reference path="./physical-world-contracts.d.ts" />
+/// <reference path="./physical-ecs-contracts.d.ts" />
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWECS?:LWPhysicalPorts.EcsApi;LWWorldECS?:LWPhysicalPorts.EcsPhysicalApi};

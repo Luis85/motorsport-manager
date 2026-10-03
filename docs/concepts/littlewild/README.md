@@ -21,6 +21,10 @@ Office runs indoors: Phil wins customer deals, Marty supplies the warehouse, and
 
 Creature interactions include autonomous friendly duels, authored trigger rules, and player controls to seek or stage a duel. **More → Settings** independently enables duels and quests. See [CREATURE-INTERACTIONS.md](CREATURE-INTERACTIONS.md) and [RULES.md](RULES.md) for the supported rules and extension points.
 
+Visit a completed building to see its interior, select floors and request item or equipment production at a workstation. Companions travel through the same saved rooms and stairs while carrying out their work. The building designer supports custom floors, walls, windows, doors and staged improvements; companions source materials and build them. **More → Terraform this world** edits grass, water, height and living resource sources through a validated preview. These features persist in whole scenario exports. See [building interiors](BUILDING-INTERIORS.md), [freeform construction](FREEFORM-BUILDING.md) and [terrain editing](TERRAFORM.md).
+
+Developers can register a renderer factory and select it programmatically through the browser renderer host. The current **basic** renderer remains the default. Plugins receive detached scene data and validated command ports. See [RENDERERS.md](RENDERERS.md) for the lifecycle contract and runnable example.
+
 **Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 
 The existing **Pause when opening panels** device preference also covers these panels. Manual pause wins. Replacement reviews remain safety pauses even with automatic pausing disabled.
@@ -57,6 +61,8 @@ npm run verify -- --no-browser
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
 - `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
 - `CREATURE-ARCHITECTURE.md`: creature archetype data, factory/ECS ownership, visual asset boundary and extension workflow.
+- `BUILDING-INTERIORS.md`, `FREEFORM-BUILDING.md`, `TERRAFORM.md`: spatial authority, physical work and authoring interfaces.
+- `RENDERERS.md`: programmatic renderer registration, replacement, observations and cleanup.
 
 Stable mechanic executors, handlers, island dimensions and animation algorithms remain compiled capabilities. Creature defaults, spawn modes, movement/physiology tuning, visual selection, ECS bindings, geometry, appearance profiles, expression thresholds, animation tuning, rig sockets and building anchors are validated data. External scenario packs can carry complete creature and visual manifest catalogs using the supported geometry and rig grammar. Imported data cannot register executable code or new engine primitives. Littlewild, Emberworks and Office demonstrate the supported configuration surface.
 

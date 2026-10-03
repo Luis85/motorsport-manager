@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./legacy-task-records.d.ts" />
 /** Narrow application capabilities consumed by companion and task services. */
 declare namespace LWTaskPorts {
@@ -26,7 +27,7 @@ declare namespace LWTaskPorts {
         researchGain(amount: number, label?: string): void;
         remember(key: string, title: string, description: string, icon?: string): void;
         log(text: string, icon?: string): void;
-        emit(type: string, text: string, extra?: object): void;
+        emit(type:LWRuntime.EventKind,text:string,extra?:LWRuntime.EventPayload): void;
         economySettlementId(scope: string, key?: string): string;
         economyRuntime(): {
             splitIncome(amount: number): {

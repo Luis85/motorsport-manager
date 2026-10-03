@@ -6,6 +6,13 @@
  type Session=LittlewildDeveloper.Session;
  interface Engine {
   s:{started:boolean;paused:boolean;simTime:number};
+  terraformSnapshot():LittlewildDeveloper.TerraformSnapshot;
+  terrainAt(x:number,y:number):string;terrainHeight(x:number,y:number):number;
+  previewTerraform(input:unknown):LittlewildDeveloper.TerraformPreview;
+  buildingInterior(buildingId:string):LittlewildDeveloper.BuildingInteriorSnapshot|null;
+  constructionOptions():LittlewildDeveloper.ConstructionOptions;
+  previewBuildingDesign(input:unknown,buildingId?:string):LittlewildDeveloper.BuildingDesignPreview;
+  buildingDesign(buildingId:string):LittlewildDeveloper.BuildingDesignDraft|null;
   interactionOptions(sourceId:string,target:LittlewildDeveloper.InteractionTarget):LittlewildDeveloper.InteractionOption[];
   gameSettings():LittlewildDeveloper.GameSettings;
   interactionState():unknown;interactionDefinitions():unknown;
@@ -17,16 +24,26 @@
  }
  interface StoryPort {inspect(input:unknown):{simulationFingerprint:string;experience?:{packId:string;sceneId:string}|null};commit(preview:unknown):Engine;encode(engine:Engine):unknown;}
  interface Root {
-  LWDeveloperData:{record(value:unknown):Document;copy(value:unknown):LittlewildDeveloper.Json;text(value:unknown,label:string):string;
+  LWDeveloperData:{record(value:unknown):Document;
+   copy(value:LittlewildDeveloper.TerraformSnapshot):LittlewildDeveloper.TerraformSnapshot;
+   copy(value:LittlewildDeveloper.TerraformPreview):LittlewildDeveloper.TerraformPreview;
+   copy(value:LittlewildDeveloper.BuildingInteriorSnapshot):LittlewildDeveloper.BuildingInteriorSnapshot;
+   copy(value:LittlewildDeveloper.ConstructionOptions):LittlewildDeveloper.ConstructionOptions;
+   copy(value:LittlewildDeveloper.BuildingDesignPreview):LittlewildDeveloper.BuildingDesignPreview;
+   copy(value:LittlewildDeveloper.BuildingDesignDraft):LittlewildDeveloper.BuildingDesignDraft;
+   copy(value:unknown):LittlewildDeveloper.Json;text(value:unknown,label:string):string;
    DeveloperError:new(code:LittlewildDeveloper.ErrorCode,message:string)=>LittlewildDeveloper.DeveloperError};
   LWDeveloperCommands:{validate(input:unknown,scope:'actor'|'world'):LittlewildDeveloper.Command};
   LWCommandRouter:{manifest:readonly LittlewildDeveloper.CommandDefinition[]};
   LWScenarios:ScenarioPort;LWStory:StoryPort;
+  LWInteriors:{defaults:unknown;validate(input:unknown):unknown};
+  LWConstructionDesigns:{validate(input:unknown):unknown};
   LWInteractions:{all():unknown[];definition(input:unknown):unknown;validate(input:unknown):unknown};
   LWAssets:{readonly revision:number};
   LWCreatures:{readonly revision:number;all():unknown[];validate(input:unknown):unknown};
   LWContent:{registry:{hash:string}};LWAdventure:{hash:string};LWWorldContent:{hash:string};LWGrowth:{hash:string};
   LWSimulationProfile:{hash:string};LWWorldProfile:{hash:string};
+  LWRuntimeResults:LWRuntime.ResultsApi;
   LWDeveloperSession?:unknown;
  }
  const root=inputRoot as Root,D=root.LWDeveloperData,X=root.LWScenarios,S=root.LWStory;
@@ -108,19 +125,28 @@
     if(['cancel-plan','pause-plan','prioritize-plan'].includes(envelope.id)){
      const colony=D.record(D.record(save().state).colony),actor=records(colony.creatures).find(actor=>actor.id===envelope.actorId);
      if(!actor||!records(actor.orders).some(order=>order.id===envelope.args[0]))
-      return {ok:false,reason:'This plan is no longer queued for that actor.',data:null};
+      return {ok:false,reason:'This plan is no longer queued for that actor.',code:'rule-rejected',data:null};
     }
     const returned=owned.dispatchCommand(envelope),data=returned===undefined?null:D.copy(returned);
     const record=data!==null&&typeof data==='object'&&!Array.isArray(data)?data:null;
     const ok=record?.ok===false||data===false?false:true;
     const reason=record&&typeof record.reason==='string'?record.reason:undefined;
-    return reason===undefined?{ok,data}:{ok,reason,data};
+    const code=root.LWRuntimeResults.codes.find(candidate=>candidate===record?.code);
+    const result:LittlewildDeveloper.CommandResult=reason===undefined?{ok,data}:{ok,reason,data};
+    return code===undefined?result:{...result,code};
    },
    interactionOptions(sourceId:string,target:LittlewildDeveloper.InteractionTarget){
     const owned=guard(),id=D.text(sourceId,'Interaction initiator'),data=D.record(target);
     if(Object.keys(data).length!==2||!Object.hasOwn(data,'scope')||!Object.hasOwn(data,'id')||!['creature','building','node'].includes(String(data.scope)))fail('invalid-input','Invalid interaction target.');
     D.text(data.id,'Target ID');return owned.interactionOptions(id,data as unknown as LittlewildDeveloper.InteractionTarget).map(value=>D.record(value) as unknown as LittlewildDeveloper.InteractionOption);
    },
+   terraform(){return D.copy(guard().terraformSnapshot());},
+   terrain(x:number,y:number){const owned=guard();if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y))fail('invalid-input','Terrain coordinates must be safe integers.');return {ground:owned.terrainAt(x,y),height:owned.terrainHeight(x,y)};},
+   previewTerraform(input:unknown){return D.copy(guard().previewTerraform(D.record(input)));},
+   buildingInterior(buildingId:string){const result=guard().buildingInterior(D.text(buildingId,'Building ID'));return result===null?null:D.copy(result);},
+   constructionOptions(){return D.copy(guard().constructionOptions());},
+   previewBuildingDesign(input:unknown,buildingId?:string){return D.copy(guard().previewBuildingDesign(D.record(input),buildingId===undefined?undefined:D.text(buildingId,'Building ID')));},
+   buildingDesign(buildingId:string){const result=guard().buildingDesign(D.text(buildingId,'Building ID'));return result===null?null:D.copy(result);},
    settings(){return D.record(guard().gameSettings()) as unknown as LittlewildDeveloper.GameSettings;},
    interactions(){return D.record(guard().interactionState());},interactionDefinitions(){return D.record(guard().interactionDefinitions());},
    step,advance(seconds:number){
@@ -173,6 +199,9 @@
   version:1,fixedStep:.1,maxSteps:36000,scenarios,
   commands:()=>root.LWCommandRouter.manifest.map(({id,scope,maxArgs,away})=>({id,scope,maxArgs,away})),
   create,validateScenario,createScenario,reviewStory,openStory,
+  interiors:()=>D.record(root.LWInteriors.defaults),
+  validateInteriorCatalog:(input:unknown)=>validation(()=>root.LWInteriors.validate(D.record(input))),
+  validateBuildingDesign:(input:unknown)=>validation(()=>root.LWConstructionDesigns.validate(D.record(input))),
   interactions:()=>root.LWInteractions.all().map(D.record),
   validateInteraction:(input:unknown)=>validation(()=>root.LWInteractions.definition(D.record(input))),
   validateInteractionLibrary:(input:unknown)=>validation(()=>root.LWInteractions.validate(D.record(input))),

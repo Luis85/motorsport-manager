@@ -1,10 +1,11 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
 /// <reference path="./content-contracts.d.ts" />
 /** Base-engine capabilities. Fresh founder state precedes colony initialization;
  * the same personal fields later resolve through the actor-scoped state view. */
 declare namespace LWCorePorts {
  type Numbers=LWApplication.Numbers;
- type Point=LWApplication.Point;
+ type Point=LWRuntime.Point;
  type Order=LWApplication.Order;
  type OrderView=Pick<Order,'type'> & Partial<Order>;
  type Task=LWApplication.Task;
@@ -25,12 +26,12 @@ declare namespace LWCorePorts {
   colony?:LWApplication.State['colony'];
  }
  interface Issue {text:string;skill?:string;building?:string;paused?:boolean;practice?:string;}
- interface Result {ok:boolean;reason?:string;amount?:number;}
- type PlanResult={ok:true;order:Order}|{ok:false;reason:string};
+ interface Result extends LWRuntime.Result {amount?:number;}
+ type PlanResult=LWRuntime.ActionResult<{order:Order}>;
  interface EconomySpec {id?:string;actorCpPerLevel?:number;guide?:number;pocket?:number;research?:number;actorXp?:number;playerXp?:number;chapterId?:string;stats?:Numbers;}
- interface EconomyResult {ok:boolean;state:string;deltas:{guide:number;pocket:number;research:number}|null;levelUps:{who:'player'|'actor';level:number}[];actorCp:number;}
+ interface EconomyResult extends LWRuntime.Result {state:string;deltas:{guide:number;pocket:number;research:number}|null;levelUps:{who:'player'|'actor';level:number}[];actorCp:number;}
  interface EconomyRuntime {settle(state:unknown,actor:LWApplication.Actor|null,spec:EconomySpec):EconomyResult;splitIncome(amount:number):{guide:number;pocket:number};rules:{xp:{playerResearchPerLevel:number}};}
- interface EngineFields {s:State;simulationProfile:LWContentPorts.SimulationProfile|null;events:({type:string;text:string}&object)[];acc:number;refreshTimer:number;_blockedKey:string;_blocked:Set<string>;economyEcs:EconomyRuntime|null;_economySettlementSequence:number;_actor?:LWApplication.Actor;}
+ interface EngineFields {s:State;simulationProfile:LWContentPorts.SimulationProfile|null;events:LWRuntime.Event[];acc:number;refreshTimer:number;_blockedKey:string;_blocked:Set<string>;economyEcs:EconomyRuntime|null;_economySettlementSequence:number;_actor?:LWApplication.Actor;}
  interface InstalledMethods {
   remember(key:string,title:string,description:string,icon?:string):void;newWish():void;checkWish():void;
   mastery(id:string|null|undefined):{points:number;rank:number;label:string;bonus:number;next:number|null};
@@ -49,7 +50,7 @@ declare namespace LWCorePorts {
   missingSkill(resource:string):string|null;assessResource(resource:string,amount:number,seen?:Set<string>):Issue|null;orderIssue(order:OrderView):Issue|null;
   nearest<T extends Point>(nodes:T[]):T|undefined;findPath(target:Point,adjacent?:boolean):Point[]|null;startTask(task:Draft):boolean;
   splitIncome(amount:number):EconomyResult;trade(resource:string,mode:string,quantity?:number):Result;step(dt:number):void;advance(seconds:number):void;
-  export():{app:string;version:number;state:State};emit(type:string,text:string,extra?:object):void;log(text:string,icon?:string):void;
+  export():{app:string;version:number;state:State};emit(type:LWRuntime.EventKind,text:string,extra?:LWRuntime.EventPayload):void;log(text:string,icon?:string):void;
   economyRuntime():EconomyRuntime;economyActor():LWApplication.Actor|null;economySettlementId(scope:string,key?:string):string;settleEconomy(input:EconomySpec,label?:string|null):EconomyResult;
   xp(who:string,amount:number):EconomyResult;researchGain(amount:number,label?:string):EconomyResult;transaction(label:string,guide?:number,pocket?:number,research?:number):void;
  }

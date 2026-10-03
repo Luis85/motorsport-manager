@@ -30,6 +30,7 @@
   LW?:LittlewildFacade;
   LWGeography?:GeographyApi;
   LWNavigation?:NavigationApi;
+  LWConstructionFootprints?:{blockers(state:NavigationState):Point[]};
  }
  const root=inputRoot as LittlewildRoot;
 
@@ -83,7 +84,7 @@
  function grid(state:NavigationState):GridLike{
   if(state.estate&&root.LWGeography)return root.LWGeography.grid(state);
   const L=root.LW;if(!L)throw Error('Littlewild facade missing.');
-  const blockers:Point[]=[...state.nodes.filter(node=>node.kind==='wood'||node.kind==='stone'),...state.buildings];
+  const blockers:Point[]=[...state.nodes.filter(node=>node.kind==='wood'||node.kind==='stone'),...(root.LWConstructionFootprints?root.LWConstructionFootprints.blockers(state):state.buildings)];
   const signature=blockers.map(point=>point.x+','+point.y).join(';');
   let entry=cache.get(state);
   if(!entry||entry.signature!==signature){entry={signature,grid:new Grid(L.SIZE,L.terrain,blockers)};cache.set(state,entry);}

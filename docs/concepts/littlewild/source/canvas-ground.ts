@@ -4,7 +4,9 @@
     const root = inputRoot as LWCanvasPorts.Root;
     const { SIZE, terrain, seeded } = root.LW;
     const { TW, TH, poly, rect, diamond } = root.LWCanvasArt;
-    function create(createCanvas: () => HTMLCanvasElement) {
+    function create(createCanvas: () => HTMLCanvasElement,engine?:LWCanvasPorts.Engine) {
+            const currentTerrain=(x:number,y:number):string=>engine?.terrainAt?.(x,y)??terrain(x,y);
+            const elevation=(x:number,y:number):number=>(engine?.terrainHeight?.(x,y)??0)*12;
             const c = createCanvas();
             c.width = SIZE * TW + 130;
             c.height = SIZE * TH + 180;
@@ -13,26 +15,27 @@
             g.imageSmoothingEnabled = false;
             g.translate(c.width / 2, 85);
             const environment=root.LWSceneEnvironment?.read();
-            if(environment){root.LWSceneEnvironment!.groundCanvas(g,root.LWCanvasArt,environment,SIZE,TW,TH);return {ground:c,decor:[],environmentKey:root.LWSceneEnvironment!.key()};}
+            if(environment){root.LWSceneEnvironment!.groundCanvas(g,root.LWCanvasArt,environment,SIZE,TW,TH,engine?.s.terraform?.tiles);return {ground:c,decor:[],environmentKey:root.LWSceneEnvironment!.key()};}
             let rand = seeded(2718);
             const decor: LWCanvasPorts.Decoration[] = [];
             for (let d = 0; d < SIZE * 2; d++)
                 for (let x = 0; x < SIZE; x++) {
-                    const y = d - x, t = terrain(x, y);
+                    const y = d - x, t = currentTerrain(x, y);
                     if (t === 'void')
                         continue;
-                    let px = (x - y) * TW / 2, py = (x + y) * TH / 2;
+                    let px = (x - y) * TW / 2, py = (x + y) * TH / 2-elevation(x,y);
                     const depth = 25;
-                    if (terrain(x + 1, y) === 'void') {
+                    if (currentTerrain(x + 1, y) === 'void') {
                         poly(g, [[px, py + TH / 2], [px + TW / 2, py], [px + TW / 2, py + depth], [px, py + TH / 2 + depth]], '#9aa07b');
                         rect(g, px + 7, py + 15, 3, 5, '#b3ac84');
                     }
-                    if (terrain(x, y + 1) === 'void') {
+                    if (currentTerrain(x, y + 1) === 'void') {
                         poly(g, [[px - TW / 2, py], [px, py + TH / 2], [px, py + TH / 2 + depth], [px - TW / 2, py + depth]], '#818d68');
                         rect(g, px - 12, py + 14, 3, 3, '#a6a37a');
                     }
                     let path = ((x >= 7 && x <= 11 && y >= 8 && y <= 11) || x === 10 && y >= 5 && y <= 13);
                     let col = t === 'water' ? ['#86b9b0', '#8fbbb0', '#9bbfb0'][Math.floor(rand() * 3)]! : path ? ['#c8cb98', '#c7c997', '#c3c694', '#ccd09f'][Math.floor(rand() * 4)]! : ['#aebf85', '#b5c58d', '#b6c78f', '#b3c489', '#adc088', '#baca92'][Math.floor(rand() * 6)]!;
+                    const height=elevation(x,y);if(height>0)poly(g,[[px-TW/2,py],[px,py+TH/2],[px,py+TH/2+height],[px-TW/2,py+height]],'#818d68');
                     diamond(g, px, py, TW, TH, col);
                     if (t === 'water') {
                         diamond(g, px, py + 1, TW - 2, TH - 2, col);

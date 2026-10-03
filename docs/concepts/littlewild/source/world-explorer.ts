@@ -31,7 +31,7 @@
   }
   function buildingDetail(b){
    const st=b.storage,p=W.building(b.kind),status=en().buildingStatus(b),node=p?.requiresNode?en().nodeAt(b.x,b.y):null;
-   let body=`<div class="land-state ${status.kind}"><strong>${e(status.label)}</strong><p>${e(status.detail)}</p></div>`;
+   let body=button('Visit building →','visit',b.id,'primary')+`<div class="land-state ${status.kind}"><strong>${e(status.label)}</strong><p>${e(status.detail)}</p></div>`;
    if(node)body+=`<div class="land-site">${ic('leaf')}On ${e(W.node(node.kind).name.toLowerCase())} <b>${W.node(node.kind).mode==='finite'?node.stock+' left':'∞'}</b>${button('Inspect','show-node',node.id,'small')}</div>`;
    if(!st){body+=`<p class="land-copy">${b.kind==='storehouse'?'This is the only shared inventory the player can sell from. Creatures physically deposit and withdraw here.':e(L.BUILDINGS[b.kind].effect)}</p>${button(b.kind==='storehouse'?'Warehouse & sales ↗':'Building details ↗','legacy',b.id)}`;}
    else if(b.kind==='map_table'){body+='<p class="land-copy">Your shared charts. Compare neighboring islands, their resources, level requirements and expedition pools before committing.</p><button class="btn primary" data-act="v10-open" data-id="land">Open world map</button>'; }
@@ -82,7 +82,8 @@
   function action(a,id,b){
    if(!a.startsWith('land-')){if(state.id&&(a==='pause'||a==='speed')&&h.pauseStatus().automatic){clear();en().s.paused=false;if(a==='speed')en().s.speed=Number(id);h.save();return true;}if(a.startsWith('w7-')||['pause','speed','creature-select','cx-select','zoom-in','zoom-out','home-view','follow'].includes(a))clear();return false;}
    try{
-    if(a==='land-close')clear(true);
+    if(a==='land-visit'){h.visit?.(id,b);return true;}
+   if(a==='land-close')clear(true);
     else if(a==='land-atlas')navigate('land-atlas');
     else if(a==='land-lens'){state.lens=!state.lens;update();art().lastDrawAt=0;}
     else if(a==='land-show-node'||a==='land-show-building')show(a.endsWith('node')?'node':'building',id,b);

@@ -132,7 +132,7 @@ validated asset ID discovered from `assets.list('actor')`, and run typecheck/bui
 and the registered asset/creature verification suites. Asset definitions live in
 `source/assets/<family>/<id>/asset.json`; adding a folder follows the documented
 build discovery contract. `assets.validate()` validates the asset's own model/rig
-contract; the build also validates cross-catalog references. Complete scenarios can instead carry their own validated visual and creature catalogs under `resources`, using the same model/rig grammar. Activation installs an isolated snapshot atomically and the session detects external catalog drift. There is no arbitrary runtime code loader or executable renderer registration API. See [Office scenario authoring](OFFICE-SCENARIO.md) for editable roles, indoor presentation and full export/import examples.
+contract; the build also validates cross-catalog references. Complete scenarios can instead carry their own validated visual and creature catalogs under `resources`, using the same model/rig grammar. Activation installs an isolated snapshot atomically and the session detects external catalog drift. Imported data cannot install executable code. Trusted developer scripts can register a browser renderer through the separate [renderer interface](RENDERERS.md). See [Office scenario authoring](OFFICE-SCENARIO.md) for editable roles, indoor presentation and full export/import examples.
 
 ```ts
 const actorAssets = toolbox.assets.list('actor');
@@ -166,8 +166,10 @@ integration, prefer the Node entry above.
 Malformed SDK input throws `LittlewildDeveloperError` with `code` and an
 actionable `message`. Codes are `invalid-input`, `session-active`,
 `session-disposed`, `review-invalid` and `operation-failed`. Gameplay rejection
-returns `{ok:false, reason, data}` from `command()`; it is distinct from an invalid
-API envelope. A successful void native command is reported as `{ok:true,data:null}`.
+returns `{ok:false, reason, data, code?}` from `command()`; it is distinct from an invalid
+API envelope. `toolbox.failureCodes()` discovers the shared gameplay failure codes,
+also exported as the SDK's `FailureCode` type. Route validation and gameplay
+authorities retain their original reasons and payloads. A successful void native command is reported as `{ok:true,data:null}`.
 Multi-command scripts are sequential; they have no implicit rollback transaction.
 
 1. Discover capabilities and scene/actor/catalog IDs before constructing intent.
@@ -197,3 +199,26 @@ encouragement, exact-pair staging and validated library replacement.
 updates a Boolean patch, including a state-pure empty patch.
 See [Creature interactions and authoring](CREATURE-INTERACTIONS.md) for profiles,
 declarative triggers, physical gathering, persistence and rules limits.
+
+## Buildings, terrain and renderer extensions
+
+Use `game.buildingInterior(id)` to inspect a detached floor/workstation view,
+`constructionOptions()` to discover supported building types and saved designs,
+and `buildingDesign(id)` to obtain an editable draft. Validate geometry with
+`toolbox.validateBuildingDesign(draft)` and preview its physical requirements with
+`game.previewBuildingDesign(draft, buildingId?)` before submitting
+`construct-design` or `improve-design`. Production and visits use
+`order-building-production` and `visit-building-floor`; their argument contracts
+are documented in [BUILDING-INTERIORS.md](BUILDING-INTERIORS.md).
+
+`game.terraform()` discovers the current revision and available source models;
+`terrain(x,y)` returns detached ground and height values. Preview an edit with
+`previewTerraform(edit)` and apply the same revision through `apply-terraform`.
+Rejections preserve committed work and inventories. Full examples and bounds
+are in [TERRAFORM.md](TERRAFORM.md).
+
+`toolbox.renderers.list()` and `validate(metadata)` provide renderer discovery.
+Browser plugins use the typed `LWRenderers` factory registry and
+`LWRendererHost.player().selectRenderer(id)`. Read [RENDERERS.md](RENDERERS.md)
+before implementing lifecycle methods, input handlers or resource cleanup.
+Simulation steps and persistent state remain owned by the engine.

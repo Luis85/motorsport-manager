@@ -62,6 +62,7 @@ function recordingCanvasEnvironment() {
         LWWorldContent: global.LWWorldContent,
         document: { createElement: canvas },
         ResizeObserver: class { observe() {} },
+        AbortController,
         console
     };
     root.window = root;

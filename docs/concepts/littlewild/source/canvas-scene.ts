@@ -8,6 +8,7 @@
     const { building } = root.LWCanvasBuildings;
     function draw(this: LWCanvasPorts.View, time: number, dt: number) {
             this.time = time;
+            if((this.terrainRevision??0)!==(this.engine.s.terraform?.revision??0))this.makeGround();
             const c = this.c, w = this.canvas.width, h = this.canvas.height, s = this.engine.s, reduced = s.settings.reducedMotion, t = reduced ? 1 : time;
             const environment=root.LWSceneEnvironment?.read(),present=(actor:LWCanvasPorts.Actor)=>!actor.activeQuest||!!root.LWSceneEnvironment?.onsite(s,actor);
             if(environment||this.environmentKey){const key=root.LWSceneEnvironment?.key()||'';if(key!==this.environmentKey){this.makeGround();this.environmentKey=key;}}
@@ -38,6 +39,12 @@
             c.translate(Math.round(tr.x), Math.round(tr.y));
             c.scale(tr.z, tr.z);
             c.drawImage(this.ground, -this.ground.width / 2, -85);
+            if(this.terraformPreview){
+                c.save();c.globalAlpha=.65;
+                for(const tile of this.terraformPreview.tiles){const p=this.project(tile.x,tile.y);p.y-=((tile.height??this.engine.terrainHeight?.(tile.x,tile.y)??0)-(this.engine.terrainHeight?.(tile.x,tile.y)??0))*12;diamond(c,p.x,p.y,root.LWCanvasArt.TW-3,root.LWCanvasArt.TH-2,tile.ground==='water'?'#8fbbb0':'#d8c596');}
+                for(const plant of this.terraformPreview.plants){const p=this.project(plant.x,plant.y);root.LWCanvasAssets?.draw(c,'item',plant.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:plant.model});}
+                c.restore();
+            }
             if(!environment){
             // Pond light and lilies.
             for (let i = 0; i < 7; i++) {
@@ -117,7 +124,8 @@
                 const p = this.project(o.x, o.y);
                 if (o.obj === 'node') {
                     c.save();if(LWWorldContent.node(o.kind)?.mode==='finite'&&o.stock===0)c.globalAlpha=.32;
-                    if(environment)root.LWCanvasAssets?.draw(c,'item',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:LWWorldContent.node(o.kind)?.mode==='finite'&&o.stock===0?'depleted':'world'});
+                    if(s.terraform?.plants[o.id])root.LWCanvasAssets?.draw(c,'item',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:s.terraform.plants[o.id]!.model});
+                    else if(environment)root.LWCanvasAssets?.draw(c,'item',o.kind,p.x,p.y,root.LWCanvasArt.TW,root.LWCanvasArt.TH,{model:LWWorldContent.node(o.kind)?.mode==='finite'&&o.stock===0?'depleted':'world'});
                     else if (o.kind === 'wood')
                         tree(c, p.x, p.y, Number(o.id.slice(1)), o.stock < 1);
                     else if (o.kind === 'berries')

@@ -13,7 +13,8 @@
       "layer": "domain",
       "files": [
         "ecs.ts",
-        "behavior-tree.ts"
+        "behavior-tree.ts",
+        "runtime-results.ts"
       ]
     },
     {
@@ -31,7 +32,8 @@
         "world-ecs.ts",
         "island-geometry.ts",
         "world-production.ts",
-        "world-tasks.ts"
+        "world-tasks.ts",
+        "construction-footprints.ts"
       ]
     },
     {
@@ -51,7 +53,8 @@
         "growth-content.ts",
         "world-profile.ts",
         "scenario-shape.ts",
-        "asset-catalog.ts"
+        "asset-catalog.ts",
+        "workflow-venues.ts"
       ]
     },
     {
@@ -72,7 +75,15 @@
       "files": [
         "navigation.ts",
         "world-integrity.ts",
-        "validation-village.ts"
+        "validation-village.ts",
+        "construction-designs.ts",
+        "construction-geometry.ts",
+        "construction-state.ts",
+        "construction-runtime.ts",
+        "construction-integration.ts",
+        "terraform-state.ts",
+        "terraform-runtime.ts",
+        "terraform-integration.ts"
       ]
     },
     {
@@ -105,7 +116,8 @@
         "engine-companion.ts",
         "world-state-validation.ts",
         "game-settings.ts",
-        "scenario-workflow.ts"
+        "scenario-workflow.ts",
+        "application-adapters.ts"
       ]
     },
     {
@@ -164,7 +176,16 @@
         "scene-environment.ts",
         "canvas-assets.ts",
         "colony-hud.ts",
-        "interaction-ui.ts"
+        "interaction-ui.ts",
+        "building-interior-renderer.ts",
+        "building-interior-ui.ts",
+        "construction-editor.ts",
+        "terraform-ui.ts",
+        "renderer-registry.ts",
+        "renderer-frame.ts",
+        "renderer-basic-adapter.ts",
+        "renderer-host.ts",
+        "renderer-example.ts"
       ]
     },
     {
@@ -189,7 +210,8 @@
       "layer": "domain",
       "files": [
         "interaction-catalog.ts",
-        "interaction-duel-rules.ts"
+        "interaction-duel-rules.ts",
+        "interaction-space.ts"
       ]
     },
     {
@@ -200,6 +222,24 @@
         "interaction-runtime.ts",
         "interaction-integration.ts",
         "interaction-triggers.ts"
+      ]
+    },
+    {
+      "id": "building-interior-definitions",
+      "layer": "domain",
+      "files": [
+        "building-interior-paths.ts",
+        "building-interior-catalog.ts"
+      ]
+    },
+    {
+      "id": "building-interiors",
+      "layer": "application",
+      "files": [
+        "building-interior-runtime.ts",
+        "building-interior-integration.ts",
+        "building-interior-projector.ts",
+        "building-interior-state.ts"
       ]
     }
   ],
@@ -234,7 +274,14 @@
     "LWInteractionLibrary",
     "LWInteractionDuelRules",
     "LWAssets",
-    "LWAssetDefinitions"
+    "LWAssetDefinitions",
+    "LWRuntimeResults",
+    "LWInteriorDefinitions",
+    "LWInteriorPaths",
+    "LWInteriors",
+    "LWConstructionFootprints",
+    "LWWorkflowVenues",
+    "LWInteractionSpace"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -255,9 +302,12 @@
     "LWAssetDefinitions",
     "LWCreatureConfig",
     "LWCreatureDefinitions",
-    "LWInteractionLibrary"
+    "LWInteractionLibrary",
+    "LWInteriorDefinitions"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,
-  "moduleBudgetExceptions": {}
+  "moduleBudgetExceptions": {},
+  "dataOwnership": "architecture/data-ownership.json",
+  "contractOwnership": "architecture/contract-ownership.json"
 }

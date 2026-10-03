@@ -28,7 +28,7 @@
   for(const a of e.creatures){
    if(actorId&&a.id!==actorId)continue;if(rule&&!matches(a,rule.source))continue;
    for(const b of e.creatures){
-    if(a.id===b.id||(rule&&(!matches(b,rule.target)||Math.hypot(a.creature.x-b.creature.x,a.creature.y-b.creature.y)>rule.maximumDistance||e.relationship(a.id,b.id).affinity<rule.minimumAffinity)))continue;
+    if(a.id===b.id||(rule&&(!matches(b,rule.target)||R.distance(e,a,b)>rule.maximumDistance||e.relationship(a.id,b.id).affinity<rule.minimumAffinity)))continue;
     const target:LWInteraction.Target={scope:'creature',id:b.id};if(!R.eligible(e,definition,a.id,target))out.push({sourceId:a.id,target});
    }
   }

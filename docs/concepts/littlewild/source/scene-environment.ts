@@ -1,9 +1,10 @@
+/// <reference path="./workflow-venue-contracts.d.ts" />
 /// <reference path="./scene-environment-ports.d.ts" />
 /* Drawing-only adapters for validated room profiles. No scenario names, mutable
  * registry, entity writes, clocks or random draws belong to the stage. */
 (function(inputRoot:unknown){
  'use strict';
- interface Root {LWWorldProfile?:{readonly current:LWEnvironmentPorts.Profile;readonly hash:string};LWSceneEnvironment?:LWEnvironmentPorts.Api;}
+ interface Root {LWWorkflowVenues:LWWorkflowVenue.Api;LWWorldProfile?:{readonly current:LWEnvironmentPorts.Profile;readonly hash:string};LWSceneEnvironment?:LWEnvironmentPorts.Api;}
  const root=inputRoot as Root;
  function read(profile=root.LWWorldProfile?.current):LWEnvironmentPorts.Environment|null{
   const environment=profile?.environment;if(environment?.mode!=='indoor')return null;
@@ -15,7 +16,7 @@
  function onsite(state:LWEnvironmentPorts.RoleState,actor:{id:string;activeQuest?:unknown}):boolean{
   if(!actor.activeQuest||typeof actor.activeQuest!=='object')return false;
   const questId=(actor.activeQuest as {questId?:unknown}).questId;
-  return !!state.scenarioWorkflow?.deals?.some(deal=>deal.venueBuildingId&&deal.questId===questId&&state.scenarioWorkflow?.roles?.some(entry=>entry.id===deal.salesRole&&entry.actorId===actor.id));
+  return root.LWWorkflowVenues.buildingId(state,actor.id,questId)!==null;
  }
  function populate3D(kit:LWEnvironmentPorts.Kit,parent:unknown,e:LWEnvironmentPorts.Environment,origins:readonly LWEnvironmentPorts.Point[],size=19):void{
   for(const origin of origins){
@@ -39,12 +40,14 @@
    }
   }
  }
- function groundCanvas(c:CanvasRenderingContext2D,art:LWEnvironmentPorts.Art,e:LWEnvironmentPorts.Environment,size:number,tw:number,th:number):void{
+ function groundCanvas(c:CanvasRenderingContext2D,art:LWEnvironmentPorts.Art,e:LWEnvironmentPorts.Environment,size:number,tw:number,th:number,tiles?:Record<string,{ground:'grass'|'water';height:number}>):void{
   const project=(x:number,y:number):readonly[number,number]=>[(x-y)*tw/2,(x+y)*th/2];
   const floorHeight=12,wallHeight=64;
   for(let diagonal=0;diagonal<size*2;diagonal++)for(let x=0;x<size;x++){
    const y=diagonal-x;if(y<0||y>=size)continue;
-   const [px,py]=project(x,y);art.diamond(c,px,py,tw,th,(x+y)%2?e.alternateFloor:e.floor);
+   const [px,base]=project(x,y),tile=tiles?.[x+','+y],height=(tile?.height??0)*12,py=base-height;
+   if(height>0)art.poly(c,[[px-tw/2,py],[px,py+th/2],[px,base+th/2],[px-tw/2,base]],e.trim);
+   art.diamond(c,px,py,tw,th,tile?(tile.ground==='water'?'#8fbbb0':'#aebf85'):(x+y)%2?e.alternateFloor:e.floor);
    if(x===size-1)art.poly(c,[[px,py+th/2],[px+tw/2,py],[px+tw/2,py+floorHeight],[px,py+th/2+floorHeight]],e.trim);
    if(y===size-1)art.poly(c,[[px-tw/2,py],[px,py+th/2],[px,py+th/2+floorHeight],[px-tw/2,py+floorHeight]],e.trim);
   }

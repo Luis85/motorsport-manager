@@ -13,7 +13,7 @@
    const add=(id,label,detail,run,disabled='')=>out.push({id,label,detail,run,disabled});
    if(h.world().placement){add('cancel-placement','Cancel blueprint','No plan or supplies are committed.',h.cancelPlacement);return{title:'Placing '+L.BUILDINGS[h.world().placement].name,out};}
    if(c)add('creature','Interact with '+c.name,'Care, mood, satchel and plans.',()=>h.inspect({...tile,actorId:c.id,objectType:'pip'}),c.activeQuest?'This companion is away.':'');
-   if(b){add('inspect','Inspect '+L.BUILDINGS[b.kind].name,'Status, contents and building controls.',()=>h.show('building',b.id));
+   if(b){add('visit','Visit '+L.BUILDINGS[b.kind].name,'Enter the building and explore its floors.',()=>h.visit?.(b.id));add('inspect','Inspect '+L.BUILDINGS[b.kind].name,'Status, contents and building controls.',()=>h.show('building',b.id));
     if(b.kind==='map_table')add('map','Open world map…','Compare neighboring shores before purchasing.',()=>h.open('v10-land'),e.mapAccessIssue()||'');
     if(b.kind==='market')add('market','Market deliveries…','Goods must be physically carried here to sell.',()=>h.open('v10-market'));
     if(b.kind==='storehouse')add('warehouse','Warehouse…','Inspect stored items and physical deliveries.',()=>h.open('warehouse'));

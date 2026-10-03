@@ -7,6 +7,7 @@
     host.setAttribute('aria-labelledby','build-panel-title'); document.getElementById('app').appendChild(host);
     const state = {open:false, detail:false, selected:null, search:'', category:'all', actorId:null, approach:'balanced', origin:null, placing:false};
     let invoker = null, lastKey = '';
+    const designer=root.LWConstructionEditor?.create(ctx);
     const button = (label,act,id='',cls='') => `<button type="button" class="${cls}" data-build="${act}" data-id="${e(id)}">${label}</button>`;
     function candidates() {
       return Object.entries(LW.BUILDINGS).filter(([id,b]) => ctx.engine().unlocked('buildings',id) &&
@@ -38,7 +39,7 @@
       const bodyScroll=host.querySelector('.panel-body')?.scrollTop||0;
       host.innerHTML=`<header class="panel-header"><div><span class="eyebrow">SHAPE YOUR WORLD</span><h2 id="build-panel-title" tabindex="-1">Build a little possibility</h2></div>${button(ctx.icon('close'),'close','','icon-btn')}</header>
         <div class="panel-time"><span data-time-label></span>${button('Focus world','world','','text-button')}</div>
-        <div class="panel-body">${state.detail?detail():`<label class="panel-search">${ctx.icon('search')}<input id="build-search" type="search" placeholder="Find a blueprint…" value="${e(state.search)}" aria-label="Find a blueprint"></label>
+        <div class="panel-body">${designer?button('Design a building layout','design','','btn full-width'):''}${state.detail?detail():`<label class="panel-search">${ctx.icon('search')}<input id="build-search" type="search" placeholder="Find a blueprint…" value="${e(state.search)}" aria-label="Find a blueprint"></label>
         <label class="panel-filter">Category<select id="build-category"><option value="all">All categories</option>${[...new Set(Object.values(LW.BUILDINGS).map(b=>b.category))].map(id=>`<option value="${e(id)}" ${state.category===id?'selected':''}>${e(LW.CATEGORY_NAMES[id]||id)}</option>`).join('')}</select></label><div id="build-results">${list()}</div>`}</div>
         <footer class="panel-footer">${button('Research','research','','btn small')}${button('Planner','planner','','btn small')}<span>F6 · world / panel</span></footer>`;
       host.querySelector('[data-build=close]').setAttribute('aria-label','Close build panel');
@@ -64,6 +65,7 @@
       const b=ev.target.closest('[data-build]');if(!b||b.disabled)return;ev.stopPropagation();
       const act=b.dataset.build;
       if(act==='close')close();
+      if(act==='design'&&designer){close(false);designer.open('',state.selected||'');}
       if(act==='select'){state.selected=b.dataset.id;state.detail=true;render();host.querySelector('h3')?.scrollIntoView({block:'nearest'});host.querySelector('[data-build=list]')?.focus();}
       if(act==='list'){state.detail=false;render();host.querySelector('[data-id="'+state.selected+'"]')?.focus();}
       if(act==='world')ctx.world().canvas.focus({preventScroll:true});
@@ -77,10 +79,10 @@
       }
     });
     host.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.stopPropagation();ev.preventDefault();close();}});
-    return {state,host,open,close,render,syncTime,
+    return {state,host,designer,open,close,render,syncTime,
       update(){if(!state.open)return;syncTime();const k=root.LWContent.registry.hash+'|'+ctx.engine().creatures.map(c=>c.id+!!c.activeQuest).join(',');if(lastKey&&lastKey!==k&&!host.contains(document.activeElement))render();lastKey=k;},
       focus(){(host.querySelector('input,button')||host).focus({preventScroll:true});},
-      reset(){close(false);state.actorId=null;state.selected=null;state.search='';state.category='all';lastKey='';}
+      reset(){close(false);designer?.reset();state.actorId=null;state.selected=null;state.search='';state.category='all';lastKey='';}
     };
   }};
 })(typeof globalThis !== 'undefined' ? globalThis : this);

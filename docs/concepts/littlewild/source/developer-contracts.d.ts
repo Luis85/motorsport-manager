@@ -1,3 +1,5 @@
+/// <reference path="./runtime-contracts.d.ts" />
+/// <reference path="./developer-space-contracts.d.ts" />
 /** Public data contracts shared by the browser global and the typed Node entry point. */
 declare namespace LittlewildDeveloper {
  type Json = null | boolean | number | string | Json[] | { [key:string]:Json };
@@ -5,6 +7,11 @@ declare namespace LittlewildDeveloper {
  type ErrorCode = 'invalid-input' | 'session-active' | 'session-disposed' | 'review-invalid' | 'operation-failed';
  interface DeveloperError extends Error { readonly code:ErrorCode; }
  interface CommandArgs {
+  'preview-terraform':[edit:TerraformEdit];'apply-terraform':[edit:TerraformEdit];
+  'visit-building-floor':[actorId:string,buildingId:string,floorId:string];
+  'order-building-production':[buildingId:string,floorId:string,stationId:string,recipeId:string,batches:number];
+  'construct-design':[design:BuildingDesignDraft,x:number,y:number];
+  'improve-design':[buildingId:string,design:BuildingDesignDraft];
   'seek-duel':[actorId:string,definitionId?:string|null,ruleId?:string|null];
   'cancel-duel-seek':[actorId:string]; 'stage-duel':[definitionId:string,actorA:string,actorB:string];
   'set-game-settings':[patch:Partial<GameSettings>];
@@ -38,10 +45,10 @@ declare namespace LittlewildDeveloper {
    | [saleId:string,action:'assign',value:string|null];
  }
  type CommandId=keyof CommandArgs;
- type WorldCommandId='seek-duel'|'cancel-duel-seek'|'stage-duel'|'set-game-settings'|'request-interaction'|'cancel-interaction'|'set-interaction-library'|'select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
+ type WorldCommandId='preview-terraform'|'apply-terraform'|'visit-building-floor'|'order-building-production'|'seek-duel'|'cancel-duel-seek'|'stage-duel'|'set-game-settings'|'request-interaction'|'cancel-interaction'|'set-interaction-library'|'select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
  type Command={ [Id in CommandId]:{id:Id;args:CommandArgs[Id]} &
   (Id extends WorldCommandId ? {actorId?:never} : {actorId:string}) }[CommandId];
- interface CommandResult { readonly ok:boolean; readonly reason?:string; readonly data:Json; }
+ interface CommandResult { readonly ok:boolean; readonly reason?:string; readonly data:Json;readonly code?:LWRuntime.FailureCode; }
  interface CommandDefinition {readonly id:CommandId;readonly scope:'actor'|'world';readonly maxArgs:number;readonly away:boolean;}
  interface ScenarioSummary {readonly id:string;readonly name:string;readonly scenes:readonly {id:string;name:string;worldId:string}[];}
  interface CreateOptions {readonly scenarioId:string;readonly sceneId?:string;}
@@ -68,6 +75,11 @@ declare namespace LittlewildDeveloper {
   step(count?:number):StepResult;
   /** Seconds must be an exact multiple of 0.1, between 0 and 3600. */
   advance(seconds:number):StepResult;
+  terraform():TerraformSnapshot;terrain(x:number,y:number):{ground:string;height:number};previewTerraform(input:unknown):TerraformPreview;
+  buildingInterior(buildingId:string):BuildingInteriorSnapshot|null;
+  constructionOptions():ConstructionOptions;
+  previewBuildingDesign(input:unknown,buildingId?:string):BuildingDesignPreview;
+  buildingDesign(buildingId:string):BuildingDesignDraft|null;
   interactionOptions(sourceId:string,target:InteractionTarget):readonly InteractionOption[];
   interactions():Document;interactionDefinitions():Document;settings():GameSettings;
   inspect():Snapshot;save():Document;story():Document;captureScenario():Document;
@@ -83,6 +95,7 @@ declare namespace LittlewildDeveloper {
   validateScenario(input:unknown):Validation;
   createScenario(input:unknown,sceneId:string):Session;
   reviewStory(input:unknown):StoryReview;openStory(review:StoryReview):Session;
+  interiors():Document;validateInteriorCatalog(input:unknown):Validation;validateBuildingDesign(input:unknown):Validation;
   interactions():readonly Document[];validateInteraction(input:unknown):Validation;validateInteractionLibrary(input:unknown):Validation;
   creatures():readonly Document[];validateCreature(input:unknown):Validation;
  }
@@ -93,7 +106,8 @@ declare namespace LittlewildDeveloper {
   get(category:AssetCategory,id:string):Document|null;
   validate(input:unknown):Validation;
  }
- interface Toolbox extends SessionApi {readonly assets:AssetApi;}
+ interface Toolbox extends SessionApi {
+  failureCodes():readonly LWRuntime.FailureCode[];readonly assets:AssetApi;readonly renderers:RendererDiscovery;}
 }
 
 /** Globals supplied by the standalone/embedding composition, never by imported content. */

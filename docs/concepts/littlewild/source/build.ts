@@ -26,12 +26,15 @@ const INSERTS: readonly Insert[] = [
   ["CREATURE_CATALOG", "creature-catalog.js", "script"],
   ["ASSET_CATALOG", "asset-catalog.js", "script"],
   ["WORLD_PROFILE", "world-profile.js", "script"],
+  ["WORKFLOW_VENUES", "workflow-venues.js", "script"],
   ["SCENE_ENVIRONMENT", "scene-environment.js", "script"],
+  ["CONSTRUCTION_FOOTPRINTS", "construction-footprints.js", "script"],
   ["GEOGRAPHY", "island-geometry.js", "script"],
   ["NAVIGATION", "navigation.js", "script"],
   ["ENGINE_TASK_PLANNING", "engine-task-planning.js", "script"],
   ["ENGINE_TASK_COMPLETION", "engine-task-completion.js", "script"],
   ["ENGINE_COMPANION", "engine-companion.js", "script"],
+  ["RUNTIME_RESULTS", "runtime-results.js", "script"],
   ["ENGINE", "engine.js", "script"],
   ["ENGINE_COMPOSITION", "engine-composition.js", "script"],
   ["ACTOR_STATE_VIEW", "actor-state-view.js", "script"],
@@ -65,6 +68,7 @@ const INSERTS: readonly Insert[] = [
   ["CARTOGRAPHY", "cartography.js", "script"],
   ["INTERACTION_CATALOG", "interaction-catalog.js", "script"],
   ["INTERACTION_DUEL_RULES", "interaction-duel-rules.js", "script"],
+  ["INTERACTION_SPACE", "interaction-space.js", "script"],
   ["INTERACTION_STATE", "interaction-state.js", "script"],
   ["INTERACTION_RUNTIME", "interaction-runtime.js", "script"],
   ["INTERACTION_TRIGGERS", "interaction-triggers.js", "script"],
@@ -72,8 +76,24 @@ const INSERTS: readonly Insert[] = [
   ["SCENARIO_RESOURCES", "scenario-resources.js", "script"],
   ["SCENARIO_WORKFLOW", "scenario-workflow.js", "script"],
   ["INTERACTION_INTEGRATION", "interaction-integration.js", "script"],
+  ["BUILDING_INTERIOR_PATHS", "building-interior-paths.js", "script"],
+  ["BUILDING_INTERIOR_CATALOG", "building-interior-catalog.js", "script"],
+  ["CONSTRUCTION_DESIGNS", "construction-designs.js", "script"],
+  ["CONSTRUCTION_GEOMETRY", "construction-geometry.js", "script"],
+  ["CONSTRUCTION_STATE", "construction-state.js", "script"],
+  ["CONSTRUCTION_RUNTIME", "construction-runtime.js", "script"],
+  ["CONSTRUCTION_INTEGRATION", "construction-integration.js", "script"],
+  ["TERRAFORM_STATE", "terraform-state.js", "script"],
+  ["TERRAFORM_RUNTIME", "terraform-runtime.js", "script"],
+  ["TERRAFORM_INTEGRATION", "terraform-integration.js", "script"],
+  ["BUILDING_INTERIOR_STATE", "building-interior-state.js", "script"],
+  ["BUILDING_INTERIOR_RUNTIME", "building-interior-runtime.js", "script"],
+  ["BUILDING_INTERIOR_INTEGRATION", "building-interior-integration.js", "script"],
+  ["BUILDING_INTERIOR_PROJECTOR", "building-interior-projector.js", "script"],
+  ["APPLICATION_ADAPTERS", "application-adapters.js", "script"],
   ["COMMAND_ROUTER", "command-router.js", "script"],
   ["ENGINE_COMPOSITION_ROOT", "engine-composition-root.js", "script"],
+  ["BUILDING_INTERIOR_CSS", "building-interior.css", "style"],
   ["WORLD_EXPLORER", "world-explorer.js", "script"],
   ["WORLD_EXPLORER_CSS", "world-explorer.css", "style"],
   ["STORY", "story-codec.js", "script"],
@@ -90,6 +110,8 @@ const INSERTS: readonly Insert[] = [
   ["CANVAS_GROUND", "canvas-ground.js", "script"],
   ["CANVAS_ASSETS", "canvas-assets.js", "script"],
   ["CANVAS_SCENE", "canvas-scene.js", "script"],
+  ["BUILDING_INTERIOR_RENDERER", "building-interior-renderer.js", "script"],
+  ["BUILDING_INTERIOR_UI", "building-interior-ui.js", "script"],
   ["WORLD", "world.js", "script"],
   ["PROGRESSION_UI", "progression-ui.js", "script"],
   ["CONTENT_UI", "content-ui.js", "script"],
@@ -109,6 +131,11 @@ const INSERTS: readonly Insert[] = [
   ["FIDELITY", "world-fidelity.js", "script"],
   ["PRESENTATION", "world-presentation.js", "script"],
   ["WORLD_3D", "world-3d.js", "script"],
+  ["RENDERER_REGISTRY", "renderer-registry.js", "script"],
+  ["RENDERER_FRAME", "renderer-frame.js", "script"],
+  ["RENDERER_BASIC_ADAPTER", "renderer-basic-adapter.js", "script"],
+  ["RENDERER_HOST", "renderer-host.js", "script"],
+  ["RENDERER_EXAMPLE", "renderer-example.js", "script"],
   ["TILE_CONTEXT", "tile-context.js", "script"],
   ["V12_CSS", "v12.css", "style"],
   ["VILLAGE_CSS", "village.css", "style"],
@@ -117,6 +144,8 @@ const INSERTS: readonly Insert[] = [
   ["INTERACTIONS_CSS", "interactions.css", "style"],
   ["VILLAGE_UI", "village-ui.js", "script"],
   ["V14_CSS", "v14.css", "style"],
+  ["CONSTRUCTION_EDITOR", "construction-editor.js", "script"],
+  ["CONSTRUCTION_EDITOR_CSS", "construction-editor.css", "style"],
   ["BUILD_PANEL", "build-panel.js", "script"],
   ["GUIDE_PANEL", "guide-panel.js", "script"],
   ["SCENARIO_UI", "scenario-ui.js", "script"],
@@ -127,6 +156,8 @@ const INSERTS: readonly Insert[] = [
   ["UI_MODAL", "ui-modal.js", "script"],
   ["UI_ACTIONS", "ui-actions.js", "script"],
   ["UI_INPUT", "ui-input.js", "script"],
+  ["TERRAFORM_UI", "terraform-ui.js", "script"],
+  ["TERRAFORM_UI_CSS", "terraform-ui.css", "style"],
   ["UI", "ui.js", "script"]
 ];
 
@@ -158,7 +189,7 @@ function compile(): void {
     cwd: PROJECT, stdio: "inherit", timeout: 30000, killSignal: "SIGKILL"
   });
   if (sdkTypes.error || sdkTypes.status !== 0) throw new Error("Developer SDK declaration generation failed.");
-  fs.copyFileSync(path.join(ROOT, "developer-contracts.d.ts"), path.join(GENERATED, "developer-contracts.d.ts"));
+  for (const file of ["developer-contracts.d.ts", "developer-space-contracts.d.ts", "runtime-contracts.d.ts"]) fs.copyFileSync(path.join(ROOT, file), path.join(GENERATED, file));
   const declaration = path.join(GENERATED, "developer-sdk.d.cts");
   fs.writeFileSync(declaration, fs.readFileSync(declaration, "utf8").replace(
     /<reference path="[^"]*developer-contracts\.d\.ts"/, '<reference path="./developer-contracts.d.ts"'));
@@ -182,6 +213,7 @@ function inlineData(packPath: string | null): string {
   const declarations: Array<[string, unknown]> = [
     ["LWDefaultLibrary", json("default-library.json")],
     ["LWContentSchema", json("library.schema.json")],
+    ["LWInteriorDefinitions", JSON.parse(fs.readFileSync(path.join(ROOT,"content","building-interiors.json"),"utf8"))],
     ["LWInteractionLibrary", JSON.parse(fs.readFileSync(path.join(ROOT,"assets","interactions","catalog.json"),"utf8"))],
     ["LWCreatureDefinitions", creatureDefinitions(ROOT)],
     ["LWCreatureConfig", creatureConfig(ROOT)],

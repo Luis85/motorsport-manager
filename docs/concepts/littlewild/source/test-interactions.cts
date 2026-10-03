@@ -13,7 +13,7 @@ const clone=<T,>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
 const root=globalThis as unknown as {
  LW:{Engine:{new():Native;import(input:unknown):Native};createWorldDemo():Native;EngineComposition:{constructThrough(id:string):Native}};
  LWInteractionState:{validate(input:unknown,state:unknown):unknown};
- LWInteractions:LWInteraction.Catalog;LWStory:{committed(engine:Native):boolean};
+ LWInteractions:LWInteraction.Catalog;LWStory:{committed(engine:Native):boolean;encode(engine:Native):unknown};
 };
 interface Native extends LWInteraction.Engine {
  export():{state:Document};interactionState():LWInteraction.State;
@@ -228,6 +228,34 @@ test('Trigger/profile/seek bad data and disabled duel settings reject without st
  assert(g.command({id:'set-game-settings',args:[{duels:false}]}).ok);assert.equal(g.settings().duels,false);const disabled=g.save();
  assert.equal(g.command({id:'stage-duel',args:['friendly-duel','c1','c2']}).ok,false);assert.equal(g.command({id:'seek-duel',args:['c1']}).ok,false);assert.deepEqual(g.save(),disabled);
  assert(g.command({id:'set-game-settings',args:[{}]}).ok);assert.deepEqual(g.save(),disabled);
+}));
+test('Paired interactions honor real floor locations, travel and portable invitation continuation',()=>game(g=>{
+ const source=g.save(),world=source.state as Document,buildings=world.buildings as Document[],home=buildings.find(b=>b.kind==='shelter');assert(home);
+ const catalog=toolbox.interiors(),layouts=catalog.layouts as Document[],bindings=catalog.bindings as Document,layout=layouts.find(l=>l.id===(bindings.shelter??catalog.fallback));assert(layout);
+ const floors=layout.floors as Document[],ground=floors.find(f=>f.id==='ground'),upper=floors.find(f=>f.id==='upper');assert(ground&&upper);
+ const door=ground.door as Document,upperDoor=upper.door as Document;
+ const actors=(world.colony as Document).creatures as Document[];
+ for(const id of ['c1','c2']){const c=actors.find(c=>c.id===id)!;c.task=null;Object.assign(c.creature as Document,{x:home.x,y:Number(home.y)+1});}
+ const locations:Document={c1:{buildingId:home.id!,floorId:'ground',stationId:null,x:door.x!,y:door.y!,route:[],purpose:'visit'},c2:{buildingId:home.id!,floorId:'upper',stationId:null,x:upperDoor.x!,y:upperDoor.y!,route:[],purpose:'visit'}};
+ world.interiors={version:1,catalog,locations,visits:[],production:{},jobs:{}};
+ let e=root.LW.Engine.import(source),before=e.export();
+ assert.equal(e.requestInteraction('friendly-duel','c1',target()).ok,false);assert.deepEqual(e.export(),before);
+ const outside=clone(source);delete (((outside.state as Document).interiors as Document).locations as Document).c2;
+ e=root.LW.Engine.import(outside);before=e.export();assert.equal(e.requestInteraction('friendly-duel','c1',target()).ok,false);assert.deepEqual(e.export(),before);
+ Object.assign(locations.c2 as Document,{floorId:'ground',x:door.x!,y:door.y!});
+ const moving=clone(source),movingLocation=((((moving.state as Document).interiors as Document).locations as Document).c2 as Document);
+ movingLocation.route=[{floorId:'ground',x:Number(door.x)+1,y:door.y!,seconds:.5}];e=root.LW.Engine.import(moving);before=e.export();assert.equal(e.requestInteraction('friendly-duel','c1',target()).ok,false);assert.deepEqual(e.export(),before);
+ e=root.LW.Engine.import(source);const invitation=e.requestInteraction('friendly-duel','c1',target());assert(invitation.ok);const pending=e.export();
+ for(const status of ['requested','active']){
+  const bad=clone(pending);if(status==='active'){assert(e.dispatchCommand({id:'respond-interaction',actorId:'c2',args:[invitation.interactionId!,true]}).ok);Object.assign(bad,e.export());}
+  const room=((((bad.state as Document).interiors as Document).locations as Document).c2 as Document);Object.assign(room,{floorId:'upper',x:upperDoor.x!,y:upperDoor.y!});
+  assert.throws(()=>root.LW.Engine.import(bad),/incompatible spaces/);
+ }
+ g.dispose();e=root.LW.Engine.import(pending);const native=root.LW.Engine.import(pending),portable=toolbox.openStory(toolbox.reviewStory(root.LWStory.encode(e)));
+ try{assert(portable.command({id:'respond-interaction',actorId:'c2',args:[invitation.interactionId!,true]}).ok);for(const restored of [e,native])assert(restored.dispatchCommand({id:'respond-interaction',actorId:'c2',args:[invitation.interactionId!,true]}).ok);assert.deepEqual(native.export(),e.export());assert.deepEqual(portable.save(),e.export());
+  for(const restored of [e,native]){restored.s.started=true;restored.s.paused=false;}portable.start();
+  for(let i=0;i<40;i++){e.step(.1);native.step(.1);portable.advance(.1);assert.deepEqual(native.export(),e.export());assert.deepEqual(portable.save(),e.export());}
+ }finally{portable.dispose();}
 }));
 test('Runtime text and JSON Schema agree on astral code points at the label and description boundaries',()=>game(g=>{
  const source=path.resolve(__dirname,'../source/assets/interactions'),schema=JSON.parse(fs.readFileSync(path.join(source,'interaction.schema.json'),'utf8')) as object;

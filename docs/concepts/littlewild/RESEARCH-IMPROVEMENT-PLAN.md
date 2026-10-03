@@ -28,3 +28,18 @@ A separate polishing agent implements this plan with focused regressions. Root i
 ## Architectural decisions
 
 Keep one authoritative persistent state, reference-bound transient ECS projections, explicit deterministic schedules and compiled trusted behaviors. Data-driven content defines validated capabilities rather than executable plugins. Defer an archetype/SOA ECS rewrite, cached queries, worker parallelism, event buses and pooling until profiling or a concrete ownership requirement demonstrates value; these introduce invalidation and ordering costs. The subsequent quality pass completed strict checking for all fifteen inventoried compatibility modules and ratcheted the typing-debt budget to zero. Process-global registry ownership remains a documented boundary; strict contracts do not establish multi-world isolation. Native legacy advisory debt is outside this Littlewild audit and remains visible.
+
+## Expansion review dispatched to the architecture polishing agent
+
+The independent follow-up review produced this concrete implementation plan for the expanded scenario, construction, terrain and presentation systems. This plan preserves the six deterministic ECS phases and the existing persistent simulation authority.
+
+| Area | Change | Acceptance evidence |
+| --- | --- | --- |
+| Errors and events | Define inward, value-only runtime result codes, event payloads and geometry contracts; use shared aliases instead of incompatible declarations in each feature. | Strict compilation, discoverable developer failure codes, and unchanged synchronous `temper` gameplay effects. |
+| Application composition | Declare the compiled adapter installation order, wrapped predecessors and method ownership in one closed manifest. | Missing roles, reordered or duplicate installation and undeclared changes fail; the real facade installs once and preserves continuation. |
+| Authored data and configuration | Record each shipped JSON catalog, ruleset, schema and scenario's owner and compiled validation role. | Architecture checks reject missing ownership and invalid bindings without allowing JSON to select executable validators. |
+| Type boundaries | Assign project type contracts to bounded contexts and check type-only dependencies, including presentation-only DOM contracts. | Negative fixtures catch outward type dependencies; existing physical line budgets and strict compiler checks remain enforced. |
+| Presentation replacement | Keep the current renderer behind a default adapter; expose a registry, lifecycle, detached scene values and validated command intents to developer plugins. | A real custom renderer switches and disposes correctly, observes interiors and authored visuals, and cannot mutate simulation through frame values. |
+| Shared spatial authority | Construction footprints, interior floor layouts and terrain walkability use the same persisted geometry and movement rules. | Paid construction and production survive native and portable checkpoints; vertical additions preserve an existing foundation; rejected edits leave active work unchanged. |
+
+Feature implementation agents own their systems; a separate integration agent owns bootstrap and SDK wiring. An independent final review follows actual browser captures and combined runtime checks. Current delivery identities and complete gate counts belong in `VERIFICATION.md`, not in historical checkpoints above.

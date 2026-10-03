@@ -1,0 +1,263 @@
+{
+  "format": "littlewild-data-ownership",
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "actor-rules",
+      "pattern": "content/actor-rules.json",
+      "owner": "actors",
+      "kind": "rules",
+      "validatorRole": "actorRules",
+      "embeddedGlobal": "LWActorRules"
+    },
+    {
+      "id": "adventure-example",
+      "pattern": "content/adventure-example.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "adventure"
+    },
+    {
+      "id": "adventure-library",
+      "pattern": "content/adventure-library.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "adventure",
+      "embeddedGlobal": "LWDefaultAdventure"
+    },
+    {
+      "id": "adventure-schema",
+      "pattern": "content/adventure.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWAdventureSchema"
+    },
+    {
+      "id": "building-interiors",
+      "pattern": "content/building-interiors.json",
+      "owner": "building-interior-definitions",
+      "kind": "definitions",
+      "validatorRole": "interiors",
+      "embeddedGlobal": "LWInteriorDefinitions"
+    },
+    {
+      "id": "default-library",
+      "pattern": "content/default-library.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "base",
+      "embeddedGlobal": "LWDefaultLibrary"
+    },
+    {
+      "id": "default-profile",
+      "pattern": "content/default-profile.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "geography",
+      "embeddedGlobal": "LWDefaultProfile"
+    },
+    {
+      "id": "economy-rules",
+      "pattern": "content/economy-rules.json",
+      "owner": "economy-progression",
+      "kind": "rules",
+      "validatorRole": "economyRules",
+      "embeddedGlobal": "LWEconomyRules"
+    },
+    {
+      "id": "emberworks-pack",
+      "pattern": "content/emberworks.pack.json",
+      "owner": "experience-application",
+      "kind": "scenario",
+      "validatorRole": "scenario"
+    },
+    {
+      "id": "growth-library",
+      "pattern": "content/growth-library.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "growth",
+      "embeddedGlobal": "LWDefaultGrowth"
+    },
+    {
+      "id": "growth-schema",
+      "pattern": "content/growth.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWGrowthSchema"
+    },
+    {
+      "id": "library-schema",
+      "pattern": "content/library.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWContentSchema"
+    },
+    {
+      "id": "littlewild-pack",
+      "pattern": "content/littlewild.pack.json",
+      "owner": "experience-application",
+      "kind": "scenario",
+      "validatorRole": "scenario"
+    },
+    {
+      "id": "office-pack",
+      "pattern": "content/office.pack.json",
+      "owner": "experience-application",
+      "kind": "scenario",
+      "validatorRole": "scenario"
+    },
+    {
+      "id": "scenario-schema",
+      "pattern": "content/scenario.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWScenarioSchema"
+    },
+    {
+      "id": "simulation-profile",
+      "pattern": "content/simulation-profile.json",
+      "owner": "simulation-application",
+      "kind": "rules",
+      "validatorRole": "simulation",
+      "embeddedGlobal": "LWDefaultSimulationProfile"
+    },
+    {
+      "id": "simulation-schema",
+      "pattern": "content/simulation.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWSimulationSchema"
+    },
+    {
+      "id": "world-library",
+      "pattern": "content/world-library.json",
+      "owner": "content-application",
+      "kind": "definitions",
+      "validatorRole": "world",
+      "embeddedGlobal": "LWDefaultWorld"
+    },
+    {
+      "id": "world-schema",
+      "pattern": "content/world.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema",
+      "embeddedGlobal": "LWWorldSchema"
+    },
+    {
+      "id": "office-assets",
+      "pattern": "content/office/assets/*.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "assets"
+    },
+    {
+      "id": "item-assets",
+      "pattern": "assets/items/*/asset.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "assets"
+    },
+    {
+      "id": "creature-assets",
+      "pattern": "assets/creatures/*/asset.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "assets"
+    },
+    {
+      "id": "creatures",
+      "pattern": "assets/creatures/*/creature.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "creatures"
+    },
+    {
+      "id": "creature-catalog",
+      "pattern": "assets/creatures/catalog.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "creatureCatalog"
+    },
+    {
+      "id": "creature-schemas",
+      "pattern": "assets/creatures/*.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema"
+    },
+    {
+      "id": "interaction-library",
+      "pattern": "assets/interactions/catalog.json",
+      "owner": "interaction-definitions",
+      "kind": "definitions",
+      "validatorRole": "interactions",
+      "embeddedGlobal": "LWInteractionLibrary"
+    },
+    {
+      "id": "building-assets",
+      "pattern": "assets/buildings/*/asset.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "assets"
+    },
+    {
+      "id": "asset-schema",
+      "pattern": "assets/asset.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema"
+    },
+    {
+      "id": "interaction-schema",
+      "pattern": "assets/interactions/*.schema.json",
+      "owner": "interaction-definitions",
+      "kind": "schema",
+      "validatorRole": "schema"
+    }
+  ],
+  "historicalFixtures": [
+    {
+      "path": "fixtures/canvas-renderer.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/content-baseline.sha256.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v1-market.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v11-protected-hashes.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v13-protected-hashes.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v2-scenario-grown.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v2-scenario-market.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v3-parity.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    },
+    {
+      "path": "fixtures/v8-paid-work.json",
+      "reason": "Historical source-pinned regression input; loaded only by verification fixtures, never shipped content."
+    }
+  ]
+}

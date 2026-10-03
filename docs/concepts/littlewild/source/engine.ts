@@ -102,7 +102,7 @@
                 this.emit('notice', this.s.name + ' earned ' + out.actorCp + ' character points.');
             return out;
         }
-        emit(type:string, text:string, extra:object = {}) { this.events.push({ type, text, ...extra }); }
+        emit(type:LWRuntime.EventKind, text:string, extra:LWRuntime.EventPayload = {}) { this.events.push({ type, text, ...extra }); }
         log(text:string, icon = 'leaf') { const entry = { text, icon, time: this.s.simTime, day: this.s.day, hour: this.s.hour }; this.s.log.unshift(entry); this.s.log = this.s.log.slice(0, 70); this.emit('log', text, { icon }); }
         drain() { const ev = this.events; this.events = []; return ev; }
         xp(who:string, amount:number) {

@@ -1,0 +1,631 @@
+{
+  "version": 1,
+  "fallback": "workshop",
+  "bindings": {
+    "shelter": "home",
+    "cottage": "home",
+    "study": "study",
+    "map_table": "study",
+    "fire": "hearth",
+    "oven": "hearth",
+    "garden": "growing",
+    "orchard": "growing",
+    "field": "growing",
+    "storehouse": "storage",
+    "market": "storage"
+  },
+  "layouts": [
+    {
+      "id": "workshop",
+      "label": "Workshop",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "workbench",
+              "production": true,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "workbench",
+              "production": true,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "label": "Home",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "activity",
+              "label": "Activity corner",
+              "kind": "bed",
+              "production": false,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "activity",
+              "label": "Activity corner",
+              "kind": "bed",
+              "production": false,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "study",
+      "label": "Study",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "desk",
+              "production": true,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "desk",
+              "production": true,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hearth",
+      "label": "Kitchen",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "hearth",
+              "production": true,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "hearth",
+              "production": true,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "growing",
+      "label": "Growing room",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "planter",
+              "production": true,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "work",
+              "label": "Work station",
+              "kind": "planter",
+              "production": true,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "label": "Store room",
+      "floors": [
+        {
+          "id": "ground",
+          "label": "Ground floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "upper",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "activity",
+              "label": "Activity corner",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 5
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "label": "Upper floor",
+          "width": 8,
+          "height": 6,
+          "door": {
+            "x": 1,
+            "y": 5
+          },
+          "stairs": [
+            {
+              "x": 6,
+              "y": 1,
+              "to": "ground",
+              "arrival": {
+                "x": 6,
+                "y": 1
+              },
+              "seconds": 2
+            }
+          ],
+          "stations": [
+            {
+              "id": "activity",
+              "label": "Activity corner",
+              "kind": "storage",
+              "production": false,
+              "x": 3,
+              "y": 2
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies shelf",
+              "kind": "storage",
+              "production": false,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "id": "output",
+              "label": "Collection tray",
+              "kind": "storage",
+              "production": false,
+              "x": 5,
+              "y": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

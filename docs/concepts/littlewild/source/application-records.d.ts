@@ -1,16 +1,18 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./legacy-task-records.d.ts" />
+/// <reference path="./construction-contracts.d.ts" />
 /** Current authoritative application records. These ports describe persisted values;
  * they do not copy state, add defaults, or grant callers ownership of a live engine. */
 declare namespace LWApplication {
  type Numbers = Record<string, number>;
  type Flags = Record<string, boolean>;
- type Point = LWTaskPorts.Point;
+ type Point = LWRuntime.Point;
  interface Lesson { id: string; progress: number; style: string; tuition: number; }
  interface Order {
   id: string; type: string; paused: boolean; priority: number; created: number;
   kind?: string; x?: number; y?: number; resource?: string | null; skillId?: string;
   amount?: number; done?: number; progress?: number; stage?: number; paid?: boolean;
-  targetLevel?: number; approach?: string; contract?: number;
+  targetLevel?: number; approach?: string; contract?: number; designId?: string; buildingId?: string;
  }
  interface Task extends LWTaskPorts.Task {
   buildingId?: string; jobId?: string; saleId?: string; recipeId?: string;
@@ -64,7 +66,7 @@ declare namespace LWApplication {
  }
  interface Building extends Point {
   id: string; kind: string; level: number; quality: number; stock: number; regen: number;
-  storage?: Storage; planAssignee?: string | null; marketInventory?: Numbers; door?: {dx:number;dy:number};
+  designId?: string; storage?: Storage; planAssignee?: string | null; marketInventory?: Numbers; door?: {dx:number;dy:number};
  }
  interface Sale {
   id: string; item: string; amount: number; remaining: number; sold: number;
@@ -75,6 +77,7 @@ declare namespace LWApplication {
  interface PlannerHistory { time: number; key: string; name: string; actorId: string | null; action: string; }
  interface State {
   version: number; simTime: number; day: number; hour: number; nextId: number;
+  construction?: LWConstruction.State;
   player: { level:number; xp:number; coins:number }; rp: number;
   started: boolean; paused: boolean;
   buildings: Building[]; nodes: (LWTaskPorts.Place & {max:number})[];

@@ -2,6 +2,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
+import { ownershipErrors, executableDataErrors, DataManifest } from "./architecture-data.cjs";
+import { contractErrors, ContractOwner } from "./architecture-contracts.cjs";
 import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
@@ -10,6 +12,8 @@ const ROOT = path.resolve(__dirname, "../..");
 const SOURCE = path.join(ROOT, "source");
 const GENERATED = path.join(ROOT, ".generated");
 const DOMAIN_MAP = JSON.parse(fs.readFileSync(path.join(SOURCE, "architecture", "domain-map.json"), "utf8")) as {
+  dataOwnership: string;
+  contractOwnership: string;
   format: string;
   schemaVersion: number;
   layers: string[];
@@ -192,21 +196,25 @@ check("All domain/application modules avoid ambient randomness and wall clock", 
   assert(violations.length === 0, "Nondeterministic API found: " + [...new Set(violations)].join("; "));
 });
 
-check("External simulation and scenario data contains no executable payload fields", () => {
-  const files = ["simulation-profile.json", "littlewild.pack.json", "emberworks.pack.json", "office.pack.json"];
-  const forbidden = new Set(["script", "callback", "execute", "eval", "sourceCode", "modulePath"]);
-  const violations: string[] = [];
-  const visit = (value: unknown, location: string): void => {
-    if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${location}/${index}`));
-    else if (value && typeof value === "object") {
-      for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-        if (forbidden.has(key)) violations.push(`${location}/${key}`);
-        visit(entry, `${location}/${key}`);
-      }
-    }
-  };
-  for (const file of files) visit(JSON.parse(fs.readFileSync(path.join(SOURCE, "content", file), "utf8")), file);
-  assert(violations.length === 0, "Executable-shaped data field found: " + violations.join("; "));
+check("Shipped definitions and configuration have one declared owner and compiled validator", () => {
+  assert(DOMAIN_MAP.dataOwnership === "architecture/data-ownership.json", "Data ownership metadata must be referenced by the domain map.");
+  const manifest = JSON.parse(source(DOMAIN_MAP.dataOwnership)) as DataManifest;
+  const shipped = [...walk(path.join(SOURCE,"content")),...walk(path.join(SOURCE,"assets"))]
+    .filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
+  const errors = ownershipErrors(manifest,shipped,new Set(DOMAIN_MAP.contexts.map(context=>context.id)));
+  for(const file of shipped)errors.push(...executableDataErrors(JSON.parse(source(file)),file));
+  const fixtures=walk(path.join(SOURCE,"fixtures")).filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
+  assert(JSON.stringify(fixtures.sort())===JSON.stringify(manifest.historicalFixtures.map(entry=>entry.path).sort()),"Historical JSON fixtures require explicit path and reason exclusions.");
+  assert(errors.length===0,errors.join("; "));
+});
+
+check("Project contracts and erased type dependencies follow inward ownership", () => {
+  assert(DOMAIN_MAP.contractOwnership === "architecture/contract-ownership.json", "Contract ownership metadata must be referenced by the domain map.");
+  const manifest=JSON.parse(source(DOMAIN_MAP.contractOwnership)) as {format:string;schemaVersion:number;entries:ContractOwner[]};
+  assert(manifest.format==="littlewild-contract-ownership"&&manifest.schemaVersion===1,"Invalid contract ownership identity.");
+  const files=fs.readdirSync(SOURCE).filter(file=>file.endsWith(".ts")||file.endsWith(".cts"));
+  const errors=contractErrors(SOURCE,DOMAIN_MAP.contexts,manifest.entries,files);
+  assert(errors.length===0,errors.join("; "));
 });
 
 check("Strict TypeScript compiler contract is hardened", () => {
@@ -254,7 +262,7 @@ check("Strict runtime modules contain no explicit any or TypeScript suppression"
     .filter(context=>context.layer==="domain"||context.layer==="application")
     .flatMap(context=>context.files));
   const violations:string[]=[];
-  for(const file of [...strictFiles].filter(file=>runtime.has(file)).sort()){
+  for(const file of [...new Set([...strictFiles].filter(file=>runtime.has(file)).concat(fs.readdirSync(SOURCE).filter(file=>file.endsWith(".d.ts"))))].sort()){
     const text=source(file);
     if(/@ts-(?:ignore|nocheck|expect-error)/.test(text))violations.push(file+": TypeScript suppression");
     const ast=ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,file.endsWith(".cts")?ts.ScriptKind.TS:ts.ScriptKind.TS);

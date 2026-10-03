@@ -5,11 +5,11 @@
 /// <reference path="./physical-world-contracts.d.ts" />
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LW:LWPhysicalPorts.Facade;LWWorldContent:LWContentPorts.WorldApi;LWAdventure:LWContentPorts.AdventureApi;LWWorldIntegrity:LWPhysicalPorts.IntegrityApi;LWWorldProduction:LWPhysicalPorts.ProductionApi;LWWorldTasks:LWPhysicalPorts.TasksApi;LWWorldECS:LWPhysicalPorts.EcsPhysicalApi;LWWorldStateValidation:{validate(state:LWPhysicalPorts.State,taskKinds:readonly string[]):void}};
+ const root=inputRoot as {LWRuntimeResults:LWRuntime.ResultsApi;LW:LWPhysicalPorts.Facade;LWWorldContent:LWContentPorts.WorldApi;LWAdventure:LWContentPorts.AdventureApi;LWWorldIntegrity:LWPhysicalPorts.IntegrityApi;LWWorldProduction:LWPhysicalPorts.ProductionApi;LWWorldTasks:LWPhysicalPorts.TasksApi;LWWorldECS:LWPhysicalPorts.EcsPhysicalApi;LWWorldStateValidation:{validate(state:LWPhysicalPorts.State,taskKinds:readonly string[]):void}};
  const L=root.LW, Composition=L.EngineComposition, W=root.LWWorldContent, A=root.LWAdventure;
  const {RES,RECIPES,BUILDINGS,SKILLS,clamp,terrain,SIZE}=L;
  const copy=W.clone, sum=(inv:LWPhysicalPorts.Inventory|null|undefined):number=>Object.values(inv||{}).reduce((a,n)=>a+n,0);
- const fail=(reason:string):LWPhysicalPorts.ActionResult=>({ok:false,reason}), ok=():LWPhysicalPorts.ActionResult=>({ok:true});
+ const fail=root.LWRuntimeResults.failure, ok=root.LWRuntimeResults.success;
  const isInt=(n:unknown,a=0,b=1e7):n is number=>typeof n==='number'&&Number.isInteger(n)&&n>=a&&n<=b;
  const item=L.colony.item, def=L.colony.definition;
  const CUSTOM=['stockbuilding','collectbuilding','emptybuilding','produce'];

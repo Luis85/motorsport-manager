@@ -4,6 +4,7 @@ require('./content-runtime.js');
 require('./creature-catalog.js');
 require('./asset-catalog.js');
 require('./scenario-story.js');
+require('./renderer-registry.js');
 require('./developer-data.js');
 require('./developer-commands.js');
 require('./developer-session.js');
@@ -27,3 +28,18 @@ export type AssetCategory=LittlewildDeveloper.AssetCategory;
 export type InteractionTarget=LittlewildDeveloper.InteractionTarget;
 export type InteractionOption=LittlewildDeveloper.InteractionOption;
 export type GameSettings=LittlewildDeveloper.GameSettings;
+
+export type InteriorLayout=LittlewildDeveloper.InteriorLayout;
+export type BuildingInteriorSnapshot=LittlewildDeveloper.BuildingInteriorSnapshot;
+export type BuildingDesignDraft=LittlewildDeveloper.BuildingDesignDraft;
+export type BuildingDesign=LittlewildDeveloper.BuildingDesign;
+export type BuildingDesignPreview=LittlewildDeveloper.BuildingDesignPreview;
+export type ConstructionOptions=LittlewildDeveloper.ConstructionOptions;
+
+export const renderers=toolbox.renderers;
+export const failureCodes=toolbox.failureCodes;
+export type TerraformEdit=LittlewildDeveloper.TerraformEdit;
+export type TerraformSnapshot=LittlewildDeveloper.TerraformSnapshot;
+export type TerraformPreview=LittlewildDeveloper.TerraformPreview;
+export type RendererMetadata=LittlewildDeveloper.RendererMetadata;
+export type FailureCode=LWRuntime.FailureCode;

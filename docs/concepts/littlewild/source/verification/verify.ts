@@ -48,6 +48,11 @@ fs.mkdirSync(OUT, { recursive: true });
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["architecture-extensions", ["node", generated("test-architecture-extensions.cjs")], generated("architecture-extensions-results.json"), 120],
+  ["building-interiors", ["node", generated("test-building-interiors.cjs")], generated("building-interiors-results.json"), 120],
+  ["construction", ["node", generated("test-construction.cjs")], generated("construction-results.json"), 120],
+  ["terraform", ["node", generated("test-terraform.cjs")], generated("terraform-results.json"), 120],
+  ["renderers", ["node", generated("test-renderers.cjs")], generated("renderer-results.json"), 120],
   ["canvas-renderer", ["node", generated("test-canvas-renderer.cjs")], generated("canvas-renderer-results.json"), 120],
   ["architecture-policy", ["node", generated("test-architecture-policy.cjs")], generated("architecture-policy-results.json"), 60],
   ["storage-clock", ["node", generated("test-storage-clock.cjs")], generated("storage-clock-results.json"), 60],
@@ -88,6 +93,10 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"building-interiors-browser", command:["node", generated("verification/building-interiors-browser.js")], result:"verification/v15/building-interiors-browser.json", timeout:180 },
+    { name:"construction-editor-browser", command:["node", generated("verification/construction-editor-browser.js")], result:"verification/v15/construction-editor-browser-results.json", timeout:180 },
+    { name:"terraform-browser", command:["node", generated("verification/terraform-browser.js")], result:"verification/v15/terraform-browser-results.json", timeout:180 },
+    { name:"renderers-browser", command:["node", generated("verification/renderers-browser.js")], result:"verification/v15/renderers-browser-results.json", timeout:180 },
     { name:"office-browser", command:["node", generated("verification/office-browser.js")], result:"verification/v15/office-browser-results.json", timeout:180 },
     { name:"game-settings-browser", command:["node", generated("verification/game-settings-browser.js")], result:"verification/v15/game-settings-browser-results.json", timeout:180 },
     { name:"browser", command:["node", generated("verification/browser.js")], result:"verification/v15/browser-results.json", timeout:300 },

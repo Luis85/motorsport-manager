@@ -19,7 +19,7 @@ declare namespace LWEnvironmentPorts {
   role(state:RoleState,actorId:string):string;
   onsite(state:RoleState,actor:{id:string;activeQuest?:unknown}):boolean;
   populate3D(kit:Kit,parent:unknown,environment:Environment,origins:readonly Point[],size?:number):void;
-  groundCanvas(c:CanvasRenderingContext2D,art:Art,environment:Environment,size:number,tileWidth:number,tileHeight:number):void;
+  groundCanvas(c:CanvasRenderingContext2D,art:Art,environment:Environment,size:number,tileWidth:number,tileHeight:number,tiles?:Record<string,{ground:'grass'|'water';height:number}>):void;
   backdropCanvas(c:CanvasRenderingContext2D,width:number,height:number,environment:Environment):void;
  }
 }

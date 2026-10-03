@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /** Compatibility application ports. These describe authoritative records; they
  * do not add persisted fields or create a second model of actor/task state. */
 declare namespace LWTaskPorts {
@@ -31,10 +32,7 @@ declare namespace LWTaskPorts {
         explore: number;
         research: number;
     }
-    interface Point {
-        x: number;
-        y: number;
-    }
+    type Point=LWRuntime.Point;
     interface Place extends Point {
         id: string;
         kind: string;
@@ -42,6 +40,7 @@ declare namespace LWTaskPorts {
         regen: number;
     }
     interface Order extends Point {
+        designId?: string; buildingId?: string;
         id: string;
         type: string;
         kind: string;
@@ -368,8 +367,7 @@ declare namespace LWTaskPorts {
             relationships: Record<string, Relationship>;
         };
     }
-    interface Settlement {
-        ok: boolean;
+    interface Settlement extends LWRuntime.Result {
         state?: string;
         deltas?: {
             prestige?: number;

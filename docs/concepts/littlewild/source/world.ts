@@ -30,8 +30,13 @@
         contextChoosing?: boolean;
         landSelected?: LWCanvasPorts.View['landSelected'];
         observer: ResizeObserver;
+        inputController = new AbortController();
+        suspended = false;
+        disposed = false;
+        terrainRevision?:number;
+        terraformMode?:boolean;
         constructor(canvas: HTMLCanvasElement, engine: LWCanvasPorts.Engine, handlers: Handlers = {}) { this.canvas = canvas; const context = canvas.getContext('2d', { alpha: false }); if (!context) throw Error('Canvas rendering context is unavailable.'); this.c = context; this.engine = engine; this.handlers = handlers; this.camera = { z: 1, x: 0, y: 0 }; this.hover = null; this.selected = null; this.placement = null; this.drag = null; this.manual = false; this.showPath = true; this.time = 0; this.bubble = null; this.particles = []; this.makeGround(); this.bind(); this.observer = new ResizeObserver(() => this.resize()); this.observer.observe(canvas); this.resize(); }
-        makeGround() { Object.assign(this, root.LWCanvasGround.create(() => document.createElement('canvas'))); }
+        makeGround() { Object.assign(this, root.LWCanvasGround.create(() => document.createElement('canvas'),this.engine));this.terrainRevision=this.engine.s.terraform?.revision??0; }
         resize() { const box = this.canvas.getBoundingClientRect(); if (!box.width || !box.height)
             return; this.canvas.width = Math.round(box.width); this.canvas.height = Math.round(box.height); this.c.imageSmoothingEnabled = false; if (!this.manual)
             this.home(); }
@@ -61,15 +66,30 @@
             }
             return this.toTile(x, y);
         }
-        project(x: number, y: number) { return { x: (x - y) * TW / 2, y: (x + y) * TH / 2 }; }
+        project(x: number, y: number) { return { x: (x - y) * TW / 2, y: (x + y) * TH / 2-(this.engine.terrainHeight?.(x,y)??0)*12 }; }
         transform() { return { x: this.canvas.width / 2 + this.camera.x, y: this.canvas.height / 2 - (SIZE - 1) * TH / 2 * this.camera.z + this.camera.y, z: this.camera.z }; }
         toScreen(x: number, y: number) { const p = this.project(x, y), t = this.transform(); return { x: p.x * t.z + t.x, y: p.y * t.z + t.y }; }
-        toTile(x: number, y: number) { const t = this.transform(), px = (x - t.x) / t.z, py = (y - t.y) / t.z; return { x: Math.round((py / (TH / 2) + px / (TW / 2)) / 2), y: Math.round((py / (TH / 2) - px / (TW / 2)) / 2) }; }
+        toTile(x: number, y: number) {
+            const t = this.transform(), px = (x - t.x) / t.z, py = (y - t.y) / t.z;
+            // Search the rendered ground diamonds using the same elevation projection as drawing.
+            // The untouched map retains its original inverse and boundary rounding.
+            if (this.engine.s.terraform) {
+                let best: LWCanvasPorts.Point | null = null, distance = Infinity;
+                for (let a = 0; a < SIZE; a++) for (let b = 0; b < SIZE; b++) {
+                    const p = this.project(a, b), score = Math.abs(px - p.x) / (TW / 2) + Math.abs(py - p.y) / (TH / 2);
+                    if (score <= 1 && score < distance) { best = { x: a, y: b }; distance = score; }
+                }
+                if (best) return best;
+            }
+            return { x: Math.round((py / (TH / 2) + px / (TW / 2)) / 2), y: Math.round((py / (TH / 2) - px / (TW / 2)) / 2) };
+        }
         bind() {
+            this.inputController = new AbortController();
             const el = this.canvas, pointers = new Map<number, LWCanvasPorts.Point>();
             let pinched = false, lastPinch: { distance: number; x: number; y: number } | null = null;
+            const on = <K extends keyof HTMLElementEventMap>(name: K, handler: (event: HTMLElementEventMap[K]) => void, options: AddEventListenerOptions = {}) => el.addEventListener(name, handler, {...options, signal: this.inputController.signal});
             const local = (e: MouseEvent) => { const r = el.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-            el.addEventListener('pointerdown', e => {
+            on('pointerdown', e => {
                 if (e.button > 0)
                     return;
                 el.focus({ preventScroll: true });
@@ -87,9 +107,9 @@
                     lastPinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
                 }
             });
-            el.addEventListener('pointermove', e => {
+            on('pointermove', e => {
                 const p = local(e);
-                this.hover = this.placement ? this.toTile(p.x, p.y) : this.hitTest(p.x, p.y);
+                this.hover = (this.placement||this.terraformMode) ? this.toTile(p.x, p.y) : this.hitTest(p.x, p.y);
                 if (pointers.has(e.pointerId))
                     pointers.set(e.pointerId, p);
                 if (pointers.size >= 2) {
@@ -121,7 +141,7 @@
             });
             const finish = (e: PointerEvent) => {
                 if (e.type === 'pointerup' && this.drag && !this.drag.moved && !pinched) {
-                    const p = local(e), tile = this.placement ? this.toTile(p.x, p.y) : this.hitTest(p.x, p.y);
+                    const p = local(e), tile = (this.placement||this.terraformMode) ? this.toTile(p.x, p.y) : this.hitTest(p.x, p.y);
                     if (this.placement)
                         this.handlers.place?.(this.placement, tile);
                     else
@@ -137,14 +157,14 @@
                 if (!pointers.size)
                     pinched = false;
             };
-            el.addEventListener('pointerup', finish);
-            el.addEventListener('pointercancel', finish);
-            el.addEventListener('lostpointercapture', e => { if (pointers.has(e.pointerId))
+            on('pointerup', finish);
+            on('pointercancel', finish);
+            on('lostpointercapture', e => { if (pointers.has(e.pointerId))
                 finish(e); });
-            el.addEventListener('pointerleave', () => { if (!pointers.size)
+            on('pointerleave', () => { if (!pointers.size)
                 this.hover = null; });
-            el.addEventListener('wheel', e => { e.preventDefault(); this.handlers.pan?.(); const p = local(e); this.zoomAt(Math.exp(clamp(-e.deltaY * .0018, -.4, .4)), p.x, p.y); }, { passive: false });
-            el.addEventListener('keydown', e => {
+            on('wheel', e => { e.preventDefault(); this.handlers.pan?.(); const p = local(e); this.zoomAt(Math.exp(clamp(-e.deltaY * .0018, -.4, .4)), p.x, p.y); }, { passive: false });
+            on('keydown', e => {
                 if (e.ctrlKey || e.metaKey || e.altKey)
                     return;
                 const directions: Record<string, LWCanvasPorts.Pair> = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
@@ -184,6 +204,9 @@
                 }
             });
         }
+        suspend() { if (this.suspended) return; this.suspended = true; this.inputController.abort(); this.observer.disconnect(); this.drag = null; }
+        resume() { if (!this.suspended) return; this.suspended = false; this.bind(); this.observer.observe(this.canvas); this.resize(); }
+        dispose() { if (this.disposed) return; this.disposed = true; this.suspend(); this.particles = []; this.effects = []; }
         say(text: string,type='heart',actorId: string | null=null){const a=this.engine.creatures.find(a=>a.id===actorId)||this.engine.selected;if(!a||a.activeQuest)return;this.bubble={text,time:this.time+6,type,actorId:a.id};if(!this.engine.s.settings.reducedMotion)for(let i=0;i<7;i++)this.particles.push({x:a.creature.x,y:a.creature.y,off:(i-3)*7,t:0,delay:i*.1,type});}
         feedbackEvent(event: LWCanvasPorts.Feedback){const a=this.engine.creatures.find(a=>a.id===event.actorId);if(!a||a.activeQuest)return;this.effects??=[];this.effects.push({...event,x:event.x??a.creature.x,y:event.y??a.creature.y,expires:(this.time||0)+4.5,started:this.time||0});this.effects=this.effects.slice(-10);if(event.type==='social')this.say(event.success?'A little closer.':'Let’s give each other a moment.','heart',a.id);else if(event.type==='transfer')this.say(event.text!,'star',a.id);}
         draw(time: number, dt: number) { root.LWCanvasScene.draw.call(this, time, dt); }

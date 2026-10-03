@@ -69,7 +69,7 @@ test('All command envelope validation runs before mutation or accessors',()=>wit
 }));
 test('Router rejection returns a useful detached result without mutation',()=>withSession(session=>{
  const before=session.save(),result=session.command({id:'care',actorId:'c999',args:['feed']});
- assert.equal(result.ok,false);assert(result.reason);assert.deepEqual(session.save(),before);
+ assert.equal(result.ok,false);assert(result.reason);assert(result.code&&toolbox.failureCodes().includes(result.code));assert.deepEqual(session.save(),before);
  const unknown=session.command({id:'cancel-plan',actorId:'c1',args:['missing']});assert.equal(unknown.ok,false);assert.match(unknown.reason??'',/no longer queued/);
 }));
 test('Typed actor commands go through the compiled router',()=>withSession(session=>{
@@ -160,7 +160,7 @@ test('Browser global composes the same toolbox without CommonJS or player UI',()
  const globals:Record<string,string>={LWDefaultLibrary:'default-library.json',LWContentSchema:'library.schema.json',LWDefaultAdventure:'adventure-library.json',
   LWAdventureSchema:'adventure.schema.json',LWDefaultWorld:'world-library.json',LWWorldSchema:'world.schema.json',LWActorRules:'actor-rules.json',
   LWEconomyRules:'economy-rules.json',LWDefaultSimulationProfile:'simulation-profile.json',LWSimulationSchema:'simulation.schema.json',
-  LWDefaultGrowth:'growth-library.json',LWGrowthSchema:'growth.schema.json',LWDefaultProfile:'default-profile.json',LWScenarioSchema:'scenario.schema.json'};
+  LWDefaultGrowth:'growth-library.json',LWGrowthSchema:'growth.schema.json',LWDefaultProfile:'default-profile.json',LWScenarioSchema:'scenario.schema.json',LWInteriorDefinitions:'building-interiors.json'};
  for(const [name,file] of Object.entries(globals))vm.runInContext(name+'='+fs.readFileSync(path.join(__dirname,'content',file),'utf8'),context);
  for(const [name,file] of [['LWCreatureDefinitions','creature-definitions.json'],['LWCreatureConfig','creature-config.json'],['LWAssetDefinitions','asset-definitions.json'],['LWInteractionLibrary','interaction-library.json']])
   vm.runInContext(name+'='+fs.readFileSync(path.join(__dirname,file!),'utf8'),context);
@@ -168,10 +168,49 @@ test('Browser global composes the same toolbox without CommonJS or player UI',()
  const composition=fs.readFileSync(path.join(__dirname,'simulation.cjs'),'utf8');
  vm.runInContext("LWAssetDefinitions[0].name='🌱'.repeat(120)",context);
  const modules=[...composition.matchAll(/require\('\.\/([^']+)\.js'\)/g)].map(match=>match[1]!);
- for(const name of [...modules,'story-codec','scenario-shape','scenario-runtime','scenario-story','developer-data','developer-commands','developer-session','developer-toolbox'])
+ for(const name of [...modules,'story-codec','scenario-shape','scenario-runtime','scenario-story','renderer-registry','developer-data','developer-commands','developer-session','developer-toolbox'])
   vm.runInContext(fs.readFileSync(path.join(__dirname,name+'.js'),'utf8'),context,{filename:name+'.js'});
  const outcome=vm.runInContext(`(()=>{const t=LWDeveloper,s=t.create({scenarioId:'littlewild'});s.start();const advanced=s.advance(.3).advancedSeconds;s.dispose();const lease=LWDeveloperSession.claimHost();let blocked=false;try{t.create({scenarioId:'emberworks'});}catch(e){blocked=e.code==='session-active';}const count=t.scenarios().length;lease.dispose();return {advanced,blocked,count,astral:t.assets.list()[0].name};})()`,context) as {advanced:number;blocked:boolean;count:number;astral:string};
  assert(Math.abs(outcome.advanced-.3)<1e-9);assert(outcome.blocked);assert.equal(outcome.count,3);assert.equal([...outcome.astral].length,120);
+});
+test('Portable spatial observations and authoring previews remain detached and state pure',()=>withSession(session=>{
+ const before=session.save(),options=session.constructionOptions(),building=options.buildings[0];assert(building);
+ const interior=session.buildingInterior(building.id),draft=session.buildingDesign(building.id);assert(interior&&draft);
+ assert.equal(interior.buildingId,building.id);assert(draft.mapUnit);
+ assert(session.previewBuildingDesign(draft,building.id).ok);
+ const terrain=session.terraform();assert.equal(session.previewTerraform({revision:terrain.revision,tiles:[{x:0,y:0,height:session.terrain(0,0).height}],plants:[]}).ok,true);
+ assert(Number.isFinite(session.terrain(0,0).height));
+ interior.floors[0]!.label='Changed';draft.name='Changed';terrain.choices.splice(0);options.buildings.splice(0);
+ assert.notEqual(session.buildingInterior(building.id)?.floors[0]?.label,'Changed');assert.notEqual(session.buildingDesign(building.id)?.name,'Changed');
+ assert(session.terraform().choices.length);assert.deepEqual(session.save(),before);
+},'littlewild','charted-home'));
+test('Authored floor geometry traverses the same router with supported nested cell arrays',()=>withSession(session=>{
+ const options=session.constructionOptions(),kind=options.types[0]?.id;assert(kind);
+ const cells=Array.from({length:400},(_,index)=>({x:index%20,y:Math.floor(index/20)}));
+ const draft:LittlewildDeveloper.BuildingDesignDraft={name:'Spacious workshop',kind,mapUnit:{width:20,height:20},layout:{id:'spacious',label:'Spacious',floors:[{id:'ground',label:'Ground',width:20,height:20,door:{x:1,y:19},stairs:[],stations:[],cells}]}};
+ assert.equal(session.previewBuildingDesign(draft).ok,true);
+ const before=session.save(),result=session.command({id:'construct-design',actorId:'c1',args:[draft,999,999]});
+ assert.equal(result.ok,false);assert.notEqual(result.code,'invalid-command');assert.deepEqual(session.save(),before);
+}));
+test('Spatial commands reject missing identities through the same typed boundary atomically',()=>withSession(session=>{
+ const before=session.save();
+ for(const command of [
+  {id:'visit-building-floor',args:['c1','missing','upper']},
+  {id:'order-building-production',args:['missing','ground','bench','planks',1]},
+  {id:'improve-design',actorId:'c1',args:['missing',{name:'Invalid',kind:'missing',layout:{id:'test',label:'Test',floors:[]}}]},
+  {id:'apply-terraform',args:[{revision:-1,tiles:[],plants:[]}]}
+ ] satisfies LittlewildDeveloper.Command[]){const result=session.command(command);assert.equal(result.ok,false);assert(result.reason);}
+ assert.deepEqual(session.save(),before);
+ assert.throws(()=>session.command({id:'visit-building-floor',args:['c1','missing','ground'],actorId:'c1'} as unknown as LittlewildDeveloper.Command),/does not accept/);
+ assert.deepEqual(session.save(),before);
+}));
+test('Renderer discovery exposes detached metadata without factories or world activation',()=>{
+ const metadata=toolbox.renderers.list();assert.equal(metadata[0]?.id,'basic');assert(metadata.every(value=>!Object.hasOwn(value,'factory')));
+ assert(toolbox.renderers.validate(metadata[0]).ok);
+ assert.equal(toolbox.renderers.validate({...metadata[0],factory:'executable'}).ok,false);
+ assert.equal(toolbox.renderers.validate([]).ok,false);let reads=0;assert.equal(toolbox.renderers.validate({get id(){reads++;return 'unsafe';}}).ok,false);assert.equal(reads,0);
+ const first=metadata[0];assert(first);const capabilities=first.capabilities as LittlewildDeveloper.RendererCapability[];capabilities.splice(0);
+ assert(toolbox.renderers.list()[0]?.capabilities.length);
 });
 test('Generated SDK types accept valid intent and reject unavailable capabilities',()=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-sdk-types-'));
@@ -179,8 +218,8 @@ test('Generated SDK types accept valid intent and reject unavailable capabilitie
   const entry=path.join(__dirname,'developer-sdk.cjs').replaceAll('\\','/');
   const prefix='import {toolbox, type Command} from '+JSON.stringify(entry)+';\n';
   const good=path.join(directory,'good.cts'),bad=path.join(directory,'bad.cts');
-  fs.writeFileSync(good,prefix+"const c:Command={id:'set-stock-target',actorId:'c1',args:['berries',4]}; const s=toolbox.create({scenarioId:'littlewild'});s.command(c);s.dispose();");
-  fs.writeFileSync(bad,prefix+"const c:Command={id:'set-stock-target',args:['berries',true]};const s=toolbox.create({scenarioId:'littlewild'});s.engine.step(.1);");
+  fs.writeFileSync(good,prefix+"const c:Command={id:'set-stock-target',actorId:'c1',args:['berries',4]}; const s=toolbox.create({scenarioId:'littlewild'});s.command(c);s.command({id:'visit-building-floor',args:['c1','b1','upper']});s.command({id:'order-building-production',args:['b1','upper','bench','planks',1]});const d=s.buildingDesign('b1');if(d){s.previewBuildingDesign(d,'b1');s.command({id:'improve-design',actorId:'c1',args:['b1',d]});s.command({id:'construct-design',actorId:'c1',args:[d,2,3]});}const t=s.terraform();s.command({id:'apply-terraform',args:[{revision:t.revision,tiles:[{x:1,y:2,height:1}],plants:[]}]});s.buildingInterior('b1');toolbox.renderers.validate(toolbox.renderers.list()[0]);s.dispose();");
+  fs.writeFileSync(bad,prefix+"const c:Command={id:'set-stock-target',args:['berries',true]};const s=toolbox.create({scenarioId:'littlewild'});s.engine.step(.1);s.command({id:'visit-building-floor',actorId:'c1',args:['c1','b1','upper']});s.command({id:'apply-terraform',args:[{revision:0,tiles:[{x:1,y:2,ground:'lava'}],plants:[]}]});toolbox.renderers.register({},()=>null);");
   const compilerOptions:ts.CompilerOptions={strict:true,noEmit:true,skipLibCheck:true,module:ts.ModuleKind.Node16,moduleResolution:ts.ModuleResolutionKind.Node16,target:ts.ScriptTarget.ES2022};
   const diagnostics=(file:string):readonly ts.Diagnostic[]=>ts.getPreEmitDiagnostics(ts.createProgram([file],compilerOptions));
   const accepted=diagnostics(good);assert.equal(accepted.length,0,accepted.map(d=>ts.flattenDiagnosticMessageText(d.messageText,'\n')).join('\n'));

@@ -7,6 +7,9 @@
  const root=inputRoot as {LWDeveloperData:DataApi;LWDeveloperCommands?:unknown};
  const D=root.LWDeveloperData;
  const contracts:Readonly<Record<LittlewildDeveloper.CommandId,readonly [number,string]>>={
+  'preview-terraform':[1,'j'],'apply-terraform':[1,'j'],
+  'visit-building-floor':[3,'sss'],'order-building-production':[5,'ssssn'],
+  'construct-design':[3,'jnn'],'improve-design':[2,'sj'],
   'seek-duel':[1,'sSS'],'cancel-duel-seek':[1,'s'],'stage-duel':[3,'sss'],'set-game-settings':[1,'j'],
   'request-interaction':[3,'ssj'],'respond-interaction':[2,'sb'],
   'cancel-interaction':[1,'s'],'set-interaction-library':[1,'j'],
@@ -45,6 +48,10 @@
    const actorId=D.text(envelope.actorId,'Actor ID');
    if(!/^c[1-9][0-9]*$/.test(actorId))fail('Actor ID must be a stable c1, c2, … identity.');
   }else if(envelope.actorId!==undefined)fail(id+' does not accept actorId.');
+  if(id==='preview-terraform'||id==='apply-terraform')D.record(args[0]);
+  if(id==='visit-building-floor'&&!/^c[1-9][0-9]*$/.test(String(args[0])))fail('Expected a stable creature identity for a floor visit.');
+  if(id==='order-building-production'&&(!Number.isInteger(args[4])||Number(args[4])<1||Number(args[4])>12))fail('Workstation orders require 1–12 batches.');
+  if(id==='construct-design'||id==='improve-design')D.record(args[id==='construct-design'?0:1]);
   if(id==='request-interaction'){
    const target=D.record(args[2]);
    if(Object.keys(target).length!==2||!Object.hasOwn(target,'scope')||!Object.hasOwn(target,'id')||!['creature','building','node'].includes(String(target.scope)))fail('Expected an interaction target {scope, id}.');

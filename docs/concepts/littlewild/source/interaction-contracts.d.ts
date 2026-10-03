@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /** Data records and inward ports for the shared creature/world interaction authority. */
 declare namespace LWInteraction {
  type Scope='creature'|'building'|'node';
@@ -50,6 +51,7 @@ declare namespace LWInteraction {
  }
  interface Engine {
   s:{colony:{rng:number};simTime:number;started:boolean;paused:boolean;creatureInteractions?:State;
+   interiors?:{locations:{[actorId:string]:LWRuntime.Point & {buildingId:string;floorId:string;route:readonly unknown[]}}};
    settings:{duels?:boolean;quests?:boolean};
    buildings:{id:string;kind:string;x:number;y:number}[];nodes:{id:string;kind:string;x:number;y:number;stock:number}[]};
   creatures:Creature[];actor:Creature;
@@ -69,9 +71,9 @@ declare namespace LWInteraction {
   nodeAvailable(node:{id:string;kind:string;stock:number}):boolean;
   reachable(point:{x:number;y:number}):boolean;room(resource:string):number;
   gateIssue(category:string,id:string):string|null;startTask(task:unknown):boolean;
-  log(message:string,icon:string):void;emit(kind:string,message:string,extra?:object):void;
+  log(message:string,icon:string):void;emit(kind:LWRuntime.EventKind,message:string,extra?:LWRuntime.EventPayload):void;
  }
- interface Result {ok:boolean;reason?:string;interactionId?:string;taskStarted?:boolean;}
+ interface Result extends LWRuntime.Result {interactionId?:string;taskStarted?:boolean;}
  interface Option {id:string;label:string;description:string;available:boolean;reason:string|null;}
  interface Catalog {
   defaults:Library;all():Definition[];validate(input:unknown):Library;definition(input:unknown):Definition;
@@ -83,6 +85,7 @@ declare namespace LWInteraction {
   respond(engine:Engine,id:unknown,actorId:string,accept:unknown):Result;
   cancel(engine:Engine,id:unknown):Result;step(engine:Engine):void;
   busy(engine:Engine,id:string):boolean;setLibrary(engine:Engine,input:unknown):Result;
+  distance(engine:Engine,source:Creature,target:Creature):number;
   eligible(engine:Engine,definition:Definition,sourceId:string,target:Target):string|null;
  }
 }

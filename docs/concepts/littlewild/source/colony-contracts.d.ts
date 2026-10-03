@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
 /// <reference path="./content-contracts.d.ts" />
 /** The colony layer borrows one scoped actor and one authoritative root from composition. */
@@ -5,7 +6,7 @@ declare namespace LWColonyPorts {
  type Actor=LWApplication.Actor;
  type State=LWApplication.State;
  type ScopedState=State & Actor;
- type Result={ok:boolean;reason?:string};
+ type Result=LWRuntime.Result;
  type Item=LWContentPorts.Equipment|LWContentPorts.Adventure['chest']|(LWContentPorts.Item & {weight:number|undefined});
  interface Load {level:number;grams:number;maximumKg:number;overloaded:boolean;move:number;}
  interface Modifier {name:string;value:number;}
@@ -14,7 +15,7 @@ declare namespace LWColonyPorts {
   s:ScopedState;state:State;_blockedKey:string;
   has(id:string):boolean;canBuild(x:number,y:number):boolean;
   place(kind:string,x:number,y:number):Result;upgrade(id:string,approach?:string):Result;
-  emit(type:string,text:string,extra?:object):void;log(text:string,icon?:string):void;
+  emit(type:LWRuntime.EventKind,text:string,extra?:LWRuntime.EventPayload):void;log(text:string,icon?:string):void;
   transaction(label:string,guide?:number,pocket?:number,research?:number):void;
   xp(who:string,amount:number):void;practiceSkill(id:string,amount?:number):void;
   careIssue(kind:string):string|null;care(kind:string):Result;mood():string;
@@ -67,6 +68,7 @@ declare namespace LWColonyPorts {
  interface Installer {install(target:object,predecessor:object,dependencies:Dependencies):void;}
  type GuardedName='care'|'research'|'teach'|'practice'|'cancelLesson'|'setLearningStyle'|'pauseLearning'|'chooseSpecialization'|'startStudy'|'pauseStudy'|'claimStudy'|'setAllowance'|'topUp'|'setStockTarget'|'place'|'upgrade'|'request'|'cancel'|'pauseOrder'|'prioritize'|'requestEquipment'|'unequip'|'cancelEquipment'|'acceptQuest'|'cancelQuestPlan'|'suggestSocial'|'requestUnpack'|'spendPoint';
  interface Root {
+  LWRuntimeResults:LWRuntime.ResultsApi;
   LW:Facade;LWRPG:Rpg;LWAdventure:LWContentPorts.AdventureApi;LWCreatures:Creatures;LWCreatureFactory:Factory;
   LWColonyAdventures:Installer;LWColonyActivity:Installer;LWColonyLogistics:Installer;LWColonyTaskCompletion:Installer;
   LWActorStateView:{create(engine:Host,state:ScopedState,personal:readonly (keyof Actor)[]):ScopedState};

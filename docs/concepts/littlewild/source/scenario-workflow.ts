@@ -1,3 +1,4 @@
+/// <reference path="./workflow-venue-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
 /* Authored roles connect completed quest facts to customer demand. Physical tasks own every transfer. */
 (function(inputRoot:unknown){
@@ -11,7 +12,7 @@
  interface State {scenarioWorkflow?:Workflow;simTime:number;buildings:LWApplication.Building[];colony:{creatures:Actor[]};market:{orders:LWApplication.Sale[];history:{id:string;actorId:string}[]};}
  interface Engine {s:State;creatures:Actor[];actor:Actor;stepWorld(dt:number):void;totalStock(item:string):number;withActor<T>(actor:Actor,work:()=>T):T;request(type:string,id:string,amount:number):{ok:boolean};addOffer(questId:string,source:string):void;acceptQuest(id:string):{ok:boolean};sellItem(item:string,amount:number,actorId:string):{ok:boolean;order?:{id:string}};gameSettings():{quests:boolean};log(text:string,icon:string):void;handlers():Record<string,()=>string>;at(point:LWApplication.Point):boolean;startTask(task:Partial<LWApplication.Task>):boolean;returnQuest():boolean;}
  interface Constructor extends Function {prototype:Record<string,unknown>;import(input:unknown):unknown;}
- const root=inputRoot as {LWContent:LWContentPorts.ContentApi;LWAdventure:LWContentPorts.AdventureApi;LWScenarioWorkflow?:typeof api;};
+ const root=inputRoot as {LWWorkflowVenues:LWWorkflowVenue.Api;LWContent:LWContentPorts.ContentApi;LWAdventure:LWContentPorts.AdventureApi;LWScenarioWorkflow?:typeof api;};
  const C=root.LWContent,A=root.LWAdventure;
  const record=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
  const fail=(message:string):never=>{throw Error('Scenario workflow: '+message);};
@@ -95,7 +96,7 @@
  }
  function install(Engine:Constructor):void{
   const p=Engine.prototype,world=p.stepWorld as Engine['stepWorld'],importer=Engine.import,handlers=p.handlers as Engine['handlers'],returnQuest=p.returnQuest as Engine['returnQuest'];
-  const venue=(e:Engine,questId:string|undefined)=>{const w=e.s.scenarioWorkflow,d=w?.deals.find(d=>d.questId===questId&&actorFor(e,w,d.salesRole)?.id===e.actor.id);return e.s.buildings.find(b=>b.id===d?.venueBuildingId);};
+  const venue=(e:Engine,questId:string|undefined)=>e.s.buildings.find(b=>b.id===root.LWWorkflowVenues.buildingId(e.s,e.actor.id,questId));
   p.handlers=function(this:Engine):Record<string,()=>string>{const h=handlers.call(this),quest=h.quest!;h.quest=()=>{const station=venue(this,this.actor.questPlan?.questId);if(station&&!this.at(station))return this.startTask({kind:'idle',target:station,duration:1,label:'Preparing a customer call',reason:'This opportunity needs its assigned workstation.',thought:'I will meet the customer from my desk.'})?'running':'failure';return quest();};return h;};
   p.returnQuest=function(this:Engine):boolean{const station=venue(this,this.actor.activeQuest?.questId),position=station?{x:this.actor.creature.x,y:this.actor.creature.y}:null,result=returnQuest.call(this);if(result&&position)Object.assign(this.actor.creature,position);return result;};
   const startTask=p.startTask as Engine['startTask'];p.startTask=function(this:Engine,task:Partial<LWApplication.Task>):boolean{const vocabulary=this.s.scenarioWorkflow?.activities?.[task.kind||''];if(vocabulary)Object.assign(task,vocabulary);return startTask.call(this,task);};

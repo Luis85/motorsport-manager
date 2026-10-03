@@ -13,10 +13,8 @@
     if (typeof module !== 'undefined' && module.exports && !root.LWColonyTaskCompletion) require('./colony-task-completion.js');
     const L = root.LW, Composition = L.EngineComposition, R = root.LWRPG, A = root.LWAdventure, Creatures = root.LWCreatures, Factory = root.LWCreatureFactory;
     const { RES, SKILLS, BUILDINGS, RECIPES, DRILLS, STYLES, CONTRACTS, clamp, terrain, SIZE } = L;
-    const copy = A.copy, fail = (reason:string) => ({ ok: false as const, reason });
-    function ok():{ok:true};
-    function ok<T extends object>(data:T):{ok:true}&T;
-    function ok(data:object={}):{ok:true}{return {ok:true,...data};}
+    const copy = A.copy, fail = root.LWRuntimeResults.failure;
+    const ok=root.LWRuntimeResults.success;
     const PERSONAL = Factory.personalFields;
     const FOOD = ['meals', 'bread', 'berries', 'meat'];
     const safeInt = (x:number, a:number, b:number) => Number.isInteger(x) && x >= a && x <= b;
@@ -141,7 +139,7 @@
                 return fail('This improvement already has a creature looking after it.');
             return super.upgrade(id,approach);
         }
-        override emit(type:string, text:string, extra:object = {}) { super.emit(type, text, { actorId: this._actor?.id, ...extra }); }
+        override emit(type:LWRuntime.EventKind, text:string, extra:LWRuntime.EventPayload = {}) { super.emit(type, text, { actorId: this._actor?.id, ...extra }); }
         override log(text:string, icon = 'leaf') {
             const before = this.s.log.length;
             super.log(text, icon);

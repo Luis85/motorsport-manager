@@ -11,7 +11,7 @@ function test(name:string,work:()=>void){try{work();results.push({name,passed:tr
 const indoor:LWEnvironmentPorts.Environment={mode:'indoor',background:'#dce3e8',floor:'#e4e2d9',alternateFloor:'#d6dadd',wall:'#b8c7cf',trim:'#577588',camera:{center:[9,9],zoom:1}};
 function load(input:object,names:string[]):Loaded{const root=input as Record<string,unknown>;root.window=root;const context=vm.createContext(root);for(const name of names)vm.runInContext(fs.readFileSync(__dirname+'/'+name+'.js','utf8'),context,{filename:name});return root as unknown as Loaded;}
 const profile={current:{environment:indoor,materialColors:{}},hash:'office-profile'};
-const root=load({LWWorldProfile:profile},['scene-environment']);
+const root=load({LWWorldProfile:profile},['workflow-venues','scene-environment']);
 test('Indoor profile is detached and outdoor profiles retain their default renderer',()=>{
  const before=JSON.stringify(profile),copy=root.LWSceneEnvironment.read()!;(copy.camera!.center as [number,number])[0]=2;copy.wall='#000000';
  assert.equal(JSON.stringify(profile),before);assert.equal(root.LWSceneEnvironment.read({}),null);assert.equal(root.LWSceneEnvironment.key(),'office-profile');

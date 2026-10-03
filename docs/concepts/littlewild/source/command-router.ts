@@ -1,3 +1,4 @@
+/// <reference path="./runtime-contracts.d.ts" />
 /* Explicit application-command boundary for the composed simulation facade.
  * Command IDs and handler mappings are compiled capabilities; imported JSON cannot add code.
  */
@@ -5,7 +6,7 @@
  'use strict';
 
  interface LittlewildFacade { CommandRouter?: unknown; }
- interface LittlewildRoot { LW?: LittlewildFacade; LWCommandRouter?: unknown; }
+ interface LittlewildRoot { LWRuntimeResults:LWRuntime.ResultsApi; LW?: LittlewildFacade; LWCommandRouter?: unknown; }
  const root=inputRoot as LittlewildRoot;
 
  type Scope = 'world' | 'actor';
@@ -27,10 +28,16 @@
   commandActor?: (actorId: string, action: () => unknown, options: { away: boolean }) => unknown;
   [key: string]: unknown;
  }
- interface Failure { ok: false; reason: string; }
+ type Failure=LWRuntime.Failure;
 
  const L=root.LW;if(!L)throw Error('Littlewild facade missing.');
  const definitions: readonly CommandDefinition[] = Object.freeze([
+  {id:'preview-terraform',method:'previewTerraform',scope:'world',maxArgs:1,away:false},
+  {id:'apply-terraform',method:'applyTerraform',scope:'world',maxArgs:1,away:false},
+  {id:'construct-design',method:'constructBuildingDesign',scope:'actor',maxArgs:3,away:false},
+  {id:'improve-design',method:'improveBuildingDesign',scope:'actor',maxArgs:2,away:false},
+  {id:'visit-building-floor',method:'visitBuildingFloor',scope:'world',maxArgs:3,away:false},
+  {id:'order-building-production',method:'orderBuildingProduction',scope:'world',maxArgs:5,away:false},
   {id:'seek-duel',method:'seekDuel',scope:'world',maxArgs:3,away:false},
   {id:'cancel-duel-seek',method:'cancelDuelSeek',scope:'world',maxArgs:1,away:false},
   {id:'stage-duel',method:'stageDuel',scope:'world',maxArgs:3,away:false},
@@ -79,8 +86,9 @@
  const manifest=Object.freeze(definitions.map(definition=>Object.freeze({...definition})));
  const byId=new Map(manifest.map(definition=>[definition.id,definition] as const));
 
- const safeValue=(value: unknown,ancestors=new Set<object>(),depth=0): value is JsonValue=>{
-  if(depth>6)return false;
+ interface JsonBudget {depth:number;array:number;values:number;}
+ const safeValue=(value:unknown,budget:JsonBudget,ancestors=new Set<object>(),depth=0):value is JsonValue=>{
+  if(depth>budget.depth||--budget.values<0)return false;
   if(value===null||typeof value==='string'||typeof value==='boolean')return true;
   if(typeof value==='number')return Number.isFinite(value);
   if(typeof value!=='object')return false;
@@ -89,13 +97,13 @@
   ancestors.add(object);
   let ok=true;
   if(Array.isArray(value)){
-   if(value.length>64)ok=false;
+   if(value.length>budget.array)ok=false;
    else{
     const names=Object.getOwnPropertyNames(value);
     if(names.length!==value.length+1||!names.includes('length'))ok=false;
     else for(let index=0;index<value.length;index+=1){
      const descriptor=Object.getOwnPropertyDescriptor(value,String(index));
-     if(!descriptor||!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
+     if(!descriptor||!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,budget,ancestors,depth+1)){ok=false;break;}
     }
    }
   }else{
@@ -105,14 +113,14 @@
     const keys=Object.keys(descriptors);
     if(keys.length>64||keys.some(key=>['__proto__','constructor','prototype'].includes(key)))ok=false;
     else for(const descriptor of Object.values(descriptors)){
-     if(!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,ancestors,depth+1)){ok=false;break;}
+     if(!descriptor.enumerable||descriptor.get||descriptor.set||!safeValue(descriptor.value,budget,ancestors,depth+1)){ok=false;break;}
     }
    }
   }
   ancestors.delete(object);
   return ok;
  };
- const fail=(reason:string):Failure=>({ok:false,reason});
+ const fail=(reason:string,code:LWRuntime.FailureCode='invalid-command'):Failure=>root.LWRuntimeResults.failure(reason,code);
 
  function dispatch(engine:EngineLike,envelope:unknown):unknown{
   if(!engine||!envelope||typeof envelope!=='object'||Object.getPrototypeOf(envelope)!==Object.prototype||
@@ -123,21 +131,21 @@
    Object.values(descriptors).some(descriptor=>!descriptor.enumerable||descriptor.get||descriptor.set))
    return fail('Invalid command envelope.');
   const id=descriptors.id?.value;
-  if(typeof id!=='string')return fail('Unknown command.');
-  const definition=byId.get(id);if(!definition)return fail('Unknown command.');
+  if(typeof id!=='string')return fail('Unknown command.','unknown-command');
+  const definition=byId.get(id);if(!definition)return fail('Unknown command.','unknown-command');
   const actorId=descriptors.actorId?.value;
   const rawArgs=descriptors.args?.value===undefined?[]:descriptors.args.value;
-  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs))
+  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs,{depth:['construct-design','improve-design'].includes(definition.id)?12:6,array:['construct-design','improve-design'].includes(definition.id)?1600:64,values:['construct-design','improve-design'].includes(definition.id)?100000:30000}))
    return fail('Invalid command arguments.');
   const args=rawArgs as JsonValue[];
-  const handler=engine[definition.method];if(typeof handler!=='function')return fail('Command handler is unavailable.');
+  const handler=engine[definition.method];if(typeof handler!=='function')return fail('Command handler is unavailable.','unavailable-command');
   if(definition.scope==='actor'){
-   if(typeof actorId!=='string'||!/^c[1-9][0-9]*$/.test(actorId))return fail('Select a valid creature.');
+   if(typeof actorId!=='string'||!/^c[1-9][0-9]*$/.test(actorId))return fail('Select a valid creature.','invalid-target');
    if(typeof engine.commandActor!=='function')return fail('Actor command boundary is unavailable.');
-   return engine.commandActor(actorId,()=>handler.apply(engine,args),{away:definition.away});
+   return root.LWRuntimeResults.annotate(engine.commandActor(actorId,()=>handler.apply(engine,args),{away:definition.away}));
   }
   if(actorId!==undefined)return fail('This command does not accept an actor.');
-  return handler.apply(engine,args);
+  return root.LWRuntimeResults.annotate(handler.apply(engine,args));
  }
 
  function install(Engine:Function&{prototype:Record<string,unknown>}):typeof Engine{
