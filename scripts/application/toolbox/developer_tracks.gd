@@ -170,7 +170,7 @@ func close_all() -> void:
 
 
 func describe() -> Array:
-	return DeveloperTrackDescriptions.describe()
+	return DeveloperToolResult.success(DeveloperTrackDescriptions.describe()).result
 
 
 func dispatch(operation: String, session: String, arguments: Dictionary) -> Dictionary:

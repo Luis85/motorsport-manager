@@ -147,7 +147,7 @@ func close_all() -> void:
 
 
 func describe() -> Array:
-	return DeveloperCampaignDescriptions.describe()
+	return DeveloperToolResult.success(DeveloperCampaignDescriptions.describe()).result
 
 
 func dispatch(operation: String, session: String, arguments: Dictionary) -> Dictionary:
