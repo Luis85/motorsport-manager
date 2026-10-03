@@ -3,6 +3,7 @@
 import json
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -182,7 +183,23 @@ class NativeToolboxTransportTests(unittest.TestCase):
         child = target / "child"
         child.mkdir(parents=True)
         link = self.project / "transport-link"
-        link.symlink_to(child, target_is_directory=True)
+        if os.name == "nt":
+            # Junctions need no symlink privilege or Developer Mode. Use literal
+            # names relative to owned cwd; no caller path enters cmd shell syntax.
+            created = subprocess.run(
+                ["cmd", "/d", "/c", "mklink", "/J", "transport-link", r"..\reserved-target\child"],
+                cwd=self.project,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertEqual(0, created.returncode, created.stdout + created.stderr)
+            self.assertTrue(link.is_dir())
+            self.assertEqual(child.resolve(strict=True), link.resolve(strict=True))
+            self.assertTrue(link.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+            self.assertEqual(stat.IO_REPARSE_TAG_MOUNT_POINT, link.lstat().st_reparse_tag)
+        else:
+            link.symlink_to(child, target_is_directory=True)
         request = target / "reserved-request.json.tmp"
         response = target / "reserved-request.json"
         backup = target / "reserved-request.json.bak"
@@ -197,9 +214,12 @@ class NativeToolboxTransportTests(unittest.TestCase):
             with self.subTest(output=alias):
                 for path, content in retained.items():
                     path.write_bytes(content)
-                self.assertTrue(
-                    os.path.samefile(request, str(link) + "/../reserved-request.json.tmp")
-                )
+                if os.name != "nt":
+                    # POSIX resolves the link before '..'. Win32/Godot normalize
+                    # dot segments lexically; both must reject the raw link path.
+                    self.assertTrue(
+                        os.path.samefile(request, str(link) + "/../reserved-request.json.tmp")
+                    )
                 frames, ready = self.execute(
                     ["--toolbox-request=" + str(request), "--toolbox-response=" + alias]
                 )
