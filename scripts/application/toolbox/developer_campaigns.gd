@@ -4,6 +4,7 @@ extends RefCounted
 var _catalog: ContentCatalog
 var _weekends: DeveloperWeekends
 var _sessions: Dictionary = {}
+var _links: Dictionary = {}
 var _disposed = false
 
 
@@ -27,20 +28,35 @@ func restore(session: String, snapshot_value: Dictionary) -> Dictionary:
 	var error = _restore_session_error(session)
 	if not error.is_empty():
 		return error
-	if not RaceStateValue.serializable(snapshot_value):
-		return DeveloperToolResult.failure("INVALID_ARGUMENT", "Use a bounded JSON checkpoint.")
-	var candidate = CampaignCheckpoint.upgrade(snapshot_value)
-	var restored = CampaignCheckpoint.restore(candidate)
-	if not restored.ok:
-		return _rejected(restored)
-	_sessions[session] = candidate.duplicate(true)
+	var candidate = DeveloperCampaignSnapshots.prepare(snapshot_value)
+	if not candidate.ok:
+		return candidate
+	var weekend: Dictionary = candidate.weekend
+	if not weekend.is_empty():
+		if _weekends == null:
+			weekend.record.detach()
+			return DeveloperToolResult.failure("UNAVAILABLE", "Weekend ownership is unavailable.")
+		var adopted = _weekends.adopt(weekend.session, weekend.simulation, weekend.record)
+		if not adopted.ok:
+			weekend.record.detach()
+			return adopted
+		_links[session] = weekend.session
+	else:
+		_links.erase(session)
+	_sessions[session] = candidate.checkpoint.duplicate(true)
 	return snapshot(session)
 
 
 func snapshot(session: String) -> Dictionary:
 	if not _available(session):
 		return _missing()
-	return DeveloperToolResult.success({"session": session, "checkpoint": _sessions[session]})
+	var captured = DeveloperCampaignSnapshots.capture(
+		_sessions[session], _links.get(session, ""), _weekends
+	)
+	if not captured.ok:
+		return captured
+	captured.result["session"] = session
+	return captured
 
 
 func query(session: String, view: String = "overview", parameters: Dictionary = {}) -> Dictionary:
@@ -90,6 +106,7 @@ func depart(session: String, weekend_session: String) -> Dictionary:
 		candidate.record.detach()
 		return adopted
 	_sessions[session] = candidate.departed.checkpoint.duplicate(true)
+	_links[session] = weekend_session
 	return DeveloperToolResult.success(
 		{
 			"session": session,
@@ -115,12 +132,14 @@ func close(session: String) -> Dictionary:
 	var existed = _available(session)
 	if _sessions.has(session):
 		_sessions[session] = null
+	_links.erase(session)
 	return DeveloperToolResult.success({"session": session, "closed": existed})
 
 
 func close_all() -> void:
 	_disposed = true
 	_sessions.clear()
+	_links.clear()
 	_catalog = null
 	_weekends = null
 
@@ -168,6 +187,8 @@ func _publish(session: String, candidate: Dictionary) -> Dictionary:
 	if not error.is_empty():
 		return DeveloperToolResult.failure("DOMAIN_REJECTED", error)
 	_sessions[session] = candidate.checkpoint.duplicate(true)
+	if candidate.checkpoint.active_manifest.is_empty():
+		_links.erase(session)
 	return DeveloperToolResult.success(
 		{
 			"session": session,

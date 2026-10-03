@@ -13,12 +13,20 @@ static func describe() -> Array:
 			DeveloperFacetValues.object({"campaign_id": ContentSchema.identity()}, ["campaign_id"])
 		)
 	)
-	result.append(
-		DeveloperFacetValues.descriptor(
-			"campaign.restore",
-			"restore",
-			"Validate and replace a complete checkpoint atomically.",
-			DeveloperFacetValues.object({"snapshot": DeveloperFacetValues.document()}, ["snapshot"])
+	(
+		result
+		. append(
+			(
+				DeveloperFacetValues
+				. descriptor(
+					"campaign.restore",
+					"restore",
+					"Restore an inactive checkpoint or complete active snapshot with its original recording.",
+					DeveloperFacetValues.object(
+						{"snapshot": DeveloperFacetValues.document()}, ["snapshot"]
+					)
+				)
+			)
 		)
 	)
 	var query = DeveloperFacetValues.descriptor(
@@ -49,18 +57,25 @@ static func describe() -> Array:
 	command.actions = DeveloperCampaignPlanning.describe()
 	result.append(command)
 	for method in ["snapshot", "advance", "close"]:
-		result.append(
-			DeveloperFacetValues.descriptor(
-				"campaign." + method,
-				method,
-				{
-					"snapshot": "Export the complete checkpoint without writing files.",
-					"advance":
-					"Advance to the next registered departure; settle due obligations atomically.",
-					"close": "Close this campaign handle permanently."
-				}[method],
-				DeveloperFacetValues.object(),
-				"campaign slots" if method == "advance" else "none"
+		(
+			result
+			. append(
+				(
+					DeveloperFacetValues
+					. descriptor(
+						"campaign." + method,
+						method,
+						{
+							"snapshot":
+							"Export the complete checkpoint and linked original recording for active continuation.",
+							"advance":
+							"Advance to the next registered departure; settle due obligations atomically.",
+							"close": "Close this campaign handle permanently."
+						}[method],
+						DeveloperFacetValues.object(),
+						"campaign slots" if method == "advance" else "none"
+					)
+				)
 			)
 		)
 	for method in ["depart", "settle"]:
