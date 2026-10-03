@@ -286,4 +286,24 @@ Central default tuning, the balancing workshop, CLI experiments and captured-val
 
 `toolbox.animations.list()` discovers compiled presets and provenance; `validate(descriptors)` checks bounded authored animation data. A trusted browser renderer can use the exported `AnimationHost` port from `LWRendererHost.player()` to call `setAnimations(descriptors)` or clear with `null`. Its `snapshot()` and `project(point)` observations are detached; it exposes no native engine. Rendering uses the existing host frame cadence. Node discovery initializes no canvas or simulation clock.
 
+For a general animation in the running browser host:
+
+```ts
+const host = LWRendererHost.player();
+host.setAnimations([{
+  id: 'greeting', presetId: 'orbit', start: 0, duration: 2,
+  x: 9, y: 9, radius: 55, color: '#33aaff', count: 7, seed: 9
+}]);
+// Call this when the feature is closed to release its p5 instance.
+const disposeAnimation = () => host.setAnimations(null);
+```
+
+Start and duration use presentation seconds; x/y identify scene coordinates,
+and radius uses canvas pixels. Setting animations starts a new presentation
+interval on the existing host clock. To animate a cutscene, put the same
+descriptor in its `animations` array. Built-in presets are `sparkles`, `orbit`
+and `ripple`. Trusted compiled extensions use `LWAnimations.register(metadata,
+preset)` and retain its unregister callback for disposal; imported JSON only
+selects registered presets. See [p5 provenance and replacement instructions](vendor/P5-VENDOR.md).
+
 `toolbox.engineExport.export(pack, sceneId)` asynchronously produces the complete inert engine/source mapping document; `validate(document)` verifies its archive admission and hashes. This format is separate from runnable scenario packs and never executes its source strings. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md).

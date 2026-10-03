@@ -8,6 +8,8 @@ Added Tiled, LDtk, glTF/GLB and Obsidian Canvas/Advanced Canvas exchange, plus a
 
 Merged current main and retained the verified native CI/tooling contracts. Current release evidence is recorded in `VERIFICATION.md`; counts and hashes in the entries below are historical checkpoints.
 
+Final combined verification fixed standalone catalog/task initialization with explicit inward dependencies, retained bare-browser authored catalog validation, and added fresh-process checks for helper-first composition. Canonical balancing now preserves Littlewild's authored site-reservation policy. Ignored test results cannot enter or change reproducible engine-source exports; delayed authoring imports retain newer edits.
+
 ## PR 25 comprehensive improvement and polishing pass
 
 Closed the remaining TypeScript/architecture/ECS/data-boundary and verification gaps after the first hardening pass. Runtime ECS collections now use real private storage with read-only snapshots; deferred component batches revalidate payloads before commit; command envelopes reject getters, symbols, cycles, sparse/hidden array data and prototype-shaped input; behavior-tree JSON has exact typed schemas and prototype-safe cooldown memory; Base/Adventure/Growth/World/rule/profile inputs share a fail-closed JSON-only boundary; compatibility globals are checked for inward dependency direction; generated builds are one-pass/preflighted and stale output/evidence is cleared before verification. CI is lockfile-driven with `npm ci`, duplicate Littlewild runs were removed, architecture failures print explicit diagnostics, and browser tests use real Playwright callbacks with screenshot capture separated from the functional gate.

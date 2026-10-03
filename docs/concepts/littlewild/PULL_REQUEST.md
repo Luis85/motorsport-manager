@@ -17,3 +17,8 @@ Quality fixes cover atomic settlement, reviewed-content identity, initialization
 Research uses verified Flecs, Bevy, EnTT and Excalibur sources, Game Programming Patterns, Godot, JSON Schema and the supplied Playtank text. Separate implementation and independent review agents apply the documented improvement plan. Final immutable-source verification and current CI identities are recorded in `VERIFICATION.md` and `delivery-manifest.json` after the combined acceptance run.
 
 The current `main` is integrated, including its digest-verified native CI artifact transport and graphics setup. Littlewild does not change native Motorsport Manager gameplay relative to that base. Headless browser checks do not establish hardware GPU performance, physical-device accessibility, human usability or balance.
+
+
+Validation: the complete clean-checkout Littlewild gate passed **1523/1523 checks across 75 suites**, including all 20 browser workflows (332 checks), strict TypeScript and architecture. Independent real-renderer/p5 and authoring review confirms the documented lifecycle and stale-read fixes. The updated native merged-main regression passed 103 suites / 21346 checks across six shards; Python: 334 passed and one expected platform skip; native architecture: 453 scripts, zero violations; advisory quality: 687 files, zero findings. Dependency audit: zero advisories.
+
+Verified source `9b56e8ff2a609a112239476d8d51ed54824300af`, gate input `e6dcff3d24fa9a2d4067b89517d959b946b5dba7c92a537873019f79306ec371`, standalone `feb63a408193509adfc771e6c520594ce40724aaa57bb5b58fdf547630f1c201` (18761164 bytes). These local results are distinct from final-head hosted CI; see `VERIFICATION.md`.

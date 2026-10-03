@@ -1,5 +1,7 @@
 # PR 25 — comprehensive code review and polishing pass
 
+This is a chronological review record. Current source, artifact and acceptance evidence are recorded in `VERIFICATION.md` and `delivery-manifest.json`.
+
 ## Review target
 
 - Repository: `Luis85/motorsport-manager`
@@ -105,4 +107,14 @@ Balancing admission now checks active interactions as well as paid tasks, produc
 
 Engine export includes dimension-aware Godot scene mappings, canonical floor geometry, every RNG stream and verified source references. Its direct Node import initializes its dependencies without relying on a preloaded SDK. Compressed source data remains inert and bounded; tests exercise hash tampering, accessors, source completeness, asynchronous snapshot ownership and actual large browser downloads. This is code-generator input, with explicit semantic-port requirements rather than a claim of an automatically converted Godot game.
 
-Current `main` was integrated at merge `e3d184dd029c9a681570b69b3022049e14396867`, retaining its digest-verified native artifact downloads and graphics setup. Native architecture checks scan 447 scripts with zero violations, and all five advisory quality tools report zero findings across 667 measured files. A clean checkout passes 292 Python tests with the Windows Job Object test skipped on Linux. Initial runs in the development workspace failed while Godot imported npm SVG assets; the separate browser project now carries `.gdignore`, and clean import completes without errors or warnings. These checks supplement the required final native runtime gate.
+Current `main` was integrated at merge `e3d184dd029c9a681570b69b3022049e14396867`, retaining its digest-verified native artifact downloads and graphics setup. Native architecture checks scan 447 scripts with zero violations, and all five advisory quality tools report zero findings across 667 measured files. That clean checkout completed 292 Python tests: 291 passed and the Windows Job Object test skipped on Linux. Initial runs in the development workspace failed while Godot imported npm SVG assets; the separate browser project now carries `.gdignore`, and clean import completes without errors or warnings. These checks supplement the required final native runtime gate.
+
+
+## Final authoring and animation checkpoint
+
+The complete registered gate on `9b56e8ff2a609a112239476d8d51ed54824300af` passed 1523/1523 checks across 75 suites, including all 20 actual browser workflows. Shipping HTML is copied from that immutable archive; its SHA-256 is `feb63a408193509adfc771e6c520594ce40724aaa57bb5b58fdf547630f1c201`. Strict domain/application typing debt remains zero, and all ownership/line-budget checks pass. Final combined verification additionally corrected cold standalone task-duration and creature-balancing initialization through explicit inward dependencies; cold-process regressions retain the supported composed entry boundary.
+
+Independent review separately verified actual p5 timing/output/lifecycle, normal cutscene completion/native continuation, registered custom renderers and authored interiors, asynchronous import race fixes, mobile balancing controls, cold source exports after extension withdrawal and deterministic source inventory reproduction. Source-specific reports distinguish prior scoped proofs from the current full gate. The updated merged-main native checkpoint passed 103 suites / 21,346 checks across six shards, separately loading all 453 scripts and retaining 537 PNG captures. Its source checkpoint is 0f9cd5e, digest 824e3a412f751d4a9e636c27e92b41f0e8d3a6cfd70b4d0713a0f8fcc5f2f0f4; final PR-head hosted checks are a separate acceptance boundary. Historical attempts and CPU-contention timeouts remain retained, with no weakened assertions, registration or timeouts.
+
+
+The final diagnostic follow-up removed the earlier interior warning exclusions and retained previously omitted raw logs for five browser workflows. All 61 focused checks and the final 75-suite gate pass with empty raw error/warning/request arrays, except the two explicitly documented local HTTPS fixture navigations in engine-export verification.

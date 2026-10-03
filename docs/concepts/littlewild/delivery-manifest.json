@@ -1,10 +1,10 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "expanded-source-checkpoint; final-release-evidence-pending",
+  "status": "locally-verified; inspect current-head GitHub checks for hosted CI",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 328,
+    "authoredTypeScriptFiles": 329,
     "runtimeModules": 184,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
@@ -27,6 +27,11 @@
       "defaultCatalog": "source/assets/creatures/catalog.json",
       "definition": "<id>/creature.json",
       "visualManifest": "<id>/asset.json"
+    },
+    "engineExportInventory": {
+      "files": 657,
+      "identity": "d5eba5743991a7b50c917c5b97cc4073c08240d908f47a6899422fbc268a597c",
+      "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
   "architecture": {
@@ -68,7 +73,8 @@
     "RESEARCH-IMPROVEMENT-PLAN.md",
     "SYSTEMIC-DESIGN.md",
     "EXCALIBUR-TOOLBOX-REVIEW.md",
-    "DEVELOPER-TOOLBOX.md"
+    "DEVELOPER-TOOLBOX.md",
+    "PR25-FINAL-AUTHORING-REVIEW.md"
   ],
   "verification": {
     "authoritativeCommands": [
@@ -87,6 +93,34 @@
       "status": "historical regression baseline only"
     },
     "current": {
+      "status": "passed",
+      "passed": 1523,
+      "total": 1523,
+      "browserIncluded": true,
+      "sourceSha256": "e6dcff3d24fa9a2d4067b89517d959b946b5dba7c92a537873019f79306ec371",
+      "startedAt": "2026-10-03T21:09:58.831Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "feb63a408193509adfc771e6c520594ce40724aaa57bb5b58fdf547630f1c201",
+      "htmlBytes": 18761164,
+      "finishedAt": "2026-10-03T21:37:49.428Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 332,
+      "verifiedSourceCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "d5eba5743991a7b50c917c5b97cc4073c08240d908f47a6899422fbc268a597c",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "9b56e8ff2a609a112239476d8d51ed54824300af",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0"
+    },
+    "historicalPreAuthoringExpansion": {
       "status": "historical-before-authoring-expansion",
       "passed": 915,
       "total": 915,
@@ -108,6 +142,63 @@
       "verifiedSourceCommit": "c93a91d68b67dda94fd2764b52914942e6d80500",
       "checkout": "Clean git archive of the committed source; exact pinned dependency lock; system Chromium",
       "additionalShippingBrowserSdkChecks": 3
+    },
+    "historicalNativeMergedMainCheckpoint": {
+      "passed": true,
+      "source": "727f4956b2845491d3b88fa66a4ff0879933ce1b4df497503338ab8c47e927f5",
+      "suites": 99,
+      "checks": 21081,
+      "shards": 6,
+      "verifiedSourceCommit": "e3d184dd029c9a681570b69b3022049e14396867",
+      "scope": "Historical 99-suite native checkpoint before the newer balancing base."
+    },
+    "nativeMergedMainCheckpoint": {
+      "passed": true,
+      "source": "824e3a412f751d4a9e636c27e92b41f0e8d3a6cfd70b4d0713a0f8fcc5f2f0f4",
+      "suites": 103,
+      "checks": 21346,
+      "shards": 6,
+      "verifiedSourceCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Supplementary clean merged-main native inputs; final-head hosted CI remains separate",
+      "godot": "4.7.2.stable.official.ed1daf0bf",
+      "nativeUiCaptures": 537,
+      "pythonTests": {
+        "completed": 335,
+        "passed": 334,
+        "skipped": 1
+      },
+      "architecture": {
+        "scripts": 453,
+        "violations": 0
+      },
+      "advisoryQuality": {
+        "files": 687,
+        "findings": 0
+      }
+    },
+    "currentNativeCompanion": {
+      "verifiedSourceCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "archiveSha256": "6f365299e65408929584bcbcaeea54fa0466ba1f85cdc6b428378027934b7362",
+      "pythonTests": {
+        "completed": 335,
+        "passed": 334,
+        "skipped": 1
+      },
+      "architecture": {
+        "passed": true,
+        "scripts_scanned": 453,
+        "violations": 0,
+        "exit_code": 0,
+        "report": "architecture.json",
+        "log": "architecture.log"
+      },
+      "advisoryQuality": {
+        "files": 687,
+        "findings": 0,
+        "sourceSha256": "d48ba10dc073729e0de7a78b5679d90c208b8ead52e09fd20653d9a9771c272b",
+        "analysisComplete": true
+      },
+      "scope": "Merged-main native companion checks; not the Littlewild full gate or the registered native runtime shard gate."
     }
   },
   "github": {
