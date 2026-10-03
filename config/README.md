@@ -1,8 +1,9 @@
 # Game configuration
 
-`config/` is the shipped, data-driven game configuration catalog. Each file is
-JSON and is loaded and checked as one catalog before a new run or campaign uses
-it. Start with `pack.json` for the catalog manifest and
+`config/` is the shipped, data-driven game configuration catalog. Editable
+values live in JSON. The content loader validates selected definitions and
+circuits; the balancing CLI additionally checks every scenario collection and
+the folder's complete JSON inventory. Start with `pack.json` for the manifest and
 `race_tuning/default.json` for the simulation's reference parameter set.
 
 | Directory | Contents |

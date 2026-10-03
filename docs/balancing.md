@@ -1,9 +1,10 @@
 # Balancing configuration
 
 The shipped `config/` catalog makes selected game parameters editable as
-versioned JSON. The baseline values are unchanged. The catalog is validated as
-a whole before a new run or campaign selects it, and the resulting race tuning
-or campaign policy is frozen into that runtime/save. Editing a file therefore
+versioned JSON. The baseline values are unchanged. The content loader validates
+selected definitions and circuits, while the balancing CLI also checks all
+scenario collections and the complete JSON inventory. The resulting race tuning
+or campaign policy is frozen into its runtime/save. Editing a file therefore
 affects later selections and new runs; it does not retune an existing save.
 
 ## What can be tuned
@@ -46,7 +47,9 @@ behavior.
 
 The Python CLI uses `scripts/balance.py`. Pass the pinned Godot binary explicitly
 for validation and edits. `--config-dir` selects a configuration catalog;
-without it the repository's `config/` is used.
+without it the repository's `config/` is used. Select the engine with `--godot`,
+`GODOT_BINARY` or `VERIFICATION_TEST_GODOT`; native commands require the exact
+pinned Godot 4.7.2 build and do not select an arbitrary engine from `PATH`.
 
 ```sh
 python3 scripts/balance.py --godot /path/to/pinned/godot list --kind race_tuning
