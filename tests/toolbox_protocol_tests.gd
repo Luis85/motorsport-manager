@@ -11,7 +11,9 @@ func run() -> void:
 	var files = player_files()
 	toolbox = GameToolbox.new(catalog)
 	value_contracts()
+	integer_boundaries()
 	discovery_contracts()
+	schema_contracts()
 	weekend_parity()
 	request_rejections()
 	batch_contracts()
@@ -66,6 +68,32 @@ func value_contracts() -> void:
 	)
 
 
+func integer_boundaries() -> void:
+	for fixture in [
+		{"text": "9007199254740993", "value": 9007199254740993},
+		{"text": "-9007199254740993", "value": -9007199254740993},
+		{"text": "9223372036854775807", "value": 9223372036854775807},
+		{"text": "-9223372036854775808", "value": -9223372036854775807 - 1}
+	]:
+		var parsed = ContentJson.parse(fixture.text, true)
+		check(parsed.ok, "Strict transport accepts signed int64 boundary " + fixture.text)
+		check(
+			typeof(parsed.data) == TYPE_INT and parsed.data == fixture.value,
+			"Signed int64 boundary remains exact without binary64 coercion"
+		)
+	for text in ["9223372036854775808", "-9223372036854775809"]:
+		var parsed = ContentJson.parse(text, true)
+		check(
+			not parsed.ok and not parsed.error.is_empty(),
+			"Out-of-range integer rejects before native conversion"
+		)
+	var authored = ContentJson.parse("123")
+	check(
+		authored.ok and typeof(authored.data) == TYPE_FLOAT,
+		"Existing authored-content numeric policy is unchanged"
+	)
+
+
 func request(operation: String, session: String = "", arguments: Dictionary = {}) -> Dictionary:
 	next_request += 1
 	return {
@@ -109,6 +137,13 @@ func discovery_contracts() -> void:
 		response.result.limits == {"batch": 128, "sessions_per_facet": 32},
 		"Discovery exposes real bounds"
 	)
+	check(
+		(
+			typeof(response.result.limits.batch) == TYPE_INT
+			and typeof(response.result.limits.sessions_per_facet) == TYPE_INT
+		),
+		"Disclosed limits preserve exact integer types on the wire"
+	)
 	var operations: Array = []
 	for descriptor in response.result.operations:
 		check(not descriptor.description.is_empty(), "Discovered operation explains its behavior")
@@ -142,6 +177,40 @@ func discovery_contracts() -> void:
 			"Content results are detached"
 		)
 	rejected(execute("content.inspect", "", {"id": "missing.content"}), "Unknown content")
+
+
+func schema_contracts() -> void:
+	var schemas = execute("content.schemas").result
+	check(
+		schemas.size() == ContentSchema.KINDS.size() + 1,
+		"Schema discovery includes every content kind and the pack manifest"
+	)
+	for kind in ContentSchema.KINDS + ["pack"]:
+		var document = execute("content.schemas", "", {"kind": kind}).result
+		same(
+			document,
+			ContentSchema.document(kind),
+			"SDK schema document is the authoritative published contract"
+		)
+		check(
+			document.has("$schema") and document.has("title"),
+			"Schema document exposes its dialect and title"
+		)
+		same(schemas[kind], document, "Combined schema discovery matches the individual document")
+	var manifest = Storage.read_json("res://content/packs/core/pack.json").data
+	check(
+		ContentValidation.check(manifest, schemas.pack).is_empty(),
+		"Published pack schema validates the actual bundled manifest"
+	)
+	rejected(
+		execute("content.list", "", {"kind": "pack"}),
+		"Pack is a schema contract rather than a catalog entity"
+	)
+	for facet in [toolbox.weekends, toolbox.campaigns, toolbox.tracks]:
+		var described: Array = facet.describe()
+		var original: Array = json_round_trip(described)
+		described[0].arguments.clear()
+		same(facet.describe(), original, "Native facet descriptors cannot alias owner contracts")
 
 
 func weekend_parity() -> void:
@@ -192,7 +261,22 @@ func weekend_parity() -> void:
 			native.get("result", native.get("error")),
 			"Elapsed response parity"
 		)
-	for view in ["state", "cars", "overview", "weather", "strategy", "mechanics"]:
+	for view in [
+		"state",
+		"cars",
+		"overview",
+		"weather",
+		"strategy",
+		"mechanics",
+		"practice",
+		"strategy_draft",
+		"strategy_forecast",
+		"tactical_draft",
+		"team_orders",
+		"recovery",
+		"decisions",
+		"setup"
+	]:
 		same(
 			execute("weekend.query", "parity", {"view": view}).result,
 			direct.query("parity", view).result,

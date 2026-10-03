@@ -12,6 +12,8 @@ func run() -> void:
 	await clock_contracts()
 	rejection_contracts()
 	event_contracts()
+	planning_contracts()
+	scenario_contracts()
 	ownership_contracts()
 	session_bounds()
 	weekends.close_all()
@@ -191,6 +193,128 @@ func event_contracts() -> void:
 		weekends.recording("events").result.inputs.size() == 1101,
 		"Transport overflow never truncates the production input trace"
 	)
+
+
+func planning_contracts() -> void:
+	if not accepted(weekends.create("practice", configuration()), "Create SDK practice experiment"):
+		return
+	accepted(weekends.command("practice", "practice_start"), "Approve the actual practice session")
+	var id: int = weekends.query("practice").result.player_ids[0]
+	var car = weekends.query("practice", "car", {"id": id}).result
+	var plan = {
+		"objective": "tyre_life", "set_id": car.tyre_sets[0].id, "laps": 1, "baseline": "balanced"
+	}
+	var before = snapshot("practice")
+	for view in [
+		"practice",
+		"strategy_draft",
+		"strategy_forecast",
+		"tactical_draft",
+		"team_orders",
+		"recovery",
+		"decisions",
+		"setup"
+	]:
+		var response = weekends.query("practice", view)
+		if accepted(response, "Read production planning view " + view):
+			response.result.clear()
+	var preview = weekends.query("practice", "practice_preview", {"id": id, "plan": plan})
+	if not accepted(preview, "Preview an explicit bounded practice plan"):
+		return
+	check(preview.result.available, "Production preview discloses a genuinely available run")
+	same(snapshot("practice"), before, "Planning reads and previews do not consume clock or RNG")
+	for parameters in [
+		{"id": true, "plan": plan},
+		{"id": id, "plan": "scalar"},
+		{"id": id, "plan": {"objective": "unsupported"}},
+		{"id": id, "plan": plan, "extra": true}
+	]:
+		rejected(
+			weekends.query("practice", "practice_preview", parameters),
+			"Malformed practice preview parameters",
+			"INVALID_ARGUMENT"
+		)
+	same(snapshot("practice"), before, "Rejected preview inputs preserve sporting state")
+	var payload = {
+		"id": id,
+		"plan": plan,
+		"key": preview.result.key,
+		"revision": preview.result.revision,
+		"time": preview.result.time
+	}
+	accepted(
+		weekends.command("practice", "practice_run", payload), "Approve the exact public preview"
+	)
+	var released = snapshot("practice")
+	rejected(
+		weekends.command("practice", "practice_run", payload),
+		"Reused practice preview",
+		"DOMAIN_REJECTED"
+	)
+	same(snapshot("practice"), released, "Stale approval cannot release a second run")
+	plan.laps = 4
+	check(
+		weekends.recording("practice").result.inputs.back().payload.plan.laps == 1,
+		"Accepted practice recording retains the detached original plan"
+	)
+	var advanced = weekends.step_ticks("practice", 15000)
+	accepted(advanced, "Run the approved practice experiment through physical fixed ticks")
+	var evidence = weekends.query("practice", "practice").result.driver
+	check(
+		not evidence.runs.is_empty() and not evidence.runs[0].samples.is_empty(),
+		"SDK-approved practice produces measured lap evidence rather than injected results"
+	)
+	check(evidence.active.is_empty(), "Measured practice returns physically to the garage")
+	var record = weekends.recording("practice").result
+	check(
+		RaceRecord.validate(record).is_empty(),
+		"Practice approval and steps remain replay compatible"
+	)
+
+
+func scenario_contracts() -> void:
+	var loaded = ContentPackLoader.new().load_packs(
+		["res://content/packs/core", "res://content/examples/club-racing"]
+	)
+	check(loaded.ok, "Addon scenario resolves against the production core catalog")
+	if not loaded.ok:
+		return
+	var addon = DeveloperWeekends.new(loaded.catalog)
+	var selection = {"scenario_id": "local.club.scenario.first-weekend"}
+	var response = addon.create("authored-scenario", selection)
+	if not accepted(response, "Create a file-authored addon scenario"):
+		addon.close_all()
+		return
+	var launch = WeekendLaunch.new(loaded.catalog)
+	check(
+		launch.stage_scenario(selection.scenario_id),
+		"Original launch resolves the same authored scenario"
+	)
+	var source = PracticeRaceSim.new(launch.visual_track(), launch.session_options())
+	same(
+		addon.snapshot("authored-scenario").result.snapshot,
+		source.snapshot(),
+		"Addon scenario uses the original source configuration and random stream"
+	)
+	check(
+		(
+			response.result.player_ids
+			== loaded.catalog.roster("local.club.roster.privateer").player_ids()
+		),
+		"Addon player ownership comes from stable authored entries"
+	)
+	var recording = addon.recording("authored-scenario").result
+	same(
+		recording.parent.content_scenario.definition,
+		loaded.catalog.scenario(selection.scenario_id).to_record(),
+		"Scenario lineage freezes the authored definition"
+	)
+	rejected(
+		addon.create("invalid-scenario", {"scenario_id": selection.scenario_id, "overrides": {}}),
+		"Scenario overrides outside the authored contract",
+		"INVALID_ARGUMENT"
+	)
+	addon.close_all()
 
 
 func ownership_contracts() -> void:

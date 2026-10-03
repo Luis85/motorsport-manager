@@ -3,6 +3,7 @@ extends "res://tests/support/toolbox_test_fixture.gd"
 const Journey = preload("res://tests/support/toolbox_weekend_journey.gd")
 var weekends: DeveloperWeekends
 var campaigns: DeveloperCampaigns
+var resumed_toolbox: GameToolbox
 
 
 func run() -> void:
@@ -18,6 +19,8 @@ func run() -> void:
 	protocol_parity()
 	campaigns.close_all()
 	weekends.close_all()
+	if resumed_toolbox != null:
+		resumed_toolbox.close()
 	same(player_files(), files, "Campaign developer transactions never write player saves")
 	finish("toolbox-campaign-tests")
 
@@ -109,8 +112,11 @@ func dated_transaction_contracts() -> void:
 	check(original.ok, "Original campaign director advances the identical dated authority")
 	same(checkpoint(), original.checkpoint, "Dated progression settles due obligations atomically")
 	check(
-		checkpoint().state.clock.elapsed_slots > before_advance.state.clock.elapsed_slots,
-		"Campaign time advances in dated slots independently of the race clock"
+		(
+			checkpoint().state.clock.elapsed_slots
+			== CampaignStarter.next_event_context(checkpoint()).departure_slot
+		),
+		"Campaign progression stops at the registered departure date, including already-ready starts"
 	)
 
 
@@ -146,6 +152,10 @@ func depart_and_return_contracts() -> void:
 		"DOMAIN_REJECTED"
 	)
 	same(checkpoint(), active, "Rejected active operations leave all campaign projections intact")
+	if not Journey.start_qualifying(weekends, "campaign-weekend", check):
+		return
+	if not restore_active_career():
+		return
 	if not Journey.finish(weekends, "campaign-weekend", check):
 		return
 	var record = weekends.owned_record("campaign-weekend")
@@ -176,6 +186,18 @@ func depart_and_return_contracts() -> void:
 		campaigns.settle("career", "campaign-weekend"), "Repeated factual return", "DOMAIN_REJECTED"
 	)
 	same(checkpoint(), after, "Repeated settlement cannot duplicate cash, awards or receipts")
+	var progressed = CampaignDirectorTransaction.advance_to_next_event(after)
+	accepted(campaigns.advance("career"), "Advance the settled career to its next dated event")
+	same(
+		checkpoint(),
+		progressed.checkpoint,
+		"Second-event obligations and date match the original owner"
+	)
+	check(
+		checkpoint().state.clock.elapsed_slots > after.state.clock.elapsed_slots,
+		"Campaign slots progress independently of finished race time"
+	)
+	after = checkpoint()
 	accepted(campaigns.restore("restored", after), "Restore a supported full campaign checkpoint")
 	same(checkpoint("restored"), after, "Valid campaign restore is lossless")
 	accepted(campaigns.close("restored"), "Close restored campaign")
@@ -186,6 +208,102 @@ func depart_and_return_contracts() -> void:
 		"Closed campaign ID reuse",
 		"SESSION_EXISTS"
 	)
+
+
+func restore_active_career() -> bool:
+	var exported = campaigns.snapshot("career").result
+	var before = weekends.snapshot("campaign-weekend").result
+	var recording = weekends.recording("campaign-weekend").result
+	check(
+		exported.active_weekend.session == "campaign-weekend",
+		"Active campaign export retains the actual process-local weekend identity"
+	)
+	check(
+		exported.active_weekend.recording.record.event_id == recording.event_id,
+		"Active export preserves the factual recording identity named by the manifest"
+	)
+	rejected(
+		campaigns.restore("career", exported.checkpoint),
+		"Raw active checkpoint without record",
+		"INCOMPLETE_SNAPSHOT"
+	)
+	for key in ["recording", "checkpoint"]:
+		var broken = exported.duplicate(true)
+		if key == "recording":
+			broken.active_weekend.recording = {}
+		else:
+			broken.checkpoint = {}
+		rejected(campaigns.restore("career", broken), "Malformed active restore")
+		same(
+			campaigns.snapshot("career").result,
+			exported,
+			"Failed active restore preserves the entire campaign authority"
+		)
+		same(
+			weekends.snapshot("campaign-weekend").result,
+			before,
+			"Failed active restore preserves the exact weekend authority"
+		)
+	var conflict = GameToolbox.new(catalog)
+	accepted(
+		conflict.weekends.create("campaign-weekend", configuration()),
+		"Reserve a conflicting restore handle"
+	)
+	var occupied = conflict.weekends.snapshot("campaign-weekend").result
+	rejected(
+		conflict.campaigns.restore("conflict", exported),
+		"Conflicting active restore handle",
+		"SESSION_EXISTS"
+	)
+	same(
+		conflict.weekends.snapshot("campaign-weekend").result,
+		occupied,
+		"Restore conflict preserves existing weekend authority"
+	)
+	conflict.close()
+	resumed_toolbox = GameToolbox.new(catalog)
+	var response = resumed_toolbox.execute(
+		json_round_trip(
+			{
+				"protocol": "motorsport-manager-toolbox",
+				"version": 1,
+				"request_id": "resume-active",
+				"operation": "campaign.restore",
+				"session": "career",
+				"arguments": {"snapshot": exported}
+			}
+		)
+	)
+	if not accepted(response, "Fresh toolbox restores the complete active campaign over JSON"):
+		return false
+	same(
+		resumed_toolbox.campaigns.snapshot("career").result.checkpoint,
+		exported.checkpoint,
+		"Fresh active restore keeps the frozen campaign manifest"
+	)
+	same(
+		resumed_toolbox.weekends.snapshot("campaign-weekend").result,
+		before,
+		"Mid-session active restore retains all RNG and sporting values"
+	)
+	var restored_record = resumed_toolbox.weekends.recording("campaign-weekend").result
+	for key in [
+		"event_id", "initial", "endpoint", "inputs", "steps", "marks", "parent", "manifest"
+	]:
+		same(
+			restored_record[key],
+			recording[key],
+			"Mid-session production record continuation: " + key
+		)
+	var old_source = weekends.owned_record("campaign-weekend").source
+	campaigns.close_all()
+	weekends.close_all()
+	check(
+		old_source.get_ref() == null, "Discarding original tool owners releases the old active race"
+	)
+	campaigns = resumed_toolbox.campaigns
+	weekends = resumed_toolbox.weekends
+	return true
 
 
 func protocol_parity() -> void:

@@ -72,6 +72,7 @@ func history_contracts() -> void:
 			initial.document,
 			"SDK read-to-create works without a JSON workaround"
 		)
+	string_name_contract(initial.document)
 	var draft = initial.document.duplicate(true)
 	draft.name = "SDK edited circuit"
 	var committed = tracks.commit("history", draft, initial.revision)
@@ -146,6 +147,31 @@ func history_contracts() -> void:
 			"Malformed edit arguments"
 		)
 	same(read("history"), before_compile, "Malformed pure edits preserve complete editor state")
+
+
+func string_name_contract(document: Dictionary) -> void:
+	var named = tracks.create("named-parameters", {"document": document}).result
+	var plain = tracks.create("plain-parameters", {"document": document}).result
+	var parameters = {&"kind": &"road", &"selected": [0], &"delta": {&"x": 5, &"y": 0}}
+	var draft = parameters.duplicate(true)
+	var native = tracks.edit("named-parameters", "transform", parameters, named.revision)
+	var canonical = tracks.edit(
+		"plain-parameters", "transform", json_round_trip(parameters), plain.revision
+	)
+	if (
+		accepted(native, "Native authored-name enum edit")
+		and accepted(canonical, "Equivalent JSON-string enum edit")
+	):
+		same(
+			native.result.document,
+			canonical.result.document,
+			"Authored-name arguments match their JSON equivalents"
+		)
+	same(parameters, draft, "Native enum normalization preserves caller parameters")
+	check(
+		typeof(parameters.kind) == TYPE_STRING_NAME,
+		"Native normalization cannot rewrite the caller's enum type"
+	)
 
 
 func protocol_parity() -> void:

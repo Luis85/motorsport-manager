@@ -66,9 +66,48 @@ func rejected(response: Dictionary, label: String, code: String = "") -> void:
 
 func same(actual: Variant, expected: Variant, label: String) -> void:
 	check(
-		RaceStateValue.fingerprint(actual) == RaceStateValue.fingerprint(expected),
+		(
+			RaceStateValue.fingerprint(actual) == RaceStateValue.fingerprint(expected)
+			and _exact_values(actual, expected)
+		),
 		label + " preserves complete values including RNG, resources and journals"
 	)
+
+
+func _exact_values(actual: Variant, expected: Variant) -> bool:
+	# Complement production digests with exact numeric comparison, independent of JSON parsing.
+	if expected is Dictionary:
+		return _exact_dictionary(actual, expected)
+	if expected is Array:
+		return _exact_array(actual, expected)
+	var numbers = [TYPE_INT, TYPE_FLOAT]
+	if typeof(actual) in numbers and typeof(expected) in numbers:
+		return actual == expected
+	var strings = [TYPE_STRING, TYPE_STRING_NAME]
+	if typeof(actual) in strings and typeof(expected) in strings:
+		return str(actual) == str(expected)
+	return typeof(actual) == typeof(expected) and actual == expected
+
+
+func _exact_dictionary(actual: Variant, expected: Dictionary) -> bool:
+	if not actual is Dictionary or actual.size() != expected.size():
+		return false
+	var canonical = {}
+	for key in actual:
+		canonical[str(key)] = actual[key]
+	for key in expected:
+		if not canonical.has(str(key)) or not _exact_values(canonical[str(key)], expected[key]):
+			return false
+	return true
+
+
+func _exact_array(actual: Variant, expected: Array) -> bool:
+	if not actual is Array or actual.size() != expected.size():
+		return false
+	for index in range(expected.size()):
+		if not _exact_values(actual[index], expected[index]):
+			return false
+	return true
 
 
 func json_round_trip(value: Variant) -> Variant:
@@ -86,6 +125,9 @@ func player_files(path: String = "user://") -> Dictionary:
 		var file = path.path_join(filename)
 		result[file] = FileAccess.get_sha256(file)
 	for child in directory.get_directories():
+		# Engine logging is verified separately; these files are not player persistence.
+		if path == "user://" and child == "logs":
+			continue
 		result.merge(player_files(path.path_join(child)))
 	return result
 
