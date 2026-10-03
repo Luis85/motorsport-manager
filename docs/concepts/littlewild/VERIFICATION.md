@@ -1,88 +1,140 @@
 # Littlewild v15 verification
 
-## Current gate
+## Authoritative gate
 
-The authoritative gate is now the TypeScript pipeline:
+The current Littlewild gate is the TypeScript pipeline:
 
 ```sh
+npm ci --no-audit --no-fund
 npm run typecheck
 npm run architecture
+npx playwright install --with-deps chromium
 npm run verify
 ```
 
-The gate compiles all authored TypeScript into `.generated/`, rebuilds `littlewild.html`, runs the deterministic/domain/regression/schema/release suites against generated JavaScript, and runs the Playwright browser contracts. Machine-readable evidence remains `verification/v15/gate-results.json`.
+The gate compiles authored TypeScript into `.generated/`, rebuilds `littlewild.html`, runs deterministic/domain/schema/release suites against generated JavaScript, and executes the Playwright browser suites. Machine-readable evidence is produced as `verification/v15/gate-results.json`.
 
-### Verified TypeScript head
+## Verified implementation head
 
-Implementation head `c8407aece0c479c2ffe0498a6e9e5bed20bfe5fc` passed **1,053 / 1,053 checks across 31 suites** in GitHub Actions run `37036136280`.
+Implementation head `3177396de09bbf2a7bfb5f99b2f2f88804567549` passed **670 / 670 checks across 26 suites** in GitHub Actions run `37105368075`.
 
-- strict TypeScript gate: passed;
-- architecture/DDD gate: **16 / 16**;
-- bundled 3D asset catalog: **8 / 8**;
-- deterministic/domain/regression/schema/release checks before browser: **948 / 948**;
-- main Playwright browser suite: **89 / 89**;
-- focused browser contracts: **16 / 16**;
-- total browser contracts: **105 / 105**;
-- standalone SHA-256: `1ab1addec4a383dd3ade1c53a33535296024ee15e5a6aaee915e8623adedfae8`;
-- standalone bytes: **4,140,507**.
+Standalone artifact:
 
-CI uses the committed lockfile and `npm ci`. Browser screenshot capture is opt-in with `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; screenshots are evidence, not functional gate requirements. The functional browser assertions remain mandatory.
+- SHA-256: `73fd6ce19eb8d810fa3f84c828196572a41ee47aa0c5d43e844d521c6918b0b5`
+- bytes: **4,117,751**
+- browser included: **yes**
 
+### Suite results
 
-### Superseded pre-TypeScript baseline
+| Suite | Passed / total |
+|---|---:|
+| TypeScript architecture | 17 / 17 |
+| Behavior tree | 7 / 7 |
+| Content boundary | 6 / 6 |
+| Asset catalog | 8 / 8 |
+| Creature catalog/factory/presentation identity | 15 / 15 |
+| ECS core | 16 / 16 |
+| Simulation profile | 15 / 15 |
+| Simulation profile integration | 16 / 16 |
+| Engine composition | 16 / 16 |
+| ECS activity | 7 / 7 |
+| ECS world | 11 / 11 |
+| ECS economy | 12 / 12 |
+| ECS integration | 7 / 7 |
+| ECS world integration | 6 / 6 |
+| ECS economy integration | 9 / 9 |
+| Scenario domain | 69 / 69 |
+| Presentation | 45 / 45 |
+| Pause policy | 52 / 52 |
+| Cartography | 71 / 71 |
+| Domain | 76 / 76 |
+| Growth stress | 3 / 3 |
+| Earned progression | 8 / 8 |
+| Scenario/schema CLI | 47 / 47 |
+| Release | 28 / 28 |
+| Browser | 89 / 89 |
+| Browser contracts | 14 / 14 |
+| **Total** | **670 / 670** |
 
-Before the TypeScript/Clean Architecture polishing pass, the branch passed **1,006 / 1,006 checks in 27 suites**, including 105 browser checks. That result and the former artifact SHA-256 `d317308acd8b10bdd0acbdd365bc6c669f89ecd06f563067bd675d4722c4b5f1` are retained below only as a regression baseline; they are not claimed as evidence for the current head.
+## Creature and ECS coverage
 
-| Suite | Passed / total | Elapsed seconds |
-|---|---:|---:|
-| ecs-core | 9 / 9 | 0.05 |
-| simulation-profile | 15 / 15 | 0.08 |
-| simulation-profile-integration | 15 / 15 | 3.09 |
-| engine-composition | 14 / 14 | 0.90 |
-| ecs-activity | 7 / 7 | 0.04 |
-| ecs-world | 11 / 11 | 0.05 |
-| ecs-economy | 12 / 12 | 0.04 |
-| ecs-integration | 7 / 7 | 0.67 |
-| ecs-world-integration | 6 / 6 | 0.40 |
-| ecs-economy-integration | 8 / 8 | 0.40 |
-| scenario-domain | 77 / 77 | 10.32 |
-| presentation | 47 / 47 | 1.09 |
-| pause-policy | 54 / 54 | 1.49 |
-| cartography | 73 / 73 | 5.17 |
-| domain | 76 / 76 | 2.96 |
-| growth-stress | 3 / 3 | 23.25 |
-| earned-progression | 8 / 8 | 8.09 |
-| legacy-v5 | 133 / 133 | 7.19 |
-| legacy-v6 | 52 / 52 | 27.42 |
-| legacy-v8 | 88 / 88 | 29.62 |
-| quality-v9 | 31 / 31 | 1.34 |
-| foundation-v9 | 31 / 31 | 10.96 |
-| legacy-schemas | 19 / 19 | 2.63 |
-| scenario-schema-cli | 47 / 47 | 3.58 |
-| release | 58 / 58 | 5.72 |
-| browser | 89 / 89 | 16.08 |
-| browser-contracts | 16 / 16 | 7.29 |
+The creature suite verifies the current data-driven design rather than historical migration compatibility.
 
-## What was actually exercised
+It checks that:
 
-The M6 profile suites validate the complete `classic-v1` actor/economy rule document, exact `living-world-v1` compiled archetype order, deep immutability, deterministic fingerprints, per-engine profile capture, both bundled schema-2 packs, atomic profile/library rollback, and deterministic continuation through envelope-10 export/import. They also validate the deliberate schema-1 pack and envelope-9 story migrations and reject profile fingerprint tampering, ambiguous legacy documents, unsupported versions, executable values, unknown systems, reordered systems, and behavior-shaped JSON.
+- every `source/creatures/<id>/creature.json` is discovered and validated;
+- creature definitions are immutable and executable-free;
+- Adventure personality definitions cover the reusable personality set;
+- actor creation is deterministic and carries explicit `{archetype, personality}` identity;
+- archetype and personality compatibility is validated independently;
+- ECS component bindings come from creature data and retain authoritative actor-record references;
+- persistent creature defaults are completely owned by the creature manifest/factory;
+- current captured scenario actors are covered by the creature-owned persistent field contract;
+- every supported personality has a valid data-authored visual profile;
+- actor animation and expression tuning are finite validated data;
+- presentation code uses explicit archetype identity rather than personality→species inference;
+- recruitment, fidelity and rendering do not reintroduce hard-coded Sproutling/variant tables;
+- creature schema drift, mismatched identities and invalid spawn modes fail closed.
 
-The asset suite validates all isolated `source/assets/` folders, unique category/ID identities, complete visual coverage for every gameplay building/item/equipment definition, actor rig/socket references, data-only payloads and catalog immutability. The scenario suite validates both packs and four starting scenes, reversed JSON property order, reversible library and simulation-profile staging, unknown fields, malformed input, world references, disconnected layouts, protected sites, fresh and captured states, corruption/stale-review checks, and exact simulation continuation. It compares 4,761 terrain cells with the authentic v14 geometry fixture and six generated legacy layouts. Separate navigation foundations perform 8,432 route comparisons; these are subcases, not additional inflated test totals.
+The ECS itself remains transient. Persistent actor records are authoritative; the ECS binds object-valued components by reference and owns deterministic system progression. `Creature`, `Activity` and `Intent` are runtime projections and are not a second save model.
 
-Legacy regression suites cover physical logistics, work interruption, RPG/quests, housing, prestige, map gating, market deliveries, deterministic restoration, and old save/schema compatibility. Six-creature stress scenarios retain their source-defined durations in the detailed JSON logs. The automated earned-progression controller completes its first expansion and physical market sale through normal commands; this is reachability evidence, not human pacing validation.
+## Data-driven presentation coverage
 
-Browser checks use actual inputs and DOM/layout inspection: pan exposed world, keyboard focus between panel and canvas, category/search/draft state, explicit second-creature assignment, real blueprint placement, real save/pack downloads and uploads, cancellation of delayed reads, changed-scene confirmation, independent single-pack launch, simulation-profile disclosure, schema-2 pack export/capture, and envelope-10 story export. Six viewports are exercised: 1440×900, 1024×768, 768×1024, 390×844, 320×568, and 844×390. No uncaught JavaScript errors or HTTP/HTTPS requests were observed in the tested main flows.
+The asset suite covers **67 isolated 3D manifests**:
 
-An actual browser save was captured from the supplied v14 artifact with hash `3ee1c7f043f2c0e8a1fff3720ede5cf63950793857f89ea9fb141a7619824b0d`; the fixture is `source/fixtures/actual-v14-story.json`. Authentic older fixtures are retained and tested separately. Native stories remain format 8, legacy scenario-aware envelope-9 stories migrate explicitly, and canonical scenario-aware stories now use envelope 10 with context version 2 and an independent simulation-profile fingerprint.
+- 24 buildings;
+- 42 items/environment/equipment assets;
+- 1 actor asset.
 
-## Gate integrity and historical assertions
+The actor asset owns geometry, material roles, model variants, rig/socket contracts, personality appearances, expression thresholds and animation tuning. `world-fidelity.ts` owns animation algorithms and attachment behavior, not model construction or creature appearance tables.
 
-Every suite result is removed before that suite runs. Nonzero exits, missing results, mismatched counts, explicit failures, schema drift, profile/archetype drift, or unexpected artifact changes fail the gate. The pre-TypeScript result below remains useful as a behavioral baseline. The current handoff is valid only when the TypeScript workflow has rebuilt the artifact and produced a fresh passing `verification/v15/gate-results.json` for the current PR head.
+The verified portrait fallback also uses `LWCreatures.defaultArchetype` and `LWCreatures.defaultPersonality`; the portrait cache key includes archetype identity.
 
-The historical v10–v14 browser scripts and per-version bundle hashes are not all rerun because some assert superseded full-screen Build/Tutorial behavior or former artifact identity. Their domain regression suites remain active, and prior pure presentation and pause assertions are retained in v15-specific suites. The 1,006-check result is the last pre-TypeScript baseline; it is not presented as evidence for the current head or as the sum of every obsolete historical harness.
+## Scenario and story coverage
+
+The current contract is deliberately current-only:
+
+- scenario schema: **2**
+- portable story envelope: **10**
+
+Obsolete scenario/story versions are rejected rather than silently migrated. Scenario packs remain data-only and cannot register ECS systems, executable handlers, renderer assets, source modules or arbitrary runtime components.
+
+Scenario/domain verification covers both bundled packs, current scenes, reversible library/profile staging, invalid/unknown fields, world/topology constraints, capture/relaunch, deterministic continuation and stale-review protection.
+
+## Browser coverage
+
+The main Playwright suite passed **89 / 89** checks and the focused browser-contract suite passed **14 / 14**.
+
+The browser harness:
+
+- runs under the production Content Security Policy without `unsafe-eval`;
+- exercises actual world/panel input and explicit creature assignment;
+- checks construction catalog/search/filter/draft behavior;
+- validates real blueprint placement and per-creature policy isolation;
+- exercises scenario pack export/import/capture and current story export/import;
+- validates selected authored world/simulation profiles;
+- checks six viewports: 1440×900, 1024×768, 768×1024, 390×844, 320×568 and 844×390;
+- rejects uncaught browser errors in the covered flows;
+- verifies that the game makes no HTTP/HTTPS requests during the tested flows.
+
+## Gate integrity
+
+Before each suite, its previous result file is removed. The gate fails on nonzero suite exit, missing results, mismatched pass/total counts, explicit failed checks, schema drift or a standalone artifact changing during verification.
+
+Strict TypeScript and architecture checks are executed before the full gate. Current source must remain authored in TypeScript/CTS; generated JavaScript is disposable output.
+
+Historical pre-current-format verification results may remain in repository history, but they are not evidence for the current head and are not counted in the current gate.
 
 ## Limits
 
-Testing uses headless Chromium through Playwright and `page.set_content`. Actual captures use the bundled software renderer. Hardware GPU/WebGL behavior and performance, Safari, Firefox, native local-file autosave, physical touch devices, screen readers, localization, human comprehension, and enjoyment are not verified. No FPS, security-certification, or full accessibility-compliance claim is made. Theme contrast remains an author responsibility for arbitrary custom palettes.
+Testing uses headless Chromium and the bundled standalone artifact. It does not establish:
 
-The delivered source is independently rebuilt during verification. Artifact identity and all suite outputs are recorded in the gate evidence rather than counted as additional gameplay tests.
+- hardware GPU/WebGL performance;
+- Safari or Firefox compatibility;
+- physical touch-device behavior;
+- screen-reader or full accessibility conformance;
+- localization quality;
+- human comprehension, pacing or game balance;
+- security certification.
+
+The automated result is implementation/regression evidence for the tested contracts, not a substitute for human usability and balance validation.
