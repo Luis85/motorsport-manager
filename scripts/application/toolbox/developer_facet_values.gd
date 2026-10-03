@@ -38,7 +38,7 @@ static func descriptor(
 static func argument_error(arguments: Dictionary, schema: Dictionary) -> Dictionary:
 	if not RaceStateValue.serializable(arguments):
 		return DeveloperToolResult.failure("INVALID_ARGUMENT", "Use bounded finite JSON values.")
-	var diagnostics = ContentValidation.check(arguments, schema)
+	var diagnostics = ContentValidation.check(DeveloperToolResult.success(arguments).result, schema)
 	if not diagnostics.is_empty():
 		return DeveloperToolResult.failure(
 			"INVALID_ARGUMENT",

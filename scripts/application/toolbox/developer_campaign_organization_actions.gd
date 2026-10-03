@@ -34,57 +34,90 @@ const SPECS = {
 
 
 static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action.get_slice(".", 0):
+		"finance":
+			result = _finance(checkpoint, action, payload)
+		"personnel":
+			result = _personnel(checkpoint, action, payload)
+		"operations":
+			result = _operations(checkpoint, action, payload)
+		"engineering":
+			result = _engineering(checkpoint, action, payload)
+	return result
+
+
+static func _finance(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
 	match action:
 		"finance.add_commitment":
-			return CampaignFinanceTransaction.add_commitment(checkpoint, payload.input)
+			result = CampaignFinanceTransaction.add_commitment(checkpoint, payload.input)
 		"finance.cancel_commitment":
-			return CampaignFinanceTransaction.cancel_commitment(checkpoint, payload.commitment_id)
+			result = CampaignFinanceTransaction.cancel_commitment(checkpoint, payload.commitment_id)
 		"finance.set_reserve_policy":
-			return CampaignFinanceTransaction.set_reserve_policy(
+			result = CampaignFinanceTransaction.set_reserve_policy(
 				checkpoint, payload.account_id, int(payload.minimum_cash_minor)
 			)
 		"finance.settle_due":
-			return CampaignFinanceTransaction.settle_due(checkpoint, int(payload.through_slot))
+			result = CampaignFinanceTransaction.settle_due(checkpoint, int(payload.through_slot))
+	return result
+
+
+static func _personnel(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"personnel.register_person":
-			return CampaignPersonnelTransaction.register_person(checkpoint, payload.input)
+			result = CampaignPersonnelTransaction.register_person(checkpoint, payload.input)
 		"personnel.sign_contract":
-			return CampaignPersonnelTransaction.sign_contract(checkpoint, payload.input)
+			result = CampaignPersonnelTransaction.sign_contract(checkpoint, payload.input)
 		"personnel.assign_role":
-			return CampaignPersonnelTransaction.assign_role(checkpoint, payload.input)
+			result = CampaignPersonnelTransaction.assign_role(checkpoint, payload.input)
 		"personnel.reserve_availability":
-			return CampaignPersonnelTransaction.reserve_availability(checkpoint, payload.input)
+			result = CampaignPersonnelTransaction.reserve_availability(checkpoint, payload.input)
 		"personnel.cancel_reservation":
-			return CampaignPersonnelTransaction.cancel_reservation(
+			result = CampaignPersonnelTransaction.cancel_reservation(
 				checkpoint, payload.reservation_id
 			)
 		"personnel.terminate_contract":
-			return CampaignPersonnelTransaction.terminate_contract(
+			result = CampaignPersonnelTransaction.terminate_contract(
 				checkpoint, payload.contract_id, payload.reason
 			)
 		"personnel.renew_contract":
-			return CampaignPersonnelTransaction.renew_contract(
+			result = CampaignPersonnelTransaction.renew_contract(
 				checkpoint, payload.contract_id, payload.input
 			)
 		"personnel.replace_contract":
-			return CampaignPersonnelTransaction.replace_contract(
+			result = CampaignPersonnelTransaction.replace_contract(
 				checkpoint, payload.outgoing_contract_id, payload.incoming_terms, payload.reason
 			)
+	return result
+
+
+static func _operations(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"operations.register_owned":
-			return CampaignOperationsTransaction.register_owned(checkpoint, payload.input)
+			result = CampaignOperationsTransaction.register_owned(checkpoint, payload.input)
 		"operations.register_service":
-			return CampaignOperationsTransaction.register_service(checkpoint, payload.input)
+			result = CampaignOperationsTransaction.register_service(checkpoint, payload.input)
 		"operations.schedule_internal":
-			return CampaignOperationsTransaction.schedule_internal(checkpoint, payload.input)
+			result = CampaignOperationsTransaction.schedule_internal(checkpoint, payload.input)
 		"operations.schedule_service":
-			return CampaignOperationsTransaction.schedule_service(checkpoint, payload.input)
+			result = CampaignOperationsTransaction.schedule_service(checkpoint, payload.input)
 		"operations.cancel_work_order":
-			return CampaignOperationsTransaction.cancel_work_order(checkpoint, payload.order_id)
+			result = CampaignOperationsTransaction.cancel_work_order(checkpoint, payload.order_id)
+	return result
+
+
+static func _engineering(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"engineering.create_project":
-			return CampaignEngineeringTransaction.create_project(checkpoint, payload.input)
+			result = CampaignEngineeringTransaction.create_project(checkpoint, payload.input)
 		"engineering.bind_stage":
-			return CampaignEngineeringTransaction.bind_stage(
+			result = CampaignEngineeringTransaction.bind_stage(
 				checkpoint, payload.project_id, payload.work_order_id
 			)
 		"engineering.complete_stage":
-			return CampaignEngineeringTransaction.complete_stage(checkpoint, payload.project_id)
-	return {"ok": false, "error": "Unknown campaign planning action."}
+			result = CampaignEngineeringTransaction.complete_stage(checkpoint, payload.project_id)
+	return result

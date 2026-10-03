@@ -41,13 +41,30 @@ const SPECS = {
 
 
 static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action.get_slice(".", 0):
+		"people":
+			result = _people(checkpoint, action, payload)
+		"commercial":
+			result = _commercial(checkpoint, action, payload)
+		"delegation":
+			result = _delegation(checkpoint, action, payload)
+		"rival":
+			result = _rival(checkpoint, action, payload)
+		"distress":
+			result = _distress(checkpoint, action, payload)
+	return result
+
+
+static func _people(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
 	match action:
 		"people.register_candidate":
-			return CampaignPeopleTransaction.register_candidate(checkpoint, payload.input)
+			result = CampaignPeopleTransaction.register_candidate(checkpoint, payload.input)
 		"people.approach":
-			return CampaignPeopleTransaction.approach(checkpoint, payload.candidate_id)
+			result = CampaignPeopleTransaction.approach(checkpoint, payload.candidate_id)
 		"people.offer_and_hire":
-			return CampaignPeopleTransaction.offer_and_hire(
+			result = CampaignPeopleTransaction.offer_and_hire(
 				checkpoint,
 				payload.candidate_id,
 				payload.role_id,
@@ -55,7 +72,7 @@ static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -
 				payload.assignment_id
 			)
 		"people.add_profile":
-			return CampaignPeopleTransaction.add_profile(
+			result = CampaignPeopleTransaction.add_profile(
 				checkpoint,
 				payload.person_id,
 				payload.attributes,
@@ -63,35 +80,59 @@ static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -
 				int(payload.get("trust", 60))
 			)
 		"people.set_development_plan":
-			return CampaignPeopleTransaction.set_development_plan(
+			result = CampaignPeopleTransaction.set_development_plan(
 				checkpoint, payload.person_id, payload.focus, int(payload.review_slot)
 			)
 		"people.create_promise":
-			return CampaignPeopleTransaction.create_promise(checkpoint, payload.input)
+			result = CampaignPeopleTransaction.create_promise(checkpoint, payload.input)
 		"people.resolve_promise":
-			return CampaignPeopleTransaction.resolve_promise(
+			result = CampaignPeopleTransaction.resolve_promise(
 				checkpoint, payload.promise_id, payload.fulfilled
 			)
 		"people.review_due":
-			return CampaignPeopleTransaction.review_due(checkpoint)
+			result = CampaignPeopleTransaction.review_due(checkpoint)
+	return result
+
+
+static func _commercial(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"commercial.sign_agreement":
-			return CampaignCommercialTransaction.sign_agreement(checkpoint, payload.input)
+			result = CampaignCommercialTransaction.sign_agreement(checkpoint, payload.input)
 		"commercial.claim_event_bonus":
-			return CampaignCommercialTransaction.claim_event_bonus(
+			result = CampaignCommercialTransaction.claim_event_bonus(
 				checkpoint, payload.agreement_id, payload.event_id
 			)
+	return result
+
+
+static func _delegation(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"delegation.create_mandate":
-			return CampaignDelegationTransaction.create_mandate(checkpoint, payload.input)
+			result = CampaignDelegationTransaction.create_mandate(checkpoint, payload.input)
 		"delegation.revoke_mandate":
-			return CampaignDelegationTransaction.revoke_mandate(checkpoint, payload.mandate_id)
+			result = CampaignDelegationTransaction.revoke_mandate(checkpoint, payload.mandate_id)
+	return result
+
+
+static func _rival(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"rival.register_team":
-			return CampaignRivalTransaction.register_team(checkpoint, payload.input)
+			result = CampaignRivalTransaction.register_team(checkpoint, payload.input)
 		"rival.review_due":
-			return CampaignRivalTransaction.review_due(checkpoint)
+			result = CampaignRivalTransaction.review_due(checkpoint)
+	return result
+
+
+static func _distress(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"distress.evaluate":
-			return CampaignDistressTransaction.evaluate(checkpoint)
+			result = CampaignDistressTransaction.evaluate(checkpoint)
 		"distress.bridge_financing":
-			return CampaignDistressTransaction.bridge_financing(
+			result = CampaignDistressTransaction.bridge_financing(
 				checkpoint, int(payload.amount_minor)
 			)
-	return {"ok": false, "error": "Unknown campaign planning action."}
+	return result

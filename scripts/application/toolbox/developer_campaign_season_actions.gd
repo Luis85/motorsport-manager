@@ -76,35 +76,58 @@ const SPECS = {
 
 
 static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action.get_slice(".", 0):
+		"competition":
+			result = _competition(checkpoint, action, payload)
+		"season_progression":
+			result = _season_progression(checkpoint, action, payload)
+		"group":
+			result = _group(checkpoint, action, payload)
+		"supply":
+			result = _supply(checkpoint, action, payload)
+	return result
+
+
+static func _competition(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
 	match action:
 		"competition.register_series":
-			return CampaignCompetitionTransaction.register_series(checkpoint, payload.rules)
+			result = CampaignCompetitionTransaction.register_series(checkpoint, payload.rules)
 		"competition.create_season":
-			return CampaignCompetitionTransaction.create_season(checkpoint, payload.definition)
+			result = CampaignCompetitionTransaction.create_season(checkpoint, payload.definition)
 		"competition.transition_season":
-			return CampaignCompetitionTransaction.transition_season(
+			result = CampaignCompetitionTransaction.transition_season(
 				checkpoint, payload.season_id, payload.target
 			)
 		"competition.submit_entry":
-			return CampaignCompetitionTransaction.submit_entry(
+			result = CampaignCompetitionTransaction.submit_entry(
 				checkpoint, payload.season_id, payload.entry
 			)
 		"competition.decide_entry":
-			return CampaignCompetitionTransaction.decide_entry(
+			result = CampaignCompetitionTransaction.decide_entry(
 				checkpoint, payload.season_id, payload.entrant_id, payload.accept
 			)
 		"competition.withdraw_entry":
-			return CampaignCompetitionTransaction.withdraw_entry(
+			result = CampaignCompetitionTransaction.withdraw_entry(
 				checkpoint, payload.season_id, payload.entrant_id
 			)
 		"competition.cancel_event":
-			return CampaignCompetitionTransaction.cancel_event(
+			result = CampaignCompetitionTransaction.cancel_event(
 				checkpoint, payload.season_id, payload.event_id, payload.reason
 			)
+	return result
+
+
+static func _season_progression(
+	checkpoint: Dictionary, action: String, payload: Dictionary
+) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"season_progression.set_plan":
-			return CampaignSeasonProgressionTransaction.set_plan(checkpoint, payload.input)
+			result = CampaignSeasonProgressionTransaction.set_plan(checkpoint, payload.input)
 		"season_progression.offer_promotion":
-			return CampaignSeasonProgressionTransaction.offer_promotion(
+			result = CampaignSeasonProgressionTransaction.offer_promotion(
 				checkpoint,
 				payload.source_season_id,
 				payload.target_series_id,
@@ -112,11 +135,11 @@ static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -
 				int(payload.minimum_cash_minor)
 			)
 		"season_progression.decide_promotion":
-			return CampaignSeasonProgressionTransaction.decide_promotion(
+			result = CampaignSeasonProgressionTransaction.decide_promotion(
 				checkpoint, payload.offer_id, payload.accept
 			)
 		"season_progression.begin_next_season":
-			return CampaignSeasonProgressionTransaction.begin_next_season(
+			result = CampaignSeasonProgressionTransaction.begin_next_season(
 				checkpoint,
 				payload.source_season_id,
 				payload.next_definition,
@@ -124,58 +147,72 @@ static func apply(checkpoint: Dictionary, action: String, payload: Dictionary) -
 				payload.decision,
 				int(payload.prize_minor)
 			)
+	return result
+
+
+static func _group(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"group.initialize":
-			return CampaignGroupTransaction.initialize(
+			result = CampaignGroupTransaction.initialize(
 				checkpoint, int(payload.parent_cash_minor), payload.era
 			)
 		"group.create_service_order":
-			return CampaignGroupTransaction.create_service_order(checkpoint, payload.input)
+			result = CampaignGroupTransaction.create_service_order(checkpoint, payload.input)
 		"group.complete_service_order":
-			return CampaignGroupTransaction.complete_service_order(checkpoint, payload.order_id)
+			result = CampaignGroupTransaction.complete_service_order(checkpoint, payload.order_id)
 		"group.transfer_to_team":
-			return CampaignGroupTransaction.transfer_to_team(
+			result = CampaignGroupTransaction.transfer_to_team(
 				checkpoint, payload.id, int(payload.amount_minor)
 			)
 		"group.set_academy_capacity":
-			return CampaignGroupTransaction.set_academy_capacity(checkpoint, int(payload.capacity))
+			result = CampaignGroupTransaction.set_academy_capacity(
+				checkpoint, int(payload.capacity)
+			)
 		"group.add_academy_prospect":
-			return CampaignGroupTransaction.add_academy_prospect(checkpoint, payload.candidate_id)
+			result = CampaignGroupTransaction.add_academy_prospect(checkpoint, payload.candidate_id)
 		"group.register_era":
-			return CampaignGroupTransaction.register_era(checkpoint, payload.input)
+			result = CampaignGroupTransaction.register_era(checkpoint, payload.input)
 		"group.activate_era":
-			return CampaignGroupTransaction.activate_era(checkpoint, payload.era_id)
+			result = CampaignGroupTransaction.activate_era(checkpoint, payload.era_id)
 		"group.appoint_successor":
-			return CampaignGroupTransaction.appoint_successor(checkpoint, payload.person_id)
+			result = CampaignGroupTransaction.appoint_successor(checkpoint, payload.person_id)
 		"group.add_legacy_goal":
-			return CampaignGroupTransaction.add_legacy_goal(checkpoint, payload.input)
+			result = CampaignGroupTransaction.add_legacy_goal(checkpoint, payload.input)
 		"group.complete_legacy_goal":
-			return CampaignGroupTransaction.complete_legacy_goal(
+			result = CampaignGroupTransaction.complete_legacy_goal(
 				checkpoint, payload.goal_id, payload.evidence_id
 			)
+	return result
+
+
+static func _supply(checkpoint: Dictionary, action: String, payload: Dictionary) -> Dictionary:
+	var result = {"ok": false, "error": "Unknown campaign planning action."}
+	match action:
 		"supply.register_supplier":
-			return CampaignSupplyTransaction.register_supplier(checkpoint, payload.input)
+			result = CampaignSupplyTransaction.register_supplier(checkpoint, payload.input)
 		"supply.order_material":
-			return CampaignSupplyTransaction.order_material(checkpoint, payload.input)
+			result = CampaignSupplyTransaction.order_material(checkpoint, payload.input)
 		"supply.receive_order":
-			return CampaignSupplyTransaction.receive_order(checkpoint, payload.order_id)
+			result = CampaignSupplyTransaction.receive_order(checkpoint, payload.order_id)
 		"supply.consume_material":
-			return CampaignSupplyTransaction.consume_material(
+			result = CampaignSupplyTransaction.consume_material(
 				checkpoint, payload.material_id, int(payload.quantity), payload.source_id
 			)
 		"supply.register_project_evidence":
-			return CampaignSupplyTransaction.register_project_evidence(
+			result = CampaignSupplyTransaction.register_project_evidence(
 				checkpoint, payload.project_id, int(payload.latent_bps)
 			)
 		"supply.observe_project":
-			return CampaignSupplyTransaction.observe_project(checkpoint, payload.project_id)
+			result = CampaignSupplyTransaction.observe_project(checkpoint, payload.project_id)
 		"supply.register_part":
-			return CampaignSupplyTransaction.register_part(checkpoint, payload.part_id)
+			result = CampaignSupplyTransaction.register_part(checkpoint, payload.part_id)
 		"supply.wear_part":
-			return CampaignSupplyTransaction.wear_part(
+			result = CampaignSupplyTransaction.wear_part(
 				checkpoint, payload.part_id, int(payload.wear)
 			)
 		"supply.repair_part":
-			return CampaignSupplyTransaction.repair_part(
+			result = CampaignSupplyTransaction.repair_part(
 				checkpoint, payload.part_id, payload.work_order_id
 			)
-	return {"ok": false, "error": "Unknown campaign planning action."}
+	return result
