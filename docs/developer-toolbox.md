@@ -365,8 +365,9 @@ runner callers must handle those lifecycle responsibilities themselves.
 
 ## Errors and reproducible experiments
 
-Unknown operations, unsupported views, invalid arguments, closed sessions and
-domain rejection return explicit failures. `DOMAIN_REJECTED` carries the owner's
+Unknown operations, unsupported views, invalid arguments and domain rejection
+return explicit failures. Reads or mutations requiring an available session reject
+a closed handle; facet close can be repeated safely. `DOMAIN_REJECTED` carries the owner's
 message without classifying game errors by their prose. A protocol/result success
 marker cannot override a Godot script error or failed engine startup. Missing
 execution is never reported as validated gameplay.
