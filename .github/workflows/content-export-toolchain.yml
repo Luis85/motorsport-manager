@@ -1,8 +1,9 @@
 name: Content export toolchain
 on:
   push:
-    branches: [refactor/data-driven-content]
+    branches: [main]
     paths: [.github/workflows/content-export-toolchain.yml]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -17,6 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/templates.tpz
+          echo "f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011  /tmp/templates.tpz" | sha256sum --check
           mkdir -p /tmp/content-export-toolchain
           unzip -j /tmp/templates.tpz 'templates/linux_debug.x86_64' 'templates/linux_release.x86_64' 'templates/version.txt' -d /tmp/content-export-toolchain
           sha256sum /tmp/templates.tpz > /tmp/content-export-toolchain/archive-sha256.txt

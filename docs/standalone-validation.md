@@ -33,7 +33,7 @@ The build wrapper hashes actual source and toolchain bytes, imports a clean
 staging project without `.godot`, and uses the named presets. It embeds
 `build-identity.json` as developer provenance, not in the sporting save. Its
 manifest also records the actual executable and PCK hashes. A nonempty output
-folder, wrong engine version, missing/different template, failed export, or
+folder, wrong engine version or editor bytes, missing/different template, failed export, or
 missing PCK fails closed. Disclose dirty source changes in `--revision`.
 
 ## What the executable journey establishes
@@ -85,7 +85,10 @@ restart removes only that owned obstruction and retries the save successfully.
 
 The acceptance JSON distinguishes `runtime_verified` from the build manifest's
 initial false value, and records each stage. A stale report, runtime script error,
-wrong source/mode, altered artifact hash or missing result fails the wrapper.
+wrong source/toolchain/mode, a different user-data directory, malformed check counts,
+altered artifact hash or missing result fails the wrapper. Build manifests require
+the pinned editor and template hashes, a SHA-256 source digest, `clean_import: true`
+and `runtime_verified: false`; only executed acceptance can assert the latter.
 The advisory quality job remains advisory; exported-app correctness is checked
 separately.
 
@@ -131,3 +134,16 @@ and destination paths to tar. The transport regression uses that same process-cw
 and relative-path pattern, including Unicode/spaces and a colon-bearing archive
 basename, then validates hashes and actually launches the extracted executable.
 Actual Windows application execution remains a separate native-smoke requirement.
+
+CI downloads exact named artifacts from its current repository, workflow run and
+source SHA through `scripts/download_artifacts.py`. The authenticated GitHub API
+metadata supplies the archive size and SHA-256 digest; both must match before ZIP
+extraction. Missing, duplicate, expired, foreign-source or malformed artifacts and
+unsafe ZIP paths fail closed. Evidence is published only after every download and
+extraction succeeds. GitHub CLI supplies the token through `GH_TOKEN`, never a
+command argument or report. Only the three artifact-consuming jobs grant
+`actions: read`; no workflow receives a write permission.
+
+Pull requests run the full gates once. Push gates run on `main`, including native
+standalone acceptance, and workflows retain manual dispatch. This avoids duplicate
+feature-branch push/PR builds while checking the post-merge source independently.

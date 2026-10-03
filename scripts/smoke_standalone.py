@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -14,7 +15,7 @@ import time
 import uuid
 from pathlib import Path
 
-from build_standalone import digest
+from build_standalone import ENGINE, ENGINE_SHA256, TEMPLATES, digest
 
 STAGES = (
     "create",
@@ -26,11 +27,56 @@ STAGES = (
     "recover-backup",
     "retry",
 )
-IDENTITY_FIELDS = ("source_revision", "source_digest", "engine", "target", "mode")
+IDENTITY_FIELDS = (
+    "source_revision",
+    "source_digest",
+    "engine",
+    "engine_sha256",
+    "templates",
+    "target",
+    "mode",
+    "runtime_verified",
+)
+
+
+def validate_identity(manifest: dict) -> None:
+    if not isinstance(manifest, dict):
+        raise ValueError("Package manifest must be an object")
+    if manifest.get("target") not in ("linux", "windows") or manifest.get("mode") not in (
+        "debug",
+        "release",
+    ):
+        raise ValueError("Package target or mode is unsupported")
+    revision = manifest.get("source_revision")
+    source = manifest.get("source_digest")
+    if (
+        not isinstance(revision, str)
+        or not revision.strip()
+        or not isinstance(source, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", source)
+    ):
+        raise ValueError("Package provenance requires a named revision and SHA-256 source")
+    templates = {
+        name: value
+        for name, value in TEMPLATES.items()
+        if name.startswith(manifest["target"] + "_")
+    }
+    if (
+        manifest.get("engine") != ENGINE
+        or manifest.get("engine_sha256") != ENGINE_SHA256
+        or manifest.get("templates") != templates
+    ):
+        raise ValueError("Package provenance differs from the pinned export toolchain")
+    if manifest.get("clean_import") is not True or manifest.get("runtime_verified") is not False:
+        raise ValueError("Build must identify a clean import without claiming runtime acceptance")
 
 
 def validate_package(folder: Path) -> dict:
-    manifest = json.loads((folder / "build-manifest.json").read_text(encoding="utf-8"))
+    manifest_path = folder / "build-manifest.json"
+    if manifest_path.is_symlink():
+        raise ValueError("Package manifest must be an owned regular file")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    validate_identity(manifest)
     expected_name = (
         "Motorsport Manager.exe"
         if manifest.get("target") == "windows"
@@ -42,11 +88,44 @@ def validate_package(folder: Path) -> dict:
     if not isinstance(files, dict) or set(files) != {expected_name, "Motorsport Manager.pck"}:
         raise ValueError("Manifest must identify exactly the executable and its PCK")
     for name, expected in files.items():
-        if digest(folder / name) != expected:
+        path = folder / name
+        if path.is_symlink():
+            raise ValueError("Packaged artifacts must be owned regular files")
+        if digest(path) != expected:
             raise ValueError(f"Packaged artifact hash differs: {name}")
-    if not all(manifest.get(field) for field in IDENTITY_FIELDS):
-        raise ValueError("Package provenance is incomplete")
     return manifest
+
+
+def validate_stage_checks(report: dict, stage: str) -> None:
+    if (
+        not isinstance(report, dict)
+        or report.get("passed") is not True
+        or type(report.get("checks")) is not int
+        or report["checks"] <= 0
+        or report.get("failures") != []
+        or report.get("stage") != stage
+    ):
+        raise ValueError(f"Missing, malformed or failed packaged checks at {stage}")
+
+
+def validate_stage_report(report: dict, stage: str, manifest: dict, user: Path) -> None:
+    validate_stage_checks(report, stage)
+    embedded = report.get("build")
+    if (
+        not isinstance(embedded, dict)
+        or embedded.get("runtime_verified") is not False
+        or any(embedded.get(key) != manifest[key] for key in IDENTITY_FIELDS)
+    ):
+        raise ValueError("Executed resource pack belongs to another source or toolchain")
+    if type(report.get("debug_build")) is not bool or report["debug_build"] != (
+        manifest["mode"] == "debug"
+    ):
+        raise ValueError("Executed template has the wrong debug/release feature")
+    directory = report.get("user_directory")
+    if not isinstance(directory, str) or os.path.normcase(os.path.realpath(directory)) != (
+        os.path.normcase(os.path.realpath(user))
+    ):
+        raise ValueError("Packaged journey used another user-data directory")
 
 
 def stop(process: subprocess.Popen) -> None:
@@ -66,6 +145,26 @@ def stop(process: subprocess.Popen) -> None:
         except ProcessLookupError:
             pass
     process.wait(timeout=15)
+
+
+def interrupt_at_boundary(process: subprocess.Popen, marker: Path, stage: str, log: Path) -> dict:
+    deadline = time.monotonic() + 90
+    while not marker.exists() and process.poll() is None and time.monotonic() < deadline:
+        time.sleep(0.05)
+    if not marker.exists() or marker.read_text(encoding="utf-8") != stage.removeprefix(
+        "interrupt-"
+    ):
+        raise RuntimeError(f"Real replacement boundary was not reached; inspect {log}")
+    stop(process)
+    text = log.read_text(encoding="utf-8")
+    if "SCRIPT ERROR:" in text or "ERROR:" in text:
+        raise RuntimeError(f"Interrupted journey has engine errors; inspect {log}")
+    return {
+        "stage": stage,
+        "passed": True,
+        "checks": 1,
+        "process_terminated_at_real_boundary": marker.read_text(encoding="utf-8"),
+    }
 
 
 def run_stage(
@@ -88,6 +187,9 @@ def run_stage(
             arguments = [xvfb, "-a", "-s", "-screen 0 2000x1200x24", *arguments]
     arguments += ["--", "--disable-vsync", f"--standalone-smoke={stage}"]
     interrupted = stage.startswith("interrupt-")
+    report_path = output / (stage + ".json")
+    if report_path.exists():
+        raise ValueError("Stage evidence must be fresh; old reports are not acceptance")
     marker = user / "replacement-paused"
     if interrupted and marker.exists():
         marker.unlink()
@@ -103,30 +205,13 @@ def run_stage(
         )
         try:
             if interrupted:
-                deadline = time.monotonic() + 90
-                while (
-                    not marker.exists() and process.poll() is None and time.monotonic() < deadline
-                ):
-                    time.sleep(0.05)
-                if not marker.exists() or marker.read_text(encoding="utf-8") != stage.removeprefix(
-                    "interrupt-"
-                ):
-                    raise RuntimeError(f"Real replacement boundary was not reached; inspect {log}")
-                stop(process)
-                return {
-                    "stage": stage,
-                    "passed": True,
-                    "checks": 1,
-                    "process_terminated_at_real_boundary": marker.read_text(encoding="utf-8"),
-                }
+                return interrupt_at_boundary(process, marker, stage, log)
             code = process.wait(timeout=180)
             text = log.read_text(encoding="utf-8")
-            report_path = output / (stage + ".json")
             if code or "SCRIPT ERROR:" in text or "ERROR:" in text or not report_path.is_file():
                 raise RuntimeError(f"Packaged journey failed at {stage}; inspect {log}")
             report = json.loads(report_path.read_text(encoding="utf-8"))
-            if report.get("passed") is not True or not report.get("checks"):
-                raise RuntimeError(f"Missing or failed packaged checks at {stage}")
+            validate_stage_checks(report, stage)
             return report
         finally:
             stop(process)
@@ -181,14 +266,7 @@ def smoke(package: Path, output: Path) -> dict:
             for stage in STAGES:
                 report = run_stage(clean / manifest["binary"], clean, user, output, stage, env)
                 if not stage.startswith("interrupt-"):
-                    if any(
-                        report.get("build", {}).get(key) != manifest[key] for key in IDENTITY_FIELDS
-                    ):
-                        raise RuntimeError(
-                            "Executed resource pack belongs to another source or mode"
-                        )
-                    if report.get("debug_build") != (manifest["mode"] == "debug"):
-                        raise RuntimeError("Executed template has the wrong debug/release feature")
+                    validate_stage_report(report, stage, manifest, user)
                 result["stages"].append(report)
             if any(
                 digest(clean / name) != expected for name, expected in manifest["artifacts"].items()

@@ -11,7 +11,7 @@ import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from build_standalone import ENGINE, digest
+from build_standalone import ENGINE, ENGINE_SHA256, TEMPLATES, digest
 from smoke_standalone import validate_package
 
 
@@ -32,8 +32,14 @@ class StandaloneArchiveTests(unittest.TestCase):
                 "target": "linux",
                 "mode": "release",
                 "source_revision": "transport-fixture",
-                "source_digest": "fixture",
+                "source_digest": "a" * 64,
                 "engine": ENGINE,
+                "engine_sha256": ENGINE_SHA256,
+                "templates": {
+                    name: value for name, value in TEMPLATES.items() if name.startswith("linux_")
+                },
+                "clean_import": True,
+                "runtime_verified": False,
                 "artifacts": {p.name: digest(p) for p in (binary, pack)},
             }
             (source / "build-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")

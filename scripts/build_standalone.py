@@ -14,6 +14,7 @@ from verification_run import source_digest
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = "4.7.2.stable.official.ed1daf0bf"
+ENGINE_SHA256 = "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
 TEMPLATES = {
     "linux_debug.x86_64": "1a291d3d15e4180b60b0af96cf6458f11fe143636d76575ddf1e23d1a3f24f2e",
     "linux_release.x86_64": "d9f79ab89b5ae369aeed11c6052d402e8218cd503bf85b4a235f9c30c46a7c63",
@@ -65,7 +66,7 @@ def build(
     root: Path = ROOT,
 ) -> dict:
     """Use a clean import, then retain only a relocatable executable/PCK and provenance."""
-    if not revision.strip():
+    if not isinstance(revision, str) or not revision.strip():
         raise ValueError("Provide the actual source revision; disclose any uncommitted changes")
     if target not in ("linux", "windows") or mode not in ("debug", "release"):
         raise ValueError("Unsupported target or build mode")
@@ -77,13 +78,16 @@ def build(
     ).stdout.strip()
     if version != ENGINE:
         raise ValueError(f"Expected {ENGINE}, received {version}")
+    engine_hash = digest(godot)
+    if engine_hash != ENGINE_SHA256:
+        raise ValueError("Export editor bytes differ from the pinned toolchain")
     selected = validate_templates(templates.resolve(), target)
     output.mkdir(parents=True, exist_ok=True)
     identity = {
         "source_revision": revision,
         "source_digest": source_digest(root),
         "engine": version,
-        "engine_sha256": digest(godot),
+        "engine_sha256": engine_hash,
         "templates": selected,
         "target": target,
         "mode": mode,
