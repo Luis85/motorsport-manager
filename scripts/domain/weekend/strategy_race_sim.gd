@@ -30,7 +30,7 @@ func _init(
 
 
 static func restore_weekend(data: Dictionary) -> StrategyRaceSim:
-	if not WeekendDefinition.agrees_with_snapshot(data):
+	if not RaceStateValue.serializable(data) or not WeekendDefinition.agrees_with_snapshot(data):
 		return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, 6):
 		return null

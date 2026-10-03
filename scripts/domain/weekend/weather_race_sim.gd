@@ -116,7 +116,7 @@ static func valid_weather_records(records: Array, entrants: Array) -> bool:
 
 
 static func restore_weather(data: Dictionary) -> WeatherRaceSim:
-	if not WeekendDefinition.agrees_with_snapshot(data):
+	if not RaceStateValue.serializable(data) or not WeekendDefinition.agrees_with_snapshot(data):
 		return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, CHECKPOINT_VERSION):
 		return null

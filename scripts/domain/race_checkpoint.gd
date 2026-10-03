@@ -3,7 +3,7 @@ extends "res://scripts/domain/race_checkpoint_validation.gd"
 
 
 static func valid(data: Dictionary) -> bool:
-	if not _valid_content_definitions(data):
+	if not RaceStateValue.serializable(data) or not _valid_content_definitions(data):
 		return false
 	var setup_profile = SetupDefinition.legacy()
 	if data.has("setup_definition"):
@@ -41,7 +41,8 @@ static func prepare_base(
 	data: Dictionary, entrant_defaults: Dictionary, compounds: Dictionary
 ) -> Dictionary:
 	if (
-		data.get("kind") != "motorsport-manager-weekend"
+		not RaceStateValue.serializable(data)
+		or data.get("kind") != "motorsport-manager-weekend"
 		or not RaceCheckpoint.integral(data.get("version"), 1, 4)
 	):
 		return {}

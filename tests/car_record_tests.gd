@@ -91,6 +91,7 @@ func run() -> void:
 	codec_partition_tests(car, cloned)
 	checkpoint_preparation_tests(geometry)
 	preload("res://tests/support/race_restore_validation_contracts.gd").run(geometry, check)
+	preload("res://tests/support/checkpoint_value_contracts.gd").run(geometry, check)
 	finish()
 
 

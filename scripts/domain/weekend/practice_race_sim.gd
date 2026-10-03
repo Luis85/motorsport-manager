@@ -18,7 +18,7 @@ func _init(
 
 
 static func restore_practice(data: Dictionary) -> PracticeRaceSim:
-	if not WeekendDefinition.agrees_with_snapshot(data):
+	if not RaceStateValue.serializable(data) or not WeekendDefinition.agrees_with_snapshot(data):
 		return null
 	if not RaceCheckpoint.integral(data.get("version"), 1, TacticalDuels.CHECKPOINT_VERSION):
 		return null
