@@ -18,7 +18,7 @@ func check(value: bool, message: String):
 
 
 func copy(data):
-	return JSON.parse_string(JSON.stringify(data, "", true, true))
+	return ContentJson.parse(JSON.stringify(data, "", true, true), true).data
 
 
 func redigest(entry):
@@ -54,6 +54,19 @@ func fixture(
 
 
 func run():
+	var exact_values = {"integer": 9007199254740993, "decimal": 0.1}
+	var copied_values = copy(exact_values)
+	check(
+		typeof(copied_values.integer) == TYPE_INT and copied_values.integer == exact_values.integer,
+		"Saved-value copies retain exact integers above binary64 precision"
+	)
+	check(
+		(
+			typeof(copied_values.decimal) == TYPE_FLOAT
+			and copied_values.decimal == exact_values.decimal
+		),
+		"Saved-value copies retain decimal values and their numerical types"
+	)
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	check(
@@ -90,6 +103,9 @@ func run():
 		"Personal interpretation is saved independently"
 	)
 	var noted = CircuitNotebook.read(path).data.entries[0]
+	check(
+		noted.facts == entry.facts, "Saving a note retains the original facts and numerical types"
+	)
 	check(
 		(
 			noted.facts == copy(entry.facts)
