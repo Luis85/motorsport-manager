@@ -146,11 +146,22 @@ class NativeToolboxTransportTests(unittest.TestCase):
         original = json.dumps(self.request()).encode()
         paths = [
             (response, str(self.project) + "/./transport-request.json"),
+            (response, str(self.project) + "/../project/transport-request.json"),
             (response, "res://transport-request.json"),
             (Path("transport-request.json"), str(response)),
             (Path(str(response) + ".tmp"), str(response)),
             (Path(str(response) + ".bak"), str(response)),
         ]
+        if os.name == "nt":
+            windows_response = str(response).replace("/", "\\")
+            paths.extend(
+                [
+                    (response, windows_response.upper()),
+                    (response, windows_response.replace("\\", "/")),
+                    (Path(str(response) + ".tmp"), windows_response.replace("\\", "/")),
+                    (Path(str(response) + ".bak"), windows_response.replace("\\", "/")),
+                ]
+            )
         for request, output in paths:
             with self.subTest(request=request, output=output):
                 physical_request = request if request.is_absolute() else self.project / request
@@ -165,6 +176,50 @@ class NativeToolboxTransportTests(unittest.TestCase):
                 self.assertEqual("INVALID_ARGUMENT", frames[0]["error"]["code"])
                 self.assertEqual(original, physical_request.read_bytes())
                 self.assertEqual(before, response.read_bytes() if response.exists() else None)
+
+    def test_windows_path_normalization_uses_native_separator_and_dot_rules_on_all_hosts(self):
+        cases = [
+            [
+                "C:\\Users\\Runner\\project/./request.json",
+                True,
+                "C:/Users/Runner/project/request.json",
+            ],
+            [
+                "C:/Users\\Runner/project/../project/request.json.tmp",
+                True,
+                "C:/Users/Runner/project/request.json.tmp",
+            ],
+            ["res://folder\\../request.json", True, "res://request.json"],
+            ["user://folder\\../request.json.bak", True, "user://request.json.bak"],
+            ["\\\\server\\share\\folder\\..\\request.json", True, "//server/share/request.json"],
+            ["/tmp/folder/../request.json", False, "/tmp/request.json"],
+        ]
+        probe = self.project / "path-normalization-probe.gd"
+        probe.write_text(
+            "extends MainLoop\n"
+            "func _initialize() -> void:\n"
+            '\tvar runner = load("res://scripts/services/toolbox/cli.gd").new()\n'
+            "\tvar cases: Array = " + json.dumps(cases) + "\n"
+            "\tvar results: Array = []\n"
+            "\tfor entry in cases:\n"
+            "\t\tresults.append(runner._normalized_path(entry[0], entry[1]))\n"
+            "\trunner.free()\n"
+            '\tprint("PATH_PROBE ", JSON.stringify(results))\n'
+            "func _process(_delta: float) -> bool:\n"
+            "\treturn true\n",
+            encoding="utf-8",
+        )
+        completed = subprocess.run(
+            [*self.base, "--script", str(probe)],
+            env=self.environment,
+            capture_output=True,
+            timeout=60,
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr.decode(errors="replace"))
+        self.assertNotIn(b"ERROR:", completed.stderr)
+        frames = [line for line in completed.stdout.splitlines() if line.startswith(b"PATH_PROBE ")]
+        self.assertEqual(1, len(frames), completed.stdout)
+        self.assertEqual([entry[2] for entry in cases], json.loads(frames[0][11:]))
 
 
 if __name__ == "__main__":

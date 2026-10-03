@@ -205,12 +205,19 @@ func _destination_conflicts(request_path: String, response_path: String) -> bool
 
 
 func _absolute_path(path: String) -> String:
-	var globalized: String = ProjectSettings.globalize_path(path)
+	var windows: bool = OS.has_feature("windows")
+	var globalized: String = ProjectSettings.globalize_path(_normalized_path(path, windows))
 	if globalized.is_relative_path():
 		var directory: DirAccess = DirAccess.open(".")
 		if directory != null:
 			globalized = directory.get_current_dir().path_join(globalized)
-	return globalized.simplify_path()
+	return _normalized_path(globalized, windows)
+
+
+func _normalized_path(path: String, windows: bool) -> String:
+	# Windows accepts either separator, including mixed spelling of the same file.
+	# Convert before simplify_path so dot segments and storage suffixes compare alike.
+	return (path.replace("\\", "/") if windows else path).simplify_path()
 
 
 func _path_has_links(path: String) -> bool:
