@@ -4,6 +4,7 @@ const DAY = CampaignClock.SLOTS_PER_DAY
 
 
 static func run(check: Callable) -> void:
+	_metadata(check)
 	var loaded = ContentPackLoader.new().load_packs([ContentPackLoader.BUILTIN_ROOT])
 	check.call(loaded.ok, "Finance balance fixture loads production content")
 	if not loaded.ok:
@@ -171,3 +172,21 @@ static func _fixture(catalog: ContentCatalog, definition: Dictionary) -> Diction
 	return CampaignStarter.create(
 		record, definition, CampaignDirectorContracts._circuits(catalog, campaign)
 	)
+
+
+static func _metadata(check: Callable) -> void:
+	var properties: Dictionary = CampaignFinanceBalance.fields().properties
+	var unit_description = RegEx.new()
+	unit_description.compile("^(days|basis points): .+")
+	for key in CampaignFinanceBalance.LEGACY:
+		var field: Dictionary = properties[key]
+		var units = "basis points" if key == "bridge_fee_bps" else "days"
+		check.call(
+			(
+				unit_description.search(str(field.get("description", ""))) != null
+				and str(field.description).begins_with(units + ": ")
+				and field.has("minimum")
+				and field.has("maximum")
+			),
+			"Finance authoring metadata exposes the contractual unit and bounds: " + key
+		)

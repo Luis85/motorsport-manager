@@ -3,6 +3,7 @@ extends RefCounted
 
 
 static func run(check: Callable) -> void:
+	_metadata(check)
 	var loaded = ContentPackLoader.new().load_packs([ContentPackLoader.BUILTIN_ROOT])
 	check.call(loaded.ok, "Presentation balance fixture loads production tuning")
 	if not loaded.ok:
@@ -175,3 +176,28 @@ static func _invalid(record: Dictionary, check: Callable) -> void:
 		RaceTuningDefinition.from_record(broken) == null,
 		"Zero tread denominator rejects before use"
 	)
+
+
+static func _metadata(check: Callable) -> void:
+	var properties: Dictionary = RacePresentationBalance.fields().presentation.properties
+	var keys = properties.keys()
+	keys.sort()
+	var expected = RacePresentationBalance.LEGACY.keys()
+	expected.sort()
+	check.call(keys == expected, "Every presentation policy leaf has an authoring schema")
+	var unit_description = RegEx.new()
+	unit_description.compile(
+		"^(tread percent|Celsius delta|points|points/damage percent|fraction|metres): .+"
+	)
+	for key in properties:
+		var field: Dictionary = properties[key]
+		check.call(
+			(
+				unit_description.search(str(field.get("description", ""))) != null
+				and field.has("minimum")
+				and field.has("maximum")
+				and float(field.minimum) <= float(RacePresentationBalance.LEGACY[key])
+				and float(field.maximum) >= float(RacePresentationBalance.LEGACY[key])
+			),
+			"Presentation authoring metadata declares units, meaning and default bounds: " + key
+		)

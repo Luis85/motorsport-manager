@@ -10,10 +10,10 @@ static func fields() -> Dictionary:
 		"bridge_maturity_days": ContentSchema.integer(1, CampaignDefinition.MAX_DAYS),
 		"bridge_fee_bps": ContentSchema.integer(0, 10000)
 	}
-	properties.distress_forecast_days.description = "Days ahead included in the committed-cash distress forecast."
-	properties.bridge_maturity_days.description = "Days from agreement creation until the bridge repayment is due."
+	properties.distress_forecast_days.description = "days: Days ahead included in the committed-cash distress forecast."
+	properties.bridge_maturity_days.description = "days: Days from agreement creation until the bridge repayment is due."
 	properties.bridge_fee_bps.description = (
-		"Fee added to bridge principal, in basis points (1000 bps = 10 percent); "
+		"basis points: Fee added to bridge principal (1000 bps = 10 percent); "
 		+ "repayment rounds to integer minor units."
 	)
 	return ContentSchema.object(properties)
