@@ -4,6 +4,7 @@
     interface Root {LWContent?:LWContentPorts.ContentApi;LWDefaultAdventure?:LWContentPorts.Adventure;LWAdventure?:LWContentPorts.AdventureApi;LWCreatures?:{personalities?:string[]};LWBehaviorTree:new(actions:Record<string,()=>false>)=>{validate(input:unknown):boolean};}
     const root=inputRoot as Root;
     const node = typeof module !== 'undefined' && module.exports;
+    const BehaviorTree=(node?require('./behavior-tree.js'):root.LWBehaviorTree) as Root['LWBehaviorTree'];
     const contentApi = (node ? require('./content-runtime.js') : root.LWContent) as LWContentPorts.ContentApi|undefined;
     if(!contentApi)throw Error('Content runtime is missing.');
     const C=contentApi;
@@ -132,7 +133,7 @@
                 check(num(optionalRecord(p.rules)[k], a, b), 'Invalid rule: ' + k);
             for (const k of ['maxCreatures', 'cpPerLevel', 'practicePerPoint', 'purchaseBase'])
                 check(Number.isInteger(optionalRecord(p.rules)[k]), k + ' must be an integer.');
-            const tree = new root.LWBehaviorTree(Object.fromEntries(ACTIONS.map(a => [a, () => false])));
+            const tree = new BehaviorTree(Object.fromEntries(ACTIONS.map(a => [a, () => false])));
             tree.validate(p.behaviorTree);
             check(optionalRecord(p.behaviorTree).type === 'selector' && optionalRecord(list(optionalRecord(p.behaviorTree).children,'Behavior children')[0]).action === 'essential', 'The root must be a selector whose first action is essential care.');
             check(p.extensions===undefined || object(p.extensions), 'Extensions must be a JSON object.');

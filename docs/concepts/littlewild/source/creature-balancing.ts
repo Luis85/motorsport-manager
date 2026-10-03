@@ -3,7 +3,7 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWContent:LWContentPorts.ContentApi;LWCreatureBalancing?:{merge(base:LWContentPorts.Resources['creatures'],overlay:unknown):LWContentPorts.Resources['creatures']}};
- const C=root.LWContent,record=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
+ const C=(typeof module!=='undefined'&&module.exports?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi,record=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
  function merge(base:LWContentPorts.Resources['creatures'],input:unknown):LWContentPorts.Resources['creatures']{
   const overlay=C.parse(input,2*1024*1024),catalog=C.copy(base);
   if(!record(overlay)||Object.keys(overlay).length!==3||overlay.format!=='littlewild-creature-balancing'||overlay.schemaVersion!==1||!Array.isArray(overlay.definitions)||overlay.definitions.length>32)throw Error('Invalid creature balancing overlay.');

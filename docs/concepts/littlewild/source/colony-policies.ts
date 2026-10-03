@@ -27,7 +27,7 @@
         LWPolicies?: typeof api;
     };
     const L = root.LW;
-    const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+    const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     const food = ['meals', 'bread', 'berries', 'meat'];
     function equipmentStatus(engine: Host, actor: Actor, id: string) {
         const gear = L.colony.definition(id);

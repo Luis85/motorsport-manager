@@ -272,7 +272,8 @@
     "source/renderer-catalog.ts",
     "source/renderer-data-contracts.d.ts",
     "source/tools/engine-export-cli.cts",
-    "source/scene-renderer-admission.ts"
+    "source/scene-renderer-admission.ts",
+    "source/test-cold-balancing.cts"
   ],
   "include": []
 }

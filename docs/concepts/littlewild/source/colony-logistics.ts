@@ -3,7 +3,7 @@
 /* Personal inventory, equipment and physical warehouse supply commands. */
 (function (inputRoot: unknown) {
     'use strict';
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     interface Host extends LWTaskPorts.ColonyHost {
         depositKeep(c?: LWTaskPorts.Actor): LWTaskPorts.Numbers;
         depositTask(reason?: string, all?: boolean): LWTaskPorts.Draft | null;

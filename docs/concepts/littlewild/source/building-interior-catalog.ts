@@ -3,6 +3,9 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWInteriorDefinitions?:unknown;LWInteriors?:LWInterior.CatalogApi;LWContent:{parse(input:unknown,limit:number):unknown};LWInteriorPaths:{validate(f:LWInterior.Floor):void;path(f:LWInterior.Floor,a:LWInterior.Point,b:LWInterior.Point):LWInterior.Point[]|null}};
+ const node=typeof module!=='undefined'&&module.exports;
+ const C=(node?require('./content-runtime.js'):root.LWContent) as typeof root.LWContent;
+ const Paths=(node?require('./building-interior-paths.js'):root.LWInteriorPaths) as typeof root.LWInteriorPaths;
  const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
  const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
  const finite=(v:unknown,min:number,max:number):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
@@ -11,7 +14,7 @@
  function fields(v:unknown,keys:string[],label:string,optional:string[]=[]):asserts v is Record<string,unknown>{if(!plain(v)||keys.some(k=>!Object.hasOwn(v,k))||Object.keys(v).some(k=>!keys.includes(k)&&!optional.includes(k)))bad('invalid '+label);}
  function point(v:unknown,width:number,height:number):void{fields(v,['x','y'],'point');if(!finite(v.x,0,width-1)||!finite(v.y,0,height-1)||!Number.isInteger(v.x)||!Number.isInteger(v.y))bad('point outside floor');}
  function validate(raw:unknown):LWInterior.Catalog{
-  const input=root.LWContent.parse(raw,2*1024*1024);
+  const input=C.parse(raw,2*1024*1024);
   fields(input,['version','layouts','bindings','fallback'],'catalog');
   if(input.version!==1||!Array.isArray(input.layouts)||input.layouts.length<1||input.layouts.length>32||!plain(input.bindings)||Object.keys(input.bindings).length>128)bad('invalid catalog bounds');
   const layoutIds=new Set<string>();
@@ -24,8 +27,8 @@
     if(floor.edges!==undefined){if(!Array.isArray(floor.edges)||floor.edges.length>1600)bad('invalid floor edges');const seen=new Set<string>();for(const edge of floor.edges){fields(edge,['x','y','side','kind'],'edge');point({x:edge.x,y:edge.y},floor.width,floor.height);if(!Number.isInteger(edge.x)||!Number.isInteger(edge.y)||!['n','e','s','w'].includes(String(edge.side))||!['wall','window','door'].includes(String(edge.kind))||seen.has(edge.x+','+edge.y+','+edge.side))bad('invalid edge');seen.add(edge.x+','+edge.y+','+edge.side);}}
     const stations=new Set<string>();for(const station of floor.stations){fields(station,['id','label','kind','production','x','y'],'station');if(!id(station.id)||stations.has(station.id)||typeof station.label!=='string'||[...station.label].length>80||!['workbench','storage','desk','hearth','bed','planter'].includes(String(station.kind))||typeof station.production!=='boolean')bad('invalid station');stations.add(station.id);point({x:station.x,y:station.y},floor.width,floor.height);}
    }
-   for(const floor of layout.floors)root.LWInteriorPaths.validate(floor as LWInterior.Floor);
-   for(const floor of layout.floors){const f=floor as unknown as LWInterior.Floor;for(const stair of f.stairs){fields(stair,['x','y','to','arrival','seconds'],'stairs');const destination=layout.floors.find((v:unknown)=>plain(v)&&v.id===stair.to) as LWInterior.Floor|undefined;if(!destination||destination.id===f.id||!finite(stair.seconds,.5,15))bad('invalid stair connection');point({x:stair.x,y:stair.y},f.width,f.height);point(stair.arrival,destination.width,destination.height);if(!root.LWInteriorPaths.path(destination,destination.door,stair.arrival as LWInterior.Point))bad('unreachable stair arrival');}}
+   for(const floor of layout.floors)Paths.validate(floor as LWInterior.Floor);
+   for(const floor of layout.floors){const f=floor as unknown as LWInterior.Floor;for(const stair of f.stairs){fields(stair,['x','y','to','arrival','seconds'],'stairs');const destination=layout.floors.find((v:unknown)=>plain(v)&&v.id===stair.to) as LWInterior.Floor|undefined;if(!destination||destination.id===f.id||!finite(stair.seconds,.5,15))bad('invalid stair connection');point({x:stair.x,y:stair.y},f.width,f.height);point(stair.arrival,destination.width,destination.height);if(!Paths.path(destination,destination.door,stair.arrival as LWInterior.Point))bad('unreachable stair arrival');}}
    for(const start of floorIds){const connected=new Set([start]);for(let i=0;i<layout.floors.length;i++)for(const floor of layout.floors as LWInterior.Floor[])if(connected.has(floor.id))for(const stair of floor.stairs)connected.add(stair.to);if(connected.size!==floorIds.size)bad('disconnected floors');}
   }
   if(typeof input.fallback!=='string'||!layoutIds.has(input.fallback))bad('missing fallback layout');for(const [kind,layout]of Object.entries(input.bindings))if(!id(kind)||typeof layout!=='string'||!layoutIds.has(layout))bad('invalid binding');

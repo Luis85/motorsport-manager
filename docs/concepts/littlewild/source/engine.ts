@@ -4,7 +4,7 @@
 (function (inputRoot:unknown) {
     'use strict';
     const root=inputRoot as LWCorePorts.Root;
- const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B=(typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     if (typeof module !== 'undefined' && module.exports && !root.LWNavigation) require('./navigation.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWCreatures) require('./creature-catalog.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWEngineTaskPlanning) require('./engine-task-planning.js');

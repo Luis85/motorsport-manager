@@ -4,7 +4,7 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as LWCorePorts.Root & {LW:LWCorePorts.Facade;LWSkillCompletions?:{finish(engine:LWCorePorts.SystemsEngine,t:LWCorePorts.Task,finishBase:(task:LWCorePorts.Task)=>void):void}};
- const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B=(typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const {clamp}=root.LW;
  const {BUILDINGS,RES,RECIPES,DRILLS,SKILLS,STYLES}=root.LWContent.tables;
  const clone=<T>(value:T):T=>root.LWContent.copy(value);

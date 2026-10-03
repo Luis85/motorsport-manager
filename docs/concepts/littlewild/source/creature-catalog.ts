@@ -43,9 +43,13 @@
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const authored:Api['defaults']={configuration:(root.LWCreatureConfig??(node?require('./creature-config.json'):undefined)) as Api['configuration'],definitions:(root.LWCreatureDefinitions??(node?require('./creature-definitions.json'):undefined)) as Definition[]};
+ if(!authored.configuration||!authored.definitions)throw Error('Creature catalog configuration or definitions are missing.');
  const balancer=(node?require('./creature-balancing.js'):(globalThis as unknown as {LWCreatureBalancing:unknown}).LWCreatureBalancing) as {merge(base:Api['defaults'],overlay:unknown):Api['defaults']};
- const overlay=node?require('./content/balancing.json').creatures:(globalThis as unknown as {LWDefaultBalancing:{creatures:unknown}}).LWDefaultBalancing.creatures;
- const balanced=balancer.merge(authored,overlay),source:unknown=balanced.definitions,configSource:unknown=balanced.configuration;
+ const browserDocument=(globalThis as unknown as {LWDefaultBalancing?:{creatures:unknown}}).LWDefaultBalancing;
+ if(!node&&browserDocument!==undefined&&(!browserDocument||typeof browserDocument!=='object'||!Object.hasOwn(browserDocument,'creatures')))throw Error('Creature balancing overlay is missing.');
+ if((node||browserDocument!==undefined)&&(!balancer||typeof balancer.merge!=='function'))throw Error('Creature balancing merge helper is missing.');
+ const overlay=node?require('./content/balancing.json').creatures:browserDocument?.creatures;
+ const balanced=!node&&browserDocument===undefined?authored:balancer.merge(authored,overlay),source:unknown=balanced.definitions,configSource:unknown=balanced.configuration;
  const safeId=/^[a-z][a-z0-9_-]{0,60}$/;
  const safeField=/^[A-Za-z][A-Za-z0-9_]{0,60}$/;
  const safeComponent=/^[A-Z][A-Za-z0-9]{0,60}$/;

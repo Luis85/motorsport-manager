@@ -6,7 +6,7 @@
 /// <reference path="./physical-world-contracts.d.ts" />
 (function(inputRoot:unknown){
  'use strict';
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const root=inputRoot as {LWRuntimeResults:LWRuntime.ResultsApi;LW:LWPhysicalPorts.Facade;LWWorldContent:LWContentPorts.WorldApi;LWAdventure:LWContentPorts.AdventureApi;LWWorldIntegrity:LWPhysicalPorts.IntegrityApi;LWWorldProduction:LWPhysicalPorts.ProductionApi;LWWorldTasks:LWPhysicalPorts.TasksApi;LWWorldECS:LWPhysicalPorts.EcsPhysicalApi;LWWorldStateValidation:{validate(state:LWPhysicalPorts.State,taskKinds:readonly string[]):void}};
  const L=root.LW, Composition=L.EngineComposition, W=root.LWWorldContent, A=root.LWAdventure;
  const {RES,RECIPES,BUILDINGS,SKILLS,clamp,terrain,SIZE}=L;

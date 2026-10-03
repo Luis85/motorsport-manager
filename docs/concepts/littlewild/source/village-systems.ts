@@ -4,7 +4,7 @@
  * Commands validate before mutation; carriers and workplaces remain the inventory authority. */
 /// <reference path="./village-contracts.d.ts" />
 (function(inputRoot:unknown){'use strict';
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const root=inputRoot as LWVillagePorts.Root;
  const L=root.LW,Composition=L.EngineComposition,G=root.LWGeography,C=root.LWGrowth,W=root.LWWorldContent,A=root.LWAdventure;
  const copy=C.clone,fail=root.LWRuntimeResults.failure,ok=root.LWRuntimeResults.success,int=(n:unknown,a:number,b:number):n is number=>typeof n==='number'&&Number.isInteger(n)&&n>=a&&n<=b;

@@ -14,7 +14,7 @@
   if(!object(data)||Object.keys(data).length!==keys.length||keys.some(k=>!Object.hasOwn(data,k))||data.format!=='littlewild-balancing'||data.schemaVersion!==1||typeof data.sceneId!=='string')throw Error('Expected a complete littlewild-balancing schema-1 document.');
   if(object(data.creatures)&&data.creatures.format==='littlewild-creature-balancing'){
    const authored={configuration:node?require('./creature-config.json'):(globalThis as unknown as {LWCreatureConfig:unknown}).LWCreatureConfig,definitions:(node?require('./creature-definitions.json'):(globalThis as unknown as {LWCreatureDefinitions:unknown[]}).LWCreatureDefinitions) as unknown[]};
-   data.creatures=(globalThis as unknown as {LWCreatureBalancing:{merge(base:LWContentPorts.Resources['creatures'],overlay:unknown):LWContentPorts.Resources['creatures']}}).LWCreatureBalancing.merge(authored,data.creatures);
+   const balancer=(node?require('./creature-balancing.js'):(globalThis as unknown as {LWCreatureBalancing:unknown}).LWCreatureBalancing) as {merge(base:LWContentPorts.Resources['creatures'],overlay:unknown):LWContentPorts.Resources['creatures']};data.creatures=balancer.merge(authored,data.creatures);
   }
   const checked=data as unknown as LWBalancing.Document;
   checked.simulation=root.LWSimulationProfile.validate(checked.simulation);

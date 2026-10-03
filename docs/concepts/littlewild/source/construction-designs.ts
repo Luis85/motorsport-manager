@@ -3,7 +3,7 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LW:{BUILDINGS:Record<string,{cost:Record<string,number>;time:number}>;RES:Record<string,unknown>};LWInteriors:LWInterior.CatalogApi;LWContent:{parse(input:unknown,limit:number):unknown};LWConstructionDesigns?:LWConstruction.DesignsApi};
- const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B=(typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const profile=()=>({simulationProfile:(globalThis as unknown as {LWSimulationProfile:{current:LWContentPorts.SimulationProfile}}).LWSimulationProfile.current});
  const copy=<T>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
  const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;

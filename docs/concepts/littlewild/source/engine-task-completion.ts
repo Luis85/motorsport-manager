@@ -24,7 +24,7 @@
         LWEngineTaskCompletion?: Api;
     }
     const root = inputRoot as Root;
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     function install(target: object): void {
         const { RES, SKILLS, BUILDINGS, RECIPES, CONTRACTS } = root.LWContent.tables;
         const clamp = (n: number, a: number, b: number): number => Math.max(a, Math.min(b, n));

@@ -3,7 +3,8 @@
  interface Root {LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWDefaultGrowth?:LWContentPorts.Growth;LWGrowthSchema?:LWContentPorts.Schema;LWGrowth?:LWContentPorts.GrowthApi;}
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
- const contentApi=root.LWContent,adventureApi=root.LWAdventure;
+ const contentApi=(node?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi|undefined;
+ const adventureApi=(node?require('./adventure-content.js'):root.LWAdventure) as LWContentPorts.AdventureApi|undefined;
  if(!contentApi||!adventureApi)throw Error('Growth content dependencies are missing.');
  const C=contentApi,A=adventureApi;
  const defaultGrowth=(node?require('./content/balancing.json').libraries.growth:root.LWDefaultGrowth) as LWContentPorts.Growth|undefined;

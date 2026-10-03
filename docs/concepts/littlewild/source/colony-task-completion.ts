@@ -19,7 +19,7 @@
         install(target: object, predecessor: object, dependencies: LWTaskPorts.ColonyDependencies): void;
     }
     const root = inputRoot as Root;
-    const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+    const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     function install(target: object, predecessor: object, dependencies: LWTaskPorts.ColonyDependencies): void {
         const { RECIPES } = root.LW;
         const A = root.LWAdventure;

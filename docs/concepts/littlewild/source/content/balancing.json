@@ -5827,7 +5827,7 @@
       ]
     },
     "materialColors": {},
-    "placementPolicy": "legacy"
+    "placementPolicy": "reserved-sites"
   },
   "creatures": {
     "format": "littlewild-creature-balancing",

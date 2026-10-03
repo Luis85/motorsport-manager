@@ -61,7 +61,7 @@
  }
  interface LittlewildRoot { LW?:LittlewildFacade; LWSimulationPipeline?:SimulationPipelineApi; }
  const root=inputRoot as LittlewildRoot;
- const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B=(typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
  const facade=root.LW;if(!facade)throw Error('Littlewild facade missing.');
  const L:LittlewildFacade=facade;
 

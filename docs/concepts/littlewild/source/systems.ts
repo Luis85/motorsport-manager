@@ -6,7 +6,7 @@
  */
 /// <reference path="./engine-core-contracts.d.ts" />
 (function (inputRoot:unknown) {
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
 'use strict';
 const root=inputRoot as LWCorePorts.Root & {LW:LWCorePorts.Facade;LWWorldProfile:{current:{nodePolicy?:string}}};
 const Work=(typeof module!=='undefined'&&module.exports?require('./systems-work-rates.js'):(globalThis as unknown as {LWSkillWorkRates:unknown}).LWSkillWorkRates) as {upgradeEffect(engine:LWCorePorts.SystemsEngine,building:LWApplication.Building,level:number):string;stationBonus(engine:LWCorePorts.SystemsEngine,kind:string):number;learningRate(engine:LWCorePorts.SystemsEngine,style?:string):number;workRate(engine:LWCorePorts.SystemsEngine,task:Task,baseRate:number):number};

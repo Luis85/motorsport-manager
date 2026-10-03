@@ -7,7 +7,7 @@
 (function (inputRoot:unknown) {
     'use strict';
     const root=inputRoot as LWColonyPorts.Root;
- const B = (globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
+ const B = (typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
     type Actor=LWColonyPorts.Actor;type Host=LWColonyPorts.Host;
     if (typeof module !== 'undefined' && module.exports && !root.LWColonyAdventures) require('./colony-adventures.js');
     if (typeof module !== 'undefined' && module.exports && !root.LWColonyActivity) require('./colony-activity.js');

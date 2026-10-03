@@ -4,8 +4,9 @@
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWContent:LWContentPorts.ContentApi;LWSkillWorkRates?:{upgradeEffect(engine:LWCorePorts.SystemsEngine,building:LWApplication.Building,level:number):string;stationBonus(engine:LWCorePorts.SystemsEngine,kind:string):number;learningRate(engine:LWCorePorts.SystemsEngine,style?:string):number;workRate(engine:LWCorePorts.SystemsEngine,task:LWCorePorts.Task,baseRate:number):number}};
- const B=(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules;
- const {SKILLS,RECIPES,STYLES,BUILDINGS}=root.LWContent.tables;
+ const B=(typeof module!=='undefined'&&module.exports?require('./balancing-rules.js'):(globalThis as unknown as {LWBalanceRules:LWBalanceRules.Api}).LWBalanceRules) as LWBalanceRules.Api;
+ const C=(typeof module!=='undefined'&&module.exports?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi;
+ const {SKILLS,RECIPES,STYLES,BUILDINGS}=C.tables;
  function stationBonus(engine:LWCorePorts.SystemsEngine,kind:string){const b=engine.s.buildings.find(b=>b.kind===kind);if(!b)return 0;let bonus=((b.level||1)-1)*B.forEngine(engine).work.stationPerLevel+Math.max(0,(b.quality??B.forEngine(engine).work.qualityBaseline)-B.forEngine(engine).work.qualityBaseline)/B.forEngine(engine).work.qualityDivisor;
   if(engine.s.buildings.some(x=>x.kind==='storehouse'&&Math.abs(x.x-b.x)+Math.abs(x.y-b.y)<=B.forEngine(engine).work.supportRadius))bonus+=B.forEngine(engine).work.storehouseBonus;
   if(engine.s.buildings.some(x=>x.kind==='waterwheel'&&Math.abs(x.x-b.x)+Math.abs(x.y-b.y)<=B.forEngine(engine).work.supportRadius))bonus+=B.forEngine(engine).work.waterwheelBonus;

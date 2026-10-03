@@ -6,8 +6,8 @@
   LWContent:{parse(input:unknown,limit:number):unknown;fingerprint(input:unknown):string;tables:{SKILLS:Record<string,unknown>;RES:Record<string,unknown>}};
   LWInteractionLibrary?:unknown;LWInteractions?:LWInteraction.Catalog;
  };
- const C=root.LWContent;
  const node=typeof module!=='undefined'&&module.exports;
+ const C=(node?require('./content-runtime.js'):root.LWContent) as typeof root.LWContent;
  const seed=node?require('./content/balancing.json').interactions as unknown:root.LWInteractionLibrary;
  const copy=<T>(value:T):T=>C.parse(value,2*1024*1024) as T;
  function object(value:unknown,keys:readonly string[],label:string):Record<string,unknown>{
