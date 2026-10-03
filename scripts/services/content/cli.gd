@@ -36,8 +36,16 @@ func run() -> void:
 			schemas[kind] = ContentSchema.document(kind)
 		finish({"ok": true, "schemas": schemas}, output)
 		return
+	if action == "balance-validate":
+		finish(BalanceConfigValidation.run(roots), output)
+		return
 	if action not in ["validate", "inspect", "export", "test"]:
-		finish({"ok": false, "error": "Choose validate, inspect, export, test or schemas."})
+		finish(
+			{
+				"ok": false,
+				"error": "Choose validate, balance-validate, inspect, export, test or schemas."
+			}
+		)
 		return
 	_execute(roots, action, identity, output, steps)
 
