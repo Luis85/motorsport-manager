@@ -6,22 +6,30 @@ var _stdio: bool = false
 var _request_path: String = ""
 var _response_path: String = ""
 var _finished: bool = false
+var _metadata: Dictionary = {}
 
 
 func _initialize() -> void:
+	_metadata = {
+		"engine_executed": true,
+		"engine": Engine.get_version_info().string,
+		"source_revision": "",
+		"source_digest": ""
+	}
 	var options: Dictionary = _options(OS.get_cmdline_user_args())
 	if not options.ok:
-		_emit(options)
+		_emit(_rejected(options.error.code, options.error.message, options.error.details))
 		_finished = true
 		return
 	_stdio = options.result.stdio
 	_request_path = options.result.request
 	_response_path = options.result.response
+	_metadata.merge(options.result.metadata, true)
 	var created: Dictionary = GameToolboxFactory.create(
 		options.result.packs, options.result.metadata
 	)
 	if not created.ok:
-		_emit(created)
+		_publish(_rejected(created.error.code, created.error.message, created.error.details))
 		_finished = true
 		return
 	_toolbox = created.toolbox
@@ -76,10 +84,7 @@ func _file_request() -> void:
 			response = _execute_text(bytes.get_string_from_utf8())
 	if file != null:
 		file.close()
-	var error: String = Storage.write_json(_response_path, response)
-	if not error.is_empty():
-		response = _rejected("RESPONSE_WRITE", error)
-	_emit(response)
+	_publish(response)
 
 
 func _execute_text(text: String) -> Dictionary:
@@ -91,17 +96,25 @@ func _execute_text(text: String) -> Dictionary:
 	return _toolbox.execute(parsed.data)
 
 
-func _rejected(code: String, message: String) -> Dictionary:
+func _rejected(code: String, message: String, details: Dictionary = {}) -> Dictionary:
 	var response: Dictionary = {
 		"protocol": GameToolbox.PROTOCOL,
 		"version": GameToolbox.VERSION,
 		"request_id": "",
 		"operation": "",
 		"session": "",
-		"metadata": _toolbox.metadata() if _toolbox != null else {}
+		"metadata": _toolbox.metadata() if _toolbox != null else _metadata.duplicate(true)
 	}
-	response.merge(DeveloperToolResult.failure(code, message))
+	response.merge(DeveloperToolResult.failure(code, message, details))
 	return response
+
+
+func _publish(response: Dictionary) -> void:
+	if not _stdio and not _response_path.is_empty():
+		var error: String = Storage.write_json(_response_path, response)
+		if not error.is_empty():
+			response = _rejected("RESPONSE_WRITE", error)
+	_emit(response)
 
 
 func _emit(response: Dictionary) -> void:

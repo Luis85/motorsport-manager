@@ -9,6 +9,8 @@ func _init(catalog: ContentCatalog) -> void:
 
 
 func dispatch(operation: String, arguments: Dictionary) -> Dictionary:
+	if _catalog == null or not _catalog._sealed:
+		return DeveloperToolResult.failure("UNAVAILABLE", "A sealed content catalog is required.")
 	match operation:
 		"content.list":
 			return _list(arguments)
