@@ -158,14 +158,14 @@ func run() -> void:
 		check(inside(view.group_buttons[group]), "Group always visible: " + group)
 		view.group_buttons[group].pressed.emit()
 		await settle()
-		for topic in view.GROUPS[group]:
+		for topic in view.groups[group]:
 			if not view.topic_buttons.has(topic):
 				continue
 			check(
-				view.tabs.current_tab in view.GROUPS[group],
+				view.tabs.current_tab in view.groups[group],
 				"Group opens the correct context: " + group
 			)
-			if view.GROUPS[group].size() > 1:
+			if view.groups[group].size() > 1:
 				check(
 					inside(view.topic_buttons[topic]),
 					"Context destination is visible without scrolling: " + str(topic)

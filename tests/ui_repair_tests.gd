@@ -245,8 +245,8 @@ func run() -> void:
 	)
 	check(
 		(
-			view.results_page_index in view.GROUPS.Review
-			and view.results_page_index not in view.GROUPS.Conditions
+			view.results_page_index in view.groups.Review
+			and view.results_page_index not in view.groups.Conditions
 		),
 		"Results index cannot masquerade as optional Recovery"
 	)
