@@ -33,11 +33,18 @@ flowchart LR
     Plan -->|explicit dated progression| Due[Due commitments and obligations]
     Due --> Ready
     Ready -->|explicit departure| Manifest[Frozen manifest and race entry]
-    Manifest -->|optional practice approval| Practice[Physical practice]
-    Manifest -->|qualifying approval| Qualifying[Physical qualifying]
-    Practice -->|close and approve| Qualifying[Physical qualifying]
-    Qualifying -->|close and approve| Grid[Grid and formation]
-    Grid -->|approve start| Race[Physical race]
+    Manifest --> Briefing[Entry briefing]
+    Briefing -->|practice_start, optional| Practice[Physical practice]
+    Practice -->|practice_end and physical returns| PracticeResults[Practice results]
+    PracticeResults -->|practice_finish| Briefing
+    Briefing -->|qualify| Qualifying[Physical qualifying]
+    Qualifying -->|close_qualifying and physical returns| QualifyingResults[Qualifying results]
+    QualifyingResults -->|prepare_race| Preparation[Race preparation]
+    Briefing -->|prepare_race, skip qualifying| Preparation
+    Preparation -->|formation| Formation[Physical formation lap]
+    Formation -->|physical completion| Grid[Grid ready]
+    Grid -->|lights| Lights[Start countdown]
+    Lights -->|physical countdown| Race[Physical race]
     Orders[Pitwall intentions] --> Race
     Race --> Feedback[Detached observations]
     Feedback --> Orders

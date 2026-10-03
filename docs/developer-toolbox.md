@@ -31,6 +31,17 @@ Departure attaches an actual tool-owned weekend; settlement consumes its own
 finished recording and the exact frozen manifest. Restoring a race checkpoint
 does not fabricate its prior recording or historical event stream.
 
+Keep the complete `campaigns.snapshot` result for active careers: its
+`active_weekend` continuation carries the owned recording and weekend handle.
+Pass that complete result to `campaigns.restore` to resume the same event in a
+fresh toolbox. An inactive raw campaign checkpoint remains supported; a raw
+active checkpoint is rejected because it would strand the pending weekend.
+An already-used continuation weekend ID conflicts rather than replacing another
+authority; use a fresh toolbox or explicitly choose a fresh continuation ID.
+Track snapshots contain document/revision and history depths; undo/redo history
+remains session-local. Open an exported track document through `tracks.create`
+with `configuration.document` to start an independent editor lifetime.
+
 ## Discover operations
 
 `toolbox.discover` returns descriptors for the implemented operations. Each has an
@@ -69,12 +80,35 @@ capability inventory, including each action/view's exact arguments.
 | `campaigns` | `create`, `restore`, `snapshot`, `query`, `command`, `advance`, `depart`, `settle`, `close` | Authored campaign creation, complete checkpoint readers and existing campaign transactions/queries |
 | `tracks` | `create`, `read`, `snapshot`, `validate`, `commit`, `edit`, `undo`, `redo`, `cancel`, `compile`, `close` | `TrackEditorSession`, pure `TrackEdit`, draft/publication validation and compilation |
 
+A weekend configuration selects `circuit_id` and `weekend_id`, with optional
+supported `overrides`, or selects a `scenario_id` alone. These are validated
+content IDs. Creation starts at the actual initial briefing phase; it does not
+approve or complete sessions implicitly. Commands use the existing action name
+and explicit payload. A pace or engine command targets an entrant ID returned by
+the created session; a tool session ID is not an entrant ID.
+
+Planning views expose the existing owner-produced drafts and previews.
+`practice` supplies current driver/session evidence and supported objective and
+baseline choices; `practice_preview` accepts an explicit `id` and `plan`.
+`strategy_draft`/`strategy_forecast` and `tactical_draft`/`tactical_preview` expose
+their respective planning boundaries. `team_orders`, `recovery`, `decisions` and
+`setup` provide detached specialist read models. Consult each view's parameter
+schema in discovery, check availability, and use the returned key, revision and
+observation time in the corresponding existing approval command. Do not fabricate
+approval tokens or treat a forecast as an accepted order.
+
+Campaign `command` selects an explicitly supported planning action. Campaign
+`advance` uses the Director transaction to reach the next registered departure
+and settle existing due obligations. It does not expose bare clock mutation.
+Readiness queries show blockers without spending cash, reserving resources or
+advancing time. Active-weekend planning freezes remain enforced.
+
 ## Native quickstart
 
 Run this from native developer composition with the factory available. The first
 step request deliberately stops at briefing. Starting optional practice and
-resuming if paused then permits twenty physical ticks, without sending a car out
-or approving qualifying.
+resuming if paused then permits twenty physical ticks, without issuing a
+managed-driver run or approving qualifying.
 
 ```gdscript
 var loaded = GameToolboxFactory.create()
@@ -146,7 +180,41 @@ stdio mode for incremental session operations. Separate CLI invocations start
 separate contexts; a session created by one invocation does not survive into
 another.
 
-## Campaign and track recipes
+## Recipes: practice, campaign and track
+
+For a real managed-driver practice run, obtain the approval assumptions from the
+production preview. Run this inside an open client. The recipe uses a newly
+created driver's actual set ID, requests at most 15,000 ticks, and checks measured
+evidence rather than inferring a lap from elapsed time:
+
+```python
+created = toolbox.weekends.create("practice-a", {
+    "circuit_id": "core.circuit.hillside",
+    "weekend_id": "core.weekend.quick",
+})
+driver_id = created["player_ids"][0]
+car = toolbox.weekends.query("practice-a", "car", {"id": driver_id})
+plan = {
+    "objective": "tyre_life", "set_id": car["tyre_sets"][0]["id"],
+    "laps": 1, "baseline": "balanced",
+}
+toolbox.weekends.command("practice-a", "practice_start")
+preview = toolbox.weekends.query("practice-a", "practice_preview", {
+    "id": driver_id, "plan": plan,
+})
+assert preview["available"], preview["reason"]
+toolbox.weekends.command("practice-a", "practice_run", {
+    "id": driver_id, "plan": plan, "revision": preview["revision"],
+    "key": preview["key"], "time": preview["time"],
+})
+advanced = toolbox.weekends.step_ticks("practice-a", 15000)
+evidence = toolbox.weekends.query("practice-a", "practice", {"id": driver_id})
+assert evidence["driver"]["runs"][0]["samples"]
+```
+
+Check the returned tick count and current phase before any subsequent request.
+This records one bounded practice sample; it does not complete the weekend or
+prove that this setup or tyre choice is optimal.
 
 Within an open client, this campaign recipe creates the authored starter career,
 inspects its current state, advances through the existing Director transaction,
@@ -188,19 +256,6 @@ print(publication["valid"], publication["errors"])
 whether the document satisfies that policy. A safe unfinished draft may fail
 publication checks. `compile` returns detached runtime/diagnostics values and
 does not save a circuit file. Neither recipe changes the source content pack.
-
-A weekend configuration selects `circuit_id` and `weekend_id`, with optional
-supported `overrides`, or selects a `scenario_id` alone. These are validated
-content IDs. Creation starts at the actual initial briefing phase; it does not
-approve or complete sessions implicitly. Commands use the existing action name
-and explicit payload. A pace or engine command targets an entrant ID returned by
-the created session; a tool session ID is not an entrant ID.
-
-Campaign `command` selects an explicitly supported planning action. Campaign
-`advance` uses the Director transaction to reach the next registered departure
-and settle existing due obligations. It does not expose bare clock mutation.
-Readiness queries show blockers without spending cash, reserving resources or
-advancing time. Active-weekend planning freezes remain enforced.
 
 ## Clocks, approvals and observations
 
