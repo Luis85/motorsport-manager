@@ -10,7 +10,7 @@ Creatures are authored as data, instantiated by an application service, simulate
 | --- | --- | --- |
 | Archetype identity, supported personalities, names, movement tuning, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/creatures/<id>/creature.json` | Definition data |
 | Personality traits, attributes and preferences | Adventure content | Definition data |
-| Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks | Creature actor record | Yes |
+| Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks, interaction events/cooldowns | Creature actor record | Yes |
 | `Creature`, `Activity`, `Intent` ECS projections | `actor-ecs.ts` | No |
 | Construction of a new mutable actor from immutable definitions | `creature-factory.ts` | Application service |
 | Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/actors/<id>/asset.json` | Presentation data |
@@ -33,7 +33,7 @@ Creatures are authored as data, instantiated by an application service, simulate
 creature.json
     ↓ validate + deep-freeze
 LWCreatures
-    ↓ seed()
+    ↓ seed(archetype, personality, mode, sequence)
 LWCreatureFactory
     ↓ detached actor record
 colony/application use cases
@@ -55,14 +55,14 @@ Three.js scene
 
 Persistent actor objects are the source of truth. The ECS owns deterministic progression, not a parallel save model.
 
-Definition-bound components are declared by each creature manifest. The engine-required baseline is `Transform`, `Needs`, `Learning`, `Feelings` and `Inventory`; an archetype may add more object-valued components. `Creature`, `Activity` and `Intent` are transient engine projections.
+Definition-bound components are declared by each creature manifest. The engine-required baseline is `Transform`, `Needs`, `Learning`, `Feelings` and `Inventory`; an archetype may add more object-valued components. `Creature`, `Activity` and `Intent` are transient engine projections. `Creature` carries the explicit archetype/personality pair used by systems, while persistent actor records remain the source of truth.
 
-The ECS caches component references and reuses transient `Activity` records to avoid avoidable per-tick allocations while still detecting actor-record replacement by reference.
+The ECS caches component references and reuses transient `Activity` records to avoid avoidable per-tick allocations while still detecting actor-record replacement by reference. All bundled archetypes currently implement one shared actor-scoped field contract because `LWActorStateView` presents a stable application facade across the roster; archetypes may vary their ECS-bound object components without hiding persistent defaults in consuming systems.
 
 ## Adding another creature
 
 1. Add `source/creatures/<id>/creature.json` using `creature.schema.json`.
-2. Assign globally unique personality IDs already defined in Adventure content, or add the matching Adventure definitions.
+2. Select one or more personality IDs defined in Adventure content. Personality definitions are reusable across creature archetypes; the actor’s explicit archetype ID disambiguates its species/model contract.
 3. Define all actor-scoped defaults and founder/arrival overrides.
 4. Declare ECS component bindings. Do not add callbacks or system names as executable behavior.
 5. Add `source/assets/actors/<id>/asset.json` with the shared creature ID.
@@ -71,4 +71,4 @@ The ECS caches component references and reuses transient `Activity` records to a
 
 ## Intentional constraints
 
-Creature archetypes and visual assets are bundled trusted application content. Scenario packs may select/tune supported simulation content but cannot inject new creature code, systems or renderer assets. Personality IDs are currently globally unique across bundled archetypes, which keeps existing roster and UI contracts deterministic without introducing a second polymorphic identity into native state.
+Creature archetypes and visual assets are bundled trusted application content. Scenario packs may select/tune supported simulation content but cannot inject new creature code, systems or renderer assets. Native actor state carries an explicit `{archetype, personality}` identity: archetype selects the creature contract and visual asset, while personality selects reusable Adventure traits, attributes and preferences. A personality may therefore be supported by multiple archetypes without coupling species identity to temperament.
