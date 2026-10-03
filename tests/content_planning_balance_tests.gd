@@ -33,7 +33,7 @@ func tuning_record(with_balance: bool = true) -> Dictionary:
 		}
 	)
 	if with_balance:
-		record.balance = GameBalanceSchema.defaults()
+		record["balance"] = GameBalanceSchema.defaults()
 	return record
 
 
