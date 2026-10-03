@@ -187,11 +187,14 @@ preloading an aggregate under another name cannot bypass its global-class rule.
 Godot import and runtime tests complement this intentionally limited static scan.
 It is not a complete GDScript parser or a security sandbox against reflection.
 
-The completed foundation's 64 entry points remain registered. The contract pass
-adds `command_contract_tests` and `storage_contract_tests`; current main adds
-`game_flow_coherence_ui_tests`. The integrated registry retains all 67 entry points
-and extends construction assertions in `mechanics_tests`. Python authoring and
-architecture adversaries complement, but do not substitute for, real Godot tests.
+The completed foundation's 64 entry points remain registered. Its contract pass
+added `command_contract_tests` and `storage_contract_tests`, followed by
+`game_flow_coherence_ui_tests`, establishing the historical 67-entry baseline.
+Later content, campaign, UI and toolbox suites extend that baseline. The current
+suite set belongs to `scripts/verification_suites.json`; use the registered list
+and [current verification guide](verification.md), rather than this historical
+count, when checking complete execution. Python authoring and architecture
+adversaries complement, but do not substitute for, real Godot tests.
 CI uses six shards and a required aggregate `verify` gate. Missing, failed,
 partial, duplicate, malformed, mixed-source or stale-source evidence is rejected.
 Engine errors fail a suite even when its own JSON says `passed: true`.
@@ -199,7 +202,7 @@ Engine errors fail a suite even when its own JSON says `passed: true`.
 The runner validates registry structure, native/layout/timeout types, bounded
 existing test-script paths and unique JSON report filenames before import,
 execution or aggregation. `tests/fixtures/required_verification_suites.json` is
-the monotonic regression floor for all 67 established suites, not an alternate
+the monotonic regression floor of established suite IDs, not an alternate
 execution registry. Missing required suites fail before launching Godot.
 
 Regression includes the 24 unchanged sporting-state checkpoints, complete

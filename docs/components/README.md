@@ -10,13 +10,17 @@ source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
 # UI component catalog
 
 This catalog documents the native Godot UI at [PR #28](https://github.com/Luis85/motorsport-manager/pull/28), source commit
-`c02b09585eccf90a26e1a3296386a3980b059069`. It covers the full PR tree, including existing UI used by that tree,
-rather than only files changed in the PR. Each page, layout, component and UI
-helper has its own Markdown reference with YAML frontmatter in this directory.
+`c02b09585eccf90a26e1a3296386a3980b059069`. The initial references cover the full source tree at that recorded commit,
+rather than only files changed in the PR. Each cataloged page, layout, component
+and UI helper has its own Markdown reference with YAML frontmatter. References
+reviewed after responsibility extraction record the newer source in their
+frontmatter. The [current helper ownership map](refactor-helper-map.md) connects
+additional extracted scripts to those existing components without inventing new
+player-facing pages.
 
 There are **120 references**: 26 pages, 15 layouts,
 58 components and 21 helpers. Coverage includes every
-`scripts/ui/**/*.gd` file, the five nested controls, screens built directly by
+`scripts/ui/**/*.gd` file at that original source, the five nested controls, screens built directly by
 the scene shell, six diagnostic galleries and shared dialog factories. Native
 Godot primitives (Label, Tree, Button, containers and their individual field
 instances) are documented in their owning component rather than duplicated as
@@ -109,13 +113,13 @@ This documentation addition does not change runtime code or save/content schemas
 | [Campaign screen composition](campaign-screens.md) | helper | [composition/campaign_screens.gd](../../scripts/composition/campaign_screens.gd) |
 | [Canvas gesture draft](track-canvas-gesture.md) | helper | [ui/track_canvas_gesture.gd](../../scripts/ui/track_canvas_gesture.gd) |
 | [Circuit Atelier](track-editor.md) | page | [ui/editor.gd](../../scripts/ui/editor.gd) |
-| [Editor Checks page](editor-checks-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor Features page](editor-features-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor Point page](editor-point-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor Reference page](editor-reference-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor Sketch page](editor-sketch-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor Track page](editor-track-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
-| [Editor World page](editor-world-page.md) | page | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
+| [Editor Checks page](editor-checks-page.md) | page | [ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) |
+| [Editor Features page](editor-features-page.md) | page | [ui/editor_inspector_circuit.gd](../../scripts/ui/editor_inspector_circuit.gd) |
+| [Editor Point page](editor-point-page.md) | page | [ui/editor_inspector_selection.gd](../../scripts/ui/editor_inspector_selection.gd) |
+| [Editor Reference page](editor-reference-page.md) | page | [ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) |
+| [Editor Sketch page](editor-sketch-page.md) | page | [ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) |
+| [Editor Track page](editor-track-page.md) | page | [ui/editor_inspector_circuit.gd](../../scripts/ui/editor_inspector_circuit.gd) |
+| [Editor World page](editor-world-page.md) | page | [ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) |
 | [Editor inspector builder](track-editor-inspector.md) | helper | [ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) |
 | [Editor toolbar builder](track-editor-toolbar.md) | helper | [ui/editor_toolbar.gd](../../scripts/ui/editor_toolbar.gd) |
 | [Global header](global-header.md) | component | [composition/main.gd](../../scripts/composition/main.gd) |
@@ -141,8 +145,8 @@ This documentation addition does not change runtime code or save/content schemas
 
 | Reference | Kind | Source |
 |---|---|---|
-| [Advanced Drive page](advanced-drive-page.md) | page | [ui/weekend.gd](../../scripts/ui/weekend.gd) |
-| [Advanced Tyres page](advanced-tyres-page.md) | page | [ui/weekend.gd](../../scripts/ui/weekend.gd) |
+| [Advanced Drive page](advanced-drive-page.md) | page | [ui/weekend_inspector_builder.gd](../../scripts/ui/weekend_inspector_builder.gd) |
+| [Advanced Tyres page](advanced-tyres-page.md) | page | [ui/weekend_inspector_builder.gd](../../scripts/ui/weekend_inspector_builder.gd) |
 | [Advanced debrief page](advanced-debrief-page.md) | page | [ui/strategy_weekend.gd](../../scripts/ui/strategy_weekend.gd) |
 | [Advanced session header](race-session-header.md) | component | [ui/race_weekend/session_header.gd](../../scripts/ui/race_weekend/session_header.gd) |
 | [Advanced timing tower](race-timing-tower.md) | component | [ui/race_weekend/timing_tower.gd](../../scripts/ui/race_weekend/timing_tower.gd) |
@@ -189,7 +193,7 @@ This documentation addition does not change runtime code or save/content schemas
 | [Recovery-capable weekend layout](recovery-weekend-view.md) | layout | [ui/recovery_weekend.gd](../../scripts/ui/recovery_weekend.gd) |
 | [Replay and sandbox](replay-workspace.md) | page | [ui/replay_workspace.gd](../../scripts/ui/replay_workspace.gd) |
 | [Replay screen composition](replay-controller.md) | helper | [composition/replay_controller.gd](../../scripts/composition/replay_controller.gd) |
-| [Retained stint plot](weekend-view-support-stint-plot.md) | component | [ui/weekend_support.gd](../../scripts/ui/weekend_support.gd) |
+| [Retained stint plot](weekend-view-support-stint-plot.md) | component | [ui/weekend_view_state.gd](../../scripts/ui/weekend_view_state.gd) |
 | [Scenario author dialog](scenario-author.md) | component | [ui/scenario_author.gd](../../scripts/ui/scenario_author.gd) |
 | [Session classification panel](session-results-panel.md) | component | [ui/race_weekend/session_results_panel.gd](../../scripts/ui/race_weekend/session_results_panel.gd) |
 | [Session review layout](race-results-workspace.md) | layout | [ui/race_weekend/results_workspace.gd](../../scripts/ui/race_weekend/results_workspace.gd) |
@@ -210,11 +214,11 @@ This documentation addition does not change runtime code or save/content schemas
 
 | Reference | Kind | Source |
 |---|---|---|
-| [Canvas car layer](track-canvas-car-overlay.md) | component | [ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) |
+| [Canvas car layer](track-canvas-car-overlay.md) | component | [ui/track_canvas_state.gd](../../scripts/ui/track_canvas_state.gd) |
 | [Canvas overlay adapter](track-canvas-overlay-renderer.md) | helper | [ui/track_canvas_overlay_renderer.gd](../../scripts/ui/track_canvas_overlay_renderer.gd) |
 | [Canvas overlay painters](track-canvas-overlays.md) | helper | [ui/track_canvas_overlays.gd](../../scripts/ui/track_canvas_overlays.gd) |
 | [Canvas pointer input](track-canvas-input.md) | helper | [ui/track_canvas_input.gd](../../scripts/ui/track_canvas_input.gd) |
-| [Canvas surface layer](track-canvas-surface-overlay.md) | component | [ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) |
+| [Canvas surface layer](track-canvas-surface-overlay.md) | component | [ui/track_canvas_state.gd](../../scripts/ui/track_canvas_state.gd) |
 | [Circuit palette](circuit-palette.md) | helper | [ui/circuit_palette.gd](../../scripts/ui/circuit_palette.gd) |
 | [Circuit world illustration](circuit-world.md) | component | [ui/circuit_world.gd](../../scripts/ui/circuit_world.gd) |
 | [Context guide](context-guide.md) | component | [ui/context_guide.gd](../../scripts/ui/context_guide.gd) |

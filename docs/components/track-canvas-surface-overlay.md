@@ -4,11 +4,11 @@ title: "Canvas surface layer"
 description: "Provides the separate read-only road-surface overlay beneath the car layer."
 kind: "component"
 surface: "shared"
-source: "scripts/ui/track_canvas.gd"
-symbol: "TrackCanvas.SurfaceOverlay"
+source: "scripts/ui/track_canvas_state.gd"
+symbol: "TrackCanvasState.SurfaceOverlay"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "class SurfaceOverlay"
 ---
 
@@ -41,11 +41,11 @@ A 0.3-second presentation timer checks visibility, channel, inspected fraction, 
 
 ## Source and integration
 
-Implementation: [scripts/ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) (`class SurfaceOverlay`).
+Implementation: [scripts/ui/track_canvas_state.gd](../../scripts/ui/track_canvas_state.gd) (`class SurfaceOverlay`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/track_canvas.gd` at `class SurfaceOverlay`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/track_canvas_state.gd` at `class SurfaceOverlay`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

@@ -8,8 +8,8 @@ source: "scripts/ui/strategy_desk.gd"
 symbol: "StrategyDesk"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "VBoxContainer"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "StrategyDeskPresentation"
 ---
 
 # Strategy desk
@@ -48,7 +48,7 @@ configure binds RaceViewQuery. show_topic selects Read/Plan/Control; editing rem
 
 ## Source and integration
 
-Implementation: [scripts/ui/strategy_desk.gd](../../scripts/ui/strategy_desk.gd) (`StrategyDesk`, extends `VBoxContainer`).
+Implementation: [scripts/ui/strategy_desk.gd](../../scripts/ui/strategy_desk.gd) (`StrategyDesk`, extends `StrategyDeskPresentation`).
 
 Referenced by [scripts/ui/recovery_panel.gd](../../scripts/ui/recovery_panel.gd), [scripts/ui/strategy_weekend.gd](../../scripts/ui/strategy_weekend.gd), [scripts/ui/team_orders_panel.gd](../../scripts/ui/team_orders_panel.gd), [scripts/ui/weather_panel.gd](../../scripts/ui/weather_panel.gd), [scripts/ui/weather_weekend.gd](../../scripts/ui/weather_weekend.gd).
 

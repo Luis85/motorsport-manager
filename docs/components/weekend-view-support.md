@@ -8,8 +8,8 @@ source: "scripts/ui/weekend_support.gd"
 symbol: "WeekendViewSupport"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "VBoxContainer"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "WeekendViewState"
 ---
 
 # Advanced weekend support
@@ -48,7 +48,7 @@ PR 28 extracts this base without changing the public WeekendView type. configure
 
 ## Source and integration
 
-Implementation: [scripts/ui/weekend_support.gd](../../scripts/ui/weekend_support.gd) (`WeekendViewSupport`, extends `VBoxContainer`).
+Implementation: [scripts/ui/weekend_support.gd](../../scripts/ui/weekend_support.gd) (`WeekendViewSupport`, extends `WeekendViewState`).
 
 Referenced by [scripts/ui/weekend.gd](../../scripts/ui/weekend.gd).
 

@@ -8,8 +8,8 @@ source: "scripts/ui/pitwall_workspace.gd"
 symbol: "PitwallWorkspace"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "RecoveryWeekendView"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "PitwallWorkspaceState"
 ---
 
 # Engineering pitwall layout
@@ -58,7 +58,7 @@ It extends the retained recovery-capable stack. open_destination routes existing
 
 ## Source and integration
 
-Implementation: [scripts/ui/pitwall_workspace.gd](../../scripts/ui/pitwall_workspace.gd) (`PitwallWorkspace`, extends `RecoveryWeekendView`).
+Implementation: [scripts/ui/pitwall_workspace.gd](../../scripts/ui/pitwall_workspace.gd) (`PitwallWorkspace`, extends `PitwallWorkspaceState`).
 
 Referenced by [scripts/composition/main.gd](../../scripts/composition/main.gd), [scripts/ui/practice_weekend.gd](../../scripts/ui/practice_weekend.gd).
 

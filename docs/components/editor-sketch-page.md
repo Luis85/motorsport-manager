@@ -4,11 +4,11 @@ title: "Editor Sketch page"
 description: "Supports Trace → Preview → Apply with simplification, smoothing and road-width draft settings."
 kind: "page"
 surface: "shipping"
-source: "scripts/ui/editor_inspector.gd"
+source: "scripts/ui/editor_inspector_workspace.gd"
 symbol: "EditorSketchPage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var sketch_page"
 ---
 
@@ -44,11 +44,11 @@ Freehand/Pen switch tools. Close loop requires at least four points; parameter c
 
 ## Source and integration
 
-Implementation: [scripts/ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) (`var sketch_page`).
+Implementation: [scripts/ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) (`var sketch_page`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/editor_inspector.gd` at `var sketch_page`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/editor_inspector_workspace.gd` at `var sketch_page`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

@@ -4,11 +4,11 @@ title: "Advanced Tyres page"
 description: "Groups finite stock selection, fitted/ planned-set details, wheel condition, physical stop scheduling and stint evidence."
 kind: "page"
 surface: "advanced"
-source: "scripts/ui/weekend.gd"
+source: "scripts/ui/weekend_inspector_builder.gd"
 symbol: "AdvancedTyresPage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var tyres"
 ---
 
@@ -50,11 +50,11 @@ Choosing an available set stages its identity without fitting it. Send, formatio
 
 ## Source and integration
 
-Implementation: [scripts/ui/weekend.gd](../../scripts/ui/weekend.gd) (`var tyres`).
+Implementation: [scripts/ui/weekend_inspector_builder.gd](../../scripts/ui/weekend_inspector_builder.gd) (`var tyres`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/weekend.gd` at `var tyres`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/weekend_inspector_builder.gd` at `var tyres`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

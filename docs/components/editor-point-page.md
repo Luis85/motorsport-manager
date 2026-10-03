@@ -4,11 +4,11 @@ title: "Editor Point page"
 description: "Shows fields and selection actions for road/pit points, scenery or multi-selection."
 kind: "page"
 surface: "shipping"
-source: "scripts/ui/editor_inspector.gd"
+source: "scripts/ui/editor_inspector_selection.gd"
 symbol: "EditorPointPage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var point"
 ---
 
@@ -43,11 +43,11 @@ Multi-selection exposes rotation, scale and horizontal/vertical distribution; ro
 
 ## Source and integration
 
-Implementation: [scripts/ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) (`var point`).
+Implementation: [scripts/ui/editor_inspector_selection.gd](../../scripts/ui/editor_inspector_selection.gd) (`var point`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/editor_inspector.gd` at `var point`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/editor_inspector_selection.gd` at `var point`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

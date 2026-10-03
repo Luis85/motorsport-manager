@@ -8,8 +8,8 @@ source: "scripts/ui/editor.gd"
 symbol: "TrackEditor"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "VBoxContainer"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "TrackEditorAuthoring"
 ---
 
 # Circuit Atelier
@@ -48,7 +48,7 @@ Circuit Atelier is the standalone authoring page for shaping, validating and han
 
 ## Source and integration
 
-Implementation: [scripts/ui/editor.gd](../../scripts/ui/editor.gd) (`TrackEditor`, extends `VBoxContainer`).
+Implementation: [scripts/ui/editor.gd](../../scripts/ui/editor.gd) (`TrackEditor`, extends `TrackEditorAuthoring`).
 
 Referenced by [scripts/composition/main.gd](../../scripts/composition/main.gd), [scripts/composition/standalone_smoke.gd](../../scripts/composition/standalone_smoke.gd).
 

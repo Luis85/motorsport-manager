@@ -8,8 +8,8 @@ source: "scripts/ui/race_weekend/call_room.gd"
 symbol: "RaceCallRoom"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "VBoxContainer"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "RaceCallRoomIntent"
 ---
 
 # Director call room
@@ -47,7 +47,7 @@ present receives displayed evidence and any accepted receipt. choose stages an o
 
 ## Source and integration
 
-Implementation: [scripts/ui/race_weekend/call_room.gd](../../scripts/ui/race_weekend/call_room.gd) (`RaceCallRoom`, extends `VBoxContainer`).
+Implementation: [scripts/ui/race_weekend/call_room.gd](../../scripts/ui/race_weekend/call_room.gd) (`RaceCallRoom`, extends `RaceCallRoomIntent`).
 
 Referenced by [scripts/ui/race_director_workspace.gd](../../scripts/ui/race_director_workspace.gd).
 

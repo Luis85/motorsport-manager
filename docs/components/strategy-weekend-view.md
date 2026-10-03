@@ -8,8 +8,8 @@ source: "scripts/ui/strategy_weekend.gd"
 symbol: "StrategyWeekendView"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "WeekendView"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "StrategyWeekendPresentation"
 ---
 
 # Strategy-capable weekend layout
@@ -51,7 +51,7 @@ open_strategy targets an owned driver; targeted_command passes explicit payloads
 
 ## Source and integration
 
-Implementation: [scripts/ui/strategy_weekend.gd](../../scripts/ui/strategy_weekend.gd) (`StrategyWeekendView`, extends `WeekendView`).
+Implementation: [scripts/ui/strategy_weekend.gd](../../scripts/ui/strategy_weekend.gd) (`StrategyWeekendView`, extends `StrategyWeekendPresentation`).
 
 Referenced by [scripts/ui/weather_weekend.gd](../../scripts/ui/weather_weekend.gd).
 

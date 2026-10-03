@@ -4,11 +4,11 @@ title: "Editor Track page"
 description: "Edits circuit metadata, grid, start/finish, timing sectors and pit-lane configuration, and selects a vehicle preview with validation details."
 kind: "page"
 surface: "shipping"
-source: "scripts/ui/editor_inspector.gd"
+source: "scripts/ui/editor_inspector_circuit.gd"
 symbol: "EditorTrackPage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var track"
 ---
 
@@ -43,11 +43,11 @@ Name submits or commits on focus exit, guarded against inspector refresh. Vehicl
 
 ## Source and integration
 
-Implementation: [scripts/ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) (`var track`).
+Implementation: [scripts/ui/editor_inspector_circuit.gd](../../scripts/ui/editor_inspector_circuit.gd) (`var track`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/editor_inspector.gd` at `var track`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/editor_inspector_circuit.gd` at `var track`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

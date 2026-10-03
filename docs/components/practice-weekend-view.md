@@ -8,8 +8,8 @@ source: "scripts/ui/practice_weekend.gd"
 symbol: "PracticeWeekendView"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "PitwallWorkspace"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "PracticeWeekendReview"
 ---
 
 # Practice-capable weekend layout
@@ -52,7 +52,7 @@ open_practice and open_practice_workspace use the same per-driver drafts. primar
 
 ## Source and integration
 
-Implementation: [scripts/ui/practice_weekend.gd](../../scripts/ui/practice_weekend.gd) (`PracticeWeekendView`, extends `PitwallWorkspace`).
+Implementation: [scripts/ui/practice_weekend.gd](../../scripts/ui/practice_weekend.gd) (`PracticeWeekendView`, extends `PracticeWeekendReview`).
 
 Referenced by [scripts/composition/main.gd](../../scripts/composition/main.gd), [scripts/ui/public_rival_inspector.gd](../../scripts/ui/public_rival_inspector.gd), [scripts/ui/race_director_workspace.gd](../../scripts/ui/race_director_workspace.gd), [scripts/ui/replay_workspace.gd](../../scripts/ui/replay_workspace.gd).
 

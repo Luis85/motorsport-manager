@@ -8,8 +8,8 @@ source: "scripts/ui/track_canvas.gd"
 symbol: "TrackCanvas"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "Control"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "TrackCanvasAuthoring"
 ---
 
 # Track canvas
@@ -45,7 +45,7 @@ set_track accepts geometry and a displayed document; configure_presentation appl
 
 ## Source and integration
 
-Implementation: [scripts/ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) (`TrackCanvas`, extends `Control`).
+Implementation: [scripts/ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) (`TrackCanvas`, extends `TrackCanvasAuthoring`).
 
 Referenced by [scripts/composition/main.gd](../../scripts/composition/main.gd), [scripts/ui/battle_overlay.gd](../../scripts/ui/battle_overlay.gd), [scripts/ui/editor.gd](../../scripts/ui/editor.gd), [scripts/ui/main_menu.gd](../../scripts/ui/main_menu.gd), [scripts/ui/rejoin_overlay.gd](../../scripts/ui/rejoin_overlay.gd), [scripts/ui/replay_workspace.gd](../../scripts/ui/replay_workspace.gd), [scripts/ui/surface_lab.gd](../../scripts/ui/surface_lab.gd), [scripts/ui/track_canvas_gesture.gd](../../scripts/ui/track_canvas_gesture.gd). Additional consumers use the same adapter.
 

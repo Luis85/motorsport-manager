@@ -8,8 +8,8 @@ source: "scripts/ui/race_weekend/metric_chart.gd"
 symbol: "RaceMetricChart"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "Control"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "RaceMetricChartData"
 ---
 
 # Metric chart
@@ -46,7 +46,7 @@ present_samples preserves explicit positions and null gaps; present_cases keeps 
 
 ## Source and integration
 
-Implementation: [scripts/ui/race_weekend/metric_chart.gd](../../scripts/ui/race_weekend/metric_chart.gd) (`RaceMetricChart`, extends `Control`).
+Implementation: [scripts/ui/race_weekend/metric_chart.gd](../../scripts/ui/race_weekend/metric_chart.gd) (`RaceMetricChart`, extends `RaceMetricChartData`).
 
 Referenced by [scripts/ui/weather_panel.gd](../../scripts/ui/weather_panel.gd), [scripts/ui/weekend_support.gd](../../scripts/ui/weekend_support.gd), [scripts/ui/race_weekend/results_workspace.gd](../../scripts/ui/race_weekend/results_workspace.gd), [scripts/ui/race_weekend/telemetry_inspector.gd](../../scripts/ui/race_weekend/telemetry_inspector.gd).
 

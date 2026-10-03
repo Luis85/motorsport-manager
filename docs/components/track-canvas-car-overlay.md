@@ -4,11 +4,11 @@ title: "Canvas car layer"
 description: "Provides a separate mouse-transparent drawing layer for detached car frames and start lights."
 kind: "component"
 surface: "shared"
-source: "scripts/ui/track_canvas.gd"
-symbol: "TrackCanvas.CarOverlay"
+source: "scripts/ui/track_canvas_state.gd"
+symbol: "TrackCanvasState.CarOverlay"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "class CarOverlay"
 ---
 
@@ -40,11 +40,11 @@ TrackCanvas creates this full-rect child once. Its _draw delegates to host.draw_
 
 ## Source and integration
 
-Implementation: [scripts/ui/track_canvas.gd](../../scripts/ui/track_canvas.gd) (`class CarOverlay`).
+Implementation: [scripts/ui/track_canvas_state.gd](../../scripts/ui/track_canvas_state.gd) (`class CarOverlay`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/track_canvas.gd` at `class CarOverlay`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/track_canvas_state.gd` at `class CarOverlay`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

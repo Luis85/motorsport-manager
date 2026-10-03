@@ -8,8 +8,8 @@ source: "scripts/ui/tactical_plan_panel.gd"
 symbol: "TacticalPlanPanel"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
-extends: "VBoxContainer"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
+extends: "TacticalPlanReview"
 ---
 
 # Tactical plan panel
@@ -46,7 +46,7 @@ configure accepts RaceViewQuery. compare_now freezes evidence; approve submits t
 
 ## Source and integration
 
-Implementation: [scripts/ui/tactical_plan_panel.gd](../../scripts/ui/tactical_plan_panel.gd) (`TacticalPlanPanel`, extends `VBoxContainer`).
+Implementation: [scripts/ui/tactical_plan_panel.gd](../../scripts/ui/tactical_plan_panel.gd) (`TacticalPlanPanel`, extends `TacticalPlanReview`).
 
 Referenced by [scripts/ui/duel_workspace.gd](../../scripts/ui/duel_workspace.gd).
 

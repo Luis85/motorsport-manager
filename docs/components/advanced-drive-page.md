@@ -4,11 +4,11 @@ title: "Advanced Drive page"
 description: "Hosts selected-driver pace, engine, send/recall and physical pit controls in the retained base inspector."
 kind: "page"
 surface: "advanced"
-source: "scripts/ui/weekend.gd"
+source: "scripts/ui/weekend_inspector_builder.gd"
 symbol: "AdvancedDrivePage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var command_page"
 ---
 
@@ -49,11 +49,11 @@ Controls route through WeekendViewSupport.dispatch and the existing command adap
 
 ## Source and integration
 
-Implementation: [scripts/ui/weekend.gd](../../scripts/ui/weekend.gd) (`var command_page`).
+Implementation: [scripts/ui/weekend_inspector_builder.gd](../../scripts/ui/weekend_inspector_builder.gd) (`var command_page`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/weekend.gd` at `var command_page`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/weekend_inspector_builder.gd` at `var command_page`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

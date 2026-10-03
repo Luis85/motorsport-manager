@@ -4,11 +4,11 @@ title: "Editor World page"
 description: "Offers illustration presets and per-layer visibility/lock controls for the editor."
 kind: "page"
 surface: "shipping"
-source: "scripts/ui/editor_inspector.gd"
+source: "scripts/ui/editor_inspector_workspace.gd"
 symbol: "EditorWorldPage"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "var look"
 ---
 
@@ -43,11 +43,11 @@ Environment and season update `document.visual` through `perform` and are undoab
 
 ## Source and integration
 
-Implementation: [scripts/ui/editor_inspector.gd](../../scripts/ui/editor_inspector.gd) (`var look`).
+Implementation: [scripts/ui/editor_inspector_workspace.gd](../../scripts/ui/editor_inspector_workspace.gd) (`var look`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/editor_inspector.gd` at `var look`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/editor_inspector_workspace.gd` at `var look`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

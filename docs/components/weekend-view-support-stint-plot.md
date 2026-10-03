@@ -4,11 +4,11 @@ title: "Retained stint plot"
 description: "Draws the retained selected-driver fitted-stint history inside the base Advanced view."
 kind: "component"
 surface: "advanced"
-source: "scripts/ui/weekend_support.gd"
-symbol: "WeekendViewSupport.StintPlot"
+source: "scripts/ui/weekend_view_state.gd"
+symbol: "WeekendViewState.StintPlot"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 source_selector: "class StintPlot"
 ---
 
@@ -47,11 +47,11 @@ WeekendView supplies the chart query and driver selection. Drawing follows recor
 
 ## Source and integration
 
-Implementation: [scripts/ui/weekend_support.gd](../../scripts/ui/weekend_support.gd) (`class StintPlot`).
+Implementation: [scripts/ui/weekend_view_state.gd](../../scripts/ui/weekend_view_state.gd) (`class StintPlot`).
 
 ## Interface
 
-This entry is implemented inside `scripts/ui/weekend_support.gd` at `class StintPlot`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
+This entry is implemented inside `scripts/ui/weekend_view_state.gd` at `class StintPlot`; it is not a separate global GDScript class. Use the owning script's API and lifecycle.
 
 ## Related documentation
 

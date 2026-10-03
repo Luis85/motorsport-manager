@@ -8,8 +8,9 @@ source: "scripts/ui/race_weekend/minimal/strategy_comparison.gd"
 symbol: "MinimalStrategyComparison"
 status: "implemented"
 source_pr: 28
-source_commit: "c02b09585eccf90a26e1a3296386a3980b059069"
+source_commit: "dfb7cead8f01ea9b0b42a4b936b1d4c4e9bf21fa"
 extends: "VBoxContainer"
+source_selector: "extends VBoxContainer"
 ---
 
 # Minimal strategy comparison
@@ -47,6 +48,9 @@ Implementation: [scripts/ui/race_weekend/minimal/strategy_comparison.gd](../../s
 Referenced by [scripts/ui/race_weekend/minimal/workspace.gd](../../scripts/ui/race_weekend/minimal/workspace.gd).
 
 ## Interface
+
+`MinimalStrategyComparison` is the catalog name for this preloaded script; it is
+not a registered `class_name`. The workspace constructs it from its script resource.
 
 Primary presentation entry points:
 
