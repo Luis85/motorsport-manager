@@ -26,6 +26,7 @@ static func run(check: Callable) -> void:
 	)
 	if checkpoint.is_empty():
 		return
+	preload("res://tests/support/campaign_frozen_content_contracts.gd").run(checkpoint, check)
 	check.call(
 		(
 			not CampaignStarter.content(checkpoint).is_empty()

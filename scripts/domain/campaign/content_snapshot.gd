@@ -12,6 +12,8 @@ static func build(
 	var campaign = CampaignDefinition.from_record(definition)
 	if campaign == null or not race_initial is Dictionary:
 		return {}
+	if not race_initial.get("vehicle_definition") is Dictionary:
+		return {}
 	var options = RaceContentSnapshot.options(race_initial)
 	options.erase("performance_profiles")
 	var data = {
@@ -141,9 +143,24 @@ static func _race_options_error(data: Dictionary, campaign: CampaignDefinition) 
 			return "Campaign race option disagrees with its frozen weekend setting: " + key
 	if data.vehicle != weekend.vehicle_id:
 		return "Campaign vehicle disagrees with its frozen weekend."
+	var runtime_error = _runtime_definition_error(options)
+	if not runtime_error.is_empty():
+		return runtime_error
 	var record = weekend.to_record()
 	if not _references_agree(record, options):
 		return "Campaign weekend references disagree with their frozen runtime definitions."
 	if not RaceContentSnapshot.valid_mechanics(options):
 		return "Campaign mechanic profile disagrees with its frozen weekend."
+	return ""
+
+
+static func _runtime_definition_error(options: Dictionary) -> String:
+	if RosterDefinition.decode_snapshot(options.get("roster_definition")) == null:
+		return "Campaign roster closure has an invalid runtime definition."
+	if RaceTyreRules.from_snapshot(options.get("tyre_definition")) == null:
+		return "Campaign tyre closure has an invalid runtime definition."
+	if SetupDefinition.from_record(options.get("setup_definition")) == null:
+		return "Campaign setup closure has an invalid runtime definition."
+	if RaceTuningDefinition.from_record(options.get("tuning_definition")) == null:
+		return "Campaign tuning closure has an invalid runtime definition."
 	return ""
