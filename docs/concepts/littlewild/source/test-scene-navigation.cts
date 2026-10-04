@@ -18,7 +18,11 @@ const root=globalThis as unknown as {
 };
 const X=root.LWScenarios,N=root.LWSceneNavigation,C=root.LWContent;
 const results:{name:string;passed:boolean;error?:string}[]=[];
-function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
+function test(name:string,work:()=>void):void{
+ const started=Date.now();console.log('START '+name);
+ try{work();results.push({name,passed:true});console.log('PASS '+name+' ('+(Date.now()-started)+' ms)');}
+ catch(error){results.push({name,passed:false,error:String(error)});console.error('FAIL '+name+' ('+(Date.now()-started)+' ms)',error);}
+}
 const native=(e:LWContentPorts.ScenarioEngine):Native=>e as Native;
 const launch=(pack:LWContentPorts.ScenarioPack,id='home'):Native=>native(X.commitScene(X.prepareScene(pack,id)));
 const move=(engine:Native,id:string):Native=>native(N.commit(engine,N.prepare(engine,id)));

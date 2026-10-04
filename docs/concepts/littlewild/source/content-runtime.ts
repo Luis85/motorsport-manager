@@ -101,11 +101,12 @@
           }
           return;
         }
-        for (const [k, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(v))) {
-          if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', path + '/' + pointer(k), 'Reserved object property is not allowed.')]);
-          if (!descriptor.enumerable || descriptor.get || descriptor.set)
-            invalid(path + '/' + pointer(k), 'Accessors and hidden properties are not JSON content.');
-          walk(descriptor!.value, path + '/' + pointer(k), depth + 1);
+        for (const k of Object.getOwnPropertyNames(v)) {
+          const descriptor = Object.getOwnPropertyDescriptor(v, k), childPath = path + '/' + pointer(k);
+          if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', childPath, 'Reserved object property is not allowed.')]);
+          if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
+            invalid(childPath, 'Accessors and hidden properties are not JSON content.');
+          walk(descriptor!.value, childPath, depth + 1);
         }
       } finally { ancestors.delete(v); }
     }

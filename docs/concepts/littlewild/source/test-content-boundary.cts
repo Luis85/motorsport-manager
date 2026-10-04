@@ -13,6 +13,43 @@ test('Content copy rejects symbols, sparse arrays, hidden properties and cycles'
  const hidden={a:1};Object.defineProperty(hidden,'x',{value:2});assert.throws(()=>C.copy(hidden),/hidden properties/);
  const cycle={};cycle.self=cycle;assert.throws(()=>C.copy(cycle),/Cyclic/);
 });
+test('Descriptor inspection retains own-name diagnostic order and never reads frozen accessors',()=>{
+ const issue=(value:unknown,code:string,path:string)=>assert.throws(()=>C.copy(value),(error:unknown)=>{
+  assert(error instanceof C.ContentError);assert.equal(error.issues[0].code,code);assert.equal(error.issues[0].path,path);return true;
+ });
+ const ordered={};Object.defineProperty(ordered,'2',{value:1});Object.defineProperty(ordered,'1',{enumerable:true,value:Infinity});
+ issue(ordered,'FINITE_NUMBER','/1');
+ let reads=0;const accessor={};Object.defineProperty(accessor,'a/b~c',{enumerable:true,get(){reads++;return 1;}});Object.freeze(accessor);
+ issue(accessor,'JSON_ONLY','/a~1b~0c');assert.equal(reads,0);
+ class InheritedAccessor{get value(){reads++;return 1;}}
+ issue(new InheritedAccessor(),'PLAIN_OBJECT','/');assert.equal(reads,0);
+ const reserved={};Object.defineProperty(reserved,'constructor',{value:1});issue(reserved,'UNSAFE_KEY','/constructor');
+ const hidden={};Object.defineProperty(hidden,'a/b~c',{value:1});issue(hidden,'JSON_ONLY','/a~1b~0c');
+ const disappearing=new Proxy({}, {ownKeys:()=>['lost'],getOwnPropertyDescriptor:()=>undefined});
+ issue(disappearing,'JSON_ONLY','/lost');
+});
+test('Validated copies preserve null prototypes and array species while expanding detached aliases',()=>{
+ const shared={list:[{value:1}]},dictionary=Object.create(null);dictionary.shared=shared;
+ class JsonList extends Array<unknown>{}
+ const list=new JsonList();list.push(shared);const input={left:shared,right:shared,dictionary,list};
+ const copied=C.copy(input),parsed=C.parse(input);
+ for(const output of [copied,parsed]){
+  assert.equal(Object.getPrototypeOf(output.dictionary),null);assert(output.list instanceof JsonList);
+  assert.deepEqual(output.left,shared);assert.notStrictEqual(output.left,shared);assert.notStrictEqual(output.left,output.right);
+  assert.notStrictEqual(output.left,output.dictionary.shared);assert.notStrictEqual(output.left,output.list[0]);
+  output.left.list[0].value=9;assert.equal(output.right.list[0].value,1);assert.equal(shared.list[0].value,1);
+ }
+});
+test('Descriptor traversal retains exact occurrence, depth, Unicode and UTF-8 admission budgets',()=>{
+ assert.doesNotThrow(()=>C.copy(Array(59999).fill(0)));assert.throws(()=>C.copy(Array(60000).fill(0)),/too deeply nested|too many values/);
+ const shared=Array(29999).fill(0);assert.throws(()=>C.copy({left:shared,right:shared}),/too deeply nested|too many values/);
+ const nested=(depth:number)=>{let value:unknown=0;for(let i=0;i<depth;i++)value={child:value};return value;};
+ assert.doesNotThrow(()=>C.copy(nested(24)));assert.throws(()=>C.copy(nested(25)),/too deeply nested|too many values/);
+ assert.doesNotThrow(()=>C.copy({text:'🌱'.repeat(10000)}));assert.throws(()=>C.copy({text:'🌱'.repeat(10001)}),/10,000/);
+ const input={text:'🌱'.repeat(20)},bytes=Buffer.byteLength(JSON.stringify(input),'utf8');
+ assert.deepEqual(C.parse(input,bytes),input);assert.deepEqual(C.parse(JSON.stringify(input),bytes),input);
+ assert.throws(()=>C.parse(input,bytes-1),/file size limit/);assert.throws(()=>C.parse(JSON.stringify(input),bytes-1),/file size limit/);
+});
 test('Public fingerprints reject behavior-shaped objects without invoking accessors',()=>{
  let touched=0;const doc={schemaVersion:1,library:{id:'x',version:1},components:{}};
  Object.defineProperty(doc.components,'bad',{enumerable:true,get(){touched++;return 1;}});
