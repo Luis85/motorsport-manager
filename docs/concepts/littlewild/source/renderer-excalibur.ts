@@ -17,15 +17,17 @@
   const retained=context.canvas.getContext('webgl2',{antialias:false,premultipliedAlpha:false,alpha:true,depth:false,powerPreference:'high-performance',preserveDrawingBuffer:true});
   if(!retained)throw Error('ExcaliburJS requires an available WebGL2 context.');
   const graphics=new library.ExcaliburGraphicsContextWebGL({canvasElement:context.canvas,context:retained,antialiasing:false,multiSampleAntialiasing:false,backgroundColor:library.Color.fromHex('#dfeade')});
-  let disposed=false,labelIndex=0;const labels:Label[]=[];const polygons=new Map<string,Polygon>(),colors=new Map<string,Color>();
+  let disposed=false,released=false,labelIndex=0;const labels:Label[]=[];const polygons=new Map<string,Polygon>(),colors=new Map<string,Color>();
   function color(value:string,opacity=1):Color {const key=value+':'+opacity;let found=colors.get(key);if(!found){found=library!.Color.fromHex(value);found.a=opacity;if(colors.size>=128)colors.clear();colors.set(key,found);}return found;}
-  function release(){if(disposed)return;disposed=true;polygons.clear();colors.clear();graphics.dispose();}context.onDispose(release);
+  const quiesce=()=>{disposed=true;};
+  function release(){quiesce();if(released)return;released=true;polygons.clear();colors.clear();graphics.dispose();}
+  context.onDispose(quiesce);if(context.onRelease)context.onRelease(release);else context.onDispose(release);
   const painter:LittlewildRenderer2D.Painter={
    polygon(points,fill,opacity=1){if(!points.length)return;const x=Math.min(...points.map(p=>p.x)),y=Math.min(...points.map(p=>p.y));const normalized=points.map(p=>new library.Vector(p.x-x,p.y-y)),key=fill+':'+opacity+':'+normalized.map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(';');let shape=polygons.get(key);if(!shape){shape=new library.Polygon({points:normalized,color:color(fill,opacity)});if(polygons.size>=2048){graphics.flush();for(const cached of polygons.values())graphics.textureLoader.delete(cached._bitmap);polygons.clear();}polygons.set(key,shape);}shape.draw(graphics,x,y);},
    circle(x,y,r,fill){graphics.drawCircle(new library.Vector(x,y),r,color(fill));},
    text(value,x,y,fill,size){if(labelIndex>=160)return;let label=labels[labelIndex];if(!label){label=new library.Text({text:value,font:new library.Font({family:'sans-serif',size,color:color(fill)}),color:color(fill)});labels.push(label);}label.text=value;label.color=color(fill);label.font.size=size;label.draw(graphics,x-label.width/2,y);labelIndex++;}
   };
-  return {redrawPolicy:'projection',previewReuse:'timeline',mount(){},resize(viewport){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.updateViewport({width:viewport.width,height:viewport.height});},
+  return {redrawPolicy:'projection',previewReuse:'timeline',retirementPolicy:'deferred',quiesce,mount(){},resize(viewport){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.updateViewport({width:viewport.width,height:viewport.height});},
    draw(frame){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.beginDrawLifecycle();try{graphics.clear();labelIndex=0;if(library.FontCache.cacheSize>256)library.FontCache.clearCache();root.LWRendererScene2D.draw(frame,context,painter);graphics.flush();}finally{graphics.endDrawLifecycle();}},
    dispose:release,project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
  });

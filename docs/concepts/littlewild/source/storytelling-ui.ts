@@ -8,6 +8,8 @@
   const input=document.createElement('input');input.type='file';input.id='storytelling-import';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
   let preview:LWStorytellingUI.Preview|null=null,mounted:HTMLCanvasElement|null=null,previewSession:LWSceneEditor.Session|null=null,previewKey='',readId=0;
   let cancelPreparation:(()=>void)|null=null,pendingPreparation=false,preparationGeneration=0;
+  let retirement:Promise<void>|null=null;
+  let cleanupNotice:HTMLElement|null=null;
   let failedPreparation:{session:LWSceneEditor.Session;key:string;canvas:HTMLCanvasElement}|null=null;
   let review:{pack:LWContentPorts.ScenarioPack;session:LWSceneEditor.Session;revision:number}|null=null;
   const e=host.esc,copy=<T>(v:T):T=>structuredClone(v);
@@ -17,7 +19,27 @@
   function clip():LWStorytelling.Cutscene{const found=pack().storytelling?.cutscenes.find(c=>c.id===state.clipId);if(!found)throw Error('Select a cutscene first.');return found;}
   function board():LWStorytelling.Storyboard{const found=pack().storytelling?.storyboards.find(b=>b.id===state.boardId);if(!found)throw Error('Select a storyboard first.');return found;}
   function cancelPreparationJob():void{preparationGeneration++;const cancel=cancelPreparation;cancelPreparation=null;pendingPreparation=false;cancel?.();}
-  function stopPreview():void{try{cancelPreparationJob();}finally{try{preview?.dispose();}finally{preview=null;mounted=null;previewSession=null;previewKey='';failedPreparation=null;}}}
+  function cleanupFailed(message:string):void{
+   try{host.toast(message,true);}catch(error){
+    if(!cleanupNotice?.isConnected){cleanupNotice=document.createElement('p');cleanupNotice.className='storytelling-feedback is-error';cleanupNotice.setAttribute('role','alert');document.body.append(cleanupNotice);}
+    cleanupNotice.textContent=message+'; feedback failed: '+String(error);
+   }
+  }
+  function releasePreview(instance:LWStorytellingUI.Preview):void{
+   let release:(()=>Promise<void>)|undefined;
+   try{release=host.deferPreviewCleanup?instance.retire?.():undefined;}
+   catch(error){try{instance.dispose();}finally{cleanupFailed('Preview retirement failed; attempted synchronous disposal: '+String(error));}return;}
+   if(!release){instance.dispose();return;}
+   // Replacement admission waits below, so this owner retains at most one batch.
+   let finish=()=>{};const completion=new Promise<void>(resolve=>{finish=resolve;});retirement=completion;
+   let started=false;
+   const work=()=>{if(started)return;started=true;void Promise.resolve().then(release).catch(error=>{cleanupFailed('Detached preview cleanup failed: '+String(error));}).finally(()=>{if(retirement===completion)retirement=null;finish();});};
+   try{host.deferPreviewCleanup!(work);}catch(error){work();cleanupFailed('Preview cleanup scheduling failed; releasing resources directly: '+String(error));}
+  }
+  function stopPreview():void{
+   const removed=preview;preview=null;mounted=null;previewSession=null;previewKey='';failedPreparation=null;
+   try{cancelPreparationJob();}finally{if(removed)releasePreview(removed);}
+  }
   function sameClip():boolean{return previewKey.slice(0,previewKey.lastIndexOf(':'))===state.clipId;}
   function redraw():void{
    const current=host.session(),retain=(preview||pendingPreparation)&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&sameClip()&&(previewKey===state.clipId+':'+current?.revision||!!preview?.update);
@@ -49,7 +71,7 @@
    const current=value?.cutscenes.find(c=>c.id===state.clipId);if(!current?.tracks.some(t=>t.id===state.trackId)){state.trackId='';state.keyIndex=-1;}
   }
   function render():string{
-   if(!host.session())return '';normalize();const p=pack();let entities:LWSceneGraph.Entity[]=[];
+   if(!host.session())return '';if(!state.active)return root.LWStorytellingView.entry(e);normalize();const p=pack();let entities:LWSceneGraph.Entity[]=[];
    const selected=p.storytelling?.cutscenes.find(c=>c.id===state.clipId);if(selected)entities=session().entities(selected.sceneId);
    const markup=root.LWStorytellingView.render({presets:root.LWAnimationCatalog?.list()??['sparkles','orbit','ripple'].map(id=>({id,name:id,description:''})),selectedSceneId:host.sceneId()??p.scenes[0]?.id??'',pack:p,state,entities,revision:session().revision,canUndo:session().canUndo,canRedo:session().canRedo,status:preview?.status()??null,esc:e});
    const reviewing=review?`<section class="storytelling-import-review" aria-label="Storytelling import review"><h3>Review storytelling import</h3><p>${review.pack.storytelling?.storyboards.length??0} storyboards and ${review.pack.storytelling?.cutscenes.length??0} cutscenes replace the draft’s storytelling data. Scene references and timelines have passed complete pack validation.</p><button class="btn" type="button" data-story="cancel-import">Cancel</button><button class="btn primary" type="button" data-story="apply-import">Apply storytelling to draft</button></section>`:'';
@@ -106,8 +128,11 @@
       }catch(error){rejected(error);}
       finally{if(generation===preparationGeneration)pendingPreparation=false;}
      };
-     try{if(host.deferPreview)cancelPreparation=host.deferPreview(prepare);else prepare();}
-     catch(error){rejected(error);preparationGeneration++;pendingPreparation=false;}
+     const schedule=()=>{if(generation!==preparationGeneration||!pendingPreparation||!ownsMount())return;
+      try{if(host.deferPreview)cancelPreparation=host.deferPreview(prepare);else prepare();}
+      catch(error){rejected(error);preparationGeneration++;pendingPreparation=false;}
+     };
+     if(retirement)void retirement.then(schedule);else schedule();
     }
    }
    if(pendingPreparation)return;
@@ -179,7 +204,7 @@
    if(host.modal()!=='scene-editor'||!(ev.target instanceof Element))return;const button=ev.target.closest<HTMLButtonElement>('[data-story]');if(!button||button.disabled)return;
    const action=button.dataset.story,id=button.dataset.id??'';
    try{
-    if(action==='open'||action==='close'){state.active=action==='open';state.error='';state.notice='';redraw();focus(state.active?'[data-story="boards"]':'[data-story="open"]');return;}
+    if(action==='open'||action==='close'){state.active=action==='open';if(!state.active)cancelRead();state.error='';state.notice='';redraw();focus(state.active?'[data-story="boards"]':'[data-story="open"]');return;}
     if(action==='boards'||action==='timeline'){state.tab=action;state.creating='';state.error='';redraw();return;}
     if(action==='new-board'||action==='new-clip'){state.creating=action==='new-board'?'board':'clip';redraw();focus('[data-story-form=create] input[name=id]');return;}
     if(action==='cancel-create'){const target=state.creating==='board'?'new-board':'new-clip';state.creating='';redraw();focus('[data-story="'+target+'"]');return;}

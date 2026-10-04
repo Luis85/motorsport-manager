@@ -18,12 +18,12 @@
  function create2D(context:LittlewildRenderer.Context):LittlewildRenderer.Instance {
   const canvas=context.canvas,c=canvas.getContext('2d');if(!c)throw Error('Detached Canvas context is unavailable.');let disposed=false;
   const painter:LittlewildRenderer2D.Painter={polygon(points,color,opacity=1){if(!points.length)return;c.globalAlpha=opacity;c.fillStyle=color;c.beginPath();points.forEach((p,index)=>index?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();c.fill();c.globalAlpha=1;},circle(x,y,r,color){c.fillStyle=color;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();},text(value,x,y,color,size){c.fillStyle=color;c.font=size+'px sans-serif';c.textAlign='center';c.fillText(value,x,y);}};
-  return{redrawPolicy:'projection',previewReuse:'timeline',mount(){},draw(frame){if(disposed)return;root.LWRendererScene2D.draw(frame,context,painter);},resize(viewport){canvas.width=viewport.width;canvas.height=viewport.height;},dispose(){disposed=true;},project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
+  return{redrawPolicy:'projection',previewReuse:'timeline',retirementPolicy:'deferred',quiesce(){disposed=true;},mount(){},draw(frame){if(disposed)return;root.LWRendererScene2D.draw(frame,context,painter);},resize(viewport){canvas.width=viewport.width;canvas.height=viewport.height;},dispose(){disposed=true;},project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
  }
  function create3D(context:LittlewildRenderer.Context):LittlewildRenderer.Instance {
   const canvas=context.canvas,T=root.THREE,scene=new T.Scene(),camera=new T.OrthographicCamera(-10,10,8,-8,.01,1000),geometries=new Map<string,Geometry>(),materials:Material[]=[];
   const terrain=new T.Group(),objects=new T.Group();scene.add(terrain,objects);
-  const owner={camera:{x:0,y:0,z:1},environment:{background:'#e3eadd'}};let disposed=false,terrainStamp='',renderer:Renderer;
+  const owner={camera:{x:0,y:0,z:1},environment:{background:'#e3eadd'}};let disposed=false,released=false,terrainStamp='',renderer:Renderer;
   try{const gl=canvas.getContext('webgl2',{antialias:false,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('Software rendering');renderer=new T.WebGLRenderer({canvas,context:gl,antialias:false,alpha:false,preserveDrawingBuffer:true});}catch{renderer=new root.LWSoftware3D(canvas,owner);}
   scene.add(new T.HemisphereLight('#fff2d4','#75968a',2));const light=new T.DirectionalLight('#ffe3b0',2.7);light.position.set(-3,25,15);scene.add(light);
   const figures=new Map<string,{root:Object3D;signature:string;materials:Material[];handles:Map<string,Object3D>}>();
@@ -44,7 +44,6 @@
    for(const stair of floor.stairs)for(let step=0;step<4;step++)kit.piece(terrain,'box',stair.x,step*.06+.03,stair.y-.3+step*.2,.7,.06,.2,'#b49d6d',0,{});
    kit.piece(terrain,'box',floor.door.x,.012,floor.door.y,.8,.03,.8,'#a2ba8d',0,{});
   }
-  function clear(group:Object3D){for(const child of [...figures.values()])if(group===objects){objects.remove(child.root);child.materials.forEach(material=>material.dispose());}if(group===objects)figures.clear();}
   function figure(key:string,category:'actor'|'building'|'item',id:string,model:string,options:Record<string,unknown>={}):Object3D|null {
    const asset=context.query.asset(category,id);if(!asset)return null;const models=record(asset.models);if(!models[model])model='world';if(!models[model])return null;
    const signature=JSON.stringify([asset,model,options]),old=figures.get(key);if(old?.signature===signature)return old.root;
@@ -71,8 +70,9 @@
    const px=frame.camera.x/width*half*2,py=frame.camera.y/height*half*2;camera.position.set(cx+22-px,25+py,cy+22-px);camera.lookAt(cx-px,py,cy-px);
    renderer.setViewport?.(surface?.x??0,surface?frame.viewport.height-surface.y-surface.height:0,width,height);renderer.setScissor?.(surface?.x??0,surface?frame.viewport.height-surface.y-surface.height:0,width,height);renderer.setScissorTest?.(!!surface);owner.camera={...frame.camera};const background=typeof frame.environment?.background==='string'?frame.environment.background:'#e3eadd';owner.environment.background=background;scene.background=new T.Color(background);renderer.render(scene,camera);
   }
-  function release(){if(disposed)return;disposed=true;clear(objects);terrain.traverse(node=>node.material?.dispose());materials.forEach(material=>material.dispose());geometries.forEach(geometry=>geometry.dispose());renderer.dispose();renderer.forceContextLoss?.();}
-  context.onDispose(release);return{redrawPolicy:'projection',previewReuse:'timeline',mount(){},draw,resize(viewport){renderer.setSize(viewport.width,viewport.height,false);},dispose:release,project(point,frame){const vector=new T.Vector3(point.x,(frame.tiles.find(tile=>tile.x===Math.round(point.x)&&tile.y===Math.round(point.y))?.height??0)*.25,point.y);vector.project(camera);const surface=frame.room?frame.interiorView?.surface:null;return{x:(surface?.x??0)+(vector.x+1)*(surface?.width??frame.viewport.width)/2,y:(surface?.y??0)+(1-vector.y)*(surface?.height??frame.viewport.height)/2};}};
+  const quiesce=()=>{disposed=true;};
+  function release(){quiesce();if(released)return;released=true;const errors:unknown[]=[],attempt=(work:()=>void)=>{try{work();}catch(error){errors.push(error);}};for(const entry of figures.values()){attempt(()=>objects.remove(entry.root));for(const material of entry.materials)attempt(()=>material.dispose());}figures.clear();terrain.traverse(node=>{if(node.material)attempt(()=>node.material!.dispose());});for(const material of materials)attempt(()=>material.dispose());for(const geometry of geometries.values())attempt(()=>geometry.dispose());attempt(()=>renderer.dispose());attempt(()=>renderer.forceContextLoss?.());if(errors.length)throw new AggregateError(errors,'Three observer resource release failed.');}
+  context.onDispose(quiesce);if(context.onRelease)context.onRelease(release);else context.onDispose(release);return{redrawPolicy:'projection',previewReuse:'timeline',retirementPolicy:'deferred',quiesce,mount(){},draw,resize(viewport){renderer.setSize(viewport.width,viewport.height,false);},dispose:release,project(point,frame){const vector=new T.Vector3(point.x,(frame.tiles.find(tile=>tile.x===Math.round(point.x)&&tile.y===Math.round(point.y))?.height??0)*.25,point.y);vector.project(camera);const surface=frame.room?frame.interiorView?.surface:null;return{x:(surface?.x??0)+(vector.x+1)*(surface?.width??frame.viewport.width)/2,y:(surface?.y??0)+(1-vector.y)*(surface?.height??frame.viewport.height)/2};}};
  }
  root.LWRendererObserver={create(context:LittlewildRenderer.Context,dimension:LittlewildRenderer.Dimension){return dimension==='3d'?create3D(context):create2D(context);}};
 })(globalThis);

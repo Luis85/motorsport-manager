@@ -201,11 +201,90 @@ async function retargetContract():Promise<void>{
  }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
  finally{release();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
 }
+async function retirementContract():Promise<void>{
+ const name='Explicit preview retirement stops ownership immediately and releases every captured resource once, including errors and late preparation';
+ const keys=['document','LWStorytellingPreview','LWRendererObserver','LWAnimations','LWStorytellingRenderer','LWScenarios','LWStorytelling','LWStorytellingEditorPreview','p5','LWAnimationCatalogRecords','LWAnimationCatalog'];
+ const prior=new Map(keys.map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)])),nativeBefore=JSON.stringify(engine);let unregister=()=>{};
+ try{
+  delete require.cache[require.resolve('./storytelling-editor-preview.js')];require('./storytelling-editor-preview.js');
+  const base=root.LWRendererFrame.create(engine,options);
+  for(const mode of ['opted','errors','custom','pending','candidate','drain','wrapped'] as const){
+   const counts={draw:0,mount:0,dispose:0,lifecycle:0,resource:0,extra:0,animation:0,quiesce:0,pb:0,wrapper:0};
+   const canvas=Object.assign(new EventTarget(),{dataset:{},style:{},width:800,height:600,isConnected:true,parentElement:null as unknown,remove(){this.isConnected=false;}});
+   const overlay={dataset:{},style:{},width:0,height:0,isConnected:true,remove(){this.isConnected=false;}};
+   const container={clientWidth:800,clientHeight:600,querySelector:()=>canvas,prepend(){},append(){}};canvas.parentElement=container;
+   let context:LittlewildRenderer.Context|null=null,resolveFactory:(value:LittlewildRenderer.Instance)=>void=()=>{},resolveAnimation:(value:LittlewildRenderer.SwitchResult)=>void=()=>{},finishResource:()=>void=()=>{};
+   const resourceDone=new Promise<void>(resolve=>{finishResource=resolve;});
+   const backend:LittlewildRenderer.Instance={...(mode==='custom'?{}:{retirementPolicy:'deferred' as const}),quiesce(){counts.quiesce++;},mount(){counts.mount++;},resize(){},draw(){counts.draw++;},dispose(){counts.dispose++;if(mode==='errors'||mode==='custom')throw Error('Backend disposal failed');}};
+   const factory=(value:LittlewildRenderer.Context)=>{context=value;value.onDispose(()=>{counts.lifecycle++;if(mode==='errors')throw Error('Lifecycle failed');});value.onRelease!(()=>{counts.resource++;return resourceDone;});value.onRelease!(()=>{counts.extra++;if(mode==='errors')throw Error('Resource failed');});return mode==='pending'||mode==='candidate'?new Promise<LittlewildRenderer.Instance>(resolve=>{resolveFactory=resolve;}):Promise.resolve(backend);};
+   let animationFinal:Promise<void>|null=null;
+   const layer:LWAnimations.Layer={ready:mode==='candidate'?new Promise(resolve=>{resolveAnimation=resolve;}):Promise.resolve({ok:true}),looping:false,draw(){},dispose(){counts.animation++;},retire(){overlay.remove();return()=>animationFinal??=(async()=>{counts.animation++;if(mode==='errors')throw Error('p5 removal failed');})();}};
+   const status:LWStorytelling.Status={cutsceneId:'clip',sceneId:'scene',state:'ready',time:0,duration:5,completion:0,generation:0};
+   const playback:LWStorytelling.Playback={status:()=>({...status}),sample:()=>({cutsceneId:'clip',sceneId:'scene',time:0,duration:5,poses:[],camera:{},animations:[]}),play(){},pause(){},resume(){},stop(){},replay(){},seek(){},skip(){},advance(){},drainEvents:()=>[],dispose(){counts.pb++;status.state='disposed';if(mode==='errors')throw Error('Playback disposal failed');}};
+   Object.assign(globalThis,{document:{createElement:()=>overlay},LWStorytellingRenderer:previewApi,LWStorytellingPreview:{create:()=>({frame:()=>base,asset:()=>null,definition:()=>null})},LWRendererObserver:{create:()=>backend},LWAnimations:{create:()=>layer},LWScenarios:{validate:(pack:LWContentPorts.ScenarioPack)=>({ok:true,pack})},LWStorytelling:{create:()=>playback}});
+   unregister=registry.registerAsync(metadata('retirement-test'),factory);
+   const pack={scenes:[{id:'scene',graph:{rendering:{dimension:'2d',rendererId:'retirement-test'}}}],storytelling:{cutscenes:[{id:'clip',sceneId:'scene'}]}} as unknown as LWContentPorts.ScenarioPack;
+   const renderer=previewApi!.create(container as unknown as HTMLElement,pack,'scene',playback);
+   // Compose against this exact scoped renderer so PB ownership is tested too.
+   (globalThis as unknown as {LWStorytellingRenderer:LWStorytellingRenderer.Api}).LWStorytellingRenderer={create:()=>renderer};
+   const composition=(globalThis as unknown as {LWStorytellingEditorPreview:{create(canvas:HTMLCanvasElement,pack:LWContentPorts.ScenarioPack,id:string):LWStorytellingUI.Preview}}).LWStorytellingEditorPreview.create(canvas as unknown as HTMLCanvasElement,pack,'clip');
+   if(mode==='pending'){
+    assert.equal(composition.retire!(),undefined);assert.equal(canvas.isConnected,true);assert.equal(counts.pb,0,'Unresolved factories cannot imply future retirement permission');
+    composition.dispose();resolveFactory(backend);finishResource();assert.equal((await composition.ready).ok,false);await Promise.resolve();await Promise.resolve();assert.equal(counts.dispose,1);assert.equal(counts.mount,0);assert.equal(counts.pb,1);
+   }else if(mode==='custom'||mode==='wrapped'){
+    assert((await composition.ready).ok);
+    if(mode==='wrapped'){const originalDispose=renderer.dispose;renderer.dispose=function(){counts.wrapper++;return Reflect.apply(originalDispose,this,[]);};}
+    assert.equal(composition.retire!(),undefined);assert.equal(canvas.isConnected,true);assert.equal(counts.lifecycle,0);assert.equal(counts.animation,0,'Undefined retirement leaves p5 ownership unchanged');assert.equal((await composition.ready).ok,true);
+    if(mode==='custom')assert.throws(()=>composition.dispose(),/disposal/);else{composition.dispose();assert.equal(counts.wrapper,1,'An in-place renderer lifecycle wrapper keeps synchronous disposal');}finishResource();assert.equal(counts.pb,1,'Synchronous backend errors cannot skip playback disposal');assert.equal(counts.resource,1);assert.equal(counts.extra,1);
+   }else{
+    if(mode==='candidate'){resolveFactory(backend);for(let turn=0;turn<8;turn++)await Promise.resolve();assert.equal(counts.mount,0);}
+    else assert((await composition.ready).ok);
+    const originalDispose=renderer.dispose;renderer.dispose=function(){counts.wrapper++;return Reflect.apply(originalDispose,this,[]);};
+    assert.equal(composition.retire!(),undefined,'A changed scoped renderer disposal hook cannot implicitly inherit retirement');assert.equal(counts.lifecycle,0);assert.equal(counts.pb,0);assert.equal(canvas.isConnected,true);renderer.dispose=originalDispose;
+    const copiedRenderer={...renderer,dispose(){counts.wrapper++;renderer.dispose();}};assert.equal(copiedRenderer.retire!(),undefined,'Copied scoped retirement cannot bypass a new lifecycle owner');
+    const copied={...composition,dispose(){counts.wrapper++;composition.dispose();}};assert.equal(copied.retire!(),undefined,'Copied composition retirement has no effects');assert.equal(counts.wrapper,0);assert.equal(counts.pb,0);assert.equal(overlay.isConnected,true);
+    const explicit={...composition,retire(){return composition.retire!();},dispose(){counts.wrapper++;composition.dispose();}};
+    const draws=counts.draw,finalize=explicit.retire();assert(finalize,mode+' explicit delegation must capture the original eligible owner');assert.equal(canvas.isConnected,false);assert.equal(overlay.isConnected,false);assert.equal(counts.pb,1);
+    assert((context as unknown as LittlewildRenderer.Context).signal.aborted);assert.equal(counts.lifecycle,1);assert.equal(counts.resource,0);assert.equal(counts.dispose,0);
+    assert.throws(()=>renderer.snapshot(),/disposed/);assert.equal(renderer.updatePlayback(playback),false);renderer.draw(0,0);assert.equal(counts.draw,draws);assert.throws(()=>composition.play(),/closed/);
+    assert.equal(composition.retire!(),undefined);if(mode==='drain')composition.dispose();const completion=finalize();assert.equal(finalize(),completion);let completed=false;void completion.then(()=>{completed=true;},()=>{completed=true;});
+    await Promise.resolve();assert.equal(counts.dispose,1);assert.equal(counts.resource,1);assert.equal(counts.extra,1);assert.equal(completed,false,'The release Promise retains asynchronous resource ownership');
+    finishResource();if(mode==='errors')await assert.rejects(completion,error=>{
+     const messages=(error:unknown):string[]=>error instanceof AggregateError?error.errors.flatMap(messages):[String(error)];
+     const collected=messages(error);for(const expected of ['Backend disposal','Lifecycle','Resource','p5 removal','Playback disposal'])assert(collected.some(value=>value.includes(expected)),expected+' must remain observable after all releases');return true;
+    });else await completion;
+    if(mode==='candidate'){resolveAnimation({ok:true});assert.equal((await composition.ready).ok,false);await Promise.resolve();assert.equal(counts.mount,0);assert.equal(counts.dispose,1,'Late readiness cannot republish or double-release a retired actual candidate');}
+    assert.equal(counts.animation,1);assert.equal(finalize(),completion);assert.equal(counts.dispose,1);assert.equal(counts.pb,1);
+    if(mode!=='errors'){composition.dispose();await Promise.resolve();assert.equal(counts.dispose,1);}
+   }
+   assert.equal(getEventListeners(canvas,'contextrestored').length,0);assert.equal(JSON.stringify(engine),nativeBefore);unregister();unregister=()=>{};
+  }
+  // Exercise real layer cancellation while p5 is awaiting its own presetup.
+  require('./animation-catalog.js');require('./renderer-animations.js');const animations=(globalThis as unknown as {LWAnimations:LWAnimations.Api}).LWAnimations;
+  let pendingSketch:Sketch|null=null,removeCalls=0,adoptions=0,reported=0;const savedError=console.error;
+  class Sketch {
+   setup=()=>{};draw=()=>{};constructor(configure:(value:Sketch)=>void){configure(this);pendingSketch=this;}
+   noLoop(){}isLooping(){return false;}pixelDensity(){}push(){}pop(){}clear(){}resizeCanvas(){}createCanvas(){adoptions++;}redraw(){return Promise.resolve();}
+   remove():Promise<void>{removeCalls++;return Promise.reject(Error('Injected pending p5 removal rejection'));}
+  }
+  Object.assign(globalThis,{p5:Sketch});console.error=()=>{reported++;};
+  try{const canvas={width:800,height:400,parentElement:{},remove(){}};const layer=animations.create(canvas as unknown as HTMLCanvasElement);assert.equal(layer.retire!(),undefined);layer.dispose();layer.dispose();assert.equal(removeCalls,0);(pendingSketch as unknown as Sketch).setup();(pendingSketch as unknown as Sketch).draw();assert.equal((await layer.ready).ok,false);await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();assert.equal(removeCalls,1);assert.equal(adoptions,0,'Late setup never reattaches the supplied canvas');assert.equal(reported,1,'Removal rejection is consumed and reported once');}
+  finally{console.error=savedError;}
+  let completeRemoval:()=>void=()=>{},readyRemovals=0;class ReadySketch extends Sketch {override remove(){readyRemovals++;return new Promise<void>(resolve=>{completeRemoval=resolve;});}}
+  Object.assign(globalThis,{p5:ReadySketch});const retainedCanvas={width:800,height:400,parentElement:{},connected:true,remove(){this.connected=false;}};
+  const retained=animations.create(retainedCanvas as unknown as HTMLCanvasElement);(pendingSketch as unknown as Sketch).setup();(pendingSketch as unknown as Sketch).draw();assert((await retained.ready).ok);
+  const releaseLayer=retained.retire!();assert(releaseLayer);assert.equal(retainedCanvas.connected,false);assert.equal(readyRemovals,0);(pendingSketch as unknown as Sketch).draw();assert.equal(readyRemovals,0);
+  const layerCompletion=releaseLayer();assert.equal(releaseLayer(),layerCompletion);retained.dispose();assert.equal(readyRemovals,1,'Public dispose drains the same captured layer release');completeRemoval();await layerCompletion;assert.equal(readyRemovals,1);
+  results.push({name,passed:true});
+ }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
+ finally{unregister();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
+}
 async function finish():Promise<void>{
  const name='Asynchronous factories remain separate from synchronous creation without requiring browser globals';
  try{let calls=0;const release=registry.registerAsync(metadata('async-test'),async()=>{calls++;return instance;});assert.throws(()=>registry.create('async-test',{} as LittlewildRenderer.Context),/selectRendererAsync/);assert.equal(calls,0);assert.equal(await registry.prepare('async-test',{} as LittlewildRenderer.Context),instance);assert.equal(calls,1);release();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});}
  await previewContract(true);await previewContract(false);await previewContract(false,true);
  await retargetContract();
+ await retirementContract();
  const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
  fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
 }

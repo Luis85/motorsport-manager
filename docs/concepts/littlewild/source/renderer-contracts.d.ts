@@ -30,12 +30,17 @@ declare namespace LittlewildRenderer {
   readonly commands:{submit(command:LittlewildDeveloper.Command):LittlewildDeveloper.CommandResult};
   /** Register external resources immediately, so factory or mount failure still cleans them up. */
   onDispose(cleanup:()=>void):void;
+  /** Optional resource-only finalization. Input, timers and subscriptions must still stop synchronously through onDispose. */
+  onRelease?(cleanup:()=>void|Promise<void>):void;
  }
  interface Instance {
   /** Opt in only when bitmap output depends on detached projection values, not host time/delta, and remains retained for presentation/readback between browser frames. Omitted instances receive every preview draw. */
   readonly redrawPolicy?:'continuous'|'projection';
   /** Compiled opt-in: this instance can reuse an unchanged scene/catalog with a newly admitted detached timeline. Omitted instances are rebuilt. */
   readonly previewReuse?:'timeline';
+  /** Explicit instance opt-in for scoped preview retirement; quiesce must immediately stop callbacks without releasing GPU resources. */
+  readonly retirementPolicy?:'deferred';
+  quiesce?():void;
   mount():void;draw(frame:Frame):void;resize(viewport:Viewport):void;dispose():void;
   hitTest?(point:Point,frame:Frame):Hit|null;
   project?(tile:Point,frame:Frame):Point;

@@ -4,107 +4,107 @@ Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run
 
 ## Current clean-checkout evidence
 
-**1539/1539 checks across75 suites passed**, including 339 real browser checks. Completed `2026-10-04T11:27:03.407Z` against the clean git archive of `9424bf9b14faf20bbc74e67a35c19baed4e93c99` with exact `npm ci` lock resolution. The tracked standalone is copied directly from this passed archive.
+**1543/1543 checks across75 suites passed**, including 342 real browser checks. Completed `2026-10-04T13:54:30.558Z` against the clean git archive of `cbcb968fcd5dec9b43da866e933f167c28693a2b` with exact `npm ci` lock resolution. The tracked standalone is copied directly from this passed archive.
 
-Source `9424bf9b14faf20bbc74e67a35c19baed4e93c99`; authored gate input `834286b70038c215bbfb7c90d0ad822a411ce038630ebe7b82942fe34b8e8cf8` (502 files); standalone `7348d5db7e122a2763fc888d2e8ecfb1209fbbd084a1d605e260f73034ca4e7e` (18,780,453 bytes); 657-file inert source bundle `123a9be8f3e4626a5eb2ae6dcf08c71c43711380cb543d61eeebba8c02d424cf`. Current identities are explicit here and in `delivery-manifest.json`.
+Source `cbcb968fcd5dec9b43da866e933f167c28693a2b`; authored gate input `77cc05fd9705b36be909441e4e63eedeca819323e9a5c9743548f85ba38b07ea` (503 files); standalone `323ea5245c0829c90685c332f0c0980fcda55064c4dbc70512fa2180875f9ffd` (18,794,852 bytes); 657-file inert source bundle `02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f`. Current identities are explicit here and in `delivery-manifest.json`.
 
-- Fresh sealed evidence: `reports/littlewild-pr25-quality/final-9424bf9/` (189 original core paths plus 1 diagnostic and 416 retained generated files; 606 sealed files).
-- Node/CLI:55 suites /1200 checks; browser:20 suites /339 checks.
-- Frozen focused proof: `reports/littlewild-pr25-quality/preview-timeline-retarget-focused-20261004/FOCUSED-PROOF.json`; seal SHA `97eeb0822cf9d2ffd84a98390d694a05bcd8caede0d48f881e7b0e2e0b7f64b7`; 1724 records. Each attempt retains its actual input identity.
+- Fresh sealed evidence: `reports/littlewild-pr25-quality/final-cbcb968/` (189 original core paths plus 1 diagnostic, 2 actual scoped completion records and 417 retained generated files; 609 sealed files).
+- Node/CLI:55 suites /1201 checks; browser:20 suites /342 checks.
+- Frozen focused proof: `reports/littlewild-pr25-quality/preview-retirement-focused-20261004/FOCUSED-PROOF.json`; seal SHA `e0dbab95b900b889ab2d1a290f199a63a20443167164696211782aa4f51f389a`; 2761 records. Each attempt retains its actual input identity.
 
-All1535 prior named checks retain relative order across75 unchanged suite registrations, commands, result paths and time limits. Actual new named regressions: 4, yielding 1539 checks (1200 Node/CLI and 339 browser). All62 original raw browser channels retain their exact values and local fixture semantics.
+All1539 prior named checks retain relative order across75 unchanged suite registrations, commands, result paths and time limits. Actual new named regressions: 4, yielding 1543 checks (1201 Node/CLI and 342 browser). All62 original raw browser channels retain their exact values and local fixture semantics.
 
-Timeline-only draft edits preserve the whole native pack fingerprint except storytelling. Full scenario admission moves to the cancellable idle/background preview task. Reuse requires an explicit instance capability and the same native fingerprint and registered factory generation; custom instances remain fresh by default. Successful retargets reset playback and invalidate painting while retaining owned GPU/p5 canvases. Native or factory changes rebuild. Failed updates, cancellation and imports preserve ownership and dispose obsolete mounts once. This changes production scheduling and renderer ownership; it does not weaken native validation, commands, budgets, CSP or vendor pins. Retained drawing buffers keep the prior deliberate GPU-memory/presentation tradeoff.
+Closing a detached preview retires eligible compiled instances immediately, stops ownership and detaches canvases, then releases captured resources through deferred finalizers. Explicit receiver/original-dispose identity guards preserve custom, copied or overridden disposal contracts through synchronous fallback. The bounded cleanup queue remains owned across cancel/reopen and inactive scene-editor entry; native admission, active-engine state, existing validators and original budgets remain authoritative. The observer never wraps protected disposal hooks; missing resource-release phases are unobservable, not evidence of completion.
 
-The frozen focused record retains each attempt's actual source identity. Earlier ffda OFF20/ON20, RendererStory15 and Libraries14 remain labelled earlier-helper executions. Final834 executes Node15, Animations5, diagnostic-ON Story20, Architecture17 and strict/build exit0. The only emitted helper delta adds the retarget-draw observation marker; all other284 emitted programs, standalone HTML and657-row source bundle are byte-identical. The initial18/20 additive selector attempt remains failed historical evidence. These local observations are not a throughput benchmark or an explanation of the hosted timeout; the complete final-source gate and future exact-head CI remain separate.
+Final77cc attempt2 passed strict/build, Architecture17, Renderer16, Animations5, StoryON23/OFF23, RendererStory15 and Libraries14 at the original limits. The earlier d432 attempt1 passed21/23 Story rows and failed two original disposal-fixture assertions; it remains separate historical evidence. Final diagnostic evidence contains97/59/20 rows for Add track/import/Close with limits192/192/64, zero dropped/oversize metadata and a38,451-byte file. Close observes retire and full scene rendering/CDP acknowledgement; it does not observe asynchronous finalizer completion. These are local functional observations, not a throughput benchmark, hosted cause or future hosted acceptance.
 
-Optional test-only click observations are sealed at `reports/littlewild-pr25-quality/final-9424bf9/verification/v15/storytelling-click-diagnostics.json` (34,004 bytes, SHA `be18e6e4a30a9c77a12e492cf150f9f66b38e4cafb7825b0f80a43f813fd95e4`), within the64KiB file and192-row per-case bounds. They retain the two original desktop target cases, CDP mouse/h.stop acknowledgements and session/idle/retarget-draw phases. They are not additional checks or causal proof. The observer is absent from shipped HTML and exported bundle files; its truthful excluded-inventory reference remains.
+Optional test-only click observations are sealed at `reports/littlewild-pr25-quality/final-cbcb968/verification/v15/storytelling-click-diagnostics.json` (38,445 bytes, SHA `3fba7613fdaf8fc93cf4dee248856c6e8b340f2064ea9d4eb6553c27290a3827`), within the64KiB file and192/192/64-row per-case bounds. They retain the three original desktop target cases, CDP mouse/h.stop acknowledgements and session/idle/retarget-draw phases. They are not additional checks or causal proof. The observer is absent from shipped HTML and exported bundle files; its truthful excluded-inventory reference remains.
 
-Playwright/playwright-core remain exactly `1.62.1`, selecting official Chromium `151.0.7922.34` revision `1234`; this local gate actually used `Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)` and Node `v24.19.0`. Hosted774 failed using the stable pin. All seven workflows must pass on the new exact publication head for hosted acceptance.
+Actual gate session49599/chunk8eb892 exited0. The sealed scoped process receipt records zero gate-started live Chromium processes, 11 unrelated preexisting live processes and 1999 inactive zombies. Original browser producers await context/browser close before successful result output; global browser closure is not claimed.
 
-Historical hosted `774965f96e24ecb4e7e03ad0c35ed2f3a3e9cbd6` completed six green workflows and one Littlewild failure, with none pending. Native aggregate job111415872400 admitted all six actual artifact IDs/digests and passed103 suites /21,346 checks at merge `26e139c3f032f08e63540100124ff4e1dd055a7b`, source digest `78c308684c4b0735039a7bbd6173dcba991c852646b5d52320dd9ff5f7686a51`. Those results apply only to that head and do not certify the new publication head.
+Playwright/playwright-core remain exactly `1.62.1`, selecting official Chromium `151.0.7922.34` revision `1234`; this local gate actually used `Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)` and Node `v24.19.0`. Hosted0d5 failed using the stable pin. All seven workflows must pass on the new exact publication head for hosted acceptance.
 
-Hosted `774965f96e24ecb4e7e03ad0c35ed2f3a3e9cbd6` passed 60 preceding suites / 1,250 checks, then storytelling passed 15/17 and failed the same two desktop 20-second click actions. Its 61 attempted suites produced 1,267 observed checks: 1,265 passed and 2 failed; 14 later suites / 268 checks were not reached. All 20 executed raw diagnostic channels are empty. The two expected local fixture requests belong to engine-export-browser, the first unreached suite; no such requests were observed in this failed run. The failed click actions do not execute their remaining assertions. Subsequent keyframe/p5 checks establish add-track commitment; import commitment is not established. Actual artifact 11299333711 is 87,091 bytes, SHA `c5632e21a1f9adfcc901383abd73a5af702610f131015bdae1e7202aad6bee62`. Stable Playwright 1.62.1 and official installed Chromium 151.0.7922.34/revision 1234 did not resolve this failure. Install-log/default-launch provenance is distinct from a sampled hosted browser.version. New exact-head hosted acceptance remains required.
+Historical hosted `0d5a52add03b4943d03dbc0c3ac387e7700a734f` passed 60 preceding suites / 1,251 checks, then Story19/20 failed the original desktop Back to scenes click at its unchanged20-second limit. Across61 attempts,1,271 checks were observed:1,270 passed and1 failed;14 later suites /268 checks were unreached. All20 executed raw channels are empty; EngineExport and its two fixture requests were not reached. Actual full ZIP and HTML7348/18,780,453 bytes were verified. The34,532-byte trace captures only two successful Add track/import cases (95/59 rows), not the failing Close action; no Close dispatch/commit/disposal cause is proved. This history does not establish new-head hosted acceptance.
 
-Prior source7ba/189-file complete acceptance, successful publication receipt13ad, immutable71/20/14 focused records and failed4cf151-file history are preserved. Earlier timing numbers remain scoped to their recorded sources; they do not measure this new implementation.
+Prior source9424/606-file complete acceptance and successful receiptff7 are preserved, together with source7ba, hosted774, immutable71/20/14/1724 focused records and failed4cf151-file history. Earlier timing numbers remain scoped to their recorded sources; they do not measure this new implementation.
 
 | Suite | Passed / total | Seconds |
 | --- | ---: | ---: |
-| engine-export-cli | 5 / 5 | 12.64 |
-| engine-export | 13 / 13 | 22.73 |
+| engine-export-cli | 5 / 5 | 11.75 |
+| engine-export | 13 / 13 | 23.66 |
 | animations | 5 / 5 | 0.04 |
-| balancing-cli | 5 / 5 | 11.64 |
-| cold-balancing | 23 / 23 | 3.24 |
-| balancing | 14 / 14 | 17.07 |
-| storytelling | 24 / 24 | 36.64 |
-| external-editor-cli | 9 / 9 | 21.21 |
-| external-canvas | 21 / 21 | 45.74 |
-| creature-editor | 18 / 18 | 28.57 |
-| external-editors | 24 / 24 | 63.17 |
-| renderer-scene-2d | 10 / 10 | 0.09 |
-| scene-editor | 15 / 15 | 15.95 |
-| scene-navigation | 15 / 15 | 112.3 |
-| architecture-extensions | 10 / 10 | 3.29 |
-| building-interiors | 15 / 15 | 5.64 |
-| construction | 12 / 12 | 3 |
-| terraform | 13 / 13 | 3.66 |
-| renderers | 15 / 15 | 0.15 |
-| canvas-renderer | 29 / 29 | 0.29 |
-| architecture-policy | 53 / 53 | 20.87 |
-| storage-clock | 15 / 15 | 0.04 |
-| gate-integrity | 21 / 21 | 1.09 |
-| cli-contracts | 23 / 23 | 16.8 |
-| typescript-architecture | 17 / 17 | 5.33 |
+| balancing-cli | 5 / 5 | 11.51 |
+| cold-balancing | 23 / 23 | 3.25 |
+| balancing | 14 / 14 | 16.85 |
+| storytelling | 24 / 24 | 37.23 |
+| external-editor-cli | 9 / 9 | 20.94 |
+| external-canvas | 21 / 21 | 44.19 |
+| creature-editor | 18 / 18 | 28.46 |
+| external-editors | 24 / 24 | 64.32 |
+| renderer-scene-2d | 10 / 10 | 0.11 |
+| scene-editor | 15 / 15 | 17.21 |
+| scene-navigation | 15 / 15 | 115.29 |
+| architecture-extensions | 10 / 10 | 3.34 |
+| building-interiors | 15 / 15 | 5.44 |
+| construction | 12 / 12 | 2.79 |
+| terraform | 13 / 13 | 3.62 |
+| renderers | 16 / 16 | 0.16 |
+| canvas-renderer | 29 / 29 | 0.28 |
+| architecture-policy | 53 / 53 | 20.53 |
+| storage-clock | 15 / 15 | 0.05 |
+| gate-integrity | 21 / 21 | 1.1 |
+| cli-contracts | 23 / 23 | 17.13 |
+| typescript-architecture | 17 / 17 | 6.1 |
 | behavior-tree | 7 / 7 | 0.04 |
-| content-boundary | 21 / 21 | 1.26 |
-| assets | 15 / 15 | 0.28 |
-| creatures | 23 / 23 | 1.7 |
+| content-boundary | 21 / 21 | 1.28 |
+| assets | 15 / 15 | 0.27 |
+| creatures | 23 / 23 | 1.75 |
 | ecs-core | 19 / 19 | 0.06 |
 | simulation-profile | 19 / 19 | 0.22 |
-| simulation-profile-integration | 17 / 17 | 6.56 |
+| simulation-profile-integration | 17 / 17 | 6.87 |
 | scene-environment | 6 / 6 | 0.04 |
-| office-scenario | 11 / 11 | 42.26 |
-| game-settings | 13 / 13 | 2.21 |
+| office-scenario | 11 / 11 | 41.47 |
+| game-settings | 13 / 13 | 2.18 |
 | game-settings-ui | 12 / 12 | 0.05 |
-| creature-interactions | 27 / 27 | 14.85 |
+| creature-interactions | 27 / 27 | 15.32 |
 | interaction-ui | 12 / 12 | 0.05 |
-| developer-toolbox | 32 / 32 | 77.94 |
+| developer-toolbox | 32 / 32 | 78.02 |
 | engine-composition | 30 / 30 | 1.57 |
 | ecs-activity | 9 / 9 | 0.06 |
-| ecs-world | 24 / 24 | 0.05 |
+| ecs-world | 24 / 24 | 0.04 |
 | ecs-economy | 15 / 15 | 0.06 |
-| ecs-integration | 7 / 7 | 0.74 |
-| ecs-world-integration | 6 / 6 | 0.51 |
-| ecs-economy-integration | 9 / 9 | 0.48 |
-| scenario-domain | 83 / 83 | 28.26 |
-| presentation | 49 / 49 | 0.41 |
-| pause-policy | 53 / 53 | 0.2 |
-| cartography | 71 / 71 | 4.15 |
-| domain | 86 / 86 | 3.13 |
-| growth-stress | 3 / 3 | 20.8 |
-| earned-progression | 8 / 8 | 6.4 |
-| scenario-schema-cli | 61 / 61 | 4.82 |
-| release | 28 / 28 | 11.23 |
-| external-editors-browser | 11 / 11 | 36.47 |
-| external-canvas-browser | 7 / 7 | 28.37 |
-| creature-editor-browser | 20 / 20 | 62.88 |
-| balancing-defaults-browser | 4 / 4 | 30.09 |
-| balancing-browser | 9 / 9 | 25.47 |
-| storytelling-browser | 20 / 20 | 101.36 |
-| engine-export-browser | 11 / 11 | 34.88 |
-| renderer-storytelling | 15 / 15 | 52.59 |
-| storytelling-player-browser | 8 / 8 | 57.05 |
-| renderer-libraries | 14 / 14 | 31.22 |
-| scene-editor-browser | 33 / 33 | 72.51 |
-| building-interiors-browser | 9 / 9 | 24.7 |
-| construction-editor-browser | 13 / 13 | 16.6 |
-| terraform-browser | 9 / 9 | 20.63 |
-| renderers-browser | 14 / 14 | 16.92 |
-| office-browser | 9 / 9 | 18.08 |
-| game-settings-browser | 11 / 11 | 14.2 |
-| browser | 90 / 90 | 30.49 |
-| interactions-browser | 8 / 8 | 17.9 |
-| browser-contracts | 24 / 24 | 31.14 |
+| ecs-integration | 7 / 7 | 0.73 |
+| ecs-world-integration | 6 / 6 | 0.46 |
+| ecs-economy-integration | 9 / 9 | 0.43 |
+| scenario-domain | 83 / 83 | 29.4 |
+| presentation | 49 / 49 | 0.36 |
+| pause-policy | 53 / 53 | 0.21 |
+| cartography | 71 / 71 | 4.24 |
+| domain | 86 / 86 | 3.34 |
+| growth-stress | 3 / 3 | 21.4 |
+| earned-progression | 8 / 8 | 6.47 |
+| scenario-schema-cli | 61 / 61 | 5.21 |
+| release | 28 / 28 | 11.74 |
+| external-editors-browser | 11 / 11 | 38.36 |
+| external-canvas-browser | 7 / 7 | 29.97 |
+| creature-editor-browser | 20 / 20 | 62.31 |
+| balancing-defaults-browser | 4 / 4 | 29.3 |
+| balancing-browser | 9 / 9 | 27.72 |
+| storytelling-browser | 23 / 23 | 108 |
+| engine-export-browser | 11 / 11 | 38.79 |
+| renderer-storytelling | 15 / 15 | 53.56 |
+| storytelling-player-browser | 8 / 8 | 59.1 |
+| renderer-libraries | 14 / 14 | 32.5 |
+| scene-editor-browser | 33 / 33 | 72.45 |
+| building-interiors-browser | 9 / 9 | 24.57 |
+| construction-editor-browser | 13 / 13 | 17.78 |
+| terraform-browser | 9 / 9 | 20.55 |
+| renderers-browser | 14 / 14 | 19.01 |
+| office-browser | 9 / 9 | 16.71 |
+| game-settings-browser | 11 / 11 | 15.52 |
+| browser | 90 / 90 | 33.77 |
+| interactions-browser | 8 / 8 | 19.58 |
+| browser-contracts | 24 / 24 | 30.85 |
 
 ## Evidence integrity and review
 

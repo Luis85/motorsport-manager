@@ -4,7 +4,7 @@
   "status": "locally-verified; hosted acceptance tracked separately in PR#25 current-head checks",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 330,
+    "authoredTypeScriptFiles": 331,
     "runtimeModules": 184,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "123a9be8f3e4626a5eb2ae6dcf08c71c43711380cb543d61eeebba8c02d424cf",
+      "identity": "02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -95,32 +95,32 @@
     },
     "current": {
       "status": "passed",
-      "passed": 1539,
-      "total": 1539,
+      "passed": 1543,
+      "total": 1543,
       "browserIncluded": true,
-      "sourceSha256": "834286b70038c215bbfb7c90d0ad822a411ce038630ebe7b82942fe34b8e8cf8",
-      "startedAt": "2026-10-04T11:03:16.882Z",
+      "sourceSha256": "77cc05fd9705b36be909441e4e63eedeca819323e9a5c9743548f85ba38b07ea",
+      "startedAt": "2026-10-04T13:30:10.650Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "7348d5db7e122a2763fc888d2e8ecfb1209fbbd084a1d605e260f73034ca4e7e",
-      "htmlBytes": 18780453,
-      "finishedAt": "2026-10-04T11:27:03.407Z",
+      "htmlSha256": "323ea5245c0829c90685c332f0c0980fcda55064c4dbc70512fa2180875f9ffd",
+      "htmlBytes": 18794852,
+      "finishedAt": "2026-10-04T13:54:30.558Z",
       "suites": 75,
       "browserSuites": 20,
-      "browserChecks": 339,
-      "verifiedSourceCommit": "9424bf9b14faf20bbc74e67a35c19baed4e93c99",
+      "browserChecks": 342,
+      "verifiedSourceCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
       "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
-      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-9424bf9-clean/docs/concepts/littlewild",
+      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-cbcb968-clean/docs/concepts/littlewild",
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "123a9be8f3e4626a5eb2ae6dcf08c71c43711380cb543d61eeebba8c02d424cf",
-      "evidence": "reports/littlewild-pr25-quality/final-9424bf9",
-      "publicationBaseCommit": "9424bf9b14faf20bbc74e67a35c19baed4e93c99",
+      "engineSourceIdentity": "02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f",
+      "evidence": "reports/littlewild-pr25-quality/final-cbcb968",
+      "publicationBaseCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Complete fresh local timeline-reuse gate; all1535 prior named checks and75 suite registrations/commands/budgets preserved. Local acceptance is separate from all seven future exact-head hosted workflows.",
+      "scope": "Complete fresh local retirement gate; all1539 prior named checks and75 suite registrations/commands/budgets preserved. Local acceptance is separate from all seven future exact-head hosted workflows.",
       "browserToolchain": {
         "playwright": "1.62.1",
         "playwrightCore": "1.62.1",
@@ -128,13 +128,13 @@
         "officialRevision": "1234",
         "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
         "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
-        "scope": "Stable Playwright1.62.1 selects official Chromium151.0.7922.34 revision1234 unchanged; local version is recorded separately. Hosted774 failed; new exact-head hosted acceptance remains required."
+        "scope": "Stable Playwright1.62.1 selects official Chromium151.0.7922.34 revision1234 unchanged; local version is recorded separately. Hosted0d5 failed; new exact-head hosted acceptance remains required."
       },
       "optionalClickDiagnostics": {
         "enabled": true,
-        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-9424bf9/verification/v15/storytelling-click-diagnostics.json",
-        "sha256": "be18e6e4a30a9c77a12e492cf150f9f66b38e4cafb7825b0f80a43f813fd95e4",
-        "bytes": 34004,
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-cbcb968/verification/v15/storytelling-click-diagnostics.json",
+        "sha256": "3fba7613fdaf8fc93cf4dee248856c6e8b340f2064ea9d4eb6553c27290a3827",
+        "bytes": 38445,
         "scope": "Test-only bounded observations; not a suite, check, hosted causal finding or replacement for62 raw channels."
       }
     },
@@ -947,6 +947,876 @@
         },
         "publicationText": "Historical hosted `774965f96e24ecb4e7e03ad0c35ed2f3a3e9cbd6` completed six green workflows and one Littlewild failure, with none pending. Native aggregate job111415872400 admitted all six actual artifact IDs/digests and passed103 suites /21,346 checks at merge `26e139c3f032f08e63540100124ff4e1dd055a7b`, source digest `78c308684c4b0735039a7bbd6173dcba991c852646b5d52320dd9ff5f7686a51`. Those results apply only to that head and do not certify the new publication head.\n\n"
       }
+    },
+    "historicalPrePreviewRetirement": {
+      "status": "passed",
+      "passed": 1539,
+      "total": 1539,
+      "browserIncluded": true,
+      "sourceSha256": "834286b70038c215bbfb7c90d0ad822a411ce038630ebe7b82942fe34b8e8cf8",
+      "startedAt": "2026-10-04T11:03:16.882Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "7348d5db7e122a2763fc888d2e8ecfb1209fbbd084a1d605e260f73034ca4e7e",
+      "htmlBytes": 18780453,
+      "finishedAt": "2026-10-04T11:27:03.407Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 339,
+      "verifiedSourceCommit": "9424bf9b14faf20bbc74e67a35c19baed4e93c99",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-9424bf9-clean/docs/concepts/littlewild",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "123a9be8f3e4626a5eb2ae6dcf08c71c43711380cb543d61eeebba8c02d424cf",
+      "evidence": "reports/littlewild-pr25-quality/final-9424bf9",
+      "publicationBaseCommit": "9424bf9b14faf20bbc74e67a35c19baed4e93c99",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete local9424 timeline-reuse checkpoint; later hosted0d5 failed the original desktop Close click. Earlier timing records retain their original source scope.",
+      "browserToolchain": {
+        "playwright": "1.62.1",
+        "playwrightCore": "1.62.1",
+        "officialBundledChromium": "151.0.7922.34",
+        "officialRevision": "1234",
+        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
+        "scope": "Stable Playwright1.62.1 selects official Chromium151.0.7922.34 revision1234 unchanged; local version is recorded separately. Hosted774 failed; new exact-head hosted acceptance remains required."
+      },
+      "optionalClickDiagnostics": {
+        "enabled": true,
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-9424bf9/verification/v15/storytelling-click-diagnostics.json",
+        "sha256": "be18e6e4a30a9c77a12e492cf150f9f66b38e4cafb7825b0f80a43f813fd95e4",
+        "bytes": 34004,
+        "scope": "Test-only bounded observations; not a suite, check, hosted causal finding or replacement for62 raw channels."
+      },
+      "historical": true
+    },
+    "historicalHosted0d5a52a": {
+      "acceptancePath": "/tmp/lw-postpush-9240715-review/hosted-0d5a52a-littlewild-failure-acceptance.json",
+      "acceptanceSha256": "7df4387ed05fe2188a2161ba54e5bd88db1ee1b716feb2a6e9e2fc961afd3fec",
+      "scope": "Historical0d5 only:60 preceding1251 pass, Story19/20,1271 observed1270 pass1 fail,14 suites268 unreached. Two successful traced cases are not Close evidence. No Close dispatch/commit/dispose cause or new-head acceptance proved.",
+      "facts": {
+        "head": "0d5a52add03b4943d03dbc0c3ac387e7700a734f",
+        "run": 37201142108,
+        "job": 111432911242,
+        "status": "FAILED",
+        "archives": [
+          {
+            "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-diagnostics.zip",
+            "bytes": 90207,
+            "sha256": "efa9451459396caceb9e564935c17fc8eae5f7d812196edf27e6a63fda5902d4",
+            "members": 126
+          },
+          {
+            "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-full.zip",
+            "bytes": 9967713,
+            "sha256": "5d9fee0c0c501e3e46d2705596f76da747ff34a59f96f4891d7c1d422f20728e",
+            "members": 127
+          }
+        ],
+        "source": "834286b70038c215bbfb7c90d0ad822a411ce038630ebe7b82942fe34b8e8cf8",
+        "actualHtmlSha256": "7348d5db7e122a2763fc888d2e8ecfb1209fbbd084a1d605e260f73034ca4e7e",
+        "actualHtmlBytes": 18780453,
+        "environment": {
+          "node": "v22.23.3",
+          "platform": "linux",
+          "architecture": "x64",
+          "chromium": "playwright-bundled"
+        },
+        "toolchain": "Lock Playwright/core1.62.1; actual install log Chromium/headless151.0.7922.34 rev1234. Gate literal playwright-bundled, not browser.version sample.",
+        "priorAcceptedSuites": 60,
+        "priorAcceptedChecks": 1251,
+        "attemptedSuites": 61,
+        "observedChecks": 1271,
+        "observedPasses": 1270,
+        "observedFailures": [
+          {
+            "name": "Mobile reflow, 44px controls and preview cleanup when returning to scenes at 1440px",
+            "passed": false,
+            "error": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('[data-story=\"close\"]')\n    - locator resolved to <button data-id=\"\" class=\"btn\" type=\"button\" data-story=\"close\">Back to scenes</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - performing click action\n"
+          }
+        ],
+        "laterUnreachedSuites": 14,
+        "laterUnreachedChecks": 268,
+        "rawChannels": [
+          {
+            "suite": "external-editors-browser",
+            "path": "diagnostics.errors",
+            "value": []
+          },
+          {
+            "suite": "external-editors-browser",
+            "path": "diagnostics.consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "external-editors-browser",
+            "path": "diagnostics.requests",
+            "value": []
+          },
+          {
+            "suite": "external-canvas-browser",
+            "path": "diagnostics.errors",
+            "value": []
+          },
+          {
+            "suite": "external-canvas-browser",
+            "path": "diagnostics.consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "external-canvas-browser",
+            "path": "diagnostics.requests",
+            "value": []
+          },
+          {
+            "suite": "creature-editor-browser",
+            "path": "diagnostics.errors",
+            "value": []
+          },
+          {
+            "suite": "creature-editor-browser",
+            "path": "diagnostics.consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "creature-editor-browser",
+            "path": "diagnostics.requests",
+            "value": []
+          },
+          {
+            "suite": "creature-editor-browser",
+            "path": "rawConsole",
+            "value": []
+          },
+          {
+            "suite": "creature-editor-browser",
+            "path": "failedRequests",
+            "value": []
+          },
+          {
+            "suite": "balancing-defaults-browser",
+            "path": "errors",
+            "value": []
+          },
+          {
+            "suite": "balancing-defaults-browser",
+            "path": "consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "balancing-defaults-browser",
+            "path": "requests",
+            "value": []
+          },
+          {
+            "suite": "balancing-browser",
+            "path": "diagnostics.errors",
+            "value": []
+          },
+          {
+            "suite": "balancing-browser",
+            "path": "diagnostics.consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "balancing-browser",
+            "path": "diagnostics.requests",
+            "value": []
+          },
+          {
+            "suite": "storytelling-browser",
+            "path": "diagnostics.errors",
+            "value": []
+          },
+          {
+            "suite": "storytelling-browser",
+            "path": "diagnostics.consoleProblems",
+            "value": []
+          },
+          {
+            "suite": "storytelling-browser",
+            "path": "diagnostics.requests",
+            "value": []
+          }
+        ],
+        "traceBytes": 34532,
+        "traceSha256": "8d14322f7cb6834d03517fea69a695ac056776744ed67da3bd3c14d23489c8c9",
+        "tracedSuccessfulCases": [
+          {
+            "name": "Actual 3D cinematic timeline animates creature position without changing native state; play/pause/seek/stop/replay at 1440px",
+            "rows": 95,
+            "phases": [
+              "admission.validate.begin",
+              "admission.validate.return",
+              "case.begin",
+              "case.end",
+              "cdp.ack",
+              "cdp.send",
+              "idle.schedule",
+              "idle.start",
+              "input.bubble",
+              "input.capture",
+              "input.microtask",
+              "input.nextFrame",
+              "input.nextTask",
+              "playback.create.begin",
+              "playback.create.return",
+              "renderer.retargetDraw.begin",
+              "renderer.retargetDraw.return",
+              "renderer.updatePlayback.begin",
+              "renderer.updatePlayback.return",
+              "session.replace.begin",
+              "session.replace.return",
+              "surface.render.begin",
+              "surface.render.return"
+            ],
+            "ackDurations": [
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 22.288988000000245
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 0.8218720000004396
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 23.49250099999972
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 0.7456779999993159
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 149.51238699999976
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 4.906214000000546
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 244.270536
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 2.5190050000001065
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 19.90994900000078
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 59.8626379999987
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 46.65072499999951
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 12.802850000000035
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 24.53987000000052
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 5.015066999992996
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 28.023112000002584
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 23.22867600000609
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 22.321084999995946
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 5.91856099999859
+              }
+            ]
+          },
+          {
+            "name": "Actual 2D preview renderer, storyboard cutscene ranges and full storytelling file review/cancellation at 1440px",
+            "rows": 59,
+            "phases": [
+              "admission.validate.begin",
+              "admission.validate.return",
+              "case.begin",
+              "case.end",
+              "cdp.ack",
+              "cdp.send",
+              "idle.schedule",
+              "idle.start",
+              "input.bubble",
+              "input.capture",
+              "input.microtask",
+              "input.nextFrame",
+              "input.nextTask",
+              "playback.create.begin",
+              "playback.create.return",
+              "renderer.retargetDraw.begin",
+              "renderer.retargetDraw.return",
+              "renderer.updatePlayback.begin",
+              "renderer.updatePlayback.return",
+              "session.replace.begin",
+              "session.replace.return",
+              "surface.render.begin",
+              "surface.render.return"
+            ],
+            "ackDurations": [
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 2.40725800000655
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 41.4509309999994
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 2.250513000006322
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 67.04367099999217
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 8.082089999996242
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 33.17744300000777
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 4.196280000003753
+              },
+              {
+                "detail": "Input.dispatchMouseEvent mouseReleased/left",
+                "milliseconds": 192.81418299999496
+              },
+              {
+                "detail": "Runtime.callFunctionOn h.stop",
+                "milliseconds": 9.125147999991896
+              }
+            ]
+          }
+        ],
+        "failedCloseCaseTraced": false,
+        "leafReports": [
+          {
+            "suite": "engine-export-cli",
+            "passed": 5,
+            "total": 5,
+            "seconds": 9.12,
+            "timeout": 240,
+            "resultSha256": "73dba20c428e7981724fb86bf529cab8b6d895c1cddfe2fc8917f9edf2f2011c"
+          },
+          {
+            "suite": "engine-export",
+            "passed": 13,
+            "total": 13,
+            "seconds": 19.81,
+            "timeout": 240,
+            "resultSha256": "87dbc3145e357c4af40471cad8df65519768e55236078117452854d6d2e86d9e"
+          },
+          {
+            "suite": "animations",
+            "passed": 5,
+            "total": 5,
+            "seconds": 0.03,
+            "timeout": 120,
+            "resultSha256": "73a036c6fa2f8861885a97644962c42f7cc3c58e71d692ea1d0fa755b28b4060"
+          },
+          {
+            "suite": "balancing-cli",
+            "passed": 5,
+            "total": 5,
+            "seconds": 10.81,
+            "timeout": 240,
+            "resultSha256": "daaed2b06e582146f3565ad7dedc499247bf5eb4dc66587f75d9eddcb899f9a7"
+          },
+          {
+            "suite": "cold-balancing",
+            "passed": 23,
+            "total": 23,
+            "seconds": 3.01,
+            "timeout": 180,
+            "resultSha256": "6d753b5e04856df64beb6b10a619d6bf4268eaa792f407b56de19a8184806172"
+          },
+          {
+            "suite": "balancing",
+            "passed": 14,
+            "total": 14,
+            "seconds": 15.73,
+            "timeout": 240,
+            "resultSha256": "9928b5ee8d8652eeeb701027b30e53378db29505fc9ee258b09d0013505c9915"
+          },
+          {
+            "suite": "storytelling",
+            "passed": 24,
+            "total": 24,
+            "seconds": 34.15,
+            "timeout": 180,
+            "resultSha256": "93dc1c30ad073ffded2d9c9886dc5ff2c2e79a6c78377c736135fed092905c14"
+          },
+          {
+            "suite": "external-editor-cli",
+            "passed": 9,
+            "total": 9,
+            "seconds": 19.39,
+            "timeout": 180,
+            "resultSha256": "c00e6f3e3bd9fcab6ec649ed549d1519890d0eaa7df6abe1f874cc431bd21067"
+          },
+          {
+            "suite": "external-canvas",
+            "passed": 21,
+            "total": 21,
+            "seconds": 41.82,
+            "timeout": 180,
+            "resultSha256": "c9e0b0e7845d43ab416e043d1c01c9f3487a640a41d67bd4cbf2a9705d51f28c"
+          },
+          {
+            "suite": "creature-editor",
+            "passed": 18,
+            "total": 18,
+            "seconds": 27.23,
+            "timeout": 240,
+            "resultSha256": "21cf2ed7381fae91309077fb67b77c76e955084f3fa004e053019501bfcdc26a"
+          },
+          {
+            "suite": "external-editors",
+            "passed": 24,
+            "total": 24,
+            "seconds": 59.68,
+            "timeout": 240,
+            "resultSha256": "a93b91d22ed89536220612de39b3dd1d09bcc7f81eadc6673a56aa2e64aa6434"
+          },
+          {
+            "suite": "renderer-scene-2d",
+            "passed": 10,
+            "total": 10,
+            "seconds": 0.1,
+            "timeout": 120,
+            "resultSha256": "d43dc001356e0ed264bb34ce53ff894c206b4aed7d08694051f3b037dc2f02f1"
+          },
+          {
+            "suite": "scene-editor",
+            "passed": 15,
+            "total": 15,
+            "seconds": 15.49,
+            "timeout": 120,
+            "resultSha256": "e0f7cf696297d50c20e6c2361be40e0dba919225fd0f101101f7f1c26ea64b45"
+          },
+          {
+            "suite": "scene-navigation",
+            "passed": 15,
+            "total": 15,
+            "seconds": 105.31,
+            "timeout": 180,
+            "resultSha256": "235ece05d6a9ba01865d95d7c28e480a99500bce94c5069b55672363bb2aa8bb"
+          },
+          {
+            "suite": "architecture-extensions",
+            "passed": 10,
+            "total": 10,
+            "seconds": 3.37,
+            "timeout": 120,
+            "resultSha256": "174516c87b471a1dc44d7736456cd086c2cb2b83f8a667e09013489f2f4bdd32"
+          },
+          {
+            "suite": "building-interiors",
+            "passed": 15,
+            "total": 15,
+            "seconds": 5.32,
+            "timeout": 120,
+            "resultSha256": "1aa6a523dac7e802d6c7fccceaa120eaf0ecf8c19949ef2e58981e6e38d68e8e"
+          },
+          {
+            "suite": "construction",
+            "passed": 12,
+            "total": 12,
+            "seconds": 2.78,
+            "timeout": 120,
+            "resultSha256": "a8358f0671154f0ec2603e626868b84ab3d6064a2d8bd53972a82179aee412d9"
+          },
+          {
+            "suite": "terraform",
+            "passed": 13,
+            "total": 13,
+            "seconds": 3.44,
+            "timeout": 120,
+            "resultSha256": "165e88874b1a3344b8615c21ff8bcdf34a62c967cfa1a3b6846379b32a1bdf10"
+          },
+          {
+            "suite": "renderers",
+            "passed": 15,
+            "total": 15,
+            "seconds": 0.14,
+            "timeout": 120,
+            "resultSha256": "d143475a177b7336566c4b01de4e2f6bb59cbe85f717c62abcc4dae09823329a"
+          },
+          {
+            "suite": "canvas-renderer",
+            "passed": 29,
+            "total": 29,
+            "seconds": 0.29,
+            "timeout": 120,
+            "resultSha256": "abf1e8359638e8b70a58b0c8155717b5b44965e3a8fb23fa1beaaa322143469d"
+          },
+          {
+            "suite": "architecture-policy",
+            "passed": 53,
+            "total": 53,
+            "seconds": 20.77,
+            "timeout": 60,
+            "resultSha256": "83c5c7e0ea0610e3c17f64dd39666c104063db13d9f44be7d09a5adbb8ebae66"
+          },
+          {
+            "suite": "storage-clock",
+            "passed": 15,
+            "total": 15,
+            "seconds": 0.03,
+            "timeout": 60,
+            "resultSha256": "273a0119afd1d46e10544421dda49f0501e3328bed56f48c91f70b3e32aa8a49"
+          },
+          {
+            "suite": "gate-integrity",
+            "passed": 21,
+            "total": 21,
+            "seconds": 1.07,
+            "timeout": 60,
+            "resultSha256": "9fb135ab9edd41079652005e6be03461fc4a72c7ea4b010e05ed804f22d532ec"
+          },
+          {
+            "suite": "cli-contracts",
+            "passed": 23,
+            "total": 23,
+            "seconds": 15.92,
+            "timeout": 120,
+            "resultSha256": "87faf9ad9e0deff2586a64c28dc0c8d52d3e7a71e4c091e17b0b981bd8cac3d2"
+          },
+          {
+            "suite": "typescript-architecture",
+            "passed": 17,
+            "total": 17,
+            "seconds": 5.35,
+            "timeout": 60,
+            "resultSha256": "efd6832fecad1870ddb36e484c73a32f444db3ef00719965f20a3041e96db3af"
+          },
+          {
+            "suite": "behavior-tree",
+            "passed": 7,
+            "total": 7,
+            "seconds": 0.03,
+            "timeout": 60,
+            "resultSha256": "9080db3495b0bf8aedd0f0fd067bf8726c895d174961affb4224b5e94aca9b8e"
+          },
+          {
+            "suite": "content-boundary",
+            "passed": 21,
+            "total": 21,
+            "seconds": 1.18,
+            "timeout": 60,
+            "resultSha256": "c177b916f3b686efde43df06e6b13adf2464c2a554afe564c335d802b1edccb3"
+          },
+          {
+            "suite": "assets",
+            "passed": 15,
+            "total": 15,
+            "seconds": 0.26,
+            "timeout": 60,
+            "resultSha256": "eda1df6b2e5392b184451763a103e50904db9cd30bac9fba86392f8db6a1c404"
+          },
+          {
+            "suite": "creatures",
+            "passed": 23,
+            "total": 23,
+            "seconds": 1.58,
+            "timeout": 60,
+            "resultSha256": "3440bfe44130f2980f2b58423f4f0efbdab34585dc787ed02a7cee00c9406467"
+          },
+          {
+            "suite": "ecs-core",
+            "passed": 19,
+            "total": 19,
+            "seconds": 0.05,
+            "timeout": 120,
+            "resultSha256": "34b2ee0a22c617b37012d27aacc2afbb5fd6f82b49b1d21db97ed0b7de5b14ea"
+          },
+          {
+            "suite": "simulation-profile",
+            "passed": 19,
+            "total": 19,
+            "seconds": 0.19,
+            "timeout": 120,
+            "resultSha256": "89fa3890fb7dabe70923b31d64689ec39699e9f046b037c1c377c0deefc2cbb7"
+          },
+          {
+            "suite": "simulation-profile-integration",
+            "passed": 17,
+            "total": 17,
+            "seconds": 6.33,
+            "timeout": 180,
+            "resultSha256": "4c54334de78b8e794718a9b749a485d48eda3a6d904074ef68b5f879379f57f7"
+          },
+          {
+            "suite": "scene-environment",
+            "passed": 6,
+            "total": 6,
+            "seconds": 0.03,
+            "timeout": 60,
+            "resultSha256": "5c77b1ccc0e014fc021c53fea80fb919e2731278e7326b00382833c792ee5bd0"
+          },
+          {
+            "suite": "office-scenario",
+            "passed": 11,
+            "total": 11,
+            "seconds": 40.92,
+            "timeout": 120,
+            "resultSha256": "d177a3a42fa893368c4038a065bb626a07cba805a03d8e6e105fea4980bf874c"
+          },
+          {
+            "suite": "game-settings",
+            "passed": 13,
+            "total": 13,
+            "seconds": 1.99,
+            "timeout": 120,
+            "resultSha256": "7ef32f15df2fe788d3320440a27f8cf68b67ec0d2bd269786c102c61c0652dfc"
+          },
+          {
+            "suite": "game-settings-ui",
+            "passed": 12,
+            "total": 12,
+            "seconds": 0.04,
+            "timeout": 60,
+            "resultSha256": "38fe8295a298203777a418e64c4c8db028067b9af96bef5635b4b989ed7252fe"
+          },
+          {
+            "suite": "creature-interactions",
+            "passed": 27,
+            "total": 27,
+            "seconds": 14.5,
+            "timeout": 120,
+            "resultSha256": "45513eba9725351bd66c10c684d00357f2be484464298fd61c2b2860a2042bc7"
+          },
+          {
+            "suite": "interaction-ui",
+            "passed": 12,
+            "total": 12,
+            "seconds": 0.04,
+            "timeout": 60,
+            "resultSha256": "afe312558ebaffd708cfce87b28ff6c4811d0af08a2d677a4b587e6584af463f"
+          },
+          {
+            "suite": "developer-toolbox",
+            "passed": 32,
+            "total": 32,
+            "seconds": 73.09,
+            "timeout": 180,
+            "resultSha256": "ec41bb7d42d3401d9a6a5a8ba3654e490aeb503c44367320badff4f13fc2c6e6"
+          },
+          {
+            "suite": "engine-composition",
+            "passed": 30,
+            "total": 30,
+            "seconds": 1.45,
+            "timeout": 180,
+            "resultSha256": "79950a1c7e8aa7b0289c80055e73f016e99b0f1e839f78d2088ddd6eeb96628d"
+          },
+          {
+            "suite": "ecs-activity",
+            "passed": 9,
+            "total": 9,
+            "seconds": 0.06,
+            "timeout": 120,
+            "resultSha256": "dfc2fbdd6c416a0309b35693997fa7d51d48f41455bd464c99db7bbbf0ec54d6"
+          },
+          {
+            "suite": "ecs-world",
+            "passed": 24,
+            "total": 24,
+            "seconds": 0.04,
+            "timeout": 120,
+            "resultSha256": "8fd23b0d01ba50b8289b0b20f47055d2378a2ccc11b6dd153f80b58cf52e8d61"
+          },
+          {
+            "suite": "ecs-economy",
+            "passed": 15,
+            "total": 15,
+            "seconds": 0.05,
+            "timeout": 120,
+            "resultSha256": "0133b75fe078cc10a96bc5be23162dd190e64846cc9ef51cb57bcae1f95db69e"
+          },
+          {
+            "suite": "ecs-integration",
+            "passed": 7,
+            "total": 7,
+            "seconds": 0.69,
+            "timeout": 180,
+            "resultSha256": "4f358c97c4f589baa863efd7df1bf444ee72bdb18bed61a2a3ace7ce1869b89d"
+          },
+          {
+            "suite": "ecs-world-integration",
+            "passed": 6,
+            "total": 6,
+            "seconds": 0.49,
+            "timeout": 180,
+            "resultSha256": "e1bf94b239e49a42d4acb51a63fde425639b7fc3aebb5f1fb3e2c67ac4d20d8d"
+          },
+          {
+            "suite": "ecs-economy-integration",
+            "passed": 9,
+            "total": 9,
+            "seconds": 0.46,
+            "timeout": 180,
+            "resultSha256": "234a3a524c5f1aeb27d64eaabe5fe792f7718e34cb852c2bdee2cd4cc08e6c2e"
+          },
+          {
+            "suite": "scenario-domain",
+            "passed": 83,
+            "total": 83,
+            "seconds": 26.63,
+            "timeout": 120,
+            "resultSha256": "357023c470e9c109d2c3c0917a8c6fcaa5528d2fd25d12d6b89468a615887b90"
+          },
+          {
+            "suite": "presentation",
+            "passed": 49,
+            "total": 49,
+            "seconds": 0.39,
+            "timeout": 120,
+            "resultSha256": "773c5ed6977251b35b59d513372c9e2e9cffdcfec25dde64bd28d221563e0ded"
+          },
+          {
+            "suite": "pause-policy",
+            "passed": 53,
+            "total": 53,
+            "seconds": 0.2,
+            "timeout": 120,
+            "resultSha256": "43a80a648c22a4dc19f7735689212857dbe5128474583585346df3cbbc62e382"
+          },
+          {
+            "suite": "cartography",
+            "passed": 71,
+            "total": 71,
+            "seconds": 3.87,
+            "timeout": 180,
+            "resultSha256": "ee3632e77c707df68f2e3e7240291776a64ab92c5dff771cbb821ae121f2d252"
+          },
+          {
+            "suite": "domain",
+            "passed": 86,
+            "total": 86,
+            "seconds": 2.9,
+            "timeout": 180,
+            "resultSha256": "98c033b144dbe788e36aa3d661ae78ffe59069a5c93cac244d826f6fb141b6a7"
+          },
+          {
+            "suite": "growth-stress",
+            "passed": 3,
+            "total": 3,
+            "seconds": 20.82,
+            "timeout": 300,
+            "resultSha256": "a9473734851088f951e3c6eb47ce53d953bd7f1ae45520f36b82703b065600e0"
+          },
+          {
+            "suite": "earned-progression",
+            "passed": 8,
+            "total": 8,
+            "seconds": 6.51,
+            "timeout": 300,
+            "resultSha256": "4f22e569bee7d84ed38a908ec489345ff357dd91ef02201c8b921ea19ac6ecf5"
+          },
+          {
+            "suite": "scenario-schema-cli",
+            "passed": 61,
+            "total": 61,
+            "seconds": 4.49,
+            "timeout": 90,
+            "resultSha256": "e019914d2f5b62770a57e66a865fda9ae85cabdca0b4c75451cc53fb9e72d7ba"
+          },
+          {
+            "suite": "release",
+            "passed": 28,
+            "total": 28,
+            "seconds": 8.79,
+            "timeout": 180,
+            "resultSha256": "ba93e9fae9b59e9e50ae9a0c2c7e03fe2f42a3f21f39ee1263bee3f8078da41f"
+          },
+          {
+            "suite": "external-editors-browser",
+            "passed": 11,
+            "total": 11,
+            "seconds": 72,
+            "timeout": 240,
+            "resultSha256": "7d1bc95e02a1c8d4d12a8c06a0601001da85c0f781941877b49c17825d0f9092"
+          },
+          {
+            "suite": "external-canvas-browser",
+            "passed": 7,
+            "total": 7,
+            "seconds": 61.93,
+            "timeout": 240,
+            "resultSha256": "6317dbfe66dfeda7f00428403a7b8320dd9c45e7e11d474fe1ba431822bd37b9"
+          },
+          {
+            "suite": "creature-editor-browser",
+            "passed": 20,
+            "total": 20,
+            "seconds": 99.1,
+            "timeout": 300,
+            "resultSha256": "772f862b1fe4fec77a4641e770b351348f477d90a79502598caac37f4788faac"
+          },
+          {
+            "suite": "balancing-defaults-browser",
+            "passed": 4,
+            "total": 4,
+            "seconds": 30.29,
+            "timeout": 300,
+            "resultSha256": "4b687a31bf32db312d9ad1b82acdf7fed5bdcd6adcd7e8239738c867e60591de"
+          },
+          {
+            "suite": "balancing-browser",
+            "passed": 9,
+            "total": 9,
+            "seconds": 51.71,
+            "timeout": 300,
+            "resultSha256": "aca47b06341080b96f50376f03f65b47521681f4d1362235ffef8d5803329cc0"
+          },
+          {
+            "suite": "storytelling-browser",
+            "passed": 19,
+            "total": 20,
+            "seconds": 200.22,
+            "timeout": 300,
+            "resultSha256": "a47b566b73cb887f0a0d87cd394c2a79a9f6f1ed7a2324a0b1e91e226f0097b4"
+          }
+        ],
+        "limits": "Library14, RendererStory15 and EngineExport first unreached; source hash is gate-reported, actual raw source not in archive. Close dispatch/commit/GPU disposal not proven by bounded two-case trace."
+      },
+      "evidenceSha256": {
+        "/tmp/lw-postpush-9240715-review/hosted-0d5a52a-littlewild-failure-acceptance.json": "7df4387ed05fe2188a2161ba54e5bd88db1ee1b716feb2a6e9e2fc961afd3fec",
+        "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-full/verification/v15/storytelling-click-diagnostics.json": "8d14322f7cb6834d03517fea69a695ac056776744ed67da3bd3c14d23489c8c9",
+        "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-diagnostics.zip": "efa9451459396caceb9e564935c17fc8eae5f7d812196edf27e6a63fda5902d4",
+        "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-full.zip": "5d9fee0c0c501e3e46d2705596f76da747ff34a59f96f4891d7c1d422f20728e"
+      },
+      "publicationText": "Historical hosted `0d5a52add03b4943d03dbc0c3ac387e7700a734f` passed 60 preceding suites / 1,251 checks, then Story19/20 failed the original desktop Back to scenes click at its unchanged20-second limit. Across61 attempts,1,271 checks were observed:1,270 passed and1 failed;14 later suites /268 checks were unreached. All20 executed raw channels are empty; EngineExport and its two fixture requests were not reached. Actual full ZIP and HTML7348/18,780,453 bytes were verified. The34,532-byte trace captures only two successful Add track/import cases (95/59 rows), not the failing Close action; no Close dispatch/commit/disposal cause is proved. This history does not establish new-head hosted acceptance.\n\n"
     }
   },
   "github": {

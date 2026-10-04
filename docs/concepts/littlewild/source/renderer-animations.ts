@@ -23,11 +23,12 @@
  const hash=(value:string):number=>{let result=2166136261;for(const character of value)result=Math.imul(result^character.codePointAt(0)!,16777619);return result>>>0;};
  function create(canvas:HTMLCanvasElement):LWAnimations.Layer {
   const P5=root.p5;if(!P5)throw Error('Pinned p5.js 2.3.4 is unavailable.');const parent=canvas.parentElement;if(!parent)throw Error('Mount the animation canvas before creating its layer.');
-  let disposed=false,initialized=false,busy=false,emptyPainted=false,request:{frame:LittlewildRenderer.Frame;descriptors:readonly LWAnimations.Descriptor[];time:number;project:(point:LittlewildRenderer.Point)=>LittlewildRenderer.Point}|null=null;
+  let disposed=false,initialized=false,busy=false,emptyPainted=false,removal:Promise<void>|null=null,request:{frame:LittlewildRenderer.Frame;descriptors:readonly LWAnimations.Descriptor[];time:number;project:(point:LittlewildRenderer.Point)=>LittlewildRenderer.Point}|null=null;
+  let setupStarted=false,resolveSetup:()=>void=()=>{};const setupReached=new Promise<void>(resolve=>{resolveSetup=resolve;});
   let resolveReady:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};const ready=new Promise<LittlewildRenderer.SwitchResult>(resolve=>{resolveReady=resolve;});
   const sketch=new P5(p=>{
-   p.noLoop();p.setup=()=>{p.noLoop();p.pixelDensity(1);p.createCanvas(canvas.width,canvas.height,canvas);if(disposed){void p.remove();resolveReady({ok:false,reason:'Animation layer was disposed.'});}};
-   p.draw=()=>{if(disposed){void p.remove();return;}p.clear();emptyPainted=!request?.descriptors.length;if(!initialized){initialized=true;void Promise.resolve().then(()=>Promise.resolve()).then(()=>resolveReady({ok:true}));}const current=request;if(!current)return;
+   p.noLoop();p.setup=()=>{setupStarted=true;resolveSetup();p.noLoop();if(disposed){void removeOnce();return;}p.pixelDensity(1);p.createCanvas(canvas.width,canvas.height,canvas);};
+   p.draw=()=>{if(disposed)return;p.clear();emptyPainted=!request?.descriptors.length;if(!initialized){initialized=true;void Promise.resolve().then(()=>Promise.resolve()).then(()=>resolveReady({ok:true}));}const current=request;if(!current)return;
     for(const descriptor of current.descriptors){if(current.time<descriptor.start||current.time>=descriptor.start+descriptor.duration)continue;const preset=presets.get(descriptor.presetId);if(!preset)continue;p.push();try{preset.draw(Object.freeze({p5:p,time:current.time-descriptor.start,phase:(current.time-descriptor.start)/descriptor.duration,seed:descriptor.seed??hash(descriptor.id),center:current.project({x:descriptor.x,y:descriptor.y}),radius:descriptor.radius,color:descriptor.color,count:descriptor.count,viewport:current.frame.viewport}));}finally{p.pop();}}
    };
   },parent);
@@ -45,8 +46,18 @@
     if(request!==pending&&!request?.descriptors.length)paint();
    });
   }
-  function dispose(){if(disposed)return;disposed=true;request=null;clearTimeout(timer);resolveReady({ok:false,reason:'Animation layer was disposed.'});void sketch.remove();canvas.remove();}
-  return{ready,get looping(){return sketch.isLooping();},draw(frame,descriptors,time,project){if(disposed)return;if(!Number.isFinite(time)||time<0)throw Error('Animation time must be finite and nonnegative.');request={frame,descriptors:validate(descriptors),time,project};paint();},dispose};
+  // p5 awaits presetup before creating its default canvas. Cancellation during
+  // that await releases once after setup reaches us, without adopting our canvas.
+  function removeOnce():Promise<void>{if(!removal){try{removal=setupStarted?Promise.resolve(sketch.remove()):setupReached.then(()=>sketch.remove());}catch(error){removal=Promise.reject(error);}}return removal;}
+  function reportRemoval(error:unknown):void{console.error('p5 animation resource release failed.',error);}
+  function stop():unknown[]{disposed=true;request=null;clearTimeout(timer);resolveReady({ok:false,reason:'Animation layer was disposed.'});const errors:unknown[]=[];try{sketch.noLoop();}catch(error){errors.push(error);}try{canvas.remove();}catch(error){errors.push(error);}return errors;}
+  let finalizer:(()=>Promise<void>)|null=null;
+  function dispose(){if(disposed){if(finalizer)void finalizer().catch(reportRemoval);return;}const errors=stop();void removeOnce().catch(reportRemoval);if(errors.length)throw new AggregateError(errors,'p5 animation retirement failed.');}
+  function retire():(()=>Promise<void>)|undefined{
+   if(disposed||!initialized)return undefined;const errors=stop();let finalization:Promise<void>|null=null;
+   finalizer=()=>finalization??=(async()=>{try{await removeOnce();}catch(error){errors.push(error);}if(errors.length)throw new AggregateError(errors,'p5 animation resource release failed.');})();return finalizer;
+  }
+  return{ready,get looping(){return sketch.isLooping();},draw(frame,descriptors,time,project){if(disposed)return;if(!Number.isFinite(time)||time<0)throw Error('Animation time must be finite and nonnegative.');request={frame,descriptors:validate(descriptors),time,project};paint();},dispose,retire};
  }
  register({id:'sparkles',name:'Sparkles',source:'source/renderer-animations.ts',description:'Deterministic drifting points around a scene position.'},({p5:p,phase,seed,center,radius,color,count})=>{p.noStroke();p.fill(color);for(let i=0;i<count;i++){const angle=((Math.imul(seed+i,2654435761)>>>0)/4294967296+phase*.2)*Math.PI*2,distance=radius*(.2+((i*37+seed)%101)/126);p.circle(center.x+Math.cos(angle)*distance,center.y+Math.sin(angle)*distance,2+4*(1-Math.abs((phase*2+i/count)%2-1)));}});
  register({id:'orbit',name:'Orbit',source:'source/renderer-animations.ts',description:'Evenly spaced lights orbit their scene position.'},({p5:p,phase,center,radius,color,count})=>{p.noStroke();p.fill(color);for(let i=0;i<count;i++){const angle=(phase+i/count)*Math.PI*2;p.circle(center.x+Math.cos(angle)*radius,center.y+Math.sin(angle)*radius*.5,6);}});
