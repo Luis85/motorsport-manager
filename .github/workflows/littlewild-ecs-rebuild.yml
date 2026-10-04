@@ -157,7 +157,7 @@ jobs:
         with:
           name: wildlands-godot-export
           path: |
-            docs/concepts/littlewild/.generated/wildlands-godot-results.json
+            docs/concepts/littlewild/.generated/wildlands-godot-*.json
             docs/concepts/littlewild/.generated/wildlands-native.png
           include-hidden-files: true
           if-no-files-found: warn
