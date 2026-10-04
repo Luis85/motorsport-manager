@@ -311,6 +311,50 @@ class StandaloneContracts(unittest.TestCase):
             command[command.index("--") + 1 :], ["--disable-vsync", "--standalone-smoke=launch"]
         )
 
+    def test_windows_ci_selects_angle_before_application_arguments(self):
+        report = {"passed": True, "checks": 1, "failures": [], "stage": "launch"}
+
+        def complete_stage(timeout):
+            self.assertEqual(timeout, 180)
+            (self.root / "launch.json").write_text(json.dumps(report), encoding="utf-8")
+            return 0
+
+        for ci in (True, False):
+            with self.subTest(ci=ci):
+                (self.root / "launch.json").unlink(missing_ok=True)
+                with (
+                    patch.object(smoke.os, "name", "nt"),
+                    patch.object(smoke.subprocess, "CREATE_NEW_PROCESS_GROUP", 512, create=True),
+                    patch.object(smoke.subprocess, "Popen") as launch,
+                ):
+                    launch.return_value.wait.side_effect = complete_stage
+                    launch.return_value.poll.return_value = 0
+                    self.assertEqual(
+                        smoke.run_stage(
+                            self.package / self.manifest["binary"],
+                            self.package,
+                            self.root / "user",
+                            self.root,
+                            "launch",
+                            {"GITHUB_ACTIONS": "true"} if ci else {},
+                        ),
+                        report,
+                    )
+                command = launch.call_args.args[0]
+                if ci:
+                    driver = command.index("--rendering-driver")
+                    self.assertLess(driver, command.index("--"))
+                    self.assertEqual(command[driver + 1], "opengl3_angle")
+                else:
+                    self.assertNotIn("--rendering-driver", command)
+                self.assertNotIn("--headless", command)
+                self.assertEqual(command.count("--disable-vsync"), 2)
+                self.assertEqual(
+                    command[command.index("--") + 1 :],
+                    ["--disable-vsync", "--standalone-smoke=launch"],
+                )
+                self.assertEqual(launch.call_args.kwargs["creationflags"], 512)
+
     def test_runtime_target_is_not_cross_build_success(self):
         self.manifest["target"] = "windows"
         self.manifest["templates"] = {

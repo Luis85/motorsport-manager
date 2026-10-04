@@ -176,6 +176,10 @@ def run_stage(
         "Dummy",
         "--disable-vsync",
     ]
+    if os.name == "nt" and env.get("GITHUB_ACTIONS") == "true":
+        # Hosted Windows has ANGLE support but no OpenGL 3.3; select its actual
+        # compatibility driver directly instead of warning through WGL fallback.
+        arguments += ["--rendering-driver", "opengl3_angle"]
     if os.name != "nt":
         xvfb = shutil.which("xvfb-run")
         if not xvfb and not env.get("DISPLAY"):
