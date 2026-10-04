@@ -47,7 +47,7 @@
         else {rememberPanelScroll();if(!back&&prior!==type&&!['content-preview','import-preview','welcome'].includes(prior)){ui.history.push({type:prior,id:ui.modalId});if(ui.history.length>12)ui.history.shift();}}
         ui.modal=type;ui.modalId=id;
         if(type==='training'&&id&&SKILLS[id]){Object.assign(shell.progressionUI.view,{learn:'lessons',discipline:'all',status:'all',search:'',selectedSkill:id,lessonDetailOpen:true});}
-        shell.world.placement=null;refreshPlacement();renderModal();$('overlay').classList.add('show');document.body.classList.add('modal-open');$('app').inert=true;updateUI();
+        shell.world.placement=null;refreshPlacement();renderModal();$('overlay').classList.add('show');document.body.classList.add('modal-open');$('app').inert=true;const builder=$('wildlands-workspace');if(builder)builder.inert=true;updateUI();
         const focusRequest=++ui.focusRequest;
         requestAnimationFrame(()=>{
             if(ui.focusRequest!==focusRequest||ui.modal!==type)return;
@@ -63,7 +63,7 @@
         if(!shell.engine.s.started){if(ui.modal!=='welcome'){shell.contentUI.view.preview=null;ui.pendingImport=null;ui.history=[];openModal('welcome',null,true);}return;}
         ui.focusRequest++;rememberPanelScroll();if(ui.modal==='import-preview')ui.pendingImport=null;
         shell.contentUI.view.preview=null;
-        ui.modal=null;ui.modalId=null;ui.history=[];$('overlay').classList.remove('show');document.body.classList.remove('modal-open');$('app').inert=false;shell.world.lastDrawAt=0;updateUI(true);
+        ui.modal=null;ui.modalId=null;ui.history=[];$('overlay').classList.remove('show');document.body.classList.remove('modal-open');$('app').inert=false;const builder=$('wildlands-workspace');if(builder)builder.inert=false;shell.world.lastDrawAt=0;updateUI(true);
         (ui.lastFocus?.isConnected&&ui.lastFocus.offsetParent!==null&&ui.lastFocus!==document.body?ui.lastFocus:$('world')).focus({preventScroll:true});
         shell.worldUI.resume();
     }

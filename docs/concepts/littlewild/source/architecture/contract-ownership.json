@@ -181,6 +181,10 @@
     {
       "path": "renderer-data-contracts.d.ts",
       "owner": "content-model"
+    },
+    {
+      "path": "wildlands-project-contracts.d.ts",
+      "owner": "wildlands-project"
     }
   ]
 }

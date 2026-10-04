@@ -72,6 +72,13 @@
         }
       }catch(error){ctx.toast(error.message,true);}
     });
-    return {state,editor,creatureEditor,storytelling,render,cancelRead(){state.readId++;editor.cancelRead();creatureEditor.cancelRead();balancingEditor.cancelRead();},reset(options={}){if(!options.preserveCameras)storytelling.reset();creatureEditor.reset();balancingEditor.reset();if(!options.preserveCameras)state.cameras.clear();state.transition=null;state.preview=null;state.errors=[];state.readId++;}};
+    function reviewPack(pack,id){
+      // Builder imports and switches share the existing validated, Cancel-first review.
+      const preview=X.prepareScene(pack,id),at=state.packs.findIndex(value=>value.id===preview.pack.id);
+      if(at<0){state.selected=state.packs.length;state.packs.push(preview.pack);}
+      else{state.packs[at]=preview.pack;state.selected=at;}
+      state.returnTo='scenarios';state.preview=preview;state.errors=[];ctx.open('scenario-preview');
+    }
+    return {state,editor,creatureEditor,storytelling,render,reviewPack,openTool(tool){if(tool==='creatures')creatureEditor.open();if(tool==='balance')balancingEditor.open();},cancelRead(){state.readId++;editor.cancelRead();creatureEditor.cancelRead();balancingEditor.cancelRead();},reset(options={}){if(!options.preserveCameras)storytelling.reset();creatureEditor.reset();balancingEditor.reset();if(!options.preserveCameras)state.cameras.clear();state.transition=null;state.preview=null;state.errors=[];state.readId++;}};
   }};
 })(typeof globalThis!=='undefined'?globalThis:this);

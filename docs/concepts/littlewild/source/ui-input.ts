@@ -138,7 +138,7 @@
         tabs[next].click();
         tabs[next].focus();
         return;
-    } if (e.code === 'Space' && e.target.closest('button,a,[role=button]'))
+    } if (e.code === 'Space' && e.target.closest('button,a,summary,[role=button]'))
         return; if (e.repeat)
         return; if (e.code === 'Space') {
         e.preventDefault();timeAction('pause');return;

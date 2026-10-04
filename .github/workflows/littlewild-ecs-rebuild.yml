@@ -52,14 +52,77 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1548'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1611'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
               {"suite":"animations","name":"Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
               {"suite":"renderer-storytelling","name":"Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
               {"suite":"renderer-storytelling","name":"Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"},
-              {"suite":"storytelling-browser","name":"Synthetic queued preview readiness publishes admitted transport before another application frame"}
+              {"suite":"storytelling-browser","name":"Synthetic queued preview readiness publishes admitted transport before another application frame"},
+              {"suite":"wildlands-runtime","name":"Discovery describes every transported operation and SDK allowlist without ticking"},
+              {"suite":"wildlands-runtime","name":"Detached native view includes canonical physical world, assets and scenario profile"},
+              {"suite":"wildlands-runtime","name":"Bridge commands and exact fixed steps produce the same authoritative SDK continuation"},
+              {"suite":"wildlands-runtime","name":"Invalid clock and command input preserve the full RNG and production story"},
+              {"suite":"wildlands-runtime","name":"Pause, inspection and authoring queries never advance simulation time"},
+              {"suite":"wildlands-runtime","name":"Failed scenario/story replacements preserve an existing complete continuation"},
+              {"suite":"wildlands-runtime","name":"Portable story restore retains exact state and permits deterministic continuation"},
+              {"suite":"wildlands-runtime","name":"Scenario switching uses canonical built-in ownership and rejects stale reflection"},
+              {"suite":"wildlands-runtime","name":"Reviewed scene transitions retain canonical visited checkpoint ownership"},
+              {"suite":"wildlands-runtime","name":"Retained scene drafts edit, undo and export without mutating a running world"},
+              {"suite":"wildlands-runtime","name":"Asynchronous SDK validation is awaited and returns its detached result"},
+              {"suite":"wildlands-runtime","name":"Complete source export can roundtrip through the same bounded protocol validator"},
+              {"suite":"wildlands-runtime","name":"Graph-less prototype captures and cinematic sampling preserve all authored scenes"},
+              {"suite":"wildlands-runtime","name":"Malformed and duplicate-key envelopes fail without accessors or mutation"},
+              {"suite":"wildlands-runtime","name":"Project startup applies the same strict admission as web and CLI"},
+              {"suite":"wildlands-runtime","name":"JSON-lines process correlates UTF8 requests, recovers malformed lines and closes cleanly"},
+              {"suite":"wildlands-runtime","name":"Oversized line is drained with bounded memory and next request still succeeds"},
+              {"suite":"wildlands-runtime","name":"Pack/project startup files preserve authored scene and reject duplicate JSON keys"},
+              {"suite":"wildlands-runtime","name":"Shutdown and EOF release owned session so a fresh SDK session can open"},
+              {"suite":"wildlands-project","name":"Default project is a complete detached Littlewild prototype"},
+              {"suite":"wildlands-project","name":"Versioned discovery describes useful portable and bounded agent operations"},
+              {"suite":"wildlands-project","name":"Project fields, target, identity and scene selection are validated strictly"},
+              {"suite":"wildlands-project","name":"Authoritative scenario validation rejects semantic world corruption"},
+              {"suite":"wildlands-project","name":"Scenario switching preserves project identity and supports portable custom packs"},
+              {"suite":"wildlands-project","name":"Deterministic bounded recipes capture changed state without losing authored scenes"},
+              {"suite":"wildlands-project","name":"Paused steps report requested clock work independently from actual advancement"},
+              {"suite":"wildlands-project","name":"Capture preserves every scene in all three built-in prototypes"},
+              {"suite":"wildlands-project","name":"Shared capture preserves a third authored scene and timeline metadata"},
+              {"suite":"wildlands-project","name":"Recipe count, clock bounds and reflection are rejected before opening sessions"},
+              {"suite":"wildlands-project","name":"Rejected native commands release their session and preserve input project"},
+              {"suite":"wildlands-project","name":"Scene authoring recipes use native revisions and validators"},
+              {"suite":"wildlands-cli","name":"Cold help and discovery are structured, versioned and machine readable"},
+              {"suite":"wildlands-cli","name":"Create validates a complete default portable project and inspect never ticks"},
+              {"suite":"wildlands-cli","name":"Scenario switching and custom pack authoring stay portable"},
+              {"suite":"wildlands-cli","name":"Explicit recipes advance the real simulation and publish a complete output"},
+              {"suite":"wildlands-cli","name":"Malformed arguments and bounded recipe failures retain prior published output"},
+              {"suite":"wildlands-cli","name":"Invalid semantic project returns exit 1 without touching files"},
+              {"suite":"wildlands-cli","name":"Input aliases and symlink aliases are rejected without overwriting authority"},
+              {"suite":"wildlands-cli","name":"Bootstrap errors remain one structured diagnostic while help remains available"},
+              {"suite":"wildlands-acceptance","name":"A new terminal project preloads Littlewild and discovery describes its actual commands"},
+              {"suite":"wildlands-acceptance","name":"Every discovered built-in scenario compiles complete resources with verified manifest hashes"},
+              {"suite":"wildlands-acceptance","name":"Repeated bounded recipes produce the same game state without changing the source project"},
+              {"suite":"wildlands-acceptance","name":"Scene editor recipes change authored data through the same portable validation boundary"},
+              {"suite":"wildlands-acceptance","name":"Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output"},
+              {"suite":"wildlands-acceptance","name":"Rejected editor and clock recipes cannot publish partial edits"},
+              {"suite":"wildlands-acceptance","name":"CLI refuses input aliases and compiled directory replacement"},
+              {"suite":"wildlands-browser","name":"1440px default showcase is a portable Littlewild project"},
+              {"suite":"wildlands-browser","name":"1440px scenario review preserves the game until explicit launch"},
+              {"suite":"wildlands-browser","name":"1440px project rename and malformed import retain the current scenario"},
+              {"suite":"wildlands-browser","name":"1440px portable project import requires review and restores project identity"},
+              {"suite":"wildlands-browser","name":"1440px export downloads a Godot ZIP and preserves the project"},
+              {"suite":"wildlands-browser","name":"1440px workspace has reachable controls without horizontal overflow"},
+              {"suite":"wildlands-browser","name":"1440px programmatic same-ID scenario replacement preserves its complete authoring closure"},
+              {"suite":"wildlands-browser","name":"390px default showcase is a portable Littlewild project"},
+              {"suite":"wildlands-browser","name":"390px scenario review preserves the game until explicit launch"},
+              {"suite":"wildlands-browser","name":"390px project rename and malformed import retain the current scenario"},
+              {"suite":"wildlands-browser","name":"390px portable project import requires review and restores project identity"},
+              {"suite":"wildlands-browser","name":"390px export downloads a Godot ZIP and preserves the project"},
+              {"suite":"wildlands-browser","name":"390px workspace has reachable controls without horizontal overflow"},
+              {"suite":"wildlands-browser","name":"390px programmatic same-ID scenario replacement preserves its complete authoring closure"},
+              {"suite":"wildlands-browser","name":"Wildlands workspace performs no external requests or script/console errors"},
+              {"suite":"wildlands-browser","name":"1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
+              {"suite":"wildlands-browser","name":"390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -106,8 +169,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 75 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The original complete 75-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 80 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 80-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -151,7 +214,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the original 75-suite gate or its reviewed baseline plus named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Official installed browser selected by pinned Playwright; executable override unset. Original browser harness flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 80-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE
@@ -258,7 +321,7 @@ jobs:
                       select(path)
           files = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size, 'sha256':hashlib.sha256(path.read_bytes()).hexdigest()} for path in sorted(selected)]
           excluded = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size} for path in sorted((root / 'verification/v15').rglob('*')) if path.is_file() and path not in selected]
-          manifest = {'scope':'Optional core artifact only; original complete artifact is retained separately.', 'selection':'HTML, package lock, every available registered result plus result/log/trace/progress evidence; bulk exports, screenshots and unrelated generated data excluded.', 'gateStatus':gate.get('status'), 'attemptedSuites':len(gate.get('suites', [])), 'missingEvidence':sorted(set(missing)), 'payloadBytes':sum(row['bytes'] for row in files), 'zipLimitBytes':30*1024*1024, 'files':files, 'excludedFromCore':excluded}
+          manifest = {'scope':'Optional core artifact only; original complete artifact is retained separately.', 'selection':'HTML, package lock, every available registered result plus result/log/trace/progress evidence; bulk exports, screenshots and unrelated generated data excluded.', 'separateArtifactScopes':[{'name':'wildlands-godot-export','scope':'Independent Godot job conformance and native frame; this primary-job archive contains only locally present evidence.'}], 'gateStatus':gate.get('status'), 'attemptedSuites':len(gate.get('suites', [])), 'missingEvidence':sorted(set(missing)), 'payloadBytes':sum(row['bytes'] for row in files), 'zipLimitBytes':30*1024*1024, 'files':files, 'excludedFromCore':excluded}
           archive = output / 'littlewild-core-evidence.zip'
           with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zipped:
               for row in files:
@@ -303,6 +366,7 @@ jobs:
           if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
+
       - name: Retain verification evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -316,4 +380,54 @@ jobs:
             docs/concepts/littlewild/.generated/*-results.json
           if-no-files-found: warn
           include-hidden-files: true
+          retention-days: 14
+
+  godot-export:
+    name: Wildlands Godot export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.7.2
+      LP_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+      - name: Install virtual display and pinned Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends xvfb xauth libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o /tmp/wildlands-godot.zip
+          unzip -q /tmp/wildlands-godot.zip -d /tmp/wildlands-godot
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
+          chmod +x /tmp/wildlands-godot/Godot_*
+      - name: Build the separate Wildlands project
+        working-directory: docs/concepts/littlewild
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run build
+      - name: Verify playable export and capture native frame
+        working-directory: docs/concepts/littlewild
+        shell: bash
+        run: |
+          set -euo pipefail
+          WILDLANDS_GODOT="/tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+          WILDLANDS_CAPTURE_NATIVE="$PWD/.generated/wildlands-native.png" \
+          xvfb-run -a npm run verify:godot --silent
+      - name: Retain export conformance and native frame
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wildlands-godot-export
+          path: |
+            docs/concepts/littlewild/.generated/wildlands-godot-*.json
+            docs/concepts/littlewild/.generated/wildlands-native.png
+          include-hidden-files: true
+          if-no-files-found: warn
           retention-days: 14

@@ -75,7 +75,7 @@ async function main():Promise<void>{
  const build=spawnSync("npm",["run","build","--silent","--","--pack","source/content/emberworks.pack.json","--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});
  if(build.status!==0)throw new Error(build.stderr||build.stdout||"Custom build failed");
  page=await context.newPage();await page.setViewportSize({width:1280,height:800});await page.setContent(fs.readFileSync(artifact,"utf8"),{waitUntil:"load"});await page.waitForFunction(() => !!(window as any).Littlewild);
- await check("Custom-build welcome is branded from its input pack",async()=>(await page.title()).startsWith("Emberworks"));
+ await check("Custom-build welcome is branded from its input pack",async()=>eq(await page.title(),"Wildlands · Emberworks"));
  await check("Custom artifact contains one selectable pack",async()=>eq(await page.evaluate("LWScenarios.builtins().length"),1));
  await page.locator("[data-act=begin]").click();await page.waitForTimeout(100);
  await check("Custom-build start uses the pack-defined first scene",async()=>eq(await page.evaluate("Littlewild.engine.scenarioContext.sceneId"),"workshop-first-morning"));

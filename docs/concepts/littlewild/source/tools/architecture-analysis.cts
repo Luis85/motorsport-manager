@@ -123,7 +123,7 @@ export function analyzeRuntime(file: string, text: string): RuntimeAnalysis {
     const value = unwrap(expression), access = member(value);
     if (access && rootExpression(access.owner)) {
       if (access.name === null) result.dynamicGlobals++;
-      else if (/^LW[A-Za-z0-9_]*$/.test(access.name)) result.globals.push({ name: access.name, write: isWrite(value) });
+      else if (/^(?:LW|Wildlands)[A-Za-z0-9_]*$/.test(access.name)) result.globals.push({ name: access.name, write: isWrite(value) });
     }
     forbidden(qualified(value));
   }
@@ -171,7 +171,7 @@ export function analyzeRuntime(file: string, text: string): RuntimeAnalysis {
         const name = element.propertyName ? literal(element.propertyName) ??
           (ts.isIdentifier(element.propertyName) ? element.propertyName.text : null) :
           ts.isIdentifier(element.name) ? element.name.text : null;
-        if (name && /^LW[A-Za-z0-9_]*$/.test(name)) result.globals.push({ name, write: false });
+        if (name && /^(?:LW|Wildlands)[A-Za-z0-9_]*$/.test(name)) result.globals.push({ name, write: false });
       }
     }
     runtimeChildren(node, visit);

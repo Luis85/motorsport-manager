@@ -2,9 +2,12 @@
 
 **Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
 
-The separate [Littlewild browser concept](../concepts/littlewild/DOCUMENTATION.md)
-has its own runtime, documentation and source-bound evidence. Its capabilities
-are outside this native project inventory.
+The separate [Wildlands prototype builder](../concepts/littlewild/DOCUMENTATION.md)
+retains its own TypeScript runtime, browser workspace, terminal tools and
+source-bound evidence. Littlewild is its default showcase; its
+[Godot desktop compiler](../concepts/littlewild/WILDLANDS.md#runnable-godot-compiler)
+uses a local Node subprocess for gameplay. Those capabilities and prerequisites
+are outside this native Motorsport Manager inventory.
 
 ## Shipping player experience
 

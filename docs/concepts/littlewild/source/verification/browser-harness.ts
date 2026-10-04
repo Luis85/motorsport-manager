@@ -3,14 +3,16 @@ import { createRequire } from "node:module";
 
 export async function launchBrowser(): Promise<Browser> {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  // Exercise full desktop Chromium, including its WebGL preview lifecycle.
+  // Without a channel Playwright selects the separate headless-shell binary.
   const args = ["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"];
-  const browser = await chromium.launch({headless:true,...(executablePath ? {executablePath} : {}),args});
+  const browser = await chromium.launch({headless:true,...(executablePath ? {executablePath} : {channel:"chromium"}),args});
   try {
     const installed = createRequire(__filename);
     const version = (name: string) => (installed(`${name}/package.json`) as {version: string}).version.slice(0,96);
     console.log(JSON.stringify({kind:"littlewild-browser-provenance",node:process.version,
       playwright:version("playwright"),playwrightCore:version("playwright-core"),
-      browser:browser.version().slice(0,96),selection:executablePath ? "explicit-override" : "default",args}));
+      browser:browser.version().slice(0,96),selection:executablePath ? "explicit-override" : "bundled-desktop-chromium",args}));
   } catch {
     // Observation must preserve a successfully launched browser even if stdout is unavailable.
   }
