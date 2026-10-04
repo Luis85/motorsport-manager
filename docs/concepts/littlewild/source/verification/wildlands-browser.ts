@@ -15,9 +15,8 @@ async function check(name:string,work:()=>Promise<void>):Promise<void>{
  catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
 }
 async function save(page:Page,width:number,label:string):Promise<Wildlands.Project>{
- const pending=page.waitForEvent('download');
- await page.locator('[data-wildlands="save"]').click();
- const download=await pending,destination=path.join(OUT,`wildlands-${label}-${width}.json`);
+ const [download]=await Promise.all([page.waitForEvent('download'),page.locator('[data-wildlands="save"]').click()]);
+ const destination=path.join(OUT,`wildlands-${label}-${width}.json`);
  assert(download.suggestedFilename().endsWith('.json'));
  await download.saveAs(destination);
  return JSON.parse(fs.readFileSync(destination,'utf8')) as Wildlands.Project;
@@ -185,12 +184,11 @@ async function main():Promise<void>{
     assert.equal(expected.id,(JSON.parse(draft) as LWContentPorts.ScenarioPack).id);
     assert.deepEqual(expected.scenes.map(scene=>scene.id),(JSON.parse(draft) as LWContentPorts.ScenarioPack).scenes.map(scene=>scene.id));
     assert.deepEqual(JSON.parse(await page.evaluate<string>('JSON.stringify(Wildlands.project().pack)')),expected);
+    await page.keyboard.press('Escape');
     const saved=await save(page,width,'same-scene-replacement');assert.deepEqual(saved.pack,expected);
     assert.equal(saved.id,retained.id);assert.equal(saved.name,retained.name);
-    await page.keyboard.press('Escape');
-    const pending=page.waitForEvent('download',{timeout:120000});
-    await page.locator('[data-wildlands="export"]').click();
-    const download=await pending,destination=path.join(OUT,'wildlands-same-scene-'+width+'.zip');
+    const [download]=await Promise.all([page.waitForEvent('download',{timeout:120000}),page.locator('[data-wildlands="export"]').click()]);
+    const destination=path.join(OUT,'wildlands-same-scene-'+width+'.zip');
     assert.equal(download.suggestedFilename(),saved.id+'.godot.zip');await download.saveAs(destination);
     assert.deepEqual(projectFromZip(fs.readFileSync(destination)),saved);
     assert.deepEqual(await save(page,width,'after-same-scene-export'),saved);
