@@ -19,7 +19,7 @@
   const e=ctx.esc;
   const exchange=root.LWExternalEditorUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,onApplied:id=>select('scene',id)});
   const engineExport=root.LWEngineExportUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e});
-  const storytelling=root.LWStorytellingUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,deferPreview,
+  const storytelling=root.LWStorytellingUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,deferPreview,deferPreviewCleanup:work=>{deferPreview(work);},
    ...(root.LWStorytellingEditorPreview?{preview:(canvas,pack,id)=>root.LWStorytellingEditorPreview!.create(canvas,pack,id)}:{})});
   function deferPreview(work:()=>void):()=>void {
    // Authoring commits synchronously. Observation preparation runs outside that
