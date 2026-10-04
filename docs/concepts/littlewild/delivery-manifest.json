@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74",
+      "identity": "16e48243f2093756244a2068b6dd868fa624417ebcc7222572a158ddce061fc1",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -95,32 +95,32 @@
     },
     "current": {
       "status": "passed",
-      "passed": 1529,
-      "total": 1529,
+      "passed": 1532,
+      "total": 1532,
       "browserIncluded": true,
-      "sourceSha256": "cd76fe50a57fc2fab1f56635f5b3e773650ebfe538f21641bf23944b81f7fde1",
-      "startedAt": "2026-10-04T04:58:01.059Z",
+      "sourceSha256": "7bcb66a8b0f4e0a1fcd78c156311346acf997d48d9cfa920dcd593866a0a14e7",
+      "startedAt": "2026-10-04T06:08:24.971Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "c33c69c238ad9075609dd4d1ae1142f18727cbf46ad3a6843f7bba139b46e421",
-      "htmlBytes": 18765740,
-      "finishedAt": "2026-10-04T05:22:46.441Z",
+      "htmlSha256": "6fafea78ba5c92f6b17d5f4e9a5c349e879a4a985e206a605a167a67b230b120",
+      "htmlBytes": 18765804,
+      "finishedAt": "2026-10-04T06:31:26.874Z",
       "suites": 75,
       "browserSuites": 20,
       "browserChecks": 334,
-      "verifiedSourceCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
+      "verifiedSourceCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
       "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
       "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74",
+      "engineSourceIdentity": "16e48243f2093756244a2068b6dd868fa624417ebcc7222572a158ddce061fc1",
       "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
-      "publicationBaseCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
+      "publicationBaseCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Fresh complete local gate for exact stable Playwright 1.62.1 pin; gameplay/verifier/vendor emit and all original assertions/limits unchanged. Actual local system Chromium 151.0.7922.173 does not certify hosted bundled 151.0.7922.34; all seven exact-head hosted workflows are required and tracked separately in PR #25 current-head checks.",
+      "scope": "Fresh complete local allocation-only ordinary-object descriptor inspection optimization gate; all original commands, limits, safety checks, validation calls and named assertions remain, with three added content-boundary regressions. Local acceptance is separate from all seven future exact-head hosted workflows.",
       "browserToolchain": {
         "playwright": "1.62.1",
         "playwrightCore": "1.62.1",
@@ -128,7 +128,7 @@
         "officialRevision": "1234",
         "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
         "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
-        "scope": "Previous stable toolchain reproducibility mitigation; not the unreleased 1.64 Range patch or a proven diagnosis of the Chromium 153 failures."
+        "scope": "Exact stable Playwright 1.62.1 and selected Chromium 151.0.7922.34 revision 1234 unchanged. ae874f0 failed before browser execution; hosted mitigation remains untested until the new exact-head CI runs."
       }
     },
     "historicalPreAuthoringExpansion": {
@@ -380,6 +380,45 @@
       "publicationBaseCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
       "scope": "Complete local bfa4e87 75-suite/1529-check lifecycle checkpoint; subsequent hosted bc7e8bb failed two desktop Storytelling clicks before renderer-library verification.",
+      "historical": true
+    },
+    "historicalPreDescriptorInspectionOptimization": {
+      "status": "passed",
+      "passed": 1529,
+      "total": 1529,
+      "browserIncluded": true,
+      "sourceSha256": "cd76fe50a57fc2fab1f56635f5b3e773650ebfe538f21641bf23944b81f7fde1",
+      "startedAt": "2026-10-04T04:58:01.059Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "c33c69c238ad9075609dd4d1ae1142f18727cbf46ad3a6843f7bba139b46e421",
+      "htmlBytes": 18765740,
+      "finishedAt": "2026-10-04T05:22:46.441Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 334,
+      "verifiedSourceCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete local c0e66f7 stable-toolchain checkpoint; ae874f0 later failed Node scene-navigation before any browser or renderer-library suite.",
+      "browserToolchain": {
+        "playwright": "1.62.1",
+        "playwrightCore": "1.62.1",
+        "officialBundledChromium": "151.0.7922.34",
+        "officialRevision": "1234",
+        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
+        "scope": "Previous stable toolchain reproducibility mitigation; not the unreleased 1.64 Range patch or a proven diagnosis of the Chromium 153 failures."
+      },
       "historical": true
     }
   },
