@@ -28,8 +28,8 @@ python3 scripts/balance.py inspect race_tuning/default.json /balance/tyre_incide
 python3 scripts/balance.py validate --godot /path/to/pinned/godot
 ```
 
-See [balancing workflow](../docs/balancing.md) for field units and bounds,
+See [balancing workflow](../docs/how-to/balancing.md) for field units and bounds,
 safe edits, dry runs, validation and A/B comparisons. The JSON-pointer editor
 only changes existing scalar parameters; structural or identity changes need
 the content-authoring workflow described in
-[`docs/content/README.md`](../docs/content/README.md).
+[`docs/reference/content/README.md`](../docs/reference/content/README.md).

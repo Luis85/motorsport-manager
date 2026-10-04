@@ -12,7 +12,7 @@ PACK = ROOT / "config/pack.json"
 STARTER = ROOT / "scripts/application/campaign/starter.gd"
 RIVALS = ROOT / "scripts/domain/campaign/rivals.gd"
 SCREENS = ROOT / "scripts/composition/campaign_screens.gd"
-INVENTORY = ROOT / "docs/content/consumer-inventory.json"
+INVENTORY = ROOT / "docs/reference/content/consumer-inventory.json"
 
 
 class CampaignDataContractTests(unittest.TestCase):
