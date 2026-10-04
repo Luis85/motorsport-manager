@@ -32,7 +32,7 @@ declare namespace LittlewildRenderer {
   onDispose(cleanup:()=>void):void;
  }
  interface Instance {
-  /** Opt in only when bitmap output depends on detached projection values, not host time/delta. Omitted instances receive every preview draw. */
+  /** Opt in only when bitmap output depends on detached projection values, not host time/delta, and remains retained for presentation/readback between browser frames. Omitted instances receive every preview draw. */
   readonly redrawPolicy?:'continuous'|'projection';
   mount():void;draw(frame:Frame):void;resize(viewport:Viewport):void;dispose():void;
   hitTest?(point:Point,frame:Frame):Hit|null;

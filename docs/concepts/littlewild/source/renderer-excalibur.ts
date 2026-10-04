@@ -9,11 +9,14 @@
  interface Font {size:number;family:string;color:Color;}
  interface Label {text:string;color:Color;font:Font;readonly width:number;draw(context:Graphics,x:number,y:number):void;}
  interface Polygon {_bitmap:HTMLCanvasElement;draw(context:Graphics,x:number,y:number):void;}
- interface Library {ExcaliburGraphicsContextWebGL:new(options:{canvasElement:HTMLCanvasElement;antialiasing:boolean;multiSampleAntialiasing:boolean;backgroundColor:Color})=>Graphics;Vector:new(x:number,y:number)=>Vector;Color:{fromHex(value:string):Color};Font:new(options:{family:string;size:number;color:Color})=>Font;Text:new(options:{text:string;font:Font;color:Color})=>Label;FontCache:{cacheSize:number;clearCache():void};Polygon:new(options:{points:Vector[];color:Color})=>Polygon;}
+ interface Library {ExcaliburGraphicsContextWebGL:new(options:{canvasElement:HTMLCanvasElement;context:WebGL2RenderingContext;antialiasing:boolean;multiSampleAntialiasing:boolean;backgroundColor:Color})=>Graphics;Vector:new(x:number,y:number)=>Vector;Color:{fromHex(value:string):Color};Font:new(options:{family:string;size:number;color:Color})=>Font;Text:new(options:{text:string;font:Font;color:Color})=>Label;FontCache:{cacheSize:number;clearCache():void};Polygon:new(options:{points:Vector[];color:Color})=>Polygon;}
  const root=inputRoot as {ex?:Library;LWRenderers:LittlewildRenderer.Registry;LWRendererScene2D:LittlewildRenderer2D.Api;};
  root.LWRenderers.register({id:'excalibur-2d',name:'ExcaliburJS 2D',description:'ExcaliburJS 0.32.0 graphics context, driven by the player frame loop.',dimensions:['2d'],capabilities:['camera','hit-test','interiors','terrain-preview','construction-preview']},context=>{
   const library=root.ex;if(!library)throw Error('Pinned ExcaliburJS 0.32.0 is unavailable.');
-  const graphics=new library.ExcaliburGraphicsContextWebGL({canvasElement:context.canvas,antialiasing:false,multiSampleAntialiasing:false,backgroundColor:library.Color.fromHex('#dfeade')});
+  // Inject the first context with Excalibur's normal attributes and retained output.
+  const retained=context.canvas.getContext('webgl2',{antialias:false,premultipliedAlpha:false,alpha:true,depth:false,powerPreference:'high-performance',preserveDrawingBuffer:true});
+  if(!retained)throw Error('ExcaliburJS requires an available WebGL2 context.');
+  const graphics=new library.ExcaliburGraphicsContextWebGL({canvasElement:context.canvas,context:retained,antialiasing:false,multiSampleAntialiasing:false,backgroundColor:library.Color.fromHex('#dfeade')});
   let disposed=false,labelIndex=0;const labels:Label[]=[];const polygons=new Map<string,Polygon>(),colors=new Map<string,Color>();
   function color(value:string,opacity=1):Color {const key=value+':'+opacity;let found=colors.get(key);if(!found){found=library!.Color.fromHex(value);found.a=opacity;if(colors.size>=128)colors.clear();colors.set(key,found);}return found;}
   function release(){if(disposed)return;disposed=true;polygons.clear();colors.clear();graphics.dispose();}context.onDispose(release);
