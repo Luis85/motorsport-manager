@@ -47,6 +47,8 @@ function compile(): void {
     cwd: PROJECT, stdio: "inherit", timeout: 30000, killSignal: "SIGKILL"
   });
   if (sdkTypes.error || sdkTypes.status !== 0) throw new Error("Developer SDK declaration generation failed.");
+  // Cleaning compiler output also clears the executable bit used by npm-linked bins.
+  fs.chmodSync(path.join(GENERATED, "tools/wildlands-cli.cjs"), 0o755);
   for (const file of ["developer-contracts.d.ts", "developer-space-contracts.d.ts", "runtime-contracts.d.ts", "developer-scene-contracts.d.ts", "content-contracts.d.ts", "scene-graph-contracts.d.ts", "scene-editor-contracts.d.ts", "external-editor-contracts.d.ts", "animation-data-contracts.d.ts", "engine-export-contracts.d.ts", "balancing-contracts.d.ts", "balancing-tools-contracts.d.ts", "building-interior-data-contracts.d.ts", "interaction-contracts.d.ts", "storytelling-data-contracts.d.ts", "storytelling-contracts.d.ts", "storytelling-render-contracts.d.ts", "scene-navigation-contracts.d.ts", "renderer-contracts.d.ts", "renderer-data-contracts.d.ts", "canvas-authoring-contracts.d.ts", "external-editor-canvas-contracts.d.ts", "creature-editor-contracts.d.ts", "wildlands-project-contracts.d.ts"]) fs.copyFileSync(path.join(ROOT, file), path.join(GENERATED, file));
   const declaration = path.join(GENERATED, "developer-sdk.d.cts");
   fs.writeFileSync(declaration, fs.readFileSync(declaration, "utf8").replace(
