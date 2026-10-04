@@ -1,6 +1,10 @@
 /// <reference path="./storytelling-render-contracts.d.ts" />
 declare namespace LWStorytellingRenderer {
- interface Preview {readonly ready:Promise<LittlewildRenderer.SwitchResult>;snapshot():LittlewildRenderer.Frame;draw(time:number,delta:number):void;dispose():void;}
+ interface Preview {readonly ready:Promise<LittlewildRenderer.SwitchResult>;snapshot():LittlewildRenderer.Frame;draw(time:number,delta:number):void;
+  /** Composition must admit the same native scene/catalog before replacing its detached timeline. Does not paint or advance time. */
+  updatePlayback(playback:LWStorytelling.Playback):boolean;
+  dispose():void;
+ }
  interface Api {create(container:HTMLElement,pack:LWContentPorts.ScenarioPack,sceneId:string,playback:LWStorytelling.Playback):Preview;}
 }
 declare var LWStorytellingRenderer:LWStorytellingRenderer.Api;

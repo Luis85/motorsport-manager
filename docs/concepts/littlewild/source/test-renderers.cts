@@ -14,8 +14,10 @@ function metadata(id='test'){return JSON.parse(JSON.stringify({id,name:'Test',de
 const instance:LittlewildRenderer.Instance={mount(){},resize(){},draw(){},dispose(){}};
 test('Registry exposes default metadata and accepts trusted factories separately',()=>{
  assert.equal(registry.list()[0]!.id,'basic');const dispose=registry.register(metadata(),()=>instance);
+ const generation=registry.generation('test');assert.equal(registry.generation('basic'),0);assert.equal(typeof generation,'number');
  assert.equal(registry.list().length,2);assert(Object.isFrozen(registry.list()));assert(Object.isFrozen(registry.list()[1]!.capabilities));
- assert.throws(()=>registry.register(metadata(),()=>instance),/already registered/);dispose();dispose();assert.equal(registry.list().length,1);
+ assert.throws(()=>registry.register(metadata(),()=>instance),/already registered/);dispose();dispose();assert.equal(registry.list().length,1);assert.equal(registry.generation('test'),null);
+ const replacement=registry.register(metadata(),()=>instance);assert.notEqual(registry.generation('test'),generation);replacement();
 });
 test('Trusted renderer metadata is published to the pure catalog and withdrawn with its factory',()=>{
  const release=registry.register({...metadata('custom-3d'),dimensions:['3d']},()=>instance),entry=root.LWRendererCatalog.list().find(row=>row.id==='custom-3d');
@@ -148,10 +150,62 @@ async function previewContract(basic:boolean,projectionOnly=false):Promise<void>
  }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
  finally{release();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
 }
+async function retargetContract():Promise<void>{
+ const name='Validated timeline retargets reuse opted instances atomically while native changes and factory replacement rebuild';
+ const keys=['document','LWStorytellingPreview','LWRendererObserver','LWAnimations','LWStorytellingRenderer','LWScenarios','LWStorytelling','LWStorytellingEditorPreview'],prior=new Map(keys.map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)])),nativeBefore=JSON.stringify(engine);
+ let release=()=>{};
+ try{
+  for(const mode of ['basic','registered','custom'] as const){
+   let validations=0,created=0,sourceCreates=0,backendCreates=0,backendDisposals=0,animationCreates=0,animationDisposals=0,rejectPlayback=false;
+   const owned:{status:LWStorytelling.Status;disposed:number}[]=[],frames:LittlewildRenderer.Frame[]=[],phases:number[]=[],base=root.LWRendererFrame.create(engine,options);
+   const canvas=Object.assign(new EventTarget(),{dataset:{},style:{},width:800,height:600,isConnected:true,remove(){}}),container={clientWidth:800,clientHeight:600,querySelector:()=>canvas,prepend(){},append(){}};
+   const rendererId=mode==='basic'?'basic':'timeline-retarget';
+   const pack={name:'Native presentation',worlds:[{id:'world',terrain:['...']}],resources:{assets:[{id:'asset'}]},scenes:[{id:'scene',initialState:{nodes:[{id:'node',x:2}]},graph:{rendering:{dimension:'3d',rendererId}}}],storytelling:{version:1,storyboards:[],cutscenes:[{id:'clip',sceneId:'scene',name:'Before',duration:5,tracks:[]}]}} as unknown as LWContentPorts.ScenarioPack;
+   const makePlayback=(input:LWContentPorts.ScenarioPack,id:string):LWStorytelling.Playback=>{
+    created++;if(rejectPlayback)throw Error('Injected timeline admission failure');const clip=input.storytelling!.cutscenes.find(value=>value.id===id)!,record={status:{cutsceneId:id,sceneId:clip.sceneId,state:'ready' as LWStorytelling.State,time:0,duration:5,completion:0,generation:0},disposed:0};owned.push(record);
+    const offset=clip.name==='After'?4:0;
+    return{status:()=>({...record.status}),sample:()=>({cutsceneId:id,sceneId:clip.sceneId,time:record.status.time,duration:5,poses:[{target:{category:'creatures',id:'c1'},values:{x:offset+record.status.time}}],camera:{},animations:[]}),play(){record.status.state='playing';},pause(){record.status.state='paused';},resume(){record.status.state='playing';},stop(){record.status.time=0;record.status.state='stopped';},replay(){record.status.generation++;record.status.state='playing';},seek(time){record.status.time=time;},skip(){},advance(){},drainEvents:()=>[],dispose(){record.disposed++;record.status.state='disposed';}};
+   };
+   const factory=():LittlewildRenderer.Instance=>{backendCreates++;return{redrawPolicy:'projection',...(mode==='custom'?{}:{previewReuse:'timeline' as const}),mount(){},resize(){},draw(frame){frames.push(frame);},dispose(){backendDisposals++;}};};
+   Object.assign(globalThis,{document:{createElement:()=>({dataset:{},style:{},width:0,height:0,remove(){}})},LWStorytellingRenderer:previewApi,
+    LWStorytellingPreview:{create(){sourceCreates++;return{frame(value:{viewport:LittlewildRenderer.Viewport;time:number;delta:number;camera:LittlewildRenderer.Camera}){return{...base,...value};},asset:()=>null,definition:()=>null};}},LWRendererObserver:{create:factory},
+    LWAnimations:{create(){animationCreates++;return{ready:Promise.resolve({ok:true}),looping:false,draw(_frame:LittlewildRenderer.Frame,_descriptors:readonly LWAnimations.Descriptor[],time:number){phases.push(time);},dispose(){animationDisposals++;}};}},
+    LWScenarios:{validate(input:LWContentPorts.ScenarioPack){validations++;if(input.name==='Invalid')return{ok:false,errors:['Injected full pack rejection']};return{ok:true,pack:structuredClone(input)};}},LWStorytelling:{create:makePlayback}});
+   if(mode!=='basic')release=registry.register(metadata(rendererId),factory);
+   require('./storytelling-editor-preview.js');const api=(globalThis as unknown as {LWStorytellingEditorPreview:{create(canvas:HTMLCanvasElement,pack:LWContentPorts.ScenarioPack,id:string):LWStorytellingUI.Preview}}).LWStorytellingEditorPreview;
+   const mounted=Object.assign(canvas,{parentElement:container}),preview=api.create(mounted as unknown as HTMLCanvasElement,pack,'clip'),ready=preview.ready;
+   const next=structuredClone(pack);next.storytelling!.cutscenes[0]!.name='After';
+   assert.equal(preview.update!(next,'clip'),false,'Pending instances cannot be retargeted');assert.equal(owned[1]!.disposed,1);assert.equal(owned[0]!.disposed,0);
+   assert.equal((await ready).ok,true);assert.equal(frames.length,1);preview.seek(2);preview.draw(0);const oldFrame=frames.at(-1)!;assert.equal(oldFrame.actors[0]!.x,2);
+   const beforePaints=frames.length;
+   assert.throws(()=>preview.update!({...pack,name:'Invalid'},'clip'),/full pack rejection/);assert.equal(preview.status().time,2);assert.equal(frames.length,beforePaints);
+   rejectPlayback=true;assert.throws(()=>preview.update!(next,'clip'),/timeline admission failure/);rejectPlayback=false;assert.equal(preview.status().time,2);assert.equal(owned[0]!.disposed,0);
+   for(const change of ['native','resources','world','rendering','scene','clip'] as const){
+    const changed=structuredClone(next);
+    if(change==='native')changed.scenes[0]!.initialState.nodes=[{id:'other',x:3}];
+    if(change==='resources')changed.resources!.assets=[{id:'other'}];
+    if(change==='world')changed.worlds[0]!.name='Changed world';
+    if(change==='rendering')changed.scenes[0]!.graph!.rendering!.dimension='2d';
+    if(change==='scene')changed.storytelling!.cutscenes[0]!.sceneId='other';
+    assert.equal(preview.update!(changed,change==='clip'?'other':'clip'),false,change+' must retain the prior preview until normal rebuilding');assert.equal(preview.status().time,2);
+   }
+   const updates=preview.update!(next,'clip');assert.equal(updates,mode!=='custom');assert.equal(preview.ready,ready);assert.equal(backendCreates,1);assert.equal(animationCreates,1);assert.equal(sourceCreates,1);assert.equal(backendDisposals,0);assert.equal(animationDisposals,0);
+   if(updates){assert.equal(preview.status().time,0);assert.equal(preview.status().state,'ready');assert.equal(owned[0]!.disposed,1);assert.equal(frames.length,beforePaints,'Admission does not create an extra paint or clock');preview.draw(0);assert.equal(frames.length,beforePaints+1);assert.equal(frames.at(-1)!.actors[0]!.x,4);assert.equal(oldFrame.actors[0]!.x,2);preview.draw(.1);assert.equal(frames.length,beforePaints+1);assert.equal(phases.at(-1),0);}
+   else{assert.equal(owned[0]!.disposed,0);assert.equal(owned.at(-1)!.disposed,1);assert.equal(preview.status().time,2);}
+   if(mode==='basic')(globalThis as unknown as {LWRendererObserver:{create:()=>LittlewildRenderer.Instance}}).LWRendererObserver.create=()=>factory();
+   else{release();release=registry.register(metadata(rendererId),factory);}
+   assert.equal(preview.update!(next,'clip'),false,'Identical renderer metadata cannot conceal a replacement executable factory');assert.equal(owned.at(-1)!.disposed,1);assert.equal(backendCreates,1);
+   assert(validations>=12,'Every update preserves full pack admission');assert(created>=5,'Successful and eligible timeline updates retain application validation');preview.dispose();preview.dispose();assert.equal(backendDisposals,1);assert.equal(animationDisposals,1);assert.equal(owned.filter(value=>value.disposed!==1).length,0);assert.equal(JSON.stringify(engine),nativeBefore);release();release=()=>{};
+  }
+  results.push({name,passed:true});
+ }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
+ finally{release();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
+}
 async function finish():Promise<void>{
  const name='Asynchronous factories remain separate from synchronous creation without requiring browser globals';
  try{let calls=0;const release=registry.registerAsync(metadata('async-test'),async()=>{calls++;return instance;});assert.throws(()=>registry.create('async-test',{} as LittlewildRenderer.Context),/selectRendererAsync/);assert.equal(calls,0);assert.equal(await registry.prepare('async-test',{} as LittlewildRenderer.Context),instance);assert.equal(calls,1);release();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});}
  await previewContract(true);await previewContract(false);await previewContract(false,true);
+ await retargetContract();
  const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
  fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
 }

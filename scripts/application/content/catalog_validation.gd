@@ -83,7 +83,7 @@ func _tyres() -> Array:
 				(
 					"Use unique existing compounds, at most 64 total sets, and selection "
 					+ "references of the required family. See "
-					+ "docs/content/tyres-and-setup.md."
+					+ "docs/reference/content/tyres-and-setup.md."
 				)
 			)
 	return []
@@ -92,13 +92,16 @@ func _tyres() -> Array:
 func _setups() -> Array:
 	for id in _records:
 		if _records[id].kind == "setup" and SetupDefinition.from_record(_records[id]) == null:
-			return _catalog._definition_error(
-				id,
-				"CONTENT_SETUP",
-				"/controls",
-				(
-					"Defaults/baselines must fit their control ranges and effect endpoints "
-					+ "must remain physically positive. See docs/content/tyres-and-setup.md."
+			return (
+				_catalog
+				. _definition_error(
+					id,
+					"CONTENT_SETUP",
+					"/controls",
+					(
+						"Defaults/baselines must fit their control ranges and effect endpoints "
+						+ "must remain physically positive. See docs/reference/content/tyres-and-setup.md."
+					)
 				)
 			)
 	return []

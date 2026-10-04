@@ -5,7 +5,8 @@
  const root=inputRoot as {LWRenderers?:LittlewildRenderer.Registry;LWRendererCatalogRecords:{add(metadata:LittlewildRenderer.Metadata):()=>void}};
  const capabilities:readonly LittlewildRenderer.Capability[]=['camera','hit-test','terrain-preview','construction-preview','resource-lens','interiors'];
  const basic:LittlewildRenderer.Metadata=Object.freeze({id:'basic',name:'Basic',description:'Built-in world renderer with graphics compatibility fallback.',capabilities:Object.freeze([...capabilities])});
- const entries=new Map<string,{metadata:LittlewildRenderer.Metadata;factory:LittlewildRenderer.Factory|LittlewildRenderer.AsyncFactory;async:boolean}>();
+ let nextGeneration=0;
+ const entries=new Map<string,{metadata:LittlewildRenderer.Metadata;factory:LittlewildRenderer.Factory|LittlewildRenderer.AsyncFactory;async:boolean;generation:number}>();
  function metadata(input:unknown):LittlewildRenderer.Metadata {
   if(!input||typeof input!=='object'||Object.getPrototypeOf(input)!==Object.prototype)throw Error('Renderer metadata must be a plain object.');
   const descriptors=Object.getOwnPropertyDescriptors(input);
@@ -33,13 +34,14 @@
  function install(input:LittlewildRenderer.Metadata,factory:LittlewildRenderer.Factory|LittlewildRenderer.AsyncFactory,async:boolean){
   const checked=metadata(input);if(checked.id==='basic'||entries.has(checked.id))throw Error('Renderer ID is already registered.');
   if(typeof factory!=='function')throw Error('Renderer factory must be trusted executable code.');
-  const withdraw=root.LWRendererCatalogRecords.add(checked),entry={metadata:checked,factory,async};entries.set(checked.id,entry);
+  const withdraw=root.LWRendererCatalogRecords.add(checked),entry={metadata:checked,factory,async,generation:++nextGeneration};entries.set(checked.id,entry);
   return ()=>{if(entries.get(checked.id)===entry){entries.delete(checked.id);withdraw();}};
  }
  const api:LittlewildRenderer.Registry=Object.freeze({version:1,
   register(input:LittlewildRenderer.Metadata,factory:LittlewildRenderer.Factory){return install(input,factory,false);},
   registerAsync(input:LittlewildRenderer.Metadata,factory:LittlewildRenderer.AsyncFactory){return install(input,factory,true);},
   list(){return Object.freeze([basic,...[...entries.values()].map(entry=>entry.metadata)]);},
+  generation(id:string){return id==='basic'?0:entries.get(id)?.generation??null;},
   validate(input:unknown){try{return {ok:true,errors:[],data:metadata(input)};}catch(error){return {ok:false,errors:[String(error instanceof Error?error.message:error)],data:null};}},
   create(id:string,context:LittlewildRenderer.Context){const entry=entries.get(id);if(!entry)throw Error('Unknown renderer: '+id+'.');if(entry.async)throw Error('Renderer requires selectRendererAsync: '+id+'.');return (entry.factory as LittlewildRenderer.Factory)(context);},
   async prepare(id:string,context:LittlewildRenderer.Context){const entry=entries.get(id);if(!entry)throw Error('Unknown renderer: '+id+'.');return entry.factory(context);}

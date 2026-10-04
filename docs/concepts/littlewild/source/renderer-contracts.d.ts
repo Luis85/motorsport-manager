@@ -34,6 +34,8 @@ declare namespace LittlewildRenderer {
  interface Instance {
   /** Opt in only when bitmap output depends on detached projection values, not host time/delta, and remains retained for presentation/readback between browser frames. Omitted instances receive every preview draw. */
   readonly redrawPolicy?:'continuous'|'projection';
+  /** Compiled opt-in: this instance can reuse an unchanged scene/catalog with a newly admitted detached timeline. Omitted instances are rebuilt. */
+  readonly previewReuse?:'timeline';
   mount():void;draw(frame:Frame):void;resize(viewport:Viewport):void;dispose():void;
   hitTest?(point:Point,frame:Frame):Hit|null;
   project?(tile:Point,frame:Frame):Point;
@@ -48,6 +50,8 @@ declare namespace LittlewildRenderer {
   register(metadata:Metadata,factory:Factory):()=>void;
   registerAsync(metadata:Metadata,factory:AsyncFactory):()=>void;
   list():readonly Metadata[];
+  /** Executable registration identity only; withdrawal/re-registration changes it even when metadata is identical. */
+  generation(id:string):number|null;
   validate(metadata:unknown):{readonly ok:boolean;readonly errors:readonly string[];readonly data:Metadata|null};
   create(id:string,context:Context):Instance;
   prepare(id:string,context:Context):Promise<Instance>;

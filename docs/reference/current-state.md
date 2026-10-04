@@ -1,0 +1,114 @@
+# Current native project status
+
+**Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
+
+The separate [Wildlands prototype builder](../concepts/littlewild/DOCUMENTATION.md)
+retains its own TypeScript runtime, browser workspace, terminal tools and
+source-bound evidence. Littlewild is its default showcase; its
+[Godot desktop compiler](../concepts/littlewild/WILDLANDS.md#runnable-godot-compiler)
+uses a local Node subprocess for gameplay. Those capabilities and prerequisites
+are outside this native Motorsport Manager inventory.
+
+## Shipping player experience
+
+- **Native Godot 4.7.2, local-first, standalone desktop application.** The player-facing race interface defaults to **Minimal**. Settings can instead select **Advanced**, starting either in Race Director or directly in Engineering.
+- **Weekend:** choose a circuit/configuration or a validated authored scenario; review before replacing an existing entry; practice (real measured runs) → qualifying → physical formation → start lights → race → factual end screen. Session transitions require explicit approval. Existing recorded commands, tyre ownership and saved weekends remain authoritative.
+- **Minimal race screen:** timing tower, illustrated circuit with flat dot cars, five core driver actions (Send out, Box this lap, Push, Calm and engine mode), time controls, read-only instruments for both controlled drivers, and an on-demand read-only strategy comparison for the selected running driver. The comparison is an explicit snapshot or refresh of the existing current-condition forecaster; it issues no command, does not pause or change speed, and consumes no gameplay randomness.
+- **Advanced race interface:** the retained Race Director and Engineering workspaces expose the broader strategy, telemetry, weather, racecraft, review and specialist toolset over the same live weekend. Race Director is the approachable advanced starting surface; Engineering opens the technical workspace directly. Choosing or reopening an interface does not clone the race, alter playback, issue commands or consume gameplay randomness.
+- **Team Principal Campaign:** start or continue a local four-event management career from the main menu. New careers are compiled from the validated default `campaign` content definition, its authored weekend, and its per-event circuit references rather than from an in-code starter table or library index. The native Director Desk shows current cash, committed minimum cash, next-event timing, principal energy, team standing, at most three priorities, organization work, rival activity, resumable onboarding and factual post-race debriefs. Explicit advance/departure actions reuse the existing campaign clock, readiness rules and Minimal race weekend; campaign state is saved independently from the active weekend checkpoint.
+- **Circuit Atelier:** edit/save native circuits with Bézier geometry, elevation/banking, pit routes, scenery, reference-image calibration, layer locks, transactional history, validation and test-weekend snapshots. Editor placement presets and contextual guide *copy* may be authored; rendering kinds and guide actions stay code-owned.
+- **Content:** validated, strict external JSON packs with stable IDs, generated schemas, ordered dependencies, hash-pinned overrides, atomic catalog activation and frozen weekend/replay/campaign definitions. Supported families include vehicles, teams, drivers, rosters, tyre compounds/allocations/operating profiles, setups, shared tuning, weekends, circuits/styles, scenario briefs, mechanic profiles, editor profiles and Team Principal campaign profiles. Campaign content owns start identity/date/resources, starter series/calendar, contracts, facilities, rivals, event finance and numerical rival/people/supply tuning; algorithms, safety ceilings and registered executable providers remain code-owned. A provider profile selects **registered code**; external packs cannot inject executable mechanics or arbitrary editor actions. The authoring CLI supports init, clone, validate, list, inspect, schemas, non-overwriting export, diff, bounded scenario test and ordered multi-pack workflows.
+
+## Interface selection and retained specialist tools
+
+Settings stages a **Minimal / Advanced** preference and saves it only on Apply. Minimal remains the safe default. Advanced remembers whether it should begin in Race Director or Engineering. The selection applies when a weekend screen next opens; it is presentation configuration, not race state. Existing `director` and `engineering` saved preferences remain valid, and the public `advanced` alias normalizes to Race Director. Explicit launch overrides remain available for development and automation.
+
+The Advanced interface makes the retained strategy/rival, weather/recovery, racecraft/team-order, debrief/journal and telemetry workspaces player-selectable. Replay/sandbox, authored scenario, notebook and other specialist utilities retain their existing entry points and evidence boundaries. **Existence in source still does not establish human usability, accessibility completeness or calibration.** Minimal deliberately does not instantiate the advanced panel tree.
+
+Bundled diagnostic scenario collections are trusted file-backed verification resources, not external executable scenario packs. Public authored complete-weekend scenarios can stage existing implemented weekend behavior, but do not add a campaign or arbitrary goal code.
+
+## Implemented campaign authorities
+
+The four-event Team Principal career is the player-facing first slice. The wider
+campaign implementation persists domain/application authorities; existence of an
+authority does not mean it has a dedicated management screen. The former TM-01
+through TM-16 roadmap and final-result correction are implemented.
+
+| Responsibility | Canonical contract |
+|---|---|
+| Authored starter and frozen content closure | [Campaign index](campaign/README.md), [content compatibility](content/version-compatibility.md) |
+| Dated clock, principal energy, accepted history and checkpoint v6 | [State, clock and storage](campaign/state-clock-storage.md) |
+| Frozen entrant mappings and factual receipt | [Weekend boundary](campaign/weekend-boundary.md) |
+| Atomic return: time, awards, resources, due cash and receipt | [Weekend consequences](campaign/weekend-consequence-transaction.md) |
+| Calendar, accepted field, countback and controlled season lifecycle | [Season lifecycle](campaign/season-lifecycle.md) |
+| Integer cash, binding commitments, reserves and detached forecasts | [Finance](campaign/finance-commitments-forecast.md) |
+| Employment, payroll, roles and exclusive availability | [Personnel](campaign/people-contracts-availability.md) |
+| Finite facilities, staff/capacity reservations and rented services | [Operations](campaign/facilities-capacity-services.md) |
+| Work-backed gates, designs, unique physical parts and frozen race profiles | [Engineering](campaign/engineering-parts-race-profile.md) |
+| Exact next-event readiness and atomic departure | [Readiness and departure](campaign/event-readiness-departure.md) |
+| Guaranteed sponsor receipts, evidenced bonuses and appearance obligations | [Commercial](campaign/sponsorship-commercial.md) |
+| Bounded delegated finance and immutable decision evidence | [Mandates](campaign/delegation-mandates.md) |
+| Finite rival organizations and dated public-information reviews | [Rivals](campaign/rival-organizations.md) |
+| Native desk, explicit advance/departure and factual debrief | [Director Desk loop](campaign/director-desk-first-loop.md) |
+| Reviewed replacement of final-result consequences | [Result correction](campaign/result-corrections.md) |
+| Persistent candidates, bounded negotiation, development and promises | [People development](campaign/people-development-recruitment.md) |
+| Plans, evidenced prizes and explicit promotion/next-season transactions | [Multi-season progression](campaign/multi-season-progression.md) |
+| Conserved materials, persistent uncertainty, part life and financial pressure | [Operational depth](campaign/operational-depth.md) |
+| Shared parent-business capacity, conserved transfers, academy and succession | [Group and dynasty](campaign/group-era-dynasty.md) |
+
+All campaign changes stage detached values and publish one complete checkpoint.
+Campaign time never reuses race ticks or the wall clock. `CampaignManagement` v2
+freezes authored campaign, scheduled circuits and effective race definitions;
+existing careers do not reread live packs. Legacy checkpoints preserve recorded
+facts and obligations without inventing missing people, calendars, facilities,
+projects or consequence history. [State and storage](campaign/state-clock-storage.md)
+is the canonical checkpoint/migration reference.
+
+## Not implemented or not established
+
+- **Campaign presentation is still bounded:** the Team Principal route is playable as a four-event first slice, but recruitment, engineering portfolio, facilities, commercial, finance, academy, multi-season and dynasty authorities do not yet have dedicated player-facing specialist screens beyond Director Desk summaries.
+- **People depth remains intentionally bounded:** persistent candidates, bounded negotiation, attributes, development, workload evidence, morale/trust and promises now exist, but there is no rich scouting uncertainty model, chemistry/fatigue simulation, department headcount model, automatic race-entry staffing or direct hidden race-pace bonus from role quality.
+- **Finance remains intentionally bounded:** payroll, event operations, sponsor value, supplier orders, prizes, owner transfers and financing use explicit dated commitments; a game-defined operating/position view and bridge financing exist. There is still no full accrual accounting, tax, depreciation, lending market, insolvency proceeding or real-world financial-reporting claim. Forecast assumptions remain analysis inputs, not spendable money.
+- **Not a comprehensive vehicle-physics or licensed-regulations simulator.** Race damage remains aggregate; additional vehicle presets are not full competition formats. Editor bridge/tunnel annotations do not certify 3D clearances.
+- **Human playtesting, comprehensive accessibility, broad device/hardware calibration, wet/endurance balance and same-host comparative performance remain separate validation gates.** Successful automated checks do not establish them. Making Advanced selectable is not a human-usefulness sign-off for every retained workspace.
+
+## Verification boundary
+
+The current verification procedure is [the verification guide](../how-to/verification.md).
+`scripts/verification_suites.json` defines the complete registered Godot suite;
+historical counts and green intermediate commits cannot substitute for checks of
+the final source. This inventory does not assert a fresh hosted or local full-suite
+pass for `dc2acaa`.
+
+Current checkout entry points:
+
+- `python3 scripts/verify.py --godot /path/to/pinned/Godot` — complete registered gate, including the required native UI environment.
+- `python3 scripts/check_architecture.py` — dependency and authority contracts.
+- `python3 scripts/check_docs.py` — local links, navigation and documentation layout.
+- `python3 scripts/content.py schemas --check --godot /path/to/pinned/Godot` — generated-schema contracts.
+- `python3 scripts/balance.py validate --godot /path/to/pinned/Godot` — shipped balance catalog validation; see [balancing](../how-to/balancing.md).
+- `python3 -m unittest discover -s tests -p 'test_*.py'` — Python tooling/contracts.
+- `python3 scripts/quality.py` — advisory lint, formatting, complexity and physical-line findings; source/test budgets remain 400/450.
+
+[The historical data-driven review ledger](../_archive/maintenance/data-driven-code-review.md)
+retains its source-pinned review evidence. Human playtesting, accessibility,
+representative-device performance and platform validation require their own
+relevant evidence.
+
+## Maintenance priorities
+
+1. Keep this inventory and the README synchronized when a capability becomes player-facing, optional, diagnostic or deferred.
+2. Maintain one canonical contract per authority; link to it from status pages instead of copying schema and transaction detail.
+3. Keep verification evidence tied to its exact source and distinguish contract correctness, human experience and performance.
+4. Prioritize campaign balance, human validation and specialist management UI over parallel authorities.
+
+## Where to read next
+
+- [Architecture and ownership](../explanation/architecture.md), plus [contributor rules](../../AGENTS.md).
+- [Shipping Minimal weekend](race-weekend/minimal.md) and [Advanced interface](race-weekend/advanced.md).
+- [Campaign route and authority contracts](campaign/README.md).
+- [Content contracts](content/README.md), [consumer inventory](content/consumer-inventory.md) and [compatibility](content/version-compatibility.md).
+- [Documentation maintenance](../how-to/maintaining-documentation.md).
+- [Historical handoffs and review ledgers](../_archive/README.md).
+
+**Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema, financial/personnel/operations authority or provider state requires explicit versioning, characterization and separate scope.

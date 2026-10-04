@@ -4,7 +4,7 @@ Wildlands is a standalone TypeScript game prototype maker. **Littlewild** is its
 
 Development stays in `docs/concepts/littlewild/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
 
-See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits.
+See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits. The [documentation index](DOCUMENTATION.md) separates task guides and contracts from source-bound Littlewild records.
 
 The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves use envelope 10; obsolete story envelopes and scenario schema versions are rejected. See `ECS-ARCHITECTURE.md`.
 
@@ -70,11 +70,11 @@ npm run verify -- --no-browser
 
 ## Documentation
 
-- `QUALITY-AUDIT.md`: current PR 25 correctness, test, refactoring and pipeline audit.
+- `QUALITY-AUDIT.md`: source-bound PR25 correctness, test, refactoring and pipeline audit.
 
 - `CONFIGURATION.md`: scenario-schema 2, simulation-profile authoring, world/scene configuration, current formats and engine boundaries.
 - `UI-RESEARCH.md` and `UI-REVIEW.html`: research, observed baseline and actual captures.
-- `VERIFICATION.md`: this build's executed checks and limitations.
+- `VERIFICATION.md`: recorded PR25 Littlewild checks, source identities and limitations; it does not certify later Wildlands changes.
 - `CHANGELOG.md` and `CODE-REVIEW.md`: changes, module ownership and remaining coupling.
 - `CONTENT-INTEGRATION.md`: existing Base/Adventure/World/Growth library contracts.
 - `ASSET-ARCHITECTURE.md`: bundled data-driven 3D model folders, manifest contract, renderer boundary and authoring workflow.
