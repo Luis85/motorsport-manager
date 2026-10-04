@@ -15,6 +15,7 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 ## Authoring and task guides
 
+- [Isometric RTS demonstration](../../tutorials/rts-demo.md)
 - [Developer toolbox](DEVELOPER-TOOLBOX.md)
 - [Central balancing and experiments](BALANCING.md)
 - [Office: a complete portable scenario](OFFICE-SCENARIO.md)
@@ -31,6 +32,7 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 ## Runtime and format references
 
+- [Data-driven ECS RTS engine and tools](../../reference/rts-engine.md)
 - [Configurable experiences — authoring contract 2](CONFIGURATION.md)
 - [Littlewild v13 — Content integration compatibility](CONTENT-INTEGRATION.md)
 - [Littlewild rules boundary](RULES.md)

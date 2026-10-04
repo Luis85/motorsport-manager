@@ -78,6 +78,7 @@ function inlineData(packPath: string | null): string {
     ["LWEngineSourceLoader", JSON.parse(fs.readFileSync(path.join(GENERATED, "engine-source-loader.json"), "utf8"))],
     ["LWDefaultBalancing", balance],
     ["LWDefaultLibrary", balance.libraries.base],
+    ["LWRTSDefinitions", json("rts-demo.json")],
     ["LWContentSchema", json("library.schema.json")],
     ["LWInteriorDefinitions", balance.interiors],
     ["LWInteractionLibrary", balance.interactions],

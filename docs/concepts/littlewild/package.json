@@ -5,13 +5,14 @@
   "description": "TypeScript game prototype maker with Littlewild preloaded, browser authoring, agent CLI and Godot desktop compilation.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.strict.json",
-    "architecture": "tsx source/tools/architecture-check.cts",
-    "build": "tsx source/build.ts",
-    "verify": "tsx source/verification/verify.ts",
+    "architecture": "node --import tsx source/tools/architecture-check.cts",
+    "build": "node --import tsx source/build.ts",
+    "verify": "node --import tsx source/verification/verify.ts",
     "toolbox": "node .generated/tools/developer-example.cjs",
     "wildlands": "node .generated/tools/wildlands-cli.cjs",
     "wildlands:runtime": "node .generated/tools/wildlands-runtime.cjs",
-    "verify:godot": "node .generated/test-wildlands-godot.cjs"
+    "verify:godot": "node .generated/test-wildlands-godot.cjs",
+    "rts": "node .generated/tools/rts-cli.cjs"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

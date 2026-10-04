@@ -185,6 +185,22 @@
     {
       "path": "wildlands-project-contracts.d.ts",
       "owner": "wildlands-project"
+    },
+    {
+      "path": "rts-runtime-contracts.d.ts",
+      "owner": "rts"
+    },
+    {
+      "path": "rts-demo-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "rts-economy-contracts.d.ts",
+      "owner": "rts"
+    },
+    {
+      "path": "rts-contracts.d.ts",
+      "owner": "simulation-core"
     }
   ]
 }

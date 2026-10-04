@@ -250,6 +250,21 @@
       "owner": "experience-application",
       "kind": "schema",
       "validatorRole": "schema"
+    },
+    {
+      "id": "rts-demo",
+      "pattern": "content/rts-demo.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "rts",
+      "embeddedGlobal": "LWRTSDefinitions"
+    },
+    {
+      "id": "rts-schema",
+      "pattern": "content/rts.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema"
     }
   ],
   "historicalFixtures": [

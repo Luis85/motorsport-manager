@@ -62,7 +62,8 @@
         "animation-catalog.ts",
         "balancing-inventory.ts",
         "creature-balancing.ts",
-        "renderer-catalog.ts"
+        "renderer-catalog.ts",
+        "rts-catalog.ts"
       ]
     },
     {
@@ -127,7 +128,10 @@
         "scenario-workflow.ts",
         "application-adapters.ts",
         "systems-work-rates.ts",
-        "systems-completions.ts"
+        "systems-completions.ts",
+        "rts-session.ts",
+        "rts-tools.ts",
+        "rts-application.ts"
       ]
     },
     {
@@ -241,7 +245,10 @@
         "storytelling-renderer.ts",
         "renderer-animation-example.ts",
         "scene-renderer-admission.ts",
-        "wildlands-ui.ts"
+        "wildlands-ui.ts",
+        "rts-renderer.ts",
+        "rts-demo.ts",
+        "rts-host.ts"
       ]
     },
     {
@@ -324,6 +331,18 @@
         "wildlands-project-sdk.cts",
         "wildlands-sdk.cts"
       ]
+    },
+    {
+      "id": "rts",
+      "layer": "domain",
+      "files": [
+        "rts-navigation.ts",
+        "rts-systems.ts",
+        "rts-production.ts",
+        "rts-economy.ts",
+        "rts-stats.ts",
+        "rts-checkpoint.ts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -376,7 +395,16 @@
     "LWBalancingInventory",
     "LWCreatureBalancing",
     "LWRendererCatalog",
-    "LWRendererCatalogRecords"
+    "LWRendererCatalogRecords",
+    "LWRTSCatalog",
+    "LWRTSDefinitions",
+    "LWRTSNavigation",
+    "LWRTSProduction",
+    "LWRTSEconomy",
+    "LWRTSSystems",
+    "LWRTS",
+    "LWRTSStats",
+    "LWRTSCheckpoint"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -404,7 +432,8 @@
     "LWEngineSourceLoader",
     "WildlandsGodotRuntimeBundle",
     "WildlandsGodotRuntimeLoader",
-    "WildlandsGodotTemplates"
+    "WildlandsGodotTemplates",
+    "LWRTSDefinitions"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

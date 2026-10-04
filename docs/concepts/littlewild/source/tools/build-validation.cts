@@ -1,3 +1,4 @@
+/// <reference path="../rts-contracts.d.ts" />
 /// <reference path="../developer-contracts.d.ts" />
 /** Admit canonical defaults and effective shipped packs before publishing a bundle. */
 import fs from 'node:fs';
@@ -5,6 +6,8 @@ import path from 'node:path';
 import {auditBalancing} from './balancing-audit.cjs';
 const source=path.resolve(__dirname,'../../source');
 function validateBundledDefaults():void {
+ const rts=require('../rts-catalog.js') as LWRTSData.CatalogApi;
+ rts.validate(JSON.parse(fs.readFileSync(path.join(source,'content/rts-demo.json'),'utf8')));
  const api=require('../developer-sdk.cjs') as {toolbox:LittlewildDeveloper.Toolbox};
  const scenarios=require('../scenario-runtime.js') as LWContentPorts.ScenarioApi;
  const canonical=JSON.parse(fs.readFileSync(path.join(source,'content/balancing.json'),'utf8')) as unknown;

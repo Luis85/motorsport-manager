@@ -314,10 +314,13 @@
     const clock = new LWFixedStepClock(.1);
     const pacer = new LWPresentation.FramePacer(30);
     let last = performance.now(), paintTimer = 0, saveTimer = 0;
+    const rtsHost=LWRTSHost.create({beforeOpen:()=>{closeModal();tileMenu.close(false);clock.reset();},afterClose:()=>{last=performance.now();clock.reset();}});
+    const rtsButton=document.createElement('button');rtsButton.type='button';rtsButton.textContent='RTS demo';rtsButton.dataset.wildlandsRts='open';rtsButton.addEventListener('click',()=>rtsHost.open());document.querySelector('.wildlands-tools nav').append(rtsButton);
     function frame(now) {
         const dt = Math.max(0, Math.min((now - last) / 1000, .1));
         last = now;
-        if (!document.hidden) {
+        if (!document.hidden && rtsHost.active) {rtsHost.advance(dt);clock.reset();}
+        else if (!document.hidden) {
             scenarioUI?.storytelling.draw(dt);
             const running = pauseStatus().running;
             if (running) {
@@ -361,5 +364,6 @@
     if(engine.s.started)presentScene(LWSceneNavigation.target(engine));
     // A small, explicit read/test surface for this prototype. The UI never uses direct movement commands.
     window.Littlewild = { version: '15.0.0', scenarios:LWScenarios, terraform, interiors:buildingInterior, scenarioUI, buildPanel, guidePanel, preferences, pauseStatus, tileMenu, village:villageUI, planner:LWPlanner, land: worldExplorer, get engine() { return engine; }, get world() { return world; }, get ui() { return { tab: ui.tab, modal: ui.modal, context:worldUI.state }; }, setEngine, snapshot: () => LWStory.encode(engine), content: {export:(category,id)=>LWContent.registry.export(category,id),validate:input=>LWContent.registry.prepare(input),schema:()=>LWContent.copy(LWContent.SCHEMA),get fingerprint(){return LWContent.registry.hash;}}, advance: seconds => { engine.advance(clamp(seconds, 0, 3600)); updateUI(true); processEvents(); }, refresh: () => updateUI(true), open: (panel, id) => openModal(panel, id), save, diagnostics: () => ({ offline: true, simulationStep: clock.step, nodes: engine.s.nodes.length, buildings: engine.s.buildings.length, orders: engine.s.orders.length, localSaving: saveAvailable }) };
+    window.WildlandsRTS = {open:()=>rtsHost.open(),close:()=>rtsHost.close(),query:()=>rtsHost.view.query(),command:input=>rtsHost.view.command(input),checkpoint:()=>rtsHost.view.checkpoint(),catalog:()=>rtsHost.view.catalog(),status:()=>rtsHost.view.status()};
     window.Wildlands = {version:'1.0.0',project:()=>wildlandsUI.project(),discover:()=>WildlandsProject.discover(),toolbox:LWDeveloper,compileGodot:project=>WildlandsGodot.compile(project),get ui(){return window.Littlewild.ui;},get engine(){return engine;},open:(panel,id)=>openModal(panel,id),refresh:()=>updateUI(true)};
 })();
