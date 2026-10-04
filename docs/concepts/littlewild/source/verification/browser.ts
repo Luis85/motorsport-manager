@@ -123,7 +123,7 @@ async function main():Promise<void>{
  await p.locator("#scenario-import-file").setInputFiles({name:"tidewatch.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(custom))});await p.waitForTimeout(200);
  await check("Valid imported pack enters catalog without replacing world",async()=>expect((await p.locator(".scenario-packs").innerText()).includes("Tidewatch")&&await p.evaluate("Littlewild.engine.scenarioContext.packId")===current));
  await p.locator("[data-scenario=review]").last().click();await p.locator("[data-scenario=launch]").click();await p.waitForTimeout(300);
- await check("Confirmed pack launch uses imported presentation",async()=>expect((await p.title()).startsWith("Tidewatch")&&(await p.locator(".brand-word").innerText())==="Tidewatch"));
+ await check("Confirmed pack launch uses imported presentation",async()=>expect((await p.title())==="Wildlands · Tidewatch"&&(await p.locator(".brand-word").innerText())==="Wildlands"));
  await check("Confirmed pack launch uses imported companion setup",async()=>equal(await p.evaluate("Littlewild.engine.creatures[0].name"),"Rivet"));
  await check("Confirmed pack changes real definition names",async()=>equal(await p.evaluate("LW.BUILDINGS.bench.name"),"Assembly bench"));
  await check("World terrain reads the selected authored profile",async()=>equal(await p.evaluate("LWGeography.islandTerrain(14,1)"),"water"));

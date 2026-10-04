@@ -61,7 +61,7 @@
     const contentUI = LWContentUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>renderModal(true),toast,backup:backupStory,setEngine,save});
     const colonyUI = LWColonyUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>{if(ui.modal)renderModal(true);},toast,backup:backupStory,setEngine,save,close:closeModal,result});
     const preferences=LWInterfacePause.create(()=>localStorage);
-    let terraform=null, buildingInterior=null, tileMenu=null, buildPanel=null, guidePanel=null, scenarioUI=null, placementActor=null, placementApproach=null;
+    let terraform=null, buildingInterior=null, tileMenu=null, buildPanel=null, guidePanel=null, scenarioUI=null, wildlandsUI=null, placementActor=null, placementApproach=null;
     function pauseStatus(){return preferences.status(engine.s,{hidden:document.hidden,cinematic:!!scenarioUI?.storytelling?.isPresenting(),modal:ui.modal,safety:LWInterfacePause.safetyView(ui.modal),placement:!!world.placement,creature:!!worldUI.state.actorId,more:!!worldUI.state.menu,world:!!buildPanel?.designer?.isOpen()||!!terraform?.state.open||!!worldExplorer.pauseReason()||!!buildPanel?.state.open||!!(guidePanel?.state.open&&!guidePanel.state.minimized),tile:!!tileMenu?.isOpen(),planner:!!villageUI.state.open});}
     function pauseToggleMarkup(){return `<section class="v13-time-setting"><h3>Time & attention</h3><label><input type="checkbox" data-pause-on-open ${preferences.pauseOnOpen?'checked':''}><span><strong>Pause when opening panels</strong><small>Include creature cards, tile menus, the planner, world map, and blueprint placement. Turn off to keep the world running while you browse.</small></span></label><p>Manual pause is always respected. Save/content replacement previews and hidden tabs still pause safely. This preference stays on this device, separately from your story.</p><small data-preference-status>${esc(preferences.error||'Preference saved on this device.')}</small></section>`;}
     function syncTimeLabels(){const p=pauseStatus();document.body.classList.toggle('world-live-panel',!!ui.modal&&p.running);document.querySelectorAll('[data-pause-on-open]').forEach(el=>{if(el.checked!==preferences.pauseOnOpen)el.checked=preferences.pauseOnOpen;});document.querySelectorAll('[data-time-label]').forEach(el=>{el.textContent=p.running?'World running · '+timeLabel(engine.s.hour):p.kind==='manual'?'Paused by you':p.reason+' · paused';});text('world-status-label',p.running?'Life in the glade':p.reason+' · paused');text('v10-planner-clock',p.running?'World running':p.kind==='manual'?'Paused by you':'Planner · paused');document.querySelectorAll('[data-manual-time]').forEach(el=>{el.textContent=engine.s.paused?(preferences.pauseOnOpen?'Release manual pause':'Resume time'):'Pause time';el.setAttribute('aria-pressed',String(engine.s.paused));});$('pause-badge').classList.toggle('show',!p.running&&engine.s.started&&!ui.modal);text('pause-text',p.reason);$('pause-button').innerHTML=icon(p.running?'pause':'play');$('pause-button').setAttribute('aria-label',p.running?'Pause':p.kind==='manual'?'Resume':'Continue world');const tip=document.querySelector('#tile-context footer');if(tip)tip.innerHTML=(p.running?'World running':p.kind==='manual'?'Paused by you':'Paused while choosing')+' · <kbd>Esc</kbd> to close';const paused=$('modal').querySelector('.workspace-pause');if(paused)paused.textContent=p.running?'World running':'World paused';}
@@ -84,6 +84,7 @@
     buildPanel=LWBuildPanel.create(panelContext);
     guidePanel=LWGuidePanel.create({...panelContext,show:showGuideTarget});
     scenarioUI=LWScenarioUI.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
+    wildlandsUI=WildlandsUI.create({engine:()=>engine,scenarios:scenarioUI,open:openModal,modal:()=>ui.modal,toast});
     applySceneRendering();
     const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);
     function presentScene(target,camera){
@@ -103,9 +104,9 @@
         document.documentElement.style.setProperty('--experience-accent',p.accent);
         document.documentElement.style.setProperty('--experience-paper',p.paper);
         document.documentElement.style.setProperty('--experience-ink',p.ink);
-        document.querySelector('.brand-word').textContent=p.title;
-        document.querySelector('.brand-sub').textContent=p.tagline;
-        document.title=p.title+' · Living Worlds v15';
+        document.querySelector('.brand-word').textContent='Wildlands';
+        document.querySelector('.brand-sub').textContent='TypeScript game prototype maker';
+        document.title='Wildlands · '+p.title;
         const sub=document.querySelector('.location-sub');if(sub)sub.textContent=p.worldSubtitle;
         const location=engine.s.estate?.islands?.[0]?.name||engine.scenarioContext?.world?.name||'Mossmeadow';
         document.querySelector('.location-title').textContent=location;
@@ -229,7 +230,7 @@
 
     function refreshContentLabels(...args){return interfaceStatus.refreshContentLabels(...args);}
     interfaceStatus.initializeNeeds();
-    function updateUI(...args){const result=interfaceStatus.updateUI(...args);buildingInterior?.update();return result;}
+    function updateUI(...args){const result=interfaceStatus.updateUI(...args);buildingInterior?.update();wildlandsUI?.refresh();return result;}
     function journalEntry(...args){return interfaceStatus.journalEntry(...args);}
     function processEvents(...args){return interfaceStatus.processEvents(...args);}
     function selectTab(tab) { ui.tab = tab; world.placement = null; refreshPlacement(); renderDock(); updateUI(); if(tab!=='care')openModal(tab==='build'?'construction':tab==='train'?'training':'warehouse'); }
@@ -284,7 +285,7 @@
     function rememberPanelScroll(...args){return interfaceModal.rememberPanelScroll(...args);}
     function restorePanelScroll(...args){return interfaceModal.restorePanelScroll(...args);}
     function openModal(...args){return interfaceModal.openModal(...args);}
-    function cancelPendingReads(){scenarioUI?.cancelRead();storyReadId++;contentUI.view.readId++;colonyUI.cancelRead();worldExplorer.cancelRead();villageUI.cancelRead();}
+    function cancelPendingReads(){scenarioUI?.cancelRead();wildlandsUI?.cancelRead();storyReadId++;contentUI.view.readId++;colonyUI.cancelRead();worldExplorer.cancelRead();villageUI.cancelRead();}
     function closeModal(...args){return interfaceModal.closeModal(...args);}
     function renderModal(...args){return interfaceModalContent.renderModal(...args);}
     function drawWelcome(...args){return interfaceModalContent.drawWelcome(...args);}
@@ -360,4 +361,5 @@
     if(engine.s.started)presentScene(LWSceneNavigation.target(engine));
     // A small, explicit read/test surface for this prototype. The UI never uses direct movement commands.
     window.Littlewild = { version: '15.0.0', scenarios:LWScenarios, terraform, interiors:buildingInterior, scenarioUI, buildPanel, guidePanel, preferences, pauseStatus, tileMenu, village:villageUI, planner:LWPlanner, land: worldExplorer, get engine() { return engine; }, get world() { return world; }, get ui() { return { tab: ui.tab, modal: ui.modal, context:worldUI.state }; }, setEngine, snapshot: () => LWStory.encode(engine), content: {export:(category,id)=>LWContent.registry.export(category,id),validate:input=>LWContent.registry.prepare(input),schema:()=>LWContent.copy(LWContent.SCHEMA),get fingerprint(){return LWContent.registry.hash;}}, advance: seconds => { engine.advance(clamp(seconds, 0, 3600)); updateUI(true); processEvents(); }, refresh: () => updateUI(true), open: (panel, id) => openModal(panel, id), save, diagnostics: () => ({ offline: true, simulationStep: clock.step, nodes: engine.s.nodes.length, buildings: engine.s.buildings.length, orders: engine.s.orders.length, localSaving: saveAvailable }) };
+    window.Wildlands = {version:'1.0.0',project:()=>wildlandsUI.project(),discover:()=>WildlandsProject.discover(),toolbox:LWDeveloper,compileGodot:project=>WildlandsGodot.compile(project),get ui(){return window.Littlewild.ui;},get engine(){return engine;},open:(panel,id)=>openModal(panel,id),refresh:()=>updateUI(true)};
 })();

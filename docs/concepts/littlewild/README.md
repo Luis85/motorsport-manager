@@ -1,6 +1,10 @@
-# Littlewild v15 — Worlds of Possibility
+# Wildlands — TypeScript game prototype maker
 
-An offline autonomous-creature simulation showcase with compact world-facing UI and reusable JSON scenario packs. The browser prototype is isolated from the native Motorsport Manager game.
+Wildlands is a standalone TypeScript game prototype maker. **Littlewild** is its default playable showcase; **Emberworks** and **Office** demonstrate alternate settings using the same simulation and authoring tools. The browser provides the workspace, and the CLI provides project automation for developers and AI agents. The first engine target is a runnable Godot desktop project.
+
+Development stays in `docs/concepts/littlewild/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
+
+See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits.
 
 The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves use envelope 10; obsolete story envelopes and scenario schema versions are rejected. See `ECS-ARCHITECTURE.md`.
 
@@ -31,7 +35,9 @@ The **3D Creature Editor** edits appearance, body parts, archetype tuning, futur
 
 **Storyboards & timelines** keeps ordered story notes beside normal scenes and cutscenes across worlds. Cutscenes animate scene entities and cameras in a detached 2D/3D preview. Scene entry rules, timed cues and completion events can request reviewed scene changes or play another cutscene. Pinned **p5.js** supplies deterministic presentation presets through a replaceable, typed animation registry driven by the existing application clock. See [STORYTELLING-EDITOR.md](STORYTELLING-EDITOR.md), [STORYTELLING.md](STORYTELLING.md) and [p5 provenance and source](vendor/P5-VENDOR.md).
 
-The developer toolbox also exports a complete **engine JSON document**: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and an explicit Godot mapping manifest. This supplies input for a code generator; gameplay systems still require a semantic port and continuation tests in Godot. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md).
+The Wildlands compiler exports a **runnable Godot project** with a native presentation adapter and the authoritative TypeScript simulation bundled for a local Node subprocess. Scenario data, owner checkpoints, assets and supported command behavior travel with the project. This desktop target requires Godot and Node; native presentation does not reproduce every browser editor or renderer. See [WILDLANDS.md](WILDLANDS.md).
+
+The existing **engine JSON document** remains a separate inert code-generator input: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and a Godot mapping manifest. A pure GDScript semantic port remains separate work. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md) for the distinction.
 
 Edit [source/content/balancing.json](source/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
 
@@ -77,7 +83,8 @@ npm run verify -- --no-browser
 - `CREATURE-EDITOR.md`: 3D character authoring, current values, appearance and package exchange.
 - `EXTERNAL-EDITORS.md`: standard editor formats, conversion APIs, CLI commands and limits.
 - `STORYTELLING-EDITOR.md` and `STORYTELLING.md`: storyboards, timeline editing, presentation playback and reviewed scene events.
-- `ENGINE-EXPORT.md`: complete code-generator JSON, source integrity and Godot conversion boundaries.
+- `WILDLANDS.md`: product boundary, project workflow, terminal/agent use and runnable Godot export.
+- `ENGINE-EXPORT.md`: inert code-generator JSON, source integrity and native-port conversion boundaries.
 - `BALANCING.md`: central gameplay tuning, reviewed edits, seeded probes and bounded sweeps.
 
 Stable mechanic executors, handlers, island dimensions and animation algorithms remain compiled capabilities. Creature defaults, spawn modes, movement/physiology tuning, visual selection, ECS bindings, geometry, appearance profiles, expression thresholds, animation tuning, rig sockets and building anchors are validated data. External scenario packs can carry complete creature and visual manifest catalogs using the supported geometry and rig grammar. Imported data cannot register executable code or new engine primitives. Littlewild, Emberworks and Office demonstrate the supported configuration surface.

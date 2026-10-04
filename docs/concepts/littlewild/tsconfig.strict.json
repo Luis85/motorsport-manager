@@ -273,7 +273,25 @@
     "source/renderer-data-contracts.d.ts",
     "source/tools/engine-export-cli.cts",
     "source/scene-renderer-admission.ts",
-    "source/test-cold-balancing.cts"
+    "source/test-cold-balancing.cts",
+    "source/wildlands-project-contracts.d.ts",
+    "source/wildlands-project.ts",
+    "source/wildlands-godot.ts",
+    "source/tools/wildlands-bundle.cts",
+    "source/tools/wildlands-godot-writer.cts",
+    "source/wildlands-ui.ts",
+    "source/wildlands-project-sdk.cts",
+    "source/wildlands-runtime.cts",
+    "source/wildlands-runtime-authoring.cts",
+    "source/tools/wildlands-runtime.cts",
+    "source/tools/wildlands-cli.cts",
+    "source/verification/wildlands-browser.ts",
+    "source/test-wildlands-acceptance.cts",
+    "source/wildlands-sdk.cts",
+    "source/test-wildlands-runtime.cts",
+    "source/test-wildlands-project.cts",
+    "source/test-wildlands-cli.cts",
+    "source/test-wildlands-godot.cts"
   ],
   "include": []
 }
