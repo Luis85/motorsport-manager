@@ -155,23 +155,28 @@
         "scope": "Separate actual diagnostic-OFF Story24 preservation check; outside80 gate counts."
       },
       "nativeTemplateQuality": {
+        "sourceCommit": "c23f72f0e942f9d78ee107980b99f6c521b56d85",
         "receipts": {
-          "private": {
-            "path": "/tmp/lw-postpush-9240715-review/native-template-private-quality-acceptance.json",
-            "sha256": "b667e53bf9d67f56aa10e2ffd44d972cd77ccfcb00a45c7e06f0e0ca7d79b727"
+          "actualReport": {
+            "path": "reports/littlewild-pr25-quality/windows-angle-c23-quality/quality.json",
+            "sha256": "af9e4861aeed30d8bae159feb307feadf5afe03f86ea85168070b90786aa0a3f"
           },
-          "binding": {
-            "path": "/tmp/lw-postpush-9240715-review/native-quality-integration-byte-binding-285.json",
-            "sha256": "58031b4d0e04df5b6eaddf60a86aec62dab25fbfffdf22505504964528e2eee2"
+          "actualProcess": {
+            "path": "reports/littlewild-pr25-quality/windows-angle-c23-quality/run-receipt.json",
+            "sha256": "2876505d67c5cf1b5a24da6d5c321cf0b94930ee7be4707683616584d4cd564a"
+          },
+          "independentAcceptance": {
+            "path": "/tmp/lw-postpush-9240715-review/windows-angle-c23-quality-independent-acceptance.json",
+            "sha256": "39454f0b07301e42ec5e4d8ce50feebd5da31ae3e31db9388c94150433615cd9"
           }
         },
-        "qualitySourceSha256": "3e93cfd63b8fcf415b7ff9f9bbe1084ff8b9c7e60dbf65a3a3b61cfd9975b1d6",
+        "qualitySourceSha256": "88d2cc6597ae64e9f59e62b9c28b2fca4b3320f7d44931b702bf5d11baab177b",
         "inventoryFiles": 698,
         "gdFiles": 632,
         "pyFiles": 66,
         "findings": 0,
-        "newAnalyzerExecution": false,
-        "scope": "Actual final285 source GD/PY closure equals accepted private698quality inventory byte-for-byte, with all config/analyzer bytes equal; tools were not rerun and no functional fullgate or hosted acceptance is implied."
+        "newAnalyzerExecution": true,
+        "scope": "Fresh actual five-tool repository quality on c23 after two Python CI-tool changes. The native templates and 531 Littlewild game inputs remain unchanged from accepted source285; its earlier quality binding is preserved separately. This report does not claim hosted Windows warning resolution."
       },
       "actualNativeConformance": {
         "receipt": {
@@ -192,6 +197,22 @@
         },
         "scope": "Prepared exact80/1613 and70 reviewed additions; no hosted outcomes implied.",
         "fullHostedAcceptance": false
+      },
+      "ciToolingFollowup": {
+        "priorPublicationCommit": "f5e594ac1ffc97aa5155cbb1203b9b63f5b57cb0",
+        "implementationCommit": "c23f72f0e942f9d78ee107980b99f6c521b56d85",
+        "paths": [
+          "scripts/smoke_standalone.py",
+          "tests/test_standalone.py"
+        ],
+        "launcherChecks": 23,
+        "windowsCIRenderingDriver": "opengl3_angle",
+        "selectionCondition": "os.name == nt and passed GITHUB_ACTIONS == true",
+        "rawWarningsPreserved": 16,
+        "hostedWarningResolutionAccepted": false,
+        "gameSourceSha256": "72b491a3e40e662921a7803c826a1f0c8def74933ca37cdae56c5cc661a76404",
+        "htmlSha256": "e26034e9356e53a5aea14cac50fb429c7669e0c6050c09cc0ef632c47dd5cf2e",
+        "scope": "Normal Windows and Linux launch arguments, visible rendering, original assertion bodies and timeout budgets are unchanged. Exact follow-up-head hosted validation remains required."
       }
     },
     "historicalPreAuthoringExpansion": {
@@ -2086,6 +2107,25 @@
         "rawChannels": 38
       },
       "publicationPerformed": false
+    },
+    "historicalNativeTemplateQuality285": {
+      "receipts": {
+        "private": {
+          "path": "/tmp/lw-postpush-9240715-review/native-template-private-quality-acceptance.json",
+          "sha256": "b667e53bf9d67f56aa10e2ffd44d972cd77ccfcb00a45c7e06f0e0ca7d79b727"
+        },
+        "binding": {
+          "path": "/tmp/lw-postpush-9240715-review/native-quality-integration-byte-binding-285.json",
+          "sha256": "58031b4d0e04df5b6eaddf60a86aec62dab25fbfffdf22505504964528e2eee2"
+        }
+      },
+      "qualitySourceSha256": "3e93cfd63b8fcf415b7ff9f9bbe1084ff8b9c7e60dbf65a3a3b61cfd9975b1d6",
+      "inventoryFiles": 698,
+      "gdFiles": 632,
+      "pyFiles": 66,
+      "findings": 0,
+      "newAnalyzerExecution": false,
+      "scope": "Actual final285 source GD/PY closure equals accepted private698quality inventory byte-for-byte, with all config/analyzer bytes equal; tools were not rerun and no functional fullgate or hosted acceptance is implied."
     }
   },
   "github": {
