@@ -84,7 +84,8 @@ def literal_errors(root: Path, pages: list[Path]) -> list[str]:
 def check(root: Path) -> tuple[list[str], int]:
     root = root.resolve()
     docs = root / "docs"
-    pages = sorted(docs.rglob("*.md"))
+    # Installed package documentation is not repository-authored documentation.
+    pages = sorted(p for p in docs.rglob("*.md") if "node_modules" not in p.relative_to(docs).parts)
     extra = [root / "README.md", root / "AGENTS.md", root / "config/README.md"]
     texts = {p: p.read_text(encoding="utf-8") for p in pages + extra if p.is_file()}
     errors: list[str] = []

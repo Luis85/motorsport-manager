@@ -28,6 +28,10 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 
 ## Authority and evidence
 
+The separate [Littlewild browser concept documentation](concepts/littlewild/DOCUMENTATION.md)
+indexes its offline prototype, contracts and dated evidence. It is isolated from
+the native Motorsport Manager capability inventory.
+
 Production code, generated schemas and validated configuration own executable
 contracts. Active references describe those contracts; tutorials and recipes link
 them rather than introducing another authority. Application release, save/model

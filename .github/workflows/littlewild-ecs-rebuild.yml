@@ -91,7 +91,7 @@ jobs:
             docs/concepts/littlewild/package-lock.json
             docs/concepts/littlewild/.generated/*-results.json
             docs/concepts/littlewild/verification/v15/gate-results.json
-            docs/concepts/littlewild/verification/v15/storytelling-click-diagnostics.json
+            docs/concepts/littlewild/verification/v15/*click-diagnostics.json
             docs/concepts/littlewild/verification/v15/*.log
             docs/concepts/littlewild/verification/v15/*-results.json
             docs/concepts/littlewild/verification/v15/building-interiors-browser.json

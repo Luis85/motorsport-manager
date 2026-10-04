@@ -2,6 +2,10 @@
 
 **Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
 
+The separate [Littlewild browser concept](../concepts/littlewild/DOCUMENTATION.md)
+has its own runtime, documentation and source-bound evidence. Its capabilities
+are outside this native project inventory.
+
 ## Shipping player experience
 
 - **Native Godot 4.7.2, local-first, standalone desktop application.** The player-facing race interface defaults to **Minimal**. Settings can instead select **Advanced**, starting either in Race Director or directly in Engineering.

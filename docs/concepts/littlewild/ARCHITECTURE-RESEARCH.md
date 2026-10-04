@@ -18,7 +18,7 @@ The actionable findings and acceptance criteria are in [RESEARCH-IMPROVEMENT-PLA
 
 # Littlewild ECS research and architecture review
 
-Reviewed 2026-10-03 against worktree `/workspace/littlewild-pr25`, HEAD `0a82de68d0505542f524033cd087c03d5b843fcc`. Read-only review; no repository files edited. Read root `AGENTS.md`, `docs/architecture-refactor.md`, Littlewild M6 implementation, ECS core, composition/root, actor/economy/world runtimes, simulation pipeline and their contract tests. The parent task's complete gate is separate evidence; this note reports only the custom reproductions described below.
+Reviewed 2026-10-03 against worktree `/workspace/littlewild-pr25`, HEAD `0a82de68d0505542f524033cd087c03d5b843fcc`. Read-only review; no repository files edited. Read root `AGENTS.md`, the native architecture guide (then named `architecture-refactor.md`, now relocated to [docs/explanation/architecture.md](../../explanation/architecture.md)), Littlewild M6 implementation, ECS core, composition/root, actor/economy/world runtimes, simulation pipeline and their contract tests. The parent task's complete gate is separate evidence; this note reports only the custom reproductions described below.
 
 ## Decision
 
