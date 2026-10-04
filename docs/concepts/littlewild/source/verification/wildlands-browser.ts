@@ -33,7 +33,10 @@ async function main():Promise<void>{
    await page.setViewportSize({width,height:width===390?844:1000});
    await page.addInitScript('localStorage.clear()');
    await page.goto(FIXTURE,{waitUntil:'load',timeout:60000});
-   await page.waitForFunction('!!window.Littlewild&&!!window.WildlandsProject');
+   await page.waitForFunction(()=>{
+    const runtime=window as unknown as {Littlewild?:unknown;WildlandsProject?:unknown};
+    return !!runtime.Littlewild&&!!runtime.WildlandsProject;
+   });
    await page.locator('[data-act="begin"]').click();
    await page.evaluate('Littlewild.engine.s.paused=true');
    await check(width+'px default showcase is a portable Littlewild project',async()=>{
@@ -58,7 +61,7 @@ async function main():Promise<void>{
    await check(width+'px scenario review preserves the game until explicit launch',async()=>{
     // A retained Littlewild authoring draft must not replace the newly launched Office pack.
     await page.locator('[data-wildlands="scenes"]').click();
-    await page.waitForFunction('!!Littlewild.scenarioUI.editor.session');
+    await page.waitForFunction(()=>!!(window as unknown as {Littlewild:{scenarioUI:{editor:{session:unknown}}}}).Littlewild.scenarioUI.editor.session);
     await page.keyboard.press('Escape');
     const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
     const office=await page.locator('#wildlands-scenario option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value).find(value=>value.startsWith('office/')));
@@ -75,7 +78,7 @@ async function main():Promise<void>{
     await page.locator('#wildlands-project-name').fill('Agent authored office');
     const before=await save(page,width,'renamed');assert.equal(before.name,'Agent authored office');
     await page.locator('#wildlands-project-file').setInputFiles({name:'invalid.wildlands.json',mimeType:'application/json',buffer:Buffer.from('{')});
-    await page.waitForFunction('document.querySelector("#wildlands-feedback").getAttribute("role")==="alert"');
+    await page.waitForFunction(()=>document.querySelector('#wildlands-feedback')?.getAttribute('role')==='alert');
     const after=await save(page,width,'after-invalid');assert.deepEqual(after,before);
    });
    await check(width+'px portable project import requires review and restores project identity',async()=>{
@@ -83,7 +86,7 @@ async function main():Promise<void>{
     imported.name='Imported Littlewild showcase';imported.id='imported-showcase';
     const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
     await page.locator('#wildlands-project-file').setInputFiles({name:'imported.wildlands.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
-    await page.waitForFunction('document.querySelector("#wildlands-feedback").textContent.includes("Project validated")');
+    await page.waitForFunction(()=>document.querySelector('#wildlands-feedback')?.textContent?.includes('Project validated'));
     assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
     await page.locator('[data-scenario="launch"]').click();await page.evaluate('Littlewild.engine.s.paused=true');
     const saved=await save(page,width,'imported');
@@ -107,10 +110,10 @@ async function main():Promise<void>{
     const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
     const summary=page.locator('[data-wildlands-export-panel] summary');
     await summary.focus();await page.keyboard.press('Space');
-    await page.waitForFunction('!document.querySelector("[data-wildlands-export-panel]").open');
+    await page.waitForFunction(()=>!document.querySelector<HTMLDetailsElement>('[data-wildlands-export-panel]')!.open);
     assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
     await page.keyboard.press('Space');
-    await page.waitForFunction('document.querySelector("[data-wildlands-export-panel]").open');
+    await page.waitForFunction(()=>document.querySelector<HTMLDetailsElement>('[data-wildlands-export-panel]')!.open);
     assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
     for(const selector of ['#wildlands-scenario','[data-wildlands="save"]','[data-wildlands="switch"]','[data-wildlands="export"]']){
      const bounds=await page.locator(selector).boundingBox();assert(bounds&&bounds.width>=44&&bounds.height>=44,selector+' '+JSON.stringify(bounds));
