@@ -2,7 +2,7 @@
 
 ## Protect the game contract
 
-Read `docs/architecture-refactor.md` and the relevant feature guide before editing.
+Read `docs/explanation/architecture.md` and the relevant feature guide before editing.
 Keep domain dependencies inward. UI emits intent and renders detached values; it
 must not tick a simulation, retain a live aggregate, mutate race/campaign
 resources, or perform persistence directly. TrackEditorSession owns document
@@ -109,13 +109,13 @@ Do not make these checks blocking without an explicit policy decision.
 
 ## Developer toolbox and coding agents
 
-Shipped editable gameplay values belong in `config/`. Read `docs/balancing.md`
+Shipped editable gameplay values belong in `config/`. Read `docs/how-to/balancing.md`
 before tuning them. Keep generated schemas and field ownership current; validate
 the whole catalog through `scripts/balance.py validate`. Runtime construction
 freezes selected settings, and restoring a save must use its retained rules.
 Keep fixed clocks, serialization contracts and safety/resource limits in code.
 
-Read `docs/developer-toolbox.md` before scripting game operations. Use
+Read `docs/reference/developer-toolbox.md` before scripting game operations. Use
 `GameToolbox`'s named facets or the JSON/Python client; discover actual supported
 actions rather than calling arbitrary aggregate methods. Domain validators remain
 authoritative. Tool sessions own their application runners and advance only on
@@ -129,6 +129,17 @@ execution identity and completed steps. A bounded run is not human or balance
 validation. The Minimal and Advanced interfaces retain their existing shared
 command/query boundaries; tool-only clock capabilities must not reach widgets.
 
+## Documentation housekeeping
+
+Read `docs/how-to/maintaining-documentation.md` before adding or reorganizing docs.
+Keep `docs/` itself limited to README/index files. Use the Diátaxis sections for
+active tutorials, task guides, reference and explanation; put dated implementation
+and verification records in `docs/_archive/` with an explicit historical notice.
+Preserve source identities and validation limits. Update navigation and all
+repository references when moving a document or companion data file, then run
+`python3 scripts/check_docs.py`. Keep current capability claims synchronized with
+`docs/reference/current-state.md`; historical evidence is not a new-source pass.
+
 ## Local checks
 
 ```sh
@@ -136,6 +147,7 @@ python3 -m pip install -r requirements-quality.txt
 python3 scripts/quality.py
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/check_architecture.py
+python3 scripts/check_docs.py
 python3 scripts/verify.py --godot /path/to/pinned/godot
 ```
 
@@ -152,4 +164,4 @@ native visual evidence in the handoff. Screenshots of synthetic fixture states
 are not evidence of a completed physical race, campaign balance or human
 usability validation.
 
-Advisory rollout, report interpretation and the initial debt inventory: `docs/code-quality.md`.
+Advisory rollout, report interpretation and the initial debt inventory: `docs/how-to/code-quality.md`.
