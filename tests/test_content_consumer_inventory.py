@@ -8,7 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-INVENTORY = ROOT / "docs/content/consumer-inventory.json"
+INVENTORY = ROOT / "docs/reference/content/consumer-inventory.json"
 SCHEMAS = ROOT / "content/schemas/v1"
 ALLOWED = {
     "contract",

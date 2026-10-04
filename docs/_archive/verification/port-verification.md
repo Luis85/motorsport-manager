@@ -1,0 +1,68 @@
+# Verification and acceptance
+
+> **Historical record.** Scope, version claims and validation below belong to the
+> named milestone. See [current project status](../../reference/current-state.md)
+> and [the documentation index](../../README.md) for current behavior.
+
+
+This is the current verification entry point. `scripts/verification_suites.json` owns suite registration, native/headless requirements, timeouts and required reports. Historical iteration evidence below describes its original source. New weekends use native checkpoint v12 with frozen performance profiles; race v10/v11 histories keep their original model identities. Campaign checkpoint v6 and management v2 are separate contracts. See [current project status](../../reference/current-state.md) and [the review ledger](../maintenance/data-driven-code-review.md).
+
+## One command
+
+```sh
+python3 scripts/verify.py --godot /path/to/godot
+```
+
+The verifier performs a headless editor import, deterministic domain tests, and rendered native UI tests. Tests use a fresh temporary project copy with a unique application name and isolated user-data environment; generated evidence is copied back to `reports/`. It checks exit codes, rejects script/parse/runtime errors in logs, requires fresh passing JSON reports, and writes `reports/verification.json`. Stale reports are removed before a run. Linux without a display needs `xvfb-run` and `xauth`; Xvfb verification and standalone smoke explicitly use Godot's supported `opengl3_es` driver (OpenGL ES through EGL), software Mesa and the Dummy audio driver. This avoids the unsupported swap-control request made by Godot's desktop GLX backend at window creation. Normal shipping launches retain their configured rendering driver. Native verification and smoke pass `--disable-vsync` before `--` to the engine and after it to the application, since Godot consumes its flag. The application preserves the saved VSync preference and skips redundant native setters. These software-rendered native runs do not replace target-GPU acceptance.
+
+`--headless-only` is available for domain-only environments and records that explicitly; it is not equivalent to full verification. In CI, the full command is mandatory and verification evidence is uploaded even on failure.
+
+## Automated coverage
+
+The complete registry includes the original domain/iteration suites and later mechanic, replay, content, campaign, application-boundary and rendered native UI contracts. Exact suite/check totals are emitted in each run’s JSON report; the original 404-assertion milestone is historical. Counts include repeated per-car/per-step invariants, not independent user scenarios. It covers:
+
+- All eight bundled layouts: bounded geometry, lengths, continuity, native round trip, sector/pit compilation and runtime export.
+- Exact cubic subdivision, automatic-handle migration, malformed documents, preset differences, snapshot isolation and persistence errors/backups.
+- A complete qualifying/formation/race lifecycle, measured qualifying laps, shared pit servicing, compound changes, limiter compliance, monotonic route progress and completion.
+- Frame-partition invariance, JSON checkpoint continuation including PRNG/surface state, pause and invalid-checkpoint rejection.
+- No-pass neutralization, blue flags, late pit calls, same-step finish ordering, all-retirement termination and wet/rotated-track/vehicle scenarios.
+
+The native UI smoke test opens the real main scene, visits menus/settings/library/editor, exercises editor history and custom-save/test-return behavior, runs a weekend through all phases, checks classification positions and checkpoint reload, and captures native screenshots of the baseline and iteration-four flows, including a 1100×720 window. It is an integration/smoke test, not a comprehensive pixel-diff or accessibility audit.
+
+## Iteration-two regressions
+
+New domain checks cover candidate-time fallback, cheap preview bakes, continuous nearest-point projection, same-level versus grade-separated crossings, duplicate sector fallback, measured three-sector qualifying, finishing active hot laps after chequered, invalid laps, lap-distance-first classification, pit-lap exclusion, persistent yielding, frozen service plans, braking before the box, physical queue spacing, v1 migration and malformed nested snapshots. A seeded race matrix adds Suzuka/Formula/dry, Interlagos/Touring/changeable and Zandvoort/Kart/wet.
+
+Native UI checks deliver actual mouse-button/motion events to the canvas, verify selection does not clear redo, drag uses the cheap preview, Escape rolls back the transaction, and release commits once. They cover reference calibration without moving the road, persistent timing TreeItems, selected-driver retention, follow-camera cancellation, synchronized speed/delegation controls, visible pit actions in all tabs and at the smaller viewport, and non-modal ordinary commands. These are scripted native integration checks, not a claim of exhaustive manual playtesting.
+
+## Source-bound aggregate and artifacts
+
+CI runs six shards and aggregates them against the exact current registry. Every shard must provide passing, finite, well-formed suite evidence, fresh required reports and the same expected source digest; duplicate, missing, stale or foreign-source reports fail. Downloaded artifacts require digest integrity. A successful subset, a headless-only run or a green advisory-quality job is not the aggregate gate.
+
+Functional verification is accompanied by generated-schema/content/exported-runtime checks, Python unit and architecture checks, runtime confidence, and Linux/Windows debug/release builds plus packaged native smoke. The maintained Actions are pinned; workflow success and the complete quality findings remain different observations. Read the [PR #29 checks](https://github.com/Luis85/motorsport-manager/pull/29/checks) and the final integrated [PR #28 checks](https://github.com/Luis85/motorsport-manager/pull/28/checks) with their source IDs. This document does not manufacture a final-head pass from earlier evidence.
+
+## Reproducible artifacts
+
+`reports/` is generated and ignored by Git. A successful full run produces import/domain/UI logs, `domain-tests.json`, `ui-smoke.json`, `verification.json`, `bake-performance.json`, `race-matrix.json`, and numbered screenshots. GitHub Actions exposes these as the `verification-evidence` artifact. Actual counts/durations are taken from the report, not hard-coded into the pass criteria.
+
+The original iteration evidence used **Godot 4.7.2 standard on Linux** and software OpenGL for native UI capture. Later workflows add Linux/Windows packaged builds and smoke gates; their exact-source artifacts establish only those covered environments. No macOS export, touch-device session, representative-GPU performance or human playtest follows from these tests. Reference lap estimates are not compared against real qualifying records as a correctness test.
+
+## Manual acceptance pass
+
+Open the project in the editor and play one dry short weekend. Confirm the actual buttons/keyboard/canvas selection work on your input device; manually command both player cars, call/cancel a stop, and inspect their tyre/fuel response. Save mid-session, close, relaunch, and resume. Try a longer changing-weather race rather than expecting a very short shower to create instant standing water.
+
+In the editor, copy Monaco, manipulate the hairpin/chicane with explicit handles, insert a point, undo, alter height/banking, reposition pit nodes, add a tunnel/bridge range, and save to the library. Import/export that authoring file and test it in a weekend. Add a licensed reference image, calibrate it, and verify it travels with the export. These hands-on checks remain valuable for ergonomics and target-device graphics beyond the automated coverage.
+
+## Iteration-three regressions
+
+Tests verify twelve-set allocation and identity, aggregate wear retention, worn-set remounting, actual garage release, scheduled-gate timing, physical servicing, no fresh-set creation on stock exhaustion, v1/v2 migration, current native numeric continuation and malformed stock. UI checks cover locked-layer no-op edits, style undo, reference-lap preview, stable set buttons, visible pit actions and cached world drawing under camera motion.
+
+`render-performance.json` records 45 paused-race camera frames, backend name, median/p95 intervals, static regeneration count and static draw reissues. Zero rebuilds/reissues is asserted; observed timing is informational, not a universal FPS threshold. The fixture does not benchmark active 16x racing.
+
+## Iteration-four regression coverage
+
+The domain suite adds four-wheel independence, load/temperature/pressure/blemish effects, heat cycles, worn-set remounts, punctures/manual ownership, batch setup validation, live bias, racecraft values, v4/legacy continuation and malformed inputs. Surface tests cover 96×7 shape, conservative runoff, local contamination and actual-pass drying/rubber. Authoring tests cover atomic group transforms, distribution, fresh duplicated IDs, connected strokes, closure history and generated-track validation.
+
+Native UI tests use real Godot controls and pointer events for Shift/marquee selection, group drag/cancel, duplication, trace preview/apply/cancel/staleness, per-driver staged setup, stable wheel cards, surface-cell selection, guides and 1100×720 reachability. Additional recovery cases cover delegated early punctures, advancing a scheduled stop, avoiding repeated order spam, manual ownership, unavailable stock and malformed group IDs. Do not infer exhaustive visual or accessibility verification from the assertion total.
+
+The generated `verification.json`, `domain-tests.json`, `ui-smoke.json`, logs and PNGs are the authority for this exact run. The **Source project** workflow separately archives tracked files; a successful packaging run does not prove gameplay tests passed. Windows/macOS hands-on and target-GPU live-race performance are not established by Linux software rendering.
