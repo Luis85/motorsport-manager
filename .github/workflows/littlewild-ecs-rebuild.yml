@@ -95,6 +95,7 @@ jobs:
           if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
+
       - name: Retain verification evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -107,4 +108,54 @@ jobs:
             docs/concepts/littlewild/.generated/*-results.json
           if-no-files-found: warn
           include-hidden-files: true
+          retention-days: 14
+
+  godot-export:
+    name: Wildlands Godot export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.7.2
+      LP_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+      - name: Install virtual display and pinned Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends xvfb xauth libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o /tmp/wildlands-godot.zip
+          unzip -q /tmp/wildlands-godot.zip -d /tmp/wildlands-godot
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
+          chmod +x /tmp/wildlands-godot/Godot_*
+      - name: Build the separate Wildlands project
+        working-directory: docs/concepts/littlewild
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run build
+      - name: Verify playable export and capture native frame
+        working-directory: docs/concepts/littlewild
+        shell: bash
+        run: |
+          set -euo pipefail
+          WILDLANDS_GODOT="/tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+          WILDLANDS_CAPTURE_NATIVE="$PWD/.generated/wildlands-native.png" \
+          xvfb-run -a npm run verify:godot --silent
+      - name: Retain export conformance and native frame
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wildlands-godot-export
+          path: |
+            docs/concepts/littlewild/.generated/wildlands-godot-results.json
+            docs/concepts/littlewild/.generated/wildlands-native.png
+          include-hidden-files: true
+          if-no-files-found: warn
           retention-days: 14
