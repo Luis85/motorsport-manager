@@ -6,6 +6,7 @@ import type {Page} from 'playwright';
 // Test-only, bounded observation. No protocol payloads or shipping hooks are saved.
 type Row={clock:'node'|'page';time:number;phase:string;detail?:string|undefined;id?:number;session?:string|undefined};
 type Case={name:string;rows:Row[];rowLimit:number;dropped:number;oversizeMessages:number};
+const navigationEvents=new Set(['Page.frameScheduledNavigation','Page.frameRequestedNavigation','Page.frameClearedScheduledNavigation','Page.frameStartedLoading','Page.frameStoppedLoading','Page.frameNavigated']);
 interface Debug {enable(pattern:string):void;disable():string;enabled(namespace:string):boolean;log:(...args:unknown[])=>unknown;}
 export function storyClickDiagnostics(out:string){
  const enabled=process.env.LITTLEWILD_STORY_CLICK_DIAGNOSTICS==='1',cases:Case[]=[],setup:string[]=[];
@@ -20,20 +21,21 @@ export function storyClickDiagnostics(out:string){
   if(isProtocol)observe(args,header);return returned;
  }
  function observe(args:unknown[],header:string){
-  const payload=args.find((arg):arg is string=>typeof arg==='string'&&/\{"(?:id|method)":/.test(arg.slice(0,256)));if(!payload)return;const start=payload.slice(0,256).search(/\{"(?:id|method)":/),prefix=payload.slice(start,start+512),id=/^\{"id":(\d+)/.exec(prefix)?.[1],send=header.includes('SEND');
-  const navigation=!id&&!send&&/"method":"Page\.(?:frameRequestedNavigation|frameScheduledNavigation|frameClearedScheduledNavigation|frameNavigated|navigatedWithinDocument|frameStartedLoading|frameStoppedLoading)"/.test(prefix);
-  if(!id&&!navigation)return;if(id&&!send&&!pending.has(id))return;
-  if(send&&!prefix.includes('"method":"Input.dispatchMouseEvent"')&&!prefix.includes('"method":"Page.enable"')&&!prefix.includes('"method":"Runtime.callFunctionOn"')&&!prefix.includes('"method":"Runtime.evaluate"'))return;
+  const payload=args.find((arg):arg is string=>typeof arg==='string'&&/\{"(?:id|method)":/.test(arg.slice(0,256)));if(!payload)return;
+  const start=payload.slice(0,256).search(/\{"(?:id|method)":/),prefix=payload.slice(start,start+512),id=/^\{"id":(\d+)/.exec(prefix)?.[1],send=header.includes('SEND');
+  const method=/"method":"([^"]+)"/.exec(prefix)?.[1],navigation=!send&&!!method&&navigationEvents.has(method);
+  if(!navigation&&(!id||!send&&!pending.has(id)))return;
+  if(send&&!['Input.dispatchMouseEvent','Runtime.callFunctionOn','Runtime.evaluate','Page.enable'].includes(method??''))return;
   if(payload.length-start>8192){if(active)active.oversizeMessages++;return;}
   try{
-   const message=JSON.parse(payload.slice(start)) as {id:number;sessionId?:string;method?:string;params?:{type?:string;button?:string;arguments?:{value?:unknown}[];expression?:string;frameId?:string;reason?:string;disposition?:string;frame?:{id?:string}};error?:unknown};
-   if(navigation){const params=message.params;record({clock:'node',time:performance.now()-origin,phase:'cdp.navigation',detail:[message.method,params?.frameId??params?.frame?.id,params?.reason,params?.disposition].filter(Boolean).join(' ').slice(0,240),session:message.sessionId});return;}
+   const message=JSON.parse(payload.slice(start)) as {id:number;sessionId?:string;method?:string;params?:{type?:string;button?:string;arguments?:{value?:unknown}[];expression?:string};error?:unknown};
+   if(navigation){record({clock:'node',time:performance.now()-origin,phase:'cdp.navigation-event',detail:message.method,session:message.sessionId});return;}
    const key=String(message.id);
    if(send){
     const params=message.params,stop=(params?.arguments??[]).some(arg=>typeof arg.value==='string'&&arg.value.length<200&&arg.value.includes('h.stop()'));
     const input=message.method==='Input.dispatchMouseEvent',epilogue=message.method==='Page.enable';
     if(!input&&!stop&&!epilogue)return;
-    const detail=input?String(params?.type)+'/'+String(params?.button):epilogue?'input action epilogue':'h.stop';
+    const detail=input?String(params?.type)+'/'+String(params?.button):epilogue?'input epilogue candidate':'h.stop';
     if(pending.size>=32){active&&(active.dropped++);return;}
     pending.set(key,{method:message.method??'',detail});record({clock:'node',time:performance.now()-origin,phase:'cdp.send',detail:(message.method??'')+' '+detail,id:message.id,session:message.sessionId});
    }else{
@@ -96,7 +98,12 @@ export function storyClickDiagnostics(out:string){
       const draw=renderer.draw;if(typeof draw==='function')renderer.draw=function(this:unknown,...args:unknown[]){const phase=first?'renderer.firstDraw':retarget?'renderer.retargetDraw':null;if(phase)emit(phase+'.begin');try{const value=Reflect.apply(draw,this,args);if(phase)emit(phase+'.return');first=false;retarget=false;return value;}catch(error){if(phase)emit(phase+'.throw',String(error).slice(0,160));throw error;}};
      });
      const idle=window.requestIdleCallback;
-     if(idle){window.requestIdleCallback=function(this:Window,callback,options){emit('idle.schedule');return Reflect.apply(idle,this,[function(this:unknown,deadline:IdleDeadline){emit('idle.start','timeout='+deadline.didTimeout+' remaining='+deadline.timeRemaining());try{const result=Reflect.apply(callback,this,[deadline]);emit('idle.return');return result;}catch(error){emit('idle.throw',String(error).slice(0,160));throw error;}},options]);};restores.push(()=>{window.requestIdleCallback=idle;});available.push('idle');}else missing.push('idle');
+     if(idle){window.requestIdleCallback=function(this:Window,callback,options){emit('idle.schedule');return Reflect.apply(idle,this,[function(this:unknown,deadline:IdleDeadline){
+      emit('idle.start','timeout='+deadline.didTimeout+' remaining='+deadline.timeRemaining());
+      try{const result=Reflect.apply(callback,this,[deadline]);emit('idle.return');return result;}
+      catch(error){emit('idle.throw',String(error).slice(0,160));throw error;}
+      finally{setTimeout(()=>emit('idle.nextTask'),0);requestAnimationFrame(()=>emit('idle.nextFrame'));}
+     },options]);};restores.push(()=>{window.requestIdleCallback=idle;});available.push('idle');}else missing.push('idle');
      const capture=(event:Event)=>{
       const element=event.target instanceof Element?event.target.closest('button'):null;
       const action=element?.matches('[data-story-form=track] button[type=submit]')?'track-submit':element?.matches('[data-story=apply-import]')?'apply-import':element?.matches('[data-story=close]')?'close':null;
@@ -113,7 +120,7 @@ export function storyClickDiagnostics(out:string){
   },
   write(){
    if(!enabled)return;this.end();
-   const report={schema:1,enabled,scope:'Original desktop Add track, Apply storytelling import and return-to-scenes close cases, including a bounded pre-target metadata ring; observations do not establish unobserved phases.',clock:{nodeOrigin:origin,nodeUnixOrigin:performance.timeOrigin+origin,page:'Unix milliseconds, streamed without awaiting bindings'},setup,cases};
+   const report={schema:1,enabled,scope:'Private diagnostic extension of original desktop Add track, Apply storytelling import and return-to-scenes close cases. Page.enable is an epilogue candidate, not proof of navigation; navigation rows save event names only. Idle return observes the callback; finalizer promise rows separately observe asynchronous resource release settlement. Original bounded pre-target ring and limits remain; observations do not establish unobserved phases.',clock:{nodeOrigin:origin,nodeUnixOrigin:performance.timeOrigin+origin,page:'Unix milliseconds, streamed without awaiting bindings'},setup,cases};
    let json=JSON.stringify(report,null,2)+'\n';
    while(Buffer.byteLength(json)>65536&&cases.some(value=>value.rows.length)){const close=cases.find(value=>value.name===closeCase&&value.rows.length),trim=close??cases.reduce((a,b)=>a.rows.length>b.rows.length?a:b);trim.rows.pop();trim.dropped++;json=JSON.stringify(report,null,2)+'\n';}
    fs.writeFileSync(path.join(out,'storytelling-click-diagnostics.json'),json);
