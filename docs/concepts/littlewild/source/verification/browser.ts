@@ -145,7 +145,13 @@ async function main():Promise<void>{
    await p.locator("[data-build=list]").click();await p.waitForTimeout(20);
   }
   const tag=`${width}x${height}`;
-  await check(tag+": build panel fits viewport",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;})));
+  await check(tag+": build panel fits viewport",async()=>{
+   expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect(),toolbar=document.getElementById("wildlands-workspace")!.getBoundingClientRect();return r.x>=0&&r.top>=toolbar.bottom&&r.right<=innerWidth&&r.bottom<=innerHeight;}));
+   await p.locator("#build-panel [data-build=close]").click();
+   expect(await p.locator("#build-panel").isHidden());
+   await p.evaluate("Littlewild.open('construction')");await p.waitForTimeout(100);
+   expect(await p.locator("#build-panel").isVisible());
+  });
   await check(tag+": world remains visible beside/above Build",async()=>expect(await p.locator("#build-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.width*r.height<innerWidth*innerHeight*.65;})));
   await check(tag+": build footer remains reachable",async()=>expect(await p.locator("#build-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await check(tag+": no horizontal page overflow",async()=>expect(await p.evaluate("document.documentElement.scrollWidth<=innerWidth")));
@@ -153,7 +159,7 @@ async function main():Promise<void>{
   await p.locator("[data-build=place]").scrollIntoViewIfNeeded();
   await check(tag+": primary placement action scrolls into view",async()=>expect(await p.locator("[data-build=place]").isVisible()));
   await p.evaluate("Littlewild.open('v10-guide')");await p.waitForTimeout(80);
-  await check(tag+": guide fits without covering entire world",async()=>expect(await p.locator("#guide-panel").evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.bottom<=innerHeight&&r.width*r.height<innerWidth*innerHeight*.58;})));
+  await check(tag+": guide fits without covering entire world",async()=>expect(await p.locator("#guide-panel").evaluate(el=>{const r=el.getBoundingClientRect(),toolbar=document.getElementById("wildlands-workspace")!.getBoundingClientRect();return r.x>=0&&r.top>=toolbar.bottom&&r.bottom<=innerHeight&&r.width*r.height<innerWidth*innerHeight*.58;})));
   await check(tag+": guide footer remains reachable",async()=>expect(await p.locator("#guide-panel .panel-footer").evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight)));
   await p.locator("[data-guide=close]").click();
  }

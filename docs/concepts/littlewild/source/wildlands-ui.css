@@ -1,6 +1,13 @@
 /* Builder workspace inherits the illustrated game's warm paper and green ink. */
 #wildlands-workspace{position:fixed;inset:0 0 auto;z-index:35;background:var(--experience-paper,#faf8ef);color:var(--experience-ink,#294b3b);padding:10px 18px 8px;border-bottom:1px solid #b5c2a4;font-size:13px;line-height:1.4}
 body .app{top:var(--wildlands-workspace-height,110px);height:calc(100dvh - var(--wildlands-workspace-height,110px))}
+/* Retained fixed world panels share the game's available viewport below the builder. */
+body .world-panel{--wildlands-panel-bottom:100px;--wildlands-panel-height:calc(100dvh - var(--wildlands-workspace-height,110px) - var(--wildlands-panel-bottom) - 8px);max-height:var(--wildlands-panel-height)}
+body :is(.build-panel,.terraform-panel,.construction-editor){top:max(98px,calc(var(--wildlands-workspace-height,110px) + 8px))}
+body .guide-panel{max-height:min(470px,var(--wildlands-panel-height))}
+@media(max-width:720px){body .world-panel{--wildlands-panel-bottom:80px}body .build-panel{top:auto;max-height:min(58dvh,var(--wildlands-panel-height))}body .guide-panel{max-height:min(50dvh,var(--wildlands-panel-height))}body :is(.terraform-panel,.construction-editor){top:max(76px,calc(var(--wildlands-workspace-height,110px) + 8px))}}
+@media(max-height:500px) and (min-width:721px){body .world-panel{--wildlands-panel-bottom:78px}body :is(.build-panel,.terraform-panel,.construction-editor){top:max(84px,calc(var(--wildlands-workspace-height,110px) + 8px))}}
+@media(max-height:700px){body .world-panel{--wildlands-panel-bottom:10px;bottom:10px}}
 .wildlands-main,.wildlands-tools{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .wildlands-main{justify-content:space-between}.wildlands-project,.wildlands-scenarios,.wildlands-files{display:flex;align-items:center;gap:8px;min-width:0}
 #wildlands-workspace label{font-weight:600}#wildlands-workspace input,#wildlands-workspace select{min-width:0;border:1px solid #8b9e7d;border-radius:6px;background:#fffdf6;color:#294b3b;min-height:44px;padding:6px 9px;font:inherit;caret-color:#294b3b}

@@ -80,6 +80,7 @@ declare namespace WildlandsUI {
     }
     choices.value=[...choices.options].some(option=>option.value===previous)?previous:project.pack.id+'/'+project.sceneId;
    }
+   resize();
   }
   function current():Wildlands.Project {
    const editor=host.scenarios.editor,draft=editor.session?.export();
@@ -130,7 +131,9 @@ declare namespace WildlandsUI {
    }catch(error){if(token===readId)status(error instanceof Error?error.message:String(error),true);}
    finally{file.value='';}
   });
-  const resize=()=>document.documentElement.style.setProperty('--wildlands-workspace-height',workspace.offsetHeight+'px');
+  let workspaceHeight=0;
+  function resize():void{const height=workspace.offsetHeight;if(height===workspaceHeight)return;workspaceHeight=height;document.documentElement.style.setProperty('--wildlands-workspace-height',height+'px');}
+  window.addEventListener('resize',resize);
   new ResizeObserver(resize).observe(workspace);status(project.pack.name+' is loaded. Build a scene, play it, then export your project.');refresh();resize();
   return {refresh,cancelRead(){readId++;},project:current};
  }
