@@ -2,6 +2,8 @@ extends Node
 ## Blocking subprocess IO lives on a worker; the scene tree only queues intent.
 signal response(method: String, result: Variant)
 signal rejected(message: String)
+signal response_with_id(request_id: int, method: String, result: Variant)
+signal rejected_with_id(request_id: int, message: String)
 var process: Dictionary = {}
 var pipe: FileAccess
 var thread := Thread.new()
@@ -12,6 +14,7 @@ var replies: Array[Dictionary] = []
 var sequence := 0
 var stopping := false
 var outstanding := 0
+var last_response_id := -1
 
 func launch() -> bool:
 	var executable := OS.get_environment("WILDLANDS_NODE")
@@ -68,7 +71,7 @@ func _worker() -> void:
 		mutex.unlock()
 		if exit_requested:
 			break
-		var result: Dictionary = {"method": request_data.method}
+		var result: Dictionary = {"id": request_data.id, "method": request_data.method}
 		if line.to_utf8_buffer().size() > 64 * 1024 * 1024:
 			result.error = "Gameplay response exceeds 64 MiB."
 		else:
@@ -91,9 +94,12 @@ func _process(_delta: float) -> void:
 	mutex.unlock()
 	for reply in available:
 		outstanding = maxi(0, outstanding - 1)
+		last_response_id = int(reply.id)
 		if reply.has("error"):
+			rejected_with_id.emit(last_response_id, reply.error)
 			rejected.emit(reply.error)
 		else:
+			response_with_id.emit(last_response_id, reply.method, reply.get("result"))
 			response.emit(reply.method, reply.get("result"))
 
 func stop() -> void:

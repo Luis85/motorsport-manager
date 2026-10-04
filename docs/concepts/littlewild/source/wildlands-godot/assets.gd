@@ -9,25 +9,26 @@ func install(records: Array) -> void:
 	for record in records:
 		definitions[str(record.category) + ":" + str(record.id)] = record
 
-func create(category: String, id: String, model := "world") -> Node3D:
+func create(category: String, id: String, model := "world", materials_override: Dictionary = {}) -> Node3D:
 	var root := Node3D.new()
 	root.set_meta("asset_id", category + ":" + id)
 	var asset: Dictionary = definitions.get(category + ":" + id, {})
 	var models: Dictionary = asset.get("models", {})
 	if not models.has(model):
 		model = "world" if models.has("world") else str(models.keys()[0]) if not models.is_empty() else ""
+	root.set_meta("model_name", model)
 	for record in models.get(model, {}).get("nodes", []):
-		_create_node(root, asset, record)
+		_create_node(root, asset, record, materials_override)
 	return root
 
-func _create_node(parent: Node3D, asset: Dictionary, record: Dictionary) -> void:
+func _create_node(parent: Node3D, asset: Dictionary, record: Dictionary, overrides: Dictionary) -> void:
 	var node: Node3D
 	if record.primitive == "group":
 		node = Node3D.new()
 	else:
 		var instance := MeshInstance3D.new()
 		instance.mesh = primitive(str(record.primitive))
-		instance.material_override = material(asset, record)
+		instance.material_override = material(asset, record, overrides)
 		if not record.get("castShadow", true):
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node = instance
@@ -42,13 +43,14 @@ func _create_node(parent: Node3D, asset: Dictionary, record: Dictionary) -> void
 	node.basis = basis.scaled_local(node.scale)
 	node.visible = record.get("visible", true)
 	for child in record.get("children", []):
-		_create_node(node, asset, child)
+		_create_node(node, asset, child, overrides)
 
 func vector(input: Array) -> Vector3:
 	return Vector3(float(input[0]), float(input[1]), float(input[2]))
 
-func material(asset: Dictionary, record: Dictionary) -> StandardMaterial3D:
-	var value: Variant = asset.get("materials", {}).get(record.get("material", ""), "#9bb98c")
+func material(asset: Dictionary, record: Dictionary, overrides: Dictionary = {}) -> StandardMaterial3D:
+	var role: String = record.get("material", "")
+	var value: Variant = overrides.get(role, asset.get("materials", {}).get(role, "#9bb98c"))
 	var properties: Dictionary = {"color": value} if value is String else value.duplicate()
 	properties.merge(record.get("materialProps", {}), true)
 	var key := JSON.stringify(properties)

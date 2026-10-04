@@ -175,19 +175,31 @@ the runtime files and an available Node executable; compiling the project does
 not package Node itself.
 
 Native controls expose start/pause, speed, scene connections, full story save/load
-and a command console using discovered gameplay commands. Authored timeline
-sampling previews supported entity positions/transforms and camera tracks in the
+and a command console using discovered gameplay commands. Littlewild's native
+view selects each companion's personality appearance and material palette,
+attaches equipped items to the authored sockets, and shows walking, work, cargo,
+care and expression feedback from detached state. Away companions leave the
+world view; onsite workflows retain their admitted presence.
+
+**Building floors** opens an inspector for a completed building, including the
+graph-less Littlewild starts. Choose a floor to observe companions and physical
+supplies, suggest a visit to the selected companion, or place a validated
+production order at an available workstation. Opening or changing the observed
+floor does not move companions or advance simulation. The native guide includes
+the authored tutorial steps; selecting advice is observational and does not
+complete tasks or change saved tutorial progress.
+
+Authored timeline sampling previews supported entity positions/transforms and camera tracks in the
 native view. Sampling is observational: it does not run scene-entry events,
 timed cues, completion events or the browser's reviewed storytelling director.
 Cutscene-driven gameplay transitions remain an explicit native integration task.
-Scenario switching in the browser selects a new authored project; connections within the native game
-use the current pack's scene admission and owner-continuation rules.
+Scenario switching in the browser selects a new authored project; connections
+within the native game use the current pack's scene admission and owner-continuation rules.
 
 The native presentation is a new adapter. Browser editors, renderer plugins,
-p5 drawing, full cutscene event execution and the browser panel layout do not
-become native Godot UI automatically. Consult the generated manifest for target
-coverage.
-Retaining their authored data in the pack is different from implementing their
+p5 drawing, full cutscene event execution, 2D/embedded presentation and the
+browser panel layout do not become native Godot UI automatically. Consult the
+generated manifest for target coverage. Retaining their authored data in the pack is different from implementing their
 native presentation. Compiler admission rejects custom renderer and animation
 extensions that lack a native adapter. The browser remains the complete authoring
 workspace.
@@ -206,7 +218,22 @@ Imported scenario and project data do not install or evaluate source strings.
 npm run typecheck
 npm run architecture
 npm run verify
+# After building, run the additional native export gate:
+npm run verify:godot
+# Select the repository's pinned Godot executable when it is not on PATH:
+WILDLANDS_GODOT=/path/to/godot npm run verify:godot
 ```
+
+`verify:godot` checks the generated archive and starts the actual native shell and
+Node subprocess headlessly by default. To capture actual rendered screenshots,
+run with a graphical display and set an absolute output path:
+
+```sh
+WILDLANDS_GODOT=/path/to/godot WILDLANDS_CAPTURE_NATIVE=/tmp/wildlands-native.png npm run verify:godot
+```
+
+The capture option enables a graphical run and requires a working display. It
+also captures the building-floor view beside the main native screenshot.
 
 The normal verification gate owns the registered simulation, CLI, export and
 browser suites. A focused or `--no-browser` run is partial evidence. Native Godot
@@ -218,9 +245,14 @@ tests against the TypeScript authority.
 
 ## First milestone: Littlewild export acceptance
 
-The goal is to export the complete Littlewild showcase into Godot. The current
-compiler delivers a runnable desktop project and retains the existing gameplay
-authority; full native presentation coverage remains an acceptance target.
+The first target is the shipped Littlewild showcase: `first-morning` and
+`charted-home` in `mossmeadow`. Both starts are graph-less and contain no authored
+cutscenes, scene triggers, renderer embeds or p5 descriptors. The exported game
+retains the existing gameplay authority and adds native companion appearances,
+equipment, task feedback, building-floor inspection and authored guidance.
+Supported gameplay commands and canonical continuation travel with the project.
+
+Acceptance is about the observable behavior of those starts, including:
 
 - Compile a validated Littlewild project without the source checkout or npm
   dependencies at runtime; require only the documented Godot/Node prerequisites.
@@ -229,11 +261,20 @@ authority; full native presentation coverage remains an acceptance target.
 - Discover and submit every supported gameplay command through the same validated
   boundary, with rejected commands preserving authoritative state.
 - Verify scene admission and transitions against the TypeScript reference.
-- Finish native presentation coverage for Littlewild's authored timeline events/effects,
-  scene dimensions/embeds, asset rigs and remaining camera behavior. Current native coverage
-  is declared in the export manifest; retained data alone does not satisfy this.
+- Reconstruct the three `charted-home` personality appearances and Pip's six
+  equipped slots, show real task/cargo/care feedback, and preserve away/indoor
+  presence without advancing gameplay through rendering.
+- Inspect actual building floors, submit visits and production through validated
+  commands, and display the authored guide without completing work automatically.
 - Validate generated Godot code, native input and actual rendering using recorded
   native smoke checks and visual evidence.
+
+This does not establish presentation parity for every prototype the builder can
+author. Automatic storytelling director events, p5 effects, 2D scenes/embeds,
+custom renderer plugins and the complete browser editor/panel presentation still
+need target adapters. None of those absent authored scene features occurs in the
+original two Littlewild starts. The generated manifest declares target coverage;
+retaining authored data alone does not demonstrate native execution.
 
 A pure GDScript simulation, bundled Node executable and web/mobile Godot targets
 are later portability work with their own conformance and packaging requirements.

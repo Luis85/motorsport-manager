@@ -35,7 +35,7 @@ The **3D Creature Editor** edits appearance, body parts, archetype tuning, futur
 
 **Storyboards & timelines** keeps ordered story notes beside normal scenes and cutscenes across worlds. Cutscenes animate scene entities and cameras in a detached 2D/3D preview. Scene entry rules, timed cues and completion events can request reviewed scene changes or play another cutscene. Pinned **p5.js** supplies deterministic presentation presets through a replaceable, typed animation registry driven by the existing application clock. See [STORYTELLING-EDITOR.md](STORYTELLING-EDITOR.md), [STORYTELLING.md](STORYTELLING.md) and [p5 provenance and source](vendor/P5-VENDOR.md).
 
-The Wildlands compiler exports a **runnable Godot project** with a native presentation adapter and the authoritative TypeScript simulation bundled for a local Node subprocess. Scenario data, owner checkpoints, assets and supported command behavior travel with the project. This desktop target requires Godot and Node; native presentation does not reproduce every browser editor or renderer. See [WILDLANDS.md](WILDLANDS.md).
+The Wildlands compiler exports a **runnable Godot project** with a native presentation adapter and the authoritative TypeScript simulation bundled for a local Node subprocess. Scenario data, owner checkpoints, assets and supported command behavior travel with the project. Native Littlewild includes personality appearances, equipment, task feedback, building-floor inspection and authored guidance. This desktop target requires Godot and Node; native presentation does not reproduce every browser editor or renderer. See [WILDLANDS.md](WILDLANDS.md).
 
 The existing **engine JSON document** remains a separate inert code-generator input: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and a Godot mapping manifest. A pure GDScript semantic port remains separate work. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md) for the distinction.
 
@@ -60,6 +60,8 @@ npm run build -- --pack source/content/emberworks.pack.json --output emberworks.
 
 npx playwright install chromium
 npm run verify
+# Additional native export checks; requires Godot on PATH or WILDLANDS_GODOT:
+npm run verify:godot
 # Skip browser suites only for an explicitly partial local check:
 npm run verify -- --no-browser
 ```

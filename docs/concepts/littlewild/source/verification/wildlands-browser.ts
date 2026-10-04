@@ -104,9 +104,36 @@ async function main():Promise<void>{
    });
    await check(width+'px workspace has reachable controls without horizontal overflow',async()=>{
     assert.equal(await page.evaluate('document.documentElement.scrollWidth>innerWidth'),false);
+    const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
+    const summary=page.locator('[data-wildlands-export-panel] summary');
+    await summary.focus();await page.keyboard.press('Space');
+    await page.waitForFunction('!document.querySelector("[data-wildlands-export-panel]").open');
+    assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
+    await page.keyboard.press('Space');
+    await page.waitForFunction('document.querySelector("[data-wildlands-export-panel]").open');
+    assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
     for(const selector of ['#wildlands-scenario','[data-wildlands="save"]','[data-wildlands="switch"]','[data-wildlands="export"]']){
      const bounds=await page.locator(selector).boundingBox();assert(bounds&&bounds.width>=44&&bounds.height>=44,selector+' '+JSON.stringify(bounds));
     }
+   });
+   await check(width+'px programmatic same-ID scenario replacement preserves its complete authoring closure',async()=>{
+    const expected=await page.evaluate<{projectId:string;projectName:string;sceneIds:string[];sceneId:string;clipId:string;graph:unknown}>(`(()=>{
+     const current=Wildlands.project(),pack=LWContent.copy(current.pack),home=pack.scenes.find(scene=>scene.id==='charted-home');
+     if(!home)throw Error('Default Littlewild authored home is missing.');
+     const custom=LWContent.copy(home);custom.id='agent-added-scene';custom.name='Agent added scene';custom.description='Programmatic authoring retains this exact graph.';
+     custom.graph={kind:'level',rendering:{dimension:'3d',rendererId:'basic'}};pack.scenes.push(custom);
+     const clip={id:'agent-added-clip',name:'Agent authored timeline',sceneId:custom.id,duration:2,skipPolicy:'cancel',tracks:[]};
+     pack.storytelling=pack.storytelling||{version:1,cutscenes:[],storyboards:[]};pack.storytelling.cutscenes.push(clip);
+     const checked=LWScenarios.validate(pack);if(!checked.ok)throw Error(checked.errors.join('\\n'));
+     const engine=LWScenarios.commitScene(LWScenarios.prepareScene(checked.pack,custom.id));engine.s.paused=true;
+     Littlewild.setEngine(engine);Littlewild.refresh();
+     return {projectId:current.id,projectName:current.name,sceneIds:pack.scenes.map(scene=>scene.id),sceneId:custom.id,clipId:clip.id,graph:custom.graph};
+    })()`);
+    const saved=await save(page,width,'programmatic-scene');
+    assert.equal(saved.id,expected.projectId);assert.equal(saved.name,expected.projectName);
+    assert.equal(saved.sceneId,expected.sceneId);assert.deepEqual(saved.pack.scenes.map(scene=>scene.id),expected.sceneIds);
+    assert.deepEqual(saved.pack.scenes.find(scene=>scene.id===expected.sceneId)!.graph,expected.graph);
+    assert(saved.pack.storytelling?.cutscenes.some(clip=>clip.id===expected.clipId&&clip.sceneId===expected.sceneId));
    });
    await page.close();
   }

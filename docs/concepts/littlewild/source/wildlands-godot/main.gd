@@ -2,8 +2,12 @@ extends Control
 ## Desktop shell: detached values in, validated intents and explicit clock out.
 const RuntimeBridge = preload("res://native/bridge.gd")
 const NativeWorld = preload("res://native/world.gd")
+const FloorInspector = preload("res://native/floors.gd")
+const TutorialGuide = preload("res://native/guide.gd")
 var bridge = RuntimeBridge.new()
 var world = NativeWorld.new()
+var floors = FloorInspector.new()
+var guide = TutorialGuide.new()
 var view: Dictionary = {}
 var actor_ids: Array[String] = []
 var actor_signature := ""
@@ -83,7 +87,7 @@ func _build_ui() -> void:
 	var toolbar := HBoxContainer.new()
 	page.add_child(toolbar)
 	play_button = _button("Start", _toggle_clock, toolbar)
-	_button("Step 1 second", func(): bridge.request("step", {"count": 10}), toolbar)
+	_button("Step 1 second", _step_second, toolbar)
 	var speeds := OptionButton.new()
 	for rate in [1, 2, 4, 8, 16]:
 		speeds.add_item(str(rate) + "×", rate)
@@ -108,15 +112,25 @@ func _build_ui() -> void:
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport_container.add_child(viewport)
 	viewport.add_child(world)
+	var scrolling := ScrollContainer.new()
+	scrolling.custom_minimum_size.x = 390
+	scrolling.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	split.add_child(scrolling)
 	var panel := VBoxContainer.new()
-	panel.custom_minimum_size.x = 390
-	split.add_child(panel)
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scrolling.add_child(panel)
 	actor_picker.item_selected.connect(_select_actor)
 	panel.add_child(actor_picker)
 	var care := HBoxContainer.new()
 	panel.add_child(care)
 	for action in ["feed", "water", "bond", "praise"]:
 		_button(action.capitalize(), func(): _command({"id": "care", "actorId": selected_actor, "args": [action]}), care)
+	panel.add_child(floors)
+	floors.configure(bridge, world, func(): return selected_actor)
+	panel.add_child(guide)
+	var project: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://wildlands.project.json"))
+	if project is Dictionary:
+		guide.configure(project)
 	panel.add_child(scene_picker)
 	_button("Enter selected connection", _enter_scene, panel)
 	details.custom_minimum_size.y = 170
@@ -187,6 +201,7 @@ func _response(method: String, result: Variant) -> void:
 		_render(result.get("view", {}))
 	elif method in ["session.openStory", "scene.enter", "session.create"]:
 		_stop_clip()
+		floors.reset()
 		world.reset_presentation()
 		actor_signature = ""
 		_render(result)
@@ -208,6 +223,9 @@ func _response(method: String, result: Variant) -> void:
 		world.apply_timeline(result)
 		if not playback.is_empty() and float(playback.time) >= float(playback.duration):
 			_stop_clip()
+	elif method == "query":
+		if bridge.last_response_id != floors.last_handled_request:
+			_append_log(JSON.stringify(result))
 	else:
 		_append_log(JSON.stringify(result))
 		bridge.request("inspect")
@@ -250,6 +268,8 @@ func _render(next: Variant) -> void:
 	details.append_text("\nPlayer: " + JSON.stringify(snapshot.player))
 	world.selected = selected_actor
 	world.update_view(view)
+	floors.update_view(view)
+	guide.update_view(view)
 
 func _select_actor(index: int) -> void:
 	if index < actor_ids.size():
@@ -346,6 +366,12 @@ func _append_log(message: String) -> void:
 		log.append_text(message.left(3000) + "\n")
 
 func _error(message: String) -> void:
+	floors.feedback.text = message
 	awaiting_step = false
 	awaiting_sample = false
 	_append_log(message)
+
+func _step_second() -> void:
+	if not view.get("snapshot", {}).get("started", false):
+		bridge.request("start")
+	bridge.request("step", {"count": 10})

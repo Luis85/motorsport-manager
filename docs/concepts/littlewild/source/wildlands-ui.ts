@@ -34,7 +34,13 @@ declare namespace WildlandsUI {
   function captureProject(engine:LWContentPorts.ScenarioEngine,original?:Wildlands.Project):Wildlands.Project {
    const captured=root.LWScenarios.capture(engine);
    const sceneId=engine.scenarioContext?.sceneId||captured.scenes[0]!.id;
-   const source=original?.pack.id===captured.id?original:root.WildlandsProject.create({pack:host.scenarios.state.packs.find(pack=>pack.id===captured.id)||captured,sceneId});
+   const belongs=(pack:LWContentPorts.ScenarioPack)=>pack.id===captured.id&&captured.scenes.every(scene=>pack.scenes.some(value=>value.id===scene.id))&&captured.worlds.every(world=>pack.worlds.some(value=>value.id===world.id));
+   const sameProject=original?.pack.id===captured.id;
+   // A programmatic host replacement may reuse the pack ID with a new authored
+   // graph. Its admitted engine closure is authoritative over the former draft.
+   const graphClosure=captured.scenes.some(scene=>scene.graph);
+   const pack=graphClosure?captured:sameProject&&belongs(original.pack)?original.pack:host.scenarios.state.packs.find(belongs)||captured;
+   const source=root.WildlandsProject.create({pack,sceneId,...(sameProject?{id:original.id,name:original.name}:{})});
    // Project admission preserves every authored beginning and asset while the
    // current graph-less game checkpoint contains only one observed scene.
    return root.WildlandsProject.capture(source,captured,sceneId);
@@ -54,6 +60,11 @@ declare namespace WildlandsUI {
     active=engine;
     if(pending&&pending.pack.id===engine.scenarioContext?.packId&&pending.sceneId===engine.scenarioContext?.sceneId){host.scenarios.editor.reset();project=pending;pending=null;}
     else project=captureProject(engine,project);
+    const at=packs().findIndex(pack=>pack.id===project.pack.id);
+    if(at<0)packs().push(project.pack);
+    else if(project.pack.scenes.some(scene=>!packs()[at]!.scenes.some(value=>value.id===scene.id)))packs()[at]=project.pack;
+    const draft=host.scenarios.editor.session?.snapshot();
+    if(draft?.id===project.pack.id&&(draft.scenes.length!==project.pack.scenes.length||project.pack.scenes.some(scene=>!draft.scenes.some(value=>value.id===scene.id))))host.scenarios.editor.reset();
     name.value=project.name;
     choices.value=project.pack.id+'/'+project.sceneId;
     status(project.pack.name+' · '+(engine.scenarioContext?.sceneName||project.sceneId)+' is active.');
