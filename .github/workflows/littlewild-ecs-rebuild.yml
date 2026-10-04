@@ -40,10 +40,144 @@ jobs:
         working-directory: docs/concepts/littlewild
         run: npx playwright install --with-deps chromium
       - name: Rebuild and verify all Littlewild contracts
+        id: complete_gate
         working-directory: docs/concepts/littlewild
         env:
           LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
         run: npm run verify
+      - name: Verify Storytelling without click diagnostics (additional 23 checks)
+        id: storytelling_diagnostics_off
+        if: ${{ success() && steps.complete_gate.outcome == 'success' }}
+        working-directory: docs/concepts/littlewild
+        env:
+          LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
+          # Reviewed expectations; acceptance still requires the actual complete gate.
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1547'
+          LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
+            [
+              {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
+              {"suite":"animations","name":"Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
+              {"suite":"renderer-storytelling","name":"Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
+              {"suite":"renderer-storytelling","name":"Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"}
+            ]
+        run: |
+          env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const crypto = require('node:crypto');
+          const {runCommand} = require('./.generated/verification/process-runner.js');
+          const {acceptedCounts, sourceIdentity} = require('./.generated/verification/gate-integrity.js');
+          const root = process.cwd(), out = process.env.LITTLEWILD_STORYTELLING_OUT;
+          if (fs.existsSync(out)) throw Error('Additional evidence directory already exists; refusing to overwrite it.');
+          fs.mkdirSync(out, {recursive:true});
+          const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+          const gatePath = path.join(root, 'verification/v15/gate-results.json');
+          const baselinePath = path.join(root, 'verification/v15/storytelling-browser-results.json');
+          const artifact = path.join(root, 'littlewild.html');
+          const suiteSnapshot = gate => {
+            const seen = new Set();
+            return gate.suites.map(suite => {
+              if (typeof suite.result !== 'string' || path.isAbsolute(suite.result) || suite.result.split(/[\\/]/).includes('..'))
+                throw Error('Invalid original result path.');
+              const target = path.resolve(root, suite.result);
+              if (!target.startsWith(root + path.sep) || fs.realpathSync(target) !== target || !fs.lstatSync(target).isFile() || seen.has(target))
+                throw Error('Missing, aliased or unbounded original result path: ' + suite.result);
+              seen.add(target);
+              return {name:suite.name, result:suite.result, bytes:fs.statSync(target).size, sha256:sha(target)};
+            });
+          };
+          const command = ['node', '.generated/verification/storytelling-browser.js'];
+          const startedAt = new Date().toISOString();
+          let result = null, counts = null, failure = null, unchanged = false;
+          let before = null, after = null, gate = null;
+          try {
+            gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
+            const expectedGateChecks = Number(process.env.LITTLEWILD_EXPECTED_GATE_CHECKS);
+            const reviewedNewChecks = JSON.parse(process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON || 'null');
+            if (!Number.isSafeInteger(expectedGateChecks) || expectedGateChecks < 1543 || !Array.isArray(reviewedNewChecks)
+                || expectedGateChecks !== 1543 + reviewedNewChecks.length)
+              throw Error('Fill the reviewed complete-gate count and named additions before enabling this guard.');
+            const newNames = new Set();
+            for (const row of reviewedNewChecks) {
+              if (!row || typeof row.suite !== 'string' || !row.suite.trim() || typeof row.name !== 'string' || !row.name.trim()
+                  || newNames.has(JSON.stringify([row.suite,row.name]))) throw Error('Invalid reviewed new-check identity.');
+              newNames.add(JSON.stringify([row.suite,row.name]));
+            }
+            if (gate.status !== 'passed' || gate.suites.length !== 75 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The original complete 75-suite gate must pass at the reviewed check count first.');
+            let acceptedOriginalTotal = 0;
+            for (const suite of gate.suites) {
+              if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
+              if (typeof suite.result !== 'string' || path.isAbsolute(suite.result) || suite.result.split(/[\\/]/).includes('..'))
+                throw Error('Invalid original result path.');
+              const target = path.resolve(root,suite.result);
+              if (!target.startsWith(root + path.sep) || fs.realpathSync(target) !== target || !fs.lstatSync(target).isFile())
+                throw Error('Missing, aliased or unbounded original result path.');
+              const report = JSON.parse(fs.readFileSync(target,'utf8'));
+              const checked = acceptedCounts(report);
+              if (suite.passed !== checked.passed || suite.total !== checked.total) throw Error('Original suite summary differs from accepted leaves.');
+              acceptedOriginalTotal += checked.total;
+              for (const added of reviewedNewChecks.filter(row => row.suite === suite.name))
+                if (!report.results.some(row => row.name === added.name)) throw Error('Reviewed new check is missing: ' + added.name);
+            }
+            if (acceptedOriginalTotal !== expectedGateChecks || reviewedNewChecks.some(row => !gate.suites.some(suite => suite.name === row.suite)))
+              throw Error('Original accepted leaves differ from the reviewed complete-gate scope.');
+            const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+            if (acceptedCounts(baseline).total !== 23) throw Error('Expected all 23 original Storytelling checks.');
+            before = {sourceSha256:sourceIdentity(root), htmlSha256:sha(artifact), gateSha256:sha(gatePath), baselineSha256:sha(baselinePath), suiteResults:suiteSnapshot(gate)};
+            if (before.sourceSha256 !== gate.sourceSha256 || before.htmlSha256 !== gate.htmlSha256)
+              throw Error('Original gate source/artifact identity differs before the additional run.');
+            result = runCommand(command, root, 300);
+            fs.writeFileSync(path.join(out, 'run.log'), (result.stdout || '') + (result.stderr || ''));
+            after = {sourceSha256:sourceIdentity(root), htmlSha256:sha(artifact), gateSha256:sha(gatePath), baselineSha256:sha(baselinePath), suiteResults:suiteSnapshot(gate)};
+            unchanged = JSON.stringify(before) === JSON.stringify(after);
+            if (!unchanged) throw Error('Source, artifact or original gate evidence changed during the additional run.');
+            if (result.error || result.signal || result.status !== 0)
+              throw Error('Additional Storytelling process failed: ' + String(result.error || result.signal || result.status));
+            const report = JSON.parse(fs.readFileSync(path.join(out, 'storytelling-browser-results.json'), 'utf8'));
+            counts = acceptedCounts(report);
+            if (counts.total !== 23 || JSON.stringify(report.results.map(row => row.name)) !== JSON.stringify(baseline.results.map(row => row.name)))
+              throw Error('Additional run must preserve all 23 named checks and their order.');
+            for (const key of ['errors', 'consoleProblems', 'requests'])
+              if (!Array.isArray(report.diagnostics[key]) || report.diagnostics[key].length)
+                throw Error('Additional run contains raw diagnostics in ' + key);
+            if (fs.existsSync(path.join(out, 'storytelling-click-diagnostics.json')))
+              throw Error('Diagnostics-disabled run unexpectedly produced click observations.');
+          } catch (error) {
+            failure = String(error);
+            if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
+          }
+          const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
+          const receipt = {schema:1, scope:'Additional 23-check observer-independence execution; does not change the original 75-suite gate or its reviewed baseline plus named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Official installed browser selected by pinned Playwright; executable override unset. Original browser harness flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
+          process.exitCode = failure ? 1 : 0;
+          NODE
+      - name: Report additional Storytelling failure details
+        if: ${{ failure() && steps.storytelling_diagnostics_off.outcome == 'failure' }}
+        working-directory: docs/concepts/littlewild
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from uuid import uuid4
+
+          folder = Path('verification/storytelling-diagnostics-off')
+          token = uuid4().hex
+          print('::stop-commands::' + token)
+          try:
+              for name in ('additional-storytelling-results.json', 'storytelling-browser-results.json', 'run.log'):
+                  target = folder / name
+                  if not target.is_file():
+                      print('Additional Storytelling evidence unavailable: ' + name)
+                      continue
+                  print('\nAdditional Storytelling evidence: ' + name)
+                  with target.open('rb') as stream:
+                      evidence = stream.read(65537)
+                  print(evidence[:65536].decode('utf-8', errors='replace'))
+                  if len(evidence) > 65536:
+                      print('[Excerpt limited to 65536 bytes; complete evidence is retained in the artifact.]')
+          finally:
+              print('::' + token + '::')
+          PY
       - name: Report failed verification details
         if: failure()
         working-directory: docs/concepts/littlewild
@@ -82,6 +216,70 @@ jobs:
           finally:
               print('::' + token + '::')
           PY
+      - name: Package optional bounded core verification evidence
+        if: always()
+        continue-on-error: true
+        working-directory: docs/concepts/littlewild
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import zipfile
+
+          root = Path.cwd().resolve()
+          output = root / 'verification/core-evidence'
+          output.mkdir(parents=True, exist_ok=False)
+          selected = set()
+          missing = []
+          def select(path):
+              if path.is_symlink() or path.resolve() != path or not path.is_relative_to(root):
+                  raise ValueError('Unbounded or aliased core evidence path: ' + str(path))
+              if path.is_file():
+                  selected.add(path)
+              else:
+                  missing.append(str(path.relative_to(root)))
+
+          for relative in ('package-lock.json', 'littlewild.html', 'verification/v15/gate-results.json', 'verification/v15/browser-progress.json'):
+              select(root / relative)
+          gate_path = root / 'verification/v15/gate-results.json'
+          gate = json.loads(gate_path.read_text()) if gate_path.is_file() else {}
+          for suite in gate.get('suites', []):
+              relative = Path(suite['result'])
+              if relative.is_absolute() or '..' in relative.parts:
+                  raise ValueError('Unbounded registered result path: ' + str(relative))
+              select(root / relative)
+          for pattern in ('.generated/*-results.json', 'verification/v15/**/*-results.json', 'verification/v15/**/*.log', 'verification/v15/**/*click-diagnostics.json', 'verification/v15/**/*trace*', 'verification/storytelling-diagnostics-off/*.json', 'verification/storytelling-diagnostics-off/*.log'):
+              for path in root.glob(pattern):
+                  if path.is_file():
+                      select(path)
+          files = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size, 'sha256':hashlib.sha256(path.read_bytes()).hexdigest()} for path in sorted(selected)]
+          excluded = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size} for path in sorted((root / 'verification/v15').rglob('*')) if path.is_file() and path not in selected]
+          manifest = {'scope':'Optional core artifact only; original complete artifact is retained separately.', 'selection':'HTML, package lock, every available registered result plus result/log/trace/progress evidence; bulk exports, screenshots and unrelated generated data excluded.', 'gateStatus':gate.get('status'), 'attemptedSuites':len(gate.get('suites', [])), 'missingEvidence':sorted(set(missing)), 'payloadBytes':sum(row['bytes'] for row in files), 'zipLimitBytes':30*1024*1024, 'files':files, 'excludedFromCore':excluded}
+          archive = output / 'littlewild-core-evidence.zip'
+          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zipped:
+              for row in files:
+                  zipped.write(root / row['path'], row['path'])
+              zipped.writestr('CORE-MANIFEST.json', json.dumps(manifest, indent=2)+'\n')
+          manifest['zipBytes'] = archive.stat().st_size
+          manifest['status'] = 'available' if manifest['zipBytes'] < manifest['zipLimitBytes'] else 'unavailable-size-limit'
+          if manifest['status'] != 'available':
+              archive.unlink()
+          else:
+              manifest['zipSha256'] = hashlib.sha256(archive.read_bytes()).hexdigest()
+          (output / 'core-evidence-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+          print(json.dumps({key:manifest[key] for key in ('status','gateStatus','attemptedSuites','payloadBytes','zipBytes','zipLimitBytes','missingEvidence')}, indent=2))
+          PY
+      - name: Retain optional bounded core verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: littlewild-ecs-core-evidence
+          path: docs/concepts/littlewild/verification/core-evidence/*.zip
+          if-no-files-found: ignore
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
       - name: Retain compact verification diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -95,6 +293,10 @@ jobs:
             docs/concepts/littlewild/verification/v15/*.log
             docs/concepts/littlewild/verification/v15/*-results.json
             docs/concepts/littlewild/verification/v15/*building-interiors-browser.json
+            docs/concepts/littlewild/verification/v15/*progress.json
+            docs/concepts/littlewild/verification/core-evidence/*.json
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.json
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.log
           if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
@@ -107,6 +309,7 @@ jobs:
             docs/concepts/littlewild/package-lock.json
             docs/concepts/littlewild/littlewild.html
             docs/concepts/littlewild/verification/v15/
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/
             docs/concepts/littlewild/.generated/*-results.json
           if-no-files-found: warn
           include-hidden-files: true

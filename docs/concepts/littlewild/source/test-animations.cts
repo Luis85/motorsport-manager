@@ -57,6 +57,34 @@ async function finish():Promise<void>{
   await settle();await settle();assert.equal(metrics.ink,false,'Latest empty request clears without another host draw');assert.equal(canvas.width,900);assert.equal(canvas.height,400);
   layer.draw(larger,[preset],1,project);layer.draw(larger,[],2,project);layer.dispose();const calls=metrics.callbacks,clears=metrics.clears;await settle();await settle();assert.equal(metrics.callbacks,calls);assert.equal(metrics.clears,clears);assert.equal(metrics.removals,1);
  });
+ const hookCase='Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles';
+ const original=Object.getOwnPropertyDescriptor(globalThis,'p5'),savedError=console.error,sketches:Sketch[]=[],layers:LWAnimations.Layer[]=[];
+ let foreignCalls=0,removedFocus=0,reported=0,reentrant:()=>void=()=>{},constructorFailure=false;
+ const foreign=function(){foreignCalls++;};
+ class Sketch {
+  static lifecycleHooks:{remove:((this:Sketch)=>void)[]}={remove:[foreign]};
+  setup=()=>{};draw=()=>{};focusActive=true;removals=0;reject=false;
+  constructor(configure:(sketch:Sketch)=>void){sketches.push(this);configure(this);const self=this;Sketch.lifecycleHooks.remove.push(function(){self.focusActive=false;removedFocus++;});void this._runLifecycleHook('presetup');if(constructorFailure)throw Error('Constructor failed after registering focus');this.setup();this.draw();}
+  async _runLifecycleHook(name:string){if(name==='presetup'){reentrant();return;}for(const hook of Sketch.lifecycleHooks.remove)hook.call(this);}
+  noLoop(){}isLooping(){return false;}pixelDensity(){}push(){}pop(){}createCanvas(){}resizeCanvas(){}clear(){}async redraw(){this.draw();}
+  async remove(){this.removals++;await this._runLifecycleHook('remove');if(this.reject)throw Error('Removal rejected');}
+ }
+ const create=()=>{const layer=animations.create({width:200,height:120,parentElement:{},remove(){}} as unknown as HTMLCanvasElement);layers.push(layer);return layer;};
+ const retire=(layer:LWAnimations.Layer)=>{const finalize=layer.retire!()!;layers.splice(layers.indexOf(layer),1);return finalize;};
+ try{
+  Object.assign(globalThis,{p5:Sketch});console.error=()=>{reported++;};
+  const first=create(),second=create();assert((await first.ready).ok&&(await second.ready).ok);assert.equal(Sketch.lifecycleHooks.remove.length,3);
+  const releaseFirst=retire(first);const completion=releaseFirst();assert.equal(releaseFirst(),completion);await completion;
+  assert.equal(sketches[0]!.focusActive,false);assert.equal(sketches[1]!.focusActive,true,'A removal must not invoke the other owned sketch focus cleanup');assert.equal(sketches[0]!.removals,1);assert.deepEqual(Sketch.lifecycleHooks.remove,[foreign,Sketch.lifecycleHooks.remove[1]]);
+  await retire(second)();assert.deepEqual(Sketch.lifecycleHooks.remove,[foreign]);assert.equal(removedFocus,2);assert.equal(foreignCalls,2);
+  const added=function(){};let nested:LWAnimations.Layer|null=null;reentrant=()=>{reentrant=()=>{};nested=create();Sketch.lifecycleHooks.remove.unshift(added);};const reordered=create();await reordered.ready;await retire(reordered)();assert.equal(sketches.at(-1)!.focusActive,true,'A reentrant live sketch keeps its focus listeners');await retire(nested as unknown as LWAnimations.Layer)();assert.deepEqual(Sketch.lifecycleHooks.remove,[added,foreign],'Presetup mutation must preserve foreign identities');Sketch.lifecycleHooks.remove.shift();
+  const throwing=function(){throw Error('Foreign hook failed before owned cleanup');};Sketch.lifecycleHooks.remove.unshift(throwing);const rejected=create();await rejected.ready;
+  await assert.rejects(retire(rejected)(),/resource release/);assert.equal(sketches.at(-1)!.focusActive,false);assert.equal(sketches.at(-1)!.removals,1);assert.deepEqual(Sketch.lifecycleHooks.remove,[throwing,foreign]);Sketch.lifecycleHooks.remove.shift();
+  const failed=create();await failed.ready;sketches.at(-1)!.reject=true;await assert.rejects(retire(failed)(),/resource release/);assert.deepEqual(Sketch.lifecycleHooks.remove,[foreign]);
+  constructorFailure=true;assert.throws(create,/construction failed/);for(let i=0;i<8;i++)await Promise.resolve();assert.equal(sketches.at(-1)!.focusActive,false);assert.equal(sketches.at(-1)!.removals,1);assert.deepEqual(Sketch.lifecycleHooks.remove,[foreign]);assert.equal(reported,0);
+  results.push({name:hookCase,passed:true});
+ }catch(error){results.push({name:hookCase,passed:false,error:String(error)});savedError(hookCase,error);}
+ finally{for(const layer of layers)layer.dispose();console.error=savedError;if(original)Object.defineProperty(globalThis,'p5',original);else Reflect.deleteProperty(globalThis,'p5');}
  fs.mkdirSync('verification/v15',{recursive:true});fs.writeFileSync('verification/v15/animations-results.json',JSON.stringify({passed:results.filter(row=>row.passed).length,total:results.length,results},null,2)+'\n');
  console.log(results.filter(row=>row.passed).length+'/'+results.length+' animation registry checks passed');if(results.some(row=>!row.passed))process.exitCode=1;
 }

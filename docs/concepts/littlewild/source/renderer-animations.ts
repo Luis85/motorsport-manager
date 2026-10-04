@@ -2,8 +2,10 @@
 /* Real p5 instance-mode sketches, sampled by the existing host cadence. No p5 loop or gameplay RNG. */
 (function(inputRoot:unknown){
  'use strict';
- interface Sketch extends LWAnimations.Drawing {setup:()=>void;draw:()=>void;noLoop():void;isLooping():boolean;pixelDensity(value:number):void;createCanvas(width:number,height:number,canvas:HTMLCanvasElement):unknown;resizeCanvas(width:number,height:number,noRedraw:boolean):void;clear():void;redraw():Promise<void>;remove():Promise<void>;}
- const root=inputRoot as {p5?:new(sketch:(instance:Sketch)=>void,node:HTMLElement)=>Sketch;LWDeveloperData:{copy(input:unknown):LittlewildDeveloper.Json;record(input:unknown):LittlewildDeveloper.Document};LWAnimationCatalogRecords:{add(metadata:LWAnimations.Metadata):()=>void};LWAnimations?:LWAnimations.Api;};
+ interface Sketch extends LWAnimations.Drawing {setup:()=>void;draw:()=>void;noLoop():void;isLooping():boolean;pixelDensity(value:number):void;createCanvas(width:number,height:number,canvas:HTMLCanvasElement):unknown;resizeCanvas(width:number,height:number,noRedraw:boolean):void;clear():void;redraw():Promise<void>;remove():Promise<void>;_runLifecycleHook?(name:string):Promise<void>;}
+ type RemoveHook=(this:Sketch)=>void;
+ interface Constructor {new(sketch:(instance:Sketch)=>void,node:HTMLElement):Sketch;lifecycleHooks?:{remove:RemoveHook[]};}
+ const root=inputRoot as {p5?:Constructor;LWDeveloperData:{copy(input:unknown):LittlewildDeveloper.Json;record(input:unknown):LittlewildDeveloper.Document};LWAnimationCatalogRecords:{add(metadata:LWAnimations.Metadata):()=>void};LWAnimations?:LWAnimations.Api;};
  const presets=new Map<string,{metadata:LWAnimations.Metadata;draw:LWAnimations.Preset}>();
  function register(input:LWAnimations.Metadata,draw:LWAnimations.Preset):()=>void {
   const value=root.LWDeveloperData.record(input),{id,name,description}=value;
@@ -26,12 +28,35 @@
   let disposed=false,initialized=false,busy=false,emptyPainted=false,removal:Promise<void>|null=null,request:{frame:LittlewildRenderer.Frame;descriptors:readonly LWAnimations.Descriptor[];time:number;project:(point:LittlewildRenderer.Point)=>LittlewildRenderer.Point}|null=null;
   let setupStarted=false,resolveSetup:()=>void=()=>{};const setupReached=new Promise<void>(resolve=>{resolveSetup=resolve;});
   let resolveReady:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};const ready=new Promise<LittlewildRenderer.SwitchResult>(resolve=>{resolveReady=resolve;});
-  const sketch=new P5(p=>{
+  let hookArray:RemoveHook[]|null=null,prefix:RemoveHook[]=[],ownedHook:RemoveHook|null=null,ownedMarker:RemoveHook|null=null,hookRan=false,captureAttempted=false,configured:Sketch|null=null;
+  function captureHook(p:Sketch):void{
+   if(captureAttempted||!hookArray)return;captureAttempted=true;
+   if(P5?.lifecycleHooks?.remove!==hookArray||!prefix.every((hook,index)=>hookArray?.[index]===hook))return;
+   const hook=hookArray[prefix.length];if(typeof hook!=='function')return;ownedHook=hook;
+   ownedMarker=function(){if(this===p&&!hookRan){hookRan=true;hook.call(p);}};hookArray[prefix.length]=ownedMarker;
+  }
+  function releaseHook(p:Sketch):void{
+   // p5 2.3.4 keeps each sketch's focus closure in a global array. A foreign
+   // throwing hook may prevent ours from running: remove its listeners first.
+   try{if(ownedHook&&!hookRan){hookRan=true;ownedHook.call(p);}}
+   finally{if(hookArray&&ownedMarker){const index=hookArray.indexOf(ownedMarker);if(index>=0)hookArray.splice(index,1);}}
+  }
+  async function releaseSketch(p:Sketch):Promise<void>{const errors:unknown[]=[];try{await p.remove();}catch(error){errors.push(error);}try{releaseHook(p);}catch(error){errors.push(error);}if(errors.length)throw new AggregateError(errors,'p5 animation resource release failed.');}
+  let sketch:Sketch;
+  try{sketch=new P5(p=>{
+   configured=p;
    p.noLoop();p.setup=()=>{setupStarted=true;resolveSetup();p.noLoop();if(disposed){void removeOnce();return;}p.pixelDensity(1);p.createCanvas(canvas.width,canvas.height,canvas);};
    p.draw=()=>{if(disposed)return;p.clear();emptyPainted=!request?.descriptors.length;if(!initialized){initialized=true;void Promise.resolve().then(()=>Promise.resolve()).then(()=>resolveReady({ok:true}));}const current=request;if(!current)return;
     for(const descriptor of current.descriptors){if(current.time<descriptor.start||current.time>=descriptor.start+descriptor.duration)continue;const preset=presets.get(descriptor.presetId);if(!preset)continue;p.push();try{preset.draw(Object.freeze({p5:p,time:current.time-descriptor.start,phase:(current.time-descriptor.start)/descriptor.duration,seed:descriptor.seed??hash(descriptor.id),center:current.project({x:descriptor.x,y:descriptor.y}),radius:descriptor.radius,color:descriptor.color,count:descriptor.count,viewport:current.frame.viewport}));}finally{p.pop();}}
    };
-  },parent);
+   // The pinned constructor appends its own hook after this callback, before
+   // invoking presetup. Capture before a reentrant addon can mutate the array.
+   const hooks=P5.lifecycleHooks?.remove;if(Array.isArray(hooks)){hookArray=hooks;prefix=hooks.slice();const run=p._runLifecycleHook;
+    if(run){const own=Object.getOwnPropertyDescriptor(p,'_runLifecycleHook');const once=function(this:Sketch,name:string):Promise<void>{if(name==='presetup'){captureHook(p);if(p._runLifecycleHook===once){if(own)Object.defineProperty(p,'_runLifecycleHook',own);else Reflect.deleteProperty(p,'_runLifecycleHook');}}return run.call(this,name);};p._runLifecycleHook=once;}
+   }
+  },parent);captureHook(sketch);}catch(error){
+   disposed=true;const partial=configured as Sketch|null;const errors:unknown[]=[error];if(partial){captureHook(partial);try{partial.noLoop();}catch(failure){errors.push(failure);}void releaseSketch(partial).catch(reportRemoval);}try{canvas.remove();}catch(failure){errors.push(failure);}throw new AggregateError(errors,'p5 animation construction failed.');
+  }
   const timer=setTimeout(()=>{if(!initialized){resolveReady({ok:false,reason:'Animation preparation timed out.'});dispose();}},10000);void ready.then(()=>clearTimeout(timer));
   function paint():void{
    if(disposed||!initialized||busy||!request)return;
@@ -48,7 +73,7 @@
   }
   // p5 awaits presetup before creating its default canvas. Cancellation during
   // that await releases once after setup reaches us, without adopting our canvas.
-  function removeOnce():Promise<void>{if(!removal){try{removal=setupStarted?Promise.resolve(sketch.remove()):setupReached.then(()=>sketch.remove());}catch(error){removal=Promise.reject(error);}}return removal;}
+  function removeOnce():Promise<void>{if(!removal)removal=setupStarted?releaseSketch(sketch):setupReached.then(()=>releaseSketch(sketch));return removal;}
   function reportRemoval(error:unknown):void{console.error('p5 animation resource release failed.',error);}
   function stop():unknown[]{disposed=true;request=null;clearTimeout(timer);resolveReady({ok:false,reason:'Animation layer was disposed.'});const errors:unknown[]=[];try{sketch.noLoop();}catch(error){errors.push(error);}try{canvas.remove();}catch(error){errors.push(error);}return errors;}
   let finalizer:(()=>Promise<void>)|null=null;

@@ -103,4 +103,40 @@ test('Creature display strings count Unicode code points at schema limits',()=>{
  for(const key of ['name','description']){const bad=JSON.parse(JSON.stringify(raw));bad[key]+='🐾';assert.throws(()=>Creatures.validate(bad),/name|description/);}
  raw.names[0]+='🌱';assert.throws(()=>Creatures.validate(raw),/names/);
 });
+test('Forced world paints reuse rigs and invalidate each authored visual identity exactly once',()=>authoredFixture(({definitions,configuration,assets})=>{
+ const alternate=definitions.find((row:{id:string})=>row.id==='brookling');alternate.state.personalFields=alternate.state.personalFields.filter((field:string)=>field!=='habitat');delete alternate.state.defaults.habitat;alternate.ecs.components=alternate.ecs.components.filter((component:{type:string})=>component.type!=='Habitat');
+ const r=realm(definitions,configuration,assets),L=r.load('simulation.cjs');
+ r.load('asset-catalog.js');r.load('asset-renderer.js');r.load('world-fidelity.js');
+ const vector=()=>({x:0,y:0,z:0,set(x:number,y:number,z:number){this.x=x;this.y=y;this.z=z;}});
+ interface Node {children:Node[];position:ReturnType<typeof vector>;rotation:ReturnType<typeof vector>;scale:ReturnType<typeof vector>;userData:Record<string,unknown>;visible:boolean;remove(child:Node):void;}
+ function node(parent:Node|null):Node {const n:Node={children:[],position:vector(),rotation:vector(),scale:vector(),userData:{},visible:true,remove(child){this.children=this.children.filter(value=>value!==child);}};parent?.children.push(n);return n;}
+ const kit={group:node,piece:(parent:Node)=>node(parent)},group=node(null),fidelity=r.context.LWFidelity;
+ let created=0,removed=0;
+ const detached=(value:unknown)=>require('node:vm').runInContext('JSON.parse('+JSON.stringify(JSON.stringify(value))+')',r.context);
+ const original=fidelity.create;fidelity.create=(ignored:unknown,parent:Node,actor:unknown)=>{created++;return original(kit,parent,actor);};
+ const remove=group.remove;group.remove=function(child:Node){removed++;remove.call(this,child);};
+ r.context.THREE={};r.context.LWArt={World:class{}};r.context.performance={now:()=>0};r.load('world-3d.js');
+ const engine=L.createWorldDemo();engine.s.buildings=[];engine.s.nodes=[];engine.s.orders=[];engine.s.settings.follow=false;
+ engine.s.colony.creatures=engine.s.colony.creatures.slice(0,1);engine.selectCreature('c1');
+ const actor=engine.creatures[0],before=JSON.stringify(engine.export());
+ const noop=()=>{},position={set:noop},world=Object.create(r.context.LWArt.World.prototype);
+ Object.assign(world,{engine,canvas:{width:900,height:700},camera:{x:0,y:0,z:1},quality:'balanced',running:false,forceDraw:true,lastState:engine.s,
+  actors:new Map(),actorAnchors:new Map(),dynamicRoot:group,doors:new Map(),rotors:[],waterMotions:[],smokeParticles:[],responses:[],visualTime:0,
+  motion:{sample:(value:{creature:{x:number;y:number}})=>({x:value.creature.x,z:value.creature.y})},
+  showPath:false,marker:{visible:false,position,material:{color:{set:noop}}},tileCursor:{position},pathDots:{children:[]},
+  frameCount:0,skippedFrames:0,scene:{},cam:{},renderer:{render:noop},labelLayer:{paint:noop},
+  present:()=>true,expireResponses:noop,syncCamera:noop,renderTerraformPreview:noop,renderPlans:noop,paintResponses:noop,drawLens:noop,drawFeedback:noop,
+  toScreen:(x:number,y:number)=>({x,y}),rebuild(){this.geometryKey=JSON.stringify([r.context.LWWorldProfile.hash,r.context.LWAssets.revision,r.context.LWSceneProps?.exterior(engine),engine.s.estate.islands,engine.s.terraform?.revision||0,[],[]]);}});
+ function contains(root:Node,asset:string):boolean{return root.userData.asset===asset||root.children.some(child=>contains(child,asset));}
+ function paint(){world.forceDraw=true;world.draw(0,.016);return world.actors.get(actor.id);}
+ let rig=paint();assert.equal(created,1);assert.equal(rig.instance.asset.id,'sproutling');
+ for(let i=0;i<8;i++){world.canvas.width=900+i;world.canvas.height=700+i;assert.equal(paint(),rig);}assert.equal(created,1);assert.equal(removed,0);assert.equal(JSON.stringify(engine.export()),before);
+ function changed(work:()=>void,inspect:(next:typeof rig)=>void){const old=rig;work();const native=JSON.stringify(engine.export());world.draw(0,.016);rig=world.actors.get(actor.id);assert.notEqual(rig,old);assert.equal(created,removed+1);inspect(rig);const count=created;for(let i=0;i<3;i++)assert.equal(paint(),rig);assert.equal(created,count);assert.equal(JSON.stringify(engine.export()),native);}
+ changed(()=>{actor.personality='maker';},next=>assert.equal(next.instance.model,'world-long'));
+ changed(()=>{actor.archetype='brookling';},next=>assert.equal(next.instance.asset.id,'brookling'));
+ changed(()=>{actor.equipment=detached({...actor.equipment,head:'stargazer_hat'});},next=>assert(contains(next.root,'item:stargazer_hat')));
+ changed(()=>{const next=detached(r.context.LWAssets.all());next.find((row:{id:string})=>row.id==='brookling').materials.fur='#123456';r.context.LWAssets.replace(next);},next=>assert.equal(next.instance.asset.materials.fur,'#123456'));
+ changed(()=>{const next=detached(r.context.LWCreatures.all());next.find((row:{id:string})=>row.id==='brookling').name='Updated Brookling';r.context.LWCreatures.replace(detached({configuration,definitions:next}));},next=>assert.equal(next.key,JSON.stringify([actor.archetype,actor.personality,actor.equipment,fidelity.revision()])));
+ assert.equal(created,6);assert.equal(removed,5);
+}));
 const passed=results.filter(r=>r.passed).length,report={passed,total:results.length,creatures:Creatures.all().length,results};fs.writeFileSync(__dirname+'/creature-catalog-results.json',JSON.stringify(report,null,2));console.log(passed+'/'+results.length);if(passed!==results.length)process.exitCode=1;

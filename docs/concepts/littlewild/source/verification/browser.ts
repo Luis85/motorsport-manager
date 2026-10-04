@@ -13,6 +13,7 @@ const CAPTURE_SCREENSHOTS=process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==="1";
 fs.mkdirSync(OUTPUT,{recursive:true});if(CAPTURE_SCREENSHOTS)fs.mkdirSync(SHOTS,{recursive:true});
 const results:Result[]=[];
 fs.rmSync(path.join(OUTPUT,"browser-results.json"),{force:true});
+fs.rmSync(path.join(OUTPUT,"browser-fatal-results.json"),{force:true});
 let diagnostics: ReturnType<typeof monitorContext>;
 
 async function check(name:string,fn:()=>unknown|Promise<unknown>):Promise<void>{
@@ -26,10 +27,11 @@ const screenshot=(page:Page,name:string)=>CAPTURE_SCREENSHOTS?page.screenshot({p
 
 async function main():Promise<void>{
  const browser=await launchBrowser();
+ let activePage:Page|null=null;
  try {
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
  diagnostics=monitorContext(context);
- const p=await context.newPage();p.setDefaultTimeout(5000);
+ const p=await context.newPage();activePage=p;p.setDefaultTimeout(5000);
  await p.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});
  await p.waitForFunction(() => !!(window as any).Littlewild);await p.waitForTimeout(250);
  await check("Application identifies the new implementation",async()=>equal(await p.evaluate("Littlewild.version"),"15.0.0"));
@@ -160,6 +162,13 @@ async function main():Promise<void>{
  await check("No uncaught browser errors in tested flows",()=>equal(diagnostics.errors,[]));
  await check("No console warnings or errors in tested flows",()=>equal(diagnostics.consoleProblems,[]));
  await check("Game makes no HTTP/HTTPS requests",()=>equal(diagnostics.requests,[]));
+ } catch(error) {
+  const failure={status:"failed",viewport:activePage?.viewportSize()??null,
+   error:error instanceof Error?error.stack??error.message:String(error),
+   completedResults:results,diagnosticsAvailable:!!diagnostics,...diagnostics};
+  try{fs.writeFileSync(path.join(OUTPUT,"browser-fatal-results.json"),JSON.stringify(failure,null,2)+"\n");}
+  catch(reportError){process.stderr.write("Could not retain fatal browser evidence: "+String(reportError)+"\n");}
+  throw error;
  } finally { await browser.close(); }
 
  const report={passed:results.filter(x=>x.passed).length,total:results.length,failed:results.filter(x=>!x.passed).length,results,...diagnostics};
