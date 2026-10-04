@@ -87,7 +87,10 @@ class DocumentationChecks(unittest.TestCase):
     def test_generated_artifact_glob_does_not_exempt_literal_documents(self):
         self.write(
             ".github/workflows/example.yml",
-            "path: docs/concepts/littlewild/verification/v15/*click-diagnostics.json\n",
+            "path: |\n"
+            "  docs/concepts/littlewild/verification/v15/*click-diagnostics.json\n"
+            "  docs/concepts/littlewild/verification/v15/*gate-results.json\n"
+            "  docs/concepts/littlewild/verification/v15/*building-interiors-browser.json\n",
         )
         self.assertEqual(check(self.root), ([], 1))
         with (self.root / "docs/how-to/guide.md").open("a") as file:
