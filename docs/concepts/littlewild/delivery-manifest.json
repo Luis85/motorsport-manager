@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "15f63dc6fcc5ff4ff0ec3c8b2234a35512c739feed8e92c8d94aa17809ab40e1",
+      "identity": "52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -95,32 +95,32 @@
     },
     "current": {
       "status": "passed",
-      "passed": 1525,
-      "total": 1525,
+      "passed": 1529,
+      "total": 1529,
       "browserIncluded": true,
-      "sourceSha256": "d368735e844818c567035785f16c22367e6d65d80edf87d90f56fa3d3b1b54db",
-      "startedAt": "2026-10-04T01:57:53.323Z",
+      "sourceSha256": "503c690d35ed01f83b799e59ca54fce60a3cad0bf028d5ba4c2c3225ffe73bd5",
+      "startedAt": "2026-10-04T03:33:55.448Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "ce1b16141e19e7bded25b9e6ca745ea8c106fd01138fa17e72da56239931de72",
-      "htmlBytes": 18762531,
-      "finishedAt": "2026-10-04T02:22:59.226Z",
+      "htmlSha256": "769e31f694710825df396f24e0fefc117bcb2f7b5f59c9093460080ecba47f08",
+      "htmlBytes": 18765564,
+      "finishedAt": "2026-10-04T03:58:57.868Z",
       "suites": 75,
       "browserSuites": 20,
-      "browserChecks": 332,
-      "verifiedSourceCommit": "e7befadc7ea74055737983ae884c25a6cf321257",
+      "browserChecks": 334,
+      "verifiedSourceCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
       "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
       "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "15f63dc6fcc5ff4ff0ec3c8b2234a35512c739feed8e92c8d94aa17809ab40e1",
+      "engineSourceIdentity": "52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e",
       "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
-      "publicationBaseCommit": "e7befadc7ea74055737983ae884c25a6cf321257",
+      "publicationBaseCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Complete final-source local gate including asynchronous verifier pixel readback, all original functional assertions and strict raw diagnostics; final PR-head hosted checks remain separate."
+      "scope": "Complete clean-source local gate for preview mount retention, connected replacement and empty p5 redraw lifecycle; all original checks and limits retained, with four additional regression cases. Final-head hosted CI is separate."
     },
     "historicalPreAuthoringExpansion": {
       "status": "historical-before-authoring-expansion",
@@ -311,6 +311,36 @@
       "publicationBaseCommit": "a2eee462f686b9ebbef4e177ed99edb2e65b1a88",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
       "scope": "Complete local paused-preview checkpoint before asynchronous verifier GPU readback; hosted renderer diagnostics subsequently reported a test-induced ReadPixels stall.",
+      "historical": true
+    },
+    "historicalPrePreviewLifecycle": {
+      "status": "passed",
+      "passed": 1525,
+      "total": 1525,
+      "browserIncluded": true,
+      "sourceSha256": "d368735e844818c567035785f16c22367e6d65d80edf87d90f56fa3d3b1b54db",
+      "startedAt": "2026-10-04T01:57:53.323Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "ce1b16141e19e7bded25b9e6ca745ea8c106fd01138fa17e72da56239931de72",
+      "htmlBytes": 18762531,
+      "finishedAt": "2026-10-04T02:22:59.226Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 332,
+      "verifiedSourceCommit": "e7befadc7ea74055737983ae884c25a6cf321257",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "15f63dc6fcc5ff4ff0ec3c8b2234a35512c739feed8e92c8d94aa17809ab40e1",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "e7befadc7ea74055737983ae884c25a6cf321257",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete local verifier-only 75-suite/1525-check checkpoint; hosted 78c02c8 later failed desktop storytelling before renderer-library verification.",
       "historical": true
     }
   },
