@@ -110,4 +110,33 @@ export async function storytellingRetirementTests(page:Page,width:number,test:Te
    }finally{modal=null;surface.cancel();for(const record of records)record.release();for(const job of cleanupJobs)job();await turn();mount.remove();}
   });
  });
+ await test('Synthetic queued preview readiness publishes admitted transport before another application frame',async()=>{
+  await page.evaluate(async()=>{
+   const root=window as unknown as {Littlewild:{open(id:string):void;scenarioUI:{editor:{session:LWSceneEditor.Session}}};LWSceneEditor:LWSceneEditor.Api;LWStorytellingUI:LWStorytellingUI.Api};
+   root.Littlewild.open('scenarios');const original=root.Littlewild.scenarioUI.editor.session.snapshot(),session=root.LWSceneEditor.create(original),native=JSON.stringify(session.snapshot());
+   const mount=document.createElement('section');document.body.append(mount);const jobs:(()=>void)[]=[],records:{status:LWStorytelling.Status;draws:number;updates:number;disposed:number}[]=[];
+   let modal:string|null='scene-editor',surface:LWStorytellingUI.Surface,resolveReady:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};
+   const ensure=(value:unknown,reason:string)=>{if(!value)throw Error(reason);},redraw=()=>{mount.innerHTML=surface.render();};
+   surface=root.LWStorytellingUI.create({session:()=>session,sceneId:()=>original.scenes[0]!.id,modal:()=>modal,redraw,esc:String,toast(){},deferPreview(run){jobs.push(run);return()=>{};},preview(_canvas,pack,id){
+    const clip=pack.storytelling!.cutscenes.find(c=>c.id===id)!,record={status:{cutsceneId:id,sceneId:clip.sceneId,state:'paused' as LWStorytelling.State,time:clip.duration/4,duration:clip.duration,completion:.25,generation:0},draws:0,updates:0,disposed:0};records.push(record);
+    const ready=new Promise<LittlewildRenderer.SwitchResult>(resolve=>{resolveReady=resolve;});
+    return{ready,status:()=>record.status,draw(){record.draws++;},update(){record.updates++;record.status={...record.status,state:'ready',time:0,completion:0};return true;},play(){},pause(){},stop(){},replay(){},seek(){},dispose(){record.disposed++;}};
+   }});
+   const click=(action:string)=>{mount.querySelector<HTMLButtonElement>('[data-story='+action+']')!.click();surface.draw(0);};
+   const transport=(time:number,completion:number)=>{
+    ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Detached scene ready'),'Ready notice must belong to the admitted playback');
+    ensure(mount.querySelector('[data-story-time]')?.textContent?.startsWith(time.toFixed(2)),'Ready notice must publish its current playback time before another application frame');
+    ensure(mount.querySelector<HTMLInputElement>('[data-story-seek]')!.value===String(time),'Ready notice must publish its admitted seek value');
+    const heads=Array.from(mount.querySelectorAll<HTMLElement>('.storytelling-playhead'));ensure(heads.length>0&&heads.every(head=>head.style.getPropertyValue('--playhead')===completion*100+'%'),'Every admitted playhead must match the ready playback');
+   };
+   try{
+    redraw();click('open');click('timeline');ensure(jobs.length===1&&records.length===0,'Preparation is genuinely queued');jobs[0]!();resolveReady({ok:true});await Promise.resolve();
+    const first=records[0]!;transport(first.status.time,.25);ensure(first.draws===0,'Initial readiness reads transport without adding a draw or clock advance');
+    first.status={...first.status,time:first.status.duration/2,completion:.5};surface.draw(0);const priorDraws=first.draws;session.replace(session.snapshot());surface.draw(0);
+    ensure(jobs.length===2&&first.draws===priorDraws,'A revised pending preview cannot advance old playback');const seek=mount.querySelector<HTMLInputElement>('[data-story-seek]')!;seek.focus();
+    jobs[1]!();transport(0,0);ensure(document.activeElement===seek,'Admission updates the owned seek without stealing its focus');
+    ensure(records.length===1&&first.updates===1&&first.draws===priorDraws+1,'Retarget keeps the instance and its existing single zero-delta paint');ensure(JSON.stringify(session.snapshot())===native,'Status publication preserves authored native data');
+   }finally{modal=null;surface.cancel();mount.remove();}
+  });
+ });
 }

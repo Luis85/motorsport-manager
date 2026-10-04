@@ -45,20 +45,21 @@ jobs:
         env:
           LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
         run: npm run verify
-      - name: Verify Storytelling without click diagnostics (additional 23 checks)
+      - name: Verify Storytelling without click diagnostics (additional 24 checks)
         id: storytelling_diagnostics_off
         if: ${{ success() && steps.complete_gate.outcome == 'success' }}
         working-directory: docs/concepts/littlewild
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1547'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1548'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
               {"suite":"animations","name":"Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
               {"suite":"renderer-storytelling","name":"Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
-              {"suite":"renderer-storytelling","name":"Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"}
+              {"suite":"renderer-storytelling","name":"Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"},
+              {"suite":"storytelling-browser","name":"Synthetic queued preview readiness publishes admitted transport before another application frame"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -89,7 +90,7 @@ jobs:
           const command = ['node', '.generated/verification/storytelling-browser.js'];
           const startedAt = new Date().toISOString();
           let result = null, counts = null, failure = null, unchanged = false;
-          let before = null, after = null, gate = null;
+          let before = null, after = null, gate = null, expectedStoryChecks = null;
           try {
             gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
             const expectedGateChecks = Number(process.env.LITTLEWILD_EXPECTED_GATE_CHECKS);
@@ -103,6 +104,8 @@ jobs:
                   || newNames.has(JSON.stringify([row.suite,row.name]))) throw Error('Invalid reviewed new-check identity.');
               newNames.add(JSON.stringify([row.suite,row.name]));
             }
+            expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
+            if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
             if (gate.status !== 'passed' || gate.suites.length !== 75 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
               throw Error('The original complete 75-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
@@ -123,7 +126,7 @@ jobs:
             if (acceptedOriginalTotal !== expectedGateChecks || reviewedNewChecks.some(row => !gate.suites.some(suite => suite.name === row.suite)))
               throw Error('Original accepted leaves differ from the reviewed complete-gate scope.');
             const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
-            if (acceptedCounts(baseline).total !== 23) throw Error('Expected all 23 original Storytelling checks.');
+            if (acceptedCounts(baseline).total !== expectedStoryChecks) throw Error('Expected all reviewed Storytelling checks: preserved 23 plus named additions.');
             before = {sourceSha256:sourceIdentity(root), htmlSha256:sha(artifact), gateSha256:sha(gatePath), baselineSha256:sha(baselinePath), suiteResults:suiteSnapshot(gate)};
             if (before.sourceSha256 !== gate.sourceSha256 || before.htmlSha256 !== gate.htmlSha256)
               throw Error('Original gate source/artifact identity differs before the additional run.');
@@ -136,8 +139,8 @@ jobs:
               throw Error('Additional Storytelling process failed: ' + String(result.error || result.signal || result.status));
             const report = JSON.parse(fs.readFileSync(path.join(out, 'storytelling-browser-results.json'), 'utf8'));
             counts = acceptedCounts(report);
-            if (counts.total !== 23 || JSON.stringify(report.results.map(row => row.name)) !== JSON.stringify(baseline.results.map(row => row.name)))
-              throw Error('Additional run must preserve all 23 named checks and their order.');
+            if (counts.total !== expectedStoryChecks || JSON.stringify(report.results.map(row => row.name)) !== JSON.stringify(baseline.results.map(row => row.name)))
+              throw Error('Additional run must preserve all 24 reviewed named checks and their order.');
             for (const key of ['errors', 'consoleProblems', 'requests'])
               if (!Array.isArray(report.diagnostics[key]) || report.diagnostics[key].length)
                 throw Error('Additional run contains raw diagnostics in ' + key);
@@ -148,7 +151,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 23-check observer-independence execution; does not change the original 75-suite gate or its reviewed baseline plus named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Official installed browser selected by pinned Playwright; executable override unset. Original browser harness flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the original 75-suite gate or its reviewed baseline plus named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Official installed browser selected by pinned Playwright; executable override unset. Original browser harness flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE

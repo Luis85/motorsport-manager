@@ -109,7 +109,7 @@
        const next=pack();
        if(retained?.update?.(next,selectedClip)){
         if(!ownsMount()||preview!==retained)return;
-        retained.draw(0);const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=readyNotice;return;
+        retained.draw(0);syncTransport(retained,true);const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=readyNotice;return;
        }
        if(!ownsMount())return;
        if(retained){
@@ -123,7 +123,7 @@
        const instance=host.preview!(target,next,selectedClip);
        if(!ownsMount()){instance.dispose();return;}
        preview=instance;instance.ready.then(result=>{
-        if(preview!==instance||!ownsMount())return;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=result.ok?readyNotice:result.reason??'The selected renderer could not prepare this scene.';
+        if(preview!==instance||!ownsMount())return;if(result.ok)syncTransport(instance,true);const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=result.ok?readyNotice:result.reason??'The selected renderer could not prepare this scene.';
        }).catch(error=>{if(preview===instance&&ownsMount()){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}});
       }catch(error){rejected(error);}
       finally{if(generation===preparationGeneration)pendingPreparation=false;}
@@ -137,9 +137,12 @@
    }
    if(pendingPreparation)return;
    preview?.draw(delta);
-   const status=preview?.status();if(!status)return;
+   if(preview)syncTransport(preview);
+  }
+  function syncTransport(instance:LWStorytellingUI.Preview,admitted=false):void{
+   const status=instance.status();
    const time=document.querySelector('[data-story-time]');if(time)time.textContent=status.time.toFixed(2)+' / '+status.duration.toFixed(2)+' s · '+status.state;
-   const seek=document.querySelector<HTMLInputElement>('[data-story-seek]');if(seek&&document.activeElement!==seek)seek.value=String(status.time);
+   const seek=document.querySelector<HTMLInputElement>('[data-story-seek]');if(seek&&(admitted||document.activeElement!==seek))seek.value=String(status.time);
    for(const head of document.querySelectorAll<HTMLElement>('.storytelling-playhead'))head.style.setProperty('--playhead',status.completion*100+'%');
   }
   const text=(form:HTMLFormElement,name:string):string=>(form.elements.namedItem(name) as HTMLInputElement|null)?.value??'';
