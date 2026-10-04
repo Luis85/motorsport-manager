@@ -1,11 +1,11 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "locally-verified; hosted acceptance tracked separately in PR#25 current-head checks",
+  "status": "locally-verified; exact-head hosted acceptance tracked separately",
   "source": {
-    "authoredExecutableLanguage": "TypeScript",
-    "authoredTypeScriptFiles": 331,
-    "runtimeModules": 184,
+    "authoredExecutableLanguage": "TypeScript and GDScript",
+    "authoredTypeScriptFiles": 349,
+    "runtimeModules": 191,
     "projectAuthoredLegacyExecutables": 0,
     "thirdPartyJavaScript": [
       "vendor/three.js",
@@ -29,10 +29,16 @@
       "visualManifest": "<id>/asset.json"
     },
     "engineExportInventory": {
-      "files": 657,
-      "identity": "02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f",
+      "files": 677,
+      "identity": "e7b5241297e399cc40bee9769433b5831210ccb058a2988c594e3db9ffd0de07",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
-    }
+    },
+    "authoredGodotPresentationScripts": 7,
+    "executableLanguageRoles": {
+      "TypeScript": "Authoritative simulation, browser implementation, SDK and compiler tools.",
+      "GDScript": "Native Godot presentation and subprocess bridge templates; gameplay remains TypeScript authoritative."
+    },
+    "projectAuthoredLegacyExecutablesDefinition": "Source-authored JavaScript executables only; generated/third-party JavaScript are excluded, and GDScript templates are counted separately."
   },
   "architecture": {
     "ownershipContract": "source/architecture/domain-map.json",
@@ -95,47 +101,97 @@
     },
     "current": {
       "status": "passed",
-      "passed": 1543,
-      "total": 1543,
+      "passed": 1613,
+      "total": 1613,
       "browserIncluded": true,
-      "sourceSha256": "77cc05fd9705b36be909441e4e63eedeca819323e9a5c9743548f85ba38b07ea",
-      "startedAt": "2026-10-04T13:30:10.650Z",
+      "sourceSha256": "72b491a3e40e662921a7803c826a1f0c8def74933ca37cdae56c5cc661a76404",
+      "startedAt": "2026-10-04T20:56:46.944Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "323ea5245c0829c90685c332f0c0980fcda55064c4dbc70512fa2180875f9ffd",
-      "htmlBytes": 18794852,
-      "finishedAt": "2026-10-04T13:54:30.558Z",
-      "suites": 75,
-      "browserSuites": 20,
-      "browserChecks": 342,
-      "verifiedSourceCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
-      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
-      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-cbcb968-clean/docs/concepts/littlewild",
-      "engineSourceFiles": 657,
-      "engineSourceIdentity": "02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f",
-      "evidence": "reports/littlewild-pr25-quality/final-cbcb968",
-      "publicationBaseCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
-      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Complete fresh local retirement gate; all1539 prior named checks and75 suite registrations/commands/budgets preserved. Local acceptance is separate from all seven future exact-head hosted workflows.",
+      "htmlSha256": "e26034e9356e53a5aea14cac50fb429c7669e0c6050c09cc0ef632c47dd5cf2e",
+      "htmlBytes": 20033473,
+      "finishedAt": "2026-10-04T21:26:36.770Z",
+      "suites": 80,
+      "browserSuites": 21,
+      "browserChecks": 362,
+      "verifiedSourceCommit": "285a235728d2c2c6f4f220582c9219fd0b38531e",
+      "engineSourceFiles": 677,
+      "engineSourceIdentity": "e7b5241297e399cc40bee9769433b5831210ccb058a2988c594e3db9ffd0de07",
+      "evidence": "reports/littlewild-pr25-quality/final-285a235",
+      "scope": "Fresh exact-source local gate; future all-seven exact-head hosted acceptance remains separate.",
       "browserToolchain": {
-        "playwright": "1.62.1",
-        "playwrightCore": "1.62.1",
-        "officialBundledChromium": "151.0.7922.34",
-        "officialRevision": "1234",
-        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
-        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
-        "scope": "Stable Playwright1.62.1 selects official Chromium151.0.7922.34 revision1234 unchanged; local version is recorded separately. Hosted0d5 failed; new exact-head hosted acceptance remains required."
+        "playwright": "1.63.0",
+        "playwrightCore": "1.63.0",
+        "selectedChromium": {
+          "name": "chromium",
+          "revision": "1243",
+          "browserVersion": "153.0.8010.12"
+        },
+        "actualLocalChromium": {
+          "version": "151.0.7922.173",
+          "selection": [
+            "explicit-override"
+          ],
+          "browserLaunchCount": 21
+        },
+        "scope": "Actual local gate; selected official browser provenance and future exact-head hosted outcomes remain distinct."
       },
-      "optionalClickDiagnostics": {
-        "enabled": true,
-        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-cbcb968/verification/v15/storytelling-click-diagnostics.json",
-        "sha256": "3fba7613fdaf8fc93cf4dee248856c6e8b340f2064ea9d4eb6553c27290a3827",
-        "bytes": 38445,
-        "scope": "Test-only bounded observations; not a suite, check, hosted causal finding or replacement for62 raw channels."
+      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-285a235-combined-clean/docs/concepts/littlewild",
+      "publicationBaseCommit": "285a235728d2c2c6f4f220582c9219fd0b38531e",
+      "gateEvidenceManifestSha256": "64f5486a0a631cfb104c42e954b9021c8b95c5c908d8f2b3bf1d29445ba6ca4f",
+      "reviewedStoryFixtureCorrection": {
+        "path": "/tmp/lw-postpush-9240715-review/wildlands-story-no-resource-fixture-static-acceptance.json",
+        "sha256": "83a4866ce47c0d6c44524b4e764118a9f9c92e67e1f396d01481ff394f8d122f"
+      },
+      "separateDiagnosticOffEvidence": {
+        "receipt": {
+          "path": "/tmp/lw-postpush-9240715-review/story-off-285-actual-acceptance.json",
+          "sha256": "4154f119d5e20d22db0afd0dde1aa2e5bd84929a6fb2c62fd97ffa39bcdcbdc5"
+        },
+        "scope": "Separate actual diagnostic-OFF Story24 preservation check; outside80 gate counts."
+      },
+      "nativeTemplateQuality": {
+        "receipts": {
+          "private": {
+            "path": "/tmp/lw-postpush-9240715-review/native-template-private-quality-acceptance.json",
+            "sha256": "b667e53bf9d67f56aa10e2ffd44d972cd77ccfcb00a45c7e06f0e0ca7d79b727"
+          },
+          "binding": {
+            "path": "/tmp/lw-postpush-9240715-review/native-quality-integration-byte-binding-285.json",
+            "sha256": "58031b4d0e04df5b6eaddf60a86aec62dab25fbfffdf22505504964528e2eee2"
+          }
+        },
+        "qualitySourceSha256": "3e93cfd63b8fcf415b7ff9f9bbe1084ff8b9c7e60dbf65a3a3b61cfd9975b1d6",
+        "inventoryFiles": 698,
+        "gdFiles": 632,
+        "pyFiles": 66,
+        "findings": 0,
+        "newAnalyzerExecution": false,
+        "scope": "Actual final285 source GD/PY closure equals accepted private698quality inventory byte-for-byte, with all config/analyzer bytes equal; tools were not rerun and no functional fullgate or hosted acceptance is implied."
+      },
+      "actualNativeConformance": {
+        "receipt": {
+          "path": "/tmp/lw-postpush-9240715-review/final-285-native-conformance-acceptance.json",
+          "sha256": "cac0a081009c173e5ff571d33aee00e7222e5eb43372c9ca5fcfff861816895d"
+        },
+        "scope": "Actual final285 separate headless Godot4.7.2 native conformance with producer before/after binary binding, unchanged full80 proof and byte-identical reused698-file quality; no visible frame capture, hosted acceptance, continuous executable immutability, physical GPU or balance claim.",
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf",
+        "actualNativeRawFields": 22,
+        "exportedFiles": 244,
+        "visibleFrameCaptured": false,
+        "hostedAccepted": false
+      },
+      "hostedPreparation": {
+        "manifest": {
+          "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-acceptance-preparation-285a235/MANIFEST.json",
+          "sha256": "747657aeeca4f04968befb3455790a06b9a6ee4afdd287ad5d78e730d693d59e"
+        },
+        "scope": "Prepared exact80/1613 and70 reviewed additions; no hosted outcomes implied.",
+        "fullHostedAcceptance": false
       }
     },
     "historicalPreAuthoringExpansion": {
@@ -1817,6 +1873,219 @@
         "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-0d5a52a-littlewild-full.zip": "5d9fee0c0c501e3e46d2705596f76da747ff34a59f96f4891d7c1d422f20728e"
       },
       "publicationText": "Historical hosted `0d5a52add03b4943d03dbc0c3ac387e7700a734f` passed 60 preceding suites / 1,251 checks, then Story19/20 failed the original desktop Back to scenes click at its unchanged20-second limit. Across61 attempts,1,271 checks were observed:1,270 passed and1 failed;14 later suites /268 checks were unreached. All20 executed raw channels are empty; EngineExport and its two fixture requests were not reached. Actual full ZIP and HTML7348/18,780,453 bytes were verified. The34,532-byte trace captures only two successful Add track/import cases (95/59 rows), not the failing Close action; no Close dispatch/commit/disposal cause is proved. This history does not establish new-head hosted acceptance.\n\n"
+    },
+    "historicalPreWildlandsIntegration": {
+      "status": "passed",
+      "passed": 1543,
+      "total": 1543,
+      "browserIncluded": true,
+      "sourceSha256": "77cc05fd9705b36be909441e4e63eedeca819323e9a5c9743548f85ba38b07ea",
+      "startedAt": "2026-10-04T13:30:10.650Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "323ea5245c0829c90685c332f0c0980fcda55064c4dbc70512fa2180875f9ffd",
+      "htmlBytes": 18794852,
+      "finishedAt": "2026-10-04T13:54:30.558Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 342,
+      "verifiedSourceCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-source-checkouts/littlewild-cbcb968-clean/docs/concepts/littlewild",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "02243f3c51f41d29baaf4af3d756a23f803421da362892f94a403a5fa360116f",
+      "evidence": "reports/littlewild-pr25-quality/final-cbcb968",
+      "publicationBaseCommit": "cbcb968fcd5dec9b43da866e933f167c28693a2b",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Prior complete cbcb/75-1543 local acceptance; hosted results retain their actual separate source scope.",
+      "browserToolchain": {
+        "playwright": "1.62.1",
+        "playwrightCore": "1.62.1",
+        "officialBundledChromium": "151.0.7922.34",
+        "officialRevision": "1234",
+        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
+        "scope": "Stable Playwright1.62.1 selects official Chromium151.0.7922.34 revision1234 unchanged; local version is recorded separately. Hosted0d5 failed; new exact-head hosted acceptance remains required."
+      },
+      "optionalClickDiagnostics": {
+        "enabled": true,
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-cbcb968/verification/v15/storytelling-click-diagnostics.json",
+        "sha256": "3fba7613fdaf8fc93cf4dee248856c6e8b340f2064ea9d4eb6553c27290a3827",
+        "bytes": 38445,
+        "scope": "Test-only bounded observations; not a suite, check, hosted causal finding or replacement for62 raw channels."
+      },
+      "historical": true
+    },
+    "historicalHostedEc594a2": {
+      "historical": true,
+      "sourceCommit": "ec594a24f5610853c4c6bdb6f8ea96c739d9454b",
+      "terminalReceipt": {
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/publication-holds/source-7ef7961-before-wildlands/selected-evidence/quality-evidence/historical-hosted-terminal.json",
+        "sha256": "1a9f98878bfed1e761f642c9282c9f6379eec56e43a2002a61b4aea5f77508f3"
+      },
+      "failureReceipt": {
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/publication-holds/source-7ef7961-before-wildlands/selected-evidence/quality-evidence/historical-hosted-failure.json",
+        "sha256": "8e27e36a04f8ad5243cc5a57cb782af3ea2d113f15a56a02b21c29d75d1c88de"
+      },
+      "workflowSummary": {
+        "workflows": 7,
+        "completed_green": 6,
+        "failed": 1,
+        "pending": 0
+      },
+      "native": {
+        "aggregate": {
+          "passed": true,
+          "source": "3b0b7f86f127b19629d0a8ccf078ab75d3a51753e6e366d910555a936e1b6ab1",
+          "suites": 103,
+          "checks": 21346,
+          "shards": 6
+        },
+        "actualSixDigestAdmissions": {
+          "repository": "Luis85/motorsport-manager",
+          "run_id": 37213299845,
+          "source": "ec594a24f5610853c4c6bdb6f8ea96c739d9454b",
+          "artifacts": [
+            {
+              "id": 11308480778,
+              "name": "verification-shard-0",
+              "digest": "sha256:a4255841336862954ef1bf12ce0b044bd614b58cfaeeae0c1f17f5b9b12178ce"
+            },
+            {
+              "id": 11308935647,
+              "name": "verification-shard-1",
+              "digest": "sha256:311ddad640a5bfe5bd5be92a81aacad8e52b91675c74624c1ae912f31f25c528"
+            },
+            {
+              "id": 11308978586,
+              "name": "verification-shard-2",
+              "digest": "sha256:5b52318d6080cb85f757fad66fac514ac48aef79c42d42c5fa5ec264d44c81af"
+            },
+            {
+              "id": 11308666479,
+              "name": "verification-shard-3",
+              "digest": "sha256:a8114d0e5a4d3a8dc5baf57d77d2cc3b10fbc379bc765fe9d75be2cfa1ab8987"
+            },
+            {
+              "id": 11308013419,
+              "name": "verification-shard-4",
+              "digest": "sha256:97c966a40f0b83707a91ea0d32b9eb57ba62cd5d8975168727b673934d0a8a8a"
+            },
+            {
+              "id": 11307934478,
+              "name": "verification-shard-5",
+              "digest": "sha256:67f347b9632886deb4dc5fe326739c11daa02d9b821a36dad577161177312d24"
+            }
+          ]
+        },
+        "job": 111481999578,
+        "logSha256": "c76a7361a328c0f1a6032028f73347d2513bfad3e75d0c20ee0d2d9b90ad2d9d",
+        "fiveSmallShardZIPsIndependentlyAudited": true,
+        "shard2": {
+          "artifact": 11308978586,
+          "bytes": 47810191,
+          "sha256": "5b52318d6080cb85f757fad66fac514ac48aef79c42d42c5fa5ec264d44c81af",
+          "reviewerZIPDownloaded": false,
+          "scope": "Actualhostedjob+aggregate digestvalidated; oversizedZIPbytesnotindependentlydownloaded."
+        }
+      },
+      "littlewild": {
+        "completedSuites": 72,
+        "completedChecks": 1421,
+        "node": 1201,
+        "browser": 220,
+        "completedBrowserSuites": 17,
+        "attemptedSuites": 73,
+        "laterUnreached": [
+          "interactions-browser",
+          "browser-contracts"
+        ]
+      },
+      "scope": "Actual hosted failedgate evidence; no reviewer tests or browser",
+      "failedPrimaryBrowser": "5s actionability wait on .build-row.first(); click not dispatched; final report unavailable. Do not certify raw arrays or named checks in this failedsuite.",
+      "allSevenAccepted": false
+    },
+    "historicalUnpublished7ef7961": {
+      "sourceCommit": "7ef7961ea1b2239ddb162a16ff0c3eac3b7104e8",
+      "sourceSha256": "c06ef5adcaa83e8cbe16f992546f11562d163b22c68d71cff6d71a68b7bdc8ab",
+      "gateAccepted": true,
+      "publicationPerformed": false,
+      "actualFullAcceptance": {
+        "path": "/tmp/lw-postpush-9240715-review/stable163-7ef-actual-full-acceptance.json",
+        "sha256": "80911cef81a7d9bca3fb146647aa48ea981b26135e8b5d1d7fb055cf03906392"
+      },
+      "selectedManifest": {
+        "path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/final-7ef7961/evidence-manifest.json",
+        "sha256": "518197044dd0e3ba72f5286540fb0f83afdaa795642fcb371276752483042510"
+      }
+    },
+    "historicalUnpublishedEf91Failure": {
+      "historical": true,
+      "receipt": {
+        "path": "/tmp/lw-postpush-9240715-review/wildlands-ef91-failed-full-acceptance.json",
+        "sha256": "f3a7c94e152b15533e7e16374dbc39a0bc67bebb80bed8ca26f5e08686a781c7"
+      },
+      "sourceCommit": "ef91c9488836ce0c061f882e2db156741d6ddd27",
+      "sourceSha256": "bcbee6e36df742d5bd9646bddf52143fd35bc55c9c41c90b0a4c6227adec1a73",
+      "counts": {
+        "completedAcceptedSuites": 65,
+        "attemptedSuites": 66,
+        "precedingAcceptedChecks": 1317,
+        "observedLeafChecks": 1341,
+        "observedPassed": 1322,
+        "observedFailed": 19,
+        "unreachedSuites": 14,
+        "unreachedExpectedChecks": 270,
+        "nodeSuites": 59,
+        "attemptedBrowserSuites": 7,
+        "rawChannels": 23
+      },
+      "scope": "Actual failed ef91 first complete-gate attempt; no OFF execution or publication approval.",
+      "all80Accepted": false,
+      "publicationPerformed": false,
+      "diagnosticOffExecuted": false
+    },
+    "historicalFocusedAa7Native": {
+      "receipt": {
+        "path": "/tmp/lw-postpush-9240715-review/wildlands-aa7-local-native-acceptance.json",
+        "sha256": "7fd6873d8954f6f523edf63e7fd5dded364c75084db06b871fe416c6fc4f3254"
+      },
+      "scope": "Actual separate aa7 local headless native conformance, not the registered80-suite gate or hosted native frame acceptance.",
+      "carriedProductionByteIdentity": false,
+      "newNativeExecution": false
+    },
+    "historicalFocusedAa7WildlandsFailure": {
+      "receipt": {
+        "path": "/tmp/lw-postpush-9240715-review/wildlands-aa7-fatal-and-fixture-static-acceptance.json",
+        "sha256": "5bac27b3df95fc92e66b63b450520460a02f05f4218c9e00239ba9647885c5a8"
+      },
+      "scope": "Preserved actual failed Wildlands browser attempt; missing primary/raw evidence cannot be certified."
+    },
+    "historicalUnpublished645Failure": {
+      "receipt": {
+        "path": "/tmp/lw-postpush-9240715-review/wildlands-6453121-failed-full-acceptance.json",
+        "sha256": "14b34cdc74897306cdceb189b6cf17622bf67d5b3a469cfcb4f404c1c7d1fae4"
+      },
+      "sourceCommit": "64531213bd33b3421c2c631f028b8eb74197c340",
+      "sourceSha256": "e81b5e330a55b63c965df03c47aac60d3315951d602734c74ce1d96cd8f8c26b",
+      "counts": {
+        "completedAcceptedSuites": 70,
+        "attemptedSuites": 71,
+        "precedingAcceptedChecks": 1391,
+        "observedLeafChecks": 1424,
+        "observedPassed": 1422,
+        "observedFailed": 2,
+        "unreachedSuites": 9,
+        "unreachedExpectedChecks": 187,
+        "nodeSuites": 59,
+        "attemptedBrowserSuites": 12,
+        "rawChannels": 38
+      },
+      "publicationPerformed": false
     }
   },
   "github": {
