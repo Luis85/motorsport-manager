@@ -22,7 +22,7 @@
    circle(x,y,r,color){graphics.circle(x,y,r).fill({color});},
    text(value,x,y,color,size){if(labelIndex>=160)return;let label=labels[labelIndex];if(!label){label=new library.Text({text:value,style:{fill:color,fontSize:size,fontFamily:'sans-serif'}});labels.push(label);stage.addChild(label);}label.text=value;label.x=x;label.y=y;label.style.fill=color;label.style.fontSize=size;label.visible=true;labelIndex++;}
   };
-  return {mount(){},resize(viewport){if(disposed)throw Error('PixiJS renderer is disposed.');renderer.resize(viewport.width,viewport.height);},
+  return {redrawPolicy:'projection',mount(){},resize(viewport){if(disposed)throw Error('PixiJS renderer is disposed.');renderer.resize(viewport.width,viewport.height);},
    draw(frame){if(disposed)throw Error('PixiJS renderer is disposed.');graphics.clear();labelIndex=0;root.LWRendererScene2D.draw(frame,context,painter);for(let i=labelIndex;i<labels.length;i++)labels[i]!.visible=false;renderer.render(stage);},
    dispose:release,project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
  });

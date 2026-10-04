@@ -11,6 +11,11 @@
   const lifecycle=new AbortController(),cleanups:(()=>void)[]=[];let disposed=false,instance:LittlewildRenderer.Instance|null=null,time=0,delta=0;
   const viewport=():LittlewildRenderer.Viewport=>({width:canvas.width,height:canvas.height,pixelRatio:1});
   let projection:LittlewildRenderer.Frame|null=null,projectionKey='',paintedKey='';
+  // Backends own resource recovery. A delivered restoration invalidates only
+  // the retained bitmap; the next application-owned draw repaints its projection.
+  const restored=()=>{paintedKey='';};
+  canvas.addEventListener('webglcontextrestored',restored,{signal:lifecycle.signal});
+  canvas.addEventListener('contextrestored',restored,{signal:lifecycle.signal});
   function frame():LittlewildRenderer.Frame{
    if(disposed)throw Error('The preview is disposed.');
    const status=playback.status(),key=[status.time,status.state,status.generation,canvas.width,canvas.height].join(':');
@@ -22,10 +27,10 @@
   const context:LittlewildRenderer.Context=Object.freeze({canvas,signal:lifecycle.signal,query:Object.freeze({frame,asset:(category:'actor'|'building'|'item',id:string)=>{if(disposed)throw Error('The preview is disposed.');return source.asset(category,id);},creatureDefinition:(id:string)=>{if(disposed)throw Error('The preview is disposed.');return source.definition(id);},buildingInterior:(id:string)=>{const current=frame();return current.room?.buildingId===id?current.room:null;}}),commands:Object.freeze({submit:():LittlewildDeveloper.CommandResult=>({ok:false,code:'unavailable-command',reason:'Draft previews are observation only.',data:null})}),onDispose(cleanup:()=>void){if(lifecycle.signal.aborted)cleanup();else cleanups.push(cleanup);}});
   const overlay=document.createElement('canvas');overlay.dataset.p5Animation='';Object.assign(overlay.style,{position:'absolute',inset:'0',width:'100%',height:'100%',pointerEvents:'none',background:'transparent',border:'0'});overlay.width=canvas.width;overlay.height=canvas.height;container.append(overlay);
   const animation=root.LWAnimations.create(overlay);
-  function draw(now:number,elapsed:number){if(disposed||!instance)return;time=now;delta=elapsed;const width=Math.max(64,Math.round(container.clientWidth)||canvas.width),height=Math.max(64,Math.round(container.clientHeight)||canvas.height);if(width!==canvas.width||height!==canvas.height)instance.resize({width,height,pixelRatio:1});const value=frame();
-   // The built-in observer paints only the frame's values. Trusted registered
-   // renderers retain every host callback, including fresh delta while paused.
-   if(rendererId!=='basic'||paintedKey!==projectionKey){instance.draw(value);paintedKey=projectionKey;}
+  function draw(now:number,elapsed:number){if(disposed||!instance)return;time=now;delta=elapsed;const width=Math.max(64,Math.round(container.clientWidth)||canvas.width),height=Math.max(64,Math.round(container.clientHeight)||canvas.height);if(width!==canvas.width||height!==canvas.height){instance.resize({width,height,pixelRatio:1});projection=null;paintedKey='';}const value=frame();
+   // Only the actual instance can opt into projection-only bitmap reuse. Custom
+   // instances retain every callback by default; queries and p5 keep fresh cadence.
+   if(instance.redrawPolicy!=='projection'||paintedKey!==projectionKey){instance.draw(value);paintedKey=projectionKey;}
    const sample=playback.sample();animation.draw(value,sample.animations,sample.time,point=>instance!.project?.(point,value)??{x:value.viewport.width/2+(point.x-9)*24,y:value.viewport.height/2+(point.y-9)*12});}
   let timer:ReturnType<typeof setTimeout>|null=null,resolveCancel:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};
   const cancelled=new Promise<LittlewildRenderer.SwitchResult>(resolve=>{resolveCancel=resolve;});

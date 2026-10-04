@@ -19,7 +19,14 @@
   const e=ctx.esc;
   const exchange=root.LWExternalEditorUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,onApplied:id=>select('scene',id)});
   const engineExport=root.LWEngineExportUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e});
-  const storytelling=root.LWStorytellingUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,...(root.LWStorytellingEditorPreview?{preview:(canvas,pack,id)=>root.LWStorytellingEditorPreview!.create(canvas,pack,id)}:{})});
+  const storytelling=root.LWStorytellingUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,deferPreview,
+   ...(root.LWStorytellingEditorPreview?{preview:(canvas,pack,id)=>root.LWStorytellingEditorPreview!.create(canvas,pack,id)}:{})});
+  function deferPreview(work:()=>void):()=>void {
+   // Authoring commits synchronously. Expensive observation preparation yields
+   // to input acknowledgements; this one-shot job never advances gameplay time.
+   if(typeof requestIdleCallback==='function'){const id=requestIdleCallback(work,{timeout:1000});return()=>cancelIdleCallback(id);}
+   const id=setTimeout(work,0);return()=>clearTimeout(id);
+  }
   function current():LWContentPorts.ScenarioPack {if(!session)throw Error('Open a pack draft first.');return session.snapshot();}
   function redraw():void {ctx.redraw();}
   function select(type:string,id:string):void {state.selection={type,id};state.category='creatures';state.entityId='';state.placement=false;state.confirm='';state.creating='';state.notice='';state.errors=[];}

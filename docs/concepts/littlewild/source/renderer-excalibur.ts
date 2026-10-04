@@ -22,7 +22,7 @@
    circle(x,y,r,fill){graphics.drawCircle(new library.Vector(x,y),r,color(fill));},
    text(value,x,y,fill,size){if(labelIndex>=160)return;let label=labels[labelIndex];if(!label){label=new library.Text({text:value,font:new library.Font({family:'sans-serif',size,color:color(fill)}),color:color(fill)});labels.push(label);}label.text=value;label.color=color(fill);label.font.size=size;label.draw(graphics,x-label.width/2,y);labelIndex++;}
   };
-  return {mount(){},resize(viewport){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.updateViewport({width:viewport.width,height:viewport.height});},
+  return {redrawPolicy:'projection',mount(){},resize(viewport){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.updateViewport({width:viewport.width,height:viewport.height});},
    draw(frame){if(disposed)throw Error('Excalibur renderer is disposed.');graphics.beginDrawLifecycle();try{graphics.clear();labelIndex=0;if(library.FontCache.cacheSize>256)library.FontCache.clearCache();root.LWRendererScene2D.draw(frame,context,painter);graphics.flush();}finally{graphics.endDrawLifecycle();}},
    dispose:release,project:root.LWRendererScene2D.project,toTile:root.LWRendererScene2D.toTile,hitTest:root.LWRendererScene2D.hitTest};
  });

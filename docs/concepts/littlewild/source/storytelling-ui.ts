@@ -7,6 +7,7 @@
   const state:LWStorytellingUI.State={active:false,tab:'boards',boardId:'',shotId:'',clipId:'',trackId:'',keyIndex:-1,creating:'',notice:'',error:'',confirm:''};
   const input=document.createElement('input');input.type='file';input.id='storytelling-import';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
   let preview:LWStorytellingUI.Preview|null=null,mounted:HTMLCanvasElement|null=null,previewSession:LWSceneEditor.Session|null=null,previewKey='',readId=0;
+  let cancelPreparation:(()=>void)|null=null,pendingPreparation=false,preparationGeneration=0;
   let review:{pack:LWContentPorts.ScenarioPack;session:LWSceneEditor.Session;revision:number}|null=null;
   const e=host.esc,copy=<T>(v:T):T=>structuredClone(v);
   function session():LWSceneEditor.Session{const value=host.session();if(!value)throw Error('Open a scenario pack draft first.');return value;}
@@ -14,9 +15,9 @@
   const author=():LWStorytelling.Authoring=>root.LWStorytellingEditor.create(session());
   function clip():LWStorytelling.Cutscene{const found=pack().storytelling?.cutscenes.find(c=>c.id===state.clipId);if(!found)throw Error('Select a cutscene first.');return found;}
   function board():LWStorytelling.Storyboard{const found=pack().storytelling?.storyboards.find(b=>b.id===state.boardId);if(!found)throw Error('Select a storyboard first.');return found;}
-  function stopPreview():void{preview?.dispose();preview=null;mounted=null;previewSession=null;previewKey='';}
+  function stopPreview():void{preparationGeneration++;const cancel=cancelPreparation;cancelPreparation=null;pendingPreparation=false;try{cancel?.();}finally{preview?.dispose();preview=null;mounted=null;previewSession=null;previewKey='';}}
   function redraw():void{
-   const current=host.session(),retain=preview&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&previewKey===state.clipId+':'+current?.revision;
+   const current=host.session(),retain=(preview||pendingPreparation)&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&previewKey===state.clipId+':'+current?.revision;
    const surface=retain?mounted?.parentElement:null,notice=document.querySelector('[data-story-preview-notice]')?.textContent;
    if(!surface)stopPreview();
    try{
@@ -34,6 +35,7 @@
    message.className='storytelling-feedback is-error';message.setAttribute('role','alert');message.textContent=state.error;
   }
   function focus(selector:string):void{document.querySelector<HTMLElement>(selector)?.focus();}
+  function preparing():boolean{if(!pendingPreparation)return false;host.toast('The detached preview is preparing. Try again when it is ready.');return true;}
   function mutate(work:()=>void,message:string):void{work();state.notice=message;state.error='';state.confirm='';redraw();}
   function cancel():void{readId++;review=null;input.value='';stopPreview();}
   function normalize():void{
@@ -56,10 +58,21 @@
    if(canvas!==mounted||key!==previewKey||current!==previewSession){
     const replaceMount=canvas===mounted;stopPreview();
     if(replaceMount){host.redraw();canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas)return;}
-    const target=canvas;mounted=target;previewSession=current;previewKey=state.clipId+':'+current.revision;
-    if(host.preview)try{const instance=host.preview(target,pack(),state.clipId);preview=instance;instance.ready.then(result=>{
-     if(preview!==instance||mounted!==target||!target.isConnected)return;const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=result.ok?'Detached scene ready. Play, pause or seek to inspect animation.':result.reason??'The selected renderer could not prepare this scene.';
-    }).catch(error=>{if(preview===instance&&mounted===target&&target.isConnected){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}});}catch(error){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}
+    const target=canvas,selectedClip=state.clipId,generation=preparationGeneration;mounted=target;previewSession=current;previewKey=key;
+    if(host.preview){
+     pendingPreparation=true;const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent='Preparing a detached scene preview…';
+     const ownsMount=():boolean=>generation===preparationGeneration&&mounted===target&&target.isConnected&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&host.session()===current&&state.clipId===selectedClip&&state.clipId+':'+current.revision===key;
+     const prepare=():void=>{
+      if(generation!==preparationGeneration||!pendingPreparation||mounted!==target)return;
+      cancelPreparation=null;pendingPreparation=false;
+      if(!ownsMount()){stopPreview();return;}
+      try{const instance=host.preview!(target,pack(),selectedClip);preview=instance;instance.ready.then(result=>{
+       if(preview!==instance||!ownsMount())return;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=result.ok?'Detached scene ready. Play, pause or seek to inspect animation.':result.reason??'The selected renderer could not prepare this scene.';
+      }).catch(error=>{if(preview===instance&&ownsMount()){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}});}catch(error){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}
+     };
+     try{if(host.deferPreview)cancelPreparation=host.deferPreview(prepare);else prepare();}
+     catch(error){preparationGeneration++;pendingPreparation=false;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}
+    }
    }
    preview?.draw(delta);
    const status=preview?.status();if(!status)return;
@@ -141,7 +154,7 @@
     if(action==='new-track'){state.trackId='';state.keyIndex=-1;redraw();focus('[data-story-form=track] input[name=id]');return;}
     if(action==='new-key'){state.keyIndex=-1;redraw();focus('[data-story-form=key] input[name=time]');return;}
     if(action==='undo'||action==='redo'){mutate(()=>session()[action](),'Draft history updated.');return;}
-    if(action==='play'||action==='pause'||action==='stop'||action==='replay'){draw();if(!preview)throw Error('This build cannot prepare a detached cinematic preview.');preview[action==='play'?'play':action]();draw();return;}
+    if(action==='play'||action==='pause'||action==='stop'||action==='replay'){draw();if(!preview){if(preparing())return;throw Error('This build cannot prepare a detached cinematic preview.');}preview[action==='play'?'play':action]();draw();return;}
     if(action==='shot-earlier'||action==='shot-later'){const value=board(),index=value.shots.findIndex(a=>a.id===id),next=index+(action==='shot-earlier'?-1:1);if(next<0||next>=value.shots.length)return;const shot=value.shots.splice(index,1)[0]!;value.shots.splice(next,0,shot);mutate(()=>author().setStoryboard(value),'Shot order updated.');return;}
     if(action?.startsWith('confirm-')){state.confirm=action.slice(8)+':'+id;redraw();focus('[data-story="cancel-delete"]');return;}
     if(action==='cancel-delete'){const split=state.confirm.indexOf(':'),kind=state.confirm.slice(0,split),target=state.confirm.slice(split+1);state.confirm='';redraw();focus('[data-story="confirm-'+kind+'"][data-id="'+CSS.escape(target)+'"]');return;}
@@ -160,7 +173,7 @@
     if(action==='apply-import'){if(!review||review.session!==session()||review.revision!==session().revision)throw Error('Draft changed after import review. Import again to review the current draft.');mutate(()=>session().replace(review!.pack),'Storytelling imported into the validated draft.');cancel();return;}
    }catch(error){failed(error);}
   });
-  document.addEventListener('input',ev=>{if(host.modal()==='scene-editor'&&ev.target instanceof HTMLInputElement&&ev.target.matches('[data-story-seek]'))try{const time=Number(ev.target.value);draw();if(!preview)throw Error('A detached preview must be ready before seeking.');preview.seek(time);draw();}catch(error){failed(error);}});
+  document.addEventListener('input',ev=>{if(host.modal()==='scene-editor'&&ev.target instanceof HTMLInputElement&&ev.target.matches('[data-story-seek]'))try{const time=Number(ev.target.value);draw();if(!preview){if(preparing())return;throw Error('A detached preview must be ready before seeking.');}preview.seek(time);draw();}catch(error){failed(error);}});
   document.addEventListener('change',ev=>{
    if(host.modal()!=='scene-editor'||!(ev.target instanceof HTMLSelectElement))return;
    const field=ev.target.dataset.storyField,form=ev.target.closest('form');if(!form)return;

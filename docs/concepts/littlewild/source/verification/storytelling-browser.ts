@@ -91,6 +91,37 @@ async function main():Promise<void>{
     }finally{modal=null;surface.cancel();mount.remove();}
    });assert.equal(await snapshot(page),active);
   });
+  await test('Queued preview preparation yields authoring and rejects stale revision, session, clip, mount and closed jobs at '+width+'px',async()=>{
+   await page.evaluate(async()=>{
+    const root=window as unknown as {Littlewild:{open(id:string):void;scenarioUI:{editor:{session:LWSceneEditor.Session}}};LWSceneEditor:LWSceneEditor.Api;LWStorytellingUI:LWStorytellingUI.Api};
+    const original=root.Littlewild.scenarioUI.editor.session.snapshot();root.Littlewild.open('scenarios');
+    let session=root.LWSceneEditor.create(original),modal:string|null='scene-editor',surface:LWStorytellingUI.Surface,throwScheduler=false,throwFactory=false;
+    const mount=document.createElement('section');document.body.append(mount);
+    const jobs:{run:()=>void;cancelled:boolean}[]=[],records:{canvas:HTMLCanvasElement;disposed:number;resolve:(result:LittlewildRenderer.SwitchResult)=>void;status:LWStorytelling.Status}[]=[],notices:string[]=[];
+    const ensure=(condition:unknown,message:string)=>{if(!condition)throw Error(message);},redraw=()=>{mount.innerHTML=surface.render();},latest=()=>jobs.at(-1)!;
+    surface=root.LWStorytellingUI.create({session:()=>session,sceneId:()=>original.scenes[0]!.id,modal:()=>modal,redraw,esc:value=>String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]!)),toast(message){notices.push(message);},
+     deferPreview(run){if(throwScheduler)throw Error('Scheduler rejected preparation');const job={run,cancelled:false};jobs.push(job);return()=>{job.cancelled=true;};},
+     preview(canvas,pack,id){
+      ensure(canvas.isConnected&&canvas.parentElement,'Queued factory requires its connected mount');if(throwFactory)throw Error('Queued factory rejected preparation');
+      const clip=pack.storytelling!.cutscenes.find(clip=>clip.id===id)!;let resolve:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};
+      const ready=new Promise<LittlewildRenderer.SwitchResult>(done=>{resolve=done;}),record={canvas,disposed:0,resolve,status:{cutsceneId:id,sceneId:clip.sceneId,state:'ready' as LWStorytelling.State,time:0,duration:clip.duration,completion:0,generation:0}};records.push(record);
+      return{ready,status:()=>record.status,draw(){},play(){record.status.state='playing';},pause(){record.status.state='paused';},stop(){record.status.time=0;record.status.state='stopped';},replay(){record.status.generation++;record.status.state='playing';},seek(time){record.status.time=time;},dispose(){record.disposed++;canvas.remove();}};
+     }});
+    const click=(action:string,id?:string)=>{const button=mount.querySelector<HTMLButtonElement>('[data-story="'+action+'"]'+(id?'[data-id="'+id+'"]':''));ensure(button,'Missing queued control '+action);button!.click();surface.draw(0);};
+    try{
+     redraw();click('open');click('timeline');ensure(jobs.length===1&&records.length===0,'No preview factory runs in the interaction/RAF task');const firstJob=latest(),pendingCanvas=mount.querySelector('[data-story-preview]'),wrapper=pendingCanvas?.parentElement;
+     ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Preparing'),'Queued preparation has a truthful pending notice');click('select-track','guide-position');click('new-track');ensure(latest()===firstJob&&!firstJob.cancelled&&mount.querySelector('[data-story-preview]')===pendingCanvas&&pendingCanvas?.parentElement===wrapper,'Selection retains the exact pending mount and job');
+     click('play');const seek=mount.querySelector<HTMLInputElement>('[data-story-seek]')!;seek.value='1';seek.dispatchEvent(new Event('input',{bubbles:true}));ensure(notices.length===2&&notices.every(message=>message.includes('preparing'))&&records.length===0&&!firstJob.cancelled,'Early playback and seeking explain preparation without starting or losing work');
+     firstJob.run();firstJob.run();ensure(records.length===1,'A queued factory runs once');const first=records[0]!;first.resolve({ok:true});await Promise.resolve();ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Detached scene ready'),'Only prepared ownership becomes ready');click('replay');click('pause');ensure(first.status.generation===1&&first.status.state==='paused'&&jobs.length===1,'Prepared replay retains its renderer and host controls');
+     session.replace(session.snapshot());surface.draw(0);const revisionJob=latest();ensure(first.disposed===1,'Revision disposes the prepared preview once');session.replace(session.snapshot());surface.draw(0);ensure(revisionJob.cancelled,'A newer revision cancels queued preparation');revisionJob.run();ensure(records.length===1,'Cancelled revision cannot prepare');
+     const identityJob=latest(),other=root.LWSceneEditor.create(session.snapshot());while(other.revision<session.revision)other.replace(other.snapshot());ensure(other.revision===session.revision,'Session identity probe holds revision equal');session=other;identityJob.run();ensure(records.length===1,'Same revision on another session rejects stale preparation');surface.draw(0);latest().run();const second=records[1]!;
+     click('select-clip','remote-clip');const clipJob=latest();ensure(second.disposed===1,'Clip change disposes the prior factory');second.resolve({ok:false,reason:'obsolete readiness'});await Promise.resolve();ensure(!mount.textContent?.includes('obsolete readiness'),'Late readiness cannot update a different clip');click('close');ensure(clipJob.cancelled,'Closing cancels queued preparation');clipJob.run();ensure(records.length===2&&!mount.querySelector('[data-story-preview]'),'Closed work cannot resurrect a canvas');
+     throwScheduler=true;click('open');ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Scheduler rejected'),'Scheduler failure is visible');throwScheduler=false;session.replace(session.snapshot());surface.draw(0);throwFactory=true;latest().run();ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Queued factory rejected'),'Queued factory failure is visible');throwFactory=false;
+     session.replace(session.snapshot());surface.draw(0);const detachedJob=latest();mount.querySelector('[data-story-preview]')!.remove();detachedJob.run();ensure(records.length===2,'Disconnected mounts cannot prepare');redraw();surface.draw(0);latest().run();const third=records[2]!;third.resolve({ok:true});await Promise.resolve();ensure(third.canvas.isConnected,'A fresh mount can recover and become ready');
+     session.replace(session.snapshot());surface.draw(0);const tabJob=latest();click('boards');tabJob.run();ensure(tabJob.cancelled&&records.length===3,'Leaving the timeline cancels pending work');click('timeline');const modalJob=latest();modal=null;surface.cancel();modalJob.run();ensure(modalJob.cancelled&&records.length===3,'Modal cancellation rejects an already delivered stale callback');ensure(records.every(record=>record.disposed===1),'Every prepared instance disposes exactly once');
+    }finally{modal=null;surface.cancel();mount.remove();}
+   });assert.equal(await snapshot(page),active);
+  });
   await page.close();
  }}finally{await context.close();await browser.close();}
  await test('Storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});

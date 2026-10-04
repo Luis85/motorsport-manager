@@ -3,6 +3,7 @@
 /// <reference path="./animation-contracts.d.ts" />
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {getEventListeners} from 'node:events';
 interface Result {name:string;passed:boolean;error?:string;}
 const results:Result[]=[];
 function test(name:string,work:()=>void):void {try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -78,20 +79,21 @@ test('Dimension metadata is bounded detached data and executes no inherited call
  const inherited=['2d'];Object.setPrototypeOf(inherited,Object.create(Array.prototype,{[Symbol.iterator]:{value(){reads++;throw Error('No caller iterator');}}}));assert(!registry.validate({...metadata(),dimensions:inherited}).ok);assert.equal(reads,0);
 });
 let previewApi:LWStorytellingRenderer.Api|null=null;
-async function previewContract(basic:boolean):Promise<void>{
- const name=basic?'Paused Basic previews reuse immutable geometry and repaint every visual change':'Registered preview callbacks retain elapsed time, queries and disposal across cached frames';
+async function previewContract(basic:boolean,projectionOnly=false):Promise<void>{
+ const name=basic?'Paused Basic previews reuse immutable geometry and repaint every visual change':projectionOnly?'Registered projection-only instances reuse paused paints while retaining query, overlay and invalidation cadence':'Registered preview callbacks retain elapsed time, queries and disposal across cached frames';
+ const cached=basic||projectionOnly,nativeBefore=JSON.stringify(engine);
  const keys=['document','LWStorytellingPreview','LWRendererObserver','LWAnimations','LWStorytellingRenderer'],prior=new Map(keys.map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));
  let release=()=>{};
  try{
   require('./content-runtime.js');require('./storytelling-projection.js');
-  const base=root.LWRendererFrame.create(engine,options),frames:LittlewildRenderer.Frame[]=[],overlays:LittlewildRenderer.Frame[]=[];
-  let sourceFrames=0,disposals=0,rejectPaint=false,context:LittlewildRenderer.Context|null=null,resolve:(value:LittlewildRenderer.Instance)=>void=()=>{};
-  const canvas={dataset:{},style:{},width:800,height:600,isConnected:true,remove(){}};
+  const base=root.LWRendererFrame.create(engine,options),frames:LittlewildRenderer.Frame[]=[],overlays:LittlewildRenderer.Frame[]=[],overlayPhases:number[]=[];
+  let sourceFrames=0,disposals=0,rejectPaint=false,deferResize=false,context:LittlewildRenderer.Context|null=null,resolve:(value:LittlewildRenderer.Instance)=>void=()=>{};
+  const canvas=Object.assign(new EventTarget(),{dataset:{},style:{},width:800,height:600,isConnected:true,remove(){}});
   const container={clientWidth:800,clientHeight:600,querySelector:()=>canvas,prepend(){},append(){}};
-  const backend:LittlewildRenderer.Instance={mount(){},resize(viewport){canvas.width=viewport.width;canvas.height=viewport.height;},draw(frame){if(rejectPaint){rejectPaint=false;throw Error('Injected paint failure');}frames.push(frame);},dispose(){disposals++;}};
-  const animation:LWAnimations.Layer={ready:Promise.resolve({ok:true}),looping:false,draw(frame){overlays.push(frame);},dispose(){}};
+  const backend:LittlewildRenderer.Instance={...(cached?{redrawPolicy:'projection' as const}:{}),mount(){},resize(viewport){if(!deferResize){canvas.width=viewport.width;canvas.height=viewport.height;}},draw(frame){if(rejectPaint){rejectPaint=false;throw Error('Injected paint failure');}frames.push(frame);},dispose(){disposals++;}};
+  const animation:LWAnimations.Layer={ready:Promise.resolve({ok:true}),looping:false,draw(frame,descriptors,phase){overlays.push(frame);if(descriptors.length)overlayPhases.push(phase);},dispose(){}};
   const status:LWStorytelling.Status={cutsceneId:'clip',sceneId:'scene',state:'paused',time:0,duration:5,completion:0,generation:0};
-  const playback:LWStorytelling.Playback={status:()=>({...status}),sample:()=>({cutsceneId:'clip',sceneId:'scene',time:status.time,duration:5,poses:[{target:{category:'creatures',id:'c1'},values:{x:status.time}}],camera:{},animations:[]}),
+  const playback:LWStorytelling.Playback={status:()=>({...status}),sample:()=>({cutsceneId:'clip',sceneId:'scene',time:status.time,duration:5,poses:[{target:{category:'creatures',id:'c1'},values:{x:status.time}}],camera:{},animations:projectionOnly?[{id:'effect',presetId:'orbit',start:0,duration:5,x:9,y:9,radius:45,color:'#77aaff',count:8}]:[]}),
    play(){status.state='playing';},pause(){status.state='paused';},resume(){status.state='playing';},stop(){status.time=0;status.state='stopped';},replay(){status.time=0;status.generation++;status.state='playing';},seek(time){status.time=time;},skip(){},advance(){},drainEvents:()=>[],dispose(){status.state='disposed';}};
   Object.assign(globalThis,{document:{createElement:()=>({dataset:{},style:{},width:0,height:0,remove(){}})},
    LWStorytellingPreview:{create:()=>({frame(value:{viewport:LittlewildRenderer.Viewport;time:number;delta:number;camera:LittlewildRenderer.Camera}){sourceFrames++;return {...base,...value};},asset:()=>null,definition:()=>null})},
@@ -107,10 +109,11 @@ async function previewContract(basic:boolean):Promise<void>{
   assert.equal((await preview.ready).ok,true);assert.equal(frames.length,1,'Ready must paint the initial bitmap');
   const first=frames[0]!,built=sourceFrames;
   preview.draw(0,.25);preview.draw(0,.5);
-  assert.equal(sourceFrames,built,'Paused geometry is immutable and reusable');assert.equal(frames.length,basic?1:3);
+  assert.equal(sourceFrames,built,'Paused geometry is immutable and reusable');assert.equal(frames.length,cached?1:3);
   assert.equal(overlays.length,3,'p5 retains every host draw');assert(Object.isFrozen(overlays.at(-1)));assert.equal(overlays.at(-1)!.delta,.5);
+  if(projectionOnly)assert.deepEqual(overlayPhases,[0,0,0],'Nonempty p5 overlays retain every paused host draw independently of geometry reuse');
   const query=(context as unknown as LittlewildRenderer.Context).query.frame();assert.equal(query.delta,.5);assert(Object.isFrozen(query));assert.equal(query.actors,first.actors);
-  if(!basic){assert.equal(frames[1]!.delta,.25);assert.equal(frames[2]!.delta,.5);assert.notEqual(frames[1],frames[2]);}
+  if(!cached){assert.equal(frames[1]!.delta,.25);assert.equal(frames[2]!.delta,.5);assert.notEqual(frames[1],frames[2]);}
   let count=frames.length;
   playback.seek(2);preview.draw(2,0);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.actors[0]!.x,2);assert.equal(first.actors[0]!.x,0);
   playback.seek(0);preview.draw(0,0);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.actors[0]!.x,0);
@@ -119,10 +122,28 @@ async function previewContract(basic:boolean):Promise<void>{
   playback.stop();preview.draw(0,0);assert.equal(frames.length,++count);
   playback.replay();preview.draw(0,0);assert.equal(frames.length,++count);
   playback.pause();preview.draw(0,0);assert.equal(frames.length,++count);
-  if(basic){playback.seek(3);rejectPaint=true;assert.throws(()=>preview.draw(3,0),/Injected paint failure/);assert.equal(frames.length,count);preview.draw(3,0);assert.equal(frames.length,++count,'A failed paint must remain eligible for retry');}
+  if(cached){playback.seek(3);rejectPaint=true;assert.throws(()=>preview.draw(3,0),/Injected paint failure/);assert.equal(frames.length,count);preview.draw(3,0);assert.equal(frames.length,++count,'A failed paint must remain eligible for retry');}
+  if(projectionOnly){
+   status.generation++;preview.draw(3,.1);assert.equal(frames.length,++count,'Generation invalidates a paused projection even when time and state match');
+   deferResize=true;container.clientWidth=901;preview.draw(3,.1);assert.equal(frames.length,++count,'Resize invalidates paint even when the backend has not updated canvas dimensions');
+   deferResize=false;preview.draw(3,.1);assert.equal(frames.length,++count);assert.equal(frames.at(-1)!.viewport.width,901);
+   preview.draw(3,.1);assert.equal(frames.length,count,'The resized bitmap becomes reusable after its successful paint');
+   for(const type of ['webglcontextrestored','contextrestored']){
+    assert.equal(getEventListeners(canvas,type).length,1);const built=sourceFrames,event=new Event(type,{cancelable:true});canvas.dispatchEvent(event);
+    assert.equal(event.defaultPrevented,false,'The preview does not claim backend resource recovery');assert.equal(frames.length,count,'Restoration waits for the application-owned draw');
+    preview.draw(3,.1);assert.equal(frames.length,++count,'Each delivered restoration repaints exactly once');
+    preview.draw(3,.1);assert.equal(frames.length,count);assert.equal(sourceFrames,built,'Restoration retains immutable projection geometry');
+   }
+  }
   preview.dispose();preview.dispose();assert.equal(disposals,1);preview.draw(3,.1);assert.equal(frames.length,count);assert.throws(()=>preview.snapshot(),/disposed/);
+  for(const type of ['webglcontextrestored','contextrestored']){assert.equal(getEventListeners(canvas,type).length,0);canvas.dispatchEvent(new Event(type));}
   // A pending factory must release its eventual instance when the preview closes.
-  if(!basic){context=null;const pending=api.create(container as unknown as HTMLElement,{...pack,scenes:[{id:'scene',graph:{rendering:{dimension:'3d',rendererId:'preview-delta-test'}}}]} as unknown as LWContentPorts.ScenarioPack,'scene',playback);pending.dispose();resolve(backend);assert.equal((await pending.ready).ok,false);await Promise.resolve();await Promise.resolve();assert.equal(disposals,2);assert.equal(frames.length,count);}
+  let expectedDisposals=1;
+  if(projectionOnly){
+   const replacement=api.create(container as unknown as HTMLElement,{...pack,scenes:[{id:'scene',graph:{rendering:{dimension:'2d',rendererId:'preview-delta-test'}}}]} as unknown as LWContentPorts.ScenarioPack,'scene',playback);resolve(backend);assert.equal((await replacement.ready).ok,true);assert.equal(frames.length,++count,'A replacement dimension must paint its own initial bitmap');replacement.dispose();assert.equal(disposals,++expectedDisposals);
+  }
+  if(!basic){context=null;const pending=api.create(container as unknown as HTMLElement,{...pack,scenes:[{id:'scene',graph:{rendering:{dimension:'3d',rendererId:'preview-delta-test'}}}]} as unknown as LWContentPorts.ScenarioPack,'scene',playback);pending.dispose();resolve(backend);assert.equal((await pending.ready).ok,false);await Promise.resolve();await Promise.resolve();assert.equal(disposals,++expectedDisposals);assert.equal(frames.length,count);}
+  assert.equal(JSON.stringify(engine),nativeBefore);
   results.push({name,passed:true});
  }catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
  finally{release();for(const key of keys){const descriptor=prior.get(key);if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}}
@@ -130,7 +151,7 @@ async function previewContract(basic:boolean):Promise<void>{
 async function finish():Promise<void>{
  const name='Asynchronous factories remain separate from synchronous creation without requiring browser globals';
  try{let calls=0;const release=registry.registerAsync(metadata('async-test'),async()=>{calls++;return instance;});assert.throws(()=>registry.create('async-test',{} as LittlewildRenderer.Context),/selectRendererAsync/);assert.equal(calls,0);assert.equal(await registry.prepare('async-test',{} as LittlewildRenderer.Context),instance);assert.equal(calls,1);release();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});}
- await previewContract(true);await previewContract(false);
+ await previewContract(true);await previewContract(false);await previewContract(false,true);
  const report={passed:results.filter(result=>result.passed).length,total:results.length,results};
  fs.writeFileSync(__dirname+'/renderer-results.json',JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
 }
