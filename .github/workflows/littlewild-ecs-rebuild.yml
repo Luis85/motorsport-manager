@@ -113,57 +113,6 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
-  preview-close-diagnosis:
-    name: Preview close diagnosis (${{ matrix.browser }})
-    # Temporary comparison: the full verification job remains the required gate.
-    continue-on-error: true
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [headless-shell, chromium]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: docs/concepts/littlewild/package-lock.json
-      - name: Prepare the original storytelling regression
-        working-directory: docs/concepts/littlewild
-        run: |
-          npm ci --no-audit --no-fund
-          npx playwright install --with-deps chromium
-          npm run build --silent
-      - name: Observe the original close action without changing its budget
-        working-directory: docs/concepts/littlewild
-        env:
-          LITTLEWILD_DIAGNOSTIC_BROWSER: ${{ matrix.browser }}
-          LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
-        run: |
-          cat > /tmp/littlewild-browser-comparison.cjs <<'JS'
-          const {chromium} = require(process.cwd() + '/node_modules/playwright');
-          const original = chromium.launch.bind(chromium);
-          chromium.launch = async options => {
-            const variant = process.env.LITTLEWILD_DIAGNOSTIC_BROWSER;
-            const browser = await original(variant === 'chromium' ? {...options, channel: 'chromium'} : options);
-            console.log(JSON.stringify({diagnosticBrowser: variant, version: browser.version()}));
-            return browser;
-          };
-          JS
-          NODE_OPTIONS=--require=/tmp/littlewild-browser-comparison.cjs node .generated/verification/storytelling-browser.js
-      - name: Retain browser comparison evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: littlewild-preview-close-${{ matrix.browser }}
-          path: |
-            docs/concepts/littlewild/verification/v15/storytelling-browser-*.json
-            docs/concepts/littlewild/verification/v15/storytelling-click-*.json
-          if-no-files-found: warn
-          retention-days: 14
-
   godot-export:
     name: Wildlands Godot export
     runs-on: ubuntu-24.04
