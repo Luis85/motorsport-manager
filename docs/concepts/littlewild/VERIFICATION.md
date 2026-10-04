@@ -4,95 +4,101 @@ Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run
 
 ## Current clean-checkout evidence
 
-**1529/1529 checks across 75 suites passed**, including 334 real browser checks. Completed `2026-10-04T03:58:57.868Z` against a clean git archive of `bfa4e8798be53eb33d05195d30e3efae009f5076` with the exact dependency lock. The tracked standalone is copied directly from this passed archive.
+**1529/1529 checks across 75 suites passed**, including 334 real browser checks. Completed `2026-10-04T05:22:46.441Z` against a clean git archive of `c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4` with exact `npm ci` lock resolution. The tracked standalone is copied directly from this passed archive.
 
-- Authored gate input SHA-256: `503c690d35ed01f83b799e59ca54fce60a3cad0bf028d5ba4c2c3225ffe73bd5`
-- Standalone SHA-256: `769e31f694710825df396f24e0fefc117bcb2f7b5f59c9093460080ecba47f08`
-- Standalone bytes: 18765564
-- Inert implementation/source inventory: 657 files, identity `52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e`
-- Runtime: `v24.19.0` on `linux/x64`
-- Chromium: `/usr/bin/chromium`
-- Fresh machine evidence: `verification/v15/gate-results.json` (ignored locally; CI uploads its own evidence).
+- Authored gate input SHA-256: `cd76fe50a57fc2fab1f56635f5b3e773650ebfe538f21641bf23944b81f7fde1`
+- Standalone SHA-256: `c33c69c238ad9075609dd4d1ae1142f18727cbf46ad3a6843f7bba139b46e421`
+- Standalone bytes: 18765740
+- Inert implementation/source inventory: 657 files, identity `6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74`
+- Actual local runtime: `v24.19.0`; system Chromium `151.0.7922.173`
+- Selected official hosted browser: Chromium `151.0.7922.34`, revision `1234`, via exact Playwright `1.62.1`
+- Fresh sealed evidence: `reports/littlewild-pr25-quality/final-c0e66f7/` (187 historical core paths plus 2 additional records; 189 actual sealed files).
 
-Documentation and shipping-only changes after this source checkpoint are excluded from the gate's input identity; source/vendor/toolchain inputs must continue to match. Earlier gates retain their own source identities and do not certify this runtime change.
+The exact official stable Playwright and playwright-core `1.62.1` pin selects bundled Chromium `151.0.7922.34` revision `1234`, replacing the failed hosted `153.0.8010.12` toolchain. This is a published stable-version reproducibility mitigation, not a proven explanation of either timeout. It does not contain the unreleased Playwright 1.64 [Range patch 43076](https://github.com/microsoft/playwright/pull/43076). [Official1.62.1 browser metadata](https://github.com/microsoft/playwright/blob/v1.62.1/packages/playwright-core/browsers.json) documents the selected bundle. Gameplay, verification source, vendor bytes, original assertions and numeric limits are unchanged; all 284 emitted JavaScript files match the lifecycle checkpoint. Only package/lock configuration rows and corresponding dependency metadata change in the 657-file source bundle.
+
+The fresh local gate actually used system Chromium `151.0.7922.173`; it does not certify the separately bundled hosted `151.0.7922.34`. All seven workflows must succeed on the new publication head before hosted acceptance. Prior hosted failures and local checkpoints retain their own identities.
+
+Hosted `bc7e8bb` passed 60 preceding suites / 1,246 checks, then Storytelling failed 13/15. The desktop Add track and Apply storytelling import clicks exceeded the unchanged 20-second action limit after resolving visible, enabled and stable buttons. Subsequent keyframe/p5 cases establish Add track committed; import commit is unproven because the following lifecycle case does not assert the renamed clip. All mobile and both new lifecycle cases passed; raw page/console/request diagnostics were empty, and renderer-library verification was not reached. Exact failure evidence remains under `reports/littlewild-pr25-quality/hosted-bc7e8bb-failure-diagnostics/`.
+
+Private whole-click profiles passed their five original desktop cases plus raw diagnostics (6/6 each) at 4x slowdown and at 16x around the target clicks, retaining 20-second actions and the 300-second suite budget. Neither reproduced the hosted failure. Validation, renderer disposal/replacement and hit-target cleanup incurred measured work; no isolated 20-second GPU disposal stall or causal determination was established. Actual phase, CDP and GPU evidence is retained in `reports/littlewild-pr25-quality/performance-checkouts/storytelling-bc7/CLICK-DIAGNOSIS.json`.
 
 | Suite | Passed / total | Seconds |
 | --- | ---: | ---: |
-| engine-export-cli | 5 / 5 | 11.34 |
-| engine-export | 13 / 13 | 23.54 |
+| engine-export-cli | 5 / 5 | 11.53 |
+| engine-export | 13 / 13 | 23.36 |
 | animations | 5 / 5 | 0.04 |
-| balancing-cli | 5 / 5 | 12.96 |
-| cold-balancing | 23 / 23 | 3.36 |
-| balancing | 14 / 14 | 20.1 |
-| storytelling | 24 / 24 | 42.47 |
-| external-editor-cli | 9 / 9 | 22.77 |
-| external-canvas | 21 / 21 | 53.55 |
-| creature-editor | 18 / 18 | 32.58 |
-| external-editors | 24 / 24 | 72.09 |
-| renderer-scene-2d | 10 / 10 | 0.11 |
-| scene-editor | 15 / 15 | 18.92 |
-| scene-navigation | 15 / 15 | 137.59 |
-| architecture-extensions | 10 / 10 | 3.3 |
-| building-interiors | 15 / 15 | 6.22 |
-| construction | 12 / 12 | 2.89 |
-| terraform | 13 / 13 | 4.06 |
-| renderers | 13 / 13 | 0.14 |
-| canvas-renderer | 29 / 29 | 0.32 |
-| architecture-policy | 53 / 53 | 19.44 |
+| balancing-cli | 5 / 5 | 13.02 |
+| cold-balancing | 23 / 23 | 3.49 |
+| balancing | 14 / 14 | 19.91 |
+| storytelling | 24 / 24 | 42.67 |
+| external-editor-cli | 9 / 9 | 22.74 |
+| external-canvas | 21 / 21 | 51.86 |
+| creature-editor | 18 / 18 | 32.14 |
+| external-editors | 24 / 24 | 73.97 |
+| renderer-scene-2d | 10 / 10 | 0.1 |
+| scene-editor | 15 / 15 | 18.33 |
+| scene-navigation | 15 / 15 | 134.32 |
+| architecture-extensions | 10 / 10 | 3.21 |
+| building-interiors | 15 / 15 | 6.17 |
+| construction | 12 / 12 | 3.03 |
+| terraform | 13 / 13 | 4.04 |
+| renderers | 13 / 13 | 0.13 |
+| canvas-renderer | 29 / 29 | 0.31 |
+| architecture-policy | 53 / 53 | 19.19 |
 | storage-clock | 15 / 15 | 0.04 |
 | gate-integrity | 21 / 21 | 1.09 |
-| cli-contracts | 23 / 23 | 16.61 |
-| typescript-architecture | 17 / 17 | 5.08 |
-| behavior-tree | 7 / 7 | 0.03 |
-| content-boundary | 18 / 18 | 1.35 |
+| cli-contracts | 23 / 23 | 16.94 |
+| typescript-architecture | 17 / 17 | 5.02 |
+| behavior-tree | 7 / 7 | 0.04 |
+| content-boundary | 18 / 18 | 1.37 |
 | assets | 15 / 15 | 0.27 |
-| creatures | 23 / 23 | 1.64 |
+| creatures | 23 / 23 | 1.62 |
 | ecs-core | 19 / 19 | 0.07 |
-| simulation-profile | 19 / 19 | 0.21 |
-| simulation-profile-integration | 17 / 17 | 7.67 |
+| simulation-profile | 19 / 19 | 0.2 |
+| simulation-profile-integration | 17 / 17 | 7.88 |
 | scene-environment | 6 / 6 | 0.04 |
-| office-scenario | 11 / 11 | 45.82 |
+| office-scenario | 11 / 11 | 45.15 |
 | game-settings | 13 / 13 | 2.5 |
 | game-settings-ui | 12 / 12 | 0.04 |
-| creature-interactions | 27 / 27 | 17.23 |
+| creature-interactions | 27 / 27 | 17.36 |
 | interaction-ui | 12 / 12 | 0.04 |
-| developer-toolbox | 32 / 32 | 90.67 |
-| engine-composition | 30 / 30 | 1.65 |
+| developer-toolbox | 32 / 32 | 92.37 |
+| engine-composition | 30 / 30 | 1.69 |
 | ecs-activity | 9 / 9 | 0.06 |
-| ecs-world | 24 / 24 | 0.05 |
+| ecs-world | 24 / 24 | 0.04 |
 | ecs-economy | 15 / 15 | 0.06 |
-| ecs-integration | 7 / 7 | 0.74 |
+| ecs-integration | 7 / 7 | 0.76 |
 | ecs-world-integration | 6 / 6 | 0.53 |
-| ecs-economy-integration | 9 / 9 | 0.52 |
-| scenario-domain | 83 / 83 | 32.32 |
-| presentation | 49 / 49 | 0.41 |
-| pause-policy | 53 / 53 | 0.2 |
-| cartography | 71 / 71 | 4.86 |
-| domain | 86 / 86 | 4.04 |
-| growth-stress | 3 / 3 | 23.19 |
-| earned-progression | 8 / 8 | 6.71 |
-| scenario-schema-cli | 61 / 61 | 5.08 |
-| release | 28 / 28 | 10.62 |
-| external-editors-browser | 11 / 11 | 36.43 |
-| external-canvas-browser | 7 / 7 | 29.15 |
-| creature-editor-browser | 20 / 20 | 61.03 |
-| balancing-defaults-browser | 4 / 4 | 27.79 |
-| balancing-browser | 9 / 9 | 27.3 |
-| storytelling-browser | 15 / 15 | 83.57 |
-| engine-export-browser | 11 / 11 | 36.31 |
-| renderer-storytelling | 15 / 15 | 55.88 |
-| storytelling-player-browser | 8 / 8 | 59.98 |
-| renderer-libraries | 14 / 14 | 34.97 |
-| scene-editor-browser | 33 / 33 | 72.2 |
-| building-interiors-browser | 9 / 9 | 23.93 |
-| construction-editor-browser | 13 / 13 | 16.9 |
-| terraform-browser | 9 / 9 | 19.81 |
-| renderers-browser | 14 / 14 | 17.81 |
-| office-browser | 9 / 9 | 16.91 |
-| game-settings-browser | 11 / 11 | 13.48 |
-| browser | 90 / 90 | 33.1 |
-| interactions-browser | 8 / 8 | 17.05 |
-| browser-contracts | 24 / 24 | 29.2 |
+| ecs-economy-integration | 9 / 9 | 0.51 |
+| scenario-domain | 83 / 83 | 32.55 |
+| presentation | 49 / 49 | 0.43 |
+| pause-policy | 53 / 53 | 0.22 |
+| cartography | 71 / 71 | 4.9 |
+| domain | 86 / 86 | 3.95 |
+| growth-stress | 3 / 3 | 22.16 |
+| earned-progression | 8 / 8 | 6.53 |
+| scenario-schema-cli | 61 / 61 | 4.94 |
+| release | 28 / 28 | 10.56 |
+| external-editors-browser | 11 / 11 | 34.7 |
+| external-canvas-browser | 7 / 7 | 30 |
+| creature-editor-browser | 20 / 20 | 58.89 |
+| balancing-defaults-browser | 4 / 4 | 28.47 |
+| balancing-browser | 9 / 9 | 25.93 |
+| storytelling-browser | 15 / 15 | 84.4 |
+| engine-export-browser | 11 / 11 | 36.64 |
+| renderer-storytelling | 15 / 15 | 54.55 |
+| storytelling-player-browser | 8 / 8 | 58.9 |
+| renderer-libraries | 14 / 14 | 30.93 |
+| scene-editor-browser | 33 / 33 | 72.39 |
+| building-interiors-browser | 9 / 9 | 22.28 |
+| construction-editor-browser | 13 / 13 | 17.53 |
+| terraform-browser | 9 / 9 | 19.54 |
+| renderers-browser | 14 / 14 | 16.74 |
+| office-browser | 9 / 9 | 16.78 |
+| game-settings-browser | 11 / 11 | 13.72 |
+| browser | 90 / 90 | 31.3 |
+| interactions-browser | 8 / 8 | 17.22 |
+| browser-contracts | 24 / 24 | 29.27 |
 
 ## Evidence integrity and review
 

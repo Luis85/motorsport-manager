@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "locally-verified; inspect current-head GitHub checks for hosted CI",
+  "status": "locally-verified; hosted acceptance tracked separately in PR #25 current-head checks",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
     "authoredTypeScriptFiles": 329,
@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e",
+      "identity": "6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -98,29 +98,38 @@
       "passed": 1529,
       "total": 1529,
       "browserIncluded": true,
-      "sourceSha256": "503c690d35ed01f83b799e59ca54fce60a3cad0bf028d5ba4c2c3225ffe73bd5",
-      "startedAt": "2026-10-04T03:33:55.448Z",
+      "sourceSha256": "cd76fe50a57fc2fab1f56635f5b3e773650ebfe538f21641bf23944b81f7fde1",
+      "startedAt": "2026-10-04T04:58:01.059Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "769e31f694710825df396f24e0fefc117bcb2f7b5f59c9093460080ecba47f08",
-      "htmlBytes": 18765564,
-      "finishedAt": "2026-10-04T03:58:57.868Z",
+      "htmlSha256": "c33c69c238ad9075609dd4d1ae1142f18727cbf46ad3a6843f7bba139b46e421",
+      "htmlBytes": 18765740,
+      "finishedAt": "2026-10-04T05:22:46.441Z",
       "suites": 75,
       "browserSuites": 20,
       "browserChecks": 334,
-      "verifiedSourceCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
+      "verifiedSourceCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
       "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
       "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e",
+      "engineSourceIdentity": "6830af3104c19377d3c531df7048c0ac6f9592a48bbd434a741669875e181f74",
       "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
-      "publicationBaseCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
+      "publicationBaseCommit": "c0e66f74569367d03058a6c9ddbc2e4f4ea38aa4",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Complete clean-source local gate for preview mount retention, connected replacement and empty p5 redraw lifecycle; all original checks and limits retained, with four additional regression cases. Final-head hosted CI is separate."
+      "scope": "Fresh complete local gate for exact stable Playwright 1.62.1 pin; gameplay/verifier/vendor emit and all original assertions/limits unchanged. Actual local system Chromium 151.0.7922.173 does not certify hosted bundled 151.0.7922.34; all seven exact-head hosted workflows are required and tracked separately in PR #25 current-head checks.",
+      "browserToolchain": {
+        "playwright": "1.62.1",
+        "playwrightCore": "1.62.1",
+        "officialBundledChromium": "151.0.7922.34",
+        "officialRevision": "1234",
+        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
+        "scope": "Previous stable toolchain reproducibility mitigation; not the unreleased 1.64 Range patch or a proven diagnosis of the Chromium 153 failures."
+      }
     },
     "historicalPreAuthoringExpansion": {
       "status": "historical-before-authoring-expansion",
@@ -341,6 +350,36 @@
       "publicationBaseCommit": "e7befadc7ea74055737983ae884c25a6cf321257",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
       "scope": "Complete local verifier-only 75-suite/1525-check checkpoint; hosted 78c02c8 later failed desktop storytelling before renderer-library verification.",
+      "historical": true
+    },
+    "historicalPreStableBrowserToolchain": {
+      "status": "passed",
+      "passed": 1529,
+      "total": 1529,
+      "browserIncluded": true,
+      "sourceSha256": "503c690d35ed01f83b799e59ca54fce60a3cad0bf028d5ba4c2c3225ffe73bd5",
+      "startedAt": "2026-10-04T03:33:55.448Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "769e31f694710825df396f24e0fefc117bcb2f7b5f59c9093460080ecba47f08",
+      "htmlBytes": 18765564,
+      "finishedAt": "2026-10-04T03:58:57.868Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 334,
+      "verifiedSourceCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "52cff763e02d1f9432a16431989a0a08bc67f7477fe32b865a4b98041e90b55e",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "bfa4e8798be53eb33d05195d30e3efae009f5076",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete local bfa4e87 75-suite/1529-check lifecycle checkpoint; subsequent hosted bc7e8bb failed two desktop Storytelling clicks before renderer-library verification.",
       "historical": true
     }
   },
