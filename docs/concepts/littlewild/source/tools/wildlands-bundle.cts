@@ -12,12 +12,22 @@ function walk(directory:string):string[]{
   return entry.isDirectory()?walk(file):entry.isFile()?[file]:[];
  });
 }
+// These root JSON outputs are produced by build.ts or the source-bundle writer.
+const generatedData=new Set(['engine-source-bundle.json','scenario-v3-grown.json','interaction-library.json',
+ 'creature-definitions.json','creature-editor-fields.json','creature-config.json','asset-definitions.json']);
+function ownedRuntimeFile(source:string,relative:string):boolean{
+ const authored=(name:string):boolean=>{const file=path.join(source,name);return fs.existsSync(file)&&fs.statSync(file).isFile();};
+ if(relative.endsWith('.json'))return generatedData.has(relative)||authored(relative);
+ const author=relative.replace(/\.js$/,'.ts').replace(/\.cjs$/,'.cts');
+ return authored(relative)||author!==relative&&authored(author);
+}
 export function writeWildlandsBundle(source:string,generated:string):void{
  const files:RuntimeFile[]=walk(generated).flatMap(file=>{
   const relative=path.relative(generated,file).replaceAll(path.sep,'/');
   if(!/\.(?:js|cjs|json)$/.test(relative)||relative.startsWith('verification/')||relative.startsWith('architecture/')||relative.startsWith('fixtures/')||
    /(^|\/)test[^/]*\.|-results\.json$/.test(relative)||relative==='engine-source-loader.json'||relative.startsWith('wildlands-runtime-bundle')||relative==='wildlands-runtime-loader.json'||relative==='wildlands-godot-templates.json'||relative==='build.js')return [];
   if(relative.startsWith('tools/')&&!['tools/wildlands-runtime.cjs','tools/cli-io.cjs'].includes(relative))return [];
+  if(!ownedRuntimeFile(source,relative))return [];
   return [{path:'runtime/'+relative,encoding:'utf8',content:fs.readFileSync(file,'utf8')}];
  });
  if(!files.some(file=>file.path==='runtime/tools/wildlands-runtime.cjs'))throw Error('Wildlands runtime entry was not compiled.');

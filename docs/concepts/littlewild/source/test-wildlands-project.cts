@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {writeWildlandsBundle} from './tools/wildlands-bundle.cjs';
 import {projects,runProject,editProject,inspectProject,discover,toolbox} from './wildlands-project-sdk.cjs';
 const results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -69,5 +70,24 @@ test('Scene authoring recipes use native revisions and validators',()=>{
  const edited=editProject(littlewild,{format:'wildlands-editor-recipe',schemaVersion:1,operations:[{operation:'updateScene',args:['first-morning',{name:'My meadow'}]}]});assert.equal(edited.project.pack.scenes[0]!.name,'My meadow');assert.equal(edited.revision,1);assert.equal(projects.validate(edited.project).ok,true);assert.notEqual(littlewild.pack.scenes[0]!.name,'My meadow');
  assert.throws(()=>editProject(littlewild,{format:'wildlands-editor-recipe',schemaVersion:1,operations:[{operation:'__proto__',args:[]}]}));
  assert.throws(()=>editProject(littlewild,{format:'wildlands-editor-recipe',schemaVersion:1,operations:[{operation:'updateScene',args:['missing',{}]}]}));
+});
+test('Runtime builds preserve owned data and ignore generated verification artifacts and stale executables',()=>{
+ const source=path.resolve(__dirname,'../source'),directory=fs.mkdtempSync(path.join(path.resolve(__dirname,'..'),'.wildlands-bundle-test-'));
+ const expected=fs.readFileSync(path.join(__dirname,'wildlands-runtime-bundle.json'),'utf8');
+ const bundle=JSON.parse(expected) as {files:{path:string;content:string}[]};
+ try{
+  for(const file of bundle.files){const target=path.join(directory,file.path.slice('runtime/'.length));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,file.content);}
+  writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),expected);
+  const loader=fs.readFileSync(path.join(directory,'wildlands-runtime-loader.json'),'utf8');
+  fs.writeFileSync(path.join(directory,'earned-progression-story.json'),JSON.stringify({format:'test-checkpoint',state:{simTime:12}}));
+  fs.writeFileSync(path.join(directory,'stale-runtime.js'),'module.exports = "retired source";');
+  fs.mkdirSync(path.join(directory,'runtime'));fs.writeFileSync(path.join(directory,'runtime','another-checkpoint.json'),'{}');
+  writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),expected);
+  assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-loader.json'),'utf8'),loader);
+  for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','interaction-library.json','content/scenario.schema.json'])assert(bundle.files.some(file=>file.path==='runtime/'+name),name);
+  const data=path.join(directory,'content','balancing.json'),changed=fs.readFileSync(data,'utf8')+'\n';fs.writeFileSync(data,changed);
+  writeWildlandsBundle(source,directory);const updated=JSON.parse(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8')) as {files:{path:string;content:string}[]};
+  assert.equal(updated.files.find(file=>file.path==='runtime/content/balancing.json')?.content,changed);assert.equal(updated.files.length,bundle.files.length);
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
 });
 const report={suite:'wildlands-project',passed:results.filter(value=>value.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'wildlands-project-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));if(results.some(value=>!value.passed))process.exitCode=1;
