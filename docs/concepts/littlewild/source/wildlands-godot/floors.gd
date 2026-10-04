@@ -23,6 +23,7 @@ var production := Button.new()
 var visit := Button.new()
 var feedback := Label.new()
 
+
 func configure(bridge: Node, renderer: Node3D, selected: Callable) -> void:
 	runtime = bridge
 	world = renderer
@@ -38,17 +39,30 @@ func configure(bridge: Node, renderer: Node3D, selected: Callable) -> void:
 	body.add_child(buildings)
 	var inspect_button := Button.new()
 	inspect_button.text = "Look inside selected building"
-	inspect_button.pressed.connect(func():
-		if buildings.selected >= 0 and buildings.selected < building_ids.size():
-			open(building_ids[buildings.selected]))
+	inspect_button.pressed.connect(
+		func():
+			if buildings.selected >= 0 and buildings.selected < building_ids.size():
+				open(building_ids[buildings.selected])
+	)
 	body.add_child(inspect_button)
 	body.add_child(floors)
 	floors.item_selected.connect(_choose_floor)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(description)
 	visit.text = "Suggest this floor to companion"
-	visit.pressed.connect(func():
-		runtime.request("command", {"command": {"id": "visit-building-floor", "args": [actor_selection.call(), building_id, floor_id]}}))
+	visit.pressed.connect(
+		func():
+			runtime.request(
+				"command",
+				{
+					"command":
+					{
+						"id": "visit-building-floor",
+						"args": [actor_selection.call(), building_id, floor_id]
+					}
+				}
+			)
+	)
 	body.add_child(visit)
 	body.add_child(stations)
 	body.add_child(recipes)
@@ -68,6 +82,7 @@ func configure(bridge: Node, renderer: Node3D, selected: Callable) -> void:
 	body.add_child(feedback)
 	_set_enabled(false)
 
+
 func update_view(view: Dictionary) -> void:
 	current_view = view
 	var signature := ""
@@ -86,6 +101,7 @@ func update_view(view: Dictionary) -> void:
 		else:
 			_refresh()
 
+
 func open(id: String) -> void:
 	building_id = id
 	if building_ids.has(id):
@@ -93,6 +109,7 @@ func open(id: String) -> void:
 	floor_id = ""
 	body.visible = true
 	_refresh()
+
 
 func _refresh() -> void:
 	if querying:
@@ -102,15 +119,18 @@ func _refresh() -> void:
 	if pending_request < 0:
 		querying = false
 
+
 func _response(id: int, method: String, result: Variant) -> void:
 	if method == "query":
 		consume(result, id)
+
 
 func _rejected(id: int, message: String) -> void:
 	if id == pending_request:
 		querying = false
 		pending_request = -1
 		feedback.text = message
+
 
 func consume(result: Variant, id: int) -> bool:
 	if not querying or id != pending_request:
@@ -140,14 +160,19 @@ func consume(result: Variant, id: int) -> bool:
 	_choose_floor(selected)
 	return true
 
+
 func _choose_floor(index: int) -> void:
 	if room.is_empty() or index < 0 or index >= room.floors.size():
 		return
 	var selected: Dictionary = room.floors[index]
 	floors.select(index)
 	floor_id = str(selected.id)
-	var previous_station: Variant = stations.get_item_metadata(stations.selected) if stations.selected >= 0 else null
-	var previous_recipe: Variant = recipes.get_item_metadata(recipes.selected) if recipes.selected >= 0 else null
+	var previous_station: Variant = (
+		stations.get_item_metadata(stations.selected) if stations.selected >= 0 else null
+	)
+	var previous_recipe: Variant = (
+		recipes.get_item_metadata(recipes.selected) if recipes.selected >= 0 else null
+	)
 	stations.clear()
 	for station in selected.get("stations", []):
 		if station.get("production", false):
@@ -165,22 +190,59 @@ func _choose_floor(index: int) -> void:
 	for actor in room.get("actors", []):
 		if str(actor.floorId) == floor_id:
 			activity.append(str(actor.name) + " · " + str(actor.action))
-	description.text = str(room.buildingName) + " · " + str(selected.label) + "\n" + ("\n".join(activity) if not activity.is_empty() else "No companion on this floor.") + "\nInputs: " + JSON.stringify(room.get("input", {})) + "\nFinished goods: " + JSON.stringify(room.get("output", {}))
+	description.text = (
+		str(room.buildingName)
+		+ " · "
+		+ str(selected.label)
+		+ "\n"
+		+ ("\n".join(activity) if not activity.is_empty() else "No companion on this floor.")
+		+ "\nInputs: "
+		+ JSON.stringify(room.get("input", {}))
+		+ "\nFinished goods: "
+		+ JSON.stringify(room.get("output", {}))
+	)
 	_set_enabled(true)
 	production.disabled = stations.item_count == 0 or recipes.item_count == 0
-	production.tooltip_text = "This floor has no available production workstation or recipe." if production.disabled else "Ingredients must be physically delivered to this building."
+	production.tooltip_text = (
+		"This floor has no available production workstation or recipe."
+		if production.disabled
+		else "Ingredients must be physically delivered to this building."
+	)
 	world.set_room(room, floor_id)
+
 
 func _produce() -> void:
 	if production.disabled:
 		return
-	runtime.request("command", {"command": {"id": "order-building-production", "args": [building_id, floor_id, stations.get_item_metadata(stations.selected), recipes.get_item_metadata(recipes.selected), int(batches.value)]}})
+	runtime.request(
+		"command",
+		{
+			"command":
+			{
+				"id": "order-building-production",
+				"args":
+				[
+					building_id,
+					floor_id,
+					stations.get_item_metadata(stations.selected),
+					recipes.get_item_metadata(recipes.selected),
+					int(batches.value)
+				]
+			}
+		}
+	)
+
 
 func _set_enabled(enabled: bool) -> void:
 	floors.disabled = not enabled
 	visit.disabled = not enabled
 	production.disabled = not enabled
-	visit.tooltip_text = "Look inside a building first." if not enabled else "The companion finishes current work and walks here; observing this room does not move them."
+	visit.tooltip_text = (
+		"Look inside a building first."
+		if not enabled
+		else "The companion finishes current work and walks here; observing this room does not move them."
+	)
+
 
 func close() -> void:
 	body.visible = false
@@ -196,6 +258,7 @@ func close() -> void:
 	feedback.text = ""
 	_set_enabled(false)
 	world.clear_room()
+
 
 func reset() -> void:
 	close()

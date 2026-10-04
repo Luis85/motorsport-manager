@@ -8,6 +8,7 @@ var text := Label.new()
 var body := VBoxContainer.new()
 var signature := ""
 
+
 func configure(project: Dictionary) -> void:
 	scenario_id = str(project.scenarioId)
 	scene_id = str(project.sceneId)
@@ -28,6 +29,7 @@ func configure(project: Dictionary) -> void:
 		_select(0)
 	visible = not steps.is_empty()
 
+
 func update_view(view: Dictionary) -> void:
 	var snapshot: Dictionary = view.get("snapshot", {})
 	visible = not steps.is_empty() and str(snapshot.get("scenarioId", "")) == scenario_id
@@ -41,6 +43,10 @@ func update_view(view: Dictionary) -> void:
 		picker.select(index)
 		_select(index)
 
+
 func _select(index: int) -> void:
 	if index >= 0 and index < steps.size():
-		text.text = str(steps[index].body) + "\n\nUse the world normally. This guide does not perform actions or change saved tutorial progress."
+		text.text = (
+			str(steps[index].body)
+			+ "\n\nUse the world normally. This guide does not perform actions or change saved tutorial progress."
+		)

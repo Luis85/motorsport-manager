@@ -55,8 +55,12 @@ async function main():Promise<void>{
    assert.equal(equivalent,true);assert.match(await p.locator('#ci-status').innerText(),/Completed/);
   });
   await check('Creature world-object selection delegates exact-node gathering with no remote grant',async()=>{
-   // The completed duel allows normal work again; an authored scene starts this independent world flow.
-   await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=review][data-id=charted-home]').click();
+   // The portable checkpoint is now registered in the library; admit a fresh authored pack for this independent flow.
+   await p.evaluate("Littlewild.open('scenarios')");
+   const fresh=await p.evaluate("LWScenarios.builtins().find(pack=>pack.id==='littlewild')");
+   await p.locator('#scenario-import-file').setInputFiles({name:'fresh-littlewild.pack.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fresh))});
+   await p.locator('#toasts .toast').filter({hasText:'Pack validated. Review a scene before starting it.'}).waitFor();
+   await p.locator('[data-scenario=review][data-id=charted-home]').click();
    await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.open('v10-interactions');Littlewild.refresh()");
    await p.locator('#ci-source').selectOption('c1');await p.locator('#ci-scope').selectOption('node');
    const node=await p.evaluate("Littlewild.engine.s.nodes.find(n=>n.kind==='wood'&&!Littlewild.engine.s.buildings.some(b=>b.x===n.x&&b.y===n.y)).id") as string;

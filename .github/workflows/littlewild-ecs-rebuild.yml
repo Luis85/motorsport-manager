@@ -52,7 +52,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1611'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1612'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -122,7 +122,8 @@ jobs:
               {"suite":"wildlands-browser","name":"390px programmatic same-ID scenario replacement preserves its complete authoring closure"},
               {"suite":"wildlands-browser","name":"Wildlands workspace performs no external requests or script/console errors"},
               {"suite":"wildlands-browser","name":"1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
-              {"suite":"wildlands-browser","name":"390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"}
+              {"suite":"wildlands-browser","name":"390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
+              {"suite":"scene-navigation","name":"Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'

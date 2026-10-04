@@ -39,6 +39,7 @@ var play_button: Button
 var selected_command: Dictionary = {}
 var viewport: SubViewport
 
+
 func _ready() -> void:
 	_build_ui()
 	add_child(bridge)
@@ -49,6 +50,7 @@ func _ready() -> void:
 		bridge.request("inspect")
 		bridge.request("storytelling.inspect")
 
+
 func _button(text: String, action: Callable, parent: Node) -> Button:
 	var button := Button.new()
 	button.text = text
@@ -56,6 +58,7 @@ func _button(text: String, action: Callable, parent: Node) -> Button:
 	button.pressed.connect(action)
 	parent.add_child(button)
 	return button
+
 
 func _build_ui() -> void:
 	var native_theme := Theme.new()
@@ -93,8 +96,8 @@ func _build_ui() -> void:
 		speeds.add_item(str(rate) + "×", rate)
 	speeds.item_selected.connect(func(index): speed = speeds.get_item_id(index))
 	toolbar.add_child(speeds)
-	_button("Save story", func(): file_action = "save"; bridge.request("story"), toolbar)
-	_button("Load story", func(): ticking = false; _choose_file("load"), toolbar)
+	_button("Save story", _request_story_save, toolbar)
+	_button("Load story", _request_story_load, toolbar)
 	_button("Orbit left", func(): world.orbit(-0.25), toolbar)
 	_button("Orbit right", func(): world.orbit(0.25), toolbar)
 	_button("Zoom +", func(): world.magnify(0.8), toolbar)
@@ -124,11 +127,17 @@ func _build_ui() -> void:
 	var care := HBoxContainer.new()
 	panel.add_child(care)
 	for action in ["feed", "water", "bond", "praise"]:
-		_button(action.capitalize(), func(): _command({"id": "care", "actorId": selected_actor, "args": [action]}), care)
+		_button(
+			action.capitalize(),
+			func(): _command({"id": "care", "actorId": selected_actor, "args": [action]}),
+			care
+		)
 	panel.add_child(floors)
 	floors.configure(bridge, world, func(): return selected_actor)
 	panel.add_child(guide)
-	var project: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://wildlands.project.json"))
+	var project: Variant = JSON.parse_string(
+		FileAccess.get_file_as_string("res://wildlands.project.json")
+	)
 	if project is Dictionary:
 		guide.configure(project)
 	panel.add_child(scene_picker)
@@ -165,12 +174,30 @@ func _build_ui() -> void:
 	file_dialog.file_selected.connect(_file_selected)
 	add_child(file_dialog)
 
+
+func _request_story_save() -> void:
+	file_action = "save"
+	bridge.request("story")
+
+
+func _request_story_load() -> void:
+	ticking = false
+	_choose_file("load")
+
+
 func _toggle_clock() -> void:
 	if not playback.is_empty():
 		_stop_clip()
 	ticking = not ticking
-	bridge.request("start" if ticking and not view.get("snapshot", {}).get("started", false) else "resume" if ticking else "pause")
+	bridge.request(
+		(
+			"start"
+			if ticking and not view.get("snapshot", {}).get("started", false)
+			else "resume" if ticking else "pause"
+		)
+	)
 	play_button.text = "Pause" if ticking else "Resume"
+
 
 func _process(delta: float) -> void:
 	if not playback.is_empty():
@@ -188,6 +215,7 @@ func _process(delta: float) -> void:
 		accumulator -= count * 0.1
 		awaiting_step = true
 		bridge.request("step", {"count": count})
+
 
 func _response(method: String, result: Variant) -> void:
 	if method == "discover":
@@ -212,7 +240,9 @@ func _response(method: String, result: Variant) -> void:
 		story_to_save = result
 		_choose_file("save")
 	elif method == "storytelling.inspect":
-		clips = result.get("cutscenes", []).filter(func(clip): return str(clip.sceneId) == str(view.get("snapshot", {}).get("sceneId", "")))
+		clips = result.get("cutscenes", []).filter(
+			func(clip): return str(clip.sceneId) == str(view.get("snapshot", {}).get("sceneId", ""))
+		)
 		clip_picker.clear()
 		for clip in clips:
 			clip_picker.add_item(str(clip.name))
@@ -230,13 +260,17 @@ func _response(method: String, result: Variant) -> void:
 		_append_log(JSON.stringify(result))
 		bridge.request("inspect")
 
+
 func _render(next: Variant) -> void:
 	if not next is Dictionary or not next.has("snapshot"):
 		_append_log(JSON.stringify(next))
 		return
 	view = next
 	var snapshot: Dictionary = view.snapshot
-	status.text = "Day %d · %.1f h · %.1f s · %s" % [int(snapshot.day), float(snapshot.hour), float(snapshot.simTime), str(snapshot.sceneId)]
+	status.text = (
+		"Day %d · %.1f h · %.1f s · %s"
+		% [int(snapshot.day), float(snapshot.hour), float(snapshot.simTime), str(snapshot.sceneId)]
+	)
 	var ids: Array[String] = []
 	var names := ""
 	for actor in snapshot.get("actors", []):
@@ -257,29 +291,44 @@ func _render(next: Variant) -> void:
 		connections = connection_ids
 		scene_picker.clear()
 		for connection in view.get("connections", []):
-			scene_picker.add_item(str(connection.get("label", connection.get("name", connection.id))))
+			scene_picker.add_item(
+				str(connection.get("label", connection.get("name", connection.id)))
+			)
 	details.clear()
 	for actor in snapshot.get("actors", []):
 		if str(actor.id) == selected_actor:
 			details.append_text(str(actor.name) + " · " + str(actor.personality) + "\n")
 			for need in actor.needs:
-				details.append_text(str(need).capitalize() + ": " + str(roundi(float(actor.needs[need]))) + "  ")
-			details.append_text("\nInventory: " + JSON.stringify(actor.inventory) + "\nTask: " + JSON.stringify(actor.task))
+				details.append_text(
+					str(need).capitalize() + ": " + str(roundi(float(actor.needs[need]))) + "  "
+				)
+			details.append_text(
+				(
+					"\nInventory: %s\nTask: %s"
+					% [JSON.stringify(actor.inventory), JSON.stringify(actor.task)]
+				)
+			)
 	details.append_text("\nPlayer: " + JSON.stringify(snapshot.player))
 	world.selected = selected_actor
 	world.update_view(view)
 	floors.update_view(view)
 	guide.update_view(view)
 
+
 func _select_actor(index: int) -> void:
 	if index < actor_ids.size():
 		selected_actor = actor_ids[index]
 		_command({"id": "select-creature", "args": [selected_actor]})
 
+
 func _select_command(index: int) -> void:
 	if index < commands.size():
 		selected_command = commands[index]
-		command_args.tooltip_text = "Scope: %s. Maximum arguments: %s. Domain validation supplies rejection reasons." % [selected_command.scope, selected_command.maxArgs]
+		command_args.tooltip_text = (
+			"Scope: %s. Maximum arguments: %s. Domain validation supplies rejection reasons."
+			% [selected_command.scope, selected_command.maxArgs]
+		)
+
 
 func _run_selected_command() -> void:
 	var args: Variant = JSON.parse_string(command_args.text)
@@ -291,20 +340,30 @@ func _run_selected_command() -> void:
 		command.actorId = selected_actor
 	_command(command)
 
+
 func _command(command: Dictionary) -> void:
 	bridge.request("command", {"command": command})
 
+
 func _send_console() -> void:
 	var request: Variant = JSON.parse_string(console.text)
-	if not request is Dictionary or not request.get("method") is String or not request.get("params", {}) is Dictionary:
-		_error("Enter {\"method\":\"query\",\"params\":{\"name\":\"constructionOptions\"}} or another discovered request.")
+	if (
+		not request is Dictionary
+		or not request.get("method") is String
+		or not request.get("params", {}) is Dictionary
+	):
+		_error(
+			'Enter {"method":"query","params":{"name":"constructionOptions"}} or another discovered request.'
+		)
 		return
 	bridge.request(request.method, request.get("params", {}))
+
 
 func _enter_scene() -> void:
 	var index := scene_picker.selected
 	if index >= 0 and index < connections.size():
 		bridge.request("scene.enter", {"connectionId": connections[index]})
+
 
 func _play_clip() -> void:
 	var index := clip_picker.selected
@@ -318,16 +377,21 @@ func _play_clip() -> void:
 	playback_generation += 1
 	playback = {"id": clip.id, "time": 0.0, "duration": clip.duration}
 
+
 func _stop_clip() -> void:
 	playback_generation += 1
 	playback.clear()
 	world.clear_timeline()
 
+
 func _choose_file(action: String) -> void:
 	file_action = action
-	file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE if action == "save" else FileDialog.FILE_MODE_OPEN_FILE
+	file_dialog.file_mode = (
+		FileDialog.FILE_MODE_SAVE_FILE if action == "save" else FileDialog.FILE_MODE_OPEN_FILE
+	)
 	file_dialog.current_file = "littlewild.story.json" if action == "save" else ""
 	file_dialog.popup_centered_ratio(0.7)
+
 
 func _file_selected(path: String) -> void:
 	if file_action == "save":
@@ -358,17 +422,20 @@ func _file_selected(path: String) -> void:
 		bridge.request("session.openStory", {"story": story})
 	file_action = ""
 
+
 func _append_log(message: String) -> void:
 	log.append_text(message.left(3000) + "\n")
 	if log.get_total_character_count() > 15000:
 		log.clear()
 		log.append_text(message.left(3000) + "\n")
 
+
 func _error(message: String) -> void:
 	floors.feedback.text = message
 	awaiting_step = false
 	awaiting_sample = false
 	_append_log(message)
+
 
 func _step_second() -> void:
 	if not view.get("snapshot", {}).get("started", false):

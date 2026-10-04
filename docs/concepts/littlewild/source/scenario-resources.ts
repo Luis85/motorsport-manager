@@ -5,7 +5,7 @@
  type Resources=LWContentPorts.Resources;
  interface Assets {readonly defaults:readonly unknown[];all():readonly unknown[];replace(input:unknown):void;withDefinitions<T>(input:unknown,work:()=>T):T;actor(id:string):{behaviors?:{appearances?:Record<string,unknown>}}|null;building(id:string):unknown;item(id:string):unknown;}
  interface Creatures {readonly defaults:Resources['creatures'];readonly configuration:unknown;all():readonly {id:string;visualAsset:string;personalities:readonly string[]}[];replace(input:unknown):void;withDefinitions<T>(input:unknown,work:()=>T):T;}
- interface Constructor extends Function {import(input:unknown):unknown;}
+ interface Constructor extends Function {prototype:Record<string,unknown>;import(input:unknown):unknown;}
  interface Root {LWAssets?:Assets;LWCreatures?:Creatures;LWContent:LWContentPorts.ContentApi;LWScenarioResources?:typeof api;}
  const root=inputRoot as Root,node=typeof module!=='undefined'&&module.exports;
  const C=(node?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi;
@@ -41,6 +41,13 @@
   });
  }
  function install(Engine:Constructor):void{
+  const exporter=Engine.prototype.export as (this:unknown,...args:unknown[])=>{state:Record<string,unknown>};
+  Engine.prototype.export=function(this:unknown,...args:unknown[]){
+   const doc=exporter.apply(this,args),state=doc.state;
+   // The resource envelope is serialized last, after lazy native owners. Only the detached export changes.
+   if(Object.hasOwn(state,'scenarioResources')){const resources=state.scenarioResources;delete state.scenarioResources;state.scenarioResources=resources;}
+   return doc;
+  };
   const importer=Engine.import;
   Engine.import=function(input:unknown):unknown{
    const doc=C.parse(input,12*1024*1024) as {state?:{scenarioResources?:Resources}};

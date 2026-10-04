@@ -24,6 +24,7 @@ var selected := ""
 var timeline: Dictionary = {}
 var timeline_camera: Dictionary = {}
 
+
 func _ready() -> void:
 	add_child(static_root)
 	add_child(actor_root)
@@ -45,18 +46,22 @@ func _ready() -> void:
 	add_child(sun)
 	_move_camera()
 
+
 func _move_camera() -> void:
 	camera.size = zoom
 	camera.position = center + Vector3(sin(yaw) * 45, 42, cos(yaw) * 45)
 	camera.look_at(center)
 
+
 func orbit(amount: float) -> void:
 	yaw += amount
 	_move_camera()
 
+
 func magnify(amount: float) -> void:
 	zoom = clampf(zoom * amount, 5, 100)
 	_move_camera()
+
 
 func update_view(view: Dictionary) -> void:
 	canonical_view = view
@@ -65,18 +70,32 @@ func update_view(view: Dictionary) -> void:
 		view.target = {"type": "interior", "buildingId": room.buildingId, "floorId": room_floor}
 		view.interior = room
 		var scenery: Dictionary = room.get("sceneProps", {})
-		view.props = scenery.get("props", []) if str(scenery.get("floorId", "")) == room_floor else []
+		view.props = (
+			scenery.get("props", []) if str(scenery.get("floorId", "")) == room_floor else []
+		)
 	last_view = view
 	assets.install(view.get("assets", []))
 	var state: Dictionary = view.get("state", {})
 	var target: Variant = view.get("target")
-	var signature := JSON.stringify([state.get("estate"), state.get("terraform"), view.get("snapshot", {}).get("sceneId"), view.get("props"), target])
-	if target is Dictionary and target.get("type") == "interior" and view.get("interior") is Dictionary:
+	var signature := JSON.stringify(
+		[
+			state.get("estate"),
+			state.get("terraform"),
+			view.get("snapshot", {}).get("sceneId"),
+			view.get("props"),
+			target
+		]
+	)
+	if (
+		target is Dictionary
+		and target.get("type") == "interior"
+		and view.get("interior") is Dictionary
+	):
 		for floor_record in view.interior.get("floors", []):
 			if str(floor_record.id) == str(target.floorId):
 				signature += JSON.stringify(floor_record)
 	for building in state.get("buildings", []):
-		signature += str([building.get("id"), building.get("kind"), building.get("x"), building.get("y"), building.get("door")])
+		signature += str(_record_values(building, ["id", "kind", "x", "y", "door"]))
 	for node in state.get("nodes", []):
 		signature += str([node.get("id"), node.get("kind"), float(node.get("stock", 0)) > 0])
 	if signature != static_signature:
@@ -88,11 +107,11 @@ func update_view(view: Dictionary) -> void:
 			_build_interior(view, str(target.floorId))
 		else:
 			_build_exterior(state, view.get("worldProfile", {}), target)
-			for prop in view.get("props", []):
-				_place(str(prop.category), str(prop.assetId), prop, str(prop.get("model", "world")), "props")
+			_place_props(view.get("props", []))
 	_update_actors(view)
 	if not timeline.is_empty():
 		apply_timeline(timeline)
+
 
 func set_room(interior: Dictionary, floor_id: String) -> void:
 	if room.is_empty():
@@ -101,6 +120,7 @@ func set_room(interior: Dictionary, floor_id: String) -> void:
 	room_floor = floor_id
 	if not canonical_view.is_empty():
 		update_view(canonical_view)
+
 
 func clear_room() -> void:
 	room.clear()
@@ -113,18 +133,64 @@ func clear_room() -> void:
 	if not canonical_view.is_empty():
 		update_view(canonical_view)
 
+
 func _process(delta: float) -> void:
 	var snapshot: Dictionary = last_view.get("snapshot", {})
-	var animate := bool(snapshot.get("started", false)) and not bool(snapshot.get("paused", true))
+	var animate := _is_animating(snapshot)
 	if animate:
 		visual_time += minf(maxf(delta, 0), 0.1)
 	for id in actors:
 		var observed: Dictionary = observations.get(id, {})
 		if not observed.is_empty():
-			creatures.pose(assets, actors[id], observed.actor, float(snapshot.get("simTime", 0)), visual_time, observed.moving, observed.working, animate, float(observed.get("velocity", 0)) * minf(delta, 0.1) if animate else 0)
+			_pose_actor(
+				actors[id],
+				observed,
+				float(snapshot.get("simTime", 0)),
+				animate,
+				float(observed.get("velocity", 0)) * minf(delta, 0.1) if animate else 0
+			)
+
 
 func _height(state: Dictionary, x: float, y: float) -> float:
-	return float(state.get("terraform", {}).get("tiles", {}).get(str(roundi(x)) + "," + str(roundi(y)), {}).get("height", 0))
+	var tiles: Dictionary = state.get("terraform", {}).get("tiles", {})
+	var tile: Dictionary = tiles.get(str(roundi(x)) + "," + str(roundi(y)), {})
+	return float(tile.get("height", 0))
+
+
+func _record_values(record: Dictionary, fields: Array) -> Array:
+	return fields.map(func(field): return record.get(field))
+
+
+func _has_work(record: Dictionary, task: Dictionary, inside: bool) -> bool:
+	return record.get("stationId") != null if inside else task.get("phase") == "work"
+
+
+func _is_animating(snapshot: Dictionary) -> bool:
+	return bool(snapshot.get("started", false)) and not bool(snapshot.get("paused", true))
+
+
+func _pose_actor(
+	actor: Node3D, observed: Dictionary, sim_time: float, animate: bool, stride: float
+) -> void:
+	creatures.pose(
+		assets,
+		actor,
+		observed.actor,
+		sim_time,
+		visual_time,
+		observed.moving,
+		observed.working,
+		animate,
+		stride
+	)
+
+
+func _place_props(props: Array) -> void:
+	for prop in props:
+		_place(
+			str(prop.category), str(prop.assetId), prop, str(prop.get("model", "world")), "props"
+		)
+
 
 func _tile(x: float, y: float, height: float, color: String, size := Vector3.ONE) -> void:
 	var mesh := MeshInstance3D.new()
@@ -133,6 +199,7 @@ func _tile(x: float, y: float, height: float, color: String, size := Vector3.ONE
 	mesh.position = Vector3(x, height - 0.12, y)
 	mesh.scale = Vector3(size.x, 0.25 * size.y, size.z)
 	static_root.add_child(mesh)
+
 
 func _build_exterior(state: Dictionary, profile: Dictionary, target: Variant) -> void:
 	_tile(9, 9, -0.65, "#a2c4c5", Vector3(900, 1, 900))
@@ -147,12 +214,32 @@ func _build_exterior(state: Dictionary, profile: Dictionary, target: Variant) ->
 				var gx := int(island.ix) * 23 + x
 				var gy := int(island.iy) * 23 + y
 				var tile: Dictionary = overrides.get(str(gx) + "," + str(gy), {})
-				var ground: String = tile.get("ground", "grass" if terrain.is_empty() or str(terrain[y])[x] == "." else "water")
+				var ground: String = tile.get(
+					"ground",
+					"grass" if terrain.is_empty() or str(terrain[y])[x] == "." else "water"
+				)
 				if ground == "grass":
-					_tile(gx, gy, float(tile.get("height", 0)), "#c6bd96" if x == 9 or y == 9 else "#9bb889")
+					_tile(
+						gx,
+						gy,
+						float(tile.get("height", 0)),
+						"#c6bd96" if x == 9 or y == 9 else "#9bb889"
+					)
 		for direction in [Vector2i(1, 0), Vector2i(0, 1)]:
-			if islands.any(func(other): return int(other.ix) == int(island.ix) + direction.x and int(other.iy) == int(island.iy) + direction.y):
-				_tile(int(island.ix) * 23 + (20.5 if direction.x else 9), int(island.iy) * 23 + (20.5 if direction.y else 9), 0, "#b7a57f", Vector3(4 if direction.x else 1, 1, 4 if direction.y else 1))
+			if islands.any(
+				func(other):
+					return (
+						int(other.ix) == int(island.ix) + direction.x
+						and int(other.iy) == int(island.iy) + direction.y
+					)
+			):
+				_tile(
+					int(island.ix) * 23 + (20.5 if direction.x else 9),
+					int(island.iy) * 23 + (20.5 if direction.y else 9),
+					0,
+					"#b7a57f",
+					Vector3(4 if direction.x else 1, 1, 4 if direction.y else 1)
+				)
 	if not islands.is_empty():
 		center = Vector3(int(islands[0].ix) * 23 + 9, 0, int(islands[0].iy) * 23 + 9)
 		_move_camera()
@@ -162,18 +249,32 @@ func _build_exterior(state: Dictionary, profile: Dictionary, target: Variant) ->
 		if float(node.get("stock", 0)) > 0:
 			_place("item", str(node.kind), node, "world", "nodes")
 
-func _place(category: String, id: String, record: Dictionary, model: String, collection: String) -> void:
+
+func _place(
+	category: String, id: String, record: Dictionary, model: String, collection: String
+) -> void:
 	var instance: Node3D = assets.create(category, id, model)
-	instance.position = Vector3(float(record.x), _height(last_view.get("state", {}), float(record.x), float(record.y)), float(record.y))
+	instance.position = Vector3(
+		float(record.x),
+		_height(last_view.get("state", {}), float(record.x), float(record.y)),
+		float(record.y)
+	)
 	if category == "building":
 		var door: Dictionary = record.get("door", {})
-		instance.rotation.y = PI / 2 if door.get("dx") == 1 else -PI / 2 if door.get("dx") == -1 else PI if door.get("dy") == -1 else 0.0
+		instance.rotation.y = (
+			PI / 2
+			if door.get("dx") == 1
+			else -PI / 2 if door.get("dx") == -1 else PI if door.get("dy") == -1 else 0.0
+		)
 	static_root.add_child(instance)
 	instance.set_meta("canonical_id", record.id)
 	entities[collection + ":" + str(record.id)] = instance
 
+
 func _build_interior(view: Dictionary, floor_id: String) -> void:
-	var interior: Dictionary = view.get("interior", {}) if view.get("interior") is Dictionary else {}
+	var interior: Dictionary = (
+		view.get("interior", {}) if view.get("interior") is Dictionary else {}
+	)
 	for floor_record in interior.get("floors", []):
 		if str(floor_record.id) != floor_id:
 			continue
@@ -189,8 +290,8 @@ func _build_interior(view: Dictionary, floor_id: String) -> void:
 		center = Vector3(float(floor_record.width) / 2, 0, float(floor_record.height) / 2)
 		zoom = maxf(float(floor_record.width), float(floor_record.height)) + 5
 		_move_camera()
-	for prop in view.get("props", []):
-		_place(str(prop.category), str(prop.assetId), prop, str(prop.get("model", "world")), "props")
+	_place_props(view.get("props", []))
+
 
 func _update_actors(view: Dictionary) -> void:
 	var records: Array = view.get("snapshot", {}).get("actors", [])
@@ -203,9 +304,13 @@ func _update_actors(view: Dictionary) -> void:
 	for entry in state.get("colony", {}).get("creatures", []):
 		canonical[str(entry.id)] = entry
 	var indoors: Dictionary = state.get("interiors", {}).get("locations", {})
-	var open_environment := str(view.get("worldProfile", {}).get("environment", {}).get("mode", "")) == "indoor"
+	var open_environment := (
+		str(view.get("worldProfile", {}).get("environment", {}).get("mode", "")) == "indoor"
+	)
 	if interior is Dictionary and target is Dictionary:
-		records = interior.get("actors", []).filter(func(actor): return str(actor.floorId) == str(target.floorId))
+		records = interior.get("actors", []).filter(
+			func(actor): return str(actor.floorId) == str(target.floorId)
+		)
 	for record in records:
 		var id := str(record.id)
 		var creature: Dictionary = canonical.get(id, record)
@@ -218,7 +323,9 @@ func _update_actors(view: Dictionary) -> void:
 		for definition in definitions:
 			if definition.get("id") == creature.get("archetype"):
 				asset_id = str(definition.get("visualAsset", asset_id))
-		var appearance := JSON.stringify([creature.get("archetype"), creature.get("personality"), creature.get("equipment"), assets.definitions.get("actor:" + asset_id, {})])
+		var appearance_values := _record_values(creature, ["archetype", "personality", "equipment"])
+		appearance_values.append(assets.definitions.get("actor:" + asset_id, {}))
+		var appearance := JSON.stringify(appearance_values)
 		if actors.has(id) and actors[id].get_meta("appearance_key", "") != appearance:
 			actors[id].free()
 			actors.erase(id)
@@ -237,7 +344,11 @@ func _update_actors(view: Dictionary) -> void:
 		var point: Dictionary = record.get("position", record)
 		var actor: Node3D = actors[id]
 		actor.get_node("ActorName").text = str(record.name)
-		var position := Vector3(float(point.x), 0 if interior is Dictionary else _height(state, float(point.x), float(point.y)), float(point.y))
+		var position := Vector3(
+			float(point.x),
+			0 if interior is Dictionary else _height(state, float(point.x), float(point.y)),
+			float(point.y)
+		)
 		var distance := actor.position.distance_to(position) if observations.has(id) else 0.0
 		actor.position = position
 		var direction := float(record.get("direction", 0))
@@ -245,16 +356,26 @@ func _update_actors(view: Dictionary) -> void:
 			direction = float(creature.get("creature", {}).get("dir", 0))
 		actor.rotation = Vector3(0, direction, 0)
 		actor.visible = true
-		actor.scale = actor.get_meta("appearance_scale", Vector3.ONE) * (1.12 if id == selected else 1.0)
-		var task: Dictionary = creature.get("task", {}) if creature.get("task") is Dictionary else {}
+		actor.scale = (
+			actor.get_meta("appearance_scale", Vector3.ONE) * (1.12 if id == selected else 1.0)
+		)
+		var task: Dictionary = (
+			creature.get("task", {}) if creature.get("task") is Dictionary else {}
+		)
 		var moving := bool(record.get("moving", task.get("phase") == "walk"))
-		var working: bool = not moving and (record.get("stationId") != null if interior is Dictionary else task.get("phase") == "work")
+		var working := not moving and _has_work(record, task, interior is Dictionary)
 		var sim_time := float(view.get("snapshot", {}).get("simTime", 0))
 		var previous: Dictionary = observations.get(id, {})
 		var elapsed := sim_time - float(previous.get("time", sim_time))
 		var velocity := distance / elapsed if elapsed > 0 else float(previous.get("velocity", 0))
-		observations[id] = {"actor": creature, "moving": moving, "working": working, "time": sim_time, "velocity": velocity}
-		creatures.pose(assets, actor, creature, sim_time, visual_time, moving, working, bool(view.get("snapshot", {}).get("started", false)) and not bool(view.get("snapshot", {}).get("paused", true)), 0)
+		observations[id] = {
+			"actor": creature,
+			"moving": moving,
+			"working": working,
+			"time": sim_time,
+			"velocity": velocity
+		}
+		_pose_actor(actor, observations[id], sim_time, _is_animating(view.get("snapshot", {})), 0)
 		entities["creatures:" + id] = actor
 	for id in actors.keys():
 		if not seen.has(id):
@@ -262,6 +383,7 @@ func _update_actors(view: Dictionary) -> void:
 			actors.erase(id)
 			observations.erase(id)
 			entities.erase("creatures:" + str(id))
+
 
 func apply_timeline(sample: Dictionary) -> void:
 	if timeline_camera.is_empty():
@@ -273,7 +395,11 @@ func apply_timeline(sample: Dictionary) -> void:
 			continue
 		var node: Node3D = entities[key]
 		var values: Dictionary = pose.values
-		node.position = Vector3(float(values.get("x", node.position.x)), float(values.get("height", node.position.y)), float(values.get("y", node.position.z)))
+		node.position = Vector3(
+			float(values.get("x", node.position.x)),
+			float(values.get("height", node.position.y)),
+			float(values.get("y", node.position.z))
+		)
 		if values.has("rotation"):
 			node.rotation.y = float(values.rotation)
 		if values.has("scale"):
@@ -287,6 +413,7 @@ func apply_timeline(sample: Dictionary) -> void:
 		zoom = 29 / maxf(float(values.zoom), 0.1)
 	_move_camera()
 
+
 func clear_timeline() -> void:
 	timeline.clear()
 	if not timeline_camera.is_empty():
@@ -297,6 +424,7 @@ func clear_timeline() -> void:
 	static_signature = ""
 	if not canonical_view.is_empty():
 		update_view(canonical_view)
+
 
 func reset_presentation() -> void:
 	room.clear()

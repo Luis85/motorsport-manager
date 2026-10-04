@@ -16,21 +16,29 @@ var stopping := false
 var outstanding := 0
 var last_response_id := -1
 
+
 func launch() -> bool:
 	var executable := OS.get_environment("WILDLANDS_NODE")
 	if executable.is_empty():
 		executable = "node"
-	var args := PackedStringArray([
-		ProjectSettings.globalize_path("res://runtime/tools/wildlands-runtime.cjs"),
-		"--project", ProjectSettings.globalize_path("res://wildlands.project.json"), "--stdio"
-	])
+	var args := PackedStringArray(
+		[
+			ProjectSettings.globalize_path("res://runtime/tools/wildlands-runtime.cjs"),
+			"--project",
+			ProjectSettings.globalize_path("res://wildlands.project.json"),
+			"--stdio"
+		]
+	)
 	process = OS.execute_with_pipe(executable, args, true)
 	if process.is_empty():
-		rejected.emit("Node.js 22+ is required. Install Node or set WILDLANDS_NODE to its executable.")
+		rejected.emit(
+			"Node.js 22+ is required. Install Node or set WILDLANDS_NODE to its executable."
+		)
 		return false
 	pipe = process.get("stdio")
 	thread.start(_worker)
 	return true
+
 
 func request(method: String, params: Dictionary = {}) -> int:
 	if pipe == null or stopping:
@@ -41,7 +49,9 @@ func request(method: String, params: Dictionary = {}) -> int:
 		return -1
 	sequence += 1
 	# Godot's default JSON formatting rounds doubles; retained checkpoints need all bits.
-	var message := JSON.stringify({"id": sequence, "method": method, "params": params}, "", true, true)
+	var message := JSON.stringify(
+		{"id": sequence, "method": method, "params": params}, "", true, true
+	)
 	if message.to_utf8_buffer().size() > 64 * 1024 * 1024:
 		rejected.emit("Gameplay request exceeds 64 MiB.")
 		return -1
@@ -51,6 +61,7 @@ func request(method: String, params: Dictionary = {}) -> int:
 	outstanding += 1
 	wake.post()
 	return sequence
+
 
 func _worker() -> void:
 	while true:
@@ -82,10 +93,15 @@ func _worker() -> void:
 				result.result = decoded.get("result")
 			else:
 				var error: Dictionary = decoded.get("error", {})
-				result.error = str(error.get("code", "error")) + ": " + str(error.get("message", "Rejected request"))
+				result.error = (
+					str(error.get("code", "error"))
+					+ ": "
+					+ str(error.get("message", "Rejected request"))
+				)
 		mutex.lock()
 		replies.append(result)
 		mutex.unlock()
+
 
 func _process(_delta: float) -> void:
 	mutex.lock()
@@ -101,6 +117,7 @@ func _process(_delta: float) -> void:
 		else:
 			response_with_id.emit(last_response_id, reply.method, reply.get("result"))
 			response.emit(reply.method, reply.get("result"))
+
 
 func stop() -> void:
 	mutex.lock()
@@ -118,6 +135,7 @@ func stop() -> void:
 	if error_pipe != null:
 		error_pipe.close()
 	process.clear()
+
 
 func _exit_tree() -> void:
 	stop()

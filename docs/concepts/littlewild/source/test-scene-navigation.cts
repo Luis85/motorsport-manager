@@ -12,7 +12,7 @@ interface Native extends LWInterior.Engine {
  orderBuildingProduction(b:string,f:string,s:string,r:string,n:number):{ok:boolean};
 }
 const root=globalThis as unknown as {
- LW:{createWorldDemo():Native};LWScenarios:LWContentPorts.ScenarioApi;LWSceneNavigation:LWSceneNavigation.NavigationApi;
+ LW:{createWorldDemo():Native;Engine:{import(input:unknown):Native}};LWScenarios:LWContentPorts.ScenarioApi;LWSceneNavigation:LWSceneNavigation.NavigationApi;
  LWContent:LWContentPorts.ContentApi;LWWorldProfile:{current:unknown};LWSimulationProfile:{current:unknown};
  LWStory:{encode(e:Native):Record<string,unknown>;inspect(input:unknown):unknown;commit(input:unknown):Native};
 };
@@ -45,6 +45,23 @@ function pack():LWContentPorts.ScenarioPack{
 }
 function until(engine:Native,condition:()=>boolean):void{for(let i=0;i<2400;i++){engine.step(.1);if(condition())return;}throw Error('Physical worker did not reach the paid job.');}
 
+test('Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation',()=>{
+ const p=pack();
+ for(const scene of p.scenes){delete scene.initialState.interiors;delete scene.initialState.creatureInteractions;delete scene.initialState.scenarioResources;}
+ const engine=launch(p);assert(engine.s.scenarioResources);assert.equal(engine.s.interiors,undefined);assert(!Object.hasOwn(engine.s,'creatureInteractions'));
+ engine.step(.1);assert(engine.s.interiors);assert(Object.hasOwn(engine.s,'creatureInteractions'));
+ const live=C.copy(engine.s),keys=Object.keys(engine.s),before=engine.export();
+ assert.equal(Object.keys(before.state).at(-1),'scenarioResources');assert.deepEqual(C.copy(engine.s),live);assert.deepEqual(Object.keys(engine.s),keys);
+ const detached=engine.export();(detached.state.scenarioResources as LWContentPorts.Resources).assets.length=0;
+ assert.deepEqual(C.copy(engine.s),live);assert.deepEqual(engine.export(),before);
+ const reordered=C.copy(before),resources=reordered.state.scenarioResources;delete reordered.state.scenarioResources;
+ reordered.state={scenarioResources:resources,...reordered.state};
+ const imported=root.LW.Engine.import(reordered);assert.equal(JSON.stringify(imported.export()),JSON.stringify(before));
+ const far=move(engine,'far'),returned=move(far,'home');assert.equal(JSON.stringify(returned.export()),JSON.stringify(before));
+ const room=move(returned,'room');assert.equal(JSON.stringify(room.export()),JSON.stringify(before));
+ const restored=root.LWStory.commit(root.LWStory.inspect(root.LWStory.encode(room)));assert.equal(JSON.stringify(restored.export()),JSON.stringify(before));
+ assert.equal(JSON.stringify(move(restored,'home').export()),JSON.stringify(before));assert.deepEqual(C.copy(engine.s),live);assert.deepEqual(Object.keys(engine.s),keys);
+});
 test('Cross-world reviews are detached and preserve unfinished state on revisits',()=>{
  const engine=launch(pack());engine.advance(5);const before=engine.export(),context=C.copy(engine.scenarioContext),registries=active();
  const preview=N.prepare(engine,'far');assert.equal(active(),registries);assert.deepEqual(engine.export(),before);assert.deepEqual(engine.scenarioContext,context);

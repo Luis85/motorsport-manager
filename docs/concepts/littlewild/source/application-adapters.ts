@@ -22,7 +22,7 @@
   spec('interactions','LWInteractionIntegration',['commands'],['interactionOptions','interactionState','interactionDefinitions','requestInteraction','respondInteraction','cancelInteraction','setInteractionLibrary','interactionBusy','stepInteractions','seekDuel','cancelDuelSeek','stageDuel','disableDuels','stepInteractionActor'],['care','interact','commandActor','startTask','acceptQuest','depart','suggestSocial','request','requestEquipment','teach','practice'],[],['import']),
   spec('settings','LWGameSettings',['interactions'],['setGameSettings','gameSettings'],['acceptQuest','questOfferIssue','questPlanIssue','depart','addOffer','offerForIsland','updateQuestBoard','gateIssue','handlers'],[],['import']),
   spec('scenario-workflow','LWScenarioWorkflow',['settings'],[],['handlers','returnQuest','startTask','stepWorld'],[],['import']),
-  spec('scenario-resources','LWScenarioResources',['scenario-workflow'],[],[],[],['import']),
+  spec('scenario-resources','LWScenarioResources',['scenario-workflow'],[],['export'],[],['import']),
   spec('construction','LWConstructionIntegration',['scenario-resources'],['constructionOptions','previewBuildingDesign','buildingDesign','constructBuildingDesign','improveBuildingDesign'],['placementIssue','totalCost','constructionPhases','finishTask'],[],['import']),
   spec('terraform','LWTerraformIntegration',['construction'],['terrainAt','terrainHeight','terraformSnapshot','previewTerraform','applyTerraform'],[],[],['import']),
   spec('interiors','LWBuildingInteriorIntegration',['terraform','construction'],['buildingInterior','visitBuildingFloor','orderBuildingProduction'],['stepQuest','stepActor','startTask','finishTask','configureBuilding'],[],['import'])

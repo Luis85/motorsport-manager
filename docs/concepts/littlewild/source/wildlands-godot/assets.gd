@@ -4,24 +4,35 @@ var definitions: Dictionary = {}
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
 
+
 func install(records: Array) -> void:
 	definitions.clear()
 	for record in records:
 		definitions[str(record.category) + ":" + str(record.id)] = record
 
-func create(category: String, id: String, model := "world", materials_override: Dictionary = {}) -> Node3D:
+
+func create(
+	category: String, id: String, model := "world", materials_override: Dictionary = {}
+) -> Node3D:
 	var root := Node3D.new()
 	root.set_meta("asset_id", category + ":" + id)
 	var asset: Dictionary = definitions.get(category + ":" + id, {})
 	var models: Dictionary = asset.get("models", {})
 	if not models.has(model):
-		model = "world" if models.has("world") else str(models.keys()[0]) if not models.is_empty() else ""
+		model = (
+			"world"
+			if models.has("world")
+			else str(models.keys()[0]) if not models.is_empty() else ""
+		)
 	root.set_meta("model_name", model)
 	for record in models.get(model, {}).get("nodes", []):
 		_create_node(root, asset, record, materials_override)
 	return root
 
-func _create_node(parent: Node3D, asset: Dictionary, record: Dictionary, overrides: Dictionary) -> void:
+
+func _create_node(
+	parent: Node3D, asset: Dictionary, record: Dictionary, overrides: Dictionary
+) -> void:
 	var node: Node3D
 	if record.primitive == "group":
 		node = Node3D.new()
@@ -39,16 +50,24 @@ func _create_node(parent: Node3D, asset: Dictionary, record: Dictionary, overrid
 	node.scale = vector(record.get("scale", [1, 1, 1]))
 	# Three's intrinsic XYZ Euler order is Basis Rx * Ry * Rz.
 	var rotation := vector(record.get("rotation", [0, 0, 0]))
-	var basis := Basis(Vector3.RIGHT, rotation.x) * Basis(Vector3.UP, rotation.y) * Basis(Vector3.BACK, rotation.z)
+	var basis := (
+		Basis(Vector3.RIGHT, rotation.x)
+		* Basis(Vector3.UP, rotation.y)
+		* Basis(Vector3.BACK, rotation.z)
+	)
 	node.basis = basis.scaled_local(node.scale)
 	node.visible = record.get("visible", true)
 	for child in record.get("children", []):
 		_create_node(node, asset, child, overrides)
 
+
 func vector(input: Array) -> Vector3:
 	return Vector3(float(input[0]), float(input[1]), float(input[2]))
 
-func material(asset: Dictionary, record: Dictionary, overrides: Dictionary = {}) -> StandardMaterial3D:
+
+func material(
+	asset: Dictionary, record: Dictionary, overrides: Dictionary = {}
+) -> StandardMaterial3D:
 	var role: String = record.get("material", "")
 	var value: Variant = overrides.get(role, asset.get("materials", {}).get(role, "#9bb98c"))
 	var properties: Dictionary = {"color": value} if value is String else value.duplicate()
@@ -71,8 +90,10 @@ func material(asset: Dictionary, record: Dictionary, overrides: Dictionary = {})
 	materials[key] = result
 	return result
 
+
 func colored(color: String) -> StandardMaterial3D:
 	return material({"materials": {"color": color}}, {"material": "color"})
+
 
 func primitive(kind: String) -> Mesh:
 	if meshes.has(kind):
@@ -113,8 +134,16 @@ func primitive(kind: String) -> Mesh:
 	meshes[kind] = mesh
 	return mesh
 
+
 func _roof() -> ArrayMesh:
-	var points := [Vector3(-0.5, 0, -0.5), Vector3(0.5, 0, -0.5), Vector3(0, 0.62, -0.5), Vector3(-0.5, 0, 0.5), Vector3(0.5, 0, 0.5), Vector3(0, 0.62, 0.5)]
+	var points := [
+		Vector3(-0.5, 0, -0.5),
+		Vector3(0.5, 0, -0.5),
+		Vector3(0, 0.62, -0.5),
+		Vector3(-0.5, 0, 0.5),
+		Vector3(0.5, 0, 0.5),
+		Vector3(0, 0.62, 0.5)
+	]
 	var vertices := PackedVector3Array()
 	for index in [0, 2, 1, 3, 4, 5, 0, 1, 4, 0, 4, 3, 1, 2, 5, 1, 5, 4, 2, 0, 3, 2, 3, 5]:
 		vertices.append(points[index])
