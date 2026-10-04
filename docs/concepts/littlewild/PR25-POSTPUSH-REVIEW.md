@@ -58,7 +58,7 @@ Navigation source and its compiled verifier are byte-identical to the earlier ho
 
 ## Hosted storytelling failure and measured preview improvement
 
-Hosted `475307b` passed navigation 15/15 in 178.66 seconds, then failed storytelling browser 11/13. Two 1440px Add-track clicks exceeded the unchanged 20-second action bound after resolving visible, enabled and stable controls. The corresponding 390px cases passed and all raw diagnostics were empty. Track creation committed despite the click interruption, as shown by the next keyframe case. Original reports remain under `reports/littlewild-pr25-quality/hosted-475307b-storytelling-browser-failure/`.
+Hosted `475307b` passed navigation 15/15 in 178.66 seconds, then failed storytelling browser 11/13. Two 1440px Add-track clicks exceeded the unchanged 20-second action bound after resolving visible, enabled and stable controls. The corresponding 390px cases passed and all raw diagnostics were empty. The 3D track creation committed despite the click interruption, as shown by the next keyframe case. Original reports remain under `reports/littlewild-pr25-quality/hosted-475307b-storytelling-browser-failure/`.
 
 Private profiling with the original assertions and bounds did not reproduce the hosted 20-second delay. Matching hosted Chromium could not be downloaded because the environment blocks cdn.playwright.dev. The controlled before/after profile measures desktop completion 68.204 to 58.086 seconds, mobile 38.937 to 31.984 seconds, and Basic paints 225 to 28, with desktop validation calls unchanged at 45. These are diagnostic measurements, not proof of the failed hosted click cause.
 
