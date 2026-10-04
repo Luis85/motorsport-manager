@@ -1,16 +1,17 @@
-# Littlewild documentation index
+# Wildlands documentation index
 
-Littlewild is a separate offline browser concept. Its runtime and evidence are
-isolated from the native Motorsport Manager game; start with the concept overview
-and its source-bound verification record below. These routes organize the
-existing documents by reader need without moving the executable prototype,
-changing its published identities or making new acceptance claims.
+Wildlands is a separate TypeScript game prototype maker with Littlewild as its
+default showcase. Its browser workspace, terminal tools and Node-backed Godot
+desktop target retain their own runtime and evidence, isolated from the native
+Motorsport Manager game. Development stays in this folder. These routes organize
+the existing documents by reader need without changing published identities or
+turning earlier Littlewild acceptance into verification of Wildlands.
 
 ## Entry points
 
-- [Littlewild v15 — Worlds of Possibility](README.md)
-- [Littlewild verification](VERIFICATION.md)
-- [Littlewild: portable worlds, storytelling and developer tools](PULL_REQUEST.md)
+- [Wildlands overview and Littlewild showcase](README.md)
+- [Project workflow, terminal/AI interface and Godot target](WILDLANDS.md)
+- [Current validation procedure and export acceptance criteria](WILDLANDS.md#validation-and-development)
 
 ## Authoring and task guides
 
@@ -57,9 +58,12 @@ changing its published identities or making new acceptance claims.
 ## Dated implementation, review and delivery records
 
 These historical records describe their named revisions, measurements and
-limitations. They do not establish acceptance for a later source. Consult the
-verification entry point for the recorded release scope and current-head checks.
+limitations. They do not establish acceptance for a later source. Follow the
+[current validation procedure](WILDLANDS.md#validation-and-development) to check a
+Wildlands checkout; the PR25 records retain their original Littlewild scope.
 
+- [PR25 Littlewild verification and source identities](VERIFICATION.md)
+- [PR25 Littlewild portable worlds, storytelling and developer tools](PULL_REQUEST.md)
 - [Littlewild ECS, data-driven architecture and game-pattern research](ARCHITECTURE-RESEARCH.md)
 - [UI research and implementation rationale](UI-RESEARCH.md)
 - [Excalibur patterns for the Littlewild developer toolbox](EXCALIBUR-TOOLBOX-REVIEW.md)
@@ -83,4 +87,3 @@ verification entry point for the recorded release scope and current-head checks.
 - [Independent cumulative Littlewild review — 6664900](PR25-FINAL-AUTHORING-REVIEW.md)
 - [Littlewild v15 — publication record](publication/README.md)
 - [Littlewild v15 verification — 29 September 2026](publication/VERIFICATION.md)
-

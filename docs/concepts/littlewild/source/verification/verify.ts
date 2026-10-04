@@ -48,6 +48,10 @@ fs.mkdirSync(OUT, { recursive: true });
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["wildlands-runtime", ["node", generated("test-wildlands-runtime.cjs")], generated("wildlands-runtime-results.json"), 300],
+  ["wildlands-project", ["node", generated("test-wildlands-project.cjs")], generated("wildlands-project-results.json"), 120],
+  ["wildlands-cli", ["node", generated("test-wildlands-cli.cjs")], generated("wildlands-cli-results.json"), 300],
+  ["wildlands-acceptance", ["node", generated("test-wildlands-acceptance.cjs")], generated("wildlands-acceptance-results.json"), 300],
   ["engine-export-cli", ["node", generated("test-engine-export-cli.cjs")], generated("engine-export-cli-results.json"), 240],
   ["engine-export", ["node", generated("test-engine-export.cjs")], generated("engine-export-results.json"), 240],
   ["animations", ["node", generated("test-animations.cjs")], "verification/v15/animations-results.json", 120],
@@ -107,6 +111,7 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"wildlands-browser", command:["node", generated("verification/wildlands-browser.js")], result:"verification/v15/wildlands-browser-results.json", timeout:300 },
     { name:"external-editors-browser", command:["node", generated("verification/external-editors-browser.js")], result:"verification/v15/external-editors-browser-results.json", timeout:240 },
     { name:"external-canvas-browser", command:["node", generated("verification/external-canvas-browser.js")], result:"verification/v15/external-canvas-browser-results.json", timeout:240 },
     { name:"creature-editor-browser", command:["node", generated("verification/creature-editor-browser.js")], result:"verification/v15/creature-editor-browser-results.json", timeout:300 },

@@ -28,9 +28,11 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 
 ## Authority and evidence
 
-The separate [Littlewild browser concept documentation](concepts/littlewild/DOCUMENTATION.md)
-indexes its offline prototype, contracts and dated evidence. It is isolated from
-the native Motorsport Manager capability inventory.
+The separate [Wildlands documentation](concepts/littlewild/DOCUMENTATION.md)
+indexes the TypeScript prototype builder, its default Littlewild showcase,
+browser/terminal workflows and Node-backed Godot desktop target. It retains its
+own runtime and source-bound evidence outside the native Motorsport Manager
+capability inventory.
 
 Production code, generated schemas and validated configuration own executable
 contracts. Active references describe those contracts; tutorials and recipes link

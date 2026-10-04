@@ -2,7 +2,9 @@ import { chromium, type Browser, type BrowserContext } from "playwright";
 
 export async function launchBrowser(): Promise<Browser> {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
-  return chromium.launch({headless:true,...(executablePath ? {executablePath} : {}),args:["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]});
+  // Exercise the full desktop browser, including its WebGL preview lifecycle.
+  // Playwright otherwise selects the separate Chromium headless-shell binary.
+  return chromium.launch({headless:true,...(executablePath ? {executablePath} : {channel:"chromium"}),args:["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]});
 }
 
 /** Observe every page, including replacement/custom-pack pages, before its first navigation. */

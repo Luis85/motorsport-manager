@@ -1,2 +1,1 @@
-# Littlewild is a separate browser/Node application. Its npm packages and editor
-# assets are not resources of the native Motorsport Manager Godot project.
+# Wildlands is a separate npm project; native templates are compiled into their own Godot project.
