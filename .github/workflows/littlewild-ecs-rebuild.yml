@@ -41,6 +41,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Rebuild and verify all Littlewild contracts
         working-directory: docs/concepts/littlewild
+        env:
+          LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
         run: npm run verify
       - name: Report failed verification details
         if: failure()
@@ -89,6 +91,7 @@ jobs:
             docs/concepts/littlewild/package-lock.json
             docs/concepts/littlewild/.generated/*-results.json
             docs/concepts/littlewild/verification/v15/gate-results.json
+            docs/concepts/littlewild/verification/v15/storytelling-click-diagnostics.json
             docs/concepts/littlewild/verification/v15/*.log
             docs/concepts/littlewild/verification/v15/*-results.json
             docs/concepts/littlewild/verification/v15/building-interiors-browser.json

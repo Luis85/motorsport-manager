@@ -8,6 +8,7 @@
   const input=document.createElement('input');input.type='file';input.id='storytelling-import';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
   let preview:LWStorytellingUI.Preview|null=null,mounted:HTMLCanvasElement|null=null,previewSession:LWSceneEditor.Session|null=null,previewKey='',readId=0;
   let cancelPreparation:(()=>void)|null=null,pendingPreparation=false,preparationGeneration=0;
+  let failedPreparation:{session:LWSceneEditor.Session;key:string;canvas:HTMLCanvasElement}|null=null;
   let review:{pack:LWContentPorts.ScenarioPack;session:LWSceneEditor.Session;revision:number}|null=null;
   const e=host.esc,copy=<T>(v:T):T=>structuredClone(v);
   function session():LWSceneEditor.Session{const value=host.session();if(!value)throw Error('Open a scenario pack draft first.');return value;}
@@ -15,10 +16,12 @@
   const author=():LWStorytelling.Authoring=>root.LWStorytellingEditor.create(session());
   function clip():LWStorytelling.Cutscene{const found=pack().storytelling?.cutscenes.find(c=>c.id===state.clipId);if(!found)throw Error('Select a cutscene first.');return found;}
   function board():LWStorytelling.Storyboard{const found=pack().storytelling?.storyboards.find(b=>b.id===state.boardId);if(!found)throw Error('Select a storyboard first.');return found;}
-  function stopPreview():void{preparationGeneration++;const cancel=cancelPreparation;cancelPreparation=null;pendingPreparation=false;try{cancel?.();}finally{preview?.dispose();preview=null;mounted=null;previewSession=null;previewKey='';}}
+  function cancelPreparationJob():void{preparationGeneration++;const cancel=cancelPreparation;cancelPreparation=null;pendingPreparation=false;cancel?.();}
+  function stopPreview():void{try{cancelPreparationJob();}finally{try{preview?.dispose();}finally{preview=null;mounted=null;previewSession=null;previewKey='';failedPreparation=null;}}}
+  function sameClip():boolean{return previewKey.slice(0,previewKey.lastIndexOf(':'))===state.clipId;}
   function redraw():void{
-   const current=host.session(),retain=(preview||pendingPreparation)&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&previewKey===state.clipId+':'+current?.revision;
-   const surface=retain?mounted?.parentElement:null,notice=document.querySelector('[data-story-preview-notice]')?.textContent;
+   const current=host.session(),retain=(preview||pendingPreparation)&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&sameClip()&&(previewKey===state.clipId+':'+current?.revision||!!preview?.update);
+   const surface=retain?mounted?.parentElement:null,notice=retain&&previewKey!==state.clipId+':'+current?.revision?'Preparing a detached scene preview…':document.querySelector('[data-story-preview-notice]')?.textContent;
    if(!surface)stopPreview();
    try{
     host.redraw();
@@ -37,7 +40,8 @@
   function focus(selector:string):void{document.querySelector<HTMLElement>(selector)?.focus();}
   function preparing():boolean{if(!pendingPreparation)return false;host.toast('The detached preview is preparing. Try again when it is ready.');return true;}
   function mutate(work:()=>void,message:string):void{work();state.notice=message;state.error='';state.confirm='';redraw();}
-  function cancel():void{readId++;review=null;input.value='';stopPreview();}
+  function cancelRead():void{readId++;review=null;input.value='';}
+  function cancel():void{cancelRead();stopPreview();}
   function normalize():void{
    const value=pack().storytelling;
    if(!value?.storyboards.some(b=>b.id===state.boardId)){state.boardId=value?.storyboards[0]?.id??'';state.shotId='';}
@@ -52,28 +56,61 @@
    return markup+reviewing;
   }
   function draw(delta=0):void{
-   if(host.modal()!=='scene-editor'||!state.active||state.tab!=='timeline'){if(preview)stopPreview();return;}
+   if(host.modal()!=='scene-editor'||!state.active||state.tab!=='timeline'){if(preview||pendingPreparation)stopPreview();return;}
    let canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas||!state.clipId)return;
    const current=session(),key=state.clipId+':'+current.revision;
+   if(failedPreparation?.session===current&&failedPreparation.key===key&&failedPreparation.canvas===canvas)return;
    if(canvas!==mounted||key!==previewKey||current!==previewSession){
-    const replaceMount=canvas===mounted;stopPreview();
-    if(replaceMount){host.redraw();canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas)return;}
-    const target=canvas,selectedClip=state.clipId,generation=preparationGeneration;mounted=target;previewSession=current;previewKey=key;
+    const retained=canvas===mounted&&current===previewSession&&sameClip()&&preview?.update?preview:null;
+    const replaceMount=canvas===mounted;
+    if(retained)cancelPreparationJob();else stopPreview();
+    if(replaceMount&&!retained){host.redraw();canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas)return;}
+    let target=canvas;const selectedClip=state.clipId,generation=preparationGeneration;mounted=target;previewSession=current;previewKey=key;
     if(host.preview){
      pendingPreparation=true;const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent='Preparing a detached scene preview…';
-     const ownsMount=():boolean=>generation===preparationGeneration&&mounted===target&&target.isConnected&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&host.session()===current&&state.clipId===selectedClip&&state.clipId+':'+current.revision===key;
+     const ownsScope=():boolean=>generation===preparationGeneration&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&host.session()===current&&state.clipId===selectedClip&&state.clipId+':'+current.revision===key;
+     const ownsMount=():boolean=>ownsScope()&&mounted===target&&target.isConnected;
+     const readyNotice='Detached scene ready. Play, pause or seek to inspect animation.';
+     const rejected=(error:unknown):void=>{
+      if(!ownsScope())return;
+      const label=document.querySelector('[data-story-preview-notice]');let reason=String(error);
+      failedPreparation={session:current,key,canvas:target};
+      const removed=preview;preview=null;mounted=null;previewSession=null;previewKey='';
+      try{removed?.dispose();}catch(disposalError){reason+='; '+String(disposalError);}
+      if(ownsScope()&&label?.isConnected)label.textContent=reason;
+     };
      const prepare=():void=>{
       if(generation!==preparationGeneration||!pendingPreparation||mounted!==target)return;
-      cancelPreparation=null;pendingPreparation=false;
+      cancelPreparation=null;
       if(!ownsMount()){stopPreview();return;}
-      try{const instance=host.preview!(target,pack(),selectedClip);preview=instance;instance.ready.then(result=>{
-       if(preview!==instance||!ownsMount())return;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=result.ok?'Detached scene ready. Play, pause or seek to inspect animation.':result.reason??'The selected renderer could not prepare this scene.';
-      }).catch(error=>{if(preview===instance&&ownsMount()){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}});}catch(error){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}
+      try{
+       const next=pack();
+       if(retained?.update?.(next,selectedClip)){
+        if(!ownsMount()||preview!==retained)return;
+        retained.draw(0);const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=readyNotice;return;
+       }
+       if(!ownsMount())return;
+       if(retained){
+        const parent=target.parentElement;try{retained.dispose();}finally{if(preview===retained)preview=null;}
+        if(!ownsScope())return;
+        if(parent?.isConnected){const replacement=target.cloneNode(false) as HTMLCanvasElement;target.remove();target=replacement;parent.prepend(target);}
+        else{host.redraw();const replacement=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!replacement)return;target=replacement;}
+        mounted=target;
+       }
+       if(!ownsMount())return;
+       const instance=host.preview!(target,next,selectedClip);
+       if(!ownsMount()){instance.dispose();return;}
+       preview=instance;instance.ready.then(result=>{
+        if(preview!==instance||!ownsMount())return;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=result.ok?readyNotice:result.reason??'The selected renderer could not prepare this scene.';
+       }).catch(error=>{if(preview===instance&&ownsMount()){const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}});
+      }catch(error){rejected(error);}
+      finally{if(generation===preparationGeneration)pendingPreparation=false;}
      };
      try{if(host.deferPreview)cancelPreparation=host.deferPreview(prepare);else prepare();}
-     catch(error){preparationGeneration++;pendingPreparation=false;const label=document.querySelector('[data-story-preview-notice]');if(label)label.textContent=String(error);}
+     catch(error){rejected(error);preparationGeneration++;pendingPreparation=false;}
     }
    }
+   if(pendingPreparation)return;
    preview?.draw(delta);
    const status=preview?.status();if(!status)return;
    const time=document.querySelector('[data-story-time]');if(time)time.textContent=status.time.toFixed(2)+' / '+status.duration.toFixed(2)+' s · '+status.state;
@@ -154,7 +191,7 @@
     if(action==='new-track'){state.trackId='';state.keyIndex=-1;redraw();focus('[data-story-form=track] input[name=id]');return;}
     if(action==='new-key'){state.keyIndex=-1;redraw();focus('[data-story-form=key] input[name=time]');return;}
     if(action==='undo'||action==='redo'){mutate(()=>session()[action](),'Draft history updated.');return;}
-    if(action==='play'||action==='pause'||action==='stop'||action==='replay'){draw();if(!preview){if(preparing())return;throw Error('This build cannot prepare a detached cinematic preview.');}preview[action==='play'?'play':action]();draw();return;}
+    if(action==='play'||action==='pause'||action==='stop'||action==='replay'){draw();if(preparing())return;if(!preview)throw Error('This build cannot prepare a detached cinematic preview.');preview[action==='play'?'play':action]();draw();return;}
     if(action==='shot-earlier'||action==='shot-later'){const value=board(),index=value.shots.findIndex(a=>a.id===id),next=index+(action==='shot-earlier'?-1:1);if(next<0||next>=value.shots.length)return;const shot=value.shots.splice(index,1)[0]!;value.shots.splice(next,0,shot);mutate(()=>author().setStoryboard(value),'Shot order updated.');return;}
     if(action?.startsWith('confirm-')){state.confirm=action.slice(8)+':'+id;redraw();focus('[data-story="cancel-delete"]');return;}
     if(action==='cancel-delete'){const split=state.confirm.indexOf(':'),kind=state.confirm.slice(0,split),target=state.confirm.slice(split+1);state.confirm='';redraw();focus('[data-story="confirm-'+kind+'"][data-id="'+CSS.escape(target)+'"]');return;}
@@ -169,11 +206,11 @@
     if(action==='delete-entry'){const value=clip(),selected=pack().scenes.find(s=>s.id===value.sceneId)!;mutate(()=>author().setEvents(selected.id,(selected.graph?.events??[]).filter((_event,index)=>index!==Number(id))),'Scene event removed.');return;}
     if(action==='import'){input.click();return;}
     if(action==='export'){root.LWFiles.downloadJSON(author().list(),pack().id+'.storytelling.json');state.notice='Storyboards and cinematic timelines exported.';redraw();return;}
-    if(action==='cancel-import'){cancel();state.notice='Import cancelled. Your storytelling draft is unchanged.';redraw();focus('[data-story="import"]');return;}
-    if(action==='apply-import'){if(!review||review.session!==session()||review.revision!==session().revision)throw Error('Draft changed after import review. Import again to review the current draft.');mutate(()=>session().replace(review!.pack),'Storytelling imported into the validated draft.');cancel();return;}
+    if(action==='cancel-import'){cancelRead();state.notice='Import cancelled. Your storytelling draft is unchanged.';redraw();focus('[data-story="import"]');return;}
+    if(action==='apply-import'){if(!review||review.session!==session()||review.revision!==session().revision)throw Error('Draft changed after import review. Import again to review the current draft.');const next=review.pack;mutate(()=>{session().replace(next);cancelRead();},'Storytelling imported into the validated draft.');return;}
    }catch(error){failed(error);}
   });
-  document.addEventListener('input',ev=>{if(host.modal()==='scene-editor'&&ev.target instanceof HTMLInputElement&&ev.target.matches('[data-story-seek]'))try{const time=Number(ev.target.value);draw();if(!preview){if(preparing())return;throw Error('A detached preview must be ready before seeking.');}preview.seek(time);draw();}catch(error){failed(error);}});
+  document.addEventListener('input',ev=>{if(host.modal()==='scene-editor'&&ev.target instanceof HTMLInputElement&&ev.target.matches('[data-story-seek]'))try{const time=Number(ev.target.value);draw();if(preparing())return;if(!preview)throw Error('A detached preview must be ready before seeking.');preview.seek(time);draw();}catch(error){failed(error);}});
   document.addEventListener('change',ev=>{
    if(host.modal()!=='scene-editor'||!(ev.target instanceof HTMLSelectElement))return;
    const field=ev.target.dataset.storyField,form=ev.target.closest('form');if(!form)return;

@@ -22,8 +22,8 @@
   const storytelling=root.LWStorytellingUI?.create({session:()=>session,sceneId:()=>state.selection.type==='scene'?state.selection.id:undefined,modal:ctx.modal,redraw,toast:ctx.toast,esc:e,deferPreview,
    ...(root.LWStorytellingEditorPreview?{preview:(canvas,pack,id)=>root.LWStorytellingEditorPreview!.create(canvas,pack,id)}:{})});
   function deferPreview(work:()=>void):()=>void {
-   // Authoring commits synchronously. Expensive observation preparation yields
-   // to input acknowledgements; this one-shot job never advances gameplay time.
+   // Authoring commits synchronously. Observation preparation runs outside that
+   // input task; this one-shot job never advances gameplay time.
    if(typeof requestIdleCallback==='function'){const id=requestIdleCallback(work,{timeout:1000});return()=>cancelIdleCallback(id);}
    const id=setTimeout(work,0);return()=>clearTimeout(id);
   }

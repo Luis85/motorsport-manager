@@ -1,7 +1,10 @@
 /// <reference path="./storytelling-contracts.d.ts" />
 /** UI emits detached authoring/preview intent; composition owns cinematic elapsed time. */
 declare namespace LWStorytellingUI {
- interface Preview {readonly ready:Promise<LittlewildRenderer.SwitchResult>;status():LWStorytelling.Status;play():void;pause():void;stop():void;replay():void;seek(time:number):void;draw(delta:number):void;dispose():void;}
+ interface Preview {readonly ready:Promise<LittlewildRenderer.SwitchResult>;status():LWStorytelling.Status;play():void;pause():void;stop():void;replay():void;seek(time:number):void;draw(delta:number):void;dispose():void;
+  /** Admit an updated timeline while retaining an explicitly reusable renderer for an identical native presentation. False leaves the prior preview untouched. */
+  update?(pack:LWContentPorts.ScenarioPack,id:string):boolean;
+ }
  interface Host {session():LWSceneEditor.Session|null;sceneId():string|undefined;modal():string|null;redraw():void;esc(value:unknown):string;toast(message:string,error?:boolean):void;preview?(canvas:HTMLCanvasElement,pack:LWContentPorts.ScenarioPack,id:string):Preview;
   /** Presentation preparation may yield after input; cancellation prevents an obsolete queued factory. */
   deferPreview?(work:()=>void):()=>void;
