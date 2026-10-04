@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "release": "Littlewild v15 \u2014 Worlds of Possibility",
-  "status": "locally-verified; hosted acceptance tracked separately in PR #25 current-head checks",
+  "status": "locally-verified; hosted acceptance tracked separately in PR#25 current-head checks",
   "source": {
     "authoredExecutableLanguage": "TypeScript",
     "authoredTypeScriptFiles": 329,
@@ -30,7 +30,7 @@
     },
     "engineExportInventory": {
       "files": 657,
-      "identity": "16e48243f2093756244a2068b6dd868fa624417ebcc7222572a158ddce061fc1",
+      "identity": "3ddc744eb564f1d03620972b57f9fffc02e8bb3d741f4d2b9d0fa20983b8de34",
       "definition": "inert authoritative implementation, data, compiler inputs, assets and licenses; no test evidence"
     }
   },
@@ -95,32 +95,32 @@
     },
     "current": {
       "status": "passed",
-      "passed": 1532,
-      "total": 1532,
+      "passed": 1535,
+      "total": 1535,
       "browserIncluded": true,
-      "sourceSha256": "7bcb66a8b0f4e0a1fcd78c156311346acf997d48d9cfa920dcd593866a0a14e7",
-      "startedAt": "2026-10-04T06:08:24.971Z",
+      "sourceSha256": "f069bae5b04c9f8c435a54052564791209bf657f8ff07022f22a2483a71ea347",
+      "startedAt": "2026-10-04T08:49:20.933Z",
       "environment": {
         "node": "v24.19.0",
         "platform": "linux",
         "architecture": "x64",
         "chromium": "/usr/bin/chromium"
       },
-      "htmlSha256": "6fafea78ba5c92f6b17d5f4e9a5c349e879a4a985e206a605a167a67b230b120",
-      "htmlBytes": 18765804,
-      "finishedAt": "2026-10-04T06:31:26.874Z",
+      "htmlSha256": "39d68853f42c8c7d4a4eb421c69fb66a0ba7c47525cf40c671da2c11df158f99",
+      "htmlBytes": 18771841,
+      "finishedAt": "2026-10-04T09:12:29.252Z",
       "suites": 75,
       "browserSuites": 20,
-      "browserChecks": 334,
-      "verifiedSourceCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
+      "browserChecks": 336,
+      "verifiedSourceCommit": "7ba27610790da02e1dc753c1749a122ecf564abe",
       "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
       "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
       "engineSourceFiles": 657,
-      "engineSourceIdentity": "16e48243f2093756244a2068b6dd868fa624417ebcc7222572a158ddce061fc1",
+      "engineSourceIdentity": "3ddc744eb564f1d03620972b57f9fffc02e8bb3d741f4d2b9d0fa20983b8de34",
       "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
-      "publicationBaseCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
+      "publicationBaseCommit": "7ba27610790da02e1dc753c1749a122ecf564abe",
       "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
-      "scope": "Fresh complete local allocation-only ordinary-object descriptor inspection optimization gate; all original commands, limits, safety checks, validation calls and named assertions remain, with three added content-boundary regressions. Local acceptance is separate from all seven future exact-head hosted workflows.",
+      "scope": "Fresh complete local preview-responsiveness gate; all 1532 original check names/order,75 registrations, commands and limits and raw 62 channels retained, with reviewed additional regressions. Local acceptance is separate from all seven future exact-head hosted workflows.",
       "browserToolchain": {
         "playwright": "1.62.1",
         "playwrightCore": "1.62.1",
@@ -128,7 +128,7 @@
         "officialRevision": "1234",
         "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
         "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
-        "scope": "Exact stable Playwright 1.62.1 and selected Chromium 151.0.7922.34 revision 1234 unchanged. ae874f0 failed before browser execution; hosted mitigation remains untested until the new exact-head CI runs."
+        "scope": "Exact stable Playwright 1.62.1/official Chromium 151.0.7922.34 revision 1234 unchanged. Hosted 21053 used that pin but failed; new publication-head hosted acceptance remains required."
       }
     },
     "historicalPreAuthoringExpansion": {
@@ -420,6 +420,252 @@
         "scope": "Previous stable toolchain reproducibility mitigation; not the unreleased 1.64 Range patch or a proven diagnosis of the Chromium 153 failures."
       },
       "historical": true
+    },
+    "historicalPrePreviewResponsiveness": {
+      "status": "passed",
+      "passed": 1532,
+      "total": 1532,
+      "browserIncluded": true,
+      "sourceSha256": "7bcb66a8b0f4e0a1fcd78c156311346acf997d48d9cfa920dcd593866a0a14e7",
+      "startedAt": "2026-10-04T06:08:24.971Z",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "linux",
+        "architecture": "x64",
+        "chromium": "/usr/bin/chromium"
+      },
+      "htmlSha256": "6fafea78ba5c92f6b17d5f4e9a5c349e879a4a985e206a605a167a67b230b120",
+      "htmlBytes": 18765804,
+      "finishedAt": "2026-10-04T06:31:26.874Z",
+      "suites": 75,
+      "browserSuites": 20,
+      "browserChecks": 334,
+      "verifiedSourceCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
+      "mergedMainCommit": "dc2acaaec936ee7cbeb26bdced97d88a6d712588",
+      "checkout": "Clean git archive; exact pinned dependency lock; system Chromium",
+      "engineSourceFiles": 657,
+      "engineSourceIdentity": "16e48243f2093756244a2068b6dd868fa624417ebcc7222572a158ddce061fc1",
+      "evidence": "verification/v15/gate-results.json (fresh ignored local and CI artifact)",
+      "publicationBaseCommit": "8793f421288336c12deca4a56f81fb417cde4b81",
+      "mergedMainIntegrationCommit": "0f9cd5e1fc040005daeba8eb6f8c8f66bddd02b0",
+      "scope": "Complete local 8793 navigation optimization checkpoint; later hosted 21053 failed two storytelling click actions despite stable browser pin.",
+      "browserToolchain": {
+        "playwright": "1.62.1",
+        "playwrightCore": "1.62.1",
+        "officialBundledChromium": "151.0.7922.34",
+        "officialRevision": "1234",
+        "actualLocalChromium": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+        "hostedAcceptance": "Tracked separately in PR #25 current-head checks and the ignored exact-head report; all seven exact-head workflows are required",
+        "scope": "Exact stable Playwright 1.62.1 and selected Chromium 151.0.7922.34 revision 1234 unchanged. ae874f0 failed before browser execution; hosted mitigation remains untested until the new exact-head CI runs."
+      },
+      "historical": true
+    },
+    "historicalHosted21053a9": {
+      "head": "21053a96f86c904fc53eb1f4b78227091db4bc1e",
+      "summary": {
+        "workflows": 7,
+        "completed_green": 6,
+        "failed": 1,
+        "pending": 0,
+        "native": "passed 103 suites / 21,346 checks across six shards",
+        "littlewild": "failed in storytelling-browser: 13/15 at 1440px; details in retained excerpt"
+      },
+      "littlewildAudit": {
+        "head": "21053a96f86c904fc53eb1f4b78227091db4bc1e",
+        "run": 37183426520,
+        "job": 111380393719,
+        "status": "hosted failed; local8793 acceptance remains historical scoped local evidence",
+        "source": "7bcb66a8b0f4e0a1fcd78c156311346acf997d48d9cfa920dcd593866a0a14e7",
+        "html": "6fafea78ba5c92f6b17d5f4e9a5c349e879a4a985e206a605a167a67b230b120",
+        "htmlBytes": 18765804,
+        "acceptedPrecedingSuites": 60,
+        "acceptedPrecedingChecks": 1249,
+        "attemptedSuites": 61,
+        "storytellingPassed": 13,
+        "storytellingTotal": 15,
+        "failedLeaves": [
+          {
+            "name": "Actual 3D cinematic timeline animates creature position without changing native state; play/pause/seek/stop/replay at 1440px",
+            "passed": false,
+            "error": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('[data-story-form=\"track\"] button[type=\"submit\"]')\n    - locator resolved to <button type=\"submit\" class=\"btn primary\">Add track</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - performing click action\n"
+          },
+          {
+            "name": "Actual 2D preview renderer, storyboard cutscene ranges and full storytelling file review/cancellation at 1440px",
+            "passed": false,
+            "error": "TimeoutError: locator.click: Timeout 20000ms exceeded.\nCall log:\n  - waiting for locator('[data-story=apply-import]')\n    - locator resolved to <button type=\"button\" class=\"btn primary\" data-story=\"apply-import\">Apply storytelling to draft</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - performing click action\n"
+          }
+        ],
+        "navigationPassed": 15,
+        "navigationSeconds": 139.24,
+        "navigationBudget": 180,
+        "diagnostics": {
+          "errors": [],
+          "consoleProblems": [],
+          "requests": []
+        },
+        "trackCommitEvidence": "Following desktop keyframe edits and typedp5 case pass on guide-position track; failed3D case remaining assertions were not run",
+        "importCommitEvidence": "Not established by remaining leaves",
+        "rendererLibrariesNeverReached": true,
+        "actualNode": "v22.23.3",
+        "browserProvenance": {
+          "gateLiteral": "playwright-bundled",
+          "installedChrome": "151.0.7922.34",
+          "installedHeadlessShell": "151.0.7922.34",
+          "revision": "1234",
+          "lockPlaywright": "1.62.1",
+          "scope": "npm-ci exacthead lock plus completed install log and default launch; not directly sampled browser.version"
+        },
+        "stableBrowserMitigationSolvedClickFailure": false,
+        "artifactId": 11296352460,
+        "zipSha256": "c1363787e285c839c945f814e91d494219047152fa69751e33cf41d7b385ad6b",
+        "compactEntries": 125,
+        "jobLogSha256": "4cdab6fe2ed5577633cdba213b2b9eb7ea1f5554d3b5c7b3d320c232b287be6b",
+        "noReviewerTestsBrowsersOrShippingEdits": true
+      },
+      "nativeCheckpoint": {
+        "run_id": 37183426542,
+        "shard_jobs": {
+          "suites-0": 111380393348,
+          "suites-1": 111380393399,
+          "suites-2": 111380393414,
+          "suites-3": 111380393411,
+          "suites-4": 111380393244,
+          "suites-5": 111380393469
+        },
+        "aggregate_job_id": 111386288891,
+        "expected_suites": 103,
+        "expected_checks": 21346,
+        "computed_source_digest": "b57cbb9e70f54f937ac7be66bffdbf4aa35903af7ab2cbcb9b6e175d2f9365dc",
+        "artifact_admissions": [],
+        "shard_status": {
+          "suites-0": "success",
+          "suites-1": "success",
+          "suites-2": "success",
+          "suites-3": "success",
+          "suites-4": "success",
+          "suites-5": "success"
+        },
+        "merge_sha": "4ce6691fa35a471ba3790a4573671a2cb2656828",
+        "aggregate_status": "completed",
+        "aggregate_conclusion": "success",
+        "passed": true,
+        "suites": 103,
+        "checks": 21346,
+        "shards": 6,
+        "source_revision": "21053a96f86c904fc53eb1f4b78227091db4bc1e",
+        "aggregate_log_path": "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-21053a9-godot-aggregate.log",
+        "shard_artifacts": [
+          {
+            "shard": 0,
+            "artifact_id": 11295894171,
+            "size_bytes": 18511389,
+            "sha256": "f1736da1e31e210d4b09627927bc1a73fad4f4724b29ce33e82492b7f26592cf"
+          },
+          {
+            "shard": 1,
+            "artifact_id": 11296755629,
+            "size_bytes": 12423820,
+            "sha256": "6846b59ef19af082cebf6f357abd9e155a74bb0aaa5848d191b119b469d0fd08"
+          },
+          {
+            "shard": 2,
+            "artifact_id": 11296602839,
+            "size_bytes": 47802975,
+            "sha256": "5673fb9d488afee63b2ff4b5aac3942961d78720b8d4b876d5ff9c96d6ca4b5a"
+          },
+          {
+            "shard": 3,
+            "artifact_id": 11296406695,
+            "size_bytes": 9510462,
+            "sha256": "8fc9eebc7de85f07a82bbd7ab2c07e546e0042bca5d43ca8891ff45477f2addd"
+          },
+          {
+            "shard": 4,
+            "artifact_id": 11295913459,
+            "size_bytes": 18907856,
+            "sha256": "701a886e55b5a56b06e449689b2a03bc4875b964acfadf8397d4b02e0ceb60a8"
+          },
+          {
+            "shard": 5,
+            "artifact_id": 11296301489,
+            "size_bytes": 9528054,
+            "sha256": "9f750023a42d5e7054a43370fa2cd95d18549c2ebfd37acea1ff31af733beae5"
+          }
+        ]
+      },
+      "actualNativeAdmissions": [
+        {
+          "id": 11295894171,
+          "name": "verification-shard-0",
+          "digest": "sha256:f1736da1e31e210d4b09627927bc1a73fad4f4724b29ce33e82492b7f26592cf"
+        },
+        {
+          "id": 11296755629,
+          "name": "verification-shard-1",
+          "digest": "sha256:6846b59ef19af082cebf6f357abd9e155a74bb0aaa5848d191b119b469d0fd08"
+        },
+        {
+          "id": 11296602839,
+          "name": "verification-shard-2",
+          "digest": "sha256:5673fb9d488afee63b2ff4b5aac3942961d78720b8d4b876d5ff9c96d6ca4b5a"
+        },
+        {
+          "id": 11296406695,
+          "name": "verification-shard-3",
+          "digest": "sha256:8fc9eebc7de85f07a82bbd7ab2c07e546e0042bca5d43ca8891ff45477f2addd"
+        },
+        {
+          "id": 11295913459,
+          "name": "verification-shard-4",
+          "digest": "sha256:701a886e55b5a56b06e449689b2a03bc4875b964acfadf8397d4b02e0ceb60a8"
+        },
+        {
+          "id": 11296301489,
+          "name": "verification-shard-5",
+          "digest": "sha256:9f750023a42d5e7054a43370fa2cd95d18549c2ebfd37acea1ff31af733beae5"
+        }
+      ],
+      "evidenceSha256": {
+        "/tmp/lw-postpush-9240715-review/hosted-21053-storytelling-failure-audit.json": "a6136884d7196f3c2f32abe7cb361499834035fc36fe1c66586811db16597cc2",
+        "/tmp/lw-postpush-9240715-review/hosted-21053-job.log": "4cdab6fe2ed5577633cdba213b2b9eb7ea1f5554d3b5c7b3d320c232b287be6b",
+        "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-21053a9-status.json": "0070ddc96f4948bbba68b9db514f8553bfe56d902d6b097c61890a9216b6cf5d",
+        "/workspace/littlewild-pr25/reports/littlewild-pr25-quality/hosted-ci-review/head-21053a9-godot-aggregate.log": "33246fb892f12128a4e25d80c79237f2787218fb578b0b867ec438cd6545c9d5"
+      },
+      "publicationText": "Hosted `21053a96f86c904fc53eb1f4b78227091db4bc1e` completed all seven workflows: six passed and Littlewild failed. Littlewild passed 60 preceding suites / 1,249 checks, then attempted storytelling-browser (13/15 passed). The two desktop 1440px click actions timed out at their original 20-second step limits; the renderer-library suite never ran. Add-track commitment is supported by subsequent keyframe/p5 leaves; import commitment is not established. The failed leaves did not execute their remaining assertions. Raw storytelling errors, console warnings and request arrays are empty. The stable Playwright 1.62.1 pin did not solve these click failures. Installed official Chromium 151.0.7922.34/revision 1234 is established by the lock/install log and default bundled launch, rather than a directly sampled hosted browser.version. The independent compact artifact `11296352460` is 86,957 bytes, SHA-256 `c1363787e285c839c945f814e91d494219047152fa69751e33cf41d7b385ad6b`. Its failed source input was `7bcb66a8b0f4e0a1fcd78c156311346acf997d48d9cfa920dcd593866a0a14e7`, standalone `6fafea78ba5c92f6b17d5f4e9a5c349e879a4a985e206a605a167a67b230b120`.\n\nThe separately completed native workflow on that same historical head passed 103 suites / 21,346 checks across six shards (run `37183426542`, aggregate job `111386288891`, merge `4ce6691fa35a471ba3790a4573671a2cb2656828`, native source digest `b57cbb9e70f54f937ac7be66bffdbf4aa35903af7ab2cbcb9b6e175d2f9365dc`). All six actual artifact IDs/digests were admitted in the aggregate log. These historical successes do not certify any workflow on the new publication head.\n\n",
+      "scope": "Exact historical 21053 head only; no new-head hosted acceptance."
+    },
+    "historicalFailedLocal4cf63df": {
+      "status": "failed; historical; never published",
+      "sourceCommit": "4cf63dfbd83d86e415cef5b6129393a86828bead",
+      "sourceSha256": "5c9a33a04878759eacaf2c53abfaa0f36be4631e8af863a9bf106e53e9b3ed7a",
+      "htmlSha256": "13e8fecc05170f0e47ff41f368e35aa6fc80545905e02259d370d9cb09b15dfe",
+      "htmlBytes": 18770872,
+      "bundleIdentity": "c0fc59eea6063cbad71898edc05a2c61be8894e680c1c26da210e4b12856bad7",
+      "actualSealedFileCount": 151,
+      "evidenceManifestSha256": "994dba4a9585a4f3ed509789e3085b702ad8afe2583510ad369718529e75389b",
+      "handoffSha256": "89cfdf3d8c5d6440d6377e2f6ba3db67612e52910e0bde2106be672ca58b9845",
+      "attemptedSuites": 63,
+      "acceptedSuites": 62,
+      "acceptedChecks": 1278,
+      "executedChecks": 1293,
+      "passedExecutedChecks": 1291,
+      "failedExecutedChecks": 2,
+      "unreachedSuites": 12,
+      "unreachedChecks": 242,
+      "failedLeaves": [
+        {
+          "name": "Detached pixi-2d 2d preview draws actual moving canonical geometry and deterministic p5 animation",
+          "passed": false,
+          "error": "AssertionError [ERR_ASSERTION]: The actual renderer canvas must change its canonical geometry pixels."
+        },
+        {
+          "name": "Detached excalibur-2d 2d preview draws actual moving canonical geometry and deterministic p5 animation",
+          "passed": false,
+          "error": "AssertionError [ERR_ASSERTION]: The actual renderer canvas must change its canonical geometry pixels."
+        }
+      ],
+      "publicationText": "The first local responsiveness checkpoint `4cf63dfbd83d86e415cef5b6129393a86828bead` was not accepted for publication. Its complete gate attempted 63 suites:62 preceding suites / 1,278 checks passed, including storytelling 17/17. The original renderer-storytelling suite then passed 13/15 and failed the Pixi and Excalibur canonical geometry pixel-change assertions. Its raw page errors, console warnings and request arrays are empty. In total 1,293 leaf checks ran: 1,291 passed and 2 failed; 12 later suites /242 checks were not reached. All 501 authored inputs stayed unchanged before/after that failed attempt. The failed input `5c9a33a04878759eacaf2c53abfaa0f36be4631e8af863a9bf106e53e9b3ed7a`, standalone `13e8fecc05170f0e47ff41f368e35aa6fc80545905e02259d370d9cb09b15dfe` (18,770,872 bytes), bundle `c0fc59eea6063cbad71898edc05a2c61be8894e680c1c26da210e4b12856bad7`, and 151-file evidence seal `994dba4a9585a4f3ed509789e3085b702ad8afe2583510ad369718529e75389b` remain immutable historical evidence. The earlier focused responsiveness proof142/0ae and its unrun publication plan do not certify that failed full gate or the corrective source.\n\n",
+      "scope": "Failed historical local4cf checkpoint only; no fresh-source acceptance."
     }
   },
   "github": {
