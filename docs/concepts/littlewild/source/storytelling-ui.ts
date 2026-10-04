@@ -6,7 +6,7 @@
  function create(host:LWStorytellingUI.Host):LWStorytellingUI.Surface{
   const state:LWStorytellingUI.State={active:false,tab:'boards',boardId:'',shotId:'',clipId:'',trackId:'',keyIndex:-1,creating:'',notice:'',error:'',confirm:''};
   const input=document.createElement('input');input.type='file';input.id='storytelling-import';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
-  let preview:LWStorytellingUI.Preview|null=null,mounted:HTMLCanvasElement|null=null,previewKey='',readId=0;
+  let preview:LWStorytellingUI.Preview|null=null,mounted:HTMLCanvasElement|null=null,previewSession:LWSceneEditor.Session|null=null,previewKey='',readId=0;
   let review:{pack:LWContentPorts.ScenarioPack;session:LWSceneEditor.Session;revision:number}|null=null;
   const e=host.esc,copy=<T>(v:T):T=>structuredClone(v);
   function session():LWSceneEditor.Session{const value=host.session();if(!value)throw Error('Open a scenario pack draft first.');return value;}
@@ -14,8 +14,19 @@
   const author=():LWStorytelling.Authoring=>root.LWStorytellingEditor.create(session());
   function clip():LWStorytelling.Cutscene{const found=pack().storytelling?.cutscenes.find(c=>c.id===state.clipId);if(!found)throw Error('Select a cutscene first.');return found;}
   function board():LWStorytelling.Storyboard{const found=pack().storytelling?.storyboards.find(b=>b.id===state.boardId);if(!found)throw Error('Select a storyboard first.');return found;}
-  function stopPreview():void{preview?.dispose();preview=null;mounted=null;previewKey='';}
-  function redraw():void{stopPreview();host.redraw();}
+  function stopPreview():void{preview?.dispose();preview=null;mounted=null;previewSession=null;previewKey='';}
+  function redraw():void{
+   const current=host.session(),retain=preview&&host.modal()==='scene-editor'&&state.active&&state.tab==='timeline'&&current===previewSession&&previewKey===state.clipId+':'+current?.revision;
+   const surface=retain?mounted?.parentElement:null,notice=document.querySelector('[data-story-preview-notice]')?.textContent;
+   if(!surface)stopPreview();
+   try{
+    host.redraw();
+    if(surface){
+     const replacement=document.querySelector('.storytelling-preview');
+     if(replacement){replacement.replaceWith(surface);const label=document.querySelector('[data-story-preview-notice]');if(label&&notice)label.textContent=notice;}
+    }
+   }finally{if(surface&&!surface.isConnected)stopPreview();}
+  }
   function failed(error:unknown):void{
    state.error=error instanceof Error?error.message:String(error);state.notice='';host.toast(state.error,true);
    const workspace=document.querySelector('.storytelling-workspace');if(!workspace){redraw();return;}
@@ -40,13 +51,15 @@
   }
   function draw(delta=0):void{
    if(host.modal()!=='scene-editor'||!state.active||state.tab!=='timeline'){if(preview)stopPreview();return;}
-   const canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas||!state.clipId)return;
-   const key=state.clipId+':'+session().revision;
-   if(canvas!==mounted||key!==previewKey){
-    stopPreview();mounted=canvas;previewKey=key;
-    if(host.preview)try{const instance=host.preview(canvas,pack(),state.clipId);preview=instance;instance.ready.then(result=>{
-     if(preview!==instance)return;const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=result.ok?'Detached scene ready. Play, pause or seek to inspect animation.':result.reason??'The selected renderer could not prepare this scene.';
-    }).catch(error=>{if(preview===instance){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}});}catch(error){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}
+   let canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas||!state.clipId)return;
+   const current=session(),key=state.clipId+':'+current.revision;
+   if(canvas!==mounted||key!==previewKey||current!==previewSession){
+    const replaceMount=canvas===mounted;stopPreview();
+    if(replaceMount){host.redraw();canvas=document.querySelector<HTMLCanvasElement>('[data-story-preview]');if(!canvas)return;}
+    const target=canvas;mounted=target;previewSession=current;previewKey=state.clipId+':'+current.revision;
+    if(host.preview)try{const instance=host.preview(target,pack(),state.clipId);preview=instance;instance.ready.then(result=>{
+     if(preview!==instance||mounted!==target||!target.isConnected)return;const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=result.ok?'Detached scene ready. Play, pause or seek to inspect animation.':result.reason??'The selected renderer could not prepare this scene.';
+    }).catch(error=>{if(preview===instance&&mounted===target&&target.isConnected){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}});}catch(error){const notice=document.querySelector('[data-story-preview-notice]');if(notice)notice.textContent=String(error);}
    }
    preview?.draw(delta);
    const status=preview?.status();if(!status)return;

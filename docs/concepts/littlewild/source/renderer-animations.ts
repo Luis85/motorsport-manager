@@ -23,17 +23,30 @@
  const hash=(value:string):number=>{let result=2166136261;for(const character of value)result=Math.imul(result^character.codePointAt(0)!,16777619);return result>>>0;};
  function create(canvas:HTMLCanvasElement):LWAnimations.Layer {
   const P5=root.p5;if(!P5)throw Error('Pinned p5.js 2.3.4 is unavailable.');const parent=canvas.parentElement;if(!parent)throw Error('Mount the animation canvas before creating its layer.');
-  let disposed=false,initialized=false,busy=false,request:{frame:LittlewildRenderer.Frame;descriptors:readonly LWAnimations.Descriptor[];time:number;project:(point:LittlewildRenderer.Point)=>LittlewildRenderer.Point}|null=null;
+  let disposed=false,initialized=false,busy=false,emptyPainted=false,request:{frame:LittlewildRenderer.Frame;descriptors:readonly LWAnimations.Descriptor[];time:number;project:(point:LittlewildRenderer.Point)=>LittlewildRenderer.Point}|null=null;
   let resolveReady:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};const ready=new Promise<LittlewildRenderer.SwitchResult>(resolve=>{resolveReady=resolve;});
   const sketch=new P5(p=>{
    p.noLoop();p.setup=()=>{p.noLoop();p.pixelDensity(1);p.createCanvas(canvas.width,canvas.height,canvas);if(disposed){void p.remove();resolveReady({ok:false,reason:'Animation layer was disposed.'});}};
-   p.draw=()=>{if(disposed){void p.remove();return;}p.clear();if(!initialized){initialized=true;void Promise.resolve().then(()=>Promise.resolve()).then(()=>resolveReady({ok:true}));}const current=request;if(!current)return;
+   p.draw=()=>{if(disposed){void p.remove();return;}p.clear();emptyPainted=!request?.descriptors.length;if(!initialized){initialized=true;void Promise.resolve().then(()=>Promise.resolve()).then(()=>resolveReady({ok:true}));}const current=request;if(!current)return;
     for(const descriptor of current.descriptors){if(current.time<descriptor.start||current.time>=descriptor.start+descriptor.duration)continue;const preset=presets.get(descriptor.presetId);if(!preset)continue;p.push();try{preset.draw(Object.freeze({p5:p,time:current.time-descriptor.start,phase:(current.time-descriptor.start)/descriptor.duration,seed:descriptor.seed??hash(descriptor.id),center:current.project({x:descriptor.x,y:descriptor.y}),radius:descriptor.radius,color:descriptor.color,count:descriptor.count,viewport:current.frame.viewport}));}finally{p.pop();}}
    };
   },parent);
   const timer=setTimeout(()=>{if(!initialized){resolveReady({ok:false,reason:'Animation preparation timed out.'});dispose();}},10000);void ready.then(()=>clearTimeout(timer));
+  function paint():void{
+   if(disposed||!initialized||busy||!request)return;
+   const pending=request;
+   if(canvas.width!==pending.frame.viewport.width||canvas.height!==pending.frame.viewport.height){sketch.resizeCanvas(pending.frame.viewport.width,pending.frame.viewport.height,true);emptyPainted=false;}
+   // No preset callback exists for an empty layer. Keep its already-clear bitmap
+   // while still admitting every request and preserving all nonempty drawing.
+   if(emptyPainted&&!pending.descriptors.length)return;
+   busy=true;void sketch.redraw().catch(error=>{resolveReady({ok:false,reason:String(error)});dispose();}).finally(()=>{
+    busy=false;
+    // A clear requested during an outstanding paint must not wait for another RAF.
+    if(request!==pending&&!request?.descriptors.length)paint();
+   });
+  }
   function dispose(){if(disposed)return;disposed=true;request=null;clearTimeout(timer);resolveReady({ok:false,reason:'Animation layer was disposed.'});void sketch.remove();canvas.remove();}
-  return{ready,get looping(){return sketch.isLooping();},draw(frame,descriptors,time,project){if(disposed)return;if(!Number.isFinite(time)||time<0)throw Error('Animation time must be finite and nonnegative.');request={frame,descriptors:validate(descriptors),time,project};if(!initialized||busy)return;if(canvas.width!==frame.viewport.width||canvas.height!==frame.viewport.height)sketch.resizeCanvas(frame.viewport.width,frame.viewport.height,true);busy=true;void sketch.redraw().catch(error=>{resolveReady({ok:false,reason:String(error)});dispose();}).finally(()=>{busy=false;});},dispose};
+  return{ready,get looping(){return sketch.isLooping();},draw(frame,descriptors,time,project){if(disposed)return;if(!Number.isFinite(time)||time<0)throw Error('Animation time must be finite and nonnegative.');request={frame,descriptors:validate(descriptors),time,project};paint();},dispose};
  }
  register({id:'sparkles',name:'Sparkles',source:'source/renderer-animations.ts',description:'Deterministic drifting points around a scene position.'},({p5:p,phase,seed,center,radius,color,count})=>{p.noStroke();p.fill(color);for(let i=0;i<count;i++){const angle=((Math.imul(seed+i,2654435761)>>>0)/4294967296+phase*.2)*Math.PI*2,distance=radius*(.2+((i*37+seed)%101)/126);p.circle(center.x+Math.cos(angle)*distance,center.y+Math.sin(angle)*distance,2+4*(1-Math.abs((phase*2+i/count)%2-1)));}});
  register({id:'orbit',name:'Orbit',source:'source/renderer-animations.ts',description:'Evenly spaced lights orbit their scene position.'},({p5:p,phase,center,radius,color,count})=>{p.noStroke();p.fill(color);for(let i=0;i<count;i++){const angle=(phase+i/count)*Math.PI*2;p.circle(center.x+Math.cos(angle)*radius,center.y+Math.sin(angle)*radius*.5,6);}});

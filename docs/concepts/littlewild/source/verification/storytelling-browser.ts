@@ -62,6 +62,35 @@ async function main():Promise<void>{
   await test('Mobile reflow, 44px controls and preview cleanup when returning to scenes at '+width+'px',async()=>{
    const metrics=await page.locator('.storytelling-workspace').evaluate(el=>({width:el.getBoundingClientRect().width,document:document.documentElement.scrollWidth,viewport:innerWidth,buttons:Array.from(el.querySelectorAll<HTMLButtonElement>('.btn,.storytelling-key')).filter(b=>b.getBoundingClientRect().height>0).map(b=>b.getBoundingClientRect().height)}));assert(metrics.width<=width);assert(metrics.document<=width);if(width===390)assert(metrics.buttons.every(h=>h>=44));await page.locator('[data-story="close"]').click();assert.equal(await page.locator('[data-p5-animation]').count(),0);assert(await page.locator('.scene-editor-layout').isVisible());assert.equal(await snapshot(page),active);
   });
+  await test('Selection retains detached preview mounts and pending readiness; revision, clip, session and close dispose exact instances at '+width+'px',async()=>{
+   await page.evaluate(async()=>{
+    const root=window as unknown as {Littlewild:{open(id:string):void;scenarioUI:{editor:{session:LWSceneEditor.Session}}};LWSceneEditor:LWSceneEditor.Api;LWStorytellingUI:LWStorytellingUI.Api};
+    const original=root.Littlewild.scenarioUI.editor.session.snapshot();root.Littlewild.open('scenarios');
+    let session=root.LWSceneEditor.create(original),modal:string|null='scene-editor',surface:LWStorytellingUI.Surface;
+    const mount=document.createElement('section');document.body.append(mount);
+    const records:{canvas:HTMLCanvasElement;overlay:HTMLCanvasElement;disposed:number;resolve:(result:LittlewildRenderer.SwitchResult)=>void;status:LWStorytelling.Status}[]=[];
+    const ensure=(condition:unknown,message:string)=>{if(!condition)throw Error(message);};
+    const redraw=()=>{mount.innerHTML=surface.render();};
+    surface=root.LWStorytellingUI.create({session:()=>session,sceneId:()=>original.scenes[0]!.id,modal:()=>modal,redraw,esc:value=>String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]!)),toast(){},preview(canvas,pack,id){
+     ensure(canvas.isConnected&&canvas.parentElement,'Preview requires a connected mount');const clip=pack.storytelling!.cutscenes.find(clip=>clip.id===id)!,overlay=document.createElement('canvas');overlay.dataset.p5Animation='';canvas.parentElement!.append(overlay);
+     let resolve:(result:LittlewildRenderer.SwitchResult)=>void=()=>{};const ready=new Promise<LittlewildRenderer.SwitchResult>(done=>{resolve=done;});
+     const record={canvas,overlay,disposed:0,resolve,status:{cutsceneId:id,sceneId:clip.sceneId,state:'paused' as LWStorytelling.State,time:2.5,duration:clip.duration,completion:.5,generation:0}};records.push(record);
+     return {ready,status:()=>record.status,draw(){},play(){record.status.state='playing';},pause(){record.status.state='paused';},stop(){record.status.time=0;},replay(){record.status.generation++;},seek(time){record.status.time=time;},dispose(){record.disposed++;overlay.remove();canvas.remove();}};
+    }});
+    const click=(action:string,id?:string)=>{const button=mount.querySelector<HTMLButtonElement>('[data-story="'+action+'"]'+(id?'[data-id="'+id+'"]':''));ensure(button,'Missing lifecycle control '+action);button!.click();surface.draw(0);};
+    try{
+     redraw();click('open');click('timeline');ensure(records.length===1,'First timeline prepares once');const first=records[0]!,wrapper=first.canvas.parentElement;click('select-track','guide-position');
+     click('new-track');ensure(records.length===1&&first.canvas.isConnected&&first.overlay.isConnected&&first.canvas.parentElement===wrapper,'Selection retains exact wrapper and both canvases');ensure((document.activeElement as HTMLInputElement).name==='id','New track retains intended form focus');
+     click('select-key','guide-position');ensure(records.length===1&&first.status.time===2.5,'Key selection retains paused sample');ensure((document.activeElement as HTMLInputElement).name==='time','Key selection focuses its new form');
+     first.resolve({ok:true});await Promise.resolve();click('new-track');ensure(mount.querySelector('[data-story-preview-notice]')?.textContent?.includes('Detached scene ready'),'Readiness notice survives a selection redraw');
+     session.replace(session.snapshot());surface.draw(0);ensure(first.disposed===1&&records.length===2&&!first.canvas.isConnected,'External revision rebuilds a connected mount once');const revised=records[1]!;
+     click('select-clip','remote-clip');ensure(revised.disposed===1&&records.length===3,'Clip selection replaces the preview once');revised.resolve({ok:false,reason:'stale readiness'});await Promise.resolve();ensure(!mount.textContent?.includes('stale readiness'),'Disposed readiness cannot update the active mount');
+     const prior=records[2]!,other=root.LWSceneEditor.create(session.snapshot());other.replace(other.snapshot());ensure(other.revision===session.revision,'Session identity probe holds revision equal');session=other;surface.draw(0);ensure(prior.disposed===1&&records.length===4,'Equal revision and clip on a different session invalidate');
+     click('boards');ensure(records[3]!.disposed===1,'Leaving the timeline disposes once');click('timeline');ensure(records.length===5,'Returning prepares a fresh mount');click('close');ensure(records[4]!.disposed===1,'Closing disposes pending preparation once');records[4]!.resolve({ok:true});await Promise.resolve();ensure(!mount.querySelector('[data-story-preview]'),'Late readiness cannot restore a closed canvas');
+     ensure(records.every(record=>record.disposed===1),'Every invalidated preview is disposed exactly once');
+    }finally{modal=null;surface.cancel();mount.remove();}
+   });assert.equal(await snapshot(page),active);
+  });
   await page.close();
  }}finally{await context.close();await browser.close();}
  await test('Storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
