@@ -7,18 +7,87 @@ interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||'/tmp/littlewild-renderer-libraries',results:Result[]=[];
 fs.mkdirSync(OUT,{recursive:true});fs.mkdirSync(SHOTS,{recursive:true});
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
+/** Installed in the page so capture starts in the same task as the actual draw. */
+function installLibraryPixelReader():void{
+ (window as unknown as {readLibraryPixels:(canvas:HTMLCanvasElement,palette:number[][])=>Promise<{colors:number;geometry:number}>}).readLibraryPixels=async(canvas,palette)=>{
+  const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');
+  if(!gl)throw Error('Actual library GPU context is unavailable.');
+  const width=canvas.width,height=canvas.height;
+  let values:Uint8Array|Uint8ClampedArray;
+  if(gl instanceof WebGL2RenderingContext){
+   values=new Uint8Array(width*height*4);
+   const buffer=gl.createBuffer();
+   if(!buffer)throw Error('Unable to allocate GPU pixel readback buffer.');
+   let fence:WebGLSync|null=null;
+   try{
+    const binding=gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING) as WebGLBuffer|null;
+    const pack=[gl.PACK_ALIGNMENT,gl.PACK_ROW_LENGTH,gl.PACK_SKIP_PIXELS,gl.PACK_SKIP_ROWS].map(parameter=>({parameter,value:gl.getParameter(parameter) as number}));
+    try{
+     gl.bindBuffer(gl.PIXEL_PACK_BUFFER,buffer);
+     gl.bufferData(gl.PIXEL_PACK_BUFFER,values.byteLength,gl.STREAM_READ);
+     gl.pixelStorei(gl.PACK_ALIGNMENT,1);
+     for(const parameter of [gl.PACK_ROW_LENGTH,gl.PACK_SKIP_PIXELS,gl.PACK_SKIP_ROWS])gl.pixelStorei(parameter,0);
+     // A numeric offset queues GPU-to-GPU readback rather than blocking on a CPU array.
+     gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,0);
+     fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);
+     if(!fence)throw Error('Unable to fence GPU pixel readback.');
+     gl.flush();
+    }finally{
+     gl.bindBuffer(gl.PIXEL_PACK_BUFFER,binding);
+     for(const state of pack)gl.pixelStorei(state.parameter,state.value);
+    }
+    // Restore renderer state before yielding: its normal RAF may draw during the wait.
+    const deadline=performance.now()+10000;
+    for(;;){
+     if(gl.isContextLost())throw Error('GPU context was lost during pixel readback.');
+     const status=gl.clientWaitSync(fence,0,0);
+     if(status===gl.ALREADY_SIGNALED||status===gl.CONDITION_SATISFIED)break;
+     if(status===gl.WAIT_FAILED)throw Error('GPU pixel readback fence failed.');
+     if(performance.now()>=deadline)throw Error('GPU pixel readback fence timed out.');
+     await new Promise<void>(resolve=>setTimeout(resolve,0));
+    }
+    const bindingAfterWait=gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING) as WebGLBuffer|null;
+    try{
+     gl.bindBuffer(gl.PIXEL_PACK_BUFFER,buffer);
+     gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,values);
+    }finally{gl.bindBuffer(gl.PIXEL_PACK_BUFFER,bindingAfterWait);}
+   }finally{
+    if(fence)gl.deleteSync(fence);
+    gl.deleteBuffer(buffer);
+   }
+  }else{
+   // WebGL1 has no pixel-pack buffers. Browser canvas snapshotting still proves
+   // actual geometry, without issuing a synchronous GL readPixels into CPU memory.
+   const bitmap=await createImageBitmap(canvas);
+   try{
+    const snapshot=new OffscreenCanvas(width,height),context=snapshot.getContext('2d',{willReadFrequently:true});
+    if(!context)throw Error('Unable to sample the actual GPU canvas snapshot.');
+    context.drawImage(bitmap,0,0);
+    values=context.getImageData(0,0,width,height).data;
+   }finally{bitmap.close();}
+  }
+  const colors=new Set<string>();let geometry=0;
+  for(let index=0;index<values.length;index+=16){
+   if(values[index+3]===0)continue;
+   const rgb=[values[index]!,values[index+1]!,values[index+2]!];
+   colors.add(rgb.join(','));
+   if(palette.some(color=>rgb.every((channel,axis)=>Math.abs(channel-color[axis]!)<=2)))geometry++;
+  }
+  return{colors:colors.size,geometry};
+ };
+}
 async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
  try{
   const p=await context.newPage();p.setDefaultTimeout(10000);await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();await p.evaluate('Littlewild.engine.s.paused=true');await p.keyboard.press('Escape');
-  await p.evaluate(`window.readLibraryPixels=(canvas,palette)=>{const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');if(!gl)throw Error('Actual library GPU context is unavailable.');const values=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,values);const colors=new Set();let geometry=0;for(let index=0;index<values.length;index+=16){if(values[index+3]===0)continue;const rgb=[values[index],values[index+1],values[index+2]];colors.add(rgb.join(','));if(palette.some(color=>rgb.every((channel,axis)=>Math.abs(channel-color[axis])<=2)))geometry++;}return{colors:colors.size,geometry};};`);
+  await p.evaluate(installLibraryPixelReader);
 
   await check('Pinned library metadata is discoverable and synchronous Pixi selection retains the active renderer',async()=>{
    const value=await p.evaluate(`(()=>{const w=Littlewild.world,before=JSON.stringify(Littlewild.engine.export()),id=w.rendererId,result=w.selectRenderer('pixi-2d');return {version:PIXI.VERSION,ids:LWRenderers.list().map(m=>m.id),rejected:!result.ok,reason:result.reason,id:w.rendererId,unchanged:before===JSON.stringify(Littlewild.engine.export()),original:id};})()`) as {version:string;ids:string[];rejected:boolean;reason:string;id:string;unchanged:boolean;original:string};assert.equal(value.version,'8.22.0');assert(value.ids.includes('pixi-2d')&&value.ids.includes('excalibur-2d'));assert(value.rejected);assert.match(value.reason,/selectRendererAsync/);assert.equal(value.id,value.original);assert(value.unchanged);
   });
   for(const id of ['pixi-2d','excalibur-2d']){
    await check('Actual '+id+' draws canonical scenes and switches without simulation mutation',async()=>{
-    const value=await p.evaluate(`(async()=>{const before=JSON.stringify(Littlewild.engine.export()),result=await Littlewild.world.selectRendererAsync('${id}');Littlewild.world.draw(0,.02);return{result,id:Littlewild.world.rendererId,unchanged:before===JSON.stringify(Littlewild.engine.export()),canvases:document.querySelectorAll('canvas#world').length,pixels:readLibraryPixels(Littlewild.world.canvas,[[182,200,160],[190,208,169]])};})()` ) as {result:{ok:boolean};id:string;unchanged:boolean;canvases:number;pixels:{colors:number;geometry:number}};assert.deepEqual({...value,pixels:undefined},{result:{ok:true},id,unchanged:true,canvases:1,pixels:undefined});assert(value.pixels.colors>12);assert(value.pixels.geometry>100);if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await p.screenshot({path:path.join(SHOTS,id+'-1440.png'),animations:'disabled'});
+    const value=await p.evaluate(`(async()=>{const before=JSON.stringify(Littlewild.engine.export()),result=await Littlewild.world.selectRendererAsync('${id}');Littlewild.world.draw(0,.02);return{result,id:Littlewild.world.rendererId,unchanged:before===JSON.stringify(Littlewild.engine.export()),canvases:document.querySelectorAll('canvas#world').length,pixels:await readLibraryPixels(Littlewild.world.canvas,[[182,200,160],[190,208,169]])};})()` ) as {result:{ok:boolean};id:string;unchanged:boolean;canvases:number;pixels:{colors:number;geometry:number}};assert.deepEqual({...value,pixels:undefined},{result:{ok:true},id,unchanged:true,canvases:1,pixels:undefined});assert(value.pixels.colors>12);assert(value.pixels.geometry>100);if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await p.screenshot({path:path.join(SHOTS,id+'-1440.png'),animations:'disabled'});
    });
    await check(id+' actual pointer picking follows validated raised/lowered ground under pan and zoom',async()=>{
     await p.evaluate(`window.libraryPointerHits=[];window.libraryPriorInspect=Littlewild.world.handlers.inspect;Littlewild.world.handlers.inspect=hit=>libraryPointerHits.push(hit);Littlewild.world.terraformMode=true;`);
@@ -36,7 +105,7 @@ async function main():Promise<void>{
    const value=await p.evaluate(`(async()=>{await Littlewild.world.selectSceneRendering({dimension:'3d',rendererId:'basic'});let release,disposed=0,cleanup=0,late;LWRenderers.registerAsync({id:'async-probe',name:'Async probe',description:'Cancellation proof',capabilities:[]},context=>{late=context;context.onDispose(()=>cleanup++);return new Promise(resolve=>release=()=>resolve({mount(){},resize(){},draw(){},dispose(){disposed++;}}));});const pending=Littlewild.world.selectRendererAsync('async-probe');Littlewild.world.selectRenderer('basic');release();const result=await pending;await Promise.resolve();return{cancelled:!result.ok,id:Littlewild.world.rendererId,disposed,cleanup,code:late.commands.submit({id:'select-creature',args:['c1']}).code,canvases:document.querySelectorAll('.world-canvas').length};})()`);assert.deepEqual(value,{cancelled:true,id:'basic',disposed:1,cleanup:1,code:'unavailable-command',canvases:1});
   });
   await check('Actual authored 3D scene composes live Pixi minimap and dormant Excalibur interior panel',async()=>{
-   const value=await p.evaluate(`(async()=>{const pack=LWScenarios.builtins().find(p=>p.id==='littlewild');pack.resources=LWScenarioResources.snapshot();const first=pack.scenes.find(s=>s.id==='first-morning'),home=pack.scenes.find(s=>s.id==='charted-home');first.graph={kind:'level',rendering:{dimension:'3d',rendererId:'basic',embeds:[{id:'live-map',sceneId:'meadow-map',role:'minimap',bounds:{anchor:'bottom-right',width:260,height:200}},{id:'workshop-panel',sceneId:'workshop-room',role:'panel',bounds:{anchor:'top-right',width:280,height:220}}]}};home.graph={kind:'level',rendering:{dimension:'2d',rendererId:'excalibur-2d'}};pack.scenes.push({id:'meadow-map',name:'Live meadow',description:'Active native owner map',worldId:first.worldId,initialState:{},graph:{kind:'island',parentId:first.id,binding:{type:'island',sourceSceneId:first.id,ix:0,iy:0},bounds:{x:0,y:0,width:19,height:19},rendering:{dimension:'2d',rendererId:'pixi-2d'}}},{id:'workshop-room',name:'Dormant upper workshop',description:'Checkpoint room observer',worldId:home.worldId,initialState:{},graph:{kind:'interior',parentId:home.id,binding:{type:'interior',sourceSceneId:home.id,buildingId:'b2',floorId:'upper'},rendering:{dimension:'2d',rendererId:'excalibur-2d'}}});const checked=LWScenarios.validate(pack);if(!checked.ok)throw Error(checked.errors.join('\\n'));window.rendererLibraryPack=checked.pack;const engine=LWScenarios.commitScene(LWScenarios.prepareScene(checked.pack,first.id));Littlewild.setEngine(engine);engine.s.paused=true;const before=JSON.stringify(engine.export()),result=await Littlewild.world.selectSceneRendering(first.graph.rendering);Littlewild.world.draw(0,.02);return{result,id:Littlewild.world.rendererId,unchanged:before===JSON.stringify(engine.export()),embeds:document.querySelectorAll('[data-scene-embed]').length,room:LWSceneRendering.source(engine,'workshop-room').frame({time:0,delta:0,running:false,alpha:1,camera:{x:0,y:0,z:1},viewport:{width:280,height:220,pixelRatio:1},presentation:{}}).interiorView.floorId};})()`);assert.deepEqual(value,{result:{ok:true},id:'basic',unchanged:true,embeds:2,room:'upper'});const pixels=await p.evaluate(`(()=>{Littlewild.world.draw(0,.02);return [...document.querySelectorAll('[data-scene-embed] canvas')].map(canvas=>readLibraryPixels(canvas,canvas.dataset.renderer==='excalibur-2d'?[[221,209,173],[230,217,182]]:[[182,200,160],[190,208,169]]));})()` ) as {colors:number;geometry:number}[];for(const view of pixels){assert(view.colors>12);assert(view.geometry>40);}if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await p.screenshot({path:path.join(SHOTS,'three-with-pixi-minimap-excalibur-panel-1440.png'),animations:'disabled'});
+   const value=await p.evaluate(`(async()=>{const pack=LWScenarios.builtins().find(p=>p.id==='littlewild');pack.resources=LWScenarioResources.snapshot();const first=pack.scenes.find(s=>s.id==='first-morning'),home=pack.scenes.find(s=>s.id==='charted-home');first.graph={kind:'level',rendering:{dimension:'3d',rendererId:'basic',embeds:[{id:'live-map',sceneId:'meadow-map',role:'minimap',bounds:{anchor:'bottom-right',width:260,height:200}},{id:'workshop-panel',sceneId:'workshop-room',role:'panel',bounds:{anchor:'top-right',width:280,height:220}}]}};home.graph={kind:'level',rendering:{dimension:'2d',rendererId:'excalibur-2d'}};pack.scenes.push({id:'meadow-map',name:'Live meadow',description:'Active native owner map',worldId:first.worldId,initialState:{},graph:{kind:'island',parentId:first.id,binding:{type:'island',sourceSceneId:first.id,ix:0,iy:0},bounds:{x:0,y:0,width:19,height:19},rendering:{dimension:'2d',rendererId:'pixi-2d'}}},{id:'workshop-room',name:'Dormant upper workshop',description:'Checkpoint room observer',worldId:home.worldId,initialState:{},graph:{kind:'interior',parentId:home.id,binding:{type:'interior',sourceSceneId:home.id,buildingId:'b2',floorId:'upper'},rendering:{dimension:'2d',rendererId:'excalibur-2d'}}});const checked=LWScenarios.validate(pack);if(!checked.ok)throw Error(checked.errors.join('\\n'));window.rendererLibraryPack=checked.pack;const engine=LWScenarios.commitScene(LWScenarios.prepareScene(checked.pack,first.id));Littlewild.setEngine(engine);engine.s.paused=true;const before=JSON.stringify(engine.export()),result=await Littlewild.world.selectSceneRendering(first.graph.rendering);Littlewild.world.draw(0,.02);return{result,id:Littlewild.world.rendererId,unchanged:before===JSON.stringify(engine.export()),embeds:document.querySelectorAll('[data-scene-embed]').length,room:LWSceneRendering.source(engine,'workshop-room').frame({time:0,delta:0,running:false,alpha:1,camera:{x:0,y:0,z:1},viewport:{width:280,height:220,pixelRatio:1},presentation:{}}).interiorView.floorId};})()`);assert.deepEqual(value,{result:{ok:true},id:'basic',unchanged:true,embeds:2,room:'upper'});const pixels=await p.evaluate(`(async()=>{Littlewild.world.draw(0,.02);return await Promise.all([...document.querySelectorAll('[data-scene-embed] canvas')].map(canvas=>readLibraryPixels(canvas,canvas.dataset.renderer==='excalibur-2d'?[[221,209,173],[230,217,182]]:[[182,200,160],[190,208,169]])));})()` ) as {colors:number;geometry:number}[];for(const view of pixels){assert(view.colors>12);assert(view.geometry>40);}if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await p.screenshot({path:path.join(SHOTS,'three-with-pixi-minimap-excalibur-panel-1440.png'),animations:'disabled'});
   });
   await check('Failed main or embedded preparation keeps the previous scene, dimensions and scoped canvases',async()=>{
    const value=await p.evaluate(`(async()=>{const w=Littlewild.world,canvases=[...document.querySelectorAll('[data-scene-embed] canvas')],before=JSON.stringify(Littlewild.engine.export());LWRenderers.registerAsync({id:'async-failed',name:'Failed async',description:'Failure rollback proof',dimensions:['2d'],capabilities:[]},async()=>{throw Error('Expected async failure');});const failed=await w.selectRendererAsync('async-failed'),embedded=await w.selectSceneRendering({dimension:'2d',rendererId:'pixi-2d',embeds:[{id:'missing-view',sceneId:'missing',role:'panel'}]});const same=canvases.every(canvas=>canvas.isConnected)&&document.querySelectorAll('[data-scene-embed]').length===2;const restore=w.selectRenderer('basic');return{failed:!failed.ok,embedded:!embedded.ok,same,id:w.rendererId,dimension:w.rendererDimension,restore,unchanged:before===JSON.stringify(Littlewild.engine.export()),worldCanvases:document.querySelectorAll('.world-canvas').length};})()`);assert.deepEqual(value,{failed:true,embedded:true,same:true,id:'basic',dimension:'3d',restore:{ok:true},unchanged:true,worldCanvases:1});
