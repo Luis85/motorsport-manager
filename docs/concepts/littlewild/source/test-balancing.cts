@@ -15,7 +15,7 @@ test('Canonical defaults drive default scenario libraries, profiles, catalogs an
 });
 test('Canonical raw overlay and effective captured documents satisfy the public authoring schema',()=>{
  const source=path.resolve(__dirname,'../source/content'),ajv=new Ajv2020({strict:false,allErrors:true});
- for(const file of ['library.schema.json','adventure.schema.json','world.schema.json','growth.schema.json','scenario.schema.json'])ajv.addSchema(JSON.parse(fs.readFileSync(path.join(source,file),'utf8')),'https://littlewild.local/'+file);
+ for(const file of ['library.schema.json','adventure.schema.json','world.schema.json','growth.schema.json','scenario.schema.json'])ajv.addSchema(JSON.parse(fs.readFileSync(path.join(__dirname,'content',file),'utf8')),'https://littlewild.local/'+file);
  const validate=ajv.compile(JSON.parse(fs.readFileSync(path.join(source,'balancing.schema.json'),'utf8')));assert(validate(JSON.parse(fs.readFileSync(path.join(__dirname,'content/balancing.json'),'utf8'))),JSON.stringify(validate.errors));assert(validate(B.defaults()),JSON.stringify(validate.errors));
 });
 test('All unknown values, types, numbers and accessors reject without executing or mutating input',()=>{

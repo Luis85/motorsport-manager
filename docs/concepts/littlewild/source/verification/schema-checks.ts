@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import Ajv2020 from "ajv/dist/2020";
 
 interface Result {name:string;passed:boolean;error?:string;}
-const ROOT=path.resolve(__dirname,"../.."),CONTENT=path.join(ROOT,"source","content"),GENERATED=path.join(ROOT,".generated");
+const ROOT=path.resolve(__dirname,"../.."),CONTENT=path.join(ROOT,".generated","content"),GENERATED=path.join(ROOT,".generated");
 const results:Result[]=[];
 const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value));
 function check(name:string,action:()=>void):void{try{action();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error instanceof Error?error.message:String(error)});}}

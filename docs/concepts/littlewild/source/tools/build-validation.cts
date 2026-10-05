@@ -13,7 +13,7 @@ function validateBundledDefaults():void {
  const api=require('../developer-sdk.cjs') as {toolbox:LittlewildDeveloper.Toolbox};
  const scenarios=require('../scenario-runtime.js') as LWContentPorts.ScenarioApi;
  const canonical=JSON.parse(fs.readFileSync(path.join(__dirname,'../content/balancing.json'),'utf8')) as unknown;
- const balance=api.toolbox.balancing.validate(canonical);if(!balance.ok)throw Error('Canonical balancing defaults: '+balance.errors.join('; '));
+ const balance=api.toolbox.balancing.validate(canonical);if(!balance.ok)throw Error('Canonical balancing defaults: '+balance.errors.map(error=>error.path+': '+error.message).join('; '));
  for(const pack of scenarios.builtins()){
   const result=api.toolbox.validateScenario(pack);if(!result.ok)throw Error('Shipped scenario '+pack.id+': '+result.errors.join('; '));
  }

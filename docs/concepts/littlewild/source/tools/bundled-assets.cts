@@ -1,24 +1,24 @@
 /** Runtime projections from the single authored definition in each asset folder. */
 import path from 'node:path';
-import {definitions, read, record, type RecordValue} from './definition-source.cjs';
+import {definitions, read, record, type RecordValue, type Definition} from './definition-source.cjs';
 const compare = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
 
-export function creatureConfig(source: string): RecordValue {
+export function creatureConfig(source: string, packages: readonly Definition[] = definitions(source)): RecordValue {
  const config = read(path.join(source, 'assets/creatures/catalog.json'));
  if (!record(config) || Object.keys(config).length !== 3 || config.format !== 'littlewild-creature-catalog' ||
      config.schemaVersion !== 1 || typeof config.defaultArchetype !== 'string' || !/^[a-z][a-z0-9_-]{0,60}$/.test(config.defaultArchetype))
   throw Error('Invalid creature catalog configuration.');
- if (!creatureDefinitions(source).some(definition => definition.id === config.defaultArchetype))
+ if (!creatureDefinitions(source, packages).some(definition => definition.id === config.defaultArchetype))
   throw Error('Unknown default creature archetype: ' + config.defaultArchetype);
  return config;
 }
-export function creatureDefinitions(source: string): RecordValue[] {
- const result = definitions(source).flatMap(definition => definition.creature ? [definition.creature] : []);
+export function creatureDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+ const result = packages.flatMap(definition => definition.creature ? [definition.creature] : []);
  if (!result.length) throw Error('At least one creature definition is required.');
  return result;
 }
-export function assetDefinitions(source: string): RecordValue[] {
- const packages = definitions(source), result = packages.flatMap(definition => definition.visual ? [definition.visual] : []);
+export function assetDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+ const result = packages.flatMap(definition => definition.visual ? [definition.visual] : []);
  const assets = new Map(result.filter(definition => definition.category === 'actor').map(definition => [definition.id, definition]));
  for (const {creature} of packages) {
   if (!creature) continue;

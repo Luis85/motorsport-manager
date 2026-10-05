@@ -10,6 +10,7 @@ import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { writeWildlandsBundle } from "./tools/wildlands-bundle.cjs";
 import { creatureDefinitions, assetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
 
+import { definitions } from "./tools/definition-source.cjs";
 import { writeContent } from "./tools/bundled-content.cjs";
 
 import { INSERTS, type InsertKind } from "./tools/build-inserts.cjs";
@@ -58,15 +59,16 @@ function compile(): void {
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
-  writeContent(ROOT, GENERATED);
+  const packages = definitions(ROOT);
+  writeContent(ROOT, GENERATED, packages);
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
   fs.copyFileSync(path.join(ROOT, "assets", "interactions", "catalog.json"), path.join(GENERATED, "interaction-library.json"));
-  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT)));
+  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT, packages)));
   fs.copyFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), path.join(GENERATED, "creature-editor-fields.json"));
-  fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT)));
-  fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT)));
+  fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT, packages)));
+  fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT, packages)));
 }
 
 function json(file: string): unknown {

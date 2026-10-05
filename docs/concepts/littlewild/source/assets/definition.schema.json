@@ -57,42 +57,83 @@
         {
           "required": [
             "visual"
-          ]
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "item"
-          ]
+          ],
+          "properties": {
+            "item": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "weight"
-          ]
+          ],
+          "properties": {
+            "weight": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
         },
         {
           "required": [
             "equipment"
-          ]
+          ],
+          "properties": {
+            "equipment": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "recipe"
-          ]
+          ],
+          "properties": {
+            "recipe": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "node"
-          ]
+          ],
+          "properties": {
+            "node": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "itemRequirements"
-          ]
+          ],
+          "properties": {
+            "itemRequirements": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "recipeRequirements"
-          ]
+          ],
+          "properties": {
+            "recipeRequirements": {
+              "type": "object"
+            }
+          }
         }
       ]
     },
@@ -139,27 +180,52 @@
         {
           "required": [
             "visual"
-          ]
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "building"
-          ]
+          ],
+          "properties": {
+            "building": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "physicalBuilding"
-          ]
+          ],
+          "properties": {
+            "physicalBuilding": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "buildingRequirements"
-          ]
+          ],
+          "properties": {
+            "buildingRequirements": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "home"
-          ]
+          ],
+          "properties": {
+            "home": {
+              "type": "object"
+            }
+          }
         }
       ]
     },
@@ -198,12 +264,22 @@
         {
           "required": [
             "visual"
-          ]
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
         },
         {
           "required": [
             "creature"
-          ]
+          ],
+          "properties": {
+            "creature": {
+              "type": "object"
+            }
+          }
         }
       ]
     }

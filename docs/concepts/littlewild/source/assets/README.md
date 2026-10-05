@@ -25,7 +25,9 @@ still validate, detach and freeze their own values; geometry remains data only.
 as `{"$catalog":"item","order":["wood","stone"],"shape":"list"}`. These selectors
 are authoring instructions for known tables, not executable runtime data. Existing
 order is retained; newly discovered facets append in stable ID order. Adding a
-folder does not require registering its data elsewhere. Changing the founder
+folder does not require registering its data elsewhere. The build also derives
+item/recipe/building IDs and references in the library schema from those facets;
+icons, algorithms and numeric field bounds remain compiled capabilities. Changing the founder
 still requires the explicit `creatures/catalog.json` setting.
 
 The standalone libraries, complete default scenario and numeric creature tuning

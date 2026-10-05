@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Ajv2020 from 'ajv/dist/2020';
+import {librarySchema} from './tools/bundled-library-schema.cjs';
 import {definitions, type Definition} from './tools/definition-source.cjs';
 import {balancingDocument, writeContent} from './tools/bundled-content.cjs';
 import {assetDefinitions} from './tools/bundled-assets.cjs';
@@ -17,7 +19,7 @@ function fixture(action: (directory: string) => void): void {
  try {
   fs.cpSync(path.join(source, 'assets'), path.join(directory, 'assets'), {recursive: true});
   fs.mkdirSync(path.join(directory, 'content'));
-  for (const file of ['balancing.json', 'littlewild.pack.json'])
+  for (const file of ['balancing.json', 'littlewild.pack.json', 'library.schema.json'])
    fs.copyFileSync(path.join(source, 'content', file), path.join(directory, 'content', file));
   action(directory);
  } finally {fs.rmSync(directory, {recursive: true, force: true});}
@@ -27,6 +29,14 @@ function edit(directory: string, relative: string, action: (definition: Definiti
  const definition = JSON.parse(fs.readFileSync(file, 'utf8')) as Definition;
  action(definition); fs.writeFileSync(file, JSON.stringify(definition));
 }
+test('The strict authoring schema accepts every shipped package and rejects unknown facets', () => {
+ const schema = JSON.parse(fs.readFileSync(path.join(source, 'assets/definition.schema.json'), 'utf8')) as object;
+ const validate = new Ajv2020({strict: true, allErrors: true}).compile(schema);
+ for (const definition of definitions(source)) {
+  assert(validate(definition), JSON.stringify(validate.errors));
+  assert.equal(validate({...definition, typo: {}}), false);
+ }
+});
 test('Generated portable libraries are exact projections of the canonical authoring catalog', () => {
  const balance = balancingDocument(source), generated = JSON.parse(fs.readFileSync(path.join(__dirname, 'content/balancing.json'), 'utf8')) as unknown;
  assert.deepEqual(balance, generated);
@@ -58,7 +68,17 @@ test('A new item folder appends to every authored facet without catalog registra
  assert.equal(balance.libraries.base.components.recipes.at(-1)!.id, 'boards');
  assert.equal(balance.libraries.adventure.weights.boards, next.weight);
  assert(assetDefinitions(directory).some(asset => asset.id === 'boards'));
+ const template = JSON.parse(fs.readFileSync(path.join(source, 'content/library.schema.json'), 'utf8')) as object;
+ const schema = librarySchema(template, balance), validate = new Ajv2020({strict: false, allErrors: true}).compile(schema);
+ assert(validate(balance.libraries.base), JSON.stringify(validate.errors));
+ const invalid = JSON.parse(JSON.stringify(balance.libraries.base)) as typeof balance.libraries.base;
+ invalid.components.items.at(-1)!.id = 'undeclared-item'; assert.equal(validate(invalid), false);
+
 }));
+test('Derived identity schemas preserve compiled bounds and presentation vocabulary', () => {
+ const template = JSON.parse(fs.readFileSync(path.join(source, 'content/library.schema.json'), 'utf8')) as object;
+ assert.deepEqual(librarySchema(template, balancingDocument(source)), template);
+});
 test('Creature numeric balancing is derived from its one gameplay facet', () => fixture(directory => {
  edit(directory, 'creatures/sproutling', definition => (definition.creature!.movement as {baseSpeed: number}).baseSpeed = 2.3);
  const balance = balancingDocument(directory) as {creatures: {definitions: {movement: {baseSpeed: number}}[]}};

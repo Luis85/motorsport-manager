@@ -111,13 +111,6 @@
       "embeddedGlobal": "LWWorldSchema"
     },
     {
-      "id": "office-assets",
-      "pattern": "content/office/assets/*.json",
-      "owner": "content-model",
-      "kind": "definitions",
-      "validatorRole": "assets"
-    },
-    {
       "id": "item-assets",
       "pattern": "assets/items/*/definition.json",
       "owner": "content-model",

@@ -134,10 +134,10 @@ Validation accepts data only: imported callbacks, functions, accessors, class
 instances, symbol fields, cycles and non-finite values are rejected.
 
 A creature's `visualAsset` selects an existing bundled actor asset. To change it,
-edit the authored `source/assets/creatures/<archetype>/creature.json`, choose a
+edit the authored `source/assets/creatures/<archetype>/definition.json (`creature` facet)`, choose a
 validated asset ID discovered from `assets.list('actor')`, and run typecheck/build
 and the registered asset/creature verification suites. Asset definitions live in
-`source/assets/<family>/<id>/asset.json`; adding a folder follows the documented
+`source/assets/<family>/<id>/definition.json (`visual` facet)`; adding a folder follows the documented
 build discovery contract. `assets.validate()` validates the asset's own model/rig
 contract; the build also validates cross-catalog references. Complete scenarios can instead carry their own validated visual and creature catalogs under `resources`, using the same model/rig grammar. Activation installs an isolated snapshot atomically and the session detects external catalog drift. Imported data cannot install executable code. Trusted developer scripts can register a browser renderer through the separate [renderer interface](RENDERERS.md). See [Office scenario authoring](OFFICE-SCENARIO.md) for editable roles, indoor presentation and full export/import examples.
 

@@ -68,13 +68,16 @@
     if (connected.size !== world.terrain.join('').split('.').length - 1) throw Error('/terrain: disconnected land');
   }
   function withLibraries<T>(libraries:LWContentPorts.Libraries, work:()=>T):T {
-    const previousA = copy(A.content);
-    return C.registry.withLibrary(libraries.base, () => {
-      try {
-        A.replace(libraries.adventure);
-        return W.withLibrary(libraries.world, () => G.withLibrary(libraries.growth, work));
-      } finally { A.replace(previousA); }
-    });
+    const previous = {adventure:copy(A.content),world:copy(W.content),growth:copy(G.content)};
+    try {
+      return C.registry.withLibrary(libraries.base, () => {
+        A.replace(libraries.adventure); W.replace(libraries.world); G.replace(libraries.growth);
+        return work();
+      });
+    } finally {
+      // Restore prerequisites first: each catalog validates against its own base context.
+      A.replace(previous.adventure); W.replace(previous.world); G.replace(previous.growth);
+    }
   }
   function withRuntime<T>(libraries:LWContentPorts.Libraries, simulation:LWContentPorts.SimulationProfile, work:()=>T):T {
     return Profiles.withProfile(simulation, () => withLibraries(libraries, work));
@@ -157,7 +160,7 @@
       stage('simulation profile', () => Profiles.validate(pack.simulation));
       const base = stage('base library', () => C.registry.prepare(pack.libraries.base));
       if (!base.ok) throw Error(base.errors.map(e => e.path + ': ' + e.message).join('\n'));
-      const ad = stage('adventure library', () => A.validate(pack.libraries.adventure));
+      const ad = stage('adventure library', () => C.registry.withLibrary(pack.libraries.base, () => A.validate(pack.libraries.adventure)));
       if (!ad.ok) throw Error(ad.errors.join('\n'));
       stage('resources',()=>{if(pack.resources)resources.validate(pack.resources);resources.checkBindings(pack.resources,pack.libraries);});
       stage('runtime staging', () => resources.withResources(pack.resources,()=>withRuntime(pack.libraries,pack.simulation, () => {

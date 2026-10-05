@@ -178,7 +178,10 @@
     for (const [category, definitions] of Object.entries(doc.components)) {
       const seen = new Set();
       definitions.forEach((def, i) => { if (seen.has(def.id)) errors.push(diagnostic('DUPLICATE_ID', '/components/' + category + '/' + i + '/id', 'Duplicate component ID “' + def.id + '”.')); seen.add(def.id); });
-      for (const def of DEFAULT.components[category as Category]) if (!seen.has(def.id)) errors.push(diagnostic('REQUIRED_COMPONENT', '/components/' + category, 'The existing runtime requires ' + category + '/' + def.id + '.', 'Stable IDs cannot be deleted or renamed. Use a patch to update selected components.'));
+      const clauses = SCHEMA.properties?.components?.properties?.[category]?.allOf;
+      const nativeIds = clauses?.map(clause => clause.contains?.properties?.id?.const).filter((id):id is string => typeof id === 'string');
+      const requiredIds = nativeIds?.length ? nativeIds : DEFAULT.components[category as Category].map(def => def.id);
+      for (const id of requiredIds) if (!seen.has(id)) errors.push(diagnostic('REQUIRED_COMPONENT', '/components/' + category, 'The existing runtime requires ' + category + '/' + id + '.', 'Stable IDs cannot be deleted or renamed. Use a patch to update selected components.'));
     }
     if (errors.length) return errors;
     for (const [i, r] of doc.components.recipes.entries()) if (r.output !== r.id) errors.push(diagnostic('OUTPUT_BINDING', '/components/recipes/' + i + '/output', 'The recipe ID must equal its output item ID in this runtime.'));
@@ -206,7 +209,7 @@
   function canonical(doc:Library):Library {
     const result = copy(doc); result.kind = 'library'; delete result.base;
     for (const category of categories) {
-      const map = index<Component>(result.components[category]); setComponents(result,category,DEFAULT.components[category].map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
+      const map = index<Component>(result.components[category]); setComponents(result,category,DEFAULT.components[category].filter(d => own(map, d.id)).map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
     }
     return result;
   }

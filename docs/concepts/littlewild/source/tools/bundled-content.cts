@@ -1,5 +1,6 @@
 /** Assemble authoring catalogs into unchanged portable/runtime document formats. */
 import fs from 'node:fs';
+import {librarySchema} from './bundled-library-schema.cjs';
 import path from 'node:path';
 import {definitions, read, record, type Definition, type RecordValue} from './definition-source.cjs';
 
@@ -33,8 +34,8 @@ function facetValue(definition: Definition, facet: string): unknown {
  if (!creature) return undefined;
  return {id: creature.id, ...Object.fromEntries(['movement', 'physiology', 'rng', 'state'].map(key => [key, numeric(creature[key])]))};
 }
-export function balancingDocument(source: string): RecordValue {
- const packages = definitions(source), visited = new Set<string>();
+export function balancingDocument(source: string, packages: readonly Definition[] = definitions(source)): RecordValue {
+ const visited = new Set<string>();
  function expand(value: unknown, location: string): unknown {
   const table = tables[location];
   if (table) {
@@ -69,13 +70,14 @@ export function defaultScenario(source: string, balance: RecordValue): RecordVal
   throw Error('Default scenario must inherit canonical defaults.');
  return {...template, libraries: balance.libraries, simulation: balance.simulation, scenes: balance.startingScenes, worlds: [balance.world]};
 }
-export function writeContent(source: string, generated: string): void {
+export function writeContent(source: string, generated: string, packages: readonly Definition[] = definitions(source)): void {
  // Source mirrors would silently create a second editable authority.
  const mirrors = ['default-library', 'adventure-library', 'world-library', 'growth-library', 'building-interiors'];
  for (const name of mirrors) if (fs.existsSync(path.join(source, 'content', name + '.json'))) throw Error('Duplicate content source: ' + name);
- const balance = balancingDocument(source), libraries = balance.libraries;
+ const balance = balancingDocument(source, packages), libraries = balance.libraries;
  if (!record(libraries)) throw Error('Missing canonical libraries.');
  const output: RecordValue = {
+  'library.schema': librarySchema(read(path.join(source, 'content/library.schema.json')), balance),
   'balancing': balance, 'default-library': libraries.base, 'adventure-library': libraries.adventure,
   'world-library': libraries.world, 'growth-library': libraries.growth, 'building-interiors': balance.interiors,
   'littlewild.pack': defaultScenario(source, balance)
