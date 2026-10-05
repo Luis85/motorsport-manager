@@ -130,5 +130,20 @@ test('SDK discovers attachment and unlock commands, reads detached trees without
   g.start();g.step(2400);assert((g.skillTrees('c1')[0]?.xp??0)>0,'Actual autonomous work must earn tree XP.');
  }finally{g.dispose();}
 });
+test('Creature authoring preserves instance trees without turning progress into archetype defaults',()=>{
+ const g=toolbox.create({scenarioId:'littlewild',sceneId:'first-morning'});
+ try{
+  g.start();g.step(2000);assert(g.command({id:'unlock-skill-tree-node',args:['c1',demo.id,'roots']}).ok);
+  const before=g.skillTrees('c1'),pack=toolbox.createSceneEditor(g.captureScenario()).snapshot();
+  const editor=toolbox.createCreatureEditor(pack,{sceneId:pack.scenes[0]!.id,archetypeId:'sproutling',instanceId:'c1'});
+  editor.updateInstance({name:'Grown Pip'});
+  const pkg=editor.exportPackage();assert(!Object.hasOwn(pkg.gameplayDefinition.state.defaults,'skillTrees'));
+  const progress=pkg.selectedInstance!.skillTrees as unknown as LWSkillTrees.Progress[];
+  assert.equal(progress[0]!.ranks.roots,1);assert.equal(progress[0]!.xp,before[0]!.xp);
+  const stable=JSON.stringify(pkg),bad=copy(progress);bad[0]!.ranks.learner=1;
+  assert.throws(()=>editor.updateInstance({skillTrees:bad as unknown as LWCreatureEditor.Data['skillTrees']}));
+  assert.equal(JSON.stringify(editor.exportPackage()),stable);assert.deepEqual(g.skillTrees('c1'),before);
+ }finally{g.dispose();}
+});
 const passed=results.filter(r=>r.passed).length;
 fs.writeFileSync(__dirname+'/skill-tree-results.json',JSON.stringify({passed,total:results.length,results},null,2)+'\n');console.log(`${passed}/${results.length} skill-tree checks passed`);if(passed!==results.length)process.exitCode=1;

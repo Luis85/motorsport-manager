@@ -89,6 +89,9 @@ scenarios and trees attach through their authored state or the API.
 Optional `skillTrees` arrays live directly on the player and creature records.
 The creature catalog registers this compiled optional actor field for scoped
 views and persistence; archetype defaults do not fabricate empty progression.
+Creature packages validate selected-instance tree progress separately from archetype
+defaults, retaining learned ranks when editing a companion. The existing optional
+`lastCuriosity` marker is also registered so running creatures remain editable.
 Current engine format 8 and story format 10 retain them through export, import,
 portable scenarios, project snapshots and the Node-backed Godot runtime. Old
 saves without this field remain tree-free and gain no fabricated history.

@@ -212,7 +212,7 @@
  let active=prepare({configuration:configSource,definitions:source});
  const defaults=clone({configuration:active.configuration,definitions:active.definitions});deepFreeze(defaults);
  // Compiled progression owns an optional actor field without inventing defaults in old saves.
- const optionalPersonalFields:readonly string[]=Object.freeze(['skillTrees']);
+ const optionalPersonalFields:readonly string[]=Object.freeze(['skillTrees','lastCuriosity']);
  const declaredPersonalFields:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
  const personalFields:readonly string[]=Object.freeze([...new Set([...declaredPersonalFields,...optionalPersonalFields])]);
  const personalities:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.personalities]))]);
