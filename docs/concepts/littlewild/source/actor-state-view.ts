@@ -35,9 +35,9 @@
   const view=new Proxy(target,{
    get(_target,key){if(key===Symbol.toStringTag)return 'LittlewildActorStateView';if(key==='__root__')return state;if(keys.has(key))return actor()[key];return state[key];},
    set(_target,key,value){if(keys.has(key))actor()[key]=value;else state[key]=value;return true;},
-   has(_target,key){return keys.has(key)||key in state;},
-   ownKeys(){return [...new Set<ViewKey>([...Reflect.ownKeys(state),...personal])];},
-   getOwnPropertyDescriptor(_target,key){if(keys.has(key)||has(state,key))return {configurable:true,enumerable:true,writable:true,value:keys.has(key)?actor()[key]:state[key]};return undefined;},
+   has(_target,key){return keys.has(key)?has(actor(),key):key in state;},
+   ownKeys(){const current=actor();return [...new Set<ViewKey>([...Reflect.ownKeys(state).filter(key=>!keys.has(key)),...personal.filter(key=>has(current,key))])];},
+   getOwnPropertyDescriptor(_target,key){const value=keys.has(key)?actor():state;if(has(value,key))return {configurable:true,enumerable:true,writable:true,value:value[key]};return undefined;},
    deleteProperty(_target,key){if(keys.has(key))return delete actor()[key];return delete state[key];},
    defineProperty(_target,key,descriptor){if(!('value'in descriptor))throw Error('Actor state view accepts data properties only.');if(keys.has(key))actor()[key]=descriptor.value;else state[key]=descriptor.value;return true;},
    getPrototypeOf(){return Object.getPrototypeOf(state);}

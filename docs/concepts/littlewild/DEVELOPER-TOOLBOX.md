@@ -307,3 +307,7 @@ preset)` and retain its unregister callback for disposal; imported JSON only
 selects registered presets. See [p5 provenance and replacement instructions](vendor/P5-VENDOR.md).
 
 `toolbox.engineExport.export(pack, sceneId)` asynchronously produces the complete inert engine/source mapping document; `validate(document)` verifies its archive admission and hashes. This format is separate from runnable scenario packs and never executes its source strings. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md).
+
+## Skill trees
+
+Use `session.skillTrees(targetId)` for detached progress. Discovery includes `attach-skill-tree` and `unlock-skill-tree-node`, targeting `player` or a stable creature ID. The [skill-tree reference](../../reference/skill-trees.md) describes definition validation, earned XP, rank costs, engine integration and saved-state compatibility.

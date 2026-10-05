@@ -8,6 +8,10 @@ See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, G
 
 The incremental ECS migration now covers actor dynamics, task movement, physical world logistics, production settlement, atomic economy/progression settlement, explicit engine composition, command boundaries, and versioned simulation profiles. Native state remains format 8. Scenario-aware saves use envelope 10; obsolete story envelopes and scenario schema versions are rejected. See `ECS-ARCHITECTURE.md`.
 
+## Skill trees
+
+Littlewild companions have independent branching skill trees. Open **Learn → Skill trees** to inspect XP, spend earned points and choose a work or learning path. The engine also supports trees on the guide and arbitrary validated trees through the developer toolbox. Definitions and progress travel with saves and scenarios. See the [skill-tree contract](../../reference/skill-trees.md).
+
 ## Developer toolbox
 
 The typed Node SDK and browser `LWDeveloper` global expose validated commands,

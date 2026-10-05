@@ -1,15 +1,17 @@
 /// <reference path="./creature-editor-contracts.d.ts" />
+/// <reference path="./skill-tree-contracts.d.ts" />
 /* Detached bounded revisions; domain validators remain the only acceptance authority. */
 (function(inputRoot:unknown){
  'use strict';
  type Data=LWCreatureEditor.Data;
  interface Catalog<T>{validate(input:unknown):T;}
- interface Root {LWContent:LWContentPorts.ContentApi;LWScenarios:LWContentPorts.ScenarioApi;LWSceneGraph:LWSceneGraph.Api;LWAssets:Catalog<LWCreatureEditor.Appearance>;LWCreatures:Catalog<LWCreatureEditor.Definition>;LW:{Engine:{import(input:unknown):LWContentPorts.ScenarioEngine}};LWWorldProfile:{withProfile<T>(profile:LWContentPorts.WorldProfile,work:()=>T):T};LWScenarioResources:{snapshot():LWContentPorts.Resources;withResources<T>(resources:LWContentPorts.Resources|undefined,work:()=>T):T};LWCreatureEditorFields:{fields(value:LWCreatureEditor.Package):LWCreatureEditor.Field[]};LWCreatureEditor?:LWCreatureEditor.Api;}
+ interface Root {LWContent:LWContentPorts.ContentApi;LWScenarios:LWContentPorts.ScenarioApi;LWSceneGraph:LWSceneGraph.Api;LWAssets:Catalog<LWCreatureEditor.Appearance>;LWCreatures:Catalog<LWCreatureEditor.Definition>&{optionalPersonalFields:readonly string[]};LWSkillTrees:LWSkillTrees.Api;LW:{Engine:{import(input:unknown):LWContentPorts.ScenarioEngine}};LWWorldProfile:{withProfile<T>(profile:LWContentPorts.WorldProfile,work:()=>T):T};LWScenarioResources:{snapshot():LWContentPorts.Resources;withResources<T>(resources:LWContentPorts.Resources|undefined,work:()=>T):T};LWCreatureEditorFields:{fields(value:LWCreatureEditor.Package):LWCreatureEditor.Field[]};LWCreatureEditor?:LWCreatureEditor.Api;}
  const root=inputRoot as Root,node=typeof module!=='undefined'&&module.exports;
  const X=(node?require('./scenario-runtime.js'):root.LWScenarios) as LWContentPorts.ScenarioApi;
  const G=(node?require('./scene-graph.js'):root.LWSceneGraph) as LWSceneGraph.Api;
  const A=(node?require('./asset-catalog.js'):root.LWAssets) as Catalog<LWCreatureEditor.Appearance>;
- const D=(node?require('./creature-catalog.js'):root.LWCreatures) as Catalog<LWCreatureEditor.Definition>;
+ const D=(node?require('./creature-catalog.js'):root.LWCreatures) as Root['LWCreatures'];
+ if(node&&!root.LWSkillTrees)require('./skill-trees.js');
  const F=(node?require('./creature-editor-fields.js'):root.LWCreatureEditorFields) as Root['LWCreatureEditorFields'];
  const C=root.LWContent,copy=C.copy;
  const record=(value:unknown):Data=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Data:{};
@@ -30,7 +32,16 @@
   const refs=value.assetReferences.map(ref=>A.validate(ref));
   const identities=new Set([appearance.category+':'+appearance.id]);
   for(const ref of refs){const key=String(ref.category)+':'+ref.id;if(identities.has(key))throw Error('Duplicate package asset reference: '+key);identities.add(key);}
-  if(value.selectedInstance!==undefined){const selected=record(value.selectedInstance);if(!selected.id||selected.archetype!==definition.id||!definition.personalities.includes(String(selected.personality)))throw Error('Selected companion identity must match this archetype and personality.');const defaults={...definition.state.defaults,...selected};delete defaults.id;D.validate({...definition,defaultPersonality:selected.personality,state:{...definition.state,defaults,modes:{founder:{},arrival:{}}}});}
+  if(value.selectedInstance!==undefined){
+   const selected=record(value.selectedInstance);
+   if(!selected.id||selected.archetype!==definition.id||!definition.personalities.includes(String(selected.personality)))throw Error('Selected companion identity must match this archetype and personality.');
+   const defaults={...definition.state.defaults,...selected};delete defaults.id;
+   // Instance progress is validated separately and never becomes an archetype default.
+   for(const field of D.optionalPersonalFields)delete defaults[field];
+   if(selected.skillTrees!==undefined)root.LWSkillTrees.validateProgress(selected.skillTrees,Number(record(selected.creature).level));
+   if(selected.lastCuriosity!==undefined&&(typeof selected.lastCuriosity!=='number'||!Number.isFinite(selected.lastCuriosity)||selected.lastCuriosity<0))throw Error('Curiosity time must be a nonnegative finite timestamp.');
+   D.validate({...definition,defaultPersonality:selected.personality,state:{...definition.state,defaults,modes:{founder:{},arrival:{}}}});
+  }
   return copy(value) as unknown as LWCreatureEditor.Package;
  }
  function install(pack:LWContentPorts.ScenarioPack,value:LWCreatureEditor.Package,selection:LWCreatureEditor.Selection):void {

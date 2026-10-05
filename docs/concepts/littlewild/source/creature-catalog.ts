@@ -30,6 +30,7 @@
   readonly defaultArchetype:string;
   readonly defaultPersonality:string;
   readonly personalFields:readonly string[];
+  readonly optionalPersonalFields:readonly string[];
   readonly personalities:readonly string[];
   all():readonly Definition[];
   get(id:string):Definition|null;
@@ -210,12 +211,15 @@
  }
  let active=prepare({configuration:configSource,definitions:source});
  const defaults=clone({configuration:active.configuration,definitions:active.definitions});deepFreeze(defaults);
- const personalFields:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
+ // Compiled progression owns an optional actor field without inventing defaults in old saves.
+ const optionalPersonalFields:readonly string[]=Object.freeze(['skillTrees','lastCuriosity']);
+ const declaredPersonalFields:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
+ const personalFields:readonly string[]=Object.freeze([...new Set([...declaredPersonalFields,...optionalPersonalFields])]);
  const personalities:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.personalities]))]);
  function replace(input:unknown):void{
   const next=prepare(input);
   // Existing actor proxies and their compiled persistence/creation contract keep these fields.
-  for(const def of next.definitions)if(def.state.personalFields.some(field=>!personalFields.includes(field))||personalFields.some(field=>!def.state.personalFields.includes(field)))fail('scenario creatures must retain the supported personal fields');
+  for(const def of next.definitions)if(def.state.personalFields.some(field=>!declaredPersonalFields.includes(field))||declaredPersonalFields.some(field=>!def.state.personalFields.includes(field)))fail('scenario creatures must retain the supported personal fields');
   active=next;
  }
  function withDefinitions<T>(input:unknown,work:()=>T):T{const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Creature scope must be synchronous.');return result;}finally{active=previous;}}
@@ -235,6 +239,6 @@
  }
  const api:Api=Object.freeze({get configuration(){return active.configuration;},get revision(){return active.revision;},defaults,
   get defaultArchetype(){return active.configuration.defaultArchetype;},get defaultPersonality(){return definition(active.configuration.defaultArchetype).defaultPersonality;},
-  personalFields,personalities,all,get,supports,componentBindings,seed,validate,replace,withDefinitions});
+  personalFields,optionalPersonalFields,personalities,all,get,supports,componentBindings,seed,validate,replace,withDefinitions});
  root.LWCreatures=api;if(node)module.exports=api;
 })(globalThis);

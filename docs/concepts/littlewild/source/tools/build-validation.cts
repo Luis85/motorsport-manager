@@ -6,6 +6,8 @@ import path from 'node:path';
 import {auditBalancing} from './balancing-audit.cjs';
 const source=path.resolve(__dirname,'../../source');
 function validateBundledDefaults():void {
+ const trees=require('../skill-trees.js') as LWSkillTrees.Api;
+ trees.validate(JSON.parse(fs.readFileSync(path.join(source,'content/skill-tree.json'),'utf8')));
  const rts=require('../rts-catalog.js') as LWRTSData.CatalogApi;
  rts.validate(JSON.parse(fs.readFileSync(path.join(source,'content/rts-demo.json'),'utf8')));
  const api=require('../developer-sdk.cjs') as {toolbox:LittlewildDeveloper.Toolbox};

@@ -30,7 +30,7 @@ function fixture():{root:Record<string,unknown>;api:Installer;engine:Engine}{
 }
 test('Closed adapter plan retains predecessor ownership and synchronous wrapper order',()=>{
  const {api,engine}=fixture(),prototype=engine.prototype,records=api.install(engine);
- assert.strictEqual(engine.prototype,prototype);assert.equal(records.length,8);
+ assert.strictEqual(engine.prototype,prototype);assert.equal(records.length,9);
  const start=engine.prototype.startTask as ()=>string[];assert.deepEqual(start(),['base','interactions','scenario-workflow','interiors']);
  assert.equal(records.at(-1)?.predecessors.startTask,'scenario-workflow');assert.equal(records.at(-1)?.predecessors.finishTask,'construction');
  assert(Object.isFrozen(api.manifest)&&Object.isFrozen(records)&&Object.isFrozen(records.at(-1)?.predecessors));
@@ -103,7 +103,7 @@ test('The shipped facade retains exact adapter order across fresh demo and nativ
  const L=require('./simulation.cjs') as {Engine:Engine&{new(state?:unknown):LWCorePorts.BaseEngine};createWorldDemo():LWCorePorts.BaseEngine};
  const root=globalThis as unknown as {LWApplicationAdapters:Installer};
  const records=root.LWApplicationAdapters.describe(L.Engine);
- assert.deepEqual(records.map(record=>record.id),['commands','interactions','settings','scenario-workflow','scenario-resources','construction','terraform','interiors']);
+ assert.deepEqual(records.map(record=>record.id),['commands','interactions','settings','scenario-workflow','scenario-resources','construction','terraform','skill-trees','interiors']);
  const demo=L.createWorldDemo(),fresh=new L.Engine(demo.export().state),native=L.Engine.import(demo.export()) as LWCorePorts.BaseEngine;
  for(const engine of [demo,fresh,native]){
   assert.strictEqual(Object.getPrototypeOf(engine),L.Engine.prototype);

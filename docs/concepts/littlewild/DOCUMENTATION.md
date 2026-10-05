@@ -33,6 +33,8 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 ## Runtime and format references
 
+- [Player and creature skill trees](../../reference/skill-trees.md)
+
 - [Data-driven ECS RTS engine and tools](../../reference/rts-engine.md)
 - [Configurable experiences — authoring contract 2](CONFIGURATION.md)
 - [Littlewild v13 — Content integration compatibility](CONTENT-INTEGRATION.md)

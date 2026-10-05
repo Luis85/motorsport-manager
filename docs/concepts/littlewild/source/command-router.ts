@@ -32,6 +32,8 @@
 
  const L=root.LW;if(!L)throw Error('Littlewild facade missing.');
  const definitions: readonly CommandDefinition[] = Object.freeze([
+  {id:'attach-skill-tree',method:'attachSkillTree',scope:'world',maxArgs:2,away:false},
+  {id:'unlock-skill-tree-node',method:'unlockSkillTreeNode',scope:'world',maxArgs:3,away:false},
   {id:'preview-terraform',method:'previewTerraform',scope:'world',maxArgs:1,away:false},
   {id:'apply-terraform',method:'applyTerraform',scope:'world',maxArgs:1,away:false},
   {id:'construct-design',method:'constructBuildingDesign',scope:'actor',maxArgs:3,away:false},
@@ -135,7 +137,7 @@
   const definition=byId.get(id);if(!definition)return fail('Unknown command.','unknown-command');
   const actorId=descriptors.actorId?.value;
   const rawArgs=descriptors.args?.value===undefined?[]:descriptors.args.value;
-  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs,{depth:['construct-design','improve-design'].includes(definition.id)?12:6,array:['construct-design','improve-design'].includes(definition.id)?1600:64,values:['construct-design','improve-design'].includes(definition.id)?100000:30000}))
+  if(!Array.isArray(rawArgs)||rawArgs.length>definition.maxArgs||!safeValue(rawArgs,{depth:['construct-design','improve-design','attach-skill-tree'].includes(definition.id)?12:6,array:['construct-design','improve-design'].includes(definition.id)?1600:64,values:['construct-design','improve-design'].includes(definition.id)?100000:30000}))
    return fail('Invalid command arguments.');
   const args=rawArgs as JsonValue[];
   const handler=engine[definition.method];if(typeof handler!=='function')return fail('Command handler is unavailable.','unavailable-command');

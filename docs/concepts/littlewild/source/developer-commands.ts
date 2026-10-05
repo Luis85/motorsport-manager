@@ -7,6 +7,7 @@
  const root=inputRoot as {LWDeveloperData:DataApi;LWDeveloperCommands?:unknown};
  const D=root.LWDeveloperData;
  const contracts:Readonly<Record<LittlewildDeveloper.CommandId,readonly [number,string]>>={
+  'attach-skill-tree':[2,'sj'],'unlock-skill-tree-node':[3,'sss'],
   'preview-terraform':[1,'j'],'apply-terraform':[1,'j'],
   'visit-building-floor':[3,'sss'],'order-building-production':[5,'ssssn'],
   'construct-design':[3,'jnn'],'improve-design':[2,'sj'],

@@ -316,7 +316,12 @@
     "source/rts-mission-editor-ui.ts",
     "source/rts-mission-editor-ui-forms.ts",
     "source/rts-mission-editor-data.ts",
-    "source/rts-mission-editor-ui-projection.ts"
+    "source/rts-mission-editor-ui-projection.ts",
+    "source/skill-trees.ts",
+    "source/skill-tree-integration.ts",
+    "source/skill-tree-ui.ts",
+    "source/test-skill-trees.cts",
+    "source/verification/skill-tree-browser.ts"
   ],
   "include": []
 }

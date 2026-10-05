@@ -6,6 +6,7 @@
  type Session=LittlewildDeveloper.Session;
  interface Engine extends LWContentPorts.ScenarioEngine {
   s:{started:boolean;paused:boolean;simTime:number;scenarioResources?:LWContentPorts.Resources};
+  skillTreeState(targetId:string):LWSkillTrees.View[];
   terraformSnapshot():LittlewildDeveloper.TerraformSnapshot;
   terrainAt(x:number,y:number):string;terrainHeight(x:number,y:number):number;
   previewTerraform(input:unknown):LittlewildDeveloper.TerraformPreview;
@@ -143,6 +144,7 @@
     if(Object.keys(data).length!==2||!Object.hasOwn(data,'scope')||!Object.hasOwn(data,'id')||!['creature','building','node'].includes(String(data.scope)))fail('invalid-input','Invalid interaction target.');
     D.text(data.id,'Target ID');return owned.interactionOptions(id,data as unknown as LittlewildDeveloper.InteractionTarget).map(value=>D.record(value) as unknown as LittlewildDeveloper.InteractionOption);
    },
+   skillTrees(targetId:string){return guard().skillTreeState(D.text(targetId,'Skill-tree owner'));},
    terraform(){return D.copy(guard().terraformSnapshot());},
    terrain(x:number,y:number){const owned=guard();if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y))fail('invalid-input','Terrain coordinates must be safe integers.');return {ground:owned.terrainAt(x,y),height:owned.terrainHeight(x,y)};},
    previewTerraform(input:unknown){return D.copy(guard().previewTerraform(D.record(input)));},
