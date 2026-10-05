@@ -52,7 +52,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1698'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1726'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -209,7 +209,35 @@ jobs:
               {"suite": "rts-mission-editor-browser", "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"},
               {"suite": "rts-mission-editor-browser", "name": "Editor return retires its surface restores focus and retains the draft on reopening"},
               {"suite": "rts-mission-editor-browser", "name": "A file picker retained across editor exit cannot import into another lifecycle"},
-              {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"}
+              {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"},
+              {"suite":"skill-trees","name":"Definitions are detached and admit arbitrary DAGs and bounded rank effects"},
+              {"suite":"skill-trees","name":"Malformed definitions reject duplicate nodes, cycles, invalid references and executable fields"},
+              {"suite":"skill-trees","name":"Earned points, rank costs, level gates and exclusive paths are enforced atomically"},
+              {"suite":"skill-trees","name":"Checkpoint validation rejects forged progress, duplicate trees and overspending"},
+              {"suite":"skill-trees","name":"Littlewild starts every authored creature with an independent unspent tree"},
+              {"suite":"skill-trees","name":"Optional progression belongs to the scoped actor without introducing defaults"},
+              {"suite":"skill-trees","name":"Player and creature attachments award independently and never retroactively grant level XP"},
+              {"suite":"skill-trees","name":"Accepted reward settlement credits its scoped creature and player exactly once"},
+              {"suite":"skill-trees","name":"Unlocked rank effects apply to the working actor and survive engine restoration"},
+              {"suite":"skill-trees","name":"Guide bonuses apply to companions without spending their personal points"},
+              {"suite":"skill-trees","name":"Portable story round-trip preserves custom definitions and progress"},
+              {"suite":"skill-trees","name":"Invalid imported trees reject before reconstruction and old saves remain tree-free"},
+              {"suite":"skill-trees","name":"New arrivals inherit the retained demo definition with independent zero progress"},
+              {"suite":"skill-trees","name":"SDK discovers attachment and unlock commands, reads detached trees without ticking"},
+              {"suite":"skill-trees","name":"Creature authoring preserves instance trees without turning progress into archetype defaults"},
+              {"suite":"skill-tree-browser","name":"Fresh tree displays earned-point gates at 1440px"},
+              {"suite":"skill-tree-browser","name":"Keyboard unlock publishes a rank and keeps focus at 1440px"},
+              {"suite":"skill-tree-browser","name":"Branch choice closes the alternative without spending its points at 1440px"},
+              {"suite":"skill-tree-browser","name":"Tree reads do not tick or change saved state at 1440px"},
+              {"suite":"skill-tree-browser","name":"Tree content fits and retains usable controls at 1440px"},
+              {"suite":"skill-tree-browser","name":"Keyboard focus distinguishes trees sharing a node ID at 1440px"},
+              {"suite":"skill-tree-browser","name":"Fresh tree displays earned-point gates at 390px"},
+              {"suite":"skill-tree-browser","name":"Keyboard unlock publishes a rank and keeps focus at 390px"},
+              {"suite":"skill-tree-browser","name":"Branch choice closes the alternative without spending its points at 390px"},
+              {"suite":"skill-tree-browser","name":"Tree reads do not tick or change saved state at 390px"},
+              {"suite":"skill-tree-browser","name":"Tree content fits and retains usable controls at 390px"},
+              {"suite":"skill-tree-browser","name":"Keyboard focus distinguishes trees sharing a node ID at 390px"},
+              {"suite":"skill-tree-browser","name":"Skill-tree browser emits no runtime errors or network requests"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -256,8 +284,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 89 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The complete 89-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 91 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 91-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -301,7 +329,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 89-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 91-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE
