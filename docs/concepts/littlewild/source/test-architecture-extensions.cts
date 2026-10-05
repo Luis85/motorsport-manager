@@ -103,7 +103,7 @@ test('The shipped facade retains exact adapter order across fresh demo and nativ
  const L=require('./simulation.cjs') as {Engine:Engine&{new(state?:unknown):LWCorePorts.BaseEngine};createWorldDemo():LWCorePorts.BaseEngine};
  const root=globalThis as unknown as {LWApplicationAdapters:Installer};
  const records=root.LWApplicationAdapters.describe(L.Engine);
- assert.deepEqual(records.map(record=>record.id),['commands','interactions','settings','scenario-workflow','scenario-resources','construction','terraform','interiors']);
+ assert.deepEqual(records.map(record=>record.id),['commands','interactions','settings','scenario-workflow','scenario-resources','construction','terraform','skill-trees','interiors']);
  const demo=L.createWorldDemo(),fresh=new L.Engine(demo.export().state),native=L.Engine.import(demo.export()) as LWCorePorts.BaseEngine;
  for(const engine of [demo,fresh,native]){
   assert.strictEqual(Object.getPrototypeOf(engine),L.Engine.prototype);
