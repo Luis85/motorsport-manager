@@ -52,7 +52,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1613'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1698'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -124,7 +124,92 @@ jobs:
               {"suite":"wildlands-browser","name":"1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
               {"suite":"wildlands-browser","name":"390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
               {"suite":"scene-navigation","name":"Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation"},
-              {"suite":"wildlands-project","name":"Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"}
+              {"suite":"wildlands-project","name":"Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"},
+              {"suite":"rts-catalog","name":"The exported default RTS catalog and editable clone satisfy the shipped authoring JSON schema"},
+              {"suite":"rts-catalog","name":"RTS catalog publishes recursively frozen behavior-free content and detached editable copies"},
+              {"suite":"rts-catalog","name":"Imported RTS data rejects executable values, unexpected fields and invalid identities"},
+              {"suite":"rts-catalog","name":"Imported getters, cycles, symbols and sparse arrays reject without running behavior"},
+              {"suite":"rts-catalog","name":"Catalog validation rejects duplicate IDs, unknown costs and broken references before publication"},
+              {"suite":"rts-catalog","name":"RTS numeric rules reject negative costs, invalid movement, non-finite stats and out-of-map spawns"},
+              {"suite":"rts-catalog","name":"Mission admission rejects out-of-map footprints, incompatible movement terrain and overlapping structures"},
+              {"suite":"rts-economy","name":"Purchased item pays authored costs once and adds authored charges to the owned unit"},
+              {"suite":"rts-economy","name":"Foreign, unknown and unaffordable item purchases leave the whole checkpoint unchanged"},
+              {"suite":"rts-economy","name":"Enabled AI uses its preferred authored unit through the same paid production queue"},
+              {"suite":"rts-economy","name":"Entity capacity blocks construction before spending and holds completed unit queues before spawning"},
+              {"suite":"rts-production","name":"Production pays once, reserves population, refunds cancellation exactly, and rejects repeated cancellation"},
+              {"suite":"rts-production","name":"Unaffordable, foreign, invalid and missing production requests preserve all resources and queue entries"},
+              {"suite":"rts-production","name":"Fixed ECS production steps publish one unit once and never charge resources twice"},
+              {"suite":"rts-production","name":"Pending research is exclusive, prerequisites gate acceptance, and completion preserves payment"},
+              {"suite":"rts-runtime","name":"RTS state lives in ECS components and queries/checkpoints are detached without advancing time"},
+              {"suite":"rts-runtime","name":"Commands reject hostile inputs without invoking accessors or mutating the ECS checkpoint"},
+              {"suite":"rts-runtime","name":"Fixed-step movement and checkpoint restoration produce identical deterministic continuation"},
+              {"suite":"rts-runtime","name":"The actual showcase catalog restores its initial and evolving ECS checkpoint without losing state"},
+              {"suite":"rts-runtime","name":"Finite gathering conserves deposit plus cargo plus bank, and cargo arrives through real storage routes"},
+              {"suite":"rts-runtime","name":"Construction starts from a worker order, blocks terrain, completes and increases population capacity"},
+              {"suite":"rts-runtime","name":"Combat consumes cooldown, applies bounded damage and removes destroyed entities through ECS"},
+              {"suite":"rts-runtime","name":"Fog keeps distant enemies hidden, rejects their targeting and retains explored tiles after movement"},
+              {"suite":"rts-runtime","name":"Consumable item pickup grants an ability, charges and cooldowns spend exactly once"},
+              {"suite":"rts-runtime","name":"Terrain movement categories route land around water, water through water and air across blocked terrain"},
+              {"suite":"rts-runtime","name":"Completion-tick production checkpoints contain no transient publication state and restore exactly"},
+              {"suite":"rts-runtime","name":"Off-map reveal ability targets reject atomically and leave a restorable checkpoint"},
+              {"suite":"rts-runtime","name":"Reveal state stays bounded, expired areas retire, and capacity rejection is atomic"},
+              {"suite":"rts-runtime","name":"Step bounds reject invalid elapsed commands before any authoritative tick or RNG changes"},
+              {"suite":"rts-runtime","name":"Hostile checkpoints and semantic component corruption reject before replacing application state"},
+              {"suite":"rts-runtime","name":"Application navigation, pause and view queries never tick; only active unpaused application frames do"},
+              {"suite":"rts-tools","name":"Discovery exposes supported commands and denied arbitrary intentions"},
+              {"suite":"rts-tools","name":"Bounded recipes advance the exact requested tick interval"},
+              {"suite":"rts-tools","name":"Checkpoint continuation retains the authoritative starting tick"},
+              {"suite":"rts-tools","name":"Rejected commands retain explicit stop and continuation receipts"},
+              {"suite":"rts-tools","name":"Recipe clock, schedule, command-count and saved mission budgets reject before execution"},
+              {"suite":"rts-tools","name":"Catalog outputs are detached and whole-catalog validation rejects missing archetypes"},
+              {"suite":"rts-tools","name":"Mission completion reports actual early-stop tick instead of requested duration"},
+              {"suite":"rts-tools","name":"Hostile accessors and cyclic recipes reject without invoking imported getters"},
+              {"suite":"rts-tools","name":"JSON checkpoint exchange produces identical deterministic continuation"},
+              {"suite":"rts-tools","name":"CLI refuses output-over-input writes and preserves original input bytes"},
+              {"suite":"rts-application","name":"Application navigation and detached queries never tick a session"},
+              {"suite":"rts-application","name":"Fixed frame subdivisions produce the same ECS checkpoint"},
+              {"suite":"rts-application","name":"Pause and navigation clear substep debt and preserve manual pause state"},
+              {"suite":"rts-application","name":"Invalid timing and speed reject before changing session or status"},
+              {"suite":"rts-application","name":"Malformed catalog/checkpoint replacement retains the running session atomically"},
+              {"suite":"rts-application","name":"Checkpoint import restores frozen catalog and pauses without advancing"},
+              {"suite":"rts-browser","name":"RTS is discoverable and switching runs only the RTS application clock"},
+              {"suite":"rts-browser","name":"Keyboard roster selection and battlefield order controls route into the ECS authority"},
+              {"suite":"rts-browser","name":"Keyboard target and position form performs gather, build and ability intents without advancing time"},
+              {"suite":"rts-browser","name":"Selected production buildings expose authored training and technology commands"},
+              {"suite":"rts-browser","name":"Rejected JSON imports preserve the complete running checkpoint; valid checkpoints round-trip paused"},
+              {"suite":"rts-browser","name":"Isometric battlefield renders at desktop and mobile sizes with keyboard controls and no horizontal overflow"},
+              {"suite":"rts-browser","name":"Leaving RTS retires its surface, restores the invoker focus, and reopening retains a single checkpoint"},
+              {"suite":"rts-browser","name":"Self-contained RTS loading and interaction generate no script errors or network requests"},
+              {"suite": "rts-mission-editor", "name": "Mission editor queries and exported catalogs are detached from each other and admitted input"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects stale intents without changing revision draft or history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor undo redo advance revisions and a new branch invalidates redo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor history retains at most sixty four accepted catalog changes"},
+              {"suite": "rts-mission-editor", "name": "Mission editor equivalent metadata selection and import preserve revision and redo history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor metadata commits a complete validated mission and rejects unsafe resizing"},
+              {"suite": "rts-mission-editor", "name": "Mission editor terrain painting overwrites cells while preserving unaffected terrain and supports undo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects terrain bounds incompatible actors and blocked building footprints atomically"},
+              {"suite": "rts-mission-editor", "name": "Mission editor places updates and removes unit building and creature spawn records"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects expanded off map actors forbidden movement and overlapping building placement"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authors deposits item drops and all registered objective types"},
+              {"suite": "rts-mission-editor", "name": "Mission editor record commands reject bad indices references payload shapes and unsafe amounts"},
+              {"suite": "rts-mission-editor", "name": "Mission editor cloning removal and history preserve other missions and catalog families"},
+              {"suite": "rts-mission-editor", "name": "Mission editor selection invalidates gestures without adding undo history or dirty content"},
+              {"suite": "rts-mission-editor", "name": "Mission editor whole catalog import is detached undoable and rejects incomplete catalogs"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects executable getters cycles symbols and unknown actions before reading behavior"},
+              {"suite": "rts-mission-editor", "name": "Mission editor catalog limits reject excess actors and preserve accepted history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects duplicate objective identities and missions without a player spawn"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authoring and navigation never tick or replace an independent running ECS match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission editor navigation and detached reads preserve both game checkpoints"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission settings publish validated metadata and reject invalid map shrink atomically"},
+              {"suite": "rts-mission-editor-browser", "name": "Keyboard terrain authoring shares validated map commands and undo redo history"},
+              {"suite": "rts-mission-editor-browser", "name": "Spawn tools author units buildings and creatures while rejecting occupied geometry"},
+              {"suite": "rts-mission-editor-browser", "name": "Deposit item and objective forms retain authored records in the complete catalog"},
+              {"suite": "rts-mission-editor-browser", "name": "Rejected editor JSON imports preserve the whole draft history and retained match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission catalog download and validated import round-trip every authored family"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor return retires its surface restores focus and retains the draft on reopening"},
+              {"suite": "rts-mission-editor-browser", "name": "A file picker retained across editor exit cannot import into another lifecycle"},
+              {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -171,8 +256,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 80 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The complete 80-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 89 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 89-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -216,7 +301,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 80-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 89-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE

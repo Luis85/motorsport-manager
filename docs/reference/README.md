@@ -5,6 +5,7 @@ implemented boundaries; existence in source is not a claim of human validation.
 
 - [Current native project status](current-state.md)
 - [Developer toolbox](developer-toolbox.md)
+- [Wildlands RTS engine](rts-engine.md)
 - [Persistence and local data](persistence.md)
 - [Track contracts](track-format.md)
 

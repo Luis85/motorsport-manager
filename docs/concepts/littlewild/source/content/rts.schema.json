@@ -1,0 +1,1222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wildlands-rts.schema.json",
+  "title": "Wildlands RTS content catalog",
+  "description": "Shape schema. Runtime admission additionally enforces unique IDs, references, acyclic technology dependencies, faction permissions and map bounds.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "id",
+    "name",
+    "resources",
+    "factions",
+    "units",
+    "buildings",
+    "items",
+    "technologies",
+    "abilities",
+    "terrain",
+    "missions"
+  ],
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "wildlands-rts"
+      ]
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "\\S"
+    },
+    "resources": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "color",
+          "gatherRate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "gatherRate": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "factions": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "color",
+          "units",
+          "buildings",
+          "technologies",
+          "startingResources",
+          "ai"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "units": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "buildings": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "technologies": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "startingResources": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          },
+          "ai": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "enabled",
+              "attackInterval",
+              "preferredUnit"
+            ],
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "attackInterval": {
+                "type": "number",
+                "maximum": 1000000,
+                "exclusiveMinimum": 0
+              },
+              "preferredUnit": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                "maxLength": 64
+              }
+            }
+          }
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "role",
+          "movement",
+          "speed",
+          "hp",
+          "armor",
+          "sight",
+          "radius",
+          "population",
+          "buildTime",
+          "cost",
+          "prerequisites",
+          "attack",
+          "abilities",
+          "color",
+          "shape",
+          "gatherRate",
+          "carryCapacity",
+          "buildRate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "worker",
+              "infantry",
+              "ranged",
+              "cavalry",
+              "siege",
+              "vehicle",
+              "naval",
+              "aircraft",
+              "creature"
+            ]
+          },
+          "movement": {
+            "type": "string",
+            "enum": [
+              "land",
+              "water",
+              "air"
+            ]
+          },
+          "speed": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "hp": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "armor": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "sight": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "radius": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "population": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "buildTime": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "cost": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          },
+          "prerequisites": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "attack": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "damage",
+                  "range",
+                  "cooldown",
+                  "projectileSpeed",
+                  "splash",
+                  "targets"
+                ],
+                "properties": {
+                  "damage": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "range": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "cooldown": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "projectileSpeed": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "minimum": 0
+                  },
+                  "splash": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "minimum": 0
+                  },
+                  "targets": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "land",
+                        "water",
+                        "air"
+                      ]
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            ]
+          },
+          "abilities": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "shape": {
+            "type": "string",
+            "enum": [
+              "person",
+              "horse",
+              "tank",
+              "boat",
+              "plane",
+              "animal"
+            ]
+          },
+          "gatherRate": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "carryCapacity": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "buildRate": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "buildings": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "hp",
+          "armor",
+          "sight",
+          "footprint",
+          "buildTime",
+          "cost",
+          "produces",
+          "researches",
+          "storage",
+          "population",
+          "power",
+          "attack",
+          "color"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "hp": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "armor": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "sight": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "footprint": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "width",
+              "height"
+            ],
+            "properties": {
+              "width": {
+                "type": "integer",
+                "maximum": 1000000,
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "integer",
+                "maximum": 1000000,
+                "exclusiveMinimum": 0
+              }
+            }
+          },
+          "buildTime": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "cost": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          },
+          "produces": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "researches": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "storage": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "population": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "power": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": -1000000
+          },
+          "attack": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "damage",
+                  "range",
+                  "cooldown",
+                  "projectileSpeed",
+                  "splash",
+                  "targets"
+                ],
+                "properties": {
+                  "damage": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "range": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "cooldown": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "exclusiveMinimum": 0
+                  },
+                  "projectileSpeed": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "minimum": 0
+                  },
+                  "splash": {
+                    "type": "number",
+                    "maximum": 1000000,
+                    "minimum": 0
+                  },
+                  "targets": {
+                    "type": "array",
+                    "maxItems": 4096,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "land",
+                        "water",
+                        "air"
+                      ]
+                    },
+                    "uniqueItems": true
+                  }
+                }
+              }
+            ]
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cost",
+          "ability",
+          "charges"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "cost": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          },
+          "ability": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "charges": {
+            "type": "integer",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "technologies": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "cost",
+          "researchTime",
+          "prerequisites",
+          "effects"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "cost": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          },
+          "researchTime": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "prerequisites": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "uniqueItems": true
+          },
+          "effects": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stat",
+                "factor",
+                "roles"
+              ],
+              "properties": {
+                "stat": {
+                  "type": "string",
+                  "enum": [
+                    "damage",
+                    "armor",
+                    "speed",
+                    "sight",
+                    "gatherRate",
+                    "maxHp"
+                  ]
+                },
+                "factor": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "exclusiveMinimum": 0
+                },
+                "roles": {
+                  "type": "array",
+                  "maxItems": 4096,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "worker",
+                      "infantry",
+                      "ranged",
+                      "cavalry",
+                      "siege",
+                      "vehicle",
+                      "naval",
+                      "aircraft",
+                      "creature"
+                    ]
+                  },
+                  "uniqueItems": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "abilities": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "effect",
+          "amount",
+          "radius",
+          "range",
+          "cooldown",
+          "duration",
+          "cost"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "heal",
+              "damage",
+              "repair",
+              "reveal"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "radius": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          },
+          "range": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "cooldown": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "duration": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "cost": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "maxLength": 64
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "terrain": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "color",
+          "passable",
+          "speedFactor",
+          "cover"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "passable": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "string",
+              "enum": [
+                "land",
+                "water",
+                "air"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "speedFactor": {
+            "type": "number",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "cover": {
+            "type": "number",
+            "maximum": 1000000,
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "missions": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "width",
+          "height",
+          "playerFaction",
+          "defaultTerrain",
+          "spawns",
+          "deposits",
+          "items",
+          "terrain",
+          "objectives",
+          "fog",
+          "seed"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "width": {
+            "type": "integer",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "height": {
+            "type": "integer",
+            "maximum": 1000000,
+            "exclusiveMinimum": 0
+          },
+          "playerFaction": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "defaultTerrain": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "maxLength": 64
+          },
+          "spawns": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "archetype",
+                "faction",
+                "x",
+                "y",
+                "count"
+              ],
+              "properties": {
+                "archetype": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "faction": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "x": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "count": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "exclusiveMinimum": 0
+                }
+              }
+            }
+          },
+          "deposits": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "resource",
+                "x",
+                "y",
+                "amount"
+              ],
+              "properties": {
+                "resource": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "x": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "amount": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "exclusiveMinimum": 0
+                }
+              }
+            }
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "item",
+                "x",
+                "y"
+              ],
+              "properties": {
+                "item": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "x": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "terrain": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "x",
+                "y",
+                "width",
+                "height"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "x": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "y": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "minimum": 0
+                },
+                "width": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "integer",
+                  "maximum": 1000000,
+                  "exclusiveMinimum": 0
+                }
+              }
+            }
+          },
+          "objectives": {
+            "type": "array",
+            "maxItems": 4096,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "name",
+                "description",
+                "type",
+                "target",
+                "amount"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "pattern": "\\S"
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "pattern": "\\S"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "eliminate",
+                    "stockpile",
+                    "survive"
+                  ]
+                },
+                "target": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+                  "maxLength": 64
+                },
+                "amount": {
+                  "type": "number",
+                  "maximum": 1000000,
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "fog": {
+            "type": "boolean"
+          },
+          "seed": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

@@ -19,6 +19,29 @@ are outside this native Motorsport Manager inventory.
 - **Circuit Atelier:** edit/save native circuits with Bézier geometry, elevation/banking, pit routes, scenery, reference-image calibration, layer locks, transactional history, validation and test-weekend snapshots. Editor placement presets and contextual guide *copy* may be authored; rendering kinds and guide actions stay code-owned.
 - **Content:** validated, strict external JSON packs with stable IDs, generated schemas, ordered dependencies, hash-pinned overrides, atomic catalog activation and frozen weekend/replay/campaign definitions. Supported families include vehicles, teams, drivers, rosters, tyre compounds/allocations/operating profiles, setups, shared tuning, weekends, circuits/styles, scenario briefs, mechanic profiles, editor profiles and Team Principal campaign profiles. Campaign content owns start identity/date/resources, starter series/calendar, contracts, facilities, rivals, event finance and numerical rival/people/supply tuning; algorithms, safety ceilings and registered executable providers remain code-owned. A provider profile selects **registered code**; external packs cannot inject executable mechanics or arbitrary editor actions. The authoring CLI supports init, clone, validate, list, inspect, schemas, non-overwriting export, diff, bounded scenario test and ordered multi-pack workflows.
 
+## Wildlands maker RTS foundation
+
+The separate TypeScript [Wildlands maker](../concepts/littlewild/README.md), built
+on the PR 25 foundation, also supports a switchable isometric RTS demonstration.
+Validated JSON catalogs define resources, factions, worker/combat/vehicle/naval/
+aircraft/creature archetypes, buildings, items, technologies, abilities, terrain
+and missions. The shared ECS hosts navigation, worker economy, construction,
+production/research, combat, fog, AI and objectives; application sessions own
+commands, clocks and checkpoints. Detached tools support complete catalog
+validation, mission inspection and bounded headless command recipes.
+
+The graphical [RTS mission editor](../how-to/rts-mission-editor.md) authors terrain,
+spawn groups, resource deposits, item drops, objectives and mission metadata over
+a separate validated catalog draft. Revision-checked commands and bounded undo/
+redo own publication; JSON import/export retains the full catalog. Explicitly
+playing the selected draft replaces the RTS match with a fresh paused session.
+Editing or returning without playing preserves the running match.
+
+This is a maker game context, separate from the shipping native race/campaign
+application. It does not establish native RTS export parity, multiplayer, broad
+balance or human validation. See the [canonical RTS contract](rts-engine.md) and
+[demo tutorial](../tutorials/rts-demo.md) for source-backed scope and limits.
+
 ## Interface selection and retained specialist tools
 
 Settings stages a **Minimal / Advanced** preference and saves it only on Apply. Minimal remains the safe default. Advanced remembers whether it should begin in Race Director or Engineering. The selection applies when a weekend screen next opens; it is presentation configuration, not race state. Existing `director` and `engineering` saved preferences remain valid, and the public `advanced` alias normalizes to Race Director. Explicit launch overrides remain available for development and automation.
