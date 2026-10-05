@@ -69,6 +69,13 @@ test('Littlewild starts every authored creature with an independent unspent tree
  assert.notStrictEqual(e.creatures[0]!.skillTrees,e.creatures[1]!.skillTrees);
  const before=snapshot(e);e.skillTreeState('c1')[0]!.nodes[0]!.name='changed';assert.equal(snapshot(e),before);
 });
+test('Optional progression belongs to the scoped actor without introducing defaults',()=>{
+ const e=engine(),catalog=(globalThis as unknown as {LWCreatures:{personalFields:readonly string[];optionalPersonalFields:readonly string[];all():{state:{defaults:Record<string,unknown>}}[]}}).LWCreatures;
+ assert(catalog.personalFields.includes('skillTrees'));assert(catalog.optionalPersonalFields.includes('skillTrees'));
+ assert(!Object.hasOwn(catalog.all()[0]!.state.defaults,'skillTrees'));
+ assert.strictEqual((e.s as unknown as {skillTrees?:LWSkillTrees.Progress[]}).skillTrees,e.actor.skillTrees);
+ e.withActor('c2',()=>assert.strictEqual((e.s as unknown as {skillTrees?:LWSkillTrees.Progress[]}).skillTrees,e.creatures[1]!.skillTrees));
+});
 test('Player and creature attachments award independently and never retroactively grant level XP',()=>{
  const e=engine(),tree={...copy(demo),id:'guide-tree'};assert(e.attachSkillTree('player',tree).ok);
  assert.equal(e.skillTreeState('player')[0]?.xp,0);assert(e.grantSkillTreeXp('c1',20).ok);
