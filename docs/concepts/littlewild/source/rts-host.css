@@ -3,6 +3,7 @@
 #rts-mode[hidden]{display:none}
 body.rts-active #app,body.rts-active #wildlands-workspace{visibility:hidden;pointer-events:none}
 .rts-exchange{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid #b5c2a4;font-size:13px}
+.rts-exchange[hidden]{display:none}
 .rts-exchange label{display:flex;align-items:center;gap:6px}
 .rts-exchange button,.rts-exchange select{font:inherit;min-height:44px;padding:7px 10px;border:1px solid #8b9e7d;border-radius:6px;color:inherit;background:#fffdf6}
 .rts-exchange button{cursor:pointer}.rts-exchange button:hover{background:#e6ecd9}

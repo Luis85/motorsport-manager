@@ -49,6 +49,11 @@ refresh do not advance its simulation clock. Resume to observe the accepted orde
 progressing. Click **Return to colony** in the RTS header; it remains a distinct
 game context.
 
+To author your own starting arrangement, open **Mission editor** in the RTS
+toolbar and follow [mission authoring](../how-to/rts-mission-editor.md). Its draft
+is separate from the match; only explicitly playing the draft replaces the match
+with a fresh paused session.
+
 ## Inspect the exact data
 
 The CLI emits JSON. Discovery and content inspection create no running match:

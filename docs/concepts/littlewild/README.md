@@ -21,6 +21,11 @@ that informed the interface.
 
 Choose **RTS demo** in the maker toolbar to open the separate isometric RTS match. Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. **Return to colony** restores the colony workspace. Follow the [RTS demo tutorial](../../tutorials/rts-demo.md) and [engine reference](../../reference/rts-engine.md) for controls, developer tools and current limits.
 
+Choose **Mission editor** in the RTS toolbar to author terrain, placements,
+objectives and mission settings in a separate validated catalog draft. Undo/redo
+and complete JSON import/export retain the authoring boundary; explicitly playing
+the draft creates a paused fresh match. Follow the [mission authoring guide](../../how-to/rts-mission-editor.md).
+
 Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or **Office**, or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
 
 Office runs indoors: Phil wins customer deals, Marty supplies the warehouse, and Angela packs and ships orders through physical production and delivery tasks. Whole scenario exports include the content libraries, creature and visual catalogs, environment, roles, workflows, interaction rules, settings, and captured state. See [OFFICE-SCENARIO.md](OFFICE-SCENARIO.md) for editing and programmatic import/export.

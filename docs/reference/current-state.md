@@ -30,6 +30,13 @@ production/research, combat, fog, AI and objectives; application sessions own
 commands, clocks and checkpoints. Detached tools support complete catalog
 validation, mission inspection and bounded headless command recipes.
 
+The graphical [RTS mission editor](../how-to/rts-mission-editor.md) authors terrain,
+spawn groups, resource deposits, item drops, objectives and mission metadata over
+a separate validated catalog draft. Revision-checked commands and bounded undo/
+redo own publication; JSON import/export retains the full catalog. Explicitly
+playing the selected draft replaces the RTS match with a fresh paused session.
+Editing or returning without playing preserves the running match.
+
 This is a maker game context, separate from the shipping native race/campaign
 application. It does not establish native RTS export parity, multiplayer, broad
 balance or human validation. See the [canonical RTS contract](rts-engine.md) and

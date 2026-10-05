@@ -52,7 +52,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1668'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1698'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -179,7 +179,37 @@ jobs:
               {"suite":"rts-browser","name":"Rejected JSON imports preserve the complete running checkpoint; valid checkpoints round-trip paused"},
               {"suite":"rts-browser","name":"Isometric battlefield renders at desktop and mobile sizes with keyboard controls and no horizontal overflow"},
               {"suite":"rts-browser","name":"Leaving RTS retires its surface, restores the invoker focus, and reopening retains a single checkpoint"},
-              {"suite":"rts-browser","name":"Self-contained RTS loading and interaction generate no script errors or network requests"}
+              {"suite":"rts-browser","name":"Self-contained RTS loading and interaction generate no script errors or network requests"},
+              {"suite": "rts-mission-editor", "name": "Mission editor queries and exported catalogs are detached from each other and admitted input"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects stale intents without changing revision draft or history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor undo redo advance revisions and a new branch invalidates redo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor history retains at most sixty four accepted catalog changes"},
+              {"suite": "rts-mission-editor", "name": "Mission editor equivalent metadata selection and import preserve revision and redo history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor metadata commits a complete validated mission and rejects unsafe resizing"},
+              {"suite": "rts-mission-editor", "name": "Mission editor terrain painting overwrites cells while preserving unaffected terrain and supports undo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects terrain bounds incompatible actors and blocked building footprints atomically"},
+              {"suite": "rts-mission-editor", "name": "Mission editor places updates and removes unit building and creature spawn records"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects expanded off map actors forbidden movement and overlapping building placement"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authors deposits item drops and all registered objective types"},
+              {"suite": "rts-mission-editor", "name": "Mission editor record commands reject bad indices references payload shapes and unsafe amounts"},
+              {"suite": "rts-mission-editor", "name": "Mission editor cloning removal and history preserve other missions and catalog families"},
+              {"suite": "rts-mission-editor", "name": "Mission editor selection invalidates gestures without adding undo history or dirty content"},
+              {"suite": "rts-mission-editor", "name": "Mission editor whole catalog import is detached undoable and rejects incomplete catalogs"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects executable getters cycles symbols and unknown actions before reading behavior"},
+              {"suite": "rts-mission-editor", "name": "Mission editor catalog limits reject excess actors and preserve accepted history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects duplicate objective identities and missions without a player spawn"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authoring and navigation never tick or replace an independent running ECS match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission editor navigation and detached reads preserve both game checkpoints"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission settings publish validated metadata and reject invalid map shrink atomically"},
+              {"suite": "rts-mission-editor-browser", "name": "Keyboard terrain authoring shares validated map commands and undo redo history"},
+              {"suite": "rts-mission-editor-browser", "name": "Spawn tools author units buildings and creatures while rejecting occupied geometry"},
+              {"suite": "rts-mission-editor-browser", "name": "Deposit item and objective forms retain authored records in the complete catalog"},
+              {"suite": "rts-mission-editor-browser", "name": "Rejected editor JSON imports preserve the whole draft history and retained match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission catalog download and validated import round-trip every authored family"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor return retires its surface restores focus and retains the draft on reopening"},
+              {"suite": "rts-mission-editor-browser", "name": "A file picker retained across editor exit cannot import into another lifecycle"},
+              {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -226,8 +256,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 87 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The complete 87-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 89 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 89-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -271,7 +301,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 87-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 89-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE

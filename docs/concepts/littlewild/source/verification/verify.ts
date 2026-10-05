@@ -48,6 +48,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["rts-mission-editor", ["node", generated("test-rts-mission-editor.cjs")], generated("rts-mission-editor-results.json"), 120],
   ["rts-catalog", ["node", generated("test-rts-catalog.cjs")], generated("rts-catalog-results.json"), 120],
   ["rts-economy", ["node", generated("test-rts-economy.cjs")], generated("rts-economy-results.json"), 120],
   ["rts-production", ["node", generated("test-rts-production.cjs")], generated("rts-production-results.json"), 120],
@@ -118,6 +119,7 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"rts-mission-editor-browser", command:["node", generated("verification/rts-mission-editor-browser.js")], result:"verification/v15/rts-mission-editor-browser-results.json", timeout:240 },
     { name:"rts-browser", command:["node", generated("verification/rts-browser.js")], result:"verification/v15/rts-browser-results.json", timeout:240 },
     { name:"wildlands-browser", command:["node", generated("verification/wildlands-browser.js")], result:"verification/v15/wildlands-browser-results.json", timeout:300 },
     { name:"external-editors-browser", command:["node", generated("verification/external-editors-browser.js")], result:"verification/v15/external-editors-browser-results.json", timeout:240 },

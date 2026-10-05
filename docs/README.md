@@ -20,6 +20,8 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
   [Editor guide](how-to/track-editor.md) → [Track format](reference/track-format.md).
 - **Content author:** [First custom pack](tutorials/author-a-pack.md) →
   [Content index](reference/content/README.md) → [Balancing](how-to/balancing.md).
+- **RTS mission author:** [Explore the RTS demo](tutorials/rts-demo.md) →
+  [Author a mission](how-to/rts-mission-editor.md) → [RTS contract](reference/rts-engine.md).
 - **Developer:** [Architecture](explanation/architecture.md) →
   [Mechanics recipes](how-to/developing-mechanics.md) or
   [Toolbox experiments](how-to/toolbox-recipes.md) → [Verification](how-to/verification.md).
