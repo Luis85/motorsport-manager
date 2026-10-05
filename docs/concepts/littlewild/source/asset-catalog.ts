@@ -90,7 +90,6 @@
  }
  function reference(value:unknown,ids:ReadonlySet<string>):boolean{return typeof value==='string'&&ids.has(value);}
  function validateShape(input:unknown):asserts input is Definition{
-  dataOnly(input);
   const raw=fields(input,['format','schemaVersion','category','id','name','materials','models','metadata','behaviors','rig'],'asset');
   if(raw.format!=='littlewild-3d-asset'||raw.schemaVersion!==1||typeof raw.category!=='string'||!categories.has(raw.category)||typeof raw.id!=='string'||!safeId.test(raw.id)||typeof raw.name!=='string'||[...raw.name].length<1||[...raw.name].length>120)fail('invalid identity');
   const id=raw.id,materials=record(raw.materials,id+' materials'),models=record(raw.models,id+' models');
@@ -121,6 +120,10 @@
  }
  /** Detached immutable validation; this never registers or replaces an active asset. */
  function validate(input:unknown):Definition{
+  dataOnly(input);return checkedDefinition(input);
+ }
+ /** The complete input tree has already passed descriptor and complexity checks. */
+ function checkedDefinition(input:unknown):Definition{
   validateShape(input);
   return deepFreeze(copy(input));
  }
@@ -156,10 +159,9 @@
  }
  const raw=root.LWAssetDefinitions??(typeof module!=='undefined'&&module.exports?require('./asset-definitions.json'):undefined);
  if(!Array.isArray(raw))fail('bundled definition list is missing');
- dataOnly(raw);
  function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
   dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
-  const defs=Object.freeze(entries.map(validate)),index=new Map<string,Definition>();
+  const defs=Object.freeze(entries.map(checkedDefinition)),index=new Map<string,Definition>();
   for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
   const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
   return {defs,index,revision};
