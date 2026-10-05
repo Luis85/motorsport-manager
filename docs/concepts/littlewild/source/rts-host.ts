@@ -51,8 +51,10 @@ declare namespace LWRTSHost {
    syncMissions();
   }
   function mountEditor():void {
+   // Stage authoring admission before retiring the retained match presentation.
+   const admitted=editor??root.LWRTSMissionEditor.create(view.catalog(),view.status().mission);
    revision++;surface?.destroy();surface=null;content.replaceChildren();paintDebt=0;
-   if(!editor)editor=root.LWRTSMissionEditor.create(view.catalog(),view.status().mission);
+   editor=admitted;
    editing=true;toolbar.hidden=true;
    editorSurface=root.LWRTSMissionEditorUI.create({parent:content,editor,
     onExit(){revision++;mount();editButton.focus();},

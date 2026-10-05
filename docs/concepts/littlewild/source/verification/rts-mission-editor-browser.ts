@@ -41,6 +41,19 @@ async function main():Promise<void> {
   const retained = await match(page);
   const colony = await page.evaluate('JSON.stringify(Littlewild.engine.export())');
   await check('Mission editor navigation and detached reads preserve both game checkpoints', async()=>{
+   const duplicateObjectives=await page.evaluate('const catalog=WildlandsRTS.catalog(); catalog.missions[0].objectives[1].id=catalog.missions[0].objectives[0].id; catalog');
+   await page.locator('#rts-import-file').setInputFiles({name:'duplicate-objectives.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(duplicateObjectives))});
+   await page.waitForFunction(()=>document.querySelector('[data-rts-file-status]')?.textContent?.includes('Imported and paused'));
+   const rejectedLaunch=await match(page);
+   await page.locator('[data-rts-file=editor]').click();
+   assert(await page.locator('#rts-demo').isVisible(),'Rejected editor admission must retain the match controls');
+   assert.equal(await page.locator('#rts-mission-editor').count(),0);
+   assert((await page.locator('[data-rts-file-status]').textContent())?.includes('Objective IDs must be unique'));
+   assert.equal(await match(page),rejectedLaunch);
+   await page.locator('[data-rts-import-kind]').selectOption('checkpoint');
+   await page.locator('#rts-import-file').setInputFiles({name:'retained.checkpoint.json',mimeType:'application/json',buffer:Buffer.from(retained)});
+   await page.waitForFunction(()=>document.querySelector('[data-rts-file-status]')?.textContent?.includes('Imported and paused'));
+   assert.equal(await match(page),retained);
    await page.locator('[data-rts-file=editor]').click();
    assert(await page.locator('#rts-mission-editor').isVisible());
    assert.equal(await page.locator('#rts-demo').count(), 0);
