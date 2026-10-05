@@ -224,8 +224,14 @@ export const INSERTS: readonly Insert[] = [
   ["RTS_APPLICATION", "rts-application.js", "script"],
   ["RTS_RENDERER", "rts-renderer.js", "script"],
   ["RTS_DEMO", "rts-demo.js", "script"],
+  ["RTS_MISSION_EDITOR_DATA", "rts-mission-editor-data.js", "script"],
+  ["RTS_MISSION_EDITOR", "rts-mission-editor.js", "script"],
+  ["RTS_MISSION_EDITOR_UI_FORMS", "rts-mission-editor-ui-forms.js", "script"],
+  ["RTS_MISSION_EDITOR_UI_PROJECTION", "rts-mission-editor-ui-projection.js", "script"],
+  ["RTS_MISSION_EDITOR_UI", "rts-mission-editor-ui.js", "script"],
   ["RTS_HOST", "rts-host.js", "script"],
   ["RTS_DEMO_CSS", "rts-demo.css", "style"],
+  ["RTS_MISSION_EDITOR_UI_CSS", "rts-mission-editor-ui.css", "style"],
   ["RTS_HOST_CSS", "rts-host.css", "style"],
   ["UI", "ui.js", "script"]
 ];

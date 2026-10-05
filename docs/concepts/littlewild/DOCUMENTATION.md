@@ -16,6 +16,7 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 ## Authoring and task guides
 
 - [Isometric RTS demonstration](../../tutorials/rts-demo.md)
+- [Graphical RTS mission authoring](../../how-to/rts-mission-editor.md)
 - [Developer toolbox](DEVELOPER-TOOLBOX.md)
 - [Central balancing and experiments](BALANCING.md)
 - [Office: a complete portable scenario](OFFICE-SCENARIO.md)

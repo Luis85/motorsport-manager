@@ -63,7 +63,8 @@
         "balancing-inventory.ts",
         "creature-balancing.ts",
         "renderer-catalog.ts",
-        "rts-catalog.ts"
+        "rts-catalog.ts",
+        "rts-mission-editor-data.ts"
       ]
     },
     {
@@ -162,7 +163,8 @@
         "balancing-probes.ts",
         "engine-export-data.ts",
         "engine-export-manifest.ts",
-        "engine-export.ts"
+        "engine-export.ts",
+        "rts-mission-editor.ts"
       ]
     },
     {
@@ -248,7 +250,10 @@
         "wildlands-ui.ts",
         "rts-renderer.ts",
         "rts-demo.ts",
-        "rts-host.ts"
+        "rts-host.ts",
+        "rts-mission-editor-ui.ts",
+        "rts-mission-editor-ui-forms.ts",
+        "rts-mission-editor-ui-projection.ts"
       ]
     },
     {
@@ -404,7 +409,8 @@
     "LWRTSSystems",
     "LWRTS",
     "LWRTSStats",
-    "LWRTSCheckpoint"
+    "LWRTSCheckpoint",
+    "LWRTSMissionEditorData"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",

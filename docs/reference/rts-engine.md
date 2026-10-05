@@ -43,6 +43,38 @@ checkpoints. Renderers and controls issue intent and consume snapshots; a redraw
 selection or query advances no simulation time. Catalog copies and query records
 are detached so edits to an inspector result cannot change the running match.
 
+## Mission authoring boundary
+
+The [graphical mission editor](../how-to/rts-mission-editor.md) edits a separate
+validated catalog draft. Its behavior-free contract is
+[`rts-mission-editor-contracts.d.ts`](../concepts/littlewild/source/rts-mission-editor-contracts.d.ts).
+`LWRTSMissionEditor.create(catalog, missionId)` returns an authoring session with
+`query()`, `command(input)` and `exportCatalog()`. It owns no ECS world or clock.
+Queries and exports return detached values.
+
+Every command carries the revision observed by its caller. Stale revisions,
+malformed records and invalid whole catalogs are rejected before draft or history
+publication. Accepted edits increment revision and retain at most 64 undo states;
+undo and redo also invalidate older proposals. Selecting a mission changes the
+revision without adding an edit or changing the dirty state. Invalid form values
+remain uncommitted UI input.
+
+Supported authoring operations select, clone or remove a mission; change its
+metadata; paint terrain rectangles; add, update or remove spawn, deposit, item and
+objective records; import a complete catalog; and undo or redo accepted edits.
+At least one mission must remain. Terrain painting normalizes the resulting tile
+field into bounded patches and applies the same catalog placement/passability
+rules as runtime admission. Editor admission additionally requires objective IDs
+to be unique within each mission. Resizing cannot silently discard out-of-bounds
+content. The exported catalog preserves the other content families and missions;
+archetype values and new registered mechanics still use their JSON/code contracts.
+
+Editing, importing into the draft, exporting and returning to the match leave the
+existing match checkpoint unchanged. Explicitly playing the selected draft
+validates and constructs a fresh match before replacing the application session,
+then opens it paused. Authoring history is an in-memory draft facility, not a
+checkpoint format or an autosave claim.
+
 ## Session boundaries
 
 The runtime's behavior-free component and command records are declared in
@@ -119,8 +151,8 @@ games must not reinterpret a colony checkpoint as an RTS match. Existing native
 race/campaign compatibility and source-bound verification still apply separately.
 
 The foundation supplies the registered mechanics above, not every historical RTS
-feature. Multiplayer/network lockstep, campaign storytelling, editor authoring of
-RTS mission geometry, sophisticated formation/flanking/tactical AI and full RTS
+feature. Multiplayer/network lockstep, campaign storytelling,
+sophisticated formation/flanking/tactical AI and full RTS
 Godot export parity require additional consumers and tests. A deterministic
 bounded experiment is not human playtesting, strategic balance or representative
 hardware performance evidence. Current capability scope is tracked in

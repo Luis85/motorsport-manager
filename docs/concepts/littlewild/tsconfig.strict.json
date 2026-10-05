@@ -309,7 +309,14 @@
     "source/rts-contracts.d.ts",
     "source/tools/rts-cli.cts",
     "source/rts-stats.ts",
-    "source/rts-checkpoint.ts"
+    "source/rts-checkpoint.ts",
+    "source/rts-mission-editor-contracts.d.ts",
+    "source/rts-mission-editor.ts",
+    "source/rts-mission-editor-ui-contracts.d.ts",
+    "source/rts-mission-editor-ui.ts",
+    "source/rts-mission-editor-ui-forms.ts",
+    "source/rts-mission-editor-data.ts",
+    "source/rts-mission-editor-ui-projection.ts"
   ],
   "include": []
 }
