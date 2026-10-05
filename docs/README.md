@@ -28,6 +28,10 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 - **Maintainer:** [Documentation discipline](how-to/maintaining-documentation.md) →
   [Current status](reference/current-state.md) → [Advisory quality](how-to/code-quality.md).
 
+## Independent concepts
+
+[Scene Forge](concepts/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder.
+
 ## Authority and evidence
 
 The separate [Wildlands documentation](concepts/littlewild/DOCUMENTATION.md)

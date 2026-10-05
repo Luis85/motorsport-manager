@@ -1,0 +1,809 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "logistics",
+    "name": "Procedural logistics bay",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "floor": {
+        "type": "box",
+        "size": [
+          13,
+          0.16,
+          7
+        ]
+      },
+      "line": {
+        "type": "box",
+        "size": [
+          0.08,
+          0.012,
+          4.8
+        ]
+      }
+    },
+    "materials": {
+      "floor": {
+        "color": "#6e797d",
+        "metalness": 0,
+        "roughness": 0.85,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "line": {
+        "color": "#e4b463",
+        "metalness": 0,
+        "roughness": 0.65,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "accent": {
+        "color": "#3d929c",
+        "metalness": 0,
+        "roughness": 0.65,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "floor",
+        "transform": {
+          "position": [
+            0,
+            -0.08,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "floor",
+        "material": "floor"
+      },
+      {
+        "id": "laneMarks",
+        "transform": {
+          "position": [
+            -5.8,
+            0.007,
+            0.3
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 7,
+          "step": [
+            1.93,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "line",
+        "material": "line"
+      },
+      {
+        "id": "rackA",
+        "name": "Compact rack",
+        "transform": {
+          "position": [
+            -4.2,
+            0,
+            -1.1
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "storage"
+        ],
+        "type": "model",
+        "model": "rack",
+        "parameters": {
+          "width": 2.4,
+          "height": 2.1,
+          "levels": 3,
+          "lanes": 2
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "rackB",
+        "name": "Tall rack",
+        "transform": {
+          "position": [
+            -0.35,
+            0,
+            -1.1
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "storage"
+        ],
+        "type": "model",
+        "model": "rack",
+        "parameters": {
+          "width": 4.1,
+          "height": 3.3,
+          "levels": 5,
+          "lanes": 4
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "rackC",
+        "name": "Standard rack",
+        "transform": {
+          "position": [
+            3.9,
+            0,
+            -1.1
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "storage"
+        ],
+        "type": "model",
+        "model": "rack",
+        "parameters": {
+          "width": 2.8,
+          "height": 2.7,
+          "levels": 4,
+          "lanes": 3
+        },
+        "materialOverrides": {
+          "cargo": "accent"
+        }
+      },
+      {
+        "id": "looseCargo",
+        "transform": {
+          "position": [
+            1.3,
+            0,
+            1.7
+          ],
+          "rotation": [
+            0,
+            12,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "cargo"
+        ],
+        "pattern": {
+          "type": "grid",
+          "counts": [
+            3,
+            1,
+            1
+          ],
+          "step": [
+            1.35,
+            0,
+            0
+          ],
+          "centered": false
+        },
+        "type": "model",
+        "model": "crate",
+        "parameters": {
+          "width": 1.1,
+          "height": 0.7,
+          "depth": 0.8
+        },
+        "materialOverrides": {}
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "ambient": 1.8,
+      "keyIntensity": 3.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "crate": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "crate",
+      "name": "Parametric cargo crate",
+      "parameters": {
+        "width": {
+          "default": 0.8,
+          "min": 0.1,
+          "max": 5
+        },
+        "height": {
+          "default": 0.5,
+          "min": 0.1,
+          "max": 5
+        },
+        "depth": {
+          "default": 0.6,
+          "min": 0.1,
+          "max": 5
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            {
+              "$param": "height"
+            },
+            {
+              "$param": "depth"
+            }
+          ]
+        },
+        "strap": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.08
+              ]
+            },
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "height"
+                },
+                0.014
+              ]
+            },
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "depth"
+                },
+                0.014
+              ]
+            }
+          ]
+        }
+      },
+      "materials": {
+        "body": {
+          "color": "#d9984d",
+          "metalness": 0,
+          "roughness": 0.7,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "band": {
+          "color": "#445662",
+          "metalness": 0.65,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "body"
+        },
+        {
+          "id": "straps",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.3
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.6
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "strap",
+          "material": "band"
+        }
+      ]
+    },
+    "rack": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "rack",
+      "name": "Procedural storage rack",
+      "parameters": {
+        "width": {
+          "default": 3.2,
+          "min": 1,
+          "max": 8,
+          "description": "Overall rack width in meters"
+        },
+        "height": {
+          "default": 2.8,
+          "min": 1.5,
+          "max": 6
+        },
+        "depth": {
+          "default": 1.1,
+          "min": 0.5,
+          "max": 3
+        },
+        "levels": {
+          "default": 4,
+          "min": 2,
+          "max": 8,
+          "description": "Integer number of shelves"
+        },
+        "lanes": {
+          "default": 3,
+          "min": 1,
+          "max": 8,
+          "description": "Integer number of cargo columns"
+        }
+      },
+      "geometries": {
+        "post": {
+          "type": "box",
+          "size": [
+            0.08,
+            {
+              "$param": "height"
+            },
+            0.08
+          ]
+        },
+        "shelf": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.08,
+            {
+              "$param": "depth"
+            }
+          ]
+        },
+        "rail": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.11,
+            0.05
+          ]
+        }
+      },
+      "materials": {
+        "frame": {
+          "color": "#55798b",
+          "metalness": 0.7,
+          "roughness": 0.38,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "shelf": {
+          "color": "#d2d4c9",
+          "metalness": 0.3,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "cargo": {
+          "color": "#dda052",
+          "metalness": 0,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "posts",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.08
+                ]
+              },
+              0,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  0.08
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "post",
+          "material": "frame"
+        },
+        {
+          "id": "shelves",
+          "transform": {
+            "position": [
+              0,
+              0.12,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": {
+              "$param": "levels"
+            },
+            "step": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.16
+                    ]
+                  },
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "levels"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "shelf",
+          "material": "shelf"
+        },
+        {
+          "id": "frontRails",
+          "transform": {
+            "position": [
+              0,
+              0.075,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": {
+              "$param": "levels"
+            },
+            "step": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.16
+                    ]
+                  },
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "levels"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "rail",
+          "material": "frame"
+        },
+        {
+          "id": "cargo",
+          "transform": {
+            "position": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "neg",
+                    "args": [
+                      {
+                        "$expr": "div",
+                        "args": [
+                          {
+                            "$param": "width"
+                          },
+                          2
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$expr": "div",
+                        "args": [
+                          {
+                            "$param": "width"
+                          },
+                          {
+                            "$param": "lanes"
+                          }
+                        ]
+                      },
+                      2
+                    ]
+                  }
+                ]
+              },
+              0.16,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [
+            "cargo"
+          ],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              {
+                "$param": "lanes"
+              },
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "levels"
+                  },
+                  1
+                ]
+              },
+              1
+            ],
+            "step": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  {
+                    "$param": "lanes"
+                  }
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.16
+                    ]
+                  },
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "levels"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              },
+              0
+            ],
+            "centered": false
+          },
+          "type": "model",
+          "model": "crate",
+          "parameters": {
+            "width": {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$expr": "div",
+                  "args": [
+                    {
+                      "$param": "width"
+                    },
+                    {
+                      "$param": "lanes"
+                    }
+                  ]
+                },
+                0.68
+              ]
+            },
+            "height": {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$expr": "div",
+                  "args": [
+                    {
+                      "$expr": "sub",
+                      "args": [
+                        {
+                          "$param": "height"
+                        },
+                        0.16
+                      ]
+                    },
+                    {
+                      "$expr": "sub",
+                      "args": [
+                        {
+                          "$param": "levels"
+                        },
+                        1
+                      ]
+                    }
+                  ]
+                },
+                0.62
+              ]
+            },
+            "depth": {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "depth"
+                },
+                0.72
+              ]
+            }
+          },
+          "materialOverrides": {
+            "body": "cargo"
+          }
+        }
+      ]
+    }
+  }
+}

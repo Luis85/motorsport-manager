@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "primitiveCylinder",
+  "category": "Primitives",
+  "description": "A capped cylinder along the local Y axis.",
+  "name": "Cylinder",
+  "parameters": {
+    "radius": {
+      "default": 0.5,
+      "min": 0.025,
+      "max": 10,
+      "description": "Radius"
+    },
+    "height": {
+      "default": 1,
+      "min": 0.05,
+      "max": 20,
+      "description": "Height"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$param": "radius"
+      },
+      "radiusBottom": {
+        "$param": "radius"
+      },
+      "height": {
+        "$param": "height"
+      },
+      "segments": 32
+    }
+  },
+  "materials": {
+    "surface": {
+      "color": "#73a3b0",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "surface"
+    }
+  ]
+}

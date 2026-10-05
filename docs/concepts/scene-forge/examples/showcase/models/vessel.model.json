@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "vessel",
+  "category": "Industrial",
+  "name": "Process vessel",
+  "parameters": {
+    "height": {
+      "default": 4,
+      "min": 2.5,
+      "max": 6,
+      "description": "Cylindrical body height"
+    },
+    "radius": {
+      "default": 1.05,
+      "min": 0.65,
+      "max": 1.5,
+      "description": "Vessel radius"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$param": "radius"
+      },
+      "radiusBottom": {
+        "$param": "radius"
+      },
+      "height": {
+        "$param": "height"
+      },
+      "segments": 40
+    },
+    "cap": {
+      "type": "sphere",
+      "radius": {
+        "$param": "radius"
+      },
+      "segments": 32
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.2,
+        0.75,
+        0.2
+      ]
+    },
+    "foot": {
+      "type": "box",
+      "size": [
+        0.45,
+        0.1,
+        0.45
+      ]
+    },
+    "band": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$expr": "add",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.016
+        ]
+      },
+      "radiusBottom": {
+        "$expr": "add",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.016
+        ]
+      },
+      "height": 0.22,
+      "segments": 40
+    },
+    "outlet": {
+      "type": "cylinder",
+      "radiusTop": 0.17,
+      "radiusBottom": 0.17,
+      "height": 0.45,
+      "segments": 24
+    }
+  },
+  "materials": {
+    "shell": {
+      "color": "#afc1c2",
+      "metalness": 0.5,
+      "roughness": 0.34,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "band": {
+      "color": "#397887",
+      "metalness": 0.35,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "legs": {
+      "color": "#4c606a",
+      "metalness": 0.7,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0.7
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "shell"
+    },
+    {
+      "id": "top",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.7
+            ]
+          },
+          0
+        ],
+        "scale": [
+          1,
+          0.36,
+          1
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cap",
+      "material": "shell"
+    },
+    {
+      "id": "baseCap",
+      "transform": {
+        "position": [
+          0,
+          0.7,
+          0
+        ],
+        "scale": [
+          1,
+          0.3,
+          1
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cap",
+      "material": "shell"
+    },
+    {
+      "id": "legs",
+      "transform": {
+        "position": [
+          0,
+          0.375,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              1.4
+            ]
+          },
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              1.4
+            ]
+          }
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "legs"
+    },
+    {
+      "id": "feet",
+      "transform": {
+        "position": [
+          0,
+          0.05,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              1.4
+            ]
+          },
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              1.4
+            ]
+          }
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "foot",
+      "material": "legs"
+    },
+    {
+      "id": "bands",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              0.7,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.2
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.6
+            ]
+          },
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "band",
+      "material": "band"
+    },
+    {
+      "id": "outlet",
+      "transform": {
+        "position": [
+          0,
+          1.15,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.1
+            ]
+          }
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "outlet",
+      "material": "legs"
+    },
+    {
+      "id": "topValve",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.7
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  0.36
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "valve",
+      "parameters": {},
+      "materialOverrides": {}
+    }
+  ]
+}

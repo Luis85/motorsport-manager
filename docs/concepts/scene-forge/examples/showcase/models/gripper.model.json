@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "gripper",
+  "category": "Robotics",
+  "name": "Parallel-jaw gripper",
+  "parameters": {
+    "opening": {
+      "default": 0.42,
+      "min": 0.15,
+      "max": 0.85,
+      "description": "Jaw opening"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "opening"
+            },
+            0.3
+          ]
+        },
+        0.22,
+        0.38
+      ]
+    },
+    "finger": {
+      "type": "box",
+      "size": [
+        0.09,
+        0.43,
+        0.13
+      ]
+    },
+    "pad": {
+      "type": "box",
+      "size": [
+        0.04,
+        0.19,
+        0.16
+      ]
+    },
+    "coupling": {
+      "type": "cylinder",
+      "radiusTop": 0.13,
+      "radiusBottom": 0.13,
+      "height": 0.2,
+      "segments": 24
+    }
+  },
+  "materials": {
+    "metal": {
+      "color": "#6d7a7f",
+      "metalness": 0.75,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pad": {
+      "color": "#333e46",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "amber": {
+      "color": "#d6a24b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          -0.11,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "metal"
+    },
+    {
+      "id": "coupling",
+      "transform": {
+        "position": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "coupling",
+      "material": "amber"
+    },
+    {
+      "id": "fingers",
+      "transform": {
+        "position": [
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "opening"
+              },
+              -2
+            ]
+          },
+          -0.39,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$param": "opening"
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "finger",
+      "material": "metal"
+    },
+    {
+      "id": "pads",
+      "transform": {
+        "position": [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "opening"
+                  },
+                  -2
+                ]
+              },
+              -0.025
+            ]
+          },
+          -0.5,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "opening"
+              },
+              0.05
+            ]
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "pad",
+      "material": "pad"
+    }
+  ]
+}

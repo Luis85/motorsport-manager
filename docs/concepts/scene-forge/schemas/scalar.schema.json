@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "type": "number",
+      "minimum": -1000000,
+      "maximum": 1000000
+    },
+    {
+      "type": "object",
+      "properties": {
+        "$param": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+        }
+      },
+      "required": [
+        "$param"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "$expr": {
+          "type": "string",
+          "enum": [
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "min",
+            "max",
+            "abs",
+            "neg",
+            "sin",
+            "cos",
+            "clamp"
+          ]
+        },
+        "args": {
+          "minItems": 1,
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "$ref": "#"
+          }
+        }
+      },
+      "required": [
+        "$expr",
+        "args"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,0 +1,655 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "box"
+        },
+        "size": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "$ref": "#/$defs/__schema0"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "type",
+        "size"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "sphere"
+        },
+        "radius": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "radius"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "cylinder"
+        },
+        "radiusTop": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "radiusBottom": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "height": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        },
+        "openEnded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "radiusTop",
+        "radiusBottom",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "cone"
+        },
+        "radius": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "height": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "radius",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "torus"
+        },
+        "radius": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "tube": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "radius",
+        "tube"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "capsule"
+        },
+        "radius": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "length": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "radius",
+        "length"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "plane"
+        },
+        "size": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "$ref": "#/$defs/__schema0"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "type",
+        "size"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tube"
+        },
+        "points": {
+          "minItems": 2,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "radius": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "tubularSegments": {
+          "default": 64,
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 512
+        },
+        "radialSegments": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 32
+        },
+        "closed": {
+          "default": false,
+          "type": "boolean"
+        },
+        "capEnds": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "points",
+        "radius"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "lathe"
+        },
+        "points": {
+          "minItems": 2,
+          "maxItems": 512,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "points"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "extrude"
+        },
+        "points": {
+          "minItems": 3,
+          "maxItems": 512,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "holes": {
+          "maxItems": 32,
+          "type": "array",
+          "items": {
+            "minItems": 3,
+            "maxItems": 512,
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "depth": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bevel": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bevelSegments": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 128
+        }
+      },
+      "required": [
+        "type",
+        "points",
+        "depth"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "mesh"
+        },
+        "positions": {
+          "minItems": 3,
+          "maxItems": 100000,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "indices": {
+          "minItems": 3,
+          "maxItems": 600000,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "normals": {
+          "minItems": 3,
+          "maxItems": 100000,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "uvs": {
+          "minItems": 3,
+          "maxItems": 100000,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/__schema0"
+              },
+              {
+                "$ref": "#/$defs/__schema0"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "required": [
+        "type",
+        "positions",
+        "indices"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "boolean"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "union",
+            "subtract",
+            "intersect"
+          ]
+        },
+        "left": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+        },
+        "right": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+        },
+        "leftTransform": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rotation": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "scale": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "rightTransform": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rotation": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "scale": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                },
+                {
+                  "$ref": "#/$defs/__schema0"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "operation",
+        "left",
+        "right"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": -1000000,
+          "maximum": 1000000
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$param": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+            }
+          },
+          "required": [
+            "$param"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$expr": {
+              "type": "string",
+              "enum": [
+                "add",
+                "sub",
+                "mul",
+                "div",
+                "min",
+                "max",
+                "abs",
+                "neg",
+                "sin",
+                "cos",
+                "clamp"
+              ]
+            },
+            "args": {
+              "minItems": 1,
+              "maxItems": 16,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema0"
+              }
+            }
+          },
+          "required": [
+            "$expr",
+            "args"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

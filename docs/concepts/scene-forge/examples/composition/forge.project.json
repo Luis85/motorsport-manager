@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "name": "Kestrel Composition Kit",
+  "activeScene": "main",
+  "scenes": {
+    "main": "scenes/main.scene.json"
+  },
+  "models": {
+    "rover": "models/rover.model.json",
+    "barrel": "models/barrel.model.json",
+    "habitat": "models/habitat.model.json",
+    "solar": "models/solar.model.json",
+    "cargo": "models/cargo.model.json",
+    "landingPad": "models/landingPad.model.json",
+    "platform": "models/platform.model.json",
+    "fieldStation": "models/fieldStation.model.json"
+  }
+}

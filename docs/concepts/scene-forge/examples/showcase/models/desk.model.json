@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "desk",
+  "category": "Everyday",
+  "description": "A table or desk with editable dimensions.",
+  "name": "Writing desk",
+  "parameters": {
+    "width": {
+      "default": 2,
+      "min": 1,
+      "max": 3.5
+    },
+    "depth": {
+      "default": 0.85,
+      "min": 0.5,
+      "max": 1.5
+    },
+    "height": {
+      "default": 0.75,
+      "min": 0.35,
+      "max": 1.2
+    }
+  },
+  "geometries": {
+    "top": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        0.09,
+        {
+          "$param": "depth"
+        }
+      ]
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.07,
+        {
+          "$param": "height"
+        },
+        0.07
+      ]
+    }
+  },
+  "materials": {
+    "top": {
+      "color": "#b18559",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "frame": {
+      "color": "#3e525a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "top",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "height"
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "top",
+      "material": "top"
+    },
+    {
+      "id": "legs",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.2
+            ]
+          },
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "depth"
+              },
+              -0.2
+            ]
+          }
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "frame"
+    }
+  ]
+}

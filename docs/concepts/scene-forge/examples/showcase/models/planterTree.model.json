@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "planterTree",
+  "category": "Architecture",
+  "name": "Planter tree",
+  "parameters": {
+    "height": {
+      "default": 3.4,
+      "min": 2,
+      "max": 5,
+      "description": "Overall height"
+    },
+    "crown": {
+      "default": 1.1,
+      "min": 0.6,
+      "max": 1.8,
+      "description": "Crown radius"
+    }
+  },
+  "geometries": {
+    "planter": {
+      "type": "box",
+      "size": [
+        1.1,
+        0.5,
+        1.1
+      ]
+    },
+    "soil": {
+      "type": "box",
+      "size": [
+        0.94,
+        0.02,
+        0.94
+      ]
+    },
+    "trunk": {
+      "type": "cylinder",
+      "radiusTop": 0.11,
+      "radiusBottom": 0.11,
+      "height": {
+        "$expr": "mul",
+        "args": [
+          {
+            "$param": "height"
+          },
+          0.58
+        ]
+      },
+      "segments": 8
+    },
+    "crown": {
+      "type": "sphere",
+      "radius": {
+        "$param": "crown"
+      },
+      "segments": 12
+    }
+  },
+  "materials": {
+    "stone": {
+      "color": "#bca98b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "earth": {
+      "color": "#564938",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "wood": {
+      "color": "#735444",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "leaf": {
+      "color": "#628260",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "lightLeaf": {
+      "color": "#8c9c6a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    }
+  },
+  "nodes": [
+    {
+      "id": "planter",
+      "transform": {
+        "position": [
+          0,
+          0.25,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "planter",
+      "material": "stone"
+    },
+    {
+      "id": "soil",
+      "transform": {
+        "position": [
+          0,
+          0.51,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "soil",
+      "material": "earth"
+    },
+    {
+      "id": "trunk",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              0.5,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.29
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trunk",
+      "material": "wood"
+    },
+    {
+      "id": "crown",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.72
+            ]
+          },
+          0
+        ],
+        "scale": [
+          1,
+          1.05,
+          1
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "crown",
+      "material": "leaf"
+    },
+    {
+      "id": "crownTop",
+      "transform": {
+        "position": [
+          0.2,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.88
+            ]
+          },
+          0.05
+        ],
+        "scale": [
+          0.72,
+          0.72,
+          0.72
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "crown",
+      "material": "lightLeaf"
+    }
+  ]
+}

@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "pipePlant",
+  "name": "Process Plant / Routing study",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {
+    "floor": {
+      "type": "box",
+      "size": [
+        17,
+        0.25,
+        12
+      ]
+    },
+    "pad": {
+      "type": "box",
+      "size": [
+        3.4,
+        0.15,
+        3.3
+      ]
+    },
+    "line": {
+      "type": "box",
+      "size": [
+        0.06,
+        0.012,
+        4.7
+      ]
+    },
+    "step": {
+      "type": "box",
+      "size": [
+        1.1,
+        0.18,
+        0.43
+      ]
+    },
+    "manifold": {
+      "type": "tube",
+      "points": [
+        [
+          -6.8,
+          0.75,
+          2.7
+        ],
+        [
+          -3,
+          0.75,
+          2.7
+        ],
+        [
+          3,
+          0.75,
+          2.7
+        ],
+        [
+          6.8,
+          0.75,
+          2.7
+        ]
+      ],
+      "radius": 0.18,
+      "tubularSegments": 48,
+      "radialSegments": 8,
+      "closed": false,
+      "capEnds": true
+    },
+    "branch": {
+      "type": "tube",
+      "points": [
+        [
+          0,
+          1.15,
+          -1.75
+        ],
+        [
+          0,
+          1.15,
+          -0.8
+        ],
+        [
+          0,
+          0.75,
+          0.8
+        ],
+        [
+          0,
+          0.75,
+          2.7
+        ]
+      ],
+      "radius": 0.14,
+      "tubularSegments": 48,
+      "radialSegments": 8,
+      "closed": false,
+      "capEnds": true
+    },
+    "overhead": {
+      "type": "tube",
+      "points": [
+        [
+          -5,
+          4.5,
+          -3
+        ],
+        [
+          -5,
+          5.7,
+          -3
+        ],
+        [
+          -4,
+          6.25,
+          -3
+        ],
+        [
+          -1,
+          6.25,
+          -3
+        ],
+        [
+          0,
+          5.7,
+          -3
+        ],
+        [
+          0,
+          5.1,
+          -3
+        ]
+      ],
+      "radius": 0.16,
+      "tubularSegments": 48,
+      "radialSegments": 8,
+      "closed": false,
+      "capEnds": true
+    },
+    "return": {
+      "type": "tube",
+      "points": [
+        [
+          5,
+          1.15,
+          -1.75
+        ],
+        [
+          6.8,
+          1.15,
+          -1.75
+        ],
+        [
+          7,
+          1.15,
+          0.2
+        ],
+        [
+          7,
+          1.15,
+          3.7
+        ],
+        [
+          5,
+          0.63,
+          4
+        ]
+      ],
+      "radius": 0.12,
+      "tubularSegments": 48,
+      "radialSegments": 8,
+      "closed": false,
+      "capEnds": true
+    },
+    "pipeSupport": {
+      "type": "box",
+      "size": [
+        0.08,
+        0.7,
+        0.08
+      ]
+    }
+  },
+  "materials": {
+    "floor": {
+      "color": "#616f75",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "concrete": {
+      "color": "#8c999b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "blue": {
+      "color": "#397e95",
+      "metalness": 0.45,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "warm": {
+      "color": "#c0784b",
+      "metalness": 0.55,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "yellow": {
+      "color": "#dfb75f",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "steel": {
+      "color": "#536772",
+      "metalness": 0.65,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "foundation",
+      "transform": {
+        "position": [
+          0,
+          -0.125,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "floor",
+      "material": "floor"
+    },
+    {
+      "id": "pads",
+      "transform": {
+        "position": [
+          -5,
+          0.075,
+          -3
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          5,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "pad",
+      "material": "concrete"
+    },
+    {
+      "id": "tankA",
+      "transform": {
+        "position": [
+          -5,
+          0.15,
+          -3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "vessels"
+      ],
+      "type": "model",
+      "model": "vessel",
+      "parameters": {
+        "height": 3.65
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "tankB",
+      "transform": {
+        "position": [
+          0,
+          0.15,
+          -3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "vessels"
+      ],
+      "type": "model",
+      "model": "vessel",
+      "parameters": {
+        "height": 4.3
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "tankC",
+      "transform": {
+        "position": [
+          5,
+          0.15,
+          -3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "vessels"
+      ],
+      "type": "model",
+      "model": "vessel",
+      "parameters": {
+        "height": 3.3
+      },
+      "materialOverrides": {
+        "band": "warm"
+      }
+    },
+    {
+      "id": "serviceDeck",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -0.5
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "access"
+      ],
+      "type": "model",
+      "model": "catwalk",
+      "parameters": {
+        "length": 12.5,
+        "height": 2.1,
+        "posts": 8
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "stairs",
+      "transform": {
+        "position": [
+          6.5,
+          0.09,
+          3.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 11,
+        "step": [
+          0,
+          0.2,
+          -0.4
+        ]
+      },
+      "type": "mesh",
+      "geometry": "step",
+      "material": "yellow"
+    },
+    {
+      "id": "supplyHeader",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "pipes"
+      ],
+      "type": "mesh",
+      "geometry": "manifold",
+      "material": "blue"
+    },
+    {
+      "id": "vesselConnections",
+      "transform": {
+        "position": [
+          -5,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "pipes"
+      ],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          5,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "branch",
+      "material": "blue"
+    },
+    {
+      "id": "overheadTransfer",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "pipes"
+      ],
+      "type": "mesh",
+      "geometry": "overhead",
+      "material": "warm"
+    },
+    {
+      "id": "returnLoop",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "pipes"
+      ],
+      "type": "mesh",
+      "geometry": "return",
+      "material": "warm"
+    },
+    {
+      "id": "lineValves",
+      "transform": {
+        "position": [
+          -5,
+          0.82,
+          1.65
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          5,
+          0,
+          0
+        ]
+      },
+      "type": "model",
+      "model": "valve",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "pumps",
+      "transform": {
+        "position": [
+          -4,
+          0,
+          4
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "equipment"
+      ],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          4,
+          0,
+          0
+        ]
+      },
+      "type": "model",
+      "model": "pump",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "pipeSupports",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            -6,
+            0.35,
+            2.7
+          ],
+          [
+            -3,
+            0.35,
+            2.7
+          ],
+          [
+            0,
+            0.35,
+            2.7
+          ],
+          [
+            3,
+            0.35,
+            2.7
+          ],
+          [
+            6,
+            0.35,
+            2.7
+          ]
+        ],
+        "orient": "none"
+      },
+      "type": "mesh",
+      "geometry": "pipeSupport",
+      "material": "steel"
+    },
+    {
+      "id": "walkwayLines",
+      "transform": {
+        "position": [
+          -7.5,
+          0.012,
+          1.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          15,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "line",
+      "material": "yellow"
+    }
+  ],
+  "environment": {
+    "background": "#171d25",
+    "ambient": 1.8,
+    "keyIntensity": 3.5,
+    "keyPosition": [
+      5,
+      10,
+      7
+    ]
+  }
+}

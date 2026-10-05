@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "Kestrel Outpost",
+  "activeScene": "main",
+  "scenes": {
+    "main": "scenes/main.scene.json"
+  },
+  "models": {
+    "rover": "models/rover.model.json",
+    "barrel": "models/barrel.model.json"
+  }
+}

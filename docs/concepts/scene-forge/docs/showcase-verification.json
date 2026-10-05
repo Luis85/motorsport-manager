@@ -1,0 +1,361 @@
+{
+  "version": "0.6.0",
+  "checkedAt": "2026-10-05T20:39:31.914Z",
+  "platform": "linux",
+  "node": "v24.19.0",
+  "scenes": [
+    {
+      "scene": "outpost",
+      "bytes": 170864,
+      "stats": {
+        "nodes": 98,
+        "meshes": 88,
+        "triangles": 6776,
+        "materials": 14,
+        "geometries": 35,
+        "bounds": {
+          "min": [
+            -5.199999809265137,
+            -0.3600000005960464,
+            -5.199999809265137
+          ],
+          "max": [
+            5.199999809265137,
+            3.409999997317791,
+            5.199999809265137
+          ],
+          "size": [
+            10.399999618530273,
+            3.769999997913837,
+            10.399999618530273
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 38
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 0
+    },
+    {
+      "scene": "fieldStation",
+      "bytes": 200008,
+      "stats": {
+        "nodes": 196,
+        "meshes": 163,
+        "triangles": 8284,
+        "materials": 14,
+        "geometries": 34,
+        "bounds": {
+          "min": [
+            -7.175999736785888,
+            -0.3600000005960464,
+            -7.175999736785888
+          ],
+          "max": [
+            7.175999736785888,
+            3.344999986588955,
+            7.175999736785888
+          ],
+          "size": [
+            14.351999473571777,
+            3.7049999871850012,
+            14.351999473571777
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 35
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 0
+    },
+    {
+      "scene": "logistics",
+      "bytes": 95216,
+      "stats": {
+        "nodes": 221,
+        "meshes": 140,
+        "triangles": 1680,
+        "materials": 8,
+        "geometries": 19,
+        "bounds": {
+          "min": [
+            -6.5,
+            -0.15999999821186067,
+            -3.5
+          ],
+          "max": [
+            6.5,
+            3.29999999910593,
+            3.5
+          ],
+          "size": [
+            13,
+            3.459999997317791,
+            7
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 19
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 0
+    },
+    {
+      "scene": "courtyard",
+      "bytes": 298316,
+      "stats": {
+        "nodes": 418,
+        "meshes": 308,
+        "triangles": 8980,
+        "materials": 23,
+        "geometries": 56,
+        "bounds": {
+          "min": [
+            -11.5,
+            -0.3000000059604645,
+            -9
+          ],
+          "max": [
+            11.5,
+            11.872000002861023,
+            9
+          ],
+          "size": [
+            23,
+            12.172000008821488,
+            18
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 57
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 6
+    },
+    {
+      "scene": "pipePlant",
+      "bytes": 288524,
+      "stats": {
+        "nodes": 207,
+        "meshes": 169,
+        "triangles": 19140,
+        "materials": 16,
+        "geometries": 32,
+        "bounds": {
+          "min": [
+            -8.5,
+            -0.25,
+            -6
+          ],
+          "max": [
+            8.5,
+            6.547883033752441,
+            6
+          ],
+          "size": [
+            17,
+            6.797883033752441,
+            12
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 33
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 6
+    },
+    {
+      "scene": "robotCell",
+      "bytes": 152764,
+      "stats": {
+        "nodes": 168,
+        "meshes": 109,
+        "triangles": 6100,
+        "materials": 19,
+        "geometries": 29,
+        "bounds": {
+          "min": [
+            -7,
+            -0.20000000149011612,
+            -6
+          ],
+          "max": [
+            7,
+            2.863017345615236,
+            6
+          ],
+          "size": [
+            14,
+            3.0630173471053523,
+            12
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 32
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 6
+    },
+    {
+      "scene": "assetStudio",
+      "bytes": 251240,
+      "stats": {
+        "nodes": 147,
+        "meshes": 100,
+        "triangles": 6704,
+        "materials": 36,
+        "geometries": 49,
+        "bounds": {
+          "min": [
+            -5.5,
+            -0.20000000149011612,
+            -4.5
+          ],
+          "max": [
+            5.5,
+            3.299999976158142,
+            4.5
+          ],
+          "size": [
+            11,
+            3.499999977648258,
+            9
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 68
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 6
+    },
+    {
+      "scene": "animationLab",
+      "bytes": 271676,
+      "stats": {
+        "nodes": 68,
+        "meshes": 46,
+        "triangles": 3264,
+        "materials": 8,
+        "geometries": 44,
+        "bounds": {
+          "min": [
+            -4,
+            -0.1399999986588955,
+            -2.5
+          ],
+          "max": [
+            4,
+            1.8700000190734865,
+            2.5
+          ],
+          "size": [
+            8,
+            2.010000017732382,
+            5
+          ]
+        },
+        "warnings": []
+      },
+      "gltf": {
+        "errors": 0,
+        "warnings": 0,
+        "info": 44
+      },
+      "quality": {
+        "passed": true,
+        "summary": {
+          "errors": 0,
+          "warnings": 0
+        }
+      },
+      "reviewFrames": 6
+    }
+  ],
+  "browser": {
+    "desktop": [
+      1600,
+      1050
+    ],
+    "mobile": [
+      390,
+      844
+    ],
+    "runtimeErrors": [],
+    "httpRequests": [],
+    "horizontalOverflow": false
+  },
+  "limitations": [
+    "Native Blender and Godot imports were not tested.",
+    "No inverse kinematics, arbitrary GLSL, manual vertex weight painting, or skeletal translation/scale tracks."
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-result",
+  "provenance": {
+    "tool": "scene-forge",
+    "version": "0.6.0",
+    "three": "186",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "chromium": "153.0.8010.0",
+    "rendererRequested": "ANGLE SwiftShader"
+  },
+  "scene": "courtyard",
+  "revision": 0,
+  "sourceStateHash": "4d42de47726ff53703711d27255b512efe1c7dc2a038a9659237b555e428586f",
+  "renderStateHash": "4d42de47726ff53703711d27255b512efe1c7dc2a038a9659237b555e428586f",
+  "target": {
+    "scene": "courtyard"
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "kind": "review",
+    "width": 800,
+    "height": 600,
+    "grid": false,
+    "wireframe": false,
+    "contactSheet": true,
+    "frames": [
+      {
+        "id": "iso",
+        "camera": {
+          "view": "iso",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "front",
+        "camera": {
+          "view": "front",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "right",
+        "camera": {
+          "view": "right",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "back",
+        "camera": {
+          "view": "back",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "left",
+        "camera": {
+          "view": "left",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "top",
+        "camera": {
+          "view": "top",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      }
+    ]
+  },
+  "stats": {
+    "nodes": 418,
+    "meshes": 308,
+    "triangles": 8980,
+    "materials": 23,
+    "geometries": 56,
+    "bounds": {
+      "min": [
+        -11.5,
+        -0.3000000059604645,
+        -9
+      ],
+      "max": [
+        11.5,
+        11.872000002861023,
+        9
+      ],
+      "size": [
+        23,
+        12.172000008821488,
+        18
+      ]
+    },
+    "warnings": []
+  },
+  "frames": [
+    {
+      "id": "iso",
+      "file": "iso.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "perspective",
+        "position": [
+          24.964900185709233,
+          23.76072813216093,
+          32.9536682451362
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "fov": 40,
+        "aspect": 1.3333333333333333
+      },
+      "sha256": "030ba553663b679aeebe9a5fdffda50d6e11278950faee42515216cbc87b2ef5",
+      "bytes": 84135
+    },
+    {
+      "id": "front",
+      "file": "front.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          0,
+          5.785999998450263,
+          94.92322296431338
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "left": -12.879999999999999,
+        "right": 12.879999999999999,
+        "top": 9.66,
+        "bottom": -9.66
+      },
+      "sha256": "898da77bf2fc008a927f0a7fc6c30ef74ce21309d35d6ea891c4ade650c5ed77",
+      "bytes": 66365
+    },
+    {
+      "id": "right",
+      "file": "right.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          94.92322296431338,
+          5.785999998450263,
+          5.812371058399846e-15
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "left": -10.08,
+        "right": 10.08,
+        "top": 7.5600000000000005,
+        "bottom": -7.5600000000000005
+      },
+      "sha256": "1d3675f3adb34244a313c63f38a86e10c09ebbfddd0f093507581d600906d279",
+      "bytes": 27453
+    },
+    {
+      "id": "back",
+      "file": "back.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          1.1624742116799692e-14,
+          5.785999998450263,
+          -94.92322296431338
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "left": -12.879999999999999,
+        "right": 12.879999999999999,
+        "top": 9.66,
+        "bottom": -9.66
+      },
+      "sha256": "153cee91430cf2d3539e6b468138708bca173489a6d3bab66984632dd32a9dc8",
+      "bytes": 10885
+    },
+    {
+      "id": "left",
+      "file": "left.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          -94.92322296431338,
+          5.785999998450263,
+          5.812371058399846e-15
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "left": -10.08,
+        "right": 10.08,
+        "top": 7.5600000000000005,
+        "bottom": -7.5600000000000005
+      },
+      "sha256": "a21899262b34bf8d62df30941afb4d7f9ff0892121776ebe4185873c008608e5",
+      "bytes": 16143
+    },
+    {
+      "id": "top",
+      "file": "top.png",
+      "width": 800,
+      "height": 600,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          0,
+          100.70922296276359,
+          2.842170943040401e-14
+        ],
+        "target": [
+          0,
+          5.785999998450278,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -1
+        ],
+        "near": 0.0316410743214378,
+        "far": 31641.074321437794,
+        "zoom": 1,
+        "left": -13.440000000000001,
+        "right": 13.440000000000001,
+        "top": 10.080000000000002,
+        "bottom": -10.080000000000002
+      },
+      "sha256": "40ba74c26c1d9af58ee463ff15bb01647892be33fdcf537cdf8f25c13fc2c74c",
+      "bytes": 58349
+    }
+  ],
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "width": 1920,
+    "height": 1024
+  },
+  "replayPlan": "replay-plan.json",
+  "durationMs": 3200
+}

@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "barrel",
+  "name": "Supply barrel",
+  "parameters": {},
+  "geometries": {
+    "body": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.34,
+          0
+        ],
+        [
+          0.38,
+          0.1
+        ],
+        [
+          0.4,
+          0.45
+        ],
+        [
+          0.38,
+          0.85
+        ],
+        [
+          0.34,
+          0.95
+        ],
+        [
+          0,
+          0.95
+        ]
+      ],
+      "segments": 24
+    },
+    "ring": {
+      "type": "torus",
+      "radius": 0.375,
+      "tube": 0.025,
+      "segments": 24
+    }
+  },
+  "materials": {
+    "shell": {
+      "color": "#587a81",
+      "metalness": 0.35,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "rim": {
+      "color": "#bac8c4",
+      "metalness": 0.65,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "shell"
+    },
+    {
+      "id": "ringLow",
+      "transform": {
+        "position": [
+          0,
+          0.15,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "ring",
+      "material": "rim"
+    },
+    {
+      "id": "ringHigh",
+      "transform": {
+        "position": [
+          0,
+          0.78,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "ring",
+      "material": "rim"
+    }
+  ]
+}

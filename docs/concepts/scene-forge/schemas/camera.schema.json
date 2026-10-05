@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "view": {
+      "default": "iso",
+      "type": "string",
+      "enum": [
+        "iso",
+        "front",
+        "back",
+        "right",
+        "left",
+        "side",
+        "top",
+        "bottom",
+        "authored",
+        "orbit"
+      ]
+    },
+    "projection": {
+      "default": "auto",
+      "type": "string",
+      "enum": [
+        "auto",
+        "perspective",
+        "orthographic"
+      ]
+    },
+    "azimuth": {
+      "default": 45,
+      "type": "number",
+      "minimum": -1000000,
+      "maximum": 1000000
+    },
+    "elevation": {
+      "default": 30,
+      "type": "number",
+      "minimum": -89.9,
+      "maximum": 89.9
+    },
+    "padding": {
+      "default": 1.12,
+      "type": "number",
+      "minimum": 1.02,
+      "maximum": 3
+    },
+    "fov": {
+      "default": 40,
+      "type": "number",
+      "minimum": 5,
+      "maximum": 120
+    },
+    "fixed": {
+      "type": "object",
+      "properties": {
+        "projection": {
+          "type": "string",
+          "enum": [
+            "perspective",
+            "orthographic"
+          ]
+        },
+        "position": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "target": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "up": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "near": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "far": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "zoom": {
+          "default": 1,
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fov": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 120
+        },
+        "aspect": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "left": {
+          "type": "number"
+        },
+        "right": {
+          "type": "number"
+        },
+        "top": {
+          "type": "number"
+        },
+        "bottom": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "projection",
+        "position",
+        "target",
+        "up",
+        "near",
+        "far"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

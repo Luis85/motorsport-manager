@@ -1,0 +1,1963 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "courtyard",
+    "name": "The Linden Courtyard",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "ground": {
+        "type": "box",
+        "size": [
+          23,
+          0.3,
+          18
+        ]
+      },
+      "plaza": {
+        "type": "cylinder",
+        "radiusTop": 3.1,
+        "radiusBottom": 3.1,
+        "height": 0.045,
+        "segments": 64
+      },
+      "joint": {
+        "type": "box",
+        "size": [
+          0.018,
+          0.01,
+          18
+        ]
+      }
+    },
+    "materials": {
+      "paving": {
+        "color": "#bcad94",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "stone": {
+        "color": "#a09584",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "blue": {
+        "color": "#779494",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "cream": {
+        "color": "#d5b98b",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "line": {
+        "color": "#d8cbb1",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "ground",
+        "transform": {
+          "position": [
+            0,
+            -0.15,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "ground",
+        "material": "paving"
+      },
+      {
+        "id": "plaza",
+        "transform": {
+          "position": [
+            2,
+            0.023,
+            2.6
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "plaza",
+        "material": "stone"
+      },
+      {
+        "id": "pavingJoints",
+        "transform": {
+          "position": [
+            -10.5,
+            0.01,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 22,
+          "step": [
+            1,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "joint",
+        "material": "line"
+      },
+      {
+        "id": "copperHouse",
+        "transform": {
+          "position": [
+            -6,
+            0,
+            -4.3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "buildings"
+        ],
+        "type": "model",
+        "model": "townhouse",
+        "parameters": {
+          "floors": 3,
+          "width": 4.8
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "blueHouse",
+        "transform": {
+          "position": [
+            -0.65,
+            0,
+            -4.3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "buildings"
+        ],
+        "type": "model",
+        "model": "townhouse",
+        "parameters": {
+          "floors": 4,
+          "width": 4.6,
+          "bays": 3
+        },
+        "materialOverrides": {
+          "wall": "blue"
+        }
+      },
+      {
+        "id": "creamHouse",
+        "transform": {
+          "position": [
+            4.65,
+            0,
+            -4.3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "buildings"
+        ],
+        "type": "model",
+        "model": "townhouse",
+        "parameters": {
+          "floors": 2,
+          "width": 4.9,
+          "bays": 3
+        },
+        "materialOverrides": {
+          "wall": "cream"
+        }
+      },
+      {
+        "id": "fountain",
+        "transform": {
+          "position": [
+            2,
+            0,
+            2.6
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "landscape"
+        ],
+        "type": "model",
+        "model": "fountain",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "avenueTrees",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "landscape"
+        ],
+        "pattern": {
+          "type": "path",
+          "points": [
+            [
+              -9.7,
+              0,
+              -2
+            ],
+            [
+              -9.7,
+              0,
+              2
+            ],
+            [
+              -9.7,
+              0,
+              6
+            ],
+            [
+              9.2,
+              0,
+              -2
+            ],
+            [
+              9.2,
+              0,
+              2
+            ],
+            [
+              9.2,
+              0,
+              6
+            ]
+          ],
+          "orient": "none"
+        },
+        "type": "model",
+        "model": "planterTree",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "benches",
+        "transform": {
+          "position": [
+            -2.8,
+            0,
+            5.3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "furniture"
+        ],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            3.2,
+            0,
+            0
+          ]
+        },
+        "type": "model",
+        "model": "parkBench",
+        "parameters": {},
+        "materialOverrides": {}
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "ambient": 1.8,
+      "keyIntensity": 3.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "windowBay": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "windowBay",
+      "category": "Architecture",
+      "name": "Framed window",
+      "parameters": {
+        "width": {
+          "default": 1,
+          "min": 0.5,
+          "max": 2,
+          "description": "Window width"
+        },
+        "height": {
+          "default": 1.3,
+          "min": 0.7,
+          "max": 2,
+          "description": "Window height"
+        }
+      },
+      "geometries": {
+        "pane": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            {
+              "$param": "height"
+            },
+            0.08
+          ]
+        },
+        "side": {
+          "type": "box",
+          "size": [
+            0.075,
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "height"
+                },
+                0.15
+              ]
+            },
+            0.12
+          ]
+        },
+        "horizontal": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.15
+              ]
+            },
+            0.075,
+            0.12
+          ]
+        },
+        "mullion": {
+          "type": "box",
+          "size": [
+            0.05,
+            {
+              "$param": "height"
+            },
+            0.13
+          ]
+        },
+        "sill": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.32
+              ]
+            },
+            0.11,
+            0.28
+          ]
+        }
+      },
+      "materials": {
+        "trim": {
+          "color": "#eee2c7",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "pane": {
+          "color": "#345967",
+          "metalness": 0.25,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "sill": {
+          "color": "#a8987b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "glass",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "pane",
+          "material": "pane"
+        },
+        {
+          "id": "frameSides",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.5
+                ]
+              },
+              0,
+              0.03
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$param": "width"
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "side",
+          "material": "trim"
+        },
+        {
+          "id": "frameCross",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  -0.5
+                ]
+              },
+              0.03
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              0,
+              {
+                "$param": "height"
+              },
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "horizontal",
+          "material": "trim"
+        },
+        {
+          "id": "mullion",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "mullion",
+          "material": "trim"
+        },
+        {
+          "id": "sill",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      -0.5
+                    ]
+                  },
+                  0.1
+                ]
+              },
+              0.08
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "sill",
+          "material": "sill"
+        }
+      ]
+    },
+    "townhouse": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "townhouse",
+      "category": "Architecture",
+      "name": "Modular townhouse",
+      "parameters": {
+        "width": {
+          "default": 4.8,
+          "min": 3.2,
+          "max": 8,
+          "description": "Facade width in meters"
+        },
+        "depth": {
+          "default": 3.5,
+          "min": 2,
+          "max": 6,
+          "description": "Building depth"
+        },
+        "floors": {
+          "default": 3,
+          "min": 2,
+          "max": 5,
+          "description": "Number of floors",
+          "integer": true
+        },
+        "bays": {
+          "default": 3,
+          "min": 2,
+          "max": 5,
+          "description": "Window columns",
+          "integer": true
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "floors"
+                },
+                2.6
+              ]
+            },
+            {
+              "$param": "depth"
+            }
+          ]
+        },
+        "cornice": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.2
+              ]
+            },
+            0.13,
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "depth"
+                },
+                0.14
+              ]
+            }
+          ]
+        },
+        "roof": {
+          "type": "extrude",
+          "points": [
+            [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.5
+                ]
+              },
+              0
+            ],
+            [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.5
+                ]
+              },
+              0
+            ],
+            [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.32
+                ]
+              }
+            ]
+          ],
+          "depth": {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "depth"
+              },
+              0.5
+            ]
+          }
+        },
+        "door": {
+          "type": "box",
+          "size": [
+            0.95,
+            2.05,
+            0.13
+          ]
+        },
+        "doorFrame": {
+          "type": "box",
+          "size": [
+            1.2,
+            2.25,
+            0.1
+          ]
+        },
+        "step": {
+          "type": "box",
+          "size": [
+            1.65,
+            0.14,
+            0.65
+          ]
+        },
+        "canopy": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.76
+              ]
+            },
+            0.12,
+            1
+          ]
+        },
+        "shopSign": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.76
+              ]
+            },
+            0.35,
+            0.1
+          ]
+        },
+        "chimney": {
+          "type": "box",
+          "size": [
+            0.42,
+            1.3,
+            0.45
+          ]
+        }
+      },
+      "materials": {
+        "wall": {
+          "color": "#c88569",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "trim": {
+          "color": "#ead7b2",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "roof": {
+          "color": "#694c4a",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "door": {
+          "color": "#40565b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "awning": {
+          "color": "#315e60",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "walls",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "floors"
+                      },
+                      2.6
+                    ]
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "wall"
+        },
+        {
+          "id": "floorBands",
+          "transform": {
+            "position": [
+              0,
+              2.6,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": {
+              "$param": "floors"
+            },
+            "step": [
+              0,
+              2.6,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "cornice",
+          "material": "trim"
+        },
+        {
+          "id": "roof",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "floors"
+                  },
+                  2.6
+                ]
+              },
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      -0.5
+                    ]
+                  },
+                  0.25
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "roof",
+          "material": "roof"
+        },
+        {
+          "id": "chimney",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.25
+                ]
+              },
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "floors"
+                      },
+                      2.6
+                    ]
+                  },
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "width"
+                      },
+                      0.15
+                    ]
+                  }
+                ]
+              },
+              -0.7
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "chimney",
+          "material": "trim"
+        },
+        {
+          "id": "upperWindows",
+          "transform": {
+            "position": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "width"
+                      },
+                      -0.5
+                    ]
+                  },
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$expr": "div",
+                        "args": [
+                          {
+                            "$param": "width"
+                          },
+                          {
+                            "$param": "bays"
+                          }
+                        ]
+                      },
+                      2
+                    ]
+                  }
+                ]
+              },
+              3.85,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.07
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              {
+                "$param": "bays"
+              },
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "floors"
+                  },
+                  1
+                ]
+              },
+              1
+            ],
+            "step": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  {
+                    "$param": "bays"
+                  }
+                ]
+              },
+              2.6,
+              0
+            ],
+            "centered": false
+          },
+          "type": "model",
+          "model": "windowBay",
+          "parameters": {
+            "width": {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$expr": "div",
+                  "args": [
+                    {
+                      "$param": "width"
+                    },
+                    {
+                      "$param": "bays"
+                    }
+                  ]
+                },
+                0.58
+              ]
+            },
+            "height": 1.4
+          },
+          "materialOverrides": {}
+        },
+        {
+          "id": "shopWindows",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.32
+                ]
+              },
+              1.3,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.07
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.64
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "model",
+          "model": "windowBay",
+          "parameters": {
+            "width": {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                0.19
+              ]
+            },
+            "height": 1.4
+          },
+          "materialOverrides": {}
+        },
+        {
+          "id": "doorSurround",
+          "transform": {
+            "position": [
+              0,
+              1.125,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.06
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "doorFrame",
+          "material": "trim"
+        },
+        {
+          "id": "door",
+          "transform": {
+            "position": [
+              0,
+              1.025,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.13
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "door",
+          "material": "door"
+        },
+        {
+          "id": "step",
+          "transform": {
+            "position": [
+              0,
+              0.07,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.4
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "step",
+          "material": "trim"
+        },
+        {
+          "id": "awning",
+          "transform": {
+            "position": [
+              0,
+              2.32,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.5
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "canopy",
+          "material": "awning"
+        },
+        {
+          "id": "sign",
+          "transform": {
+            "position": [
+              0,
+              2.14,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "depth"
+                      },
+                      2
+                    ]
+                  },
+                  0.98
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shopSign",
+          "material": "awning"
+        }
+      ]
+    },
+    "fountain": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "fountain",
+      "category": "Architecture",
+      "name": "Courtyard fountain",
+      "parameters": {
+        "radius": {
+          "default": 1.7,
+          "min": 1,
+          "max": 3,
+          "description": "Basin radius"
+        }
+      },
+      "geometries": {
+        "base": {
+          "type": "cylinder",
+          "radiusTop": {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.15
+            ]
+          },
+          "radiusBottom": {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.15
+            ]
+          },
+          "height": 0.18,
+          "segments": 48
+        },
+        "bowl": {
+          "type": "lathe",
+          "points": [
+            [
+              0,
+              0.08
+            ],
+            [
+              {
+                "$param": "radius"
+              },
+              0.08
+            ],
+            [
+              {
+                "$param": "radius"
+              },
+              0.6
+            ],
+            [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  0.15
+                ]
+              },
+              0.64
+            ],
+            [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  0.2
+                ]
+              },
+              0.24
+            ],
+            [
+              0,
+              0.24
+            ]
+          ],
+          "segments": 48
+        },
+        "water": {
+          "type": "cylinder",
+          "radiusTop": {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.21
+            ]
+          },
+          "radiusBottom": {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.21
+            ]
+          },
+          "height": 0.025,
+          "segments": 48
+        },
+        "column": {
+          "type": "cylinder",
+          "radiusTop": 0.16,
+          "radiusBottom": 0.16,
+          "height": 1.25,
+          "segments": 24
+        },
+        "orb": {
+          "type": "sphere",
+          "radius": 0.3,
+          "segments": 24
+        },
+        "jet": {
+          "type": "tube",
+          "points": [
+            [
+              0,
+              1.55,
+              0
+            ],
+            [
+              0.45,
+              1.45,
+              0
+            ],
+            [
+              0.9,
+              0.8,
+              0
+            ],
+            [
+              1.15,
+              0.37,
+              0
+            ]
+          ],
+          "radius": 0.028,
+          "tubularSegments": 24,
+          "radialSegments": 6,
+          "closed": false,
+          "capEnds": true
+        }
+      },
+      "materials": {
+        "stone": {
+          "color": "#c8baa1",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "water": {
+          "color": "#5caaa5",
+          "metalness": 0,
+          "roughness": 0.28,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "metal": {
+          "color": "#477c74",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.09,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "stone"
+        },
+        {
+          "id": "basin",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "bowl",
+          "material": "stone"
+        },
+        {
+          "id": "water",
+          "transform": {
+            "position": [
+              0,
+              0.36,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "water",
+          "material": "water"
+        },
+        {
+          "id": "column",
+          "transform": {
+            "position": [
+              0,
+              0.825,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "column",
+          "material": "metal"
+        },
+        {
+          "id": "orb",
+          "transform": {
+            "position": [
+              0,
+              1.6,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "orb",
+          "material": "stone"
+        },
+        {
+          "id": "jets",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "radial",
+            "count": 6,
+            "radius": 0,
+            "startAngle": 0,
+            "sweep": 360,
+            "orient": true
+          },
+          "type": "mesh",
+          "geometry": "jet",
+          "material": "water"
+        }
+      ]
+    },
+    "planterTree": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "planterTree",
+      "category": "Architecture",
+      "name": "Planter tree",
+      "parameters": {
+        "height": {
+          "default": 3.4,
+          "min": 2,
+          "max": 5,
+          "description": "Overall height"
+        },
+        "crown": {
+          "default": 1.1,
+          "min": 0.6,
+          "max": 1.8,
+          "description": "Crown radius"
+        }
+      },
+      "geometries": {
+        "planter": {
+          "type": "box",
+          "size": [
+            1.1,
+            0.5,
+            1.1
+          ]
+        },
+        "soil": {
+          "type": "box",
+          "size": [
+            0.94,
+            0.02,
+            0.94
+          ]
+        },
+        "trunk": {
+          "type": "cylinder",
+          "radiusTop": 0.11,
+          "radiusBottom": 0.11,
+          "height": {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.58
+            ]
+          },
+          "segments": 8
+        },
+        "crown": {
+          "type": "sphere",
+          "radius": {
+            "$param": "crown"
+          },
+          "segments": 12
+        }
+      },
+      "materials": {
+        "stone": {
+          "color": "#bca98b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "earth": {
+          "color": "#564938",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "wood": {
+          "color": "#735444",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "leaf": {
+          "color": "#628260",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": true
+        },
+        "lightLeaf": {
+          "color": "#8c9c6a",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": true
+        }
+      },
+      "nodes": [
+        {
+          "id": "planter",
+          "transform": {
+            "position": [
+              0,
+              0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "planter",
+          "material": "stone"
+        },
+        {
+          "id": "soil",
+          "transform": {
+            "position": [
+              0,
+              0.51,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "soil",
+          "material": "earth"
+        },
+        {
+          "id": "trunk",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  0.5,
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.29
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "trunk",
+          "material": "wood"
+        },
+        {
+          "id": "crown",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.72
+                ]
+              },
+              0
+            ],
+            "scale": [
+              1,
+              1.05,
+              1
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "crown",
+          "material": "leaf"
+        },
+        {
+          "id": "crownTop",
+          "transform": {
+            "position": [
+              0.2,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.88
+                ]
+              },
+              0.05
+            ],
+            "scale": [
+              0.72,
+              0.72,
+              0.72
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "crown",
+          "material": "lightLeaf"
+        }
+      ]
+    },
+    "parkBench": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "parkBench",
+      "category": "Architecture",
+      "name": "Slatted park bench",
+      "parameters": {
+        "width": {
+          "default": 1.8,
+          "min": 1,
+          "max": 3,
+          "description": "Seat width"
+        }
+      },
+      "geometries": {
+        "slat": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.07,
+            0.095
+          ]
+        },
+        "back": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.09,
+            0.07
+          ]
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.07,
+            0.65,
+            0.07
+          ]
+        },
+        "backPost": {
+          "type": "box",
+          "size": [
+            0.055,
+            0.8,
+            0.055
+          ]
+        }
+      },
+      "materials": {
+        "wood": {
+          "color": "#b77d49",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "metal": {
+          "color": "#425153",
+          "metalness": 0.6,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "slats",
+          "transform": {
+            "position": [
+              0,
+              0.57,
+              -0.22
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 5,
+            "step": [
+              0,
+              0,
+              0.11
+            ]
+          },
+          "type": "mesh",
+          "geometry": "slat",
+          "material": "wood"
+        },
+        {
+          "id": "legs",
+          "transform": {
+            "position": [
+              0,
+              0.325,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.3
+                ]
+              },
+              0,
+              0.4
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "metal"
+        },
+        {
+          "id": "backPosts",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.4
+                ]
+              },
+              0.72,
+              -0.25
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.8
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "backPost",
+          "material": "metal"
+        },
+        {
+          "id": "backSlats",
+          "transform": {
+            "position": [
+              0,
+              0.83,
+              -0.25
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 3,
+            "step": [
+              0,
+              0.14,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "back",
+          "material": "wood"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "guideArrow",
+  "category": "Robotics",
+  "name": "Route arrow",
+  "parameters": {},
+  "geometries": {
+    "arrow": {
+      "type": "extrude",
+      "points": [
+        [
+          -0.09,
+          0
+        ],
+        [
+          0.09,
+          0
+        ],
+        [
+          0.09,
+          0.5
+        ],
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0,
+          0.85
+        ],
+        [
+          -0.25,
+          0.5
+        ],
+        [
+          -0.09,
+          0.5
+        ]
+      ],
+      "depth": 0.012
+    }
+  },
+  "materials": {
+    "paint": {
+      "color": "#e6c578",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "arrow",
+      "transform": {
+        "position": [
+          0,
+          0.025,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "arrow",
+      "material": "paint"
+    }
+  ]
+}

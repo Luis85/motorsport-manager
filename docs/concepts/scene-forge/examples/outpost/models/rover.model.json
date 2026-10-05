@@ -1,0 +1,734 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "rover",
+  "name": "Survey rover",
+  "parameters": {
+    "wheelRadius": {
+      "default": 0.48,
+      "min": 0.25,
+      "max": 0.7,
+      "description": "Wheel radius in meters"
+    },
+    "mastHeight": {
+      "default": 1.3,
+      "min": 0.5,
+      "max": 2.5
+    }
+  },
+  "materials": {
+    "body": {
+      "color": "#e99045",
+      "metalness": 0.2,
+      "roughness": 0.45
+    },
+    "ivory": {
+      "color": "#d8e0dc",
+      "metalness": 0.15,
+      "roughness": 0.5
+    },
+    "dark": {
+      "color": "#26323b",
+      "metalness": 0.3,
+      "roughness": 0.55
+    },
+    "rubber": {
+      "color": "#10191e",
+      "metalness": 0,
+      "roughness": 0.92
+    },
+    "glass": {
+      "color": "#4babb4",
+      "metalness": 0.45,
+      "roughness": 0.22
+    },
+    "light": {
+      "color": "#a2e8de",
+      "metalness": 0,
+      "roughness": 0.65,
+      "emissive": "#57bfb1",
+      "emissiveIntensity": 0.5
+    }
+  },
+  "geometries": {
+    "hull": {
+      "type": "box",
+      "size": [
+        1.8,
+        0.55,
+        2.65
+      ]
+    },
+    "underbody": {
+      "type": "box",
+      "size": [
+        1.5,
+        0.35,
+        2.35
+      ]
+    },
+    "cabin": {
+      "type": "extrude",
+      "points": [
+        [
+          -0.75,
+          0
+        ],
+        [
+          0.75,
+          0
+        ],
+        [
+          0.61,
+          0.82
+        ],
+        [
+          -0.42,
+          1.02
+        ],
+        [
+          -0.75,
+          0.65
+        ]
+      ],
+      "depth": 1.1,
+      "bevel": 0.06
+    },
+    "roof": {
+      "type": "box",
+      "size": [
+        1.3,
+        0.13,
+        1.4
+      ]
+    },
+    "window": {
+      "type": "box",
+      "size": [
+        1.12,
+        0.43,
+        0.04
+      ]
+    },
+    "wheel": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$param": "wheelRadius"
+      },
+      "radiusBottom": {
+        "$param": "wheelRadius"
+      },
+      "height": 0.38,
+      "segments": 16
+    },
+    "hub": {
+      "type": "cylinder",
+      "radiusTop": 0.23,
+      "radiusBottom": 0.23,
+      "height": 0.41,
+      "segments": 16
+    },
+    "axle": {
+      "type": "cylinder",
+      "radiusTop": 0.1,
+      "radiusBottom": 0.1,
+      "height": 2.3,
+      "segments": 12
+    },
+    "bumper": {
+      "type": "box",
+      "size": [
+        2,
+        0.14,
+        0.18
+      ]
+    },
+    "lamp": {
+      "type": "box",
+      "size": [
+        0.35,
+        0.15,
+        0.055
+      ]
+    },
+    "mast": {
+      "type": "cylinder",
+      "radiusTop": 0.045,
+      "radiusBottom": 0.07,
+      "height": {
+        "$param": "mastHeight"
+      },
+      "segments": 12
+    },
+    "camera": {
+      "type": "box",
+      "size": [
+        0.5,
+        0.24,
+        0.25
+      ]
+    },
+    "lens": {
+      "type": "cylinder",
+      "radiusTop": 0.075,
+      "radiusBottom": 0.075,
+      "height": 0.035,
+      "segments": 16
+    },
+    "crate": {
+      "type": "box",
+      "size": [
+        0.6,
+        0.43,
+        0.64
+      ]
+    },
+    "strap": {
+      "type": "box",
+      "size": [
+        0.63,
+        0.07,
+        0.69
+      ]
+    },
+    "vent": {
+      "type": "box",
+      "size": [
+        0.065,
+        0.025,
+        0.32
+      ]
+    },
+    "panel": {
+      "type": "box",
+      "size": [
+        0.62,
+        0.06,
+        0.65
+      ]
+    },
+    "fender": {
+      "type": "box",
+      "size": [
+        0.18,
+        0.14,
+        2.5
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "chassis",
+      "type": "mesh",
+      "geometry": "hull",
+      "material": "body",
+      "transform": {
+        "position": [
+          0,
+          0.87,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "undercarriage",
+      "type": "mesh",
+      "geometry": "underbody",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0,
+          0.55,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "cab",
+      "type": "mesh",
+      "geometry": "cabin",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          0,
+          1.15,
+          -0.15
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "canopy",
+      "type": "mesh",
+      "geometry": "roof",
+      "material": "body",
+      "transform": {
+        "position": [
+          0,
+          2.18,
+          0.35
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "windshield",
+      "type": "mesh",
+      "geometry": "window",
+      "material": "glass",
+      "transform": {
+        "position": [
+          0.04,
+          1.75,
+          0.975
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "frontBumper",
+      "type": "mesh",
+      "geometry": "bumper",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0,
+          0.7,
+          1.48
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "rearBumper",
+      "type": "mesh",
+      "geometry": "bumper",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0,
+          0.7,
+          -1.48
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "leftFender",
+      "type": "mesh",
+      "geometry": "fender",
+      "material": "body",
+      "transform": {
+        "position": [
+          -1.02,
+          1.05,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "rightFender",
+      "type": "mesh",
+      "geometry": "fender",
+      "material": "body",
+      "transform": {
+        "position": [
+          1.02,
+          1.05,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "leftLight",
+      "type": "mesh",
+      "geometry": "lamp",
+      "material": "light",
+      "transform": {
+        "position": [
+          -0.58,
+          1,
+          1.35
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "rightLight",
+      "type": "mesh",
+      "geometry": "lamp",
+      "material": "light",
+      "transform": {
+        "position": [
+          0.58,
+          1,
+          1.35
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "mast",
+      "type": "mesh",
+      "geometry": "mast",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0.58,
+          2.55,
+          -0.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "camera",
+      "type": "mesh",
+      "geometry": "camera",
+      "material": "body",
+      "transform": {
+        "position": [
+          0.58,
+          3.2,
+          -0.65
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "lens",
+      "type": "mesh",
+      "geometry": "lens",
+      "material": "glass",
+      "transform": {
+        "position": [
+          0.58,
+          3.2,
+          -0.505
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "cargo",
+      "type": "mesh",
+      "geometry": "crate",
+      "material": "dark",
+      "transform": {
+        "position": [
+          -0.45,
+          1.37,
+          -0.94
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "cargoStrap",
+      "type": "mesh",
+      "geometry": "strap",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          -0.45,
+          1.55,
+          -0.94
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "solar",
+      "type": "mesh",
+      "geometry": "panel",
+      "material": "glass",
+      "transform": {
+        "position": [
+          0.45,
+          1.2,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "vents",
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark",
+      "transform": {
+        "position": [
+          -0.36,
+          2.26,
+          0.35
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "pattern": {
+        "type": "linear",
+        "count": 8,
+        "step": [
+          0.105,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "id": "leftRearWheel",
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber",
+      "transform": {
+        "position": [
+          -1.06,
+          0.49,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "leftRearHub",
+      "type": "mesh",
+      "geometry": "hub",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          -1.06,
+          0.49,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "leftFrontWheel",
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber",
+      "transform": {
+        "position": [
+          -1.06,
+          0.49,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "leftFrontHub",
+      "type": "mesh",
+      "geometry": "hub",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          -1.06,
+          0.49,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "rightRearWheel",
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber",
+      "transform": {
+        "position": [
+          1.06,
+          0.49,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "rightRearHub",
+      "type": "mesh",
+      "geometry": "hub",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          1.06,
+          0.49,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "rightFrontWheel",
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber",
+      "transform": {
+        "position": [
+          1.06,
+          0.49,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "rightFrontHub",
+      "type": "mesh",
+      "geometry": "hub",
+      "material": "ivory",
+      "transform": {
+        "position": [
+          1.06,
+          0.49,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "axleRear",
+      "type": "mesh",
+      "geometry": "axle",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0,
+          0.49,
+          -0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "id": "axleFront",
+      "type": "mesh",
+      "geometry": "axle",
+      "material": "dark",
+      "transform": {
+        "position": [
+          0,
+          0.49,
+          0.88
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      }
+    }
+  ]
+}

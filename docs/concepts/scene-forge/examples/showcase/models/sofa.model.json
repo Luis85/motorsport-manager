@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "sofa",
+  "category": "Everyday",
+  "description": "A modular sofa with a parametric width.",
+  "name": "Two-seat sofa",
+  "parameters": {
+    "width": {
+      "default": 2.1,
+      "min": 1.4,
+      "max": 3.5,
+      "description": "Sofa width"
+    }
+  },
+  "geometries": {
+    "base": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        0.22,
+        0.85
+      ]
+    },
+    "seat": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$expr": "div",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                2
+              ]
+            },
+            -0.18
+          ]
+        },
+        0.2,
+        0.64
+      ]
+    },
+    "back": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "width"
+            },
+            -0.15
+          ]
+        },
+        0.58,
+        0.19
+      ]
+    },
+    "arm": {
+      "type": "box",
+      "size": [
+        0.18,
+        0.52,
+        0.85
+      ]
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.08,
+        0.19,
+        0.08
+      ]
+    }
+  },
+  "materials": {
+    "fabric": {
+      "color": "#71898e",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "base": {
+      "color": "#465960",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "wood": {
+      "color": "#906b4b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          0.3,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "base"
+    },
+    {
+      "id": "seats",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.24
+            ]
+          },
+          0.5,
+          0.06
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.48
+            ]
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "seat",
+      "material": "fabric"
+    },
+    {
+      "id": "back",
+      "transform": {
+        "position": [
+          0,
+          0.74,
+          -0.36
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "back",
+      "material": "fabric"
+    },
+    {
+      "id": "arms",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.5
+            ]
+          },
+          0.56,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$param": "width"
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "arm",
+      "material": "fabric"
+    },
+    {
+      "id": "feet",
+      "transform": {
+        "position": [
+          0,
+          0.095,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.25
+            ]
+          },
+          0,
+          0.65
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "wood"
+    }
+  ]
+}

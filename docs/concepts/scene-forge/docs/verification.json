@@ -1,0 +1,235 @@
+{
+  "version": "0.5.0",
+  "checkedAt": "2026-10-05T19:47:12.572Z",
+  "platform": "linux",
+  "node": "v24.19.0",
+  "releaseChecks": {
+    "version": "0.5.0",
+    "checkedAt": "2026-10-05T19:47:00.074Z",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "checks": {
+      "formatting": {
+        "status": "passed",
+        "durationMs": 1652
+      },
+      "architecture": {
+        "status": "passed",
+        "durationMs": 392
+      },
+      "typecheck": {
+        "status": "passed",
+        "durationMs": 2644
+      },
+      "build": {
+        "status": "passed",
+        "durationMs": 3203
+      },
+      "core": {
+        "status": "passed",
+        "durationMs": 865,
+        "tests": 51,
+        "passed": 51,
+        "failed": 0
+      },
+      "endToEnd": {
+        "status": "passed",
+        "durationMs": 16762,
+        "tests": 12,
+        "passed": 12,
+        "failed": 0
+      }
+    }
+  },
+  "browserChecks": {
+    "desktop": [
+      1600,
+      1050
+    ],
+    "mobile": [
+      390,
+      844
+    ],
+    "runtimeErrors": 0,
+    "httpRequests": 0,
+    "horizontalOverflow": false
+  },
+  "gltf": [
+    {
+      "file": "examples/outpost/exports/outpost.glb",
+      "bytes": 166960,
+      "sha256": "3e0b1c25fab09ece5b8884ed06e663d2f4984fcfb828208b4975b925fb8e2408",
+      "errors": 0,
+      "warnings": 0,
+      "informationalMessages": 38,
+      "stats": {
+        "nodes": 98,
+        "meshes": 88,
+        "triangles": 6776,
+        "materials": 14,
+        "geometries": 35,
+        "bounds": {
+          "min": [
+            -5.199999809265137,
+            -0.3600000005960464,
+            -5.199999809265137
+          ],
+          "max": [
+            5.199999809265137,
+            3.409999997317791,
+            5.199999809265137
+          ],
+          "size": [
+            10.399999618530273,
+            3.769999997913837,
+            10.399999618530273
+          ]
+        },
+        "warnings": []
+      }
+    },
+    {
+      "file": "examples/outpost/exports/rover.glb",
+      "bytes": 60268,
+      "sha256": "69317a014839c2b2c3d13c66f61345a7ec5691c364c7fc566c6cc890af7cba77",
+      "errors": 0,
+      "warnings": 0,
+      "informationalMessages": 18,
+      "stats": {
+        "nodes": 37,
+        "meshes": 35,
+        "triangles": 1060,
+        "materials": 6,
+        "geometries": 18,
+        "bounds": {
+          "min": [
+            -1.0076455630681558,
+            0.10000001072883596,
+            -0.8455214906294489
+          ],
+          "max": [
+            2.4076455630681557,
+            3.409999997317791,
+            2.845521490629449
+          ],
+          "size": [
+            3.4152911261363115,
+            3.309999986588955,
+            3.6910429812588976
+          ]
+        },
+        "warnings": []
+      }
+    },
+    {
+      "file": "examples/composition/exports/field-station.glb",
+      "bytes": 189080,
+      "sha256": "81d3473efd8b74db7423979badd3c8b5dfe21316c62c8540b554222f4bfbfb00",
+      "errors": 0,
+      "warnings": 0,
+      "informationalMessages": 35,
+      "stats": {
+        "nodes": 196,
+        "meshes": 163,
+        "triangles": 8284,
+        "materials": 14,
+        "geometries": 34,
+        "bounds": {
+          "min": [
+            -7.175999736785888,
+            -0.3600000005960464,
+            -7.175999736785888
+          ],
+          "max": [
+            7.175999736785888,
+            3.344999986588955,
+            7.175999736785888
+          ],
+          "size": [
+            14.351999473571777,
+            3.7049999871850012,
+            14.351999473571777
+          ]
+        },
+        "warnings": []
+      }
+    },
+    {
+      "file": "examples/procedural/exports/logistics.glb",
+      "bytes": 85588,
+      "sha256": "43cddec9cd6dcece4d93897488f7c6181f8121525f82e73db5cb2a047842fc75",
+      "errors": 0,
+      "warnings": 0,
+      "informationalMessages": 19,
+      "stats": {
+        "nodes": 221,
+        "meshes": 140,
+        "triangles": 1680,
+        "materials": 8,
+        "geometries": 19,
+        "bounds": {
+          "min": [
+            -6.5,
+            -0.15999999821186067,
+            -3.5
+          ],
+          "max": [
+            6.5,
+            3.29999999910593,
+            3.5
+          ],
+          "size": [
+            13,
+            3.459999997317791,
+            7
+          ]
+        },
+        "warnings": []
+      }
+    }
+  ],
+  "quality": [
+    {
+      "project": "examples/outpost",
+      "passed": true,
+      "summary": {
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    {
+      "project": "examples/composition",
+      "passed": true,
+      "summary": {
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    {
+      "project": "examples/procedural",
+      "passed": true,
+      "summary": {
+        "errors": 0,
+        "warnings": 0
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "target": "scene",
+      "frames": 6,
+      "durationMs": 2088
+    },
+    {
+      "target": "rack",
+      "frames": 6,
+      "durationMs": 2081
+    }
+  ],
+  "limitations": [
+    "Native Blender and Godot editor imports were not run.",
+    "Screenshots use a local alternate Chromium executable; the managed environment browser download failed.",
+    "macOS and Windows were not tested.",
+    "Scene history does not freeze model definitions; multi-file registry updates are not crash-atomic."
+  ]
+}

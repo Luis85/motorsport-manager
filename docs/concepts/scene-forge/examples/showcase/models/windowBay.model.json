@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "windowBay",
+  "category": "Architecture",
+  "name": "Framed window",
+  "parameters": {
+    "width": {
+      "default": 1,
+      "min": 0.5,
+      "max": 2,
+      "description": "Window width"
+    },
+    "height": {
+      "default": 1.3,
+      "min": 0.7,
+      "max": 2,
+      "description": "Window height"
+    }
+  },
+  "geometries": {
+    "pane": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        {
+          "$param": "height"
+        },
+        0.08
+      ]
+    },
+    "side": {
+      "type": "box",
+      "size": [
+        0.075,
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "height"
+            },
+            0.15
+          ]
+        },
+        0.12
+      ]
+    },
+    "horizontal": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.15
+          ]
+        },
+        0.075,
+        0.12
+      ]
+    },
+    "mullion": {
+      "type": "box",
+      "size": [
+        0.05,
+        {
+          "$param": "height"
+        },
+        0.13
+      ]
+    },
+    "sill": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.32
+          ]
+        },
+        0.11,
+        0.28
+      ]
+    }
+  },
+  "materials": {
+    "trim": {
+      "color": "#eee2c7",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pane": {
+      "color": "#345967",
+      "metalness": 0.25,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "sill": {
+      "color": "#a8987b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "glass",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "pane",
+      "material": "pane"
+    },
+    {
+      "id": "frameSides",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.5
+            ]
+          },
+          0,
+          0.03
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$param": "width"
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "side",
+      "material": "trim"
+    },
+    {
+      "id": "frameCross",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              -0.5
+            ]
+          },
+          0.03
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          0,
+          {
+            "$param": "height"
+          },
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "horizontal",
+      "material": "trim"
+    },
+    {
+      "id": "mullion",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0.06
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "mullion",
+      "material": "trim"
+    },
+    {
+      "id": "sill",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  -0.5
+                ]
+              },
+              0.1
+            ]
+          },
+          0.08
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sill",
+      "material": "sill"
+    }
+  ]
+}

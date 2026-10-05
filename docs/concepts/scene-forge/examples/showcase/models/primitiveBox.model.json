@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "primitiveBox",
+  "category": "Primitives",
+  "description": "A box with independent dimensions.",
+  "name": "Box",
+  "parameters": {
+    "width": {
+      "default": 1,
+      "min": 0.05,
+      "max": 20,
+      "description": "Width"
+    },
+    "height": {
+      "default": 1,
+      "min": 0.05,
+      "max": 20,
+      "description": "Height"
+    },
+    "depth": {
+      "default": 1,
+      "min": 0.05,
+      "max": 20,
+      "description": "Depth"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        {
+          "$param": "height"
+        },
+        {
+          "$param": "depth"
+        }
+      ]
+    }
+  },
+  "materials": {
+    "surface": {
+      "color": "#73a3b0",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "surface"
+    }
+  ]
+}

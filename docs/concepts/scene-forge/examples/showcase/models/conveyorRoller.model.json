@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "conveyorRoller",
+  "category": "Robotics",
+  "name": "Conveyor roller",
+  "parameters": {},
+  "geometries": {
+    "roller": {
+      "type": "cylinder",
+      "radiusTop": 0.085,
+      "radiusBottom": 0.085,
+      "height": 1.6,
+      "segments": 16
+    }
+  },
+  "materials": {
+    "steel": {
+      "color": "#a9b7bc",
+      "metalness": 0.8,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "roller",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "roller",
+      "material": "steel"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "primitivePlane",
+  "category": "Primitives",
+  "description": "An upward-facing horizontal plane.",
+  "name": "Plane",
+  "parameters": {
+    "width": {
+      "default": 2,
+      "min": 0.1,
+      "max": 20,
+      "description": "Width"
+    },
+    "depth": {
+      "default": 2,
+      "min": 0.1,
+      "max": 20,
+      "description": "Depth"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "plane",
+      "size": [
+        {
+          "$param": "width"
+        },
+        {
+          "$param": "depth"
+        }
+      ]
+    }
+  },
+  "materials": {
+    "surface": {
+      "color": "#73a3b0",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "rotation": [
+          -90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "surface"
+    }
+  ]
+}

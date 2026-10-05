@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "monitor",
+  "category": "Everyday",
+  "description": "An unlit screen shader and metallic stand, portable through glTF.",
+  "name": "Desktop monitor",
+  "parameters": {},
+  "geometries": {
+    "screen": {
+      "type": "box",
+      "size": [
+        0.8,
+        0.46,
+        0.045
+      ]
+    },
+    "case": {
+      "type": "box",
+      "size": [
+        0.85,
+        0.51,
+        0.08
+      ]
+    },
+    "stem": {
+      "type": "box",
+      "size": [
+        0.08,
+        0.23,
+        0.08
+      ]
+    },
+    "base": {
+      "type": "box",
+      "size": [
+        0.38,
+        0.035,
+        0.24
+      ]
+    }
+  },
+  "materials": {
+    "case": {
+      "color": "#34434b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "screen": {
+      "color": "#6398a5",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "shading": "unlit"
+    },
+    "stand": {
+      "color": "#7b8b91",
+      "metalness": 0.7,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          0.0175,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "stand"
+    },
+    {
+      "id": "stem",
+      "transform": {
+        "position": [
+          0,
+          0.14,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stem",
+      "material": "stand"
+    },
+    {
+      "id": "case",
+      "transform": {
+        "position": [
+          0,
+          0.47,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "case",
+      "material": "case"
+    },
+    {
+      "id": "screen",
+      "transform": {
+        "position": [
+          0,
+          0.47,
+          0.045
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "screen",
+      "material": "screen"
+    }
+  ]
+}
