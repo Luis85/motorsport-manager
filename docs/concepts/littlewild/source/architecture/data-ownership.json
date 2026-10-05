@@ -265,6 +265,13 @@
       "owner": "content-model",
       "kind": "schema",
       "validatorRole": "schema"
+    },
+    {
+      "id": "skill-tree",
+      "pattern": "content/skill-tree.json",
+      "owner": "economy-progression",
+      "kind": "definitions",
+      "validatorRole": "skillTrees"
     }
   ],
   "historicalFixtures": [

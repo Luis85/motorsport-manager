@@ -1,0 +1,12 @@
+/* Inherits the Learning studio's typography, controls and palette. */
+.skill-tree-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 0;border-block:1px solid var(--v6-border)}
+.skill-tree-branches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:24px;margin-top:24px}
+.skill-tree-stage h4{font-size:16px;margin:0 0 12px}
+.skill-tree-stage ol{list-style:none;padding:0;margin:0}
+.skill-tree-node{border-top:1px solid var(--v6-border);padding:16px 0;color:var(--v6-ink)}
+.skill-tree-node h5{font-size:15px;margin:0}
+.skill-tree-node .section-heading{align-items:flex-start;flex-wrap:wrap;gap:8px}
+.skill-tree-node .section-heading>span{font-size:12px;white-space:nowrap}
+.skill-tree-node p{line-height:1.6;margin:8px 0;overflow-wrap:anywhere}
+.studio-body .skill-tree-node .btn{min-height:44px;max-width:100%;white-space:normal}
+.skill-tree-node .btn:disabled{opacity:1;color:var(--v6-muted);background:var(--v6-surface);border-color:var(--v6-border)}

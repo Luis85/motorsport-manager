@@ -30,7 +30,7 @@ function fixture():{root:Record<string,unknown>;api:Installer;engine:Engine}{
 }
 test('Closed adapter plan retains predecessor ownership and synchronous wrapper order',()=>{
  const {api,engine}=fixture(),prototype=engine.prototype,records=api.install(engine);
- assert.strictEqual(engine.prototype,prototype);assert.equal(records.length,8);
+ assert.strictEqual(engine.prototype,prototype);assert.equal(records.length,9);
  const start=engine.prototype.startTask as ()=>string[];assert.deepEqual(start(),['base','interactions','scenario-workflow','interiors']);
  assert.equal(records.at(-1)?.predecessors.startTask,'scenario-workflow');assert.equal(records.at(-1)?.predecessors.finishTask,'construction');
  assert(Object.isFrozen(api.manifest)&&Object.isFrozen(records)&&Object.isFrozen(records.at(-1)?.predecessors));

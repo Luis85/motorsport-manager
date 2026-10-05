@@ -40,7 +40,8 @@
       "id": "economy-progression",
       "layer": "domain",
       "files": [
-        "economy-ecs.ts"
+        "economy-ecs.ts",
+        "skill-trees.ts"
       ]
     },
     {
@@ -132,7 +133,8 @@
         "systems-completions.ts",
         "rts-session.ts",
         "rts-tools.ts",
-        "rts-application.ts"
+        "rts-application.ts",
+        "skill-tree-integration.ts"
       ]
     },
     {
@@ -253,7 +255,8 @@
         "rts-host.ts",
         "rts-mission-editor-ui.ts",
         "rts-mission-editor-ui-forms.ts",
-        "rts-mission-editor-ui-projection.ts"
+        "rts-mission-editor-ui-projection.ts",
+        "skill-tree-ui.ts"
       ]
     },
     {
@@ -410,7 +413,8 @@
     "LWRTS",
     "LWRTSStats",
     "LWRTSCheckpoint",
-    "LWRTSMissionEditorData"
+    "LWRTSMissionEditorData",
+    "LWSkillTrees"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",

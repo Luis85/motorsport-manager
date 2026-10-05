@@ -26,8 +26,8 @@ root.LWProgressionUI={create(ctx){
   const s=st();
   return wrap('Learning studio','Choose a lesson. Make space for practice. Pip takes it from there.','LEARN & GROW',
    stats([[Object.keys(s.skills).length+'/'+Object.keys(SKILLS).length,'skills learned','book'],[Object.values(s.practice).reduce((a,b)=>a+b,0),'practice earned','star'],[s.rp,'research available','research'],[s.player.coins,'guide coins','coin']])+
-   tabs([['lessons','Lessons'],['practice','Practice'],['talents','Talents'],['studies','Field studies'],['paths','Learning paths']],view.learn,'v3-learn-tab')+
-   (view.learn==='lessons'?lessonLibrary():view.learn==='practice'?practicePanel():view.learn==='talents'?talentsPanel():view.learn==='studies'?studiesPanel():pathsPanel()));
+   tabs([['lessons','Lessons'],['practice','Practice'],['trees','Skill trees'],['talents','Talents'],['studies','Field studies'],['paths','Learning paths']],view.learn,'v3-learn-tab')+
+   (view.learn==='lessons'?lessonLibrary():view.learn==='practice'?practicePanel():view.learn==='trees'?globalThis.LWSkillTreeUI.render(eng().skillTreeState(eng().actor.id),eng().actor.name):view.learn==='talents'?talentsPanel():view.learn==='studies'?studiesPanel():pathsPanel()));
  }
  function filteredLessons(){
   const s=st();
@@ -161,6 +161,7 @@ root.LWProgressionUI={create(ctx){
   else if(act==='v3-confirm-lesson-cancel'){result(engine.cancelLesson(id));open('training');}
   else if(act==='v3-practice-focus'){view.learn='practice';open('training');requestAnimationFrame(()=>{const el=document.getElementById('practice-'+id);el?.classList.add('focused');el?.scrollIntoView({block:'center'});});}
   else if(act==='v3-practice'){r=engine.practice(id,view.practiceCount);result(r,r.ok?'Practice added to the plan board. Supplies are used when each session finishes.':null);redraw();}
+  else if(act==='skill-tree-unlock'){const treeId=element.dataset.tree;r=engine.dispatchCommand({id:'unlock-skill-tree-node',args:[engine.actor.id,treeId,id]});result(r,r.ok?'A new skill-tree rank is active.':null);redraw();requestAnimationFrame(()=>[...document.querySelectorAll<HTMLElement>('.skill-tree-node')].find(node=>node.dataset.skillTree===treeId&&node.dataset.skillNode===id)?.focus());}
   else if(act==='v3-talent'){r=engine.chooseSpecialization(element.dataset.discipline,id);result(r,r.ok?'A new way to grow. The selected bonus is active.':null);redraw();}
   else if(act==='v3-study'){result(engine.startStudy(id),'A question to explore. New actions count now; existing structures satisfy construction milestones.');redraw();}
   else if(act==='v3-study-pause'){result(engine.pauseStudy());redraw();}

@@ -3,13 +3,13 @@
  'use strict';
  interface Engine extends Function {prototype:Record<string,unknown>;import(input:unknown):unknown;}
  interface Adapter {install(engine:Engine):unknown;}
- type Role='LWCommandRouter'|'LWInteractionIntegration'|'LWGameSettings'|'LWScenarioWorkflow'|'LWScenarioResources'|'LWConstructionIntegration'|'LWTerraformIntegration'|'LWBuildingInteriorIntegration';
+ type Role='LWCommandRouter'|'LWInteractionIntegration'|'LWGameSettings'|'LWScenarioWorkflow'|'LWScenarioResources'|'LWConstructionIntegration'|'LWTerraformIntegration'|'LWBuildingInteriorIntegration'|'LWSkillTreeIntegration';
  interface Spec {readonly id:string;readonly role:Role;readonly after:readonly string[];readonly methods:readonly string[];readonly wraps:readonly string[];readonly staticMethods:readonly string[];readonly staticWraps:readonly string[];}
  interface Installed extends Spec {readonly predecessors:Readonly<Record<string,string>>;}
  interface Api {readonly manifest:readonly Spec[];install(engine:Engine,ids?:readonly string[]):readonly Installed[];describe(engine:Engine):readonly Installed[];}
  const root=inputRoot as Partial<Record<Role,Adapter>>&{LWApplicationAdapters?:Api};
  const adapters:Readonly<Record<Role,Adapter|undefined>>={
-  get LWCommandRouter(){return root.LWCommandRouter;},get LWInteractionIntegration(){return root.LWInteractionIntegration;},
+  get LWSkillTreeIntegration(){return root.LWSkillTreeIntegration;},get LWCommandRouter(){return root.LWCommandRouter;},get LWInteractionIntegration(){return root.LWInteractionIntegration;},
   get LWGameSettings(){return root.LWGameSettings;},get LWScenarioWorkflow(){return root.LWScenarioWorkflow;},
   get LWScenarioResources(){return root.LWScenarioResources;},get LWConstructionIntegration(){return root.LWConstructionIntegration;},
   get LWTerraformIntegration(){return root.LWTerraformIntegration;},get LWBuildingInteriorIntegration(){return root.LWBuildingInteriorIntegration;}
@@ -25,6 +25,7 @@
   spec('scenario-resources','LWScenarioResources',['scenario-workflow'],[],['export'],[],['import']),
   spec('construction','LWConstructionIntegration',['scenario-resources'],['constructionOptions','previewBuildingDesign','buildingDesign','constructBuildingDesign','improveBuildingDesign'],['placementIssue','totalCost','constructionPhases','finishTask'],[],['import']),
   spec('terraform','LWTerraformIntegration',['construction'],['terrainAt','terrainHeight','terraformSnapshot','previewTerraform','applyTerraform'],[],[],['import']),
+  spec('skill-trees','LWSkillTreeIntegration',['commands'],['attachSkillTree','unlockSkillTreeNode','skillTreeState','grantSkillTreeXp'],['settleEconomy','workRate','learningRate','purchaseCreature'],[],['import']),
   spec('interiors','LWBuildingInteriorIntegration',['terraform','construction'],['buildingInterior','visitBuildingFloor','orderBuildingProduction'],['stepQuest','stepActor','startTask','finishTask','configureBuilding'],[],['import'])
  ]);
  const installed=new WeakMap<Engine,readonly Installed[]>(),started=new WeakSet<Engine>();

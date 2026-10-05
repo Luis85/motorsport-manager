@@ -37,6 +37,8 @@ redo own publication; JSON import/export retains the full catalog. Explicitly
 playing the selected draft replaces the RTS match with a fresh paused session.
 Editing or returning without playing preserves the running match.
 
+The maker engine also supports [player and creature skill trees](skill-trees.md) with captured definitions, XP-earned points, prerequisites, ranks, exclusive branches and saved progression. Littlewild attaches a growth tree to each starting companion and provides a **Learn → Skill trees** view. The Node-backed native runtime retains the same commands and checkpoints; a dedicated Godot tree screen is not implemented.
+
 This is a maker game context, separate from the shipping native race/campaign
 application. It does not establish native RTS export parity, multiplayer, broad
 balance or human validation. See the [canonical RTS contract](rts-engine.md) and

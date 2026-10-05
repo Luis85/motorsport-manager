@@ -48,6 +48,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const generated = (name: string): string => path.join(".generated", name);
 
 const suites: Suite[] = [
+  ["skill-trees", ["node", generated("test-skill-trees.cjs")], generated("skill-tree-results.json"), 120],
   ["rts-mission-editor", ["node", generated("test-rts-mission-editor.cjs")], generated("rts-mission-editor-results.json"), 120],
   ["rts-catalog", ["node", generated("test-rts-catalog.cjs")], generated("rts-catalog-results.json"), 120],
   ["rts-economy", ["node", generated("test-rts-economy.cjs")], generated("rts-economy-results.json"), 120],
@@ -119,6 +120,7 @@ const suites: Suite[] = [
 
 if (!noBrowser) {
   suites.push(
+    { name:"skill-tree-browser", command:["node", generated("verification/skill-tree-browser.js")], result:"verification/v15/skill-tree-browser-results.json", timeout:180 },
     { name:"rts-mission-editor-browser", command:["node", generated("verification/rts-mission-editor-browser.js")], result:"verification/v15/rts-mission-editor-browser-results.json", timeout:240 },
     { name:"rts-browser", command:["node", generated("verification/rts-browser.js")], result:"verification/v15/rts-browser-results.json", timeout:240 },
     { name:"wildlands-browser", command:["node", generated("verification/wildlands-browser.js")], result:"verification/v15/wildlands-browser-results.json", timeout:300 },

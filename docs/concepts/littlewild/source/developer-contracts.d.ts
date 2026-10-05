@@ -1,4 +1,5 @@
 /// <reference path="./runtime-contracts.d.ts" />
+/// <reference path="./skill-tree-contracts.d.ts" />
 /// <reference path="./developer-scene-contracts.d.ts" />
 /// <reference path="./external-editor-contracts.d.ts" />
 /// <reference path="./developer-space-contracts.d.ts" />
@@ -13,6 +14,8 @@ declare namespace LittlewildDeveloper {
  type ErrorCode = 'invalid-input' | 'session-active' | 'session-disposed' | 'review-invalid' | 'operation-failed';
  interface DeveloperError extends Error { readonly code:ErrorCode; }
  interface CommandArgs {
+  'attach-skill-tree':[targetId:string,definition:LWSkillTrees.Definition|Document];
+  'unlock-skill-tree-node':[targetId:string,treeId:string,nodeId:string];
   'preview-terraform':[edit:TerraformEdit];'apply-terraform':[edit:TerraformEdit];
   'visit-building-floor':[actorId:string,buildingId:string,floorId:string];
   'order-building-production':[buildingId:string,floorId:string,stationId:string,recipeId:string,batches:number];
@@ -51,7 +54,7 @@ declare namespace LittlewildDeveloper {
    | [saleId:string,action:'assign',value:string|null];
  }
  type CommandId=keyof CommandArgs;
- type WorldCommandId='preview-terraform'|'apply-terraform'|'visit-building-floor'|'order-building-production'|'seek-duel'|'cancel-duel-seek'|'stage-duel'|'set-game-settings'|'request-interaction'|'cancel-interaction'|'set-interaction-library'|'select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
+ type WorldCommandId='attach-skill-tree'|'unlock-skill-tree-node'|'preview-terraform'|'apply-terraform'|'visit-building-floor'|'order-building-production'|'seek-duel'|'cancel-duel-seek'|'stage-duel'|'set-game-settings'|'request-interaction'|'cancel-interaction'|'set-interaction-library'|'select-creature'|'research-feature'|'configure-building'|'assign-home'|'buy-island'|'unlock-slot'|'create-sale'|'control-sale';
  type Command={ [Id in CommandId]:{id:Id;args:CommandArgs[Id]} &
   (Id extends WorldCommandId ? {actorId?:never} : {actorId:string}) }[CommandId];
  interface CommandResult { readonly ok:boolean; readonly reason?:string; readonly data:Json;readonly code?:LWRuntime.FailureCode; }
@@ -77,6 +80,7 @@ declare namespace LittlewildDeveloper {
   readonly disposed:boolean;
   start():void;pause():void;resume():void;
   command(command:Command):CommandResult;
+  skillTrees(targetId:string):LWSkillTrees.View[];
   /** Whole fixed steps only: 0..36000 per call, always 0.1 simulation seconds. */
   step(count?:number):StepResult;
   /** Seconds must be an exact multiple of 0.1, between 0 and 3600. */

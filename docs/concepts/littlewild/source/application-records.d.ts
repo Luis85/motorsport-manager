@@ -1,4 +1,5 @@
 /// <reference path="./runtime-contracts.d.ts" />
+/// <reference path="./skill-tree-contracts.d.ts" />
 /// <reference path="./legacy-task-records.d.ts" />
 /// <reference path="./construction-contracts.d.ts" />
 /** Current authoritative application records. These ports describe persisted values;
@@ -27,6 +28,7 @@ declare namespace LWApplication {
  interface Memory {key:string;title:string;description:string;icon:string;day:number;hour:number;}
  interface Wish {stat:string;amount:number;title:string;thought:string;action:string;day:number;start:number;complete:boolean;}
  interface Actor {
+  skillTrees?:LWSkillTrees.Progress[];
   id: string; name: string; archetype: string; personality: string; traits: string[];
   creature: Point & { level: number; xp: number; coins: number; dir: number };
   bond: number; needs: LWTaskPorts.Needs; inventory: Numbers; skills: Flags; researched: Flags;
@@ -78,7 +80,7 @@ declare namespace LWApplication {
  interface State {
   version: number; simTime: number; day: number; hour: number; nextId: number;
   construction?: LWConstruction.State;
-  player: { level:number; xp:number; coins:number }; rp: number;
+  player: { level:number; xp:number; coins:number; skillTrees?:LWSkillTrees.Progress[] }; rp: number;
   started: boolean; paused: boolean;
   buildings: Building[]; nodes: (LWTaskPorts.Place & {max:number})[];
   log: { text:string;icon:string;time:number;day:number;hour:number;actorId?:string|null }[];

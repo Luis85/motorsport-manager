@@ -209,6 +209,10 @@
     {
       "path": "rts-mission-editor-ui-contracts.d.ts",
       "owner": "presentation"
+    },
+    {
+      "path": "skill-tree-contracts.d.ts",
+      "owner": "economy-progression"
     }
   ]
 }

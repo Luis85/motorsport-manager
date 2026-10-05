@@ -32,6 +32,7 @@
     class Engine {
         constructor(state?:LWCorePorts.State|null, options:LWCorePorts.CompositionOptions = {}) {
             root.LWGameSettings?.validateState(state);
+            (inputRoot as {LWSkillTreeIntegration?:{validateState(state:unknown):void}}).LWSkillTreeIntegration?.validateState(state);
             const composition = root.LWEngineComposition;
             state = composition ? composition.prepare(state, options) : state;
             this.s = state || initial();

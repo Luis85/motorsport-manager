@@ -21,7 +21,7 @@ and observes the grant immediately.
 the six existing composition layers finalize. The `living-world-v1` archetype and
 simulation phase identities are unchanged. Installation order is commands,
 interactions, settings, scenario workflow, scenario resources, construction,
-terraform, interiors. Construction precedes interiors so completion retains its
+terraform, skill trees, interiors. Construction precedes interiors so completion retains its
 physical construction authority before interior cleanup.
 
 Each entry declares its required global role, new methods, wrapped predecessor
@@ -67,3 +67,5 @@ payloads, inward type contracts, valid/invalid TypeScript callers, actual facade
 reconstruction and synchronous temper grants. The design follows the concrete ownership and extension plan in
 `RESEARCH-IMPROVEMENT-PLAN.md`. The normal architecture and strict
 compiler gates also run against the complete authored tree.
+
+The compiled skill-tree adapter wraps reward settlement, work/learning rates, arrival and import. It adds validated player/creature attachment and rank commands without introducing a clock or a second XP authority. See [skill trees](../../reference/skill-trees.md).
