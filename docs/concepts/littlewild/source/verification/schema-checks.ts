@@ -32,7 +32,7 @@ const unknown=copy(defaultProfile);unknown.execute="alert(1)";
 check("Independent profile schema rejects unknown behavior-shaped fields",()=>invalid(simulationSchema,unknown));
 
 for(const name of ["littlewild","emberworks","office"]){
- const file=path.join(CONTENT,name+".pack.json"),document=JSON.parse(fs.readFileSync(file,"utf8"));
+ const file=path.join(GENERATED,"content",name+".pack.json"),document=JSON.parse(fs.readFileSync(file,"utf8"));
  check(name+" publishes scenario schema 2",()=>assert.equal(document.schemaVersion,2));
  check(name+" embeds a valid simulation profile",()=>valid(simulationSchema,document.simulation));
  check(name+" validates with independent JSON Schema",()=>valid(scenarioSchema,document));
@@ -49,7 +49,7 @@ for(const name of ["littlewild","emberworks","office"]){
  check(name+" CLI leaves input unchanged",()=>assert.equal(Buffer.compare(fs.readFileSync(file),before),0));
 }
 
-const oldSchema=JSON.parse(fs.readFileSync(path.join(CONTENT,"littlewild.pack.json"),"utf8"));oldSchema.schemaVersion=1;delete oldSchema.simulation;
+const oldSchema=JSON.parse(fs.readFileSync(path.join(GENERATED,"content/littlewild.pack.json"),"utf8"));oldSchema.schemaVersion=1;delete oldSchema.simulation;
 check("Independent schema rejects obsolete schema 1 packs",()=>invalid(scenarioSchema,oldSchema));
 
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),"littlewild-schema-"));

@@ -30,7 +30,7 @@ try {
   });
   test("Content normalize never overwrites input, including file aliases",()=>{
     const input=path.join(temp,"library.json"),alias=path.join(temp,"alias.json");
-    fs.copyFileSync(path.join(ROOT,"source/content/default-library.json"),input);fs.linkSync(input,alias);const before=fs.readFileSync(input);
+    fs.copyFileSync(path.join(ROOT,".generated/content/default-library.json"),input);fs.linkSync(input,alias);const before=fs.readFileSync(input);
     for(const output of [input,alias]){const result=cli("content-cli",["normalize",input,"--out",output]);assert.equal(result.status,2);assert.equal(result.payload.ok,false);assert.deepEqual(fs.readFileSync(input),before);}
   });
   test("Rejected content preserves the requested output file",()=>{
@@ -48,7 +48,7 @@ try {
     const file=path.join(temp,"bounded.json");fs.writeFileSync(file,"12345");assert.equal(readJsonFile(file,5),"12345");assert.throws(()=>readJsonFile(file,4));assert.throws(()=>readJsonFile(temp,1024));
   });
   test("Scenario CLI retains the full runtime pack and story input budgets",()=>{
-    const pack=path.join(temp,"large.pack.json");fs.writeFileSync(pack,fs.readFileSync(path.join(ROOT,"source/content/littlewild.pack.json"),"utf8")+" ".repeat(4*1024*1024));assert.equal(cli("scenario-cli",["validate",pack]).status,0);
+    const pack=path.join(temp,"large.pack.json");fs.writeFileSync(pack,fs.readFileSync(path.join(ROOT,".generated/content/littlewild.pack.json"),"utf8")+" ".repeat(4*1024*1024));assert.equal(cli("scenario-cli",["validate",pack]).status,0);
     const fixture=spawnSync(process.execPath,["-e",`const L=require(${JSON.stringify(path.join(__dirname,"simulation.cjs"))}),S=require(${JSON.stringify(path.join(__dirname,"story-codec.js"))});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`],{cwd:ROOT,encoding:"utf8",timeout:15000});assert.equal(fixture.status,0,fixture.stderr);
     const story=path.join(temp,"large-story.json"),output=path.join(temp,"captured.pack.json");fs.writeFileSync(story,fixture.stdout+" ".repeat(4*1024*1024));const captured=cli("scenario-cli",["capture",story,output]);assert.equal(captured.status,0);assert.equal(captured.payload.ok,true);assert.equal(JSON.parse(fs.readFileSync(output,"utf8")).schemaVersion,2);
   });
@@ -62,7 +62,7 @@ try {
       ["simulation-profile-cli","simulation-profile.json",100,d=>d]
     ];
     for(const [tool,fixture,limit,target] of fixtures)for(const count of [limit,limit+1]){
-      const doc=JSON.parse(fs.readFileSync(path.join(ROOT,"source/content",fixture),"utf8"));target(doc).name="🌱".repeat(count);
+      const doc=JSON.parse(fs.readFileSync(path.join(ROOT,".generated/content",fixture),"utf8"));target(doc).name="🌱".repeat(count);
       const input=path.join(temp,tool+"-unicode.json");fs.writeFileSync(input,JSON.stringify(doc));
       const result=cli(tool,["validate",input]);assert.equal(result.status,count===limit?0:1,tool+" at "+count);assert.equal(result.payload.ok,count===limit);
     }
@@ -71,7 +71,7 @@ try {
     const artifact=path.join(ROOT,"littlewild.html"),before=fs.existsSync(artifact)?fs.readFileSync(artifact):null;
     const run=(args:string[])=>spawnSync(process.execPath,["--import","tsx",path.join(ROOT,"source/build.ts"),...args],{cwd:ROOT,encoding:"utf8",timeout:15000});
     assert.equal(run(["--help"]).status,0);
-    for(const args of [["--unknown"],["--output","--pack"],["--output","one","--output","two"],["--output","source/style.css"],["--pack","source/content/littlewild.pack.json","--output","source/content/littlewild.pack.json"]]){const r=run(args);assert.equal(r.status,1);assert.match(r.stderr,/Build failed:/);assert.doesNotMatch(r.stderr,/at parseArgs/);}
+    for(const args of [["--unknown"],["--output","--pack"],["--output","one","--output","two"],["--output","source/style.css"],["--pack",".generated/content/littlewild.pack.json","--output",".generated/content/littlewild.pack.json"]]){const r=run(args);assert.equal(r.status,1);assert.match(r.stderr,/Build failed:/);assert.doesNotMatch(r.stderr,/at parseArgs/);}
     if(before)assert.deepEqual(fs.readFileSync(artifact),before);
   });
   test("Build rejects symlinked protected parents before compiling or writing",()=>{

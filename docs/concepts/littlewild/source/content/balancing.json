@@ -14,320 +14,56 @@
         "description": "Core items, recipes, lessons and buildings. The World library defines resource supply, workplace inventories and tending in v8. Data-only definitions for external authoring."
       },
       "components": {
-        "items": [
-          {
-            "id": "wood",
-            "name": "Wood",
-            "icon": "wood",
-            "price": 3
-          },
-          {
-            "id": "stone",
-            "name": "Stone",
-            "icon": "stone",
-            "price": 3
-          },
-          {
-            "id": "fiber",
-            "name": "Fiber",
-            "icon": "fiber",
-            "price": 2
-          },
-          {
-            "id": "berries",
-            "name": "Berries",
-            "icon": "berries",
-            "price": 3
-          },
-          {
-            "id": "water",
-            "name": "Water",
-            "icon": "water",
-            "price": 2
-          },
-          {
-            "id": "planks",
-            "name": "Planks",
-            "icon": "planks",
-            "price": 8
-          },
-          {
-            "id": "meat",
-            "name": "Wild meat",
-            "icon": "meat",
-            "price": 6
-          },
-          {
-            "id": "meals",
-            "name": "Hearty meals",
-            "icon": "meal",
-            "price": 12
-          },
-          {
-            "id": "clay",
-            "name": "Clay",
-            "icon": "stone",
-            "price": 3
-          },
-          {
-            "id": "ore",
-            "name": "Iron ore",
-            "icon": "stone",
-            "price": 5
-          },
-          {
-            "id": "herbs",
-            "name": "Herbs",
-            "icon": "leaf",
-            "price": 4
-          },
-          {
-            "id": "grain",
-            "name": "Grain",
-            "icon": "sprout",
-            "price": 3
-          },
-          {
-            "id": "rope",
-            "name": "Rope",
-            "icon": "fiber",
-            "price": 6
-          },
-          {
-            "id": "cloth",
-            "name": "Cloth",
-            "icon": "fiber",
-            "price": 12
-          },
-          {
-            "id": "charcoal",
-            "name": "Charcoal",
-            "icon": "fire",
-            "price": 5
-          },
-          {
-            "id": "bricks",
-            "name": "Bricks",
-            "icon": "stone",
-            "price": 8
-          },
-          {
-            "id": "pots",
-            "name": "Clay pots",
-            "icon": "water",
-            "price": 8
-          },
-          {
-            "id": "beams",
-            "name": "Timber beams",
-            "icon": "planks",
-            "price": 22
-          },
-          {
-            "id": "iron",
-            "name": "Iron",
-            "icon": "stone",
-            "price": 18
-          },
-          {
-            "id": "tools",
-            "name": "Tools",
-            "icon": "bench",
-            "price": 28
-          },
-          {
-            "id": "flour",
-            "name": "Flour",
-            "icon": "sprout",
-            "price": 6
-          },
-          {
-            "id": "bread",
-            "name": "Fresh bread",
-            "icon": "meal",
-            "price": 13
-          },
-          {
-            "id": "balm",
-            "name": "Soothing balm",
-            "icon": "heart",
-            "price": 15
-          },
-          {
-            "id": "glass",
-            "name": "Glass",
-            "icon": "research",
-            "price": 16
-          }
-        ],
-        "recipes": [
-          {
-            "id": "planks",
-            "skill": "woodwork",
-            "station": "bench",
-            "cost": {
-              "wood": 2
-            },
-            "amount": 1,
-            "time": 4,
-            "output": "planks"
-          },
-          {
-            "id": "meals",
-            "skill": "cooking",
-            "station": "fire",
-            "cost": {
-              "berries": 2,
-              "water": 1,
-              "meat": 1
-            },
-            "amount": 2,
-            "time": 5,
-            "output": "meals"
-          },
-          {
-            "id": "rope",
-            "skill": "fiberwork",
-            "station": "bench",
-            "cost": {
-              "fiber": 3
-            },
-            "amount": 2,
-            "time": 5,
-            "output": "rope"
-          },
-          {
-            "id": "cloth",
-            "skill": "weaving",
-            "station": "loom",
-            "cost": {
-              "fiber": 4,
-              "rope": 1
-            },
-            "amount": 1,
-            "time": 7,
-            "output": "cloth"
-          },
-          {
-            "id": "charcoal",
-            "skill": "firekeeping",
-            "station": "fire",
-            "cost": {
-              "wood": 3
-            },
-            "amount": 2,
-            "time": 5,
-            "output": "charcoal"
-          },
-          {
-            "id": "bricks",
-            "skill": "pottery",
-            "station": "kiln",
-            "cost": {
-              "clay": 3,
-              "charcoal": 1
-            },
-            "amount": 2,
-            "time": 7,
-            "output": "bricks"
-          },
-          {
-            "id": "pots",
-            "skill": "pottery",
-            "station": "kiln",
-            "cost": {
-              "clay": 2,
-              "charcoal": 1
-            },
-            "amount": 1,
-            "time": 6,
-            "output": "pots"
-          },
-          {
-            "id": "beams",
-            "skill": "joinery",
-            "station": "bench",
-            "cost": {
-              "planks": 3,
-              "rope": 1
-            },
-            "amount": 1,
-            "time": 8,
-            "output": "beams"
-          },
-          {
-            "id": "iron",
-            "skill": "metalwork",
-            "station": "smelter",
-            "cost": {
-              "ore": 3,
-              "charcoal": 2
-            },
-            "amount": 1,
-            "time": 9,
-            "output": "iron"
-          },
-          {
-            "id": "tools",
-            "skill": "metalwork",
-            "station": "workshop",
-            "cost": {
-              "iron": 1,
-              "planks": 1
-            },
-            "amount": 1,
-            "time": 8,
-            "output": "tools"
-          },
-          {
-            "id": "flour",
-            "skill": "milling",
-            "station": "mill",
-            "cost": {
-              "grain": 3
-            },
-            "amount": 2,
-            "time": 5,
-            "output": "flour"
-          },
-          {
-            "id": "bread",
-            "skill": "baking",
-            "station": "bakery",
-            "cost": {
-              "flour": 2,
-              "water": 1
-            },
-            "amount": 2,
-            "time": 6,
-            "output": "bread"
-          },
-          {
-            "id": "balm",
-            "skill": "herbalism",
-            "station": "herbarium",
-            "cost": {
-              "herbs": 3,
-              "water": 1,
-              "pots": 1
-            },
-            "amount": 2,
-            "time": 6,
-            "output": "balm"
-          },
-          {
-            "id": "glass",
-            "skill": "glassmaking",
-            "station": "kiln",
-            "cost": {
-              "stone": 3,
-              "charcoal": 2
-            },
-            "amount": 1,
-            "time": 8,
-            "output": "glass"
-          }
-        ],
+        "items": {
+          "$catalog": "item",
+          "order": [
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meals",
+            "clay",
+            "ore",
+            "herbs",
+            "grain",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ],
+          "shape": "list"
+        },
+        "recipes": {
+          "$catalog": "recipe",
+          "order": [
+            "planks",
+            "meals",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ],
+          "shape": "list"
+        },
         "skills": [
           {
             "id": "woodcraft",
@@ -802,377 +538,35 @@
             }
           }
         ],
-        "buildings": [
-          {
-            "id": "shelter",
-            "name": "Leaf shelter",
-            "desc": "A safe little nest. Better sleep and comfort.",
-            "skill": "shelter",
-            "cost": {
-              "wood": 6,
-              "fiber": 4
-            },
-            "time": 12,
-            "icon": "home",
-            "effect": "Rest restores 60 energy and 24 comfort.",
-            "unique": true,
-            "category": "home"
-          },
-          {
-            "id": "bench",
-            "name": "Workbench",
-            "desc": "A place to turn resources into possibilities.",
-            "skill": "woodcraft",
-            "cost": {
-              "wood": 6,
-              "stone": 2
-            },
-            "time": 12,
-            "icon": "bench",
-            "effect": "Make planks, rope and timber beams with the matching learned skills.",
-            "unique": true,
-            "category": "workshops"
-          },
-          {
-            "id": "fire",
-            "name": "Campfire",
-            "desc": "Warm paws. Stories. A light to come home to.",
-            "skill": "firekeeping",
-            "cost": {
-              "wood": 4,
-              "stone": 3
-            },
-            "time": 10,
-            "icon": "fire",
-            "effect": "A warming place, a cooking station and a way to make charcoal.",
-            "unique": true,
-            "category": "home"
-          },
-          {
-            "id": "garden",
-            "name": "Berry garden",
-            "desc": "A little care today. A little food tomorrow.",
-            "skill": "gardening",
-            "cost": {
-              "wood": 4,
-              "fiber": 4
-            },
-            "time": 12,
-            "icon": "sprout",
-            "effect": "Tending with delivered water produces berries in the garden\u2019s output tray.",
-            "unique": true,
-            "category": "growing"
-          },
-          {
-            "id": "market",
-            "name": "Market stall",
-            "desc": "Open your clearing to a world of neighbors.",
-            "skill": "commerce",
-            "cost": {
-              "wood": 5,
-              "planks": 4,
-              "stone": 2
-            },
-            "time": 16,
-            "icon": "market",
-            "effect": "Pip can shop. You can trade and delegate deliveries.",
-            "unique": true,
-            "category": "community"
-          },
-          {
-            "id": "well",
-            "name": "Stone well",
-            "desc": "Bring fresh water closer to home.",
-            "skill": "masonry",
-            "cost": {
-              "stone": 8,
-              "planks": 2
-            },
-            "time": 14,
-            "icon": "water",
-            "effect": "A groundwater site supplies water through work at the well; creatures collect its output.",
-            "unique": true,
-            "category": "growing"
-          },
-          {
-            "id": "cottage",
-            "name": "Woodland cottage",
-            "desc": "From a little clearing to a proper home.",
-            "skill": "architecture",
-            "cost": {
-              "planks": 10,
-              "stone": 12,
-              "fiber": 5
-            },
-            "time": 22,
-            "icon": "cottage",
-            "effect": "The best sleep. A permanent comfort bonus.",
-            "unique": true,
-            "category": "home"
-          },
-          {
-            "id": "study",
-            "name": "Study nook",
-            "desc": "A quiet corner for bright little ideas.",
-            "skill": "invention",
-            "cost": {
-              "planks": 6,
-              "stone": 6,
-              "fiber": 3
-            },
-            "time": 17,
-            "icon": "research",
-            "effect": "Pip can independently earn shared research.",
-            "unique": true,
-            "category": "learning"
-          },
-          {
-            "id": "circle",
-            "name": "Learning circle",
-            "skill": "shelter",
-            "cost": {
-              "wood": 4,
-              "fiber": 4,
-              "stone": 2
-            },
-            "time": 15,
-            "category": "learning",
-            "effect": "Lessons are 12% faster. Coached practice gains +1 mastery point.",
-            "desc": "A ring of cushions, an open notebook, and permission to get it wrong.",
-            "icon": "book",
-            "unique": true
-          },
-          {
-            "id": "grainplot",
-            "name": "Grain patch",
-            "skill": "gardening",
-            "cost": {
-              "wood": 3,
-              "fiber": 3,
-              "water": 2
-            },
-            "time": 13,
-            "category": "growing",
-            "effect": "Tending with delivered water produces grain for collection at the grain patch.",
-            "desc": "A small patch of golden stalks. Tomorrow starts here.",
-            "icon": "sprout",
-            "unique": true
-          },
-          {
-            "id": "loom",
-            "name": "Weaving loom",
-            "skill": "weaving",
-            "cost": {
-              "planks": 3,
-              "rope": 3,
-              "wood": 2
-            },
-            "time": 19,
-            "category": "workshops",
-            "effect": "Turns fibers and rope into cloth.",
-            "desc": "Soft comforts and sturdy cloth begin with a patient shuttle.",
-            "icon": "fiber",
-            "unique": true
-          },
-          {
-            "id": "kiln",
-            "name": "Clay kiln",
-            "skill": "pottery",
-            "cost": {
-              "clay": 6,
-              "stone": 5,
-              "wood": 3
-            },
-            "time": 20,
-            "category": "workshops",
-            "effect": "Fires bricks and pots; later, fuses glass.",
-            "desc": "An earthy little oven for making things that last.",
-            "icon": "fire",
-            "unique": true
-          },
-          {
-            "id": "herbarium",
-            "name": "Herbarium",
-            "skill": "herbalism",
-            "cost": {
-              "wood": 5,
-              "rope": 2,
-              "stone": 2
-            },
-            "time": 18,
-            "category": "workshops",
-            "effect": "Turns herbs, water and a pot into soothing balm.",
-            "desc": "Hang a few leaves. Label a few jars. Care can be crafted.",
-            "icon": "leaf",
-            "unique": true
-          },
-          {
-            "id": "workshop",
-            "name": "Timber workshop",
-            "skill": "joinery",
-            "cost": {
-              "beams": 3,
-              "planks": 4,
-              "cloth": 2,
-              "stone": 4
-            },
-            "time": 28,
-            "category": "workshops",
-            "effect": "Makes tools. Nearby construction within 3 tiles is 10% faster.",
-            "desc": "A sheltered place for the ambitious, slightly crooked first attempt.",
-            "icon": "bench",
-            "unique": true
-          },
-          {
-            "id": "smelter",
-            "name": "Little smelter",
-            "skill": "metalwork",
-            "cost": {
-              "bricks": 6,
-              "stone": 6,
-              "planks": 3
-            },
-            "time": 27,
-            "category": "workshops",
-            "effect": "Smelts ore and charcoal into iron.",
-            "desc": "A contained, careful fire for big new possibilities.",
-            "icon": "fire",
-            "unique": true
-          },
-          {
-            "id": "mill",
-            "name": "Windmill",
-            "skill": "milling",
-            "cost": {
-              "planks": 6,
-              "rope": 3,
-              "cloth": 2,
-              "stone": 4
-            },
-            "time": 27,
-            "category": "growing",
-            "effect": "Mills grain into flour. Its sails turn while the world runs.",
-            "desc": "The breeze lends a hand. Pip still decides when to make flour.",
-            "icon": "sprout",
-            "unique": true
-          },
-          {
-            "id": "bakery",
-            "name": "Glade bakery",
-            "skill": "baking",
-            "cost": {
-              "bricks": 6,
-              "planks": 4,
-              "cloth": 1
-            },
-            "time": 25,
-            "category": "home",
-            "effect": "Bakes fresh bread. One loaf restores 40 food.",
-            "desc": "A warm doorway and something good cooling on the sill.",
-            "icon": "meal",
-            "unique": true
-          },
-          {
-            "id": "greenhouse",
-            "name": "Growing house",
-            "skill": "horticulture",
-            "cost": {
-              "planks": 5,
-              "cloth": 3,
-              "rope": 2,
-              "stone": 3
-            },
-            "time": 25,
-            "category": "growing",
-            "effect": "A tended herb bed supplied with carried water. Herbs wait locally for collection.",
-            "desc": "A woven shade-house before the glade learns to make glass.",
-            "icon": "sprout",
-            "unique": true
-          },
-          {
-            "id": "storehouse",
-            "name": "Storehouse",
-            "skill": "logistics",
-            "cost": {
-              "planks": 6,
-              "rope": 3,
-              "bricks": 4
-            },
-            "time": 24,
-            "category": "community",
-            "effect": "Crafting stations within 4 tiles work 12% faster.",
-            "desc": "Every useful thing has a place; every trip can be a little shorter.",
-            "icon": "market",
-            "unique": true
-          },
-          {
-            "id": "waterwheel",
-            "name": "Waterwheel",
-            "skill": "engineering",
-            "cost": {
-              "beams": 4,
-              "iron": 3,
-              "tools": 2,
-              "bricks": 6
-            },
-            "time": 36,
-            "category": "workshops",
-            "effect": "Must be near the spring. Stations within 4 tiles work 18% faster.",
-            "desc": "Quiet power from the spring, shared with nearby workshops.",
-            "icon": "water",
-            "unique": true,
-            "placement": "water"
-          },
-          {
-            "id": "orchard",
-            "name": "Bramble orchard",
-            "skill": "stewardship",
-            "cost": {
-              "beams": 2,
-              "rope": 3,
-              "water": 5,
-              "pots": 3
-            },
-            "time": 30,
-            "category": "growing",
-            "effect": "Tending with delivered water produces berries. This peaceful place adds +8 joy to play.",
-            "desc": "A promise of shade, fruit and many unhurried afternoons.",
-            "icon": "sprout",
-            "unique": true
-          },
-          {
-            "id": "observatory",
-            "name": "Stargazer\u2019s nook",
-            "skill": "scholarship",
-            "cost": {
-              "beams": 4,
-              "glass": 4,
-              "iron": 2,
-              "cloth": 3
-            },
-            "time": 38,
-            "category": "learning",
-            "effect": "Autonomous research yields +2 shared points. Lessons are 10% faster.",
-            "desc": "A little lens, a wide sky, and someone to share the question with.",
-            "icon": "research",
-            "unique": true
-          },
-          {
-            "id": "map_table",
-            "name": "Map table",
-            "desc": "A sturdy table for shared charts, island invitations and the next bridge. Build it to open the world map.",
-            "skill": "woodwork",
-            "cost": {
-              "planks": 4,
-              "wood": 4
-            },
-            "time": 18,
-            "icon": "compass",
-            "effect": "A completed, reachable map table opens the world map. Island purchases still require land research, guide levels, coins and prestige.",
-            "unique": true,
-            "category": "community"
-          }
-        ],
+        "buildings": {
+          "$catalog": "building",
+          "order": [
+            "shelter",
+            "bench",
+            "fire",
+            "garden",
+            "market",
+            "well",
+            "cottage",
+            "study",
+            "circle",
+            "grainplot",
+            "loom",
+            "kiln",
+            "herbarium",
+            "workshop",
+            "smelter",
+            "mill",
+            "bakery",
+            "greenhouse",
+            "storehouse",
+            "waterwheel",
+            "orchard",
+            "observatory",
+            "map_table"
+          ],
+          "shape": "list"
+        },
         "drills": [
           {
             "id": "woodcraft",
@@ -2063,308 +1457,53 @@
       "schemaVersion": 1,
       "revision": "5.0.0",
       "weights": {
-        "wood": 800,
-        "stone": 1100,
-        "fiber": 100,
-        "berries": 150,
-        "water": 500,
-        "planks": 650,
-        "meat": 350,
-        "meals": 450,
-        "clay": 700,
-        "ore": 1200,
-        "herbs": 80,
-        "grain": 250,
-        "rope": 300,
-        "cloth": 250,
-        "charcoal": 200,
-        "bricks": 900,
-        "pots": 400,
-        "beams": 1600,
-        "iron": 850,
-        "tools": 1000,
-        "glass": 350,
-        "flour": 250,
-        "bread": 300,
-        "balm": 150
+        "$catalog": "weight",
+        "order": [
+          "wood",
+          "stone",
+          "fiber",
+          "berries",
+          "water",
+          "planks",
+          "meat",
+          "meals",
+          "clay",
+          "ore",
+          "herbs",
+          "grain",
+          "rope",
+          "cloth",
+          "charcoal",
+          "bricks",
+          "pots",
+          "beams",
+          "iron",
+          "tools",
+          "glass",
+          "flour",
+          "bread",
+          "balm"
+        ],
+        "shape": "map"
       },
-      "equipment": [
-        {
-          "id": "trail_cap",
-          "name": "Trail cap",
-          "slot": "head",
-          "weight": 150,
-          "price": 22,
-          "visual": "cap",
-          "color": "#597665",
-          "bonuses": {
-            "Per": 1
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "cloth": 1,
-              "fiber": 2
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "A brim for sunlit trails. +1 to observation checks."
-        },
-        {
-          "id": "rain_cape",
-          "name": "Rain cape",
-          "slot": "body",
-          "weight": 650,
-          "price": 38,
-          "visual": "cape",
-          "color": "#c9a953",
-          "bonuses": {
-            "HT": 1
-          },
-          "travel": 0.06,
-          "recipe": {
-            "cost": {
-              "cloth": 2,
-              "rope": 1
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "Dry shoulders and a steadier journey. +1 HT; 6% shorter quests."
-        },
-        {
-          "id": "walking_boots",
-          "name": "Walking boots",
-          "slot": "feet",
-          "weight": 700,
-          "price": 42,
-          "visual": "boots",
-          "color": "#876145",
-          "bonuses": {
-            "DX": 1
-          },
-          "travel": 0.1,
-          "recipe": {
-            "cost": {
-              "cloth": 2,
-              "rope": 1
-            },
-            "station": "bench",
-            "skill": "fiberwork",
-            "time": 14
-          },
-          "description": "Sure footing. +1 DX-based checks; 10% shorter quests."
-        },
-        {
-          "id": "gathering_axe",
-          "name": "Gathering axe",
-          "slot": "tool",
-          "weight": 1200,
-          "price": 30,
-          "visual": "axe",
-          "color": "#89a3a4",
-          "bonuses": {
-            "woodcraft": 2
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "planks": 2,
-              "stone": 2
-            },
-            "station": "bench",
-            "skill": "woodwork",
-            "time": 14
-          },
-          "description": "Better leverage on fallen wood. +2 wood gathering."
-        },
-        {
-          "id": "hand_hammer",
-          "name": "Craft hammer",
-          "slot": "tool",
-          "weight": 900,
-          "price": 46,
-          "visual": "hammer",
-          "color": "#748c95",
-          "bonuses": {
-            "craft": 1
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "iron": 1,
-              "planks": 1
-            },
-            "station": "bench",
-            "skill": "metalwork",
-            "time": 14
-          },
-          "description": "A reliable balance. +1 crafting and construction checks."
-        },
-        {
-          "id": "walking_staff",
-          "name": "Walking staff",
-          "slot": "tool",
-          "weight": 650,
-          "price": 26,
-          "visual": "staff",
-          "color": "#9b7950",
-          "bonuses": {
-            "tracking": 2
-          },
-          "travel": 0.08,
-          "recipe": {
-            "cost": {
-              "wood": 3,
-              "rope": 1
-            },
-            "station": "bench",
-            "skill": "woodcraft",
-            "time": 14
-          },
-          "description": "A steady companion on unfamiliar paths. +2 tracking; 8% shorter quests."
-        },
-        {
-          "id": "field_satchel",
-          "name": "Field satchel",
-          "slot": "back",
-          "weight": 300,
-          "price": 26,
-          "visual": "pack",
-          "color": "#b07848",
-          "bonuses": {
-            "Per": 1
-          },
-          "travel": 0.04,
-          "recipe": {
-            "cost": {
-              "cloth": 1,
-              "rope": 1
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "Organized supplies. +1 observation; 4% shorter quests. Does not cancel weight."
-        },
-        {
-          "id": "friendship_charm",
-          "name": "Friendship charm",
-          "slot": "charm",
-          "weight": 50,
-          "price": 28,
-          "visual": "charm",
-          "color": "#db9987",
-          "bonuses": {
-            "social": 1
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "fiber": 3,
-              "stone": 1
-            },
-            "station": "bench",
-            "skill": "fiberwork",
-            "time": 14
-          },
-          "description": "A small reminder of home. +1 social checks."
-        },
-        {
-          "id": "stargazer_hat",
-          "name": "Stargazer hat",
-          "slot": "head",
-          "weight": 250,
-          "price": 66,
-          "visual": "wizard",
-          "color": "#797ca4",
-          "bonuses": {
-            "invention": 2
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "cloth": 2,
-              "glass": 1
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "A soft, star-stitched hat. +2 research checks."
-        },
-        {
-          "id": "woodland_vest",
-          "name": "Woodland vest",
-          "slot": "body",
-          "weight": 800,
-          "price": 44,
-          "visual": "vest",
-          "color": "#737853",
-          "bonuses": {
-            "tracking": 1
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "cloth": 2,
-              "rope": 1
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "Quiet pockets and woodland colors. +1 tracking."
-        },
-        {
-          "id": "swift_shoes",
-          "name": "Swift shoes",
-          "slot": "feet",
-          "weight": 400,
-          "price": 85,
-          "visual": "boots",
-          "color": "#607887",
-          "bonuses": {},
-          "travel": 0.18,
-          "recipe": {
-            "cost": {
-              "cloth": 3,
-              "rope": 2
-            },
-            "station": "loom",
-            "skill": "weaving",
-            "time": 14
-          },
-          "description": "Light travel shoes. 18% shorter quests, but no skill bonus."
-        },
-        {
-          "id": "lantern",
-          "name": "Travel lantern",
-          "slot": "tool",
-          "weight": 750,
-          "price": 70,
-          "visual": "lantern",
-          "color": "#e2b66c",
-          "bonuses": {
-            "Per": 2
-          },
-          "travel": 0,
-          "recipe": {
-            "cost": {
-              "iron": 1,
-              "glass": 1,
-              "charcoal": 1
-            },
-            "station": "bench",
-            "skill": "metalwork",
-            "time": 14
-          },
-          "description": "Light to notice what others miss. +2 observation."
-        }
-      ],
+      "equipment": {
+        "$catalog": "equipment",
+        "order": [
+          "trail_cap",
+          "rain_cape",
+          "walking_boots",
+          "gathering_axe",
+          "hand_hammer",
+          "walking_staff",
+          "field_satchel",
+          "friendship_charm",
+          "stargazer_hat",
+          "woodland_vest",
+          "swift_shoes",
+          "lantern"
+        ],
+        "shape": "list"
+      },
       "traits": [
         {
           "id": "observant",
@@ -3205,316 +2344,46 @@
       "id": "littlewild.living-land",
       "name": "The Living Land",
       "description": "Finite deposits, sustainable sources and physically serviced workspaces.",
-      "nodes": [
-        {
-          "id": "wood",
-          "name": "Branching grove",
-          "resource": "wood",
-          "mode": "infinite",
-          "quantity": 120,
-          "batch": 3,
-          "seconds": 4,
-          "skill": "woodcraft",
-          "direct": true
-        },
-        {
-          "id": "stone",
-          "name": "Stone outcrop",
-          "resource": "stone",
-          "mode": "finite",
-          "quantity": 240,
-          "batch": 2,
-          "seconds": 4.5,
-          "skill": "stonework",
-          "direct": true
-        },
-        {
-          "id": "fiber",
-          "name": "Wild fibers",
-          "resource": "fiber",
-          "mode": "infinite",
-          "quantity": 80,
-          "batch": 3,
-          "seconds": 3,
-          "skill": null,
-          "direct": true
-        },
-        {
-          "id": "berries",
-          "name": "Berry thicket",
-          "resource": "berries",
-          "mode": "infinite",
-          "quantity": 80,
-          "batch": 3,
-          "seconds": 3,
-          "skill": null,
-          "direct": true
-        },
-        {
-          "id": "water",
-          "name": "Freshwater spring",
-          "resource": "water",
-          "mode": "infinite",
-          "quantity": 999,
-          "batch": 3,
-          "seconds": 2.8,
-          "skill": null,
-          "direct": true
-        },
-        {
-          "id": "hunt",
-          "name": "Woodland hunting grounds",
-          "resource": "meat",
-          "mode": "infinite",
-          "quantity": 120,
-          "batch": 2,
-          "seconds": 9,
-          "skill": "tracking",
-          "direct": true
-        },
-        {
-          "id": "clay",
-          "name": "Clay deposit",
-          "resource": "clay",
-          "mode": "finite",
-          "quantity": 180,
-          "batch": 3,
-          "seconds": 4,
-          "skill": "claywork",
-          "direct": true
-        },
-        {
-          "id": "ore",
-          "name": "Iron-bearing rock",
-          "resource": "ore",
-          "mode": "finite",
-          "quantity": 120,
-          "batch": 2,
-          "seconds": 5,
-          "skill": "metalwork",
-          "direct": true
-        },
-        {
-          "id": "herbs",
-          "name": "Wild herb bed",
-          "resource": "herbs",
-          "mode": "infinite",
-          "quantity": 80,
-          "batch": 3,
-          "seconds": 3,
-          "skill": "herbalism",
-          "direct": true
-        },
-        {
-          "id": "grain",
-          "name": "Wild grain",
-          "resource": "grain",
-          "mode": "infinite",
-          "quantity": 80,
-          "batch": 3,
-          "seconds": 3,
-          "skill": "gardening",
-          "direct": true
-        },
-        {
-          "id": "soil",
-          "name": "Fertile ground",
-          "resource": null,
-          "mode": "infinite",
-          "quantity": 120,
-          "batch": 1,
-          "seconds": 12,
-          "skill": null,
-          "direct": false
-        },
-        {
-          "id": "groundwater",
-          "name": "Groundwater pocket",
-          "resource": null,
-          "mode": "infinite",
-          "quantity": 300,
-          "batch": 1,
-          "seconds": 8,
-          "skill": null,
-          "direct": false
-        },
-        {
-          "id": "stream",
-          "name": "Flowing spring bank",
-          "resource": null,
-          "mode": "infinite",
-          "quantity": 300,
-          "batch": 1,
-          "seconds": 8,
-          "skill": null,
-          "direct": false
-        }
-      ],
-      "buildings": [
-        {
-          "id": "bench",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "fire",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "loom",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "kiln",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "herbarium",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "workshop",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "smelter",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "mill",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "bakery",
-          "requiresNode": null,
-          "inputCapacity": 24,
-          "outputCapacity": 16,
-          "production": null,
-          "defaultTarget": 0
-        },
-        {
-          "id": "garden",
-          "requiresNode": "soil",
-          "inputCapacity": 8,
-          "outputCapacity": 16,
-          "production": {
-            "output": "berries",
-            "amount": 4,
-            "cost": {
-              "water": 1
-            },
-            "seconds": 18,
-            "skill": "gardening",
-            "depletion": 1
-          },
-          "defaultTarget": 8
-        },
-        {
-          "id": "grainplot",
-          "requiresNode": "soil",
-          "inputCapacity": 8,
-          "outputCapacity": 16,
-          "production": {
-            "output": "grain",
-            "amount": 4,
-            "cost": {
-              "water": 1
-            },
-            "seconds": 20,
-            "skill": "gardening",
-            "depletion": 1
-          },
-          "defaultTarget": 8
-        },
-        {
-          "id": "greenhouse",
-          "requiresNode": "soil",
-          "inputCapacity": 8,
-          "outputCapacity": 16,
-          "production": {
-            "output": "herbs",
-            "amount": 4,
-            "cost": {
-              "water": 1
-            },
-            "seconds": 18,
-            "skill": "horticulture",
-            "depletion": 1
-          },
-          "defaultTarget": 8
-        },
-        {
-          "id": "orchard",
-          "requiresNode": "soil",
-          "inputCapacity": 8,
-          "outputCapacity": 16,
-          "production": {
-            "output": "berries",
-            "amount": 6,
-            "cost": {
-              "water": 1
-            },
-            "seconds": 24,
-            "skill": "stewardship",
-            "depletion": 1
-          },
-          "defaultTarget": 8
-        },
-        {
-          "id": "well",
-          "requiresNode": "groundwater",
-          "inputCapacity": 4,
-          "outputCapacity": 12,
-          "production": {
-            "output": "water",
-            "amount": 4,
-            "cost": {},
-            "seconds": 4,
-            "skill": "masonry",
-            "depletion": 4
-          },
-          "defaultTarget": 8
-        },
-        {
-          "id": "waterwheel",
-          "requiresNode": "stream",
-          "inputCapacity": 0,
-          "outputCapacity": 0,
-          "production": null,
-          "defaultTarget": 0
-        }
-      ],
+      "nodes": {
+        "$catalog": "node",
+        "order": [
+          "wood",
+          "stone",
+          "fiber",
+          "berries",
+          "water",
+          "meat",
+          "clay",
+          "ore",
+          "herbs",
+          "grain",
+          "soil",
+          "groundwater",
+          "stream"
+        ],
+        "shape": "list"
+      },
+      "buildings": {
+        "$catalog": "physicalBuilding",
+        "order": [
+          "bench",
+          "fire",
+          "loom",
+          "kiln",
+          "herbarium",
+          "workshop",
+          "smelter",
+          "mill",
+          "bakery",
+          "garden",
+          "grainplot",
+          "greenhouse",
+          "orchard",
+          "well",
+          "waterwheel"
+        ],
+        "shape": "list"
+      },
       "sites": [
         {
           "id": "site-soil-0",
@@ -3631,14 +2500,12 @@
         "marketSeconds": 4
       },
       "homes": {
-        "shelter": {
-          "places": 1,
-          "perLevel": 1
-        },
-        "cottage": {
-          "places": 3,
-          "perLevel": 1
-        }
+        "$catalog": "home",
+        "order": [
+          "shelter",
+          "cottage"
+        ],
+        "shape": "map"
       },
       "features": [
         {
@@ -3664,403 +2531,95 @@
       ],
       "requirements": {
         "buildings": {
-          "shelter": {
-            "playerLevel": 1,
-            "features": {},
-            "research": "blueprint-shelter"
-          },
-          "bench": {
-            "playerLevel": 1,
-            "features": {},
-            "research": "blueprint-bench"
-          },
-          "fire": {
-            "playerLevel": 1,
-            "features": {
-              "homestead": 1
-            },
-            "research": "blueprint-fire"
-          },
-          "garden": {
-            "playerLevel": 1,
-            "features": {
-              "homestead": 1
-            },
-            "research": "blueprint-garden"
-          },
-          "market": {
-            "playerLevel": 2,
-            "features": {
-              "community": 2
-            },
-            "research": "blueprint-market"
-          },
-          "well": {
-            "playerLevel": 2,
-            "features": {
-              "homestead": 2
-            },
-            "research": "blueprint-well"
-          },
-          "cottage": {
-            "playerLevel": 3,
-            "features": {
-              "homestead": 3
-            },
-            "research": "blueprint-cottage"
-          },
-          "study": {
-            "playerLevel": 3,
-            "features": {
-              "discovery": 3
-            },
-            "research": "blueprint-study"
-          },
-          "circle": {
-            "playerLevel": 1,
-            "features": {
-              "discovery": 1
-            },
-            "research": "blueprint-circle"
-          },
-          "grainplot": {
-            "playerLevel": 1,
-            "features": {
-              "homestead": 1
-            },
-            "research": "blueprint-grainplot"
-          },
-          "loom": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "blueprint-loom"
-          },
-          "kiln": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "blueprint-kiln"
-          },
-          "herbarium": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "blueprint-herbarium"
-          },
-          "workshop": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "blueprint-workshop"
-          },
-          "smelter": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "blueprint-smelter"
-          },
-          "mill": {
-            "playerLevel": 3,
-            "features": {
-              "homestead": 3
-            },
-            "research": "blueprint-mill"
-          },
-          "bakery": {
-            "playerLevel": 3,
-            "features": {
-              "homestead": 3
-            },
-            "research": "blueprint-bakery"
-          },
-          "greenhouse": {
-            "playerLevel": 3,
-            "features": {
-              "homestead": 3
-            },
-            "research": "blueprint-greenhouse"
-          },
-          "storehouse": {
-            "playerLevel": 1,
-            "features": {},
-            "research": "blueprint-storehouse"
-          },
-          "waterwheel": {
-            "playerLevel": 4,
-            "features": {
-              "making": 4
-            },
-            "research": "blueprint-waterwheel"
-          },
-          "orchard": {
-            "playerLevel": 4,
-            "features": {
-              "homestead": 4
-            },
-            "research": "blueprint-orchard"
-          },
-          "observatory": {
-            "playerLevel": 4,
-            "features": {
-              "discovery": 4
-            },
-            "research": "blueprint-observatory"
-          },
-          "map_table": {
-            "playerLevel": 3,
-            "features": {
-              "discovery": 2
-            },
-            "research": "blueprint-map-table"
-          }
+          "$catalog": "buildingRequirements",
+          "order": [
+            "shelter",
+            "bench",
+            "fire",
+            "garden",
+            "market",
+            "well",
+            "cottage",
+            "study",
+            "circle",
+            "grainplot",
+            "loom",
+            "kiln",
+            "herbarium",
+            "workshop",
+            "smelter",
+            "mill",
+            "bakery",
+            "greenhouse",
+            "storehouse",
+            "waterwheel",
+            "orchard",
+            "observatory",
+            "map_table"
+          ],
+          "shape": "map"
         },
         "recipes": {
-          "planks": {
-            "playerLevel": 1,
-            "features": {},
-            "research": "recipe-planks"
-          },
-          "meals": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "recipe-meals"
-          },
-          "rope": {
-            "playerLevel": 1,
-            "features": {},
-            "research": "recipe-rope"
-          },
-          "cloth": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "recipe-cloth"
-          },
-          "charcoal": {
-            "playerLevel": 1,
-            "features": {
-              "making": 1
-            },
-            "research": "recipe-charcoal"
-          },
-          "bricks": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "recipe-bricks"
-          },
-          "pots": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "recipe-pots"
-          },
-          "beams": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "recipe-beams"
-          },
-          "iron": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "recipe-iron"
-          },
-          "tools": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "recipe-tools"
-          },
-          "flour": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "recipe-flour"
-          },
-          "bread": {
-            "playerLevel": 3,
-            "features": {
-              "making": 3
-            },
-            "research": "recipe-bread"
-          },
-          "balm": {
-            "playerLevel": 2,
-            "features": {
-              "making": 2
-            },
-            "research": "recipe-balm"
-          },
-          "glass": {
-            "playerLevel": 4,
-            "features": {
-              "making": 4
-            },
-            "research": "recipe-glass"
-          }
+          "$catalog": "recipeRequirements",
+          "order": [
+            "planks",
+            "meals",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ],
+          "shape": "map"
         },
         "items": {
-          "wood": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "stone": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "fiber": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "berries": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "water": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "planks": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "meat": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "meals": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "clay": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "ore": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "herbs": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "grain": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "rope": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "cloth": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "charcoal": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "bricks": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "pots": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "beams": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "iron": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "tools": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "flour": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "bread": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "balm": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "glass": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "trail_cap": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "rain_cape": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "walking_boots": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "gathering_axe": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "hand_hammer": {
-            "playerLevel": 3,
-            "features": {}
-          },
-          "walking_staff": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "field_satchel": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "friendship_charm": {
-            "playerLevel": 1,
-            "features": {}
-          },
-          "stargazer_hat": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "woodland_vest": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "swift_shoes": {
-            "playerLevel": 2,
-            "features": {}
-          },
-          "lantern": {
-            "playerLevel": 3,
-            "features": {}
-          }
+          "$catalog": "itemRequirements",
+          "order": [
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meals",
+            "clay",
+            "ore",
+            "herbs",
+            "grain",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass",
+            "trail_cap",
+            "rain_cape",
+            "walking_boots",
+            "gathering_axe",
+            "hand_hammer",
+            "walking_staff",
+            "field_satchel",
+            "friendship_charm",
+            "stargazer_hat",
+            "woodland_vest",
+            "swift_shoes",
+            "lantern"
+          ],
+          "shape": "map"
         },
         "features": {
           "quests": {
@@ -5832,201 +4391,13 @@
   "creatures": {
     "format": "littlewild-creature-balancing",
     "schemaVersion": 1,
-    "definitions": [
-      {
-        "id": "sproutling",
-        "movement": {
-          "baseSpeed": 1.8,
-          "bondThreshold": 65,
-          "bondedSpeedBonus": 0.12
-        },
-        "physiology": {
-          "food": 1,
-          "water": 1,
-          "energy": 1,
-          "comfort": 1,
-          "joy": 1,
-          "fatigue": 1,
-          "recovery": 1,
-          "social": 1,
-          "anger": 1
-        },
-        "rng": {
-          "base": 4631,
-          "stride": 1913
-        },
-        "state": {
-          "defaults": {
-            "creature": {
-              "level": 1,
-              "xp": 0,
-              "coins": 0,
-              "x": 8,
-              "y": 9,
-              "dir": 1
-            },
-            "bond": 22,
-            "needs": {
-              "food": 68,
-              "water": 58,
-              "energy": 82,
-              "comfort": 52,
-              "joy": 65
-            },
-            "inventory": {
-              "wood": 0,
-              "stone": 0,
-              "fiber": 0,
-              "berries": 0,
-              "water": 0,
-              "planks": 0,
-              "meat": 0,
-              "meals": 0,
-              "clay": 0,
-              "ore": 0,
-              "herbs": 0,
-              "grain": 0,
-              "rope": 0,
-              "cloth": 0,
-              "charcoal": 0,
-              "bricks": 0,
-              "pots": 0,
-              "beams": 0,
-              "iron": 0,
-              "tools": 0,
-              "flour": 0,
-              "bread": 0,
-              "balm": 0,
-              "glass": 0
-            },
-            "allowance": {
-              "limit": 10,
-              "given": 0,
-              "auto": true,
-              "reserve": 4
-            },
-            "cooldowns": {
-              "feed": 0,
-              "water": 0,
-              "bond": 0,
-              "praise": 0,
-              "explore": 0,
-              "research": 0
-            },
-            "memory": {
-              "lastAchievement": -100,
-              "lastPraise": -100,
-              "lastGentleWarning": -100,
-              "lastDecline": -100
-            },
-            "stats": {
-              "fed": 0,
-              "watered": 0,
-              "bonded": 0,
-              "gathered": 0,
-              "built": 0,
-              "trained": 0,
-              "planksMade": 0,
-              "deliveries": 0,
-              "explored": 0,
-              "earned": 0,
-              "researchEarned": 0
-            },
-            "stockTargets": {
-              "wood": 0,
-              "stone": 0,
-              "fiber": 0,
-              "berries": 4,
-              "water": 3,
-              "planks": 0,
-              "meat": 0,
-              "meals": 0,
-              "clay": 0,
-              "ore": 0,
-              "herbs": 0,
-              "grain": 0,
-              "rope": 0,
-              "cloth": 0,
-              "charcoal": 0,
-              "bricks": 0,
-              "pots": 0,
-              "beams": 0,
-              "iron": 0,
-              "tools": 0,
-              "flour": 0,
-              "bread": 0,
-              "balm": 0,
-              "glass": 0
-            },
-            "daily": {
-              "day": 1,
-              "bonded": 0
-            },
-            "learning": {
-              "fatigue": 0,
-              "recovering": false,
-              "paused": false,
-              "practiceDay": 1
-            },
-            "metrics": {
-              "stages": 0,
-              "upgrades": 0,
-              "lessons": 0
-            },
-            "rpg": {
-              "attributes": {
-                "ST": 10,
-                "DX": 10,
-                "IQ": 10,
-                "HT": 10
-              },
-              "cp": 0,
-              "rng": 2718
-            },
-            "needsDeposit": false,
-            "feelings": {
-              "anger": 0,
-              "social": 76,
-              "lastControl": -100,
-              "coolingUntil": 0,
-              "lastSocial": -100
-            },
-            "unpackIntent": false,
-            "lastNeedFeeling": 0
-          },
-          "modes": {
-            "founder": {
-              "creature": {
-                "coins": 6,
-                "x": 8,
-                "y": 9,
-                "dir": 1
-              },
-              "inventory": {
-                "wood": 2,
-                "fiber": 2,
-                "berries": 5,
-                "water": 4
-              },
-              "allowance": {
-                "given": 6
-              }
-            },
-            "arrival": {
-              "creature": {
-                "coins": 0,
-                "x": 17,
-                "y": 16,
-                "dir": -1
-              },
-              "allowance": {
-                "given": 0
-              }
-            }
-          }
-        }
-      }
-    ]
+    "definitions": {
+      "$catalog": "creatureTuning",
+      "order": [
+        "sproutling"
+      ],
+      "shape": "list"
+    }
   },
   "interactions": {
     "format": "littlewild-interactions",

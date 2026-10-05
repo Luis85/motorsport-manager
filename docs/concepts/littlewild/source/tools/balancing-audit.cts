@@ -1,9 +1,10 @@
 /** Bounded source audit: each declared tuner must have a real documented domain consumer. */
 import fs from 'node:fs';
 import path from 'node:path';
+import {balancingDocument} from './bundled-content.cjs';
 interface Entry {path:string;source:string;consumer:string;occurrences:number;}
 export function auditBalancing(sourceRoot:string):string[]{
- const issues:string[]=[],balance=JSON.parse(fs.readFileSync(path.join(sourceRoot,'content/balancing.json'),'utf8')) as {simulation:{rules:{gameplay:Record<string,Record<string,number>>}}};
+ const issues:string[]=[],balance=balancingDocument(sourceRoot) as {simulation:{rules:{gameplay:Record<string,Record<string,number>>}}};
  const inventory=JSON.parse(fs.readFileSync(path.join(sourceRoot,'content/balancing-inventory.json'),'utf8')) as {tuners:Entry[]};
  const declared=new Set(Object.entries(balance.simulation.rules.gameplay).flatMap(([group,keys])=>Object.keys(keys).map(key=>'/simulation/rules/gameplay/'+group+'/'+key)));
  const seen=new Set<string>(),files=fs.readdirSync(sourceRoot).filter(file=>file.endsWith('.ts')&&!file.startsWith('test-')&&!file.endsWith('.d.ts'));

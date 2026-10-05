@@ -321,7 +321,10 @@
     "source/skill-tree-integration.ts",
     "source/skill-tree-ui.ts",
     "source/test-skill-trees.cts",
-    "source/verification/skill-tree-browser.ts"
+    "source/verification/skill-tree-browser.ts",
+    "source/tools/definition-source.cts",
+    "source/tools/bundled-content.cts",
+    "source/tools/bundled-assets.cts"
   ],
   "include": []
 }

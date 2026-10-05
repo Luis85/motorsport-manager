@@ -8,13 +8,13 @@ Creatures are authored as data, instantiated by an application service, simulate
 
 | Concern | Owner | Persistent? |
 | --- | --- | --- |
-| Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/assets/creatures/<id>/creature.json` | Definition data |
+| Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/assets/creatures/<id>/definition.json (`creature` facet)` | Definition data |
 | Personality traits, attributes and preferences | Adventure content | Definition data |
 | Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks, interaction events/cooldowns | Creature actor record | Yes |
 | Paired invitations, duel rounds/history, catalog identity, participant cooldowns, trigger clocks and seek intents | Root `state.creatureInteractions` via `interaction-runtime.ts` and `interaction-triggers.ts` | Yes |
 | `Creature`, `Activity`, `Intent` ECS projections | `actor-ecs.ts` | No |
 | Construction of a new mutable actor from immutable definitions | `creature-factory.ts` | Application service |
-| Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/creatures/<id>/asset.json` | Presentation data |
+| Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/creatures/<id>/definition.json (`visual` facet)` | Presentation data |
 | Animation algorithm and Three.js attachment behavior | `world-fidelity.ts` | No |
 | Recruitment, social/quest orchestration and use-case sequencing | `colony.ts` | Application orchestration |
 
@@ -31,7 +31,7 @@ Creatures are authored as data, instantiated by an application service, simulate
 ## Runtime flow
 
 ```text
-creature.json
+definition.json creature facet
     ↓ validate + deep-freeze
 LWCreatures
     ↓ seed(archetype, personality, mode, sequence)
@@ -43,7 +43,7 @@ LWActorECS
     ↓ deterministic systems
 authoritative actor record
 
-actor asset.json
+definition.json visual facet
     ↓ validate + deep-freeze
 LWAssets
     ↓ appearance/expression/animation profile
@@ -78,8 +78,8 @@ explicit and recruitment accepts any supported pair.
 ## Adding another creature
 
 1. Copy `source/assets/creatures/sproutling/` to a new safe lowercase ID.
-2. Set `creature.json.id`, `state.defaults.archetype`, `asset.json.id` and normally
-   `visualAsset` to that ID. Keep `asset.json.category` as `actor`.
+2. Set the wrapper `id`, `creature.id`, `creature.state.defaults.archetype`, `visual.id` and normally
+   `visualAsset` to that ID. Keep `visual.category` as `actor`.
 3. Select supported personality IDs from Adventure content and set a supported
    `defaultPersonality` and matching default state. Personalities supply shared
    traits, attributes and preferences independently of species.
@@ -92,7 +92,7 @@ explicit and recruitment accepts any supported pair.
 6. Add optional actor-owned defaults through `state.personalFields`; bind extra
    object state through `ecs.components` when useful. This creates reference-bound
    data, not an executable system. Every existing archetype keeps its own defaults.
-7. Edit geometry/materials and appearance profiles in `asset.json`. Keep required
+7. Edit geometry/materials and appearance profiles in the `visual` facet. Keep required
    rig/socket handles valid in every selected model. The same compiled fidelity
    layer renders world actors and portraits using explicit archetype/personality.
 8. To swap visuals, change `visualAsset` to another bundled package's asset ID.

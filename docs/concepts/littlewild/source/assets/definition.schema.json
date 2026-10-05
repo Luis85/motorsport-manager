@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:definition:1",
+  "title": "Littlewild authored definition",
+  "description": "Build-only wrapper. Projected facets must also pass their domain validators.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "items"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "item": {
+          "type": "object"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "equipment": {
+          "type": "object"
+        },
+        "recipe": {
+          "type": "object"
+        },
+        "node": {
+          "type": "object"
+        },
+        "itemRequirements": {
+          "type": "object"
+        },
+        "recipeRequirements": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ]
+        },
+        {
+          "required": [
+            "item"
+          ]
+        },
+        {
+          "required": [
+            "weight"
+          ]
+        },
+        {
+          "required": [
+            "equipment"
+          ]
+        },
+        {
+          "required": [
+            "recipe"
+          ]
+        },
+        {
+          "required": [
+            "node"
+          ]
+        },
+        {
+          "required": [
+            "itemRequirements"
+          ]
+        },
+        {
+          "required": [
+            "recipeRequirements"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "buildings"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "building": {
+          "type": "object"
+        },
+        "physicalBuilding": {
+          "type": "object"
+        },
+        "buildingRequirements": {
+          "type": "object"
+        },
+        "home": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ]
+        },
+        {
+          "required": [
+            "building"
+          ]
+        },
+        {
+          "required": [
+            "physicalBuilding"
+          ]
+        },
+        {
+          "required": [
+            "buildingRequirements"
+          ]
+        },
+        {
+          "required": [
+            "home"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id",
+        "creature"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "creatures"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "creature": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ]
+        },
+        {
+          "required": [
+            "creature"
+          ]
+        }
+      ]
+    }
+  ]
+}

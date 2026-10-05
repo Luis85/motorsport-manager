@@ -10,6 +10,8 @@ import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { writeWildlandsBundle } from "./tools/wildlands-bundle.cjs";
 import { creatureDefinitions, assetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
 
+import { writeContent } from "./tools/bundled-content.cjs";
+
 import { INSERTS, type InsertKind } from "./tools/build-inserts.cjs";
 
 const ROOT = __dirname;
@@ -56,6 +58,7 @@ function compile(): void {
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
+  writeContent(ROOT, GENERATED);
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
@@ -67,7 +70,7 @@ function compile(): void {
 }
 
 function json(file: string): unknown {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, "content", file), "utf8"));
+  return JSON.parse(fs.readFileSync(path.join(GENERATED, "content", file), "utf8"));
 }
 
 function inlineData(packPath: string | null): string {
@@ -82,9 +85,9 @@ function inlineData(packPath: string | null): string {
     ["LWContentSchema", json("library.schema.json")],
     ["LWInteriorDefinitions", balance.interiors],
     ["LWInteractionLibrary", balance.interactions],
-    ["LWCreatureDefinitions", creatureDefinitions(ROOT)],
+    ["LWCreatureDefinitions", JSON.parse(fs.readFileSync(path.join(GENERATED, "creature-definitions.json"), "utf8"))],
     ["LWCreatureEditorFieldDefinitions", JSON.parse(fs.readFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), "utf8"))],
-    ["LWCreatureConfig", creatureConfig(ROOT)],
+    ["LWCreatureConfig", JSON.parse(fs.readFileSync(path.join(GENERATED, "creature-config.json"), "utf8"))],
     ["LWDefaultAdventure", balance.libraries.adventure],
     ["LWAdventureSchema", json("adventure.schema.json")],
     ["LWDefaultWorld", balance.libraries.world],
@@ -97,7 +100,7 @@ function inlineData(packPath: string | null): string {
     ["LWGrowthSchema", json("growth.schema.json")],
     ["LWDefaultProfile", balance.world],
     ["LWScenarioSchema", json("scenario.schema.json")],
-    ["LWAssetDefinitions", assetDefinitions(ROOT)]
+    ["LWAssetDefinitions", JSON.parse(fs.readFileSync(path.join(GENERATED, "asset-definitions.json"), "utf8"))]
   ];
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]

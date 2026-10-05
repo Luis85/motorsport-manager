@@ -18,36 +18,12 @@
       "validatorRole": "adventure"
     },
     {
-      "id": "adventure-library",
-      "pattern": "content/adventure-library.json",
-      "owner": "content-model",
-      "kind": "definitions",
-      "validatorRole": "adventure",
-      "embeddedGlobal": "LWDefaultAdventure"
-    },
-    {
       "id": "adventure-schema",
       "pattern": "content/adventure.schema.json",
       "owner": "content-model",
       "kind": "schema",
       "validatorRole": "schema",
       "embeddedGlobal": "LWAdventureSchema"
-    },
-    {
-      "id": "building-interiors",
-      "pattern": "content/building-interiors.json",
-      "owner": "building-interior-definitions",
-      "kind": "definitions",
-      "validatorRole": "interiors",
-      "embeddedGlobal": "LWInteriorDefinitions"
-    },
-    {
-      "id": "default-library",
-      "pattern": "content/default-library.json",
-      "owner": "content-model",
-      "kind": "definitions",
-      "validatorRole": "base",
-      "embeddedGlobal": "LWDefaultLibrary"
     },
     {
       "id": "default-profile",
@@ -73,14 +49,6 @@
       "validatorRole": "scenario"
     },
     {
-      "id": "growth-library",
-      "pattern": "content/growth-library.json",
-      "owner": "content-model",
-      "kind": "definitions",
-      "validatorRole": "growth",
-      "embeddedGlobal": "LWDefaultGrowth"
-    },
-    {
       "id": "growth-schema",
       "pattern": "content/growth.schema.json",
       "owner": "content-model",
@@ -101,7 +69,7 @@
       "pattern": "content/littlewild.pack.json",
       "owner": "experience-application",
       "kind": "scenario",
-      "validatorRole": "scenario"
+      "validatorRole": "defaultScenarioSource"
     },
     {
       "id": "office-pack",
@@ -135,14 +103,6 @@
       "embeddedGlobal": "LWSimulationSchema"
     },
     {
-      "id": "world-library",
-      "pattern": "content/world-library.json",
-      "owner": "content-application",
-      "kind": "definitions",
-      "validatorRole": "world",
-      "embeddedGlobal": "LWDefaultWorld"
-    },
-    {
       "id": "world-schema",
       "pattern": "content/world.schema.json",
       "owner": "content-model",
@@ -159,24 +119,17 @@
     },
     {
       "id": "item-assets",
-      "pattern": "assets/items/*/asset.json",
+      "pattern": "assets/items/*/definition.json",
       "owner": "content-model",
       "kind": "definitions",
-      "validatorRole": "assets"
+      "validatorRole": "definitionSource"
     },
     {
       "id": "creature-assets",
-      "pattern": "assets/creatures/*/asset.json",
+      "pattern": "assets/creatures/*/definition.json",
       "owner": "content-model",
       "kind": "definitions",
-      "validatorRole": "assets"
-    },
-    {
-      "id": "creatures",
-      "pattern": "assets/creatures/*/creature.json",
-      "owner": "content-model",
-      "kind": "definitions",
-      "validatorRole": "creatures"
+      "validatorRole": "definitionSource"
     },
     {
       "id": "creature-catalog",
@@ -202,10 +155,10 @@
     },
     {
       "id": "building-assets",
-      "pattern": "assets/buildings/*/asset.json",
+      "pattern": "assets/buildings/*/definition.json",
       "owner": "content-model",
       "kind": "definitions",
-      "validatorRole": "assets"
+      "validatorRole": "definitionSource"
     },
     {
       "id": "asset-schema",
@@ -234,7 +187,7 @@
       "pattern": "content/balancing.json",
       "owner": "experience-application",
       "kind": "rules",
-      "validatorRole": "balancing",
+      "validatorRole": "balancingSource",
       "embeddedGlobal": "LWDefaultBalancing"
     },
     {
@@ -272,6 +225,13 @@
       "owner": "economy-progression",
       "kind": "definitions",
       "validatorRole": "skillTrees"
+    },
+    {
+      "id": "definition-schema",
+      "pattern": "assets/definition.schema.json",
+      "owner": "content-model",
+      "kind": "schema",
+      "validatorRole": "schema"
     }
   ],
   "historicalFixtures": [

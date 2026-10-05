@@ -1,19 +1,46 @@
-# Littlewild 3D assets
+# Littlewild definitions
 
-Every visible gameplay model is isolated under one of three asset families:
+Each item, building, environment source and creature has one authored
+`definition.json` under `items/<id>/`, `buildings/<id>/` or `creatures/<id>/`.
+The folder and wrapper identify the thing. Its facets describe different uses of
+that same identity: gameplay, production, progression and visual presentation.
 
-- `buildings/<id>/asset.json`
-- `items/<id>/asset.json`
-- `creatures/<id>/{creature.json,asset.json}`
+| Family | Supported facets |
+|---|---|
+| Items | `visual`, `item`, `weight`, `equipment`, `recipe`, `node`, `itemRequirements`, `recipeRequirements` |
+| Buildings | `visual`, `building`, `physicalBuilding`, `buildingRequirements`, `home` |
+| Creatures | `visual`, `creature` |
 
-The runtime never imports executable code from an asset. Each manifest is declarative data containing primitive geometry, material roles, named handles, bounds, optional animation anchors, and rig/socket metadata. `asset-catalog.ts` validates and freezes the bundled definitions; `asset-renderer.ts` is the only generic interpreter.
+A facet is optional unless required by its domain. A node-only environment source,
+such as `stream`, needs no mesh. A gameplay item needs a world or carry mesh;
+equipment needs an equipped mesh; a building needs a world mesh. Creature gameplay
+can select another package's actor mesh through `visualAsset`.
 
-Building assets own their complete world mesh plus door/rotor/smoke anchors. Item assets may expose `world`, `depleted`, `carry`, or `equipped` models as appropriate. Actor assets own body geometry and named rig sockets; `world-fidelity.ts` only applies animation state and attaches item assets.
+`tools/definition-source.cts` discovers folders and rejects typos, empty packages,
+wrong families and mismatched identities. `tools/bundled-content.cts` projects
+facets into the existing portable library and balancing formats. Runtime catalogs
+still validate, detach and freeze their own values; geometry remains data only.
 
-These files are build-time bundled content. Scenario/story imports cannot add, replace, or execute 3D assets.
+`content/balancing.json` owns shared rules and catalog order, using selectors such
+as `{"$catalog":"item","order":["wood","stone"],"shape":"list"}`. These selectors
+are authoring instructions for known tables, not executable runtime data. Existing
+order is retained; newly discovered facets append in stable ID order. Adding a
+folder does not require registering its data elsewhere. Changing the founder
+still requires the explicit `creatures/catalog.json` setting.
 
-Creature packages also own gameplay definition data. `creatures/catalog.json` explicitly selects the founder default; `visualAsset` chooses reusable actor geometry. See `creatures/README.md` for adding, editing and swapping a package.
+The standalone libraries, complete default scenario and numeric creature tuning
+are generated into `.generated/content/`. Edit the definitions and shared rules,
+then run `npm run build`; never edit those outputs. Legacy `asset.json`,
+`creature.json` and standalone source-library mirrors fail the architecture/build
+gates so they cannot quietly become a second authority.
 
-Interaction definitions and autonomous trigger rules live in `interactions/`.
-They use their own validated data catalog and schema, independently of visual
-asset definitions. See [Creature interactions](../../CREATURE-INTERACTIONS.md).
+To add an item, copy its closest folder, change the wrapper and facet identities,
+and edit its data. A recipe's ID/output must match its item; references to other
+items, skills, stations and research must satisfy the existing domain validators.
+Remove facets the new thing does not support. Run `npm run typecheck`,
+`npm run architecture` and the complete `npm run verify` gate.
+
+Scenario overrides and exported stories retain complete validated portable
+snapshots. They intentionally travel independently of later default edits and
+cannot install executable renderer programs or loaders. Interaction rules remain
+in their own validated catalog; see [Creature interactions](../../CREATURE-INTERACTIONS.md).

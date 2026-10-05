@@ -1,0 +1,56 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "shore-rock",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "shore-rock",
+    "name": "Shore rock",
+    "materials": {
+      "stone": "#a7b2a4",
+      "light": "#bac2b4"
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "ball",
+            "id": "main",
+            "position": [
+              0,
+              0.18,
+              0
+            ],
+            "scale": [
+              0.5,
+              0.34,
+              0.48
+            ],
+            "material": "stone"
+          },
+          {
+            "primitive": "ball",
+            "id": "cap",
+            "position": [
+              0.18,
+              0.28,
+              0.1
+            ],
+            "scale": [
+              0.24,
+              0.17,
+              0.23
+            ],
+            "material": "light"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "radius": 0.6
+    }
+  }
+}
