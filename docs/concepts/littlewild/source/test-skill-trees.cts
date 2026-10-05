@@ -114,6 +114,7 @@ test('Invalid imported trees reject before reconstruction and old saves remain t
  const e=engine(),before=snapshot(e),saved=e.export();saved.state.colony.creatures[0]!.skillTrees![0]!.ranks={maker:1};assert.throws(()=>root.LW.Engine.import(saved));assert.equal(snapshot(e),before);
  const legacy=e.export();for(const actor of legacy.state.colony.creatures)delete actor.skillTrees;
  const restored=root.LW.Engine.import(legacy);assert.deepEqual(restored.skillTreeState('c1'),[]);assert.equal(snapshot(restored),JSON.stringify(legacy));
+ const detached=(globalThis as unknown as {LWContent:{copy<T>(input:T):T}}).LWContent.copy(restored.s);assert(!Object.hasOwn(detached,'skillTrees'));assert(!Object.hasOwn(restored.s,'skillTrees'));assert.equal(snapshot(restored),JSON.stringify(legacy));
  assert.throws(()=>new root.LW.Engine(saved.state));
 });
 test('New arrivals inherit the retained demo definition with independent zero progress',()=>{
