@@ -1,0 +1,54 @@
+{
+  "version": "0.5.0",
+  "checkedAt": "2026-10-05T19:41:37.565Z",
+  "goldenStateHashCompatible": true,
+  "outputs": [
+    {
+      "project": "examples/outpost",
+      "glbByteIdentical": true,
+      "bytes": 166960,
+      "sha256": "3e0b1c25fab09ece5b8884ed06e663d2f4984fcfb828208b4975b925fb8e2408",
+      "stateHashIdentical": true,
+      "statsIdentical": true
+    },
+    {
+      "project": "examples/composition",
+      "glbByteIdentical": true,
+      "bytes": 189080,
+      "sha256": "81d3473efd8b74db7423979badd3c8b5dfe21316c62c8540b554222f4bfbfb00",
+      "stateHashIdentical": true,
+      "statsIdentical": true
+    },
+    {
+      "project": "examples/procedural",
+      "glbByteIdentical": true,
+      "bytes": 85588,
+      "sha256": "43cddec9cd6dcece4d93897488f7c6181f8121525f82e73db5cb2a047842fc75",
+      "stateHashIdentical": true,
+      "statsIdentical": true
+    }
+  ],
+  "hotspots": [
+    {
+      "module": "cli.ts",
+      "beforeLines": 747,
+      "afterLines": 3
+    },
+    {
+      "module": "preview/viewer.ts",
+      "beforeLines": 1036,
+      "afterLines": 760
+    },
+    {
+      "module": "application/compiler.ts",
+      "beforeLines": 436,
+      "afterLines": 201
+    },
+    {
+      "module": "infra/project.ts",
+      "beforeLines": 462,
+      "afterLines": 320
+    }
+  ],
+  "note": "Three.js resource UUIDs are opaque and change in this release. GLB bytes and persisted source-state hashes are preserved for these fixtures."
+}

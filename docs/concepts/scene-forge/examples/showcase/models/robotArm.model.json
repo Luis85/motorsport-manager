@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "robotArm",
+  "category": "Robotics",
+  "name": "Articulated robot arm",
+  "parameters": {
+    "upper": {
+      "default": 1.8,
+      "min": 1.1,
+      "max": 2.4,
+      "description": "Shoulder-to-elbow length"
+    },
+    "forearm": {
+      "default": 1.5,
+      "min": 1,
+      "max": 2.2,
+      "description": "Elbow-to-wrist length"
+    },
+    "shoulder": {
+      "default": -30,
+      "min": -80,
+      "max": 30,
+      "description": "Shoulder rotation in degrees"
+    },
+    "elbow": {
+      "default": -65,
+      "min": -130,
+      "max": 10,
+      "description": "Elbow rotation in degrees"
+    },
+    "wrist": {
+      "default": 95,
+      "min": -180,
+      "max": 180,
+      "description": "Wrist rotation in degrees"
+    },
+    "opening": {
+      "default": 0.42,
+      "min": 0.15,
+      "max": 0.85,
+      "description": "Gripper opening"
+    }
+  },
+  "geometries": {
+    "base": {
+      "type": "cylinder",
+      "radiusTop": 0.62,
+      "radiusBottom": 0.62,
+      "height": 0.18,
+      "segments": 24
+    },
+    "turret": {
+      "type": "cylinder",
+      "radiusTop": 0.38,
+      "radiusBottom": 0.38,
+      "height": 0.7,
+      "segments": 24
+    },
+    "joint": {
+      "type": "cylinder",
+      "radiusTop": 0.29,
+      "radiusBottom": 0.29,
+      "height": 0.62,
+      "segments": 24
+    },
+    "cap": {
+      "type": "cylinder",
+      "radiusTop": 0.18,
+      "radiusBottom": 0.18,
+      "height": 0.68,
+      "segments": 24
+    },
+    "upper": {
+      "type": "box",
+      "size": [
+        0.44,
+        {
+          "$param": "upper"
+        },
+        0.45
+      ]
+    },
+    "forearm": {
+      "type": "box",
+      "size": [
+        0.34,
+        {
+          "$param": "forearm"
+        },
+        0.38
+      ]
+    },
+    "stripe": {
+      "type": "box",
+      "size": [
+        0.12,
+        {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "upper"
+            },
+            0.6
+          ]
+        },
+        0.015
+      ]
+    },
+    "hose": {
+      "type": "tube",
+      "points": [
+        [
+          0,
+          0.1,
+          0.31
+        ],
+        [
+          0.33,
+          0.4,
+          0.35
+        ],
+        [
+          0.35,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "upper"
+              },
+              0.6
+            ]
+          },
+          0.35
+        ],
+        [
+          0.05,
+          {
+            "$param": "upper"
+          },
+          0.31
+        ]
+      ],
+      "radius": 0.045,
+      "tubularSegments": 28,
+      "radialSegments": 8,
+      "closed": false,
+      "capEnds": true
+    }
+  },
+  "materials": {
+    "yellow": {
+      "color": "#dba347",
+      "metalness": 0.4,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "dark": {
+      "color": "#344650",
+      "metalness": 0.6,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "steel": {
+      "color": "#a1adb1",
+      "metalness": 0.8,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          0.09,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "dark"
+    },
+    {
+      "id": "turret",
+      "transform": {
+        "position": [
+          0,
+          0.53,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "turret",
+      "material": "yellow"
+    },
+    {
+      "id": "shoulder",
+      "transform": {
+        "position": [
+          0,
+          0.9,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          {
+            "$param": "shoulder"
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "shoulderJoint",
+      "parent": "shoulder",
+      "transform": {
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "joint",
+      "material": "dark"
+    },
+    {
+      "id": "shoulderCap",
+      "parent": "shoulder",
+      "transform": {
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cap",
+      "material": "steel"
+    },
+    {
+      "id": "upperLink",
+      "parent": "shoulder",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "upper"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "upper",
+      "material": "yellow"
+    },
+    {
+      "id": "upperStripe",
+      "parent": "shoulder",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "upper"
+              },
+              2
+            ]
+          },
+          0.233
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stripe",
+      "material": "dark"
+    },
+    {
+      "id": "serviceHose",
+      "parent": "shoulder",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "hose",
+      "material": "dark"
+    },
+    {
+      "id": "elbow",
+      "parent": "shoulder",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "upper"
+          },
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          {
+            "$param": "elbow"
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "elbowJoint",
+      "parent": "elbow",
+      "transform": {
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "joint",
+      "material": "dark"
+    },
+    {
+      "id": "elbowCap",
+      "parent": "elbow",
+      "transform": {
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cap",
+      "material": "steel"
+    },
+    {
+      "id": "forearm",
+      "parent": "elbow",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "forearm"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "forearm",
+      "material": "yellow"
+    },
+    {
+      "id": "wrist",
+      "parent": "elbow",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "forearm"
+          },
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          {
+            "$param": "wrist"
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "wristJoint",
+      "parent": "wrist",
+      "transform": {
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "scale": [
+          0.65,
+          0.75,
+          0.65
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "joint",
+      "material": "dark"
+    },
+    {
+      "id": "tool",
+      "parent": "wrist",
+      "transform": {
+        "position": [
+          0,
+          -0.05,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "gripper",
+      "parameters": {
+        "opening": {
+          "$param": "opening"
+        }
+      },
+      "materialOverrides": {}
+    }
+  ]
+}

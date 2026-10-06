@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "primitiveSphere",
+  "category": "Primitives",
+  "description": "A smooth sphere centered one radius above its local origin.",
+  "name": "Sphere",
+  "parameters": {
+    "radius": {
+      "default": 0.5,
+      "min": 0.025,
+      "max": 10,
+      "description": "Radius"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "sphere",
+      "radius": {
+        "$param": "radius"
+      },
+      "segments": 24
+    }
+  },
+  "materials": {
+    "surface": {
+      "color": "#73a3b0",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "radius"
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "surface"
+    }
+  ]
+}

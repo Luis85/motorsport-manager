@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "kind": "composition",
+  "scene": "main",
+  "groups": [
+    {
+      "id": "baseCamp",
+      "name": "Base camp",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -3.2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "fleet",
+      "name": "Survey fleet",
+      "transform": {
+        "position": [
+          0,
+          0,
+          1.4
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "power",
+      "name": "Power systems",
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "supplies",
+      "name": "Field supplies",
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    }
+  ],
+  "instances": [
+    {
+      "id": "terrain",
+      "name": "Terrain platform",
+      "transform": {
+        "scale": [
+          1.38,
+          1,
+          1.38
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "platform",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "habitatWest",
+      "name": "Habitat · workshop",
+      "parent": "baseCamp",
+      "transform": {
+        "position": [
+          -2.3,
+          0.014999998658895494,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "habitat",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "habitatEast",
+      "name": "Habitat · storage",
+      "parent": "baseCamp",
+      "transform": {
+        "position": [
+          0.1,
+          0.014999998658895494,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "habitat",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "habitatComms",
+      "name": "Habitat · communications",
+      "parent": "baseCamp",
+      "transform": {
+        "position": [
+          2.5,
+          0.014999998658895494,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "habitat",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "padAlpha",
+      "name": "Landing pad · Alpha",
+      "parent": "fleet",
+      "transform": {
+        "position": [
+          -2.25,
+          0.01449999985098839,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "landingPad",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "padBravo",
+      "name": "Landing pad · Bravo",
+      "parent": "fleet",
+      "transform": {
+        "position": [
+          2.25,
+          0.01449999985098839,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "landingPad",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "alpha",
+      "name": "Rover · Alpha",
+      "parent": "fleet",
+      "transform": {
+        "position": [
+          -2.25,
+          0.024999989271164008,
+          0
+        ],
+        "rotation": [
+          0,
+          -18,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "rover",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bravo",
+      "name": "Rover · Bravo",
+      "parent": "fleet",
+      "transform": {
+        "position": [
+          2.25,
+          0.024999989271164008,
+          0
+        ],
+        "rotation": [
+          0,
+          22,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "rover",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "solarWest",
+      "name": "Solar collector · West",
+      "parent": "power",
+      "transform": {
+        "position": [
+          -4.6,
+          0.035,
+          -2
+        ],
+        "rotation": [
+          0,
+          -35,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "solar",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "solarEast",
+      "name": "Solar collector · East",
+      "parent": "power",
+      "transform": {
+        "position": [
+          4.6,
+          0.035,
+          -2
+        ],
+        "rotation": [
+          0,
+          35,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "solar",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "fuel",
+      "name": "Fuel supplies",
+      "parent": "supplies",
+      "transform": {
+        "position": [
+          5.3,
+          0.035,
+          0.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          0,
+          0,
+          0.88
+        ]
+      },
+      "type": "model",
+      "model": "barrel",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "cargoLine",
+      "name": "Cargo crates",
+      "parent": "supplies",
+      "transform": {
+        "position": [
+          -5.3,
+          -0.010000011920928947,
+          0.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          0,
+          0,
+          1.05
+        ]
+      },
+      "type": "model",
+      "model": "cargo",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "spares",
+      "name": "Spare parts",
+      "parent": "supplies",
+      "transform": {
+        "position": [
+          -3.4,
+          -0.010000011920928947,
+          -1.6
+        ],
+        "rotation": [
+          0,
+          20,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "cargo",
+      "parameters": {},
+      "materialOverrides": {}
+    }
+  ]
+}

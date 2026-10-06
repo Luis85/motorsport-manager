@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "cargo",
+  "name": "Cargo crate",
+  "parameters": {},
+  "geometries": {
+    "crate": {
+      "type": "box",
+      "size": [
+        0.8,
+        0.65,
+        0.8
+      ]
+    },
+    "stripe": {
+      "type": "box",
+      "size": [
+        0.84,
+        0.08,
+        0.84
+      ]
+    }
+  },
+  "materials": {
+    "orange": {
+      "color": "#e89550",
+      "metalness": 0.1,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "ivory": {
+      "color": "#d8dfd6",
+      "metalness": 0.1,
+      "roughness": 0.65,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "crate1",
+      "transform": {
+        "position": [
+          0,
+          0.37,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "crate",
+      "material": "orange"
+    },
+    {
+      "id": "crate1Band",
+      "transform": {
+        "position": [
+          0,
+          0.55,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stripe",
+      "material": "ivory"
+    }
+  ]
+}

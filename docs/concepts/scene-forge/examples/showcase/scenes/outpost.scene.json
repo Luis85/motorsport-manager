@@ -1,0 +1,750 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "outpost",
+  "name": "Kestrel · Survey outpost",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {
+    "base": {
+      "type": "cylinder",
+      "radiusTop": 5.2,
+      "radiusBottom": 5.2,
+      "height": 0.28,
+      "segments": 64
+    },
+    "soil": {
+      "type": "cylinder",
+      "radiusTop": 5.1,
+      "radiusBottom": 5.1,
+      "height": 0.12,
+      "segments": 64
+    },
+    "pad": {
+      "type": "cylinder",
+      "radiusTop": 2.2,
+      "radiusBottom": 2.2,
+      "height": 0.055,
+      "segments": 48
+    },
+    "post": {
+      "type": "cylinder",
+      "radiusTop": 0.09,
+      "radiusBottom": 0.09,
+      "height": 2.5,
+      "segments": 12
+    },
+    "panel": {
+      "type": "box",
+      "size": [
+        2.2,
+        0.09,
+        1.4
+      ]
+    },
+    "cell": {
+      "type": "box",
+      "size": [
+        0.012,
+        0.02,
+        1.3
+      ]
+    },
+    "station": {
+      "type": "box",
+      "size": [
+        1.6,
+        1.4,
+        1.3
+      ]
+    },
+    "stationTrim": {
+      "type": "box",
+      "size": [
+        1.68,
+        0.16,
+        1.38
+      ]
+    },
+    "door": {
+      "type": "box",
+      "size": [
+        0.66,
+        1.1,
+        0.08
+      ]
+    },
+    "step": {
+      "type": "box",
+      "size": [
+        1,
+        0.12,
+        0.5
+      ]
+    },
+    "antenna": {
+      "type": "cylinder",
+      "radiusTop": 0.024,
+      "radiusBottom": 0.024,
+      "height": 1.35,
+      "segments": 8
+    },
+    "crate": {
+      "type": "box",
+      "size": [
+        0.8,
+        0.65,
+        0.8
+      ]
+    },
+    "stripe": {
+      "type": "box",
+      "size": [
+        0.84,
+        0.08,
+        0.84
+      ]
+    },
+    "marker": {
+      "type": "box",
+      "size": [
+        0.14,
+        0.04,
+        0.45
+      ]
+    },
+    "rock": {
+      "type": "sphere",
+      "radius": 0.35,
+      "segments": 6
+    }
+  },
+  "materials": {
+    "sand": {
+      "color": "#ae9680",
+      "metalness": 0,
+      "roughness": 0.95,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "edge": {
+      "color": "#403e3b",
+      "metalness": 0.1,
+      "roughness": 0.8,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "ivory": {
+      "color": "#d8dfd6",
+      "metalness": 0.1,
+      "roughness": 0.65,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "dark": {
+      "color": "#354551",
+      "metalness": 0.4,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "solar": {
+      "color": "#31556c",
+      "metalness": 0.35,
+      "roughness": 0.35,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "orange": {
+      "color": "#e89550",
+      "metalness": 0.1,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "cyan": {
+      "color": "#65aeb4",
+      "metalness": 0.2,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          -0.22,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "edge"
+    },
+    {
+      "id": "terrain",
+      "transform": {
+        "position": [
+          0,
+          -0.03,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "soil",
+      "material": "sand"
+    },
+    {
+      "id": "servicePad",
+      "transform": {
+        "position": [
+          0.7,
+          0.048,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "pad",
+      "material": "ivory"
+    },
+    {
+      "id": "scout",
+      "name": "Kestrel survey rover",
+      "transform": {
+        "position": [
+          0.7,
+          0.09,
+          1
+        ],
+        "rotation": [
+          0,
+          -25,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "vehicle",
+        "hero"
+      ],
+      "type": "model",
+      "model": "rover",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "station",
+      "transform": {
+        "position": [
+          -2.15,
+          0.74,
+          -1.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "station",
+      "material": "ivory"
+    },
+    {
+      "id": "stationTop",
+      "transform": {
+        "position": [
+          -2.15,
+          1.49,
+          -1.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stationTrim",
+      "material": "orange"
+    },
+    {
+      "id": "stationFoot",
+      "transform": {
+        "position": [
+          -2.15,
+          0.12,
+          -1.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stationTrim",
+      "material": "dark"
+    },
+    {
+      "id": "stationDoor",
+      "transform": {
+        "position": [
+          -2.15,
+          0.64,
+          -1.115
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "door",
+      "material": "dark"
+    },
+    {
+      "id": "entryStep",
+      "transform": {
+        "position": [
+          -2.15,
+          0.08,
+          -0.85
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "step",
+      "material": "ivory"
+    },
+    {
+      "id": "antenna",
+      "transform": {
+        "position": [
+          -2.65,
+          2.2,
+          -1.9
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "antenna",
+      "material": "dark"
+    },
+    {
+      "id": "array",
+      "name": "Solar collector",
+      "transform": {
+        "position": [
+          0.5,
+          0,
+          -2.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "solarPost",
+      "parent": "array",
+      "transform": {
+        "position": [
+          0,
+          1.25,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "post",
+      "material": "dark"
+    },
+    {
+      "id": "solarHead",
+      "parent": "array",
+      "transform": {
+        "position": [
+          0,
+          2.5,
+          0
+        ],
+        "rotation": [
+          20,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "solarPanel",
+      "parent": "solarHead",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "panel",
+      "material": "solar"
+    },
+    {
+      "id": "solarCells",
+      "parent": "solarHead",
+      "transform": {
+        "position": [
+          -0.94,
+          0.052,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 9,
+        "step": [
+          0.235,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "cell",
+      "material": "ivory"
+    },
+    {
+      "id": "barrels",
+      "name": "Supply barrels",
+      "transform": {
+        "position": [
+          2.7,
+          0.04,
+          -1.1
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          0,
+          0,
+          -0.85
+        ]
+      },
+      "type": "model",
+      "model": "barrel",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "crate1",
+      "transform": {
+        "position": [
+          -2.7,
+          0.37,
+          0.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "crate",
+      "material": "orange"
+    },
+    {
+      "id": "crate1Band",
+      "transform": {
+        "position": [
+          -2.7,
+          0.55,
+          0.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stripe",
+      "material": "ivory"
+    },
+    {
+      "id": "crate2",
+      "transform": {
+        "position": [
+          -3.35,
+          0.37,
+          1.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "crate",
+      "material": "dark"
+    },
+    {
+      "id": "crate2Band",
+      "transform": {
+        "position": [
+          -3.35,
+          0.55,
+          1.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stripe",
+      "material": "orange"
+    },
+    {
+      "id": "padMarks",
+      "transform": {
+        "position": [
+          0.7,
+          0.083,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "radial",
+        "count": 16,
+        "radius": 2.02,
+        "startAngle": 0,
+        "sweep": 360,
+        "orient": true
+      },
+      "type": "mesh",
+      "geometry": "marker",
+      "material": "orange"
+    },
+    {
+      "id": "rock0",
+      "transform": {
+        "position": [
+          -3.6,
+          0.13,
+          -2.2
+        ],
+        "rotation": [
+          0,
+          0,
+          10
+        ],
+        "scale": [
+          1,
+          0.6,
+          0.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rock",
+      "material": "sand"
+    },
+    {
+      "id": "rock1",
+      "transform": {
+        "position": [
+          3.6,
+          0.09,
+          1.7
+        ],
+        "rotation": [
+          0,
+          37,
+          10
+        ],
+        "scale": [
+          1,
+          0.6,
+          0.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rock",
+      "material": "sand"
+    },
+    {
+      "id": "rock2",
+      "transform": {
+        "position": [
+          2.7,
+          0.14,
+          3.3
+        ],
+        "rotation": [
+          0,
+          74,
+          10
+        ],
+        "scale": [
+          1,
+          0.6,
+          0.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rock",
+      "material": "sand"
+    },
+    {
+      "id": "rock3",
+      "transform": {
+        "position": [
+          -1.7,
+          0.09,
+          3.6
+        ],
+        "rotation": [
+          0,
+          111,
+          10
+        ],
+        "scale": [
+          1,
+          0.6,
+          0.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rock",
+      "material": "sand"
+    }
+  ],
+  "camera": {
+    "position": [
+      10,
+      8,
+      12
+    ],
+    "target": [
+      0,
+      1,
+      0
+    ],
+    "fov": 39
+  },
+  "environment": {
+    "background": "#171d25",
+    "ambient": 2.4,
+    "keyIntensity": 4,
+    "keyPosition": [
+      -4,
+      10,
+      7
+    ]
+  }
+}

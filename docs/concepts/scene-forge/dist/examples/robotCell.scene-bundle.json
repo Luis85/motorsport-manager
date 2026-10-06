@@ -1,0 +1,1640 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "robotCell",
+    "name": "Robotic Assembly Cell",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "floor": {
+        "type": "box",
+        "size": [
+          14,
+          0.2,
+          12
+        ]
+      },
+      "pad": {
+        "type": "box",
+        "size": [
+          2.6,
+          0.09,
+          2.6
+        ]
+      },
+      "mark": {
+        "type": "box",
+        "size": [
+          0.08,
+          0.01,
+          8.8
+        ]
+      },
+      "blank": {
+        "type": "cylinder",
+        "radiusTop": 0.23,
+        "radiusBottom": 0.23,
+        "height": 0.32,
+        "segments": 24
+      },
+      "rim": {
+        "type": "cylinder",
+        "radiusTop": 0.3,
+        "radiusBottom": 0.3,
+        "height": 0.05,
+        "segments": 24
+      },
+      "bollard": {
+        "type": "cylinder",
+        "radiusTop": 0.08,
+        "radiusBottom": 0.08,
+        "height": 0.85,
+        "segments": 12
+      }
+    },
+    "materials": {
+      "floor": {
+        "color": "#738087",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "panel": {
+        "color": "#52656c",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "yellow": {
+        "color": "#e0b55c",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "blue": {
+        "color": "#467e96",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "part": {
+        "color": "#518e86",
+        "metalness": 0.45,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "foundation",
+        "transform": {
+          "position": [
+            0,
+            -0.1,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "floor",
+        "material": "floor"
+      },
+      {
+        "id": "robotPads",
+        "transform": {
+          "position": [
+            -3,
+            0.045,
+            -0.9
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 2,
+          "step": [
+            6,
+            0,
+            2.1
+          ]
+        },
+        "type": "mesh",
+        "geometry": "pad",
+        "material": "panel"
+      },
+      {
+        "id": "transferLine",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "conveyor"
+        ],
+        "type": "model",
+        "model": "conveyor",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "leftRobot",
+        "transform": {
+          "position": [
+            -3,
+            0.09,
+            -0.9
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "robots"
+        ],
+        "type": "model",
+        "model": "robotArm",
+        "parameters": {
+          "shoulder": -30,
+          "elbow": -65,
+          "wrist": 95,
+          "opening": 0.45
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "rightRobot",
+        "transform": {
+          "position": [
+            3,
+            0.09,
+            1.2
+          ],
+          "rotation": [
+            0,
+            180,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "robots"
+        ],
+        "type": "model",
+        "model": "robotArm",
+        "parameters": {
+          "shoulder": -40,
+          "elbow": -40,
+          "wrist": 80,
+          "opening": 0.6
+        },
+        "materialOverrides": {
+          "yellow": "blue"
+        }
+      },
+      {
+        "id": "controller",
+        "transform": {
+          "position": [
+            -4.8,
+            0,
+            -3.7
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "controlCabinet",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "parts",
+        "transform": {
+          "position": [
+            0,
+            1.26,
+            -2.8
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 5,
+          "step": [
+            0,
+            0,
+            1.4
+          ]
+        },
+        "type": "mesh",
+        "geometry": "blank",
+        "material": "part"
+      },
+      {
+        "id": "partRims",
+        "transform": {
+          "position": [
+            0,
+            1.43,
+            -2.8
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 5,
+          "step": [
+            0,
+            0,
+            1.4
+          ]
+        },
+        "type": "mesh",
+        "geometry": "rim",
+        "material": "part"
+      },
+      {
+        "id": "safetyLines",
+        "transform": {
+          "position": [
+            -5.8,
+            0.01,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 2,
+          "step": [
+            11.6,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "mark",
+        "material": "yellow"
+      },
+      {
+        "id": "bollards",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "path",
+          "points": [
+            [
+              -5.4,
+              0.425,
+              -4.2
+            ],
+            [
+              -5.4,
+              0.425,
+              0
+            ],
+            [
+              -5.4,
+              0.425,
+              4.2
+            ],
+            [
+              5.4,
+              0.425,
+              -4.2
+            ],
+            [
+              5.4,
+              0.425,
+              0
+            ],
+            [
+              5.4,
+              0.425,
+              4.2
+            ]
+          ],
+          "orient": "none"
+        },
+        "type": "mesh",
+        "geometry": "bollard",
+        "material": "yellow"
+      },
+      {
+        "id": "flowRoute",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "wayfinding"
+        ],
+        "pattern": {
+          "type": "path",
+          "points": [
+            [
+              -4.5,
+              0,
+              4.8
+            ],
+            [
+              -2.5,
+              0,
+              4.8
+            ],
+            [
+              0,
+              0,
+              4.8
+            ],
+            [
+              2.5,
+              0,
+              4.8
+            ],
+            [
+              4.5,
+              0,
+              4.8
+            ],
+            [
+              4.5,
+              0,
+              2.8
+            ],
+            [
+              4.5,
+              0,
+              0.6
+            ],
+            [
+              4.5,
+              0,
+              -1.5
+            ]
+          ],
+          "orient": "yaw"
+        },
+        "type": "model",
+        "model": "guideArrow",
+        "parameters": {},
+        "materialOverrides": {}
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "ambient": 1.8,
+      "keyIntensity": 3.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "conveyorRoller": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "conveyorRoller",
+      "category": "Robotics",
+      "name": "Conveyor roller",
+      "parameters": {},
+      "geometries": {
+        "roller": {
+          "type": "cylinder",
+          "radiusTop": 0.085,
+          "radiusBottom": 0.085,
+          "height": 1.6,
+          "segments": 16
+        }
+      },
+      "materials": {
+        "steel": {
+          "color": "#a9b7bc",
+          "metalness": 0.8,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "roller",
+          "transform": {
+            "rotation": [
+              0,
+              0,
+              90
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "roller",
+          "material": "steel"
+        }
+      ]
+    },
+    "conveyor": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "conveyor",
+      "category": "Robotics",
+      "name": "Roller conveyor",
+      "parameters": {
+        "length": {
+          "default": 8,
+          "min": 3,
+          "max": 12,
+          "description": "Conveyor length"
+        },
+        "rollers": {
+          "default": 24,
+          "min": 8,
+          "max": 36,
+          "description": "Roller count",
+          "integer": true
+        }
+      },
+      "geometries": {
+        "side": {
+          "type": "box",
+          "size": [
+            0.15,
+            0.24,
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "length"
+                },
+                0.35
+              ]
+            }
+          ]
+        },
+        "roller": {
+          "type": "cylinder",
+          "radiusTop": 0.085,
+          "radiusBottom": 0.085,
+          "height": 1.6,
+          "segments": 16
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.1,
+            0.95,
+            0.1
+          ]
+        },
+        "foot": {
+          "type": "box",
+          "size": [
+            0.35,
+            0.12,
+            0.35
+          ]
+        }
+      },
+      "materials": {
+        "frame": {
+          "color": "#466c7b",
+          "metalness": 0.6,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "roller": {
+          "color": "#a9b7bc",
+          "metalness": 0.8,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "feet": {
+          "color": "#354650",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "sideRails",
+          "transform": {
+            "position": [
+              -0.88,
+              1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              1.76,
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "side",
+          "material": "frame"
+        },
+        {
+          "id": "rollers",
+          "transform": {
+            "position": [
+              0,
+              1,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.5
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": {
+              "$param": "rollers"
+            },
+            "step": [
+              0,
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "rollers"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "type": "model",
+          "model": "conveyorRoller",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "legs",
+          "transform": {
+            "position": [
+              0,
+              0.475,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              3
+            ],
+            "step": [
+              1.6,
+              0,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "length"
+                      },
+                      2
+                    ]
+                  },
+                  0.2
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "feet"
+        },
+        {
+          "id": "feet",
+          "transform": {
+            "position": [
+              0,
+              0.06,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              3
+            ],
+            "step": [
+              1.6,
+              0,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "length"
+                      },
+                      2
+                    ]
+                  },
+                  0.2
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "foot",
+          "material": "feet"
+        }
+      ]
+    },
+    "gripper": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "gripper",
+      "category": "Robotics",
+      "name": "Parallel-jaw gripper",
+      "parameters": {
+        "opening": {
+          "default": 0.42,
+          "min": 0.15,
+          "max": 0.85,
+          "description": "Jaw opening"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "opening"
+                },
+                0.3
+              ]
+            },
+            0.22,
+            0.38
+          ]
+        },
+        "finger": {
+          "type": "box",
+          "size": [
+            0.09,
+            0.43,
+            0.13
+          ]
+        },
+        "pad": {
+          "type": "box",
+          "size": [
+            0.04,
+            0.19,
+            0.16
+          ]
+        },
+        "coupling": {
+          "type": "cylinder",
+          "radiusTop": 0.13,
+          "radiusBottom": 0.13,
+          "height": 0.2,
+          "segments": 24
+        }
+      },
+      "materials": {
+        "metal": {
+          "color": "#6d7a7f",
+          "metalness": 0.75,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "pad": {
+          "color": "#333e46",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "amber": {
+          "color": "#d6a24b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              -0.11,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "metal"
+        },
+        {
+          "id": "coupling",
+          "transform": {
+            "position": [
+              0,
+              0.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "coupling",
+          "material": "amber"
+        },
+        {
+          "id": "fingers",
+          "transform": {
+            "position": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "opening"
+                  },
+                  -2
+                ]
+              },
+              -0.39,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$param": "opening"
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "finger",
+          "material": "metal"
+        },
+        {
+          "id": "pads",
+          "transform": {
+            "position": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "opening"
+                      },
+                      -2
+                    ]
+                  },
+                  -0.025
+                ]
+              },
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "opening"
+                  },
+                  0.05
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "pad",
+          "material": "pad"
+        }
+      ]
+    },
+    "robotArm": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "robotArm",
+      "category": "Robotics",
+      "name": "Articulated robot arm",
+      "parameters": {
+        "upper": {
+          "default": 1.8,
+          "min": 1.1,
+          "max": 2.4,
+          "description": "Shoulder-to-elbow length"
+        },
+        "forearm": {
+          "default": 1.5,
+          "min": 1,
+          "max": 2.2,
+          "description": "Elbow-to-wrist length"
+        },
+        "shoulder": {
+          "default": -30,
+          "min": -80,
+          "max": 30,
+          "description": "Shoulder rotation in degrees"
+        },
+        "elbow": {
+          "default": -65,
+          "min": -130,
+          "max": 10,
+          "description": "Elbow rotation in degrees"
+        },
+        "wrist": {
+          "default": 95,
+          "min": -180,
+          "max": 180,
+          "description": "Wrist rotation in degrees"
+        },
+        "opening": {
+          "default": 0.42,
+          "min": 0.15,
+          "max": 0.85,
+          "description": "Gripper opening"
+        }
+      },
+      "geometries": {
+        "base": {
+          "type": "cylinder",
+          "radiusTop": 0.62,
+          "radiusBottom": 0.62,
+          "height": 0.18,
+          "segments": 24
+        },
+        "turret": {
+          "type": "cylinder",
+          "radiusTop": 0.38,
+          "radiusBottom": 0.38,
+          "height": 0.7,
+          "segments": 24
+        },
+        "joint": {
+          "type": "cylinder",
+          "radiusTop": 0.29,
+          "radiusBottom": 0.29,
+          "height": 0.62,
+          "segments": 24
+        },
+        "cap": {
+          "type": "cylinder",
+          "radiusTop": 0.18,
+          "radiusBottom": 0.18,
+          "height": 0.68,
+          "segments": 24
+        },
+        "upper": {
+          "type": "box",
+          "size": [
+            0.44,
+            {
+              "$param": "upper"
+            },
+            0.45
+          ]
+        },
+        "forearm": {
+          "type": "box",
+          "size": [
+            0.34,
+            {
+              "$param": "forearm"
+            },
+            0.38
+          ]
+        },
+        "stripe": {
+          "type": "box",
+          "size": [
+            0.12,
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "upper"
+                },
+                0.6
+              ]
+            },
+            0.015
+          ]
+        },
+        "hose": {
+          "type": "tube",
+          "points": [
+            [
+              0,
+              0.1,
+              0.31
+            ],
+            [
+              0.33,
+              0.4,
+              0.35
+            ],
+            [
+              0.35,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "upper"
+                  },
+                  0.6
+                ]
+              },
+              0.35
+            ],
+            [
+              0.05,
+              {
+                "$param": "upper"
+              },
+              0.31
+            ]
+          ],
+          "radius": 0.045,
+          "tubularSegments": 28,
+          "radialSegments": 8,
+          "closed": false,
+          "capEnds": true
+        }
+      },
+      "materials": {
+        "yellow": {
+          "color": "#dba347",
+          "metalness": 0.4,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#344650",
+          "metalness": 0.6,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "steel": {
+          "color": "#a1adb1",
+          "metalness": 0.8,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.09,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "dark"
+        },
+        {
+          "id": "turret",
+          "transform": {
+            "position": [
+              0,
+              0.53,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "turret",
+          "material": "yellow"
+        },
+        {
+          "id": "shoulder",
+          "transform": {
+            "position": [
+              0,
+              0.9,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "shoulder"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "shoulderJoint",
+          "parent": "shoulder",
+          "transform": {
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "joint",
+          "material": "dark"
+        },
+        {
+          "id": "shoulderCap",
+          "parent": "shoulder",
+          "transform": {
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cap",
+          "material": "steel"
+        },
+        {
+          "id": "upperLink",
+          "parent": "shoulder",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "upper"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "upper",
+          "material": "yellow"
+        },
+        {
+          "id": "upperStripe",
+          "parent": "shoulder",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "upper"
+                  },
+                  2
+                ]
+              },
+              0.233
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stripe",
+          "material": "dark"
+        },
+        {
+          "id": "serviceHose",
+          "parent": "shoulder",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hose",
+          "material": "dark"
+        },
+        {
+          "id": "elbow",
+          "parent": "shoulder",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$param": "upper"
+              },
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "elbow"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "elbowJoint",
+          "parent": "elbow",
+          "transform": {
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "joint",
+          "material": "dark"
+        },
+        {
+          "id": "elbowCap",
+          "parent": "elbow",
+          "transform": {
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cap",
+          "material": "steel"
+        },
+        {
+          "id": "forearm",
+          "parent": "elbow",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "forearm"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "forearm",
+          "material": "yellow"
+        },
+        {
+          "id": "wrist",
+          "parent": "elbow",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$param": "forearm"
+              },
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "wrist"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "wristJoint",
+          "parent": "wrist",
+          "transform": {
+            "rotation": [
+              90,
+              0,
+              0
+            ],
+            "scale": [
+              0.65,
+              0.75,
+              0.65
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "joint",
+          "material": "dark"
+        },
+        {
+          "id": "tool",
+          "parent": "wrist",
+          "transform": {
+            "position": [
+              0,
+              -0.05,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "gripper",
+          "parameters": {
+            "opening": {
+              "$param": "opening"
+            }
+          },
+          "materialOverrides": {}
+        }
+      ]
+    },
+    "controlCabinet": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "controlCabinet",
+      "category": "Robotics",
+      "name": "Control cabinet",
+      "parameters": {},
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            1.25,
+            1.9,
+            0.65
+          ]
+        },
+        "door": {
+          "type": "box",
+          "size": [
+            1.08,
+            1.69,
+            0.06
+          ]
+        },
+        "screen": {
+          "type": "box",
+          "size": [
+            0.6,
+            0.4,
+            0.08
+          ]
+        },
+        "button": {
+          "type": "cylinder",
+          "radiusTop": 0.035,
+          "radiusBottom": 0.035,
+          "height": 0.04,
+          "segments": 12
+        },
+        "base": {
+          "type": "box",
+          "size": [
+            1.34,
+            0.15,
+            0.74
+          ]
+        }
+      },
+      "materials": {
+        "body": {
+          "color": "#c8ceca",
+          "metalness": 0.2,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#3d535e",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "screen": {
+          "color": "#5dadaa",
+          "metalness": 0,
+          "roughness": 0.55,
+          "emissive": "#153b3a",
+          "emissiveIntensity": 0.2,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "button": {
+          "color": "#dfaa55",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.075,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "dark"
+        },
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "body"
+        },
+        {
+          "id": "door",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0.34
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "door",
+          "material": "dark"
+        },
+        {
+          "id": "screen",
+          "transform": {
+            "position": [
+              0,
+              1.55,
+              0.395
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "screen",
+          "material": "screen"
+        },
+        {
+          "id": "buttons",
+          "transform": {
+            "position": [
+              -0.25,
+              1.2,
+              0.405
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 4,
+            "step": [
+              0.17,
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "button",
+          "material": "button"
+        }
+      ]
+    },
+    "guideArrow": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "guideArrow",
+      "category": "Robotics",
+      "name": "Route arrow",
+      "parameters": {},
+      "geometries": {
+        "arrow": {
+          "type": "extrude",
+          "points": [
+            [
+              -0.09,
+              0
+            ],
+            [
+              0.09,
+              0
+            ],
+            [
+              0.09,
+              0.5
+            ],
+            [
+              0.25,
+              0.5
+            ],
+            [
+              0,
+              0.85
+            ],
+            [
+              -0.25,
+              0.5
+            ],
+            [
+              -0.09,
+              0.5
+            ]
+          ],
+          "depth": 0.012
+        }
+      },
+      "materials": {
+        "paint": {
+          "color": "#e6c578",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "arrow",
+          "transform": {
+            "position": [
+              0,
+              0.025,
+              0
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arrow",
+          "material": "paint"
+        }
+      ]
+    }
+  }
+}

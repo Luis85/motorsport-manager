@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "mug",
+  "category": "Everyday",
+  "description": "A lathed ceramic mug with a handle and opaque coffee surface.",
+  "name": "Coffee mug",
+  "parameters": {},
+  "geometries": {
+    "cup": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.16,
+          0
+        ],
+        [
+          0.18,
+          0.36
+        ],
+        [
+          0.155,
+          0.37
+        ],
+        [
+          0.135,
+          0.06
+        ],
+        [
+          0,
+          0.06
+        ]
+      ],
+      "segments": 32
+    },
+    "handle": {
+      "type": "torus",
+      "radius": 0.12,
+      "tube": 0.03,
+      "segments": 24
+    },
+    "coffee": {
+      "type": "cylinder",
+      "radiusTop": 0.148,
+      "radiusBottom": 0.148,
+      "height": 0.01,
+      "segments": 32
+    }
+  },
+  "materials": {
+    "ceramic": {
+      "color": "#c89470",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "coffee": {
+      "color": "#594332",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "cup",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cup",
+      "material": "ceramic"
+    },
+    {
+      "id": "handle",
+      "transform": {
+        "position": [
+          0.2,
+          0.22,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "handle",
+      "material": "ceramic"
+    },
+    {
+      "id": "coffee",
+      "transform": {
+        "position": [
+          0,
+          0.29,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "coffee",
+      "material": "coffee"
+    }
+  ]
+}

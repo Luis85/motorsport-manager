@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "parkBench",
+  "category": "Architecture",
+  "name": "Slatted park bench",
+  "parameters": {
+    "width": {
+      "default": 1.8,
+      "min": 1,
+      "max": 3,
+      "description": "Seat width"
+    }
+  },
+  "geometries": {
+    "slat": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        0.07,
+        0.095
+      ]
+    },
+    "back": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        0.09,
+        0.07
+      ]
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.07,
+        0.65,
+        0.07
+      ]
+    },
+    "backPost": {
+      "type": "box",
+      "size": [
+        0.055,
+        0.8,
+        0.055
+      ]
+    }
+  },
+  "materials": {
+    "wood": {
+      "color": "#b77d49",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "metal": {
+      "color": "#425153",
+      "metalness": 0.6,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "slats",
+      "transform": {
+        "position": [
+          0,
+          0.57,
+          -0.22
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 5,
+        "step": [
+          0,
+          0,
+          0.11
+        ]
+      },
+      "type": "mesh",
+      "geometry": "slat",
+      "material": "wood"
+    },
+    {
+      "id": "legs",
+      "transform": {
+        "position": [
+          0,
+          0.325,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.3
+            ]
+          },
+          0,
+          0.4
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "metal"
+    },
+    {
+      "id": "backPosts",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.4
+            ]
+          },
+          0.72,
+          -0.25
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.8
+            ]
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "backPost",
+      "material": "metal"
+    },
+    {
+      "id": "backSlats",
+      "transform": {
+        "position": [
+          0,
+          0.83,
+          -0.25
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          0,
+          0.14,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "back",
+      "material": "wood"
+    }
+  ]
+}

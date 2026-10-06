@@ -1,0 +1,8 @@
+# Keep generated deliverables available without dominating source review.
+/dist/** linguist-generated=true
+/schemas/** linguist-generated=true
+/examples/**/exports/** linguist-generated=true
+
+# Bundled upstream GLSL contains significant string contents; preserve its bytes.
+/dist/viewer.js whitespace=-blank-at-eol,-space-before-tab
+/examples/**/exports/*.html whitespace=-blank-at-eol,-space-before-tab

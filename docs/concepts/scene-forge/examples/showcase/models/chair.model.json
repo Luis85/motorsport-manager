@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "chair",
+  "category": "Everyday",
+  "description": "A four-legged chair with separate seat and frame materials.",
+  "name": "Dining chair",
+  "parameters": {},
+  "geometries": {
+    "seat": {
+      "type": "box",
+      "size": [
+        0.48,
+        0.08,
+        0.48
+      ]
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.055,
+        0.46,
+        0.055
+      ]
+    },
+    "backPost": {
+      "type": "box",
+      "size": [
+        0.05,
+        0.5,
+        0.05
+      ]
+    },
+    "back": {
+      "type": "box",
+      "size": [
+        0.47,
+        0.3,
+        0.065
+      ]
+    }
+  },
+  "materials": {
+    "wood": {
+      "color": "#b58a5d",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "seat": {
+      "color": "#667f7e",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "seat",
+      "transform": {
+        "position": [
+          0,
+          0.48,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "seat",
+      "material": "seat"
+    },
+    {
+      "id": "legs",
+      "transform": {
+        "position": [
+          0,
+          0.23,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          2,
+          1,
+          2
+        ],
+        "step": [
+          0.37,
+          0,
+          0.37
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "wood"
+    },
+    {
+      "id": "backPosts",
+      "transform": {
+        "position": [
+          -0.195,
+          0.7,
+          -0.2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          0.39,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "backPost",
+      "material": "wood"
+    },
+    {
+      "id": "back",
+      "transform": {
+        "position": [
+          0,
+          0.8,
+          -0.2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "back",
+      "material": "wood"
+    }
+  ]
+}

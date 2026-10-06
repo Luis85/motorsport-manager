@@ -1,0 +1,29 @@
+{
+  "fixture": "examples/procedural",
+  "baselineVersion": "0.3.0",
+  "version": "0.4.0",
+  "before": {
+    "bytes": 184544,
+    "sha256": "ab32d9e7aa43677d6a0a4b18a7f857b6455f4b4270fd7082905fa65159b7e38e",
+    "nodes": 222,
+    "meshResources": 75,
+    "materials": 46,
+    "accessors": 300
+  },
+  "after": {
+    "bytes": 85588,
+    "sha256": "43cddec9cd6dcece4d93897488f7c6181f8121525f82e73db5cb2a047842fc75",
+    "nodes": 222,
+    "meshResources": 19,
+    "materials": 8,
+    "accessors": 76
+  },
+  "byteReductionPercent": 53.621900468181025,
+  "renderedTriangles": {
+    "before": 1680,
+    "after": 1680
+  },
+  "limitations": [
+    "One local fixture; not an FPS benchmark or a general compression ratio."
+  ]
+}

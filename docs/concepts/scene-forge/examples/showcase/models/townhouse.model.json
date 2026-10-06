@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "townhouse",
+  "category": "Architecture",
+  "name": "Modular townhouse",
+  "parameters": {
+    "width": {
+      "default": 4.8,
+      "min": 3.2,
+      "max": 8,
+      "description": "Facade width in meters"
+    },
+    "depth": {
+      "default": 3.5,
+      "min": 2,
+      "max": 6,
+      "description": "Building depth"
+    },
+    "floors": {
+      "default": 3,
+      "min": 2,
+      "max": 5,
+      "description": "Number of floors",
+      "integer": true
+    },
+    "bays": {
+      "default": 3,
+      "min": 2,
+      "max": 5,
+      "description": "Window columns",
+      "integer": true
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "floors"
+            },
+            2.6
+          ]
+        },
+        {
+          "$param": "depth"
+        }
+      ]
+    },
+    "cornice": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.2
+          ]
+        },
+        0.13,
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "depth"
+            },
+            0.14
+          ]
+        }
+      ]
+    },
+    "roof": {
+      "type": "extrude",
+      "points": [
+        [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.5
+            ]
+          },
+          0
+        ],
+        [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.5
+            ]
+          },
+          0
+        ],
+        [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.32
+            ]
+          }
+        ]
+      ],
+      "depth": {
+        "$expr": "add",
+        "args": [
+          {
+            "$param": "depth"
+          },
+          0.5
+        ]
+      }
+    },
+    "door": {
+      "type": "box",
+      "size": [
+        0.95,
+        2.05,
+        0.13
+      ]
+    },
+    "doorFrame": {
+      "type": "box",
+      "size": [
+        1.2,
+        2.25,
+        0.1
+      ]
+    },
+    "step": {
+      "type": "box",
+      "size": [
+        1.65,
+        0.14,
+        0.65
+      ]
+    },
+    "canopy": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.76
+          ]
+        },
+        0.12,
+        1
+      ]
+    },
+    "shopSign": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.76
+          ]
+        },
+        0.35,
+        0.1
+      ]
+    },
+    "chimney": {
+      "type": "box",
+      "size": [
+        0.42,
+        1.3,
+        0.45
+      ]
+    }
+  },
+  "materials": {
+    "wall": {
+      "color": "#c88569",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "trim": {
+      "color": "#ead7b2",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "roof": {
+      "color": "#694c4a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "door": {
+      "color": "#40565b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "awning": {
+      "color": "#315e60",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "walls",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "floors"
+                  },
+                  2.6
+                ]
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "wall"
+    },
+    {
+      "id": "floorBands",
+      "transform": {
+        "position": [
+          0,
+          2.6,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": {
+          "$param": "floors"
+        },
+        "step": [
+          0,
+          2.6,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "cornice",
+      "material": "trim"
+    },
+    {
+      "id": "roof",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "floors"
+              },
+              2.6
+            ]
+          },
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  -0.5
+                ]
+              },
+              0.25
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "roof",
+      "material": "roof"
+    },
+    {
+      "id": "chimney",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.25
+            ]
+          },
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "floors"
+                  },
+                  2.6
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.15
+                ]
+              }
+            ]
+          },
+          -0.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "chimney",
+      "material": "trim"
+    },
+    {
+      "id": "upperWindows",
+      "transform": {
+        "position": [
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.5
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "width"
+                      },
+                      {
+                        "$param": "bays"
+                      }
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          3.85,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.07
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          {
+            "$param": "bays"
+          },
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "floors"
+              },
+              1
+            ]
+          },
+          1
+        ],
+        "step": [
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "width"
+              },
+              {
+                "$param": "bays"
+              }
+            ]
+          },
+          2.6,
+          0
+        ],
+        "centered": false
+      },
+      "type": "model",
+      "model": "windowBay",
+      "parameters": {
+        "width": {
+          "$expr": "mul",
+          "args": [
+            {
+              "$expr": "div",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                {
+                  "$param": "bays"
+                }
+              ]
+            },
+            0.58
+          ]
+        },
+        "height": 1.4
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "shopWindows",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.32
+            ]
+          },
+          1.3,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.07
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.64
+            ]
+          },
+          0,
+          0
+        ]
+      },
+      "type": "model",
+      "model": "windowBay",
+      "parameters": {
+        "width": {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.19
+          ]
+        },
+        "height": 1.4
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "doorSurround",
+      "transform": {
+        "position": [
+          0,
+          1.125,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.06
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "doorFrame",
+      "material": "trim"
+    },
+    {
+      "id": "door",
+      "transform": {
+        "position": [
+          0,
+          1.025,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.13
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "door",
+      "material": "door"
+    },
+    {
+      "id": "step",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.4
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "step",
+      "material": "trim"
+    },
+    {
+      "id": "awning",
+      "transform": {
+        "position": [
+          0,
+          2.32,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.5
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "canopy",
+      "material": "awning"
+    },
+    {
+      "id": "sign",
+      "transform": {
+        "position": [
+          0,
+          2.14,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  2
+                ]
+              },
+              0.98
+            ]
+          }
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "shopSign",
+      "material": "awning"
+    }
+  ]
+}

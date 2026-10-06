@@ -1,0 +1,38 @@
+{
+  "version": "0.6.0",
+  "checkedAt": "2026-10-05T20:46:02.598Z",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "checks": {
+    "formatting": {
+      "status": "passed",
+      "durationMs": 1795
+    },
+    "architecture": {
+      "status": "passed",
+      "durationMs": 416
+    },
+    "typecheck": {
+      "status": "passed",
+      "durationMs": 2985
+    },
+    "build": {
+      "status": "passed",
+      "durationMs": 3482
+    },
+    "core": {
+      "status": "passed",
+      "durationMs": 1631,
+      "tests": 61,
+      "passed": 61,
+      "failed": 0
+    },
+    "endToEnd": {
+      "status": "passed",
+      "durationMs": 20202,
+      "tests": 14,
+      "passed": 14,
+      "failed": 0
+    }
+  }
+}
