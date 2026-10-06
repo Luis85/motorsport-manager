@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 import type {Page} from 'playwright';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..');
@@ -20,7 +20,7 @@ async function main():Promise<void>{
  try{
   for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
    const p=await context.newPage();p.setDefaultTimeout(7000);await p.setViewportSize(viewport);await p.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});
-   await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act="begin"]').click();await open(p);
+   await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act="begin"]').click();await open(p);
    const suffix=' at '+viewport.width+'px',original=await snapshot(p);
    await check('Editor opens the separate pack draft with navigable worlds and scenes'+suffix,async()=>{
     assert(await p.getByRole('heading',{name:'World & Scene Editor',exact:true}).isVisible());assert.equal(await p.locator('[data-scene-editor="select-world"]').count(),1);assert(await p.locator('[data-scene-editor="select-scene"]').count()>=2);

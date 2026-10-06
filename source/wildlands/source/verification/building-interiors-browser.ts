@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||'/tmp/littlewild-building-interiors';
 const results:{name:string;passed:boolean;error?:string}[]=[];
 let diagnostics:ReturnType<typeof monitorContext>;
@@ -15,7 +15,7 @@ async function inspect(p:Page,id:string):Promise<void>{await p.evaluate(id=>{con
 async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context);
  try{
-  const p=await context.newPage();p.setDefaultTimeout(5000);await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
+  const p=await context.newPage();p.setDefaultTimeout(5000);await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
   await check('Default building inspector enters a detached floor view and Escape restores exact map camera',async()=>{
    await scene(p,'Littlewild','charted-home');assert.equal(await p.locator('#building-interior').isVisible(),false);await p.evaluate("Littlewild.land.show('building','b2')");const before=await p.evaluate('JSON.stringify(Littlewild.engine.export())'),camera=await p.evaluate('JSON.stringify(Littlewild.world.camera)');await p.locator('[data-act=land-visit]').click();assert.equal(await p.locator('#building-interior').isVisible(),true);assert.equal(await p.evaluate('JSON.stringify(Littlewild.engine.export())'),before);assert.equal(await p.evaluate('Littlewild.pauseStatus().kind'),'manual');await p.locator('[data-interior=floor][data-floor=upper]').click();assert.equal(await p.evaluate('Littlewild.interiors.state.floorId'),'upper');await shot(p,'default-upper-desktop');await p.keyboard.press('Escape');assert.equal(await p.locator('#building-interior').isVisible(),false);assert.equal(await p.evaluate('JSON.stringify(Littlewild.world.camera)'),camera);assert.equal(await p.evaluate('document.activeElement.id'),'world');
   });

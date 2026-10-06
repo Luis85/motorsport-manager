@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 import type {Page} from 'playwright';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_CREATURE_EDITOR_OUT||path.join(ROOT,'verification/v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||OUT;
 const results:{name:string;passed:boolean;error?:string}[]=[],rawConsole:{type:string;text:string}[]=[],failedRequests:string[]=[];let diagnostics:unknown=null;
@@ -16,7 +16,7 @@ async function image(page:Page):Promise<string>{return crypto.createHash('sha256
 async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),observed=monitorContext(context);context.on('page',p=>{p.on('console',message=>rawConsole.push({type:message.type(),text:message.text()}));p.on('requestfailed',request=>failedRequests.push(request.url()+': '+request.failure()?.errorText));});
  try{for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
-  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize(viewport);await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act="begin"]').click();
+  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize(viewport);await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act="begin"]').click();
   await page.evaluate('(()=>{const pack=LWScenarios.builtins().find(p=>p.id==="office");Littlewild.setEngine(LWScenarios.commitScene(LWScenarios.prepareScene(pack,"operations-shift")));Littlewild.engine.s.paused=true;Littlewild.engine.advance(36);Littlewild.refresh();Littlewild.open("scenarios");window.creaturePreviewStats={created:0,disposed:0};const original=LWCreaturePreview;window.LWCreaturePreview={create(canvas){creaturePreviewStats.created++;const view=original.create(canvas);return {...view,get nodeCount(){return view.nodeCount},dispose(){creaturePreviewStats.disposed++;view.dispose()}}}};})()');await page.locator('[data-scenario="creature-editor"]').click();
   const suffix=' at '+viewport.width+'px',original=await state(page);
   await check('Visible actual 3D preview and detached current Office companion'+suffix,async()=>{await page.waitForFunction(()=>Number(document.querySelector<HTMLCanvasElement>('#creature-editor-preview')?.dataset.nodeCount)>20);assert(await page.getByRole('heading',{name:'Littlewild 3D Creature Editor',exact:true}).isVisible());const projection=await pixels(page);assert(projection.colors>20,JSON.stringify(projection));assert(projection.figurePixels>1500,JSON.stringify(projection));assert.equal(await state(page),original);assert(await value(page,'document.documentElement.scrollWidth<=innerWidth'));});

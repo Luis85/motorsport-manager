@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_STORYTELLING_PLAYER_OUT||path.join(ROOT,'verification/v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function test(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 const native=(page:Page):Promise<string>=>page.evaluate('JSON.stringify(Littlewild.engine.export().state)') as Promise<string>;
 async function setup(page:Page,gated=false,cueSwitch=false):Promise<void>{
- await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario=editor]').click();
+ await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario=editor]').click();
  await page.evaluate(({blocked,cueSwitch})=>{
   const root=window as unknown as {Littlewild:{scenarioUI:{editor:{session:LWSceneEditor.Session}};open(type:string):void}};
   const editor=root.Littlewild.scenarioUI.editor,pack=editor.session.snapshot(),first=pack.scenes[0]!;

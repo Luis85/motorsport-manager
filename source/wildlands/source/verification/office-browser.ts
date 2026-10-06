@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {type Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR??path.join(ROOT,'screenshots','office');
@@ -22,7 +22,7 @@ async function main():Promise<void>{
  try{
   const p=await context.newPage();p.setDefaultTimeout(5000);
   await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
+  await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
   await check('Office is discoverable as a reviewed authored experience with three named residents',async()=>{
    await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=select]').filter({hasText:'Office'}).click();
    assert.match(await p.locator('.scenario-library').innerText(),/Angela.*Phil.*Marty/s);

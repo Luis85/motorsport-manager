@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 import {storyClickDiagnostics} from './storytelling-click-diagnostics';
 import {storytellingRetirementTests} from './storytelling-retirement-browser';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_STORYTELLING_OUT||path.join(ROOT,'verification/v15');
@@ -23,7 +23,7 @@ async function ready(page:Page):Promise<void>{await page.waitForFunction(()=>doc
 async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorContext(context);
  try{for(const width of [1440,390]){
-  const page=await context.newPage();page.setDefaultTimeout(20000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
+  const page=await context.newPage();page.setDefaultTimeout(20000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
   // Explicit synthetic authoring fixture: existing native scene plus another world.
   await page.evaluate('(()=>{const editor=Littlewild.scenarioUI.editor,p=editor.session.snapshot(),first=p.scenes[0];delete p.resources;for(const scene of p.scenes)delete scene.initialState.scenarioResources;first.graph={...first.graph,kind:"level",rendering:{dimension:"3d",rendererId:"basic"},connections:[{id:"story-travel",targetSceneId:"story-remote",label:"Travel to story world"}]};p.worlds.push({...structuredClone(p.worlds[0]),id:"story-world",name:"Second story world"});p.scenes.push({...structuredClone(first),id:"story-remote",name:"Remote story scene",worldId:"story-world",graph:{kind:"level",rendering:{dimension:"2d",rendererId:"basic"}}});editor.session.replace(p);Littlewild.open("scene-editor")})()');
   const active=await snapshot(page),first=await value<string>(page,'Littlewild.scenarioUI.editor.session.snapshot().scenes[0].id'),entity=await value<LWSceneGraph.Entity>(page,'Littlewild.scenarioUI.editor.session.entities(Littlewild.scenarioUI.editor.session.snapshot().scenes[0].id).find(e=>e.category==="creatures")');

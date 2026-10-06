@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Globals {
  Littlewild:{open(id:string):void;engine:{s:{paused:boolean};actor:{id:string;creature:{level:number}};
   skillTreeState(id:string):LWSkillTrees.View[];attachSkillTree(id:string,definition:LWSkillTrees.Definition):{ok:boolean};grantSkillTreeXp(id:string,n:number):{ok:boolean};export():unknown}};
@@ -15,7 +15,7 @@ async function main():Promise<void>{
   for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
    const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(5000);
    await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-   await page.waitForFunction(()=>!!(window as unknown as Globals).Littlewild);
+   await waitForReady(page,{timeout:READY_TIMEOUT_MS});
    await page.locator('[data-act=begin]').click();await page.evaluate(()=>(window as unknown as Globals).Littlewild.open('training'));
    await page.locator('[data-act=v3-learn-tab][data-id=trees]').click();
    await check('Fresh tree displays earned-point gates at '+viewport.width+'px',async()=>{

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const results:Result[]=[];fs.mkdirSync(OUT,{recursive:true});
@@ -13,7 +13,7 @@ async function main():Promise<void>{
  try{
   const p=await context.newPage();p.setDefaultTimeout(5000);
   await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
+  await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
   await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=review][data-id=charted-home]').click();
   // Pause synchronously with scene installation, before the first decision frame.
   await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");

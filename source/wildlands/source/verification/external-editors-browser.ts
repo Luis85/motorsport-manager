@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_EXTERNAL_EDITOR_OUT||path.join(ROOT,'verification/v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];let diagnostics:unknown;
 async function test(name:string,fn:()=>Promise<void>):Promise<void>{try{await fn();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,String(error));}}
@@ -12,7 +12,7 @@ async function story(page:Page):Promise<string>{return value<string>(page,'JSON.
 async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),observations=monitorContext(context);
  try{for(const width of [1440,390]){
-  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();const original=await story(page);
+  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();const original=await story(page);
   if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(OUT,{recursive:true});await page.screenshot({path:path.join(OUT,'external-editor-collapsed-'+width+'.png'),animations:'disabled'});}
   await page.locator('[data-external-editor-panel] summary').first().click();
   for(const format of ['tiled','ldtk','gltf'])await test(format+' actual file download, detached review cancellation and explicit draft apply at '+width+'px',async()=>{

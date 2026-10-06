@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=process.env.LITTLEWILD_TERRAFORM_EVIDENCE??path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -10,7 +10,7 @@ async function main():Promise<void>{
  try{
   const page=await context.newPage();page.setDefaultTimeout(8000);
   await page.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act=begin]').click();
+  await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
   await page.evaluate("Littlewild.open('scenarios')");await page.locator('[data-scenario=review][data-id=charted-home]').click();
   await page.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");
   let tile:{x:number;y:number}={x:5,y:5};

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser, monitorContext} from './browser-harness';
+import {launchBrowser, monitorContext, READY_TIMEOUT_MS} from './browser-harness';
 
 const ROOT = path.resolve(__dirname, '../..');
 const OUT = path.join(ROOT, 'verification', 'v15');
@@ -33,7 +33,7 @@ async function main():Promise<void> {
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
   await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'), {waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!(window as any).Littlewild && !!(window as any).WildlandsRTS);
+  await page.waitForFunction(()=>!!(window as any).Littlewild && !!(window as any).WildlandsRTS,null,{timeout:READY_TIMEOUT_MS});
   await page.locator('[data-act=begin]').click();
   await page.evaluate('Littlewild.engine.s.paused=true; Littlewild.refresh()');
   await page.locator('[data-wildlands-rts=open]').click();
