@@ -264,7 +264,8 @@
         "pet-renderer.ts",
         "pet-demo.ts",
         "pet-host.ts",
-        "pet-store.ts"
+        "pet-store.ts",
+        "play-boot.ts"
       ]
     },
     {

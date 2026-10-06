@@ -8,6 +8,7 @@ import ts from "typescript";
 import { ownershipErrors, executableDataErrors, DataManifest } from "./architecture-data.cjs";
 import { contractErrors, ContractOwner } from "./architecture-contracts.cjs";
 import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
+import { profileErrors } from "./artifact-profiles.cjs";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
 
@@ -328,6 +329,11 @@ check("ECS persistence remains plain-data owned by domain records", () => {
   assert(actor.includes("Components bind by reference"), "Actor ECS no longer documents authoritative record binding.");
   assert(world.includes("no ECS state is") && world.includes("serialized"), "World ECS persistence boundary is unclear.");
   assert(economy.includes("Existing save records remain authoritative"), "Economy ECS persistence boundary is unclear.");
+});
+
+check("Artifact bundles tag every insert and profiles keep the canonical load order", () => {
+  const errors = profileErrors(SOURCE);
+  assert(errors.length === 0, errors.join("; "));
 });
 
 check("Generated JavaScript is outside authored source", () => {

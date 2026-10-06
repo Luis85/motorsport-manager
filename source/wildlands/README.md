@@ -91,6 +91,8 @@ npm run verify:godot
 npm run verify -- --no-browser
 ```
 
+`npm run build` compiles once, then `source/tools/artifact-assembler.cts` assembles every profile in `source/tools/artifact-profiles.cts`. Each profile selects bundle tags from `source/tools/build-inserts.cts` (canonical load order), a template under `source/templates/` and its data globals. It writes `littlewild.html` (the full showcase, also `.generated/artifacts/showcase.html`) plus `.generated/artifacts/studio.html` and the minified play artifacts `colony-play.html`, `rts-play.html` and `pet-play.html`, each with a `.manifest.json`. Play artifacts never embed the engine-source or Godot runtime payloads. `npm run build -- --profile ID [--output FILE]` builds one artifact. `npm run report:artifacts` prints a JSON size breakdown per insert, bundle, data global and compressed payload, including `bin/wildlands`.
+
 `typecheck` runs strict TypeScript checks, including shared declarations and dependencies. The former 15-module compatibility typing debt inventory is empty. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
 
 ## Documentation
