@@ -36,7 +36,8 @@ declare namespace LWPetDemo {
   const actions=$('.pet-actions'),needs=$('.pet-needs'),facts=$('.pet-facts'),alerts=$('.pet-alerts'),log=$('.pet-log'),status=$('.pet-status'),emote=$('.pet-emote');
   if(renderer.mode==='Unavailable')$('.pet-webgl').hidden=false;
   status.textContent=host.query().status!=='alive'?'Your pet has departed. Adopt a new egg when you are ready.':host.query().pet.stage==='egg'?'Cuddle the egg to keep it warm. It hatches by itself soon.':'Choose a care action below.';
-  let snapshot=host.query(),stamp='',drag:{x:number;y:number}|null=null;
+  // Separate stamps keep interactive lists stable: buttons are rebuilt only when their own state changes.
+  let snapshot=host.query(),stamp='',actionStamp='',shopStamp='',drag:{x:number;y:number}|null=null;
   function feedback(message:string,error=false):void{status.textContent=message;status.classList.toggle('pet-error',error);}
   function command(input:LWPetRuntime.Command):void{const result=host.command(input);feedback(result.message,!result.ok);refresh(true);}
   function button(id:string,label:string,icon:string,enabled:boolean,reason:string,data:string):string{
@@ -73,7 +74,9 @@ declare namespace LWPetDemo {
    $('[data-pet-clock]').textContent=`Day ${c.day} · ${String(c.hour).padStart(2,'0')}:${String(c.minute).padStart(2,'0')}${c.night?' · night':''}`;
    const pause=$<HTMLButtonElement>('[data-pet=pause]');pause.textContent=state.paused?'Resume':'Pause';pause.setAttribute('aria-pressed',String(state.paused));
    $<HTMLSelectElement>('[data-pet=speed]').value=String(state.speed);
-   paintActions();paintShop();
+   const nextActions=JSON.stringify([snapshot.actions,snapshot.lightsAction]),nextShop=JSON.stringify([snapshot.shop,snapshot.wardrobe]);
+   if(force||nextActions!==actionStamp){actionStamp=nextActions;paintActions();}
+   if(force||nextShop!==shopStamp){shopStamp=nextShop;paintShop();}
    $('[data-pet-coins]').textContent=snapshot.wardrobe.coins+' '+snapshot.wardrobe.currency.toLowerCase();
    needs.innerHTML=[...snapshot.needs,{id:'health',name:'Health',value:snapshot.health,warn:snapshot.health<40}].map(n=>`<div class="pet-need${n.warn?' pet-warn':''}"><span id="pet-need-${n.id}">${escape(n.name)}</span><meter aria-labelledby="pet-need-${n.id}" min="0" max="100" low="30" high="70" optimum="100" value="${n.value}"></meter><b>${Math.round(n.value)}</b></div>`).join('');
    const mood=moods[snapshot.mood]??moods.content!;
