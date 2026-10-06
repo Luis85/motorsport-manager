@@ -79,8 +79,12 @@ runtime declares what is present instead of assuming it:
   `embedded-app-contracts.d.ts`). The colony shell mounts only the descriptors
   present, in that explicit order, and runs at most one at a time. `standalone()`
   runs a host as the whole page with its own frame loop and a focusable re-entry
-  launcher after the player exits. Each host alone installs its public global
-  (`WildlandsRTS`, `WildlandsPet`).
+  launcher after the player exits; its exit control then reads "Close RTS demo"
+  or "Close Pocket Pet". Each host alone installs its public global
+  (`WildlandsRTS`, `WildlandsPet`). The colony shell reads the developer
+  session, scenario library, workspace and template hosts as optional globals,
+  and the RTS host keeps its Mission editor launcher focusable with a reason when
+  the mission editor bundle is absent.
 - The scenario library, Wildlands workspace and engine-export panel keep absent
   tools as full-label, focusable launchers with `aria-disabled` and a visible
   reason. `Wildlands.capabilities()`, `Littlewild.scenarioUI.capabilities()` and
