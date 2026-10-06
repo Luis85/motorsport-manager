@@ -5,6 +5,7 @@ import path from "node:path";
 import { runCommand } from "./verification/process-runner";
 import { assertAuthoredTypescript, executableFiles } from "./verification/release-integrity";
 import { acceptedCounts, parseGateArgs, sourceIdentity } from "./verification/gate-integrity";
+import { gateRunnerChecks } from "./verification/gate-runner-checks";
 const results: Array<{name:string;passed:boolean;error?:string}> = [];
 function test(name: string, action: () => void): void {
   try { action(); results.push({name,passed:true}); }
@@ -82,6 +83,15 @@ if(process.platform==="linux")test("Timeout cleanup terminates child processes a
     assert.equal(running,false,"Timed-out descendant survived process-group cleanup");
   } finally {try{process.kill(pid,"SIGKILL");}catch(error){if((error as NodeJS.ErrnoException).code!=="ESRCH")throw error;}}
 });
-const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
-if(path.basename(__dirname)===".generated")fs.writeFileSync(path.join(__dirname,"gate-integrity-results.json"),JSON.stringify(report,null,2)+"\n");
-console.log(`${report.passed}/${report.total} gate integrity checks`);if(report.failed){console.error(results.filter(r=>!r.passed));process.exitCode=1;}
+// Registry, expectations, parallel runner and sleep-policy checks (reviewed additions) run after the
+// original synchronous checks so the historical names keep their order.
+async function finish(): Promise<void> {
+  for(const [name,action] of gateRunnerChecks(path.resolve(__dirname,".."),path.basename(__dirname)===".generated")){
+    try { await action(); results.push({name,passed:true}); }
+    catch (error) { results.push({name,passed:false,error:String(error)}); }
+  }
+  const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
+  if(path.basename(__dirname)===".generated")fs.writeFileSync(path.join(__dirname,"gate-integrity-results.json"),JSON.stringify(report,null,2)+"\n");
+  console.log(`${report.passed}/${report.total} gate integrity checks`);if(report.failed){console.error(results.filter(r=>!r.passed));process.exitCode=1;}
+}
+void finish();

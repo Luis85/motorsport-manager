@@ -1,6 +1,33 @@
 # Littlewild verification
 
-Run `npm ci --no-audit --no-fund`, install Playwright Chromium, and run `npm run verify`. The complete registered gate includes strict TypeScript, architecture, compilation, deterministic domain/CLI/release tests and all 21 browser suites. `--no-browser` creates partial evidence only. Supplemental PNG artifacts require explicit `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; functional image comparisons remain mandatory. At the earlier capture-policy checkpoint, default and explicit-capture external-editor runs separately passed 11/11, preserving the original limits. That fix preserved all 421 assertions and their control flow, browser actions and timeouts.
+## Running the gate
+
+Run `npm ci --no-audit --no-fund`, install Playwright Chromium (or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an existing desktop Chromium), and run `npm run verify`. The complete registered gate runs strict TypeScript and the build concurrently, then every registered domain/CLI/release suite and all browser suites. Only an unfiltered run can report `passed`; every option below except `--jobs`, `--browser-jobs` and `--keep-going` produces `partial-passed` evidence.
+
+| Command | Scope |
+| --- | --- |
+| `npm test` | Fast tier (`--tier fast`): typecheck, build and the quick Node suites. Partial evidence for edit loops. |
+| `npm run verify` | Complete gate, parallel by default. |
+| `npm run verify:sequential` | Complete gate with `--jobs 1` (registry order, one suite at a time). |
+| `npm run verify:node` | `--no-browser`; partial evidence. |
+| `npm run verify -- --only a,b` | Named registered suites; unknown or excluded names are rejected. |
+| `npm run verify -- --shard I/N` | The I-th of N deterministic, duration-balanced shards; combine shard reports with `npm run verify:merge -- --output merged.json shard-1.json …`, which re-accepts every pinned result file and the complete inventory. |
+
+`--jobs N` sets the total number of concurrent suites (default `min(4, cores - 1)`; `1` reproduces the sequential order) and `--browser-jobs N` caps concurrent browser suites (default `min(2, jobs)`). Suites marked `exclusive` in the registry (currently `browser-contracts`, which rebuilds the shared `.generated/` output in place) run first and alone; longer suites are dispatched next, but `gate-results.json` always lists suites in registry order, so reports and accepted check names are identical at every job count. After a failure no new suite starts unless `--keep-going` is given. `gate-results.json` is written only when the run starts and finishes (suites such as `cli-contracts` compare it across their own execution); in-flight progress is in `gate-progress.json`.
+
+Each suite runs as its own process group with its registry timeout, a private `TMPDIR` that is removed afterwards, and `WILDLANDS_SUITE_NAME`/`WILDLANDS_SUITE_OUT` (an empty-by-default directory under `verification/v15/suite-output/`) for scratch output. Registered result paths are unchanged; CI and reviewers read the same files.
+
+### Registry and reviewed expectations
+
+`source/verification/suites.json` is the suite registry: name, kind (`node`/`browser`), tier (`fast`/`full`), compiled entry, pinned result path, hard timeout, an observed-cost scheduling hint and an optional `exclusive` reason. `source/verification/gate-expectations.json` holds the reviewed gate contract: the ordered suite list, the exact check-name inventory of every suite, `totalChecks`, the immutable historical baseline (75 suites, 1,543 checks), named `reviewedAdditions`, and explicit `renames` and `retirements`. `totalChecks` must equal baseline + additions − retirements. The gate fails closed on a missing, unexpected, duplicated or renamed check, a missing or reordered suite, or a count mismatch; a partial run still matches each selected suite's inventory. To add, rename or retire a check, update the inventory together with the matching reviewed entry; never edit the baseline. The CI Storytelling observer-independence step reads the same file instead of inline pins.
+
+### Browser harness and sleeps
+
+`browser-harness.ts` provides `openArtifact` (serves the HTML from memory through `context.route` on a fixed fixture URL with a navigation timeout separate from action timeouts), `waitForReady` (waits for `window.__wildlandsReady === true`, falling back to the `Littlewild` global while a runtime does not publish the flag) and Playwright clock helpers (`installClock`, `advanceClock`, `pauseClockAt`). Browser suites wait for readiness through `waitForReady` with an explicit 60 s `READY_TIMEOUT_MS` rather than their short action timeouts, and `browser.ts`/`game-settings-browser.ts` give `setContent` an explicit 30 s navigation timeout like the other suites; no check name or assertion changed. New fixed `waitForTimeout` sleeps are rejected: `source/verification/sleep-allowlist.json` records the reviewed per-file budget, which may only go down.
+
+### Screenshots
+
+Supplemental PNG artifacts require explicit `LITTLEWILD_CAPTURE_SCREENSHOTS=1`; functional image comparisons remain mandatory. At the earlier capture-policy checkpoint, default and explicit-capture external-editor runs separately passed 11/11, preserving the original limits. That fix preserved all 421 assertions and their control flow, browser actions and timeouts.
 
 ## Current clean-checkout evidence
 
