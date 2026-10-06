@@ -11,14 +11,14 @@ content contracts and tool budgets.
 From the repository root:
 
 ```sh
-cd docs/concepts/littlewild
+cd source/wildlands
 npm ci
 npm run typecheck
 npm run build
 ```
 
 Open the generated maker HTML using the existing
-[maker instructions](../concepts/littlewild/README.md). Click **RTS demo** in the maker toolbar. The demo map should display an isometric battlefield,
+[maker instructions](../../source/wildlands/README.md). Click **RTS demo** in the maker toolbar. The demo map should display an isometric battlefield,
 units, buildings and resource deposits. Inspect the selected faction's resources
 and population before issuing an order.
 

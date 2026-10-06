@@ -1,7 +1,7 @@
 # Wildlands RTS engine
 
 This contract concerns the TypeScript Wildlands maker in
-[`docs/concepts/littlewild/`](../concepts/littlewild/README.md), extended from PR 25.
+[`source/wildlands/`](../../source/wildlands/README.md), extended from PR 25.
 It is separate from the native Godot race and campaign authorities. The RTS demo
 is an original scenario illustrating reusable genre mechanics rather than a
 recreation of a licensed game's content or rules. Follow the
@@ -11,12 +11,12 @@ recreation of a licensed game's content or rules. Follow the
 
 The complete catalog is plain JSON with `format: "wildlands-rts"`, `schemaVersion: 1`,
 identity and nine arrays. The shipped fixture is
-[`rts-demo.json`](../concepts/littlewild/source/content/rts-demo.json).
-[`rts-contracts.d.ts`](../concepts/littlewild/source/rts-contracts.d.ts) defines
-all records; [`rts-catalog.ts`](../concepts/littlewild/source/rts-catalog.ts)
+[`rts-demo.json`](../../source/wildlands/source/content/rts-demo.json).
+[`rts-contracts.d.ts`](../../source/wildlands/source/rts-contracts.d.ts) defines
+all records; [`rts-catalog.ts`](../../source/wildlands/source/rts-catalog.ts)
 validates shape, ranges, references and technology dependencies before use.
 The checked-in external shape contract is
-[`rts.schema.json`](../concepts/littlewild/source/content/rts.schema.json); runtime
+[`rts.schema.json`](../../source/wildlands/source/content/rts.schema.json); runtime
 validation remains authoritative for cross-record constraints.
 
 | Family | Editable gameplay records |
@@ -36,7 +36,7 @@ systems. Adding an algorithm requires implementing and registering its system,
 updating the contract and validator, and testing both its accepted behavior and
 rejections. Merely adding an unused field to JSON cannot add a mechanic.
 
-The shared [`LWECS.World` and `Scheduler`](../concepts/littlewild/source/ecs.ts)
+The shared [`LWECS.World` and `Scheduler`](../../source/wildlands/source/ecs.ts)
 own entities, component records, system ordering and deferred structural edits.
 The RTS application session owns commands, fixed ticks, detached queries and
 checkpoints. Renderers and controls issue intent and consume snapshots; a redraw,
@@ -47,7 +47,7 @@ are detached so edits to an inspector result cannot change the running match.
 
 The [graphical mission editor](../how-to/rts-mission-editor.md) edits a separate
 validated catalog draft. Its behavior-free contract is
-[`rts-mission-editor-contracts.d.ts`](../concepts/littlewild/source/rts-mission-editor-contracts.d.ts).
+[`rts-mission-editor-contracts.d.ts`](../../source/wildlands/source/rts-mission-editor-contracts.d.ts).
 `LWRTSMissionEditor.create(catalog, missionId)` returns an authoring session with
 `query()`, `command(input)` and `exportCatalog()`. It owns no ECS world or clock.
 Queries and exports return detached values.
@@ -78,7 +78,7 @@ checkpoint format or an autosave claim.
 ## Session boundaries
 
 The runtime's behavior-free component and command records are declared in
-[`rts-runtime-contracts.d.ts`](../concepts/littlewild/source/rts-runtime-contracts.d.ts).
+[`rts-runtime-contracts.d.ts`](../../source/wildlands/source/rts-runtime-contracts.d.ts).
 `LWRTS.create(catalog, missionId)` creates a session. `command(input)` returns
 `{ok, message}` with an optional created entity ID. `query(faction)` projects
 state, map, entities, resources, technologies, fog and bounded event observations.
@@ -111,10 +111,10 @@ presentation is a projection of map coordinates rather than a separate world.
 
 ## Developer tools
 
-[`rts-tools.ts`](../concepts/littlewild/source/rts-tools.ts) supplies catalog export,
+[`rts-tools.ts`](../../source/wildlands/source/rts-tools.ts) supplies catalog export,
 validation, mission inspection and bounded command experiments. Discovery reports
 available operations and actual budgets. The JSON-only CLI is
-[`tools/rts-cli.cts`](../concepts/littlewild/source/tools/rts-cli.cts), compiled to
+[`tools/rts-cli.cts`](../../source/wildlands/source/tools/rts-cli.cts), compiled to
 `.generated/tools/rts-cli.cjs` by the maker build.
 
 | Operation | Inputs and result |

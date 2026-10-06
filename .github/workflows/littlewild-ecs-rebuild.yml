@@ -2,7 +2,7 @@ name: Littlewild ECS verification
 on:
   pull_request:
     paths:
-      - 'docs/concepts/littlewild/**'
+      - 'source/wildlands/**'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
   workflow_dispatch:
 permissions:
@@ -21,36 +21,36 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+          cache-dependency-path: source/wildlands/package-lock.json
       - name: Clear stale Littlewild verification evidence
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: |
           rm -rf verification/v15 .generated
           rm -f littlewild.html
       - name: Install TypeScript verification toolchain
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: npm ci --no-audit --no-fund
       - name: Type-check strict architecture kernel
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: npm run typecheck
       - name: Verify architecture boundaries
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: npm run architecture
       - name: Install Chromium
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: npx playwright install --with-deps chromium
       - name: Rebuild and verify all Littlewild contracts
         id: complete_gate
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         env:
           LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
         run: npm run verify
       - name: Verify Storytelling without click diagnostics (additional 24 checks)
         id: storytelling_diagnostics_off
         if: ${{ success() && steps.complete_gate.outcome == 'success' }}
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         env:
-          LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
+          LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/source/wildlands/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
           LITTLEWILD_EXPECTED_GATE_CHECKS: '1739'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
@@ -348,7 +348,7 @@ jobs:
           NODE
       - name: Report additional Storytelling failure details
         if: ${{ failure() && steps.storytelling_diagnostics_off.outcome == 'failure' }}
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -374,7 +374,7 @@ jobs:
           PY
       - name: Report failed verification details
         if: failure()
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: |
           python3 - <<'PY'
           import json
@@ -413,7 +413,7 @@ jobs:
       - name: Package optional bounded core verification evidence
         if: always()
         continue-on-error: true
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -469,7 +469,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: littlewild-ecs-core-evidence
-          path: docs/concepts/littlewild/verification/core-evidence/*.zip
+          path: source/wildlands/verification/core-evidence/*.zip
           if-no-files-found: ignore
           include-hidden-files: true
           compression-level: 0
@@ -480,17 +480,17 @@ jobs:
         with:
           name: littlewild-ecs-diagnostics
           path: |
-            docs/concepts/littlewild/package-lock.json
-            docs/concepts/littlewild/.generated/*-results.json
-            docs/concepts/littlewild/verification/v15/*gate-results.json
-            docs/concepts/littlewild/verification/v15/*click-diagnostics.json
-            docs/concepts/littlewild/verification/v15/*.log
-            docs/concepts/littlewild/verification/v15/*-results.json
-            docs/concepts/littlewild/verification/v15/*building-interiors-browser.json
-            docs/concepts/littlewild/verification/v15/*progress.json
-            docs/concepts/littlewild/verification/core-evidence/*.json
-            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.json
-            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.log
+            source/wildlands/package-lock.json
+            source/wildlands/.generated/*-results.json
+            source/wildlands/verification/v15/*gate-results.json
+            source/wildlands/verification/v15/*click-diagnostics.json
+            source/wildlands/verification/v15/*.log
+            source/wildlands/verification/v15/*-results.json
+            source/wildlands/verification/v15/*building-interiors-browser.json
+            source/wildlands/verification/v15/*progress.json
+            source/wildlands/verification/core-evidence/*.json
+            source/wildlands/verification/storytelling-diagnostics-off/*.json
+            source/wildlands/verification/storytelling-diagnostics-off/*.log
           if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
@@ -501,11 +501,11 @@ jobs:
         with:
           name: littlewild-ecs-verification
           path: |
-            docs/concepts/littlewild/package-lock.json
-            docs/concepts/littlewild/littlewild.html
-            docs/concepts/littlewild/verification/v15/
-            docs/concepts/littlewild/verification/storytelling-diagnostics-off/
-            docs/concepts/littlewild/.generated/*-results.json
+            source/wildlands/package-lock.json
+            source/wildlands/littlewild.html
+            source/wildlands/verification/v15/
+            source/wildlands/verification/storytelling-diagnostics-off/
+            source/wildlands/.generated/*-results.json
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14
@@ -523,7 +523,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+          cache-dependency-path: source/wildlands/package-lock.json
       - name: Install virtual display and pinned Godot
         shell: bash
         run: |
@@ -535,13 +535,13 @@ jobs:
           echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
           chmod +x /tmp/wildlands-godot/Godot_*
       - name: Build the separate Wildlands project
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         run: |
           npm ci --no-audit --no-fund
           npm run typecheck
           npm run build
       - name: Verify playable export and capture native frame
-        working-directory: docs/concepts/littlewild
+        working-directory: source/wildlands
         shell: bash
         run: |
           set -euo pipefail
@@ -554,8 +554,8 @@ jobs:
         with:
           name: wildlands-godot-export
           path: |
-            docs/concepts/littlewild/.generated/wildlands-godot-*.json
-            docs/concepts/littlewild/.generated/wildlands-native.png
+            source/wildlands/.generated/wildlands-godot-*.json
+            source/wildlands/.generated/wildlands-native.png
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14

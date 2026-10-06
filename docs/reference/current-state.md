@@ -2,10 +2,10 @@
 
 **Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
 
-The separate [Wildlands prototype builder](../concepts/littlewild/DOCUMENTATION.md)
+The separate [Wildlands prototype builder](../../source/wildlands/DOCUMENTATION.md)
 retains its own TypeScript runtime, browser workspace, terminal tools and
 source-bound evidence. Littlewild is its default showcase; its
-[Godot desktop compiler](../concepts/littlewild/WILDLANDS.md#runnable-godot-compiler)
+[Godot desktop compiler](../../source/wildlands/WILDLANDS.md#runnable-godot-compiler)
 uses a local Node subprocess for gameplay. Those capabilities and prerequisites
 are outside this native Motorsport Manager inventory.
 
@@ -21,7 +21,7 @@ are outside this native Motorsport Manager inventory.
 
 ## Wildlands maker RTS foundation
 
-The separate TypeScript [Wildlands maker](../concepts/littlewild/README.md), built
+The separate TypeScript [Wildlands maker](../../source/wildlands/README.md), built
 on the PR 25 foundation, also supports a switchable isometric RTS demonstration.
 Validated JSON catalogs define resources, factions, worker/combat/vehicle/naval/
 aircraft/creature archetypes, buildings, items, technologies, abilities, terrain

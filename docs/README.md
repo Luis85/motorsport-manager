@@ -30,11 +30,11 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 
 ## Independent concepts
 
-[Scene Forge](concepts/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder.
+[Scene Forge](../source/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder.
 
 ## Authority and evidence
 
-The separate [Wildlands documentation](concepts/littlewild/DOCUMENTATION.md)
+The separate [Wildlands documentation](../source/wildlands/DOCUMENTATION.md)
 indexes the TypeScript prototype builder, its default Littlewild showcase,
 browser/terminal workflows and Node-backed Godot desktop target. It retains its
 own runtime and source-bound evidence outside the native Motorsport Manager
