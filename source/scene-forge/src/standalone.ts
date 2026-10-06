@@ -12,6 +12,13 @@ Output: stdout {"ok":true,"data":...} with exit 0; stderr {"ok":false,"error":{c
 screenshot and review render through Playwright and Chromium (not bundled); run scene-forge doctor.
 `;
 
+// A closed downstream pipe (e.g. `scene-forge --help | head`) ends output, not the process with a crash.
+for (const stream of [process.stdout, process.stderr])
+  stream.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE') process.exit(process.exitCode ?? 0);
+    throw error;
+  });
+
 void createCli({}, { name: 'scene-forge', helpFooter })
   .run(process.argv.slice(2))
   .then((status) => {

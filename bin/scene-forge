@@ -9947,7 +9947,7 @@ Handbook: docs/reference/scene-forge-cli.md (repository root).
 Discover: scene-forge catalog | scene-forge describe <command...> | scene-forge schema --kind <kind> --raw
 Output: stdout {"ok":true,"data":...} with exit 0; stderr {"ok":false,"error":{code,message,...}} with exit 1.
 screenshot and review render through Playwright and Chromium (not bundled); run scene-forge doctor.
-`;KI({},{name:"scene-forge",helpFooter:Dk}).run(process.argv.slice(2)).then(a=>{process.exitCode=a});
+`;for(let a of[process.stdout,process.stderr])a.on("error",e=>{throw e.code==="EPIPE"&&process.exit(process.exitCode??0),e});KI({},{name:"scene-forge",helpFooter:Dk}).run(process.argv.slice(2)).then(a=>{process.exitCode=a});
 /*! Bundled license information:
 
 three/build/three.core.js:
