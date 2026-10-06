@@ -464,7 +464,8 @@
     "WildlandsGodotTemplates",
     "LWRTSDefinitions",
     "LWPetDefinitions",
-    "LWPetAssetDefinitions"
+    "LWPetAssetDefinitions",
+    "LWGameProfile"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

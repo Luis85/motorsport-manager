@@ -5,8 +5,43 @@
     interface StoragePort { getItem(key:string):string|null; setItem(key:string,value:string):void; }
     interface Keys { primary:string; backup:string; legacy:readonly string[]; oldBackups:readonly string[]; }
     type LoadResult<T> = {value:T|null;key?:string} | {error:'corrupt'|'unavailable';detail:string};
+    interface NamespacedKeys extends Keys { namespace:string; }
     const detail=(error:unknown):string=>error instanceof Error?error.message:String(error);
+    /* Per-game storage namespaces. Pages opened from file:// share one origin, so each
+     * game artifact scopes its keys. The littlewild namespace (also used when no game
+     * profile is configured) keeps the exact legacy save, backup and migration keys. */
+    const LEGACY_NAMESPACE='littlewild';
+    const NAMESPACE_PATTERN=/^[a-z][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)*$/;
+    function namespaceOf(profile:unknown):string {
+        const storage=profile&&typeof profile==='object'?(profile as {storage?:unknown}).storage:undefined;
+        const value=storage&&typeof storage==='object'?(storage as {namespace?:unknown}).namespace:undefined;
+        if(value===undefined)return LEGACY_NAMESPACE;
+        if(typeof value!=='string'||value.length>64||!NAMESPACE_PATTERN.test(value))
+            throw Error('Invalid game storage namespace. Use 1-64 lowercase letters, digits, hyphens and dots, for example wildlands.emberworks.');
+        return value;
+    }
+    function keysFor(namespace:string):NamespacedKeys {
+        if(namespace===LEGACY_NAMESPACE)return {namespace,primary:'littlewild.save.v5',backup:'littlewild.backup.v5',
+            legacy:['littlewild.save.v4','littlewild.save.v3','littlewild.save.v2','littlewild.save.v1'],oldBackups:['littlewild.backup.v3']};
+        if(!NAMESPACE_PATTERN.test(namespace))throw Error('Invalid game storage namespace: '+namespace);
+        // A new game namespace never migrates or recovers another game's story.
+        return {namespace,primary:namespace+'.save.v5',backup:namespace+'.backup.v5',legacy:[],oldBackups:[]};
+    }
+    /** Scope device preferences ('littlewild.<name>' or bare keys) to a game namespace. */
+    function scopedKey(namespace:string,key:string):string {
+        if(namespace===LEGACY_NAMESPACE)return key;
+        return namespace+'.'+(key.startsWith(LEGACY_NAMESPACE+'.')?key.slice(LEGACY_NAMESPACE.length+1):key);
+    }
+    function scoped(provider:()=>StoragePort,namespace:string):()=>StoragePort {
+        if(namespace===LEGACY_NAMESPACE)return provider;
+        return ()=>{const storage=provider();return {getItem:key=>storage.getItem(scopedKey(namespace,key)),setItem:(key,value)=>storage.setItem(scopedKey(namespace,key),value)};};
+    }
     class StoryStorage<T> {
+        static readonly LEGACY_NAMESPACE=LEGACY_NAMESPACE;
+        static readonly namespace=namespaceOf;
+        static readonly keys=keysFor;
+        static readonly scopedKey=scopedKey;
+        static readonly scoped=scoped;
         lastPayload=''; blocked=false; available=true;
         constructor(readonly provider:()=>StoragePort,readonly validate:(input:unknown)=>T,readonly keys:Keys) {}
         load():LoadResult<T> {

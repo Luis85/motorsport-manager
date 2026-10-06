@@ -1,13 +1,21 @@
 /// <reference path="./pet-contracts.d.ts" />
+/// <reference path="./embedded-app-contracts.d.ts" />
 /** Browser composition: mount/retire the pet demo and route file intent into application admission. */
 declare namespace LWPetHost {
- interface Surface {open():void;close():void;advance(seconds:number):void;readonly active:boolean;view:LWPetApplication.View;renderer():LWPetRenderer.Stats|null;useStore(adapter:unknown):void;unlock(sku:string):Promise<LWPetRuntime.Result>;}
- interface Api {create(options:{beforeOpen():void;afterClose():void}):Surface;}
+ interface Surface extends LWEmbeddedApp.Surface {view:LWPetApplication.View;renderer():LWPetRenderer.Stats|null;useStore(adapter:unknown):void;unlock(sku:string):Promise<LWPetRuntime.Result>;}
+ /** Detached page API installed as `window.WildlandsPet` by a shell or the standalone runner. */
+ interface PublicApi {
+  open():void;close():void;query():LWPetRuntime.Snapshot;command(input:unknown):LWPetRuntime.Result;checkpoint():LWPetRuntime.Checkpoint;catalog():LWPetData.Catalog;
+  status():LWPetApplication.Status;control(action:'pause'|'resume'|'speed'|'restart',value?:number|{species:string;name?:string}):void;
+  renderer():LWPetRenderer.Stats|null;useStore(adapter:unknown):void;unlock(sku:string):Promise<LWPetRuntime.Result>;
+ }
+ type Api=LWEmbeddedApp.Descriptor<Surface,PublicApi>;
 }
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
   LWPetApplication:LWPetApplication.Api;LWPetDemo:LWPetDemo.Api;LWPetHost?:LWPetHost.Api;LWPetAssetDefinitions?:unknown;LWPetStore:LWPetStore.Api;
+  WildlandsPet?:LWPetHost.PublicApi;__wildlandsReady?:boolean;
   LWFiles:{downloadJSON(input:unknown,name:string):void};
  };
  function create(options:{beforeOpen():void;afterClose():void}):LWPetHost.Surface{
@@ -73,5 +81,37 @@ declare namespace LWPetHost {
    }
   };
  }
- root.LWPetHost={create};
+ function api(surface:LWPetHost.Surface):LWPetHost.PublicApi{
+  const view=surface.view;
+  return Object.freeze({open:()=>surface.open(),close:()=>surface.close(),query:()=>view.query(),command:(input:unknown)=>view.command(input),checkpoint:()=>view.checkpoint(),catalog:()=>view.catalog(),status:()=>view.status(),
+   control:(action:'pause'|'resume'|'speed'|'restart',value?:number|{species:string;name?:string})=>view.control(action,value),renderer:()=>surface.renderer(),useStore:(adapter:unknown)=>surface.useStore(adapter),unlock:(sku:string)=>surface.unlock(sku)});
+ }
+ function install(surface:LWPetHost.Surface):LWPetHost.PublicApi{const installed=api(surface);root.WildlandsPet=installed;return installed;}
+ let standaloneSurface:LWPetHost.Surface|null=null;
+ /** Run the Pocket Pet application as the whole page: own frame loop, no colony shell. */
+ function standalone(options:LWEmbeddedApp.StandaloneOptions={}):LWPetHost.Surface{
+  if(standaloneSurface)return standaloneSurface;
+  let launcher:HTMLElement|null=null;
+  function showLauncher():void{
+   launcher=document.createElement('main');launcher.className='embedded-app-closed';launcher.style.cssText='padding:24px;font:16px/1.5 system-ui,sans-serif';
+   const heading=document.createElement('h1');heading.textContent='Pocket Pet';heading.style.fontSize='22px';
+   const button=document.createElement('button');button.type='button';button.dataset.wildlandsPet='open';button.textContent='Open Pocket Pet';button.style.cssText='min-height:44px;padding:8px 16px;font:inherit';
+   button.addEventListener('click',()=>surface.open());launcher.append(heading,button);document.body.append(launcher);button.focus();
+  }
+  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher});
+  standaloneSurface=surface;document.body.classList.add('pet-standalone');
+  install(surface);
+  if(options.autoOpen===false)showLauncher();else surface.open();
+  let last=performance.now();
+  const frame=(now:number):void=>{const seconds=Math.max(0,Math.min((now-last)/1000,.1));last=now;if(!document.hidden&&surface.active)surface.advance(seconds);requestAnimationFrame(frame);};
+  requestAnimationFrame(frame);
+  ready('pet');
+  return surface;
+ }
+ function ready(host:string):void{
+  root.__wildlandsReady=true;document.documentElement.dataset.wildlandsReady=host;
+  dispatchEvent(new CustomEvent<LWEmbeddedApp.ReadyDetail>('wildlands:ready',{detail:{host}}));
+ }
+ const descriptor:LWPetHost.Api=Object.freeze({id:'pet',label:'Pet demo',launcher:'wildlandsPet',global:'WildlandsPet',create,api,install,standalone});
+ root.LWPetHost=descriptor;
 })(globalThis);

@@ -69,3 +69,37 @@ reconstruction and synchronous temper grants. The design follows the concrete ow
 compiler gates also run against the complete authored tree.
 
 The compiled skill-tree adapter wraps reward settlement, work/learning rates, arrival and import. It adds validated player/creature attachment and rank commands without introducing a clock or a second XP authority. See [skill trees](../../docs/reference/skill-trees.md).
+
+## Optional runtime capabilities
+
+A play-only artifact may omit template, editor, export or payload bundles. The
+runtime declares what is present instead of assuming it:
+
+- Template hosts publish one descriptor each (`LWRTSHost`, `LWPetHost`,
+  `embedded-app-contracts.d.ts`). The colony shell mounts only the descriptors
+  present, in that explicit order, and runs at most one at a time. `standalone()`
+  runs a host as the whole page with its own frame loop and a focusable re-entry
+  launcher after the player exits. Each host alone installs its public global
+  (`WildlandsRTS`, `WildlandsPet`).
+- The scenario library, Wildlands workspace and engine-export panel keep absent
+  tools as full-label, focusable launchers with `aria-disabled` and a visible
+  reason. `Wildlands.capabilities()`, `Littlewild.scenarioUI.capabilities()` and
+  `LWDeveloper.capabilities()` report detached availability with reasons. Absent
+  toolbox facets stay on the frozen toolbox and reject use with an explicit
+  `operation-failed` reason.
+- `WildlandsGodot.capability()` and `LWEngineExport.capability()` report absent
+  Godot runtime, template or engine-source payloads without inflating anything;
+  compilation and export fail with the same explicit message.
+- Saves are scoped by `LWGameProfile.storage.namespace` (`LWStoryStorage.namespace`,
+  `keys`, `scoped`). No profile, or the `littlewild` namespace, keeps exactly
+  `littlewild.save.v5`, `littlewild.backup.v5` and their migrations. Any other
+  namespace (for example `wildlands.office`) uses `<namespace>.save.v5` and
+  `<namespace>.backup.v5`, never migrates another game's story and scopes device
+  preferences the same way.
+- Each host sets `window.__wildlandsReady = true`, sets
+  `document.documentElement.dataset.wildlandsReady` to its host id (`colony`,
+  `rts` or `pet`) and then dispatches one `wildlands:ready` window event whose
+  `detail.host` names it, after its public APIs exist.
+
+`test-runtime-optionality.cts` and `verification/runtime-optionality-browser.ts`
+cover these seams.

@@ -11,5 +11,7 @@ declare namespace LWEngineExport {
  type Validation={ok:true;document:Document;errors:string[]}|{ok:false;errors:string[]};
  interface Decoder {parse(input:unknown):unknown;record(input:unknown):Record<string,unknown>;path(input:unknown):string;sha256(text:string):Promise<string>;readonly maxBytes:number;}
  interface ManifestApi {extensions(pack:LWContentPorts.ScenarioPack,input?:unknown):Extensions;create(pack:LWContentPorts.ScenarioPack,sceneId:string,bundle:SourceBundle,extensions:Extensions):Pick<Document,'checkpoint'|'catalogs'|'runtime'|'godot'|'limitations'>;}
- interface Api {export(pack:unknown,sceneId:string):Promise<Document>;validate(input:unknown):Promise<Validation>;readonly maxBytes:number;}
+ /** Declared payload capability; an unavailable capability carries an explicit player-facing reason. */
+ interface Capability {available:boolean;reason?:string;}
+ interface Api {export(pack:unknown,sceneId:string):Promise<Document>;validate(input:unknown):Promise<Validation>;readonly maxBytes:number;capability():Capability;}
 }

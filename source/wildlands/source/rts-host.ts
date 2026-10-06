@@ -1,15 +1,19 @@
 /// <reference path="./rts-demo-contracts.d.ts" />
 /// <reference path="./rts-runtime-contracts.d.ts" />
 /// <reference path="./rts-mission-editor-ui-contracts.d.ts" />
+/// <reference path="./embedded-app-contracts.d.ts" />
 /** Browser composition: mount/retire the demo and route file intent into application admission. */
 declare namespace LWRTSHost {
- interface Surface {open():void;close():void;advance(seconds:number):void;readonly active:boolean;view:LWRTSApplication.View;editorQuery():LWRTSMissionEditor.Snapshot|null;}
- interface Api {create(options:{beforeOpen():void;afterClose():void}):Surface;}
+ interface Surface extends LWEmbeddedApp.Surface {view:LWRTSApplication.View;editorQuery():LWRTSMissionEditor.Snapshot|null;}
+ /** Detached page API installed as `window.WildlandsRTS` by a shell or the standalone runner. */
+ interface PublicApi {open():void;close():void;query():LWRTSRuntime.Snapshot;command(input:LWRTSRuntime.Command):LWRTSRuntime.Result;checkpoint():LWRTSRuntime.Data;catalog():LWRTSData.Catalog;status():LWRTSApplication.Status;editorQuery():LWRTSMissionEditor.Snapshot|null;}
+ type Api=LWEmbeddedApp.Descriptor<Surface,PublicApi>;
 }
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
   LWRTSApplication:LWRTSApplication.Api;LWRTSDemo:LWRTSDemo.Api;LWRTSHost?:LWRTSHost.Api;
+  WildlandsRTS?:LWRTSHost.PublicApi;__wildlandsReady?:boolean;
   LWRTSMissionEditor:LWRTSMissionEditor.Api;LWRTSMissionEditorUI:LWRTSMissionEditorUI.Api;
   LWFiles:{downloadJSON(input:unknown,name:string):void};
  };
@@ -119,5 +123,36 @@ declare namespace LWRTSHost {
    advance(seconds){if(!view.status().active||editing)return;try{application.advance(seconds);if(view.status().paused){paintDebt=0;return;}paintDebt+=seconds;if(paintDebt>=1/30){paintDebt=0;surface?.refresh();}}catch(error){status(error instanceof Error?error.message:String(error),true);}}
   };
  }
- root.LWRTSHost={create};
+ function api(surface:LWRTSHost.Surface):LWRTSHost.PublicApi {
+  const view=surface.view;
+  return Object.freeze({open:()=>surface.open(),close:()=>surface.close(),query:()=>view.query(),command:(input:LWRTSRuntime.Command)=>view.command(input),checkpoint:()=>view.checkpoint(),catalog:()=>view.catalog(),status:()=>view.status(),editorQuery:()=>surface.editorQuery()});
+ }
+ function install(surface:LWRTSHost.Surface):LWRTSHost.PublicApi {const installed=api(surface);root.WildlandsRTS=installed;return installed;}
+ let standaloneSurface:LWRTSHost.Surface|null=null;
+ /** Run the RTS application as the whole page: own frame loop, no colony shell. */
+ function standalone(options:LWEmbeddedApp.StandaloneOptions={}):LWRTSHost.Surface {
+  if(standaloneSurface)return standaloneSurface;
+  let launcher:HTMLElement|null=null;
+  function showLauncher():void {
+   launcher=document.createElement('main');launcher.className='embedded-app-closed';launcher.style.cssText='padding:24px;font:16px/1.5 system-ui,sans-serif';
+   const heading=document.createElement('h1');heading.textContent='RTS demo';heading.style.fontSize='22px';
+   const button=document.createElement('button');button.type='button';button.dataset.wildlandsRts='open';button.textContent='Open the RTS demo';button.style.cssText='min-height:44px;padding:8px 16px;font:inherit';
+   button.addEventListener('click',()=>surface.open());launcher.append(heading,button);document.body.append(launcher);button.focus();
+  }
+  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher});
+  standaloneSurface=surface;document.body.classList.add('rts-standalone');
+  install(surface);
+  if(options.autoOpen===false)showLauncher();else surface.open();
+  let last=performance.now();
+  const frame=(now:number):void=>{const seconds=Math.max(0,Math.min((now-last)/1000,.1));last=now;if(!document.hidden&&surface.active)surface.advance(seconds);requestAnimationFrame(frame);};
+  requestAnimationFrame(frame);
+  ready('rts');
+  return surface;
+ }
+ function ready(host:string):void {
+  root.__wildlandsReady=true;document.documentElement.dataset.wildlandsReady=host;
+  dispatchEvent(new CustomEvent<LWEmbeddedApp.ReadyDetail>('wildlands:ready',{detail:{host}}));
+ }
+ const descriptor:LWRTSHost.Api=Object.freeze({id:'rts',label:'RTS demo',launcher:'wildlandsRts',global:'WildlandsRTS',create,api,install,standalone});
+ root.LWRTSHost=descriptor;
 })(globalThis);

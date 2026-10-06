@@ -6,16 +6,38 @@
     const X=root.LWScenarios,e=ctx.esc;
     const state={returnTo:'scenarios',transition:null,cameras:new Map(),packs:X.builtins(),selected:0,preview:null,errors:[],readId:0};
     const input=document.createElement('input');input.id='scenario-import-file';input.type='file';input.accept='.json,application/json';input.hidden=true;document.body.appendChild(input);
-    const editor=root.LWSceneEditorUI.create({...ctx,review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='scene-editor';ctx.open('scenario-preview');}});
-    const creatureEditor=root.LWCreatureEditorUI.create({...ctx,capture(){const pack=X.capture(ctx.engine()),sceneId=ctx.engine().scenarioContext?.sceneId||pack.scenes[0].id,instanceId=ctx.engine().s.colony?.selectedId;return {pack,sceneId,...(instanceId?{instanceId}:{})};},review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='creature-editor';ctx.open('scenario-preview');document.querySelector('[data-scenario="cancel"]')?.focus({preventScroll:true});}});
-    const balancingEditor=root.LWBalancingUI.create({...ctx,capture(){const pack=X.capture(ctx.engine());return {pack,sceneId:ctx.engine().scenarioContext?.sceneId||pack.scenes[0].id};},review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='balancing-editor';ctx.open('scenario-preview');document.querySelector('[data-scenario="cancel"]')?.focus({preventScroll:true});}});
-    const storytelling=root.LWStorytellingPlayer.create({...ctx,presentation:playback=>root.LWRendererHost.player().setPlayback(playback),admitScene:(pack,id)=>root.LWSceneRendererAdmission.assertAvailable(pack,id),pause:paused=>{ctx.engine().s.paused=paused;ctx.save();ctx.redraw();}});
+    // Optional tool registry: editors and the storytelling player belong to separate bundles.
+    // An absent bundle leaves its tool null; its launcher stays focusable with an explicit reason.
+    const TOOLS={
+      'editor':{api:()=>root.LWSceneEditorUI,name:'World & Scene Editor',bundle:'editors'},
+      'creature-editor':{api:()=>root.LWCreatureEditorUI,name:'3D Creature Editor',bundle:'editors'},
+      'balancing-editor':{api:()=>root.LWBalancingUI,name:'Balancing workshop',bundle:'editors'},
+      'storytelling':{api:()=>root.LWStorytellingPlayer,name:'Storytelling player',bundle:'storytelling player'}
+    };
+    const toolReason=tool=>TOOLS[tool].name+' is unavailable in this build: the '+TOOLS[tool].bundle+' bundle is not included.';
+    const optional=(tool,build)=>{const api=TOOLS[tool].api();return api?build(api):null;};
+    function capability(tool){return TOOLS[tool]?.api()?{available:true}:{available:false,reason:TOOLS[tool]?toolReason(tool):'Unknown tool: '+tool};}
+    const editor=optional('editor',api=>api.create({...ctx,review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='scene-editor';ctx.open('scenario-preview');}}));
+    const creatureEditor=optional('creature-editor',api=>api.create({...ctx,capture(){const pack=X.capture(ctx.engine()),sceneId=ctx.engine().scenarioContext?.sceneId||pack.scenes[0].id,instanceId=ctx.engine().s.colony?.selectedId;return {pack,sceneId,...(instanceId?{instanceId}:{})};},review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='creature-editor';ctx.open('scenario-preview');document.querySelector('[data-scenario="cancel"]')?.focus({preventScroll:true});}}));
+    const balancingEditor=optional('balancing-editor',api=>api.create({...ctx,capture(){const pack=X.capture(ctx.engine());return {pack,sceneId:ctx.engine().scenarioContext?.sceneId||pack.scenes[0].id};},review(pack,id){state.preview=X.prepareScene(pack,id);state.returnTo='balancing-editor';ctx.open('scenario-preview');document.querySelector('[data-scenario="cancel"]')?.focus({preventScroll:true});}}));
+    const storytelling=optional('storytelling',api=>api.create({...ctx,presentation:playback=>root.LWRendererHost.player().setPlayback(playback),admitScene:(pack,id)=>admit(pack,id),pause:paused=>{ctx.engine().s.paused=paused;ctx.save();ctx.redraw();}}));
+    const tools={'editor':editor,'creature-editor':creatureEditor,'balancing-editor':balancingEditor};
+    function admit(pack,id){
+      if(!root.LWSceneRendererAdmission)throw Error('Scene renderer admission is unavailable in this build, so this scene cannot be started safely.');
+      return root.LWSceneRendererAdmission.assertAvailable(pack,id);
+    }
     const btn=(label,action,id='',cls='')=>`<button type="button" class="btn ${cls}" data-scenario="${action}" data-id="${e(id)}">${label}</button>`;
+    // Unavailable tools keep a full label and keyboard focus; aria-disabled plus a visible reason explain why.
+    const toolBtn=(label,tool,cls='')=>tools[tool]?btn(label,tool,'',cls):`<button type="button" class="btn ${cls}" data-scenario="${tool}" data-id="" aria-disabled="true" aria-describedby="scenario-tool-${tool}-reason">${label}</button>`;
+    function unavailableTools(){
+      const missing=Object.keys(tools).filter(tool=>!tools[tool]);
+      return missing.length?`<div class="scenario-unavailable panel-hint">${missing.map(tool=>`<p id="scenario-tool-${tool}-reason">${e(toolReason(tool))}</p>`).join('')}</div>`:'';
+    }
     function render(type){
-      const storytellingMarkup=storytelling.render(type);if(storytellingMarkup!==null)return storytellingMarkup;
-      const balancingMarkup=balancingEditor.render(type);if(balancingMarkup!==null)return balancingMarkup;
-      const creatureMarkup=creatureEditor.render(type);if(creatureMarkup!==null)return creatureMarkup;
-      const editorMarkup=editor.render(type);if(editorMarkup!==null)return editorMarkup;
+      const storytellingMarkup=storytelling?.render(type)??null;if(storytellingMarkup!==null)return storytellingMarkup;
+      const balancingMarkup=balancingEditor?.render(type)??null;if(balancingMarkup!==null)return balancingMarkup;
+      const creatureMarkup=creatureEditor?.render(type)??null;if(creatureMarkup!==null)return creatureMarkup;
+      const editorMarkup=editor?.render(type)??null;if(editorMarkup!==null)return editorMarkup;
       if(type==='scene-transition'){const p=state.transition;if(!p)return ctx.head('Review a connected scene first.')+ctx.footer();return ctx.head('Enter '+e(p.sceneName)+'?','Current work is checkpointed. Returning restores its saved state.','REVIEW CONNECTION')+`<div class="modal-body"><p>${e(p.target?.type==='interior'?'Visits the existing building floor without moving companions.':p.target?.type==='island'?'Focuses existing owned land without moving companions.':'Starts or restores the connected level.')}</p>${p.messages.map(text=>`<p>${e(text)}</p>`).join('')}${btn('Export current story','backup')}</div><footer class="modal-footer">${btn('Cancel','cancel-transition')}${btn('Enter scene','enter','','primary')}</footer>`;}
       if(type==='scenario-preview'){
         const p=state.preview;if(!p)return ctx.head('No scenario selected.')+ctx.footer();
@@ -29,9 +51,9 @@
       if(type!=='scenarios')return null;
       const p=state.packs[state.selected];
       return ctx.head('Worlds & scenarios','Littlewild is one showcase. Choose or import a data-authored setting for the same simulation.','EXPERIENCE LIBRARY')+
-      `<div class="modal-body scenario-library"><div class="scenario-tools">${btn('Open World & Scene Editor','editor','','primary')}${btn('Open 3D Creature Editor','creature-editor')}${btn('Open balancing workshop','balancing-editor')}${btn('Import pack JSON','import')}${btn('Export this pack','export')}${btn('Capture current scene','capture')}${btn('Schema','schema','','small')}</div>
+      `<div class="modal-body scenario-library"><div class="scenario-tools">${toolBtn('Open World & Scene Editor','editor','primary')}${toolBtn('Open 3D Creature Editor','creature-editor')}${toolBtn('Open balancing workshop','balancing-editor')}${btn('Import pack JSON','import')}${btn('Export this pack','export')}${btn('Capture current scene','capture')}${btn('Schema','schema','','small')}</div>${unavailableTools()}
       ${state.errors.length?`<div class="validation-issue" role="alert"><strong>The pack was not applied.</strong>${state.errors.slice(0,8).map(x=>`<p>${e(x)}</p>`).join('')}</div>`:''}
-      ${storytelling.controls()}${connections()}<div class="scenario-layout"><nav class="scenario-packs" aria-label="Experience packs">${state.packs.map((p,i)=>`<button data-scenario="select" data-id="${i}" aria-pressed="${i===state.selected}"><strong>${e(p.name)}</strong><small>${p.scenes.length} starting scenes</small></button>`).join('')}</nav>
+      ${storytelling?.controls()??''}${connections()}<div class="scenario-layout"><nav class="scenario-packs" aria-label="Experience packs">${state.packs.map((p,i)=>`<button data-scenario="select" data-id="${i}" aria-pressed="${i===state.selected}"><strong>${e(p.name)}</strong><small>${p.scenes.length} starting scenes</small></button>`).join('')}</nav>
       <section><h3>${e(p.name)}</h3><p>${e(p.description)}</p><p class="panel-hint">Simulation: ${e(p.simulation.name)} · ${e(p.simulation.archetype.id)}</p>${p.scenes.map(s=>`<article class="scenario-card"><h4>${e(s.name)}</h4><p>${e(s.description)}</p>${btn('Review & start','review',s.id,'primary')}</article>`).join('')}</section></div>
       <details class="scenario-boundaries"><summary>What can be configured?</summary><p>Four content libraries; a validated actor/economy rule profile; starting creatures, inventories, buildings, work and progression; island terrain and resource generation; palettes and branding; tutorial steps; embedded furniture and creature catalogs; named roles and physical customer-order workflows. Capturing a scene produces an editable template, not a new executable game engine.</p><p>Supported topology remains 19 × 19 tiles per island with four bridge edges. Core item/skill/building role IDs, behavioral handlers, system schedules and creature rigs are compiled capabilities. Unknown fields, unsupported topology and new executable scripts are rejected.</p></details></div>`+ctx.footer();
     }
@@ -50,13 +72,14 @@
     document.addEventListener('click',ev=>{
       const b=ev.target.closest('[data-scenario]');if(!b||b.disabled)return;
       const action=b.dataset.scenario,p=state.packs[state.selected];ev.preventDefault();
+      if(b.getAttribute('aria-disabled')==='true'){if(TOOLS[action])ctx.toast(toolReason(action),true);return;}
       try {
-        if(action==='editor')editor.open(p);
-        if(action==='creature-editor')creatureEditor.open();
-        if(action==='balancing-editor')balancingEditor.open();
+        if(action==='editor')requireTool('editor').open(p);
+        if(action==='creature-editor')requireTool('creature-editor').open();
+        if(action==='balancing-editor')requireTool('balancing-editor').open();
         if(action==='transition'){state.transition=root.LWSceneNavigation.prepare(ctx.engine(),b.dataset.id);ctx.open('scene-transition');}
         if(action==='cancel-transition'){state.transition=null;ctx.open('scenarios');}
-        if(action==='enter'){const current=ctx.engine(),preview=state.transition;if(!preview)throw Error('Review a connection first.');root.LWSceneRendererAdmission.assertAvailable(preview.scene.pack,preview.sceneId);const source=current.scenarioContext.packId+'/'+current.scenarioContext.sceneId,camera=ctx.camera?.();ctx.backup();const next=root.LWSceneNavigation.commit(current,preview);if(camera)state.cameras.set(source,camera);ctx.setEngine(next,{sceneTransition:true});ctx.close();ctx.presentScene?.(root.LWSceneNavigation.target(next),state.cameras.get(next.scenarioContext.packId+'/'+next.scenarioContext.sceneId));ctx.save();storytelling.entered(preview.scene.pack.scenes.find(scene=>scene.id===preview.sourceSceneId)?.graph?.connections?.find(link=>link.id===preview.connectionId)?.events?.filter(event=>event.type==='play-cutscene'||event.type==='scene-switch')??[]);ctx.toast('Entered '+next.scenarioContext.sceneName+'.');for(const message of preview.messages)ctx.toast(message);}
+        if(action==='enter'){const current=ctx.engine(),preview=state.transition;if(!preview)throw Error('Review a connection first.');admit(preview.scene.pack,preview.sceneId);const source=current.scenarioContext.packId+'/'+current.scenarioContext.sceneId,camera=ctx.camera?.();ctx.backup();const next=root.LWSceneNavigation.commit(current,preview);if(camera)state.cameras.set(source,camera);ctx.setEngine(next,{sceneTransition:true});ctx.close();ctx.presentScene?.(root.LWSceneNavigation.target(next),state.cameras.get(next.scenarioContext.packId+'/'+next.scenarioContext.sceneId));ctx.save();storytelling?.entered(preview.scene.pack.scenes.find(scene=>scene.id===preview.sourceSceneId)?.graph?.connections?.find(link=>link.id===preview.connectionId)?.events?.filter(event=>event.type==='play-cutscene'||event.type==='scene-switch')??[]);ctx.toast('Entered '+next.scenarioContext.sceneName+'.');for(const message of preview.messages)ctx.toast(message);}
         if(action==='select'){state.selected=Number(b.dataset.id);state.errors=[];ctx.redraw();}
         if(action==='import')input.click();
         if(action==='export')LWFiles.downloadJSON(p,p.id+'.pack.json');
@@ -66,7 +89,7 @@
         if(action==='review'){state.returnTo='scenarios';state.preview=X.prepareScene(p,b.dataset.id);ctx.open('scenario-preview');}
         if(action==='cancel'){state.preview=null;ctx.open(state.returnTo);if(state.returnTo==='balancing-editor')document.querySelector('[data-balancing="review"]')?.focus({preventScroll:true});if(state.returnTo==='creature-editor')document.querySelector('[data-creature-editor="review"]')?.focus({preventScroll:true});}
         if(action==='launch'){
-          const checked=state.preview;if(!checked)throw Error('Review a scene first.');root.LWSceneRendererAdmission.assertAvailable(checked.pack,checked.sceneId);
+          const checked=state.preview;if(!checked)throw Error('Review a scene first.');admit(checked.pack,checked.sceneId);
           ctx.backup();const next=X.commitScene(checked);state.preview=null;
           ctx.setEngine(next);ctx.close();ctx.save();ctx.toast('Started '+next.scenarioContext.sceneName+'.');for(const message of checked.messages||[])ctx.toast(message);
         }
@@ -79,6 +102,9 @@
       else{state.packs[at]=preview.pack;state.selected=at;}
       state.returnTo='scenarios';state.preview=preview;state.errors=[];ctx.open('scenario-preview');
     }
-    return {state,editor,creatureEditor,storytelling,render,reviewPack,openTool(tool){if(tool==='creatures')creatureEditor.open();if(tool==='balance')balancingEditor.open();},cancelRead(){state.readId++;editor.cancelRead();creatureEditor.cancelRead();balancingEditor.cancelRead();},reset(options={}){if(!options.preserveCameras)storytelling.reset();creatureEditor.reset();balancingEditor.reset();if(!options.preserveCameras)state.cameras.clear();state.transition=null;state.preview=null;state.errors=[];state.readId++;}};
+    function requireTool(tool){if(!tools[tool])throw Error(toolReason(tool));return tools[tool];}
+    /** Detached availability report for every optional tool in this panel. */
+    function capabilities(){return Object.keys(TOOLS).map(tool=>({id:tool,label:TOOLS[tool].name,...capability(tool)}));}
+    return {state,editor,creatureEditor,storytelling,render,reviewPack,capability,capabilities,openTool(tool){if(tool==='creatures')requireTool('creature-editor').open();if(tool==='balance')requireTool('balancing-editor').open();},cancelRead(){state.readId++;editor?.cancelRead();creatureEditor?.cancelRead();balancingEditor?.cancelRead();},reset(options={}){if(!options.preserveCameras)storytelling?.reset();creatureEditor?.reset();balancingEditor?.reset();if(!options.preserveCameras)state.cameras.clear();state.transition=null;state.preview=null;state.errors=[];state.readId++;}};
   }};
 })(typeof globalThis!=='undefined'?globalThis:this);
