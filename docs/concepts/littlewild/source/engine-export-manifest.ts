@@ -35,7 +35,8 @@
  }
  function create(pack:LWContentPorts.ScenarioPack,sceneId:string,bundle:LWEngineExport.SourceBundle,snapshot:LWEngineExport.Extensions):ReturnType<LWEngineExport.ManifestApi['create']>{
   const catalogs:Record<string,unknown>={},sources=new Map(bundle.files.map(file=>[file.path,file]));
-  for(const file of bundle.files)if(file.path.endsWith('.json')&&/^source\/(assets|content|schemas)\//.test(file.path))catalogs[file.path]=JSON.parse(file.text) as unknown;
+  // Pocket Pet meshes belong to a separate demo application; they stay exported as source text, not colony catalogs.
+  for(const file of bundle.files)if(file.path.endsWith('.json')&&/^source\/(assets|content|schemas)\//.test(file.path)&&!/^source\/(assets\/pets\/|content\/pet-demo\.json$)/.test(file.path))catalogs[file.path]=JSON.parse(file.text) as unknown;
   const commandText=sources.get('source/command-router.ts')?.text??'',scheduleText=sources.get('source/simulation-pipeline.ts')?.text??'';
   const commands=[...commandText.matchAll(/\{id:'([^']+)',method:'([^']+)',scope:'([^']+)',maxArgs:(\d+),away:(true|false)\}/g)].map(match=>({id:match[1],method:match[2],scope:match[3],maxArgs:Number(match[4]),away:match[5]==='true'}));
   const schedule=[...scheduleText.matchAll(/\{id:'([^']+)',scope:'([^']+)',order:(\d+),owner:'([^']+)'\}/g)].map(match=>({id:match[1],scope:match[2],order:Number(match[3]),owner:match[4]}));
