@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "metalness": {
+      "default": 0,
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "roughness": {
+      "default": 0.65,
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "emissive": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "emissiveIntensity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "opacity": {
+      "default": 1,
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "doubleSided": {
+      "default": false,
+      "type": "boolean"
+    },
+    "flatShading": {
+      "default": false,
+      "type": "boolean"
+    },
+    "shading": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "unlit"
+      ]
+    }
+  },
+  "required": [
+    "color"
+  ],
+  "additionalProperties": false
+}

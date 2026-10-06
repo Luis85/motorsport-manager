@@ -1,0 +1,218 @@
+{
+  "format": "littlewild-contract-ownership",
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "path": "application-records.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "building-interior-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "canvas-ports.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "colony-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "construction-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "content-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "developer-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "developer-space-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "engine-core-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "interaction-contracts.d.ts",
+      "owner": "interaction-definitions"
+    },
+    {
+      "path": "interaction-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "legacy-task-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "legacy-task-records.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "physical-world-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "renderer-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "runtime-contracts.d.ts",
+      "owner": "simulation-core"
+    },
+    {
+      "path": "scene-environment-ports.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "terraform-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "village-contracts.d.ts",
+      "owner": "simulation-application"
+    },
+    {
+      "path": "physical-ecs-contracts.d.ts",
+      "owner": "physical-world"
+    },
+    {
+      "path": "building-interior-data-contracts.d.ts",
+      "owner": "building-interior-definitions"
+    },
+    {
+      "path": "workflow-venue-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "scene-graph-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "scene-navigation-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "scene-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "scene-editor-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "developer-scene-contracts.d.ts",
+      "owner": "developer-application"
+    },
+    {
+      "path": "external-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "canvas-authoring-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "external-editor-canvas-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "creature-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "creature-editor-preview-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "creature-editor-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-data-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "storytelling-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "storytelling-render-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "balancing-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "storytelling-player-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "engine-export-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "balancing-tools-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "animation-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "storytelling-renderer-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "animation-data-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "renderer-data-contracts.d.ts",
+      "owner": "content-model"
+    },
+    {
+      "path": "wildlands-project-contracts.d.ts",
+      "owner": "wildlands-project"
+    },
+    {
+      "path": "rts-runtime-contracts.d.ts",
+      "owner": "rts"
+    },
+    {
+      "path": "rts-demo-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "rts-economy-contracts.d.ts",
+      "owner": "rts"
+    },
+    {
+      "path": "rts-contracts.d.ts",
+      "owner": "simulation-core"
+    },
+    {
+      "path": "rts-mission-editor-contracts.d.ts",
+      "owner": "experience-application"
+    },
+    {
+      "path": "rts-mission-editor-ui-contracts.d.ts",
+      "owner": "presentation"
+    },
+    {
+      "path": "skill-tree-contracts.d.ts",
+      "owner": "economy-progression"
+    }
+  ]
+}

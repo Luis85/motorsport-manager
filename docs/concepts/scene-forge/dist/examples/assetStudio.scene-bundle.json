@@ -1,0 +1,3762 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "assetStudio",
+    "name": "The Asset Workshop",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "floor": {
+        "type": "box",
+        "size": [
+          11,
+          0.2,
+          9
+        ]
+      },
+      "wall": {
+        "type": "box",
+        "size": [
+          11,
+          3.3,
+          0.15
+        ]
+      },
+      "rug": {
+        "type": "box",
+        "size": [
+          3.9,
+          0.025,
+          2.5
+        ]
+      },
+      "plinth": {
+        "type": "box",
+        "size": [
+          1.25,
+          0.15,
+          1.1
+        ]
+      }
+    },
+    "materials": {
+      "floor": {
+        "color": "#8f9997",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "wall": {
+        "color": "#c5bcaa",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "rug": {
+        "color": "#b28660",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "plinth": {
+        "color": "#657b83",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "accent": {
+        "color": "#d4a358",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "floor",
+        "transform": {
+          "position": [
+            0,
+            -0.1,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "floor",
+        "material": "floor"
+      },
+      {
+        "id": "backdrop",
+        "transform": {
+          "position": [
+            0,
+            1.65,
+            -4.3
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "wall",
+        "material": "wall"
+      },
+      {
+        "id": "rug",
+        "transform": {
+          "position": [
+            -2.3,
+            0.015,
+            -0.4
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "rug",
+        "material": "rug"
+      },
+      {
+        "id": "sofa",
+        "transform": {
+          "position": [
+            -2.6,
+            0,
+            -1.1
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "sofa",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "sideTable",
+        "transform": {
+          "position": [
+            -2.2,
+            0,
+            0.6
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "desk",
+        "parameters": {
+          "width": 1.4,
+          "depth": 0.65,
+          "height": 0.45
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "coffee",
+        "transform": {
+          "position": [
+            -2.5,
+            0.5,
+            0.7
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "mug",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "reading",
+        "transform": {
+          "position": [
+            -1.95,
+            0.5,
+            0.62
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "book",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "desk",
+        "transform": {
+          "position": [
+            2.4,
+            0,
+            -2.7
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "desk",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "chair",
+        "transform": {
+          "position": [
+            2.3,
+            0,
+            -1.45
+          ],
+          "rotation": [
+            0,
+            180,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "chair",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "screen",
+        "transform": {
+          "position": [
+            2.35,
+            0.8,
+            -2.7
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "monitor",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "taskLamp",
+        "transform": {
+          "position": [
+            3.18,
+            0.8,
+            -2.66
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "tableLamp",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "bottle",
+        "transform": {
+          "position": [
+            1.65,
+            0.8,
+            -2.6
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "bottle",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "host",
+        "transform": {
+          "position": [
+            -4.3,
+            0,
+            1.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "person",
+        "parameters": {
+          "leftArm": -55,
+          "rightArm": 12,
+          "headTurn": 15
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "astronaut",
+        "transform": {
+          "position": [
+            0.1,
+            0,
+            1.6
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "astronaut",
+        "parameters": {
+          "rightArm": 70,
+          "headTurn": -20
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "assistant",
+        "transform": {
+          "position": [
+            3.2,
+            0,
+            0.65
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "serviceCharacter",
+        "parameters": {
+          "height": 1.5,
+          "leftArm": -30
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "plinths",
+        "transform": {
+          "position": [
+            -3.2,
+            0.075,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 5,
+          "step": [
+            1.6,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "plinth",
+        "material": "plinth"
+      },
+      {
+        "id": "box",
+        "transform": {
+          "position": [
+            -3.2,
+            0.15,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "primitiveBox",
+        "parameters": {
+          "width": 0.65,
+          "height": 0.65,
+          "depth": 0.65
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "sphere",
+        "transform": {
+          "position": [
+            -1.6,
+            0.15,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "primitiveSphere",
+        "parameters": {
+          "radius": 0.35
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "cone",
+        "transform": {
+          "position": [
+            0,
+            0.15,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "primitiveCone",
+        "parameters": {
+          "radius": 0.35,
+          "height": 0.8
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "torus",
+        "transform": {
+          "position": [
+            1.6,
+            0.15,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "primitiveTorus",
+        "parameters": {
+          "radius": 0.3,
+          "tube": 0.09
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "capsule",
+        "transform": {
+          "position": [
+            3.2,
+            0.15,
+            3.5
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "primitiveCapsule",
+        "parameters": {
+          "radius": 0.2,
+          "length": 0.42
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "warmFill",
+        "transform": {
+          "position": [
+            -3,
+            3,
+            2
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "light",
+        "light": "point",
+        "color": "#ffdcad",
+        "intensity": 35,
+        "distance": 14,
+        "angle": 35,
+        "penumbra": 0.25,
+        "castShadow": false
+      },
+      {
+        "id": "coolRim",
+        "transform": {
+          "position": [
+            4,
+            4,
+            -2
+          ],
+          "rotation": [
+            -55,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "light",
+        "light": "spot",
+        "color": "#c0d8ff",
+        "intensity": 80,
+        "distance": 16,
+        "angle": 45,
+        "penumbra": 0.25,
+        "castShadow": false
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "exposure": 1,
+      "toneMapping": "filmic",
+      "ambient": 1.2,
+      "keyIntensity": 2.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "sofa": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "sofa",
+      "category": "Everyday",
+      "description": "A modular sofa with a parametric width.",
+      "name": "Two-seat sofa",
+      "parameters": {
+        "width": {
+          "default": 2.1,
+          "min": 1.4,
+          "max": 3.5,
+          "description": "Sofa width"
+        }
+      },
+      "geometries": {
+        "base": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.22,
+            0.85
+          ]
+        },
+        "seat": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$expr": "div",
+                  "args": [
+                    {
+                      "$param": "width"
+                    },
+                    2
+                  ]
+                },
+                -0.18
+              ]
+            },
+            0.2,
+            0.64
+          ]
+        },
+        "back": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                -0.15
+              ]
+            },
+            0.58,
+            0.19
+          ]
+        },
+        "arm": {
+          "type": "box",
+          "size": [
+            0.18,
+            0.52,
+            0.85
+          ]
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.08,
+            0.19,
+            0.08
+          ]
+        }
+      },
+      "materials": {
+        "fabric": {
+          "color": "#71898e",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "base": {
+          "color": "#465960",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "wood": {
+          "color": "#906b4b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.3,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "base"
+        },
+        {
+          "id": "seats",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.24
+                ]
+              },
+              0.5,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  0.48
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "seat",
+          "material": "fabric"
+        },
+        {
+          "id": "back",
+          "transform": {
+            "position": [
+              0,
+              0.74,
+              -0.36
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "back",
+          "material": "fabric"
+        },
+        {
+          "id": "arms",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.5
+                ]
+              },
+              0.56,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$param": "width"
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "fabric"
+        },
+        {
+          "id": "feet",
+          "transform": {
+            "position": [
+              0,
+              0.095,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.25
+                ]
+              },
+              0,
+              0.65
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "wood"
+        }
+      ]
+    },
+    "desk": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "desk",
+      "category": "Everyday",
+      "description": "A table or desk with editable dimensions.",
+      "name": "Writing desk",
+      "parameters": {
+        "width": {
+          "default": 2,
+          "min": 1,
+          "max": 3.5
+        },
+        "depth": {
+          "default": 0.85,
+          "min": 0.5,
+          "max": 1.5
+        },
+        "height": {
+          "default": 0.75,
+          "min": 0.35,
+          "max": 1.2
+        }
+      },
+      "geometries": {
+        "top": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.09,
+            {
+              "$param": "depth"
+            }
+          ]
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.07,
+            {
+              "$param": "height"
+            },
+            0.07
+          ]
+        }
+      },
+      "materials": {
+        "top": {
+          "color": "#b18559",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "frame": {
+          "color": "#3e525a",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "top",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$param": "height"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "top",
+          "material": "top"
+        },
+        {
+          "id": "legs",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.2
+                ]
+              },
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  -0.2
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "frame"
+        }
+      ]
+    },
+    "mug": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "mug",
+      "category": "Everyday",
+      "description": "A lathed ceramic mug with a handle and opaque coffee surface.",
+      "name": "Coffee mug",
+      "parameters": {},
+      "geometries": {
+        "cup": {
+          "type": "lathe",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.16,
+              0
+            ],
+            [
+              0.18,
+              0.36
+            ],
+            [
+              0.155,
+              0.37
+            ],
+            [
+              0.135,
+              0.06
+            ],
+            [
+              0,
+              0.06
+            ]
+          ],
+          "segments": 32
+        },
+        "handle": {
+          "type": "torus",
+          "radius": 0.12,
+          "tube": 0.03,
+          "segments": 24
+        },
+        "coffee": {
+          "type": "cylinder",
+          "radiusTop": 0.148,
+          "radiusBottom": 0.148,
+          "height": 0.01,
+          "segments": 32
+        }
+      },
+      "materials": {
+        "ceramic": {
+          "color": "#c89470",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "coffee": {
+          "color": "#594332",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "cup",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cup",
+          "material": "ceramic"
+        },
+        {
+          "id": "handle",
+          "transform": {
+            "position": [
+              0.2,
+              0.22,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "handle",
+          "material": "ceramic"
+        },
+        {
+          "id": "coffee",
+          "transform": {
+            "position": [
+              0,
+              0.29,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "coffee",
+          "material": "coffee"
+        }
+      ]
+    },
+    "book": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "book",
+      "category": "Everyday",
+      "description": "A closed book with independent cover and page materials.",
+      "name": "Hardcover book",
+      "parameters": {
+        "width": {
+          "default": 0.24,
+          "min": 0.12,
+          "max": 0.5
+        },
+        "height": {
+          "default": 0.035,
+          "min": 0.015,
+          "max": 0.12
+        },
+        "depth": {
+          "default": 0.32,
+          "min": 0.16,
+          "max": 0.6
+        }
+      },
+      "geometries": {
+        "cover": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            0.008,
+            {
+              "$param": "depth"
+            }
+          ]
+        },
+        "pages": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "width"
+                },
+                -0.012
+              ]
+            },
+            {
+              "$param": "height"
+            },
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "depth"
+                },
+                -0.018
+              ]
+            }
+          ]
+        },
+        "spine": {
+          "type": "box",
+          "size": [
+            0.012,
+            {
+              "$expr": "add",
+              "args": [
+                {
+                  "$param": "height"
+                },
+                0.012
+              ]
+            },
+            {
+              "$param": "depth"
+            }
+          ]
+        }
+      },
+      "materials": {
+        "cover": {
+          "color": "#637f95",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "pages": {
+          "color": "#dfd6bb",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "pages",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      2
+                    ]
+                  },
+                  0.008
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "pages",
+          "material": "pages"
+        },
+        {
+          "id": "covers",
+          "transform": {
+            "position": [
+              0,
+              0.004,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.008
+                ]
+              },
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "cover",
+          "material": "cover"
+        },
+        {
+          "id": "spine",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "width"
+                  },
+                  -0.5
+                ]
+              },
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      2
+                    ]
+                  },
+                  0.008
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "spine",
+          "material": "cover"
+        }
+      ]
+    },
+    "chair": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "chair",
+      "category": "Everyday",
+      "description": "A four-legged chair with separate seat and frame materials.",
+      "name": "Dining chair",
+      "parameters": {},
+      "geometries": {
+        "seat": {
+          "type": "box",
+          "size": [
+            0.48,
+            0.08,
+            0.48
+          ]
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.055,
+            0.46,
+            0.055
+          ]
+        },
+        "backPost": {
+          "type": "box",
+          "size": [
+            0.05,
+            0.5,
+            0.05
+          ]
+        },
+        "back": {
+          "type": "box",
+          "size": [
+            0.47,
+            0.3,
+            0.065
+          ]
+        }
+      },
+      "materials": {
+        "wood": {
+          "color": "#b58a5d",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "seat": {
+          "color": "#667f7e",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "seat",
+          "transform": {
+            "position": [
+              0,
+              0.48,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "seat",
+          "material": "seat"
+        },
+        {
+          "id": "legs",
+          "transform": {
+            "position": [
+              0,
+              0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              0.37,
+              0,
+              0.37
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "wood"
+        },
+        {
+          "id": "backPosts",
+          "transform": {
+            "position": [
+              -0.195,
+              0.7,
+              -0.2
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              0.39,
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "backPost",
+          "material": "wood"
+        },
+        {
+          "id": "back",
+          "transform": {
+            "position": [
+              0,
+              0.8,
+              -0.2
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "back",
+          "material": "wood"
+        }
+      ]
+    },
+    "monitor": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "monitor",
+      "category": "Everyday",
+      "description": "An unlit screen shader and metallic stand, portable through glTF.",
+      "name": "Desktop monitor",
+      "parameters": {},
+      "geometries": {
+        "screen": {
+          "type": "box",
+          "size": [
+            0.8,
+            0.46,
+            0.045
+          ]
+        },
+        "case": {
+          "type": "box",
+          "size": [
+            0.85,
+            0.51,
+            0.08
+          ]
+        },
+        "stem": {
+          "type": "box",
+          "size": [
+            0.08,
+            0.23,
+            0.08
+          ]
+        },
+        "base": {
+          "type": "box",
+          "size": [
+            0.38,
+            0.035,
+            0.24
+          ]
+        }
+      },
+      "materials": {
+        "case": {
+          "color": "#34434b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "screen": {
+          "color": "#6398a5",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false,
+          "shading": "unlit"
+        },
+        "stand": {
+          "color": "#7b8b91",
+          "metalness": 0.7,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.0175,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "stand"
+        },
+        {
+          "id": "stem",
+          "transform": {
+            "position": [
+              0,
+              0.14,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stem",
+          "material": "stand"
+        },
+        {
+          "id": "case",
+          "transform": {
+            "position": [
+              0,
+              0.47,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "case",
+          "material": "case"
+        },
+        {
+          "id": "screen",
+          "transform": {
+            "position": [
+              0,
+              0.47,
+              0.045
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "screen",
+          "material": "screen"
+        }
+      ]
+    },
+    "tableLamp": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "tableLamp",
+      "category": "Everyday",
+      "description": "A table lamp with an authored warm point light.",
+      "name": "Table lamp",
+      "parameters": {},
+      "geometries": {
+        "base": {
+          "type": "cylinder",
+          "radiusTop": 0.18,
+          "radiusBottom": 0.18,
+          "height": 0.04,
+          "segments": 24
+        },
+        "stem": {
+          "type": "cylinder",
+          "radiusTop": 0.018,
+          "radiusBottom": 0.018,
+          "height": 0.5,
+          "segments": 12
+        },
+        "shade": {
+          "type": "cylinder",
+          "radiusTop": 0.12,
+          "radiusBottom": 0.24,
+          "height": 0.25,
+          "segments": 24
+        },
+        "bulb": {
+          "type": "sphere",
+          "radius": 0.055,
+          "segments": 16
+        }
+      },
+      "materials": {
+        "metal": {
+          "color": "#bb965e",
+          "metalness": 0.5,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "shade": {
+          "color": "#dcd2b6",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "bulb": {
+          "color": "#ffe4af",
+          "metalness": 0,
+          "roughness": 0.55,
+          "emissive": "#ffd27a",
+          "emissiveIntensity": 1.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [
+              0,
+              0.02,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "metal"
+        },
+        {
+          "id": "stem",
+          "transform": {
+            "position": [
+              0,
+              0.29,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stem",
+          "material": "metal"
+        },
+        {
+          "id": "shade",
+          "transform": {
+            "position": [
+              0,
+              0.66,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shade",
+          "material": "shade"
+        },
+        {
+          "id": "bulb",
+          "transform": {
+            "position": [
+              0,
+              0.53,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "bulb",
+          "material": "bulb"
+        },
+        {
+          "id": "bulbLight",
+          "transform": {
+            "position": [
+              0,
+              0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "light",
+          "light": "point",
+          "color": "#ffe2aa",
+          "intensity": 2.5,
+          "distance": 2,
+          "angle": 35,
+          "penumbra": 0.25,
+          "castShadow": false
+        }
+      ]
+    },
+    "bottle": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "bottle",
+      "category": "Everyday",
+      "description": "An opaque metal bottle with editable height.",
+      "name": "Reusable bottle",
+      "parameters": {
+        "height": {
+          "default": 0.65,
+          "min": 0.25,
+          "max": 1.2,
+          "description": "Bottle height"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "lathe",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              0
+            ],
+            [
+              0.13,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.08
+                ]
+              }
+            ],
+            [
+              0.13,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.7
+                ]
+              }
+            ],
+            [
+              0.07,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.82
+                ]
+              }
+            ],
+            [
+              0.065,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.94
+                ]
+              }
+            ],
+            [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.94
+                ]
+              }
+            ]
+          ],
+          "segments": 24
+        },
+        "cap": {
+          "type": "cylinder",
+          "radiusTop": 0.071,
+          "radiusBottom": 0.071,
+          "height": {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.09
+            ]
+          },
+          "segments": 24
+        }
+      },
+      "materials": {
+        "body": {
+          "color": "#4d8a84",
+          "metalness": 0.35,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "cap": {
+          "color": "#374b54",
+          "metalness": 0.5,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bottle",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "body"
+        },
+        {
+          "id": "cap",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.955
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cap",
+          "material": "cap"
+        }
+      ]
+    },
+    "person": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "person",
+      "category": "Characters",
+      "description": "A static, poseable group hierarchy. Change dimensions, joint angles and materials through the recipe; no skeleton or animation is included.",
+      "name": "Everyday person",
+      "parameters": {
+        "height": {
+          "default": 1.75,
+          "min": 1,
+          "max": 2.5,
+          "description": "Overall stature"
+        },
+        "leftArm": {
+          "default": 8,
+          "min": -160,
+          "max": 160,
+          "description": "Left shoulder angle in degrees"
+        },
+        "rightArm": {
+          "default": -8,
+          "min": -160,
+          "max": 160,
+          "description": "Right shoulder angle in degrees"
+        },
+        "stride": {
+          "default": 0,
+          "min": -35,
+          "max": 35,
+          "description": "Leg pose in degrees"
+        },
+        "headTurn": {
+          "default": 0,
+          "min": -80,
+          "max": 80,
+          "description": "Head yaw in degrees"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            0.46,
+            0.6,
+            0.26
+          ]
+        },
+        "hip": {
+          "type": "box",
+          "size": [
+            0.41,
+            0.18,
+            0.25
+          ]
+        },
+        "head": {
+          "type": "sphere",
+          "radius": 0.16,
+          "segments": 16
+        },
+        "limb": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.5,
+            0.14
+          ]
+        },
+        "arm": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.46,
+            0.13
+          ]
+        },
+        "hand": {
+          "type": "sphere",
+          "radius": 0.073,
+          "segments": 12
+        },
+        "shoe": {
+          "type": "box",
+          "size": [
+            0.17,
+            0.12,
+            0.28
+          ]
+        },
+        "eye": {
+          "type": "sphere",
+          "radius": 0.022,
+          "segments": 8
+        },
+        "visor": {
+          "type": "box",
+          "size": [
+            0.245,
+            0.105,
+            0.045
+          ]
+        },
+        "pack": {
+          "type": "box",
+          "size": [
+            0.3,
+            0.4,
+            0.14
+          ]
+        },
+        "badge": {
+          "type": "box",
+          "size": [
+            0.09,
+            0.12,
+            0.015
+          ]
+        }
+      },
+      "materials": {
+        "outfit": {
+          "color": "#75969b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "skin": {
+          "color": "#cf9c7b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#374957",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "accent": {
+          "color": "#a56d4f",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bodyRoot",
+          "transform": {
+            "scale": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "torso",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "outfit"
+        },
+        {
+          "id": "hip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              0.72,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hip",
+          "material": "dark"
+        },
+        {
+          "id": "badge",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.1,
+              1.18,
+              0.14
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "badge",
+          "material": "accent"
+        },
+        {
+          "id": "headPivot",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.57,
+              0
+            ],
+            "rotation": [
+              0,
+              {
+                "$param": "headTurn"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "head",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "head",
+          "material": "skin"
+        },
+        {
+          "id": "leftEye",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              -0.06,
+              0.02,
+              0.143
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "dark"
+        },
+        {
+          "id": "rightEye",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0.06,
+              0.02,
+              0.143
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "leftArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "rightArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftArm",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "leftHand",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "rightArm",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "rightHand",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "leftHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$param": "stride"
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "stride"
+                  },
+                  -1
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftLeg",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "rightLeg",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoe",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        },
+        {
+          "id": "rightShoe",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        }
+      ]
+    },
+    "astronaut": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "astronaut",
+      "category": "Characters",
+      "description": "A static, poseable group hierarchy. Change dimensions, joint angles and materials through the recipe; no skeleton or animation is included.",
+      "name": "Astronaut",
+      "parameters": {
+        "height": {
+          "default": 1.75,
+          "min": 1,
+          "max": 2.5,
+          "description": "Overall stature"
+        },
+        "leftArm": {
+          "default": 8,
+          "min": -160,
+          "max": 160,
+          "description": "Left shoulder angle in degrees"
+        },
+        "rightArm": {
+          "default": -8,
+          "min": -160,
+          "max": 160,
+          "description": "Right shoulder angle in degrees"
+        },
+        "stride": {
+          "default": 0,
+          "min": -35,
+          "max": 35,
+          "description": "Leg pose in degrees"
+        },
+        "headTurn": {
+          "default": 0,
+          "min": -80,
+          "max": 80,
+          "description": "Head yaw in degrees"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            0.46,
+            0.6,
+            0.26
+          ]
+        },
+        "hip": {
+          "type": "box",
+          "size": [
+            0.41,
+            0.18,
+            0.25
+          ]
+        },
+        "head": {
+          "type": "sphere",
+          "radius": 0.16,
+          "segments": 16
+        },
+        "limb": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.5,
+            0.14
+          ]
+        },
+        "arm": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.46,
+            0.13
+          ]
+        },
+        "hand": {
+          "type": "sphere",
+          "radius": 0.073,
+          "segments": 12
+        },
+        "shoe": {
+          "type": "box",
+          "size": [
+            0.17,
+            0.12,
+            0.28
+          ]
+        },
+        "eye": {
+          "type": "sphere",
+          "radius": 0.022,
+          "segments": 8
+        },
+        "visor": {
+          "type": "box",
+          "size": [
+            0.245,
+            0.105,
+            0.045
+          ]
+        },
+        "pack": {
+          "type": "box",
+          "size": [
+            0.3,
+            0.4,
+            0.14
+          ]
+        },
+        "badge": {
+          "type": "box",
+          "size": [
+            0.09,
+            0.12,
+            0.015
+          ]
+        }
+      },
+      "materials": {
+        "outfit": {
+          "color": "#ddd8c4",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "skin": {
+          "color": "#dbd7c6",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#304854",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "accent": {
+          "color": "#c4874c",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bodyRoot",
+          "transform": {
+            "scale": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "torso",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "outfit"
+        },
+        {
+          "id": "hip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              0.72,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hip",
+          "material": "dark"
+        },
+        {
+          "id": "badge",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.1,
+              1.18,
+              0.14
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "badge",
+          "material": "accent"
+        },
+        {
+          "id": "headPivot",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.57,
+              0
+            ],
+            "rotation": [
+              0,
+              {
+                "$param": "headTurn"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "head",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "head",
+          "material": "outfit"
+        },
+        {
+          "id": "visor",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0.015,
+              0.153
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "visor",
+          "material": "dark"
+        },
+        {
+          "id": "backpack",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.12,
+              -0.19
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "pack",
+          "material": "accent"
+        },
+        {
+          "id": "leftShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "leftArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "rightArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftArm",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "leftHand",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "rightArm",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "rightHand",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "leftHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$param": "stride"
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "stride"
+                  },
+                  -1
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftLeg",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "rightLeg",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoe",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        },
+        {
+          "id": "rightShoe",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        }
+      ]
+    },
+    "serviceCharacter": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "serviceCharacter",
+      "category": "Characters",
+      "description": "A static, poseable group hierarchy. Change dimensions, joint angles and materials through the recipe; no skeleton or animation is included.",
+      "name": "Service robot character",
+      "parameters": {
+        "height": {
+          "default": 1.75,
+          "min": 1,
+          "max": 2.5,
+          "description": "Overall stature"
+        },
+        "leftArm": {
+          "default": 8,
+          "min": -160,
+          "max": 160,
+          "description": "Left shoulder angle in degrees"
+        },
+        "rightArm": {
+          "default": -8,
+          "min": -160,
+          "max": 160,
+          "description": "Right shoulder angle in degrees"
+        },
+        "stride": {
+          "default": 0,
+          "min": -35,
+          "max": 35,
+          "description": "Leg pose in degrees"
+        },
+        "headTurn": {
+          "default": 0,
+          "min": -80,
+          "max": 80,
+          "description": "Head yaw in degrees"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            0.46,
+            0.6,
+            0.26
+          ]
+        },
+        "hip": {
+          "type": "box",
+          "size": [
+            0.41,
+            0.18,
+            0.25
+          ]
+        },
+        "head": {
+          "type": "sphere",
+          "radius": 0.16,
+          "segments": 16
+        },
+        "limb": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.5,
+            0.14
+          ]
+        },
+        "arm": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.46,
+            0.13
+          ]
+        },
+        "hand": {
+          "type": "sphere",
+          "radius": 0.073,
+          "segments": 12
+        },
+        "shoe": {
+          "type": "box",
+          "size": [
+            0.17,
+            0.12,
+            0.28
+          ]
+        },
+        "eye": {
+          "type": "sphere",
+          "radius": 0.022,
+          "segments": 8
+        },
+        "visor": {
+          "type": "box",
+          "size": [
+            0.245,
+            0.105,
+            0.045
+          ]
+        },
+        "pack": {
+          "type": "box",
+          "size": [
+            0.3,
+            0.4,
+            0.14
+          ]
+        },
+        "badge": {
+          "type": "box",
+          "size": [
+            0.09,
+            0.12,
+            0.015
+          ]
+        }
+      },
+      "materials": {
+        "outfit": {
+          "color": "#a0b7b8",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "skin": {
+          "color": "#84999c",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#344b56",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "accent": {
+          "color": "#dbaf59",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bodyRoot",
+          "transform": {
+            "scale": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "torso",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "outfit"
+        },
+        {
+          "id": "hip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              0.72,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hip",
+          "material": "dark"
+        },
+        {
+          "id": "badge",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.1,
+              1.18,
+              0.14
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "badge",
+          "material": "accent"
+        },
+        {
+          "id": "headPivot",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.57,
+              0
+            ],
+            "rotation": [
+              0,
+              {
+                "$param": "headTurn"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "head",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "head",
+          "material": "outfit"
+        },
+        {
+          "id": "visor",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0.015,
+              0.153
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "visor",
+          "material": "dark"
+        },
+        {
+          "id": "backpack",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.12,
+              -0.19
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "pack",
+          "material": "accent"
+        },
+        {
+          "id": "leftShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "leftArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "rightArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftArm",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "leftHand",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "rightArm",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "rightHand",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "leftHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$param": "stride"
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "stride"
+                  },
+                  -1
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftLeg",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "rightLeg",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoe",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        },
+        {
+          "id": "rightShoe",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        }
+      ]
+    },
+    "primitiveBox": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "primitiveBox",
+      "category": "Primitives",
+      "description": "A box with independent dimensions.",
+      "name": "Box",
+      "parameters": {
+        "width": {
+          "default": 1,
+          "min": 0.05,
+          "max": 20,
+          "description": "Width"
+        },
+        "height": {
+          "default": 1,
+          "min": 0.05,
+          "max": 20,
+          "description": "Height"
+        },
+        "depth": {
+          "default": 1,
+          "min": 0.05,
+          "max": 20,
+          "description": "Depth"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "width"
+            },
+            {
+              "$param": "height"
+            },
+            {
+              "$param": "depth"
+            }
+          ]
+        }
+      },
+      "materials": {
+        "surface": {
+          "color": "#73a3b0",
+          "metalness": 0,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "surface"
+        }
+      ]
+    },
+    "primitiveSphere": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "primitiveSphere",
+      "category": "Primitives",
+      "description": "A smooth sphere centered one radius above its local origin.",
+      "name": "Sphere",
+      "parameters": {
+        "radius": {
+          "default": 0.5,
+          "min": 0.025,
+          "max": 10,
+          "description": "Radius"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "sphere",
+          "radius": {
+            "$param": "radius"
+          },
+          "segments": 24
+        }
+      },
+      "materials": {
+        "surface": {
+          "color": "#73a3b0",
+          "metalness": 0,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$param": "radius"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "surface"
+        }
+      ]
+    },
+    "primitiveCone": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "primitiveCone",
+      "category": "Primitives",
+      "description": "A cone with editable radius and height.",
+      "name": "Cone",
+      "parameters": {
+        "radius": {
+          "default": 0.5,
+          "min": 0.025,
+          "max": 10,
+          "description": "Base radius"
+        },
+        "height": {
+          "default": 1,
+          "min": 0.05,
+          "max": 20,
+          "description": "Height"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "cone",
+          "radius": {
+            "$param": "radius"
+          },
+          "height": {
+            "$param": "height"
+          },
+          "segments": 32
+        }
+      },
+      "materials": {
+        "surface": {
+          "color": "#73a3b0",
+          "metalness": 0,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "surface"
+        }
+      ]
+    },
+    "primitiveTorus": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "primitiveTorus",
+      "category": "Primitives",
+      "description": "A vertical ring in the XY plane.",
+      "name": "Torus",
+      "parameters": {
+        "radius": {
+          "default": 0.5,
+          "min": 0.1,
+          "max": 8,
+          "description": "Major radius"
+        },
+        "tube": {
+          "default": 0.12,
+          "min": 0.02,
+          "max": 1,
+          "description": "Tube radius"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "torus",
+          "radius": {
+            "$param": "radius"
+          },
+          "tube": {
+            "$param": "tube"
+          },
+          "segments": 32
+        }
+      },
+      "materials": {
+        "surface": {
+          "color": "#73a3b0",
+          "metalness": 0,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  {
+                    "$param": "tube"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "surface"
+        }
+      ]
+    },
+    "primitiveCapsule": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "primitiveCapsule",
+      "category": "Primitives",
+      "description": "A Y-aligned capsule for blocking out forms.",
+      "name": "Capsule",
+      "parameters": {
+        "radius": {
+          "default": 0.3,
+          "min": 0.03,
+          "max": 5,
+          "description": "Radius"
+        },
+        "length": {
+          "default": 0.8,
+          "min": 0,
+          "max": 12,
+          "description": "Straight section length"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "capsule",
+          "radius": {
+            "$param": "radius"
+          },
+          "length": {
+            "$param": "length"
+          },
+          "segments": 24
+        }
+      },
+      "materials": {
+        "surface": {
+          "color": "#73a3b0",
+          "metalness": 0,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "length"
+                      },
+                      2
+                    ]
+                  },
+                  {
+                    "$param": "radius"
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "surface"
+        }
+      ]
+    }
+  }
+}

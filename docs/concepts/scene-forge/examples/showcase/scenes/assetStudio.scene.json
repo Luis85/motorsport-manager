@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "assetStudio",
+  "name": "The Asset Workshop",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {
+    "floor": {
+      "type": "box",
+      "size": [
+        11,
+        0.2,
+        9
+      ]
+    },
+    "wall": {
+      "type": "box",
+      "size": [
+        11,
+        3.3,
+        0.15
+      ]
+    },
+    "rug": {
+      "type": "box",
+      "size": [
+        3.9,
+        0.025,
+        2.5
+      ]
+    },
+    "plinth": {
+      "type": "box",
+      "size": [
+        1.25,
+        0.15,
+        1.1
+      ]
+    }
+  },
+  "materials": {
+    "floor": {
+      "color": "#8f9997",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "wall": {
+      "color": "#c5bcaa",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "rug": {
+      "color": "#b28660",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "plinth": {
+      "color": "#657b83",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "accent": {
+      "color": "#d4a358",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "floor",
+      "transform": {
+        "position": [
+          0,
+          -0.1,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "floor",
+      "material": "floor"
+    },
+    {
+      "id": "backdrop",
+      "transform": {
+        "position": [
+          0,
+          1.65,
+          -4.3
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wall",
+      "material": "wall"
+    },
+    {
+      "id": "rug",
+      "transform": {
+        "position": [
+          -2.3,
+          0.015,
+          -0.4
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rug",
+      "material": "rug"
+    },
+    {
+      "id": "sofa",
+      "transform": {
+        "position": [
+          -2.6,
+          0,
+          -1.1
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "sofa",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "sideTable",
+      "transform": {
+        "position": [
+          -2.2,
+          0,
+          0.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "desk",
+      "parameters": {
+        "width": 1.4,
+        "depth": 0.65,
+        "height": 0.45
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "coffee",
+      "transform": {
+        "position": [
+          -2.5,
+          0.5,
+          0.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "mug",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "reading",
+      "transform": {
+        "position": [
+          -1.95,
+          0.5,
+          0.62
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "book",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "desk",
+      "transform": {
+        "position": [
+          2.4,
+          0,
+          -2.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "desk",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "chair",
+      "transform": {
+        "position": [
+          2.3,
+          0,
+          -1.45
+        ],
+        "rotation": [
+          0,
+          180,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "chair",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "screen",
+      "transform": {
+        "position": [
+          2.35,
+          0.8,
+          -2.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "monitor",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "taskLamp",
+      "transform": {
+        "position": [
+          3.18,
+          0.8,
+          -2.66
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "tableLamp",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bottle",
+      "transform": {
+        "position": [
+          1.65,
+          0.8,
+          -2.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "bottle",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "host",
+      "transform": {
+        "position": [
+          -4.3,
+          0,
+          1.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "person",
+      "parameters": {
+        "leftArm": -55,
+        "rightArm": 12,
+        "headTurn": 15
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "astronaut",
+      "transform": {
+        "position": [
+          0.1,
+          0,
+          1.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "astronaut",
+      "parameters": {
+        "rightArm": 70,
+        "headTurn": -20
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "assistant",
+      "transform": {
+        "position": [
+          3.2,
+          0,
+          0.65
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "serviceCharacter",
+      "parameters": {
+        "height": 1.5,
+        "leftArm": -30
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "plinths",
+      "transform": {
+        "position": [
+          -3.2,
+          0.075,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 5,
+        "step": [
+          1.6,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "plinth",
+      "material": "plinth"
+    },
+    {
+      "id": "box",
+      "transform": {
+        "position": [
+          -3.2,
+          0.15,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "primitiveBox",
+      "parameters": {
+        "width": 0.65,
+        "height": 0.65,
+        "depth": 0.65
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "sphere",
+      "transform": {
+        "position": [
+          -1.6,
+          0.15,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "primitiveSphere",
+      "parameters": {
+        "radius": 0.35
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "cone",
+      "transform": {
+        "position": [
+          0,
+          0.15,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "primitiveCone",
+      "parameters": {
+        "radius": 0.35,
+        "height": 0.8
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "torus",
+      "transform": {
+        "position": [
+          1.6,
+          0.15,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "primitiveTorus",
+      "parameters": {
+        "radius": 0.3,
+        "tube": 0.09
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "capsule",
+      "transform": {
+        "position": [
+          3.2,
+          0.15,
+          3.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "primitiveCapsule",
+      "parameters": {
+        "radius": 0.2,
+        "length": 0.42
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "warmFill",
+      "transform": {
+        "position": [
+          -3,
+          3,
+          2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "light",
+      "light": "point",
+      "color": "#ffdcad",
+      "intensity": 35,
+      "distance": 14,
+      "angle": 35,
+      "penumbra": 0.25,
+      "castShadow": false
+    },
+    {
+      "id": "coolRim",
+      "transform": {
+        "position": [
+          4,
+          4,
+          -2
+        ],
+        "rotation": [
+          -55,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "light",
+      "light": "spot",
+      "color": "#c0d8ff",
+      "intensity": 80,
+      "distance": 16,
+      "angle": 45,
+      "penumbra": 0.25,
+      "castShadow": false
+    }
+  ],
+  "environment": {
+    "background": "#171d25",
+    "exposure": 1,
+    "toneMapping": "filmic",
+    "ambient": 1.2,
+    "keyIntensity": 2.5,
+    "keyPosition": [
+      5,
+      10,
+      7
+    ]
+  }
+}

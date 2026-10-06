@@ -1,0 +1,41 @@
+{
+  "operations": [
+    {
+      "op": "putMaterial",
+      "id": "enamel",
+      "material": {
+        "color": "#e99045",
+        "metalness": 0.2,
+        "roughness": 0.4
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "bodyGeo",
+      "geometry": {
+        "type": "box",
+        "size": [
+          2,
+          1,
+          3
+        ]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "type": "mesh",
+        "id": "body",
+        "geometry": "bodyGeo",
+        "material": "enamel",
+        "transform": {
+          "position": [
+            0,
+            0.5,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}

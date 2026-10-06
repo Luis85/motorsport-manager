@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "landingPad",
+  "name": "Landing pad",
+  "parameters": {},
+  "geometries": {
+    "pad": {
+      "type": "cylinder",
+      "radiusTop": 2.2,
+      "radiusBottom": 2.2,
+      "height": 0.055,
+      "segments": 48
+    },
+    "marker": {
+      "type": "box",
+      "size": [
+        0.14,
+        0.04,
+        0.45
+      ]
+    }
+  },
+  "materials": {
+    "ivory": {
+      "color": "#d8dfd6",
+      "metalness": 0.1,
+      "roughness": 0.65,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "orange": {
+      "color": "#e89550",
+      "metalness": 0.1,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "servicePad",
+      "transform": {
+        "position": [
+          0,
+          0.048,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "pad",
+      "material": "ivory"
+    },
+    {
+      "id": "padMarks",
+      "transform": {
+        "position": [
+          0,
+          0.083,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "radial",
+        "count": 16,
+        "radius": 2.02,
+        "startAngle": 0,
+        "sweep": 360,
+        "orient": true
+      },
+      "type": "mesh",
+      "geometry": "marker",
+      "material": "orange"
+    }
+  ]
+}

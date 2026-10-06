@@ -1,0 +1,561 @@
+name: Littlewild ECS verification
+on:
+  pull_request:
+    paths:
+      - 'docs/concepts/littlewild/**'
+      - '.github/workflows/littlewild-ecs-rebuild.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: littlewild-ecs-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    # The expanded registered gate retains its per-suite limits and needs a full job budget.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+      - name: Clear stale Littlewild verification evidence
+        working-directory: docs/concepts/littlewild
+        run: |
+          rm -rf verification/v15 .generated
+          rm -f littlewild.html
+      - name: Install TypeScript verification toolchain
+        working-directory: docs/concepts/littlewild
+        run: npm ci --no-audit --no-fund
+      - name: Type-check strict architecture kernel
+        working-directory: docs/concepts/littlewild
+        run: npm run typecheck
+      - name: Verify architecture boundaries
+        working-directory: docs/concepts/littlewild
+        run: npm run architecture
+      - name: Install Chromium
+        working-directory: docs/concepts/littlewild
+        run: npx playwright install --with-deps chromium
+      - name: Rebuild and verify all Littlewild contracts
+        id: complete_gate
+        working-directory: docs/concepts/littlewild
+        env:
+          LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
+        run: npm run verify
+      - name: Verify Storytelling without click diagnostics (additional 24 checks)
+        id: storytelling_diagnostics_off
+        if: ${{ success() && steps.complete_gate.outcome == 'success' }}
+        working-directory: docs/concepts/littlewild
+        env:
+          LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
+          # Reviewed expectations; acceptance still requires the actual complete gate.
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1739'
+          LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
+            [
+              {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
+              {"suite":"animations","name":"Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
+              {"suite":"renderer-storytelling","name":"Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
+              {"suite":"renderer-storytelling","name":"Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"},
+              {"suite":"storytelling-browser","name":"Synthetic queued preview readiness publishes admitted transport before another application frame"},
+              {"suite":"wildlands-runtime","name":"Discovery describes every transported operation and SDK allowlist without ticking"},
+              {"suite":"wildlands-runtime","name":"Detached native view includes canonical physical world, assets and scenario profile"},
+              {"suite":"wildlands-runtime","name":"Bridge commands and exact fixed steps produce the same authoritative SDK continuation"},
+              {"suite":"wildlands-runtime","name":"Invalid clock and command input preserve the full RNG and production story"},
+              {"suite":"wildlands-runtime","name":"Pause, inspection and authoring queries never advance simulation time"},
+              {"suite":"wildlands-runtime","name":"Failed scenario/story replacements preserve an existing complete continuation"},
+              {"suite":"wildlands-runtime","name":"Portable story restore retains exact state and permits deterministic continuation"},
+              {"suite":"wildlands-runtime","name":"Scenario switching uses canonical built-in ownership and rejects stale reflection"},
+              {"suite":"wildlands-runtime","name":"Reviewed scene transitions retain canonical visited checkpoint ownership"},
+              {"suite":"wildlands-runtime","name":"Retained scene drafts edit, undo and export without mutating a running world"},
+              {"suite":"wildlands-runtime","name":"Asynchronous SDK validation is awaited and returns its detached result"},
+              {"suite":"wildlands-runtime","name":"Complete source export can roundtrip through the same bounded protocol validator"},
+              {"suite":"wildlands-runtime","name":"Graph-less prototype captures and cinematic sampling preserve all authored scenes"},
+              {"suite":"wildlands-runtime","name":"Malformed and duplicate-key envelopes fail without accessors or mutation"},
+              {"suite":"wildlands-runtime","name":"Project startup applies the same strict admission as web and CLI"},
+              {"suite":"wildlands-runtime","name":"JSON-lines process correlates UTF8 requests, recovers malformed lines and closes cleanly"},
+              {"suite":"wildlands-runtime","name":"Oversized line is drained with bounded memory and next request still succeeds"},
+              {"suite":"wildlands-runtime","name":"Pack/project startup files preserve authored scene and reject duplicate JSON keys"},
+              {"suite":"wildlands-runtime","name":"Shutdown and EOF release owned session so a fresh SDK session can open"},
+              {"suite":"wildlands-project","name":"Default project is a complete detached Littlewild prototype"},
+              {"suite":"wildlands-project","name":"Versioned discovery describes useful portable and bounded agent operations"},
+              {"suite":"wildlands-project","name":"Project fields, target, identity and scene selection are validated strictly"},
+              {"suite":"wildlands-project","name":"Authoritative scenario validation rejects semantic world corruption"},
+              {"suite":"wildlands-project","name":"Scenario switching preserves project identity and supports portable custom packs"},
+              {"suite":"wildlands-project","name":"Deterministic bounded recipes capture changed state without losing authored scenes"},
+              {"suite":"wildlands-project","name":"Paused steps report requested clock work independently from actual advancement"},
+              {"suite":"wildlands-project","name":"Capture preserves every scene in all three built-in prototypes"},
+              {"suite":"wildlands-project","name":"Shared capture preserves a third authored scene and timeline metadata"},
+              {"suite":"wildlands-project","name":"Recipe count, clock bounds and reflection are rejected before opening sessions"},
+              {"suite":"wildlands-project","name":"Rejected native commands release their session and preserve input project"},
+              {"suite":"wildlands-project","name":"Scene authoring recipes use native revisions and validators"},
+              {"suite":"wildlands-cli","name":"Cold help and discovery are structured, versioned and machine readable"},
+              {"suite":"wildlands-cli","name":"Create validates a complete default portable project and inspect never ticks"},
+              {"suite":"wildlands-cli","name":"Scenario switching and custom pack authoring stay portable"},
+              {"suite":"wildlands-cli","name":"Explicit recipes advance the real simulation and publish a complete output"},
+              {"suite":"wildlands-cli","name":"Malformed arguments and bounded recipe failures retain prior published output"},
+              {"suite":"wildlands-cli","name":"Invalid semantic project returns exit 1 without touching files"},
+              {"suite":"wildlands-cli","name":"Input aliases and symlink aliases are rejected without overwriting authority"},
+              {"suite":"wildlands-cli","name":"Bootstrap errors remain one structured diagnostic while help remains available"},
+              {"suite":"wildlands-acceptance","name":"A new terminal project preloads Littlewild and discovery describes its actual commands"},
+              {"suite":"wildlands-acceptance","name":"Every discovered built-in scenario compiles complete resources with verified manifest hashes"},
+              {"suite":"wildlands-acceptance","name":"Repeated bounded recipes produce the same game state without changing the source project"},
+              {"suite":"wildlands-acceptance","name":"Scene editor recipes change authored data through the same portable validation boundary"},
+              {"suite":"wildlands-acceptance","name":"Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output"},
+              {"suite":"wildlands-acceptance","name":"Rejected editor and clock recipes cannot publish partial edits"},
+              {"suite":"wildlands-acceptance","name":"CLI refuses input aliases and compiled directory replacement"},
+              {"suite":"wildlands-browser","name":"1440px default showcase is a portable Littlewild project"},
+              {"suite":"wildlands-browser","name":"1440px scenario review preserves the game until explicit launch"},
+              {"suite":"wildlands-browser","name":"1440px project rename and malformed import retain the current scenario"},
+              {"suite":"wildlands-browser","name":"1440px portable project import requires review and restores project identity"},
+              {"suite":"wildlands-browser","name":"1440px export downloads a Godot ZIP and preserves the project"},
+              {"suite":"wildlands-browser","name":"1440px workspace has reachable controls without horizontal overflow"},
+              {"suite":"wildlands-browser","name":"1440px programmatic same-ID scenario replacement preserves its complete authoring closure"},
+              {"suite":"wildlands-browser","name":"390px default showcase is a portable Littlewild project"},
+              {"suite":"wildlands-browser","name":"390px scenario review preserves the game until explicit launch"},
+              {"suite":"wildlands-browser","name":"390px project rename and malformed import retain the current scenario"},
+              {"suite":"wildlands-browser","name":"390px portable project import requires review and restores project identity"},
+              {"suite":"wildlands-browser","name":"390px export downloads a Godot ZIP and preserves the project"},
+              {"suite":"wildlands-browser","name":"390px workspace has reachable controls without horizontal overflow"},
+              {"suite":"wildlands-browser","name":"390px programmatic same-ID scenario replacement preserves its complete authoring closure"},
+              {"suite":"wildlands-browser","name":"Wildlands workspace performs no external requests or script/console errors"},
+              {"suite":"wildlands-browser","name":"1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
+              {"suite":"wildlands-browser","name":"390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
+              {"suite":"scene-navigation","name":"Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation"},
+              {"suite":"wildlands-project","name":"Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"},
+              {"suite":"rts-catalog","name":"The exported default RTS catalog and editable clone satisfy the shipped authoring JSON schema"},
+              {"suite":"rts-catalog","name":"RTS catalog publishes recursively frozen behavior-free content and detached editable copies"},
+              {"suite":"rts-catalog","name":"Imported RTS data rejects executable values, unexpected fields and invalid identities"},
+              {"suite":"rts-catalog","name":"Imported getters, cycles, symbols and sparse arrays reject without running behavior"},
+              {"suite":"rts-catalog","name":"Catalog validation rejects duplicate IDs, unknown costs and broken references before publication"},
+              {"suite":"rts-catalog","name":"RTS numeric rules reject negative costs, invalid movement, non-finite stats and out-of-map spawns"},
+              {"suite":"rts-catalog","name":"Mission admission rejects out-of-map footprints, incompatible movement terrain and overlapping structures"},
+              {"suite":"rts-economy","name":"Purchased item pays authored costs once and adds authored charges to the owned unit"},
+              {"suite":"rts-economy","name":"Foreign, unknown and unaffordable item purchases leave the whole checkpoint unchanged"},
+              {"suite":"rts-economy","name":"Enabled AI uses its preferred authored unit through the same paid production queue"},
+              {"suite":"rts-economy","name":"Entity capacity blocks construction before spending and holds completed unit queues before spawning"},
+              {"suite":"rts-production","name":"Production pays once, reserves population, refunds cancellation exactly, and rejects repeated cancellation"},
+              {"suite":"rts-production","name":"Unaffordable, foreign, invalid and missing production requests preserve all resources and queue entries"},
+              {"suite":"rts-production","name":"Fixed ECS production steps publish one unit once and never charge resources twice"},
+              {"suite":"rts-production","name":"Pending research is exclusive, prerequisites gate acceptance, and completion preserves payment"},
+              {"suite":"rts-runtime","name":"RTS state lives in ECS components and queries/checkpoints are detached without advancing time"},
+              {"suite":"rts-runtime","name":"Commands reject hostile inputs without invoking accessors or mutating the ECS checkpoint"},
+              {"suite":"rts-runtime","name":"Fixed-step movement and checkpoint restoration produce identical deterministic continuation"},
+              {"suite":"rts-runtime","name":"The actual showcase catalog restores its initial and evolving ECS checkpoint without losing state"},
+              {"suite":"rts-runtime","name":"Finite gathering conserves deposit plus cargo plus bank, and cargo arrives through real storage routes"},
+              {"suite":"rts-runtime","name":"Construction starts from a worker order, blocks terrain, completes and increases population capacity"},
+              {"suite":"rts-runtime","name":"Combat consumes cooldown, applies bounded damage and removes destroyed entities through ECS"},
+              {"suite":"rts-runtime","name":"Fog keeps distant enemies hidden, rejects their targeting and retains explored tiles after movement"},
+              {"suite":"rts-runtime","name":"Consumable item pickup grants an ability, charges and cooldowns spend exactly once"},
+              {"suite":"rts-runtime","name":"Terrain movement categories route land around water, water through water and air across blocked terrain"},
+              {"suite":"rts-runtime","name":"Completion-tick production checkpoints contain no transient publication state and restore exactly"},
+              {"suite":"rts-runtime","name":"Off-map reveal ability targets reject atomically and leave a restorable checkpoint"},
+              {"suite":"rts-runtime","name":"Reveal state stays bounded, expired areas retire, and capacity rejection is atomic"},
+              {"suite":"rts-runtime","name":"Step bounds reject invalid elapsed commands before any authoritative tick or RNG changes"},
+              {"suite":"rts-runtime","name":"Hostile checkpoints and semantic component corruption reject before replacing application state"},
+              {"suite":"rts-runtime","name":"Application navigation, pause and view queries never tick; only active unpaused application frames do"},
+              {"suite":"rts-tools","name":"Discovery exposes supported commands and denied arbitrary intentions"},
+              {"suite":"rts-tools","name":"Bounded recipes advance the exact requested tick interval"},
+              {"suite":"rts-tools","name":"Checkpoint continuation retains the authoritative starting tick"},
+              {"suite":"rts-tools","name":"Rejected commands retain explicit stop and continuation receipts"},
+              {"suite":"rts-tools","name":"Recipe clock, schedule, command-count and saved mission budgets reject before execution"},
+              {"suite":"rts-tools","name":"Catalog outputs are detached and whole-catalog validation rejects missing archetypes"},
+              {"suite":"rts-tools","name":"Mission completion reports actual early-stop tick instead of requested duration"},
+              {"suite":"rts-tools","name":"Hostile accessors and cyclic recipes reject without invoking imported getters"},
+              {"suite":"rts-tools","name":"JSON checkpoint exchange produces identical deterministic continuation"},
+              {"suite":"rts-tools","name":"CLI refuses output-over-input writes and preserves original input bytes"},
+              {"suite":"rts-application","name":"Application navigation and detached queries never tick a session"},
+              {"suite":"rts-application","name":"Fixed frame subdivisions produce the same ECS checkpoint"},
+              {"suite":"rts-application","name":"Pause and navigation clear substep debt and preserve manual pause state"},
+              {"suite":"rts-application","name":"Invalid timing and speed reject before changing session or status"},
+              {"suite":"rts-application","name":"Malformed catalog/checkpoint replacement retains the running session atomically"},
+              {"suite":"rts-application","name":"Checkpoint import restores frozen catalog and pauses without advancing"},
+              {"suite":"rts-browser","name":"RTS is discoverable and switching runs only the RTS application clock"},
+              {"suite":"rts-browser","name":"Keyboard roster selection and battlefield order controls route into the ECS authority"},
+              {"suite":"rts-browser","name":"Keyboard target and position form performs gather, build and ability intents without advancing time"},
+              {"suite":"rts-browser","name":"Selected production buildings expose authored training and technology commands"},
+              {"suite":"rts-browser","name":"Rejected JSON imports preserve the complete running checkpoint; valid checkpoints round-trip paused"},
+              {"suite":"rts-browser","name":"Isometric battlefield renders at desktop and mobile sizes with keyboard controls and no horizontal overflow"},
+              {"suite":"rts-browser","name":"Leaving RTS retires its surface, restores the invoker focus, and reopening retains a single checkpoint"},
+              {"suite":"rts-browser","name":"Self-contained RTS loading and interaction generate no script errors or network requests"},
+              {"suite": "rts-mission-editor", "name": "Mission editor queries and exported catalogs are detached from each other and admitted input"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects stale intents without changing revision draft or history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor undo redo advance revisions and a new branch invalidates redo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor history retains at most sixty four accepted catalog changes"},
+              {"suite": "rts-mission-editor", "name": "Mission editor equivalent metadata selection and import preserve revision and redo history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor metadata commits a complete validated mission and rejects unsafe resizing"},
+              {"suite": "rts-mission-editor", "name": "Mission editor terrain painting overwrites cells while preserving unaffected terrain and supports undo"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects terrain bounds incompatible actors and blocked building footprints atomically"},
+              {"suite": "rts-mission-editor", "name": "Mission editor places updates and removes unit building and creature spawn records"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects expanded off map actors forbidden movement and overlapping building placement"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authors deposits item drops and all registered objective types"},
+              {"suite": "rts-mission-editor", "name": "Mission editor record commands reject bad indices references payload shapes and unsafe amounts"},
+              {"suite": "rts-mission-editor", "name": "Mission editor cloning removal and history preserve other missions and catalog families"},
+              {"suite": "rts-mission-editor", "name": "Mission editor selection invalidates gestures without adding undo history or dirty content"},
+              {"suite": "rts-mission-editor", "name": "Mission editor whole catalog import is detached undoable and rejects incomplete catalogs"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects executable getters cycles symbols and unknown actions before reading behavior"},
+              {"suite": "rts-mission-editor", "name": "Mission editor catalog limits reject excess actors and preserve accepted history"},
+              {"suite": "rts-mission-editor", "name": "Mission editor rejects duplicate objective identities and missions without a player spawn"},
+              {"suite": "rts-mission-editor", "name": "Mission editor authoring and navigation never tick or replace an independent running ECS match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission editor navigation and detached reads preserve both game checkpoints"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission settings publish validated metadata and reject invalid map shrink atomically"},
+              {"suite": "rts-mission-editor-browser", "name": "Keyboard terrain authoring shares validated map commands and undo redo history"},
+              {"suite": "rts-mission-editor-browser", "name": "Spawn tools author units buildings and creatures while rejecting occupied geometry"},
+              {"suite": "rts-mission-editor-browser", "name": "Deposit item and objective forms retain authored records in the complete catalog"},
+              {"suite": "rts-mission-editor-browser", "name": "Rejected editor JSON imports preserve the whole draft history and retained match"},
+              {"suite": "rts-mission-editor-browser", "name": "Mission catalog download and validated import round-trip every authored family"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"},
+              {"suite": "rts-mission-editor-browser", "name": "Editor return retires its surface restores focus and retains the draft on reopening"},
+              {"suite": "rts-mission-editor-browser", "name": "A file picker retained across editor exit cannot import into another lifecycle"},
+              {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"},
+              {"suite":"skill-trees","name":"Definitions are detached and admit arbitrary DAGs and bounded rank effects"},
+              {"suite":"skill-trees","name":"Malformed definitions reject duplicate nodes, cycles, invalid references and executable fields"},
+              {"suite":"skill-trees","name":"Earned points, rank costs, level gates and exclusive paths are enforced atomically"},
+              {"suite":"skill-trees","name":"Checkpoint validation rejects forged progress, duplicate trees and overspending"},
+              {"suite":"skill-trees","name":"Littlewild starts every authored creature with an independent unspent tree"},
+              {"suite":"skill-trees","name":"Optional progression belongs to the scoped actor without introducing defaults"},
+              {"suite":"skill-trees","name":"Player and creature attachments award independently and never retroactively grant level XP"},
+              {"suite":"skill-trees","name":"Accepted reward settlement credits its scoped creature and player exactly once"},
+              {"suite":"skill-trees","name":"Unlocked rank effects apply to the working actor and survive engine restoration"},
+              {"suite":"skill-trees","name":"Guide bonuses apply to companions without spending their personal points"},
+              {"suite":"skill-trees","name":"Portable story round-trip preserves custom definitions and progress"},
+              {"suite":"skill-trees","name":"Invalid imported trees reject before reconstruction and old saves remain tree-free"},
+              {"suite":"skill-trees","name":"New arrivals inherit the retained demo definition with independent zero progress"},
+              {"suite":"skill-trees","name":"SDK discovers attachment and unlock commands, reads detached trees without ticking"},
+              {"suite":"skill-trees","name":"Creature authoring preserves instance trees without turning progress into archetype defaults"},
+              {"suite":"skill-tree-browser","name":"Fresh tree displays earned-point gates at 1440px"},
+              {"suite":"skill-tree-browser","name":"Keyboard unlock publishes a rank and keeps focus at 1440px"},
+              {"suite":"skill-tree-browser","name":"Branch choice closes the alternative without spending its points at 1440px"},
+              {"suite":"skill-tree-browser","name":"Tree reads do not tick or change saved state at 1440px"},
+              {"suite":"skill-tree-browser","name":"Tree content fits and retains usable controls at 1440px"},
+              {"suite":"skill-tree-browser","name":"Keyboard focus distinguishes trees sharing a node ID at 1440px"},
+              {"suite":"skill-tree-browser","name":"Fresh tree displays earned-point gates at 390px"},
+              {"suite":"skill-tree-browser","name":"Keyboard unlock publishes a rank and keeps focus at 390px"},
+              {"suite":"skill-tree-browser","name":"Branch choice closes the alternative without spending its points at 390px"},
+              {"suite":"skill-tree-browser","name":"Tree reads do not tick or change saved state at 390px"},
+              {"suite":"skill-tree-browser","name":"Tree content fits and retains usable controls at 390px"},
+              {"suite":"skill-tree-browser","name":"Keyboard focus distinguishes trees sharing a node ID at 390px"},
+              {"suite":"skill-tree-browser","name":"Skill-tree browser emits no runtime errors or network requests"},
+              {"suite":"typescript-architecture","name":"Bundled assets have one authoring source and canonical catalog projections"},
+              {"suite":"definition-source","name":"The strict authoring schema accepts every shipped package and rejects unknown facets"},
+              {"suite":"definition-source","name":"Generated portable libraries are exact projections of the canonical authoring catalog"},
+              {"suite":"definition-source","name":"Changing one item definition updates price, weight, recipe and visual projections"},
+              {"suite":"definition-source","name":"A new item folder appends to every authored facet without catalog registration"},
+              {"suite":"definition-source","name":"Derived identity schemas preserve compiled bounds and presentation vocabulary"},
+              {"suite":"definition-source","name":"Creature numeric balancing is derived from its one gameplay facet"},
+              {"suite":"definition-source","name":"Legacy asset and creature manifests cannot become a second editable authority"},
+              {"suite":"definition-source","name":"Catalog order rejects missing facets and duplicate IDs instead of silently dropping data"},
+              {"suite":"definition-source","name":"Inline gameplay tables are rejected as competing definitions"},
+              {"suite":"definition-source","name":"Wrong family, facet identity, typo, missing file and empty definitions fail discovery"},
+              {"suite":"definition-source","name":"A gameplay definition without its required visual model fails before build publication"},
+              {"suite":"definition-source","name":"Compatibility exports reject source mirrors and default scenario overrides"}
+            ]
+        run: |
+          env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const crypto = require('node:crypto');
+          const {runCommand} = require('./.generated/verification/process-runner.js');
+          const {acceptedCounts, sourceIdentity} = require('./.generated/verification/gate-integrity.js');
+          const root = process.cwd(), out = process.env.LITTLEWILD_STORYTELLING_OUT;
+          if (fs.existsSync(out)) throw Error('Additional evidence directory already exists; refusing to overwrite it.');
+          fs.mkdirSync(out, {recursive:true});
+          const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+          const gatePath = path.join(root, 'verification/v15/gate-results.json');
+          const baselinePath = path.join(root, 'verification/v15/storytelling-browser-results.json');
+          const artifact = path.join(root, 'littlewild.html');
+          const suiteSnapshot = gate => {
+            const seen = new Set();
+            return gate.suites.map(suite => {
+              if (typeof suite.result !== 'string' || path.isAbsolute(suite.result) || suite.result.split(/[\\/]/).includes('..'))
+                throw Error('Invalid original result path.');
+              const target = path.resolve(root, suite.result);
+              if (!target.startsWith(root + path.sep) || fs.realpathSync(target) !== target || !fs.lstatSync(target).isFile() || seen.has(target))
+                throw Error('Missing, aliased or unbounded original result path: ' + suite.result);
+              seen.add(target);
+              return {name:suite.name, result:suite.result, bytes:fs.statSync(target).size, sha256:sha(target)};
+            });
+          };
+          const command = ['node', '.generated/verification/storytelling-browser.js'];
+          const startedAt = new Date().toISOString();
+          let result = null, counts = null, failure = null, unchanged = false;
+          let before = null, after = null, gate = null, expectedStoryChecks = null;
+          try {
+            gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
+            const expectedGateChecks = Number(process.env.LITTLEWILD_EXPECTED_GATE_CHECKS);
+            const reviewedNewChecks = JSON.parse(process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON || 'null');
+            if (!Number.isSafeInteger(expectedGateChecks) || expectedGateChecks < 1543 || !Array.isArray(reviewedNewChecks)
+                || expectedGateChecks !== 1543 + reviewedNewChecks.length)
+              throw Error('Fill the reviewed complete-gate count and named additions before enabling this guard.');
+            const newNames = new Set();
+            for (const row of reviewedNewChecks) {
+              if (!row || typeof row.suite !== 'string' || !row.suite.trim() || typeof row.name !== 'string' || !row.name.trim()
+                  || newNames.has(JSON.stringify([row.suite,row.name]))) throw Error('Invalid reviewed new-check identity.');
+              newNames.add(JSON.stringify([row.suite,row.name]));
+            }
+            expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
+            if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
+            if (gate.status !== 'passed' || gate.suites.length !== 92 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 92-suite gate must pass at the reviewed check count first.');
+            let acceptedOriginalTotal = 0;
+            for (const suite of gate.suites) {
+              if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
+              if (typeof suite.result !== 'string' || path.isAbsolute(suite.result) || suite.result.split(/[\\/]/).includes('..'))
+                throw Error('Invalid original result path.');
+              const target = path.resolve(root,suite.result);
+              if (!target.startsWith(root + path.sep) || fs.realpathSync(target) !== target || !fs.lstatSync(target).isFile())
+                throw Error('Missing, aliased or unbounded original result path.');
+              const report = JSON.parse(fs.readFileSync(target,'utf8'));
+              const checked = acceptedCounts(report);
+              if (suite.passed !== checked.passed || suite.total !== checked.total) throw Error('Original suite summary differs from accepted leaves.');
+              acceptedOriginalTotal += checked.total;
+              for (const added of reviewedNewChecks.filter(row => row.suite === suite.name))
+                if (!report.results.some(row => row.name === added.name)) throw Error('Reviewed new check is missing: ' + added.name);
+            }
+            if (acceptedOriginalTotal !== expectedGateChecks || reviewedNewChecks.some(row => !gate.suites.some(suite => suite.name === row.suite)))
+              throw Error('Original accepted leaves differ from the reviewed complete-gate scope.');
+            const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+            if (acceptedCounts(baseline).total !== expectedStoryChecks) throw Error('Expected all reviewed Storytelling checks: preserved 23 plus named additions.');
+            before = {sourceSha256:sourceIdentity(root), htmlSha256:sha(artifact), gateSha256:sha(gatePath), baselineSha256:sha(baselinePath), suiteResults:suiteSnapshot(gate)};
+            if (before.sourceSha256 !== gate.sourceSha256 || before.htmlSha256 !== gate.htmlSha256)
+              throw Error('Original gate source/artifact identity differs before the additional run.');
+            result = runCommand(command, root, 300);
+            fs.writeFileSync(path.join(out, 'run.log'), (result.stdout || '') + (result.stderr || ''));
+            after = {sourceSha256:sourceIdentity(root), htmlSha256:sha(artifact), gateSha256:sha(gatePath), baselineSha256:sha(baselinePath), suiteResults:suiteSnapshot(gate)};
+            unchanged = JSON.stringify(before) === JSON.stringify(after);
+            if (!unchanged) throw Error('Source, artifact or original gate evidence changed during the additional run.');
+            if (result.error || result.signal || result.status !== 0)
+              throw Error('Additional Storytelling process failed: ' + String(result.error || result.signal || result.status));
+            const report = JSON.parse(fs.readFileSync(path.join(out, 'storytelling-browser-results.json'), 'utf8'));
+            counts = acceptedCounts(report);
+            if (counts.total !== expectedStoryChecks || JSON.stringify(report.results.map(row => row.name)) !== JSON.stringify(baseline.results.map(row => row.name)))
+              throw Error('Additional run must preserve all 24 reviewed named checks and their order.');
+            for (const key of ['errors', 'consoleProblems', 'requests'])
+              if (!Array.isArray(report.diagnostics[key]) || report.diagnostics[key].length)
+                throw Error('Additional run contains raw diagnostics in ' + key);
+            if (fs.existsSync(path.join(out, 'storytelling-click-diagnostics.json')))
+              throw Error('Diagnostics-disabled run unexpectedly produced click observations.');
+          } catch (error) {
+            failure = String(error);
+            if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
+          }
+          const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 92-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
+          process.exitCode = failure ? 1 : 0;
+          NODE
+      - name: Report additional Storytelling failure details
+        if: ${{ failure() && steps.storytelling_diagnostics_off.outcome == 'failure' }}
+        working-directory: docs/concepts/littlewild
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from uuid import uuid4
+
+          folder = Path('verification/storytelling-diagnostics-off')
+          token = uuid4().hex
+          print('::stop-commands::' + token)
+          try:
+              for name in ('additional-storytelling-results.json', 'storytelling-browser-results.json', 'run.log'):
+                  target = folder / name
+                  if not target.is_file():
+                      print('Additional Storytelling evidence unavailable: ' + name)
+                      continue
+                  print('\nAdditional Storytelling evidence: ' + name)
+                  with target.open('rb') as stream:
+                      evidence = stream.read(65537)
+                  print(evidence[:65536].decode('utf-8', errors='replace'))
+                  if len(evidence) > 65536:
+                      print('[Excerpt limited to 65536 bytes; complete evidence is retained in the artifact.]')
+          finally:
+              print('::' + token + '::')
+          PY
+      - name: Report failed verification details
+        if: failure()
+        working-directory: docs/concepts/littlewild
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from uuid import uuid4
+
+          root = Path.cwd().resolve()
+          token = uuid4().hex
+          print('::stop-commands::' + token)
+          gate_path = root / 'verification/v15/gate-results.json'
+          try:
+              if gate_path.is_file():
+                  gate = json.loads(gate_path.read_text())
+                  print(json.dumps(gate, indent=2))
+                  for suite in gate.get('suites', []):
+                      if suite.get('exitCode') == 0 and not suite.get('error'):
+                          continue
+                      for relative in (suite.get('result'), 'verification/v15/' + suite['name'] + '.log'):
+                          if not relative:
+                              continue
+                          target = (root / relative).resolve()
+                          if not target.is_relative_to(root) or not target.is_file():
+                              print('Failed-suite evidence unavailable: ' + relative)
+                              continue
+                          print('\nFailed-suite evidence: ' + relative)
+                          with target.open('rb') as stream:
+                              evidence = stream.read(65537)
+                          print(evidence[:65536].decode('utf-8', errors='replace'))
+                          if len(evidence) > 65536:
+                              print('[Log excerpt limited to 65536 bytes; full evidence is retained in the artifact.]')
+              else:
+                  print('No gate report was produced; inspect the failed preflight step above.')
+          finally:
+              print('::' + token + '::')
+          PY
+      - name: Package optional bounded core verification evidence
+        if: always()
+        continue-on-error: true
+        working-directory: docs/concepts/littlewild
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import zipfile
+
+          root = Path.cwd().resolve()
+          output = root / 'verification/core-evidence'
+          output.mkdir(parents=True, exist_ok=False)
+          selected = set()
+          missing = []
+          def select(path):
+              if path.is_symlink() or path.resolve() != path or not path.is_relative_to(root):
+                  raise ValueError('Unbounded or aliased core evidence path: ' + str(path))
+              if path.is_file():
+                  selected.add(path)
+              else:
+                  missing.append(str(path.relative_to(root)))
+
+          for relative in ('package-lock.json', 'littlewild.html', 'verification/v15/gate-results.json', 'verification/v15/browser-progress.json'):
+              select(root / relative)
+          gate_path = root / 'verification/v15/gate-results.json'
+          gate = json.loads(gate_path.read_text()) if gate_path.is_file() else {}
+          for suite in gate.get('suites', []):
+              relative = Path(suite['result'])
+              if relative.is_absolute() or '..' in relative.parts:
+                  raise ValueError('Unbounded registered result path: ' + str(relative))
+              select(root / relative)
+          for pattern in ('.generated/*-results.json', 'verification/v15/**/*-results.json', 'verification/v15/**/*.log', 'verification/v15/**/*click-diagnostics.json', 'verification/v15/**/*trace*', 'verification/storytelling-diagnostics-off/*.json', 'verification/storytelling-diagnostics-off/*.log'):
+              for path in root.glob(pattern):
+                  if path.is_file():
+                      select(path)
+          files = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size, 'sha256':hashlib.sha256(path.read_bytes()).hexdigest()} for path in sorted(selected)]
+          excluded = [{'path':str(path.relative_to(root)), 'bytes':path.stat().st_size} for path in sorted((root / 'verification/v15').rglob('*')) if path.is_file() and path not in selected]
+          manifest = {'scope':'Optional core artifact only; original complete artifact is retained separately.', 'selection':'HTML, package lock, every available registered result plus result/log/trace/progress evidence; bulk exports, screenshots and unrelated generated data excluded.', 'separateArtifactScopes':[{'name':'wildlands-godot-export','scope':'Independent Godot job conformance and native frame; this primary-job archive contains only locally present evidence.'}], 'gateStatus':gate.get('status'), 'attemptedSuites':len(gate.get('suites', [])), 'missingEvidence':sorted(set(missing)), 'payloadBytes':sum(row['bytes'] for row in files), 'zipLimitBytes':30*1024*1024, 'files':files, 'excludedFromCore':excluded}
+          archive = output / 'littlewild-core-evidence.zip'
+          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as zipped:
+              for row in files:
+                  zipped.write(root / row['path'], row['path'])
+              zipped.writestr('CORE-MANIFEST.json', json.dumps(manifest, indent=2)+'\n')
+          manifest['zipBytes'] = archive.stat().st_size
+          manifest['status'] = 'available' if manifest['zipBytes'] < manifest['zipLimitBytes'] else 'unavailable-size-limit'
+          if manifest['status'] != 'available':
+              archive.unlink()
+          else:
+              manifest['zipSha256'] = hashlib.sha256(archive.read_bytes()).hexdigest()
+          (output / 'core-evidence-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+          print(json.dumps({key:manifest[key] for key in ('status','gateStatus','attemptedSuites','payloadBytes','zipBytes','zipLimitBytes','missingEvidence')}, indent=2))
+          PY
+      - name: Retain optional bounded core verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: littlewild-ecs-core-evidence
+          path: docs/concepts/littlewild/verification/core-evidence/*.zip
+          if-no-files-found: ignore
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+      - name: Retain compact verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: littlewild-ecs-diagnostics
+          path: |
+            docs/concepts/littlewild/package-lock.json
+            docs/concepts/littlewild/.generated/*-results.json
+            docs/concepts/littlewild/verification/v15/*gate-results.json
+            docs/concepts/littlewild/verification/v15/*click-diagnostics.json
+            docs/concepts/littlewild/verification/v15/*.log
+            docs/concepts/littlewild/verification/v15/*-results.json
+            docs/concepts/littlewild/verification/v15/*building-interiors-browser.json
+            docs/concepts/littlewild/verification/v15/*progress.json
+            docs/concepts/littlewild/verification/core-evidence/*.json
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.json
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/*.log
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 14
+
+      - name: Retain verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: littlewild-ecs-verification
+          path: |
+            docs/concepts/littlewild/package-lock.json
+            docs/concepts/littlewild/littlewild.html
+            docs/concepts/littlewild/verification/v15/
+            docs/concepts/littlewild/verification/storytelling-diagnostics-off/
+            docs/concepts/littlewild/.generated/*-results.json
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+
+  godot-export:
+    name: Wildlands Godot export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.7.2
+      LP_NUM_THREADS: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: docs/concepts/littlewild/package-lock.json
+      - name: Install virtual display and pinned Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends xvfb xauth libgl1-mesa-dri libglx-mesa0 libegl1 libegl-mesa0 libgles2
+          curl --fail --location --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o /tmp/wildlands-godot.zip
+          unzip -q /tmp/wildlands-godot.zip -d /tmp/wildlands-godot
+          echo "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e  /tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" | sha256sum --check
+          chmod +x /tmp/wildlands-godot/Godot_*
+      - name: Build the separate Wildlands project
+        working-directory: docs/concepts/littlewild
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run build
+      - name: Verify playable export and capture native frame
+        working-directory: docs/concepts/littlewild
+        shell: bash
+        run: |
+          set -euo pipefail
+          WILDLANDS_GODOT="/tmp/wildlands-godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+          WILDLANDS_CAPTURE_NATIVE="$PWD/.generated/wildlands-native.png" \
+          xvfb-run -a npm run verify:godot --silent
+      - name: Retain export conformance and native frame
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wildlands-godot-export
+          path: |
+            docs/concepts/littlewild/.generated/wildlands-godot-*.json
+            docs/concepts/littlewild/.generated/wildlands-native.png
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

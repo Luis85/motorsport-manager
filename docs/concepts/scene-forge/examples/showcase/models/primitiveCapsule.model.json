@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "primitiveCapsule",
+  "category": "Primitives",
+  "description": "A Y-aligned capsule for blocking out forms.",
+  "name": "Capsule",
+  "parameters": {
+    "radius": {
+      "default": 0.3,
+      "min": 0.03,
+      "max": 5,
+      "description": "Radius"
+    },
+    "length": {
+      "default": 0.8,
+      "min": 0,
+      "max": 12,
+      "description": "Straight section length"
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "capsule",
+      "radius": {
+        "$param": "radius"
+      },
+      "length": {
+        "$param": "length"
+      },
+      "segments": 24
+    }
+  },
+  "materials": {
+    "surface": {
+      "color": "#73a3b0",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  2
+                ]
+              },
+              {
+                "$param": "radius"
+              }
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "surface"
+    }
+  ]
+}

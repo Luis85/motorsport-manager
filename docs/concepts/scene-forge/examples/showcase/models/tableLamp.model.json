@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "tableLamp",
+  "category": "Everyday",
+  "description": "A table lamp with an authored warm point light.",
+  "name": "Table lamp",
+  "parameters": {},
+  "geometries": {
+    "base": {
+      "type": "cylinder",
+      "radiusTop": 0.18,
+      "radiusBottom": 0.18,
+      "height": 0.04,
+      "segments": 24
+    },
+    "stem": {
+      "type": "cylinder",
+      "radiusTop": 0.018,
+      "radiusBottom": 0.018,
+      "height": 0.5,
+      "segments": 12
+    },
+    "shade": {
+      "type": "cylinder",
+      "radiusTop": 0.12,
+      "radiusBottom": 0.24,
+      "height": 0.25,
+      "segments": 24
+    },
+    "bulb": {
+      "type": "sphere",
+      "radius": 0.055,
+      "segments": 16
+    }
+  },
+  "materials": {
+    "metal": {
+      "color": "#bb965e",
+      "metalness": 0.5,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "shade": {
+      "color": "#dcd2b6",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "bulb": {
+      "color": "#ffe4af",
+      "metalness": 0,
+      "roughness": 0.55,
+      "emissive": "#ffd27a",
+      "emissiveIntensity": 1.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          0.02,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "metal"
+    },
+    {
+      "id": "stem",
+      "transform": {
+        "position": [
+          0,
+          0.29,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stem",
+      "material": "metal"
+    },
+    {
+      "id": "shade",
+      "transform": {
+        "position": [
+          0,
+          0.66,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "shade",
+      "material": "shade"
+    },
+    {
+      "id": "bulb",
+      "transform": {
+        "position": [
+          0,
+          0.53,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "bulb",
+      "material": "bulb"
+    },
+    {
+      "id": "bulbLight",
+      "transform": {
+        "position": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "light",
+      "light": "point",
+      "color": "#ffe2aa",
+      "intensity": 2.5,
+      "distance": 2,
+      "angle": 35,
+      "penumbra": 0.25,
+      "castShadow": false
+    }
+  ]
+}

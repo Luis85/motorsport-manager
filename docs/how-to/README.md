@@ -7,6 +7,7 @@ the procedure to the relevant [contracts](../reference/README.md).
 - [Advisory code quality](code-quality.md)
 - [Developing systems and mechanics](developing-mechanics.md)
 - [Save and test a custom circuit](first-circuit.md)
+- [Author a Wildlands RTS mission](rts-mission-editor.md)
 - [Maintain useful documentation](maintaining-documentation.md)
 - [Runtime confidence and change safety](runtime-confidence.md)
 - [Shipping runtime measurements](runtime-performance.md)

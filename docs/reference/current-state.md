@@ -2,6 +2,13 @@
 
 **Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
 
+The separate [Wildlands prototype builder](../concepts/littlewild/DOCUMENTATION.md)
+retains its own TypeScript runtime, browser workspace, terminal tools and
+source-bound evidence. Littlewild is its default showcase; its
+[Godot desktop compiler](../concepts/littlewild/WILDLANDS.md#runnable-godot-compiler)
+uses a local Node subprocess for gameplay. Those capabilities and prerequisites
+are outside this native Motorsport Manager inventory.
+
 ## Shipping player experience
 
 - **Native Godot 4.7.2, local-first, standalone desktop application.** The player-facing race interface defaults to **Minimal**. Settings can instead select **Advanced**, starting either in Race Director or directly in Engineering.
@@ -11,6 +18,31 @@
 - **Team Principal Campaign:** start or continue a local four-event management career from the main menu. New careers are compiled from the validated default `campaign` content definition, its authored weekend, and its per-event circuit references rather than from an in-code starter table or library index. The native Director Desk shows current cash, committed minimum cash, next-event timing, principal energy, team standing, at most three priorities, organization work, rival activity, resumable onboarding and factual post-race debriefs. Explicit advance/departure actions reuse the existing campaign clock, readiness rules and Minimal race weekend; campaign state is saved independently from the active weekend checkpoint.
 - **Circuit Atelier:** edit/save native circuits with Bézier geometry, elevation/banking, pit routes, scenery, reference-image calibration, layer locks, transactional history, validation and test-weekend snapshots. Editor placement presets and contextual guide *copy* may be authored; rendering kinds and guide actions stay code-owned.
 - **Content:** validated, strict external JSON packs with stable IDs, generated schemas, ordered dependencies, hash-pinned overrides, atomic catalog activation and frozen weekend/replay/campaign definitions. Supported families include vehicles, teams, drivers, rosters, tyre compounds/allocations/operating profiles, setups, shared tuning, weekends, circuits/styles, scenario briefs, mechanic profiles, editor profiles and Team Principal campaign profiles. Campaign content owns start identity/date/resources, starter series/calendar, contracts, facilities, rivals, event finance and numerical rival/people/supply tuning; algorithms, safety ceilings and registered executable providers remain code-owned. A provider profile selects **registered code**; external packs cannot inject executable mechanics or arbitrary editor actions. The authoring CLI supports init, clone, validate, list, inspect, schemas, non-overwriting export, diff, bounded scenario test and ordered multi-pack workflows.
+
+## Wildlands maker RTS foundation
+
+The separate TypeScript [Wildlands maker](../concepts/littlewild/README.md), built
+on the PR 25 foundation, also supports a switchable isometric RTS demonstration.
+Validated JSON catalogs define resources, factions, worker/combat/vehicle/naval/
+aircraft/creature archetypes, buildings, items, technologies, abilities, terrain
+and missions. The shared ECS hosts navigation, worker economy, construction,
+production/research, combat, fog, AI and objectives; application sessions own
+commands, clocks and checkpoints. Detached tools support complete catalog
+validation, mission inspection and bounded headless command recipes.
+
+The graphical [RTS mission editor](../how-to/rts-mission-editor.md) authors terrain,
+spawn groups, resource deposits, item drops, objectives and mission metadata over
+a separate validated catalog draft. Revision-checked commands and bounded undo/
+redo own publication; JSON import/export retains the full catalog. Explicitly
+playing the selected draft replaces the RTS match with a fresh paused session.
+Editing or returning without playing preserves the running match.
+
+The maker engine also supports [player and creature skill trees](skill-trees.md) with captured definitions, XP-earned points, prerequisites, ranks, exclusive branches and saved progression. Littlewild attaches a growth tree to each starting companion and provides a **Learn → Skill trees** view. The Node-backed native runtime retains the same commands and checkpoints; a dedicated Godot tree screen is not implemented.
+
+This is a maker game context, separate from the shipping native race/campaign
+application. It does not establish native RTS export parity, multiplayer, broad
+balance or human validation. See the [canonical RTS contract](rts-engine.md) and
+[demo tutorial](../tutorials/rts-demo.md) for source-backed scope and limits.
 
 ## Interface selection and retained specialist tools
 

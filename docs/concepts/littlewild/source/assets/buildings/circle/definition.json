@@ -1,0 +1,212 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "buildings",
+  "id": "circle",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "building",
+    "id": "circle",
+    "name": "Learning circle",
+    "materials": {
+      "wood": "#bd9b70",
+      "dark": "#8d704f",
+      "paper": "#e2c69a",
+      "accent": "#778d7d",
+      "cloth": "#b78d76",
+      "metal": "#9da9a1",
+      "stone": "#b89b83",
+      "fire": {
+        "color": "#e5a15e",
+        "emissive": "#cb7541",
+        "emissiveIntensity": 0.45
+      }
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "center",
+            "position": [
+              0,
+              0.12,
+              0
+            ],
+            "scale": [
+              0.34,
+              0.12,
+              0.34
+            ],
+            "material": "stone"
+          },
+          {
+            "primitive": "box",
+            "id": "stool-0",
+            "position": [
+              0.62,
+              0.18,
+              0
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "stool-1",
+            "position": [
+              0.31000000000000005,
+              0.18,
+              0.5369357503463519
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              -1.0471975511965976,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "stool-2",
+            "position": [
+              -0.3099999999999999,
+              0.18,
+              0.536935750346352
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              -2.0943951023931953,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "stool-3",
+            "position": [
+              -0.62,
+              0.18,
+              7.59281015471359e-17
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              -3.141592653589793,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "stool-4",
+            "position": [
+              -0.3100000000000003,
+              0.18,
+              -0.5369357503463518
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              -4.1887902047863905,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "stool-5",
+            "position": [
+              0.31000000000000005,
+              0.18,
+              -0.5369357503463519
+            ],
+            "scale": [
+              0.26,
+              0.18,
+              0.26
+            ],
+            "material": "wood",
+            "rotation": [
+              0,
+              -5.235987755982989,
+              0
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "board",
+            "position": [
+              0,
+              0.6,
+              -0.45
+            ],
+            "scale": [
+              0.76,
+              0.48,
+              0.05
+            ],
+            "material": "paper"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "orientation": "none",
+      "indoor": false,
+      "hitHeight": 1.15,
+      "radius": 1.05
+    }
+  },
+  "building": {
+    "id": "circle",
+    "name": "Learning circle",
+    "skill": "shelter",
+    "cost": {
+      "wood": 4,
+      "fiber": 4,
+      "stone": 2
+    },
+    "time": 15,
+    "category": "learning",
+    "effect": "Lessons are 12% faster. Coached practice gains +1 mastery point.",
+    "desc": "A ring of cushions, an open notebook, and permission to get it wrong.",
+    "icon": "book",
+    "unique": true
+  },
+  "buildingRequirements": {
+    "playerLevel": 1,
+    "features": {
+      "discovery": 1
+    },
+    "research": "blueprint-circle"
+  }
+}

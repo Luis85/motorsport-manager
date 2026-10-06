@@ -1,0 +1,350 @@
+[
+  {
+    "id": "outpost",
+    "name": "Kestrel · Survey outpost",
+    "description": "A field outpost with a reusable survey rover and supplies.",
+    "features": [
+      "Model composition",
+      "Portable scene bundles",
+      "Multi-view review"
+    ],
+    "stats": {
+      "nodes": 98,
+      "meshes": 88,
+      "triangles": 6776,
+      "materials": 14,
+      "geometries": 35,
+      "bounds": {
+        "min": [
+          -5.199999809265137,
+          -0.3600000005960464,
+          -5.199999809265137
+        ],
+        "max": [
+          5.199999809265137,
+          3.409999997317791,
+          5.199999809265137
+        ],
+        "size": [
+          10.399999618530273,
+          3.769999997913837,
+          10.399999618530273
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "rover",
+      "barrel"
+    ]
+  },
+  {
+    "id": "fieldStation",
+    "name": "Kestrel · Modular field station",
+    "description": "A larger field station composed from eight reusable model types.",
+    "features": [
+      "Model composition",
+      "Portable scene bundles",
+      "Multi-view review"
+    ],
+    "stats": {
+      "nodes": 196,
+      "meshes": 163,
+      "triangles": 8284,
+      "materials": 14,
+      "geometries": 34,
+      "bounds": {
+        "min": [
+          -7.175999736785888,
+          -0.3600000005960464,
+          -7.175999736785888
+        ],
+        "max": [
+          7.175999736785888,
+          3.344999986588955,
+          7.175999736785888
+        ],
+        "size": [
+          14.351999473571777,
+          3.7049999871850012,
+          14.351999473571777
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "platform",
+      "habitat",
+      "landingPad",
+      "rover",
+      "solar",
+      "barrel",
+      "cargo"
+    ]
+  },
+  {
+    "id": "logistics",
+    "name": "Procedural logistics bay",
+    "description": "Parameter-driven shelving, nested cargo and repeated layouts.",
+    "features": [
+      "Model composition",
+      "Portable scene bundles",
+      "Multi-view review"
+    ],
+    "stats": {
+      "nodes": 221,
+      "meshes": 140,
+      "triangles": 1680,
+      "materials": 8,
+      "geometries": 19,
+      "bounds": {
+        "min": [
+          -6.5,
+          -0.15999999821186067,
+          -3.5
+        ],
+        "max": [
+          6.5,
+          3.29999999910593,
+          3.5
+        ],
+        "size": [
+          13,
+          3.459999997317791,
+          7
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "crate",
+      "rack"
+    ]
+  },
+  {
+    "id": "courtyard",
+    "name": "The Linden Courtyard",
+    "description": "A small architectural scene assembled from parametric townhouses, framed windows, street furniture and landscape models.",
+    "features": [
+      "Nested facade modules",
+      "Integer floor and window counts",
+      "Parameter-driven grids",
+      "Path planting",
+      "Lathed fountain and spline jets"
+    ],
+    "stats": {
+      "nodes": 418,
+      "meshes": 308,
+      "triangles": 8980,
+      "materials": 23,
+      "geometries": 56,
+      "bounds": {
+        "min": [
+          -11.5,
+          -0.3000000059604645,
+          -9
+        ],
+        "max": [
+          11.5,
+          11.872000002861023,
+          9
+        ],
+        "size": [
+          23,
+          12.172000008821488,
+          18
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "windowBay",
+      "townhouse",
+      "fountain",
+      "planterTree",
+      "parkBench"
+    ]
+  },
+  {
+    "id": "pipePlant",
+    "name": "Process Plant / Routing study",
+    "description": "A compact industrial plant with color-coded pipe circuits, three vessel variants, motor pumps and a service catwalk.",
+    "features": [
+      "Capped 3D spline pipes",
+      "Reusable vessels and valves",
+      "Nested equipment assemblies",
+      "Catwalk count parameters",
+      "Path-based pipe supports"
+    ],
+    "stats": {
+      "nodes": 207,
+      "meshes": 169,
+      "triangles": 19140,
+      "materials": 16,
+      "geometries": 32,
+      "bounds": {
+        "min": [
+          -8.5,
+          -0.25,
+          -6
+        ],
+        "max": [
+          8.5,
+          6.547883033752441,
+          6
+        ],
+        "size": [
+          17,
+          6.797883033752441,
+          12
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "valve",
+      "vessel",
+      "catwalk",
+      "pump"
+    ]
+  },
+  {
+    "id": "robotCell",
+    "name": "Robotic Assembly Cell",
+    "description": "A static assembly-cell study with two articulated robot poses, a parametric conveyor, grippers and route markers. No simulation or animation is implied.",
+    "features": [
+      "Articulated group pivots",
+      "Nested gripper parameters",
+      "Two robot pose variants",
+      "Conveyor repetition",
+      "Yaw-oriented route markers"
+    ],
+    "stats": {
+      "nodes": 168,
+      "meshes": 109,
+      "triangles": 6100,
+      "materials": 19,
+      "geometries": 29,
+      "bounds": {
+        "min": [
+          -7,
+          -0.20000000149011612,
+          -6
+        ],
+        "max": [
+          7,
+          2.863017345615236,
+          6
+        ],
+        "size": [
+          14,
+          3.0630173471053523,
+          12
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "conveyorRoller",
+      "conveyor",
+      "gripper",
+      "robotArm",
+      "controlCabinet",
+      "guideArrow"
+    ]
+  },
+  {
+    "id": "assetStudio",
+    "name": "The Asset Workshop",
+    "description": "A ready-to-compose asset workshop: primitives, poseable characters, furniture and everyday props, with authored lights and material slots.",
+    "features": [
+      "Primitive palette",
+      "Poseable character groups",
+      "Everyday props",
+      "Authored point and spot lights",
+      "Unlit and PBR materials"
+    ],
+    "stats": {
+      "nodes": 147,
+      "meshes": 100,
+      "triangles": 6704,
+      "materials": 36,
+      "geometries": 49,
+      "bounds": {
+        "min": [
+          -5.5,
+          -0.20000000149011612,
+          -4.5
+        ],
+        "max": [
+          5.5,
+          3.299999976158142,
+          4.5
+        ],
+        "size": [
+          11,
+          3.499999977648258,
+          9
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "sofa",
+      "desk",
+      "mug",
+      "book",
+      "chair",
+      "monitor",
+      "tableLamp",
+      "bottle",
+      "person",
+      "astronaut",
+      "serviceCharacter",
+      "primitiveBox",
+      "primitiveSphere",
+      "primitiveCone",
+      "primitiveTorus",
+      "primitiveCapsule"
+    ]
+  },
+  {
+    "id": "animationLab",
+    "name": "Motion Workshop / Rest, pose, animate",
+    "description": "Editable seven-joint characters with explicit part bindings, poses and a portable waving animation.",
+    "features": [
+      "Skeleton joints",
+      "Explicit mesh skinning",
+      "Pose overrides",
+      "Quaternion animation clips"
+    ],
+    "stats": {
+      "nodes": 68,
+      "meshes": 46,
+      "triangles": 3264,
+      "materials": 8,
+      "geometries": 11,
+      "bounds": {
+        "min": [
+          -4,
+          -0.1399999986588955,
+          -2.5
+        ],
+        "max": [
+          4,
+          1.8700000190734865,
+          2.5
+        ],
+        "size": [
+          8,
+          2.010000017732382,
+          5
+        ]
+      },
+      "warnings": []
+    },
+    "models": [
+      "person"
+    ]
+  }
+]

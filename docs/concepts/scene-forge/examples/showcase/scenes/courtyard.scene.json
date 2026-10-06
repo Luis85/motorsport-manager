@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "courtyard",
+  "name": "The Linden Courtyard",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {
+    "ground": {
+      "type": "box",
+      "size": [
+        23,
+        0.3,
+        18
+      ]
+    },
+    "plaza": {
+      "type": "cylinder",
+      "radiusTop": 3.1,
+      "radiusBottom": 3.1,
+      "height": 0.045,
+      "segments": 64
+    },
+    "joint": {
+      "type": "box",
+      "size": [
+        0.018,
+        0.01,
+        18
+      ]
+    }
+  },
+  "materials": {
+    "paving": {
+      "color": "#bcad94",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "stone": {
+      "color": "#a09584",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "blue": {
+      "color": "#779494",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "cream": {
+      "color": "#d5b98b",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "line": {
+      "color": "#d8cbb1",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "ground",
+      "transform": {
+        "position": [
+          0,
+          -0.15,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "ground",
+      "material": "paving"
+    },
+    {
+      "id": "plaza",
+      "transform": {
+        "position": [
+          2,
+          0.023,
+          2.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "plaza",
+      "material": "stone"
+    },
+    {
+      "id": "pavingJoints",
+      "transform": {
+        "position": [
+          -10.5,
+          0.01,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 22,
+        "step": [
+          1,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "joint",
+      "material": "line"
+    },
+    {
+      "id": "copperHouse",
+      "transform": {
+        "position": [
+          -6,
+          0,
+          -4.3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "buildings"
+      ],
+      "type": "model",
+      "model": "townhouse",
+      "parameters": {
+        "floors": 3,
+        "width": 4.8
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "blueHouse",
+      "transform": {
+        "position": [
+          -0.65,
+          0,
+          -4.3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "buildings"
+      ],
+      "type": "model",
+      "model": "townhouse",
+      "parameters": {
+        "floors": 4,
+        "width": 4.6,
+        "bays": 3
+      },
+      "materialOverrides": {
+        "wall": "blue"
+      }
+    },
+    {
+      "id": "creamHouse",
+      "transform": {
+        "position": [
+          4.65,
+          0,
+          -4.3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "buildings"
+      ],
+      "type": "model",
+      "model": "townhouse",
+      "parameters": {
+        "floors": 2,
+        "width": 4.9,
+        "bays": 3
+      },
+      "materialOverrides": {
+        "wall": "cream"
+      }
+    },
+    {
+      "id": "fountain",
+      "transform": {
+        "position": [
+          2,
+          0,
+          2.6
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "landscape"
+      ],
+      "type": "model",
+      "model": "fountain",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "avenueTrees",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "landscape"
+      ],
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            -9.7,
+            0,
+            -2
+          ],
+          [
+            -9.7,
+            0,
+            2
+          ],
+          [
+            -9.7,
+            0,
+            6
+          ],
+          [
+            9.2,
+            0,
+            -2
+          ],
+          [
+            9.2,
+            0,
+            2
+          ],
+          [
+            9.2,
+            0,
+            6
+          ]
+        ],
+        "orient": "none"
+      },
+      "type": "model",
+      "model": "planterTree",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "benches",
+      "transform": {
+        "position": [
+          -2.8,
+          0,
+          5.3
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "furniture"
+      ],
+      "pattern": {
+        "type": "linear",
+        "count": 3,
+        "step": [
+          3.2,
+          0,
+          0
+        ]
+      },
+      "type": "model",
+      "model": "parkBench",
+      "parameters": {},
+      "materialOverrides": {}
+    }
+  ],
+  "environment": {
+    "background": "#171d25",
+    "ambient": 1.8,
+    "keyIntensity": 3.5,
+    "keyPosition": [
+      5,
+      10,
+      7
+    ]
+  }
+}

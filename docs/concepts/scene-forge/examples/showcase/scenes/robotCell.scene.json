@@ -1,0 +1,423 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "robotCell",
+  "name": "Robotic Assembly Cell",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {
+    "floor": {
+      "type": "box",
+      "size": [
+        14,
+        0.2,
+        12
+      ]
+    },
+    "pad": {
+      "type": "box",
+      "size": [
+        2.6,
+        0.09,
+        2.6
+      ]
+    },
+    "mark": {
+      "type": "box",
+      "size": [
+        0.08,
+        0.01,
+        8.8
+      ]
+    },
+    "blank": {
+      "type": "cylinder",
+      "radiusTop": 0.23,
+      "radiusBottom": 0.23,
+      "height": 0.32,
+      "segments": 24
+    },
+    "rim": {
+      "type": "cylinder",
+      "radiusTop": 0.3,
+      "radiusBottom": 0.3,
+      "height": 0.05,
+      "segments": 24
+    },
+    "bollard": {
+      "type": "cylinder",
+      "radiusTop": 0.08,
+      "radiusBottom": 0.08,
+      "height": 0.85,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "floor": {
+      "color": "#738087",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "panel": {
+      "color": "#52656c",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "yellow": {
+      "color": "#e0b55c",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "blue": {
+      "color": "#467e96",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "part": {
+      "color": "#518e86",
+      "metalness": 0.45,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "foundation",
+      "transform": {
+        "position": [
+          0,
+          -0.1,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "floor",
+      "material": "floor"
+    },
+    {
+      "id": "robotPads",
+      "transform": {
+        "position": [
+          -3,
+          0.045,
+          -0.9
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          6,
+          0,
+          2.1
+        ]
+      },
+      "type": "mesh",
+      "geometry": "pad",
+      "material": "panel"
+    },
+    {
+      "id": "transferLine",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "conveyor"
+      ],
+      "type": "model",
+      "model": "conveyor",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "leftRobot",
+      "transform": {
+        "position": [
+          -3,
+          0.09,
+          -0.9
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "robots"
+      ],
+      "type": "model",
+      "model": "robotArm",
+      "parameters": {
+        "shoulder": -30,
+        "elbow": -65,
+        "wrist": 95,
+        "opening": 0.45
+      },
+      "materialOverrides": {}
+    },
+    {
+      "id": "rightRobot",
+      "transform": {
+        "position": [
+          3,
+          0.09,
+          1.2
+        ],
+        "rotation": [
+          0,
+          180,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "robots"
+      ],
+      "type": "model",
+      "model": "robotArm",
+      "parameters": {
+        "shoulder": -40,
+        "elbow": -40,
+        "wrist": 80,
+        "opening": 0.6
+      },
+      "materialOverrides": {
+        "yellow": "blue"
+      }
+    },
+    {
+      "id": "controller",
+      "transform": {
+        "position": [
+          -4.8,
+          0,
+          -3.7
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "controlCabinet",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "parts",
+      "transform": {
+        "position": [
+          0,
+          1.26,
+          -2.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 5,
+        "step": [
+          0,
+          0,
+          1.4
+        ]
+      },
+      "type": "mesh",
+      "geometry": "blank",
+      "material": "part"
+    },
+    {
+      "id": "partRims",
+      "transform": {
+        "position": [
+          0,
+          1.43,
+          -2.8
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 5,
+        "step": [
+          0,
+          0,
+          1.4
+        ]
+      },
+      "type": "mesh",
+      "geometry": "rim",
+      "material": "part"
+    },
+    {
+      "id": "safetyLines",
+      "transform": {
+        "position": [
+          -5.8,
+          0.01,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          11.6,
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "mark",
+      "material": "yellow"
+    },
+    {
+      "id": "bollards",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            -5.4,
+            0.425,
+            -4.2
+          ],
+          [
+            -5.4,
+            0.425,
+            0
+          ],
+          [
+            -5.4,
+            0.425,
+            4.2
+          ],
+          [
+            5.4,
+            0.425,
+            -4.2
+          ],
+          [
+            5.4,
+            0.425,
+            0
+          ],
+          [
+            5.4,
+            0.425,
+            4.2
+          ]
+        ],
+        "orient": "none"
+      },
+      "type": "mesh",
+      "geometry": "bollard",
+      "material": "yellow"
+    },
+    {
+      "id": "flowRoute",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [
+        "wayfinding"
+      ],
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            -4.5,
+            0,
+            4.8
+          ],
+          [
+            -2.5,
+            0,
+            4.8
+          ],
+          [
+            0,
+            0,
+            4.8
+          ],
+          [
+            2.5,
+            0,
+            4.8
+          ],
+          [
+            4.5,
+            0,
+            4.8
+          ],
+          [
+            4.5,
+            0,
+            2.8
+          ],
+          [
+            4.5,
+            0,
+            0.6
+          ],
+          [
+            4.5,
+            0,
+            -1.5
+          ]
+        ],
+        "orient": "yaw"
+      },
+      "type": "model",
+      "model": "guideArrow",
+      "parameters": {},
+      "materialOverrides": {}
+    }
+  ],
+  "environment": {
+    "background": "#171d25",
+    "ambient": 1.8,
+    "keyIntensity": 3.5,
+    "keyPosition": [
+      5,
+      10,
+      7
+    ]
+  }
+}

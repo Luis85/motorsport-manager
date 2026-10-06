@@ -1,0 +1,1352 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "animationLab",
+    "name": "Motion Workshop / Rest, pose, animate",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "ground": {
+        "type": "box",
+        "size": [
+          8,
+          0.12,
+          5
+        ]
+      },
+      "plinth": {
+        "type": "cylinder",
+        "radiusTop": 0.8,
+        "radiusBottom": 0.8,
+        "height": 0.14,
+        "segments": 48
+      }
+    },
+    "materials": {
+      "ground": {
+        "color": "#45535b",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "plinth": {
+        "color": "#738184",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "gold": {
+        "color": "#ba8a52",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "red": {
+        "color": "#ac7760",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "blue": {
+        "color": "#709ba7",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "floor",
+        "transform": {
+          "position": [
+            0,
+            -0.08,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "ground",
+        "material": "ground"
+      },
+      {
+        "id": "plinths",
+        "transform": {
+          "position": [
+            -2.3,
+            0.07,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            2.3,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "plinth",
+        "material": "plinth"
+      },
+      {
+        "id": "rest",
+        "transform": {
+          "position": [
+            -2.3,
+            0.14,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "person",
+        "rig": {
+          "joints": [
+            {
+              "id": "hips",
+              "position": [
+                0,
+                0.72,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "spine",
+              "parent": "hips",
+              "position": [
+                0,
+                0.38,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "head",
+              "parent": "spine",
+              "position": [
+                0,
+                0.47,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftArm",
+              "parent": "spine",
+              "position": [
+                -0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightArm",
+              "parent": "spine",
+              "position": [
+                0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftLeg",
+              "parent": "hips",
+              "position": [
+                -0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightLeg",
+              "parent": "hips",
+              "position": [
+                0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "binding": "rigid",
+          "bindings": {
+            "torso": "spine",
+            "hip": "hips",
+            "badge": "spine",
+            "head": "head",
+            "leftEye": "head",
+            "rightEye": "head",
+            "leftArm": "leftArm",
+            "leftHand": "leftArm",
+            "rightArm": "rightArm",
+            "rightHand": "rightArm",
+            "leftLeg": "leftLeg",
+            "leftShoe": "leftLeg",
+            "rightLeg": "rightLeg",
+            "rightShoe": "rightLeg"
+          },
+          "pose": {},
+          "clips": [
+            {
+              "id": "wave",
+              "duration": 2,
+              "tracks": [
+                {
+                  "joint": "rightArm",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 0.6,
+                      "rotation": [
+                        0,
+                        0,
+                        130
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        0,
+                        110
+                      ]
+                    },
+                    {
+                      "time": 1.4,
+                      "rotation": [
+                        0,
+                        0,
+                        135
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "joint": "head",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        -20,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "parameters": {
+          "leftArm": 0,
+          "rightArm": 0
+        },
+        "materialOverrides": {
+          "outfit": "blue"
+        }
+      },
+      {
+        "id": "wave",
+        "transform": {
+          "position": [
+            0,
+            0.14,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "person",
+        "rig": {
+          "joints": [
+            {
+              "id": "hips",
+              "position": [
+                0,
+                0.72,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "spine",
+              "parent": "hips",
+              "position": [
+                0,
+                0.38,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "head",
+              "parent": "spine",
+              "position": [
+                0,
+                0.47,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftArm",
+              "parent": "spine",
+              "position": [
+                -0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightArm",
+              "parent": "spine",
+              "position": [
+                0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftLeg",
+              "parent": "hips",
+              "position": [
+                -0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightLeg",
+              "parent": "hips",
+              "position": [
+                0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "binding": "rigid",
+          "bindings": {
+            "torso": "spine",
+            "hip": "hips",
+            "badge": "spine",
+            "head": "head",
+            "leftEye": "head",
+            "rightEye": "head",
+            "leftArm": "leftArm",
+            "leftHand": "leftArm",
+            "rightArm": "rightArm",
+            "rightHand": "rightArm",
+            "leftLeg": "leftLeg",
+            "leftShoe": "leftLeg",
+            "rightLeg": "rightLeg",
+            "rightShoe": "rightLeg"
+          },
+          "pose": {
+            "rightArm": [
+              0,
+              0,
+              125
+            ],
+            "head": [
+              0,
+              -15,
+              0
+            ]
+          },
+          "clips": [
+            {
+              "id": "wave",
+              "duration": 2,
+              "tracks": [
+                {
+                  "joint": "rightArm",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 0.6,
+                      "rotation": [
+                        0,
+                        0,
+                        130
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        0,
+                        110
+                      ]
+                    },
+                    {
+                      "time": 1.4,
+                      "rotation": [
+                        0,
+                        0,
+                        135
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "joint": "head",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        -20,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "parameters": {
+          "leftArm": 0,
+          "rightArm": 0
+        },
+        "materialOverrides": {
+          "outfit": "gold"
+        }
+      },
+      {
+        "id": "walk",
+        "transform": {
+          "position": [
+            2.3,
+            0.14,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "model",
+        "model": "person",
+        "rig": {
+          "joints": [
+            {
+              "id": "hips",
+              "position": [
+                0,
+                0.72,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "spine",
+              "parent": "hips",
+              "position": [
+                0,
+                0.38,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "head",
+              "parent": "spine",
+              "position": [
+                0,
+                0.47,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftArm",
+              "parent": "spine",
+              "position": [
+                -0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightArm",
+              "parent": "spine",
+              "position": [
+                0.3,
+                0.25,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "leftLeg",
+              "parent": "hips",
+              "position": [
+                -0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "id": "rightLeg",
+              "parent": "hips",
+              "position": [
+                0.13,
+                -0.05,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "binding": "rigid",
+          "bindings": {
+            "torso": "spine",
+            "hip": "hips",
+            "badge": "spine",
+            "head": "head",
+            "leftEye": "head",
+            "rightEye": "head",
+            "leftArm": "leftArm",
+            "leftHand": "leftArm",
+            "rightArm": "rightArm",
+            "rightHand": "rightArm",
+            "leftLeg": "leftLeg",
+            "leftShoe": "leftLeg",
+            "rightLeg": "rightLeg",
+            "rightShoe": "rightLeg"
+          },
+          "pose": {
+            "leftArm": [
+              -25,
+              0,
+              0
+            ],
+            "rightArm": [
+              25,
+              0,
+              0
+            ],
+            "leftLeg": [
+              30,
+              0,
+              0
+            ],
+            "rightLeg": [
+              -30,
+              0,
+              0
+            ]
+          },
+          "clips": [
+            {
+              "id": "wave",
+              "duration": 2,
+              "tracks": [
+                {
+                  "joint": "rightArm",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 0.6,
+                      "rotation": [
+                        0,
+                        0,
+                        130
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        0,
+                        110
+                      ]
+                    },
+                    {
+                      "time": 1.4,
+                      "rotation": [
+                        0,
+                        0,
+                        135
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "joint": "head",
+                  "keyframes": [
+                    {
+                      "time": 0,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 1,
+                      "rotation": [
+                        0,
+                        -20,
+                        0
+                      ]
+                    },
+                    {
+                      "time": 2,
+                      "rotation": [
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "parameters": {
+          "leftArm": 0,
+          "rightArm": 0
+        },
+        "materialOverrides": {
+          "outfit": "red"
+        }
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "ambient": 1.8,
+      "keyIntensity": 3.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "person": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "person",
+      "category": "Characters",
+      "description": "A static, poseable group hierarchy. Change dimensions, joint angles and materials through the recipe; no skeleton or animation is included.",
+      "name": "Everyday person",
+      "parameters": {
+        "height": {
+          "default": 1.75,
+          "min": 1,
+          "max": 2.5,
+          "description": "Overall stature"
+        },
+        "leftArm": {
+          "default": 8,
+          "min": -160,
+          "max": 160,
+          "description": "Left shoulder angle in degrees"
+        },
+        "rightArm": {
+          "default": -8,
+          "min": -160,
+          "max": 160,
+          "description": "Right shoulder angle in degrees"
+        },
+        "stride": {
+          "default": 0,
+          "min": -35,
+          "max": 35,
+          "description": "Leg pose in degrees"
+        },
+        "headTurn": {
+          "default": 0,
+          "min": -80,
+          "max": 80,
+          "description": "Head yaw in degrees"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "box",
+          "size": [
+            0.46,
+            0.6,
+            0.26
+          ]
+        },
+        "hip": {
+          "type": "box",
+          "size": [
+            0.41,
+            0.18,
+            0.25
+          ]
+        },
+        "head": {
+          "type": "sphere",
+          "radius": 0.16,
+          "segments": 16
+        },
+        "limb": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.5,
+            0.14
+          ]
+        },
+        "arm": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.46,
+            0.13
+          ]
+        },
+        "hand": {
+          "type": "sphere",
+          "radius": 0.073,
+          "segments": 12
+        },
+        "shoe": {
+          "type": "box",
+          "size": [
+            0.17,
+            0.12,
+            0.28
+          ]
+        },
+        "eye": {
+          "type": "sphere",
+          "radius": 0.022,
+          "segments": 8
+        },
+        "visor": {
+          "type": "box",
+          "size": [
+            0.245,
+            0.105,
+            0.045
+          ]
+        },
+        "pack": {
+          "type": "box",
+          "size": [
+            0.3,
+            0.4,
+            0.14
+          ]
+        },
+        "badge": {
+          "type": "box",
+          "size": [
+            0.09,
+            0.12,
+            0.015
+          ]
+        }
+      },
+      "materials": {
+        "outfit": {
+          "color": "#75969b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "skin": {
+          "color": "#cf9c7b",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#374957",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "accent": {
+          "color": "#a56d4f",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bodyRoot",
+          "transform": {
+            "scale": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              },
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  1.75
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "torso",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.1,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "outfit"
+        },
+        {
+          "id": "hip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              0.72,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hip",
+          "material": "dark"
+        },
+        {
+          "id": "badge",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.1,
+              1.18,
+              0.14
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "badge",
+          "material": "accent"
+        },
+        {
+          "id": "headPivot",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0,
+              1.57,
+              0
+            ],
+            "rotation": [
+              0,
+              {
+                "$param": "headTurn"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "head",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "head",
+          "material": "skin"
+        },
+        {
+          "id": "leftEye",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              -0.06,
+              0.02,
+              0.143
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "dark"
+        },
+        {
+          "id": "rightEye",
+          "parent": "headPivot",
+          "transform": {
+            "position": [
+              0.06,
+              0.02,
+              0.143
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "leftArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightShoulder",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.3,
+              1.35,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              {
+                "$param": "rightArm"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftArm",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "leftHand",
+          "parent": "leftShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "rightArm",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.23,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "outfit"
+        },
+        {
+          "id": "rightHand",
+          "parent": "rightShoulder",
+          "transform": {
+            "position": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hand",
+          "material": "skin"
+        },
+        {
+          "id": "leftHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              -0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$param": "stride"
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "rightHip",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [
+              0.13,
+              0.67,
+              0
+            ],
+            "rotation": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "stride"
+                  },
+                  -1
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "leftLeg",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "rightLeg",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.25,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "limb",
+          "material": "dark"
+        },
+        {
+          "id": "leftShoe",
+          "parent": "leftHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        },
+        {
+          "id": "rightShoe",
+          "parent": "rightHip",
+          "transform": {
+            "position": [
+              0,
+              -0.58,
+              0.06
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shoe",
+          "material": "accent"
+        }
+      ]
+    }
+  }
+}

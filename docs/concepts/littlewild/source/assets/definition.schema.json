@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:definition:1",
+  "title": "Littlewild authored definition",
+  "description": "Build-only wrapper. Projected facets must also pass their domain validators.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "items"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "item": {
+          "type": "object"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0
+        },
+        "equipment": {
+          "type": "object"
+        },
+        "recipe": {
+          "type": "object"
+        },
+        "node": {
+          "type": "object"
+        },
+        "itemRequirements": {
+          "type": "object"
+        },
+        "recipeRequirements": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "item"
+          ],
+          "properties": {
+            "item": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "weight"
+          ],
+          "properties": {
+            "weight": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "required": [
+            "equipment"
+          ],
+          "properties": {
+            "equipment": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "recipe"
+          ],
+          "properties": {
+            "recipe": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "node"
+          ],
+          "properties": {
+            "node": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "itemRequirements"
+          ],
+          "properties": {
+            "itemRequirements": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "recipeRequirements"
+          ],
+          "properties": {
+            "recipeRequirements": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "buildings"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "building": {
+          "type": "object"
+        },
+        "physicalBuilding": {
+          "type": "object"
+        },
+        "buildingRequirements": {
+          "type": "object"
+        },
+        "home": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "building"
+          ],
+          "properties": {
+            "building": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "physicalBuilding"
+          ],
+          "properties": {
+            "physicalBuilding": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "buildingRequirements"
+          ],
+          "properties": {
+            "buildingRequirements": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "home"
+          ],
+          "properties": {
+            "home": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "family",
+        "id",
+        "creature"
+      ],
+      "properties": {
+        "format": {
+          "const": "littlewild-definition"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "family": {
+          "const": "creatures"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,60}$"
+        },
+        "visual": {
+          "type": "object"
+        },
+        "creature": {
+          "type": "object"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "visual"
+          ],
+          "properties": {
+            "visual": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "required": [
+            "creature"
+          ],
+          "properties": {
+            "creature": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

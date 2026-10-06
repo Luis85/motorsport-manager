@@ -1,0 +1,16 @@
+.terraform-panel{top:98px;right:var(--space-6,24px);bottom:98px;width:min(360px,calc(100vw - 28px));max-height:calc(100dvh - 148px)}
+.terraform-panel .panel-body{display:flex;flex-direction:column;gap:16px;padding:20px;overflow:auto}
+.terraform-panel p{margin:0;line-height:1.6}
+.terraform-panel label{display:flex;flex-direction:column;gap:7px;font-weight:600}
+.terraform-panel select{width:100%;min-height:44px;padding:10px;color:var(--experience-ink,#315441);background:var(--experience-paper,#fffbee);border:1px solid #aebb97;border-radius:7px}
+.terraform-panel h3{margin:10px 0 0;font-size:18px}
+.terraform-selection{padding:12px 0;border-block:1px solid #d6ddc6;line-height:1.6;font-variant-numeric:tabular-nums}
+.terraform-changes{margin:0;padding-left:24px;max-height:180px;overflow:auto;line-height:1.7;font-variant-numeric:tabular-nums}
+.terraform-feedback{color:var(--experience-ink,#315441);font-weight:600}
+.terraform-actions{display:flex;gap:10px;flex-wrap:wrap}
+.terraform-actions button{flex:1;min-height:44px}
+.terraform-panel button:focus-visible,.terraform-panel select:focus-visible{outline:3px solid #bf8a35;outline-offset:2px}
+.terraform-panel button:disabled{opacity:.6;cursor:default}
+@media(max-width:720px){.terraform-panel{top:88px;left:12px;right:auto;bottom:auto;max-height:calc(100dvh - 176px)}body.terraform-open .world-tools{display:none}.terraform-panel .panel-body{padding:16px;gap:12px}}
+body.building-interior-open .terraform-panel{display:none}
+@media(max-width:720px){.terraform-panel[data-minimized]{bottom:auto;max-height:none}.terraform-panel[data-minimized] .panel-body,.terraform-panel[data-minimized] .panel-footer{display:none}.terraform-panel[data-minimized] .panel-header{padding:12px;align-items:center}.terraform-panel[data-minimized] .panel-header h2{font-size:19px;margin:0}.terraform-panel .terraform-mobile-tools{display:inline-flex;min-height:44px;align-items:center}}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "review",
+  "width": 800,
+  "height": 600,
+  "frames": [
+    {
+      "id": "iso",
+      "camera": {
+        "view": "iso"
+      }
+    },
+    {
+      "id": "front",
+      "camera": {
+        "view": "front"
+      }
+    },
+    {
+      "id": "right",
+      "camera": {
+        "view": "right"
+      }
+    },
+    {
+      "id": "back",
+      "camera": {
+        "view": "back"
+      }
+    },
+    {
+      "id": "left",
+      "camera": {
+        "view": "left"
+      }
+    },
+    {
+      "id": "top",
+      "camera": {
+        "view": "top"
+      }
+    }
+  ]
+}

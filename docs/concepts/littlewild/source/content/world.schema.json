@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:world:1",
+  "title": "Littlewild world library 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "id",
+    "name",
+    "description",
+    "nodes",
+    "buildings",
+    "sites",
+    "logistics",
+    "extensions"
+  ],
+  "properties": {
+    "format": {
+      "const": "littlewild-world"
+    },
+    "version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]{0,99}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 600
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "resource",
+          "mode",
+          "quantity",
+          "batch",
+          "seconds",
+          "skill",
+          "direct"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "resource": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "finite",
+              "infinite"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "batch": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 24
+          },
+          "seconds": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 300
+          },
+          "skill": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "direct": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "buildings": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "requiresNode",
+          "inputCapacity",
+          "outputCapacity",
+          "production",
+          "defaultTarget"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "requiresNode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "inputCapacity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "outputCapacity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "production": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "output",
+                  "amount",
+                  "cost",
+                  "seconds",
+                  "skill",
+                  "depletion"
+                ],
+                "properties": {
+                  "output": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 24
+                  },
+                  "cost": {
+                    "type": "object",
+                    "maxProperties": 24,
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 24
+                    }
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 300
+                  },
+                  "skill": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+                  },
+                  "depletion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 24
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "defaultTarget": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 48
+          }
+        }
+      }
+    },
+    "sites": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 16
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 16
+          }
+        }
+      }
+    },
+    "logistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "batch",
+        "outputAge"
+      ],
+      "properties": {
+        "batch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "outputAge": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
+        }
+      }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "littlewild-3d-asset.schema.json",
+  "title": "Littlewild bundled 3D asset",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "format",
+    "schemaVersion",
+    "category",
+    "id",
+    "name",
+    "materials",
+    "models",
+    "metadata"
+  ],
+  "properties": {
+    "format": {
+      "const": "littlewild-3d-asset"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "category": {
+      "enum": [
+        "building",
+        "item",
+        "actor"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,79}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "materials": {
+      "type": "object"
+    },
+    "models": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "behaviors": {
+      "type": "object",
+      "properties": {
+        "animation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bodyBob",
+            "breath",
+            "earSway",
+            "tailSway",
+            "footLift",
+            "footStride",
+            "walkArmSwing",
+            "workArmBase",
+            "workArmSwing",
+            "blinkThreshold",
+            "idleHeadYaw",
+            "idleHeadRoll"
+          ],
+          "properties": {
+            "bodyBob": {
+              "type": "number"
+            },
+            "breath": {
+              "type": "number"
+            },
+            "earSway": {
+              "type": "number"
+            },
+            "tailSway": {
+              "type": "number"
+            },
+            "footLift": {
+              "type": "number"
+            },
+            "footStride": {
+              "type": "number"
+            },
+            "walkArmSwing": {
+              "type": "number"
+            },
+            "workArmBase": {
+              "type": "number"
+            },
+            "workArmSwing": {
+              "type": "number"
+            },
+            "blinkThreshold": {
+              "type": "number",
+              "minimum": 0.8,
+              "exclusiveMaximum": 1
+            },
+            "idleHeadYaw": {
+              "type": "number"
+            },
+            "idleHeadRoll": {
+              "type": "number"
+            }
+          }
+        },
+        "appearances": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "model",
+              "scale",
+              "labelHeight",
+              "contextHeight",
+              "bubbleHeight",
+              "materials"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "scale": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "labelHeight": {
+                "type": "number"
+              },
+              "contextHeight": {
+                "type": "number"
+              },
+              "bubbleHeight": {
+                "type": "number"
+              },
+              "materials": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "expression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "angerAt",
+            "tiredEnergyBelow",
+            "concernFoodBelow",
+            "concernWaterBelow",
+            "happyJoyAbove"
+          ],
+          "properties": {
+            "angerAt": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "tiredEnergyBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "concernFoodBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "concernWaterBelow": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "happyJoyAbove": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        }
+      }
+    },
+    "rig": {
+      "type": "object"
+    }
+  }
+}

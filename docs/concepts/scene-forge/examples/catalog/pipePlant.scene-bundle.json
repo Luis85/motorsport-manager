@@ -1,0 +1,1726 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene-bundle",
+  "scene": {
+    "schemaVersion": 1,
+    "kind": "scene",
+    "id": "pipePlant",
+    "name": "Process Plant / Routing study",
+    "revision": 0,
+    "units": "meters",
+    "parameters": {},
+    "geometries": {
+      "floor": {
+        "type": "box",
+        "size": [
+          17,
+          0.25,
+          12
+        ]
+      },
+      "pad": {
+        "type": "box",
+        "size": [
+          3.4,
+          0.15,
+          3.3
+        ]
+      },
+      "line": {
+        "type": "box",
+        "size": [
+          0.06,
+          0.012,
+          4.7
+        ]
+      },
+      "step": {
+        "type": "box",
+        "size": [
+          1.1,
+          0.18,
+          0.43
+        ]
+      },
+      "manifold": {
+        "type": "tube",
+        "points": [
+          [
+            -6.8,
+            0.75,
+            2.7
+          ],
+          [
+            -3,
+            0.75,
+            2.7
+          ],
+          [
+            3,
+            0.75,
+            2.7
+          ],
+          [
+            6.8,
+            0.75,
+            2.7
+          ]
+        ],
+        "radius": 0.18,
+        "tubularSegments": 48,
+        "radialSegments": 8,
+        "closed": false,
+        "capEnds": true
+      },
+      "branch": {
+        "type": "tube",
+        "points": [
+          [
+            0,
+            1.15,
+            -1.75
+          ],
+          [
+            0,
+            1.15,
+            -0.8
+          ],
+          [
+            0,
+            0.75,
+            0.8
+          ],
+          [
+            0,
+            0.75,
+            2.7
+          ]
+        ],
+        "radius": 0.14,
+        "tubularSegments": 48,
+        "radialSegments": 8,
+        "closed": false,
+        "capEnds": true
+      },
+      "overhead": {
+        "type": "tube",
+        "points": [
+          [
+            -5,
+            4.5,
+            -3
+          ],
+          [
+            -5,
+            5.7,
+            -3
+          ],
+          [
+            -4,
+            6.25,
+            -3
+          ],
+          [
+            -1,
+            6.25,
+            -3
+          ],
+          [
+            0,
+            5.7,
+            -3
+          ],
+          [
+            0,
+            5.1,
+            -3
+          ]
+        ],
+        "radius": 0.16,
+        "tubularSegments": 48,
+        "radialSegments": 8,
+        "closed": false,
+        "capEnds": true
+      },
+      "return": {
+        "type": "tube",
+        "points": [
+          [
+            5,
+            1.15,
+            -1.75
+          ],
+          [
+            6.8,
+            1.15,
+            -1.75
+          ],
+          [
+            7,
+            1.15,
+            0.2
+          ],
+          [
+            7,
+            1.15,
+            3.7
+          ],
+          [
+            5,
+            0.63,
+            4
+          ]
+        ],
+        "radius": 0.12,
+        "tubularSegments": 48,
+        "radialSegments": 8,
+        "closed": false,
+        "capEnds": true
+      },
+      "pipeSupport": {
+        "type": "box",
+        "size": [
+          0.08,
+          0.7,
+          0.08
+        ]
+      }
+    },
+    "materials": {
+      "floor": {
+        "color": "#616f75",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "concrete": {
+        "color": "#8c999b",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "blue": {
+        "color": "#397e95",
+        "metalness": 0.45,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "warm": {
+        "color": "#c0784b",
+        "metalness": 0.55,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "yellow": {
+        "color": "#dfb75f",
+        "metalness": 0,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      },
+      "steel": {
+        "color": "#536772",
+        "metalness": 0.65,
+        "roughness": 0.55,
+        "opacity": 1,
+        "doubleSided": false,
+        "flatShading": false
+      }
+    },
+    "nodes": [
+      {
+        "id": "foundation",
+        "transform": {
+          "position": [
+            0,
+            -0.125,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "type": "mesh",
+        "geometry": "floor",
+        "material": "floor"
+      },
+      {
+        "id": "pads",
+        "transform": {
+          "position": [
+            -5,
+            0.075,
+            -3
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            5,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "pad",
+        "material": "concrete"
+      },
+      {
+        "id": "tankA",
+        "transform": {
+          "position": [
+            -5,
+            0.15,
+            -3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "vessels"
+        ],
+        "type": "model",
+        "model": "vessel",
+        "parameters": {
+          "height": 3.65
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "tankB",
+        "transform": {
+          "position": [
+            0,
+            0.15,
+            -3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "vessels"
+        ],
+        "type": "model",
+        "model": "vessel",
+        "parameters": {
+          "height": 4.3
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "tankC",
+        "transform": {
+          "position": [
+            5,
+            0.15,
+            -3
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "vessels"
+        ],
+        "type": "model",
+        "model": "vessel",
+        "parameters": {
+          "height": 3.3
+        },
+        "materialOverrides": {
+          "band": "warm"
+        }
+      },
+      {
+        "id": "serviceDeck",
+        "transform": {
+          "position": [
+            0,
+            0,
+            -0.5
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "access"
+        ],
+        "type": "model",
+        "model": "catwalk",
+        "parameters": {
+          "length": 12.5,
+          "height": 2.1,
+          "posts": 8
+        },
+        "materialOverrides": {}
+      },
+      {
+        "id": "stairs",
+        "transform": {
+          "position": [
+            6.5,
+            0.09,
+            3.7
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 11,
+          "step": [
+            0,
+            0.2,
+            -0.4
+          ]
+        },
+        "type": "mesh",
+        "geometry": "step",
+        "material": "yellow"
+      },
+      {
+        "id": "supplyHeader",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "pipes"
+        ],
+        "type": "mesh",
+        "geometry": "manifold",
+        "material": "blue"
+      },
+      {
+        "id": "vesselConnections",
+        "transform": {
+          "position": [
+            -5,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "pipes"
+        ],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            5,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "branch",
+        "material": "blue"
+      },
+      {
+        "id": "overheadTransfer",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "pipes"
+        ],
+        "type": "mesh",
+        "geometry": "overhead",
+        "material": "warm"
+      },
+      {
+        "id": "returnLoop",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "pipes"
+        ],
+        "type": "mesh",
+        "geometry": "return",
+        "material": "warm"
+      },
+      {
+        "id": "lineValves",
+        "transform": {
+          "position": [
+            -5,
+            0.82,
+            1.65
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            5,
+            0,
+            0
+          ]
+        },
+        "type": "model",
+        "model": "valve",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "pumps",
+        "transform": {
+          "position": [
+            -4,
+            0,
+            4
+          ]
+        },
+        "visible": true,
+        "tags": [
+          "equipment"
+        ],
+        "pattern": {
+          "type": "linear",
+          "count": 3,
+          "step": [
+            4,
+            0,
+            0
+          ]
+        },
+        "type": "model",
+        "model": "pump",
+        "parameters": {},
+        "materialOverrides": {}
+      },
+      {
+        "id": "pipeSupports",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "path",
+          "points": [
+            [
+              -6,
+              0.35,
+              2.7
+            ],
+            [
+              -3,
+              0.35,
+              2.7
+            ],
+            [
+              0,
+              0.35,
+              2.7
+            ],
+            [
+              3,
+              0.35,
+              2.7
+            ],
+            [
+              6,
+              0.35,
+              2.7
+            ]
+          ],
+          "orient": "none"
+        },
+        "type": "mesh",
+        "geometry": "pipeSupport",
+        "material": "steel"
+      },
+      {
+        "id": "walkwayLines",
+        "transform": {
+          "position": [
+            -7.5,
+            0.012,
+            1.8
+          ]
+        },
+        "visible": true,
+        "tags": [],
+        "pattern": {
+          "type": "linear",
+          "count": 2,
+          "step": [
+            15,
+            0,
+            0
+          ]
+        },
+        "type": "mesh",
+        "geometry": "line",
+        "material": "yellow"
+      }
+    ],
+    "environment": {
+      "background": "#171d25",
+      "ambient": 1.8,
+      "keyIntensity": 3.5,
+      "keyPosition": [
+        5,
+        10,
+        7
+      ]
+    }
+  },
+  "models": {
+    "valve": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "valve",
+      "category": "Industrial",
+      "name": "Handwheel valve",
+      "parameters": {
+        "radius": {
+          "default": 0.32,
+          "min": 0.15,
+          "max": 0.65,
+          "description": "Wheel radius"
+        }
+      },
+      "geometries": {
+        "hub": {
+          "type": "cylinder",
+          "radiusTop": 0.1,
+          "radiusBottom": 0.1,
+          "height": 0.35,
+          "segments": 16
+        },
+        "wheel": {
+          "type": "torus",
+          "radius": {
+            "$param": "radius"
+          },
+          "tube": 0.035,
+          "segments": 24
+        },
+        "spoke": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "radius"
+                },
+                1.85
+              ]
+            },
+            0.035,
+            0.035
+          ]
+        },
+        "housing": {
+          "type": "cylinder",
+          "radiusTop": 0.15,
+          "radiusBottom": 0.15,
+          "height": 0.22,
+          "segments": 24
+        }
+      },
+      "materials": {
+        "wheel": {
+          "color": "#d99b3d",
+          "metalness": 0.55,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "steel": {
+          "color": "#87959b",
+          "metalness": 0.75,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "housing",
+          "transform": {
+            "position": [
+              0,
+              0.11,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "housing",
+          "material": "steel"
+        },
+        {
+          "id": "stem",
+          "transform": {
+            "position": [
+              0,
+              0.3,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hub",
+          "material": "steel"
+        },
+        {
+          "id": "wheel",
+          "transform": {
+            "position": [
+              0,
+              0.49,
+              0
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "wheel",
+          "material": "wheel"
+        },
+        {
+          "id": "spokeX",
+          "transform": {
+            "position": [
+              0,
+              0.49,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "spoke",
+          "material": "wheel"
+        },
+        {
+          "id": "spokeZ",
+          "transform": {
+            "position": [
+              0,
+              0.49,
+              0
+            ],
+            "rotation": [
+              0,
+              90,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "spoke",
+          "material": "wheel"
+        }
+      ]
+    },
+    "vessel": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "vessel",
+      "category": "Industrial",
+      "name": "Process vessel",
+      "parameters": {
+        "height": {
+          "default": 4,
+          "min": 2.5,
+          "max": 6,
+          "description": "Cylindrical body height"
+        },
+        "radius": {
+          "default": 1.05,
+          "min": 0.65,
+          "max": 1.5,
+          "description": "Vessel radius"
+        }
+      },
+      "geometries": {
+        "body": {
+          "type": "cylinder",
+          "radiusTop": {
+            "$param": "radius"
+          },
+          "radiusBottom": {
+            "$param": "radius"
+          },
+          "height": {
+            "$param": "height"
+          },
+          "segments": 40
+        },
+        "cap": {
+          "type": "sphere",
+          "radius": {
+            "$param": "radius"
+          },
+          "segments": 32
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.2,
+            0.75,
+            0.2
+          ]
+        },
+        "foot": {
+          "type": "box",
+          "size": [
+            0.45,
+            0.1,
+            0.45
+          ]
+        },
+        "band": {
+          "type": "cylinder",
+          "radiusTop": {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.016
+            ]
+          },
+          "radiusBottom": {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.016
+            ]
+          },
+          "height": 0.22,
+          "segments": 40
+        },
+        "outlet": {
+          "type": "cylinder",
+          "radiusTop": 0.17,
+          "radiusBottom": 0.17,
+          "height": 0.45,
+          "segments": 24
+        }
+      },
+      "materials": {
+        "shell": {
+          "color": "#afc1c2",
+          "metalness": 0.5,
+          "roughness": 0.34,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "band": {
+          "color": "#397887",
+          "metalness": 0.35,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "legs": {
+          "color": "#4c606a",
+          "metalness": 0.7,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      2
+                    ]
+                  },
+                  0.7
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "shell"
+        },
+        {
+          "id": "top",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.7
+                ]
+              },
+              0
+            ],
+            "scale": [
+              1,
+              0.36,
+              1
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cap",
+          "material": "shell"
+        },
+        {
+          "id": "baseCap",
+          "transform": {
+            "position": [
+              0,
+              0.7,
+              0
+            ],
+            "scale": [
+              1,
+              0.3,
+              1
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cap",
+          "material": "shell"
+        },
+        {
+          "id": "legs",
+          "transform": {
+            "position": [
+              0,
+              0.375,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  1.4
+                ]
+              },
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  1.4
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "legs"
+        },
+        {
+          "id": "feet",
+          "transform": {
+            "position": [
+              0,
+              0.05,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              2,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  1.4
+                ]
+              },
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  1.4
+                ]
+              }
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "foot",
+          "material": "legs"
+        },
+        {
+          "id": "bands",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  0.7,
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.2
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.6
+                ]
+              },
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "band",
+          "material": "band"
+        },
+        {
+          "id": "outlet",
+          "transform": {
+            "position": [
+              0,
+              1.15,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "radius"
+                  },
+                  0.1
+                ]
+              }
+            ],
+            "rotation": [
+              90,
+              0,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "outlet",
+          "material": "legs"
+        },
+        {
+          "id": "topValve",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$expr": "add",
+                    "args": [
+                      {
+                        "$param": "height"
+                      },
+                      0.7
+                    ]
+                  },
+                  {
+                    "$expr": "mul",
+                    "args": [
+                      {
+                        "$param": "radius"
+                      },
+                      0.36
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "valve",
+          "parameters": {},
+          "materialOverrides": {}
+        }
+      ]
+    },
+    "catwalk": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "catwalk",
+      "category": "Industrial",
+      "name": "Guarded catwalk",
+      "parameters": {
+        "length": {
+          "default": 12,
+          "min": 4,
+          "max": 18,
+          "description": "Walkway length"
+        },
+        "height": {
+          "default": 2.1,
+          "min": 1,
+          "max": 3,
+          "description": "Deck height"
+        },
+        "posts": {
+          "default": 7,
+          "min": 3,
+          "max": 12,
+          "description": "Guard posts per side",
+          "integer": true
+        }
+      },
+      "geometries": {
+        "deck": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "length"
+            },
+            0.16,
+            1
+          ]
+        },
+        "leg": {
+          "type": "box",
+          "size": [
+            0.12,
+            {
+              "$param": "height"
+            },
+            0.12
+          ]
+        },
+        "post": {
+          "type": "box",
+          "size": [
+            0.045,
+            1.05,
+            0.045
+          ]
+        },
+        "rail": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "length"
+            },
+            0.05,
+            0.05
+          ]
+        }
+      },
+      "materials": {
+        "deck": {
+          "color": "#65767d",
+          "metalness": 0.6,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "rail": {
+          "color": "#dca54a",
+          "metalness": 0.4,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "deck",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$param": "height"
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "deck",
+          "material": "deck"
+        },
+        {
+          "id": "supports",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              3,
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "div",
+                    "args": [
+                      {
+                        "$param": "length"
+                      },
+                      2
+                    ]
+                  },
+                  0.25
+                ]
+              },
+              0,
+              0.75
+            ],
+            "centered": true
+          },
+          "type": "mesh",
+          "geometry": "leg",
+          "material": "deck"
+        },
+        {
+          "id": "guardPosts",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.5
+                ]
+              },
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.58
+                ]
+              },
+              -0.5
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              {
+                "$param": "posts"
+              },
+              1,
+              2
+            ],
+            "step": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  {
+                    "$expr": "sub",
+                    "args": [
+                      {
+                        "$param": "posts"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              },
+              0,
+              1
+            ],
+            "centered": false
+          },
+          "type": "mesh",
+          "geometry": "post",
+          "material": "rail"
+        },
+        {
+          "id": "rails",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  0.65
+                ]
+              },
+              -0.5
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "grid",
+            "counts": [
+              1,
+              2,
+              2
+            ],
+            "step": [
+              0,
+              0.43,
+              1
+            ],
+            "centered": false
+          },
+          "type": "mesh",
+          "geometry": "rail",
+          "material": "rail"
+        }
+      ]
+    },
+    "pump": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "pump",
+      "category": "Industrial",
+      "name": "Motor pump assembly",
+      "parameters": {
+        "length": {
+          "default": 1.8,
+          "min": 1.2,
+          "max": 2.6,
+          "description": "Motor and pump length"
+        }
+      },
+      "geometries": {
+        "motor": {
+          "type": "cylinder",
+          "radiusTop": 0.35,
+          "radiusBottom": 0.35,
+          "height": {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "length"
+              },
+              0.55
+            ]
+          },
+          "segments": 24
+        },
+        "collar": {
+          "type": "cylinder",
+          "radiusTop": 0.4,
+          "radiusBottom": 0.4,
+          "height": 0.09,
+          "segments": 24
+        },
+        "foot": {
+          "type": "box",
+          "size": [
+            {
+              "$param": "length"
+            },
+            0.12,
+            0.85
+          ]
+        },
+        "pedestal": {
+          "type": "box",
+          "size": [
+            0.12,
+            0.42,
+            0.6
+          ]
+        },
+        "shaft": {
+          "type": "cylinder",
+          "radiusTop": 0.12,
+          "radiusBottom": 0.12,
+          "height": 0.25,
+          "segments": 16
+        },
+        "casing": {
+          "type": "cylinder",
+          "radiusTop": 0.43,
+          "radiusBottom": 0.43,
+          "height": 0.4,
+          "segments": 32
+        },
+        "fin": {
+          "type": "box",
+          "size": [
+            {
+              "$expr": "mul",
+              "args": [
+                {
+                  "$param": "length"
+                },
+                0.5
+              ]
+            },
+            0.08,
+            0.025
+          ]
+        }
+      },
+      "materials": {
+        "blue": {
+          "color": "#416f83",
+          "metalness": 0.55,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#384951",
+          "metalness": 0.65,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "steel": {
+          "color": "#abb7bb",
+          "metalness": 0.8,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "skid",
+          "transform": {
+            "position": [
+              0,
+              0.06,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "foot",
+          "material": "dark"
+        },
+        {
+          "id": "pedestals",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.3
+                ]
+              },
+              0.28,
+              0
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 2,
+            "step": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  0.6
+                ]
+              },
+              0,
+              0
+            ]
+          },
+          "type": "mesh",
+          "geometry": "pedestal",
+          "material": "dark"
+        },
+        {
+          "id": "motor",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.12
+                ]
+              },
+              0.63,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              90
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "motor",
+          "material": "blue"
+        },
+        {
+          "id": "frontCasing",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  0.38
+                ]
+              },
+              0.63,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              90
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "casing",
+          "material": "blue"
+        },
+        {
+          "id": "endCollar",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.4
+                ]
+              },
+              0.63,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              90
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "collar",
+          "material": "steel"
+        },
+        {
+          "id": "shaft",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  0.18
+                ]
+              },
+              0.63,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              90
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shaft",
+          "material": "steel"
+        },
+        {
+          "id": "coolingFins",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  -0.12
+                ]
+              },
+              0.93,
+              -0.21
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 7,
+            "step": [
+              0,
+              0,
+              0.07
+            ]
+          },
+          "type": "mesh",
+          "geometry": "fin",
+          "material": "dark"
+        }
+      ]
+    }
+  }
+}

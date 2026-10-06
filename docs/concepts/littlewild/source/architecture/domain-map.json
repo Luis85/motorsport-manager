@@ -1,0 +1,453 @@
+{
+  "format": "littlewild-domain-map",
+  "schemaVersion": 1,
+  "layers": [
+    "domain",
+    "application",
+    "infrastructure",
+    "presentation"
+  ],
+  "contexts": [
+    {
+      "id": "simulation-core",
+      "layer": "domain",
+      "files": [
+        "ecs.ts",
+        "behavior-tree.ts",
+        "runtime-results.ts"
+      ]
+    },
+    {
+      "id": "actors",
+      "layer": "domain",
+      "files": [
+        "actor-ecs.ts",
+        "rpg.ts"
+      ]
+    },
+    {
+      "id": "physical-world",
+      "layer": "domain",
+      "files": [
+        "world-ecs.ts",
+        "island-geometry.ts",
+        "world-production.ts",
+        "world-tasks.ts",
+        "construction-footprints.ts"
+      ]
+    },
+    {
+      "id": "economy-progression",
+      "layer": "domain",
+      "files": [
+        "economy-ecs.ts",
+        "skill-trees.ts"
+      ]
+    },
+    {
+      "id": "content-model",
+      "layer": "domain",
+      "files": [
+        "content-runtime.ts",
+        "creature-catalog.ts",
+        "adventure-content.ts",
+        "growth-content.ts",
+        "world-profile.ts",
+        "scenario-shape.ts",
+        "asset-catalog.ts",
+        "workflow-venues.ts",
+        "scene-graph.ts",
+        "canvas-authoring.ts",
+        "storytelling-validation.ts",
+        "balancing-rules.ts",
+        "animation-catalog.ts",
+        "balancing-inventory.ts",
+        "creature-balancing.ts",
+        "renderer-catalog.ts",
+        "rts-catalog.ts",
+        "rts-mission-editor-data.ts"
+      ]
+    },
+    {
+      "id": "actors-application",
+      "layer": "application",
+      "files": [
+        "colony-policies.ts",
+        "creature-factory.ts",
+        "colony-adventures.ts",
+        "colony-activity.ts",
+        "colony-logistics.ts",
+        "colony-task-completion.ts"
+      ]
+    },
+    {
+      "id": "physical-world-application",
+      "layer": "application",
+      "files": [
+        "navigation.ts",
+        "world-integrity.ts",
+        "validation-village.ts",
+        "construction-designs.ts",
+        "construction-geometry.ts",
+        "construction-state.ts",
+        "construction-runtime.ts",
+        "construction-integration.ts",
+        "terraform-state.ts",
+        "terraform-runtime.ts",
+        "terraform-integration.ts"
+      ]
+    },
+    {
+      "id": "content-application",
+      "layer": "application",
+      "files": [
+        "world-content.ts"
+      ]
+    },
+    {
+      "id": "simulation-application",
+      "layer": "application",
+      "files": [
+        "engine.ts",
+        "engine-composition.ts",
+        "engine-composition-root.ts",
+        "actor-state-view.ts",
+        "systems.ts",
+        "colony.ts",
+        "village-systems.ts",
+        "world-simulation.ts",
+        "simulation-pipeline.ts",
+        "simulation-profile.ts",
+        "command-router.ts",
+        "simulation.cts",
+        "planner.ts",
+        "cartography.ts",
+        "engine-task-planning.ts",
+        "engine-task-completion.ts",
+        "engine-companion.ts",
+        "world-state-validation.ts",
+        "game-settings.ts",
+        "scenario-workflow.ts",
+        "application-adapters.ts",
+        "systems-work-rates.ts",
+        "systems-completions.ts",
+        "rts-session.ts",
+        "rts-tools.ts",
+        "rts-application.ts",
+        "skill-tree-integration.ts"
+      ]
+    },
+    {
+      "id": "experience-application",
+      "layer": "application",
+      "files": [
+        "scenario-runtime.ts",
+        "scenario-story.ts",
+        "story-codec.ts",
+        "scenario-resources.ts",
+        "scene-navigation.ts",
+        "scene-editor.ts",
+        "scene-props.ts",
+        "external-editor-core.ts",
+        "external-editor-tiled.ts",
+        "external-editor-ldtk.ts",
+        "external-editor-gltf.ts",
+        "external-editors.ts",
+        "external-editor-canvas-data.ts",
+        "external-editor-canvas.ts",
+        "creature-editor-fields.ts",
+        "creature-editor.ts",
+        "external-editor-canvas-story.ts",
+        "storytelling-director.ts",
+        "storytelling-editor.ts",
+        "storytelling.ts",
+        "balancing-tools.ts",
+        "balancing-probes.ts",
+        "engine-export-data.ts",
+        "engine-export-manifest.ts",
+        "engine-export.ts",
+        "rts-mission-editor.ts"
+      ]
+    },
+    {
+      "id": "persistence-and-clock",
+      "layer": "infrastructure",
+      "files": [
+        "file-io.ts",
+        "story-storage.ts",
+        "simulation-clock.ts"
+      ]
+    },
+    {
+      "id": "presentation",
+      "layer": "presentation",
+      "files": [
+        "asset-renderer.ts",
+        "build-panel.ts",
+        "colony-ui.ts",
+        "content-ui.ts",
+        "guide-panel.ts",
+        "interface-pause.ts",
+        "progression-ui.ts",
+        "scenario-ui.ts",
+        "software-3d.ts",
+        "tile-context.ts",
+        "ui.ts",
+        "village-ui.ts",
+        "world-3d.ts",
+        "world-explorer.ts",
+        "world-fidelity.ts",
+        "world-input.ts",
+        "world-layout.ts",
+        "world-presentation.ts",
+        "world-ui.ts",
+        "world.ts",
+        "ui-status.ts",
+        "ui-modal-content.ts",
+        "ui-story-panels.ts",
+        "ui-modal.ts",
+        "ui-actions.ts",
+        "ui-input.ts",
+        "canvas-art.ts",
+        "canvas-buildings.ts",
+        "canvas-ground.ts",
+        "canvas-scene.ts",
+        "scene-environment.ts",
+        "canvas-assets.ts",
+        "colony-hud.ts",
+        "interaction-ui.ts",
+        "building-interior-renderer.ts",
+        "building-interior-ui.ts",
+        "construction-editor.ts",
+        "terraform-ui.ts",
+        "renderer-registry.ts",
+        "renderer-frame.ts",
+        "renderer-basic-adapter.ts",
+        "renderer-host.ts",
+        "renderer-example.ts",
+        "scene-editor-view.ts",
+        "scene-editor-ui.ts",
+        "renderer-scene-2d.ts",
+        "renderer-pixi.ts",
+        "renderer-excalibur.ts",
+        "scene-rendering.ts",
+        "renderer-compositor.ts",
+        "external-editor-ui.ts",
+        "creature-editor-preview.ts",
+        "creature-editor-view.ts",
+        "creature-editor-ui.ts",
+        "storytelling-preview.ts",
+        "storytelling-projection.ts",
+        "storytelling-player.ts",
+        "storytelling-view.ts",
+        "storytelling-ui.ts",
+        "storytelling-editor-preview.ts",
+        "engine-export-ui.ts",
+        "balancing-ui.ts",
+        "renderer-animations.ts",
+        "renderer-observer.ts",
+        "storytelling-renderer.ts",
+        "renderer-animation-example.ts",
+        "scene-renderer-admission.ts",
+        "wildlands-ui.ts",
+        "rts-renderer.ts",
+        "rts-demo.ts",
+        "rts-host.ts",
+        "rts-mission-editor-ui.ts",
+        "rts-mission-editor-ui-forms.ts",
+        "rts-mission-editor-ui-projection.ts",
+        "skill-tree-ui.ts"
+      ]
+    },
+    {
+      "id": "developer-application",
+      "layer": "application",
+      "files": [
+        "developer-data.ts",
+        "developer-commands.ts",
+        "developer-session.ts",
+        "developer-scenes.ts",
+        "developer-creatures.ts",
+        "developer-storytelling.ts"
+      ]
+    },
+    {
+      "id": "developer-composition",
+      "layer": "presentation",
+      "files": [
+        "developer-toolbox.ts",
+        "developer-sdk.cts"
+      ]
+    },
+    {
+      "id": "interaction-definitions",
+      "layer": "domain",
+      "files": [
+        "interaction-catalog.ts",
+        "interaction-duel-rules.ts",
+        "interaction-space.ts"
+      ]
+    },
+    {
+      "id": "creature-interactions",
+      "layer": "application",
+      "files": [
+        "interaction-state.ts",
+        "interaction-runtime.ts",
+        "interaction-integration.ts",
+        "interaction-triggers.ts"
+      ]
+    },
+    {
+      "id": "building-interior-definitions",
+      "layer": "domain",
+      "files": [
+        "building-interior-paths.ts",
+        "building-interior-catalog.ts"
+      ]
+    },
+    {
+      "id": "building-interiors",
+      "layer": "application",
+      "files": [
+        "building-interior-runtime.ts",
+        "building-interior-integration.ts",
+        "building-interior-projector.ts",
+        "building-interior-state.ts"
+      ]
+    },
+    {
+      "id": "wildlands-project",
+      "layer": "application",
+      "files": [
+        "wildlands-project.ts"
+      ]
+    },
+    {
+      "id": "wildlands-godot",
+      "layer": "infrastructure",
+      "files": [
+        "wildlands-godot.ts"
+      ]
+    },
+    {
+      "id": "wildlands-runtime",
+      "layer": "presentation",
+      "files": [
+        "wildlands-runtime.cts",
+        "wildlands-runtime-authoring.cts",
+        "wildlands-project-sdk.cts",
+        "wildlands-sdk.cts"
+      ]
+    },
+    {
+      "id": "rts",
+      "layer": "domain",
+      "files": [
+        "rts-navigation.ts",
+        "rts-systems.ts",
+        "rts-production.ts",
+        "rts-economy.ts",
+        "rts-stats.ts",
+        "rts-checkpoint.ts"
+      ]
+    }
+  ],
+  "moduleBudgetBytes": 40000,
+  "domainGlobals": [
+    "LWECS",
+    "LWBehaviorTree",
+    "LWActorECS",
+    "LWActorRules",
+    "LWRPG",
+    "LWWorldECS",
+    "LWGeography",
+    "LWWorldProfile",
+    "LWEconomyECS",
+    "LWEconomyRules",
+    "LWContent",
+    "LWContentSchema",
+    "LWDefaultLibrary",
+    "LWAdventure",
+    "LWDefaultAdventure",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWGrowth",
+    "LWDefaultProfile",
+    "LWScenarioShape",
+    "LWCreatureConfig",
+    "LWCreatureDefinitions",
+    "LWCreatures",
+    "LWWorldProduction",
+    "LWWorldTasks",
+    "LWInteractions",
+    "LWInteractionLibrary",
+    "LWInteractionDuelRules",
+    "LWAssets",
+    "LWAssetDefinitions",
+    "LWRuntimeResults",
+    "LWInteriorDefinitions",
+    "LWInteriorPaths",
+    "LWInteriors",
+    "LWConstructionFootprints",
+    "LWWorkflowVenues",
+    "LWInteractionSpace",
+    "LWSceneGraph",
+    "LWCanvasAuthoring",
+    "LWStorytellingValidation",
+    "LWScenarioSchema",
+    "LWBalanceRules",
+    "LWDefaultBalancing",
+    "LWAnimationCatalog",
+    "LWAnimationCatalogRecords",
+    "LWBalancingInventory",
+    "LWCreatureBalancing",
+    "LWRendererCatalog",
+    "LWRendererCatalogRecords",
+    "LWRTSCatalog",
+    "LWRTSDefinitions",
+    "LWRTSNavigation",
+    "LWRTSProduction",
+    "LWRTSEconomy",
+    "LWRTSSystems",
+    "LWRTS",
+    "LWRTSStats",
+    "LWRTSCheckpoint",
+    "LWRTSMissionEditorData",
+    "LWSkillTrees"
+  ],
+  "injectedDataGlobals": [
+    "LWDefaultLibrary",
+    "LWContentSchema",
+    "LWDefaultAdventure",
+    "LWAdventureSchema",
+    "LWDefaultWorld",
+    "LWWorldSchema",
+    "LWActorRules",
+    "LWEconomyRules",
+    "LWDefaultSimulationProfile",
+    "LWSimulationSchema",
+    "LWDefaultGrowth",
+    "LWGrowthSchema",
+    "LWDefaultProfile",
+    "LWScenarioSchema",
+    "LWScenarioPacks",
+    "LWAssetDefinitions",
+    "LWCreatureConfig",
+    "LWCreatureDefinitions",
+    "LWInteractionLibrary",
+    "LWInteriorDefinitions",
+    "LWCreatureEditorFieldDefinitions",
+    "LWDefaultBalancing",
+    "LWEngineSourceLoader",
+    "WildlandsGodotRuntimeBundle",
+    "WildlandsGodotRuntimeLoader",
+    "WildlandsGodotTemplates",
+    "LWRTSDefinitions"
+  ],
+  "strictTypingDebt": {},
+  "strictTypingDebtBudget": 0,
+  "moduleBudgetExceptions": {},
+  "dataOwnership": "architecture/data-ownership.json",
+  "contractOwnership": "architecture/contract-ownership.json"
+}

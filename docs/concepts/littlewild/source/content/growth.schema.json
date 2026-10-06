@@ -1,0 +1,718 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "littlewild-growth-content"
+    },
+    "schemaVersion": {
+      "const": 2
+    },
+    "revision": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^[^<>\\u0000-\\u001f]*$"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^[^<>\\u0000-\\u001f]*$"
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "maxSlots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "initialSlots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "slotPrestigeBase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "slotGrowth": {
+          "type": "number",
+          "minimum": 1.05,
+          "maximum": 3
+        },
+        "slotLevelBase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "slotLevelStep": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "questPrestigeBase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "questPrestigePerTier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "landLevel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "landCoinsBase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "landPrestigeBase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "landGrowth": {
+          "type": "number",
+          "minimum": 1.05,
+          "maximum": 3
+        },
+        "maxIslands": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 49
+        },
+        "marketBatch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "marketCapacity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "marketSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        }
+      },
+      "required": [
+        "maxSlots",
+        "initialSlots",
+        "slotPrestigeBase",
+        "slotGrowth",
+        "slotLevelBase",
+        "slotLevelStep",
+        "questPrestigeBase",
+        "questPrestigePerTier",
+        "landLevel",
+        "landCoinsBase",
+        "landPrestigeBase",
+        "landGrowth",
+        "maxIslands",
+        "marketBatch",
+        "marketCapacity",
+        "marketSeconds"
+      ],
+      "additionalProperties": false
+    },
+    "homes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "places": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16
+          },
+          "perLevel": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8
+          }
+        },
+        "required": [
+          "places",
+          "perLevel"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "maxRank": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "maxRank"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 16
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "buildings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playerLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              },
+              "research": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              }
+            },
+            "required": [
+              "playerLevel",
+              "features"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "recipes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playerLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              },
+              "research": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              }
+            },
+            "required": [
+              "playerLevel",
+              "features"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playerLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              },
+              "research": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              }
+            },
+            "required": [
+              "playerLevel",
+              "features"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playerLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              },
+              "research": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              }
+            },
+            "required": [
+              "playerLevel",
+              "features"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "skills": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playerLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "features": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              },
+              "research": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+              }
+            },
+            "required": [
+              "playerLevel",
+              "features"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "buildings",
+        "recipes",
+        "items",
+        "features",
+        "skills"
+      ],
+      "additionalProperties": false
+    },
+    "research": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "playerLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "requires": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            }
+          },
+          "cost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "grants": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "feature": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+                  },
+                  "rank": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4
+                  }
+                },
+                "required": [
+                  "feature",
+                  "rank"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "unlocks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^[^<>\\u0000-\\u001f]*$"
+            },
+            "maxItems": 10
+          },
+          "initial": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "playerLevel",
+          "requires",
+          "cost",
+          "grants",
+          "unlocks"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 256
+    },
+    "shop": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "prestige": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "playerLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prestige",
+          "playerLevel",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 64
+    },
+    "interactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "icon": {
+            "type": "string",
+            "maxLength": 500,
+            "pattern": "^[^<>\\u0000-\\u001f]*$"
+          },
+          "handler": {
+            "enum": [
+              "care",
+              "moment"
+            ]
+          },
+          "action": {
+            "enum": [
+              "feed",
+              "water",
+              "bond",
+              "praise",
+              "soothe",
+              "space"
+            ]
+          },
+          "eventOnly": {
+            "type": "boolean"
+          },
+          "cooldown": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3600
+          },
+          "cost": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "effects": {
+            "type": "object",
+            "properties": {
+              "bond": {
+                "type": "integer",
+                "minimum": -20,
+                "maximum": 20
+              },
+              "joy": {
+                "type": "integer",
+                "minimum": -20,
+                "maximum": 20
+              },
+              "anger": {
+                "type": "integer",
+                "minimum": -20,
+                "maximum": 20
+              },
+              "social": {
+                "type": "integer",
+                "minimum": -20,
+                "maximum": 20
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "icon",
+          "handler",
+          "eventOnly",
+          "cooldown",
+          "cost",
+          "effects"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 64
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "trigger": {
+            "enum": [
+              "home-assigned",
+              "quest-success",
+              "temper",
+              "arrival",
+              "island-purchased"
+            ]
+          },
+          "interaction": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,60}$"
+          },
+          "seconds": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 3600
+          }
+        },
+        "required": [
+          "id",
+          "trigger",
+          "interaction",
+          "seconds"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 64
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "cartography": {
+      "type": "object",
+      "properties": {
+        "tableBuilding": {
+          "const": "map_table"
+        },
+        "distanceLevelStep": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "cooldown": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 1800
+        },
+        "eventChance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "guaranteedAfterMisses": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "biomes": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": [
+                  "Meadow",
+                  "Pinewood",
+                  "Amber grove",
+                  "Stonegarden"
+                ]
+              },
+              "minimumLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 90
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[^<>\\u0000-\\u001f]*$"
+              },
+              "questIds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                }
+              }
+            },
+            "required": [
+              "id",
+              "minimumLevel",
+              "description",
+              "questIds"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tableBuilding",
+        "distanceLevelStep",
+        "cooldown",
+        "eventChance",
+        "guaranteedAfterMisses",
+        "biomes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "revision",
+    "name",
+    "rules",
+    "homes",
+    "features",
+    "requirements",
+    "research",
+    "shop",
+    "interactions",
+    "events",
+    "extensions",
+    "cartography"
+  ],
+  "additionalProperties": false,
+  "title": "Littlewild Growth Library 2 — cartography and progression"
+}

@@ -1,0 +1,182 @@
+/* The interior replaces the map surface while retaining the shared simulation clock. */
+.building-interior {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  padding: 100px 24px 20px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.building-interior[hidden] { display: none !important; }
+.building-interior-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: none;
+}
+.building-interior-title { min-width: 0; flex: 1; }
+.building-interior-title h1 {
+  font: 30px/1.2 Georgia, serif;
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+}
+.building-interior-title p { color: var(--muted); line-height: 1.5; }
+.building-interior-title small { display: block; margin-bottom: 5px; color: var(--muted); letter-spacing: .09em; }
+.building-interior button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  padding: 9px 14px;
+  line-height: 1.3;
+}
+.building-interior button:hover { background: var(--green-light); }
+.building-interior button:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+.building-interior input:focus-visible,
+.building-interior select:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+.building-interior-floors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  flex: 1 0 100%;
+}
+.building-interior-floors button[aria-selected=true],
+.building-interior-floors button[aria-pressed=true] {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--card);
+}
+.building-interior-main {
+  display: flex;
+  flex: 1;
+  gap: 24px;
+  min-height: 0;
+  padding-top: 14px;
+}
+.building-interior-stage { position: relative; flex: 1; min-width: 0; min-height: 180px; }
+.building-interior-stage canvas,
+.building-interior-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.building-interior-details {
+  width: clamp(230px, 25vw, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 4px 12px 20px;
+  border-left: 1px solid var(--line);
+  scrollbar-width: thin;
+  line-height: 1.6;
+}
+.building-interior-details h2 { font: 20px/1.3 Georgia, serif; margin: 0 0 8px; }
+.building-interior-details section + section { margin-top: 24px; }
+.building-interior-details p { margin: 7px 0; }
+.building-interior-details small { display: block; font-size: 12px; color: var(--muted); }
+.building-interior-details form { display: grid; gap: 12px; margin: 14px 0; }
+.building-interior-details label { display: block; font-weight: 600; }
+.building-interior-details select,
+.building-interior-details input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+}
+.building-interior-details meter { display: block; width: 100%; height: 12px; margin: 6px 0; }
+.building-interior-details article { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.building-interior-details dl { margin: 0; }
+.building-interior-details dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.building-interior-details dd { margin: 0; font-variant-numeric: tabular-nums; }
+.building-interior-actor,
+.building-interior-recipe { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.building-interior-actor strong,
+.building-interior-recipe strong { display: block; }
+.building-interior-status { color: var(--muted); line-height: 1.6; }
+.building-interior-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  flex: none;
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+body.building-interior-open .cx-roster-strip,
+body.building-interior-open #world-toolbar,
+body.building-interior-open .world-tools,
+body.building-interior-open .world-top,
+body.building-interior-open #world-objective,
+body.building-interior-open #world-selection-hint,
+body.building-interior-open #creature-context,
+body.building-interior-open #world-more,
+body.building-interior-open #world-context,
+body.building-interior-open .tile-tip,
+body.building-interior-open .pause-badge { display: none !important; }
+@media (max-width: 760px) {
+  .building-interior { padding: 124px 14px 14px; }
+  .building-interior-title { flex: 1 0 100%; }
+  .building-interior-title h1 { font-size: 25px; }
+  .building-interior-header { gap: 12px; }
+  .building-interior-header > button { padding-inline: 10px; flex: 1; min-width: 0; }
+  .building-interior-floors button { padding-inline: 10px; }
+  .building-interior-main { flex-direction: column; gap: 0; padding-top: 8px; }
+  .building-interior-stage { flex: 1; min-height: 170px; }
+  .building-interior-details {
+    width: 100%;
+    max-height: 24dvh;
+    flex: none;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 12px 4px 0;
+  }
+  .building-interior-details section + section { margin-top: 16px; }
+  .building-interior-footer { margin-top: 8px; padding-top: 8px; }
+}
+@media (max-height: 580px) and (min-width: 761px) {
+  .building-interior { padding-top: 88px; padding-bottom: 10px; }
+  .building-interior-title h1 { font-size: 25px; }
+  .building-interior-footer { margin-top: 7px; padding-top: 7px; }
+}
+/* Room feedback stays beside the action; global alerts retain their live region. */
+body.building-interior-open #toasts {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+body.high-contrast .building-interior { background: var(--card); }
+body.high-contrast .building-interior-status,
+body.high-contrast .building-interior-title p,
+body.high-contrast .building-interior-details small { color: var(--ink); }
+
+.building-interior.custom-interior-renderer { background: transparent; }
+.custom-interior-renderer .building-interior-stage canvas { display: none; }
+.custom-interior-renderer .building-interior-header,
+.custom-interior-renderer .building-interior-details,
+.custom-interior-renderer .building-interior-footer { background: var(--paper); }

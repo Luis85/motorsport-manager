@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "platform",
+  "name": "Terrain platform",
+  "parameters": {},
+  "geometries": {
+    "base": {
+      "type": "cylinder",
+      "radiusTop": 5.2,
+      "radiusBottom": 5.2,
+      "height": 0.28,
+      "segments": 64
+    },
+    "soil": {
+      "type": "cylinder",
+      "radiusTop": 5.1,
+      "radiusBottom": 5.1,
+      "height": 0.12,
+      "segments": 64
+    }
+  },
+  "materials": {
+    "edge": {
+      "color": "#403e3b",
+      "metalness": 0.1,
+      "roughness": 0.8,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "sand": {
+      "color": "#ae9680",
+      "metalness": 0,
+      "roughness": 0.95,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          -0.22,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "edge"
+    },
+    {
+      "id": "terrain",
+      "transform": {
+        "position": [
+          0,
+          -0.03,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "soil",
+      "material": "sand"
+    }
+  ]
+}

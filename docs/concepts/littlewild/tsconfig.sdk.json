@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.strict.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "source/developer-sdk.cts",
+    "source/developer-contracts.d.ts",
+    "source/wildlands-project-sdk.cts",
+    "source/wildlands-project-contracts.d.ts",
+    "source/wildlands-sdk.cts"
+  ],
+  "include": []
+}

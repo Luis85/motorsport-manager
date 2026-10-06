@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "book",
+  "category": "Everyday",
+  "description": "A closed book with independent cover and page materials.",
+  "name": "Hardcover book",
+  "parameters": {
+    "width": {
+      "default": 0.24,
+      "min": 0.12,
+      "max": 0.5
+    },
+    "height": {
+      "default": 0.035,
+      "min": 0.015,
+      "max": 0.12
+    },
+    "depth": {
+      "default": 0.32,
+      "min": 0.16,
+      "max": 0.6
+    }
+  },
+  "geometries": {
+    "cover": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        0.008,
+        {
+          "$param": "depth"
+        }
+      ]
+    },
+    "pages": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "width"
+            },
+            -0.012
+          ]
+        },
+        {
+          "$param": "height"
+        },
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "depth"
+            },
+            -0.018
+          ]
+        }
+      ]
+    },
+    "spine": {
+      "type": "box",
+      "size": [
+        0.012,
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "height"
+            },
+            0.012
+          ]
+        },
+        {
+          "$param": "depth"
+        }
+      ]
+    }
+  },
+  "materials": {
+    "cover": {
+      "color": "#637f95",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pages": {
+      "color": "#dfd6bb",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "pages",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0.008
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "pages",
+      "material": "pages"
+    },
+    {
+      "id": "covers",
+      "transform": {
+        "position": [
+          0,
+          0.004,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.008
+            ]
+          },
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "cover",
+      "material": "cover"
+    },
+    {
+      "id": "spine",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.5
+            ]
+          },
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "height"
+                  },
+                  2
+                ]
+              },
+              0.008
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spine",
+      "material": "cover"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "Procedural logistics bay",
+  "activeScene": "main",
+  "scenes": {
+    "main": "scenes/main.scene.json"
+  },
+  "models": {
+    "crate": "models/crate.model.json",
+    "rack": "models/rack.model.json"
+  }
+}

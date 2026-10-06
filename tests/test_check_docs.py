@@ -62,6 +62,49 @@ class DocumentationChecks(unittest.TestCase):
         errors, _ = check(self.root)
         self.assertTrue(any("stale document path docs/old.md" in error for error in errors))
 
+    def test_installed_dependency_docs_are_not_authored_pages(self):
+        self.write(
+            "docs/concepts/example/node_modules/package/README.md",
+            "[Missing](missing.md)\nSee docs/old.md.\n",
+        )
+        self.assertEqual(check(self.root), ([], 1))
+
+    def test_other_nested_docs_and_dependency_links_remain_checked(self):
+        self.write("docs/concepts/example/vendor/README.md", "[Missing](missing.md)\n")
+        self.write("docs/concepts/example/node_modules-not/README.md", "# Authored\n")
+        with (self.root / "docs/how-to/guide.md").open("a") as file:
+            file.write("[Dependency](../concepts/example/node_modules/package/missing.md)\n")
+        errors, _ = check(self.root)
+        self.assertTrue(any("vendor/README.md:1: missing link" in error for error in errors))
+        self.assertTrue(any("vendor/README.md: unreachable" in error for error in errors))
+        self.assertTrue(any("node_modules-not/README.md: unreachable" in error for error in errors))
+        self.assertTrue(
+            any(
+                "missing link target ../concepts/example/node_modules/" in error for error in errors
+            )
+        )
+
+    def test_generated_artifact_glob_does_not_exempt_literal_documents(self):
+        self.write(
+            ".github/workflows/example.yml",
+            "path: |\n"
+            "  docs/concepts/littlewild/verification/v15/*click-diagnostics.json\n"
+            "  docs/concepts/littlewild/verification/v15/*gate-results.json\n"
+            "  docs/concepts/littlewild/verification/v15/*building-interiors-browser.json\n",
+        )
+        self.assertEqual(check(self.root), ([], 1))
+        with (self.root / "docs/how-to/guide.md").open("a") as file:
+            file.write(
+                "See docs/concepts/littlewild/verification/v15/storytelling-click-diagnostics.json.\n"
+            )
+        errors, _ = check(self.root)
+        self.assertTrue(
+            any(
+                "stale document path docs/concepts/littlewild/verification/v15/" in error
+                for error in errors
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,128 @@
+{
+  "id": "mossmeadow",
+  "name": "Mossmeadow",
+  "description": "Connected woodland islands with room for a shared home.",
+  "terrain": [
+    "~~~...............~",
+    "~.................~",
+    "~..................",
+    "..............~~...",
+    ".............~~~~..",
+    ".............~~~~..",
+    ".............~~~~..",
+    "..............~~...",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    "...................",
+    ".................~~",
+    "~~...............~~"
+  ],
+  "biomeNames": {
+    "Meadow": "Meadow",
+    "Pinewood": "Pinewood",
+    "Amber grove": "Amber grove",
+    "Stonegarden": "Stonegarden"
+  },
+  "resourceCounts": {
+    "wood": 15,
+    "berries": 5,
+    "fiber": 5,
+    "stone": 4,
+    "clay": 3,
+    "ore": 3,
+    "herbs": 3,
+    "grain": 2
+  },
+  "fixedSites": [
+    {
+      "kind": "soil",
+      "x": 4,
+      "y": 8
+    },
+    {
+      "kind": "soil",
+      "x": 5,
+      "y": 8
+    },
+    {
+      "kind": "soil",
+      "x": 4,
+      "y": 9
+    },
+    {
+      "kind": "soil",
+      "x": 5,
+      "y": 9
+    },
+    {
+      "kind": "soil",
+      "x": 4,
+      "y": 10
+    },
+    {
+      "kind": "soil",
+      "x": 5,
+      "y": 10
+    },
+    {
+      "kind": "soil",
+      "x": 10,
+      "y": 14
+    },
+    {
+      "kind": "soil",
+      "x": 11,
+      "y": 14
+    },
+    {
+      "kind": "groundwater",
+      "x": 6,
+      "y": 6
+    },
+    {
+      "kind": "stream",
+      "x": 12,
+      "y": 5
+    },
+    {
+      "kind": "water",
+      "x": 12,
+      "y": 4
+    },
+    {
+      "kind": "hunt",
+      "x": 15,
+      "y": 16
+    }
+  ],
+  "groundColors": {
+    "Meadow": [
+      "#9cb681",
+      "#a0b984",
+      "#a5bd88"
+    ],
+    "Pinewood": [
+      "#87a591",
+      "#8cab95",
+      "#91af99"
+    ],
+    "Amber grove": [
+      "#b4b079",
+      "#b9b57d",
+      "#beba82"
+    ],
+    "Stonegarden": [
+      "#9fad93",
+      "#a4b298",
+      "#aab79f"
+    ]
+  },
+  "materialColors": {},
+  "placementPolicy": "legacy"
+}

@@ -1,0 +1,149 @@
+[
+  {
+    "project": "examples/outpost",
+    "schemaVersion": 1,
+    "kind": "quality-report",
+    "scope": "visible",
+    "passed": true,
+    "policy": {
+      "schemaVersion": 1,
+      "kind": "quality-policy",
+      "allowTransparency": true,
+      "allowDoubleSided": true,
+      "requireUVs": false
+    },
+    "metrics": {
+      "nodes": 98,
+      "meshes": 88,
+      "triangles": 6776,
+      "geometries": 35,
+      "materials": 14,
+      "geometryBytes": 107520,
+      "maxExtent": 10.399999618530273,
+      "bounds": {
+        "min": [
+          -5.199999809265137,
+          -0.3600000005960464,
+          -5.199999809265137
+        ],
+        "max": [
+          5.199999809265137,
+          3.409999997317791,
+          5.199999809265137
+        ],
+        "size": [
+          10.399999618530273,
+          3.769999997913837,
+          10.399999618530273
+        ]
+      }
+    },
+    "findings": [],
+    "summary": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "limitations": [
+      "Not a manifold, collision, UV-overlap or native application import check.",
+      "geometryBytes counts unique attribute/index buffers, not GPU memory or export file size."
+    ]
+  },
+  {
+    "project": "examples/composition",
+    "schemaVersion": 1,
+    "kind": "quality-report",
+    "scope": "visible",
+    "passed": true,
+    "policy": {
+      "schemaVersion": 1,
+      "kind": "quality-policy",
+      "allowTransparency": true,
+      "allowDoubleSided": true,
+      "requireUVs": false
+    },
+    "metrics": {
+      "nodes": 196,
+      "meshes": 163,
+      "triangles": 8284,
+      "geometries": 34,
+      "materials": 14,
+      "geometryBytes": 105000,
+      "maxExtent": 14.351999473571777,
+      "bounds": {
+        "min": [
+          -7.175999736785888,
+          -0.3600000005960464,
+          -7.175999736785888
+        ],
+        "max": [
+          7.175999736785888,
+          3.344999986588955,
+          7.175999736785888
+        ],
+        "size": [
+          14.351999473571777,
+          3.7049999871850012,
+          14.351999473571777
+        ]
+      }
+    },
+    "findings": [],
+    "summary": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "limitations": [
+      "Not a manifold, collision, UV-overlap or native application import check.",
+      "geometryBytes counts unique attribute/index buffers, not GPU memory or export file size."
+    ]
+  },
+  {
+    "project": "examples/procedural",
+    "schemaVersion": 1,
+    "kind": "quality-report",
+    "scope": "visible",
+    "passed": true,
+    "policy": {
+      "schemaVersion": 1,
+      "kind": "quality-policy",
+      "allowTransparency": true,
+      "allowDoubleSided": true,
+      "requireUVs": false
+    },
+    "metrics": {
+      "nodes": 221,
+      "meshes": 140,
+      "triangles": 1680,
+      "geometries": 19,
+      "materials": 8,
+      "geometryBytes": 15960,
+      "maxExtent": 13,
+      "bounds": {
+        "min": [
+          -6.5,
+          -0.15999999821186067,
+          -3.5
+        ],
+        "max": [
+          6.5,
+          3.29999999910593,
+          3.5
+        ],
+        "size": [
+          13,
+          3.459999997317791,
+          7
+        ]
+      }
+    },
+    "findings": [],
+    "summary": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "limitations": [
+      "Not a manifold, collision, UV-overlap or native application import check.",
+      "geometryBytes counts unique attribute/index buffers, not GPU memory or export file size."
+    ]
+  }
+]

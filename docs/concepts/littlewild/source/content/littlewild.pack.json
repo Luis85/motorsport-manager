@@ -1,0 +1,84 @@
+{
+  "format": "living-worlds-pack",
+  "schemaVersion": 2,
+  "id": "littlewild",
+  "version": "1.0.0",
+  "name": "Littlewild",
+  "description": "The woodland showcase for the shared autonomous-life simulation.",
+  "presentation": {
+    "title": "Littlewild",
+    "tagline": "A life beside yours",
+    "worldSubtitle": "A small world. So much possibility.",
+    "accent": "#355a4a",
+    "paper": "#faf8ee",
+    "ink": "#284b3d"
+  },
+  "tutorial": [
+    {
+      "id": "step-1",
+      "title": "A buddy, not a cursor",
+      "body": "Select Pip in the world or the roster. Their card opens beside them. You influence choices; you never move their paws.",
+      "action": "select"
+    },
+    {
+      "id": "step-2",
+      "title": "A small act of care",
+      "body": "Offer water or a snack from Pip\u2019s own satchel. Watch the response in the world. When supplies run out, Pip gathers or visits the warehouse.",
+      "action": "care"
+    },
+    {
+      "id": "step-3",
+      "title": "Give knowledge room to grow",
+      "body": "Open Learn. Research and teach Woodland hands, then a first shelter lesson. Learning takes time and practice.",
+      "action": "learn"
+    },
+    {
+      "id": "step-4",
+      "title": "A place to belong",
+      "body": "Open Build, place a leaf shelter on clear ground, and watch Pip gather and build. Completed homes are assigned automatically when a bed is available.",
+      "action": "home"
+    },
+    {
+      "id": "step-5",
+      "title": "Make a plan, not a chore",
+      "body": "Open the planner. Add a gathering goal and assign Pip. Try pause and resume. Essential self-care is protected; no items disappear when work is interrupted.",
+      "action": "planner"
+    },
+    {
+      "id": "step-6",
+      "title": "Research a little further",
+      "body": "Guide levels open discoveries. Feature ranks unlock new research choices. Only researched recipes, blueprints and features appear in their normal menus.",
+      "action": "research"
+    },
+    {
+      "id": "step-7",
+      "title": "A little adventure",
+      "body": "Discover quests, prepare supplies and equipment, then send a companion. While away they leave the glade; only a recall is available. Successful returns earn prestige.",
+      "action": "quests"
+    },
+    {
+      "id": "step-8",
+      "title": "A shared home, a wider world",
+      "body": "Spend prestige on a level-gated slot, prepare another bed, then welcome a friend with coins. Build a map table before buying adjacent islands. Each island shows its own level requirement and coin/prestige cost.",
+      "action": "growth"
+    },
+    {
+      "id": "step-9",
+      "title": "Let the world do the carrying",
+      "body": "Only warehouse stock can be listed for sale. A creature carries it to a built market stall, then earns coins there. Workplace inputs and outputs also need physical trips.",
+      "action": "market"
+    },
+    {
+      "id": "step-10",
+      "title": "Keep your little world safe",
+      "body": "Export a story from Settings. A save includes the exact content definitions, homes, islands and unfinished work. Pause at any time; nothing advances while the game is closed.",
+      "action": "save"
+    },
+    {
+      "id": "step-11",
+      "title": "Chart your next shore",
+      "body": "Discover Shared cartography at guide level 3 with discovery rank 2. Build a map table, then use World map to compare island resources, level requirements and quests. Buying still needs land research, coins and prestige.",
+      "action": "map"
+    }
+  ]
+}

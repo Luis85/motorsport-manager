@@ -1,0 +1,408 @@
+{
+  "format": "littlewild-world",
+  "version": 1,
+  "id": "littlewild.living-land",
+  "name": "The Living Land",
+  "description": "Finite deposits, sustainable sources and physically serviced workspaces.",
+  "nodes": [
+    {
+      "id": "wood",
+      "name": "Branching grove",
+      "resource": "wood",
+      "mode": "finite",
+      "quantity": 80,
+      "batch": 3,
+      "seconds": 4,
+      "skill": "woodcraft",
+      "direct": true
+    },
+    {
+      "id": "stone",
+      "name": "Stone outcrop",
+      "resource": "stone",
+      "mode": "finite",
+      "quantity": 240,
+      "batch": 2,
+      "seconds": 4.5,
+      "skill": "stonework",
+      "direct": true
+    },
+    {
+      "id": "fiber",
+      "name": "Wild fibers",
+      "resource": "fiber",
+      "mode": "infinite",
+      "quantity": 80,
+      "batch": 3,
+      "seconds": 3,
+      "skill": null,
+      "direct": true
+    },
+    {
+      "id": "berries",
+      "name": "Berry thicket",
+      "resource": "berries",
+      "mode": "infinite",
+      "quantity": 80,
+      "batch": 3,
+      "seconds": 3,
+      "skill": null,
+      "direct": true
+    },
+    {
+      "id": "water",
+      "name": "Freshwater spring",
+      "resource": "water",
+      "mode": "infinite",
+      "quantity": 999,
+      "batch": 3,
+      "seconds": 2.8,
+      "skill": null,
+      "direct": true
+    },
+    {
+      "id": "hunt",
+      "name": "Woodland hunting grounds",
+      "resource": "meat",
+      "mode": "infinite",
+      "quantity": 120,
+      "batch": 2,
+      "seconds": 9,
+      "skill": "tracking",
+      "direct": true
+    },
+    {
+      "id": "clay",
+      "name": "Clay deposit",
+      "resource": "clay",
+      "mode": "finite",
+      "quantity": 180,
+      "batch": 3,
+      "seconds": 4,
+      "skill": "claywork",
+      "direct": true
+    },
+    {
+      "id": "ore",
+      "name": "Iron-bearing rock",
+      "resource": "ore",
+      "mode": "finite",
+      "quantity": 120,
+      "batch": 2,
+      "seconds": 5,
+      "skill": "metalwork",
+      "direct": true
+    },
+    {
+      "id": "herbs",
+      "name": "Wild herb bed",
+      "resource": "herbs",
+      "mode": "infinite",
+      "quantity": 80,
+      "batch": 3,
+      "seconds": 3,
+      "skill": "herbalism",
+      "direct": true
+    },
+    {
+      "id": "grain",
+      "name": "Wild grain",
+      "resource": "grain",
+      "mode": "infinite",
+      "quantity": 80,
+      "batch": 3,
+      "seconds": 3,
+      "skill": "gardening",
+      "direct": true
+    },
+    {
+      "id": "soil",
+      "name": "Fertile ground",
+      "resource": null,
+      "mode": "infinite",
+      "quantity": 120,
+      "batch": 1,
+      "seconds": 12,
+      "skill": null,
+      "direct": false
+    },
+    {
+      "id": "groundwater",
+      "name": "Groundwater pocket",
+      "resource": null,
+      "mode": "infinite",
+      "quantity": 300,
+      "batch": 1,
+      "seconds": 8,
+      "skill": null,
+      "direct": false
+    },
+    {
+      "id": "stream",
+      "name": "Flowing spring bank",
+      "resource": null,
+      "mode": "infinite",
+      "quantity": 300,
+      "batch": 1,
+      "seconds": 8,
+      "skill": null,
+      "direct": false
+    }
+  ],
+  "buildings": [
+    {
+      "id": "bench",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "fire",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "loom",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "kiln",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "herbarium",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "workshop",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "smelter",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "mill",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "bakery",
+      "requiresNode": null,
+      "inputCapacity": 24,
+      "outputCapacity": 16,
+      "production": null,
+      "defaultTarget": 0
+    },
+    {
+      "id": "garden",
+      "requiresNode": "soil",
+      "inputCapacity": 8,
+      "outputCapacity": 16,
+      "production": {
+        "output": "berries",
+        "amount": 4,
+        "cost": {
+          "water": 1
+        },
+        "seconds": 18,
+        "skill": "gardening",
+        "depletion": 1
+      },
+      "defaultTarget": 8
+    },
+    {
+      "id": "grainplot",
+      "requiresNode": "soil",
+      "inputCapacity": 8,
+      "outputCapacity": 16,
+      "production": {
+        "output": "grain",
+        "amount": 4,
+        "cost": {
+          "water": 1
+        },
+        "seconds": 20,
+        "skill": "gardening",
+        "depletion": 1
+      },
+      "defaultTarget": 8
+    },
+    {
+      "id": "greenhouse",
+      "requiresNode": "soil",
+      "inputCapacity": 8,
+      "outputCapacity": 16,
+      "production": {
+        "output": "herbs",
+        "amount": 4,
+        "cost": {
+          "water": 1
+        },
+        "seconds": 18,
+        "skill": "horticulture",
+        "depletion": 1
+      },
+      "defaultTarget": 8
+    },
+    {
+      "id": "orchard",
+      "requiresNode": "soil",
+      "inputCapacity": 8,
+      "outputCapacity": 16,
+      "production": {
+        "output": "berries",
+        "amount": 6,
+        "cost": {
+          "water": 1
+        },
+        "seconds": 24,
+        "skill": "stewardship",
+        "depletion": 1
+      },
+      "defaultTarget": 8
+    },
+    {
+      "id": "well",
+      "requiresNode": "groundwater",
+      "inputCapacity": 4,
+      "outputCapacity": 12,
+      "production": {
+        "output": "water",
+        "amount": 4,
+        "cost": {},
+        "seconds": 4,
+        "skill": "masonry",
+        "depletion": 4
+      },
+      "defaultTarget": 8
+    },
+    {
+      "id": "waterwheel",
+      "requiresNode": "stream",
+      "inputCapacity": 0,
+      "outputCapacity": 0,
+      "production": null,
+      "defaultTarget": 0
+    }
+  ],
+  "sites": [
+    {
+      "id": "site-soil-0",
+      "kind": "soil",
+      "x": 4,
+      "y": 7
+    },
+    {
+      "id": "site-soil-1",
+      "kind": "soil",
+      "x": 5,
+      "y": 8
+    },
+    {
+      "id": "site-soil-2",
+      "kind": "soil",
+      "x": 4,
+      "y": 10
+    },
+    {
+      "id": "site-soil-3",
+      "kind": "soil",
+      "x": 6,
+      "y": 7
+    },
+    {
+      "id": "site-soil-4",
+      "kind": "soil",
+      "x": 3,
+      "y": 11
+    },
+    {
+      "id": "site-soil-5",
+      "kind": "soil",
+      "x": 9,
+      "y": 14
+    },
+    {
+      "id": "site-soil-6",
+      "kind": "soil",
+      "x": 12,
+      "y": 13
+    },
+    {
+      "id": "site-soil-7",
+      "kind": "soil",
+      "x": 7,
+      "y": 14
+    },
+    {
+      "id": "site-groundwater-0",
+      "kind": "groundwater",
+      "x": 12,
+      "y": 7
+    },
+    {
+      "id": "site-groundwater-1",
+      "kind": "groundwater",
+      "x": 11,
+      "y": 8
+    },
+    {
+      "id": "site-groundwater-2",
+      "kind": "groundwater",
+      "x": 14,
+      "y": 8
+    },
+    {
+      "id": "site-stream-0",
+      "kind": "stream",
+      "x": 12,
+      "y": 4
+    },
+    {
+      "id": "site-stream-1",
+      "kind": "stream",
+      "x": 12,
+      "y": 3
+    },
+    {
+      "id": "site-stream-2",
+      "kind": "stream",
+      "x": 15,
+      "y": 8
+    }
+  ],
+  "logistics": {
+    "batch": 6,
+    "outputAge": 24
+  },
+  "extensions": {}
+}

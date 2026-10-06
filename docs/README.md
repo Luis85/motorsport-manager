@@ -20,13 +20,25 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
   [Editor guide](how-to/track-editor.md) → [Track format](reference/track-format.md).
 - **Content author:** [First custom pack](tutorials/author-a-pack.md) →
   [Content index](reference/content/README.md) → [Balancing](how-to/balancing.md).
+- **RTS mission author:** [Explore the RTS demo](tutorials/rts-demo.md) →
+  [Author a mission](how-to/rts-mission-editor.md) → [RTS contract](reference/rts-engine.md).
 - **Developer:** [Architecture](explanation/architecture.md) →
   [Mechanics recipes](how-to/developing-mechanics.md) or
   [Toolbox experiments](how-to/toolbox-recipes.md) → [Verification](how-to/verification.md).
 - **Maintainer:** [Documentation discipline](how-to/maintaining-documentation.md) →
   [Current status](reference/current-state.md) → [Advisory quality](how-to/code-quality.md).
 
+## Independent concepts
+
+[Scene Forge](concepts/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder.
+
 ## Authority and evidence
+
+The separate [Wildlands documentation](concepts/littlewild/DOCUMENTATION.md)
+indexes the TypeScript prototype builder, its default Littlewild showcase,
+browser/terminal workflows and Node-backed Godot desktop target. It retains its
+own runtime and source-bound evidence outside the native Motorsport Manager
+capability inventory.
 
 Production code, generated schemas and validated configuration own executable
 contracts. Active references describe those contracts; tutorials and recipes link

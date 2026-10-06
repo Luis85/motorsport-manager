@@ -1,0 +1,2026 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:littlewild:content-schema:1",
+  "title": "Littlewild content library / patch",
+  "description": "Data-only interchange for the existing Littlewild v4 runtime. Schema validates shape; the bundled validator additionally validates identities, graphs, bootstrapping, and patch base fingerprints.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "const": "urn:littlewild:content-schema:1"
+    },
+    "format": {
+      "const": "littlewild-content"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "enum": [
+        "library",
+        "patch"
+      ]
+    },
+    "library": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._-]{0,79}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9.-]+)?$",
+          "maxLength": 40
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "version",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "base": {
+      "type": "object",
+      "properties": {
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        },
+        "libraryId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._-]{0,79}$"
+        }
+      },
+      "required": [
+        "fingerprint",
+        "libraryId"
+      ],
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/items"
+          },
+          "minItems": 1,
+          "maxItems": 24,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "recipes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/recipes"
+          },
+          "minItems": 1,
+          "maxItems": 14,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/skills"
+          },
+          "minItems": 1,
+          "maxItems": 28,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "buildings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/buildings"
+          },
+          "minItems": 1,
+          "maxItems": 23,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "drills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/drills"
+          },
+          "minItems": 1,
+          "maxItems": 28,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "disciplines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/disciplines"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "teachingStyles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/teachingStyles"
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "buildingApproaches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/buildingApproaches"
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "talents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/talents"
+          },
+          "minItems": 1,
+          "maxItems": 12,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "studies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/studies"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/paths"
+          },
+          "minItems": 1,
+          "maxItems": 5,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "deliveries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deliveries"
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        },
+        "chapters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chapters"
+          },
+          "minItems": 1,
+          "maxItems": 7,
+          "description": "Stable runtime IDs. Patches upsert complete definitions; omission never deletes."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "$schema",
+    "format",
+    "schemaVersion",
+    "kind",
+    "library",
+    "components"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "library"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "components": {
+            "required": [
+              "items",
+              "recipes",
+              "skills",
+              "buildings",
+              "drills",
+              "disciplines",
+              "teachingStyles",
+              "buildingApproaches",
+              "talents",
+              "studies",
+              "paths",
+              "deliveries",
+              "chapters"
+            ]
+          }
+        }
+      },
+      "else": {
+        "required": [
+          "base"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meals",
+            "clay",
+            "ore",
+            "herbs",
+            "grain",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 70,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "leaf",
+            "sprout",
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meal",
+            "home",
+            "cottage",
+            "bench",
+            "fire",
+            "market",
+            "research",
+            "paw",
+            "coin",
+            "heart",
+            "sun",
+            "moon",
+            "star",
+            "book",
+            "plan",
+            "compass",
+            "energy",
+            "comfort",
+            "joy",
+            "bag",
+            "clock",
+            "flag",
+            "route"
+          ]
+        },
+        "price": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "icon",
+        "price"
+      ],
+      "additionalProperties": false
+    },
+    "recipes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "planks",
+            "meals",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ]
+        },
+        "output": {
+          "type": "string",
+          "enum": [
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meals",
+            "clay",
+            "ore",
+            "herbs",
+            "grain",
+            "rope",
+            "cloth",
+            "charcoal",
+            "bricks",
+            "pots",
+            "beams",
+            "iron",
+            "tools",
+            "flour",
+            "bread",
+            "balm",
+            "glass"
+          ]
+        },
+        "skill": {
+          "type": "string",
+          "enum": [
+            "woodcraft",
+            "shelter",
+            "stonework",
+            "firekeeping",
+            "gardening",
+            "woodwork",
+            "cooking",
+            "tracking",
+            "commerce",
+            "masonry",
+            "architecture",
+            "invention",
+            "fiberwork",
+            "claywork",
+            "weaving",
+            "pottery",
+            "herbalism",
+            "joinery",
+            "metalwork",
+            "horticulture",
+            "milling",
+            "baking",
+            "logistics",
+            "mentorship",
+            "engineering",
+            "glassmaking",
+            "stewardship",
+            "scholarship"
+          ]
+        },
+        "station": {
+          "type": "string",
+          "enum": [
+            "shelter",
+            "bench",
+            "fire",
+            "garden",
+            "market",
+            "well",
+            "cottage",
+            "study",
+            "circle",
+            "grainplot",
+            "loom",
+            "kiln",
+            "herbarium",
+            "workshop",
+            "smelter",
+            "mill",
+            "bakery",
+            "greenhouse",
+            "storehouse",
+            "waterwheel",
+            "orchard",
+            "observatory"
+          ]
+        },
+        "cost": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 24,
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "wood",
+              "stone",
+              "fiber",
+              "berries",
+              "water",
+              "planks",
+              "meat",
+              "meals",
+              "clay",
+              "ore",
+              "herbs",
+              "grain",
+              "rope",
+              "cloth",
+              "charcoal",
+              "bricks",
+              "pots",
+              "beams",
+              "iron",
+              "tools",
+              "flour",
+              "bread",
+              "balm",
+              "glass"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99
+        },
+        "time": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "output",
+        "skill",
+        "station",
+        "cost",
+        "amount",
+        "time"
+      ],
+      "additionalProperties": false
+    },
+    "skills": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "woodcraft",
+            "shelter",
+            "stonework",
+            "firekeeping",
+            "gardening",
+            "woodwork",
+            "cooking",
+            "tracking",
+            "commerce",
+            "masonry",
+            "architecture",
+            "invention",
+            "fiberwork",
+            "claywork",
+            "weaving",
+            "pottery",
+            "herbalism",
+            "joinery",
+            "metalwork",
+            "horticulture",
+            "milling",
+            "baking",
+            "logistics",
+            "mentorship",
+            "engineering",
+            "glassmaking",
+            "stewardship",
+            "scholarship"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "short": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "discipline": {
+          "type": "string",
+          "enum": [
+            "woodland",
+            "making",
+            "homestead",
+            "craft",
+            "community",
+            "discovery"
+          ]
+        },
+        "rp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "coins": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "time": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "unlocks": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "woodcraft",
+              "shelter",
+              "stonework",
+              "firekeeping",
+              "gardening",
+              "woodwork",
+              "cooking",
+              "tracking",
+              "commerce",
+              "masonry",
+              "architecture",
+              "invention",
+              "fiberwork",
+              "claywork",
+              "weaving",
+              "pottery",
+              "herbalism",
+              "joinery",
+              "metalwork",
+              "horticulture",
+              "milling",
+              "baking",
+              "logistics",
+              "mentorship",
+              "engineering",
+              "glassmaking",
+              "stewardship",
+              "scholarship"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "leaf",
+            "sprout",
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meal",
+            "home",
+            "cottage",
+            "bench",
+            "fire",
+            "market",
+            "research",
+            "paw",
+            "coin",
+            "heart",
+            "sun",
+            "moon",
+            "star",
+            "book",
+            "plan",
+            "compass",
+            "energy",
+            "comfort",
+            "joy",
+            "bag",
+            "clock",
+            "flag",
+            "route"
+          ]
+        },
+        "practical": {
+          "type": "object",
+          "properties": {
+            "skill": {
+              "type": "string",
+              "enum": [
+                "woodcraft",
+                "shelter",
+                "stonework",
+                "firekeeping",
+                "gardening",
+                "woodwork",
+                "cooking",
+                "tracking",
+                "commerce",
+                "masonry",
+                "architecture",
+                "invention",
+                "fiberwork",
+                "claywork",
+                "weaving",
+                "pottery",
+                "herbalism",
+                "joinery",
+                "metalwork",
+                "horticulture",
+                "milling",
+                "baking",
+                "logistics",
+                "mentorship",
+                "engineering",
+                "glassmaking",
+                "stewardship",
+                "scholarship"
+              ]
+            },
+            "points": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 40
+            }
+          },
+          "required": [
+            "skill",
+            "points"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "short",
+        "tier",
+        "discipline",
+        "rp",
+        "coins",
+        "time",
+        "desc",
+        "unlocks",
+        "requires",
+        "icon"
+      ],
+      "additionalProperties": false
+    },
+    "buildings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "shelter",
+            "bench",
+            "fire",
+            "garden",
+            "market",
+            "well",
+            "cottage",
+            "study",
+            "circle",
+            "grainplot",
+            "loom",
+            "kiln",
+            "herbarium",
+            "workshop",
+            "smelter",
+            "mill",
+            "bakery",
+            "greenhouse",
+            "storehouse",
+            "waterwheel",
+            "orchard",
+            "observatory",
+            "map_table"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 70,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "skill": {
+          "type": "string",
+          "enum": [
+            "woodcraft",
+            "shelter",
+            "stonework",
+            "firekeeping",
+            "gardening",
+            "woodwork",
+            "cooking",
+            "tracking",
+            "commerce",
+            "masonry",
+            "architecture",
+            "invention",
+            "fiberwork",
+            "claywork",
+            "weaving",
+            "pottery",
+            "herbalism",
+            "joinery",
+            "metalwork",
+            "horticulture",
+            "milling",
+            "baking",
+            "logistics",
+            "mentorship",
+            "engineering",
+            "glassmaking",
+            "stewardship",
+            "scholarship"
+          ]
+        },
+        "cost": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 24,
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "wood",
+              "stone",
+              "fiber",
+              "berries",
+              "water",
+              "planks",
+              "meat",
+              "meals",
+              "clay",
+              "ore",
+              "herbs",
+              "grain",
+              "rope",
+              "cloth",
+              "charcoal",
+              "bricks",
+              "pots",
+              "beams",
+              "iron",
+              "tools",
+              "flour",
+              "bread",
+              "balm",
+              "glass"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "time": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 120
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "leaf",
+            "sprout",
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meal",
+            "home",
+            "cottage",
+            "bench",
+            "fire",
+            "market",
+            "research",
+            "paw",
+            "coin",
+            "heart",
+            "sun",
+            "moon",
+            "star",
+            "book",
+            "plan",
+            "compass",
+            "energy",
+            "comfort",
+            "joy",
+            "bag",
+            "clock",
+            "flag",
+            "route"
+          ]
+        },
+        "effect": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "unique": {
+          "const": true
+        },
+        "category": {
+          "enum": [
+            "home",
+            "workshops",
+            "growing",
+            "learning",
+            "community"
+          ]
+        },
+        "placement": {
+          "enum": [
+            "water"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "desc",
+        "skill",
+        "cost",
+        "time",
+        "icon",
+        "effect",
+        "unique",
+        "category"
+      ],
+      "additionalProperties": false
+    },
+    "drills": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "woodcraft",
+            "stonework",
+            "tracking",
+            "shelter",
+            "firekeeping",
+            "gardening",
+            "cooking",
+            "woodwork",
+            "commerce",
+            "masonry",
+            "architecture",
+            "invention",
+            "fiberwork",
+            "claywork",
+            "weaving",
+            "pottery",
+            "herbalism",
+            "joinery",
+            "metalwork",
+            "horticulture",
+            "milling",
+            "baking",
+            "logistics",
+            "mentorship",
+            "engineering",
+            "glassmaking",
+            "stewardship",
+            "scholarship"
+          ]
+        },
+        "cost": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 24,
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "wood",
+              "stone",
+              "fiber",
+              "berries",
+              "water",
+              "planks",
+              "meat",
+              "meals",
+              "clay",
+              "ore",
+              "herbs",
+              "grain",
+              "rope",
+              "cloth",
+              "charcoal",
+              "bricks",
+              "pots",
+              "beams",
+              "iron",
+              "tools",
+              "flour",
+              "bread",
+              "balm",
+              "glass"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "station": {
+          "type": "string",
+          "enum": [
+            "shelter",
+            "bench",
+            "fire",
+            "garden",
+            "market",
+            "well",
+            "cottage",
+            "study",
+            "circle",
+            "grainplot",
+            "loom",
+            "kiln",
+            "herbarium",
+            "workshop",
+            "smelter",
+            "mill",
+            "bakery",
+            "greenhouse",
+            "storehouse",
+            "waterwheel",
+            "orchard",
+            "observatory"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "cost"
+      ],
+      "additionalProperties": false
+    },
+    "disciplines": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "woodland",
+            "making",
+            "homestead",
+            "craft",
+            "community",
+            "discovery"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "leaf",
+            "sprout",
+            "wood",
+            "stone",
+            "fiber",
+            "berries",
+            "water",
+            "planks",
+            "meat",
+            "meal",
+            "home",
+            "cottage",
+            "bench",
+            "fire",
+            "market",
+            "research",
+            "paw",
+            "coin",
+            "heart",
+            "sun",
+            "moon",
+            "star",
+            "book",
+            "plan",
+            "compass",
+            "energy",
+            "comfort",
+            "joy",
+            "bag",
+            "clock",
+            "flag",
+            "route"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "icon",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "teachingStyles": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "together",
+            "playful",
+            "independent"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "rate": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "practice": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "bond": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "joy": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "rate",
+        "practice",
+        "bond",
+        "joy",
+        "desc"
+      ],
+      "additionalProperties": false
+    },
+    "buildingApproaches": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "balanced",
+            "careful",
+            "quick"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2
+        },
+        "quality": {
+          "type": "integer",
+          "minimum": -25,
+          "maximum": 25
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "time",
+        "quality",
+        "desc"
+      ],
+      "additionalProperties": false
+    },
+    "talents": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "gatherer",
+            "explorer",
+            "maker",
+            "builder",
+            "comfort",
+            "cook",
+            "efficient",
+            "finisher",
+            "merchant",
+            "steward",
+            "mentor",
+            "thinker"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 70,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "discipline": {
+          "type": "string",
+          "enum": [
+            "woodland",
+            "making",
+            "homestead",
+            "craft",
+            "community",
+            "discovery"
+          ]
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "discipline",
+        "desc"
+      ],
+      "additionalProperties": false
+    },
+    "studies": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "branches",
+            "threads",
+            "earth",
+            "harvest",
+            "neighbors",
+            "stars"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "discipline": {
+          "type": "string",
+          "enum": [
+            "woodland",
+            "making",
+            "homestead",
+            "craft",
+            "community",
+            "discovery"
+          ]
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "requires": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "woodcraft",
+                "shelter",
+                "stonework",
+                "firekeeping",
+                "gardening",
+                "woodwork",
+                "cooking",
+                "tracking",
+                "commerce",
+                "masonry",
+                "architecture",
+                "invention",
+                "fiberwork",
+                "claywork",
+                "weaving",
+                "pottery",
+                "herbalism",
+                "joinery",
+                "metalwork",
+                "horticulture",
+                "milling",
+                "baking",
+                "logistics",
+                "mentorship",
+                "engineering",
+                "glassmaking",
+                "stewardship",
+                "scholarship"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "enum": [
+                  "stage",
+                  "upgrade",
+                  "deliver",
+                  "research",
+                  "gather:wood",
+                  "gather:stone",
+                  "gather:fiber",
+                  "gather:berries",
+                  "gather:water",
+                  "gather:meat",
+                  "gather:clay",
+                  "gather:ore",
+                  "gather:herbs",
+                  "gather:grain",
+                  "craft:planks",
+                  "craft:meals",
+                  "craft:rope",
+                  "craft:cloth",
+                  "craft:charcoal",
+                  "craft:bricks",
+                  "craft:pots",
+                  "craft:beams",
+                  "craft:iron",
+                  "craft:tools",
+                  "craft:flour",
+                  "craft:bread",
+                  "craft:balm",
+                  "craft:glass",
+                  "practice:woodcraft",
+                  "practice:shelter",
+                  "practice:stonework",
+                  "practice:firekeeping",
+                  "practice:gardening",
+                  "practice:woodwork",
+                  "practice:cooking",
+                  "practice:tracking",
+                  "practice:commerce",
+                  "practice:masonry",
+                  "practice:architecture",
+                  "practice:invention",
+                  "practice:fiberwork",
+                  "practice:claywork",
+                  "practice:weaving",
+                  "practice:pottery",
+                  "practice:herbalism",
+                  "practice:joinery",
+                  "practice:metalwork",
+                  "practice:horticulture",
+                  "practice:milling",
+                  "practice:baking",
+                  "practice:logistics",
+                  "practice:mentorship",
+                  "practice:engineering",
+                  "practice:glassmaking",
+                  "practice:stewardship",
+                  "practice:scholarship",
+                  "build:shelter",
+                  "build:bench",
+                  "build:fire",
+                  "build:garden",
+                  "build:market",
+                  "build:well",
+                  "build:cottage",
+                  "build:study",
+                  "build:circle",
+                  "build:grainplot",
+                  "build:loom",
+                  "build:kiln",
+                  "build:herbarium",
+                  "build:workshop",
+                  "build:smelter",
+                  "build:mill",
+                  "build:bakery",
+                  "build:greenhouse",
+                  "build:storehouse",
+                  "build:waterwheel",
+                  "build:orchard",
+                  "build:observatory"
+                ]
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              }
+            },
+            "required": [
+              "event",
+              "amount",
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "reward": {
+          "type": "object",
+          "properties": {
+            "rp": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "coins": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "rp",
+            "coins"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "discipline",
+        "desc",
+        "requires",
+        "goals",
+        "reward"
+      ],
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "home",
+            "threads",
+            "earth",
+            "harvest",
+            "wonder"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "woodcraft",
+              "shelter",
+              "stonework",
+              "firekeeping",
+              "gardening",
+              "woodwork",
+              "cooking",
+              "tracking",
+              "commerce",
+              "masonry",
+              "architecture",
+              "invention",
+              "fiberwork",
+              "claywork",
+              "weaving",
+              "pottery",
+              "herbalism",
+              "joinery",
+              "metalwork",
+              "horticulture",
+              "milling",
+              "baking",
+              "logistics",
+              "mentorship",
+              "engineering",
+              "glassmaking",
+              "stewardship",
+              "scholarship"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 28,
+          "uniqueItems": true
+        },
+        "buildings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "shelter",
+              "bench",
+              "fire",
+              "garden",
+              "market",
+              "well",
+              "cottage",
+              "study",
+              "circle",
+              "grainplot",
+              "loom",
+              "kiln",
+              "herbarium",
+              "workshop",
+              "smelter",
+              "mill",
+              "bakery",
+              "greenhouse",
+              "storehouse",
+              "waterwheel",
+              "orchard",
+              "observatory"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 22,
+          "uniqueItems": true
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "desc",
+        "skills",
+        "buildings"
+      ],
+      "additionalProperties": false
+    },
+    "deliveries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "fence",
+            "journey",
+            "hearth",
+            "supper"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "cost": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 24,
+          "propertyNames": {
+            "type": "string",
+            "enum": [
+              "wood",
+              "stone",
+              "fiber",
+              "berries",
+              "water",
+              "planks",
+              "meat",
+              "meals",
+              "clay",
+              "ore",
+              "herbs",
+              "grain",
+              "rope",
+              "cloth",
+              "charcoal",
+              "bricks",
+              "pots",
+              "beams",
+              "iron",
+              "tools",
+              "flour",
+              "bread",
+              "balm",
+              "glass"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "coins": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "rp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "desc",
+        "cost",
+        "coins",
+        "rp"
+      ],
+      "additionalProperties": false
+    },
+    "chapters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "hello",
+            "learn",
+            "home",
+            "spark",
+            "market",
+            "neighbors",
+            "dream"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "chapter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^<>\\u0000-\\u001f\\u007f]*$"
+              },
+              "action": {
+                "enum": [
+                  "feed",
+                  "water",
+                  "bond",
+                  "trade",
+                  "train:woodcraft",
+                  "train:shelter",
+                  "train:stonework",
+                  "train:firekeeping",
+                  "train:gardening",
+                  "train:woodwork",
+                  "train:cooking",
+                  "train:tracking",
+                  "train:commerce",
+                  "train:masonry",
+                  "train:architecture",
+                  "train:invention",
+                  "train:fiberwork",
+                  "train:claywork",
+                  "train:weaving",
+                  "train:pottery",
+                  "train:herbalism",
+                  "train:joinery",
+                  "train:metalwork",
+                  "train:horticulture",
+                  "train:milling",
+                  "train:baking",
+                  "train:logistics",
+                  "train:mentorship",
+                  "train:engineering",
+                  "train:glassmaking",
+                  "train:stewardship",
+                  "train:scholarship",
+                  "build:shelter",
+                  "build:bench",
+                  "build:fire",
+                  "build:garden",
+                  "build:market",
+                  "build:well",
+                  "build:cottage",
+                  "build:study",
+                  "build:circle",
+                  "build:grainplot",
+                  "build:loom",
+                  "build:kiln",
+                  "build:herbarium",
+                  "build:workshop",
+                  "build:smelter",
+                  "build:mill",
+                  "build:bakery",
+                  "build:greenhouse",
+                  "build:storehouse",
+                  "build:waterwheel",
+                  "build:orchard",
+                  "build:observatory",
+                  "request:planks"
+                ]
+              },
+              "condition": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "stat"
+                      },
+                      "key": {
+                        "enum": [
+                          "fed",
+                          "watered",
+                          "bonded",
+                          "gathered",
+                          "built",
+                          "trained",
+                          "planksMade",
+                          "deliveries",
+                          "explored",
+                          "earned",
+                          "researchEarned"
+                        ]
+                      },
+                      "gte": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100000
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "key",
+                      "gte"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "skill"
+                      },
+                      "key": {
+                        "type": "string",
+                        "enum": [
+                          "woodcraft",
+                          "shelter",
+                          "stonework",
+                          "firekeeping",
+                          "gardening",
+                          "woodwork",
+                          "cooking",
+                          "tracking",
+                          "commerce",
+                          "masonry",
+                          "architecture",
+                          "invention",
+                          "fiberwork",
+                          "claywork",
+                          "weaving",
+                          "pottery",
+                          "herbalism",
+                          "joinery",
+                          "metalwork",
+                          "horticulture",
+                          "milling",
+                          "baking",
+                          "logistics",
+                          "mentorship",
+                          "engineering",
+                          "glassmaking",
+                          "stewardship",
+                          "scholarship"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "key"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "building"
+                      },
+                      "key": {
+                        "type": "string",
+                        "enum": [
+                          "shelter",
+                          "bench",
+                          "fire",
+                          "garden",
+                          "market",
+                          "well",
+                          "cottage",
+                          "study",
+                          "circle",
+                          "grainplot",
+                          "loom",
+                          "kiln",
+                          "herbarium",
+                          "workshop",
+                          "smelter",
+                          "mill",
+                          "bakery",
+                          "greenhouse",
+                          "storehouse",
+                          "waterwheel",
+                          "orchard",
+                          "observatory"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "key"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "const": "bond"
+                      },
+                      "gte": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "gte"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "label",
+              "action",
+              "condition"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "reward": {
+          "type": "object",
+          "properties": {
+            "coins": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "rp": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "xp": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "coins",
+            "rp",
+            "xp"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Tool-owned JSON metadata. Retained on round trips, never executed by the game."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "chapter",
+        "desc",
+        "checks",
+        "reward"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

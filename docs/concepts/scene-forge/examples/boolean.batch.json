@@ -1,0 +1,62 @@
+{
+  "operations": [
+    {
+      "op": "putMaterial",
+      "id": "metal",
+      "material": {
+        "color": "#a9c1bf",
+        "metalness": 0.35,
+        "roughness": 0.4
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "block",
+      "geometry": {
+        "type": "box",
+        "size": [
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "bore",
+      "geometry": {
+        "type": "cylinder",
+        "radiusTop": 0.65,
+        "radiusBottom": 0.65,
+        "height": 3,
+        "segments": 32
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "bracket",
+      "geometry": {
+        "type": "boolean",
+        "operation": "subtract",
+        "left": "block",
+        "right": "bore"
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "type": "mesh",
+        "id": "bracket",
+        "geometry": "bracket",
+        "material": "metal",
+        "transform": {
+          "position": [
+            0,
+            1,
+            0
+          ]
+        }
+      }
+    }
+  ]
+}

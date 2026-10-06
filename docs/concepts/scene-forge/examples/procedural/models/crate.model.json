@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "crate",
+  "name": "Parametric cargo crate",
+  "parameters": {
+    "width": {
+      "default": 0.8,
+      "min": 0.1,
+      "max": 5
+    },
+    "height": {
+      "default": 0.5,
+      "min": 0.1,
+      "max": 5
+    },
+    "depth": {
+      "default": 0.6,
+      "min": 0.1,
+      "max": 5
+    }
+  },
+  "geometries": {
+    "body": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "width"
+        },
+        {
+          "$param": "height"
+        },
+        {
+          "$param": "depth"
+        }
+      ]
+    },
+    "strap": {
+      "type": "box",
+      "size": [
+        {
+          "$expr": "mul",
+          "args": [
+            {
+              "$param": "width"
+            },
+            0.08
+          ]
+        },
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "height"
+            },
+            0.014
+          ]
+        },
+        {
+          "$expr": "add",
+          "args": [
+            {
+              "$param": "depth"
+            },
+            0.014
+          ]
+        }
+      ]
+    }
+  },
+  "materials": {
+    "body": {
+      "color": "#d9984d",
+      "metalness": 0,
+      "roughness": 0.7,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "band": {
+      "color": "#445662",
+      "metalness": 0.65,
+      "roughness": 0.65,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "body",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "body",
+      "material": "body"
+    },
+    {
+      "id": "straps",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              -0.3
+            ]
+          },
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "linear",
+        "count": 2,
+        "step": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "width"
+              },
+              0.6
+            ]
+          },
+          0,
+          0
+        ]
+      },
+      "type": "mesh",
+      "geometry": "strap",
+      "material": "band"
+    }
+  ]
+}

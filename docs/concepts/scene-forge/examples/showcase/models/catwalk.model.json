@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "catwalk",
+  "category": "Industrial",
+  "name": "Guarded catwalk",
+  "parameters": {
+    "length": {
+      "default": 12,
+      "min": 4,
+      "max": 18,
+      "description": "Walkway length"
+    },
+    "height": {
+      "default": 2.1,
+      "min": 1,
+      "max": 3,
+      "description": "Deck height"
+    },
+    "posts": {
+      "default": 7,
+      "min": 3,
+      "max": 12,
+      "description": "Guard posts per side",
+      "integer": true
+    }
+  },
+  "geometries": {
+    "deck": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "length"
+        },
+        0.16,
+        1
+      ]
+    },
+    "leg": {
+      "type": "box",
+      "size": [
+        0.12,
+        {
+          "$param": "height"
+        },
+        0.12
+      ]
+    },
+    "post": {
+      "type": "box",
+      "size": [
+        0.045,
+        1.05,
+        0.045
+      ]
+    },
+    "rail": {
+      "type": "box",
+      "size": [
+        {
+          "$param": "length"
+        },
+        0.05,
+        0.05
+      ]
+    }
+  },
+  "materials": {
+    "deck": {
+      "color": "#65767d",
+      "metalness": 0.6,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "rail": {
+      "color": "#dca54a",
+      "metalness": 0.4,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "deck",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "height"
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "deck",
+      "material": "deck"
+    },
+    {
+      "id": "supports",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "height"
+              },
+              2
+            ]
+          },
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          3,
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$expr": "div",
+                "args": [
+                  {
+                    "$param": "length"
+                  },
+                  2
+                ]
+              },
+              0.25
+            ]
+          },
+          0,
+          0.75
+        ],
+        "centered": true
+      },
+      "type": "mesh",
+      "geometry": "leg",
+      "material": "deck"
+    },
+    {
+      "id": "guardPosts",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "length"
+              },
+              -0.5
+            ]
+          },
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.58
+            ]
+          },
+          -0.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          {
+            "$param": "posts"
+          },
+          1,
+          2
+        ],
+        "step": [
+          {
+            "$expr": "div",
+            "args": [
+              {
+                "$param": "length"
+              },
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "posts"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0,
+          1
+        ],
+        "centered": false
+      },
+      "type": "mesh",
+      "geometry": "post",
+      "material": "rail"
+    },
+    {
+      "id": "rails",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.65
+            ]
+          },
+          -0.5
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "grid",
+        "counts": [
+          1,
+          2,
+          2
+        ],
+        "step": [
+          0,
+          0.43,
+          1
+        ],
+        "centered": false
+      },
+      "type": "mesh",
+      "geometry": "rail",
+      "material": "rail"
+    }
+  ]
+}

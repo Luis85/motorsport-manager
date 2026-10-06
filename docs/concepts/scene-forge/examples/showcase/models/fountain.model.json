@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "fountain",
+  "category": "Architecture",
+  "name": "Courtyard fountain",
+  "parameters": {
+    "radius": {
+      "default": 1.7,
+      "min": 1,
+      "max": 3,
+      "description": "Basin radius"
+    }
+  },
+  "geometries": {
+    "base": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$expr": "add",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.15
+        ]
+      },
+      "radiusBottom": {
+        "$expr": "add",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.15
+        ]
+      },
+      "height": 0.18,
+      "segments": 48
+    },
+    "bowl": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0.08
+        ],
+        [
+          {
+            "$param": "radius"
+          },
+          0.08
+        ],
+        [
+          {
+            "$param": "radius"
+          },
+          0.6
+        ],
+        [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.15
+            ]
+          },
+          0.64
+        ],
+        [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "radius"
+              },
+              0.2
+            ]
+          },
+          0.24
+        ],
+        [
+          0,
+          0.24
+        ]
+      ],
+      "segments": 48
+    },
+    "water": {
+      "type": "cylinder",
+      "radiusTop": {
+        "$expr": "sub",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.21
+        ]
+      },
+      "radiusBottom": {
+        "$expr": "sub",
+        "args": [
+          {
+            "$param": "radius"
+          },
+          0.21
+        ]
+      },
+      "height": 0.025,
+      "segments": 48
+    },
+    "column": {
+      "type": "cylinder",
+      "radiusTop": 0.16,
+      "radiusBottom": 0.16,
+      "height": 1.25,
+      "segments": 24
+    },
+    "orb": {
+      "type": "sphere",
+      "radius": 0.3,
+      "segments": 24
+    },
+    "jet": {
+      "type": "tube",
+      "points": [
+        [
+          0,
+          1.55,
+          0
+        ],
+        [
+          0.45,
+          1.45,
+          0
+        ],
+        [
+          0.9,
+          0.8,
+          0
+        ],
+        [
+          1.15,
+          0.37,
+          0
+        ]
+      ],
+      "radius": 0.028,
+      "tubularSegments": 24,
+      "radialSegments": 6,
+      "closed": false,
+      "capEnds": true
+    }
+  },
+  "materials": {
+    "stone": {
+      "color": "#c8baa1",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "water": {
+      "color": "#5caaa5",
+      "metalness": 0,
+      "roughness": 0.28,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "metal": {
+      "color": "#477c74",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "base",
+      "transform": {
+        "position": [
+          0,
+          0.09,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "base",
+      "material": "stone"
+    },
+    {
+      "id": "basin",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "bowl",
+      "material": "stone"
+    },
+    {
+      "id": "water",
+      "transform": {
+        "position": [
+          0,
+          0.36,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "water",
+      "material": "water"
+    },
+    {
+      "id": "column",
+      "transform": {
+        "position": [
+          0,
+          0.825,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "column",
+      "material": "metal"
+    },
+    {
+      "id": "orb",
+      "transform": {
+        "position": [
+          0,
+          1.6,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "orb",
+      "material": "stone"
+    },
+    {
+      "id": "jets",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "pattern": {
+        "type": "radial",
+        "count": 6,
+        "radius": 0,
+        "startAngle": 0,
+        "sweep": 360,
+        "orient": true
+      },
+      "type": "mesh",
+      "geometry": "jet",
+      "material": "water"
+    }
+  ]
+}

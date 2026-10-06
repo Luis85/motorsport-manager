@@ -1,0 +1,118 @@
+{
+  "format": "littlewild-simulation-profile",
+  "schemaVersion": 1,
+  "id": "classic-v1",
+  "version": 1,
+  "name": "Classic deterministic simulation",
+  "description": "Compatibility profile preserving the established Littlewild v15 simulation rules and composed runtime.",
+  "rules": {
+    "actor": {
+      "format": "littlewild-actor-rules",
+      "schemaVersion": 1,
+      "learning": {
+        "playfulFatigue": 0.45,
+        "standardFatigue": 0.7,
+        "recoveryRate": 0.16,
+        "recoverAt": 30,
+        "limitAt": 70
+      },
+      "feelings": {
+        "socialRate": 0.035,
+        "socialPreferenceRate": 0.01,
+        "angerRate": 0.09
+      },
+      "needs": {
+        "workingKinds": [
+          "build",
+          "gather",
+          "craft",
+          "gearcraft",
+          "hunt",
+          "practice",
+          "produce",
+          "stockbuilding",
+          "emptybuilding",
+          "collectbuilding"
+        ],
+        "foodWork": 0.1,
+        "foodIdle": 0.07,
+        "waterWork": 0.13,
+        "waterIdle": 0.09,
+        "energyWork": 0.12,
+        "energyIdle": 0.05,
+        "walkLoadFactor": 0.2,
+        "comfortShelter": 0.02,
+        "comfortWithoutShelter": 0.045,
+        "joyRate": 0.035
+      }
+    },
+    "economy": {
+      "format": "littlewild-economy-rules",
+      "schemaVersion": 1,
+      "xp": {
+        "base": 28,
+        "perLevel": 8,
+        "playerResearchPerLevel": 2,
+        "actorBondPerLevel": 2
+      },
+      "income": {
+        "pocketShare": 0.3
+      },
+      "limits": {
+        "balance": 1000000000000,
+        "delta": 1000000000,
+        "level": 1000000,
+        "stat": 1000000000000
+      }
+    }
+  },
+  "archetype": {
+    "id": "living-world-v1",
+    "version": 1,
+    "engineLayers": [
+      "systems",
+      "colony",
+      "world-simulation",
+      "village",
+      "planner",
+      "cartography"
+    ],
+    "simulationPipeline": [
+      "clock",
+      "world",
+      "quest-board",
+      "actor-daily",
+      "actor-quest",
+      "actor-simulation"
+    ],
+    "actorDynamics": [
+      "practice-day",
+      "learning-fatigue",
+      "social-decay",
+      "needs-decay"
+    ],
+    "actorActivity": [
+      "task-intent",
+      "task-movement",
+      "task-work-progress",
+      "task-intent-result"
+    ],
+    "worldTransactions": [
+      "inventory-transfer",
+      "resource-harvest",
+      "production-reserve",
+      "production-job-update",
+      "production-settlement"
+    ],
+    "economyTransactions": [
+      "settlement-plan",
+      "wallet-settlement",
+      "shared-research-settlement",
+      "xp-progression",
+      "prestige-settlement",
+      "stat-settlement",
+      "chapter-settlement",
+      "settlement-outbox"
+    ]
+  }
+}
