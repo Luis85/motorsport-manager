@@ -56,6 +56,19 @@ more mistakes grow the thorny **Bramble** form. Use **Speed 16×** to reach
 adulthood within a few minutes of real time. If health reaches zero after long
 neglect, the pet departs; **Adopt a new egg** then lets you choose Mochi or Pebble.
 
+## Dress your pet
+
+Caring earns coins: the badge beside the clock shows the balance. Open **Shop &
+wardrobe** in the side panel. **Buy for 30 coins** buys the **Party hat**; press
+**Wear** and the hat appears on your pet's head in the 3D room. Offers you cannot
+afford say how many coins are missing. Skins such as **Mint** recolour the pet;
+**Classic** returns to the species' own colours.
+
+Premium offers such as the **Golden crown** show **Unlock in store…**. The
+confirmation names the store and starts on **Cancel**. The bundled demo store is
+simulated and takes no payment. Your wardrobe stays when you adopt a new egg or
+start over.
+
 ## Save, restore and return
 
 **Export checkpoint** downloads the exact ECS state. Choose **Import → Checkpoint**

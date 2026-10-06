@@ -71,7 +71,7 @@ forge3d -p examples/pocket-pet littlewild sync --file examples/pocket-pet/little
 forge3d -p my-project littlewild import --definition ../littlewild/source/assets/creatures/sproutling/definition.json
 ```
 
-Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages and ten props of the Pocket Pet demo. See the [workflow guide](../../how-to/scene-forge-littlewild-assets.md).
+Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages, ten props and six socketed accessories of the Pocket Pet demo. See the [workflow guide](../../how-to/scene-forge-littlewild-assets.md).
 
 ## Authoring and editor improvements in v0.6
 

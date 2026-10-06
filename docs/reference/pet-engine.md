@@ -23,7 +23,10 @@ validates fields, ranges, ordering and references, then returns a frozen copy.
 | `needs` | Exactly `hunger`, `joy`, `energy`, `hygiene`: display name, start value, hourly decay, sleep factor, warning threshold |
 | `species` | ID, display name, description and pet asset ID |
 | `stages` | Exactly `egg`, `baby`, `teen`, `adult` in order: duration, decay factor and forms with increasing `maxMistakes`; the last form must accept `999` |
-| `actions` | Kind (`feed`, `treat`, `play`, `clean`, `cuddle`, `medicine`), prop asset, duration, need/health effects, weight change, digestion delay and allowed stages |
+| `actions` | Kind (`feed`, `treat`, `play`, `clean`, `cuddle`, `medicine`), prop asset, duration, coin reward, need/health effects, weight change, digestion delay and allowed stages |
+| `economy` | Currency display name, starting coins, coins per stage change, coin ceiling |
+| `skins` | Product ID, name, description, allowed species (empty = all), base material colours, price; the first skin is the free default with no colour changes |
+| `items` | Product ID, name, description, socket slot (`hat`, `face`, `neck`, `back`), accessory asset, price |
 
 When the pet asset bundle is present, every species must provide every stage
 model and every scene/action prop must provide a `world` model. JSON chooses
@@ -61,6 +64,39 @@ Queries, rendering and navigation never advance time. Checkpoints use
 `format: "wildlands-pet-checkpoint"` and embed the catalog; restoration validates
 the catalog and every component before installation.
 
+## Personalization and monetization
+
+A price is either `{"currency":"coins","amount":n}` or `{"currency":"premium","sku":"…"}`.
+Skin and item IDs share one product namespace. Coins are earned only when an
+action finishes (its `coins` value) and on every stage change (`growthCoins`).
+
+The wardrobe is a separate `pet-owner` entity: coins, coin-bought products, the
+selected skin, one equipped item per slot and store entitlements. Adopting a new
+egg, **Start over** and catalog import keep it; a skin limited to other species
+falls back to the default. Restoring an older checkpoint restores its coins and
+coin purchases but never removes a store entitlement already granted.
+
+| Command | Fields | Rules |
+|---|---|---|
+| `buy` | `product` | Coin offers only; not owned; enough coins. Debits once |
+| `equip` | `product` | Owned skin allowed for the species, or owned item; replaces the slot |
+| `unequip` | `slot` | Something must be worn there |
+| `entitle` | `sku`, `source` | Store boundary only. Unknown or repeated SKUs are rejected; never charges coins |
+
+Premium ownership is derived from entitlements, not from coin purchases. The
+browser host's [`pet-store.ts`](../concepts/littlewild/source/pet-store.ts) defines
+the store port: an adapter with `id`, `name`, `simulated`, `notice` and
+`purchase(sku)`. Only a successful result for the requested SKU becomes an
+`entitle` command with the adapter ID as source. The bundled **Demo store** is
+simulated, takes no payment and says so in its confirmation, which opens on
+**Cancel**. `WildlandsPet.useStore(adapter)` installs another adapter. Real
+payment, receipt verification and server-side restore are not implemented.
+
+Skins replace base material roles (`skin`, `belly`, `foot`, `blush`, `leaf` and
+similar); variant roles such as `skin-adult-bramble` follow their base role.
+Items attach to the stage model's `hat`, `face`, `neck` or `back` socket; the egg
+has no sockets, so accessories appear from the baby stage on.
+
 ## Application and presentation
 
 [`pet-application.ts`](../concepts/littlewild/source/pet-application.ts) owns the
@@ -91,10 +127,10 @@ MINUTES [SPECIES] [CHECKPOINT_OUTPUT] [CATALOG]`. Policies are `attentive`,
 `casual` (no bedtime management), `snacker` and `neglect`; runs are limited to
 20,160 game minutes. Results report milestones, accepted/rejected commands and
 the final state. Tests live in `test-pet-catalog.cts`, `test-pet-runtime.cts`,
-`test-pet-application.cts` and `verification/pet-browser.ts`.
+`test-pet-application.cts`, `test-pet-wardrobe.cts` and `verification/pet-browser.ts`.
 
 ## Limits
 
 Pocket Pet has no native Godot export, background time while the page is closed,
-multiple pets, audio, or in-browser catalog editor. Balance values are a
+multiple pets, audio, in-browser catalog editor or real payment provider. Balance values are a
 demonstration default validated by bounded scripts, not human playtesting.

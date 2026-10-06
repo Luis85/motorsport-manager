@@ -24,7 +24,10 @@ describes how the game consumes it.
    `LITTLEWILD_BUDGET`.
 2. For the `pets` family, tag animated nodes with `rig:<role>`. Roles are `body`,
    `head`, `eyes`, `ears`, `tail`, `arms`, `feet`, `mouth`, `cheeks`, `sprout` and
-   `shell`. Paired roles may tag several nodes; the others must tag exactly one.
+   `shell`, plus the accessory sockets `hat`, `face`, `neck` and `back`. Paired roles
+   may tag several nodes; the others must tag exactly one. Sockets are empty groups;
+   their scale fits accessories authored around the origin, so one item fits every
+   stage.
 3. Describe the targets in a manifest (`schema --kind littlewild-export --raw`):
 
    ```json

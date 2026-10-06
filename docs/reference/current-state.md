@@ -45,7 +45,9 @@ mistakes, growth and two adult forms through ECS systems; its application owns a
 separate fixed clock and checkpoints, and a WebGL room renders Scene Forge
 authored models. Scene Forge's `littlewild` commands export, check and import those
 definitions; the asset grammar gained a bounded baked-mesh primitive and a `pet`
-category. Bounded caretaker scripts exercise the rules; there is no Godot export
+category. Owner-scoped wardrobes add coin-bought skins and socketed accessories, while premium
+offers unlock only through entitlements reported by a replaceable store adapter;
+the bundled store is simulated and processes no payment. Bounded caretaker scripts exercise the rules; there is no Godot export
 or human balance validation. See the [tutorial](../tutorials/pocket-pet-demo.md).
 
 This is a maker game context, separate from the shipping native race/campaign

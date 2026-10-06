@@ -27,7 +27,9 @@ Choose **RTS demo** in the maker toolbar to open the separate isometric RTS matc
 
 Choose **Pet demo** in the maker toolbar to raise an original tamagotchi-style
 virtual pet in a 3D room. A validated catalog drives needs, digestion, sleep,
-sickness, care mistakes, growth and two adult forms on the shared ECS; the demo
+sickness, care mistakes, growth and two adult forms on the shared ECS. Coins buy
+skins and socketed accessories; premium offers unlock through a replaceable store
+adapter (the bundled one is simulated). The demo
 owns its own clock and checkpoints, and `npm run pet` runs bounded caretaker
 experiments. Every pet and prop model is a [Scene Forge](../scene-forge/README.md)
 recipe exported with `forge3d littlewild sync`. Follow the
