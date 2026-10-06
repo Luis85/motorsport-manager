@@ -2,7 +2,9 @@
 
 Wildlands is a standalone TypeScript game prototype maker. **Littlewild** is its default playable showcase; **Emberworks** and **Office** demonstrate alternate settings using the same simulation and authoring tools. The browser provides the workspace, and the CLI provides project automation for developers and AI agents. The first engine target is a runnable Godot desktop project.
 
-Development stays in `docs/concepts/littlewild/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
+Development stays in `source/wildlands/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
+
+To script projects without installing anything, run the checked-in single-file CLI `bin/wildlands` from the repository root with Node.js 22+; the [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md) covers every command.
 
 See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits. The [documentation index](DOCUMENTATION.md) separates task guides and contracts from source-bound Littlewild records.
 
@@ -10,7 +12,7 @@ The incremental ECS migration now covers actor dynamics, task movement, physical
 
 ## Skill trees
 
-Littlewild companions have independent branching skill trees. Open **Learn → Skill trees** to inspect XP, spend earned points and choose a work or learning path. The engine also supports trees on the guide and arbitrary validated trees through the developer toolbox. Definitions and progress travel with saves and scenarios. See the [skill-tree contract](../../reference/skill-trees.md).
+Littlewild companions have independent branching skill trees. Open **Learn → Skill trees** to inspect XP, spend earned points and choose a work or learning path. The engine also supports trees on the guide and arbitrary validated trees through the developer toolbox. Definitions and progress travel with saves and scenarios. See the [skill-tree contract](../../docs/reference/skill-trees.md).
 
 ## Developer toolbox
 
@@ -23,12 +25,12 @@ that informed the interface.
 
 ## Play
 
-Choose **RTS demo** in the maker toolbar to open the separate isometric RTS match. Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. **Return to colony** restores the colony workspace. Follow the [RTS demo tutorial](../../tutorials/rts-demo.md) and [engine reference](../../reference/rts-engine.md) for controls, developer tools and current limits.
+Choose **RTS demo** in the maker toolbar to open the separate isometric RTS match. Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. **Return to colony** restores the colony workspace. Follow the [RTS demo tutorial](../../docs/tutorials/rts-demo.md) and [engine reference](../../docs/reference/rts-engine.md) for controls, developer tools and current limits.
 
 Choose **Mission editor** in the RTS toolbar to author terrain, placements,
 objectives and mission settings in a separate validated catalog draft. Undo/redo
 and complete JSON import/export retain the authoring boundary; explicitly playing
-the draft creates a paused fresh match. Follow the [mission authoring guide](../../how-to/rts-mission-editor.md).
+the draft creates a paused fresh match. Follow the [mission authoring guide](../../docs/how-to/rts-mission-editor.md).
 
 Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or **Office**, or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
 

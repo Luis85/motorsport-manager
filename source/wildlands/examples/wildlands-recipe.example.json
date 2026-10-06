@@ -1,0 +1,12 @@
+{
+  "format": "wildlands-recipe",
+  "schemaVersion": 1,
+  "operations": [
+    {"operation": "start"},
+    {"operation": "command", "command": {"id": "select-creature", "args": ["c1"]}},
+    {"operation": "command", "command": {"id": "set-stock-target", "actorId": "c1", "args": ["wood", 10]}},
+    {"operation": "advance", "seconds": 30},
+    {"operation": "step", "count": 5},
+    {"operation": "connections"}
+  ]
+}

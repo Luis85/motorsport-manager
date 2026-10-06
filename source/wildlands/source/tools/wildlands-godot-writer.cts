@@ -10,9 +10,9 @@ export async function writeGodotProject(project:unknown,output:string):Promise<{
  if(fs.existsSync(destination)||fs.realpathSync(parent)!==parent)throw Error('Godot output must be a new directory with a real parent and no symlink ancestors.');
  const P=require('../wildlands-project.js');
  const G=require('../wildlands-godot.js') as {compile(project:unknown,resources:{bundle:unknown;templates:Record<string,string>}):Promise<Result>};
- const generated=path.resolve(__dirname,'..');
- const bundle=JSON.parse(fs.readFileSync(path.join(generated,'wildlands-runtime-bundle.json'),'utf8')) as unknown;
- const templates=JSON.parse(fs.readFileSync(path.join(generated,'wildlands-godot-templates.json'),'utf8')) as Record<string,string>;
+ // Static requires of the trusted build outputs let tools/cli-bundle.cts embed them in bin/wildlands.
+ const bundle=require('../wildlands-runtime-bundle.json') as unknown;
+ const templates=require('../wildlands-godot-templates.json') as Record<string,string>;
  const compiled=await G.compile(project,{bundle,templates}),temporary=path.join(parent,'.'+path.basename(destination)+'.wildlands-'+randomUUID());
  // Exclusive directory claim closes the normal concurrent-publisher collision window.
  fs.mkdirSync(destination,{recursive:false});const claim=fs.lstatSync(destination);

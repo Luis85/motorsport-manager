@@ -6,7 +6,7 @@ Littlewild simulation. Littlewild loads by default to demonstrate the builder's
 capabilities. Emberworks and Office provide different scenario examples.
 
 During development this separate npm project remains in
-`docs/concepts/littlewild/` within Motorsport Manager. Run the commands below from
+`source/wildlands/` within Motorsport Manager. Run the commands below from
 that folder. Native Motorsport Manager and Wildlands retain separate builds,
 application lifecycles, simulations and persistence.
 
@@ -71,6 +71,15 @@ banner does not appear on stdout:
 ```sh
 node .generated/tools/wildlands-cli.cjs discover
 ```
+
+The repository also checks in the same CLI as one self-contained executable,
+`bin/wildlands` at the repository root. It needs only Node.js 22 or newer: no
+`npm ci`, build or `node_modules`. Its commands, JSON output and exit codes are
+identical to the generated entry. The [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md)
+is the complete command reference and agent guide. After changing any authored
+source, package or toolchain file, refresh it with `npm run build:cli`;
+`npm run check:cli` rebuilds it in memory, smoke-runs the candidate from an empty
+directory and fails when the checked-in file differs.
 
 Each invocation emits one JSON result with `ok` and `protocolVersion: 1`. Exit 0
 means success, exit 1 means the project was rejected by validation, and exit 2

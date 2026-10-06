@@ -285,6 +285,7 @@
     "source/wildlands-runtime-authoring.cts",
     "source/tools/wildlands-runtime.cts",
     "source/tools/wildlands-cli.cts",
+    "source/tools/cli-bundle.cts",
     "source/verification/wildlands-browser.ts",
     "source/test-wildlands-acceptance.cts",
     "source/wildlands-sdk.cts",

@@ -2,7 +2,9 @@
 /// <reference path="../wildlands-project-contracts.d.ts" />
 /** Stable JSON-only, noninteractive CLI. No output is written until admission succeeds. */
 import {readJsonFile,writeJsonFile,emit} from './cli-io.cjs';
-const usage='wildlands discover | scenarios | create --output project.json [--scenario littlewild|emberworks|office] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json | scenario --project project.json --scenario ID [--scene ID] --output project.json | run|edit --project project.json --recipe recipe.json --output project.json | compile|export --project project.json --output godot-directory';
+const usage='wildlands --help | --version | discover | scenarios | create --output project.json [--scenario littlewild|emberworks|office] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json | scenario --project project.json --scenario ID [--scene ID] --output project.json | run|edit --project project.json --recipe recipe.json --output project.json | compile|export --project project.json --output godot-directory';
+/** Repository handbook for humans and agents; reported by --help. */
+const handbook='docs/reference/wildlands-cli.md';
 const allowed:Record<string,readonly string[]>={discover:[],scenarios:[],create:['--output','--scenario','--scene','--pack','--id','--name'],validate:['--project'],inspect:['--project'],scenario:['--project','--scenario','--scene','--output'],run:['--project','--recipe','--output'],edit:['--project','--recipe','--output'],compile:['--project','--output'],export:['--project','--output']};
 function options(args:readonly string[],fields:readonly string[]):Map<string,string>{
  const values=new Map<string,string>();
@@ -16,7 +18,9 @@ function options(args:readonly string[],fields:readonly string[]):Map<string,str
 export async function run(args:readonly string[]):Promise<void>{
  const command=args[0];
  try{
-  if(args.length===0||(args.length===1&&['--help','-h'].includes(command!))){emit({ok:true,protocolVersion:1,usage});return;}
+  if(args.length===0||(args.length===1&&['--help','-h'].includes(command!))){emit({ok:true,protocolVersion:1,usage,handbook});return;}
+  // Lazy: a broken package manifest cannot affect help, and the single-file bundle inlines this version.
+  if(args.length===1&&command==='--version'){const manifest=require('../../package.json') as {name:string;version:string};emit({ok:true,protocolVersion:1,name:manifest.name,version:manifest.version});return;}
   if(!command||!Object.hasOwn(allowed,command))throw Error('Unknown operation. '+usage);
   const values=options(args.slice(1),allowed[command]!);
   const required=(flag:string):string=>{const value=values.get(flag);if(!value)throw Error('Missing required option: '+flag);return value;};

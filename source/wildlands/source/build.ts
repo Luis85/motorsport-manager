@@ -37,7 +37,7 @@ function cleanGeneratedExecutables(directory: string): void {
 
 function compile(): void {
   if (!fs.existsSync(TSC)) {
-    throw new Error("TypeScript dependencies are missing. Run npm install in docs/concepts/littlewild.");
+    throw new Error("TypeScript dependencies are missing. Run npm ci in source/wildlands.");
   }
   fs.mkdirSync(GENERATED, { recursive: true });
   cleanGeneratedExecutables(GENERATED);

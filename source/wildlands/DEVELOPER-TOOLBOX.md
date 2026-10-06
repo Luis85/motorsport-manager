@@ -7,7 +7,7 @@ scenario schema 2 and portable story envelope 10.
 
 ## Start in Node
 
-Run from `docs/concepts/littlewild`:
+Run from `source/wildlands`:
 
 ```sh
 npm ci
@@ -310,4 +310,4 @@ selects registered presets. See [p5 provenance and replacement instructions](ven
 
 ## Skill trees
 
-Use `session.skillTrees(targetId)` for detached progress. Discovery includes `attach-skill-tree` and `unlock-skill-tree-node`, targeting `player` or a stable creature ID. The [skill-tree reference](../../reference/skill-trees.md) describes definition validation, earned XP, rank costs, engine integration and saved-state compatibility.
+Use `session.skillTrees(targetId)` for detached progress. Discovery includes `attach-skill-tree` and `unlock-skill-tree-node`, targeting `player` or a stable creature ID. The [skill-tree reference](../../docs/reference/skill-trees.md) describes definition validation, earned XP, rank costs, engine integration and saved-state compatibility.

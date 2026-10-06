@@ -1,3 +1,7 @@
+## Standalone project and single-file CLI
+
+Moved the project from `docs/concepts/littlewild/` to `source/wildlands/`; build guidance, documentation links and the engine-export repository license provenance now use the new location. Added `wildlands --version` and the handbook path to `--help`. `npm run build:cli` bundles the compiled CLI with all content and trusted Godot runtime resources into the deterministic, dependency-free executable `bin/wildlands` at the repository root; `npm run check:cli` rebuilds and smoke-runs it and fails when the checked-in file is stale. The repository handbook is `docs/reference/wildlands-cli.md`.
+
 ## PR 25 portable-world and authoring expansion
 
 Added a world/scene tree editor, nested building floors and connected levels, a 3D creature editor, freeform construction and terraforming, authored creature interactions and automatic friendly duels, independent duel/quest settings, and the indoor Office workflow. Scene checkpoints preserve dormant native work and captured data. All fifteen inventoried domain/application typing debts are closed.

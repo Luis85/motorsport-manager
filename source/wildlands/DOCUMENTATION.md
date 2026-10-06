@@ -11,12 +11,13 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 - [Wildlands overview and Littlewild showcase](README.md)
 - [Project workflow, terminal/AI interface and Godot target](WILDLANDS.md)
+- [Wildlands CLI handbook for `bin/wildlands`](../../docs/reference/wildlands-cli.md)
 - [Current validation procedure and export acceptance criteria](WILDLANDS.md#validation-and-development)
 
 ## Authoring and task guides
 
-- [Isometric RTS demonstration](../../tutorials/rts-demo.md)
-- [Graphical RTS mission authoring](../../how-to/rts-mission-editor.md)
+- [Isometric RTS demonstration](../../docs/tutorials/rts-demo.md)
+- [Graphical RTS mission authoring](../../docs/how-to/rts-mission-editor.md)
 - [Developer toolbox](DEVELOPER-TOOLBOX.md)
 - [Central balancing and experiments](BALANCING.md)
 - [Office: a complete portable scenario](OFFICE-SCENARIO.md)
@@ -33,9 +34,9 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 ## Runtime and format references
 
-- [Player and creature skill trees](../../reference/skill-trees.md)
+- [Player and creature skill trees](../../docs/reference/skill-trees.md)
 
-- [Data-driven ECS RTS engine and tools](../../reference/rts-engine.md)
+- [Data-driven ECS RTS engine and tools](../../docs/reference/rts-engine.md)
 - [Configurable experiences — authoring contract 2](CONFIGURATION.md)
 - [Littlewild v13 — Content integration compatibility](CONTENT-INTEGRATION.md)
 - [Littlewild rules boundary](RULES.md)

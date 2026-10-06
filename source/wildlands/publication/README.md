@@ -4,8 +4,8 @@
 
 ## Status
 
-**Published and runnable.** The checksum-pinned v15 payload is installed under
-`docs/concepts/littlewild/`, including the standalone `littlewild.html`,
+**Published and runnable.** The checksum-pinned v15 payload was installed under
+`docs/concepts/littlewild/` (the project has since moved to `source/wildlands/`), including the standalone `littlewild.html`,
 authored `source/`, bundled `vendor/`, configuration/scenario content, tests,
 verification records, and documentation.
 

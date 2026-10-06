@@ -7,6 +7,8 @@
     "typecheck": "tsc -p tsconfig.strict.json",
     "architecture": "node --import tsx source/tools/architecture-check.cts",
     "build": "node --import tsx source/build.ts",
+    "build:cli": "node --import tsx source/build.ts && node --import tsx source/tools/cli-bundle.cts --output ../../bin/wildlands",
+    "check:cli": "node --import tsx source/build.ts && node --import tsx source/tools/cli-bundle.cts --check ../../bin/wildlands",
     "verify": "node --import tsx source/verification/verify.ts",
     "toolbox": "node .generated/tools/developer-example.cjs",
     "wildlands": "node .generated/tools/wildlands-cli.cjs",
@@ -17,6 +19,8 @@
   "devDependencies": {
     "@types/node": "22.20.5",
     "ajv": "8.20.0",
+    "esbuild": "0.25.12",
+    "pako": "2.2.0",
     "playwright": "1.63.0",
     "tsx": "4.20.0",
     "typescript": "5.9.3"

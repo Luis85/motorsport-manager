@@ -68,4 +68,4 @@ reconstruction and synchronous temper grants. The design follows the concrete ow
 `RESEARCH-IMPROVEMENT-PLAN.md`. The normal architecture and strict
 compiler gates also run against the complete authored tree.
 
-The compiled skill-tree adapter wraps reward settlement, work/learning rates, arrival and import. It adds validated player/creature attachment and rank commands without introducing a clock or a second XP authority. See [skill trees](../../reference/skill-trees.md).
+The compiled skill-tree adapter wraps reward settlement, work/learning rates, arrival and import. It adds validated player/creature attachment and rank commands without introducing a clock or a second XP authority. See [skill trees](../../docs/reference/skill-trees.md).

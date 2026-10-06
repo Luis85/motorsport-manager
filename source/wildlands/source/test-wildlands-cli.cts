@@ -9,7 +9,8 @@ function run(args:string[],entry=cli):{status:number|null;out:Record<string,unkn
 const project=path.join(directory,'project.json'),output=path.join(directory,'played.json'),recipe=path.join(directory,'recipe.json');
 fs.writeFileSync(recipe,JSON.stringify({format:'wildlands-recipe',schemaVersion:1,operations:[{operation:'start'},{operation:'advance',seconds:1}]}));
 test('Cold help and discovery are structured, versioned and machine readable',()=>{
- const help=run(['--help']);assert.equal(help.status,0);assert.equal(help.out.protocolVersion,1);assert(help.out.usage);
+ const help=run(['--help']);assert.equal(help.status,0);assert.equal(help.out.protocolVersion,1);assert(help.out.usage);assert.equal(help.out.handbook,'docs/reference/wildlands-cli.md');
+ const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../package.json'),'utf8')) as {name:string;version:string},version=run(['--version']);assert.equal(version.status,0);assert.deepEqual(version.out,{ok:true,protocolVersion:1,name:manifest.name,version:manifest.version});assert.equal(run(['--version','extra']).status,2);
  const discovery=run(['discover']);assert.equal(discovery.status,0);assert.equal(discovery.out.protocolVersion,1);assert.equal(discovery.out.defaultScenario,'littlewild');assert(Array.isArray(discovery.out.commands));assert(Array.isArray(discovery.out.operations));
  if(process.platform!=='win32'){const executable=spawnSync(cli,['discover'],{encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024});assert.ifError(executable.error);assert.equal(executable.status,0,executable.stderr);assert.deepEqual(JSON.parse(executable.stdout),discovery.out);}
  const scenarios=run(['scenarios']);assert.equal(scenarios.status,0);assert.deepEqual((scenarios.out.scenarios as {id:string}[]).map(value=>value.id),['littlewild','emberworks','office']);
