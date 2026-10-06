@@ -103,7 +103,14 @@ runtime declares what is present instead of assuming it:
 - Each host sets `window.__wildlandsReady = true`, sets
   `document.documentElement.dataset.wildlandsReady` to its host id (`colony`,
   `rts` or `pet`) and then dispatches one `wildlands:ready` window event whose
-  `detail.host` names it, after its public APIs exist.
+  `detail.host` names it, after its public APIs exist. Standalone play artifacts
+  (`play-boot`) mount their host through the descriptor's `create`/`api`, publish
+  `WildlandsPlay` and then the same signal with the app id; a failed boot never
+  signals ready.
+- `LWAssets` starts with an empty catalog when no `LWAssetDefinitions` list is
+  declared (a standalone pet admits its own definitions through `validate()`);
+  a declared list must still be a valid 1–256 catalog, and every artifact profile
+  that runs the colony declares one.
 
 `test-runtime-optionality.cts` and `verification/runtime-optionality-browser.ts`
 cover these seams.

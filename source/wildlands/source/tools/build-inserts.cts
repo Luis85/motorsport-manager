@@ -5,6 +5,9 @@
  * order (source/index.html), so every artifact profile that filters it keeps the same
  * relative order. Each insert names exactly one bundle; profiles select bundles, never
  * individual files. tools/artifact-profiles.cts owns the profiles and their order checks.
+ * A module is tagged with the lowest bundle that needs it: the defensive developer JSON/command
+ * boundary (DEVELOPER_DATA, DEVELOPER_COMMANDS) is required by the renderer host's plugin
+ * contexts, and the storytelling preview renderer is used only by the storytelling editor.
  */
 export type InsertKind = "style" | "script";
 /** Canonical bundle order; a profile lists its bundles as a subsequence of this list. */
@@ -151,8 +154,8 @@ export const INSERTS: readonly Insert[] = [
   ["STORYTELLING_PREVIEW", "storytelling-preview.js", "script", "editors"],
   ["DEVELOPER_STORYTELLING", "developer-storytelling.js", "script", "developer"],
   ["BALANCING_TOOLS", "balancing-tools.js", "script", "editors"],
-  ["DEVELOPER_DATA", "developer-data.js", "script", "developer"],
-  ["DEVELOPER_COMMANDS", "developer-commands.js", "script", "developer"],
+  ["DEVELOPER_DATA", "developer-data.js", "script", "renderer-host"],
+  ["DEVELOPER_COMMANDS", "developer-commands.js", "script", "renderer-host"],
   ["BALANCING_PROBES", "balancing-probes.js", "script", "editors"],
   ["DEVELOPER_CREATURES", "developer-creatures.js", "script", "developer"],
   ["DEVELOPER_SCENES", "developer-scenes.js", "script", "developer"],
@@ -190,7 +193,7 @@ export const INSERTS: readonly Insert[] = [
   ["RENDERER_ANIMATIONS", "renderer-animations.js", "script", "renderer-host"],
   ["RENDERER_ANIMATION_EXAMPLE", "renderer-animation-example.js", "script", "renderer-examples"],
   ["RENDERER_OBSERVER", "renderer-observer.js", "script", "renderer-host"],
-  ["STORYTELLING_RENDERER", "storytelling-renderer.js", "script", "storytelling-player"],
+  ["STORYTELLING_RENDERER", "storytelling-renderer.js", "script", "editors"],
   ["RENDERER_HOST", "renderer-host.js", "script", "renderer-host"],
   ["RENDERER_EXAMPLE", "renderer-example.js", "script", "renderer-examples"],
   ["SKILL_TREE_UI", "skill-tree-ui.js", "script", "colony-shell"],

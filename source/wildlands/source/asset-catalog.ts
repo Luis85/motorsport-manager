@@ -191,7 +191,10 @@
   }
  }
  const raw=root.LWAssetDefinitions??(typeof module!=='undefined'&&module.exports?require('./asset-definitions.json'):undefined);
- if(!Array.isArray(raw))fail('bundled definition list is missing');
+ // A page without a bundled catalog (a standalone pet artifact admits its own definitions through
+ // validate()) starts empty; a declared list must be a valid 1–256 catalog. Colony profiles always
+ // declare LWAssetDefinitions (tools/artifact-profiles.cts enforces it).
+ if(raw!==undefined&&!Array.isArray(raw))fail('bundled definition list is missing');
  function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
   dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
   const defs=Object.freeze(entries.map(checkedDefinition)),index=new Map<string,Definition>();
@@ -199,7 +202,7 @@
   const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
   return {defs,index,revision};
  }
- let active=prepare(raw);const defaults=active.defs;
+ let active=raw===undefined?{defs:Object.freeze([]) as readonly Definition[],index:new Map<string,Definition>(),revision:5381}:prepare(raw);const defaults=active.defs;
  function replace(input:unknown):void{active=prepare(input);}
  function withDefinitions<T>(input:unknown,work:()=>T):T{
   const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}

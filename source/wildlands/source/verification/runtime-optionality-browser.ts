@@ -54,6 +54,7 @@ async function main():Promise<void>{
    assert.equal(await value(page,'typeof Littlewild.engine==="object"&&typeof WildlandsRTS.query==="function"&&typeof WildlandsPet.query==="function"'),true);
    assert.equal(await page.locator('[data-wildlands-rts=open]').textContent(),'RTS demo');
    assert.equal(await page.locator('[data-wildlands-pet=open]').textContent(),'Pet demo');
+   assert.equal(await page.locator('#modal [data-act=scenarios]').textContent(),'Worlds & scenarios · import your own ↗');
    const capabilities=await value<{id:string;available:boolean}[]>(page,'Wildlands.capabilities()');
    assert(capabilities.every(entry=>entry.available),JSON.stringify(capabilities));
    assert.deepEqual(capabilities.filter(entry=>entry.id.startsWith('app:')).map(entry=>entry.id),['app:rts','app:pet']);
@@ -76,7 +77,9 @@ async function main():Promise<void>{
    const page=await open(RECORD_READY,html);await ready(page,'colony');
    assert.deepEqual(await value(page,'window.__readyEvents'),[{host:'colony',flag:true}]);
    assert.equal(await value(page,'[typeof LWScenarioUI,typeof LWDeveloperSession,typeof WildlandsUI,typeof LWRTSHost,typeof LWPetHost,typeof LWDeveloper].join()'),'undefined,undefined,undefined,undefined,undefined,undefined');
-   assert.equal(await page.locator('#wildlands-workspace, #world-more [data-act=scenarios], [data-wildlands-rts], [data-wildlands-pet]').count(),0);
+   assert.equal(await value(page,'Littlewild.ui.modal'),'welcome');
+   // Neither the world menu nor the welcome modal offers the absent scenario library.
+   assert.equal(await page.locator('#wildlands-workspace, [data-act=scenarios], [data-wildlands-rts], [data-wildlands-pet]').count(),0);
    assert.equal(await value(page,'Littlewild.scenarioUI'),null);
    assert.match((await value<{id:string;reason?:string}[]>(page,'Wildlands.capabilities()')).find(entry=>entry.id==='project')?.reason??'',/studio bundle is not included/);
    await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.preferences.set(false);Littlewild.engine.s.paused=false;Littlewild.refresh()');

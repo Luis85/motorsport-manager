@@ -5,16 +5,19 @@
  * assembler filters the canonical INSERTS order, so every artifact keeps the showcase load order.
  * `transitional` bundles are included only until a runtime seam makes them optional; each carries
  * the reason and is listed separately so the debt stays visible in reports and checks.
+ * `game` is the profile's own LWGameProfile data global (today only its storage namespace); the
+ * showcase never declares one, so the composite fixture keeps the legacy Littlewild save keys.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import {BUNDLES, INSERTS, type BundleTag} from './build-inserts.cjs';
 
-export type DataGroup = 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content';
+export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content';
 export type ProfileKind = 'fixture' | 'studio' | 'play';
 
 /** Canonical declaration order of every injectable data global (the showcase order). */
 export const DATA_GLOBALS: readonly (readonly [name: string, group: DataGroup])[] = [
+  ['LWGameProfile', 'game-profile'],
   ['WildlandsGodotRuntimeLoader', 'export-payloads'],
   ['WildlandsGodotTemplates', 'export-payloads'],
   ['LWEngineSourceLoader', 'export-payloads'],
@@ -45,6 +48,11 @@ export const DATA_GLOBALS: readonly (readonly [name: string, group: DataGroup])[
   ['LWScenarioPacks', 'colony-content']
 ];
 
+/** Runtime game profile read by the colony shell (RUNTIME-CONTRACTS.md, storage namespaces). */
+export interface GameProfile {readonly storage: {readonly namespace: string};}
+/** Same rule as LWStoryStorage: the `littlewild` namespace keeps the legacy v5 keys. */
+const STORAGE_NAMESPACE = /^[a-z][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)*$/;
+
 export interface ArtifactProfile {
   readonly id: string;
   readonly kind: ProfileKind;
@@ -54,6 +62,8 @@ export interface ArtifactProfile {
   readonly transitional?: {readonly bundles: readonly BundleTag[]; readonly reason: string};
   /** Data globals to declare; serialized in DATA_GLOBALS order. */
   readonly data: readonly string[];
+  /** Per-profile LWGameProfile value; declared exactly when `data` names LWGameProfile. */
+  readonly game?: GameProfile;
   /** Deterministic esbuild whitespace+syntax minification of scripts (identifiers kept). */
   readonly minify: boolean;
   /** Template `{{NAME}}` values; HTML-escaped on substitution. */
@@ -67,28 +77,23 @@ const SHOWCASE_TEXT = {
 };
 /** Bundles that a play artifact may carry only as declared transitional debt. */
 export const PLAY_EXCLUDED_BUNDLES: readonly BundleTag[] = ['editors', 'developer', 'export', 'renderers-2d', 'animation-p5', 'renderer-examples', 'rts-editor'];
-const COLONY_SHELL_SEAMS = 'ui.ts mounts the RTS and Pet hosts (and so the RTS mission editor) unconditionally, and ui.ts, scenario-ui, ' +
-  'developer-toolbox and wildlands-ui hard-wire the editors, developer session and export UI at boot (tangles T3/T4/T5). ' +
-  'Phase 1C optionality seams remove these; export payloads are already excluded and their controls report unavailability.';
 
 export const PROFILES: readonly ArtifactProfile[] = [
   {id: 'showcase', kind: 'fixture', template: 'index.html', minify: false, variables: SHOWCASE_TEXT,
-    bundles: BUNDLES.filter(bundle => bundle !== 'play-boot'), data: DATA_GLOBALS.map(([name]) => name)},
+    bundles: BUNDLES.filter(bundle => bundle !== 'play-boot'), data: DATA_GLOBALS.filter(([, group]) => group !== 'game-profile').map(([name]) => name)},
   {id: 'studio', kind: 'studio', template: 'templates/colony.html', minify: false, variables: SHOWCASE_TEXT,
     bundles: ['engine-kernel', 'asset-catalog', 'colony-styles', 'core-sim', 'colony-shell', 'renderer-3d', 'renderer-host', 'renderers-2d', 'animation-p5',
       'storytelling-player', 'editors', 'developer', 'export'],
-    transitional: {bundles: ['template-rts', 'rts-editor', 'template-pet'], reason: COLONY_SHELL_SEAMS},
-    data: groups('export-payloads', 'colony-content', 'asset-catalog', 'rts-content', 'pet-content')},
+    data: groups('export-payloads', 'colony-content', 'asset-catalog')},
   {id: 'colony-play', kind: 'play', template: 'templates/colony.html', minify: true, variables: SHOWCASE_TEXT,
     bundles: ['engine-kernel', 'asset-catalog', 'colony-styles', 'core-sim', 'colony-shell', 'renderer-3d', 'renderer-host', 'storytelling-player'],
-    transitional: {bundles: ['editors', 'developer', 'export', 'template-rts', 'rts-editor', 'template-pet'], reason: COLONY_SHELL_SEAMS},
-    data: groups('colony-content', 'asset-catalog', 'rts-content', 'pet-content')},
+    game: {storage: {namespace: 'littlewild'}}, data: groups('game-profile', 'colony-content', 'asset-catalog')},
   {id: 'rts-play', kind: 'play', template: 'templates/standalone.html', minify: true,
     variables: {APP: 'rts', TITLE: 'Wildlands RTS', DESCRIPTION: 'An offline isometric real-time strategy match built with Wildlands.'},
     bundles: ['engine-kernel', 'template-rts', 'play-boot'], data: groups('rts-content')},
   {id: 'pet-play', kind: 'play', template: 'templates/standalone.html', minify: true,
     variables: {APP: 'pet', TITLE: 'Pocket Pet', DESCRIPTION: 'An offline virtual pet built with Wildlands.'},
-    bundles: ['engine-kernel', 'asset-catalog', 'renderer-3d', 'template-pet', 'play-boot'], data: groups('asset-catalog', 'pet-content')}
+    bundles: ['engine-kernel', 'asset-catalog', 'renderer-3d', 'template-pet', 'play-boot'], data: groups('pet-content')}
 ];
 
 export function profile(id: string): ArtifactProfile {
@@ -114,6 +119,48 @@ const tokens = (css: string): Map<string, string> => {
   return new Map([...block.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)].map(match => [match[1]!, match[2]!]));
 };
 
+/**
+ * Members a module declares as required in its `inputRoot as {...}` shape (no `?`). Modules
+ * without that declaration are not covered; optional members (`Name?:`) are optional bundles.
+ */
+export function requiredRootMembers(text: string): string[] {
+  const at = text.search(/inputRoot\s+as\s+\{/);
+  if (at < 0) return [];
+  const required: string[] = [];
+  let depth = 0, member = true;
+  for (let index = text.indexOf('{', at); index < text.length; index += 1) {
+    const char = text[index]!;
+    if (depth === 1 && member && /[A-Za-z_$]/.test(char)) {
+      const match = /^([A-Za-z_$][\w$]*)\s*(\?)?\s*:/.exec(text.slice(index, index + 160));
+      if (match && !match[2]) required.push(match[1]!);
+      member = false;
+    }
+    if ('{(['.includes(char)) depth += 1;
+    else if ('})]'.includes(char)) { depth -= 1; if (depth === 0) break; }
+    else if (depth === 1 && (char === ';' || char === ',')) member = true;
+    else if (depth === 1 && !/\s/.test(char)) member = false;
+  }
+  return required;
+}
+
+/** Every global a profile's modules require must be published by a module or data global it includes. */
+function closureErrors(source: string, candidate: ArtifactProfile): string[] {
+  const scripts = INSERTS.filter(insert => insert[2] === 'script' && !insert[1].startsWith('../vendor/'));
+  const text = (file: string): string => { const authored = path.join(source, file.replace(/\.js$/, '.ts')); return fs.existsSync(authored) ? fs.readFileSync(authored, 'utf8') : ''; };
+  const publishers = new Map<string, string[]>();
+  for (const [marker, file] of scripts) for (const match of text(file).matchAll(/\.([A-Z][\w$]*)\s*=(?![=>])/g)) publishers.set(match[1]!, [...publishers.get(match[1]!) ?? [], marker]);
+  const bundles = profileBundles(candidate), included = new Set(INSERTS.filter(insert => bundles.includes(insert[3])).map(insert => insert[0]));
+  const data = new Set(DATA_GLOBALS.map(([name]) => name)), errors: string[] = [];
+  for (const [marker, file] of scripts.filter(insert => included.has(insert[0]))) {
+    for (const name of requiredRootMembers(text(file))) {
+      if (data.has(name)) { if (!candidate.data.includes(name)) errors.push(`Profile ${candidate.id}: ${marker} requires data global ${name}.`); continue; }
+      const owners = publishers.get(name);
+      if (owners && !owners.some(owner => included.has(owner))) errors.push(`Profile ${candidate.id}: ${marker} requires ${name}, published only by ${owners.join(', ')}.`);
+    }
+  }
+  return errors;
+}
+
 /** Structural contract between INSERTS, bundle tags, data globals, templates and profiles. */
 export function profileErrors(source: string): string[] {
   const errors: string[] = [], known = new Set<string>(BUNDLES), names = INSERTS.map(insert => insert[0]);
@@ -128,6 +175,7 @@ export function profileErrors(source: string): string[] {
   const showcase = PROFILES.find(candidate => candidate.id === 'showcase');
   if (!showcase) errors.push('The showcase fixture profile is missing.');
   else {
+    if (showcase.game || showcase.data.includes('LWGameProfile')) errors.push('The showcase fixture must not declare LWGameProfile; it keeps the legacy Littlewild save keys.');
     const order = markers(fs.readFileSync(path.join(source, showcase.template), 'utf8')).filter(name => name !== 'CONTENT_DATA');
     const selected = new Set(profileBundles(showcase));
     const expected = INSERTS.filter(insert => selected.has(insert[3])).map(insert => insert[0]);
@@ -143,6 +191,8 @@ export function profileErrors(source: string): string[] {
     if (transitional.some(bundle => candidate.bundles.includes(bundle))) errors.push(`${where} lists a bundle as both required and transitional.`);
     if (candidate.transitional && candidate.transitional.reason.trim().length < 40) errors.push(`${where} needs a concrete transitional reason.`);
     if (!subsequence(candidate.data, dataNames)) errors.push(`${where} data globals are unknown or not in canonical order.`);
+    if (!!candidate.game !== candidate.data.includes('LWGameProfile')) errors.push(`${where} must declare LWGameProfile exactly when it has a game profile.`);
+    if (candidate.game && !STORAGE_NAMESPACE.test(candidate.game.storage.namespace)) errors.push(`${where} has an invalid storage namespace.`);
     if (!fs.existsSync(path.join(source, candidate.template))) errors.push(`${where} template is missing.`);
     if (candidate.kind === 'play') {
       for (const bundle of candidate.bundles) if (PLAY_EXCLUDED_BUNDLES.includes(bundle)) errors.push(`${where} requires excluded bundle ${bundle}; declare it transitional with a reason.`);
@@ -151,6 +201,9 @@ export function profileErrors(source: string): string[] {
     }
     const resolved = INSERTS.filter(insert => profileBundles(candidate).includes(insert[3])).map(insert => insert[0]);
     if (!subsequence(resolved, names)) errors.push(`${where} insert order is not a subsequence of INSERTS.`);
+    errors.push(...closureErrors(source, candidate));
+    // The asset catalog starts empty without a bundled list; only the standalone pet admits its own.
+    if (profileBundles(candidate).includes('colony-shell') && !candidate.data.includes('LWAssetDefinitions')) errors.push(`${where} runs the colony and must declare LWAssetDefinitions.`);
   }
   // Standalone templates do not load the colony stylesheet; their tokens must mirror it exactly.
   const base = tokens(fs.readFileSync(path.join(source, 'style.css'), 'utf8')), play = tokens(fs.readFileSync(path.join(source, 'play.css'), 'utf8'));

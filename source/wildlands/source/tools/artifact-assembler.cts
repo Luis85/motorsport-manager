@@ -118,7 +118,8 @@ export function assembleArtifact(profile: ArtifactProfile, input: AssemblyInput)
       outOfOrder: JSON.stringify(canonical) !== JSON.stringify(explicit)}));
   }
   const blocks = new Map<string, {text: string; segments: ArtifactSegment[]}>();
-  const data = dataScript(profile.data, input.data);
+  const available = profile.game ? new Map([...input.data, ['LWGameProfile', profile.game]]) : input.data;
+  const data = dataScript(profile.data, available);
   blocks.set('CONTENT_DATA', {text: data.script, segments: data.segments});
   for (const insert of selected) {
     const text = insertText(insert, input, profile.minify), segment: ArtifactSegment = {kind: insert[2], name: insert[0], bundle: insert[3], bytes: byteLength(text)};

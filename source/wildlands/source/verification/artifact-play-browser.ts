@@ -70,16 +70,23 @@ async function main(): Promise<void> {
     }));
     await check('Colony play artifact boots the colony and starts a story', () => withArtifact(browser, 'colony-play', async page => {
       await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
+      // The play profile carries no editors, developer session, export or template bundles.
+      assert.equal(await page.evaluate('[typeof LWScenarioUI,typeof LWDeveloper,typeof WildlandsUI,typeof LWRTSHost,typeof LWPetHost].join()'), 'undefined,undefined,undefined,undefined,undefined');
+      assert.equal(await page.locator('[data-act=scenarios], [data-wildlands-rts], [data-wildlands-pet]').count(), 0, 'no launcher for an absent bundle');
       await page.locator('[data-act=begin]').click();
       const before = await page.evaluate('Littlewild.engine.s.simTime') as number;
       await page.evaluate('Littlewild.advance(5)');
       assert((await page.evaluate('Littlewild.engine.s.simTime') as number) > before, 'explicit advance moves the colony clock');
+      // Its explicit littlewild game profile keeps the legacy save keys.
+      await page.evaluate('Littlewild.save(true)');
+      assert.equal(await page.evaluate('LWGameProfile.storage.namespace+"/"+(localStorage.getItem("littlewild.save.v5")!==null)'), 'littlewild/true');
     }));
     await check('Studio artifact boots the colony with editors and export tools', () => withArtifact(browser, 'studio', async page => {
       await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
       assert.equal(await page.evaluate('typeof Littlewild+"/"+typeof Wildlands'), 'object/object');
       await page.locator('[data-act=begin]').click();
       assert.equal(await page.evaluate('typeof LWDeveloper'), 'object');
+      assert.equal(await page.evaluate('typeof LWRTSHost+"/"+typeof LWPetHost+"/"+Wildlands.capabilities().some(entry=>entry.id.startsWith("app:"))'), 'undefined/undefined/false');
     }));
   } finally { await browser.close(); }
 }
