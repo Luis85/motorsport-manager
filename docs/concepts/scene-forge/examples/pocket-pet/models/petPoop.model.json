@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petPoop",
+  "category": "Pocket pet props",
+  "name": "Little mess",
+  "parameters": {},
+  "geometries": {
+    "swirl": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.12,
+          0
+        ],
+        [
+          0.13,
+          0.03
+        ],
+        [
+          0.1,
+          0.06
+        ],
+        [
+          0.11,
+          0.08
+        ],
+        [
+          0.07,
+          0.11
+        ],
+        [
+          0.08,
+          0.13
+        ],
+        [
+          0.045,
+          0.16
+        ],
+        [
+          0.02,
+          0.2
+        ],
+        [
+          0,
+          0.21
+        ]
+      ],
+      "segments": 20
+    },
+    "shine": {
+      "type": "sphere",
+      "radius": 0.016,
+      "segments": 8
+    }
+  },
+  "materials": {
+    "mess": {
+      "color": "#9b6a4a",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "shine": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.2,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffffff",
+      "emissiveIntensity": 0.3
+    }
+  },
+  "nodes": [
+    {
+      "id": "swirl",
+      "type": "mesh",
+      "geometry": "swirl",
+      "material": "mess"
+    },
+    {
+      "id": "shine",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.04,
+          0.14,
+          0.05
+        ],
+        "scale": [
+          1,
+          1.3,
+          0.6
+        ]
+      },
+      "geometry": "shine",
+      "material": "shine"
+    }
+  ]
+}

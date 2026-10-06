@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "kind": "littlewild-export",
+  "target": "../../../littlewild/source/assets",
+  "assets": [
+    {
+      "id": "mochi",
+      "family": "pets",
+      "name": "Mochi",
+      "metadata": {
+        "radius": 0.35,
+        "hitHeight": 0.9
+      },
+      "models": {
+        "egg": {
+          "model": "petEgg"
+        },
+        "baby": {
+          "model": "petBaby"
+        },
+        "teen": {
+          "model": "petTeen"
+        },
+        "adult-bloom": {
+          "model": "petAdultBloom"
+        },
+        "adult-bramble": {
+          "model": "petAdultBramble",
+          "materials": {
+            "skin": {
+              "color": "#c9a3b4",
+              "roughness": 0.65
+            },
+            "foot": {
+              "color": "#b98c9f",
+              "roughness": 0.65
+            },
+            "belly": {
+              "color": "#efe0e6",
+              "roughness": 0.65
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "pebble",
+      "family": "pets",
+      "name": "Pebble",
+      "metadata": {
+        "radius": 0.35,
+        "hitHeight": 0.9
+      },
+      "models": {
+        "egg": {
+          "model": "petEgg",
+          "materials": {
+            "spot": {
+              "color": "#a9c8f5",
+              "roughness": 0.45
+            },
+            "shell": {
+              "color": "#f3f7ff",
+              "roughness": 0.45
+            }
+          }
+        },
+        "baby": {
+          "model": "petBaby",
+          "materials": {
+            "skin": {
+              "color": "#a9c8f5",
+              "roughness": 0.55
+            },
+            "belly": {
+              "color": "#eef5ff",
+              "roughness": 0.55
+            },
+            "foot": {
+              "color": "#8fb2e8",
+              "roughness": 0.55
+            },
+            "blush": {
+              "color": "#c7a6ff",
+              "roughness": 0.55
+            }
+          }
+        },
+        "teen": {
+          "model": "petTeen",
+          "materials": {
+            "skin": {
+              "color": "#a9c8f5",
+              "roughness": 0.55
+            },
+            "belly": {
+              "color": "#eef5ff",
+              "roughness": 0.55
+            },
+            "foot": {
+              "color": "#8fb2e8",
+              "roughness": 0.55
+            },
+            "blush": {
+              "color": "#c7a6ff",
+              "roughness": 0.55
+            }
+          }
+        },
+        "adult-bloom": {
+          "model": "petAdultBloom",
+          "materials": {
+            "skin": {
+              "color": "#a9c8f5",
+              "roughness": 0.55
+            },
+            "belly": {
+              "color": "#eef5ff",
+              "roughness": 0.55
+            },
+            "foot": {
+              "color": "#8fb2e8",
+              "roughness": 0.55
+            },
+            "blush": {
+              "color": "#c7a6ff",
+              "roughness": 0.55
+            }
+          }
+        },
+        "adult-bramble": {
+          "model": "petAdultBramble",
+          "materials": {
+            "skin": {
+              "color": "#8f9fc4",
+              "roughness": 0.65
+            },
+            "belly": {
+              "color": "#e4e9f5",
+              "roughness": 0.65
+            },
+            "foot": {
+              "color": "#7a8bb3",
+              "roughness": 0.65
+            },
+            "blush": {
+              "color": "#b8a6e0",
+              "roughness": 0.65
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "pet-room",
+      "family": "pets",
+      "name": "Pet room",
+      "metadata": {
+        "radius": 2.4
+      },
+      "models": {
+        "world": {
+          "model": "petRoom"
+        }
+      }
+    },
+    {
+      "id": "pet-bowl",
+      "family": "pets",
+      "name": "Food bowl",
+      "metadata": {
+        "radius": 0.22
+      },
+      "models": {
+        "world": {
+          "model": "petBowl"
+        }
+      }
+    },
+    {
+      "id": "pet-snack",
+      "family": "pets",
+      "name": "Cupcake snack",
+      "metadata": {
+        "radius": 0.1
+      },
+      "models": {
+        "world": {
+          "model": "petSnack"
+        }
+      }
+    },
+    {
+      "id": "pet-ball",
+      "family": "pets",
+      "name": "Toy ball",
+      "metadata": {
+        "radius": 0.12
+      },
+      "models": {
+        "world": {
+          "model": "petBall"
+        }
+      }
+    },
+    {
+      "id": "pet-bed",
+      "family": "pets",
+      "name": "Cushion bed",
+      "metadata": {
+        "radius": 0.5
+      },
+      "models": {
+        "world": {
+          "model": "petBed"
+        }
+      }
+    },
+    {
+      "id": "pet-mess",
+      "family": "pets",
+      "name": "Little mess",
+      "metadata": {
+        "radius": 0.13
+      },
+      "models": {
+        "world": {
+          "model": "petPoop"
+        }
+      }
+    },
+    {
+      "id": "pet-medicine",
+      "family": "pets",
+      "name": "Medicine bottle",
+      "metadata": {
+        "radius": 0.08
+      },
+      "models": {
+        "world": {
+          "model": "petMedicine"
+        }
+      }
+    },
+    {
+      "id": "pet-bubbles",
+      "family": "pets",
+      "name": "Bath bubbles",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "petBubbles"
+        }
+      }
+    },
+    {
+      "id": "pet-heart",
+      "family": "pets",
+      "name": "Floating heart",
+      "metadata": {
+        "radius": 0.12
+      },
+      "models": {
+        "world": {
+          "model": "petHeart"
+        }
+      }
+    },
+    {
+      "id": "pet-star",
+      "family": "pets",
+      "name": "Sparkle star",
+      "metadata": {
+        "radius": 0.12
+      },
+      "models": {
+        "world": {
+          "model": "petStar"
+        }
+      }
+    },
+    {
+      "id": "acc-party-hat",
+      "family": "pets",
+      "name": "Party hat",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemPartyHat"
+        }
+      }
+    },
+    {
+      "id": "acc-bow",
+      "family": "pets",
+      "name": "Ribbon bow",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemBow"
+        }
+      }
+    },
+    {
+      "id": "acc-glasses",
+      "family": "pets",
+      "name": "Round glasses",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemGlasses"
+        }
+      }
+    },
+    {
+      "id": "acc-scarf",
+      "family": "pets",
+      "name": "Knitted scarf",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemScarf"
+        }
+      }
+    },
+    {
+      "id": "acc-crown",
+      "family": "pets",
+      "name": "Golden crown",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemCrown"
+        }
+      }
+    },
+    {
+      "id": "acc-wings",
+      "family": "pets",
+      "name": "Fairy wings",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemWings"
+        }
+      }
+    }
+  ]
+}

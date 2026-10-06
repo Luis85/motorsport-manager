@@ -6,15 +6,17 @@ export type RecordValue = Record<string, unknown>;
 export interface Definition extends RecordValue {
  format: 'littlewild-definition';
  schemaVersion: 1;
- family: 'items' | 'buildings' | 'creatures';
+ family: 'items' | 'buildings' | 'creatures' | 'pets';
  id: string;
  visual?: RecordValue;
  creature?: RecordValue;
 }
-export const facets = Object.freeze({
+export const facets: Readonly<Record<Definition['family'], readonly string[]>> = Object.freeze({
  items: ['item', 'weight', 'equipment', 'recipe', 'node', 'itemRequirements', 'recipeRequirements'],
  buildings: ['building', 'physicalBuilding', 'buildingRequirements', 'home'],
- creatures: ['creature']
+ creatures: ['creature'],
+ // Pet presentation packages; gameplay rules live in the validated pet game catalog.
+ pets: []
 });
 export const read = (file: string): unknown => JSON.parse(fs.readFileSync(file, 'utf8')) as unknown;
 export const record = (value: unknown): value is RecordValue =>
@@ -37,7 +39,7 @@ export function definitions(source: string): Definition[] {
    if (!record(value) || value.format !== 'littlewild-definition' || value.schemaVersion !== 1 ||
        value.family !== family || value.id !== id || !/^[a-z0-9][a-z0-9_-]{0,60}$/.test(id))
     throw Error('Definition identity/path mismatch: ' + family + '/' + id);
-   const allowed = ['format', 'schemaVersion', 'family', 'id', 'visual', ...facets[knownFamily]];
+   const allowed: string[] = ['format', 'schemaVersion', 'family', 'id', 'visual', ...facets[knownFamily]];
    if (Object.keys(value).some(key => !allowed.includes(key))) throw Error('Unknown definition facet: ' + family + '/' + id);
    if (!Object.keys(value).some(key => key === 'visual' || facets[knownFamily].includes(key)))
     throw Error('Empty definition: ' + family + '/' + id);
@@ -54,7 +56,7 @@ export function definitions(source: string): Definition[] {
    }
    if (record(value.recipe) && (value.recipe.id !== id || value.recipe.output !== id)) throw Error('Recipe output identity mismatch: ' + id);
    if (record(value.visual)) {
-    const category = {items: 'item', buildings: 'building', creatures: 'actor'}[knownFamily];
+    const category = {items: 'item', buildings: 'building', creatures: 'actor', pets: 'pet'}[knownFamily];
     if (value.visual.format !== 'littlewild-3d-asset' || value.visual.schemaVersion !== 1 || value.visual.id !== id || value.visual.category !== category)
      throw Error('Asset identity/path mismatch: ' + family + '/' + id);
    }

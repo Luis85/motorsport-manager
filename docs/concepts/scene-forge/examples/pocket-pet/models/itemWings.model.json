@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "itemWings",
+  "category": "Pocket pet accessories",
+  "name": "Fairy wings",
+  "parameters": {},
+  "geometries": {
+    "wing": {
+      "type": "sphere",
+      "radius": 0.1,
+      "segments": 18
+    }
+  },
+  "materials": {
+    "wing": {
+      "color": "#c9f0ff",
+      "metalness": 0,
+      "roughness": 0.15,
+      "opacity": 0.6,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#9ad9ff",
+      "emissiveIntensity": 0.45
+    }
+  },
+  "nodes": [
+    {
+      "id": "wingUL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.1,
+          0.07,
+          -0.02
+        ],
+        "rotation": [
+          0,
+          25,
+          35
+        ],
+        "scale": [
+          1.25,
+          0.75,
+          0.12
+        ]
+      },
+      "geometry": "wing",
+      "material": "wing"
+    },
+    {
+      "id": "wingUR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.1,
+          0.07,
+          -0.02
+        ],
+        "rotation": [
+          0,
+          -25,
+          -35
+        ],
+        "scale": [
+          1.25,
+          0.75,
+          0.12
+        ]
+      },
+      "geometry": "wing",
+      "material": "wing"
+    },
+    {
+      "id": "wingLL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.08,
+          -0.06,
+          -0.02
+        ],
+        "rotation": [
+          0,
+          25,
+          -25
+        ],
+        "scale": [
+          0.85,
+          0.5,
+          0.1
+        ]
+      },
+      "geometry": "wing",
+      "material": "wing"
+    },
+    {
+      "id": "wingLR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.08,
+          -0.06,
+          -0.02
+        ],
+        "rotation": [
+          0,
+          -25,
+          25
+        ],
+        "scale": [
+          0.85,
+          0.5,
+          0.1
+        ]
+      },
+      "geometry": "wing",
+      "material": "wing"
+    }
+  ]
+}

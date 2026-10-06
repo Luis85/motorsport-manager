@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petBowl",
+  "category": "Pocket pet props",
+  "name": "Food bowl",
+  "parameters": {},
+  "geometries": {
+    "bowl": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.15,
+          0
+        ],
+        [
+          0.19,
+          0.025
+        ],
+        [
+          0.215,
+          0.1
+        ],
+        [
+          0.2,
+          0.11
+        ],
+        [
+          0.175,
+          0.05
+        ],
+        [
+          0.13,
+          0.035
+        ],
+        [
+          0,
+          0.035
+        ]
+      ],
+      "segments": 32
+    },
+    "food": {
+      "type": "sphere",
+      "radius": 0.16,
+      "segments": 20
+    },
+    "bit": {
+      "type": "sphere",
+      "radius": 0.022,
+      "segments": 8
+    }
+  },
+  "materials": {
+    "bowl": {
+      "color": "#7fb8e6",
+      "metalness": 0,
+      "roughness": 0.35,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "rim": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.4,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "food": {
+      "color": "#fff6e5",
+      "metalness": 0,
+      "roughness": 0.8,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "bits": {
+      "color": "#ff9f68",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "greens": {
+      "color": "#7cc47a",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "bowl",
+      "type": "mesh",
+      "geometry": "bowl",
+      "material": "bowl"
+    },
+    {
+      "id": "meal",
+      "type": "group",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0
+        ]
+      },
+      "visible": true
+    },
+    {
+      "id": "mound",
+      "type": "mesh",
+      "parent": "meal",
+      "transform": {
+        "scale": [
+          1,
+          0.38,
+          1
+        ]
+      },
+      "geometry": "food",
+      "material": "food"
+    },
+    {
+      "id": "bits",
+      "type": "mesh",
+      "parent": "meal",
+      "transform": {
+        "position": [
+          0,
+          0.045,
+          0
+        ]
+      },
+      "geometry": "bit",
+      "material": "bits",
+      "pattern": {
+        "type": "radial",
+        "count": 5,
+        "radius": 0.07
+      }
+    },
+    {
+      "id": "greens",
+      "type": "mesh",
+      "parent": "meal",
+      "transform": {
+        "position": [
+          0.02,
+          0.06,
+          0.01
+        ],
+        "scale": [
+          1.6,
+          0.6,
+          1.2
+        ]
+      },
+      "geometry": "bit",
+      "material": "greens"
+    }
+  ]
+}

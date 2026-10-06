@@ -1,0 +1,12 @@
+/* The pet demo uses the same full-screen workspace pattern as the RTS demo. */
+#pet-mode{position:fixed;inset:0;z-index:100;background:var(--experience-paper,#faf8ef);color:var(--experience-ink,#294b3b);display:flex;flex-direction:column;overflow:auto}
+#pet-mode[hidden]{display:none}
+body.pet-active #app,body.pet-active #wildlands-workspace{visibility:hidden;pointer-events:none}
+.pet-exchange{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid #b5c2a4;font-size:13px}
+.pet-exchange label{display:flex;align-items:center;gap:6px}
+.pet-exchange button,.pet-exchange select{font:inherit;min-height:44px;padding:7px 10px;border:1px solid #8b9e7d;border-radius:6px;color:inherit;background:#fffdf6}
+.pet-exchange button{cursor:pointer}.pet-exchange button:hover{background:#e6ecd9}
+.pet-exchange :focus-visible{outline:2px solid #38624b;outline-offset:3px}
+.pet-exchange [role=alert]{color:#843d28}
+.pet-play-surface{flex:1;min-height:0;position:relative}
+@media(max-width:700px){.pet-exchange{gap:6px;padding:6px;font-size:12px}}

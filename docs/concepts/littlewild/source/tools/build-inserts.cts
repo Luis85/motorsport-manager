@@ -237,5 +237,15 @@ export const INSERTS: readonly Insert[] = [
   ["RTS_DEMO_CSS", "rts-demo.css", "style"],
   ["RTS_MISSION_EDITOR_UI_CSS", "rts-mission-editor-ui.css", "style"],
   ["RTS_HOST_CSS", "rts-host.css", "style"],
+  ["PET_CATALOG", "pet-catalog.js", "script"],
+  ["PET_SYSTEMS", "pet-systems.js", "script"],
+  ["PET_SESSION", "pet-session.js", "script"],
+  ["PET_APPLICATION", "pet-application.js", "script"],
+  ["PET_RENDERER", "pet-renderer.js", "script"],
+  ["PET_STORE", "pet-store.js", "script"],
+  ["PET_DEMO", "pet-demo.js", "script"],
+  ["PET_HOST", "pet-host.js", "script"],
+  ["PET_DEMO_CSS", "pet-demo.css", "style"],
+  ["PET_HOST_CSS", "pet-host.css", "style"],
   ["UI", "ui.js", "script"]
 ];

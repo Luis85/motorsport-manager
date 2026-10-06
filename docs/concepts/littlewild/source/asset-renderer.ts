@@ -6,10 +6,37 @@
   if(typeof chosen==='string')return{color:chosen,extra:{}};
   return{color:chosen.color,extra:Object.fromEntries(Object.entries(chosen).filter(([k])=>k!=='color'))};
  }
+ /* Data names a portable doubleSided flag; Three expects its side constant. */
+ function materialProps(kit,extra){
+  if(extra.doubleSided===undefined)return extra;
+  const {doubleSided,...rest}=extra;return doubleSided&&kit.T?{...rest,side:kit.T.DoubleSide}:rest;
+ }
+ /* Baked meshes are cached per catalog definition object and Three namespace; definitions are immutable. */
+ const meshCache=new WeakMap();
+ function meshGeometry(kit,source,asset,id){
+  if(!kit.T||!kit.mat)throw Error('This renderer kit cannot draw baked mesh primitives');
+  let byKit=meshCache.get(kit.T);if(!byKit){byKit=new WeakMap();meshCache.set(kit.T,byKit);}
+  let bySource=byKit.get(source);if(!bySource){bySource=new Map();byKit.set(source,bySource);}
+  if(!bySource.has(id)){
+   const data=asset.meshes[id],g=new kit.T.BufferGeometry();
+   g.setAttribute('position',new kit.T.Float32BufferAttribute(data.positions,3));
+   if(data.indices)g.setIndex(data.indices);
+   if(data.normals)g.setAttribute('normal',new kit.T.Float32BufferAttribute(data.normals,3));else g.computeVertexNormals();
+   g.computeBoundingSphere();bySource.set(id,g);
+  }
+  return bySource.get(id);
+ }
  function makeNode(kit,parent,asset,node,options,handles){
   let o;
   if(node.primitive==='group')o=kit.group(parent);
-  else{const m=material(asset,node.material,options.materials);const p=node.position||[0,0,0],s=node.scale||[1,1,1];o=kit.piece(parent,node.primitive,p[0],p[1],p[2],s[0],s[1],s[2],m.color,0,{...m.extra,...(node.materialProps||{})});}
+  else if(node.primitive==='mesh'){
+   const m=material(asset,node.material,options.materials),p=node.position||[0,0,0],s=node.scale||[1,1,1];
+   // Smooth shading suits baked organic meshes unless the authored material asks for facets.
+   const geometry=meshGeometry(kit,options.source||asset,asset,node.mesh);
+   o=new kit.T.Mesh(geometry,kit.mat(m.color,materialProps(kit,{flatShading:false,...m.extra,...(node.materialProps||{})})));
+   o.position.set(p[0],p[1],p[2]);o.scale.set(s[0],s[1],s[2]);o.castShadow=true;o.receiveShadow=true;parent.add(o);
+  }
+  else{const m=material(asset,node.material,options.materials);const p=node.position||[0,0,0],s=node.scale||[1,1,1];o=kit.piece(parent,node.primitive,p[0],p[1],p[2],s[0],s[1],s[2],m.color,0,materialProps(kit,{...m.extra,...(node.materialProps||{})}));}
   if(node.primitive==='group'){const p=node.position||[0,0,0],s=node.scale||[1,1,1];o.position.set(p[0],p[1],p[2]);o.scale.set(s[0],s[1],s[2]);}
   const r=node.rotation||[0,0,0];o.rotation.set(r[0],r[1],r[2]);
   if(node.visible===false)o.visible=false;
@@ -24,7 +51,7 @@
   return createFromDefinition(kit,parent,asset,modelName,options);
  }
  function createFromDefinition(kit,parent,input,modelName='world',options={}){
-  const asset=A.validate(input),category=asset.category,id=asset.id;
+  const asset=A.validate(input),category=asset.category,id=asset.id;options={...options,source:options.source||input};
   const model=asset.models[modelName];if(!model)throw Error('Missing 3D model '+category+':'+id+'/'+modelName);
   const rootGroup=kit.group(parent),handles=new Map(),p=options.position||[0,0,0],r=options.rotation||[0,0,0],s=options.scale||[1,1,1];
   rootGroup.position.set(p[0],p[1],p[2]);rootGroup.rotation.set(r[0],r[1],r[2]);rootGroup.scale.set(s[0],s[1],s[2]);rootGroup.userData.asset=category+':'+id;rootGroup.userData.radius=asset.metadata?.radius||1;

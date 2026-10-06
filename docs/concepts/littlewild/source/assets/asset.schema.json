@@ -25,7 +25,8 @@
       "enum": [
         "building",
         "item",
-        "actor"
+        "actor",
+        "pet"
       ]
     },
     "id": {
@@ -190,6 +191,42 @@
     },
     "rig": {
       "type": "object"
+    },
+    "meshes": {
+      "type": "object",
+      "description": "Baked indexed triangle meshes referenced by mesh primitives.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "positions"
+        ],
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 9,
+            "maxItems": 24576
+          },
+          "normals": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "indices": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 3,
+            "maxItems": 49152
+          }
+        }
+      }
     }
   }
 }

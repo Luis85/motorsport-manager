@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "itemPartyHat",
+  "category": "Pocket pet accessories",
+  "name": "Party hat",
+  "parameters": {},
+  "geometries": {
+    "cone": {
+      "type": "cone",
+      "radius": 0.075,
+      "height": 0.2,
+      "segments": 24
+    },
+    "band": {
+      "type": "torus",
+      "radius": 0.07,
+      "tube": 0.012,
+      "segments": 24
+    },
+    "pom": {
+      "type": "sphere",
+      "radius": 0.028,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "paper": {
+      "color": "#7ec8e3",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "band": {
+      "color": "#ffd166",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pom": {
+      "color": "#ff6f91",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "hat",
+      "type": "group",
+      "transform": {
+        "rotation": [
+          0,
+          0,
+          -12
+        ]
+      }
+    },
+    {
+      "id": "cone",
+      "type": "mesh",
+      "parent": "hat",
+      "transform": {
+        "position": [
+          0,
+          0.095,
+          0
+        ]
+      },
+      "geometry": "cone",
+      "material": "paper"
+    },
+    {
+      "id": "band",
+      "type": "mesh",
+      "parent": "hat",
+      "transform": {
+        "position": [
+          0,
+          0.012,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "geometry": "band",
+      "material": "band"
+    },
+    {
+      "id": "pom",
+      "type": "mesh",
+      "parent": "hat",
+      "transform": {
+        "position": [
+          0,
+          0.2,
+          0
+        ]
+      },
+      "geometry": "pom",
+      "material": "pom"
+    }
+  ]
+}

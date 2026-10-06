@@ -16,6 +16,7 @@ import { registerOutputsCommands } from './outputs.js';
 import { registerRuntimeCommands } from './runtime.js';
 import { registerCompositionCommands } from './composition.js';
 import { registerAgentCommands } from './agent.js';
+import { registerLittlewildCommands } from './littlewild.js';
 
 export function createCli(overrides: Partial<CliRuntime> = {}) {
   const runtime: CliRuntime = {
@@ -75,6 +76,7 @@ export function createCli(overrides: Partial<CliRuntime> = {}) {
   registerAgentCommands(context);
   registerExampleCommands(context);
   registerRigCommands(context);
+  registerLittlewildCommands(context);
 
   return {
     program,

@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petFace",
+  "category": "Pocket pet parts",
+  "name": "Pet face",
+  "description": "Eyes with highlights, blush and a smile. Rig tags drive blinking and expressions in Littlewild.",
+  "parameters": {
+    "spread": {
+      "default": 0.085,
+      "min": 0.04,
+      "max": 0.2,
+      "description": "Half distance between the eyes"
+    },
+    "depth": {
+      "default": 0.215,
+      "min": 0.1,
+      "max": 0.4,
+      "description": "Forward offset of the face plane"
+    },
+    "eyeSize": {
+      "default": 1,
+      "min": 0.5,
+      "max": 2,
+      "description": "Eye scale"
+    }
+  },
+  "geometries": {
+    "eye": {
+      "type": "sphere",
+      "radius": 0.045,
+      "segments": 16
+    },
+    "shine": {
+      "type": "sphere",
+      "radius": 0.014,
+      "segments": 8
+    },
+    "cheek": {
+      "type": "sphere",
+      "radius": 0.036,
+      "segments": 12
+    },
+    "smile": {
+      "type": "tube",
+      "points": [
+        [
+          -0.034,
+          0.012,
+          0
+        ],
+        [
+          -0.018,
+          -0.005,
+          0
+        ],
+        [
+          0,
+          -0.011,
+          0
+        ],
+        [
+          0.018,
+          -0.005,
+          0
+        ],
+        [
+          0.034,
+          0.012,
+          0
+        ]
+      ],
+      "radius": 0.0075,
+      "tubularSegments": 16,
+      "radialSegments": 6
+    }
+  },
+  "materials": {
+    "ink": {
+      "color": "#2a2433",
+      "metalness": 0,
+      "roughness": 0.25,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "shine": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.2,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffffff",
+      "emissiveIntensity": 0.6
+    },
+    "blush": {
+      "color": "#ff8fa8",
+      "metalness": 0,
+      "roughness": 0.7,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "eyeL",
+      "type": "group",
+      "name": "Left eye",
+      "transform": {
+        "position": [
+          {
+            "$expr": "neg",
+            "args": [
+              {
+                "$param": "spread"
+              }
+            ]
+          },
+          0.03,
+          {
+            "$param": "depth"
+          }
+        ]
+      },
+      "tags": [
+        "rig:eyes"
+      ]
+    },
+    {
+      "id": "eyeLBall",
+      "type": "mesh",
+      "parent": "eyeL",
+      "transform": {
+        "scale": [
+          {
+            "$param": "eyeSize"
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "eyeSize"
+              },
+              1.25
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "eyeSize"
+              },
+              0.6
+            ]
+          }
+        ]
+      },
+      "geometry": "eye",
+      "material": "ink"
+    },
+    {
+      "id": "eyeLShine",
+      "type": "mesh",
+      "parent": "eyeL",
+      "transform": {
+        "position": [
+          0.014,
+          0.022,
+          0.024
+        ]
+      },
+      "geometry": "shine",
+      "material": "shine"
+    },
+    {
+      "id": "eyeR",
+      "type": "group",
+      "name": "Right eye",
+      "transform": {
+        "position": [
+          {
+            "$param": "spread"
+          },
+          0.03,
+          {
+            "$param": "depth"
+          }
+        ]
+      },
+      "tags": [
+        "rig:eyes"
+      ]
+    },
+    {
+      "id": "eyeRBall",
+      "type": "mesh",
+      "parent": "eyeR",
+      "transform": {
+        "scale": [
+          {
+            "$param": "eyeSize"
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "eyeSize"
+              },
+              1.25
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "eyeSize"
+              },
+              0.6
+            ]
+          }
+        ]
+      },
+      "geometry": "eye",
+      "material": "ink"
+    },
+    {
+      "id": "eyeRShine",
+      "type": "mesh",
+      "parent": "eyeR",
+      "transform": {
+        "position": [
+          0.014,
+          0.022,
+          0.024
+        ]
+      },
+      "geometry": "shine",
+      "material": "shine"
+    },
+    {
+      "id": "cheekL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$expr": "neg",
+                "args": [
+                  {
+                    "$param": "spread"
+                  }
+                ]
+              },
+              0.062
+            ]
+          },
+          -0.035,
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "depth"
+              },
+              0.025
+            ]
+          }
+        ],
+        "scale": [
+          1,
+          0.55,
+          0.4
+        ]
+      },
+      "tags": [
+        "rig:cheeks"
+      ],
+      "geometry": "cheek",
+      "material": "blush"
+    },
+    {
+      "id": "cheekR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "spread"
+              },
+              0.062
+            ]
+          },
+          -0.035,
+          {
+            "$expr": "sub",
+            "args": [
+              {
+                "$param": "depth"
+              },
+              0.025
+            ]
+          }
+        ],
+        "scale": [
+          1,
+          0.55,
+          0.4
+        ]
+      },
+      "tags": [
+        "rig:cheeks"
+      ],
+      "geometry": "cheek",
+      "material": "blush"
+    },
+    {
+      "id": "mouth",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          -0.045,
+          {
+            "$expr": "add",
+            "args": [
+              {
+                "$param": "depth"
+              },
+              0.004
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "rig:mouth"
+      ],
+      "geometry": "smile",
+      "material": "ink"
+    }
+  ]
+}

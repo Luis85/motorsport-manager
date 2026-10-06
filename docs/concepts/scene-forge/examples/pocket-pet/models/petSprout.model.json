@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petSprout",
+  "category": "Pocket pet parts",
+  "name": "Pet sprout",
+  "parameters": {
+    "height": {
+      "default": 0.1,
+      "min": 0.03,
+      "max": 0.4,
+      "description": "Stem height"
+    },
+    "leaves": {
+      "default": 2,
+      "min": 1,
+      "max": 8,
+      "integer": true,
+      "description": "Leaf count"
+    },
+    "leafSize": {
+      "default": 1,
+      "min": 0.3,
+      "max": 3,
+      "description": "Leaf scale"
+    }
+  },
+  "geometries": {
+    "stem": {
+      "type": "cylinder",
+      "radiusTop": 0.011,
+      "radiusBottom": 0.016,
+      "height": {
+        "$param": "height"
+      },
+      "segments": 8
+    }
+  },
+  "materials": {
+    "leaf": {
+      "color": "#7cc47a",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "stem": {
+      "color": "#4f9a5a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "stem",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "height"
+              },
+              0.5
+            ]
+          },
+          0
+        ]
+      },
+      "geometry": "stem",
+      "material": "stem"
+    },
+    {
+      "id": "leaves",
+      "type": "model",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$param": "height"
+          },
+          0
+        ]
+      },
+      "pattern": {
+        "type": "radial",
+        "count": {
+          "$param": "leaves"
+        },
+        "radius": 0,
+        "startAngle": 90
+      },
+      "model": "petLeaf",
+      "parameters": {
+        "size": {
+          "$param": "leafSize"
+        }
+      },
+      "materialOverrides": {
+        "leaf": "leaf"
+      }
+    }
+  ]
+}

@@ -1,0 +1,707 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petAdultBramble",
+  "category": "Pocket pet",
+  "name": "Pet adult (bramble)",
+  "description": "Adult raised with frequent care mistakes: thorny, but still friendly.",
+  "parameters": {},
+  "geometries": {
+    "torso": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.0832,
+          0.005
+        ],
+        [
+          0.1399,
+          0.0198
+        ],
+        [
+          0.1848,
+          0.0438
+        ],
+        [
+          0.2198,
+          0.0762
+        ],
+        [
+          0.2452,
+          0.1156
+        ],
+        [
+          0.2613,
+          0.1605
+        ],
+        [
+          0.2684,
+          0.2093
+        ],
+        [
+          0.2668,
+          0.26
+        ],
+        [
+          0.257,
+          0.3107
+        ],
+        [
+          0.2395,
+          0.3595
+        ],
+        [
+          0.2152,
+          0.4044
+        ],
+        [
+          0.1846,
+          0.4438
+        ],
+        [
+          0.1486,
+          0.4762
+        ],
+        [
+          0.1076,
+          0.5002
+        ],
+        [
+          0.0612,
+          0.515
+        ],
+        [
+          0,
+          0.52
+        ]
+      ],
+      "segments": 36
+    },
+    "belly": {
+      "type": "sphere",
+      "radius": 0.18,
+      "segments": 20
+    },
+    "head": {
+      "type": "sphere",
+      "radius": 0.25,
+      "segments": 32
+    },
+    "arm": {
+      "type": "capsule",
+      "radius": 0.055,
+      "length": 0.14,
+      "segments": 10
+    },
+    "foot": {
+      "type": "sphere",
+      "radius": 0.085,
+      "segments": 14
+    },
+    "tail": {
+      "type": "tube",
+      "points": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0.05,
+          -0.1
+        ],
+        [
+          0,
+          0.16,
+          -0.17
+        ],
+        [
+          0,
+          0.29,
+          -0.15
+        ],
+        [
+          0,
+          0.36,
+          -0.08
+        ]
+      ],
+      "radius": 0.032,
+      "tubularSegments": 20,
+      "radialSegments": 8
+    },
+    "ear": {
+      "type": "cone",
+      "radius": 0.06,
+      "height": 0.2,
+      "segments": 10
+    },
+    "thorn": {
+      "type": "cone",
+      "radius": 0.035,
+      "height": 0.12,
+      "segments": 8
+    }
+  },
+  "materials": {
+    "skin": {
+      "color": "#f6b8c8",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "belly": {
+      "color": "#fde6ec",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "foot": {
+      "color": "#ee9fb5",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "ink": {
+      "color": "#2a2433",
+      "metalness": 0,
+      "roughness": 0.25,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "shine": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.2,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffffff",
+      "emissiveIntensity": 0.6
+    },
+    "blush": {
+      "color": "#ff8fa8",
+      "metalness": 0,
+      "roughness": 0.7,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "leaf": {
+      "color": "#7cc47a",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "stem": {
+      "color": "#4f9a5a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "thorn": {
+      "color": "#5c6b4a",
+      "metalness": 0,
+      "roughness": 0.7,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "bodyRoot",
+      "type": "group",
+      "tags": [
+        "rig:body"
+      ]
+    },
+    {
+      "id": "torso",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.05,
+          0
+        ]
+      },
+      "geometry": "torso",
+      "material": "skin"
+    },
+    {
+      "id": "belly",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.25,
+          0.232
+        ],
+        "scale": [
+          1,
+          1.05,
+          0.42
+        ]
+      },
+      "geometry": "belly",
+      "material": "belly"
+    },
+    {
+      "id": "armL",
+      "type": "group",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          -0.25,
+          0.42,
+          0.02
+        ]
+      },
+      "tags": [
+        "rig:arms"
+      ]
+    },
+    {
+      "id": "armLLimb",
+      "type": "mesh",
+      "parent": "armL",
+      "transform": {
+        "position": [
+          -0.04,
+          -0.09,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          -28
+        ]
+      },
+      "geometry": "arm",
+      "material": "skin"
+    },
+    {
+      "id": "armR",
+      "type": "group",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0.25,
+          0.42,
+          0.02
+        ]
+      },
+      "tags": [
+        "rig:arms"
+      ]
+    },
+    {
+      "id": "armRLimb",
+      "type": "mesh",
+      "parent": "armR",
+      "transform": {
+        "position": [
+          0.04,
+          -0.09,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          28
+        ]
+      },
+      "geometry": "arm",
+      "material": "skin"
+    },
+    {
+      "id": "footL",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          -0.13,
+          0.042,
+          0.07
+        ],
+        "scale": [
+          1,
+          0.5,
+          1.3
+        ]
+      },
+      "tags": [
+        "rig:feet"
+      ],
+      "geometry": "foot",
+      "material": "foot"
+    },
+    {
+      "id": "footR",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0.13,
+          0.042,
+          0.07
+        ],
+        "scale": [
+          1,
+          0.5,
+          1.3
+        ]
+      },
+      "tags": [
+        "rig:feet"
+      ],
+      "geometry": "foot",
+      "material": "foot"
+    },
+    {
+      "id": "tail",
+      "type": "group",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.14,
+          -0.25
+        ]
+      },
+      "tags": [
+        "rig:tail"
+      ]
+    },
+    {
+      "id": "tailStem",
+      "type": "mesh",
+      "parent": "tail",
+      "geometry": "tail",
+      "material": "skin"
+    },
+    {
+      "id": "head",
+      "type": "group",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.76,
+          0
+        ]
+      },
+      "tags": [
+        "rig:head"
+      ]
+    },
+    {
+      "id": "headBall",
+      "type": "mesh",
+      "parent": "head",
+      "transform": {
+        "scale": [
+          1.05,
+          0.93,
+          0.98
+        ]
+      },
+      "geometry": "head",
+      "material": "skin"
+    },
+    {
+      "id": "face",
+      "type": "model",
+      "parent": "head",
+      "model": "petFace",
+      "parameters": {
+        "spread": 0.095,
+        "depth": 0.228,
+        "eyeSize": 0.95
+      },
+      "materialOverrides": {
+        "ink": "ink",
+        "shine": "shine",
+        "blush": "blush"
+      }
+    },
+    {
+      "id": "socketHat",
+      "type": "group",
+      "name": "Hat accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.225,
+          0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.2
+        ]
+      },
+      "tags": [
+        "rig:hat"
+      ]
+    },
+    {
+      "id": "socketFace",
+      "type": "group",
+      "name": "Face accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.035,
+          0.232
+        ],
+        "scale": [
+          1.18,
+          1.18,
+          1.18
+        ]
+      },
+      "tags": [
+        "rig:face"
+      ]
+    },
+    {
+      "id": "socketNeck",
+      "type": "group",
+      "name": "Neck accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.56,
+          0
+        ],
+        "scale": [
+          1.3,
+          1.3,
+          1.3
+        ]
+      },
+      "tags": [
+        "rig:neck"
+      ]
+    },
+    {
+      "id": "socketBack",
+      "type": "group",
+      "name": "Back accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.38,
+          -0.27
+        ],
+        "scale": [
+          1.25,
+          1.25,
+          1.25
+        ]
+      },
+      "tags": [
+        "rig:back"
+      ]
+    },
+    {
+      "id": "earL",
+      "type": "mesh",
+      "parent": "head",
+      "transform": {
+        "position": [
+          -0.16,
+          0.2,
+          -0.03
+        ],
+        "rotation": [
+          0,
+          0,
+          32
+        ]
+      },
+      "tags": [
+        "rig:ears"
+      ],
+      "geometry": "ear",
+      "material": "skin"
+    },
+    {
+      "id": "earR",
+      "type": "mesh",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0.16,
+          0.2,
+          -0.03
+        ],
+        "rotation": [
+          0,
+          0,
+          -32
+        ]
+      },
+      "tags": [
+        "rig:ears"
+      ],
+      "geometry": "ear",
+      "material": "skin"
+    },
+    {
+      "id": "crown",
+      "type": "group",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.2,
+          0.0
+        ]
+      },
+      "tags": [
+        "rig:sprout"
+      ]
+    },
+    {
+      "id": "crownThorns",
+      "type": "mesh",
+      "parent": "crown",
+      "geometry": "thorn",
+      "material": "thorn",
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            -0.07,
+            0.0,
+            0.05
+          ],
+          [
+            0,
+            0.03,
+            0.03
+          ],
+          [
+            0.07,
+            0.0,
+            0.05
+          ],
+          [
+            -0.05,
+            0.0,
+            -0.06
+          ],
+          [
+            0.05,
+            0.0,
+            -0.06
+          ]
+        ]
+      }
+    },
+    {
+      "id": "crownLeaves",
+      "type": "model",
+      "parent": "crown",
+      "pattern": {
+        "type": "radial",
+        "count": 2,
+        "radius": 0,
+        "startAngle": 120
+      },
+      "model": "petLeaf",
+      "parameters": {
+        "size": 1.1
+      },
+      "materialOverrides": {
+        "leaf": "stem"
+      }
+    },
+    {
+      "id": "backThorns",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.12,
+          -0.27
+        ],
+        "rotation": [
+          -60,
+          0,
+          0
+        ]
+      },
+      "geometry": "thorn",
+      "material": "thorn",
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            0,
+            0.1,
+            0.02
+          ],
+          [
+            0,
+            0.24,
+            0.05
+          ],
+          [
+            0,
+            0.38,
+            0.04
+          ]
+        ]
+      }
+    },
+    {
+      "id": "tailThorns",
+      "type": "mesh",
+      "parent": "tail",
+      "geometry": "thorn",
+      "material": "thorn",
+      "pattern": {
+        "type": "path",
+        "points": [
+          [
+            0,
+            0.3,
+            -0.16
+          ],
+          [
+            0,
+            0.37,
+            -0.08
+          ]
+        ]
+      }
+    }
+  ]
+}

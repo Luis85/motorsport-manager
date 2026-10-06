@@ -65,7 +65,8 @@
         "creature-balancing.ts",
         "renderer-catalog.ts",
         "rts-catalog.ts",
-        "rts-mission-editor-data.ts"
+        "rts-mission-editor-data.ts",
+        "pet-catalog.ts"
       ]
     },
     {
@@ -134,7 +135,10 @@
         "rts-session.ts",
         "rts-tools.ts",
         "rts-application.ts",
-        "skill-tree-integration.ts"
+        "skill-tree-integration.ts",
+        "pet-session.ts",
+        "pet-application.ts",
+        "pet-tools.ts"
       ]
     },
     {
@@ -256,7 +260,11 @@
         "rts-mission-editor-ui.ts",
         "rts-mission-editor-ui-forms.ts",
         "rts-mission-editor-ui-projection.ts",
-        "skill-tree-ui.ts"
+        "skill-tree-ui.ts",
+        "pet-renderer.ts",
+        "pet-demo.ts",
+        "pet-host.ts",
+        "pet-store.ts"
       ]
     },
     {
@@ -351,6 +359,13 @@
         "rts-stats.ts",
         "rts-checkpoint.ts"
       ]
+    },
+    {
+      "id": "pet",
+      "layer": "domain",
+      "files": [
+        "pet-systems.ts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -414,7 +429,11 @@
     "LWRTSStats",
     "LWRTSCheckpoint",
     "LWRTSMissionEditorData",
-    "LWSkillTrees"
+    "LWSkillTrees",
+    "LWPetDefinitions",
+    "LWPetAssetDefinitions",
+    "LWPetCatalog",
+    "LWPetSystems"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -443,7 +462,9 @@
     "WildlandsGodotRuntimeBundle",
     "WildlandsGodotRuntimeLoader",
     "WildlandsGodotTemplates",
-    "LWRTSDefinitions"
+    "LWRTSDefinitions",
+    "LWPetDefinitions",
+    "LWPetAssetDefinitions"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

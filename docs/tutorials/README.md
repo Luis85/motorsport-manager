@@ -8,3 +8,4 @@ you should observe before moving on. Start with a weekend if you are new to the 
 - [Complete your first race weekend](getting-started.md)
 
 - [Explore the Wildlands RTS demonstration](rts-demo.md)
+- [Raise a Pocket Pet](pocket-pet-demo.md)

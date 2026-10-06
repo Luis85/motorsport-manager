@@ -12,7 +12,8 @@
     "wildlands": "node .generated/tools/wildlands-cli.cjs",
     "wildlands:runtime": "node .generated/tools/wildlands-runtime.cjs",
     "verify:godot": "node .generated/test-wildlands-godot.cjs",
-    "rts": "node .generated/tools/rts-cli.cjs"
+    "rts": "node .generated/tools/rts-cli.cjs",
+    "pet": "node .generated/tools/pet-cli.cjs"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

@@ -39,6 +39,17 @@ Editing or returning without playing preserves the running match.
 
 The maker engine also supports [player and creature skill trees](skill-trees.md) with captured definitions, XP-earned points, prerequisites, ranks, exclusive branches and saved progression. Littlewild attaches a growth tree to each starting companion and provides a **Learn → Skill trees** view. The Node-backed native runtime retains the same commands and checkpoints; a dedicated Godot tree screen is not implemented.
 
+A third switchable context, [Pocket Pet](pet-engine.md), is an original virtual-pet
+demonstration. A validated catalog drives needs, digestion, sleep, sickness, care
+mistakes, growth and two adult forms through ECS systems; its application owns a
+separate fixed clock and checkpoints, and a WebGL room renders Scene Forge
+authored models. Scene Forge's `littlewild` commands export, check and import those
+definitions; the asset grammar gained a bounded baked-mesh primitive and a `pet`
+category. Owner-scoped wardrobes add coin-bought skins and socketed accessories, while premium
+offers unlock only through entitlements reported by a replaceable store adapter;
+the bundled store is simulated and processes no payment. Bounded caretaker scripts exercise the rules; there is no Godot export
+or human balance validation. See the [tutorial](../tutorials/pocket-pet-demo.md).
+
 This is a maker game context, separate from the shipping native race/campaign
 application. It does not establish native RTS export parity, multiplayer, broad
 balance or human validation. See the [canonical RTS contract](rts-engine.md) and

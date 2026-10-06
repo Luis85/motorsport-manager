@@ -7,6 +7,7 @@ implemented boundaries; existence in source is not a claim of human validation.
 - [Developer toolbox](developer-toolbox.md)
 - [Wildlands skill trees](skill-trees.md)
 - [Wildlands RTS engine](rts-engine.md)
+- [Wildlands Pocket Pet engine](pet-engine.md)
 - [Persistence and local data](persistence.md)
 - [Track contracts](track-format.md)
 

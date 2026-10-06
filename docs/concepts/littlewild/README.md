@@ -25,6 +25,18 @@ that informed the interface.
 
 Choose **RTS demo** in the maker toolbar to open the separate isometric RTS match. Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. **Return to colony** restores the colony workspace. Follow the [RTS demo tutorial](../../tutorials/rts-demo.md) and [engine reference](../../reference/rts-engine.md) for controls, developer tools and current limits.
 
+Choose **Pet demo** in the maker toolbar to raise an original tamagotchi-style
+virtual pet in a 3D room. A validated catalog drives needs, digestion, sleep,
+sickness, care mistakes, growth and two adult forms on the shared ECS. Coins buy
+skins and socketed accessories; premium offers unlock through a replaceable store
+adapter (the bundled one is simulated). The demo
+owns its own clock and checkpoints, and `npm run pet` runs bounded caretaker
+experiments. Every pet and prop model is a [Scene Forge](../scene-forge/README.md)
+recipe exported with `forge3d littlewild sync`. Follow the
+[Pocket Pet tutorial](../../tutorials/pocket-pet-demo.md), the
+[engine reference](../../reference/pet-engine.md) and the
+[asset workflow](../../how-to/scene-forge-littlewild-assets.md).
+
 Choose **Mission editor** in the RTS toolbar to author terrain, placements,
 objectives and mission settings in a separate validated catalog draft. Undo/redo
 and complete JSON import/export retain the authoring boundary; explicitly playing

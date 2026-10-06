@@ -36,3 +36,5 @@ Run `npm run format:check`, `npm run architecture:check`, `npm run check`, `npm 
 Do not add hidden mutable session state, terminal prompts, arbitrary executable code in recipes, or network dependencies to exported HTML.
 
 Use `example list`/`example create` for starter projects. `rig inspect` lists joint data and expanded mesh paths; `rig bind` replaces the rig; `rig pose` makes a guarded joint pose edit. Prefer GLB for skeletal output. See `./docs/RIGGING.md`. New browser tools implement `EditorTool` and register in `preview/tools/index.ts`; do not expose mutable renderer state to tools. Follow `./docs/EDITOR_EXTENSIONS.md` for schema, transaction and lifecycle seams.
+
+For Littlewild/Wildlands assets use `littlewild sync --file <manifest>` (dry-run first, then `--check`), tag pet animation nodes `rig:<role>`, and keep `src/application/littlewild*.ts` free of file I/O. Do not hand-edit generated Littlewild definitions; change the recipe or manifest and re-sync. `littlewild import` creates editable models from existing definitions.

@@ -1,3 +1,9 @@
+## Pocket Pet and Scene Forge asset exchange
+
+Added Pocket Pet, an original tamagotchi-style demonstration on the shared ECS: a validated `wildlands-pet` catalog, clock/activity/metabolism/digestion/sleep/health/growth systems, two species with egg, baby, teen and Bloom/Bramble adult forms, checkpoints, a separately clocked application, a WebGL room renderer, an accessible care interface and the bounded `npm run pet` CLI. Coins earned through care buy skins and accessories that attach to Scene Forge socket roles; an owner-scoped wardrobe survives adoption and restarts, and premium offers unlock only through entitlements from a replaceable, explicitly simulated store adapter. Node and browser suites cover catalog admission, rules, determinism, wardrobe ownership, application time and UI focus/disabled reasons.
+
+The asset grammar gained a `pet` category with per-model presentation rigs, a bounded baked `mesh` primitive and `flatShading`/`doubleSided` material flags. Canvas, Three.js and Godot asset adapters draw baked meshes. Pet definitions are bundled separately from the colony asset catalog. Every Pocket Pet model is authored in Scene Forge and exported with its new `littlewild` commands.
+
 ## PR 25 portable-world and authoring expansion
 
 Added a world/scene tree editor, nested building floors and connected levels, a 3D creature editor, freeform construction and terraforming, authored creature interactions and automatic friendly duels, independent duel/quest settings, and the indoor Office workflow. Scene checkpoints preserve dormant native work and captured data. All fifteen inventoried domain/application typing debts are closed.
