@@ -3,7 +3,8 @@ import path from 'node:path';
 import os from 'node:os';
 import { pathToFileURL } from 'node:url';
 import type { Browser, Page } from 'playwright';
-import { fail, errorMessage } from '../domain/errors.js';
+import { fail, errorMessage, ForgeError } from '../domain/errors.js';
+import { loadPlaywright } from './playwright.js';
 import type { CameraRequest } from '../domain/schema.js';
 
 export type CaptureBrowser = Pick<Browser, 'newPage' | 'close' | 'version'>;
@@ -14,7 +15,7 @@ export interface CaptureDependencies {
 const dependencies: CaptureDependencies = {
   createTemp: () => fs.mkdtemp(path.join(os.tmpdir(), 'forge-capture-')),
   async launch() {
-    const { chromium } = await import('playwright');
+    const { chromium } = (await loadPlaywright()).module;
     return chromium.launch({
       headless: true,
       executablePath: process.env.FORGE_CHROMIUM_PATH,
@@ -51,6 +52,7 @@ export async function withCaptureSession<T>(
     try {
       browser = await ports.launch();
     } catch (error) {
+      if (error instanceof ForgeError && error.code === 'PLAYWRIGHT_UNAVAILABLE') throw error;
       fail(
         'BROWSER_UNAVAILABLE',
         'Screenshot capture needs Chromium. Run npx playwright install chromium (or install --with-deps chromium on Linux), or set FORGE_CHROMIUM_PATH.',

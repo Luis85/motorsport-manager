@@ -3,7 +3,7 @@ import type { PreviewPayload, LibraryItem, PreviewScene } from '../preview/contr
 import { VERSION } from '../version.js';
 import { withCaptureSession } from './capture.js';
 import { atomicWrite } from './files.js';
-import { promises as fs } from 'node:fs';
+import { readAsset } from './assets.js';
 import path from 'node:path';
 import { compileScene } from '../application/compiler.js';
 import {
@@ -21,16 +21,6 @@ export interface PreviewOptions {
   stateHash?: string;
   editable?: boolean;
   includeLibrary?: boolean;
-}
-async function resource(name: string) {
-  for (const url of [
-    new URL(`./${name}`, import.meta.url),
-    new URL(`../../dist/${name}`, import.meta.url),
-  ])
-    try {
-      return await fs.readFile(url, 'utf8');
-    } catch {}
-  return fail('BUILD_REQUIRED', `Preview resource ${name} is missing. Run npm run build.`);
 }
 function compileLibrary(models: ModelLibrary): LibraryItem[] {
   return Object.values(models).map((model) => {
@@ -77,7 +67,7 @@ function compilePreview(
   }
 }
 async function renderPreview(data: PreviewPayload) {
-  const [script, css] = await Promise.all([resource('viewer.js'), resource('viewer.css')]);
+  const [script, css] = await Promise.all([readAsset('viewer.js'), readAsset('viewer.css')]);
   const json = JSON.stringify(data);
   if (Buffer.byteLength(json) > 64 * 1024 * 1024)
     fail('PREVIEW_BUDGET', 'Preview scene data exceeds 64 MiB. Preview a smaller scene or model.');

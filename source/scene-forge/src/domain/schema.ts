@@ -553,7 +553,7 @@ export function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   if (!result.success)
     fail(
       'SCHEMA_INVALID',
-      'Input does not match the schema. Use forge3d schema to inspect the contract.',
+      'Input does not match the schema. Use the schema command to inspect the contract.',
       result.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
     );
   return result.data;

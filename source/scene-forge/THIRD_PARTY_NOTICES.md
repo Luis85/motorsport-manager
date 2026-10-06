@@ -2,6 +2,8 @@
 
 The source project uses dependencies installed by npm. Their licenses remain in their packages. The portable viewer bundles Three.js and includes its full license in the HTML.
 
+The repository executable `bin/scene-forge` bundles commander, zod, three, three-bvh-csg, three-mesh-bvh and gltf-validator (Apache-2.0). Its header comment reproduces the complete license and notice files of every bundled package, generated from the build's module graph. Playwright is not bundled.
+
 ## three
 
 ```text

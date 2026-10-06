@@ -1,6 +1,6 @@
 # Working with Scene Forge
 
-This repository contains a TypeScript CLI for declarative 3D modeling. Use `node dist/cli.js` after `npm ci && npm run build`, or link the `forge3d` command with `npm link`.
+This repository contains a TypeScript CLI for declarative 3D modeling. Use `node dist/cli.js` after `npm ci && npm run build`, or link the `forge3d` command with `npm link`. From the repository root, the checked-in `bin/scene-forge` runs the same CLI without `node_modules`; see `../../docs/reference/scene-forge-cli.md`.
 
 ## Model authoring protocol
 
@@ -31,7 +31,7 @@ Keep CLI registration in `src/commands`, import file helpers from `infra/files.t
 
 When adding a geometry or operation, update schema, compiler/application support, catalog, meaningful tests, and documentation. The browser should continue to consume compiled Three.js scene JSON rather than duplicate modeling logic.
 
-Run `npm run format:check`, `npm run architecture:check`, `npm run check`, `npm run build`, and `npm test`. Run `npm run test:e2e` when changing export, preview, capture, or command workflows; Chromium is required. Do not claim native Blender/Godot compatibility was manually verified unless those applications were actually used.
+Run `npm run format:check`, `npm run architecture:check`, `npm run check`, `npm run build`, and `npm test`. `npm run build` also regenerates the checked-in `../../bin/scene-forge`; commit it with source changes, and confirm with `npm run check:cli`. Keep Playwright out of that bundle: browser code loads it through `infra/playwright.ts`, and packaged files are read through `infra/assets.ts`. Run `npm run test:e2e` when changing export, preview, capture, or command workflows; Chromium is required. Do not claim native Blender/Godot compatibility was manually verified unless those applications were actually used.
 
 Do not add hidden mutable session state, terminal prompts, arbitrary executable code in recipes, or network dependencies to exported HTML.
 

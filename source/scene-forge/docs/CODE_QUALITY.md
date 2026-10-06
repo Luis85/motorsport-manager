@@ -4,20 +4,23 @@ This release separates responsibilities while preserving scene recipes, command 
 
 ## Responsibility map
 
-| Boundary             | Implementation                                                     | Responsibility                                                                                                                |
-| -------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Data contracts       | `domain/schema.ts`, `validate.ts`, `canonical.ts`                  | Strict schemas, semantic validation, numeric scalar resolution and deterministic JSON equality                                |
-| Edit preparation     | `application/edit.ts`                                              | Check revision/state guards, apply operations, validate/compile the proposal and calculate dry-run/commit results without I/O |
-| Compilation          | `application/compiler.ts`                                          | Expand the scene hierarchy, models and patterns; enforce expansion budgets and report statistics                              |
-| Resource ownership   | `application/resources.ts`, `transforms.ts`                        | Pool equivalent geometry/materials, construct geometry, apply resolved transforms and dispose resources                       |
-| Project persistence  | `infra/project.ts`, `files.ts`, `state-hash.ts`                    | Hold project locks, load the snapshot, persist prepared changes, retain history, and generate SHA-256 concurrency tokens      |
-| Capture lifecycle    | `infra/capture.ts`                                                 | Own the temporary workspace and Chromium session; wait for readiness, report browser errors and capture completed frames      |
-| Capture products     | `infra/preview.ts`, `review.ts`                                    | Assemble HTML, save single PNGs, produce multi-view manifests and contact sheets                                              |
-| CLI composition      | `commands/create-cli.ts`, `context.ts`                             | Construct independent CLI instances with injected working directory, stdin and output sinks                                   |
-| CLI adapters         | `commands/input.ts`, `options.ts`, `errors.ts`, command registrars | Parse unknown input, select a use case and serialize success or failure                                                       |
-| Editor state         | `preview/edit-state.ts`                                            | Own undo/redo snapshots, transaction rollback and guarded batch generation without DOM or WebGL                               |
-| Editor rendering     | `preview/templates.ts`, `viewport.ts`, `panels.ts`                 | Reuse compiled prototypes, configure lighting/rendering and display scene/model/inspector panels                              |
-| Editor orchestration | `preview/viewer.ts`                                                | Connect DOM events, selection, transforms, camera controls and exports                                                        |
+| Boundary              | Implementation                                                     | Responsibility                                                                                                                |
+| --------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Data contracts        | `domain/schema.ts`, `validate.ts`, `canonical.ts`                  | Strict schemas, semantic validation, numeric scalar resolution and deterministic JSON equality                                |
+| Edit preparation      | `application/edit.ts`                                              | Check revision/state guards, apply operations, validate/compile the proposal and calculate dry-run/commit results without I/O |
+| Compilation           | `application/compiler.ts`                                          | Expand the scene hierarchy, models and patterns; enforce expansion budgets and report statistics                              |
+| Resource ownership    | `application/resources.ts`, `transforms.ts`                        | Pool equivalent geometry/materials, construct geometry, apply resolved transforms and dispose resources                       |
+| Project persistence   | `infra/project.ts`, `files.ts`, `state-hash.ts`                    | Hold project locks, load the snapshot, persist prepared changes, retain history, and generate SHA-256 concurrency tokens      |
+| Capture lifecycle     | `infra/capture.ts`                                                 | Own the temporary workspace and Chromium session; wait for readiness, report browser errors and capture completed frames      |
+| Capture products      | `infra/preview.ts`, `review.ts`                                    | Assemble HTML, save single PNGs, produce multi-view manifests and contact sheets                                              |
+| Packaged assets       | `infra/assets.ts`, `embedded-assets.ts`                            | Resolve the viewer, stylesheet and example catalog from the executable itself or from the package build directory             |
+| Browser runtime       | `infra/playwright.ts`                                              | Load the optional Playwright dependency lazily and report `PLAYWRIGHT_UNAVAILABLE` with searched locations and remedies       |
+| Repository executable | `standalone.ts`, `scripts/standalone.mjs`                          | Bundle a deterministic CommonJS `bin/scene-forge` with embedded assets and license texts; `check:cli` detects drift           |
+| CLI composition       | `commands/create-cli.ts`, `context.ts`                             | Construct independent CLI instances with injected working directory, stdin and output sinks                                   |
+| CLI adapters          | `commands/input.ts`, `options.ts`, `errors.ts`, command registrars | Parse unknown input, select a use case and serialize success or failure                                                       |
+| Editor state          | `preview/edit-state.ts`                                            | Own undo/redo snapshots, transaction rollback and guarded batch generation without DOM or WebGL                               |
+| Editor rendering      | `preview/templates.ts`, `viewport.ts`, `panels.ts`                 | Reuse compiled prototypes, configure lighting/rendering and display scene/model/inspector panels                              |
+| Editor orchestration  | `preview/viewer.ts`                                                | Connect DOM events, selection, transforms, camera controls and exports                                                        |
 
 The application core deliberately uses Three.js and the CSG engine as its geometry implementation. It does not import Node built-ins, project persistence, browser automation or CLI code. There is no general dependency-injection container or second procedural engine in the browser.
 

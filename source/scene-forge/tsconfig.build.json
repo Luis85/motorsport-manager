@@ -8,5 +8,5 @@
     "rootDir": "src"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/cli.ts", "src/preview/viewer.ts"]
+  "exclude": ["src/cli.ts", "src/standalone.ts", "src/preview/viewer.ts"]
 }

@@ -4,7 +4,19 @@ A working v0.6 **CLI 3D editor and scene composer**. Create projects, describe m
 
 The editable recipe is the source of truth. Generated meshes are build outputs. This makes procedural models reviewable in Git and easier for agents to change reliably.
 
-This standalone concept has its own Node package, schemas, build and verification. Run the commands below from `docs/concepts/scene-forge/`.
+This standalone project has its own Node package, schemas, build and verification. Run the commands below from `source/scene-forge/`.
+
+## Repository executable
+
+The repository root carries a checked-in, self-contained build of this CLI: `bin/scene-forge`. It needs only Node.js 22+ (no `npm ci`) and accepts the same commands as `forge3d`. `screenshot` and `review` additionally need Playwright and Chromium, which are loaded at runtime rather than bundled. The [Scene Forge CLI handbook](../../docs/reference/scene-forge-cli.md) is its complete manual for people and agents.
+
+```bash
+# From the repository root
+bin/scene-forge --help
+bin/scene-forge example list
+```
+
+After changing source, run `npm run build` (or only `npm run build:cli`) and commit the refreshed `bin/scene-forge`. `npm run check:cli` rebuilds it in a temporary directory and fails when the checked-in file differs; builds are byte-for-byte deterministic for the locked dependencies.
 
 ## Start here
 
@@ -377,6 +389,7 @@ npm run check
 npm run build
 npm test
 npm run test:e2e  # requires Chromium
+npm run check:cli  # bin/scene-forge matches a fresh build
 # Or run all gates and record machine-readable results:
 npm run verify
 npm run release:examples

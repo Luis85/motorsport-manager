@@ -17,7 +17,17 @@ import { registerRuntimeCommands } from './runtime.js';
 import { registerCompositionCommands } from './composition.js';
 import { registerAgentCommands } from './agent.js';
 
-export function createCli(overrides: Partial<CliRuntime> = {}) {
+/** How the program presents itself: `forge3d` for the package, `scene-forge` for the repository executable. */
+export interface CliIdentity {
+  name: string;
+  /** Extra text printed after the root help. */
+  helpFooter?: string;
+}
+
+export function createCli(
+  overrides: Partial<CliRuntime> = {},
+  identity: CliIdentity = { name: 'forge3d' },
+) {
   const runtime: CliRuntime = {
     cwd: process.cwd(),
     stdin: process.stdin,
@@ -30,7 +40,7 @@ export function createCli(overrides: Partial<CliRuntime> = {}) {
     ...overrides,
   };
   const program = new Command()
-    .name('forge3d')
+    .name(identity.name)
     .description('Data-driven 3D modeling for agents. JSON in, reproducible geometry out.')
     .version(VERSION)
     .option(
@@ -43,6 +53,7 @@ export function createCli(overrides: Partial<CliRuntime> = {}) {
     .showHelpAfterError(false)
     .exitOverride()
     .configureOutput({ writeOut: runtime.writeOut, writeErr: () => {} });
+  if (identity.helpFooter) program.addHelpText('after', identity.helpFooter);
   const resolvePath = (value: string) => path.resolve(runtime.cwd, value);
   const global = () => {
     const options = program.opts<{ project: string; scene?: string }>();

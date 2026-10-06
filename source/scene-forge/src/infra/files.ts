@@ -66,7 +66,10 @@ export async function findProject(start: string) {
     }
     const parent = path.dirname(current);
     if (parent === current)
-      fail('PROJECT_NOT_FOUND', 'No forge.project.json found. Run forge3d init <directory>.');
+      fail(
+        'PROJECT_NOT_FOUND',
+        'No forge.project.json found. Run init <directory> to create a project.',
+      );
     current = parent;
   }
 }

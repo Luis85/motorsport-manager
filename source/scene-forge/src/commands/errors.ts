@@ -25,6 +25,8 @@ export function formatCliError(error: unknown): string {
               STATE_CONFLICT:
                 'Inspect the latest scene/model library and regenerate the review or edit batch.',
               BROWSER_UNAVAILABLE: 'Run doctor; install Chromium or set FORGE_CHROMIUM_PATH.',
+              PLAYWRIGHT_UNAVAILABLE:
+                'Run doctor. Make playwright resolvable (details.remedies), then install Chromium.',
               RIG_INVALID:
                 'Run schema --kind rig --raw. Check the single root, joint references, cycles and increasing keyframe times.',
               RIG_BINDING: 'Run rig inspect <node> and use the exact relative mesh paths returned.',

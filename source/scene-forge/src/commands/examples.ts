@@ -20,7 +20,10 @@ export function registerExampleCommands(c: CommandContext) {
   command
     .command('create <id> <directory>')
     .description('Create a new project from an example without overwriting existing files')
-    .action(async (id: string, directory: string) =>
-      c.output(await createExample(id, c.resolvePath(directory))),
-    );
+    .action(async (id: string, directory: string) => {
+      const created = await createExample(id, c.resolvePath(directory));
+      // Suggested commands name the executable that is actually running.
+      const nextCommands = created.nextCommands.map(([, ...args]) => [c.program.name(), ...args]);
+      c.output({ ...created, nextCommands });
+    });
 }

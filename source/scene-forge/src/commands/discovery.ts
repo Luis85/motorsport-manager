@@ -98,7 +98,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
           mutations:
             'Atomic scene batches with revision and scene/library state guards; put replaces, patch merges named fields',
           idempotency: 'Reapplying identical put operations does not increment revision',
-          discovery: 'forge3d schema --kind batch --raw',
+          discovery: `${program.name()} schema --kind batch --raw`,
         },
         limits: {
           expandedObjects: 20000,

@@ -463,7 +463,7 @@ function parse(schema, input) {
   if (!result.success)
     fail(
       "SCHEMA_INVALID",
-      "Input does not match the schema. Use forge3d schema to inspect the contract.",
+      "Input does not match the schema. Use the schema command to inspect the contract.",
       result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message }))
     );
   return result.data;
@@ -612,11 +612,11 @@ function bindRig(root, spec) {
   if (meshes.reduce((sum, mesh) => sum + mesh.geometry.getAttribute("position").count, 0) > 2e5)
     fail("RIG_BUDGET", "A rig supports at most 200,000 skin vertices.");
   const knownPaths = new Set(meshes.map((mesh) => mesh.name.slice(root.name.length + 1)));
-  for (const path9 of Object.keys(spec.bindings))
-    if (!knownPaths.has(path9))
+  for (const path10 of Object.keys(spec.bindings))
+    if (!knownPaths.has(path10))
       fail(
         "RIG_BINDING",
-        `Rig binding ${path9} does not match a mesh path relative to ${root.name}.`
+        `Rig binding ${path10} does not match a mesh path relative to ${root.name}.`
       );
   root.updateWorldMatrix(true, true);
   const inverse = root.matrixWorld.clone().invert();
@@ -1065,7 +1065,7 @@ function createResourcePool(warnings) {
   const materials = /* @__PURE__ */ new Set();
   const geometryPool = /* @__PURE__ */ new Map();
   const materialPool = /* @__PURE__ */ new Map();
-  function scopeResources(scope, path9, overrides = {}) {
+  function scopeResources(scope, path10, overrides = {}) {
     const geometryCache = /* @__PURE__ */ new Map();
     const materialCache = /* @__PURE__ */ new Map();
     function material(id) {
@@ -1082,7 +1082,7 @@ function createResourcePool(warnings) {
         return materialPool.get(key);
       }
       const result = createMaterial(m);
-      result.name = `${path9}/${id}`;
+      result.name = `${path10}/${id}`;
       Object.defineProperty(result, "uuid", { value: uuid(`material/${key}`), writable: true });
       materialPool.set(key, result);
       materialCache.set(id, result);
@@ -1214,7 +1214,7 @@ function createResourcePool(warnings) {
           return fail("UNKNOWN_GEOMETRY", `Unsupported geometry type.`);
       }
       geometries.add(result);
-      result.name = `${path9}/${id}`;
+      result.name = `${path10}/${id}`;
       result.uuid = uuid(`geometry/${key}`);
       if ((g.type === "lathe" || g.type === "capsule") && result.index) {
         const positions = result.getAttribute("position");
@@ -1303,10 +1303,10 @@ function compileScene(document2, models = {}, options = {}) {
     rigs.forEach((rig) => rig.dispose());
     resources.dispose();
   };
-  function buildScope(source, target, path9, parameters, overrides = {}, inheritedSlots = {}) {
+  function buildScope(source, target, path10, parameters, overrides = {}, inheritedSlots = {}) {
     const scope = resolveData(source, parameters);
-    const slots = (id) => [`${path9}/${id}`, ...inheritedSlots[id] ?? []];
-    const { geometry, material } = resources.scopeResources(scope, path9, overrides);
+    const slots = (id) => [`${path10}/${id}`, ...inheritedSlots[id] ?? []];
+    const { geometry, material } = resources.scopeResources(scope, path10, overrides);
     const objects = /* @__PURE__ */ new Map();
     const make = (node, nodePath) => {
       if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1371,7 +1371,7 @@ function compileScene(document2, models = {}, options = {}) {
       return object;
     };
     for (const node of scope.nodes) {
-      const nodePath = `${path9}/${node.id}`;
+      const nodePath = `${path10}/${node.id}`;
       let object;
       if (node.pattern) {
         if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1993,7 +1993,10 @@ async function findProject(start) {
     }
     const parent = path.dirname(current);
     if (parent === current)
-      fail("PROJECT_NOT_FOUND", "No forge.project.json found. Run forge3d init <directory>.");
+      fail(
+        "PROJECT_NOT_FOUND",
+        "No forge.project.json found. Run init <directory> to create a project."
+      );
     current = parent;
   }
 }
@@ -2359,11 +2362,43 @@ function registerRigCommands(c) {
 }
 
 // src/infra/examples.ts
-import { fileURLToPath } from "node:url";
 import { z as z2 } from "zod";
 
-// src/infra/bundle.ts
+// src/infra/assets.ts
 import { promises as fs3 } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+// src/infra/embedded-assets.ts
+var embeddedAssets = void 0;
+
+// src/infra/assets.ts
+function candidates(name) {
+  const base = import.meta.url;
+  if (!base) return [];
+  const relative = name.startsWith("examples/") ? [`./${name}`, `../../examples/catalog/${name.slice("examples/".length)}`] : [`./${name}`, `../../dist/${name}`];
+  return relative.map((file) => fileURLToPath(new URL(file, base)));
+}
+async function readAsset(name) {
+  if (embeddedAssets) {
+    const embedded = embeddedAssets[name];
+    if (embedded !== void 0) return embedded;
+    return fail(
+      "BUILD_REQUIRED",
+      `Packaged asset ${name} is missing from this executable. Rebuild it with npm run build:cli.`
+    );
+  }
+  for (const file of candidates(name)) {
+    try {
+      return await fs3.readFile(file, "utf8");
+    } catch (error) {
+      if (!["ENOENT", "ENOTDIR"].includes(errorCode(error) ?? "")) throw error;
+    }
+  }
+  return fail("BUILD_REQUIRED", `Packaged asset ${name} is missing. Run npm run build.`);
+}
+
+// src/infra/bundle.ts
+import { promises as fs4 } from "node:fs";
 import path3 from "node:path";
 function packScene(scene, library) {
   const models = {};
@@ -2385,9 +2420,9 @@ async function unpackScene(directory, input) {
     if (id !== model.id) fail("ID_MISMATCH", `Model ${model.id} is keyed as ${id}.`);
   const packed = packScene(bundle.scene, bundle.models);
   const root = path3.resolve(directory);
-  await fs3.mkdir(path3.dirname(root), { recursive: true });
+  await fs4.mkdir(path3.dirname(root), { recursive: true });
   try {
-    await fs3.mkdir(root);
+    await fs4.mkdir(root);
   } catch (error) {
     if (errorCode(error) === "EEXIST") fail("ALREADY_EXISTS", "Unpack requires a new directory.");
     throw error;
@@ -2420,9 +2455,9 @@ async function unpackScene(directory, input) {
       stateHash: stateHash(packed.scene, packed.models)
     };
   } catch (error) {
-    for (const file of files) await fs3.rm(file, { force: true });
+    for (const file of files) await fs4.rm(file, { force: true });
     for (const relative of ["scenes", "models", ""])
-      await fs3.rmdir(path3.join(root, relative)).catch(() => {
+      await fs4.rmdir(path3.join(root, relative)).catch(() => {
       });
     throw error;
   }
@@ -2438,17 +2473,7 @@ var Entry = z2.object({
   stats: z2.unknown()
 }).strict();
 async function exampleData(name) {
-  for (const url of [
-    new URL(`./examples/${name}`, import.meta.url),
-    new URL(`../../examples/catalog/${name}`, import.meta.url)
-  ]) {
-    try {
-      return await readJson(fileURLToPath(url));
-    } catch (error) {
-      if (errorCode(error) !== "NOT_FOUND") throw error;
-    }
-  }
-  return fail("BUILD_REQUIRED", "Bundled examples are missing. Run npm run build.");
+  return JSON.parse(await readAsset(`examples/${name}`));
 }
 var listExamples = async () => parse(z2.array(Entry), await exampleData("index.json"));
 async function exampleBundle(id) {
@@ -2489,14 +2514,16 @@ function registerExampleCommands(c) {
     if (options.raw) c.writeOut(JSON.stringify(bundle, null, 2) + "\n");
     else c.output(bundle);
   });
-  command.command("create <id> <directory>").description("Create a new project from an example without overwriting existing files").action(
-    async (id, directory) => c.output(await createExample(id, c.resolvePath(directory)))
-  );
+  command.command("create <id> <directory>").description("Create a new project from an example without overwriting existing files").action(async (id, directory) => {
+    const created = await createExample(id, c.resolvePath(directory));
+    const nextCommands = created.nextCommands.map(([, ...args]) => [c.program.name(), ...args]);
+    c.output({ ...created, nextCommands });
+  });
 }
 
 // src/commands/create-cli.ts
 import { Command as Command2, CommanderError as CommanderError2 } from "commander";
-import path8 from "node:path";
+import path9 from "node:path";
 
 // src/version.ts
 var VERSION = "0.6.0";
@@ -2521,6 +2548,7 @@ function formatCliError(error) {
           REVISION_CONFLICT: "Inspect the latest source and rebase the edit; do not drop the guard blindly.",
           STATE_CONFLICT: "Inspect the latest scene/model library and regenerate the review or edit batch.",
           BROWSER_UNAVAILABLE: "Run doctor; install Chromium or set FORGE_CHROMIUM_PATH.",
+          PLAYWRIGHT_UNAVAILABLE: "Run doctor. Make playwright resolvable (details.remedies), then install Chromium.",
           RIG_INVALID: "Run schema --kind rig --raw. Check the single root, joint references, cycles and increasing keyframe times.",
           RIG_BINDING: "Run rig inspect <node> and use the exact relative mesh paths returned.",
           RIG_MISSING: "Use rig bind <node> --file <rig.json> before posing a joint.",
@@ -2873,7 +2901,7 @@ function registerDiscoveryCommands(c) {
         input: "--file path, --file - (stdin), or --data JSON",
         mutations: "Atomic scene batches with revision and scene/library state guards; put replaces, patch merges named fields",
         idempotency: "Reapplying identical put operations does not increment revision",
-        discovery: "forge3d schema --kind batch --raw"
+        discovery: `${program.name()} schema --kind batch --raw`
       },
       limits: {
         expandedObjects: 2e4,
@@ -3124,14 +3152,79 @@ import { Option as Option2 } from "commander";
 import { createServer } from "node:http";
 
 // src/infra/capture.ts
-import { promises as fs4 } from "node:fs";
-import path5 from "node:path";
+import { promises as fs5 } from "node:fs";
+import path6 from "node:path";
 import os from "node:os";
 import { pathToFileURL } from "node:url";
+
+// src/infra/playwright.ts
+import { createRequire } from "node:module";
+import { realpathSync } from "node:fs";
+import path5 from "node:path";
+var notFound = (error) => ["MODULE_NOT_FOUND", "ERR_MODULE_NOT_FOUND"].includes(errorCode(error) ?? "");
+function realDirectory(file) {
+  if (!file) return void 0;
+  try {
+    return path5.dirname(realpathSync(file));
+  } catch {
+    return path5.dirname(path5.resolve(file));
+  }
+}
+function playwrightSearchRoots(environment) {
+  const entry = realDirectory(environment.entry);
+  const prefix = path5.dirname(environment.execPath);
+  const roots = [
+    environment.cwd,
+    ...entry ? [path5.join(entry, "..", "source", "scene-forge")] : [],
+    environment.platform === "win32" ? prefix : path5.join(prefix, "..", "lib")
+  ];
+  return [...new Set(roots.map((root) => path5.resolve(root)))];
+}
+var playwrightRemedies = [
+  "From a repository checkout: cd source/scene-forge && npm ci (bin/scene-forge then finds source/scene-forge/node_modules/playwright).",
+  "Anywhere: npm install --global playwright, or set NODE_PATH to a node_modules directory that contains playwright.",
+  "Then provide Chromium: npx playwright install chromium (Linux: --with-deps), or set FORGE_CHROMIUM_PATH."
+];
+var defaultEnvironment = () => ({
+  cwd: process.cwd(),
+  entry: process.argv[1],
+  execPath: process.execPath,
+  platform: process.platform
+});
+async function loadPlaywright(environment = defaultEnvironment(), importDefault = () => import("playwright")) {
+  const reasons = [];
+  try {
+    return { resolvedFrom: "default", module: await importDefault() };
+  } catch (error) {
+    if (!notFound(error)) throw error;
+    reasons.push(errorMessage(error).split("\n")[0]);
+  }
+  const roots = playwrightSearchRoots(environment);
+  for (const root of roots) {
+    try {
+      const load = createRequire(path5.join(root, "noop.js"));
+      const resolved = load.resolve("playwright");
+      return { resolvedFrom: resolved, module: load(resolved) };
+    } catch (error) {
+      if (!notFound(error)) throw error;
+    }
+  }
+  return fail(
+    "PLAYWRIGHT_UNAVAILABLE",
+    "This command renders in headless Chromium through Playwright, which is not bundled with this executable and could not be resolved.",
+    {
+      searched: ["module resolution of the running CLI and NODE_PATH", ...roots],
+      reasons,
+      remedies: playwrightRemedies
+    }
+  );
+}
+
+// src/infra/capture.ts
 var dependencies = {
-  createTemp: () => fs4.mkdtemp(path5.join(os.tmpdir(), "forge-capture-")),
+  createTemp: () => fs5.mkdtemp(path6.join(os.tmpdir(), "forge-capture-")),
   async launch() {
-    const { chromium } = await import("playwright");
+    const { chromium } = (await loadPlaywright()).module;
     return chromium.launch({
       headless: true,
       executablePath: process.env.FORGE_CHROMIUM_PATH,
@@ -3144,11 +3237,12 @@ async function withCaptureSession(html, options, action, ports = dependencies) {
   let browser;
   let failed = false;
   try {
-    const file = path5.join(temp, "scene.html");
-    await fs4.writeFile(file, html);
+    const file = path6.join(temp, "scene.html");
+    await fs5.writeFile(file, html);
     try {
       browser = await ports.launch();
     } catch (error) {
+      if (error instanceof ForgeError && error.code === "PLAYWRIGHT_UNAVAILABLE") throw error;
       fail(
         "BROWSER_UNAVAILABLE",
         "Screenshot capture needs Chromium. Run npx playwright install chromium (or install --with-deps chromium on Linux), or set FORGE_CHROMIUM_PATH.",
@@ -3209,14 +3303,13 @@ async function withCaptureSession(html, options, action, ports = dependencies) {
     } catch (error) {
       if (!failed) throw error;
     } finally {
-      await fs4.rm(temp, { recursive: true, force: true });
+      await fs5.rm(temp, { recursive: true, force: true });
     }
   }
 }
 
 // src/infra/preview.ts
-import { promises as fs5 } from "node:fs";
-import path6 from "node:path";
+import path7 from "node:path";
 
 // src/preview/template.ts
 var escapeHtml = (s) => s.replace(
@@ -3236,17 +3329,6 @@ function previewTemplate(name, css, script, payload, version) {
 }
 
 // src/infra/preview.ts
-async function resource(name) {
-  for (const url of [
-    new URL(`./${name}`, import.meta.url),
-    new URL(`../../dist/${name}`, import.meta.url)
-  ])
-    try {
-      return await fs5.readFile(url, "utf8");
-    } catch {
-    }
-  return fail("BUILD_REQUIRED", `Preview resource ${name} is missing. Run npm run build.`);
-}
 function compileLibrary(models) {
   return Object.values(models).map((model) => {
     const doc = parse(SceneSchema, {
@@ -3288,7 +3370,7 @@ function compilePreview(document2, models, options) {
   }
 }
 async function renderPreview(data) {
-  const [script, css] = await Promise.all([resource("viewer.js"), resource("viewer.css")]);
+  const [script, css] = await Promise.all([readAsset("viewer.js"), readAsset("viewer.css")]);
   const json = JSON.stringify(data);
   if (Buffer.byteLength(json) > 64 * 1024 * 1024)
     fail("PREVIEW_BUDGET", "Preview scene data exceeds 64 MiB. Preview a smaller scene or model.");
@@ -3322,9 +3404,9 @@ async function screenshot(html, output, options) {
   const request = parse(CameraRequestSchema, { view: options.view, ...options.camera });
   return withCaptureSession(html, options, async ({ capture }) => {
     const { bytes, camera } = await capture(request, options.grid, !!options.wireframe);
-    await atomicWrite(path6.resolve(output), bytes);
+    await atomicWrite(path7.resolve(output), bytes);
     return {
-      path: path6.resolve(output),
+      path: path7.resolve(output),
       width: options.width,
       height: options.height,
       view: options.view,
@@ -3463,19 +3545,40 @@ function registerOutputsCommands(c) {
 
 // src/commands/runtime.ts
 import { promises as fs6 } from "node:fs";
+async function exists(file) {
+  try {
+    await fs6.access(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function probe() {
+  try {
+    return await loadPlaywright();
+  } catch (error) {
+    if (error instanceof ForgeError) return error;
+    throw error;
+  }
+}
 function registerRuntimeCommands(c) {
   const { program, output } = c;
-  program.command("doctor").description("Check runtime and Chromium installation").action(async () => {
-    const { chromium } = await import("playwright");
-    const browser = process.env.FORGE_CHROMIUM_PATH ?? chromium.executablePath();
-    let available = true;
-    try {
-      await fs6.access(browser);
-    } catch {
-      available = false;
+  program.command("doctor").description("Check runtime, Playwright and Chromium installation").action(async () => {
+    const playwright = await probe();
+    if (playwright instanceof ForgeError) {
+      const browser2 = process.env.FORGE_CHROMIUM_PATH;
+      return output({
+        node: process.version,
+        playwright: { installed: false, details: playwright.details },
+        chromium: { path: browser2 ?? null, installed: browser2 ? await exists(browser2) : false },
+        screenshotSetup: playwrightRemedies.join(" ")
+      });
     }
+    const browser = process.env.FORGE_CHROMIUM_PATH ?? playwright.module.chromium.executablePath();
+    const available = await exists(browser);
     output({
       node: process.version,
+      playwright: { installed: true, resolvedFrom: playwright.resolvedFrom },
       chromium: { path: browser, installed: available },
       screenshotSetup: available ? "Run a screenshot to verify OS libraries and WebGL." : "Run npx playwright install chromium, or npx playwright install --with-deps chromium on Linux."
     });
@@ -3653,10 +3756,10 @@ function auditScene(scene, models = {}, input = {}) {
   const built = compileScene(scene, models);
   try {
     const findings = /* @__PURE__ */ new Map();
-    const add = (code, severity, message, hint, path9, count = 1) => {
+    const add = (code, severity, message, hint, path10, count = 1) => {
       const f = findings.get(code) ?? { code, severity, message, count: 0, paths: [], hint };
       f.count += count;
-      if (path9 && !f.paths.includes(path9) && f.paths.length < 10) f.paths.push(path9);
+      if (path10 && !f.paths.includes(path10) && f.paths.length < 10) f.paths.push(path10);
       findings.set(code, f);
     };
     const geometries = /* @__PURE__ */ new Set(), materials = /* @__PURE__ */ new Set();
@@ -3807,7 +3910,7 @@ function auditScene(scene, models = {}, input = {}) {
 
 // src/infra/review.ts
 import { promises as fs7 } from "node:fs";
-import path7 from "node:path";
+import path8 from "node:path";
 import { createHash as createHash2 } from "node:crypto";
 import { REVISION } from "three";
 async function reviewScene(scene, models, output, input, options = {}) {
@@ -3821,12 +3924,12 @@ async function reviewScene(scene, models, output, input, options = {}) {
     fail("DUPLICATE_ID", "Review frame IDs must be unique; contact-sheet is reserved.");
   if (plan.frames.some((f) => f.camera.view === "authored" && !f.camera.fixed) && !scene.camera)
     fail("INVALID_CAMERA", "No authored camera is defined. Use setCamera or another view.");
-  const destination = path7.resolve(output);
-  const exists = await fs7.readdir(destination).catch((error) => {
+  const destination = path8.resolve(output);
+  const exists2 = await fs7.readdir(destination).catch((error) => {
     if (errorCode(error) === "ENOENT") return [];
     throw error;
   });
-  if (exists.length && !options.overwrite)
+  if (exists2.length && !options.overwrite)
     fail(
       "ALREADY_EXISTS",
       "Review directory is not empty. Choose a new directory or pass --overwrite."
@@ -3842,7 +3945,7 @@ async function reviewScene(scene, models, output, input, options = {}) {
     const frames = [];
     for (const frame of plan.frames) {
       const { bytes, camera } = await capture(frame.camera, plan.grid, plan.wireframe);
-      await fs7.writeFile(path7.join(temp, `${frame.id}.png`), bytes);
+      await fs7.writeFile(path8.join(temp, `${frame.id}.png`), bytes);
       frames.push({
         id: frame.id,
         file: `${frame.id}.png`,
@@ -3858,7 +3961,7 @@ async function reviewScene(scene, models, output, input, options = {}) {
       const images = await Promise.all(
         frames.map(async (f) => ({
           id: f.id,
-          url: "data:image/png;base64," + (await fs7.readFile(path7.join(temp, f.file))).toString("base64")
+          url: "data:image/png;base64," + (await fs7.readFile(path8.join(temp, f.file))).toString("base64")
         }))
       );
       const result = await page.evaluate(
@@ -3885,7 +3988,7 @@ async function reviewScene(scene, models, output, input, options = {}) {
         { images, width: plan.width, height: plan.height }
       );
       await fs7.writeFile(
-        path7.join(temp, "contact-sheet.png"),
+        path8.join(temp, "contact-sheet.png"),
         Buffer.from(result.url.split(",")[1], "base64")
       );
       contactSheet = { file: "contact-sheet.png", width: result.width, height: result.height };
@@ -3922,15 +4025,15 @@ async function reviewScene(scene, models, output, input, options = {}) {
     });
     await fs7.mkdir(destination, { recursive: true });
     for (const name of [...frames.map((f) => f.file), ...contactSheet ? [contactSheet.file] : []])
-      await atomicWrite(path7.join(destination, name), await fs7.readFile(path7.join(temp, name)));
-    await writeJson(path7.join(destination, "replay-plan.json"), replay);
-    await writeJson(path7.join(destination, "review.json"), manifest);
+      await atomicWrite(path8.join(destination, name), await fs7.readFile(path8.join(temp, name)));
+    await writeJson(path8.join(destination, "replay-plan.json"), replay);
+    await writeJson(path8.join(destination, "review.json"), manifest);
     return {
       directory: destination,
-      manifest: path7.join(destination, "review.json"),
-      replayPlan: path7.join(destination, "replay-plan.json"),
-      contactSheet: contactSheet ? path7.join(destination, contactSheet.file) : void 0,
-      frames: frames.map((f) => ({ ...f, path: path7.join(destination, f.file) })),
+      manifest: path8.join(destination, "review.json"),
+      replayPlan: path8.join(destination, "replay-plan.json"),
+      contactSheet: contactSheet ? path8.join(destination, contactSheet.file) : void 0,
+      frames: frames.map((f) => ({ ...f, path: path8.join(destination, f.file) })),
       stats,
       durationMs: manifest.durationMs,
       sourceStateHash: manifest.sourceStateHash
@@ -3951,9 +4054,9 @@ var selector = (o) => {
   });
 };
 function commandDescription(command, prefix = "") {
-  const path9 = [prefix, command.name()].filter(Boolean).join(" ");
+  const path10 = [prefix, command.name()].filter(Boolean).join(" ");
   return {
-    command: path9,
+    command: path10,
     description: command.description(),
     arguments: command.registeredArguments.map((a) => ({
       name: a.name(),
@@ -3971,7 +4074,7 @@ function commandDescription(command, prefix = "") {
       default: o.defaultValue,
       choices: o.argChoices
     })),
-    subcommands: command.commands.map((c) => commandDescription(c, path9))
+    subcommands: command.commands.map((c) => commandDescription(c, path10))
   };
 }
 function registerAgentCommands(c) {
@@ -4140,7 +4243,7 @@ function registerAgentCommands(c) {
 }
 
 // src/commands/create-cli.ts
-function createCli(overrides = {}) {
+function createCli(overrides = {}, identity = { name: "forge3d" }) {
   const runtime = {
     cwd: process.cwd(),
     stdin: process.stdin,
@@ -4152,13 +4255,14 @@ function createCli(overrides = {}) {
     },
     ...overrides
   };
-  const program = new Command2().name("forge3d").description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
+  const program = new Command2().name(identity.name).description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
     "-p, --project <directory>",
     "Project directory; otherwise find the nearest project",
     runtime.cwd
   ).option("-s, --scene <id>", "Scene to use; otherwise use activeScene").option("--compact", "Write compact JSON for smaller agent responses").showHelpAfterError(false).exitOverride().configureOutput({ writeOut: runtime.writeOut, writeErr: () => {
   } });
-  const resolvePath = (value) => path8.resolve(runtime.cwd, value);
+  if (identity.helpFooter) program.addHelpText("after", identity.helpFooter);
+  const resolvePath = (value) => path9.resolve(runtime.cwd, value);
   const global = () => {
     const options = program.opts();
     return { ...options, project: resolvePath(options.project) };

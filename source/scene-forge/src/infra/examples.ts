@@ -1,8 +1,6 @@
-import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { readJson } from './files.js';
+import { readAsset } from './assets.js';
 import { parse, Id, SceneBundleSchema, fail } from '../domain/schema.js';
-import { errorCode } from '../domain/errors.js';
 import { unpackScene } from './bundle.js';
 
 const Entry = z
@@ -15,18 +13,8 @@ const Entry = z
     stats: z.unknown(),
   })
   .strict();
-async function exampleData(name: string) {
-  for (const url of [
-    new URL(`./examples/${name}`, import.meta.url),
-    new URL(`../../examples/catalog/${name}`, import.meta.url),
-  ]) {
-    try {
-      return await readJson(fileURLToPath(url));
-    } catch (error) {
-      if (errorCode(error) !== 'NOT_FOUND') throw error;
-    }
-  }
-  return fail('BUILD_REQUIRED', 'Bundled examples are missing. Run npm run build.');
+async function exampleData(name: string): Promise<unknown> {
+  return JSON.parse(await readAsset(`examples/${name}`));
 }
 export const listExamples = async () => parse(z.array(Entry), await exampleData('index.json'));
 export async function exampleBundle(id: string) {
