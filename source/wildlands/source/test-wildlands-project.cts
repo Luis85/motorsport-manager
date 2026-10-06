@@ -11,6 +11,7 @@ test('Default project is a complete detached Littlewild prototype',()=>{
  assert.equal(littlewild.format,'wildlands-project');assert.equal(littlewild.target,'godot');assert.equal(littlewild.scenarioId,'littlewild');assert.equal(littlewild.sceneId,'first-morning');assert.equal(littlewild.pack.scenes.length,2);
  const changed=projects.create();changed.pack.name='Changed';assert.notEqual(projects.create().pack.name,'Changed');
  const checked=projects.validate(littlewild);assert(checked.ok);assert.equal(projects.validate(JSON.stringify(littlewild)).ok,true);assert(checked.fingerprint);
+ const text=projects.validate(JSON.stringify(littlewild)),renamed=projects.validate({...littlewild,name:'Renamed'});assert(text.ok&&renamed.ok);assert.match(checked.fingerprint,/^[0-9a-f]{16}$/);assert.equal(text.fingerprint,checked.fingerprint);assert.notEqual(renamed.fingerprint,checked.fingerprint);
 });
 test('Versioned discovery describes useful portable and bounded agent operations',()=>{
  const found=discover();assert.equal(found.protocolVersion,1);assert.equal(found.projectSchemaVersion,1);assert.deepEqual(found.scenarios.map(value=>value.id),['littlewild','emberworks','office']);

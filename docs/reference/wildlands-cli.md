@@ -182,13 +182,18 @@ bin/wildlands validate --project "$OUT/custom.json"
 ```
 
 Result: `{ok, protocolVersion, fingerprint, projectId, scenarioId, sceneId}`.
-`fingerprint` is 16 hexadecimal digits. **Do not use it to detect project
-changes:** it is computed with the content-library fingerprint, which covers only
-a document's `schemaVersion`, `library` and `components` fields. A project has
-none of the last two, so every valid project currently reports the same value
-(`1ebf74e42e9cb060`). To detect changes, compare file digests (for example
-`sha256sum`) or the fields you care about. The fingerprint is never stored in the
-project.
+`fingerprint` is 16 hexadecimal digits identifying the complete normalized
+project: it hashes the key-sorted canonical JSON of every field, including `id`,
+`name`, `scenarioId`, `sceneId` and the whole `pack`. JSON key order and
+whitespace do not change it; any value change does, including the captured
+result of a `run` or `edit` recipe. `validate` and `inspect` report the same
+value for the same project. Use it to detect content changes between project
+files. A `run` output is the complete captured project, so even a recipe that
+advances no time can differ from a project made by `create` (the capture writes
+the pack's explicit `resources`); measure simulation progress with
+`advancedSeconds`, not the fingerprint. It is a non-cryptographic change
+identifier, not a signature or proof of authorship, and it is never stored in the
+project. Use a file digest such as `sha256sum` when you need exact bytes.
 
 ### `inspect`
 
@@ -395,8 +400,8 @@ bin/wildlands create --output "$OUT/a.json" --output "$OUT/b.json"; echo "exit=$
    and `compile` results to new paths, then `validate` or `inspect` the result.
 6. Change projects through `create`, `scenario`, `run` and `edit` recipes. Do not
    hand-edit `pack` internals unless you then pass `validate`. Never add a
-   `fingerprint` to documents, and do not use it to detect changes (see
-   [`validate`](#validate)).
+   `fingerprint` to documents. Compare `validate` fingerprints to detect content
+   changes, never to establish trust (see [`validate`](#validate)).
 7. Do not hand-edit compiled Godot output. `wildlands.manifest.json` records the
    SHA-256 of every file; recompile instead.
 8. Time advances only through explicit `step`/`advance` operations in `run`.

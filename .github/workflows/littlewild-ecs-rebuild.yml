@@ -58,7 +58,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/source/wildlands/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1739'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1740'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -105,6 +105,7 @@ jobs:
               {"suite":"wildlands-cli","name":"Invalid semantic project returns exit 1 without touching files"},
               {"suite":"wildlands-cli","name":"Input aliases and symlink aliases are rejected without overwriting authority"},
               {"suite":"wildlands-cli","name":"Bootstrap errors remain one structured diagnostic while help remains available"},
+              {"suite":"wildlands-cli","name":"Project fingerprints identify complete content independent of key order and command"},
               {"suite":"wildlands-acceptance","name":"A new terminal project preloads Littlewild and discovery describes its actual commands"},
               {"suite":"wildlands-acceptance","name":"Every discovered built-in scenario compiles complete resources with verified manifest hashes"},
               {"suite":"wildlands-acceptance","name":"Repeated bounded recipes produce the same game state without changing the source project"},

@@ -7,6 +7,7 @@ declare namespace Wildlands {
   scenarioId:string;sceneId:string;pack:LWContentPorts.ScenarioPack;
  }
  interface CreateOptions {id?:string;name?:string;scenarioId?:string;sceneId?:string;pack?:unknown;}
+ /** `fingerprint`: 16 hex digits over the complete normalized project; change detection only. */
  type Validation={ok:true;project:Project;fingerprint:string;errors:[]}|{ok:false;errors:string[]};
  interface Discovery {
   name:'wildlands';protocolVersion:1;projectFormat:'wildlands-project';projectSchemaVersion:1;

@@ -25,6 +25,13 @@
   const selected=text(id??pack.scenes[0]?.id,'Scene ID',true);
   if(!pack.scenes.some(value=>value.id===selected))throw Error('Scene does not exist in this scenario: '+selected);return selected;
  }
+ /** Opaque change identifier for the complete normalized project: every field,
+  * including the whole pack, enters key-sorted canonical JSON. The content-library
+  * fingerprint covers only library fields, so the project is wrapped as its
+  * components under a format tag. Not a signature or authenticity proof. */
+ function projectFingerprint(project:Wildlands.Project):string{
+  return C.fingerprint({schemaVersion:project.schemaVersion,library:project.format,components:project});
+ }
  function validate(input:unknown):Wildlands.Validation{
   try{
    const doc=record(input),fields=['format','schemaVersion','id','name','target','scenarioId','sceneId','pack'];
@@ -33,7 +40,7 @@
    const pack=checkedPack(doc.pack),scenarioId=text(doc.scenarioId,'Scenario ID',true);
    if(scenarioId!==pack.id)throw Error('Project scenarioId must match pack.id.');
    const project:Wildlands.Project={format:'wildlands-project',schemaVersion:1,id:text(doc.id,'Project ID',true),name:text(doc.name,'Project name'),target:'godot',scenarioId,sceneId:scene(pack,doc.sceneId),pack};
-   return {ok:true,project,fingerprint:C.fingerprint(project),errors:[]};
+   return {ok:true,project,fingerprint:projectFingerprint(project),errors:[]};
   }catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)]};}
  }
  function create(options:Wildlands.CreateOptions={}):Wildlands.Project{

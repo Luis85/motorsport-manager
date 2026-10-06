@@ -1,3 +1,7 @@
+## Project fingerprint covers project content
+
+**CLI/SDK contract change:** the `fingerprint` returned by `wildlands validate`, `wildlands inspect`, `projects.validate` and `inspectProject` now identifies the complete normalized project: a deterministic 16-hex-digit hash of its key-sorted canonical JSON, including `id`, `name`, `scenarioId`, `sceneId` and the whole `pack`. Previously the project validator reused the content-library fingerprint, which hashes only `schemaVersion`, `library` and `components`; a project has neither of the last two, so every valid project reported the same constant (`1ebf74e42e9cb060`). Key order does not change the new value; any content change does. Content-library, scenario-pack and simulation-profile fingerprints are unchanged. It remains a change identifier, not a signature. The `wildlands-cli` suite adds one named regression check.
+
 ## Standalone project and single-file CLI
 
 Moved the project from `docs/concepts/littlewild/` to `source/wildlands/`; build guidance, documentation links and the engine-export repository license provenance now use the new location. Added `wildlands --version` and the handbook path to `--help`. `npm run build:cli` bundles the compiled CLI with all content and trusted Godot runtime resources into the deterministic, dependency-free executable `bin/wildlands` at the repository root; `npm run check:cli` rebuilds and smoke-runs it and fails when the checked-in file is stale. The repository handbook is `docs/reference/wildlands-cli.md`.

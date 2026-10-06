@@ -27,6 +27,16 @@ test('Explicit recipes advance the real simulation and publish a complete output
  const before=fs.readFileSync(project),played=run(['run','--project',project,'--recipe',recipe,'--output',output]);assert.equal(played.status,0);assert.equal(played.out.requestedSteps,10);assert(Math.abs(Number(played.out.advancedSeconds)-1)<1e-9);assert.deepEqual(fs.readFileSync(project),before);assert.equal(run(['validate','--project',output]).status,0);
  const editorRecipe=path.join(directory,'editor.json'),edited=path.join(directory,'edited.json');fs.writeFileSync(editorRecipe,JSON.stringify({format:'wildlands-editor-recipe',schemaVersion:1,operations:[{operation:'updateScene',args:['first-morning',{name:'Terminal meadow'}]}]}));assert.equal(run(['edit','--project',project,'--recipe',editorRecipe,'--output',edited]).status,0);assert.equal((JSON.parse(fs.readFileSync(edited,'utf8')) as Wildlands.Project).pack.scenes[0]!.name,'Terminal meadow');
 });
+test('Project fingerprints identify complete content independent of key order and command',()=>{
+ const fingerprint=(file:string):string=>{const checked=run(['validate','--project',file]);assert.equal(checked.status,0);assert.match(String(checked.out.fingerprint),/^[0-9a-f]{16}$/);return String(checked.out.fingerprint);};
+ const base=fingerprint(project),inspected=run(['inspect','--project',project]);assert.equal(inspected.status,0);assert.equal(inspected.out.fingerprint,base);assert.equal(fingerprint(project),base);
+ const recreated=path.join(directory,'recreated.json');assert.equal(run(['create','--output',recreated]).status,0);assert.equal(fingerprint(recreated),base);
+ const reorder=(value:unknown):unknown=>Array.isArray(value)?value.map(reorder):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).reverse().map(([key,entry])=>[key,reorder(entry)])):value;
+ const reordered=path.join(directory,'reordered.json'),source=fs.readFileSync(project,'utf8');fs.writeFileSync(reordered,JSON.stringify(reorder(JSON.parse(source)),null,1));assert.notEqual(fs.readFileSync(reordered,'utf8'),source);assert.equal(fingerprint(reordered),base);
+ const renamed=path.join(directory,'renamed.json'),scene=path.join(directory,'scene.json');assert.equal(run(['create','--name','Renamed prototype','--output',renamed]).status,0);assert.equal(run(['create','--scene','charted-home','--output',scene]).status,0);
+ const variants=[renamed,scene,path.join(directory,'office.json'),output,path.join(directory,'edited.json')].map(fingerprint);
+ assert.equal(new Set([base,...variants]).size,variants.length+1);
+});
 test('Malformed arguments and bounded recipe failures retain prior published output',()=>{
  const before=fs.readFileSync(output),invalid=path.join(directory,'invalid-recipe.json');fs.writeFileSync(invalid,JSON.stringify({format:'wildlands-recipe',schemaVersion:1,operations:[{operation:'advance',seconds:.15}]}));
  for(const args of [['create','--output',output,'--unknown','x'],['create','--output',output,'--output',output],['run','--project',project,'--recipe',invalid,'--output',output],['scenario','--project',project,'--scenario','missing','--output',output]]){const result=run(args);assert.equal(result.status,2);assert.equal(result.out.ok,false);}

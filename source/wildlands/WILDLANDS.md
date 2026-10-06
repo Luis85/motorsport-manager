@@ -33,8 +33,15 @@ The selected scene must exist and `scenarioId` must match `pack.id`. The complet
 pack carries supported content libraries, assets, creature definitions,
 configuration, storyboards and owner checkpoints. It is data, and cannot add
 executable mechanics. Project validation is bounded to 10 MiB; the inner pack
-retains its own admission limits. Fingerprints detect changes rather than
-authenticate authors.
+retains its own admission limits.
+
+`validate` and `inspect` report the same project `fingerprint`: 16 hexadecimal
+digits computed from the key-sorted canonical JSON of the complete normalized
+project, including `id`, `name`, `scenarioId`, `sceneId` and the whole `pack`.
+JSON key order and whitespace do not affect it; any value change, including a
+captured `run` or `edit` result, does. The fingerprint is not stored in the
+project. It detects changes rather than authenticating authors, and is a
+non-cryptographic identifier, not a signature.
 
 ## Terminal and AI-agent workflow
 
