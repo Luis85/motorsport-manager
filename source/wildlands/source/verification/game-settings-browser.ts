@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 
 interface Settings {duels:boolean;quests:boolean;}
 interface SettingsEngine {
@@ -32,8 +32,8 @@ async function main():Promise<void>{
   for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
    const page=await context.newPage();
    await page.setViewportSize(viewport);page.setDefaultTimeout(5000);
-   await page.setContent(html,{waitUntil:'load'});
-   await page.waitForFunction(()=>!!(window as unknown as BrowserGlobals).Littlewild);
+   await page.setContent(html,{waitUntil:'load',timeout:30000});
+   await waitForReady(page,{timeout:READY_TIMEOUT_MS});
    await page.locator('[data-act=begin]').click();
    await page.evaluate(()=>(window as unknown as BrowserGlobals).Littlewild.open('settings'));
 

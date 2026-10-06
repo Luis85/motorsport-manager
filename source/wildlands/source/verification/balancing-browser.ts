@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_BALANCING_OUT||path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 const touchTargets:{state:string;controls:{label:string;width:number;height:number}[]}[]=[];
@@ -15,7 +15,7 @@ async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await
 async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext(),diagnostics=monitorContext(context);
  try{for(const width of [1440,390]){
-  const page=await context.newPage();page.setDefaultTimeout(7000);await page.setViewportSize({width,height:width===1440?1000:844});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load'});await page.waitForFunction(()=>!!(globalThis as unknown as {Littlewild?:unknown}).Littlewild);await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true');
+  const page=await context.newPage();page.setDefaultTimeout(7000);await page.setViewportSize({width,height:width===1440?1000:844});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true');
   const original=await page.evaluate('JSON.stringify(Littlewild.engine.export())');await page.evaluate('Littlewild.open("scenarios")');await page.locator('[data-scenario=balancing-editor]').click();
   await check('A delayed real JSON import cannot replace a newer numeric draft at '+width+'px',async()=>{
    const imported=await page.evaluate('(()=>{const pack=LWScenarios.capture(Littlewild.engine),draft=LWBalancing.capture(pack);draft.simulation.rules.gameplay.task.quietJoy=7;if(!LWBalancing.validate(draft,pack).ok)throw Error("The race fixture must be valid balancing JSON.");return JSON.stringify(draft);})()') as string;

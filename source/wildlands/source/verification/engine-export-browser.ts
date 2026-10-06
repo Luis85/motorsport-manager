@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_ENGINE_EXPORT_OUT||path.join(ROOT,'verification/v15');
 const FIXTURE='https://localhost/littlewild-engine-export-proof';
 const results:{name:string;passed:boolean;error?:string}[]=[];let diagnostics:unknown;
@@ -17,7 +17,7 @@ async function main():Promise<void>{
  try{for(const width of [1440,390]){
   const page=await context.newPage();page.setDefaultTimeout(60000);await page.setViewportSize({width,height:width===390?844:1000});
   await page.addInitScript('localStorage.clear();window.__sourceInflations=0;window.__originalDecompressionStream=DecompressionStream;window.DecompressionStream=class extends window.__originalDecompressionStream{constructor(format){super(format);window.__sourceInflations++;}}');
-  const started=Date.now();await page.goto(FIXTURE,{waitUntil:'load',timeout:60000});await page.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);const startup=Date.now()-started;
+  const started=Date.now();await page.goto(FIXTURE,{waitUntil:'load',timeout:60000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});const startup=Date.now()-started;
   await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();const original=await value<string>(page,'JSON.stringify(Littlewild.engine.export())'),draft=await value<string>(page,'JSON.stringify(Littlewild.scenarioUI.editor.session.snapshot())');
   await test(width+'px engine source stays compressed during offline startup and editor opening',async()=>{assert(await value<boolean>(page,'window.isSecureContext&&!!crypto.subtle'));assert.equal(await value<number>(page,'window.__sourceInflations'),0);assert(startup<20000,'startup '+startup+'ms');assert.equal(await page.locator('[data-engine-export-panel]').getAttribute('open'),null);if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1')await page.screenshot({path:path.join(OUT,'engine-export-collapsed-'+width+'.png'),fullPage:true});});
   if(width===1440)await test('Declared source inflation bounds stop oversized streaming data before admission',async()=>{const error=await value<string>(page,'(async()=>{const old=LWEngineSourceLoader.decodedBytes;LWEngineSourceLoader.decodedBytes=32;try{await LWDeveloper.engineExport.export(Littlewild.scenarioUI.editor.session.export(),Littlewild.scenarioUI.editor.state.selection.id);return "accepted";}catch(error){return error.message;}finally{LWEngineSourceLoader.decodedBytes=old;}})()');assert(error.includes('bounds'));assert.equal(await value<string>(page,'JSON.stringify(Littlewild.engine.export())'),original);});

@@ -46,9 +46,79 @@ export function sourceIdentity(root: string): string {
   return hash.digest("hex");
 }
 
+export type GateTier = "fast" | "full";
+export interface VerifyOptions {
+  noBrowser: boolean;
+  help: boolean;
+  /** Total concurrent suites; undefined selects the host default. */
+  jobs?: number;
+  /** Maximum concurrent browser suites; undefined selects the host default. */
+  browserJobs?: number;
+  tier: GateTier;
+  /** One-based shard index and shard count. */
+  shard?: { index: number; count: number };
+  only?: string[];
+  keepGoing: boolean;
+}
+
+export const VERIFY_USAGE = [
+  "Usage: npm run verify -- [options | --help]",
+  "  --no-browser        omit browser suites (partial evidence only)",
+  "  --jobs N            total concurrent suites (default min(4, cores-1); 1 = sequential registry order)",
+  "  --browser-jobs N    concurrent browser suites (default min(2, jobs))",
+  "  --tier fast|full    registry tier to run (default full; fast is partial evidence)",
+  "  --shard I/N         run the I-th of N deterministic duration-balanced shards (partial evidence)",
+  "  --only a,b          run only the named registered suites (partial evidence)",
+  "  --keep-going        keep running remaining suites after a failure"
+].join("\n");
+
+const positive = (flag: string, text: string | undefined, maximum: number): number => {
+  if (text === undefined || !/^[1-9][0-9]*$/.test(text) || Number(text) > maximum) throw new Error(`${flag} requires an integer from 1 to ${maximum}\n${VERIFY_USAGE}`);
+  return Number(text);
+};
+
+/** Strict gate option parser: unknown, repeated or malformed flags are rejected before any evidence changes. */
+export function parseVerifyArgs(args: readonly string[]): VerifyOptions {
+  const options: VerifyOptions = { noBrowser: false, help: false, tier: "full", keepGoing: false };
+  if (args.length === 1 && ["--help", "-h"].includes(args[0]!)) return { ...options, help: true };
+  const seen = new Set<string>();
+  for (let index = 0; index < args.length; index++) {
+    const raw = args[index]!;
+    const equals = raw.startsWith("--") ? raw.indexOf("=") : -1;
+    const flag = equals > 0 ? raw.slice(0, equals) : raw;
+    const takesValue = ["--jobs", "--browser-jobs", "--tier", "--shard", "--only"].includes(flag);
+    if (seen.has(flag)) throw new Error(`Repeated option ${flag}\n${VERIFY_USAGE}`);
+    seen.add(flag);
+    let value: string | undefined;
+    if (takesValue) value = equals > 0 ? raw.slice(equals + 1) : args[++index];
+    else if (equals > 0) throw new Error(`Option ${flag} takes no value\n${VERIFY_USAGE}`);
+    switch (flag) {
+      case "--no-browser": options.noBrowser = true; break;
+      case "--keep-going": options.keepGoing = true; break;
+      case "--jobs": options.jobs = positive(flag, value, 64); break;
+      case "--browser-jobs": options.browserJobs = positive(flag, value, 64); break;
+      case "--tier":
+        if (value !== "fast" && value !== "full") throw new Error(`--tier requires fast or full\n${VERIFY_USAGE}`);
+        options.tier = value; break;
+      case "--shard": {
+        const match = /^([1-9][0-9]*)\/([1-9][0-9]*)$/.exec(value ?? "");
+        if (!match || Number(match[1]) > Number(match[2]) || Number(match[2]) > 64) throw new Error(`--shard requires I/N with 1 <= I <= N <= 64\n${VERIFY_USAGE}`);
+        options.shard = { index: Number(match[1]), count: Number(match[2]) }; break;
+      }
+      case "--only": {
+        const names = (value ?? "").split(",");
+        if (!value || value.startsWith("--") || names.some(name => !/^[a-z0-9][a-z0-9-]*$/.test(name)) || new Set(names).size !== names.length)
+          throw new Error(`--only requires a comma-separated list of distinct suite names\n${VERIFY_USAGE}`);
+        options.only = names; break;
+      }
+      default: throw new Error(`Unknown option ${raw}\n${VERIFY_USAGE}`);
+    }
+  }
+  return options;
+}
+
+/** The original two-flag contract, retained as a projection of the complete option parser. */
 export function parseGateArgs(args: readonly string[]): { noBrowser: boolean; help: boolean } {
-  if (args.length === 0) return { noBrowser: false, help: false };
-  if (args.length === 1 && args[0] === "--no-browser") return { noBrowser: true, help: false };
-  if (args.length === 1 && ["--help", "-h"].includes(args[0]!)) return { noBrowser: false, help: true };
-  throw new Error("Usage: npm run verify -- [--no-browser | --help]");
+  const { noBrowser, help } = parseVerifyArgs(args);
+  return { noBrowser, help };
 }

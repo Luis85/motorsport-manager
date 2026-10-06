@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -10,7 +10,7 @@ async function main():Promise<void>{
  try{
   const page=await context.newPage();page.setDefaultTimeout(10000);
   await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsRTS);await page.locator('[data-act=begin]').click();
+  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsRTS,null,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
   await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.refresh()');
   await check('RTS is discoverable and switching runs only the RTS application clock',async()=>{
    const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');

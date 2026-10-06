@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {toolbox} from '../developer-sdk.cjs';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||'/tmp/littlewild-renderers';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15'),results:Result[]=[];
@@ -14,7 +14,7 @@ async function main():Promise<void>{
  try {
   const p=await context.newPage();p.setDefaultTimeout(5000);
   await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
+  await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
   await p.evaluate("Littlewild.engine.s.paused=true;LWRendererExample.register()");
   await p.keyboard.press('Escape');
   await check('Default adapter retains the shipped graphics renderer',async()=>{assert.equal(await p.evaluate('Littlewild.world.rendererId'),'basic');assert.match(await p.evaluate('Littlewild.world.mode') as string,/WebGL|Software/);});

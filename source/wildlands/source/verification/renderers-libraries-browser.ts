@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||'/tmp/littlewild-renderer-libraries',results:Result[]=[];
 fs.mkdirSync(OUT,{recursive:true});fs.mkdirSync(SHOTS,{recursive:true});
@@ -79,7 +79,7 @@ function installLibraryPixelReader():void{
 async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
  try{
-  const p=await context.newPage();p.setDefaultTimeout(10000);await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();await p.evaluate('Littlewild.engine.s.paused=true');await p.keyboard.press('Escape');
+  const p=await context.newPage();p.setDefaultTimeout(10000);await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();await p.evaluate('Littlewild.engine.s.paused=true');await p.keyboard.press('Escape');
   await p.evaluate(installLibraryPixelReader);
 
   await check('Pinned library metadata is discoverable and synchronous Pixi selection retains the active renderer',async()=>{

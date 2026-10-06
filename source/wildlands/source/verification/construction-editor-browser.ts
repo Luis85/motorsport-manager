@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 
 interface BrowserEngine {
  s:LWConstruction.World & {paused:boolean};
@@ -37,8 +37,8 @@ async function main():Promise<void>{
  try{
   for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
    const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(7000);
-   await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load'});
-   await page.waitForFunction(()=>!!(window as unknown as BrowserGlobals).Littlewild);
+   await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});
+   await waitForReady(page,{timeout:READY_TIMEOUT_MS});
    await page.locator('[data-act=begin]').click();
    if(!await page.evaluate(()=>(window as unknown as BrowserGlobals).Littlewild.engine.s.paused))await page.locator('#pause-button').click();
    await page.evaluate(()=>{

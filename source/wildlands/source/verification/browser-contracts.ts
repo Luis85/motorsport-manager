@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { launchBrowser, monitorContext } from "./browser-harness";
+import { launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady } from "./browser-harness";
 
 interface Result{name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,"../.."),OUT=path.join(ROOT,"verification","v15");
@@ -17,7 +17,7 @@ async function main():Promise<void>{
  try {
  const context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context);
  let page=await context.newPage();
- await page.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});await page.waitForFunction(() => !!(window as any).Littlewild);
+ await page.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
  await page.locator("[data-act=land-demo]").click();await page.waitForTimeout(200);
  await page.evaluate("Littlewild.engine.s.paused=true;Littlewild.refresh()");
  const before=await page.evaluate("Littlewild.engine.creatures.map(c=>({id:c.id,n:c.orders.length,approach:c.buildPolicy.approach}))") as any[];
@@ -74,7 +74,7 @@ async function main():Promise<void>{
  const artifact=path.join(OUT,"emberworks.html");
  const build=spawnSync("npm",["run","build","--silent","--","--pack","source/content/emberworks.pack.json","--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});
  if(build.status!==0)throw new Error(build.stderr||build.stdout||"Custom build failed");
- page=await context.newPage();await page.setViewportSize({width:1280,height:800});await page.setContent(fs.readFileSync(artifact,"utf8"),{waitUntil:"load"});await page.waitForFunction(() => !!(window as any).Littlewild);
+ page=await context.newPage();await page.setViewportSize({width:1280,height:800});await page.setContent(fs.readFileSync(artifact,"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
  await check("Custom-build welcome is branded from its input pack",async()=>eq(await page.title(),"Wildlands · Emberworks"));
  await check("Custom artifact contains one selectable pack",async()=>eq(await page.evaluate("LWScenarios.builtins().length"),1));
  await page.locator("[data-act=begin]").click();await page.waitForTimeout(100);
