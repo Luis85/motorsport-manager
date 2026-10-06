@@ -15,7 +15,7 @@
  };
  const D=root.LWDeveloperData;
  function category(value:unknown):Category {
-  if(value!=='actor'&&value!=='building'&&value!=='item')throw new D.DeveloperError('invalid-input','Asset category must be actor, building or item.');
+  if(value!=='actor'&&value!=='building'&&value!=='item'&&value!=='pet')throw new D.DeveloperError('invalid-input','Asset category must be actor, building, item or pet.');
   return value;
  }
  const assets:LittlewildDeveloper.AssetApi=Object.freeze({

@@ -84,4 +84,33 @@ test('Asset identity text accepts Unicode at the schema limit and rejects beyond
  }
 });
 
+function bakedPet(){return {format:'littlewild-3d-asset',schemaVersion:1,category:'pet',id:'test-pet',name:'Test pet',materials:{skin:{color:'#f0c0b0',flatShading:false}},
+ meshes:{tri:{positions:[0,0,0,1,0,0,0,1,0],normals:[0,0,1,0,0,1,0,0,1],indices:[0,1,2]}},
+ models:{baby:{nodes:[{primitive:'group',id:'body',children:[{primitive:'mesh',id:'head',mesh:'tri',material:'skin'}]}]}},metadata:{radius:.5},rig:{baby:{body:'body',head:'head'}}};}
+test('Pet assets accept bounded baked meshes and per-model rigs',()=>{
+ const catalog=accepts([bakedPet()]);assert.equal(catalog.pet('test-pet').meshes.tri.indices.length,3);assert.equal(catalog.get('pet','test-pet').rig.baby.head,'head');
+ for(const edit of[
+  d=>d.models.baby.nodes[0].children[0].mesh='missing',d=>delete d.models.baby.nodes[0].children[0].mesh,
+  d=>d.models.baby.nodes[0].mesh='tri',d=>d.meshes.tri.indices=[0,1,3],d=>d.meshes.tri.positions.push(1),
+  d=>d.meshes.tri.normals=[0,0,1],d=>d.meshes.tri.positions[0]=Number.NaN,d=>d.meshes.tri.positions=Array(3*8193).fill(0),
+  d=>d.rig.baby.head='missing',d=>d.rig.adult={head:'head'},d=>d.rig.baby.wings='body',d=>d.meshes['Bad id']=d.meshes.tri,
+  d=>d.materials.skin.flatShading='yes',d=>{d.category='item';}
+ ]){const d=bakedPet();edit(d);assert.throws(()=>accepts([d]),/3D asset:/);}
+});
+test('Generic asset renderer builds baked meshes once per immutable definition',()=>{
+ const sandbox={};
+ const vm=require('node:vm'),json=JSON.stringify([bakedPet()]);
+ vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(json)+');\n'+fs.readFileSync(__dirname+'/asset-catalog.js','utf8')+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
+ let geometries=0;class Obj{constructor(){this.position={set(){}};this.rotation={set(){}};this.scale={set(){}};this.children=[];this.userData={};}add(c){this.children.push(c);}}
+ class Mesh extends Obj{constructor(g,m){super();this.geometry=g;this.material=m;}}
+ class BufferGeometry{constructor(){geometries++;this.attributes={};}setAttribute(k,v){this.attributes[k]=v;}setIndex(i){this.index=i;}computeVertexNormals(){}computeBoundingSphere(){}}
+ const T={Mesh,BufferGeometry,Float32BufferAttribute:class{constructor(a,n){this.array=a;this.itemSize=n;}}};
+ const kit={T,mat:(color,extra)=>({color,...extra}),group(parent){const g=new Obj();parent.add(g);return g;},piece(){throw Error('unexpected primitive');}};
+ const definition=sandbox.LWAssets.pet('test-pet'),parent=new Obj();
+ const first=sandbox.LWAssetRenderer.create(kit,parent,'pet','test-pet','baby'),second=sandbox.LWAssetRenderer.create(kit,parent,'pet','test-pet','baby');
+ assert.equal(geometries,1);assert.equal(first.handles.get('head').geometry,second.handles.get('head').geometry);assert.equal(first.handles.get('head').material.flatShading,false);
+ assert.equal(first.handles.get('head').geometry.attributes.normal.array.length,9);assert(definition);
+ assert.throws(()=>sandbox.LWAssetRenderer.create({...kit,T:undefined},parent,'pet','test-pet','baby'),/cannot draw baked mesh/);
+});
+
 const passed=results.filter(r=>r.passed).length,report={passed,total:results.length,assets:A.all().length,results};fs.writeFileSync(__dirname+'/asset-catalog-results.json',JSON.stringify(report,null,2));console.log(passed+'/'+results.length);if(passed!==results.length)process.exitCode=1;

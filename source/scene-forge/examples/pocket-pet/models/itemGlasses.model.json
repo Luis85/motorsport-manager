@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "itemGlasses",
+  "category": "Pocket pet accessories",
+  "name": "Round glasses",
+  "parameters": {},
+  "geometries": {
+    "rim": {
+      "type": "torus",
+      "radius": 0.048,
+      "tube": 0.007,
+      "segments": 28
+    },
+    "lens": {
+      "type": "cylinder",
+      "radiusTop": 0.045,
+      "radiusBottom": 0.045,
+      "height": 0.004,
+      "segments": 24
+    },
+    "bridge": {
+      "type": "cylinder",
+      "radiusTop": 0.005,
+      "radiusBottom": 0.005,
+      "height": 0.05,
+      "segments": 8
+    },
+    "arm": {
+      "type": "box",
+      "size": [
+        0.008,
+        0.008,
+        0.12
+      ]
+    }
+  },
+  "materials": {
+    "frame": {
+      "color": "#3d2c46",
+      "metalness": 0,
+      "roughness": 0.35,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "lens": {
+      "color": "#d9f2ff",
+      "metalness": 0,
+      "roughness": 0.05,
+      "opacity": 0.35,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "rimL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.078,
+          0,
+          0.02
+        ]
+      },
+      "geometry": "rim",
+      "material": "frame"
+    },
+    {
+      "id": "rimR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.078,
+          0,
+          0.02
+        ]
+      },
+      "geometry": "rim",
+      "material": "frame"
+    },
+    {
+      "id": "lensL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.078,
+          0,
+          0.02
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "geometry": "lens",
+      "material": "lens"
+    },
+    {
+      "id": "lensR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.078,
+          0,
+          0.02
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "geometry": "lens",
+      "material": "lens"
+    },
+    {
+      "id": "bridge",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.01,
+          0.022
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      },
+      "geometry": "bridge",
+      "material": "frame"
+    },
+    {
+      "id": "armL",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.125,
+          0,
+          -0.04
+        ]
+      },
+      "geometry": "arm",
+      "material": "frame"
+    },
+    {
+      "id": "armR",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.125,
+          0,
+          -0.04
+        ]
+      },
+      "geometry": "arm",
+      "material": "frame"
+    }
+  ]
+}

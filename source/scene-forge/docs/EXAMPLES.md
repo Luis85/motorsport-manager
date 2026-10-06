@@ -15,6 +15,10 @@ Open `examples/showcase/exports/workshop.html` for the offline eight-scene demo.
 
 The workshop palette contains 43 reusable recipes: seven primitives, three characters, eight everyday objects, plus the architecture, industrial, robotics and earlier project assets. Individual example bundles include only their reachable model dependencies; the all-scenes workshop exposes the entire registry.
 
+## Pocket Pet project
+
+`examples/pocket-pet` is a separate project rather than a workshop scene. It contains 26 recipes: reusable face, leaf, sprout, petal and flower parts; an egg, baby, teen and two adult forms tagged with `rig:<role>` including `hat`, `face`, `neck` and `back` accessory sockets; a room, bed, bowl, snack, ball, mess, medicine, bubbles, heart and star; and six accessories (party hat, bow, glasses, scarf, crown, wings). `littlewild.export.json` publishes them as two species, ten props and six accessories into `../wildlands/source/assets/pets/`. Review the lineup with `forge3d -p examples/pocket-pet review --node lifeStages --out review`.
+
 ## Agent entry points
 
 ```bash

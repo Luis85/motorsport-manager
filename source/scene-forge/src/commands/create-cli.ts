@@ -16,6 +16,7 @@ import { registerOutputsCommands } from './outputs.js';
 import { registerRuntimeCommands } from './runtime.js';
 import { registerCompositionCommands } from './composition.js';
 import { registerAgentCommands } from './agent.js';
+import { registerLittlewildCommands } from './littlewild.js';
 
 /** How the program presents itself: `forge3d` for the package, `scene-forge` for the repository executable. */
 export interface CliIdentity {
@@ -86,6 +87,7 @@ export function createCli(
   registerAgentCommands(context);
   registerExampleCommands(context);
   registerRigCommands(context);
+  registerLittlewildCommands(context);
 
   return {
     program,

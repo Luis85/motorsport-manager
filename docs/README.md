@@ -22,6 +22,9 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
   [Content index](reference/content/README.md) → [Balancing](how-to/balancing.md).
 - **RTS mission author:** [Explore the RTS demo](tutorials/rts-demo.md) →
   [Author a mission](how-to/rts-mission-editor.md) → [RTS contract](reference/rts-engine.md).
+- **Virtual-pet and 3D asset author:** [Raise a Pocket Pet](tutorials/pocket-pet-demo.md) →
+  [Author Littlewild assets in Scene Forge](how-to/scene-forge-littlewild-assets.md) →
+  [Pocket Pet contract](reference/pet-engine.md).
 - **Developer:** [Architecture](explanation/architecture.md) →
   [Mechanics recipes](how-to/developing-mechanics.md) or
   [Toolbox experiments](how-to/toolbox-recipes.md) → [Verification](how-to/verification.md).
@@ -45,6 +48,10 @@ desktop target. Scene Forge is a standalone CLI and offline 3D editor for
 declarative modeling, reusable scene composition, portable rigs and multi-view
 review. Each project retains its own runtime, tests and source-bound evidence
 outside the native Motorsport Manager capability inventory.
+
+Scene Forge's `littlewild` commands export recipes into Wildlands asset
+definitions and import them back; the Pocket Pet demo's models are authored this
+way (see [Author Littlewild assets in Scene Forge](how-to/scene-forge-littlewild-assets.md)).
 
 ## Authority and evidence
 

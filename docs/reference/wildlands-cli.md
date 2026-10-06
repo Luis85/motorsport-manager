@@ -263,7 +263,7 @@ presentation and the subprocess bridge), `runtime/` (the compiled TypeScript
 simulation that stays the gameplay authority), `wildlands.project.json` (the
 validated project) and `wildlands.manifest.json` (target, prerequisites,
 capabilities, limitations and the byte size and SHA-256 of every generated file).
-A Littlewild project compiles to about 250 files and 44 MB, mostly the bundled
+A Littlewild project compiles to about 260 files and 47 MB, mostly the bundled
 runtime and its source provenance. Projects whose scenes use custom renderer or
 animation extensions without a native adapter are rejected. The output needs
 desktop Godot 4.4+ and Node.js 22+ on `PATH` (or `WILDLANDS_NODE`); it is not a
@@ -452,7 +452,7 @@ nor the Node.js release changes the bytes. It embeds the complete engine source
 bundle that every Godot export carries. Consequently any change to an authored
 file under `source/wildlands/source/`, `vendor/`, `package.json`,
 `package-lock.json` or the `tsconfig` files changes `bin/wildlands`. Rebuild and
-commit it in the same change. The file is about 15.5 MB, mostly the compressed
+commit it in the same change. The file is about 16 MB, mostly the compressed
 engine sources.
 
 ## Related documentation

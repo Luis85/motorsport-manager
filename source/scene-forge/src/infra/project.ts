@@ -14,7 +14,7 @@ import {
   type Operation,
 } from '../domain/schema.js';
 import { canonical } from '../domain/canonical.js';
-import { errorCode } from '../domain/errors.js';
+import { errorCode, ForgeError } from '../domain/errors.js';
 import { checkGuards, prepareSceneEdit, type EditOptions } from '../application/edit.js';
 import { stateHash } from './state-hash.js';
 import { readJson, writeJson, atomicWrite, inside, findProject, withLock } from './files.js';
@@ -34,6 +34,21 @@ export interface Snapshot {
 }
 export const newScene = (id: string, name = id) =>
   parse(SceneSchema, { schemaVersion: 1, kind: 'scene', id, name });
+/** Name the project file in schema failures so agents can repair the right recipe. */
+async function parseFile<T>(
+  schema: Parameters<typeof parse<T>>[0],
+  root: string,
+  relative: string,
+): Promise<T> {
+  const value = await readJson(await inside(root, relative));
+  try {
+    return parse(schema, value);
+  } catch (error) {
+    if (error instanceof ForgeError && error.code === 'SCHEMA_INVALID')
+      fail(error.code, `${relative}: ${error.message}`, error.details);
+    throw error;
+  }
+}
 async function readManifest(root: string) {
   return parse(ProjectSchema, await readJson(path.join(root, 'forge.project.json')));
 }
@@ -44,12 +59,12 @@ async function loadUnlocked(root: string, sceneId?: string): Promise<Snapshot> {
     fail('NOT_FOUND', `Scene ${id} is not registered.`, {
       available: Object.keys(manifest.scenes),
     });
-  const scene = parse(SceneSchema, await readJson(await inside(root, manifest.scenes[id])));
+  const scene = await parseFile(SceneSchema, root, manifest.scenes[id]);
   if (scene.id !== id)
     fail('ID_MISMATCH', `Scene file declares ${scene.id}, but is registered as ${id}.`);
   const models: ModelLibrary = {};
   for (const [mid, file] of Object.entries(manifest.models)) {
-    const model = parse(ModelSchema, await readJson(await inside(root, file)));
+    const model = await parseFile(ModelSchema, root, file);
     if (model.id !== mid)
       fail('ID_MISMATCH', `Model file declares ${model.id}, but is registered as ${mid}.`);
     models[mid] = model;

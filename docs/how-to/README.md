@@ -8,6 +8,7 @@ the procedure to the relevant [contracts](../reference/README.md).
 - [Developing systems and mechanics](developing-mechanics.md)
 - [Save and test a custom circuit](first-circuit.md)
 - [Author a Wildlands RTS mission](rts-mission-editor.md)
+- [Author Littlewild assets in Scene Forge](scene-forge-littlewild-assets.md)
 - [Maintain useful documentation](maintaining-documentation.md)
 - [Runtime confidence and change safety](runtime-confidence.md)
 - [Shipping runtime measurements](runtime-performance.md)

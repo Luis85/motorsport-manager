@@ -18,6 +18,8 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 
 - [Isometric RTS demonstration](../../docs/tutorials/rts-demo.md)
 - [Graphical RTS mission authoring](../../docs/how-to/rts-mission-editor.md)
+- [Pocket Pet virtual-pet demonstration](../../docs/tutorials/pocket-pet-demo.md)
+- [Author Littlewild assets in Scene Forge](../../docs/how-to/scene-forge-littlewild-assets.md)
 - [Developer toolbox](DEVELOPER-TOOLBOX.md)
 - [Central balancing and experiments](BALANCING.md)
 - [Office: a complete portable scenario](OFFICE-SCENARIO.md)
@@ -37,6 +39,7 @@ turning earlier Littlewild acceptance into verification of Wildlands.
 - [Player and creature skill trees](../../docs/reference/skill-trees.md)
 
 - [Data-driven ECS RTS engine and tools](../../docs/reference/rts-engine.md)
+- [Pocket Pet engine, catalog and tools](../../docs/reference/pet-engine.md)
 - [Configurable experiences — authoring contract 2](CONFIGURATION.md)
 - [Littlewild v13 — Content integration compatibility](CONTENT-INTEGRATION.md)
 - [Littlewild rules boundary](RULES.md)

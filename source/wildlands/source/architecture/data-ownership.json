@@ -154,6 +154,13 @@
       "validatorRole": "definitionSource"
     },
     {
+      "id": "pet-assets",
+      "pattern": "assets/pets/*/definition.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "definitionSource"
+    },
+    {
       "id": "asset-schema",
       "pattern": "assets/asset.schema.json",
       "owner": "content-model",
@@ -211,6 +218,14 @@
       "owner": "content-model",
       "kind": "schema",
       "validatorRole": "schema"
+    },
+    {
+      "id": "pet-demo",
+      "pattern": "content/pet-demo.json",
+      "owner": "content-model",
+      "kind": "definitions",
+      "validatorRole": "pet",
+      "embeddedGlobal": "LWPetDefinitions"
     },
     {
       "id": "skill-tree",

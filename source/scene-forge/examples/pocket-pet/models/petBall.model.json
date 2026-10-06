@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petBall",
+  "category": "Pocket pet props",
+  "name": "Toy ball",
+  "parameters": {},
+  "geometries": {
+    "ball": {
+      "type": "sphere",
+      "radius": 0.12,
+      "segments": 24
+    },
+    "stripe": {
+      "type": "torus",
+      "radius": 0.12,
+      "tube": 0.014,
+      "segments": 32
+    }
+  },
+  "materials": {
+    "ball": {
+      "color": "#ff7b6b",
+      "metalness": 0,
+      "roughness": 0.35,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "stripe": {
+      "color": "#fff4d6",
+      "metalness": 0,
+      "roughness": 0.4,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "ball",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.12,
+          0
+        ]
+      },
+      "geometry": "ball",
+      "material": "ball"
+    },
+    {
+      "id": "stripeA",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.12,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ]
+      },
+      "geometry": "stripe",
+      "material": "stripe"
+    },
+    {
+      "id": "stripeB",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.12,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ]
+      },
+      "geometry": "stripe",
+      "material": "stripe"
+    }
+  ]
+}

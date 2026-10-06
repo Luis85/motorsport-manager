@@ -254,6 +254,7 @@ index, searched paths, quality findings). Codes are stable identifiers.
 | Concurrency | `REVISION_CONFLICT`, `STATE_CONFLICT`, `GUARD_MISMATCH`, `PROJECT_LOCKED`, `PROJECT_NOT_FOUND` |
 | Rigs | `RIG_INVALID`, `RIG_BINDING`, `RIG_MISSING`, `RIG_NESTED`, `RIG_EMPTY`, `RIG_CHILDREN`, `RIG_BUDGET` |
 | Outputs | `EXPORT_INVALID`, `QUALITY_GATE_FAILED`, `INVALID_CAMERA`, `RENDER_FAILED` |
+| Littlewild exchange | `LITTLEWILD_EXPORT`, `LITTLEWILD_IMPORT`, `LITTLEWILD_BUDGET` (baked mesh over its vertex limit), `LITTLEWILD_STALE` (`sync --check` found an out-of-date definition) |
 | Runtime | `PLAYWRIGHT_UNAVAILABLE` (Playwright not resolvable), `BROWSER_UNAVAILABLE` (Chromium did not launch), `BUILD_REQUIRED` (packaged asset missing), `INTERNAL_ERROR` |
 
 Never delete another process's `.forge.lock` to clear `PROJECT_LOCKED`; wait and retry.
@@ -279,7 +280,7 @@ for the installed build, and `scene-forge help <command path>` as text.
 |---|---|
 | `catalog` | none. Commands, geometry types, operations, conventions, limits, unsupported features |
 | `describe [path...]` | none. Arguments, flags, defaults and choices of a command subtree |
-| `schema` | `--kind <name>` (default `scene`; one of `scene`, `model`, `project`, `batch`, `node`, `geometry`, `material`, `composition`, `model-bundle`, `scene-bundle`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `pattern`, `rig`), `--raw` (bare JSON Schema) |
+| `schema` | `--kind <name>` (default `scene`; one of `scene`, `model`, `project`, `batch`, `node`, `geometry`, `material`, `composition`, `model-bundle`, `scene-bundle`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `pattern`, `rig`, `littlewild-export`), `--raw` (bare JSON Schema) |
 | `help [command]` | text help |
 
 ```sh
@@ -530,6 +531,28 @@ scene-forge scene unpack courtyard --file courtyard.scene-bundle.json
 scene-forge example create animationLab motion
 ```
 
+### Littlewild / Wildlands exchange
+
+These commands publish Scene Forge models as asset definitions of the
+[Wildlands](../../source/wildlands/DOCUMENTATION.md) engine and import existing
+definitions back as editable models. The task guide
+[Author Littlewild assets in Scene Forge](../how-to/scene-forge-littlewild-assets.md)
+covers rig roles, mesh budgets and manifests.
+
+| Command | Options |
+|---|---|
+| `littlewild sync` | `--file <path>` (required `littlewild-export` manifest), `--asset <id>`, `--dry-run`, `--check` (fail with `LITTLEWILD_STALE`, never write) |
+| `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets`, `--variant <name>`, `--name <name>`, `--parameters <json>`, `--materials <json>`, `--dry-run` |
+| `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace` |
+
+A manifest's `target` is relative to the manifest file; `--file` and
+`--definition` are relative to the working directory. From the repository root,
+confirm that the Pocket Pet definitions match their recipes:
+
+```sh
+scene-forge -p source/scene-forge/examples/pocket-pet littlewild sync --file source/scene-forge/examples/pocket-pet/littlewild.export.json --check
+```
+
 ### Rigs and animation
 
 | Command | Options |
@@ -638,6 +661,7 @@ nest at most 16 levels and must stay within ±1,000,000.
 | `review` | any file for `review --file` | `review.plan.json` in [Rendering](#rendering) |
 | `rig` | any file for `rig bind` | `arm.rig.json` in [Rigs and animation](#rigs-and-animation) |
 | `model-bundle`, `scene-bundle` | written by `model export`, `scene pack`, `example show --raw` | [Bundles and examples](#bundles-and-examples) |
+| `littlewild-export` | any file for `littlewild sync --file` | `littlewild.export.json` in the [Pocket Pet example](../../source/scene-forge/examples/pocket-pet/littlewild.export.json) |
 
 The manifest written by `init garage` after the steps above:
 

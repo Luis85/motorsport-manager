@@ -17,8 +17,13 @@ export function creatureDefinitions(source: string, packages: readonly Definitio
  if (!result.length) throw Error('At least one creature definition is required.');
  return result;
 }
+/** Pocket Pet presentation assets ship as their own bundle; colony scenarios and saves never embed them. */
+export function petAssetDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+ return packages.filter(definition => definition.family === 'pets' && definition.visual).map(definition => definition.visual!)
+  .sort((a, b) => compare(String(a.id), String(b.id)));
+}
 export function assetDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
- const result = packages.flatMap(definition => definition.visual ? [definition.visual] : []);
+ const result = packages.flatMap(definition => definition.visual && definition.family !== 'pets' ? [definition.visual] : []);
  const assets = new Map(result.filter(definition => definition.category === 'actor').map(definition => [definition.id, definition]));
  for (const {creature} of packages) {
   if (!creature) continue;

@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { writeWildlandsBundle } from "./tools/wildlands-bundle.cjs";
-import { creatureDefinitions, assetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
+import { creatureDefinitions, assetDefinitions, petAssetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
 
 import { definitions } from "./tools/definition-source.cjs";
 import { writeContent } from "./tools/bundled-content.cjs";
@@ -69,6 +69,7 @@ function compile(): void {
   fs.copyFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), path.join(GENERATED, "creature-editor-fields.json"));
   fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT, packages)));
   fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT, packages)));
+  fs.writeFileSync(path.join(GENERATED, "pet-asset-definitions.json"), JSON.stringify(petAssetDefinitions(ROOT, packages)));
 }
 
 function json(file: string): unknown {
@@ -84,6 +85,8 @@ function inlineData(packPath: string | null): string {
     ["LWDefaultBalancing", balance],
     ["LWDefaultLibrary", balance.libraries.base],
     ["LWRTSDefinitions", json("rts-demo.json")],
+    ["LWPetDefinitions", json("pet-demo.json")],
+    ["LWPetAssetDefinitions", JSON.parse(fs.readFileSync(path.join(GENERATED, "pet-asset-definitions.json"), "utf8"))],
     ["LWContentSchema", json("library.schema.json")],
     ["LWInteriorDefinitions", balance.interiors],
     ["LWInteractionLibrary", balance.interactions],

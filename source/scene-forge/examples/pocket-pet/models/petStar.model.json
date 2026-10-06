@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petStar",
+  "category": "Pocket pet props",
+  "name": "Sparkle star",
+  "parameters": {},
+  "geometries": {
+    "star": {
+      "type": "extrude",
+      "points": [
+        [
+          0.0,
+          0.11
+        ],
+        [
+          -0.0265,
+          0.0364
+        ],
+        [
+          -0.1046,
+          0.034
+        ],
+        [
+          -0.0428,
+          -0.0139
+        ],
+        [
+          -0.0647,
+          -0.089
+        ],
+        [
+          -0.0,
+          -0.045
+        ],
+        [
+          0.0647,
+          -0.089
+        ],
+        [
+          0.0428,
+          -0.0139
+        ],
+        [
+          0.1046,
+          0.034
+        ],
+        [
+          0.0265,
+          0.0364
+        ]
+      ],
+      "depth": 0.03,
+      "bevel": 0.01,
+      "bevelSegments": 3
+    }
+  },
+  "materials": {
+    "star": {
+      "color": "#ffd166",
+      "metalness": 0,
+      "roughness": 0.3,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffb703",
+      "emissiveIntensity": 0.6
+    }
+  },
+  "nodes": [
+    {
+      "id": "star",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.12,
+          -0.015
+        ]
+      },
+      "geometry": "star",
+      "material": "star"
+    }
+  ]
+}

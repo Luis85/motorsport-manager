@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petBed",
+  "category": "Pocket pet props",
+  "name": "Cushion bed",
+  "parameters": {},
+  "geometries": {
+    "rim": {
+      "type": "torus",
+      "radius": 0.38,
+      "tube": 0.12,
+      "segments": 36
+    },
+    "pad": {
+      "type": "cylinder",
+      "radiusTop": 0.4,
+      "radiusBottom": 0.4,
+      "height": 0.08,
+      "segments": 32
+    },
+    "button": {
+      "type": "sphere",
+      "radius": 0.025,
+      "segments": 8
+    }
+  },
+  "materials": {
+    "rim": {
+      "color": "#b8a6e8",
+      "metalness": 0,
+      "roughness": 0.8,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pad": {
+      "color": "#e2d9ff",
+      "metalness": 0,
+      "roughness": 0.85,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "button": {
+      "color": "#8e7cc3",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "pad",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.05,
+          0
+        ]
+      },
+      "geometry": "pad",
+      "material": "pad"
+    },
+    {
+      "id": "rim",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.1,
+          0
+        ],
+        "rotation": [
+          90,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          0.75
+        ]
+      },
+      "geometry": "rim",
+      "material": "rim"
+    },
+    {
+      "id": "buttons",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.095,
+          0
+        ]
+      },
+      "geometry": "button",
+      "material": "button",
+      "pattern": {
+        "type": "radial",
+        "count": 4,
+        "radius": 0.16
+      }
+    }
+  ]
+}

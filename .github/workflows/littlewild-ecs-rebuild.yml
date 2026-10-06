@@ -58,7 +58,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/source/wildlands/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1740'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1778'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -257,7 +257,45 @@ jobs:
               {"suite":"definition-source","name":"Inline gameplay tables are rejected as competing definitions"},
               {"suite":"definition-source","name":"Wrong family, facet identity, typo, missing file and empty definitions fail discovery"},
               {"suite":"definition-source","name":"A gameplay definition without its required visual model fails before build publication"},
-              {"suite":"definition-source","name":"Compatibility exports reject source mirrors and default scenario overrides"}
+              {"suite":"definition-source","name":"Compatibility exports reject source mirrors and default scenario overrides"},
+              {"suite":"assets","name":"Pet assets accept bounded baked meshes and per-model rigs"},
+              {"suite":"assets","name":"Generic asset renderer builds baked meshes once per immutable definition"},
+              {"suite":"pet-catalog","name":"Default catalog is valid, frozen and detached from its source JSON"},
+              {"suite":"pet-catalog","name":"Every species, stage model and scene prop resolves to a bundled Scene Forge pet asset"},
+              {"suite":"pet-catalog","name":"Validation rejects malformed, unknown and executable-shaped data before use"},
+              {"suite":"pet-catalog","name":"Validation returns an independent frozen copy"},
+              {"suite":"pet-runtime","name":"An egg hatches on schedule and cuddles warm it sooner"},
+              {"suite":"pet-runtime","name":"Eggs only accept stage-allowed care and never decay"},
+              {"suite":"pet-runtime","name":"Needs decay with the stage factor and feeding applies catalog effects when the action finishes"},
+              {"suite":"pet-runtime","name":"Digestion leaves a mess that lowers cleanliness until cleaned"},
+              {"suite":"pet-runtime","name":"Too many treats in an hour cause sickness that only medicine cures"},
+              {"suite":"pet-runtime","name":"Lights off puts the pet to sleep; it wakes rested and a lit room costs happiness"},
+              {"suite":"pet-runtime","name":"Neglect becomes care mistakes, health loss and finally departure; adopting starts a new egg"},
+              {"suite":"pet-runtime","name":"Care quality selects the adult form: attentive grows Bloom, a casual caretaker who skips bedtime grows Bramble"},
+              {"suite":"pet-runtime","name":"Commands are validated atomically and queries never advance time"},
+              {"suite":"pet-runtime","name":"Checkpoints restore exactly and continue deterministically"},
+              {"suite":"pet-runtime","name":"Tools discover bounded operations and reject unbounded experiments"},
+              {"suite":"pet-application","name":"Navigation and detached queries never tick the session"},
+              {"suite":"pet-application","name":"Frames advance fixed ticks with speed, bounded catch-up and pause"},
+              {"suite":"pet-application","name":"Restart chooses a species and resets the clock"},
+              {"suite":"pet-application","name":"Replacement admission is atomic for checkpoints and catalogs"},
+              {"suite":"pet-browser","name":"Pet demo is discoverable and runs only its own application clock"},
+              {"suite":"pet-browser","name":"The 3D room renders Scene Forge pet assets through WebGL"},
+              {"suite":"pet-browser","name":"Disabled care actions stay focusable and explain why"},
+              {"suite":"pet-browser","name":"Keyboard care intents hatch, feed and evolve the pet over application ticks"},
+              {"suite":"pet-browser","name":"Checkpoints export and restore through the application boundary"},
+              {"suite":"pet-browser","name":"Starting over asks first, starts on Cancel and restores focus"},
+              {"suite":"pet-browser","name":"Returning to the colony restores focus and stops the pet clock"},
+              {"suite":"pet-browser","name":"Self-contained pet loading and interaction generate no script errors or network requests"},
+              {"suite":"pet-wardrobe","name":"Care and growth earn catalog coins only when actions finish"},
+              {"suite":"pet-wardrobe","name":"Coin purchases debit exactly once and explain unaffordable offers"},
+              {"suite":"pet-wardrobe","name":"Owned items equip into their socket slot and one item per slot is worn"},
+              {"suite":"pet-wardrobe","name":"Skins change only material colours, respect species limits and start from the free default"},
+              {"suite":"pet-wardrobe","name":"Premium offers unlock only through store entitlements, never coins"},
+              {"suite":"pet-wardrobe","name":"The wardrobe belongs to the owner: adoption, restart and checkpoints keep it"},
+              {"suite":"pet-wardrobe","name":"Forged wardrobes and malformed shop catalogs are rejected before installation"},
+              {"suite":"pet-browser","name":"Earned coins buy an accessory that the 3D pet wears on its socket"},
+              {"suite":"pet-browser","name":"Premium unlocks confirm first, start on Cancel and grant only adapter-reported entitlements"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -304,8 +342,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 92 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The complete 92-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 97 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 97-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -349,7 +387,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 92-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 97-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE

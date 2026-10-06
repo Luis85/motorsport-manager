@@ -112,7 +112,7 @@ declare namespace LittlewildDeveloper {
   interactions():readonly Document[];validateInteraction(input:unknown):Validation;validateInteractionLibrary(input:unknown):Validation;
   creatures():readonly Document[];validateCreature(input:unknown):Validation;
  }
- type AssetCategory='actor'|'building'|'item';
+ type AssetCategory='actor'|'building'|'item'|'pet';
  interface AssetSummary {readonly category:AssetCategory;readonly id:string;readonly name:string;readonly models:readonly string[];}
  interface AssetApi {
   list(category?:AssetCategory):readonly AssetSummary[];

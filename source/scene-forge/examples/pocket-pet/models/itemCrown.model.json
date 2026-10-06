@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "itemCrown",
+  "category": "Pocket pet accessories",
+  "name": "Golden crown",
+  "parameters": {},
+  "geometries": {
+    "ring": {
+      "type": "cylinder",
+      "radiusTop": 0.085,
+      "radiusBottom": 0.08,
+      "height": 0.045,
+      "segments": 28,
+      "openEnded": true
+    },
+    "spike": {
+      "type": "cone",
+      "radius": 0.022,
+      "height": 0.06,
+      "segments": 8
+    },
+    "gem": {
+      "type": "sphere",
+      "radius": 0.014,
+      "segments": 8
+    }
+  },
+  "materials": {
+    "gold": {
+      "color": "#f2c14e",
+      "metalness": 0.75,
+      "roughness": 0.25,
+      "opacity": 1,
+      "doubleSided": true,
+      "flatShading": false,
+      "emissive": "#a8740f",
+      "emissiveIntensity": 0.25
+    },
+    "gem": {
+      "color": "#7b2cbf",
+      "metalness": 0,
+      "roughness": 0.15,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#c77dff",
+      "emissiveIntensity": 0.5
+    }
+  },
+  "nodes": [
+    {
+      "id": "ring",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.022,
+          0
+        ]
+      },
+      "geometry": "ring",
+      "material": "gold"
+    },
+    {
+      "id": "spikes",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0
+        ]
+      },
+      "geometry": "spike",
+      "material": "gold",
+      "pattern": {
+        "type": "radial",
+        "count": 5,
+        "radius": 0.075
+      }
+    },
+    {
+      "id": "gems",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.024,
+          0
+        ]
+      },
+      "geometry": "gem",
+      "material": "gem",
+      "pattern": {
+        "type": "radial",
+        "count": 5,
+        "radius": 0.086,
+        "startAngle": 36
+      }
+    }
+  ]
+}
