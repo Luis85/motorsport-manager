@@ -1,0 +1,51 @@
+/* Pocket Pet shares the workspace paper/ink tokens; the device frame is the only pet-specific chrome. */
+#pet-demo{--pet-shell:#f6c8d4;--pet-shell-dark:#d995a8;--pet-accent:#7cc47a;background:var(--paper,#faf8ef);color:var(--ink,#294b3b);padding:18px;max-width:1500px;margin:auto}
+.pet-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.pet-header h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin:2px 0}
+.pet-subtitle{margin:0;color:var(--muted,#5d7366)}
+.pet-time{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pet-clock{font-variant-numeric:tabular-nums;padding:8px 12px;border-radius:999px;background:var(--card,#fffdf6);border:1px solid var(--line,#cfd8c4)}
+#pet-demo button,#pet-demo select,#pet-demo input{font:inherit;min-height:44px;min-width:44px;border:1px solid var(--line,#cfd8c4);border-radius:10px;background:var(--card,#fffdf6);padding:8px 12px;color:inherit}
+#pet-demo button{cursor:pointer}
+#pet-demo button:hover:not([aria-disabled=true]){background:var(--green-light,#e6ecd9);border-color:var(--green,#5f8f63)}
+#pet-demo :focus-visible{outline:3px solid var(--amber,#d79b2c);outline-offset:2px}
+.pet-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.pet-device{position:relative;border-radius:46% 46% 36px 36px/22% 22% 36px 36px;padding:42px 26px 26px;background:radial-gradient(circle at 30% 20%,#fff3f7,var(--pet-shell) 55%,var(--pet-shell-dark));box-shadow:inset 0 -10px 24px #0001,0 10px 30px #6b3b4a33}
+.pet-view{display:block;width:100%;height:min(62vh,640px);min-height:340px;border-radius:24px;background:#1b2233;touch-action:none;cursor:grab;box-shadow:inset 0 0 0 6px #00000014}
+.pet-emote{position:absolute;left:26px;top:42px;pointer-events:none;font-size:22px;padding:4px 10px;border-radius:999px;background:#fffdf6e6;box-shadow:0 2px 8px #0002;white-space:nowrap}
+.pet-emote[hidden]{display:none}
+.pet-webgl{position:absolute;inset:42px 26px 26px;display:grid;place-items:center;text-align:center;padding:24px;color:#fff;margin:0}
+.pet-webgl[hidden]{display:none}
+.pet-view-tools{position:absolute;right:38px;bottom:38px;display:flex;gap:6px}
+.pet-view-tools button{background:#fffdf6d9!important}
+.pet-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:16px}
+.pet-actions button{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 8px;text-align:left;min-height:56px}
+.pet-actions .pet-icon{font-size:22px;grid-row:span 2}
+.pet-actions .pet-label{font-weight:600}
+.pet-actions [aria-disabled=true]{opacity:.72;cursor:not-allowed;background:#f1eee4}
+.pet-disabled-reason{font-size:12px;color:var(--muted,#5d7366);line-height:1.25}
+.pet-status{min-height:24px;margin:12px 2px}
+.pet-status.pet-error{color:#843d28}
+.pet-panel{background:var(--card,#fffdf6);border:1px solid var(--line,#cfd8c4);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.pet-need{display:grid;grid-template-columns:96px 1fr 34px;align-items:center;gap:8px}
+.pet-need meter{width:100%;height:16px}
+.pet-need b{font-variant-numeric:tabular-nums;text-align:right}
+.pet-warn span{color:#9b3a24;font-weight:600}
+.pet-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.pet-facts div{background:#f5f2e8;border-radius:8px;padding:6px 8px}
+.pet-facts dt{font-size:12px;color:var(--muted,#5d7366)}
+.pet-facts dd{margin:0;font-weight:600}
+.pet-alerts{margin:0;padding:8px 8px 8px 28px;border-radius:8px;background:#fff1e6;color:#7a3a1d}
+.pet-alerts[hidden]{display:none}
+.pet-adopt{border:2px dashed var(--pet-shell-dark);border-radius:12px;padding:10px;display:grid;gap:8px}
+.pet-adopt[hidden]{display:none}
+.pet-adopt h2{font-size:17px;margin:0}
+.pet-rename,.pet-restart{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:8px}
+.pet-confirm{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff1e6;border-radius:8px;padding:8px}
+.pet-confirm[hidden]{display:none}
+.pet-confirm p{flex-basis:100%;margin:0}
+#pet-demo .pet-danger{border-color:#b45a3c;color:#843d28}
+.pet-log{margin:0;padding:0;list-style:none;display:grid;gap:4px;max-height:260px;overflow:auto}
+.pet-log time{color:var(--muted,#5d7366);font-variant-numeric:tabular-nums;margin-right:4px}
+.pet-features{padding-left:18px;margin:6px 0}
+@media(max-width:980px){.pet-layout{grid-template-columns:1fr}.pet-device{padding:30px 14px 16px;border-radius:32px}.pet-view{height:52vh;min-height:300px}.pet-view-tools{right:22px;bottom:24px}}

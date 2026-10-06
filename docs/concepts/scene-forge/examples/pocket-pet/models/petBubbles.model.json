@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petBubbles",
+  "category": "Pocket pet props",
+  "name": "Bath bubbles",
+  "parameters": {},
+  "geometries": {
+    "bubble": {
+      "type": "sphere",
+      "radius": 0.07,
+      "segments": 16
+    }
+  },
+  "materials": {
+    "bubble": {
+      "color": "#d4f1ff",
+      "metalness": 0,
+      "roughness": 0.1,
+      "opacity": 0.5,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#bfe8ff",
+      "emissiveIntensity": 0.25
+    }
+  },
+  "nodes": [
+    {
+      "id": "bubbleA",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0
+        ]
+      },
+      "geometry": "bubble",
+      "material": "bubble"
+    },
+    {
+      "id": "bubbleB",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.09,
+          0.12,
+          0.03
+        ],
+        "scale": [
+          0.7,
+          0.7,
+          0.7
+        ]
+      },
+      "geometry": "bubble",
+      "material": "bubble"
+    },
+    {
+      "id": "bubbleC",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.08,
+          0.15,
+          -0.02
+        ],
+        "scale": [
+          0.55,
+          0.55,
+          0.55
+        ]
+      },
+      "geometry": "bubble",
+      "material": "bubble"
+    },
+    {
+      "id": "bubbleD",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0.02,
+          0.21,
+          0.04
+        ],
+        "scale": [
+          0.4,
+          0.4,
+          0.4
+        ]
+      },
+      "geometry": "bubble",
+      "material": "bubble"
+    },
+    {
+      "id": "bubbleE",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          -0.04,
+          0.05,
+          0.09
+        ],
+        "scale": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "geometry": "bubble",
+      "material": "bubble"
+    }
+  ]
+}

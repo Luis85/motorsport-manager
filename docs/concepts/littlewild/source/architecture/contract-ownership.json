@@ -213,6 +213,10 @@
     {
       "path": "skill-tree-contracts.d.ts",
       "owner": "economy-progression"
+    },
+    {
+      "path": "pet-contracts.d.ts",
+      "owner": "pet"
     }
   ]
 }

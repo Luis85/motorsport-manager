@@ -325,7 +325,21 @@
     "source/tools/definition-source.cts",
     "source/tools/bundled-content.cts",
     "source/tools/bundled-assets.cts",
-    "source/tools/bundled-library-schema.cts"
+    "source/tools/bundled-library-schema.cts",
+    "source/pet-contracts.d.ts",
+    "source/pet-catalog.ts",
+    "source/pet-systems.ts",
+    "source/pet-session.ts",
+    "source/pet-application.ts",
+    "source/pet-renderer.ts",
+    "source/pet-demo.ts",
+    "source/pet-host.ts",
+    "source/test-pet-catalog.cts",
+    "source/test-pet-runtime.cts",
+    "source/test-pet-application.cts",
+    "source/verification/pet-browser.ts",
+    "source/tools/pet-cli.cts",
+    "source/pet-tools.ts"
   ],
   "include": []
 }

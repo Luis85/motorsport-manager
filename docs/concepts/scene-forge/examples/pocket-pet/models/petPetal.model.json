@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petPetal",
+  "category": "Pocket pet parts",
+  "name": "Pet petal",
+  "parameters": {
+    "size": {
+      "default": 1,
+      "min": 0.3,
+      "max": 3,
+      "description": "Petal scale"
+    }
+  },
+  "geometries": {
+    "petal": {
+      "type": "sphere",
+      "radius": 0.05,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "petal": {
+      "color": "#ffd1e0",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "petal",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.05
+            ]
+          },
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          18
+        ],
+        "scale": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              1.1
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.35
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.75
+            ]
+          }
+        ]
+      },
+      "geometry": "petal",
+      "material": "petal"
+    }
+  ]
+}

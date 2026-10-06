@@ -1,7 +1,7 @@
 /** Compiled validator capabilities and plain-data ownership checks, shared by policy/tests. */
 export const validatorRoles=Object.freeze({
  definitionSource:'tools/definition-source.cts:definitions',balancingSource:'tools/bundled-content.cts:balancingDocument',defaultScenarioSource:'tools/bundled-content.cts:defaultScenario',
- skillTrees:'skill-trees.ts:validate',rts:'rts-catalog.ts:validate',balancing:'balancing-tools.ts:validate',balancingInventory:'balancing-inventory.ts:validate',
+ skillTrees:'skill-trees.ts:validate',rts:'rts-catalog.ts:validate',pet:'pet-catalog.ts:validate',balancing:'balancing-tools.ts:validate',balancingInventory:'balancing-inventory.ts:validate',
  base:'content-runtime.ts:Registry.prepare',adventure:'adventure-content.ts:validate',world:'world-content.ts:validate',
  growth:'growth-content.ts:validate',scenario:'scenario-runtime.ts:validate',simulation:'simulation-profile.ts:validate',
  actorRules:'actor-ecs.ts:validateRules',economyRules:'economy-ecs.ts:validateRules',

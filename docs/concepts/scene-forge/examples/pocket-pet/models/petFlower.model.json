@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petFlower",
+  "category": "Pocket pet parts",
+  "name": "Pet flower",
+  "parameters": {
+    "petals": {
+      "default": 6,
+      "min": 3,
+      "max": 12,
+      "integer": true,
+      "description": "Petal count"
+    },
+    "size": {
+      "default": 1,
+      "min": 0.3,
+      "max": 3,
+      "description": "Flower scale"
+    }
+  },
+  "geometries": {
+    "core": {
+      "type": "sphere",
+      "radius": 0.035,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "petal": {
+      "color": "#ffd1e0",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "pollen": {
+      "color": "#ffd36b",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffb703",
+      "emissiveIntensity": 0.25
+    }
+  },
+  "nodes": [
+    {
+      "id": "petals",
+      "type": "model",
+      "pattern": {
+        "type": "radial",
+        "count": {
+          "$param": "petals"
+        },
+        "radius": 0
+      },
+      "model": "petPetal",
+      "parameters": {
+        "size": {
+          "$param": "size"
+        }
+      },
+      "materialOverrides": {
+        "petal": "petal"
+      }
+    },
+    {
+      "id": "core",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.015
+            ]
+          },
+          0
+        ],
+        "scale": [
+          {
+            "$param": "size"
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.7
+            ]
+          },
+          {
+            "$param": "size"
+          }
+        ]
+      },
+      "geometry": "core",
+      "material": "pollen"
+    }
+  ]
+}

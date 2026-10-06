@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petBaby",
+  "category": "Pocket pet",
+  "name": "Pet baby",
+  "description": "Round hatchling with oversized eyes and a two-leaf sprout.",
+  "parameters": {},
+  "geometries": {
+    "body": {
+      "type": "sphere",
+      "radius": 0.26,
+      "segments": 32
+    },
+    "belly": {
+      "type": "sphere",
+      "radius": 0.17,
+      "segments": 20
+    },
+    "foot": {
+      "type": "sphere",
+      "radius": 0.065,
+      "segments": 14
+    },
+    "nub": {
+      "type": "sphere",
+      "radius": 0.06,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "skin": {
+      "color": "#f6b8c8",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "belly": {
+      "color": "#fde6ec",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "foot": {
+      "color": "#ee9fb5",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "ink": {
+      "color": "#2a2433",
+      "metalness": 0,
+      "roughness": 0.25,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "shine": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.2,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false,
+      "emissive": "#ffffff",
+      "emissiveIntensity": 0.6
+    },
+    "blush": {
+      "color": "#ff8fa8",
+      "metalness": 0,
+      "roughness": 0.7,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "leaf": {
+      "color": "#7cc47a",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "stem": {
+      "color": "#4f9a5a",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "bodyRoot",
+      "type": "group",
+      "tags": [
+        "rig:body"
+      ]
+    },
+    {
+      "id": "bodyBall",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.24,
+          0
+        ],
+        "scale": [
+          1,
+          0.88,
+          0.95
+        ]
+      },
+      "geometry": "body",
+      "material": "skin"
+    },
+    {
+      "id": "belly",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.135,
+          0.158
+        ],
+        "scale": [
+          0.82,
+          0.62,
+          0.45
+        ]
+      },
+      "geometry": "belly",
+      "material": "belly"
+    },
+    {
+      "id": "armL",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          -0.245,
+          0.2,
+          0.04
+        ],
+        "rotation": [
+          0,
+          0,
+          20
+        ],
+        "scale": [
+          0.6,
+          0.85,
+          0.7
+        ]
+      },
+      "tags": [
+        "rig:arms"
+      ],
+      "geometry": "nub",
+      "material": "skin"
+    },
+    {
+      "id": "armR",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0.245,
+          0.2,
+          0.04
+        ],
+        "rotation": [
+          0,
+          0,
+          -20
+        ],
+        "scale": [
+          0.6,
+          0.85,
+          0.7
+        ]
+      },
+      "tags": [
+        "rig:arms"
+      ],
+      "geometry": "nub",
+      "material": "skin"
+    },
+    {
+      "id": "footL",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          -0.115,
+          0.03,
+          0.07
+        ],
+        "scale": [
+          1,
+          0.5,
+          1.25
+        ]
+      },
+      "tags": [
+        "rig:feet"
+      ],
+      "geometry": "foot",
+      "material": "foot"
+    },
+    {
+      "id": "footR",
+      "type": "mesh",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0.115,
+          0.03,
+          0.07
+        ],
+        "scale": [
+          1,
+          0.5,
+          1.25
+        ]
+      },
+      "tags": [
+        "rig:feet"
+      ],
+      "geometry": "foot",
+      "material": "foot"
+    },
+    {
+      "id": "head",
+      "type": "group",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.26,
+          0
+        ]
+      },
+      "tags": [
+        "rig:head"
+      ]
+    },
+    {
+      "id": "face",
+      "type": "model",
+      "parent": "head",
+      "model": "petFace",
+      "parameters": {
+        "spread": 0.085,
+        "depth": 0.212,
+        "eyeSize": 1.15
+      },
+      "materialOverrides": {
+        "ink": "ink",
+        "shine": "shine",
+        "blush": "blush"
+      }
+    },
+    {
+      "id": "sprout",
+      "type": "model",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.2,
+          0
+        ]
+      },
+      "tags": [
+        "rig:sprout"
+      ],
+      "model": "petSprout",
+      "parameters": {
+        "height": 0.09,
+        "leaves": 2
+      },
+      "materialOverrides": {
+        "leaf": "leaf",
+        "stem": "stem"
+      }
+    }
+  ]
+}

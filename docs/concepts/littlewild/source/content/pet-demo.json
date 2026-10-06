@@ -1,0 +1,75 @@
+{
+  "format": "wildlands-pet",
+  "schemaVersion": 1,
+  "id": "pocket-pet",
+  "name": "Pocket Pet",
+  "description": "An original virtual-pet demonstration on the shared Wildlands ECS. Hatch an egg, keep its needs balanced and discover which adult form your care produces.",
+  "rules": {
+    "minutesPerSecond": 2,
+    "startHour": 8,
+    "startWeight": 5,
+    "minWeight": 3,
+    "maxWeight": 40,
+    "messHygienePerHour": 14,
+    "maxMesses": 4,
+    "sleepEnergyPerHour": 70,
+    "wakeEnergy": 100,
+    "snackLimit": 3,
+    "snackWindowMinutes": 60,
+    "sickHygieneBelow": 15,
+    "sickAfterMinutes": 45,
+    "healthLossPerHour": 18,
+    "healthGainPerHour": 6,
+    "sickHealthLossPerHour": 10,
+    "mistakeAfterMinutes": 30,
+    "lightsOnSleepJoyPerHour": 10,
+    "eggWarmMinutes": 4
+  },
+  "scene": {
+    "room": "pet-room",
+    "bed": "pet-bed",
+    "mess": "pet-mess",
+    "sparkle": "pet-star",
+    "pet": { "x": 0.15, "z": 0.25 },
+    "bedSpot": { "x": -1.25, "z": -0.9 },
+    "messSpots": [
+      { "x": 0.95, "z": 0.6 },
+      { "x": -0.7, "z": 0.85 },
+      { "x": 1.2, "z": -0.45 },
+      { "x": -0.25, "z": 1.35 }
+    ]
+  },
+  "needs": [
+    { "id": "hunger", "name": "Fullness", "description": "Meals fill it; it empties steadily while awake.", "start": 70, "decayPerHour": 30, "sleepFactor": 0.35, "warnBelow": 30 },
+    { "id": "joy", "name": "Happiness", "description": "Play, cuddles and treats raise it.", "start": 70, "decayPerHour": 20, "sleepFactor": 0.2, "warnBelow": 30 },
+    { "id": "energy", "name": "Energy", "description": "Spent while awake and playing; restored by sleep with the lights off.", "start": 80, "decayPerHour": 14, "sleepFactor": 0, "warnBelow": 20 },
+    { "id": "hygiene", "name": "Cleanliness", "description": "Drops over time and faster beside messes. Clean up to restore it.", "start": 90, "decayPerHour": 8, "sleepFactor": 0.5, "warnBelow": 30 }
+  ],
+  "species": [
+    { "id": "mochi", "name": "Mochi", "description": "A rosy sprout-creature that loves snacks and slow afternoons.", "asset": "mochi" },
+    { "id": "pebble", "name": "Pebble", "description": "A cool-blue sprout-creature with a curious streak.", "asset": "pebble" }
+  ],
+  "stages": [
+    { "id": "egg", "name": "Egg", "minutes": 20, "decayFactor": 0, "models": [
+      { "id": "egg", "name": "Egg", "model": "egg", "maxMistakes": 999, "description": "Warm it with cuddles to hatch sooner." }
+    ] },
+    { "id": "baby", "name": "Baby", "minutes": 240, "decayFactor": 1.25, "models": [
+      { "id": "baby", "name": "Hatchling", "model": "baby", "maxMistakes": 999, "description": "Needs frequent meals and naps." }
+    ] },
+    { "id": "teen", "name": "Teen", "minutes": 600, "decayFactor": 1, "models": [
+      { "id": "teen", "name": "Sprout", "model": "teen", "maxMistakes": 999, "description": "Playful and curious; care quality now shapes the adult." }
+    ] },
+    { "id": "adult", "name": "Adult", "minutes": 0, "decayFactor": 0.85, "models": [
+      { "id": "bloom", "name": "Bloom", "model": "adult-bloom", "maxMistakes": 1, "description": "Raised with attentive care; wears a blossom crown." },
+      { "id": "bramble", "name": "Bramble", "model": "adult-bramble", "maxMistakes": 999, "description": "Raised with several care mistakes; thorny but loyal." }
+    ] }
+  ],
+  "actions": [
+    { "id": "meal", "name": "Meal", "description": "A filling bowl of rice and greens.", "kind": "feed", "prop": "pet-bowl", "minutes": 10, "effects": { "hunger": 40, "joy": 4 }, "weight": 1, "digestMinutes": 50, "stages": ["baby", "teen", "adult"] },
+    { "id": "snack", "name": "Snack", "description": "A cupcake treat. Too many in an hour cause a tummy ache.", "kind": "treat", "prop": "pet-snack", "minutes": 5, "effects": { "hunger": 12, "joy": 18 }, "weight": 2, "digestMinutes": 70, "stages": ["baby", "teen", "adult"] },
+    { "id": "play", "name": "Play ball", "description": "Bounce the ball together.", "kind": "play", "prop": "pet-ball", "minutes": 15, "effects": { "joy": 28, "energy": -14, "hunger": -6 }, "weight": -1, "digestMinutes": 0, "stages": ["baby", "teen", "adult"] },
+    { "id": "clean", "name": "Clean up", "description": "Bubbles wash the pet and remove every mess.", "kind": "clean", "prop": "pet-bubbles", "minutes": 6, "effects": { "hygiene": 100 }, "weight": 0, "digestMinutes": 0, "stages": ["egg", "baby", "teen", "adult"] },
+    { "id": "cuddle", "name": "Cuddle", "description": "A gentle hug. Warming the egg helps it hatch sooner.", "kind": "cuddle", "prop": "pet-heart", "minutes": 3, "effects": { "joy": 10 }, "weight": 0, "digestMinutes": 0, "stages": ["egg", "baby", "teen", "adult"] },
+    { "id": "medicine", "name": "Medicine", "description": "Cures sickness and restores some health.", "kind": "medicine", "prop": "pet-medicine", "minutes": 5, "effects": { "health": 25, "joy": -5 }, "weight": 0, "digestMinutes": 0, "stages": ["baby", "teen", "adult"] }
+  ]
+}

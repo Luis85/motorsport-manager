@@ -1,6 +1,8 @@
 import { Option } from 'commander';
 import { jsonSchema, schemaKinds, viewNames, expressionOperators } from '../domain/schema.js';
 import { exportFormats } from '../infra/export.js';
+import { littlewildFamilies } from '../domain/schema.js';
+import { littlewildLimits, littlewildPetRoles } from '../application/littlewild.js';
 import { VERSION } from '../version.js';
 import type { CommandContext } from './context.js';
 export function registerDiscoveryCommands(c: CommandContext) {
@@ -57,6 +59,18 @@ export function registerDiscoveryCommands(c: CommandContext) {
           interpolation: 'quaternion linear',
           bindings: ['nearest joint', 'two-joint blend', 'explicit mesh to joint'],
           export: 'glTF skins and rotation clips',
+        },
+        littlewild: {
+          commands: ['littlewild sync', 'littlewild export', 'littlewild import'],
+          manifest: 'littlewild-export (schema --kind littlewild-export)',
+          families: Object.keys(littlewildFamilies),
+          output: '<target>/<family>/<id>/definition.json visual facet; other facets are preserved',
+          geometry:
+            'boxes and unchanged lw-<primitive> geometries stay native; other meshes are baked',
+          rig: 'pets only: tag nodes rig:<role>',
+          rigRoles: littlewildPetRoles,
+          limits: littlewildLimits,
+          check: 'littlewild sync --check fails when a definition is stale',
         },
         lights: ['point', 'spot', 'directional'],
         materialShading: ['standard', 'unlit'],

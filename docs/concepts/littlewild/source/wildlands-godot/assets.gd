@@ -38,7 +38,11 @@ func _create_node(
 		node = Node3D.new()
 	else:
 		var instance := MeshInstance3D.new()
-		instance.mesh = primitive(str(record.primitive))
+		instance.mesh = (
+			baked(asset, str(record.get("mesh", "")))
+			if record.primitive == "mesh"
+			else primitive(str(record.primitive))
+		)
 		instance.material_override = material(asset, record, overrides)
 		if not record.get("castShadow", true):
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -133,6 +137,37 @@ func primitive(kind: String) -> Mesh:
 			mesh = sphere
 	meshes[kind] = mesh
 	return mesh
+
+
+## Baked meshes keep Three's counter-clockwise triangles; Godot treats clockwise as front.
+func baked(asset: Dictionary, id: String) -> Mesh:
+	var key := str(asset.get("category", "")) + ":" + str(asset.get("id", "")) + "#" + id
+	if meshes.has(key):
+		return meshes[key]
+	var data: Dictionary = asset.get("meshes", {}).get(id, {})
+	var positions: Array = data.get("positions", [])
+	var normals: Array = data.get("normals", [])
+	var vertices := PackedVector3Array()
+	var normal_values := PackedVector3Array()
+	for index in range(0, positions.size(), 3):
+		vertices.append(Vector3(positions[index], positions[index + 1], positions[index + 2]))
+		if normals.size() == positions.size():
+			normal_values.append(Vector3(normals[index], normals[index + 1], normals[index + 2]))
+	var source: Array = data.get("indices", range(vertices.size()))
+	var indices := PackedInt32Array()
+	for index in range(0, source.size() - 2, 3):
+		indices.append_array([int(source[index]), int(source[index + 2]), int(source[index + 1])])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	if normal_values.size() == vertices.size():
+		arrays[Mesh.ARRAY_NORMAL] = normal_values
+	var result := ArrayMesh.new()
+	if not vertices.is_empty():
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	meshes[key] = result
+	return result
 
 
 func _roof() -> ArrayMesh:

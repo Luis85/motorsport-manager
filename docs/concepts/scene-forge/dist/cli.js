@@ -364,6 +364,34 @@ var SceneBundleSchema = z.object({
   scene: SceneSchema,
   models: z.record(Id, ModelSchema)
 }).strict();
+var littlewildFamilies = {
+  items: "item",
+  buildings: "building",
+  creatures: "actor",
+  pets: "pet"
+};
+var LittlewildId = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,60}$/);
+var LittlewildVariantSchema = z.object({
+  model: Id,
+  parameters: z.record(Id, NumberValue).default({}),
+  /** Replace a model material with an inline specification for this variant. */
+  materials: z.record(Id, MaterialSchema).default({})
+}).strict();
+var LittlewildAssetSchema = z.object({
+  id: LittlewildId,
+  family: z.enum(["items", "buildings", "creatures", "pets"]),
+  name: z.string().min(1).max(120),
+  models: z.record(LittlewildId, LittlewildVariantSchema).refine((v) => Object.keys(v).length, {
+    message: "At least one Littlewild model variant is required."
+  }),
+  metadata: z.record(z.string().max(64), z.union([z.number(), z.string().max(120)])).default({})
+}).strict();
+var LittlewildExportSchema = z.object({
+  schemaVersion: z.literal(1),
+  kind: z.literal("littlewild-export"),
+  target: z.string().min(1).max(512),
+  assets: z.array(LittlewildAssetSchema).min(1).max(128)
+}).strict();
 var viewNames = [
   "iso",
   "front",
@@ -486,7 +514,8 @@ var schemas = {
   "camera-snapshot": CameraSnapshotSchema,
   "quality-policy": QualityPolicySchema,
   pattern: PatternSchema,
-  rig: RigSchema
+  rig: RigSchema,
+  "littlewild-export": LittlewildExportSchema
 };
 var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
@@ -612,11 +641,11 @@ function bindRig(root, spec) {
   if (meshes.reduce((sum, mesh) => sum + mesh.geometry.getAttribute("position").count, 0) > 2e5)
     fail("RIG_BUDGET", "A rig supports at most 200,000 skin vertices.");
   const knownPaths = new Set(meshes.map((mesh) => mesh.name.slice(root.name.length + 1)));
-  for (const path9 of Object.keys(spec.bindings))
-    if (!knownPaths.has(path9))
+  for (const path11 of Object.keys(spec.bindings))
+    if (!knownPaths.has(path11))
       fail(
         "RIG_BINDING",
-        `Rig binding ${path9} does not match a mesh path relative to ${root.name}.`
+        `Rig binding ${path11} does not match a mesh path relative to ${root.name}.`
       );
   root.updateWorldMatrix(true, true);
   const inverse = root.matrixWorld.clone().invert();
@@ -1065,10 +1094,10 @@ function createResourcePool(warnings) {
   const materials = /* @__PURE__ */ new Set();
   const geometryPool = /* @__PURE__ */ new Map();
   const materialPool = /* @__PURE__ */ new Map();
-  function scopeResources(scope, path9, overrides = {}) {
+  function scopeResources(scope, path11, overrides = {}) {
     const geometryCache = /* @__PURE__ */ new Map();
     const materialCache = /* @__PURE__ */ new Map();
-    function material(id) {
+    function material2(id) {
       if (Object.hasOwn(overrides, id)) return overrides[id];
       if (materialCache.has(id)) return materialCache.get(id);
       const m = scope.materials[id];
@@ -1082,7 +1111,7 @@ function createResourcePool(warnings) {
         return materialPool.get(key);
       }
       const result = createMaterial(m);
-      result.name = `${path9}/${id}`;
+      result.name = `${path11}/${id}`;
       Object.defineProperty(result, "uuid", { value: uuid(`material/${key}`), writable: true });
       materialPool.set(key, result);
       materialCache.set(id, result);
@@ -1214,7 +1243,7 @@ function createResourcePool(warnings) {
           return fail("UNKNOWN_GEOMETRY", `Unsupported geometry type.`);
       }
       geometries.add(result);
-      result.name = `${path9}/${id}`;
+      result.name = `${path11}/${id}`;
       result.uuid = uuid(`geometry/${key}`);
       if ((g.type === "lathe" || g.type === "capsule") && result.index) {
         const positions = result.getAttribute("position");
@@ -1263,7 +1292,7 @@ function createResourcePool(warnings) {
       geometryPool.set(key, result);
       return result;
     }
-    return { geometry, material };
+    return { geometry, material: material2 };
   }
   return {
     scopeResources,
@@ -1275,7 +1304,7 @@ function createResourcePool(warnings) {
     },
     dispose() {
       geometries.forEach((geometry) => geometry.dispose());
-      materials.forEach((material) => material.dispose());
+      materials.forEach((material2) => material2.dispose());
       geometries.clear();
       materials.clear();
       geometryPool.clear();
@@ -1303,10 +1332,10 @@ function compileScene(document2, models = {}, options = {}) {
     rigs.forEach((rig) => rig.dispose());
     resources.dispose();
   };
-  function buildScope(source, target, path9, parameters, overrides = {}, inheritedSlots = {}) {
+  function buildScope(source, target, path11, parameters, overrides = {}, inheritedSlots = {}) {
     const scope = resolveData(source, parameters);
-    const slots = (id) => [`${path9}/${id}`, ...inheritedSlots[id] ?? []];
-    const { geometry, material } = resources.scopeResources(scope, path9, overrides);
+    const slots = (id) => [`${path11}/${id}`, ...inheritedSlots[id] ?? []];
+    const { geometry, material: material2 } = resources.scopeResources(scope, path11, overrides);
     const objects = /* @__PURE__ */ new Map();
     const make = (node, nodePath) => {
       if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1317,7 +1346,7 @@ function compileScene(document2, models = {}, options = {}) {
         meshCount++;
         if (triangleCount > 2e6)
           fail("SCENE_BUDGET", "Expanded scene exceeds 2,000,000 triangles.");
-        object = new THREE7.Mesh(g, material(node.material));
+        object = new THREE7.Mesh(g, material2(node.material));
         object.castShadow = true;
         object.receiveShadow = true;
       } else if (node.type === "light") {
@@ -1332,7 +1361,7 @@ function compileScene(document2, models = {}, options = {}) {
         if (node.type === "model") {
           const model = models[node.model];
           const replace = Object.fromEntries(
-            Object.entries(node.materialOverrides).map(([from, to]) => [from, material(to)])
+            Object.entries(node.materialOverrides).map(([from, to]) => [from, material2(to)])
           );
           buildScope(
             model,
@@ -1371,7 +1400,7 @@ function compileScene(document2, models = {}, options = {}) {
       return object;
     };
     for (const node of scope.nodes) {
-      const nodePath = `${path9}/${node.id}`;
+      const nodePath = `${path11}/${node.id}`;
       let object;
       if (node.pattern) {
         if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1897,7 +1926,7 @@ function checkGuards(snapshot, options) {
       { expected: options.expectedState, actual: snapshot.stateHash }
     );
 }
-function prepareSceneEdit(snapshot, operations, options, hash) {
+function prepareSceneEdit(snapshot, operations, options, hash2) {
   const ops = operations.map((operation) => parse(OperationSchema, operation));
   const { scene, models } = snapshot;
   checkGuards(snapshot, options);
@@ -1913,8 +1942,8 @@ function prepareSceneEdit(snapshot, operations, options, hash) {
     result: {
       scene: scene.id,
       revision: next.revision,
-      stateHash: options.dryRun ? snapshot.stateHash : hash(next, models),
-      proposedStateHash: hash({ ...next, revision: proposedRevision }, models),
+      stateHash: options.dryRun ? snapshot.stateHash : hash2(next, models),
+      proposedStateHash: hash2({ ...next, revision: proposedRevision }, models),
       proposedRevision,
       changes: sceneChanges(scene, next),
       changed,
@@ -2024,6 +2053,16 @@ async function withLock(root, action) {
 
 // src/infra/project.ts
 var newScene = (id, name = id) => parse(SceneSchema, { schemaVersion: 1, kind: "scene", id, name });
+async function parseFile(schema, root, relative) {
+  const value = await readJson(await inside(root, relative));
+  try {
+    return parse(schema, value);
+  } catch (error) {
+    if (error instanceof ForgeError && error.code === "SCHEMA_INVALID")
+      fail(error.code, `${relative}: ${error.message}`, error.details);
+    throw error;
+  }
+}
 async function readManifest(root) {
   return parse(ProjectSchema, await readJson(path2.join(root, "forge.project.json")));
 }
@@ -2034,12 +2073,12 @@ async function loadUnlocked(root, sceneId) {
     fail("NOT_FOUND", `Scene ${id} is not registered.`, {
       available: Object.keys(manifest.scenes)
     });
-  const scene = parse(SceneSchema, await readJson(await inside(root, manifest.scenes[id])));
+  const scene = await parseFile(SceneSchema, root, manifest.scenes[id]);
   if (scene.id !== id)
     fail("ID_MISMATCH", `Scene file declares ${scene.id}, but is registered as ${id}.`);
   const models = {};
   for (const [mid, file] of Object.entries(manifest.models)) {
-    const model = parse(ModelSchema, await readJson(await inside(root, file)));
+    const model = await parseFile(ModelSchema, root, file);
     if (model.id !== mid)
       fail("ID_MISMATCH", `Model file declares ${model.id}, but is registered as ${mid}.`);
     models[mid] = model;
@@ -2496,7 +2535,7 @@ function registerExampleCommands(c) {
 
 // src/commands/create-cli.ts
 import { Command as Command2, CommanderError as CommanderError2 } from "commander";
-import path8 from "node:path";
+import path10 from "node:path";
 
 // src/version.ts
 var VERSION = "0.6.0";
@@ -2781,6 +2820,259 @@ async function exportScene(document2, models, format, nodeId) {
   }
 }
 
+// src/application/littlewild.ts
+import * as THREE9 from "three";
+var littlewildLimits = {
+  meshVertices: 8192,
+  meshTriangles: 16384,
+  definitionVertices: 4e4
+};
+var littlewildPetRoles = [
+  "body",
+  "head",
+  "eyes",
+  "ears",
+  "tail",
+  "arms",
+  "feet",
+  "mouth",
+  "cheeks",
+  "sprout",
+  "shell"
+];
+function roofGeometry() {
+  const shape = new THREE9.Shape();
+  shape.moveTo(-0.5, 0);
+  shape.lineTo(0.5, 0);
+  shape.lineTo(0, 0.62);
+  shape.closePath();
+  const geometry = new THREE9.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
+  geometry.translate(0, 0, -0.5);
+  return geometry;
+}
+function primitiveGeometry(kind) {
+  switch (kind) {
+    case "ball":
+      return new THREE9.IcosahedronGeometry(1, 0);
+    case "tiny":
+      return new THREE9.SphereGeometry(1, 6, 4);
+    case "soft":
+      return new THREE9.SphereGeometry(1, 10, 7);
+    case "cone":
+      return new THREE9.ConeGeometry(1, 1, 7);
+    case "cylinder":
+      return new THREE9.CylinderGeometry(1, 1, 1, 8);
+    case "ring":
+      return new THREE9.TorusGeometry(1, 0.07, 4, 16);
+    case "roof":
+      return roofGeometry();
+    case "ground": {
+      const g = new THREE9.BufferGeometry();
+      g.setAttribute(
+        "position",
+        new THREE9.Float32BufferAttribute(
+          [-0.5, 0, -0.5, -0.5, 0, 0.5, 0.5, 0, 0.5, 0.5, 0, -0.5],
+          3
+        )
+      );
+      g.setIndex([0, 1, 2, 0, 2, 3]);
+      g.computeVertexNormals();
+      return g;
+    }
+    default:
+      return fail("LITTLEWILD_IMPORT", `Unsupported Littlewild primitive ${kind}.`);
+  }
+}
+var nativeCounts = /* @__PURE__ */ new Map();
+function nativePrimitive(object) {
+  const kind = /^lw-(ball|soft|tiny|cone|cylinder|ring|roof|ground)$/.exec(
+    String(object.userData.geometry ?? "")
+  )?.[1];
+  if (!kind) return null;
+  if (!nativeCounts.has(kind)) {
+    const g = primitiveGeometry(kind);
+    nativeCounts.set(kind, g.getAttribute("position").count);
+    g.dispose();
+  }
+  return object.geometry.getAttribute("position").count === nativeCounts.get(kind) ? kind : null;
+}
+var pairedRoles = /* @__PURE__ */ new Set(["eyes", "ears", "cheeks", "arms", "feet"]);
+var round = (value, step) => {
+  const result = Math.round(value / step) * step;
+  return Number((Object.is(result, -0) ? 0 : result).toFixed(Math.max(0, -Math.log10(step))));
+};
+var vector = (values, step = 1e-5) => values.map((v) => round(v, step));
+var same = (values, value) => values.every((v) => Math.abs(v - value) < 1e-9);
+function hash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619) >>> 0;
+  return h.toString(16).padStart(8, "0");
+}
+function littlewildId(value) {
+  const id = value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/[^A-Za-z0-9_-]+/g, "-").toLowerCase().replace(/^[^a-z0-9]+/, "").slice(0, 72);
+  return id || "node";
+}
+function materialData(material2) {
+  const m = material2;
+  const result = {
+    color: `#${m.color.getHexString()}`,
+    roughness: round(m.roughness ?? 1, 1e-3),
+    metalness: round(m.metalness ?? 0, 1e-3),
+    flatShading: !!m.flatShading
+  };
+  if (m.emissive && m.emissive.getHex() !== 0) {
+    result.emissive = `#${m.emissive.getHexString()}`;
+    result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
+  }
+  if (material2.side === THREE9.DoubleSide) result.doubleSided = true;
+  if (material2.opacity < 1) {
+    result.opacity = round(material2.opacity, 1e-3);
+    result.transparent = true;
+  }
+  return result;
+}
+function meshData(geometry, label) {
+  const position = geometry.getAttribute("position");
+  if (!position || position.itemSize !== 3) fail("LITTLEWILD_EXPORT", `${label} has no positions.`);
+  const vertices = position.count, triangles2 = (geometry.index?.count ?? vertices) / 3;
+  if (vertices > littlewildLimits.meshVertices || triangles2 > littlewildLimits.meshTriangles)
+    fail(
+      "LITTLEWILD_BUDGET",
+      `${label} has ${vertices} vertices and ${triangles2} triangles; Littlewild meshes allow ${littlewildLimits.meshVertices} vertices and ${littlewildLimits.meshTriangles} triangles. Reduce its segments.`
+    );
+  const positions = [];
+  for (let i = 0; i < vertices; i++)
+    positions.push(...vector([position.getX(i), position.getY(i), position.getZ(i)], 1e-4));
+  const result = { positions };
+  const normal = geometry.getAttribute("normal");
+  if (normal && normal.count === vertices) {
+    const normals = [];
+    for (let i = 0; i < vertices; i++)
+      normals.push(...vector([normal.getX(i), normal.getY(i), normal.getZ(i)], 1e-3));
+    result.normals = normals;
+  }
+  if (geometry.index) result.indices = Array.from(geometry.index.array);
+  return result;
+}
+function boxSize(geometry) {
+  const position = geometry.getAttribute("position");
+  if (!position || position.count !== 24 || geometry.index?.count !== 36) return null;
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox, size = box.getSize(new THREE9.Vector3()).toArray(), center = box.getCenter(new THREE9.Vector3()).toArray();
+  if (center.some((v) => Math.abs(v) > 1e-6) || size.some((v) => v <= 0)) return null;
+  for (let i = 0; i < 24; i++)
+    for (let axis = 0; axis < 3; axis++)
+      if (Math.abs(Math.abs(position.getComponent(i, axis)) - size[axis] / 2) > 1e-6) return null;
+  return size;
+}
+function littlewildModel(root, options) {
+  const materials = {}, materialRoles = /* @__PURE__ */ new Map(), meshes = {}, meshIds = /* @__PURE__ */ new Map(), ids = /* @__PURE__ */ new Set(), rig = {}, warnings = /* @__PURE__ */ new Set(), stats = { nodes: 0, meshes: 0, primitives: 0, vertices: 0, triangles: 0 };
+  const roles = new Set(littlewildPetRoles);
+  function role(material2) {
+    if (Array.isArray(material2))
+      fail("LITTLEWILD_EXPORT", "Multi-material meshes are unsupported.");
+    const known = materialRoles.get(material2);
+    if (known) return known;
+    if (material2.type === "MeshBasicMaterial")
+      warnings.add("Unlit materials are exported as standard Littlewild materials.");
+    const data = materialData(material2), base = (material2.name.split("/").pop() || "material").slice(0, 72);
+    let name = base;
+    for (let n = 2; materials[name] && JSON.stringify(materials[name]) !== JSON.stringify(data); n++)
+      name = `${base}-${n}`;
+    materials[name] = data;
+    materialRoles.set(material2, name);
+    return name;
+  }
+  function nodeId(object, parentId) {
+    const last = object.name.split("/").pop() ?? "";
+    const own = littlewildId(String(object.userData.forgeId ?? "node"));
+    let id = /^[0-9]+$/.test(last) ? `${own}-${last}` : own;
+    if (ids.has(id)) id = `${parentId}-${id}`.slice(0, 72);
+    for (let n = 2; ids.has(id); n++) id = `${id.slice(0, 70)}-${n}`;
+    ids.add(id);
+    return id;
+  }
+  function transform2(object, node) {
+    const p = vector(object.position.toArray()), r = vector([object.rotation.x, object.rotation.y, object.rotation.z]), s = vector(object.scale.toArray());
+    if (object.rotation.order !== "XYZ")
+      fail("LITTLEWILD_EXPORT", "Only XYZ rotation order is supported.");
+    if (!same(p, 0)) node.position = p;
+    if (!same(r, 0)) node.rotation = r;
+    if (!same(s, 1)) node.scale = s;
+  }
+  function convert(object, parentId) {
+    if (object instanceof THREE9.Light) {
+      warnings.add("Lights are not part of Littlewild assets and were skipped.");
+      return null;
+    }
+    const id = nodeId(object, parentId), node = { primitive: "group", id };
+    stats.nodes++;
+    transform2(object, node);
+    if (!object.visible) node.visible = false;
+    if (object instanceof THREE9.Mesh) {
+      const geometry = object.geometry, size = boxSize(geometry);
+      node.material = role(object.material);
+      const native = nativePrimitive(object);
+      if (native) {
+        node.primitive = native;
+        stats.primitives++;
+      } else if (size) {
+        node.primitive = "box";
+        node.scale = vector((node.scale ?? [1, 1, 1]).map((v, axis) => v * size[axis]));
+        stats.primitives++;
+      } else {
+        let meshId = meshIds.get(geometry);
+        if (!meshId) {
+          const data = meshData(geometry, String(object.userData.forgePath ?? id));
+          meshId = `m-${hash(JSON.stringify(data))}`;
+          meshIds.set(geometry, meshId);
+          if (!meshes[meshId]) {
+            meshes[meshId] = data;
+            stats.vertices += data.positions.length / 3;
+          }
+        }
+        node.primitive = "mesh";
+        node.mesh = meshId;
+        stats.meshes++;
+      }
+      stats.triangles += (geometry.index?.count ?? geometry.getAttribute("position").count) / 3;
+    }
+    for (const tag of object.userData.tags ?? []) {
+      if (!tag.startsWith("rig:")) continue;
+      const name = tag.slice(4);
+      if (!options.rig) warnings.add("Rig tags are exported only for the pets family.");
+      else if (!roles.has(name))
+        fail("LITTLEWILD_EXPORT", `Unknown Littlewild rig role ${name}.`, { roles: [...roles] });
+      else (rig[name] ??= []).push(id);
+    }
+    const children = object.children.flatMap((child) => convert(child, id) ?? []);
+    if (children.length) node.children = children;
+    return node;
+  }
+  const nodes = root.children.flatMap((child) => convert(child, "asset") ?? []);
+  if (!stats.primitives && !stats.meshes)
+    fail("LITTLEWILD_EXPORT", "The model has no visible geometry.");
+  if (stats.vertices > littlewildLimits.definitionVertices)
+    fail(
+      "LITTLEWILD_BUDGET",
+      `Model bakes ${stats.vertices} vertices; Littlewild allows ${littlewildLimits.definitionVertices}.`
+    );
+  return {
+    nodes,
+    materials,
+    meshes,
+    rig: Object.fromEntries(
+      Object.entries(rig).map(([key, value]) => {
+        if (!pairedRoles.has(key) && value.length > 1)
+          fail("LITTLEWILD_EXPORT", `Rig role ${key} is tagged on ${value.length} nodes.`);
+        return [key, pairedRoles.has(key) ? value : value[0]];
+      })
+    ),
+    warnings: [...warnings],
+    stats
+  };
+}
+
 // src/commands/discovery.ts
 function registerDiscoveryCommands(c) {
   const { program, output, writeOut } = c;
@@ -2833,6 +3125,17 @@ function registerDiscoveryCommands(c) {
         interpolation: "quaternion linear",
         bindings: ["nearest joint", "two-joint blend", "explicit mesh to joint"],
         export: "glTF skins and rotation clips"
+      },
+      littlewild: {
+        commands: ["littlewild sync", "littlewild export", "littlewild import"],
+        manifest: "littlewild-export (schema --kind littlewild-export)",
+        families: Object.keys(littlewildFamilies),
+        output: "<target>/<family>/<id>/definition.json visual facet; other facets are preserved",
+        geometry: "boxes and unchanged lw-<primitive> geometries stay native; other meshes are baked",
+        rig: "pets only: tag nodes rig:<role>",
+        rigRoles: littlewildPetRoles,
+        limits: littlewildLimits,
+        check: "littlewild sync --check fails when a definition is stale"
       },
       lights: ["point", "spot", "directional"],
       materialShading: ["standard", "unlit"],
@@ -3643,30 +3946,30 @@ import { Option as Option4 } from "commander";
 // src/application/quality.ts
 import {
   Box3 as Box35,
-  Vector3 as Vector38,
-  Mesh as Mesh6,
+  Vector3 as Vector39,
+  Mesh as Mesh7,
   SkinnedMesh as SkinnedMesh3,
-  DoubleSide as DoubleSide2
+  DoubleSide as DoubleSide3
 } from "three";
 function auditScene(scene, models = {}, input = {}) {
   const policy = parse(QualityPolicySchema, { schemaVersion: 1, kind: "quality-policy", ...input });
   const built = compileScene(scene, models);
   try {
     const findings = /* @__PURE__ */ new Map();
-    const add = (code, severity, message, hint, path9, count = 1) => {
+    const add = (code, severity, message, hint, path11, count = 1) => {
       const f = findings.get(code) ?? { code, severity, message, count: 0, paths: [], hint };
       f.count += count;
-      if (path9 && !f.paths.includes(path9) && f.paths.length < 10) f.paths.push(path9);
+      if (path11 && !f.paths.includes(path11) && f.paths.length < 10) f.paths.push(path11);
       findings.set(code, f);
     };
     const geometries = /* @__PURE__ */ new Set(), materials = /* @__PURE__ */ new Set();
     const degenerate = /* @__PURE__ */ new Map();
     const bounds = new Box35();
-    const a = new Vector38(), b = new Vector38(), c = new Vector38(), ab = new Vector38(), ac = new Vector38();
+    const a = new Vector39(), b = new Vector39(), c = new Vector39(), ab = new Vector39(), ac = new Vector39();
     let meshes = 0, triangles2 = 0, geometryBytes = 0, nodes = 0;
     built.content.traverseVisible((object) => {
       if (object.userData.forgeId) nodes++;
-      if (!(object instanceof Mesh6)) return;
+      if (!(object instanceof Mesh7)) return;
       meshes++;
       const g = object.geometry;
       const position = g.getAttribute("position");
@@ -3734,7 +4037,7 @@ function auditScene(scene, models = {}, input = {}) {
             "Review overlapping transparent surfaces; use opaque materials when transparency is unnecessary.",
             object.name
           );
-        if (m.side === DoubleSide2 && !policy.allowDoubleSided)
+        if (m.side === DoubleSide3 && !policy.allowDoubleSided)
           add(
             "DOUBLE_SIDED",
             "error",
@@ -3751,7 +4054,7 @@ function auditScene(scene, models = {}, input = {}) {
         "No visible meshes will be exported.",
         "Add a mesh/model or enable visibility on its ancestors."
       );
-    const size = bounds.isEmpty() ? [0, 0, 0] : bounds.getSize(new Vector38()).toArray();
+    const size = bounds.isEmpty() ? [0, 0, 0] : bounds.getSize(new Vector39()).toArray();
     const metrics = {
       nodes,
       meshes,
@@ -3951,9 +4254,9 @@ var selector = (o) => {
   });
 };
 function commandDescription(command, prefix = "") {
-  const path9 = [prefix, command.name()].filter(Boolean).join(" ");
+  const path11 = [prefix, command.name()].filter(Boolean).join(" ");
   return {
-    command: path9,
+    command: path11,
     description: command.description(),
     arguments: command.registeredArguments.map((a) => ({
       name: a.name(),
@@ -3971,7 +4274,7 @@ function commandDescription(command, prefix = "") {
       default: o.defaultValue,
       choices: o.argChoices
     })),
-    subcommands: command.commands.map((c) => commandDescription(c, path9))
+    subcommands: command.commands.map((c) => commandDescription(c, path11))
   };
 }
 function registerAgentCommands(c) {
@@ -4139,6 +4442,385 @@ function registerAgentCommands(c) {
   });
 }
 
+// src/commands/littlewild.ts
+import path9 from "node:path";
+import { Option as Option5 } from "commander";
+
+// src/infra/littlewild.ts
+import path8 from "node:path";
+import { promises as fs8 } from "node:fs";
+var plain = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+function definitionText(value) {
+  return JSON.stringify(value, null, 2).replace(
+    /\[\s+(-?[\d.e+-]+(?:,\s+-?[\d.e+-]+)*)\s+\]/g,
+    (_, body) => `[${String(body).replace(/,\s+/g, ", ")}]`
+  ) + "\n";
+}
+function renameMaterials(nodes, names) {
+  for (const node of nodes) {
+    if (node.material && names.has(node.material)) node.material = names.get(node.material);
+    if (node.children) renameMaterials(node.children, names);
+  }
+}
+function collect(nodes, key, into) {
+  for (const node of nodes) {
+    if (!plain(node)) continue;
+    if (typeof node[key] === "string") into.add(node[key]);
+    if (Array.isArray(node.children)) collect(node.children, key, into);
+  }
+  return into;
+}
+function littlewildVisual(asset, models, existing) {
+  const category = littlewildFamilies[asset.family], previous = plain(existing?.visual) ? existing.visual : {}, previousModels = plain(previous.models) ? previous.models : {}, previousMaterials = plain(previous.materials) ? previous.materials : {}, previousMeshes = plain(previous.meshes) ? previous.meshes : {};
+  const materials = {}, meshes = {}, exported = {}, rig = {}, report = [], warnings = /* @__PURE__ */ new Set();
+  for (const [variant, spec] of Object.entries(asset.models)) {
+    const model = models[spec.model];
+    if (!model) fail("NOT_FOUND", `Model ${spec.model} does not exist.`);
+    for (const key of Object.keys(spec.materials))
+      if (!Object.hasOwn(model.materials, key))
+        fail("LITTLEWILD_EXPORT", `Model ${spec.model} has no material ${key} to replace.`);
+    const scene = parse(SceneSchema, {
+      schemaVersion: 1,
+      kind: "scene",
+      id: "littlewild",
+      name: asset.name,
+      materials: spec.materials,
+      nodes: [
+        {
+          type: "model",
+          id: "asset",
+          model: spec.model,
+          parameters: spec.parameters,
+          materialOverrides: Object.fromEntries(Object.keys(spec.materials).map((k) => [k, k]))
+        }
+      ]
+    });
+    const built = compileScene(scene, models, { bindRigs: false });
+    try {
+      const root = built.content.children[0];
+      const result = littlewildModel(root, { rig: asset.family === "pets" });
+      const names = /* @__PURE__ */ new Map();
+      for (const [role, data] of Object.entries(result.materials)) {
+        let name = role;
+        if (materials[name] && JSON.stringify(materials[name]) !== JSON.stringify(data))
+          name = `${role}-${variant}`.slice(0, 80);
+        materials[name] = data;
+        if (name !== role) names.set(role, name);
+      }
+      renameMaterials(result.nodes, names);
+      Object.assign(meshes, result.meshes);
+      exported[variant] = { nodes: result.nodes };
+      if (Object.keys(result.rig).length) rig[variant] = result.rig;
+      result.warnings.forEach((w) => warnings.add(w));
+      report.push({ variant, model: spec.model, ...result.stats });
+    } finally {
+      built.dispose();
+    }
+  }
+  const finalModels = { ...previousModels, ...exported };
+  for (const [name, model] of Object.entries(previousModels)) {
+    if (Object.hasOwn(exported, name) || !plain(model) || !Array.isArray(model.nodes)) continue;
+    for (const role of collect(model.nodes, "material", /* @__PURE__ */ new Set()))
+      if (Object.hasOwn(previousMaterials, role)) {
+        if (materials[role] && JSON.stringify(materials[role]) !== JSON.stringify(previousMaterials[role]))
+          warnings.add(`Retained variant ${name} now uses the re-exported material ${role}.`);
+        else materials[role] ??= previousMaterials[role];
+      }
+    for (const id of collect(model.nodes, "mesh", /* @__PURE__ */ new Set()))
+      if (Object.hasOwn(previousMeshes, id)) meshes[id] ??= previousMeshes[id];
+  }
+  const vertices = Object.values(meshes).reduce(
+    (sum, mesh) => sum + (plain(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
+    0
+  );
+  if (vertices > littlewildLimits.definitionVertices)
+    fail(
+      "LITTLEWILD_BUDGET",
+      `${asset.id} bakes ${vertices} vertices; Littlewild allows ${littlewildLimits.definitionVertices}.`
+    );
+  const previousRig = asset.family === "pets" && plain(previous.rig) ? previous.rig : {};
+  const finalRig = asset.family === "pets" ? Object.fromEntries(
+    Object.entries({ ...previousRig, ...rig }).filter(
+      ([name]) => Object.hasOwn(finalModels, name) && (Object.hasOwn(rig, name) || !Object.hasOwn(exported, name))
+    )
+  ) : previous.rig;
+  const metadata = {
+    ...plain(previous.metadata) ? previous.metadata : {},
+    ...asset.metadata
+  };
+  const visual = {
+    format: "littlewild-3d-asset",
+    schemaVersion: 1,
+    category,
+    id: asset.id,
+    name: asset.name,
+    materials,
+    models: finalModels,
+    metadata,
+    ...previous.behaviors === void 0 ? {} : { behaviors: previous.behaviors },
+    ...finalRig === void 0 || plain(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
+    ...Object.keys(meshes).length ? { meshes } : {}
+  };
+  return { visual, report, warnings: [...warnings] };
+}
+async function readDefinition(file) {
+  try {
+    await fs8.access(file);
+  } catch (error) {
+    if (errorCode(error) === "ENOENT") return void 0;
+    throw error;
+  }
+  const value = await readJson(file);
+  if (!plain(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
+  return value;
+}
+async function writeLittlewildAsset(asset, models, file, options = {}) {
+  const existing = await readDefinition(file);
+  if (existing && (existing.format !== "littlewild-definition" || existing.family !== asset.family || existing.id !== asset.id))
+    fail(
+      "LITTLEWILD_EXPORT",
+      `${file} belongs to ${String(existing.family)}/${String(existing.id)}, not ${asset.family}/${asset.id}.`
+    );
+  if (path8.basename(path8.dirname(file)) !== asset.id || path8.basename(path8.dirname(path8.dirname(file))) !== asset.family)
+    fail(
+      "LITTLEWILD_EXPORT",
+      `Littlewild expects ${asset.family}/${asset.id}/definition.json; got ${file}.`
+    );
+  const { visual, report, warnings } = littlewildVisual(asset, models, existing);
+  const definition = existing ? Object.fromEntries(
+    Object.entries({ ...existing, visual }).map(([k]) => [
+      k,
+      k === "visual" ? visual : existing[k]
+    ])
+  ) : {
+    format: "littlewild-definition",
+    schemaVersion: 1,
+    family: asset.family,
+    id: asset.id,
+    visual
+  };
+  const text = definitionText(definition);
+  let previousText;
+  try {
+    previousText = await fs8.readFile(file, "utf8");
+  } catch {
+    previousText = void 0;
+  }
+  const changed = previousText !== text;
+  if (changed && !options.dryRun && !options.check) await atomicWrite(file, text);
+  return {
+    path: file,
+    id: asset.id,
+    family: asset.family,
+    changed,
+    written: changed && !options.dryRun && !options.check,
+    bytes: Buffer.byteLength(text),
+    variants: report,
+    warnings
+  };
+}
+
+// src/application/littlewild-import.ts
+import * as THREE10 from "three";
+var plain2 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var degrees = (value) => Number(THREE10.MathUtils.radToDeg(value).toFixed(4));
+var triples = (values, step) => {
+  const out = [];
+  for (let i = 0; i < values.length; i += 3)
+    out.push([0, 1, 2].map((k) => Number((Math.round(values[i + k] / step) * step).toFixed(5))));
+  return out;
+};
+function bake(geometry) {
+  const indexed = geometry.index ? geometry : geometry.toNonIndexed();
+  const position = indexed.getAttribute("position"), normal = indexed.getAttribute("normal");
+  const indices = indexed.index ? Array.from(indexed.index.array) : Array.from({ length: position.count }, (_, i) => i);
+  return {
+    type: "mesh",
+    positions: triples(position.array, 1e-5),
+    indices,
+    ...normal ? { normals: triples(normal.array, 1e-4) } : {}
+  };
+}
+function forgeId(value, fallback) {
+  const id = value.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 64);
+  return /^[A-Za-z]/.test(id) ? id : `n${id}`.slice(0, 64) || fallback;
+}
+var camel = (value) => value.replace(/[-_]+([a-z0-9])/g, (_, c) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
+function material(value) {
+  const data = typeof value === "string" ? { color: value } : plain2(value) ? value : { color: "#9bb98c" };
+  return {
+    color: String(data.color),
+    roughness: typeof data.roughness === "number" ? data.roughness : 0.98,
+    metalness: typeof data.metalness === "number" ? data.metalness : 0,
+    opacity: typeof data.opacity === "number" ? data.opacity : 1,
+    // The Littlewild kit shades primitives with facets unless a material opts out.
+    flatShading: typeof data.flatShading === "boolean" ? data.flatShading : true,
+    ...typeof data.emissive === "string" ? { emissive: data.emissive } : {},
+    ...typeof data.emissiveIntensity === "number" ? { emissiveIntensity: Math.min(20, data.emissiveIntensity) } : {}
+  };
+}
+function littlewildModels(asset, prefix) {
+  if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain2(asset.models))
+    fail("LITTLEWILD_IMPORT", "Expected a littlewild-3d-asset visual definition.");
+  const base = forgeId(prefix ?? camel(String(asset.id)), "littlewild"), meshes = plain2(asset.meshes) ? asset.meshes : {}, materials = plain2(asset.materials) ? asset.materials : {}, rig = asset.category === "pet" && plain2(asset.rig) ? asset.rig : {};
+  const roles = new Set(littlewildPetRoles);
+  const models = {};
+  for (const [variant, model] of Object.entries(asset.models)) {
+    if (!plain2(model) || !Array.isArray(model.nodes))
+      fail("LITTLEWILD_IMPORT", `Variant ${variant} has no nodes.`);
+    const id = `${base}${camel(`-${variant}`)}`.slice(0, 64), geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
+    for (const [role, refs] of Object.entries(plain2(rig[variant]) ? rig[variant] : {}))
+      if (roles.has(role))
+        for (const ref of Array.isArray(refs) ? refs : [refs])
+          tags.set(String(ref), [...tags.get(String(ref)) ?? [], `rig:${role}`]);
+    let counter = 0;
+    const visit = (input, parent) => {
+      if (!plain2(input)) return;
+      const primitive = String(input.primitive), lwId = typeof input.id === "string" ? input.id : void 0;
+      let nodeId = forgeId(lwId ?? `${primitive}${++counter}`, `node${++counter}`);
+      while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
+      ids.add(nodeId);
+      const vec = (key) => Array.isArray(input[key]) ? input[key] : void 0;
+      const position = vec("position"), rotation2 = vec("rotation"), scale = vec("scale");
+      const node = {
+        id: nodeId,
+        type: primitive === "group" ? "group" : "mesh",
+        ...parent ? { parent } : {},
+        ...position || rotation2 || scale ? {
+          transform: {
+            ...position ? { position } : {},
+            ...rotation2 ? { rotation: rotation2.map(degrees) } : {},
+            ...scale ? { scale } : {}
+          }
+        } : {},
+        ...input.visible === false ? { visible: false } : {},
+        ...lwId && tags.has(lwId) ? { tags: tags.get(lwId) } : {}
+      };
+      if (primitive !== "group") {
+        const geometryId = primitive === "mesh" ? forgeId(`mesh-${String(input.mesh)}`, "mesh") : primitive === "box" ? "box" : `lw-${primitive}`;
+        if (!geometries[geometryId]) {
+          if (primitive === "mesh") {
+            const data = meshes[String(input.mesh)];
+            if (!plain2(data) || !Array.isArray(data.positions))
+              fail("LITTLEWILD_IMPORT", `Missing mesh ${String(input.mesh)}.`);
+            const positions = data.positions;
+            geometries[geometryId] = {
+              type: "mesh",
+              positions: triples(positions, 1e-5),
+              indices: Array.isArray(data.indices) ? data.indices : Array.from({ length: positions.length / 3 }, (_, i) => i),
+              ...Array.isArray(data.normals) ? { normals: triples(data.normals, 1e-4) } : {}
+            };
+          } else geometries[geometryId] = bake(primitiveGeometry(primitive));
+        }
+        const role = String(input.material);
+        const materialId = forgeId(
+          Object.hasOwn(materials, role) ? role : `c${role.replace("#", "")}`,
+          "material"
+        );
+        usedMaterials[materialId] ??= material(
+          Object.hasOwn(materials, role) ? materials[role] : role
+        );
+        if (primitive === "mesh" && !(plain2(materials[role]) && typeof materials[role].flatShading === "boolean"))
+          usedMaterials[materialId].flatShading = false;
+        Object.assign(node, { geometry: geometryId, material: materialId });
+      }
+      nodes.push(node);
+      for (const child of Array.isArray(input.children) ? input.children : []) visit(child, nodeId);
+    };
+    for (const node of model.nodes) visit(node);
+    if (!Object.values(usedMaterials).length)
+      fail("LITTLEWILD_IMPORT", `Variant ${variant} has no geometry.`);
+    const used = new Set(nodes.map((n) => n.geometry).filter(Boolean));
+    models[id] = {
+      schemaVersion: 1,
+      kind: "model",
+      id,
+      name: `${String(asset.name)} (${variant})`.slice(0, 120),
+      category: `littlewild-${String(asset.category)}`,
+      description: `Imported from Littlewild ${String(asset.category)}:${String(asset.id)}/${variant}.`,
+      geometries: Object.fromEntries(Object.entries(geometries).filter(([k]) => used.has(k))),
+      materials: usedMaterials,
+      nodes
+    };
+  }
+  return models;
+}
+
+// src/infra/littlewild-import.ts
+async function importLittlewildDefinition(project, file, options) {
+  const input = await readJson(file);
+  const record = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  const visual = record.format === "littlewild-definition" ? record.visual : record;
+  if (!visual || typeof visual !== "object" || Array.isArray(visual))
+    fail("LITTLEWILD_IMPORT", `${file} has no visual facet to import.`);
+  const models = littlewildModels(visual, options.prefix);
+  const entry = Object.keys(models)[0];
+  const result = await importModel(
+    project,
+    { schemaVersion: 1, kind: "model-bundle", entry, models },
+    options.replace,
+    { dryRun: options.dryRun }
+  );
+  return { ...result, source: file, variants: Object.keys(models) };
+}
+
+// src/commands/littlewild.ts
+function registerLittlewildCommands(c) {
+  const { program, snapshot, output, resolvePath, global } = c;
+  const group = program.command("littlewild").description("Exchange models with Littlewild engine definitions");
+  group.command("sync").description("Export every asset in a littlewild-export manifest into Littlewild definitions").requiredOption("--file <path>", "littlewild.export.json manifest").option("--asset <id>", "Export only one asset from the manifest").option("--dry-run", "Compile and compare without writing").option("--check", "Fail when any definition is out of date; never writes").action(async (opts) => {
+    const file = resolvePath(opts.file), manifest = parse(LittlewildExportSchema, await readJson(file)), target = path9.resolve(path9.dirname(file), manifest.target), s = await snapshot();
+    const assets = manifest.assets.filter((a) => !opts.asset || a.id === opts.asset);
+    if (!assets.length) fail("NOT_FOUND", `Asset ${opts.asset} is not in the manifest.`);
+    const results = [];
+    for (const asset of assets)
+      results.push(
+        await writeLittlewildAsset(
+          asset,
+          s.models,
+          path9.join(target, asset.family, asset.id, "definition.json"),
+          { dryRun: opts.dryRun, check: opts.check }
+        )
+      );
+    const stale = results.filter((r) => r.changed).map((r) => r.id);
+    if (opts.check && stale.length)
+      fail(
+        "LITTLEWILD_STALE",
+        "Littlewild definitions differ from their Scene Forge recipes. Run littlewild sync.",
+        { stale }
+      );
+    output({ target, assets: results, stale });
+  });
+  group.command("export").description("Export one model as a Littlewild definition model variant").requiredOption("--model <id>", "Scene Forge model to export").requiredOption("--out <path>", "Littlewild <family>/<id>/definition.json to create or update").addOption(
+    new Option5("--family <family>").choices(["items", "buildings", "creatures", "pets"]).default("items")
+  ).option("--variant <name>", "Littlewild model variant", "world").option("--name <name>", "Display name; defaults to the model name").option("--parameters <json>", "Model parameter overrides").option("--materials <json>", "Inline material replacements keyed by model material ID").option("--dry-run", "Compile and compare without writing").action(async (opts) => {
+    const s = await snapshot(), out = resolvePath(opts.out), model = s.models[opts.model];
+    if (!model) fail("NOT_FOUND", `Model ${opts.model} does not exist.`);
+    const asset = parse(LittlewildAssetSchema, {
+      id: path9.basename(path9.dirname(out)),
+      family: opts.family,
+      name: opts.name ?? model.name,
+      models: {
+        [opts.variant]: {
+          model: opts.model,
+          parameters: opts.parameters ? parseJson(opts.parameters) : {},
+          materials: opts.materials ? parseJson(opts.materials) : {}
+        }
+      }
+    });
+    output(await writeLittlewildAsset(asset, s.models, out, { dryRun: opts.dryRun }));
+  });
+  group.command("import").description("Import Littlewild definition variants as editable Scene Forge models").requiredOption("--definition <path>", "Littlewild definition.json or littlewild-3d-asset JSON").option("--prefix <id>", "Model ID prefix; defaults to the camel-cased asset ID").option("--dry-run", "Validate and report without writing").option("--replace", "Replace existing models with the same IDs").action(async (opts) => {
+    output(
+      await importLittlewildDefinition(global().project, resolvePath(opts.definition), {
+        prefix: opts.prefix,
+        dryRun: opts.dryRun,
+        replace: opts.replace
+      })
+    );
+  });
+}
+
 // src/commands/create-cli.ts
 function createCli(overrides = {}) {
   const runtime = {
@@ -4158,7 +4840,7 @@ function createCli(overrides = {}) {
     runtime.cwd
   ).option("-s, --scene <id>", "Scene to use; otherwise use activeScene").option("--compact", "Write compact JSON for smaller agent responses").showHelpAfterError(false).exitOverride().configureOutput({ writeOut: runtime.writeOut, writeErr: () => {
   } });
-  const resolvePath = (value) => path8.resolve(runtime.cwd, value);
+  const resolvePath = (value) => path10.resolve(runtime.cwd, value);
   const global = () => {
     const options = program.opts();
     return { ...options, project: resolvePath(options.project) };
@@ -4189,6 +4871,7 @@ function createCli(overrides = {}) {
   registerAgentCommands(context);
   registerExampleCommands(context);
   registerRigCommands(context);
+  registerLittlewildCommands(context);
   return {
     program,
     /** One invocation per factory instance, with a returned status rather than process.exit. */

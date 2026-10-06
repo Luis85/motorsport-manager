@@ -56,6 +56,9 @@ const suites: Suite[] = [
   ["rts-runtime", ["node", generated("test-rts-runtime.cjs")], generated("rts-runtime-results.json"), 120],
   ["rts-tools", ["node", generated("test-rts-tools.cjs")], generated("rts-tools-results.json"), 120],
   ["rts-application", ["node", generated("test-rts-application.cjs")], generated("rts-application-results.json"), 120],
+  ["pet-catalog", ["node", generated("test-pet-catalog.cjs")], generated("pet-catalog-results.json"), 120],
+  ["pet-runtime", ["node", generated("test-pet-runtime.cjs")], generated("pet-runtime-results.json"), 180],
+  ["pet-application", ["node", generated("test-pet-application.cjs")], generated("pet-application-results.json"), 120],
 
   ["wildlands-runtime", ["node", generated("test-wildlands-runtime.cjs")], generated("wildlands-runtime-results.json"), 300],
   ["wildlands-project", ["node", generated("test-wildlands-project.cjs")], generated("wildlands-project-results.json"), 120],
@@ -124,6 +127,7 @@ if (!noBrowser) {
     { name:"skill-tree-browser", command:["node", generated("verification/skill-tree-browser.js")], result:"verification/v15/skill-tree-browser-results.json", timeout:180 },
     { name:"rts-mission-editor-browser", command:["node", generated("verification/rts-mission-editor-browser.js")], result:"verification/v15/rts-mission-editor-browser-results.json", timeout:240 },
     { name:"rts-browser", command:["node", generated("verification/rts-browser.js")], result:"verification/v15/rts-browser-results.json", timeout:240 },
+    { name:"pet-browser", command:["node", generated("verification/pet-browser.js")], result:"verification/v15/pet-browser-results.json", timeout:300 },
     { name:"wildlands-browser", command:["node", generated("verification/wildlands-browser.js")], result:"verification/v15/wildlands-browser-results.json", timeout:300 },
     { name:"external-editors-browser", command:["node", generated("verification/external-editors-browser.js")], result:"verification/v15/external-editors-browser-results.json", timeout:240 },
     { name:"external-canvas-browser", command:["node", generated("verification/external-canvas-browser.js")], result:"verification/v15/external-canvas-browser-results.json", timeout:240 },

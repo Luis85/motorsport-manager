@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "Pocket Pet",
+  "activeScene": "main",
+  "scenes": {
+    "main": "scenes/main.scene.json"
+  },
+  "models": {
+    "petFace": "models/petFace.model.json",
+    "petLeaf": "models/petLeaf.model.json",
+    "petSprout": "models/petSprout.model.json",
+    "petPetal": "models/petPetal.model.json",
+    "petFlower": "models/petFlower.model.json",
+    "petEgg": "models/petEgg.model.json",
+    "petBaby": "models/petBaby.model.json",
+    "petTeen": "models/petTeen.model.json",
+    "petAdultBloom": "models/petAdultBloom.model.json",
+    "petAdultBramble": "models/petAdultBramble.model.json",
+    "petBowl": "models/petBowl.model.json",
+    "petSnack": "models/petSnack.model.json",
+    "petBall": "models/petBall.model.json",
+    "petBed": "models/petBed.model.json",
+    "petPoop": "models/petPoop.model.json",
+    "petMedicine": "models/petMedicine.model.json",
+    "petBubbles": "models/petBubbles.model.json",
+    "petHeart": "models/petHeart.model.json",
+    "petStar": "models/petStar.model.json",
+    "petRoom": "models/petRoom.model.json"
+  }
+}

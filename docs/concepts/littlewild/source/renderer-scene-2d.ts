@@ -23,8 +23,8 @@ declare var LWRendererScene2D:LittlewildRenderer2D.Api;
  type Context=LittlewildRenderer.Context;
  type Painter=LittlewildRenderer2D.Painter;
  type Vector=readonly[number,number,number];
- interface Node {id?:string;primitive:string;position?:Vector;scale?:Vector;rotation?:Vector;material?:string;materialProps?:{opacity?:number};visible?:boolean;children?:readonly Node[];}
- interface Asset {rig?:{arms?:readonly string[];head?:string};materials:Readonly<Record<string,string|{color:string;opacity?:number}>>;models:Readonly<Record<string,{nodes:readonly Node[]}>>;behaviors?:{appearances?:Readonly<Record<string,{model?:string;scale?:Vector;materials?:Readonly<Record<string,string>>}>>};}
+ interface Node {id?:string;mesh?:string;primitive:string;position?:Vector;scale?:Vector;rotation?:Vector;material?:string;materialProps?:{opacity?:number};visible?:boolean;children?:readonly Node[];}
+ interface Asset {meshes?:Readonly<Record<string,{positions:readonly number[];indices?:readonly number[]}>>;rig?:{arms?:readonly string[];head?:string};materials:Readonly<Record<string,string|{color:string;opacity?:number}>>;models:Readonly<Record<string,{nodes:readonly Node[]}>>;behaviors?:{appearances?:Readonly<Record<string,{model?:string;scale?:Vector;materials?:Readonly<Record<string,string>>}>>};}
  interface Face {points:Vector[];color:string;opacity:number;depth:number;}
  interface Layout {unit:number;cx:number;cy:number;x:number;y:number;}
  interface RoomLayout {unit:number;origin:Point;surface:LittlewildRenderer.Surface;floor:NonNullable<Frame['room']>['floors'][number];}
@@ -95,6 +95,14 @@ declare var LWRendererScene2D:LittlewildRenderer2D.Api;
   if(!/^#[0-9a-f]{6}$/i.test(color))return color;
   const value=parseInt(color.slice(1),16);return '#'+[value>>16&255,value>>8&255,value&255].map(channel=>Math.round(Math.min(255,Math.max(0,channel*factor))).toString(16).padStart(2,'0')).join('');
  }
+ /** Baked mesh triangles keep the 3D winding, so the shared back-face test applies unchanged. */
+ function meshFaces(mesh:{positions:readonly number[];indices?:readonly number[]}|undefined):Vector[][] {
+  if(!mesh)return [];
+  const p=mesh.positions,vertex=(i:number):Vector=>[p[i*3]!,p[i*3+1]!,p[i*3+2]!],faces:Vector[][]=[];
+  const count=mesh.indices?mesh.indices.length:p.length/3;
+  for(let i=0;i+2<count;i+=3){const a=mesh.indices?mesh.indices[i]!:i,b=mesh.indices?mesh.indices[i+1]!:i+1,c=mesh.indices?mesh.indices[i+2]!:i+2;faces.push([vertex(a),vertex(b),vertex(c)]);}
+  return faces;
+ }
  function geometry(kind:string):Vector[][] {
   if(kind==='ground')return[[[-.5,0,-.5],[-.5,0,.5],[.5,0,.5],[.5,0,-.5]]];
   if(kind==='box')return[
@@ -138,7 +146,7 @@ declare var LWRendererScene2D:LittlewildRenderer2D.Api;
    if(node.primitive!=='group'){
     const material=asset!.materials[node.material||''],chosen=typeof material==='string'?{color:material}:material||{color:'#808080'};
     const color=options.materials?.[node.material||'']||chosen.color;
-    for(const raw of geometry(node.primitive)){
+    for(const raw of node.primitive==='mesh'?meshFaces(asset!.meshes?.[node.mesh||'']):geometry(node.primitive)){
      const points=raw.map(point=>chain.reduce((value,entry)=>transform(value,entry),point)),a=points[0]!,b=points[1]!,d=points[2]!;
      const u:Vector=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v:Vector=[d[0]-a[0],d[1]-a[1],d[2]-a[2]];
      const normal:Vector=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],length=Math.hypot(...normal);

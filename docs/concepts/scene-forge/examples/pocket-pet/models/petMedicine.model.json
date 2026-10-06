@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petMedicine",
+  "category": "Pocket pet props",
+  "name": "Medicine bottle",
+  "parameters": {},
+  "geometries": {
+    "bottle": {
+      "type": "lathe",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0.07,
+          0
+        ],
+        [
+          0.075,
+          0.01
+        ],
+        [
+          0.075,
+          0.13
+        ],
+        [
+          0.05,
+          0.16
+        ],
+        [
+          0.03,
+          0.17
+        ],
+        [
+          0,
+          0.17
+        ]
+      ],
+      "segments": 20
+    },
+    "cap": {
+      "type": "cylinder",
+      "radiusTop": 0.035,
+      "radiusBottom": 0.035,
+      "height": 0.04,
+      "segments": 16
+    },
+    "label": {
+      "type": "cylinder",
+      "radiusTop": 0.077,
+      "radiusBottom": 0.077,
+      "height": 0.07,
+      "segments": 20,
+      "openEnded": true
+    },
+    "bar": {
+      "type": "box",
+      "size": [
+        0.05,
+        0.016,
+        0.01
+      ]
+    }
+  },
+  "materials": {
+    "glass": {
+      "color": "#9ad7f0",
+      "metalness": 0,
+      "roughness": 0.2,
+      "opacity": 0.85,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "cap": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "label": {
+      "color": "#ffffff",
+      "metalness": 0,
+      "roughness": 0.6,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "cross": {
+      "color": "#ef476f",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "bottle",
+      "type": "mesh",
+      "geometry": "bottle",
+      "material": "glass"
+    },
+    {
+      "id": "cap",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.19,
+          0
+        ]
+      },
+      "geometry": "cap",
+      "material": "cap"
+    },
+    {
+      "id": "label",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0
+        ]
+      },
+      "geometry": "label",
+      "material": "label"
+    },
+    {
+      "id": "crossH",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0.078
+        ]
+      },
+      "geometry": "bar",
+      "material": "cross"
+    },
+    {
+      "id": "crossV",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          0,
+          0.07,
+          0.078
+        ],
+        "rotation": [
+          0,
+          0,
+          90
+        ]
+      },
+      "geometry": "bar",
+      "material": "cross"
+    }
+  ]
+}

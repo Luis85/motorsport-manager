@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petLeaf",
+  "category": "Pocket pet parts",
+  "name": "Pet leaf",
+  "parameters": {
+    "size": {
+      "default": 1,
+      "min": 0.3,
+      "max": 3,
+      "description": "Leaf scale"
+    }
+  },
+  "geometries": {
+    "leaf": {
+      "type": "sphere",
+      "radius": 0.05,
+      "segments": 12
+    }
+  },
+  "materials": {
+    "leaf": {
+      "color": "#7cc47a",
+      "metalness": 0,
+      "roughness": 0.5,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "blade",
+      "type": "mesh",
+      "transform": {
+        "position": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.045
+            ]
+          },
+          0.012,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          28
+        ],
+        "scale": [
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              1.25
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.22
+            ]
+          },
+          {
+            "$expr": "mul",
+            "args": [
+              {
+                "$param": "size"
+              },
+              0.62
+            ]
+          }
+        ]
+      },
+      "geometry": "leaf",
+      "material": "leaf"
+    }
+  ]
+}
