@@ -11,27 +11,28 @@ source/assets/
 ├── asset.schema.json
 ├── README.md
 ├── buildings/
-│   └── <building-id>/asset.json
+│   └── <building-id>/definition.json
 ├── items/
-│   └── <item-or-prop-id>/asset.json
+│   └── <item-or-prop-id>/definition.json
 └── creatures/
     ├── catalog.json
     ├── catalog.schema.json
     ├── creature.schema.json
     └── <creature-id>/
-        ├── creature.json
-        └── asset.json
+        └── definition.json
 ```
 
-Creature gameplay and visual manifests share one assets folder; gameplay uses `visualAsset` to select a bundled actor asset independently of the archetype ID. `creatures/catalog.json` selects the default archetype. The visual runtime category remains `actor`.
+Each folder has one definition containing gameplay and visual facets; gameplay uses `visualAsset` to select a bundled actor asset independently of the archetype ID. `creatures/catalog.json` selects the default archetype. The visual runtime category remains `actor`.
 
-The folder name is the stable model ID. The manifest must repeat that identity and category. The build rejects missing manifests or a path/identity mismatch.
+The folder name and wrapper identify the thing. Visual facets retain the existing model identity and category. The build rejects missing definitions, old competing manifests, unknown facets and identity mismatches.
+
+Gameplay item/building values, recipes, weights, physical rules and progression gates live in these same definitions. The build projects existing library formats from their facets; catalog order and shared rules remain in `content/balancing.json`. See [definition authoring](source/assets/README.md).
 
 Current catalog: **67 assets** — 24 buildings, 42 items/environment/equipment models and 1 actor.
 
 ## Manifest
 
-Each manifest has:
+Each `visual` facet projects a runtime manifest with:
 
 - `format: "littlewild-3d-asset"`, `schemaVersion: 1`;
 - `category`, stable `id`, display `name`;
@@ -51,7 +52,7 @@ Primitive nodes support groups, boxes, low-poly balls, soft/tiny spheres, cones,
 
 `world-3d.ts` owns the camera, scene, terrain surface, batching, transient selection/path/build-plan helpers, world placement and animation scheduling. It no longer owns building/resource/actor/equipment model construction.
 
-`world-fidelity.ts` owns **behavior**, not geometry: gait, breathing, blinking, facial pose, carried-item choice, care gestures and attaching equipment to data-authored sockets. The Sproutling body and sockets are defined in `creatures/sproutling/asset.json`.
+`world-fidelity.ts` owns **behavior**, not geometry: gait, breathing, blinking, facial pose, carried-item choice, care gestures and attaching equipment to data-authored sockets. The Sproutling body and sockets are defined in `creatures/sproutling/definition.json`.
 
 The software renderer consumes the same Three.js scene. There is no separate low-fidelity model catalog.
 
@@ -63,7 +64,7 @@ A building manifest includes everything the visual engine needs to instantiate i
 - `rotors[]` with node, axis and speed;
 - `smoke.position` + `always`.
 
-Navigation, work capacity, recipes, construction cost and gameplay eligibility remain domain/content definitions, not visual-asset data. Indoor/outdoor semantics remain authoritative in gameplay code. The visual asset must match those semantics but cannot change them.
+Navigation, work capacity, recipes, construction cost and gameplay eligibility remain domain facets of the same definition, separate from the visual facet. Indoor/outdoor semantics remain authoritative in gameplay code. The visual asset must match those semantics but cannot change them.
 
 ## Item contract
 
@@ -84,9 +85,9 @@ The animation program is intentionally compiled. Asset data says **what exists a
 ## Authoring workflow
 
 1. Copy the closest asset folder inside the correct category.
-2. Give the folder and manifest a new stable ID.
-3. Edit materials and primitive nodes; keep behavior/rig references valid.
-4. Connect the new ID to an existing supported gameplay definition when appropriate.
+2. Give the folder, wrapper and identity-bearing facets a new stable ID.
+3. Edit the visual facet’s materials and primitive nodes; keep behavior/rig references valid.
+4. Edit the applicable gameplay facets in the same file; new facets are discovered automatically.
 5. Run:
    ```sh
    npm run typecheck

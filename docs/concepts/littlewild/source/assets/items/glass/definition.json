@@ -1,0 +1,103 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "glass",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "glass",
+    "name": "Glass",
+    "materials": {
+      "primary": "#a7c7c2",
+      "light": "#d9c69d",
+      "dark": "#84694d",
+      "metal": "#9ba6a0"
+    },
+    "models": {
+      "carry": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "box",
+            "position": [
+              0,
+              0.15,
+              0
+            ],
+            "scale": [
+              0.32,
+              0.3,
+              0.3
+            ],
+            "material": "primary"
+          },
+          {
+            "primitive": "box",
+            "id": "lid",
+            "position": [
+              0,
+              0.3,
+              0
+            ],
+            "scale": [
+              0.34,
+              0.04,
+              0.32
+            ],
+            "material": "light"
+          },
+          {
+            "primitive": "box",
+            "id": "band",
+            "position": [
+              0,
+              0.13,
+              0
+            ],
+            "scale": [
+              0.35,
+              0.045,
+              0.06
+            ],
+            "material": "dark"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "radius": 0.6
+    }
+  },
+  "item": {
+    "id": "glass",
+    "name": "Glass",
+    "icon": "research",
+    "price": 16
+  },
+  "recipe": {
+    "id": "glass",
+    "skill": "glassmaking",
+    "station": "kiln",
+    "cost": {
+      "stone": 3,
+      "charcoal": 2
+    },
+    "amount": 1,
+    "time": 8,
+    "output": "glass"
+  },
+  "weight": 350,
+  "itemRequirements": {
+    "playerLevel": 1,
+    "features": {}
+  },
+  "recipeRequirements": {
+    "playerLevel": 4,
+    "features": {
+      "making": 4
+    },
+    "research": "recipe-glass"
+  }
+}

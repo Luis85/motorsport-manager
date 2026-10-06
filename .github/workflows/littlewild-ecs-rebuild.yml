@@ -52,7 +52,7 @@ jobs:
         env:
           LITTLEWILD_STORYTELLING_OUT: ${{ github.workspace }}/docs/concepts/littlewild/verification/storytelling-diagnostics-off
           # Reviewed expectations; acceptance still requires the actual complete gate.
-          LITTLEWILD_EXPECTED_GATE_CHECKS: '1726'
+          LITTLEWILD_EXPECTED_GATE_CHECKS: '1739'
           LITTLEWILD_REVIEWED_NEW_CHECKS_JSON: |-
             [
               {"suite":"creatures","name":"Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
@@ -237,7 +237,20 @@ jobs:
               {"suite":"skill-tree-browser","name":"Tree reads do not tick or change saved state at 390px"},
               {"suite":"skill-tree-browser","name":"Tree content fits and retains usable controls at 390px"},
               {"suite":"skill-tree-browser","name":"Keyboard focus distinguishes trees sharing a node ID at 390px"},
-              {"suite":"skill-tree-browser","name":"Skill-tree browser emits no runtime errors or network requests"}
+              {"suite":"skill-tree-browser","name":"Skill-tree browser emits no runtime errors or network requests"},
+              {"suite":"typescript-architecture","name":"Bundled assets have one authoring source and canonical catalog projections"},
+              {"suite":"definition-source","name":"The strict authoring schema accepts every shipped package and rejects unknown facets"},
+              {"suite":"definition-source","name":"Generated portable libraries are exact projections of the canonical authoring catalog"},
+              {"suite":"definition-source","name":"Changing one item definition updates price, weight, recipe and visual projections"},
+              {"suite":"definition-source","name":"A new item folder appends to every authored facet without catalog registration"},
+              {"suite":"definition-source","name":"Derived identity schemas preserve compiled bounds and presentation vocabulary"},
+              {"suite":"definition-source","name":"Creature numeric balancing is derived from its one gameplay facet"},
+              {"suite":"definition-source","name":"Legacy asset and creature manifests cannot become a second editable authority"},
+              {"suite":"definition-source","name":"Catalog order rejects missing facets and duplicate IDs instead of silently dropping data"},
+              {"suite":"definition-source","name":"Inline gameplay tables are rejected as competing definitions"},
+              {"suite":"definition-source","name":"Wrong family, facet identity, typo, missing file and empty definitions fail discovery"},
+              {"suite":"definition-source","name":"A gameplay definition without its required visual model fails before build publication"},
+              {"suite":"definition-source","name":"Compatibility exports reject source mirrors and default scenario overrides"}
             ]
         run: |
           env -u LITTLEWILD_STORY_CLICK_DIAGNOSTICS -u NODE_OPTIONS -u LITTLEWILD_CAPTURE_SCREENSHOTS -u PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH -u LITTLEWILD_BROWSER_ARTIFACT node <<'NODE'
@@ -284,8 +297,8 @@ jobs:
             }
             expectedStoryChecks = 23 + reviewedNewChecks.filter(row => row.suite === 'storytelling-browser').length;
             if (expectedStoryChecks !== 24) throw Error('Expected the reviewed 24-check Storytelling scope.');
-            if (gate.status !== 'passed' || gate.suites.length !== 91 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
-              throw Error('The complete 91-suite gate must pass at the reviewed check count first.');
+            if (gate.status !== 'passed' || gate.suites.length !== 92 || gate.total !== expectedGateChecks || gate.passed !== expectedGateChecks)
+              throw Error('The complete 92-suite gate must pass at the reviewed check count first.');
             let acceptedOriginalTotal = 0;
             for (const suite of gate.suites) {
               if (suite.exitCode !== 0 || suite.error) throw Error('Original registered suite did not pass: ' + suite.name);
@@ -329,7 +342,7 @@ jobs:
             if (!fs.existsSync(path.join(out, 'run.log'))) fs.writeFileSync(path.join(out, 'run.log'), failure + '\n');
           }
           const versions = {node:process.version, playwright:require('playwright/package.json').version, playwrightCore:require('playwright-core/package.json').version};
-          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 91-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
+          const receipt = {schema:1, scope:'Additional 24-check observer-independence execution; does not change the complete 92-suite gate, its preserved historical 75-suite baseline or reviewed named additions.', status:failure?'failed':'passed', startedAt, finishedAt:new Date().toISOString(), command, timeoutSeconds:300, actionTimeoutMilliseconds:20000, originalGateUnchanged:unchanged, expectedStoryChecks, originalIdentity:before, afterIdentity:after, expectedGateChecks:process.env.LITTLEWILD_EXPECTED_GATE_CHECKS, reviewedNewChecksJson:process.env.LITTLEWILD_REVIEWED_NEW_CHECKS_JSON, counts, error:failure, process:result?{exitCode:result.status,signal:result.signal,error:result.error?String(result.error):null}:null, versions, browserSelection:'Pinned Playwright requests official full desktop Chromium (channel=chromium); executable override unset. Actual sampled browser version is retained in run.log. Existing launch flags and production CSP are unchanged.', environment:{LITTLEWILD_STORY_CLICK_DIAGNOSTICS:null,NODE_OPTIONS:null,LITTLEWILD_CAPTURE_SCREENSHOTS:null,PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:null,LITTLEWILD_BROWSER_ARTIFACT:null,LITTLEWILD_STORYTELLING_OUT:out}};
           fs.writeFileSync(path.join(out, 'additional-storytelling-results.json'), JSON.stringify(receipt,null,2)+'\n');
           process.exitCode = failure ? 1 : 0;
           NODE

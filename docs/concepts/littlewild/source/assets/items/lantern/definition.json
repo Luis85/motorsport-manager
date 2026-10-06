@@ -1,0 +1,114 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "lantern",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "lantern",
+    "name": "Lantern",
+    "materials": {
+      "primary": "#e2b66c",
+      "light": "#e7d3a5",
+      "dark": "#7d674f",
+      "metal": "#a5b1aa",
+      "glow": {
+        "color": "#e7bd73",
+        "emissive": "#d99d49",
+        "emissiveIntensity": 0.45
+      }
+    },
+    "models": {
+      "equipped": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "frame",
+            "position": [
+              0,
+              0.03,
+              0
+            ],
+            "scale": [
+              0.15,
+              0.2,
+              0.14
+            ],
+            "material": "dark"
+          },
+          {
+            "primitive": "box",
+            "id": "light",
+            "position": [
+              0,
+              0.04,
+              0.074
+            ],
+            "scale": [
+              0.1,
+              0.13,
+              0.012
+            ],
+            "material": "glow"
+          },
+          {
+            "primitive": "ring",
+            "id": "handle",
+            "position": [
+              0,
+              0.18,
+              0
+            ],
+            "scale": [
+              0.06,
+              0.08,
+              0.02
+            ],
+            "material": "metal",
+            "rotation": [
+              1.5707963267948966,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "equipment": true,
+      "slot": "tool",
+      "visual": "lantern",
+      "radius": 0.45
+    }
+  },
+  "equipment": {
+    "id": "lantern",
+    "name": "Travel lantern",
+    "slot": "tool",
+    "weight": 750,
+    "price": 70,
+    "visual": "lantern",
+    "color": "#e2b66c",
+    "bonuses": {
+      "Per": 2
+    },
+    "travel": 0,
+    "recipe": {
+      "cost": {
+        "iron": 1,
+        "glass": 1,
+        "charcoal": 1
+      },
+      "station": "bench",
+      "skill": "metalwork",
+      "time": 14
+    },
+    "description": "Light to notice what others miss. +2 observation."
+  },
+  "itemRequirements": {
+    "playerLevel": 3,
+    "features": {}
+  }
+}

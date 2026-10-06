@@ -27,6 +27,8 @@ test('Descriptor inspection retains own-name diagnostic order and never reads fr
  const hidden={};Object.defineProperty(hidden,'a/b~c',{value:1});issue(hidden,'JSON_ONLY','/a~1b~0c');
  const disappearing=new Proxy({}, {ownKeys:()=>['lost'],getOwnPropertyDescriptor:()=>undefined});
  issue(disappearing,'JSON_ONLY','/lost');
+ const incomplete=[,1];Object.defineProperty(incomplete,'constructor',{get(){reads++;return Array;}});
+ issue(incomplete,'JSON_ONLY','/0');assert.equal(reads,0);
 });
 test('Validated copies preserve null prototypes and array species while expanding detached aliases',()=>{
  const shared={list:[{value:1}]},dictionary=Object.create(null);dictionary.shared=shared;

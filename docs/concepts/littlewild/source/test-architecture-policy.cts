@@ -74,7 +74,9 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
   fs.copyFileSync(path.join(project,'tsconfig.strict.json'),path.join(fixture,'tsconfig.strict.json'));
   fs.symlinkSync(path.join(project,'node_modules'),path.join(fixture,'node_modules'),'junction');
   const tools=path.join(fixture,'.generated','tools');fs.mkdirSync(tools,{recursive:true});
-  for(const file of ['architecture-check.cjs','architecture-analysis.cjs','architecture-data.cjs','architecture-contracts.cjs'])fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
+  const checkerFiles=['architecture-check.cjs','architecture-analysis.cjs','architecture-data.cjs','architecture-contracts.cjs',
+   'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs'];
+  for(const file of checkerFiles)fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
   const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
   assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
   const run=():{status:number|null;report:PolicyResult}=>{

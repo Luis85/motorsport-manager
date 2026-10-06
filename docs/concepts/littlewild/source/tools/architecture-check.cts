@@ -1,3 +1,6 @@
+import {definitions} from './definition-source.cjs';
+import {balancingDocument, defaultScenario} from './bundled-content.cjs';
+import {assetDefinitions} from './bundled-assets.cjs';
 'use strict';
 import fs from "node:fs";
 import path from "node:path";
@@ -206,6 +209,13 @@ check("Shipped definitions and configuration have one declared owner and compile
   const fixtures=walk(path.join(SOURCE,"fixtures")).filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
   assert(JSON.stringify(fixtures.sort())===JSON.stringify(manifest.historicalFixtures.map(entry=>entry.path).sort()),"Historical JSON fixtures require explicit path and reason exclusions.");
   assert(errors.length===0,errors.join("; "));
+});
+
+check("Bundled assets have one authoring source and canonical catalog projections", () => {
+  definitions(SOURCE); assetDefinitions(SOURCE);
+  defaultScenario(SOURCE, balancingDocument(SOURCE));
+  for (const name of ['default-library','adventure-library','world-library','growth-library','building-interiors'])
+    assert(!fs.existsSync(path.join(SOURCE,'content',name+'.json')), 'Duplicate content source: '+name);
 });
 
 check("Project contracts and erased type dependencies follow inward ownership", () => {

@@ -7,9 +7,9 @@ const results:Result[]=[];
 function test(name:string,work:()=>void):void {try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 const painter=require('./renderer-scene-2d.js') as LittlewildRenderer2D.Api;
 function freeze<T>(value:T):T {if(value&&typeof value==='object'){for(const item of Object.values(value))freeze(item);Object.freeze(value);}return value;}
-const asset=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/creatures/sproutling/asset.json'),'utf8')) as LittlewildDeveloper.Document);
-const bench=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/buildings/bench/asset.json'),'utf8')) as LittlewildDeveloper.Document);
-const satchel=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/items/field_satchel/asset.json'),'utf8')) as LittlewildDeveloper.Document);
+const asset=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/creatures/sproutling/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
+const bench=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/buildings/bench/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
+const satchel=freeze(JSON.parse(fs.readFileSync(path.resolve('source/assets/items/field_satchel/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
 const frame=freeze({version:1,time:2,delta:.016,simTime:7,running:true,alpha:1,camera:{x:0,y:0,z:1},viewport:{width:800,height:600,pixelRatio:1},
  actors:[{id:'onsite',name:'Onsite',archetype:'sproutling',visualAsset:'sproutling',personality:'curious',equipment:{back:'field_satchel'},away:false,selected:true,x:9,y:9,height:0},{id:'away',name:'Away',archetype:'sproutling',visualAsset:'sproutling',personality:'curious',equipment:{},away:true,selected:false,x:10,y:9,height:0}],
  nodes:[],buildings:[{id:'bench',kind:'bench',x:8,y:8,height:0,details:{id:'bench',kind:'bench',x:8,y:8}}],props:[{id:'prop',name:'Authored bench',category:'building',assetId:'bench',model:'world',x:7,y:7}],

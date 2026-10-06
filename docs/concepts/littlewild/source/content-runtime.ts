@@ -34,8 +34,8 @@
     }
     return value;
   }
-  function copy<T>(value:T):T { inspectJson(value); return cloneJson(value); }
-  const pointer = (key:PropertyKey) => String(key).replace(/~/g, '~0').replace(/\//g, '~1');
+  function copy<T>(value:T):T { return inspectJson(value, true); }
+  const pointer = (key:PropertyKey) => { const text=String(key); return text.includes('~') || text.includes('/') ? text.replace(/~/g, '~0').replace(/\//g, '~1') : text; };
   const freeze = <T>(value:T):T => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
   function stable(value:object):string;
   function stable(value:unknown):string|undefined;
@@ -75,15 +75,15 @@
       }
     }
   }
-  function inspectJson(value:unknown) {
+  function inspectJson<T>(value:T, detach=false):T {
     let count = 0;
     const ancestors = new Set<unknown>();
     function invalid(path:string, message:string):never { throw new ContentError([diagnostic('JSON_ONLY', path, message)]); }
-    function walk(v:unknown, path:string, depth:number):void {
+    function walk(v:unknown, path:string, depth:number):unknown {
       if (++count > MAX_NODES || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
-      if (v === null || typeof v === 'boolean') return;
-      if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return; }
-      if (typeof v === 'string') { if ([...v].length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return; }
+      if (v === null || typeof v === 'boolean') return v;
+      if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return v; }
+      if (typeof v === 'string') { if (v.length > 10000 && [...v].length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return v; }
       if (typeof v !== 'object') invalid(path, 'Only JSON data is accepted; functions and undefined values are not content.');
       if (!Array.isArray(v) && ![Object.prototype, null].includes(Object.getPrototypeOf(v))) throw new ContentError([diagnostic('PLAIN_OBJECT', path, 'Only plain JSON objects are accepted.')]);
       if (ancestors.has(v)) invalid(path, 'Cyclic object graphs are not JSON content.');
@@ -93,27 +93,33 @@
         if (Array.isArray(v)) {
           const names = Object.getOwnPropertyNames(v);
           if (names.length !== v.length + 1 || !names.includes('length')) invalid(path, 'Arrays must be dense JSON lists with no extra properties.');
+          const result:unknown[]=detach?[]:v;
           for (let i = 0; i < v.length; i++) {
             const descriptor = Object.getOwnPropertyDescriptor(v, String(i));
             if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
               invalid(path + '/' + i, 'Accessors and hidden array values are not JSON content.');
-            walk(descriptor!.value, path + '/' + i, depth + 1);
+            const child=walk(descriptor!.value, path + '/' + i, depth + 1);
+            if(detach)result.push(child);
           }
-          return;
+          // Retain Array species only after every own descriptor has been checked.
+          return detach?v.map((_child,i)=>result[i]):v;
         }
+        const result:Record<string,unknown>=detach?Object.create(Object.getPrototypeOf(v)) : v as Record<string,unknown>;
         for (const k of Object.getOwnPropertyNames(v)) {
           const descriptor = Object.getOwnPropertyDescriptor(v, k), childPath = path + '/' + pointer(k);
           if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', childPath, 'Reserved object property is not allowed.')]);
           if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
             invalid(childPath, 'Accessors and hidden properties are not JSON content.');
-          walk(descriptor!.value, childPath, depth + 1);
+          const child=walk(descriptor!.value, childPath, depth + 1);
+          if(detach)result[k]=child;
         }
+        return result;
       } finally { ancestors.delete(v); }
     }
-    walk(value, '', 0);
+    return walk(value, '', 0) as T;
   }
   function parse(input:unknown, limit = MAX_BYTES):unknown {
-    if (typeof input !== 'string') { inspectJson(input); const serialized = JSON.stringify(input); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return cloneJson(input); }
+    if (typeof input !== 'string') { const value=copy(input),serialized = JSON.stringify(value); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return value; }
     if (new TextEncoder().encode(input).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the ' + Math.round(limit / 1024) + ' KiB file size limit.')]);
     let value:unknown;
     try { value = JSON.parse(input.replace(/^\uFEFF/, '')); } catch (error) { throw new ContentError([diagnostic('JSON_SYNTAX', '/', 'Could not read JSON: ' + (error instanceof Error?error.message:String(error)), 'Export UTF-8 JSON with no comments or trailing commas.')]); }
@@ -178,7 +184,10 @@
     for (const [category, definitions] of Object.entries(doc.components)) {
       const seen = new Set();
       definitions.forEach((def, i) => { if (seen.has(def.id)) errors.push(diagnostic('DUPLICATE_ID', '/components/' + category + '/' + i + '/id', 'Duplicate component ID “' + def.id + '”.')); seen.add(def.id); });
-      for (const def of DEFAULT.components[category as Category]) if (!seen.has(def.id)) errors.push(diagnostic('REQUIRED_COMPONENT', '/components/' + category, 'The existing runtime requires ' + category + '/' + def.id + '.', 'Stable IDs cannot be deleted or renamed. Use a patch to update selected components.'));
+      const clauses = SCHEMA.properties?.components?.properties?.[category]?.allOf;
+      const nativeIds = clauses?.map(clause => clause.contains?.properties?.id?.const).filter((id):id is string => typeof id === 'string');
+      const requiredIds = nativeIds?.length ? nativeIds : DEFAULT.components[category as Category].map(def => def.id);
+      for (const id of requiredIds) if (!seen.has(id)) errors.push(diagnostic('REQUIRED_COMPONENT', '/components/' + category, 'The existing runtime requires ' + category + '/' + id + '.', 'Stable IDs cannot be deleted or renamed. Use a patch to update selected components.'));
     }
     if (errors.length) return errors;
     for (const [i, r] of doc.components.recipes.entries()) if (r.output !== r.id) errors.push(diagnostic('OUTPUT_BINDING', '/components/recipes/' + i + '/output', 'The recipe ID must equal its output item ID in this runtime.'));
@@ -206,7 +215,7 @@
   function canonical(doc:Library):Library {
     const result = copy(doc); result.kind = 'library'; delete result.base;
     for (const category of categories) {
-      const map = index<Component>(result.components[category]); setComponents(result,category,DEFAULT.components[category].map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
+      const map = index<Component>(result.components[category]); setComponents(result,category,DEFAULT.components[category].filter(d => own(map, d.id)).map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
     }
     return result;
   }

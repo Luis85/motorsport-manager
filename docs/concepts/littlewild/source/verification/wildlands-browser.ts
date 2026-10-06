@@ -56,7 +56,7 @@ async function main():Promise<void>{
     assert.equal(project.format,'wildlands-project');assert.equal(project.target,'godot');
     assert.equal(project.scenarioId,'littlewild');assert.equal(project.pack.id,'littlewild');
     assert(project.pack.scenes.some(scene=>scene.id===project.sceneId));
-    const authored=JSON.parse(fs.readFileSync(path.join(ROOT,'source/content/littlewild.pack.json'),'utf8')) as LWContentPorts.ScenarioPack;
+    const authored=JSON.parse(fs.readFileSync(path.join(ROOT,'.generated/content/littlewild.pack.json'),'utf8')) as LWContentPorts.ScenarioPack;
     for(const scene of authored.scenes)assert(project.pack.scenes.some(value=>value.id===scene.id),'Missing authored scene '+scene.id);
     const builtinIds=await page.evaluate<string[]>('LWScenarios.builtins().find(pack=>pack.id==="littlewild").scenes.map(scene=>scene.id)');
     assert.deepEqual(project.pack.scenes.map(scene=>scene.id),builtinIds);

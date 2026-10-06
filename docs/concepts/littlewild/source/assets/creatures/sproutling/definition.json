@@ -1,0 +1,3464 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "creatures",
+  "id": "sproutling",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "actor",
+    "id": "sproutling",
+    "name": "Sproutling",
+    "materials": {
+      "fur": "#caa273",
+      "light": "#eed8b4",
+      "inner": "#c98f79",
+      "nose": "#79503e",
+      "eyeWhite": "#faf6de",
+      "pupil": "#303f37",
+      "shadow": {
+        "color": "#455f52",
+        "transparent": true,
+        "opacity": 0.16,
+        "depthWrite": false
+      },
+      "gold": "#dfbf70"
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "shadow",
+            "position": [
+              0,
+              0.055,
+              0
+            ],
+            "scale": [
+              0.27,
+              0.005,
+              0.21
+            ],
+            "material": "shadow",
+            "castShadow": false
+          },
+          {
+            "primitive": "group",
+            "id": "body",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "children": [
+              {
+                "primitive": "soft",
+                "id": "torso",
+                "position": [
+                  0,
+                  0.32,
+                  0
+                ],
+                "scale": [
+                  0.225,
+                  0.28,
+                  0.2
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "bib",
+                "position": [
+                  0,
+                  0.32,
+                  0.13
+                ],
+                "scale": [
+                  0.163,
+                  0.205,
+                  0.1
+                ],
+                "material": "light"
+              },
+              {
+                "primitive": "group",
+                "id": "head",
+                "position": [
+                  0,
+                  0.64,
+                  0.045
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "head-shell",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.278,
+                      0.249,
+                      0.234
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-left",
+                    "position": [
+                      -0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-right",
+                    "position": [
+                      0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-left",
+                    "position": [
+                      -0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-outer",
+                        "position": [
+                          0,
+                          0.07,
+                          0
+                        ],
+                        "scale": [
+                          0.085,
+                          0.17,
+                          0.065
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-inner",
+                        "position": [
+                          0,
+                          0.08,
+                          0.05
+                        ],
+                        "scale": [
+                          0.045,
+                          0.1,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-right",
+                    "position": [
+                      0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-outer",
+                        "position": [
+                          0,
+                          0.07,
+                          0
+                        ],
+                        "scale": [
+                          0.085,
+                          0.17,
+                          0.065
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-inner",
+                        "position": [
+                          0,
+                          0.08,
+                          0.05
+                        ],
+                        "scale": [
+                          0.045,
+                          0.1,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      -0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-left",
+                    "position": [
+                      -0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-right",
+                    "position": [
+                      0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-left",
+                    "position": [
+                      -0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      0.04
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-right",
+                    "position": [
+                      0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      -0.04
+                    ]
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-left",
+                    "position": [
+                      -0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-right",
+                    "position": [
+                      0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "nose",
+                    "position": [
+                      0,
+                      -0.066,
+                      0.258
+                    ],
+                    "scale": [
+                      0.036,
+                      0.026,
+                      0.025
+                    ],
+                    "material": "nose"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "mouth",
+                    "position": [
+                      0,
+                      -0.137,
+                      0.254
+                    ],
+                    "children": [
+                      {
+                        "primitive": "box",
+                        "id": "mouth-left",
+                        "position": [
+                          -0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          -0.22
+                        ]
+                      },
+                      {
+                        "primitive": "box",
+                        "id": "mouth-right",
+                        "position": [
+                          0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          0.22
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "headgear-socket",
+                    "position": [
+                      0,
+                      0.172,
+                      -0.01
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-left",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-right",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "group",
+                "id": "foot-left-socket",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "foot-right-socket",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "arm-left",
+                "position": [
+                  -0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "arm-right",
+                "position": [
+                  0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "tool-socket",
+                    "position": [
+                      0.02,
+                      -0.075,
+                      0.09
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "tail",
+                "position": [
+                  0,
+                  0.225,
+                  -0.195
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "tail-soft",
+                    "position": [
+                      0,
+                      0,
+                      -0.025
+                    ],
+                    "scale": [
+                      0.1,
+                      0.13,
+                      0.1
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "rotation": [
+                  -0.4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "body-gear-socket",
+                "position": [
+                  0,
+                  0.328,
+                  0
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "back-gear-socket",
+                "position": [
+                  0,
+                  0.351,
+                  -0.245
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "charm-gear-socket",
+                "position": [
+                  0,
+                  0.38,
+                  0.215
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "carry-socket",
+                "position": [
+                  0,
+                  0.245,
+                  0.325
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "care",
+                "position": [
+                  0,
+                  0.51,
+                  0.34
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "care-snack",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.055,
+                      0.045,
+                      0.052
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "cylinder",
+                    "id": "care-cup",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.046,
+                      0.12,
+                      0.046
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "visible": false
+              }
+            ]
+          }
+        ]
+      },
+      "world-round": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "shadow",
+            "position": [
+              0,
+              0.055,
+              0
+            ],
+            "scale": [
+              0.27,
+              0.005,
+              0.21
+            ],
+            "material": "shadow",
+            "castShadow": false
+          },
+          {
+            "primitive": "group",
+            "id": "body",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "children": [
+              {
+                "primitive": "soft",
+                "id": "torso",
+                "position": [
+                  0,
+                  0.32,
+                  0
+                ],
+                "scale": [
+                  0.225,
+                  0.28,
+                  0.2
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "bib",
+                "position": [
+                  0,
+                  0.32,
+                  0.13
+                ],
+                "scale": [
+                  0.163,
+                  0.205,
+                  0.1
+                ],
+                "material": "light"
+              },
+              {
+                "primitive": "group",
+                "id": "head",
+                "position": [
+                  0,
+                  0.64,
+                  0.045
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "head-shell",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.278,
+                      0.249,
+                      0.234
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-left",
+                    "position": [
+                      -0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-right",
+                    "position": [
+                      0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-left",
+                    "position": [
+                      -0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-outer",
+                        "position": [
+                          0,
+                          0.042,
+                          0
+                        ],
+                        "scale": [
+                          0.089,
+                          0.105,
+                          0.068
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-inner",
+                        "position": [
+                          0,
+                          0.046,
+                          0.053
+                        ],
+                        "scale": [
+                          0.048,
+                          0.061,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-right",
+                    "position": [
+                      0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-outer",
+                        "position": [
+                          0,
+                          0.042,
+                          0
+                        ],
+                        "scale": [
+                          0.089,
+                          0.105,
+                          0.068
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-inner",
+                        "position": [
+                          0,
+                          0.046,
+                          0.053
+                        ],
+                        "scale": [
+                          0.048,
+                          0.061,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      -0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-left",
+                    "position": [
+                      -0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-right",
+                    "position": [
+                      0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-left",
+                    "position": [
+                      -0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      0.04
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-right",
+                    "position": [
+                      0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      -0.04
+                    ]
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-left",
+                    "position": [
+                      -0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-right",
+                    "position": [
+                      0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "nose",
+                    "position": [
+                      0,
+                      -0.066,
+                      0.258
+                    ],
+                    "scale": [
+                      0.036,
+                      0.026,
+                      0.025
+                    ],
+                    "material": "nose"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "mouth",
+                    "position": [
+                      0,
+                      -0.137,
+                      0.254
+                    ],
+                    "children": [
+                      {
+                        "primitive": "box",
+                        "id": "mouth-left",
+                        "position": [
+                          -0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          -0.22
+                        ]
+                      },
+                      {
+                        "primitive": "box",
+                        "id": "mouth-right",
+                        "position": [
+                          0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          0.22
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "headgear-socket",
+                    "position": [
+                      0,
+                      0.172,
+                      -0.01
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-left",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-right",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "group",
+                "id": "foot-left-socket",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "foot-right-socket",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "arm-left",
+                "position": [
+                  -0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "arm-right",
+                "position": [
+                  0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "tool-socket",
+                    "position": [
+                      0.02,
+                      -0.075,
+                      0.09
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "tail",
+                "position": [
+                  0,
+                  0.225,
+                  -0.195
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "tail-soft",
+                    "position": [
+                      0,
+                      0,
+                      -0.025
+                    ],
+                    "scale": [
+                      0.101,
+                      0.094,
+                      0.097
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "rotation": [
+                  -0.4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "body-gear-socket",
+                "position": [
+                  0,
+                  0.328,
+                  0
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "back-gear-socket",
+                "position": [
+                  0,
+                  0.351,
+                  -0.245
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "charm-gear-socket",
+                "position": [
+                  0,
+                  0.38,
+                  0.215
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "carry-socket",
+                "position": [
+                  0,
+                  0.245,
+                  0.325
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "care",
+                "position": [
+                  0,
+                  0.51,
+                  0.34
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "care-snack",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.055,
+                      0.045,
+                      0.052
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "cylinder",
+                    "id": "care-cup",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.046,
+                      0.12,
+                      0.046
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "visible": false
+              }
+            ]
+          }
+        ]
+      },
+      "world-long": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "shadow",
+            "position": [
+              0,
+              0.055,
+              0
+            ],
+            "scale": [
+              0.27,
+              0.005,
+              0.21
+            ],
+            "material": "shadow",
+            "castShadow": false
+          },
+          {
+            "primitive": "group",
+            "id": "body",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "children": [
+              {
+                "primitive": "soft",
+                "id": "torso",
+                "position": [
+                  0,
+                  0.32,
+                  0
+                ],
+                "scale": [
+                  0.225,
+                  0.28,
+                  0.2
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "bib",
+                "position": [
+                  0,
+                  0.32,
+                  0.13
+                ],
+                "scale": [
+                  0.163,
+                  0.205,
+                  0.1
+                ],
+                "material": "light"
+              },
+              {
+                "primitive": "group",
+                "id": "head",
+                "position": [
+                  0,
+                  0.64,
+                  0.045
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "head-shell",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.278,
+                      0.249,
+                      0.234
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-left",
+                    "position": [
+                      -0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-right",
+                    "position": [
+                      0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-left",
+                    "position": [
+                      -0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-outer",
+                        "position": [
+                          0,
+                          0.115,
+                          0
+                        ],
+                        "scale": [
+                          0.068,
+                          0.232,
+                          0.061
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-left-inner",
+                        "position": [
+                          0,
+                          0.138,
+                          0.05
+                        ],
+                        "scale": [
+                          0.032,
+                          0.14,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      0.12
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-right",
+                    "position": [
+                      0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-outer",
+                        "position": [
+                          0,
+                          0.115,
+                          0
+                        ],
+                        "scale": [
+                          0.068,
+                          0.232,
+                          0.061
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "ear-right-inner",
+                        "position": [
+                          0,
+                          0.138,
+                          0.05
+                        ],
+                        "scale": [
+                          0.032,
+                          0.14,
+                          0.012
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      -0.12
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-left",
+                    "position": [
+                      -0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-right",
+                    "position": [
+                      0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-left",
+                    "position": [
+                      -0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      0.04
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-right",
+                    "position": [
+                      0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      -0.04
+                    ]
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-left",
+                    "position": [
+                      -0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-right",
+                    "position": [
+                      0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "nose",
+                    "position": [
+                      0,
+                      -0.066,
+                      0.258
+                    ],
+                    "scale": [
+                      0.036,
+                      0.026,
+                      0.025
+                    ],
+                    "material": "nose"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "mouth",
+                    "position": [
+                      0,
+                      -0.137,
+                      0.254
+                    ],
+                    "children": [
+                      {
+                        "primitive": "box",
+                        "id": "mouth-left",
+                        "position": [
+                          -0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          -0.22
+                        ]
+                      },
+                      {
+                        "primitive": "box",
+                        "id": "mouth-right",
+                        "position": [
+                          0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          0.22
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "headgear-socket",
+                    "position": [
+                      0,
+                      0.172,
+                      -0.01
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-left",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-right",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "group",
+                "id": "foot-left-socket",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "foot-right-socket",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "arm-left",
+                "position": [
+                  -0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "arm-right",
+                "position": [
+                  0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "tool-socket",
+                    "position": [
+                      0.02,
+                      -0.075,
+                      0.09
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "tail",
+                "position": [
+                  0,
+                  0.225,
+                  -0.195
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "tail-soft",
+                    "position": [
+                      0,
+                      0,
+                      -0.025
+                    ],
+                    "scale": [
+                      0.101,
+                      0.094,
+                      0.097
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "rotation": [
+                  -0.4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "body-gear-socket",
+                "position": [
+                  0,
+                  0.328,
+                  0
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "back-gear-socket",
+                "position": [
+                  0,
+                  0.351,
+                  -0.245
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "charm-gear-socket",
+                "position": [
+                  0,
+                  0.38,
+                  0.215
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "carry-socket",
+                "position": [
+                  0,
+                  0.245,
+                  0.325
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "care",
+                "position": [
+                  0,
+                  0.51,
+                  0.34
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "care-snack",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.055,
+                      0.045,
+                      0.052
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "cylinder",
+                    "id": "care-cup",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.046,
+                      0.12,
+                      0.046
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "visible": false
+              }
+            ]
+          }
+        ]
+      },
+      "world-pointed": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "shadow",
+            "position": [
+              0,
+              0.055,
+              0
+            ],
+            "scale": [
+              0.27,
+              0.005,
+              0.21
+            ],
+            "material": "shadow",
+            "castShadow": false
+          },
+          {
+            "primitive": "group",
+            "id": "body",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "children": [
+              {
+                "primitive": "soft",
+                "id": "torso",
+                "position": [
+                  0,
+                  0.32,
+                  0
+                ],
+                "scale": [
+                  0.225,
+                  0.28,
+                  0.2
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "bib",
+                "position": [
+                  0,
+                  0.32,
+                  0.13
+                ],
+                "scale": [
+                  0.163,
+                  0.205,
+                  0.1
+                ],
+                "material": "light"
+              },
+              {
+                "primitive": "group",
+                "id": "head",
+                "position": [
+                  0,
+                  0.64,
+                  0.045
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "head-shell",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.278,
+                      0.249,
+                      0.234
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-left",
+                    "position": [
+                      -0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "muzzle-right",
+                    "position": [
+                      0.085,
+                      -0.095,
+                      0.183
+                    ],
+                    "scale": [
+                      0.12,
+                      0.092,
+                      0.085
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-left",
+                    "position": [
+                      -0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "cone",
+                        "id": "ear-left-outer",
+                        "position": [
+                          0,
+                          0.077,
+                          0
+                        ],
+                        "scale": [
+                          0.09,
+                          0.236,
+                          0.075
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "cone",
+                        "id": "ear-left-inner",
+                        "position": [
+                          0,
+                          0.077,
+                          0.046
+                        ],
+                        "scale": [
+                          0.046,
+                          0.15,
+                          0.016
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "ear-right",
+                    "position": [
+                      0.19,
+                      0.175,
+                      -0.007
+                    ],
+                    "children": [
+                      {
+                        "primitive": "cone",
+                        "id": "ear-right-outer",
+                        "position": [
+                          0,
+                          0.077,
+                          0
+                        ],
+                        "scale": [
+                          0.09,
+                          0.236,
+                          0.075
+                        ],
+                        "material": "fur"
+                      },
+                      {
+                        "primitive": "cone",
+                        "id": "ear-right-inner",
+                        "position": [
+                          0,
+                          0.077,
+                          0.046
+                        ],
+                        "scale": [
+                          0.046,
+                          0.15,
+                          0.016
+                        ],
+                        "material": "inner"
+                      }
+                    ],
+                    "rotation": [
+                      0,
+                      0,
+                      -0.2
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-left",
+                    "position": [
+                      -0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-left-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "eye-right",
+                    "position": [
+                      0.097,
+                      0.024,
+                      0.206
+                    ],
+                    "children": [
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-white",
+                        "position": [
+                          0,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.041,
+                          0.052,
+                          0.028
+                        ],
+                        "material": "eyeWhite"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-pupil",
+                        "position": [
+                          0,
+                          -0.003,
+                          0.02
+                        ],
+                        "scale": [
+                          0.029,
+                          0.043,
+                          0.015
+                        ],
+                        "material": "pupil"
+                      },
+                      {
+                        "primitive": "soft",
+                        "id": "eye-right-glint",
+                        "position": [
+                          -0.009,
+                          0.015,
+                          0.033
+                        ],
+                        "scale": [
+                          0.009,
+                          0.012,
+                          0.006
+                        ],
+                        "material": "eyeWhite"
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-left",
+                    "position": [
+                      -0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      0.04
+                    ]
+                  },
+                  {
+                    "primitive": "box",
+                    "id": "brow-right",
+                    "position": [
+                      0.097,
+                      0.099,
+                      0.21
+                    ],
+                    "scale": [
+                      0.085,
+                      0.014,
+                      0.019
+                    ],
+                    "material": "nose",
+                    "rotation": [
+                      0,
+                      0,
+                      -0.04
+                    ]
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-left",
+                    "position": [
+                      -0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "cheek-right",
+                    "position": [
+                      0.174,
+                      -0.08,
+                      0.192
+                    ],
+                    "scale": [
+                      0.043,
+                      0.026,
+                      0.02
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "nose",
+                    "position": [
+                      0,
+                      -0.066,
+                      0.258
+                    ],
+                    "scale": [
+                      0.036,
+                      0.026,
+                      0.025
+                    ],
+                    "material": "nose"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "mouth",
+                    "position": [
+                      0,
+                      -0.137,
+                      0.254
+                    ],
+                    "children": [
+                      {
+                        "primitive": "box",
+                        "id": "mouth-left",
+                        "position": [
+                          -0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          -0.22
+                        ]
+                      },
+                      {
+                        "primitive": "box",
+                        "id": "mouth-right",
+                        "position": [
+                          0.024,
+                          0,
+                          0
+                        ],
+                        "scale": [
+                          0.045,
+                          0.01,
+                          0.012
+                        ],
+                        "material": "nose",
+                        "rotation": [
+                          0,
+                          0,
+                          0.22
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "headgear-socket",
+                    "position": [
+                      0,
+                      0.172,
+                      -0.01
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-left",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "soft",
+                "id": "foot-right",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "scale": [
+                  0.104,
+                  0.082,
+                  0.146
+                ],
+                "material": "fur"
+              },
+              {
+                "primitive": "group",
+                "id": "foot-left-socket",
+                "position": [
+                  -0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "foot-right-socket",
+                "position": [
+                  0.118,
+                  0.083,
+                  0.045
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "arm-left",
+                "position": [
+                  -0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-left-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "arm-right",
+                "position": [
+                  0.235,
+                  0.405,
+                  0.014
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-upper",
+                    "position": [
+                      0,
+                      -0.06,
+                      0
+                    ],
+                    "scale": [
+                      0.067,
+                      0.133,
+                      0.067
+                    ],
+                    "material": "fur"
+                  },
+                  {
+                    "primitive": "soft",
+                    "id": "arm-right-paw",
+                    "position": [
+                      0,
+                      -0.151,
+                      0.008
+                    ],
+                    "scale": [
+                      0.07,
+                      0.064,
+                      0.07
+                    ],
+                    "material": "light"
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "tool-socket",
+                    "position": [
+                      0.02,
+                      -0.075,
+                      0.09
+                    ],
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "tail",
+                "position": [
+                  0,
+                  0.225,
+                  -0.195
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "tail-soft",
+                    "position": [
+                      0,
+                      0.03,
+                      -0.025
+                    ],
+                    "scale": [
+                      0.075,
+                      0.21,
+                      0.079
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "rotation": [
+                  -0.4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "primitive": "group",
+                "id": "body-gear-socket",
+                "position": [
+                  0,
+                  0.328,
+                  0
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "back-gear-socket",
+                "position": [
+                  0,
+                  0.351,
+                  -0.245
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "charm-gear-socket",
+                "position": [
+                  0,
+                  0.38,
+                  0.215
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "carry-socket",
+                "position": [
+                  0,
+                  0.245,
+                  0.325
+                ],
+                "children": []
+              },
+              {
+                "primitive": "group",
+                "id": "care",
+                "position": [
+                  0,
+                  0.51,
+                  0.34
+                ],
+                "children": [
+                  {
+                    "primitive": "soft",
+                    "id": "care-snack",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.055,
+                      0.045,
+                      0.052
+                    ],
+                    "material": "inner"
+                  },
+                  {
+                    "primitive": "cylinder",
+                    "id": "care-cup",
+                    "position": [
+                      0,
+                      0,
+                      0
+                    ],
+                    "scale": [
+                      0.046,
+                      0.12,
+                      0.046
+                    ],
+                    "material": "light"
+                  }
+                ],
+                "visible": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "radius": 1.4,
+      "hitHeight": 1.3,
+      "variants": [
+        "world-round",
+        "world-long",
+        "world-pointed"
+      ]
+    },
+    "behaviors": {
+      "sockets": {
+        "head": "headgear-socket",
+        "body": "body-gear-socket",
+        "back": "back-gear-socket",
+        "feet": [
+          "foot-left-socket",
+          "foot-right-socket"
+        ],
+        "tool": "tool-socket",
+        "charm": "charm-gear-socket",
+        "carry": "carry-socket"
+      },
+      "animation": {
+        "bodyBob": 0.032,
+        "breath": 0.004,
+        "earSway": 0.022,
+        "tailSway": 0.12,
+        "footLift": 0.068,
+        "footStride": 0.075,
+        "walkArmSwing": 0.28,
+        "workArmBase": -0.36,
+        "workArmSwing": 0.43,
+        "blinkThreshold": 0.996,
+        "idleHeadYaw": 0.055,
+        "idleHeadRoll": 0.028
+      },
+      "appearances": {
+        "curious": {
+          "model": "world-round",
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "labelHeight": 1.17,
+          "contextHeight": 0.67,
+          "bubbleHeight": 1.55,
+          "materials": {
+            "fur": "#caa273",
+            "light": "#eed8b4",
+            "inner": "#c98f79",
+            "nose": "#79503e"
+          }
+        },
+        "maker": {
+          "model": "world-long",
+          "scale": [
+            0.98,
+            1.03,
+            0.98
+          ],
+          "labelHeight": 1.34,
+          "contextHeight": 0.74,
+          "bubbleHeight": 1.66,
+          "materials": {
+            "fur": "#a4ba99",
+            "light": "#e3e7c5",
+            "inner": "#bfab99",
+            "nose": "#696b56"
+          }
+        },
+        "sunny": {
+          "model": "world-pointed",
+          "scale": [
+            1.03,
+            0.98,
+            1.03
+          ],
+          "labelHeight": 1.18,
+          "contextHeight": 0.67,
+          "bubbleHeight": 1.54,
+          "materials": {
+            "fur": "#e0cbb0",
+            "light": "#fbecd1",
+            "inner": "#dca08e",
+            "nose": "#a46d63"
+          }
+        },
+        "spirited": {
+          "model": "world-round",
+          "scale": [
+            1.01,
+            1.01,
+            1
+          ],
+          "labelHeight": 1.19,
+          "contextHeight": 0.68,
+          "bubbleHeight": 1.57,
+          "materials": {
+            "fur": "#b99ba8",
+            "light": "#ead5cd",
+            "inner": "#c08e9b",
+            "nose": "#725363"
+          }
+        },
+        "thoughtful": {
+          "model": "world-long",
+          "scale": [
+            0.97,
+            1.04,
+            0.97
+          ],
+          "labelHeight": 1.36,
+          "contextHeight": 0.75,
+          "bubbleHeight": 1.68,
+          "materials": {
+            "fur": "#9fb5b0",
+            "light": "#d7e5d9",
+            "inner": "#c8aaa6",
+            "nose": "#596f72"
+          }
+        },
+        "steadfast": {
+          "model": "world-pointed",
+          "scale": [
+            1.04,
+            0.99,
+            1.03
+          ],
+          "labelHeight": 1.2,
+          "contextHeight": 0.69,
+          "bubbleHeight": 1.58,
+          "materials": {
+            "fur": "#c7b779",
+            "light": "#f0e3b6",
+            "inner": "#be9681",
+            "nose": "#847048"
+          }
+        }
+      },
+      "expression": {
+        "angerAt": 45,
+        "tiredEnergyBelow": 30,
+        "concernFoodBelow": 25,
+        "concernWaterBelow": 25,
+        "happyJoyAbove": 72
+      }
+    },
+    "rig": {
+      "body": "body",
+      "torso": "torso",
+      "bib": "bib",
+      "head": "head",
+      "ears": [
+        "ear-left",
+        "ear-right"
+      ],
+      "tail": "tail",
+      "feet": [
+        "foot-left",
+        "foot-right"
+      ],
+      "arms": [
+        "arm-left",
+        "arm-right"
+      ],
+      "eyes": [
+        "eye-left",
+        "eye-right"
+      ],
+      "brows": [
+        "brow-left",
+        "brow-right"
+      ],
+      "mouth": "mouth",
+      "carry": "carry-socket",
+      "care": "care",
+      "snack": "care-snack",
+      "cup": "care-cup"
+    }
+  },
+  "creature": {
+    "format": "littlewild-creature",
+    "schemaVersion": 1,
+    "id": "sproutling",
+    "name": "Sproutling",
+    "description": "A small woodland companion with an independent routine, personality, belongings and progression.",
+    "defaultPersonality": "curious",
+    "personalities": [
+      "curious",
+      "maker",
+      "sunny",
+      "spirited",
+      "thoughtful",
+      "steadfast"
+    ],
+    "names": [
+      "Pip",
+      "Fern",
+      "Mochi",
+      "Clover",
+      "Bramble",
+      "Wren",
+      "Pebble",
+      "Juniper"
+    ],
+    "movement": {
+      "baseSpeed": 1.8,
+      "bondThreshold": 65,
+      "bondedSpeedBonus": 0.12
+    },
+    "rng": {
+      "base": 4631,
+      "stride": 1913
+    },
+    "state": {
+      "personalFields": [
+        "archetype",
+        "name",
+        "personality",
+        "creature",
+        "bond",
+        "needs",
+        "inventory",
+        "allowance",
+        "skills",
+        "researched",
+        "training",
+        "orders",
+        "task",
+        "focus",
+        "cooldowns",
+        "memory",
+        "stats",
+        "stockTargets",
+        "practice",
+        "memories",
+        "wish",
+        "daily",
+        "learning",
+        "specializations",
+        "fieldStudies",
+        "buildPolicy",
+        "metrics",
+        "traits",
+        "rpg",
+        "equipment",
+        "equipQueue",
+        "questPlan",
+        "activeQuest",
+        "questHistory",
+        "needsDeposit",
+        "feelings",
+        "behavior",
+        "lastRoll",
+        "careVisual",
+        "salvage",
+        "socialIntent",
+        "unpackIntent",
+        "lastNeedFeeling",
+        "lastTemperCheck",
+        "homeId",
+        "worldPickup",
+        "worldSupply",
+        "eventInteractions",
+        "interactionCooldowns"
+      ],
+      "defaults": {
+        "archetype": "sproutling",
+        "name": "Pip",
+        "personality": "curious",
+        "creature": {
+          "level": 1,
+          "xp": 0,
+          "coins": 0,
+          "x": 8,
+          "y": 9,
+          "dir": 1
+        },
+        "bond": 22,
+        "needs": {
+          "food": 68,
+          "water": 58,
+          "energy": 82,
+          "comfort": 52,
+          "joy": 65
+        },
+        "inventory": {
+          "wood": 0,
+          "stone": 0,
+          "fiber": 0,
+          "berries": 0,
+          "water": 0,
+          "planks": 0,
+          "meat": 0,
+          "meals": 0,
+          "clay": 0,
+          "ore": 0,
+          "herbs": 0,
+          "grain": 0,
+          "rope": 0,
+          "cloth": 0,
+          "charcoal": 0,
+          "bricks": 0,
+          "pots": 0,
+          "beams": 0,
+          "iron": 0,
+          "tools": 0,
+          "flour": 0,
+          "bread": 0,
+          "balm": 0,
+          "glass": 0
+        },
+        "allowance": {
+          "limit": 10,
+          "given": 0,
+          "auto": true,
+          "reserve": 4,
+          "sourcing": "balanced"
+        },
+        "skills": {},
+        "researched": {},
+        "training": null,
+        "orders": [],
+        "task": null,
+        "focus": "balanced",
+        "cooldowns": {
+          "feed": 0,
+          "water": 0,
+          "bond": 0,
+          "praise": 0,
+          "explore": 0,
+          "research": 0
+        },
+        "memory": {
+          "lastAchievement": -100,
+          "lastPraise": -100,
+          "lastGentleWarning": -100,
+          "lastPlan": "",
+          "lastDecline": -100
+        },
+        "stats": {
+          "fed": 0,
+          "watered": 0,
+          "bonded": 0,
+          "gathered": 0,
+          "built": 0,
+          "trained": 0,
+          "planksMade": 0,
+          "deliveries": 0,
+          "explored": 0,
+          "earned": 0,
+          "researchEarned": 0
+        },
+        "stockTargets": {
+          "wood": 0,
+          "stone": 0,
+          "fiber": 0,
+          "berries": 4,
+          "water": 3,
+          "planks": 0,
+          "meat": 0,
+          "meals": 0,
+          "clay": 0,
+          "ore": 0,
+          "herbs": 0,
+          "grain": 0,
+          "rope": 0,
+          "cloth": 0,
+          "charcoal": 0,
+          "bricks": 0,
+          "pots": 0,
+          "beams": 0,
+          "iron": 0,
+          "tools": 0,
+          "flour": 0,
+          "bread": 0,
+          "balm": 0,
+          "glass": 0
+        },
+        "practice": {},
+        "memories": [],
+        "wish": null,
+        "daily": {
+          "day": 1,
+          "bonded": 0
+        },
+        "learning": {
+          "queue": [],
+          "style": "together",
+          "fatigue": 0,
+          "recovering": false,
+          "paused": false,
+          "practiceDay": 1,
+          "practicedToday": {},
+          "path": "home"
+        },
+        "specializations": {},
+        "fieldStudies": {
+          "active": null,
+          "progress": {},
+          "completed": []
+        },
+        "buildPolicy": {
+          "approach": "balanced"
+        },
+        "metrics": {
+          "crafts": {},
+          "gathered": {},
+          "practices": {},
+          "stages": 0,
+          "upgrades": 0,
+          "lessons": 0
+        },
+        "traits": [],
+        "rpg": {
+          "attributes": {
+            "ST": 10,
+            "DX": 10,
+            "IQ": 10,
+            "HT": 10
+          },
+          "cp": 0,
+          "points": {},
+          "practiceCredit": {},
+          "rolls": [],
+          "rng": 2718
+        },
+        "equipment": {
+          "head": null,
+          "body": null,
+          "tool": null,
+          "feet": null,
+          "back": null,
+          "charm": null
+        },
+        "equipQueue": [],
+        "questPlan": null,
+        "activeQuest": null,
+        "questHistory": [],
+        "needsDeposit": false,
+        "feelings": {
+          "anger": 0,
+          "social": 76,
+          "causes": [],
+          "lastControl": -100,
+          "coolingUntil": 0,
+          "lastSocial": -100,
+          "mood": "Content"
+        },
+        "behavior": {
+          "trace": [],
+          "memory": {},
+          "lastAction": "A new beginning"
+        },
+        "lastRoll": null,
+        "careVisual": null,
+        "salvage": [],
+        "socialIntent": null,
+        "unpackIntent": false,
+        "lastNeedFeeling": 0,
+        "lastTemperCheck": null,
+        "homeId": null,
+        "worldPickup": null,
+        "worldSupply": null,
+        "eventInteractions": [],
+        "interactionCooldowns": {}
+      },
+      "modes": {
+        "founder": {
+          "creature": {
+            "coins": 6,
+            "x": 8,
+            "y": 9,
+            "dir": 1
+          },
+          "inventory": {
+            "wood": 2,
+            "fiber": 2,
+            "berries": 5,
+            "water": 4
+          },
+          "allowance": {
+            "given": 6
+          }
+        },
+        "arrival": {
+          "creature": {
+            "coins": 0,
+            "x": 17,
+            "y": 16,
+            "dir": -1
+          },
+          "inventory": {},
+          "allowance": {
+            "given": 0
+          },
+          "feelings": {
+            "causes": [
+              {
+                "reason": "A new place, and a new beginning",
+                "joy": 6,
+                "anger": 0,
+                "time": 0
+              }
+            ]
+          }
+        }
+      }
+    },
+    "ecs": {
+      "components": [
+        {
+          "type": "Transform",
+          "field": "creature"
+        },
+        {
+          "type": "Needs",
+          "field": "needs"
+        },
+        {
+          "type": "Learning",
+          "field": "learning"
+        },
+        {
+          "type": "Feelings",
+          "field": "feelings"
+        },
+        {
+          "type": "Inventory",
+          "field": "inventory"
+        }
+      ]
+    },
+    "visualAsset": "sproutling",
+    "physiology": {
+      "food": 1,
+      "water": 1,
+      "energy": 1,
+      "comfort": 1,
+      "joy": 1,
+      "fatigue": 1,
+      "recovery": 1,
+      "social": 1,
+      "anger": 1
+    }
+  }
+}

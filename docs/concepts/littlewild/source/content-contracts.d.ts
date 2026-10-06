@@ -8,7 +8,7 @@ declare namespace LWContentPorts {
  type QuantityMap = Record<string,number>;
  type SchemaType = 'object'|'array'|'string'|'number'|'integer'|'boolean'|'null';
  interface Schema {
-  $ref?:string;$defs?:Record<string,Schema>;allOf?:Schema[];oneOf?:Schema[];if?:Schema;then?:Schema;else?:Schema;propertyNames?:Schema;
+  contains?:Schema;minContains?:number;$ref?:string;$defs?:Record<string,Schema>;allOf?:Schema[];oneOf?:Schema[];if?:Schema;then?:Schema;else?:Schema;propertyNames?:Schema;
   type?:SchemaType|SchemaType[]; const?:unknown; enum?:unknown[]; anyOf?:Schema[];
   properties?:Record<string,Schema>; additionalProperties?:boolean|Schema; required?:string[];
   items?:Schema; minItems?:number; maxItems?:number; uniqueItems?:boolean;
