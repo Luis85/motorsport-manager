@@ -2,7 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {gzipSync} from 'node:zlib';
+
+// pako ships no declarations; the pinned pure-JS encoder keeps payload bytes independent of Node's zlib.
+const pako=require('pako') as {gzip(data:Uint8Array,options:{level:number}):Uint8Array};
 
 interface RuntimeFile {path:string;encoding:'utf8';content:string;}
 export interface RuntimeLoader {encoding:'gzip-base64';decodedBytes:number;sha256:string;data:string;}
@@ -37,7 +39,7 @@ export function writeWildlandsBundle(source:string,generated:string):void{
  const browserBundle={...bundle,sharedEngineSources:true,files:files.filter(file=>file.path!=='runtime/engine-source-bundle.json')};
  const bytes=Buffer.from(JSON.stringify(browserBundle));
  if(bytes.length>64*1024*1024||Buffer.byteLength(text)>64*1024*1024)throw Error('Wildlands runtime exceeds64MiB.');
- const loader:RuntimeLoader={encoding:'gzip-base64',decodedBytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),data:gzipSync(bytes,{level:9}).toString('base64')};
+ const loader:RuntimeLoader={encoding:'gzip-base64',decodedBytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),data:Buffer.from(pako.gzip(bytes,{level:9})).toString('base64')};
  fs.writeFileSync(path.join(generated,'wildlands-runtime-bundle.json'),text);
  fs.writeFileSync(path.join(generated,'wildlands-runtime-loader.json'),JSON.stringify(loader));
  const templateRoot=path.join(source,'wildlands-godot');

@@ -4,8 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import ts from 'typescript';
-import {gzipSync} from 'node:zlib';
 import {INSERTS} from './build-inserts.cjs';
+// pako ships no declarations; the pinned pure-JS encoder keeps payload bytes independent of Node's zlib.
+const pako=require('pako') as {gzip(data:string|Uint8Array,options:{level:number}):Uint8Array};
 const compare=(a:string,b:string):number=>a<b?-1:a>b?1:0;
 const digest=(text:string|Uint8Array):string=>createHash('sha256').update(text).digest('hex');
 function walk(directory:string):string[]{return fs.readdirSync(directory,{withFileTypes:true}).sort((a,b)=>compare(a.name,b.name)).flatMap(entry=>entry.isDirectory()?walk(path.join(directory,entry.name)):entry.isFile()?[path.join(directory,entry.name)]:[]);}
@@ -41,7 +42,7 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
  return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, offline vendors, gate-covered source/vendor documentation and installed TypeScript compiler/Node/Undici declarations; other build dependencies remain exact locked metadata; excludes tests, generated suite results and browser verification evidence, generated artifacts, node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/typescript/lib/tsc.js',dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
 }
 export function writeSourceBundle(project:string,generated:string):LWEngineExport.SourceLoader{
- const bundle=createSourceBundle(project),text=JSON.stringify(bundle),compressed=gzipSync(text,{level:9});
+ const bundle=createSourceBundle(project),text=JSON.stringify(bundle),compressed=Buffer.from(pako.gzip(text,{level:9}));
  const loader:LWEngineExport.SourceLoader={format:'littlewild-engine-source-loader',schemaVersion:1,identity:bundle.identity,decodedBytes:Buffer.byteLength(text),compressedBytes:compressed.byteLength,encoding:'gzip-base64',data:compressed.toString('base64')};
  if(loader.decodedBytes>64*1024*1024)throw Error('Engine source bundle exceeds64MiB.');
  fs.mkdirSync(generated,{recursive:true});fs.writeFileSync(path.join(generated,'engine-source-bundle.json'),text);fs.writeFileSync(path.join(generated,'engine-source-loader.json'),JSON.stringify(loader)+'\n');return loader;
