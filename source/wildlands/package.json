@@ -9,6 +9,7 @@
     "build": "node --import tsx source/build.ts",
     "build:cli": "node --import tsx source/build.ts && node --import tsx source/tools/cli-bundle.cts --output ../../bin/wildlands",
     "check:cli": "node --import tsx source/build.ts && node --import tsx source/tools/cli-bundle.cts --check ../../bin/wildlands",
+    "report:artifacts": "node --import tsx source/tools/artifact-report.cts",
     "verify": "node --import tsx source/verification/verify.ts",
     "toolbox": "node .generated/tools/developer-example.cjs",
     "wildlands": "node .generated/tools/wildlands-cli.cjs",

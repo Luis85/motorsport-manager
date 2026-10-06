@@ -242,6 +242,9 @@
     "source/tools/engine-export-bundle.cts",
     "source/tools/balancing-cli.cts",
     "source/tools/build-inserts.cts",
+    "source/tools/artifact-profiles.cts",
+    "source/tools/artifact-assembler.cts",
+    "source/tools/artifact-report.cts",
     "source/balancing-ui.ts",
     "source/animation-contracts.d.ts",
     "source/storytelling-renderer-contracts.d.ts",
@@ -342,7 +345,9 @@
     "source/tools/pet-cli.cts",
     "source/pet-tools.ts",
     "source/test-pet-wardrobe.cts",
-    "source/pet-store.ts"
+    "source/pet-store.ts",
+    "source/play-boot.ts",
+    "source/verification/artifact-play-browser.ts"
   ],
   "include": []
 }
