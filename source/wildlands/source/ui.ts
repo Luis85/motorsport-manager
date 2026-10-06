@@ -2,7 +2,9 @@
 (function () {
     'use strict';
     // The player host owns the process-global context for this document's lifetime.
-    LWDeveloperSession.claimHost();
+    // Optional bundles (developer session, scenario library, workspace, template hosts) are read
+    // through window.X?. so a play-only colony artifact boots without them.
+    window.LWDeveloperSession?.claimHost();
     const { Engine, SKILLS, BUILDINGS, RES, RECIPES, CONTRACTS, threshold, terrain, clamp } = LW;
     const $ = id => document.getElementById(id), esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const icon = (name, cls = '') => `<svg class="icon ${cls}" aria-hidden="true"><use href="#i-${esc(name)}"/></svg>`;
@@ -12,9 +14,10 @@
         e.innerHTML = value; };
     const width = (id, n) => { const e = $(id); if (e)
         e.style.width = clamp(n, 0, 100) + '%'; };
-    const STORE = 'littlewild.save.v5', LEGACY_STORE = 'littlewild.save.v1', BACKUP_STORE = 'littlewild.backup.v5';
-    const storage = new LWStoryStorage(()=>localStorage,LWStory.inspect,{primary:STORE,backup:BACKUP_STORE,
-        legacy:['littlewild.save.v4','littlewild.save.v3','littlewild.save.v2',LEGACY_STORE],oldBackups:['littlewild.backup.v3']});
+    // Saves are scoped per game. Without a game profile (or with the littlewild namespace)
+    // the exact legacy keys littlewild.save.v5/littlewild.backup.v5 and their migrations apply.
+    const storageNamespace = LWStoryStorage.namespace(window.LWGameProfile);
+    const storage = new LWStoryStorage(()=>localStorage,LWStory.inspect,LWStoryStorage.keys(storageNamespace));
 
     let storyReadId = 0;
     let engine = new Engine(), engineRevision = 0, saveAvailable = true, loadWarning = '';
@@ -60,7 +63,7 @@
     const progressionUI = LWProgressionUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>renderModal(true),save,close:closeModal,result});
     const contentUI = LWContentUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>renderModal(true),toast,backup:backupStory,setEngine,save});
     const colonyUI = LWColonyUI.create({engine:()=>engine,icon,esc,head:modalHead,footer:modalFooter,open:openModal,redraw:()=>{if(ui.modal)renderModal(true);},toast,backup:backupStory,setEngine,save,close:closeModal,result});
-    const preferences=LWInterfacePause.create(()=>localStorage);
+    const preferences=LWInterfacePause.create(LWStoryStorage.scoped(()=>localStorage,storageNamespace));
     let terraform=null, buildingInterior=null, tileMenu=null, buildPanel=null, guidePanel=null, scenarioUI=null, wildlandsUI=null, placementActor=null, placementApproach=null;
     function pauseStatus(){return preferences.status(engine.s,{hidden:document.hidden,cinematic:!!scenarioUI?.storytelling?.isPresenting(),modal:ui.modal,safety:LWInterfacePause.safetyView(ui.modal),placement:!!world.placement,creature:!!worldUI.state.actorId,more:!!worldUI.state.menu,world:!!buildPanel?.designer?.isOpen()||!!terraform?.state.open||!!worldExplorer.pauseReason()||!!buildPanel?.state.open||!!(guidePanel?.state.open&&!guidePanel.state.minimized),tile:!!tileMenu?.isOpen(),planner:!!villageUI.state.open});}
     function pauseToggleMarkup(){return `<section class="v13-time-setting"><h3>Time & attention</h3><label><input type="checkbox" data-pause-on-open ${preferences.pauseOnOpen?'checked':''}><span><strong>Pause when opening panels</strong><small>Include creature cards, tile menus, the planner, world map, and blueprint placement. Turn off to keep the world running while you browse.</small></span></label><p>Manual pause is always respected. Save/content replacement previews and hidden tabs still pause safely. This preference stays on this device, separately from your story.</p><small data-preference-status>${esc(preferences.error||'Preference saved on this device.')}</small></section>`;}
@@ -78,15 +81,16 @@
     const villageUI=LWVillageUI.create({pauseStatus,engine:()=>engine,world:()=>world,esc,icon,head:modalHead,footer:modalFooter,open:openModal,close:closeModal,modal:()=>ui.modal,redraw:()=>renderModal(true),toast,save,backup:backupStory,setEngine,blueprint:selectBlueprint,result,clearContext:()=>{worldUI.clear({restore:false});worldExplorer.clear();},selectCreature:id=>worldUI.openFor(id,null,{focus:true})});
     tileMenu=LWTileContext.create({engine:()=>engine,world:()=>world,village:()=>villageUI,esc,modal:()=>ui.modal,open:openModal,inspect,visit:(id,origin)=>buildingInterior?.open(id,origin),show:(type,id)=>worldExplorer.show(type,id),refresh:()=>updateUI(true),clearOther:()=>{worldUI.clear({restore:false});worldExplorer.clear();if(villageUI.state.open)villageUI.toggle(false);},command:r=>{result(r,r.ok?'Request saved. Creatures handle the work.':null);},cancelPlacement:()=>{world.placement=null;refreshPlacement();}});
     terraform=window.LWTerraformUI?.create({engine:()=>engine,world:()=>world,esc,save,refresh:()=>updateUI(true),closeContexts:()=>{buildingInterior?.close(false);closeModal();tileMenu?.close(false);worldUI.clear({restore:false});worldExplorer.clear();buildPanel?.close(false);buildPanel?.designer?.close(false);guidePanel?.minimize();if(villageUI.state.open)villageUI.toggle(false);world.placement=null;refreshPlacement();}});
-    const terraformButton=document.createElement('button');terraformButton.textContent='Terraform this world';terraformButton.addEventListener('click',()=>terraform.open());$('world-more').prepend(terraformButton);
+    if(terraform){const terraformButton=document.createElement('button');terraformButton.textContent='Terraform this world';terraformButton.addEventListener('click',()=>terraform.open());$('world-more').prepend(terraformButton);}
     const panelContext={engine:()=>engine,world:()=>world,esc,icon,pauseStatus,open:openModal,save,toast,blueprint:selectBlueprint};
     buildingInterior=LWBuildingInteriorUI.create({engine:()=>engine,world:()=>world,esc,save,refresh:()=>updateUI(true),closeContexts:()=>{terraform?.close(false);closeModal();tileMenu?.close(false);worldUI.clear({restore:false});worldExplorer.clear();buildPanel?.close(false);buildPanel?.designer?.close(false);guidePanel?.minimize();if(villageUI.state.open)villageUI.toggle(false);}});
     buildPanel=LWBuildPanel.create(panelContext);
     guidePanel=LWGuidePanel.create({...panelContext,show:showGuideTarget});
-    scenarioUI=LWScenarioUI.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
-    wildlandsUI=WildlandsUI.create({engine:()=>engine,revision:()=>engineRevision,scenarios:scenarioUI,open:openModal,modal:()=>ui.modal,toast});
+    scenarioUI=window.LWScenarioUI?.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
+    scenarioUI=scenarioUI||null;
+    wildlandsUI=scenarioUI&&window.WildlandsUI?.create({engine:()=>engine,revision:()=>engineRevision,scenarios:scenarioUI,open:openModal,modal:()=>ui.modal,toast})||null;
     applySceneRendering();
-    const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);
+    if(scenarioUI){const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);}
     function presentScene(target,camera){
         if(camera){Object.assign(world.camera,camera);world.manual=true;world.invalidate();}
         if(target?.type==='island')world.focus(target.ix*23+9,target.iy*23+9);
@@ -314,17 +318,24 @@
     const clock = new LWFixedStepClock(.1);
     const pacer = new LWPresentation.FramePacer(30);
     let last = performance.now(), paintTimer = 0, saveTimer = 0;
-    const rtsHost=LWRTSHost.create({beforeOpen:()=>{closeModal();tileMenu.close(false);clock.reset();},afterClose:()=>{last=performance.now();clock.reset();}});
-    const rtsButton=document.createElement('button');rtsButton.type='button';rtsButton.textContent='RTS demo';rtsButton.dataset.wildlandsRts='open';rtsButton.addEventListener('click',()=>rtsHost.open());document.querySelector('.wildlands-tools nav').append(rtsButton);
-    const petHost=LWPetHost.create({beforeOpen:()=>{closeModal();tileMenu.close(false);clock.reset();},afterClose:()=>{last=performance.now();clock.reset();}});
-    const petButton=document.createElement('button');petButton.type='button';petButton.textContent='Pet demo';petButton.dataset.wildlandsPet='open';petButton.addEventListener('click',()=>petHost.open());document.querySelector('.wildlands-tools nav').append(petButton);
+    // Optional template applications: each template bundle publishes one host descriptor.
+    // The colony shell mounts only the hosts present in this artifact, in this explicit order,
+    // and at most one of them runs at a time. Each host installs its own public API global.
+    const optionalApps=[window.LWRTSHost?.create?window.LWRTSHost:null,window.LWPetHost?.create?window.LWPetHost:null].filter(Boolean);
+    const embeddedApps=optionalApps.map(app=>{
+        const surface=app.create({beforeOpen:()=>{closeModal();tileMenu.close(false);clock.reset();},afterClose:()=>{last=performance.now();clock.reset();}});
+        const launcherParent=document.querySelector('.wildlands-tools nav')||$('world-more');
+        if(launcherParent){const button=document.createElement('button');button.type='button';button.textContent=app.label;button.dataset[app.launcher]='open';button.addEventListener('click',()=>surface.open());launcherParent.append(button);}
+        app.install(surface);
+        return {app,surface};
+    });
     function frame(now) {
         const dt = Math.max(0, Math.min((now - last) / 1000, .1));
         last = now;
-        if (!document.hidden && rtsHost.active) {rtsHost.advance(dt);clock.reset();}
-        else if (!document.hidden && petHost.active) {petHost.advance(dt);clock.reset();}
+        const activeApp = document.hidden ? null : embeddedApps.find(entry=>entry.surface.active);
+        if (activeApp) {activeApp.surface.advance(dt);clock.reset();}
         else if (!document.hidden) {
-            scenarioUI?.storytelling.draw(dt);
+            scenarioUI?.storytelling?.draw(dt);
             const running = pauseStatus().running;
             if (running) {
                 clock.advance(dt, engine.s.speed, step => { world.motion.begin(engine.creatures); engine.step(step); world.motion.end(engine.creatures, engine.s.simTime); });
@@ -340,8 +351,8 @@
                 buildingInterior?.paint();
                 tileMenu.position();
             }
-            scenarioUI?.creatureEditor.draw();
-            scenarioUI?.editor.storytelling?.draw(dt);
+            scenarioUI?.creatureEditor?.draw();
+            scenarioUI?.editor?.storytelling?.draw(dt);
             paintTimer += dt;
             saveTimer += dt;
             if (paintTimer >= .25) {
@@ -367,7 +378,30 @@
     if(engine.s.started)presentScene(LWSceneNavigation.target(engine));
     // A small, explicit read/test surface for this prototype. The UI never uses direct movement commands.
     window.Littlewild = { version: '15.0.0', scenarios:LWScenarios, terraform, interiors:buildingInterior, scenarioUI, buildPanel, guidePanel, preferences, pauseStatus, tileMenu, village:villageUI, planner:LWPlanner, land: worldExplorer, get engine() { return engine; }, get world() { return world; }, get ui() { return { tab: ui.tab, modal: ui.modal, context:worldUI.state }; }, setEngine, snapshot: () => LWStory.encode(engine), content: {export:(category,id)=>LWContent.registry.export(category,id),validate:input=>LWContent.registry.prepare(input),schema:()=>LWContent.copy(LWContent.SCHEMA),get fingerprint(){return LWContent.registry.hash;}}, advance: seconds => { engine.advance(clamp(seconds, 0, 3600)); updateUI(true); processEvents(); }, refresh: () => updateUI(true), open: (panel, id) => openModal(panel, id), save, diagnostics: () => ({ offline: true, simulationStep: clock.step, nodes: engine.s.nodes.length, buildings: engine.s.buildings.length, orders: engine.s.orders.length, localSaving: saveAvailable }) };
-    window.WildlandsRTS = {open:()=>rtsHost.open(),close:()=>rtsHost.close(),query:()=>rtsHost.view.query(),command:input=>rtsHost.view.command(input),checkpoint:()=>rtsHost.view.checkpoint(),catalog:()=>rtsHost.view.catalog(),status:()=>rtsHost.view.status(),editorQuery:()=>rtsHost.editorQuery()};
-    window.WildlandsPet = {open:()=>petHost.open(),close:()=>petHost.close(),query:()=>petHost.view.query(),command:input=>petHost.view.command(input),checkpoint:()=>petHost.view.checkpoint(),catalog:()=>petHost.view.catalog(),status:()=>petHost.view.status(),control:(action,value)=>petHost.view.control(action,value),renderer:()=>petHost.renderer(),useStore:adapter=>petHost.useStore(adapter),unlock:sku=>petHost.unlock(sku)};
-    window.Wildlands = {version:'1.0.0',project:()=>wildlandsUI.project(),discover:()=>WildlandsProject.discover(),toolbox:LWDeveloper,compileGodot:project=>WildlandsGodot.compile(project),get ui(){return window.Littlewild.ui;},get engine(){return engine;},open:(panel,id)=>openModal(panel,id),refresh:()=>updateUI(true)};
+    window.Wildlands = {version:'1.0.0',
+        project:()=>{if(!wildlandsUI)throw Error(capabilityReason('project'));return wildlandsUI.project();},
+        discover:()=>{if(!window.WildlandsProject)throw Error(capabilityReason('project'));return WildlandsProject.discover();},
+        toolbox:window.LWDeveloper,
+        compileGodot:project=>window.WildlandsGodot?WildlandsGodot.compile(project):Promise.reject(Error(capabilityReason('godot'))),
+        capabilities:runtimeCapabilities,
+        get ui(){return window.Littlewild.ui;},get engine(){return engine;},open:(panel,id)=>openModal(panel,id),refresh:()=>updateUI(true)};
+    function capabilityReason(id){return runtimeCapabilities().find(entry=>entry.id===id)?.reason||'This capability is unavailable in this build.';}
+    /** Detached optional-capability report for this artifact; absent bundles carry an explicit reason. */
+    function runtimeCapabilities(){
+        const entry=(id,label,available,reason)=>available?{id,label,available:true}:{id,label,available:false,reason};
+        const godot=window.WildlandsGodot?.capability?.()||{available:false,reason:'Godot export is unavailable in this build: the Godot export bundle is not included.'};
+        const engineExport=window.LWEngineExport?.capability?.()||{available:false,reason:'Engine export is unavailable in this build: the export bundle is not included.'};
+        const apps=embeddedApps.map(({app})=>entry('app:'+app.id,app.label,true));
+        return [
+            entry('project','Wildlands project workspace',!!wildlandsUI&&!!window.WildlandsProject,'The Wildlands project workspace is unavailable in this build: the studio bundle is not included.'),
+            ...(scenarioUI?.capabilities?.()||[]),
+            entry('godot','Godot export',godot.available,godot.reason),
+            entry('engine-export','Engine export',engineExport.available,engineExport.reason),
+            ...apps
+        ];
+    }
+    // Boot is complete: every mounted surface, frame loop and public API now exists.
+    window.__wildlandsReady = true;
+    document.documentElement.dataset.wildlandsReady = 'colony';
+    window.dispatchEvent(new CustomEvent('wildlands:ready', {detail:{host:'colony'}}));
 })();

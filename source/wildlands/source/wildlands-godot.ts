@@ -28,17 +28,31 @@
   if(loader.sha256!==undefined&&await hash(raw)!==loader.sha256)throw Error('Trusted Godot runtime loader integrity failed.');
   return new TextDecoder('utf-8',{fatal:true}).decode(raw);
  }
+ // Declared payload capabilities: an artifact may omit the Godot runtime or engine-source payloads.
+ const ENGINE_SOURCES_UNAVAILABLE='Shared trusted engine sources are unavailable. Godot export needs the engine-source payload, which is not included in this build; rebuild with the engine-source payload enabled.';
+ const RUNTIME_UNAVAILABLE='Godot export is unavailable in this build: the trusted Godot runtime payload is not included. Rebuild with the Godot export payload enabled.';
+ const TEMPLATES_UNAVAILABLE='Godot export is unavailable in this build: the Godot scene templates are not included. Rebuild with the Godot export payload enabled.';
+ const VALIDATOR_UNAVAILABLE='Godot export is unavailable in this build: the Wildlands project validator is not included.';
+ /** Report, without inflating any payload, whether this artifact can compile Godot projects. */
+ function capability():{available:boolean;reason?:string}{
+  if(!root.WildlandsProject)return {available:false,reason:VALIDATOR_UNAVAILABLE};
+  if(!root.WildlandsGodotRuntimeBundle&&!root.WildlandsGodotRuntimeLoader)return {available:false,reason:RUNTIME_UNAVAILABLE};
+  if(!root.WildlandsGodotTemplates)return {available:false,reason:TEMPLATES_UNAVAILABLE};
+  return {available:true};
+ }
  async function runtimeBundle():Promise<RuntimeBundle|undefined>{
   if(root.WildlandsGodotRuntimeBundle)return root.WildlandsGodotRuntimeBundle;
   if(cachedBundle)return cachedBundle;
   const loader=root.WildlandsGodotRuntimeLoader;if(!loader)return undefined;
   const bundle=JSON.parse(await inflate(loader)) as RuntimeBundle;
-  if(bundle.sharedEngineSources){if(!root.LWEngineSourceLoader)throw Error('Shared trusted engine sources are unavailable.');bundle.files.push({path:'runtime/engine-source-bundle.json',encoding:'utf8',content:await inflate(root.LWEngineSourceLoader)});delete bundle.sharedEngineSources;}
+  if(bundle.sharedEngineSources){if(!root.LWEngineSourceLoader)throw Error(ENGINE_SOURCES_UNAVAILABLE);bundle.files.push({path:'runtime/engine-source-bundle.json',encoding:'utf8',content:await inflate(root.LWEngineSourceLoader)});delete bundle.sharedEngineSources;}
   cachedBundle=bundle;return bundle;
  }
  async function compile(input:unknown,resources?:Resources):Promise<Compiled>{
   const checked=root.WildlandsProject?.validate(input);
   if(!checked?.ok||!checked.project)throw Error(checked?.errors.join('\n')??'Wildlands project validator is unavailable.');
+  if(!resources?.bundle&&!root.WildlandsGodotRuntimeBundle&&!root.WildlandsGodotRuntimeLoader)throw Error(RUNTIME_UNAVAILABLE);
+  if(!resources?.templates&&!root.WildlandsGodotTemplates)throw Error(TEMPLATES_UNAVAILABLE);
   const project=checked.project,bundle=resources?.bundle??await runtimeBundle(),templates=resources?.templates??root.WildlandsGodotTemplates;
   if(!bundle||bundle.format!=='wildlands-runtime-bundle'||bundle.schemaVersion!==1||!Array.isArray(bundle.files)||!templates)throw Error('Trusted Godot runtime bundle is unavailable. Rebuild Wildlands.');
   const renderers=project.pack.scenes.map(scene=>scene.graph?.rendering?.rendererId??'basic');
@@ -69,5 +83,5 @@
   const footer=new Uint8Array(22),view=new DataView(footer.buffer);view.setUint32(0,0x06054b50,true);view.setUint16(8,compiled.files.length,true);view.setUint16(10,compiled.files.length,true);view.setUint32(12,centralSize,true);view.setUint32(16,offset,true);chunks.push(...central,footer);
   if(offset+centralSize+22>0xffffffff)throw Error('Godot archive exceeds ZIP32 size limit.');const result=new Uint8Array(offset+centralSize+22);let cursor=0;for(const chunk of chunks){result.set(chunk,cursor);cursor+=chunk.length;}return result;
  }
- const api=Object.freeze({compile,zip});root.WildlandsGodot=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+ const api=Object.freeze({compile,zip,capability});root.WildlandsGodot=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

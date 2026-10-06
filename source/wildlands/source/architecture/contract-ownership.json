@@ -217,6 +217,10 @@
     {
       "path": "pet-contracts.d.ts",
       "owner": "pet"
+    },
+    {
+      "path": "embedded-app-contracts.d.ts",
+      "owner": "presentation"
     }
   ]
 }
