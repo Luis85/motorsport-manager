@@ -1,9 +1,12 @@
 /* Standalone template composition: mount exactly one game host without the colony shell.
- * Selected by <html data-wildlands-app>. It only calls the hosts' public create/open/advance
- * surface; time advances from animation frames exactly as in the colony shell. A missing or
- * failing host degrades to an accessible message instead of an uncaught boot error.
- * The game API (same shape as the shell's WildlandsRTS/WildlandsPet) is published as
- * WildlandsPlay.game; the shell keeps sole ownership of those two global names. */
+ * Selected by <html data-wildlands-app>. It only calls the host descriptor's create/api surface;
+ * time advances from animation frames exactly as in the colony shell. A missing or failing host
+ * degrades to an accessible message instead of an uncaught boot error and never signals ready.
+ * The game API is the descriptor's detached api() (the same shape as WildlandsRTS/WildlandsPet),
+ * published as WildlandsPlay.game; the shell keeps sole ownership of those two global names.
+ * Once WildlandsPlay exists the page publishes the shared ready signal (RUNTIME-CONTRACTS.md):
+ * window.__wildlandsReady, documentElement.dataset.wildlandsReady = app id, then one
+ * `wildlands:ready` event. Optional bundle controls keep the host's explicit disabled reason. */
 declare namespace LWPlayBoot {
  /** Published as globalThis.WildlandsPlay once boot finishes; a readiness signal for tests and tools. */
  interface Ready {readonly app:string;readonly ready:boolean;readonly error?:string;readonly game?:object;}
@@ -11,8 +14,8 @@ declare namespace LWPlayBoot {
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
-  LWRTSHost?:LWRTSHost.Api;LWPetHost?:LWPetHost.Api;LWRTSMissionEditorUI?:unknown;
-  WildlandsPlay?:LWPlayBoot.Ready;
+  LWRTSHost?:LWRTSHost.Api;LWPetHost?:LWPetHost.Api;
+  WildlandsPlay?:LWPlayBoot.Ready;__wildlandsReady?:boolean;
  };
  const app=document.documentElement.dataset.wildlandsApp??'';
  const status=document.getElementById('play-status'),resume=document.getElementById('play-resume');
@@ -35,28 +38,21 @@ declare namespace LWPlayBoot {
  }
  const closed=(label:string)=>():void=>{say(label+' is closed. Your progress stays in this page until you reload it.');if(resume){resume.hidden=false;resume.focus();}};
  const opened=():void=>{if(resume)resume.hidden=true;};
- function bootRTS(api:LWRTSHost.Api):object{
-  const host=api.create({beforeOpen:opened,afterClose:closed('The match')});
-  // The mission editor bundle is optional in play artifacts; never offer a control that cannot work.
-  if(!root.LWRTSMissionEditorUI)for(const button of document.querySelectorAll<HTMLButtonElement>('[data-rts-file="editor"]')){button.hidden=true;button.disabled=true;}
-  const game=Object.freeze({open:()=>host.open(),close:()=>host.close(),query:()=>host.view.query(),
-   command:(input:LWRTSRuntime.Command)=>host.view.command(input),checkpoint:()=>host.view.checkpoint(),catalog:()=>host.view.catalog(),
-   status:()=>host.view.status(),editorQuery:()=>host.editorQuery()});
-  run(host,'The match');return game;
+ /** Mount one host through its descriptor; the detached api() is the published game surface. */
+ function boot<S extends LWEmbeddedApp.Surface,P extends object>(descriptor:LWEmbeddedApp.Descriptor<S,P>,label:string):object{
+  const host=descriptor.create({beforeOpen:opened,afterClose:closed(label),standalone:true});
+  const game=descriptor.api(host);run(host,label);return game;
  }
- function bootPet(api:LWPetHost.Api):object{
-  const host=api.create({beforeOpen:opened,afterClose:closed('Your pet')});
-  const game=Object.freeze({open:()=>host.open(),close:()=>host.close(),query:()=>host.view.query(),
-   command:(input:unknown)=>host.view.command(input),checkpoint:()=>host.view.checkpoint(),catalog:()=>host.view.catalog(),
-   status:()=>host.view.status(),control:(action:Parameters<LWPetApplication.View['control']>[0],value?:Parameters<LWPetApplication.View['control']>[1])=>host.view.control(action,value),
-   renderer:()=>host.renderer(),useStore:(adapter:unknown)=>host.useStore(adapter),unlock:(sku:string)=>host.unlock(sku)});
-  run(host,'Your pet');return game;
+ function ready(host:string):void{
+  root.__wildlandsReady=true;document.documentElement.dataset.wildlandsReady=host;
+  dispatchEvent(new CustomEvent<LWEmbeddedApp.ReadyDetail>('wildlands:ready',{detail:{host}}));
  }
  try{
   let game:object;
-  if(app==='rts'){if(!root.LWRTSHost)return fail('This artifact does not contain the RTS game.');game=bootRTS(root.LWRTSHost);}
-  else if(app==='pet'){if(!root.LWPetHost)return fail('This artifact does not contain the pet game.');game=bootPet(root.LWPetHost);}
+  if(app==='rts'){if(!root.LWRTSHost)return fail('This artifact does not contain the RTS game.');game=boot(root.LWRTSHost,'The match');}
+  else if(app==='pet'){if(!root.LWPetHost)return fail('This artifact does not contain the pet game.');game=boot(root.LWPetHost,'Your pet');}
   else return fail('This artifact names no standalone game.');
   root.WildlandsPlay=Object.freeze({app,ready:true,game});
+  ready(app);
  }catch(error){fail('The game could not start: '+(error instanceof Error?error.message:String(error)));}
 })(globalThis);

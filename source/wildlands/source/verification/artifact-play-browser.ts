@@ -1,14 +1,14 @@
 /**
  * Smoke checks for the play and studio artifacts written by `npm run build` to
  * .generated/artifacts/. Each artifact opens from file:// in its own context with no network,
- * boots its own game and advances only through its own application clock.
- * Not yet registered in the gate: the suite registry is owned by the test-infrastructure phase.
+ * boots its own game, publishes the shared ready signal for its host id and advances only through
+ * its own application clock. Registered in source/verification/suites.json.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {launchBrowser, monitorContext} from './browser-harness';
+import {launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady} from './browser-harness';
 import type {Browser, Page} from 'playwright';
 
 const ROOT = path.resolve(__dirname, '../..'), ARTIFACTS = path.join(ROOT, '.generated', 'artifacts');
@@ -44,9 +44,13 @@ async function main(): Promise<void> {
   const browser = await launchBrowser();
   try {
     await check('RTS play artifact boots standalone, advances its match and offers a resume after exit', () => withArtifact(browser, 'rts-play', async page => {
-      await page.waitForFunction(() => (globalThis as {WildlandsPlay?: {ready: boolean}}).WildlandsPlay?.ready === true);
+      await waitForReady(page, {host: 'rts', timeout: READY_TIMEOUT_MS});
+      assert.equal(await page.evaluate('WildlandsPlay.ready===true&&WildlandsPlay.app==="rts"'), true);
       assert(await page.locator('#rts-mode').isVisible());
-      assert.equal(await page.locator('[data-rts-file="editor"]').isHidden(), true, 'mission editor control is hidden without its bundle');
+      // Without its bundle the mission editor launcher stays focusable with an explicit reason.
+      const editor = page.locator('[data-rts-file="editor"]');
+      assert.equal(await editor.getAttribute('aria-disabled'), 'true', 'mission editor control is disabled without its bundle');
+      assert.equal(await page.locator('#' + await editor.getAttribute('aria-describedby')).textContent(), 'The mission editor is unavailable in this build: the RTS mission editor bundle is not included.');
       if (await page.evaluate('WildlandsPlay.game.status().paused')) await page.locator('[data-rts="pause"]').click();
       const tick = await page.evaluate('WildlandsPlay.game.query().tick') as number;
       await page.waitForFunction(start => (globalThis as unknown as PlayGlobal).WildlandsPlay.game.query().tick > start, tick);
@@ -56,7 +60,8 @@ async function main(): Promise<void> {
       assert.equal(await page.evaluate('WildlandsPlay.game.status().active'), true);
     }));
     await check('Pet play artifact boots standalone and renders the WebGL room', () => withArtifact(browser, 'pet-play', async page => {
-      await page.waitForFunction(() => (globalThis as {WildlandsPlay?: {ready: boolean}}).WildlandsPlay?.ready === true);
+      await waitForReady(page, {host: 'pet', timeout: READY_TIMEOUT_MS});
+      assert.equal(await page.evaluate('WildlandsPlay.ready===true&&WildlandsPlay.app==="pet"'), true);
       assert(await page.locator('#pet-demo').isVisible());
       await page.waitForFunction(() => ((globalThis as unknown as PlayGlobal).WildlandsPlay.game.renderer()?.frames ?? 0) > 2);
       const stats = await page.evaluate('WildlandsPlay.game.renderer()') as {mode: string; triangles: number};
@@ -64,14 +69,15 @@ async function main(): Promise<void> {
       await page.waitForFunction(() => (globalThis as unknown as PlayGlobal).WildlandsPlay.game.query().tick >= 3);
     }));
     await check('Colony play artifact boots the colony and starts a story', () => withArtifact(browser, 'colony-play', async page => {
-      await page.waitForFunction(() => !!(globalThis as {Littlewild?: unknown}).Littlewild);
+      await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
       await page.locator('[data-act=begin]').click();
       const before = await page.evaluate('Littlewild.engine.s.simTime') as number;
       await page.evaluate('Littlewild.advance(5)');
       assert((await page.evaluate('Littlewild.engine.s.simTime') as number) > before, 'explicit advance moves the colony clock');
     }));
     await check('Studio artifact boots the colony with editors and export tools', () => withArtifact(browser, 'studio', async page => {
-      await page.waitForFunction(() => !!(globalThis as {Littlewild?: unknown; Wildlands?: unknown}).Littlewild && !!(globalThis as {Wildlands?: unknown}).Wildlands);
+      await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
+      assert.equal(await page.evaluate('typeof Littlewild+"/"+typeof Wildlands'), 'object/object');
       await page.locator('[data-act=begin]').click();
       assert.equal(await page.evaluate('typeof LWDeveloper'), 'object');
     }));

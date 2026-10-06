@@ -94,16 +94,18 @@ export async function openArtifact(page: Page, artifactPath: string, options: Op
 export const READY_TIMEOUT_MS = 60_000;
 
 /**
- * Wait until the runtime reports readiness. Runtimes that publish `window.__wildlandsReady` must
- * initialise it to `false` before booting and set it to `true` when interactive; until a runtime
- * publishes the flag, the existing readiness evidence (the `Littlewild` global) is used instead.
+ * Wait for the shared ready signal (RUNTIME-CONTRACTS.md): every host (colony shell, standalone
+ * RTS/Pet host, play-boot) sets `window.__wildlandsReady = true` and
+ * `document.documentElement.dataset.wildlandsReady` to its host id only after its public APIs
+ * exist, then dispatches `wildlands:ready`. A boot that throws never signals ready, so the wait
+ * fails instead of treating a half-booted page as interactive. `host` additionally requires the
+ * named host id (for example `colony`, `rts` or `pet`).
  */
-export async function waitForReady(page: Page, options: { timeout?: number; fallbackGlobal?: string } = {}): Promise<void> {
-  await page.waitForFunction(global => {
-    const runtime = window as unknown as Record<string, unknown>;
-    if (runtime.__wildlandsReady === true) return true;
-    return runtime.__wildlandsReady === undefined && !!runtime[global];
-  }, options.fallbackGlobal ?? "Littlewild", options.timeout === undefined ? {} : { timeout: options.timeout });
+export async function waitForReady(page: Page, options: { timeout?: number; host?: string } = {}): Promise<void> {
+  await page.waitForFunction(host => {
+    if ((window as unknown as { __wildlandsReady?: unknown }).__wildlandsReady !== true) return false;
+    return host === null || document.documentElement.dataset.wildlandsReady === host;
+  }, options.host ?? null, options.timeout === undefined ? {} : { timeout: options.timeout });
 }
 
 /**

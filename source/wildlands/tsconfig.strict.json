@@ -354,7 +354,9 @@
     "source/test-pet-wardrobe.cts",
     "source/pet-store.ts",
     "source/play-boot.ts",
-    "source/verification/artifact-play-browser.ts"
+    "source/verification/artifact-play-browser.ts",
+    "source/test-runtime-optionality.cts",
+    "source/verification/runtime-optionality-browser.ts"
   ],
   "include": []
 }
