@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts"],
-  "totalChecks": 1788,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "runtime-optionality-browser", "artifact-play-browser"],
+  "totalChecks": 1816,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -249,7 +249,35 @@
     {"suite": "gate-integrity", "name": "Parallel pool returns registry-ordered results identical to sequential execution and isolates exclusive suites"},
     {"suite": "gate-integrity", "name": "Asynchronous runner retains output, exit status, environment, timeouts and descendant cleanup"},
     {"suite": "gate-integrity", "name": "Shard merge requires identical identity, disjoint complete coverage and re-accepted evidence"},
-    {"suite": "gate-integrity", "name": "Verification sources add no fixed sleeps beyond the reviewed waitForTimeout budget"}
+    {"suite": "gate-integrity", "name": "Verification sources add no fixed sleeps beyond the reviewed waitForTimeout budget"},
+    {"suite": "typescript-architecture", "name": "Artifact bundles tag every insert and profiles keep the canonical load order"},
+    {"suite": "runtime-optionality", "name": "Legacy littlewild storage namespace keeps the exact v5 save, backup and migration keys"},
+    {"suite": "runtime-optionality", "name": "A configured game storage namespace scopes saves and never migrates another game story"},
+    {"suite": "runtime-optionality", "name": "Two games sharing one file origin keep independent saves and recovery copies"},
+    {"suite": "runtime-optionality", "name": "Invalid game storage namespaces are rejected with an actionable message"},
+    {"suite": "runtime-optionality", "name": "Scoped device preferences follow the game namespace while littlewild keeps its keys"},
+    {"suite": "runtime-optionality", "name": "Denied browser storage under a game namespace still reports session-only preferences"},
+    {"suite": "runtime-optionality", "name": "Engine export in the node composition reports its bundled sources as available"},
+    {"suite": "runtime-optionality", "name": "Developer toolbox reports every optional facet available in the complete composition"},
+    {"suite": "runtime-optionality", "name": "Engine export declares the absent engine-source payload without inflating anything"},
+    {"suite": "runtime-optionality", "name": "Developer toolbox keeps absent editor and export facets explicit instead of failing obscurely"},
+    {"suite": "runtime-optionality", "name": "Godot export declares an unavailable capability when the runtime payload is absent"},
+    {"suite": "runtime-optionality", "name": "Godot export names missing templates and a missing project validator explicitly"},
+    {"suite": "runtime-optionality", "name": "Godot export that needs shared engine sources fails with the opt-in payload message"},
+    {"suite": "runtime-optionality-browser", "name": "The complete colony shell signals ready once, after its public APIs and optional hosts exist"},
+    {"suite": "runtime-optionality-browser", "name": "The colony shell boots, runs and signals ready without the RTS and Pet template bundles"},
+    {"suite": "runtime-optionality-browser", "name": "The colony shell boots without the scenario library, developer session, workspace and template host bundles"},
+    {"suite": "runtime-optionality-browser", "name": "Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent"},
+    {"suite": "runtime-optionality-browser", "name": "Scenario library keeps editor launchers focusable with explicit reasons when the editors bundle is absent"},
+    {"suite": "runtime-optionality-browser", "name": "Godot and engine export show explicit capability reasons when their payloads are absent"},
+    {"suite": "runtime-optionality-browser", "name": "Separate game storage namespaces keep saves apart on one browser origin"},
+    {"suite": "runtime-optionality-browser", "name": "Standalone RTS page runs its own frame loop without the colony shell and signals ready"},
+    {"suite": "runtime-optionality-browser", "name": "Standalone Pocket Pet page runs its own frame loop without the colony shell and signals ready"},
+    {"suite": "runtime-optionality-browser", "name": "Optional-bundle pages generate no script errors or network requests"},
+    {"suite": "artifact-play-browser", "name": "RTS play artifact boots standalone, advances its match and offers a resume after exit"},
+    {"suite": "artifact-play-browser", "name": "Pet play artifact boots standalone and renders the WebGL room"},
+    {"suite": "artifact-play-browser", "name": "Colony play artifact boots the colony and starts a story"},
+    {"suite": "artifact-play-browser", "name": "Studio artifact boots the colony with editors and export tools"}
   ],
   "renames": [],
   "retirements": [],
@@ -927,6 +955,7 @@
       "Strict runtime modules contain no explicit any or TypeScript suppression",
       "Obsolete story and migration artifacts stay removed",
       "ECS persistence remains plain-data owned by domain records",
+      "Artifact bundles tag every insert and profiles keep the canonical load order",
       "Generated JavaScript is outside authored source"
     ],
     "behavior-tree": [
@@ -2235,6 +2264,39 @@
       "No uncaught errors across both pack workflows",
       "No console warnings or errors across both pack workflows",
       "No HTTP/HTTPS requests across both pack workflows"
+    ],
+    "runtime-optionality": [
+      "Legacy littlewild storage namespace keeps the exact v5 save, backup and migration keys",
+      "A configured game storage namespace scopes saves and never migrates another game story",
+      "Two games sharing one file origin keep independent saves and recovery copies",
+      "Invalid game storage namespaces are rejected with an actionable message",
+      "Scoped device preferences follow the game namespace while littlewild keeps its keys",
+      "Denied browser storage under a game namespace still reports session-only preferences",
+      "Engine export in the node composition reports its bundled sources as available",
+      "Developer toolbox reports every optional facet available in the complete composition",
+      "Engine export declares the absent engine-source payload without inflating anything",
+      "Developer toolbox keeps absent editor and export facets explicit instead of failing obscurely",
+      "Godot export declares an unavailable capability when the runtime payload is absent",
+      "Godot export names missing templates and a missing project validator explicitly",
+      "Godot export that needs shared engine sources fails with the opt-in payload message"
+    ],
+    "runtime-optionality-browser": [
+      "The complete colony shell signals ready once, after its public APIs and optional hosts exist",
+      "The colony shell boots, runs and signals ready without the RTS and Pet template bundles",
+      "The colony shell boots without the scenario library, developer session, workspace and template host bundles",
+      "Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent",
+      "Scenario library keeps editor launchers focusable with explicit reasons when the editors bundle is absent",
+      "Godot and engine export show explicit capability reasons when their payloads are absent",
+      "Separate game storage namespaces keep saves apart on one browser origin",
+      "Standalone RTS page runs its own frame loop without the colony shell and signals ready",
+      "Standalone Pocket Pet page runs its own frame loop without the colony shell and signals ready",
+      "Optional-bundle pages generate no script errors or network requests"
+    ],
+    "artifact-play-browser": [
+      "RTS play artifact boots standalone, advances its match and offers a resume after exit",
+      "Pet play artifact boots standalone and renders the WebGL room",
+      "Colony play artifact boots the colony and starts a story",
+      "Studio artifact boots the colony with editors and export tools"
     ]
   }
 }

@@ -113,4 +113,5 @@ runtime declares what is present instead of assuming it:
   that runs the colony declares one.
 
 `test-runtime-optionality.cts` and `verification/runtime-optionality-browser.ts`
-cover these seams.
+(registered as `runtime-optionality` and `runtime-optionality-browser`) cover these
+seams; `verification/artifact-play-browser.ts` covers the assembled play artifacts.

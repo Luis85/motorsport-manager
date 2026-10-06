@@ -98,6 +98,9 @@
     {"name": "game-settings-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-settings-browser.js", "result": "verification/v15/game-settings-browser-results.json", "timeout": 180, "cost": 29.6},
     {"name": "browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/browser.js", "result": "verification/v15/browser-results.json", "timeout": 300, "cost": 65.1},
     {"name": "interactions-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/interactions-browser.js", "result": "verification/v15/interactions-browser-results.json", "timeout": 180, "cost": 41.2},
-    {"name": "browser-contracts", "kind": "browser", "tier": "full", "entry": ".generated/verification/browser-contracts.js", "result": "verification/v15/browser-contract-results.json", "timeout": 240, "cost": 59.1, "exclusive": "Rebuilds the shared .generated output in place (npm run build --pack emberworks), which other concurrent suites load."}
+    {"name": "browser-contracts", "kind": "browser", "tier": "full", "entry": ".generated/verification/browser-contracts.js", "result": "verification/v15/browser-contract-results.json", "timeout": 240, "cost": 59.1, "exclusive": "Rebuilds the shared .generated output in place (npm run build --pack emberworks), which other concurrent suites load."},
+    {"name": "runtime-optionality", "kind": "node", "tier": "fast", "entry": ".generated/test-runtime-optionality.cjs", "result": ".generated/runtime-optionality-results.json", "timeout": 120, "cost": 1.6},
+    {"name": "runtime-optionality-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/runtime-optionality-browser.js", "result": "verification/v15/runtime-optionality-browser-results.json", "timeout": 300, "cost": 105.0},
+    {"name": "artifact-play-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/artifact-play-browser.js", "result": "verification/v15/artifact-play-browser-results.json", "timeout": 240, "cost": 30.0}
   ]
 }
