@@ -28,17 +28,25 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 - **Maintainer:** [Documentation discipline](how-to/maintaining-documentation.md) →
   [Current status](reference/current-state.md) → [Advisory quality](how-to/code-quality.md).
 
-## Independent concepts
+## Standalone CLI projects
 
-[Scene Forge](../source/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder.
+Two independent Node/TypeScript projects live under `source/`, outside the Godot
+game. Each builds a self-contained command-line bundle that is checked in under
+[`bin/`](../bin/README.md) and needs only Node.js 22 or newer, without `npm ci`.
+
+| Project | Checked-in CLI | Handbook |
+|---|---|---|
+| [Wildlands](../source/wildlands/DOCUMENTATION.md) | `bin/wildlands` | [Wildlands CLI](reference/wildlands-cli.md) |
+| [Scene Forge](../source/scene-forge/README.md) | `bin/scene-forge` | [Scene Forge CLI](reference/scene-forge-cli.md) |
+
+The separate Wildlands documentation indexes the TypeScript prototype builder,
+its default Littlewild showcase, browser/terminal workflows and Node-backed Godot
+desktop target. Scene Forge is a standalone CLI and offline 3D editor for
+declarative modeling, reusable scene composition, portable rigs and multi-view
+review. Each project retains its own runtime, tests and source-bound evidence
+outside the native Motorsport Manager capability inventory.
 
 ## Authority and evidence
-
-The separate [Wildlands documentation](../source/wildlands/DOCUMENTATION.md)
-indexes the TypeScript prototype builder, its default Littlewild showcase,
-browser/terminal workflows and Node-backed Godot desktop target. It retains its
-own runtime and source-bound evidence outside the native Motorsport Manager
-capability inventory.
 
 Production code, generated schemas and validated configuration own executable
 contracts. Active references describe those contracts; tutorials and recipes link

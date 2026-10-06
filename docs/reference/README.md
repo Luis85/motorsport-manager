@@ -16,3 +16,11 @@ implemented boundaries; existence in source is not a claim of human validation.
 - [Campaign authorities](campaign/README.md)
 - [Content fields, validation and consumer ownership](content/README.md)
 - [UI pages, components and helpers](components/README.md)
+
+## Standalone CLI projects
+
+These checked-in command-line tools are built from separate TypeScript projects
+under `source/`; they are outside the native game's capability inventory.
+
+- [Wildlands CLI (`bin/wildlands`)](wildlands-cli.md)
+- [Scene Forge CLI (`bin/scene-forge`)](scene-forge-cli.md)

@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'source/wildlands/**'
+      - 'bin/wildlands'
+      - 'docs/reference/wildlands-cli.md'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
   workflow_dispatch:
 permissions:
@@ -22,11 +24,6 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: source/wildlands/package-lock.json
-      - name: Clear stale Littlewild verification evidence
-        working-directory: source/wildlands
-        run: |
-          rm -rf verification/v15 .generated
-          rm -f littlewild.html
       - name: Install TypeScript verification toolchain
         working-directory: source/wildlands
         run: npm ci --no-audit --no-fund
@@ -36,6 +33,15 @@ jobs:
       - name: Verify architecture boundaries
         working-directory: source/wildlands
         run: npm run architecture
+      - name: Verify checked-in bin/wildlands matches source
+        working-directory: source/wildlands
+        # Performs a full build into .generated/ and littlewild.html; the next step clears that output.
+        run: npm run check:cli
+      - name: Clear stale Littlewild verification evidence
+        working-directory: source/wildlands
+        run: |
+          rm -rf verification/v15 .generated
+          rm -f littlewild.html
       - name: Install Chromium
         working-directory: source/wildlands
         run: npx playwright install --with-deps chromium

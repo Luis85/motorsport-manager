@@ -44,6 +44,25 @@ application. It does not establish native RTS export parity, multiplayer, broad
 balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 [demo tutorial](../tutorials/rts-demo.md) for source-backed scope and limits.
 
+## Standalone command-line tools
+
+Two separate TypeScript projects ship checked-in, self-contained command-line
+bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
+clone without `npm ci` or `node_modules`:
+
+- [`bin/wildlands`](wildlands-cli.md) creates, validates, inspects, plays, edits
+  and compiles portable Wildlands projects from `source/wildlands/`. Running a
+  compiled or exported Godot project requires Godot.
+- [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
+  declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
+  `review` capture commands additionally need Playwright and Chromium; `doctor`
+  reports their availability.
+
+The bundles are generated from their source projects and checked by each
+project's `npm run check:cli`. Like the Wildlands maker above, they are outside
+the native Motorsport Manager race/campaign inventory and do not read or write
+its saves or race/campaign state.
+
 ## Interface selection and retained specialist tools
 
 Settings stages a **Minimal / Advanced** preference and saves it only on Apply. Minimal remains the safe default. Advanced remembers whether it should begin in Race Director or Engineering. The selection applies when a weekend screen next opens; it is presentation configuration, not race state. Existing `director` and `engineering` saved preferences remain valid, and the public `advanced` alias normalizes to Race Director. Explicit launch overrides remain available for development and automation.
