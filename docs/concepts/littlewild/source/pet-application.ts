@@ -26,14 +26,18 @@ declare namespace LWPetApplication {
     if(action==='speed'){if(typeof value!=='number'||!SPEEDS.includes(value))throw Error('Choose pet speed '+SPEEDS.join(', ')+'.');speed=value;}
     else if(action==='restart'){
      const choice=typeof value==='object'&&value?value:{species:catalog.species[0]!.id};
-     session=root.LWPet.create(catalog,choice.species,choice.name);pending=0;paused=false;
+     // Starting over keeps the owner's wardrobe: purchases and coins are never lost with a pet.
+     session=root.LWPet.create(catalog,choice.species,choice.name,current().wardrobe());pending=0;paused=false;
     }else{paused=action==='pause';pending=0;}
    },
    checkpoint:()=>current().checkpoint(),
    catalog:()=>JSON.parse(JSON.stringify(catalog)) as LWPetData.Catalog,
    replace(input,kind){
     // Admission stages a complete replacement before touching the active session.
-    const replacement=kind==='catalog'?root.LWPet.create(input):root.LWPet.restore(input);
+    const carried=current().wardrobe();
+    const replacement=kind==='catalog'?root.LWPet.create(input,undefined,undefined,carried):root.LWPet.restore(input);
+    // Store entitlements outlive any restored checkpoint; coins and coin purchases follow the save.
+    if(kind==='checkpoint')for(const entitlement of carried.entitlements)if(!replacement.wardrobe().entitlements.some(e=>e.sku===entitlement.sku))replacement.command({kind:'entitle',sku:entitlement.sku,source:entitlement.source});
     replacement.query();
     catalog=replacement.catalog;session=replacement;pending=0;paused=true;
    }

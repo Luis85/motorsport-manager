@@ -242,6 +242,7 @@ export const INSERTS: readonly Insert[] = [
   ["PET_SESSION", "pet-session.js", "script"],
   ["PET_APPLICATION", "pet-application.js", "script"],
   ["PET_RENDERER", "pet-renderer.js", "script"],
+  ["PET_STORE", "pet-store.js", "script"],
   ["PET_DEMO", "pet-demo.js", "script"],
   ["PET_HOST", "pet-host.js", "script"],
   ["PET_DEMO_CSS", "pet-demo.css", "style"],

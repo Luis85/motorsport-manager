@@ -60,6 +60,11 @@ export const littlewildPetRoles = [
   'cheeks',
   'sprout',
   'shell',
+  // Accessory sockets: empty groups where Littlewild attaches equipped items.
+  'hat',
+  'face',
+  'neck',
+  'back',
 ] as const;
 function roofGeometry() {
   const shape = new THREE.Shape();

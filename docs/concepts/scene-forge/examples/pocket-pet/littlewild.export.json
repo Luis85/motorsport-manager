@@ -280,6 +280,84 @@
           "model": "petStar"
         }
       }
+    },
+    {
+      "id": "acc-party-hat",
+      "family": "pets",
+      "name": "Party hat",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemPartyHat"
+        }
+      }
+    },
+    {
+      "id": "acc-bow",
+      "family": "pets",
+      "name": "Ribbon bow",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemBow"
+        }
+      }
+    },
+    {
+      "id": "acc-glasses",
+      "family": "pets",
+      "name": "Round glasses",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemGlasses"
+        }
+      }
+    },
+    {
+      "id": "acc-scarf",
+      "family": "pets",
+      "name": "Knitted scarf",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemScarf"
+        }
+      }
+    },
+    {
+      "id": "acc-crown",
+      "family": "pets",
+      "name": "Golden crown",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemCrown"
+        }
+      }
+    },
+    {
+      "id": "acc-wings",
+      "family": "pets",
+      "name": "Fairy wings",
+      "metadata": {
+        "radius": 0.15
+      },
+      "models": {
+        "world": {
+          "model": "itemWings"
+        }
+      }
     }
   ]
 }

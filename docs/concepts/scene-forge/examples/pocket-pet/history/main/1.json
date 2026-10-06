@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "main",
+  "name": "Main scene",
+  "revision": 1,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {},
+  "materials": {},
+  "nodes": [
+    {
+      "id": "lifeStages",
+      "name": "Life stages",
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "props",
+      "name": "Care props",
+      "transform": {
+        "position": [
+          0,
+          0,
+          1.2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "room",
+      "name": "Room diorama",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -0.6
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petRoom",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "egg",
+      "parent": "lifeStages",
+      "transform": {
+        "position": [
+          -1.6,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petEgg",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "baby",
+      "parent": "lifeStages",
+      "transform": {
+        "position": [
+          -0.8,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petBaby",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "teen",
+      "parent": "lifeStages",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petTeen",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "adultBloom",
+      "parent": "lifeStages",
+      "transform": {
+        "position": [
+          0.9,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petAdultBloom",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "adultBramble",
+      "parent": "lifeStages",
+      "transform": {
+        "position": [
+          1.8,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petAdultBramble",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bowl",
+      "parent": "props",
+      "transform": {
+        "position": [
+          -1.6,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petBowl",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "snack",
+      "parent": "props",
+      "transform": {
+        "position": [
+          -1.1,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petSnack",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "ball",
+      "parent": "props",
+      "transform": {
+        "position": [
+          -0.65,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petBall",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bed",
+      "parent": "props",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petBed",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "mess",
+      "parent": "props",
+      "transform": {
+        "position": [
+          0.6,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petPoop",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "medicine",
+      "parent": "props",
+      "transform": {
+        "position": [
+          0.95,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petMedicine",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bubbles",
+      "parent": "props",
+      "transform": {
+        "position": [
+          1.3,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petBubbles",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "heart",
+      "parent": "props",
+      "transform": {
+        "position": [
+          1.65,
+          0.1,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petHeart",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "star",
+      "parent": "props",
+      "transform": {
+        "position": [
+          2,
+          0.1,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "petStar",
+      "parameters": {},
+      "materialOverrides": {}
+    }
+  ],
+  "environment": {
+    "background": "#171d25",
+    "ambient": 1.8,
+    "keyIntensity": 3.5,
+    "keyPosition": [
+      5,
+      10,
+      7
+    ]
+  }
+}

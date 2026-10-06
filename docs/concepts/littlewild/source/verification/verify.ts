@@ -59,6 +59,7 @@ const suites: Suite[] = [
   ["pet-catalog", ["node", generated("test-pet-catalog.cjs")], generated("pet-catalog-results.json"), 120],
   ["pet-runtime", ["node", generated("test-pet-runtime.cjs")], generated("pet-runtime-results.json"), 180],
   ["pet-application", ["node", generated("test-pet-application.cjs")], generated("pet-application-results.json"), 120],
+  ["pet-wardrobe", ["node", generated("test-pet-wardrobe.cjs")], generated("pet-wardrobe-results.json"), 120],
 
   ["wildlands-runtime", ["node", generated("test-wildlands-runtime.cjs")], generated("wildlands-runtime-results.json"), 300],
   ["wildlands-project", ["node", generated("test-wildlands-project.cjs")], generated("wildlands-project-results.json"), 120],

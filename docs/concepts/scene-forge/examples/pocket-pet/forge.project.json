@@ -25,6 +25,12 @@
     "petBubbles": "models/petBubbles.model.json",
     "petHeart": "models/petHeart.model.json",
     "petStar": "models/petStar.model.json",
-    "petRoom": "models/petRoom.model.json"
+    "petRoom": "models/petRoom.model.json",
+    "itemPartyHat": "models/itemPartyHat.model.json",
+    "itemBow": "models/itemBow.model.json",
+    "itemGlasses": "models/itemGlasses.model.json",
+    "itemScarf": "models/itemScarf.model.json",
+    "itemCrown": "models/itemCrown.model.json",
+    "itemWings": "models/itemWings.model.json"
   }
 }

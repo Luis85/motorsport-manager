@@ -417,8 +417,32 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-hat",
+                    "position": [0, 0.2, 0],
+                    "scale": [1.15, 1.15, 1.15]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-face",
+                    "position": [0, 0.03, 0.215],
+                    "scale": [1.05, 1.05, 1.05]
                   }
                 ]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-neck",
+                "position": [0, 0.09, 0],
+                "scale": [1.35, 1.35, 1.35]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-back",
+                "position": [0, 0.27, -0.22],
+                "scale": [0.9, 0.9, 0.9]
               }
             ]
           }
@@ -688,8 +712,28 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-hat",
+                    "position": [0, 0.185, 0]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-face",
+                    "position": [0, 0.03, 0.195]
                   }
                 ]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-neck",
+                "position": [0, 0.43, 0]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-back",
+                "position": [0, 0.3, -0.2]
               }
             ]
           }
@@ -960,6 +1004,18 @@
                     ]
                   },
                   {
+                    "primitive": "group",
+                    "id": "socket-hat",
+                    "position": [0, 0.225, 0],
+                    "scale": [1.2, 1.2, 1.2]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-face",
+                    "position": [0, 0.035, 0.232],
+                    "scale": [1.18, 1.18, 1.18]
+                  },
+                  {
                     "primitive": "mesh",
                     "id": "ear-l",
                     "position": [-0.17, 0.19, -0.02],
@@ -1155,6 +1211,18 @@
                     ]
                   }
                 ]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-neck",
+                "position": [0, 0.56, 0],
+                "scale": [1.3, 1.3, 1.3]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-back",
+                "position": [0, 0.38, -0.27],
+                "scale": [1.25, 1.25, 1.25]
               }
             ]
           }
@@ -1344,6 +1412,18 @@
                     ]
                   },
                   {
+                    "primitive": "group",
+                    "id": "socket-hat",
+                    "position": [0, 0.225, 0],
+                    "scale": [1.2, 1.2, 1.2]
+                  },
+                  {
+                    "primitive": "group",
+                    "id": "socket-face",
+                    "position": [0, 0.035, 0.232],
+                    "scale": [1.18, 1.18, 1.18]
+                  },
+                  {
                     "primitive": "mesh",
                     "id": "ear-l",
                     "position": [-0.16, 0.2, -0.03],
@@ -1449,6 +1529,18 @@
               },
               {
                 "primitive": "group",
+                "id": "socket-neck",
+                "position": [0, 0.56, 0],
+                "scale": [1.3, 1.3, 1.3]
+              },
+              {
+                "primitive": "group",
+                "id": "socket-back",
+                "position": [0, 0.38, -0.27],
+                "scale": [1.25, 1.25, 1.25]
+              },
+              {
+                "primitive": "group",
                 "id": "back-thorns",
                 "position": [0, 0.12, -0.27],
                 "rotation": [-1.0472, 0, 0],
@@ -1510,7 +1602,11 @@
           "cheek-r"
         ],
         "mouth": "mouth",
-        "sprout": "sprout"
+        "sprout": "sprout",
+        "hat": "socket-hat",
+        "face": "socket-face",
+        "neck": "socket-neck",
+        "back": "socket-back"
       },
       "teen": {
         "body": "body-root",
@@ -1537,7 +1633,11 @@
           "ear-l",
           "ear-r"
         ],
-        "sprout": "sprout"
+        "sprout": "sprout",
+        "hat": "socket-hat",
+        "face": "socket-face",
+        "neck": "socket-neck",
+        "back": "socket-back"
       },
       "adult-bloom": {
         "body": "body-root",
@@ -1560,11 +1660,15 @@
           "cheek-r"
         ],
         "mouth": "mouth",
+        "hat": "socket-hat",
+        "face": "socket-face",
         "ears": [
           "ear-l",
           "ear-r"
         ],
-        "sprout": "crown"
+        "sprout": "crown",
+        "neck": "socket-neck",
+        "back": "socket-back"
       },
       "adult-bramble": {
         "body": "body-root",
@@ -1587,11 +1691,15 @@
           "cheek-r"
         ],
         "mouth": "mouth",
+        "hat": "socket-hat",
+        "face": "socket-face",
         "ears": [
           "ear-l",
           "ear-r"
         ],
-        "sprout": "crown"
+        "sprout": "crown",
+        "neck": "socket-neck",
+        "back": "socket-back"
       }
     },
     "meshes": {

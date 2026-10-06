@@ -2,7 +2,7 @@
 /* Pocket Pet 3D presentation. It consumes detached snapshots and Scene Forge authored assets;
  * every motion here is presentation time and never advances or commands the simulation. */
 declare namespace LWPetRenderer {
- interface Stats {mode:string;frames:number;model:string;triangles:number;props:string[];}
+ interface Stats {mode:string;frames:number;model:string;triangles:number;props:string[];accessories:string[];}
  interface Surface {draw(snapshot:LWPetRuntime.Snapshot,time:number,dt:number):void;orbit(yaw:number,pitch?:number):void;zoom(factor:number):void;anchor():{x:number;y:number}|null;stats():Stats;destroy():void;readonly mode:string;}
  interface Api {create(canvas:HTMLCanvasElement,assets:readonly unknown[],layout:LWPetData.Scene):Surface;}
 }
@@ -46,19 +46,36 @@ declare namespace LWPetRenderer {
   }
   const props=new Map<string,Instance>();
   function prop(id:string):Instance{let p=props.get(id);if(!p){p=instance(id);props.set(id,p);}return p;}
-  let roomId='',bed:Instance|null=null,pet:Instance|null=null,petKey='',petTop=.6,rest:Rest[]=[],petMaterials:{material:O;color:O}[]=[];
+  let roomId='',bed:Instance|null=null,pet:Instance|null=null,petKey='',petModel='',worn:string[]=[],petTop=.6,rest:Rest[]=[],petMaterials:{material:O;color:O}[]=[];
   const messes=new Map<string,Instance>(),position={x:0,z:0,yaw:0},view={yaw:.62,pitch:.46,distance:5.6};
   let frames=0,sparkle=0,blink=0,lastStage='';
   function rig(snapshot:LWPetRuntime.Snapshot,role:string):O[]{
    const refs=assets.get(snapshot.pet.asset)?.rig?.[snapshot.pet.model]?.[role];
    return (Array.isArray(refs)?refs:refs?[refs]:[]).map((id:string)=>pet?.handles.get(id)).filter(Boolean);
   }
+  /** A skin names base material roles; variant-specific roles such as `skin-adult-bramble` follow their base. */
+  function skinMaterials(asset:Record<string,any>,skin:Record<string,string>):Record<string,unknown>{
+   const out:Record<string,unknown>={};
+   for(const [role,value] of Object.entries(asset.materials??{})){
+    const color=skin[role.split('-')[0]!];if(!color)continue;
+    out[role]=typeof value==='string'?color:{...(value as Record<string,unknown>),color};
+   }
+   return out;
+  }
   function buildPet(snapshot:LWPetRuntime.Snapshot):void{
-   const key=snapshot.pet.asset+'/'+snapshot.pet.model;if(key===petKey)return;
-   if(pet){scene.remove(pet.root);owned.splice(owned.indexOf(pet.root),1);}
-   petKey=key;pet=instance(snapshot.pet.asset,snapshot.pet.model);
+   const wardrobe=snapshot.wardrobe,key=JSON.stringify([snapshot.pet.asset,snapshot.pet.model,wardrobe.materials,wardrobe.accessories]);if(key===petKey)return;
+   if(pet){scene.remove(pet.root);owned.splice(owned.indexOf(pet.root),1);for(const entry of petMaterials)entry.material.dispose();}
+   const asset=assets.get(snapshot.pet.asset);if(!asset)throw Error('Missing Pocket Pet asset '+snapshot.pet.asset);
+   petKey=key;petModel=snapshot.pet.asset+'/'+snapshot.pet.model;
+   pet=root.LWAssetRenderer.createFromDefinition(kit,scene,asset,snapshot.pet.model,{materials:skinMaterials(asset,wardrobe.materials)});owned.push(pet.root);
    // Per-instance material copies let sickness tint this pet without touching shared catalog materials.
    petMaterials=[];pet.root.traverse((node:O)=>{if(node.isMesh){node.material=node.material.clone();petMaterials.push({material:node.material,color:node.material.color.clone()});}});
+   // Equipped accessories attach to the model's authored socket roles; stages without a socket show none.
+   worn=[];
+   for(const accessory of wardrobe.accessories){
+    const socket=rig(snapshot,accessory.slot)[0];const item=assets.get(accessory.asset);
+    if(socket&&item){root.LWAssetRenderer.createFromDefinition(kit,socket,item,'world');worn.push(accessory.item);}
+   }
    petTop=new T.Box3().setFromObject(pet.root).max.y;
    rest=[];pet.root.traverse((node:O)=>rest.push({node,position:node.position.clone(),rotation:node.rotation.clone(),scale:node.scale.clone()}));
    if(lastStage&&lastStage!==snapshot.pet.stage)sparkle=2.2;lastStage=snapshot.pet.stage;
@@ -168,7 +185,7 @@ declare namespace LWPetRenderer {
   return {mode,draw,anchor,
    orbit(yaw,pitch=0){view.yaw=Math.max(-.35,Math.min(1.55,view.yaw+yaw));view.pitch=Math.max(.18,Math.min(1.05,view.pitch+pitch));},
    zoom(factor){view.distance=Math.max(2.8,Math.min(10,view.distance*factor));},
-   stats:()=>({mode,frames,model:petKey,triangles:renderer?.info.render.triangles??0,props:[...props].filter(([,p])=>p.root.visible).map(([id])=>id)}),
+   stats:()=>({mode,frames,model:petModel,accessories:[...worn],triangles:renderer?.info.render.triangles??0,props:[...props].filter(([,p])=>p.root.visible).map(([id])=>id)}),
    destroy(){
     for(const node of owned)scene.remove(node);
     for(const g of geometries.values())g.dispose();for(const m of materials.values())m.dispose();for(const entry of petMaterials)entry.material.dispose();

@@ -263,7 +263,8 @@
         "skill-tree-ui.ts",
         "pet-renderer.ts",
         "pet-demo.ts",
-        "pet-host.ts"
+        "pet-host.ts",
+        "pet-store.ts"
       ]
     },
     {

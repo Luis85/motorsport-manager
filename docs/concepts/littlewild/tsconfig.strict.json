@@ -339,7 +339,9 @@
     "source/test-pet-application.cts",
     "source/verification/pet-browser.ts",
     "source/tools/pet-cli.cts",
-    "source/pet-tools.ts"
+    "source/pet-tools.ts",
+    "source/test-pet-wardrobe.cts",
+    "source/pet-store.ts"
   ],
   "include": []
 }

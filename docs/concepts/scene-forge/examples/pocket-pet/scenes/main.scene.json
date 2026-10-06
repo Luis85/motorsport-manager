@@ -3,7 +3,7 @@
   "kind": "scene",
   "id": "main",
   "name": "Main scene",
-  "revision": 1,
+  "revision": 2,
   "units": "meters",
   "parameters": {},
   "geometries": {},
@@ -282,6 +282,122 @@
       "tags": [],
       "type": "model",
       "model": "petStar",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "wardrobe",
+      "name": "Accessories",
+      "transform": {
+        "position": [
+          0,
+          0.05,
+          2
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "group"
+    },
+    {
+      "id": "partyHat",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          -1.25,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemPartyHat",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "bow",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          -0.75,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemBow",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "glasses",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          -0.25,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemGlasses",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "scarf",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          0.25,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemScarf",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "crown",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          0.75,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemCrown",
+      "parameters": {},
+      "materialOverrides": {}
+    },
+    {
+      "id": "wings",
+      "parent": "wardrobe",
+      "transform": {
+        "position": [
+          1.25,
+          0,
+          0
+        ]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "model",
+      "model": "itemWings",
       "parameters": {},
       "materialOverrides": {}
     }

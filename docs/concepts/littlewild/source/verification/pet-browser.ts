@@ -51,6 +51,33 @@ async function main():Promise<void>{
    await page.waitForFunction(()=>((window as any).WildlandsPet.renderer().props as string[]).includes('pet-bowl'));
    await page.screenshot({path:path.join(OUT,'pet-demo-baby.png')});
   });
+  await check('Earned coins buy an accessory that the 3D pet wears on its socket',async()=>{
+   const coins=await page.evaluate('WildlandsPet.query().wardrobe.coins') as number;assert(coins>=30,'hatching and care earned coins');
+   const hat=page.locator('[data-pet-product=party-hat]');await hat.focus();await page.keyboard.press('Enter');
+   assert.equal(await page.locator('.pet-status').textContent(),'Bought Party hat.');
+   assert.equal(await page.evaluate('WildlandsPet.query().wardrobe.coins'),coins-30);
+   await page.locator('[data-pet-product=party-hat]').focus();await page.keyboard.press('Enter');
+   await page.waitForFunction(()=>((window as any).WildlandsPet.renderer().accessories as string[]).includes('party-hat'));
+   const scarf=page.locator('[data-pet-product=knit-scarf]');
+   if(await scarf.getAttribute('aria-disabled')==='true')assert.match(await scarf.locator('.pet-disabled-reason').textContent()??'',/^Needs \d+ more coins$/);
+  });
+  await check('Premium unlocks confirm first, start on Cancel and grant only adapter-reported entitlements',async()=>{
+   const crown=page.locator('[data-pet-product=golden-crown]');await crown.click();
+   assert.equal(await page.evaluate('document.activeElement?.dataset.pet'),'store-cancel');
+   assert.match(await page.locator('[data-pet-store-notice]').textContent()??'',/simulated\. No payment is taken/);
+   await page.keyboard.press('Enter');assert.equal(await page.evaluate('document.activeElement?.dataset.petProduct'),'golden-crown');
+   assert.equal(await page.evaluate("WildlandsPet.query().shop.find(p=>p.id==='golden-crown').owned"),false);
+   await page.evaluate("WildlandsPet.useStore({id:'refusing-store',name:'Refusing store',simulated:true,notice:'Test adapter.',purchase:async sku=>({ok:false,sku,source:'refusing-store',message:'Purchase cancelled by the store.'})})");
+   assert.equal(await page.evaluate("WildlandsPet.unlock('pocketpet.item.crown').then(r=>r.ok)"),false);
+   assert.equal(await page.evaluate("WildlandsPet.query().shop.find(p=>p.id==='golden-crown').owned"),false);
+   await page.evaluate("WildlandsPet.useStore({id:'demo-store',name:'Demo store',simulated:true,notice:'This demo store is simulated. No payment is taken and nothing leaves this browser.',purchase:async sku=>({ok:true,sku,source:'demo-store',message:'Unlocked in the demo store.'})})");
+   await page.locator('[data-pet-product=golden-crown]').click();await page.locator('[data-pet=store-confirm]').click();
+   await page.waitForFunction(()=>(window as any).WildlandsPet.query().shop.find((p:{id:string})=>p.id==='golden-crown').owned);
+   assert.deepEqual(await page.evaluate("WildlandsPet.checkpoint().entities.find(e=>e.id==='pet-owner').components['pet-wardrobe'].entitlements.map(e=>[e.sku,e.source])"),[['pocketpet.item.crown','demo-store']]);
+   await page.locator('[data-pet-product=golden-crown]').click();
+   await page.waitForFunction(()=>((window as any).WildlandsPet.renderer().accessories as string[]).includes('golden-crown'));
+   await page.screenshot({path:path.join(OUT,'pet-demo-wardrobe.png')});
+  });
   await check('Checkpoints export and restore through the application boundary',async()=>{
    const saved=await page.evaluate('JSON.stringify(WildlandsPet.checkpoint())') as string;
    const download=page.waitForEvent('download');await page.locator('[data-pet-file=save]').click();

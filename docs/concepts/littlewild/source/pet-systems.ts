@@ -24,6 +24,7 @@
   if(action.kind==='clean')for(const mess of world.query(['pet-mess']))world.defer('destroy',mess);
   if(action.kind==='medicine'){care.sick=false;care.sickFor=0;}
   if(action.kind==='cuddle'&&life.stage==='egg')life.stageAge+=ctx.catalog.rules.eggWarmMinutes;
+  ctx.earn(action.coins);
   ctx.emit('finished',life.name+' enjoyed: '+action.name+'.');
  }
  function register(scheduler:LWPetRuntime.Scheduler,ctx:C):void{
@@ -100,7 +101,7 @@
    if(!current.minutes||life.stageAge<current.minutes)return;
    const next=ctx.catalog.stages[ctx.catalog.stages.indexOf(current)+1];if(!next)return;
    const form=next.models.find(f=>life.mistakes<=f.maxMistakes)!;
-   life.stage=next.id;life.form=form.id;life.model=form.model;life.stageAge=0;
+   life.stage=next.id;life.form=form.id;life.model=form.model;life.stageAge=0;ctx.earn(ctx.catalog.economy.growthCoins);
    if(current.id==='egg'){
     const needs=world.get<Needs>(id,'pet-needs')!;for(const need of ctx.catalog.needs)needs[need.id]=need.start;
     ctx.emit('hatched',life.name+' hatched! Keep an eye on every need.');

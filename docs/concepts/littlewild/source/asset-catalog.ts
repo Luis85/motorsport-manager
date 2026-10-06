@@ -29,7 +29,7 @@
  const categories=new Set<string>(['building','item','actor','pet']);
  const primitives=new Set<string>(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground','mesh']);
  /** Fixed presentation roles a pet renderer may animate; data names nodes, code owns motion. */
- const petRigRoles=new Set<string>(['body','head','eyes','ears','tail','arms','feet','mouth','cheeks','sprout','shell']);
+ const petRigRoles=new Set<string>(['body','head','eyes','ears','tail','arms','feet','mouth','cheeks','sprout','shell','hat','face','neck','back']);
  const MESH_VERTICES=8192,MESH_TRIANGLES=16384,DEFINITION_VERTICES=40000;
  const safeId=/^[a-z0-9][a-z0-9_-]{0,79}$/;
  const safeRole=/^[A-Za-z][A-Za-z0-9_-]{0,79}$/;

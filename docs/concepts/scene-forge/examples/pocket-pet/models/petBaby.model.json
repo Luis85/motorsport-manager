@@ -294,6 +294,90 @@
         "leaf": "leaf",
         "stem": "stem"
       }
+    },
+    {
+      "id": "socketHat",
+      "type": "group",
+      "name": "Hat accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.2,
+          0
+        ],
+        "scale": [
+          1.15,
+          1.15,
+          1.15
+        ]
+      },
+      "tags": [
+        "rig:hat"
+      ]
+    },
+    {
+      "id": "socketFace",
+      "type": "group",
+      "name": "Face accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.03,
+          0.215
+        ],
+        "scale": [
+          1.05,
+          1.05,
+          1.05
+        ]
+      },
+      "tags": [
+        "rig:face"
+      ]
+    },
+    {
+      "id": "socketNeck",
+      "type": "group",
+      "name": "Neck accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.09,
+          0
+        ],
+        "scale": [
+          1.35,
+          1.35,
+          1.35
+        ]
+      },
+      "tags": [
+        "rig:neck"
+      ]
+    },
+    {
+      "id": "socketBack",
+      "type": "group",
+      "name": "Back accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.27,
+          -0.22
+        ],
+        "scale": [
+          0.9,
+          0.9,
+          0.9
+        ]
+      },
+      "tags": [
+        "rig:back"
+      ]
     }
   ]
 }

@@ -6,8 +6,14 @@ declare namespace LWPetData {
  interface Species {id:string;name:string;description:string;asset:string;}
  interface Form {id:string;name:string;model:string;maxMistakes:number;description:string;}
  interface Stage {id:'egg'|'baby'|'teen'|'adult';name:string;minutes:number;decayFactor:number;models:readonly Form[];}
+ /** Coins are earned in play; premium offers are unlocked only by a store entitlement for their SKU. */
+ type Price={currency:'coins';amount:number}|{currency:'premium';sku:string};
+ type Slot='hat'|'face'|'neck'|'back';
+ interface Economy {currency:string;startCoins:number;growthCoins:number;maxCoins:number;}
+ interface Skin {id:string;name:string;description:string;species:readonly string[];materials:Readonly<Record<string,string>>;price:Price;}
+ interface Item {id:string;name:string;description:string;slot:Slot;asset:string;price:Price;}
  interface Action {
-  id:string;name:string;description:string;kind:ActionKind;prop:string;minutes:number;
+  id:string;name:string;description:string;kind:ActionKind;prop:string;minutes:number;coins:number;
   effects:Readonly<Partial<Record<NeedId|'health',number>>>;weight:number;digestMinutes:number;
   stages:readonly Stage['id'][];
  }
@@ -23,6 +29,7 @@ declare namespace LWPetData {
  interface Catalog {
   format:'wildlands-pet';schemaVersion:1;id:string;name:string;description:string;
   rules:Rules;scene:Scene;needs:readonly Need[];species:readonly Species[];stages:readonly Stage[];actions:readonly Action[];
+  economy:Economy;skins:readonly Skin[];items:readonly Item[];
  }
  interface CatalogApi {readonly defaults:Catalog;validate(input:unknown):Catalog;}
 }
@@ -36,16 +43,21 @@ declare namespace LWPetRuntime {
  interface Care extends Data {sleeping:boolean;lights:boolean;sick:boolean;sickFor:number;filthFor:number;neglect:Record<string,number>;snacks:number[];digesting:number[];}
  interface Activity extends Data {action:string;remaining:number;total:number;}
  interface Mess extends Data {x:number;z:number;minute:number;}
+ interface Entitlement extends Data {sku:string;source:string;minute:number;}
+ /** Owner-scoped wardrobe: it survives adopting or restarting a pet and is saved in checkpoints. */
+ interface Wardrobe extends Data {coins:number;owned:string[];skin:string;equipped:Partial<Record<LWPetData.Slot,string>>;entitlements:Entitlement[];}
  interface Event extends Data {kind:string;message:string;minute?:number;}
- interface Command extends Data {kind:'care'|'sleep'|'wake'|'name'|'adopt';action?:string;name?:string;species?:string;}
+ interface Command extends Data {kind:'care'|'sleep'|'wake'|'name'|'adopt'|'buy'|'equip'|'unequip'|'entitle';action?:string;name?:string;species?:string;product?:string;slot?:string;sku?:string;source?:string;}
  interface Result {ok:boolean;message:string;}
  interface NeedView {id:LWPetData.NeedId;name:string;value:number;warn:boolean;}
  interface ActionView {id:string;name:string;kind:LWPetData.ActionKind;enabled:boolean;reason:string;}
+ interface ProductView {id:string;kind:'skin'|'item';name:string;description:string;slot:LWPetData.Slot|null;price:LWPetData.Price;owned:boolean;active:boolean;command:'buy'|'equip'|'unequip'|'store';enabled:boolean;reason:string;}
  interface Snapshot {
   tick:number;minute:number;clock:{day:number;hour:number;minute:number;night:boolean};status:Status;
   pet:{species:string;speciesName:string;asset:string;name:string;stage:string;stageName:string;form:string;formName:string;model:string;age:number;stageProgress:number;weight:number;mistakes:number};
   needs:NeedView[];health:number;sick:boolean;sleeping:boolean;lights:boolean;mood:string;
   activity:(Activity & {kind:LWPetData.ActionKind;prop:string})|null;messes:(Mess & {id:string})[];
+  wardrobe:{currency:string;coins:number;skin:string;equipped:Partial<Record<LWPetData.Slot,string>>;materials:Record<string,string>;accessories:{slot:LWPetData.Slot;item:string;asset:string}[]};shop:ProductView[];
   alerts:string[];actions:ActionView[];lightsAction:{command:'sleep'|'wake';label:string;enabled:boolean;reason:string};events:Event[];
  }
  interface World {
@@ -60,9 +72,9 @@ declare namespace LWPetRuntime {
  interface Scheduler {register(spec:System):Scheduler;step(world:World,dt:number,context?:Data):void;}
  interface Ecs {World:new()=>World;Scheduler:new()=>Scheduler;}
  /** System context: the frozen catalog, fixed minutes per tick and an event sink. */
- interface Context {world:World;catalog:LWPetData.Catalog;minutesPerTick:number;emit(kind:string,message:string):void;spawnMess():void;}
+ interface Context {world:World;catalog:LWPetData.Catalog;minutesPerTick:number;emit(kind:string,message:string):void;spawnMess():void;earn(coins:number):void;}
  interface Systems {register(scheduler:Scheduler,context:Context):void;}
  interface Checkpoint extends Data {format:'wildlands-pet-checkpoint';schemaVersion:1;catalog:LWPetData.Catalog;entities:{id:string;components:Data}[];events:Event[];}
- interface Session {command(input:unknown):Result;query():Snapshot;step(ticks?:number):void;checkpoint():Checkpoint;readonly catalog:LWPetData.Catalog;}
- interface Api {create(catalog?:unknown,species?:string,name?:string):Session;restore(input:unknown):Session;readonly STEP:number;}
+ interface Session {command(input:unknown):Result;query():Snapshot;step(ticks?:number):void;checkpoint():Checkpoint;wardrobe():Wardrobe;readonly catalog:LWPetData.Catalog;}
+ interface Api {create(catalog?:unknown,species?:string,name?:string,wardrobe?:unknown):Session;restore(input:unknown):Session;readonly STEP:number;}
 }

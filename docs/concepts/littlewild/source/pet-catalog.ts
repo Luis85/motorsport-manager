@@ -10,7 +10,7 @@
  const plain=(v:unknown):v is Plain=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&[Object.prototype,null].includes(Object.getPrototypeOf(v));
  const copy=<T>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
  const ID=/^[a-z][a-z0-9_-]{0,63}$/,NEEDS=['hunger','joy','energy','hygiene'] as const,STAGES=['egg','baby','teen','adult'] as const;
- const KINDS=['feed','treat','play','clean','cuddle','medicine'],EFFECTS=[...NEEDS,'health'];
+ const KINDS=['feed','treat','play','clean','cuddle','medicine'],SLOTS=['hat','face','neck','back'],EFFECTS=[...NEEDS,'health'];
  function fields(value:unknown,keys:readonly string[],path:string):Plain{
   if(!plain(value))fail(path+' must be an object');
   const record=value as Plain;
@@ -36,7 +36,7 @@
  }
  function validate(input:unknown):LWPetData.Catalog{
   let data:unknown;try{data=copy(input);}catch{fail('must be JSON data');}
-  const catalog=fields(data,['format','schemaVersion','id','name','description','rules','scene','needs','species','stages','actions'],'catalog');
+  const catalog=fields(data,['format','schemaVersion','id','name','description','rules','scene','needs','species','stages','actions','economy','skins','items'],'catalog');
   if(catalog.format!=='wildlands-pet'||catalog.schemaVersion!==1)fail('unsupported format');
   id(catalog.id,'id');text(catalog.name,'name',80);text(catalog.description,'description',600);
   const rules=fields(catalog.rules,['minutesPerSecond','startHour','maxWeight','minWeight','startWeight','messHygienePerHour','maxMesses','sleepEnergyPerHour','wakeEnergy','snackLimit','snackWindowMinutes','sickHygieneBelow','sickAfterMinutes','healthLossPerHour','healthGainPerHour','sickHealthLossPerHour','mistakeAfterMinutes','lightsOnSleepJoyPerHour','eggWarmMinutes'],'rules');
@@ -88,7 +88,8 @@
   for(const key of ['pet','bedSpot'])spot(scene[key],'scene.'+key);
   list(scene.messSpots,'scene.messSpots',rules.maxMesses as number,8).forEach((value,i)=>spot(value,'scene.messSpots['+i+']'));
   const actions=list(catalog.actions,'actions',1,24).map((value,i)=>{
-   const action=fields(value,['id','name','description','kind','prop','minutes','effects','weight','digestMinutes','stages'],'actions['+i+']');
+   const action=fields(value,['id','name','description','kind','prop','minutes','coins','effects','weight','digestMinutes','stages'],'actions['+i+']');
+   if(!Number.isInteger(num(action.coins,'actions['+i+'].coins',0,100)))fail('actions['+i+'].coins must be a whole number');
    text(action.name,'actions['+i+'].name',40);text(action.description,'actions['+i+'].description');
    if(typeof action.kind!=='string'||!KINDS.includes(action.kind))fail('actions['+i+'].kind must be one of '+KINDS.join(', '));
    const prop=id(action.prop,'actions['+i+'].prop');if(index&&!index.get(prop)?.has('world'))fail('actions['+i+'] references a missing prop '+prop);
@@ -100,6 +101,36 @@
    return id(action.id,'actions['+i+'].id');
   });
   unique(actions,'actions');
+  const economy=fields(catalog.economy,['currency','startCoins','growthCoins','maxCoins'],'economy');
+  text(economy.currency,'economy.currency',24);
+  const maxCoins=num(economy.maxCoins,'economy.maxCoins',1,1e6);
+  for(const key of ['startCoins','growthCoins']){if(!Number.isInteger(num(economy[key],'economy.'+key,0,maxCoins)))fail('economy.'+key+' must be a whole number');}
+  if(!Number.isInteger(maxCoins))fail('economy.maxCoins must be a whole number');
+  const speciesIds=new Set(species.map(s=>s.id));
+  function price(value:unknown,path:string):void{
+   const record=plain(value)?value:fail(path+' must be an object');
+   if(record.currency==='coins'){fields(record,['currency','amount'],path);if(!Number.isInteger(num(record.amount,path+'.amount',0,maxCoins)))fail(path+'.amount must be a whole number');}
+   else if(record.currency==='premium'){fields(record,['currency','sku'],path);if(typeof record.sku!=='string'||!/^[a-z][a-z0-9_.-]{2,63}$/.test(record.sku))fail(path+'.sku must be a store product ID');}
+   else fail(path+'.currency must be coins or premium');
+  }
+  const skins=list(catalog.skins,'skins',1,32).map((value,i)=>{
+   const skin=fields(value,['id','name','description','species','materials','price'],'skins['+i+']');
+   text(skin.name,'skins['+i+'].name',40);text(skin.description,'skins['+i+'].description');price(skin.price,'skins['+i+'].price');
+   const allowed=list(skin.species,'skins['+i+'].species',0,16);if(allowed.some(id=>typeof id!=='string'||!speciesIds.has(id)))fail('skins['+i+'] lists an unknown species');
+   if(!plain(skin.materials)||Object.keys(skin.materials).length>12)fail('skins['+i+'].materials must map up to 12 material roles');
+   for(const [role,color] of Object.entries(skin.materials as Plain))if(!/^[A-Za-z][A-Za-z0-9_]{0,40}$/.test(role)||typeof color!=='string'||!/^#[0-9a-f]{6}$/i.test(color))fail('skins['+i+'] has an invalid material '+role);
+   return id(skin.id,'skins['+i+'].id');
+  });
+  const first=(catalog.skins as Plain[])[0]!;
+  if(Object.keys(first.materials as Plain).length||(first.species as unknown[]).length||(first.price as Plain).currency!=='coins'||(first.price as Plain).amount!==0)fail('the first skin must be the free species default with no material changes');
+  const items=list(catalog.items,'items',0,64).map((value,i)=>{
+   const item=fields(value,['id','name','description','slot','asset','price'],'items['+i+']');
+   text(item.name,'items['+i+'].name',40);text(item.description,'items['+i+'].description');price(item.price,'items['+i+'].price');
+   if(typeof item.slot!=='string'||!SLOTS.includes(item.slot))fail('items['+i+'].slot must be one of '+SLOTS.join(', '));
+   const asset=id(item.asset,'items['+i+'].asset');if(index&&!index.get(asset)?.has('world'))fail('items['+i+'] references a missing accessory '+asset);
+   return id(item.id,'items['+i+'].id');
+  });
+  unique([...skins,...items],'skin and item product');
   return deepFreeze(data as LWPetData.Catalog);
  }
  function deepFreeze<T>(value:T):T{if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.freeze(value);for(const child of Object.values(value))deepFreeze(child);}return value;}

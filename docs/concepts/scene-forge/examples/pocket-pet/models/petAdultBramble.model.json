@@ -445,6 +445,90 @@
       }
     },
     {
+      "id": "socketHat",
+      "type": "group",
+      "name": "Hat accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.225,
+          0
+        ],
+        "scale": [
+          1.2,
+          1.2,
+          1.2
+        ]
+      },
+      "tags": [
+        "rig:hat"
+      ]
+    },
+    {
+      "id": "socketFace",
+      "type": "group",
+      "name": "Face accessory socket",
+      "parent": "head",
+      "transform": {
+        "position": [
+          0,
+          0.035,
+          0.232
+        ],
+        "scale": [
+          1.18,
+          1.18,
+          1.18
+        ]
+      },
+      "tags": [
+        "rig:face"
+      ]
+    },
+    {
+      "id": "socketNeck",
+      "type": "group",
+      "name": "Neck accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.56,
+          0
+        ],
+        "scale": [
+          1.3,
+          1.3,
+          1.3
+        ]
+      },
+      "tags": [
+        "rig:neck"
+      ]
+    },
+    {
+      "id": "socketBack",
+      "type": "group",
+      "name": "Back accessory socket",
+      "parent": "bodyRoot",
+      "transform": {
+        "position": [
+          0,
+          0.38,
+          -0.27
+        ],
+        "scale": [
+          1.25,
+          1.25,
+          1.25
+        ]
+      },
+      "tags": [
+        "rig:back"
+      ]
+    },
+    {
       "id": "earL",
       "type": "mesh",
       "parent": "head",
