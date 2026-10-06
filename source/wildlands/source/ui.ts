@@ -2,7 +2,9 @@
 (function () {
     'use strict';
     // The player host owns the process-global context for this document's lifetime.
-    LWDeveloperSession.claimHost();
+    // Optional bundles (developer session, scenario library, workspace, template hosts) are read
+    // through window.X?. so a play-only colony artifact boots without them.
+    window.LWDeveloperSession?.claimHost();
     const { Engine, SKILLS, BUILDINGS, RES, RECIPES, CONTRACTS, threshold, terrain, clamp } = LW;
     const $ = id => document.getElementById(id), esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const icon = (name, cls = '') => `<svg class="icon ${cls}" aria-hidden="true"><use href="#i-${esc(name)}"/></svg>`;
@@ -84,10 +86,11 @@
     buildingInterior=LWBuildingInteriorUI.create({engine:()=>engine,world:()=>world,esc,save,refresh:()=>updateUI(true),closeContexts:()=>{terraform?.close(false);closeModal();tileMenu?.close(false);worldUI.clear({restore:false});worldExplorer.clear();buildPanel?.close(false);buildPanel?.designer?.close(false);guidePanel?.minimize();if(villageUI.state.open)villageUI.toggle(false);}});
     buildPanel=LWBuildPanel.create(panelContext);
     guidePanel=LWGuidePanel.create({...panelContext,show:showGuideTarget});
-    scenarioUI=LWScenarioUI.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
-    wildlandsUI=window.WildlandsUI?.create({engine:()=>engine,revision:()=>engineRevision,scenarios:scenarioUI,open:openModal,modal:()=>ui.modal,toast})||null;
+    scenarioUI=window.LWScenarioUI?.create({...panelContext,head:modalHead,footer:modalFooter,modal:()=>ui.modal,redraw:()=>renderModal(true),close:closeModal,backup:backupStory,setEngine,exportStory:exportSave,camera:()=>({...world.camera}),presentScene});
+    scenarioUI=scenarioUI||null;
+    wildlandsUI=scenarioUI&&window.WildlandsUI?.create({engine:()=>engine,revision:()=>engineRevision,scenarios:scenarioUI,open:openModal,modal:()=>ui.modal,toast})||null;
     applySceneRendering();
-    const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);
+    if(scenarioUI){const scenarioButton=document.createElement('button');scenarioButton.dataset.act='scenarios';scenarioButton.textContent='Worlds & scenarios';$('world-more').prepend(scenarioButton);}
     function presentScene(target,camera){
         if(camera){Object.assign(world.camera,camera);world.manual=true;world.invalidate();}
         if(target?.type==='island')world.focus(target.ix*23+9,target.iy*23+9);
@@ -318,7 +321,7 @@
     // Optional template applications: each template bundle publishes one host descriptor.
     // The colony shell mounts only the hosts present in this artifact, in this explicit order,
     // and at most one of them runs at a time. Each host installs its own public API global.
-    const optionalApps=[window.LWRTSHost,window.LWPetHost].filter(Boolean);
+    const optionalApps=[window.LWRTSHost?.create?window.LWRTSHost:null,window.LWPetHost?.create?window.LWPetHost:null].filter(Boolean);
     const embeddedApps=optionalApps.map(app=>{
         const surface=app.create({beforeOpen:()=>{closeModal();tileMenu.close(false);clock.reset();},afterClose:()=>{last=performance.now();clock.reset();}});
         const launcherParent=document.querySelector('.wildlands-tools nav')||$('world-more');

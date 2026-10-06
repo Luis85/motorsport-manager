@@ -18,7 +18,7 @@ declare namespace LWPetHost {
   WildlandsPet?:LWPetHost.PublicApi;__wildlandsReady?:boolean;
   LWFiles:{downloadJSON(input:unknown,name:string):void};
  };
- function create(options:{beforeOpen():void;afterClose():void}):LWPetHost.Surface{
+ function create(options:LWEmbeddedApp.Hooks):LWPetHost.Surface{
   const application=root.LWPetApplication.create(),view=application.view,assets=Array.isArray(root.LWPetAssetDefinitions)?root.LWPetAssetDefinitions as unknown[]:[];
   let surface:LWPetDemo.Surface|null=null,invoker:HTMLElement|null=null,ticket=0,paint=0,clock=0,store=root.LWPetStore.demo();
   const workspace=document.createElement('section');workspace.id='pet-mode';workspace.hidden=true;workspace.setAttribute('aria-label','Pocket Pet engine demonstration');
@@ -42,6 +42,8 @@ declare namespace LWPetHost {
    surface=root.LWPetDemo.create({parent:content,catalog:view.catalog(),assets,speeds:root.LWPetApplication.SPEEDS,
     store,unlock,query:()=>view.query(),command:input=>view.command(input),status:()=>view.status(),
     control(action,value){if(action==='exit')close();else view.control(action,value);}});
+   // A standalone page has no colony to return to; the exit control closes the pet instead.
+   if(options.standalone){const exit=content.querySelector<HTMLButtonElement>('[data-pet=exit]');if(exit)exit.textContent='Close Pocket Pet';}
   }
   function open():void{
    if(view.status().active)return;
@@ -98,7 +100,7 @@ declare namespace LWPetHost {
    const button=document.createElement('button');button.type='button';button.dataset.wildlandsPet='open';button.textContent='Open Pocket Pet';button.style.cssText='min-height:44px;padding:8px 16px;font:inherit';
    button.addEventListener('click',()=>surface.open());launcher.append(heading,button);document.body.append(launcher);button.focus();
   }
-  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher});
+  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher,standalone:true});
   standaloneSurface=surface;document.body.classList.add('pet-standalone');
   install(surface);
   if(options.autoOpen===false)showLauncher();else surface.open();

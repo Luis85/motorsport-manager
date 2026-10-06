@@ -2,7 +2,9 @@
  * a shell mounts only the descriptors present, and a play-only page runs one through standalone(). */
 declare namespace LWEmbeddedApp {
  /** Shell hooks around a host taking over the page. */
- interface Hooks {beforeOpen():void;afterClose():void;}
+ interface Hooks {beforeOpen():void;afterClose():void;
+  /** True when the host is the whole page: its exit control then closes the app instead of returning to a shell. */
+  standalone?:boolean;}
  /** The lifecycle every host surface exposes to a shell or standalone runner. */
  interface Surface {open():void;close():void;advance(seconds:number):void;readonly active:boolean;}
  /** Standalone pages own their frame loop and show this launcher after the player exits. */

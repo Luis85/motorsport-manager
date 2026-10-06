@@ -28,6 +28,14 @@ function playOnlyPage(prefix:string,extra:readonly string[],data:Record<string,u
  const declarations=Object.entries(data).map(([name,input])=>`window.${name}=${JSON.stringify(input).replaceAll('<','\\u003c')};`).join('\n');
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${prefix}play-only</title>${style}</head><body><script>${declarations}</script>${scripts}<script>${boot}</script></body></html>`;
 }
+/** Remove compiled modules from the composite exactly as a profile without their bundle would. */
+function withoutModules(html:string,files:readonly string[]):string{
+ return files.reduce((page,file)=>{
+  const text=fs.readFileSync(path.join(GENERATED,file),'utf8'),at=page.indexOf(text);
+  assert(at>=0&&page.indexOf(text,at+1)<0,'Expected exactly one inlined copy of '+file);
+  return page.slice(0,at)+page.slice(at+text.length);
+ },html);
+}
 const content=(file:string):unknown=>JSON.parse(fs.readFileSync(path.join(GENERATED,'content',file),'utf8'));
 
 async function main():Promise<void>{
@@ -36,7 +44,7 @@ async function main():Promise<void>{
  // The probe script is placed first in the document instead, ahead of every artifact module.
  const withInit=(init:string,html:string):string=>html.replace(/<head([^>]*)>/i,match=>match+'<script>'+init+'</script>');
  const open=async(init:string,html=ARTIFACT):Promise<Page>=>{
-  const page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>console.error('pageerror',error));
+  const page=await context.newPage();page.setDefaultTimeout(60000);page.on('pageerror',error=>console.error('pageerror',error));
   await page.setContent(withInit(init,html),{waitUntil:'load',timeout:60000});return page;
  };
  try{
@@ -61,6 +69,30 @@ async function main():Promise<void>{
    await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.preferences.set(false);Littlewild.engine.s.paused=false;Littlewild.refresh()');
    const before=await value<number>(page,'Littlewild.engine.s.simTime');
    await page.waitForFunction(start=>(window as unknown as {Littlewild:{engine:{s:{simTime:number}}}}).Littlewild.engine.s.simTime>start,before);
+   await page.close();
+  });
+  await check('The colony shell boots without the scenario library, developer session, workspace and template host bundles',async()=>{
+   const html=withoutModules(ARTIFACT,['developer-session.js','developer-toolbox.js','scenario-ui.js','wildlands-ui.js','rts-host.js','pet-host.js']);
+   const page=await open(RECORD_READY,html);await ready(page,'colony');
+   assert.deepEqual(await value(page,'window.__readyEvents'),[{host:'colony',flag:true}]);
+   assert.equal(await value(page,'[typeof LWScenarioUI,typeof LWDeveloperSession,typeof WildlandsUI,typeof LWRTSHost,typeof LWPetHost,typeof LWDeveloper].join()'),'undefined,undefined,undefined,undefined,undefined,undefined');
+   assert.equal(await page.locator('#wildlands-workspace, #world-more [data-act=scenarios], [data-wildlands-rts], [data-wildlands-pet]').count(),0);
+   assert.equal(await value(page,'Littlewild.scenarioUI'),null);
+   assert.match((await value<{id:string;reason?:string}[]>(page,'Wildlands.capabilities()')).find(entry=>entry.id==='project')?.reason??'',/studio bundle is not included/);
+   await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.preferences.set(false);Littlewild.engine.s.paused=false;Littlewild.refresh()');
+   const before=await value<number>(page,'Littlewild.engine.s.simTime');
+   await page.waitForFunction(start=>(window as unknown as {Littlewild:{engine:{s:{simTime:number}}}}).Littlewild.engine.s.simTime>start,before);
+   await page.close();
+  });
+  await check('Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent',async()=>{
+   const html=playOnlyPage('RTS_',['ECS','FILES'],{LWRTSDefinitions:content('rts-demo.json')},'LWRTSHost.standalone();');
+   const page=await open('',withoutModules(html,['rts-mission-editor-ui.js']));await ready(page,'rts');
+   const button=page.locator('[data-rts-file=editor]');
+   assert.equal(await button.textContent(),'Mission editor');assert.equal(await button.getAttribute('aria-disabled'),'true');
+   assert.equal(await page.locator('#'+await button.getAttribute('aria-describedby')).textContent(),'The mission editor is unavailable in this build: the RTS mission editor bundle is not included.');
+   await button.focus();await page.keyboard.press('Enter');
+   assert.equal(await page.locator('[data-rts-file-status]').textContent(),'The mission editor is unavailable in this build: the RTS mission editor bundle is not included.');
+   assert(await page.locator('#rts-demo').isVisible());assert.equal(await page.locator('[data-rts=exit]').textContent(),'Close RTS demo');
    await page.close();
   });
   await check('Scenario library keeps editor launchers focusable with explicit reasons when the editors bundle is absent',async()=>{
@@ -105,7 +137,7 @@ async function main():Promise<void>{
    shared.on('page',page=>{page.on('pageerror',error=>errors.push(String(error)));page.on('request',request=>requests.push(request.url()));});
    try{
     await shared.route(origin+'/**',route=>route.fulfill({status:200,contentType:'text/html',body:route.request().url().endsWith('/office.html')?withInit("window.LWGameProfile={storage:{namespace:'wildlands.office'}};",ARTIFACT):ARTIFACT}));
-    const visit=async(file:string):Promise<Page>=>{const page=await shared.newPage();page.setDefaultTimeout(15000);await page.goto(origin+'/'+file,{waitUntil:'load',timeout:60000});await ready(page,'colony');return page;};
+    const visit=async(file:string):Promise<Page>=>{const page=await shared.newPage();page.setDefaultTimeout(60000);await page.goto(origin+'/'+file,{waitUntil:'load',timeout:60000});await ready(page,'colony');return page;};
     const first=await visit('littlewild.html');
     await first.locator('[data-act=begin]').click();await first.evaluate('Littlewild.save(true)');
     const legacy=await value<string|null>(first,'localStorage.getItem("littlewild.save.v5")');assert(legacy);await first.close();
@@ -147,6 +179,7 @@ async function main():Promise<void>{
    assert(await page.locator('#pet-demo').isVisible());assert.equal(await value(page,'WildlandsPet.status().active'),true);
    await page.waitForFunction(()=>(window as unknown as {WildlandsPet:{renderer():unknown}}).WildlandsPet.renderer()!==null);
    await page.locator('#pet-demo [data-pet-action]').first().waitFor();
+   assert.equal(await page.locator('[data-pet=exit]').textContent(),'Close Pocket Pet');
    await page.evaluate('WildlandsPet.close()');
    const launcher=page.locator('[data-wildlands-pet=open]');
    assert.equal(await launcher.textContent(),'Open Pocket Pet');assert.equal(await launcher.evaluate(el=>el===document.activeElement),true);

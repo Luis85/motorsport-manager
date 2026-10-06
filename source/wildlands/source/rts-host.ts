@@ -14,10 +14,11 @@ declare namespace LWRTSHost {
  const root=inputRoot as {
   LWRTSApplication:LWRTSApplication.Api;LWRTSDemo:LWRTSDemo.Api;LWRTSHost?:LWRTSHost.Api;
   WildlandsRTS?:LWRTSHost.PublicApi;__wildlandsReady?:boolean;
-  LWRTSMissionEditor:LWRTSMissionEditor.Api;LWRTSMissionEditorUI:LWRTSMissionEditorUI.Api;
+  LWRTSMissionEditor?:LWRTSMissionEditor.Api;LWRTSMissionEditorUI?:LWRTSMissionEditorUI.Api;
   LWFiles:{downloadJSON(input:unknown,name:string):void};
  };
- function create(options:{beforeOpen():void;afterClose():void}):LWRTSHost.Surface {
+ const EDITOR_UNAVAILABLE='The mission editor is unavailable in this build: the RTS mission editor bundle is not included.';
+ function create(options:LWEmbeddedApp.Hooks):LWRTSHost.Surface {
   const application=root.LWRTSApplication.create(),view=application.view;
   let surface:LWRTSDemo.Surface|null=null,invoker:HTMLElement|null=null,revision=0,paintDebt=0;
   let editor:LWRTSMissionEditor.Session|null=null,editorSurface:LWRTSMissionEditorUI.Surface|null=null,editing=false;
@@ -29,6 +30,12 @@ declare namespace LWRTSHost {
   const file=document.createElement('input');file.type='file';file.accept='.json,application/json';file.hidden=true;file.id='rts-import-file';
   toolbar.append(file);workspace.append(toolbar);
   const editButton=document.createElement('button');editButton.type='button';editButton.dataset.rtsFile='editor';editButton.textContent='Mission editor';toolbar.prepend(editButton);
+  // The mission editor is an optional bundle: without it the launcher stays focusable with an explicit reason.
+  const editorAvailable=():boolean=>!!root.LWRTSMissionEditor&&!!root.LWRTSMissionEditorUI;
+  if(!editorAvailable()){
+   const reason=document.createElement('span');reason.id='rts-editor-unavailable';reason.className='rts-unavailable';reason.textContent=EDITOR_UNAVAILABLE;
+   editButton.setAttribute('aria-disabled','true');editButton.setAttribute('aria-describedby',reason.id);editButton.after(reason);
+  }
   const content=document.createElement('div');content.className='rts-play-surface';workspace.append(content);document.body.append(workspace);
   const missions=toolbar.querySelector<HTMLSelectElement>('[data-rts-mission]')!,kind=toolbar.querySelector<HTMLSelectElement>('[data-rts-import-kind]')!,feedback=toolbar.querySelector<HTMLElement>('[data-rts-file-status]')!;
   function status(message:string,error=false):void {feedback.textContent=message;feedback.setAttribute('role',error?'alert':'status');}
@@ -52,15 +59,19 @@ declare namespace LWRTSHost {
     command(input){const result=view.command({...input});return {ok:result.ok,...(!result.ok?{reason:result.message}:{})};},
     control(action,value){if(action==='exit')close();else {view.control(action,value);surface?.refresh();}},
     paused:()=>view.status().paused,speed:()=>view.status().speed});
+   // A standalone page has no colony to return to; the exit control closes the demo instead.
+   if(options.standalone){const exit=content.querySelector<HTMLButtonElement>('[data-rts=exit]');if(exit)exit.textContent='Close RTS demo';}
    syncMissions();
   }
   function mountEditor():void {
+   const editorApi=root.LWRTSMissionEditor,editorUI=root.LWRTSMissionEditorUI;
+   if(!editorApi||!editorUI)throw Error(EDITOR_UNAVAILABLE);
    // Stage authoring admission before retiring the retained match presentation.
-   const admitted=editor??root.LWRTSMissionEditor.create(view.catalog(),view.status().mission);
+   const admitted=editor??editorApi.create(view.catalog(),view.status().mission);
    revision++;surface?.destroy();surface=null;content.replaceChildren();paintDebt=0;
    editor=admitted;
    editing=true;toolbar.hidden=true;
-   editorSurface=root.LWRTSMissionEditorUI.create({parent:content,editor,
+   editorSurface=editorUI.create({parent:content,editor,
     onExit(){revision++;mount();editButton.focus();},
     onPlay(){
      if(!editor)return;
@@ -139,7 +150,7 @@ declare namespace LWRTSHost {
    const button=document.createElement('button');button.type='button';button.dataset.wildlandsRts='open';button.textContent='Open the RTS demo';button.style.cssText='min-height:44px;padding:8px 16px;font:inherit';
    button.addEventListener('click',()=>surface.open());launcher.append(heading,button);document.body.append(launcher);button.focus();
   }
-  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher});
+  const surface=create({beforeOpen(){launcher?.remove();launcher=null;},afterClose:showLauncher,standalone:true});
   standaloneSurface=surface;document.body.classList.add('rts-standalone');
   install(surface);
   if(options.autoOpen===false)showLauncher();else surface.open();
