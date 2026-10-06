@@ -50,7 +50,10 @@ jobs:
         working-directory: source/wildlands
         env:
           LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
-        run: npm run verify
+        # Complete registered gate, parallel (default jobs = min(4, cores - 1)). Browser suites run one at a
+        # time beside the Node suites: several still use 5 s action timeouts that two concurrent Chromium
+        # instances exceeded on a 4-core host. Raise --browser-jobs once hosted runs show it is reliable.
+        run: npm run verify -- --browser-jobs 1
       - name: Verify Storytelling without click diagnostics (additional 24 checks)
         id: storytelling_diagnostics_off
         if: ${{ success() && steps.complete_gate.outcome == 'success' }}
