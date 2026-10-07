@@ -476,6 +476,7 @@
     "LWGameProfile",
     "LWCreatureEditorFieldDefinitions",
     "LWScenarioPacks",
+    "LWProcessLimits",
     "LWProcessSchema",
     "LWProcessGraph",
     "LWProcessCatalog",
