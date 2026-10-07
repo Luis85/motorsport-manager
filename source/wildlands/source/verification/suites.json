@@ -39,7 +39,7 @@
     {"name": "terraform", "kind": "node", "tier": "full", "entry": ".generated/test-terraform.cjs", "result": ".generated/terraform-results.json", "timeout": 120, "cost": 7.9},
     {"name": "renderers", "kind": "node", "tier": "fast", "entry": ".generated/test-renderers.cjs", "result": ".generated/renderer-results.json", "timeout": 120, "cost": 0.4},
     {"name": "canvas-renderer", "kind": "node", "tier": "fast", "entry": ".generated/test-canvas-renderer.cjs", "result": ".generated/canvas-renderer-results.json", "timeout": 120, "cost": 0.7},
-    {"name": "architecture-policy", "kind": "node", "tier": "full", "entry": ".generated/test-architecture-policy.cjs", "result": ".generated/architecture-policy-results.json", "timeout": 60, "cost": 15.7, "exclusive": "Runs the real architecture checker in nested processes with a fixed 15 s internal timeout that CPU contention from concurrent suites exceeds."},
+    {"name": "architecture-policy", "kind": "node", "tier": "full", "entry": ".generated/test-architecture-policy.cjs", "result": ".generated/architecture-policy-results.json", "timeout": 300, "cost": 44.0},
     {"name": "storage-clock", "kind": "node", "tier": "fast", "entry": ".generated/test-storage-clock.cjs", "result": ".generated/storage-clock-results.json", "timeout": 60, "cost": 0.1},
     {"name": "gate-integrity", "kind": "node", "tier": "fast", "entry": ".generated/test-gate-integrity.cjs", "result": ".generated/gate-integrity-results.json", "timeout": 60, "cost": 2.8},
     {"name": "cli-contracts", "kind": "node", "tier": "full", "entry": ".generated/test-cli-contracts.cjs", "result": ".generated/cli-contract-results.json", "timeout": 120, "cost": 41.4},
