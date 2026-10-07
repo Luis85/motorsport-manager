@@ -127,3 +127,61 @@ export async function advanceClock(page: Page, milliseconds: number): Promise<vo
 export async function pauseClockAt(page: Page, time: number | string | Date): Promise<void> {
   await page.clock.pauseAt(time);
 }
+
+/**
+ * Action budget for ordinary controls (click, fill, select, focus). The former 5–7 s budgets were
+ * exceeded under concurrent suites on a 4-core host; a control that is not actionable within this
+ * budget is a real failure, not load.
+ */
+export const ACTION_TIMEOUT_MS = 15_000;
+/**
+ * Budget for a control whose handler synchronously builds or replaces a whole world (Begin, a scene
+ * launch, entering an interior or an embedded application). Playwright's click resolves only after
+ * that handler returns, measured at 2–8 s per click on a contended 4-core host, so it is a scene
+ * transition rather than an ordinary user action. Use it only for such clicks.
+ */
+export const TRANSITION_TIMEOUT_MS = 60_000;
+/** Fixed virtual start instant for suites that install the clock, so Date values are deterministic. */
+export const CLOCK_START = "2026-01-01T00:00:00.000Z";
+
+/** Freeze virtual time at the page's current virtual instant; timers and frames stop until resumed or advanced. */
+export async function pauseClock(page: Page): Promise<void> {
+  await page.clock.pauseAt(await page.evaluate(() => Date.now()));
+}
+
+/** Let virtual time flow with real time again after `pauseClock`/`pauseClockAt`. */
+export async function resumeClock(page: Page): Promise<void> {
+  await page.clock.resume();
+}
+
+/**
+ * Resolve after the page has rendered `count` further animation frames (style, layout, resize
+ * observers and paint run between them): an explicit rendering condition, not a duration. With an
+ * installed clock the frames come from virtual time, so the clock must not be paused.
+ */
+export async function nextFrames(page: Page, count = 2): Promise<void> {
+  await page.evaluate(total => new Promise<void>(resolve => {
+    let remaining = total;
+    const step = (): void => { remaining -= 1; if (remaining <= 0) resolve(); else requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }), count);
+}
+
+/**
+ * Wait until `predicate` holds before a check asserts that same state. A timeout is deliberately not
+ * thrown here: the check's own assertion then reports the failure under its name instead of
+ * aborting the suite. The predicate must be a function (the artifacts' CSP rejects string predicates).
+ */
+export async function settle<Arg>(page: Page, predicate: (arg: Arg) => unknown, arg: Arg, timeout = ACTION_TIMEOUT_MS): Promise<boolean> {
+  try { await page.waitForFunction(predicate, arg, { timeout }); return true; }
+  catch { return false; }
+}
+
+/**
+ * Per-page fixture URL on its own origin. Artifacts served from one origin share localStorage (and
+ * the colony saves on pagehide), so pages that must each start fresh use distinct origins.
+ */
+export const fixtureUrl = (label: string): string => {
+  if (!/^[a-z0-9-]{1,40}$/.test(label)) throw new Error("Fixture labels are short lowercase host labels");
+  return `https://${label}.localhost/wildlands-artifact.html`;
+};

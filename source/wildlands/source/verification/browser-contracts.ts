@@ -1,9 +1,10 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady } from "./browser-harness";
-import { gameDirectory } from "../tools/game-folder.cjs";
+import { spawn } from "node:child_process";
+import { ACTION_TIMEOUT_MS, ARTIFACT_FIXTURE_URL, fixtureUrl, launchBrowser, monitorContext, openArtifact, READY_TIMEOUT_MS, settle, TRANSITION_TIMEOUT_MS, waitForReady } from "./browser-harness";
+import { gameDirectory, gamesRoot } from "../tools/game-folder.cjs";
 
 interface Result{name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,"../.."),OUT=path.join(ROOT,"verification","v15");
@@ -12,14 +13,54 @@ let diagnostics:ReturnType<typeof monitorContext>;
 fs.rmSync(path.join(OUT,"browser-contract-results.json"),{force:true});
 async function check(name:string,action:()=>unknown|Promise<unknown>):Promise<void>{try{assert.notEqual(await action(),false);results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error instanceof Error?error.message:String(error)});process.stderr.write("FAIL "+name+" "+String(error)+"\n");}}
 const eq=(a:unknown,b:unknown)=>assert.deepEqual(a,b);
+// The placement, HUD and expedition contracts need only the colony; its play artifact carries all of them.
+const ARTIFACT=path.join(ROOT,".generated/artifacts/colony-play.html"),CUSTOM_URL=fixtureUrl("custom-emberworks");
+/** The authored project inputs `npm run build` reads (sources, vendor files, manifests and compiler configuration). */
+const PROJECT_INPUTS=["source","vendor","package.json","package-lock.json",...fs.readdirSync(ROOT).filter(name=>/^tsconfig[^/]*\.json$/.test(name))];
+
+/** Hard-link a dependency tree (copying across devices) so the isolated project resolves its own real paths. */
+function linkTree(from:string,to:string):void{
+ fs.mkdirSync(to,{recursive:true});
+ for(const entry of fs.readdirSync(from,{withFileTypes:true})){
+  const source=path.join(from,entry.name),target=path.join(to,entry.name);
+  if(entry.isDirectory())linkTree(source,target);
+  else if(entry.isSymbolicLink())fs.symlinkSync(fs.readlinkSync(source),target);
+  else try{fs.linkSync(source,target);}catch{fs.copyFileSync(source,target);}
+ }
+}
+
+/**
+ * Run the real `npm run build -- --pack ... --output ...` in an isolated copy of the authored project, so its
+ * compile step never rewrites the shared .generated output that concurrent suites load. node_modules is linked
+ * file by file rather than symlinked: the engine-source payload records the toolchain by real path, and the
+ * isolated build is byte-identical to an in-place one only when those paths resolve inside the copy.
+ */
+function customBuild(pack:string,output:string,timeoutMs=180_000):{done:Promise<void>;cleanup:()=>void}{
+ const project=fs.mkdtempSync(path.join(os.tmpdir(),"wildlands-custom-build-"));
+ for(const name of PROJECT_INPUTS)fs.cpSync(path.join(ROOT,name),path.join(project,name),{recursive:true});
+ linkTree(path.join(ROOT,"node_modules"),path.join(project,"node_modules"));
+ const done=new Promise<void>((resolve,reject)=>{
+  const child=spawn("npm",["run","build","--silent","--","--pack",pack,"--output",output],{cwd:project,env:{...process.env,WILDLANDS_GAMES_DIR:gamesRoot()},stdio:["ignore","pipe","pipe"]});
+  let log="";child.stdout.on("data",chunk=>{log+=String(chunk);});child.stderr.on("data",chunk=>{log+=String(chunk);});
+  const timer=setTimeout(()=>child.kill("SIGKILL"),timeoutMs);
+  child.on("error",error=>{clearTimeout(timer);reject(error);});
+  child.on("close",(status,signal)=>{clearTimeout(timer);if(status===0)resolve();else reject(new Error((log.trim()||"Custom build failed")+(signal?" ("+signal+")":"")));});
+ });
+ return {done,cleanup:()=>fs.rmSync(project,{recursive:true,force:true,maxRetries:5,retryDelay:200})};
+}
 
 async function main():Promise<void>{
+ // The custom build compiles for tens of seconds; it runs in its isolated project while the colony contracts run.
+ const artifact=path.join(OUT,"emberworks.html");fs.rmSync(artifact,{force:true});
+ const build=customBuild(path.join(gameDirectory("emberworks"),"content/emberworks.pack.json"),artifact);
+ build.done.catch(()=>undefined);
  const browser=await launchBrowser();
  try {
- const context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context);
- let page=await context.newPage();
- await page.setContent(fs.readFileSync(path.join(ROOT,".generated/artifacts/showcase.html"),"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
- await page.locator("[data-act=land-demo]").click();await page.waitForTimeout(200);
+ const context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL,CUSTOM_URL]});
+ let page=await context.newPage();page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+ await openArtifact(page,ARTIFACT);await waitForReady(page,{host:"colony",timeout:READY_TIMEOUT_MS});
+ // The land-demo handler installs its scene synchronously before the click resolves.
+ await page.locator("[data-act=land-demo]").click({timeout:TRANSITION_TIMEOUT_MS});
  await page.evaluate("Littlewild.engine.s.paused=true;Littlewild.refresh()");
  const before=await page.evaluate("Littlewild.engine.creatures.map(c=>({id:c.id,n:c.orders.length,approach:c.buildPolicy.approach}))") as any[];
  await page.evaluate("Littlewild.open('construction')");await page.locator("[data-build=select][data-id=shelter]").click();
@@ -28,7 +69,8 @@ async function main():Promise<void>{
  await page.locator("[data-build=place]").click();
  const tile=await page.evaluate(()=>{const e=(window as any).Littlewild.engine;for(let y=1;y<18;y++)for(let x=1;x<18;x++)if(e.canBuild(x,y)&&!e.placementIssue("shelter",x,y))return{x,y};throw Error("No free plot");});
  await page.evaluate(target=>{const app=(window as any).Littlewild;app.world.hover=target;app.world.keyboardTile=target;},tile);
- await page.locator("#world").focus();await page.keyboard.press("Enter");await page.waitForTimeout(100);
+ await page.locator("#world").focus();await page.keyboard.press("Enter");
+ await settle(page,expected=>(window as any).Littlewild.engine.creatures.find((c:any)=>c.id==="c2").orders.length>expected,before[1]!.n);
  const order=await page.evaluate("Littlewild.engine.creatures.find(c=>c.id==='c2').orders.at(-1)") as any;
  await check("Keyboard placement creates an actual construction task",()=>eq(order.type,"build"));
  await check("Placement targets the explicitly assigned companion",async()=>eq(await page.evaluate("Littlewild.engine.creatures.find(c=>c.id==='c2').orders.length"),before[1]!.n+1));
@@ -72,20 +114,19 @@ async function main():Promise<void>{
  });
  await check("Changing expedition origin redraws its workspace exactly once",()=>eq(questFilter.redraws,1));
  await check("Expedition origin change preserves selection and keyboard focus",()=>{eq(questFilter.focused,true);eq(questFilter.value,questFilter.expected);});
- const artifact=path.join(OUT,"emberworks.html");
- const build=spawnSync("npm",["run","build","--silent","--","--pack",path.join(gameDirectory("emberworks"),"content/emberworks.pack.json"),"--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});
- if(build.status!==0)throw new Error(build.stderr||build.stdout||"Custom build failed");
- page=await context.newPage();await page.setViewportSize({width:1280,height:800});await page.setContent(fs.readFileSync(artifact,"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
+ await build.done;
+ page=await context.newPage();page.setDefaultTimeout(ACTION_TIMEOUT_MS);await page.setViewportSize({width:1280,height:800});await openArtifact(page,artifact,{url:CUSTOM_URL});await waitForReady(page,{host:"colony",timeout:READY_TIMEOUT_MS});
  await check("Custom-build welcome is branded from its input pack",async()=>eq(await page.title(),"Wildlands · Emberworks"));
  await check("Custom artifact contains one selectable pack",async()=>eq(await page.evaluate("LWScenarios.builtins().length"),1));
- await page.locator("[data-act=begin]").click();await page.waitForTimeout(100);
+ // Begin installs the pack's first scene synchronously before the click resolves.
+ await page.locator("[data-act=begin]").click({timeout:TRANSITION_TIMEOUT_MS});
  await check("Custom-build start uses the pack-defined first scene",async()=>eq(await page.evaluate("Littlewild.engine.scenarioContext.sceneId"),"workshop-first-morning"));
  await check("Custom-build start uses the authored companion name",async()=>eq(await page.evaluate("Littlewild.engine.creatures[0].name"),"Rivet"));
  await check("Custom-build start uses an authored world profile",async()=>eq(await page.evaluate("LWWorldProfile.current.name"),"Copper Shore"));
  await check("No uncaught errors across both pack workflows",()=>eq(diagnostics.errors,[]));
  await check("No console warnings or errors across both pack workflows",()=>eq(diagnostics.consoleProblems,[]));
  await check("No HTTP/HTTPS requests across both pack workflows",()=>eq(diagnostics.requests,[]));
- } finally { await browser.close(); }
+ } finally { await browser.close(); await build.done.catch(()=>undefined); build.cleanup(); }
  const report={passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results,...diagnostics};
  fs.writeFileSync(path.join(OUT,"browser-contract-results.json"),JSON.stringify(report,null,2)+"\n");process.stdout.write(`${report.passed}/${report.total}\n`);if(report.failed)process.exitCode=1;
 }

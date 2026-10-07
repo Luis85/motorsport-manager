@@ -3,7 +3,6 @@
   "pattern": "waitForTimeout",
   "description": "Reviewed fixed-sleep budget per verification source (Phase 1B snapshot). Counts may only go down: replace a sleep with an explicit readiness condition or the Playwright clock helpers in browser-harness.ts, then lower the count here.",
   "files": {
-    "verification/browser-contracts.ts": 3,
     "verification/browser.ts": 15,
     "verification/building-interiors-browser.ts": 1,
     "verification/creature-editor-browser.ts": 3,
