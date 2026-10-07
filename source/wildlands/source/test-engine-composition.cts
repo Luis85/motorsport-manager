@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 /* M5 contracts for explicit engine composition and actor-scoped state views. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const L=require('./simulation.cjs'),S=require('./story-codec.js');

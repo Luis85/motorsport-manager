@@ -1,21 +1,31 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Littlewild content boundary. Pure data validation, deterministic diffing and stable runtime tables.
  * No DOM, storage, network, dynamic code execution or game-state writes.
  * JSON Schema covers shape. Semantic checks cover IDs, references and acquisition cycles.
  */
 (function (inputRoot:unknown) {
   'use strict';
-  interface Root {LWDefaultLibrary?:LWContentPorts.Library;LWContentSchema?:LWContentPorts.Schema;LWContent?:LWContentPorts.ContentApi;}
+  interface Root {LWContentProvider?:LWContentProvider.Api;LWContent?:LWContentPorts.ContentApi;}
   const root=inputRoot as Root;
   type Category=LWContentPorts.Category;type Library=LWContentPorts.Library;type Diagnostic=LWContentPorts.Diagnostic;type Preview=LWContentPorts.Preview;
   type Component=LWContentPorts.DefinitionMap[Category];
   const isRecord=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
   const IS_NODE = typeof module !== 'undefined' && module.exports;
-  const defaultLibrary=(IS_NODE ? require('./content/balancing.json').libraries.base : root.LWDefaultLibrary) as Library|undefined;
-  if(!defaultLibrary)throw Error('Default content library is missing.');
-  const DEFAULT=defaultLibrary;
-  const bundledSchema=(IS_NODE ? require('./content/library.schema.json') : root.LWContentSchema) as LWContentPorts.Schema|undefined;
-  if(!bundledSchema)throw Error('Content schema is missing.');
-  const SCHEMA=bundledSchema;
+  const provider=(IS_NODE ? require('./content-provider.js') : root.LWContentProvider) as LWContentProvider.Api|undefined;
+  if(!provider)throw Error('Content provider is missing.');
+  const contentProvider=provider;
+  let installed:{library:Library;schema:LWContentPorts.Schema}|null=null;
+  /** The default library and its compiled identity schema belong to the installed game; read on first use. */
+  function content():{library:Library;schema:LWContentPorts.Schema} {
+    if(installed)return installed;
+    const profile=contentProvider.get('the content library'),balance=profile.balancing;
+    const libraries=isRecord(balance)?balance.libraries:undefined;
+    const library=(isRecord(libraries)?libraries.base:undefined) as Library|undefined;
+    if(!library)throw Error('Default content library is missing.');
+    const schema=profile.librarySchema as LWContentPorts.Schema|undefined;
+    if(!schema)throw Error('Content schema is missing.');
+    return installed={library,schema};
+  }
   const MAX_BYTES = 1024 * 1024, MAX_DEPTH = 24, MAX_NODES = 60000;
   const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype']);
   const CATEGORIES = {
@@ -25,6 +35,7 @@
     paths: 'Learning paths', deliveries: 'Deliveries', chapters: 'Story chapters'
   };
   const own = (obj:object, key:PropertyKey) => Object.prototype.hasOwnProperty.call(obj, key);
+  const emptyTables = ():LWContentPorts.Tables => ({RES:{},RECIPES:{},SKILLS:{},BUILDINGS:{},DRILLS:{},DISCIPLINES:{},STYLES:{},APPROACHES:{},STUDIES:{},PATHS:{},SPECIALIZATIONS:{},QUESTS:[],CONTRACTS:[]} as unknown as LWContentPorts.Tables);
   function cloneJson<T>(value:T):T {
     if (Array.isArray(value)) return value.map(cloneJson) as T;
     if (value && typeof value === 'object') {
@@ -132,7 +143,7 @@
     const errors:Diagnostic[] = [];
     function visit(v:unknown, s:LWContentPorts.Schema, path:string, out:Diagnostic[]):void {
       if (out.length >= 100) return;
-      if (s.$ref) { let target:unknown = SCHEMA; for (const part of s.$ref.slice(2).split('/')) {if(!isRecord(target))throw Error('Invalid local schema reference.');target = target[part.replace(/~1/g, '/').replace(/~0/g, '~')];} if(!isRecord(target))throw Error('Invalid local schema reference.');return visit(v, target as LWContentPorts.Schema, path, out); }
+      if (s.$ref) { let target:unknown = content().schema; for (const part of s.$ref.slice(2).split('/')) {if(!isRecord(target))throw Error('Invalid local schema reference.');target = target[part.replace(/~1/g, '/').replace(/~0/g, '~')];} if(!isRecord(target))throw Error('Invalid local schema reference.');return visit(v, target as LWContentPorts.Schema, path, out); }
       const add = (code:string, message:string, hint = '') => out.push(diagnostic(code, path, message, hint));
       if (own(s, 'const') && stable(v) !== stable(s.const)) add('CONSTANT', 'Expected ' + JSON.stringify(s.const) + '.');
       if (s.enum && !s.enum.some(item => stable(item) === stable(v))) add('KNOWN_VALUE', 'Unknown value ' + JSON.stringify(v) + '.', 'Use a supported value from the exported schema.');
@@ -174,7 +185,7 @@
       }
       if (s.if) { const local:Diagnostic[] = []; visit(v, s.if, path, local); const branch = local.length === 0 ? s.then : s.else; if (branch) visit(v, branch, path, out); }
     }
-    visit(value, SCHEMA, '', errors); return errors;
+    visit(value, content().schema, '', errors); return errors;
   }
   const index = <T extends {id:string}>(arr:readonly T[]):Record<string,T> => Object.fromEntries(arr.map(entry => [entry.id, entry]));
   const categories=Object.keys(CATEGORIES) as Category[];
@@ -184,14 +195,14 @@
     for (const [category, definitions] of Object.entries(doc.components)) {
       const seen = new Set();
       definitions.forEach((def, i) => { if (seen.has(def.id)) errors.push(diagnostic('DUPLICATE_ID', '/components/' + category + '/' + i + '/id', 'Duplicate component ID “' + def.id + '”.')); seen.add(def.id); });
-      const clauses = SCHEMA.properties?.components?.properties?.[category]?.allOf;
+      const clauses = content().schema.properties?.components?.properties?.[category]?.allOf;
       const nativeIds = clauses?.map(clause => clause.contains?.properties?.id?.const).filter((id):id is string => typeof id === 'string');
-      const requiredIds = nativeIds?.length ? nativeIds : DEFAULT.components[category as Category].map(def => def.id);
+      const requiredIds = nativeIds?.length ? nativeIds : content().library.components[category as Category].map(def => def.id);
       for (const id of requiredIds) if (!seen.has(id)) errors.push(diagnostic('REQUIRED_COMPONENT', '/components/' + category, 'The existing runtime requires ' + category + '/' + id + '.', 'Stable IDs cannot be deleted or renamed. Use a patch to update selected components.'));
     }
     if (errors.length) return errors;
     for (const [i, r] of doc.components.recipes.entries()) if (r.output !== r.id) errors.push(diagnostic('OUTPUT_BINDING', '/components/recipes/' + i + '/output', 'The recipe ID must equal its output item ID in this runtime.'));
-    doc.components.talents.forEach((t, i) => { const base = DEFAULT.components.talents.find(b => b.id === t.id); if (t.discipline !== base?.discipline) errors.push(diagnostic('RUNTIME_BINDING', '/components/talents/' + i + '/discipline', 'This talent is bound to its existing discipline.')); });
+    doc.components.talents.forEach((t, i) => { const base = content().library.components.talents.find(b => b.id === t.id); if (t.discipline !== base?.discipline) errors.push(diagnostic('RUNTIME_BINDING', '/components/talents/' + i + '/discipline', 'This talent is bound to its existing discipline.')); });
     doc.components.studies.forEach((s, i) => { if (new Set(s.goals.map(g => g.event)).size !== s.goals.length) errors.push(diagnostic('DUPLICATE_EVENT', '/components/studies/' + i + '/goals', 'Field-study goals must use distinct evidence events.')); });
     // Model actual acquisition dependencies, including a station's own bill of materials.
     // This catches e.g. a workbench requiring planks that can only be made at a workbench.
@@ -215,7 +226,7 @@
   function canonical(doc:Library):Library {
     const result = copy(doc); result.kind = 'library'; delete result.base;
     for (const category of categories) {
-      const map = index<Component>(result.components[category]); setComponents(result,category,DEFAULT.components[category].filter(d => own(map, d.id)).map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
+      const map = index<Component>(result.components[category]); setComponents(result,category,content().library.components[category].filter(d => own(map, d.id)).map(d => map[d.id]!) as LWContentPorts.Components[typeof category]);
     }
     return result;
   }
@@ -267,8 +278,8 @@
   class Registry implements LWContentPorts.Registry {
     readonly tables:LWContentPorts.Tables;
     readonly _default:Library;_current!:Library;_fingerprint!:string;
-    constructor(defaults = DEFAULT) {
-      this.tables = {RES:{},RECIPES:{},SKILLS:{},BUILDINGS:{},DRILLS:{},DISCIPLINES:{},STYLES:{},APPROACHES:{},STUDIES:{},PATHS:{},SPECIALIZATIONS:{},QUESTS:[],CONTRACTS:[]} as Registry['tables'];
+    constructor(defaults:Library = content().library, tables:LWContentPorts.Tables = emptyTables()) {
+      this.tables = tables;
       registryReviews.set(this, {revision: 0, previews: new WeakMap()});
       this._default = freeze(copy(defaults)); this._activate(canonical(defaults));
     }
@@ -349,8 +360,13 @@
       this.tables.QUESTS.splice(0, this.tables.QUESTS.length, ...this.current.components.chapters.map(q => ({...clean(q),id:q.id,checks:q.checks.map(c=>[c.label,(s:Parameters<typeof chapterCondition>[0])=>chapterCondition(s,c.condition),c.action] as [string,(state:LWContentPorts.ChapterState)=>boolean,string])})));
     }
   }
-  const registry = new Registry();
-  const api = {Registry,ContentError,registry,tables:registry.tables,CATEGORIES,SCHEMA,MAX_BYTES,parse,validateShape,validateSemantics,fingerprint,stable,copy,diagnostic};
+  // Runtime tables keep one stable identity for every consumer; the default registry fills them
+  // when the installed game's library is first requested (or at load once a game is installed).
+  const tables = emptyTables();
+  let defaultRegistry:Registry|null = null;
+  const registry = ():Registry => defaultRegistry ??= new Registry(content().library, tables);
+  const api = {Registry,ContentError,get registry(){return registry();},tables,CATEGORIES,get SCHEMA(){return content().schema;},MAX_BYTES,parse,validateShape,validateSemantics,fingerprint,stable,copy,diagnostic};
+  contentProvider.whenInstalled(() => { registry(); },'balancing');
   if (IS_NODE) module.exports = api;
   root.LWContent = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

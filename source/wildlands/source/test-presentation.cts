@@ -1,5 +1,7 @@
 /* Current presentation behavior: interpolation, pacing and label layout. Historical story snapshots are intentionally outside the current-only contract. */
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {MotionSamples,FramePacer,placeLabels,visibleAnchor}=require('./world-presentation.js');
 const L=require('./simulation.cjs');

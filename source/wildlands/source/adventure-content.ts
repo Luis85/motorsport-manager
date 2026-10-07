@@ -1,7 +1,8 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Versioned, bounded adventure definitions. Imported JSON never contains executable code. */
 (function (inputRoot:unknown) {
     'use strict';
-    interface Root {LWContent?:LWContentPorts.ContentApi;LWDefaultAdventure?:LWContentPorts.Adventure;LWAdventure?:LWContentPorts.AdventureApi;LWCreatures?:{personalities?:string[]};LWBehaviorTree:new(actions:Record<string,()=>false>)=>{validate(input:unknown):boolean};}
+    interface Root {LWContent?:LWContentPorts.ContentApi;LWContentProvider?:LWContentProvider.Api;LWAdventure?:LWContentPorts.AdventureApi;LWCreatures?:{personalities?:string[]};LWBehaviorTree:new(actions:Record<string,()=>false>)=>{validate(input:unknown):boolean};}
     const root=inputRoot as Root;
     const node = typeof module !== 'undefined' && module.exports;
     const BehaviorTree=(node?require('./behavior-tree.js'):root.LWBehaviorTree) as Root['LWBehaviorTree'];
@@ -9,9 +10,10 @@
     if(!contentApi)throw Error('Content runtime is missing.');
     const C=contentApi;
     const copy = C.copy;
-    const defaults = (node ? require('./content/balancing.json').libraries.adventure : root.LWDefaultAdventure) as LWContentPorts.Adventure|undefined;
-    if(!defaults)throw Error('Default adventure content is missing.');
-    const defaultContent=defaults;
+    const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+    if(!provider)throw Error('Content provider is missing.');
+    const Content=provider;
+    const dig=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((at,key)=>at!==null&&typeof at==='object'?(at as Record<string,unknown>)[key]:undefined,value);
     const base = C.tables;
     const ACTIONS = ['essential', 'homecoming', 'overburdened', 'feelings', 'comfort', 'outfit', 'quest', 'learning', 'plans', 'companionship', 'supplies', 'deposit', 'curiosity', 'restful', 'workplaces'];
     const slots = ['head', 'body', 'tool', 'feet', 'back', 'charm'], visuals = ['cap', 'cape', 'boots', 'axe', 'hammer', 'staff', 'pack', 'charm', 'wizard', 'vest', 'lantern'];
@@ -184,16 +186,26 @@
         walk(before, after, '');
         return { changes, total, truncated: total > changes.length };
     }
-    let content = copy(defaultContent);
-    const result = validate(content);
-    if (!result.ok)
-        throw Error(result.errors.join('\n'));
-    const api:LWContentPorts.AdventureApi = { get content() { return content; }, get hash() { return hash(content); }, replace(input:unknown) {
+    // The installed game's adventure library; admitted on first use or as soon as a game is installed.
+    let state:{content:LWContentPorts.Adventure;defaults:LWContentPorts.Adventure}|null = null;
+    function active():{content:LWContentPorts.Adventure;defaults:LWContentPorts.Adventure} {
+        if (state) return state;
+        const defaultContent = dig(Content.get('adventure content').balancing, 'libraries', 'adventure') as LWContentPorts.Adventure|undefined;
+        if(!defaultContent)throw Error('Default adventure content is missing.');
+        const content = copy(defaultContent);
+        const result = validate(content);
+        if (!result.ok)
+            throw Error(result.errors.join('\n'));
+        return state = {content, defaults: copy(defaultContent)};
+    }
+    const api:LWContentPorts.AdventureApi = { get content() { return active().content; }, get hash() { return hash(active().content); }, replace(input:unknown) {
+            const current = active();
             const v = validate(input);
             if (!v.ok)
                 throw Error(v.errors.join('\n'));
-            content = v.content;
-        }, validate, parse, diff, hashOf: hash, copy, defaultContent: copy(defaultContent), ACTIONS, slots, visuals };
+            current.content = v.content;
+        }, validate, parse, diff, hashOf: hash, copy, get defaultContent() { return active().defaults; }, ACTIONS, slots, visuals };
+    Content.whenInstalled(() => { active(); },'balancing');
     root.LWAdventure = api;
     if (node)
         module.exports = api;

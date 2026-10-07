@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Validated visual data catalog. Scenario scopes install JSON definitions atomically. */
 (function(inputRoot:unknown){
  'use strict';
@@ -24,7 +25,7 @@
   hasModel(category:Category,id:string,name:string):boolean;
   validate(input:unknown):Definition;
  }
- interface Root {LWAssetDefinitions?:unknown;LWAssets?:Api;}
+ interface Root {LWContentProvider?:LWContentProvider.Api;LWAssets?:Api;}
  const root=inputRoot as Root;
  const categories=new Set<string>(['building','item','actor','pet']);
  const primitives=new Set<string>(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground','mesh']);
@@ -190,11 +191,6 @@
    for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(materials,role)||!color(value))fail(id+' invalid appearance material '+profile+'/'+role);
   }
  }
- const raw=root.LWAssetDefinitions??(typeof module!=='undefined'&&module.exports?require('./asset-definitions.json'):undefined);
- // A page without a bundled catalog (a standalone pet artifact admits its own definitions through
- // validate()) starts empty; a declared list must be a valid 1–256 catalog. Colony profiles always
- // declare LWAssetDefinitions (tools/artifact-profiles.cts enforces it).
- if(raw!==undefined&&!Array.isArray(raw))fail('bundled definition list is missing');
  function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
   dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
   const defs=Object.freeze(entries.map(checkedDefinition)),index=new Map<string,Definition>();
@@ -202,20 +198,38 @@
   const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
   return {defs,index,revision};
  }
- let active=raw===undefined?{defs:Object.freeze([]) as readonly Definition[],index:new Map<string,Definition>(),revision:5381}:prepare(raw);const defaults=active.defs;
+ type Active=ReturnType<typeof prepare>;
+ let installed:Active|null=null,active:Active|null=null;
+ /**
+  * The installed game's asset definitions. A game without a bundled catalog (a standalone pet
+  * admits its own definitions through validate()) starts empty; a declared list must be a valid
+  * 1–256 catalog. Colony profiles always declare LWAssetDefinitions (tools/artifact-profiles.cts
+  * enforces it). The provider is read as a global: this catalog depends on no executable module.
+  */
+ function load():Active{
+  if(installed)return installed;
+  const provider=root.LWContentProvider;if(!provider)return fail('content provider is not loaded');
+  const raw=provider.get('asset definitions').assets;
+  if(raw!==undefined&&!Array.isArray(raw))fail('bundled definition list is missing');
+  const first=raw===undefined?{defs:Object.freeze([]) as readonly Definition[],index:new Map<string,Definition>(),revision:5381}:prepare(raw);
+  if(active===null)active=first;
+  return installed=first;
+ }
+ const current=():Active=>{load();return active!;};
  function replace(input:unknown):void{active=prepare(input);}
  function withDefinitions<T>(input:unknown,work:()=>T):T{
-  const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}
+  const previous=current();try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}
  }
  const api:Api=Object.freeze({
-  get revision(){return active.revision;},defaults,validate,replace,withDefinitions,all:()=>active.defs,
-  get:(category:Category,id:string)=>active.index.get(category+':'+id)||null,
-  building:(id:string)=>active.index.get('building:'+id)||null,
-  item:(id:string)=>active.index.get('item:'+id)||null,
-  actor:(id:string)=>active.index.get('actor:'+id)||null,
-  pet:(id:string)=>active.index.get('pet:'+id)||null,
-  hasModel:(category:Category,id:string,name:string)=>!!active.index.get(category+':'+id)?.models[name]
+  get revision(){return current().revision;},get defaults(){return load().defs;},validate,replace,withDefinitions,all:()=>current().defs,
+  get:(category:Category,id:string)=>current().index.get(category+':'+id)||null,
+  building:(id:string)=>current().index.get('building:'+id)||null,
+  item:(id:string)=>current().index.get('item:'+id)||null,
+  actor:(id:string)=>current().index.get('actor:'+id)||null,
+  pet:(id:string)=>current().index.get('pet:'+id)||null,
+  hasModel:(category:Category,id:string,name:string)=>!!current().index.get(category+':'+id)?.models[name]
  });
+ root.LWContentProvider?.whenInstalled(()=>{load();});
  root.LWAssets=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

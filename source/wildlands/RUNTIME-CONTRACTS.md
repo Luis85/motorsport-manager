@@ -115,3 +115,50 @@ runtime declares what is present instead of assuming it:
 `test-runtime-optionality.cts` and `verification/runtime-optionality-browser.ts`
 (registered as `runtime-optionality` and `runtime-optionality-browser`) cover these
 seams; `verification/artifact-play-browser.ts` covers the assembled play artifacts.
+
+## Game content provider
+
+The engine runs only with an installed game content profile. `source/content-provider.ts`
+(`LWContentProvider`, contract `content-provider-contracts.d.ts`, version 1) is the single seam
+between engine modules and game data; no runtime module requires a game content file
+(`content/*.json` other than engine schemas, `assets/**`, or the generated asset/creature/
+interaction projections) or reads an injected game data global. The TypeScript architecture
+check "Runtime modules read game content only through the installed content provider" enforces
+both rules with regression probes.
+
+- A profile is `{format: 'wildlands-content-profile', version: 1, id, storage?, balancing?,
+  librarySchema?, creatures?: {configuration?, definitions?, editorFields?}, assets?,
+  scenarios?: {packs, defaultId, canonicalId?}, rts?, pet?: {definitions?, assets?}}`.
+  Admission checks only the envelope (closed fields, own enumerable data properties, no accessor
+  is invoked, a newer version is rejected, `defaultId`/`canonicalId` name listed packs). Section
+  contents stay opaque: each owning module validates its section with its existing rejection
+  texts. The profile is shallow-frozen; section data is never copied or mutated by the provider.
+- One profile per realm: re-installing the same object is a no-op; installing another is
+  rejected ("game content is already installed (<id>); a realm runs exactly one game").
+- `get(what)` throws `Wildlands: no game content installed (<what> requested)` when nothing is
+  installed. Modules request content lazily, so every engine module loads without a game and
+  fails on its first content request instead. Owners that admitted content at load before
+  register with `whenInstalled(listener, section?)`: with a game already installed the listener
+  runs at once (unchanged failure timing for invalid bundled data); otherwise it runs inside
+  `install`, in module load order, only when the game declares that section.
+- `LWContent.tables` keeps one stable identity and is filled by the default registry when the
+  game's library is admitted; `registry`, `SCHEMA` and the other content-derived exports
+  (`LWCreatures.defaults`, `LWSimulationProfile.current`, `LWRTSCatalog.data`, …) are getters.
+- Scenario packs are an injected catalog: `builtins()` lists `scenarios.packs` in declared order,
+  `defaultPack()`/`defaultId()` replace the former first built-in, and only the declared
+  `canonicalId` pack (Littlewild today) is refreshed from the game's balancing defaults on a
+  detached copy. `LWStoryStorage` namespaces come from the installed profile's `storage`.
+- Browser transport: artifacts still declare their data globals ahead of every module; the
+  engine-kernel bundle loads the provider first (`CONTENT_PROVIDER`), and it installs the
+  profile adopted from those globals (`fromGlobals`; `LWGameProfile` carries `storage`).
+- Node: entry points install before using content. `developer-sdk` (and through it the project
+  SDK, `wildlands-runtime`, the Godot runtime and `bin/wildlands`) and the colony CLIs install the
+  bundled Littlewild profile from `source/test-support/littlewild-game.cts` when nothing is
+  installed; `rts-cli`/`pet-cli` install their template game; every Node suite first requires
+  `source/test-support/install-games.cts`, the composite showcase profile. `simulation.cjs`
+  loads the provider but installs nothing. These bundled installers are transitional until
+  game folders supply profiles.
+
+`test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
+later installation, envelope admission, the browser adoption of data globals, the injected
+scenario catalog and the provider's position in every built artifact.

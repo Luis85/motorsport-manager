@@ -17,7 +17,8 @@
     const { RES, SKILLS, BUILDINGS, RECIPES, DRILLS, STYLES, CONTRACTS, clamp, terrain, SIZE } = L;
     const copy = A.copy, fail = root.LWRuntimeResults.failure;
     const ok=root.LWRuntimeResults.success;
-    const PERSONAL = Factory.personalFields;
+    // Actor-scoped fields come from the installed creature catalog; read when actors are composed.
+    const personal = () => Factory.personalFields;
     const FOOD = ['meals', 'bread', 'berries', 'meat'];
     const safeInt = (x:number, a:number, b:number) => Number.isInteger(x) && x >= a && x <= b;
     function definition(id:string) { return A.content.equipment.find(x => x.id === id); }
@@ -29,7 +30,7 @@
         self._actor = null;
         const state = self.s;
         if (!state.colony) {
-            const base:Partial<Actor> = Object.fromEntries(PERSONAL.filter(k => state[k] !== undefined).map(k => [k, state[k]]));
+            const base:Partial<Actor> = Object.fromEntries(personal().filter(k => state[k] !== undefined).map(k => [k, state[k]]));
             const archetype = base.archetype, personality = base.personality;
             if (typeof archetype !== 'string' || typeof personality !== 'string' || !Factory.supportsPersonality(archetype, personality)) throw Error('Fresh creature identity is invalid.');
             const c = Factory.hydrate(base, { id: 'c1', archetype, personality, mode: 'founder', sequence: 0, day: state.day, simTime: state.simTime });
@@ -45,8 +46,8 @@
         self._actor = state.colony.creatures.find(c => c.id === state.colony.selectedId) || state.colony.creatures[0]!;
         self.state = state;
         const actorFields:Partial<Actor>=state;
-        for (const key of PERSONAL) delete actorFields[key];
-        self.s = root.LWActorStateView.create(self, state, PERSONAL);
+        for (const key of personal()) delete actorFields[key];
+        self.s = root.LWActorStateView.create(self, state, personal());
         self.s.version = 5;
         self.ensureWarehouse();
         self.behaviorTree = new root.LWBehaviorTree(self.handlers());
@@ -302,9 +303,9 @@
         // One shared world tick. The explicit pipeline owns phase order; domain methods own behavior.
         step(dt:number) { return this.domainPipeline.step(this, dt); }
         override export() {
-            const state:Record<string,unknown> = {};
+            const state:Record<string,unknown> = {}, fields = personal();
             for (const [k, v] of Object.entries(this.s))
-                if (!PERSONAL.includes(k as keyof Actor))
+                if (!fields.includes(k as keyof Actor))
                     state[k] = copy(v);
             state.version = 5;
             return { app: 'littlewild', version: 5, state };
@@ -331,7 +332,7 @@
             }});
         }
     }
-    L.colony = { item, definition, profile, PERSONAL, arrivalPoint };
+    L.colony = { item, definition, profile, get PERSONAL() { return personal(); }, arrivalPoint };
     function installFactories() {
         const oldDemo = L.createWorkshopDemo;
         L.createWorkshopDemo = () => Composition.constructThrough('colony', oldDemo().s);

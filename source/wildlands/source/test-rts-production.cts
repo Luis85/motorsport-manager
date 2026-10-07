@@ -1,4 +1,6 @@
 /// <reference path="./rts-economy-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const ecs=require('./ecs.js');

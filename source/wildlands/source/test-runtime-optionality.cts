@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 /* Runtime optionality seams: per-game storage namespaces, declared payload capabilities and
  * optional developer-toolbox facets. Absent bundles must fail with explicit reasons. */
 import assert from 'node:assert/strict';

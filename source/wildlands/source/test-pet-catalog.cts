@@ -1,3 +1,5 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 // Catalog admission is exercised with the built pet asset bundle present, as in the browser.

@@ -9,6 +9,13 @@
   ],
   "contexts": [
     {
+      "id": "content-provider",
+      "layer": "domain",
+      "files": [
+        "content-provider.ts"
+      ]
+    },
+    {
       "id": "simulation-core",
       "layer": "domain",
       "files": [
@@ -434,7 +441,11 @@
     "LWPetDefinitions",
     "LWPetAssetDefinitions",
     "LWPetCatalog",
-    "LWPetSystems"
+    "LWPetSystems",
+    "LWContentProvider",
+    "LWGameProfile",
+    "LWCreatureEditorFieldDefinitions",
+    "LWScenarioPacks"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",

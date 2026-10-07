@@ -1,6 +1,7 @@
 /// <reference path="./balancing-contracts.d.ts" />
 /* Littlewild — pure simulation. No DOM, dependencies, network, or wall-clock catch-up. */
 /// <reference path="./engine-core-contracts.d.ts" />
+/// <reference path="./content-provider-contracts.d.ts" />
 (function (inputRoot:unknown) {
     'use strict';
     const root=inputRoot as LWCorePorts.Root;
@@ -18,14 +19,17 @@
         return 'void'; const edge = (x === 0 && y < 3) || (y === 0 && x < 3) || (x > 16 && y > 16) || (x === 18 && y < 2) || (y === 18 && x < 2); if (edge)
         return 'void'; if ((x >= 13 && x <= 16 && y >= 3 && y <= 7) && !((x === 13 || x === 16) && (y === 3 || y === 7)))
         return 'water'; return 'grass'; }
-    const canonical=(typeof module!=='undefined'&&module.exports?require('./content/balancing.json'):(globalThis as unknown as {LWDefaultBalancing:unknown}).LWDefaultBalancing) as {libraries:{world:{sites:{id:string}[]}};startingScenes:{initialState:{seed:number;player:LWCorePorts.State['player'];rp:number;nodes:LWCorePorts.State['nodes']}}[];simulation:{rules:{economy:{xp:{base:number;perLevel:number}}}}};
-    const starter=canonical.startingScenes[0]!.initialState;
-    function makeNodes():LWCorePorts.State['nodes'] {return root.LWContent.copy(starter.nodes.filter(node=>!canonical.libraries.world.sites.some(site=>site.id===node.id)));}
+    const provider=(typeof module!=='undefined'&&module.exports?require('./content-provider.js'):(root as unknown as {LWContentProvider:LWContentProvider.Api}).LWContentProvider) as LWContentProvider.Api;
+    type Canonical={libraries:{world:{sites:{id:string}[]}};startingScenes:{initialState:{seed:number;player:LWCorePorts.State['player'];rp:number;nodes:LWCorePorts.State['nodes']}}[];simulation:{rules:{economy:{xp:{base:number;perLevel:number}}}}};
+    /** The installed game's canonical balancing defaults: the fresh-story starter and fallback XP curve. */
+    const canonical=():Canonical=>provider.get('the canonical balancing defaults').balancing as Canonical;
+    function makeNodes():LWCorePorts.State['nodes'] {const balance=canonical(),starter=balance.startingScenes[0]!.initialState;return root.LWContent.copy(starter.nodes.filter(node=>!balance.libraries.world.sites.some(site=>site.id===node.id)));}
     function initial():LWCorePorts.State {
+        const starter=canonical().startingScenes[0]!.initialState;
         const personal = root.LWCreatures.seed(root.LWCreatures.defaultArchetype, root.LWCreatures.defaultPersonality, 'founder', 0) as LWCorePorts.Personal;
         return { version: VERSION, ...personal, seed: starter.seed, simTime: 0, day: 1, hour: 8, started: false, speed: 1, paused: false, player: root.LWContent.copy(starter.player), rp: starter.rp, buildings: [], nodes: makeNodes(), log: [], completedQuests: [], contractIndex: 0, settings: { sound: false, follow: false, reducedMotion: false, highContrast: false }, ledger: [], nextId: 1 };
     }
-    function threshold(level:number) { const rules=(root.LWSimulationProfile?.current.rules.economy??canonical.simulation.rules.economy) as {xp:{base:number;perLevel:number}};return rules.xp.base + level * rules.xp.perLevel; }
+    function threshold(level:number) { const rules=(root.LWSimulationProfile?.current.rules.economy??canonical().simulation.rules.economy) as {xp:{base:number;perLevel:number}};return rules.xp.base + level * rules.xp.perLevel; }
     function clamp(n:number, a:number, b:number) { return Math.max(a, Math.min(b, n)); }
     function owns(table:object, key:unknown):key is string { return typeof key === 'string' && Object.prototype.hasOwnProperty.call(table, key); }
     interface Engine extends LWCorePorts.EngineFields,LWCorePorts.InstalledMethods {}

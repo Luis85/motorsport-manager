@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./pet-contracts.d.ts" />
 /// <reference path="./embedded-app-contracts.d.ts" />
 /** Browser composition: mount/retire the pet demo and route file intent into application admission. */
@@ -14,12 +15,12 @@ declare namespace LWPetHost {
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
-  LWPetApplication:LWPetApplication.Api;LWPetDemo:LWPetDemo.Api;LWPetHost?:LWPetHost.Api;LWPetAssetDefinitions?:unknown;LWPetStore:LWPetStore.Api;
+  LWPetApplication:LWPetApplication.Api;LWPetDemo:LWPetDemo.Api;LWPetHost?:LWPetHost.Api;LWContentProvider?:LWContentProvider.Api;LWPetStore:LWPetStore.Api;
   WildlandsPet?:LWPetHost.PublicApi;__wildlandsReady?:boolean;
   LWFiles:{downloadJSON(input:unknown,name:string):void};
  };
  function create(options:LWEmbeddedApp.Hooks):LWPetHost.Surface{
-  const application=root.LWPetApplication.create(),view=application.view,assets=Array.isArray(root.LWPetAssetDefinitions)?root.LWPetAssetDefinitions as unknown[]:[];
+  const application=root.LWPetApplication.create(),view=application.view,declared=root.LWContentProvider?.installed()?root.LWContentProvider.get().pet?.assets:undefined,assets=Array.isArray(declared)?declared as unknown[]:[];
   let surface:LWPetDemo.Surface|null=null,invoker:HTMLElement|null=null,ticket=0,paint=0,clock=0,store=root.LWPetStore.demo();
   const workspace=document.createElement('section');workspace.id='pet-mode';workspace.hidden=true;workspace.setAttribute('aria-label','Pocket Pet engine demonstration');
   const toolbar=document.createElement('div');toolbar.className='pet-exchange';

@@ -46,7 +46,7 @@
  function create(options:Wildlands.CreateOptions={}):Wildlands.Project{
   const config=record(options);
   if(Object.keys(config).some(key=>!['id','name','scenarioId','sceneId','pack'].includes(key)))throw Error('Create options have unknown fields.');
-  const pack=checkedPack(config.pack??selectedPack(text(config.scenarioId??'littlewild','Scenario ID',true)));
+  const pack=checkedPack(config.pack??selectedPack(text(config.scenarioId??X.defaultId(),'Scenario ID',true)));
   if(config.scenarioId!==undefined&&config.scenarioId!==pack.id)throw Error('Scenario ID must match the supplied pack.');
   const candidate={format:'wildlands-project',schemaVersion:1,id:config.id??'wildlands-prototype',name:config.name??pack.name,target:'godot',scenarioId:pack.id,sceneId:scene(pack,config.sceneId),pack};
   const checked=validate(candidate);if(!checked.ok)throw Error(checked.errors.join('\n'));return checked.project;

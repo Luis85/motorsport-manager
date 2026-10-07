@@ -1,11 +1,13 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./balancing-contracts.d.ts" />
 /* Strict numeric tuners augment compatible profiles. They are copied and frozen at capture. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LWDefaultBalancing?:{simulation:{rules:{gameplay:LWBalanceRules.Rules}}};LWBalanceRules?:LWBalanceRules.Api};
+ const root=inputRoot as {LWContentProvider?:LWContentProvider.Api;LWBalanceRules?:LWBalanceRules.Api};
  const node=typeof module!=='undefined'&&module.exports;
- const source=(node?require('./content/balancing.json'):root.LWDefaultBalancing) as {simulation:{rules:{gameplay:LWBalanceRules.Rules}}}|undefined;
- if(!source)throw Error('Canonical balancing defaults missing.');
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!provider)throw Error('Canonical balancing defaults missing.');
+ const Content=provider;
  const fields:Readonly<Record<string,Readonly<Record<string,readonly[number,number,boolean]>>>>=Object.freeze({
   task:{
    breakthroughAnger:[-100,100,false],
@@ -300,7 +302,6 @@
    hourRate:[0,10,false],
   },
  });
- const seed=source.simulation.rules.gameplay;
  const record=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value)&&Object.getPrototypeOf(value)===Object.prototype&&Object.getOwnPropertySymbols(value).length===0&&Object.values(Object.getOwnPropertyDescriptors(value)).every(d=>Object.hasOwn(d,'value'));
  function validate(input:unknown):LWBalanceRules.Rules{
   if(!record(input)||Object.keys(input).length!==Object.keys(fields).length)throw Error('Invalid gameplay rule groups.');
@@ -324,7 +325,15 @@
   if(result.construction&&((result.construction.dependableQuality??0)>(result.construction.wellMadeQuality??0)||(result.construction.wellMadeQuality??0)>(result.construction.beautifulQuality??0)))throw Error('Construction quality thresholds must be ordered.');
   return Object.freeze(result) as unknown as LWBalanceRules.Rules;
  }
- const defaults=validate(seed);
- const api:LWBalanceRules.Api=Object.freeze({defaults,supported:()=>Object.entries(fields).flatMap(([group,keys])=>Object.entries(keys).map(([key,[minimum,maximum,integer]])=>({path:'/simulation/rules/gameplay/'+group+'/'+key,minimum,maximum,integer}))),validate,forEngine:(engine:LWBalanceRules.Owner)=>engine.simulationProfile?.rules?.gameplay??defaults});
+ // Canonical gameplay tuners of the installed game, validated once on first use (or at install).
+ let canonical:LWBalanceRules.Rules|null=null;
+ function defaults():LWBalanceRules.Rules{
+  if(canonical)return canonical;
+  const source=Content.get('canonical gameplay rules').balancing as {simulation:{rules:{gameplay:LWBalanceRules.Rules}}}|undefined;
+  if(!source)throw Error('Canonical balancing defaults missing.');
+  return canonical=validate(source.simulation.rules.gameplay);
+ }
+ const api:LWBalanceRules.Api=Object.freeze({get defaults(){return defaults();},supported:()=>Object.entries(fields).flatMap(([group,keys])=>Object.entries(keys).map(([key,[minimum,maximum,integer]])=>({path:'/simulation/rules/gameplay/'+group+'/'+key,minimum,maximum,integer}))),validate,forEngine:(engine:LWBalanceRules.Owner)=>engine.simulationProfile?.rules?.gameplay??defaults()});
+ Content.whenInstalled(()=>{defaults();},'balancing');
  root.LWBalanceRules=api;if(node)module.exports=api;
 })(globalThis);

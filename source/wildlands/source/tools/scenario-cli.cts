@@ -2,6 +2,9 @@
 /* Local scenario validation and capture. Does not contact a server or run pack code. */
 'use strict';
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
+// Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
+// help) until game folders supply profiles.
+const {installLittlewild}=require('../test-support/littlewild-game.cjs');
 const args=process.argv.slice(2),[command,input,output]=args;
 const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export <scenario-id> output.pack.json | external-export pack.json scene-id tiled|ldtk|gltf|canvas|advanced-canvas output | external-import external-file output.pack.json [mapping-options.json] | engine-export pack.json scene-id output.engine.json | engine-export-validate engine.json';
 try{
@@ -9,7 +12,7 @@ try{
   if(command==='engine-export'||command==='engine-export-validate'){require('./engine-export-cli.cjs').run(args).catch(error=>{emit({ok:false,errors:[error.message]});process.exitCode=2;});}else if(command==='external-export'||command==='external-import'){require('./external-editor-cli.cjs').run(args);}
   else {
   if(!['validate','capture','export'].includes(command)||args.length!==(command==='validate'?2:3))throw Error('Usage: '+usage);
-  const X=require('../scenario-runtime.js'),S=require('../scenario-story.js');
+  installLittlewild();const X=require('../scenario-runtime.js'),S=require('../scenario-story.js');
   if(command==='validate'){
     const result=X.validate(readJsonFile(input,8*1024*1024));
     emit({ok:result.ok,errors:result.errors,pack:result.pack?.id,scenes:result.sceneCount,fingerprint:result.fingerprint,simulationProfile:result.pack?.simulation?.id,compositionArchetype:result.pack?.simulation?.archetype?.id});

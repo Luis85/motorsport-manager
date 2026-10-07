@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const source=path.resolve(__dirname,'../source'),creatureRoot=path.join(source,'assets','creatures'),assetRoot=path.join(source,'assets'),results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error('FAIL',name,error.message);}}
@@ -27,12 +29,17 @@ test('Spawn mode components satisfy their actual ECS system contracts',()=>{cons
  d=>d.ecs.components.push({type:'Creature',field:'rpg'})
  ]){const d=JSON.parse(JSON.stringify(raw));edit(d);assert.throws(()=>Creatures.validate(d),/component|Needs|transient/);}});
 test('Factory rejects a coerced identity before reading or mutating actor state',()=>{let reads=0;const options={id:{toString(){reads++;return 'c9';}},archetype:'sproutling',personality:'curious',mode:'arrival',sequence:9,day:1,simTime:0};assert.throws(()=>Factory.create(options),/creation options/);assert.equal(reads,0);});
-// Load untouched compiled modules in a fresh CommonJS realm with discovered manifests.
+// Load untouched compiled modules in a fresh CommonJS realm with discovered manifests. The realm's
+// content provider adopts its data globals like a browser artifact: the discovered creatures and
+// assets plus the bundled Littlewild balancing, library schema, editor fields and scenario packs.
 function realm(definitions,configuration,assets){
  const vm=require('node:vm'),context=vm.createContext({console,TextEncoder,TextDecoder}),cache=new Map();
  context.LWCreatureDefinitions=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(definitions))+')',context);
  context.LWCreatureConfig=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(configuration))+')',context);
  context.LWAssetDefinitions=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(assets))+')',context);
+ const bundled=file=>'JSON.parse('+JSON.stringify(fs.readFileSync(path.join(__dirname,file),'utf8'))+')';
+ for(const [name,file] of [['LWDefaultBalancing','content/balancing.json'],['LWContentSchema','content/library.schema.json'],['LWCreatureEditorFieldDefinitions','creature-editor-fields.json']])context[name]=vm.runInContext(bundled(file),context);
+ context.LWScenarioPacks=vm.runInContext('['+['littlewild','emberworks','office'].map(id=>bundled('content/'+id+'.pack.json')).join(',')+']',context);
  function load(file){
   const filename=path.resolve(__dirname,file);if(cache.has(filename))return cache.get(filename).exports;
   const module={exports:{}};cache.set(filename,module);
@@ -85,12 +92,14 @@ test('Visual swaps select a reusable bundled asset while retaining gameplay iden
  assert.equal(r.context.LWCreatures.get('brookling').visualAsset,'sproutling');assert.equal(r.context.LWFidelity.mood({archetype:'brookling',personality:'maker',needs:{joy:100}}),'happy');
  definitions[0].visualAsset='missing';packageValue.creature=definitions[0];fs.writeFileSync(packagePath,JSON.stringify(packageValue));assert.throws(()=>discovery.assetDefinitions(directory),/visual asset/);
 }));
+/** A browser page loads the content provider (engine kernel) ahead of every catalog module. */
+const browserModule=(file:string):string=>fs.readFileSync(path.join(__dirname,'content-provider.js'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,file),'utf8');
 test('Catalog configuration and top-level compensated sparse arrays fail closed',()=>{
  const defs=JSON.parse(fs.readFileSync(path.join(__dirname,'creature-definitions.json'),'utf8')),config=JSON.parse(fs.readFileSync(path.join(creatureRoot,'catalog.json'),'utf8'));
  for(const bad of [{...config,defaultArchetype:'missing'},{...config,typo:1}])assert.throws(()=>realm(defs,bad,[]).load('creature-catalog.js'),/catalog|default|configuration/);
- const vm=require('node:vm'),missing=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+')',missing);assert.throws(()=>vm.runInContext(fs.readFileSync(path.join(__dirname,'creature-catalog.js'),'utf8'),missing),/configuration/);
+ const vm=require('node:vm'),missing=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+')',missing);assert.throws(()=>vm.runInContext(browserModule('creature-catalog.js'),missing),/configuration/);
  const context=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+');LWCreatureConfig=JSON.parse('+JSON.stringify(JSON.stringify(config))+');delete LWCreatureDefinitions[0];LWCreatureDefinitions.extra={};',context);
- assert.throws(()=>vm.runInContext(fs.readFileSync(path.join(__dirname,'creature-catalog.js'),'utf8'),context),/dense/);
+ assert.throws(()=>vm.runInContext(browserModule('creature-catalog.js'),context),/dense/);
 });
 test('Creature tuning rejects unbound baseline components and invalid physiology or Unicode',()=>{
  const raw=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).creature;

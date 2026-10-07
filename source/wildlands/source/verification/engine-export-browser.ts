@@ -1,4 +1,6 @@
 /// <reference path="../engine-export-contracts.d.ts" />
+// The Node reference export runs the composite showcase game: install its content profile first.
+import '../test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';

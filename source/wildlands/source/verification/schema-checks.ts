@@ -63,7 +63,8 @@ try{
  check("Export CLI creates a complete schema 2 pack",()=>{assert.equal(r.status,0);assert.equal(exported.schemaVersion,2);valid(scenarioSchema,exported);valid(simulationSchema,exported.simulation);});
  const currentStory=path.join(temp,"current-story.json");
  const storyRuntime=path.join(GENERATED,"simulation.cjs"),storyCodec=path.join(GENERATED,"story-codec.js");
- const storyScript=`const L=require(${JSON.stringify(storyRuntime)}),S=require(${JSON.stringify(storyCodec)});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`;
+ // A fresh process installs the bundled showcase game before composing the engine.
+ const storyScript=`require(${JSON.stringify(path.join(GENERATED,"test-support","install-games.cjs"))});const L=require(${JSON.stringify(storyRuntime)}),S=require(${JSON.stringify(storyCodec)});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`;
  const story=spawnSync(process.execPath,["-e",storyScript],{cwd:ROOT,encoding:"utf8",timeout:45000});
  check("Current story fixture can be generated for capture",()=>{assert.equal(story.status,0,story.stderr);assert(story.stdout.trim());});
  fs.writeFileSync(currentStory,story.stdout);
