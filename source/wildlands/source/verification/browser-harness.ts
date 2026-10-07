@@ -165,7 +165,8 @@ export async function nextFrames(page: Page, count = 2): Promise<void> {
  * aborting the suite. The predicate must be a function (the artifacts' CSP rejects string predicates).
  */
 export async function settle<Arg>(page: Page, predicate: (arg: Arg) => unknown, arg: Arg, timeout = ACTION_TIMEOUT_MS): Promise<boolean> {
-  try { await page.waitForFunction(predicate, arg, { timeout }); return true; }
+  // Playwright cannot unbox a generic argument type, so the predicate is passed with an erased argument type.
+  try { await page.waitForFunction(predicate as (value: unknown) => unknown, arg as unknown, { timeout }); return true; }
   catch { return false; }
 }
 
