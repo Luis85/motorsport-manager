@@ -52,17 +52,20 @@
    if(++count>400000||depth>32)fail('definition exceeds supported complexity');
    if(entry===null||typeof entry==='boolean'||typeof entry==='string'||finite(entry))return;
    if(!Array.isArray(entry)&&!plain(entry))fail('definition must contain only JSON data');
-   const object=entry as object;
+   const object=entry as object,array=Array.isArray(entry);
    if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)fail('definition must contain only JSON data');
    ancestors.add(object);
-   const descriptors=Object.getOwnPropertyDescriptors(object);
-   if(Array.isArray(entry)){
-    if(Object.keys(descriptors).length!==entry.length+1)fail('arrays must be dense JSON lists');
-    for(let i=0;i<entry.length;i++)if(!Object.hasOwn(descriptors,String(i)))fail('arrays must contain every own numeric index');
+   // Own string keys in property order (symbols were rejected above); each descriptor is read
+   // without invoking accessors, exactly as a full descriptor snapshot would be.
+   const keys=Object.getOwnPropertyNames(object);
+   if(array){
+    if(keys.length!==entry.length+1)fail('arrays must be dense JSON lists');
+    for(let i=0;i<entry.length;i++)if(!Object.hasOwn(object,String(i)))fail('arrays must contain every own numeric index');
    }
-   for(const [key,descriptor] of Object.entries(descriptors)){
-    if(Array.isArray(entry)&&key==='length')continue;
-    if(forbidden.has(key)||!descriptor.enumerable||descriptor.get||descriptor.set)fail('invalid data field '+key);
+   for(const key of keys){
+    if(array&&key==='length')continue;
+    const descriptor=Object.getOwnPropertyDescriptor(object,key);
+    if(!descriptor||forbidden.has(key)||!descriptor.enumerable||descriptor.get||descriptor.set)fail('invalid data field '+key);
     visit(descriptor.value,depth+1);
    }
    ancestors.delete(object);
@@ -191,14 +194,30 @@
    for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(materials,role)||!color(value))fail(id+' invalid appearance material '+profile+'/'+role);
   }
  }
- function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
-  dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
+ /**
+  * Prepared catalogs by exact JSON text. A prepared catalog is immutable (frozen definitions, a
+  * private index and a content revision), and its validation reads nothing but its input, so an
+  * input whose JSON-only check passed and whose serialized text equals an earlier accepted input
+  * reuses that result. Rejected inputs are never remembered.
+  */
+ const PREPARED_ENTRIES=8,prepared=new Map<string,Active>();
+ function prepare(input:unknown):Active{
+  dataOnly(input);
+  const text=JSON.stringify(input),known=prepared.get(text);
+  if(known){prepared.delete(text);prepared.set(text,known);return known;}
+  const result=prepareChecked(input);
+  prepared.set(text,result);
+  for(const key of prepared.keys()){if(prepared.size<=PREPARED_ENTRIES)break;prepared.delete(key);}
+  return result;
+ }
+ function prepareChecked(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
+  const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
   const defs=Object.freeze(entries.map(checkedDefinition)),index=new Map<string,Definition>();
   for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
   const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
   return {defs,index,revision};
  }
- type Active=ReturnType<typeof prepare>;
+ type Active=ReturnType<typeof prepareChecked>;
  let installed:Active|null=null,active:Active|null=null;
  /**
   * The installed game's asset definitions. A game without a bundled catalog (a standalone pet

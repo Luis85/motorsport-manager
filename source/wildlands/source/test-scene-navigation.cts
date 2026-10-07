@@ -1,3 +1,4 @@
+/// <reference path="./renderer-data-contracts.d.ts" />
 /// <reference path="./scene-navigation-contracts.d.ts" />
 /// <reference path="./building-interior-contracts.d.ts" />
 // Tests run the composite showcase game: install its content profile before any engine module loads.
@@ -202,6 +203,22 @@ test('Whole portable capacity rejects a larger journey before replacing its live
  }
  assert(rejected,'Expected the shared portable capacity to bound accumulated owner checkpoints');
  const saved=session.save(),story=session.story();session.dispose();const restored=sdk.toolbox.openStory(sdk.toolbox.reviewStory(story));assert.deepEqual(restored.save(),saved);restored.dispose();
+});
+test('Accepted pack validation is memoized by canonical content and extension catalogs and hands out detached packs',()=>{
+ const p=pack(),first=X.validate(p),second=X.validate(p);
+ assert(first.ok&&second.ok);assert.deepEqual(second.pack,first.pack);assert.notEqual(second.pack,first.pack);assert.equal(second.fingerprint,first.fingerprint);assert.equal(second.sceneCount,first.sceneCount);
+ first.pack.name='Mutated accepted copy';(first.pack.scenes[0]!.initialState.player as {coins:number}).coins=-5;
+ const third=X.validate(p);assert(third.ok);assert.deepEqual(third.pack,second.pack);
+ // Editing the same input object is new content: an invalid edit is rejected, and restoring it is accepted again.
+ const player=p.scenes[0]!.initialState.player as {coins:number},coins=player.coins;player.coins=-1;
+ const rejected=X.validate(p);assert(!rejected.ok&&rejected.errors.length>0);player.coins=coins;assert(X.validate(p).ok);
+ // Registering a renderer whose metadata excludes the authored dimension rejects the accepted pack until it is withdrawn.
+ p.scenes[0]!.graph={...p.scenes[0]!.graph!,rendering:{dimension:'3d',rendererId:'memo-probe'}};
+ assert(X.validate(p).ok,'An unregistered renderer ID remains portable data.');
+ const records=(globalThis as unknown as {LWRendererCatalogRecords:{add(metadata:LittlewildRenderer.Metadata):()=>void}}).LWRendererCatalogRecords;
+ const withdraw=records.add({id:'memo-probe',name:'Memo probe',description:'Two-dimensional extension metadata.',capabilities:[],dimensions:['2d']});
+ try{const conflicting=X.validate(p);assert(!conflicting.ok);assert.match(conflicting.errors.join('\n'),/does not support dimension 3d/);}finally{withdraw();}
+ assert(X.validate(p).ok);
 });
 const report={passed:results.filter(r=>r.passed).length,total:results.length,results};
 fs.writeFileSync(__dirname+'/scene-navigation-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;
