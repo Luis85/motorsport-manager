@@ -182,6 +182,7 @@
     "source/developer-scene-contracts.d.ts",
     "source/test-scene-editor.cts",
     "source/test-scene-navigation.cts",
+    "source/test-scene-journeys.cts",
     "source/verification/scene-editor-browser.ts",
     "source/renderer-scene-2d.ts",
     "source/renderer-pixi.ts",
@@ -390,6 +391,8 @@
     "source/tools/process-forge.cts",
     "source/test-process.cts",
     "source/verification/process-browser.ts"
+    "source/test-support/scene-journeys.cts",
+    "source/test-content-provider.cts"
   ],
   "include": []
 }

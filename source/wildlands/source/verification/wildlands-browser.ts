@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {admit,artifactPath} from './browser-pages';
 
 const ROOT=path.resolve(__dirname,'../..');
 const OUT=path.join(ROOT,'verification/v15');
@@ -36,18 +37,19 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});
  const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true});
  const observed=monitorContext(context);
- await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8')}));
+ await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(artifactPath(ROOT,'studio'),'utf8')}));
  try{
   for(const width of [1440,390]){
    const page=await context.newPage();page.setDefaultTimeout(20000);
    await page.setViewportSize({width,height:width===390?844:1000});
    await page.addInitScript('localStorage.clear()');
    await page.goto(FIXTURE,{waitUntil:'load',timeout:60000});
+   await waitForReady(page,{timeout:READY_TIMEOUT_MS,host:'colony'});
    await page.waitForFunction(()=>{
     const runtime=window as unknown as {Littlewild?:unknown;WildlandsProject?:unknown};
     return !!runtime.Littlewild&&!!runtime.WildlandsProject;
    });
-   await page.locator('[data-act="begin"]').click();
+   await admit(page.locator('[data-act="begin"]'));
    await page.evaluate('Littlewild.engine.s.paused=true');
    await check(width+'px default showcase is a portable Littlewild project',async()=>{
     assert(await page.locator('#wildlands-workspace').isVisible());
@@ -76,9 +78,9 @@ async function main():Promise<void>{
     const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
     const office=await page.locator('#wildlands-scenario option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value).find(value=>value.startsWith('office/')));
     assert(office);await page.locator('#wildlands-scenario').selectOption(office);
-    await page.locator('[data-wildlands="switch"]').click();
+    await admit(page.locator('[data-wildlands="switch"]'));
     assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
-    await page.locator('[data-scenario="launch"]').click();
+    await admit(page.locator('[data-scenario="launch"]'));
     await page.evaluate('Littlewild.engine.s.paused=true');
     assert.deepEqual(await page.evaluate('Littlewild.engine.creatures.map(creature=>creature.name)'),['Angela','Phil','Marty']);
     const project=await save(page,width,'office');assert.equal(project.scenarioId,'office');
@@ -98,7 +100,7 @@ async function main():Promise<void>{
     await page.locator('#wildlands-project-file').setInputFiles({name:'imported.wildlands.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
     await page.waitForFunction(()=>document.querySelector('#wildlands-feedback')?.textContent?.includes('Project validated'));
     assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
-    await page.locator('[data-scenario="launch"]').click();await page.evaluate('Littlewild.engine.s.paused=true');
+    await admit(page.locator('[data-scenario="launch"]'));await page.evaluate('Littlewild.engine.s.paused=true');
     const saved=await save(page,width,'imported');
     assert.equal(saved.name,imported.name);assert.equal(saved.id,imported.id);
     assert.equal(saved.scenarioId,'littlewild');assert.equal(saved.sceneId,imported.sceneId);

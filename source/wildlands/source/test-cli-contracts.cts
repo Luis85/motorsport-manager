@@ -134,9 +134,13 @@ try {
   });
   test("Engine distributions carry no game: engine-only sources, runtime closure and kit hold engine data only",()=>{
     const generated=path.join(ROOT,".generated"),text=fs.readFileSync(path.join(generated,"engine-source-bundle.json"),"utf8"),engine=engineOnlySources(text);
-    const files=(JSON.parse(engine) as {files:{path:string;sha256:string}[]}).files,pending=(JSON.parse(fs.readFileSync(path.join(ROOT,"source/architecture/engine-data.json"),"utf8")) as {pending:{pattern:string}[]}).pending;
+    const files=(JSON.parse(engine) as {files:{path:string;sha256:string}[]}).files,allowList=JSON.parse(fs.readFileSync(path.join(ROOT,"source/architecture/engine-data.json"),"utf8")) as {engine:{pattern:string}[]};
     assert(!files.some(file=>file.path.startsWith("games/")));assert.equal(engineOnlySources(engine),engine,"idempotent");
-    for(const entry of pending){const pattern=new RegExp("^source/"+entry.pattern.replace(/[.]/g,"\\.").replace(/\*/g,"[^/]+")+"$");assert(!files.some(file=>pattern.test(file.path)),entry.pattern);}
+    // No pending game data: every engine-directory file the payload carries is allow-listed engine data.
+    assert(!Object.hasOwn(allowList,"pending"),"the engine data allow-list has no pending game data");
+    const engineData=allowList.engine.map(entry=>new RegExp("^source/"+entry.pattern.replace(/[.]/g,"\\.").replace(/\*/g,"[^/]+")+"$"));
+    const engineDirectories=files.filter(file=>/^source\/(?:content|assets|schemas)\//.test(file.path));assert(engineDirectories.length>0);
+    for(const file of engineDirectories)assert(engineData.some(pattern=>pattern.test(file.path)),file.path+" is not allow-listed engine data");
     assert.equal((JSON.parse(engine) as {identity:string}).identity,createHash("sha256").update(files.map(file=>file.path+"\0"+file.sha256+"\n").join("")).digest("hex"));
     const runtime=JSON.parse(fs.readFileSync(path.join(generated,"wildlands-runtime-bundle.json"),"utf8")) as {files:{path:string}[]};
     assert.deepEqual(runtime.files.filter(file=>file.path.endsWith(".json")&&!/^runtime\/content\/[a-z0-9-]+\.schema\.json$/.test(file.path)),[]);

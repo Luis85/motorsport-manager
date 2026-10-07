@@ -4,7 +4,7 @@
  * The result runs with plain Node.js 22+ and no node_modules or .generated directory. It is the
  * engine alone: it carries no game. The transitional game installers resolve to the engine-only
  * installer (tools/engine-installer.cts), only engine-owned JSON is embedded (an allowlist below),
- * and the engine-source payload drops the build's game folders and pending game data. Games are
+ * and the engine-source payload drops the build's game folders. Games are
  * folders the CLI reads at run time (`--game DIR`) or that schemaVersion 2 projects embed.
  *
  * Embedded resources: engine JSON as exact text parsed at first use, and three integrity-checked

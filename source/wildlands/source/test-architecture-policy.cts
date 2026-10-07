@@ -67,6 +67,8 @@ test('Architecture resolves runtime paths without basename collisions or escapes
 });
 test('Architecture catches composition accessed with brackets', () => assert(analyze("const composition=root.LW['EngineComposition']; composition.register({});").composition.includes('EngineComposition')));
 
+/** Backstop for one nested architecture-checker process; the suite's registry timeout bounds all four runs. */
+const NESTED_CHECKER_TIMEOUT_MS=120000;
 test('The actual architecture policy rejects asset-catalog DOM/platform and presentation dependencies',()=>{
  const project=path.resolve(__dirname,'..'),fixture=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-asset-policy-'));
  interface PolicyResult {passed:number;total:number;results:{name:string;passed:boolean;error?:string}[];}
@@ -85,8 +87,10 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
   const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
   assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
   const run=():{status:number|null;report:PolicyResult}=>{
-   // The isolated tree has no repository around it: point it at the real game folders.
-   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:15000,env:{...globalThis.process.env,WILDLANDS_GAMES_DIR:(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gamesRoot()}});
+   // The isolated tree has no repository around it: point it at the real game folders. One checker run
+   // takes about 10 s alone (most of it the TypeScript program) and several times that beside other
+   // suites, so each nested run gets a generous backstop; the registry timeout still bounds the suite.
+   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:NESTED_CHECKER_TIMEOUT_MS,killSignal:'SIGKILL',env:{...globalThis.process.env,WILDLANDS_GAMES_DIR:(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gamesRoot()}});
    assert.ifError(process.error);assert.equal(process.signal,null,process.stderr);
    return {status:process.status,report:JSON.parse(fs.readFileSync(path.join(fixture,'.generated','typescript-architecture-results.json'),'utf8')) as PolicyResult};
   };

@@ -1,373 +1,1577 @@
 {
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
-  "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-browser"],
-  "totalChecks": 1903,
+  "historicalBaseline": {
+    "suites": 75,
+    "checks": 1543,
+    "note": "Original 75 registrations and 1,543 named checks; immutable."
+  },
+  "suites": [
+    "skill-trees",
+    "rts-mission-editor",
+    "rts-catalog",
+    "rts-economy",
+    "rts-production",
+    "rts-runtime",
+    "rts-tools",
+    "rts-application",
+    "pet-catalog",
+    "pet-runtime",
+    "pet-application",
+    "pet-wardrobe",
+    "wildlands-runtime",
+    "wildlands-project",
+    "wildlands-cli",
+    "wildlands-acceptance",
+    "engine-export-cli",
+    "engine-export",
+    "animations",
+    "balancing-cli",
+    "cold-balancing",
+    "balancing",
+    "storytelling",
+    "external-editor-cli",
+    "external-canvas",
+    "creature-editor",
+    "external-editors",
+    "renderer-scene-2d",
+    "scene-editor",
+    "scene-navigation",
+    "scene-journeys",
+    "architecture-extensions",
+    "building-interiors",
+    "construction",
+    "terraform",
+    "renderers",
+    "canvas-renderer",
+    "architecture-policy",
+    "storage-clock",
+    "gate-integrity",
+    "cli-contracts",
+    "typescript-architecture",
+    "behavior-tree",
+    "content-boundary",
+    "definition-source",
+    "assets",
+    "creatures",
+    "ecs-core",
+    "simulation-profile",
+    "simulation-profile-integration",
+    "scene-environment",
+    "office-scenario",
+    "game-settings",
+    "game-settings-ui",
+    "creature-interactions",
+    "interaction-ui",
+    "developer-toolbox",
+    "engine-composition",
+    "ecs-activity",
+    "ecs-world",
+    "ecs-economy",
+    "ecs-integration",
+    "ecs-world-integration",
+    "ecs-economy-integration",
+    "scenario-domain",
+    "presentation",
+    "pause-policy",
+    "cartography",
+    "domain",
+    "growth-stress",
+    "earned-progression",
+    "scenario-schema-cli",
+    "release",
+    "skill-tree-browser",
+    "rts-mission-editor-browser",
+    "rts-browser",
+    "pet-browser",
+    "wildlands-browser",
+    "external-editors-browser",
+    "external-canvas-browser",
+    "creature-editor-browser",
+    "balancing-defaults-browser",
+    "balancing-browser",
+    "storytelling-browser",
+    "engine-export-browser",
+    "renderer-storytelling",
+    "storytelling-player-browser",
+    "renderer-libraries",
+    "scene-editor-browser",
+    "building-interiors-browser",
+    "construction-editor-browser",
+    "terraform-browser",
+    "renderers-browser",
+    "office-browser",
+    "game-settings-browser",
+    "browser",
+    "interactions-browser",
+    "browser-contracts",
+    "runtime-optionality",
+    "content-provider",
+    "game-folders",
+    "runtime-optionality-browser",
+    "artifact-play-browser",
+    "game-demos-browser",
+    "business-process",
+    "business-process-browser"
+  ],
+  "totalChecks": 1904,
   "reviewedAdditions": [
-    {"suite": "business-process-browser", "name": "Keyboard scene selection retains focus across detached view refreshes"},
-    {"suite": "business-process", "name": "One task completes at its declared business minute with detached read queries"},
-    {"suite": "business-process", "name": "FIFO shared capacity produces exact queue times, utilization and costs"},
-    {"suite": "business-process", "name": "Multiple resources allocate atomically and never exceed capacity"},
-    {"suite": "business-process", "name": "Future arrivals and zero interval batches preserve authored arrival order"},
-    {"suite": "business-process", "name": "Agency parallel joins and rework complete with exact deterministic evidence"},
-    {"suite": "business-process", "name": "Chunked clock commands and one bounded run produce identical snapshots"},
-    {"suite": "business-process", "name": "Decisions take matching rules before fallback regardless of fallback position"},
-    {"suite": "business-process", "name": "Missing condition fields choose fallback and numeric comparisons are typed"},
-    {"suite": "business-process", "name": "Zero-work routing loops fail explicitly within the transition budget"},
-    {"suite": "business-process", "name": "Bounded run limits and rejected clock commands preserve state"},
-    {"suite": "business-process", "name": "Malformed, unknown and unsafe JSON values never pass admission"},
-    {"suite": "business-process", "name": "Dangling links, duplicate IDs and scene identities are rejected"},
-    {"suite": "business-process", "name": "Unreachable work and paths with no end are rejected"},
-    {"suite": "business-process", "name": "Impossible resources and invalid task fields are rejected before execution"},
-    {"suite": "business-process", "name": "Parallel region rejects branch overlap, nested controls and conflicting writes"},
-    {"suite": "business-process", "name": "Scene Forge exports are admitted as world assets and executable asset fields reject"},
-    {"suite": "business-process", "name": "Fingerprint ignores object key order and tracks complete definition changes"},
-    {"suite": "business-process", "name": "Guarded edits validate atomically and stale guards preserve input"},
-    {"suite": "business-process", "name": "Incremental drafts retain explicit diagnostics and become runnable when connected"},
-    {"suite": "business-process", "name": "Scene and renderer navigation leaves the authoritative run untouched"},
-    {"suite": "business-process", "name": "Rejected imports preserve session and definition; valid import starts paused"},
-    {"suite": "business-process", "name": "Definition JSON Schema and runtime agree on structural fixtures"},
-    {"suite": "business-process", "name": "CLI agent workflow supports create, dry-run, guarded edit, inspect and bounded run"},
-    {"suite": "business-process", "name": "Scene Forge attachment requires exact edit guards and retains compiled geometry"},
-    {"suite": "business-process-browser", "name": "Process artifact starts paused with one selectable scene per step and real WebGL"},
-    {"suite": "business-process-browser", "name": "2D and 3D scene navigation preserves the same simulation state"},
-    {"suite": "business-process-browser", "name": "Run and pause controls advance only the owned process clock"},
-    {"suite": "business-process-browser", "name": "Invalid JSON import preserves the active definition and run"},
-    {"suite": "business-process-browser", "name": "Definition editor validates before applying and resets a valid edit explicitly"},
-    {"suite": "business-process-browser", "name": "Browser exported JSON imports losslessly and report binds definition to observed metrics"},
-    {"suite": "business-process-browser", "name": "Downloaded self-contained HTML reopens offline with the edited definition and no requests"},
-    {"suite": "business-process-browser", "name": "Imported text renders inertly and survives escaped standalone HTML export"},
-    {"suite": "business-process-browser", "name": "Desktop and mobile reflow retain controls without horizontal overflow"},
-    {"suite": "business-process-browser", "name": "Process browser lifecycle emits no runtime errors or network requests"},
-    {"suite": "game-demos-browser", "name": "Published agency process demo boots offline with all step scenes and explicit clock control"},
-    {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
-    {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
-    {"suite": "renderer-storytelling", "name": "Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
-    {"suite": "renderer-storytelling", "name": "Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"},
-    {"suite": "storytelling-browser", "name": "Synthetic queued preview readiness publishes admitted transport before another application frame"},
-    {"suite": "wildlands-runtime", "name": "Discovery describes every transported operation and SDK allowlist without ticking"},
-    {"suite": "wildlands-runtime", "name": "Detached native view includes canonical physical world, assets and scenario profile"},
-    {"suite": "wildlands-runtime", "name": "Bridge commands and exact fixed steps produce the same authoritative SDK continuation"},
-    {"suite": "wildlands-runtime", "name": "Invalid clock and command input preserve the full RNG and production story"},
-    {"suite": "wildlands-runtime", "name": "Pause, inspection and authoring queries never advance simulation time"},
-    {"suite": "wildlands-runtime", "name": "Failed scenario/story replacements preserve an existing complete continuation"},
-    {"suite": "wildlands-runtime", "name": "Portable story restore retains exact state and permits deterministic continuation"},
-    {"suite": "wildlands-runtime", "name": "Scenario switching uses canonical built-in ownership and rejects stale reflection"},
-    {"suite": "wildlands-runtime", "name": "Reviewed scene transitions retain canonical visited checkpoint ownership"},
-    {"suite": "wildlands-runtime", "name": "Retained scene drafts edit, undo and export without mutating a running world"},
-    {"suite": "wildlands-runtime", "name": "Asynchronous SDK validation is awaited and returns its detached result"},
-    {"suite": "wildlands-runtime", "name": "Complete source export can roundtrip through the same bounded protocol validator"},
-    {"suite": "wildlands-runtime", "name": "Graph-less prototype captures and cinematic sampling preserve all authored scenes"},
-    {"suite": "wildlands-runtime", "name": "Malformed and duplicate-key envelopes fail without accessors or mutation"},
-    {"suite": "wildlands-runtime", "name": "Project startup applies the same strict admission as web and CLI"},
-    {"suite": "wildlands-runtime", "name": "JSON-lines process correlates UTF8 requests, recovers malformed lines and closes cleanly"},
-    {"suite": "wildlands-runtime", "name": "Oversized line is drained with bounded memory and next request still succeeds"},
-    {"suite": "wildlands-runtime", "name": "Pack/project startup files preserve authored scene and reject duplicate JSON keys"},
-    {"suite": "wildlands-runtime", "name": "Shutdown and EOF release owned session so a fresh SDK session can open"},
-    {"suite": "wildlands-project", "name": "Default project is a complete detached Littlewild prototype"},
-    {"suite": "wildlands-project", "name": "Versioned discovery describes useful portable and bounded agent operations"},
-    {"suite": "wildlands-project", "name": "Project fields, target, identity and scene selection are validated strictly"},
-    {"suite": "wildlands-project", "name": "Authoritative scenario validation rejects semantic world corruption"},
-    {"suite": "wildlands-project", "name": "Scenario switching preserves project identity and supports portable custom packs"},
-    {"suite": "wildlands-project", "name": "Deterministic bounded recipes capture changed state without losing authored scenes"},
-    {"suite": "wildlands-project", "name": "Paused steps report requested clock work independently from actual advancement"},
-    {"suite": "wildlands-project", "name": "Capture preserves every scene in all three built-in prototypes"},
-    {"suite": "wildlands-project", "name": "Shared capture preserves a third authored scene and timeline metadata"},
-    {"suite": "wildlands-project", "name": "Recipe count, clock bounds and reflection are rejected before opening sessions"},
-    {"suite": "wildlands-project", "name": "Rejected native commands release their session and preserve input project"},
-    {"suite": "wildlands-project", "name": "Scene authoring recipes use native revisions and validators"},
-    {"suite": "wildlands-cli", "name": "Cold help and discovery are structured, versioned and machine readable"},
-    {"suite": "wildlands-cli", "name": "Create validates a complete default portable project and inspect never ticks"},
-    {"suite": "wildlands-cli", "name": "Scenario switching and custom pack authoring stay portable"},
-    {"suite": "wildlands-cli", "name": "Explicit recipes advance the real simulation and publish a complete output"},
-    {"suite": "wildlands-cli", "name": "Malformed arguments and bounded recipe failures retain prior published output"},
-    {"suite": "wildlands-cli", "name": "Invalid semantic project returns exit 1 without touching files"},
-    {"suite": "wildlands-cli", "name": "Input aliases and symlink aliases are rejected without overwriting authority"},
-    {"suite": "wildlands-cli", "name": "Bootstrap errors remain one structured diagnostic while help remains available"},
-    {"suite": "wildlands-cli", "name": "Project fingerprints identify complete content independent of key order and command"},
-    {"suite": "wildlands-acceptance", "name": "A new terminal project preloads Littlewild and discovery describes its actual commands"},
-    {"suite": "wildlands-acceptance", "name": "Every discovered game folder scenario compiles complete resources with verified manifest hashes"},
-    {"suite": "wildlands-acceptance", "name": "Repeated bounded recipes produce the same game state without changing the source project"},
-    {"suite": "wildlands-acceptance", "name": "Scene editor recipes change authored data through the same portable validation boundary"},
-    {"suite": "wildlands-acceptance", "name": "Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output"},
-    {"suite": "wildlands-acceptance", "name": "Rejected editor and clock recipes cannot publish partial edits"},
-    {"suite": "wildlands-acceptance", "name": "CLI refuses input aliases and compiled directory replacement"},
-    {"suite": "wildlands-browser", "name": "1440px default showcase is a portable Littlewild project"},
-    {"suite": "wildlands-browser", "name": "1440px scenario review preserves the game until explicit launch"},
-    {"suite": "wildlands-browser", "name": "1440px project rename and malformed import retain the current scenario"},
-    {"suite": "wildlands-browser", "name": "1440px portable project import requires review and restores project identity"},
-    {"suite": "wildlands-browser", "name": "1440px export downloads a Godot ZIP and preserves the project"},
-    {"suite": "wildlands-browser", "name": "1440px workspace has reachable controls without horizontal overflow"},
-    {"suite": "wildlands-browser", "name": "1440px programmatic same-ID scenario replacement preserves its complete authoring closure"},
-    {"suite": "wildlands-browser", "name": "390px default showcase is a portable Littlewild project"},
-    {"suite": "wildlands-browser", "name": "390px scenario review preserves the game until explicit launch"},
-    {"suite": "wildlands-browser", "name": "390px project rename and malformed import retain the current scenario"},
-    {"suite": "wildlands-browser", "name": "390px portable project import requires review and restores project identity"},
-    {"suite": "wildlands-browser", "name": "390px export downloads a Godot ZIP and preserves the project"},
-    {"suite": "wildlands-browser", "name": "390px workspace has reachable controls without horizontal overflow"},
-    {"suite": "wildlands-browser", "name": "390px programmatic same-ID scenario replacement preserves its complete authoring closure"},
-    {"suite": "wildlands-browser", "name": "Wildlands workspace performs no external requests or script/console errors"},
-    {"suite": "wildlands-browser", "name": "1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
-    {"suite": "wildlands-browser", "name": "390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"},
-    {"suite": "scene-navigation", "name": "Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation"},
-    {"suite": "wildlands-project", "name": "Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"},
-    {"suite": "rts-catalog", "name": "The exported default RTS catalog and editable clone satisfy the shipped authoring JSON schema"},
-    {"suite": "rts-catalog", "name": "RTS catalog publishes recursively frozen behavior-free content and detached editable copies"},
-    {"suite": "rts-catalog", "name": "Imported RTS data rejects executable values, unexpected fields and invalid identities"},
-    {"suite": "rts-catalog", "name": "Imported getters, cycles, symbols and sparse arrays reject without running behavior"},
-    {"suite": "rts-catalog", "name": "Catalog validation rejects duplicate IDs, unknown costs and broken references before publication"},
-    {"suite": "rts-catalog", "name": "RTS numeric rules reject negative costs, invalid movement, non-finite stats and out-of-map spawns"},
-    {"suite": "rts-catalog", "name": "Mission admission rejects out-of-map footprints, incompatible movement terrain and overlapping structures"},
-    {"suite": "rts-economy", "name": "Purchased item pays authored costs once and adds authored charges to the owned unit"},
-    {"suite": "rts-economy", "name": "Foreign, unknown and unaffordable item purchases leave the whole checkpoint unchanged"},
-    {"suite": "rts-economy", "name": "Enabled AI uses its preferred authored unit through the same paid production queue"},
-    {"suite": "rts-economy", "name": "Entity capacity blocks construction before spending and holds completed unit queues before spawning"},
-    {"suite": "rts-production", "name": "Production pays once, reserves population, refunds cancellation exactly, and rejects repeated cancellation"},
-    {"suite": "rts-production", "name": "Unaffordable, foreign, invalid and missing production requests preserve all resources and queue entries"},
-    {"suite": "rts-production", "name": "Fixed ECS production steps publish one unit once and never charge resources twice"},
-    {"suite": "rts-production", "name": "Pending research is exclusive, prerequisites gate acceptance, and completion preserves payment"},
-    {"suite": "rts-runtime", "name": "RTS state lives in ECS components and queries/checkpoints are detached without advancing time"},
-    {"suite": "rts-runtime", "name": "Commands reject hostile inputs without invoking accessors or mutating the ECS checkpoint"},
-    {"suite": "rts-runtime", "name": "Fixed-step movement and checkpoint restoration produce identical deterministic continuation"},
-    {"suite": "rts-runtime", "name": "The actual showcase catalog restores its initial and evolving ECS checkpoint without losing state"},
-    {"suite": "rts-runtime", "name": "Finite gathering conserves deposit plus cargo plus bank, and cargo arrives through real storage routes"},
-    {"suite": "rts-runtime", "name": "Construction starts from a worker order, blocks terrain, completes and increases population capacity"},
-    {"suite": "rts-runtime", "name": "Combat consumes cooldown, applies bounded damage and removes destroyed entities through ECS"},
-    {"suite": "rts-runtime", "name": "Fog keeps distant enemies hidden, rejects their targeting and retains explored tiles after movement"},
-    {"suite": "rts-runtime", "name": "Consumable item pickup grants an ability, charges and cooldowns spend exactly once"},
-    {"suite": "rts-runtime", "name": "Terrain movement categories route land around water, water through water and air across blocked terrain"},
-    {"suite": "rts-runtime", "name": "Completion-tick production checkpoints contain no transient publication state and restore exactly"},
-    {"suite": "rts-runtime", "name": "Off-map reveal ability targets reject atomically and leave a restorable checkpoint"},
-    {"suite": "rts-runtime", "name": "Reveal state stays bounded, expired areas retire, and capacity rejection is atomic"},
-    {"suite": "rts-runtime", "name": "Step bounds reject invalid elapsed commands before any authoritative tick or RNG changes"},
-    {"suite": "rts-runtime", "name": "Hostile checkpoints and semantic component corruption reject before replacing application state"},
-    {"suite": "rts-runtime", "name": "Application navigation, pause and view queries never tick; only active unpaused application frames do"},
-    {"suite": "rts-tools", "name": "Discovery exposes supported commands and denied arbitrary intentions"},
-    {"suite": "rts-tools", "name": "Bounded recipes advance the exact requested tick interval"},
-    {"suite": "rts-tools", "name": "Checkpoint continuation retains the authoritative starting tick"},
-    {"suite": "rts-tools", "name": "Rejected commands retain explicit stop and continuation receipts"},
-    {"suite": "rts-tools", "name": "Recipe clock, schedule, command-count and saved mission budgets reject before execution"},
-    {"suite": "rts-tools", "name": "Catalog outputs are detached and whole-catalog validation rejects missing archetypes"},
-    {"suite": "rts-tools", "name": "Mission completion reports actual early-stop tick instead of requested duration"},
-    {"suite": "rts-tools", "name": "Hostile accessors and cyclic recipes reject without invoking imported getters"},
-    {"suite": "rts-tools", "name": "JSON checkpoint exchange produces identical deterministic continuation"},
-    {"suite": "rts-tools", "name": "CLI refuses output-over-input writes and preserves original input bytes"},
-    {"suite": "rts-application", "name": "Application navigation and detached queries never tick a session"},
-    {"suite": "rts-application", "name": "Fixed frame subdivisions produce the same ECS checkpoint"},
-    {"suite": "rts-application", "name": "Pause and navigation clear substep debt and preserve manual pause state"},
-    {"suite": "rts-application", "name": "Invalid timing and speed reject before changing session or status"},
-    {"suite": "rts-application", "name": "Malformed catalog/checkpoint replacement retains the running session atomically"},
-    {"suite": "rts-application", "name": "Checkpoint import restores frozen catalog and pauses without advancing"},
-    {"suite": "rts-browser", "name": "RTS is discoverable and switching runs only the RTS application clock"},
-    {"suite": "rts-browser", "name": "Keyboard roster selection and battlefield order controls route into the ECS authority"},
-    {"suite": "rts-browser", "name": "Keyboard target and position form performs gather, build and ability intents without advancing time"},
-    {"suite": "rts-browser", "name": "Selected production buildings expose authored training and technology commands"},
-    {"suite": "rts-browser", "name": "Rejected JSON imports preserve the complete running checkpoint; valid checkpoints round-trip paused"},
-    {"suite": "rts-browser", "name": "Isometric battlefield renders at desktop and mobile sizes with keyboard controls and no horizontal overflow"},
-    {"suite": "rts-browser", "name": "Leaving RTS retires its surface, restores the invoker focus, and reopening retains a single checkpoint"},
-    {"suite": "rts-browser", "name": "Self-contained RTS loading and interaction generate no script errors or network requests"},
-    {"suite": "rts-mission-editor", "name": "Mission editor queries and exported catalogs are detached from each other and admitted input"},
-    {"suite": "rts-mission-editor", "name": "Mission editor rejects stale intents without changing revision draft or history"},
-    {"suite": "rts-mission-editor", "name": "Mission editor undo redo advance revisions and a new branch invalidates redo"},
-    {"suite": "rts-mission-editor", "name": "Mission editor history retains at most sixty four accepted catalog changes"},
-    {"suite": "rts-mission-editor", "name": "Mission editor equivalent metadata selection and import preserve revision and redo history"},
-    {"suite": "rts-mission-editor", "name": "Mission editor metadata commits a complete validated mission and rejects unsafe resizing"},
-    {"suite": "rts-mission-editor", "name": "Mission editor terrain painting overwrites cells while preserving unaffected terrain and supports undo"},
-    {"suite": "rts-mission-editor", "name": "Mission editor rejects terrain bounds incompatible actors and blocked building footprints atomically"},
-    {"suite": "rts-mission-editor", "name": "Mission editor places updates and removes unit building and creature spawn records"},
-    {"suite": "rts-mission-editor", "name": "Mission editor rejects expanded off map actors forbidden movement and overlapping building placement"},
-    {"suite": "rts-mission-editor", "name": "Mission editor authors deposits item drops and all registered objective types"},
-    {"suite": "rts-mission-editor", "name": "Mission editor record commands reject bad indices references payload shapes and unsafe amounts"},
-    {"suite": "rts-mission-editor", "name": "Mission editor cloning removal and history preserve other missions and catalog families"},
-    {"suite": "rts-mission-editor", "name": "Mission editor selection invalidates gestures without adding undo history or dirty content"},
-    {"suite": "rts-mission-editor", "name": "Mission editor whole catalog import is detached undoable and rejects incomplete catalogs"},
-    {"suite": "rts-mission-editor", "name": "Mission editor rejects executable getters cycles symbols and unknown actions before reading behavior"},
-    {"suite": "rts-mission-editor", "name": "Mission editor catalog limits reject excess actors and preserve accepted history"},
-    {"suite": "rts-mission-editor", "name": "Mission editor rejects duplicate objective identities and missions without a player spawn"},
-    {"suite": "rts-mission-editor", "name": "Mission editor authoring and navigation never tick or replace an independent running ECS match"},
-    {"suite": "rts-mission-editor-browser", "name": "Mission editor navigation and detached reads preserve both game checkpoints"},
-    {"suite": "rts-mission-editor-browser", "name": "Mission settings publish validated metadata and reject invalid map shrink atomically"},
-    {"suite": "rts-mission-editor-browser", "name": "Keyboard terrain authoring shares validated map commands and undo redo history"},
-    {"suite": "rts-mission-editor-browser", "name": "Spawn tools author units buildings and creatures while rejecting occupied geometry"},
-    {"suite": "rts-mission-editor-browser", "name": "Deposit item and objective forms retain authored records in the complete catalog"},
-    {"suite": "rts-mission-editor-browser", "name": "Rejected editor JSON imports preserve the whole draft history and retained match"},
-    {"suite": "rts-mission-editor-browser", "name": "Mission catalog download and validated import round-trip every authored family"},
-    {"suite": "rts-mission-editor-browser", "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"},
-    {"suite": "rts-mission-editor-browser", "name": "Editor return retires its surface restores focus and retains the draft on reopening"},
-    {"suite": "rts-mission-editor-browser", "name": "A file picker retained across editor exit cannot import into another lifecycle"},
-    {"suite": "rts-mission-editor-browser", "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"},
-    {"suite": "skill-trees", "name": "Definitions are detached and admit arbitrary DAGs and bounded rank effects"},
-    {"suite": "skill-trees", "name": "Malformed definitions reject duplicate nodes, cycles, invalid references and executable fields"},
-    {"suite": "skill-trees", "name": "Earned points, rank costs, level gates and exclusive paths are enforced atomically"},
-    {"suite": "skill-trees", "name": "Checkpoint validation rejects forged progress, duplicate trees and overspending"},
-    {"suite": "skill-trees", "name": "Littlewild starts every authored creature with an independent unspent tree"},
-    {"suite": "skill-trees", "name": "Optional progression belongs to the scoped actor without introducing defaults"},
-    {"suite": "skill-trees", "name": "Player and creature attachments award independently and never retroactively grant level XP"},
-    {"suite": "skill-trees", "name": "Accepted reward settlement credits its scoped creature and player exactly once"},
-    {"suite": "skill-trees", "name": "Unlocked rank effects apply to the working actor and survive engine restoration"},
-    {"suite": "skill-trees", "name": "Guide bonuses apply to companions without spending their personal points"},
-    {"suite": "skill-trees", "name": "Portable story round-trip preserves custom definitions and progress"},
-    {"suite": "skill-trees", "name": "Invalid imported trees reject before reconstruction and old saves remain tree-free"},
-    {"suite": "skill-trees", "name": "New arrivals inherit the retained demo definition with independent zero progress"},
-    {"suite": "skill-trees", "name": "SDK discovers attachment and unlock commands, reads detached trees without ticking"},
-    {"suite": "skill-trees", "name": "Creature authoring preserves instance trees without turning progress into archetype defaults"},
-    {"suite": "skill-tree-browser", "name": "Fresh tree displays earned-point gates at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Keyboard unlock publishes a rank and keeps focus at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Branch choice closes the alternative without spending its points at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Tree reads do not tick or change saved state at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Tree content fits and retains usable controls at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Keyboard focus distinguishes trees sharing a node ID at 1440px"},
-    {"suite": "skill-tree-browser", "name": "Fresh tree displays earned-point gates at 390px"},
-    {"suite": "skill-tree-browser", "name": "Keyboard unlock publishes a rank and keeps focus at 390px"},
-    {"suite": "skill-tree-browser", "name": "Branch choice closes the alternative without spending its points at 390px"},
-    {"suite": "skill-tree-browser", "name": "Tree reads do not tick or change saved state at 390px"},
-    {"suite": "skill-tree-browser", "name": "Tree content fits and retains usable controls at 390px"},
-    {"suite": "skill-tree-browser", "name": "Keyboard focus distinguishes trees sharing a node ID at 390px"},
-    {"suite": "skill-tree-browser", "name": "Skill-tree browser emits no runtime errors or network requests"},
-    {"suite": "typescript-architecture", "name": "Bundled assets have one authoring source and canonical catalog projections"},
-    {"suite": "definition-source", "name": "The strict authoring schema accepts every shipped package and rejects unknown facets"},
-    {"suite": "definition-source", "name": "Generated portable libraries are exact projections of the canonical authoring catalog"},
-    {"suite": "definition-source", "name": "Changing one item definition updates price, weight, recipe and visual projections"},
-    {"suite": "definition-source", "name": "A new item folder appends to every authored facet without catalog registration"},
-    {"suite": "definition-source", "name": "Derived identity schemas preserve compiled bounds and presentation vocabulary"},
-    {"suite": "definition-source", "name": "Creature numeric balancing is derived from its one gameplay facet"},
-    {"suite": "definition-source", "name": "Legacy asset and creature manifests cannot become a second editable authority"},
-    {"suite": "definition-source", "name": "Catalog order rejects missing facets and duplicate IDs instead of silently dropping data"},
-    {"suite": "definition-source", "name": "Inline gameplay tables are rejected as competing definitions"},
-    {"suite": "definition-source", "name": "Wrong family, facet identity, typo, missing file and empty definitions fail discovery"},
-    {"suite": "definition-source", "name": "A gameplay definition without its required visual model fails before build publication"},
-    {"suite": "definition-source", "name": "Compatibility exports reject source mirrors and default scenario overrides"},
-    {"suite": "assets", "name": "Pet assets accept bounded baked meshes and per-model rigs"},
-    {"suite": "assets", "name": "Generic asset renderer builds baked meshes once per immutable definition"},
-    {"suite": "pet-catalog", "name": "Default catalog is valid, frozen and detached from its source JSON"},
-    {"suite": "pet-catalog", "name": "Every species, stage model and scene prop resolves to a bundled Scene Forge pet asset"},
-    {"suite": "pet-catalog", "name": "Validation rejects malformed, unknown and executable-shaped data before use"},
-    {"suite": "pet-catalog", "name": "Validation returns an independent frozen copy"},
-    {"suite": "pet-runtime", "name": "An egg hatches on schedule and cuddles warm it sooner"},
-    {"suite": "pet-runtime", "name": "Eggs only accept stage-allowed care and never decay"},
-    {"suite": "pet-runtime", "name": "Needs decay with the stage factor and feeding applies catalog effects when the action finishes"},
-    {"suite": "pet-runtime", "name": "Digestion leaves a mess that lowers cleanliness until cleaned"},
-    {"suite": "pet-runtime", "name": "Too many treats in an hour cause sickness that only medicine cures"},
-    {"suite": "pet-runtime", "name": "Lights off puts the pet to sleep; it wakes rested and a lit room costs happiness"},
-    {"suite": "pet-runtime", "name": "Neglect becomes care mistakes, health loss and finally departure; adopting starts a new egg"},
-    {"suite": "pet-runtime", "name": "Care quality selects the adult form: attentive grows Bloom, a casual caretaker who skips bedtime grows Bramble"},
-    {"suite": "pet-runtime", "name": "Commands are validated atomically and queries never advance time"},
-    {"suite": "pet-runtime", "name": "Checkpoints restore exactly and continue deterministically"},
-    {"suite": "pet-runtime", "name": "Tools discover bounded operations and reject unbounded experiments"},
-    {"suite": "pet-application", "name": "Navigation and detached queries never tick the session"},
-    {"suite": "pet-application", "name": "Frames advance fixed ticks with speed, bounded catch-up and pause"},
-    {"suite": "pet-application", "name": "Restart chooses a species and resets the clock"},
-    {"suite": "pet-application", "name": "Replacement admission is atomic for checkpoints and catalogs"},
-    {"suite": "pet-browser", "name": "Pet demo is discoverable and runs only its own application clock"},
-    {"suite": "pet-browser", "name": "The 3D room renders Scene Forge pet assets through WebGL"},
-    {"suite": "pet-browser", "name": "Disabled care actions stay focusable and explain why"},
-    {"suite": "pet-browser", "name": "Keyboard care intents hatch, feed and evolve the pet over application ticks"},
-    {"suite": "pet-browser", "name": "Checkpoints export and restore through the application boundary"},
-    {"suite": "pet-browser", "name": "Starting over asks first, starts on Cancel and restores focus"},
-    {"suite": "pet-browser", "name": "Returning to the colony restores focus and stops the pet clock"},
-    {"suite": "pet-browser", "name": "Self-contained pet loading and interaction generate no script errors or network requests"},
-    {"suite": "pet-wardrobe", "name": "Care and growth earn catalog coins only when actions finish"},
-    {"suite": "pet-wardrobe", "name": "Coin purchases debit exactly once and explain unaffordable offers"},
-    {"suite": "pet-wardrobe", "name": "Owned items equip into their socket slot and one item per slot is worn"},
-    {"suite": "pet-wardrobe", "name": "Skins change only material colours, respect species limits and start from the free default"},
-    {"suite": "pet-wardrobe", "name": "Premium offers unlock only through store entitlements, never coins"},
-    {"suite": "pet-wardrobe", "name": "The wardrobe belongs to the owner: adoption, restart and checkpoints keep it"},
-    {"suite": "pet-wardrobe", "name": "Forged wardrobes and malformed shop catalogs are rejected before installation"},
-    {"suite": "pet-browser", "name": "Earned coins buy an accessory that the 3D pet wears on its socket"},
-    {"suite": "pet-browser", "name": "Premium unlocks confirm first, start on Cancel and grant only adapter-reported entitlements"},
-    {"suite": "gate-integrity", "name": "Suite registry and gate expectations agree on the complete ordered gate"},
-    {"suite": "gate-integrity", "name": "Gate expectations reject duplicate, unreviewed, renamed and miscounted declarations"},
-    {"suite": "gate-integrity", "name": "Check assessment fails closed on missing, unexpected, renamed and duplicate checks"},
-    {"suite": "gate-integrity", "name": "Complete-gate assessment rejects missing suites, reordering, unknown suites and count mismatch"},
-    {"suite": "gate-integrity", "name": "Verify options parse jobs, tier, shard, only and keep-going strictly"},
-    {"suite": "gate-integrity", "name": "Suite selection is deterministic for tier, browser exclusion, only and complete shard partitions"},
-    {"suite": "gate-integrity", "name": "Parallel pool returns registry-ordered results identical to sequential execution and isolates exclusive suites"},
-    {"suite": "gate-integrity", "name": "Asynchronous runner retains output, exit status, environment, timeouts and descendant cleanup"},
-    {"suite": "gate-integrity", "name": "Shard merge requires identical identity, disjoint complete coverage and re-accepted evidence"},
-    {"suite": "gate-integrity", "name": "Verification sources add no fixed sleeps beyond the reviewed waitForTimeout budget"},
-    {"suite": "typescript-architecture", "name": "Artifact bundles tag every insert and profiles keep the canonical load order"},
-    {"suite": "runtime-optionality", "name": "Legacy littlewild storage namespace keeps the exact v5 save, backup and migration keys"},
-    {"suite": "runtime-optionality", "name": "A configured game storage namespace scopes saves and never migrates another game story"},
-    {"suite": "runtime-optionality", "name": "Two games sharing one file origin keep independent saves and recovery copies"},
-    {"suite": "runtime-optionality", "name": "Invalid game storage namespaces are rejected with an actionable message"},
-    {"suite": "runtime-optionality", "name": "Scoped device preferences follow the game namespace while littlewild keeps its keys"},
-    {"suite": "runtime-optionality", "name": "Denied browser storage under a game namespace still reports session-only preferences"},
-    {"suite": "runtime-optionality", "name": "Engine export in the node composition reports its bundled sources as available"},
-    {"suite": "runtime-optionality", "name": "Developer toolbox reports every optional facet available in the complete composition"},
-    {"suite": "runtime-optionality", "name": "Engine export declares the absent engine-source payload without inflating anything"},
-    {"suite": "runtime-optionality", "name": "Developer toolbox keeps absent editor and export facets explicit instead of failing obscurely"},
-    {"suite": "runtime-optionality", "name": "Godot export declares an unavailable capability when the runtime payload is absent"},
-    {"suite": "runtime-optionality", "name": "Godot export names missing templates and a missing project validator explicitly"},
-    {"suite": "runtime-optionality", "name": "Godot export that needs shared engine sources fails with the opt-in payload message"},
-    {"suite": "runtime-optionality-browser", "name": "The complete colony shell signals ready once, after its public APIs and optional hosts exist"},
-    {"suite": "runtime-optionality-browser", "name": "The colony shell boots, runs and signals ready without the RTS and Pet template bundles"},
-    {"suite": "runtime-optionality-browser", "name": "The colony shell boots without the scenario library, developer session, workspace and template host bundles"},
-    {"suite": "runtime-optionality-browser", "name": "Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent"},
-    {"suite": "runtime-optionality-browser", "name": "Scenario library keeps editor launchers focusable with explicit reasons when the editors bundle is absent"},
-    {"suite": "runtime-optionality-browser", "name": "Godot and engine export show explicit capability reasons when their payloads are absent"},
-    {"suite": "runtime-optionality-browser", "name": "Separate game storage namespaces keep saves apart on one browser origin"},
-    {"suite": "runtime-optionality-browser", "name": "Standalone RTS page runs its own frame loop without the colony shell and signals ready"},
-    {"suite": "runtime-optionality-browser", "name": "Standalone Pocket Pet page runs its own frame loop without the colony shell and signals ready"},
-    {"suite": "runtime-optionality-browser", "name": "Optional-bundle pages generate no script errors or network requests"},
-    {"suite": "artifact-play-browser", "name": "RTS play artifact boots standalone, advances its match and offers a resume after exit"},
-    {"suite": "artifact-play-browser", "name": "Pet play artifact boots standalone and renders the WebGL room"},
-    {"suite": "artifact-play-browser", "name": "Colony play artifact boots the colony and starts a story"},
-    {"suite": "artifact-play-browser", "name": "Studio artifact boots the colony with editors and export tools"},
-    {"suite": "wildlands-project", "name": "Godot runtime bundle is exactly the static require closure of the bridge entry points"},
-    {"suite": "wildlands-cli", "name": "Default compile writes a runnable Godot project without the engine-source payload"},
-    {"suite": "wildlands-cli", "name": "Opt-in --with-engine-sources adds the exact engine-source bundle and enables engine export in the compiled runtime"},
-    {"suite": "wildlands-cli", "name": "Godot compilation is deterministic and the engine-source switch is a strict value-less flag"},
-    {"suite": "engine-export", "name": "Inline vendor restoration needs the exact inline script bytes and never accepts a missing or altered copy"},
-    {"suite": "engine-export", "name": "Trimmed toolchain keeps exactly the declarations the project compiler loads and drops unloaded TypeScript files"},
-    {"suite": "engine-export", "name": "Bundled sources and trimmed toolchain recompile to the gate's exact compiled JavaScript"},
-    {"suite": "engine-export", "name": "Engine-source payload profiles inline vendors verbatim and every p5 artifact carries its LGPL source"},
-    {"suite": "engine-export-browser", "name": "An altered inline vendor script rejects engine export instead of exporting an incomplete inventory"},
-    {"suite": "content-provider", "name": "Engine modules load without an installed game and name the missing content on first request"},
-    {"suite": "content-provider", "name": "A later install admits every owned section in load order with unchanged canonical values"},
-    {"suite": "content-provider", "name": "Profile admission rejects malformed, newer and second installs without invoking accessors"},
-    {"suite": "content-provider", "name": "Browser artifacts adopt their declared data globals as the installed profile"},
-    {"suite": "content-provider", "name": "The injected scenario catalog orders built-ins and selects its declared default pack"},
-    {"suite": "content-provider", "name": "Built artifacts run the content provider after their data globals and before every engine module"},
-    {"suite": "typescript-architecture", "name": "Runtime modules read game content only through the installed content provider"},
-    {"suite": "typescript-architecture", "name": "Engine content directories hold only engine data and declared pending game data"},
-    {"suite": "game-folders", "name": "Game manifest schema and structural validator agree and stay closed and bounded"},
-    {"suite": "game-folders", "name": "Manifest semantics bind id, folder name, storage namespace and demo output"},
-    {"suite": "game-folders", "name": "Closed inventory rejects code, unreferenced files, links, executable modes and oversized trees"},
-    {"suite": "game-folders", "name": "Folder digest is byte-based, path-ordered and independent of where the folder lives"},
-    {"suite": "game-folders", "name": "Littlewild folder profile equals the profile bundled before the move"},
-    {"suite": "game-folders", "name": "Artifact data globals are the folder profile plus engine-owned schemas and adopt as the same profile"},
-    {"suite": "game-folders", "name": "Template folders compile RTS and Pocket Pet catalogs into their profiles and validate"},
-    {"suite": "game-folders", "name": "Full validation runs the engine validators in a fresh process and reports their rejection"},
-    {"suite": "game-folders", "name": "Builds locate game folders through WILDLANDS_GAMES_DIR and fail clearly without one"},
-    {"suite": "game-folders", "name": "Emberworks folder validates, keeps a closed inventory and equals its pre-move profile"},
-    {"suite": "game-folders", "name": "Office folder validates, keeps a closed inventory and equals its pre-move profile"},
-    {"suite": "game-folders", "name": "RTS Frontier folder validates, keeps a closed inventory and equals its pre-move profile"},
-    {"suite": "game-folders", "name": "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile"},
-    {"suite": "wildlands-project", "name": "Schema version 2 projects embed the colony sections of the installed game and round-trip"},
-    {"suite": "wildlands-project", "name": "Legacy schemaVersion 1 projects stay readable and every write upgrades them to the installed game"},
-    {"suite": "wildlands-project", "name": "Engine distributions install no game: the engine-only installer leaves the game to its entry point"},
-    {"suite": "wildlands-cli", "name": "Create, scenarios and legacy projects without --game fail with a game-required diagnostic naming the handbook"},
-    {"suite": "wildlands-cli", "name": "Legacy schemaVersion 1 projects validate with --game and upgrade or compile to self-contained schemaVersion 2 projects"},
-    {"suite": "wildlands-cli", "name": "validate-game and inspect-game report a game folder's identity, inventory and profile section sizes"},
-    {"suite": "wildlands-cli", "name": "build-game builds deterministic play artifacts for colony, RTS and Pocket Pet folders and --check detects staleness"},
-    {"suite": "wildlands-cli", "name": "build-game enforces the play budget and writes nothing over it"},
-    {"suite": "wildlands-cli", "name": "build-game builds the studio on demand with editors and export payloads; Pocket Pet has no studio profile"},
-    {"suite": "cli-contracts", "name": "Wildlands game commands keep the JSON protocol: usage errors exit 2 and rejected games exit 1"},
-    {"suite": "cli-contracts", "name": "Game builds place exactly what the build assembler places for the same profile"},
-    {"suite": "cli-contracts", "name": "Engine distributions carry no game: engine-only sources, runtime closure and kit hold engine data only"},
-    {"suite": "game-demos-browser", "name": "CLI-built Littlewild demo boots from file:// with its own game profile and no requests"},
-    {"suite": "game-demos-browser", "name": "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces"},
-    {"suite": "game-demos-browser", "name": "CLI-built studio boots the colony with editors and export tools on demand"},
-    {"suite": "game-demos-browser", "name": "Published demos/manifest.json lists one byte-identical demo per game folder within its play budget"},
-    {"suite": "game-demos-browser", "name": "Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys"},
-    {"suite": "game-demos-browser", "name": "Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace"},
-    {"suite": "game-demos-browser", "name": "Published Office demo boots only Office from file:// under the wildlands.office storage namespace"},
-    {"suite": "game-demos-browser", "name": "Published RTS Frontier demo boots only its RTS match from file:// under the wildlands.rts-frontier storage namespace"},
-    {"suite": "game-demos-browser", "name": "Published Pocket Pet demo boots only its pet room from file:// under the wildlands.pocket-pet storage namespace"}
+    {
+      "suite": "creatures",
+      "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"
+    },
+    {
+      "suite": "animations",
+      "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"
+    },
+    {
+      "suite": "renderer-storytelling",
+      "name": "Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"
+    },
+    {
+      "suite": "renderer-storytelling",
+      "name": "Actual p5 cancellation and rejected foreign cleanup release only the owned focus hook"
+    },
+    {
+      "suite": "storytelling-browser",
+      "name": "Synthetic queued preview readiness publishes admitted transport before another application frame"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Discovery describes every transported operation and SDK allowlist without ticking"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Detached native view includes canonical physical world, assets and scenario profile"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Bridge commands and exact fixed steps produce the same authoritative SDK continuation"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Invalid clock and command input preserve the full RNG and production story"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Pause, inspection and authoring queries never advance simulation time"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Failed scenario/story replacements preserve an existing complete continuation"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Portable story restore retains exact state and permits deterministic continuation"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Scenario switching uses canonical built-in ownership and rejects stale reflection"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Reviewed scene transitions retain canonical visited checkpoint ownership"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Retained scene drafts edit, undo and export without mutating a running world"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Asynchronous SDK validation is awaited and returns its detached result"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Complete source export can roundtrip through the same bounded protocol validator"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Graph-less prototype captures and cinematic sampling preserve all authored scenes"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Malformed and duplicate-key envelopes fail without accessors or mutation"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Project startup applies the same strict admission as web and CLI"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "JSON-lines process correlates UTF8 requests, recovers malformed lines and closes cleanly"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Oversized line is drained with bounded memory and next request still succeeds"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Pack/project startup files preserve authored scene and reject duplicate JSON keys"
+    },
+    {
+      "suite": "wildlands-runtime",
+      "name": "Shutdown and EOF release owned session so a fresh SDK session can open"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Default project is a complete detached Littlewild prototype"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Versioned discovery describes useful portable and bounded agent operations"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Project fields, target, identity and scene selection are validated strictly"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Authoritative scenario validation rejects semantic world corruption"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Scenario switching preserves project identity and supports portable custom packs"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Deterministic bounded recipes capture changed state without losing authored scenes"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Paused steps report requested clock work independently from actual advancement"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Capture preserves every scene in all three built-in prototypes"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Shared capture preserves a third authored scene and timeline metadata"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Recipe count, clock bounds and reflection are rejected before opening sessions"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Rejected native commands release their session and preserve input project"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Scene authoring recipes use native revisions and validators"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Cold help and discovery are structured, versioned and machine readable"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Create validates a complete default portable project and inspect never ticks"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Scenario switching and custom pack authoring stay portable"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Explicit recipes advance the real simulation and publish a complete output"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Malformed arguments and bounded recipe failures retain prior published output"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Invalid semantic project returns exit 1 without touching files"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Input aliases and symlink aliases are rejected without overwriting authority"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Bootstrap errors remain one structured diagnostic while help remains available"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Project fingerprints identify complete content independent of key order and command"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "A new terminal project preloads Littlewild and discovery describes its actual commands"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "Every discovered game folder scenario compiles complete resources with verified manifest hashes"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "Repeated bounded recipes produce the same game state without changing the source project"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "Scene editor recipes change authored data through the same portable validation boundary"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "Rejected editor and clock recipes cannot publish partial edits"
+    },
+    {
+      "suite": "wildlands-acceptance",
+      "name": "CLI refuses input aliases and compiled directory replacement"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px default showcase is a portable Littlewild project"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px scenario review preserves the game until explicit launch"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px project rename and malformed import retain the current scenario"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px portable project import requires review and restores project identity"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px export downloads a Godot ZIP and preserves the project"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px workspace has reachable controls without horizontal overflow"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px programmatic same-ID scenario replacement preserves its complete authoring closure"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px default showcase is a portable Littlewild project"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px scenario review preserves the game until explicit launch"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px project rename and malformed import retain the current scenario"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px portable project import requires review and restores project identity"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px export downloads a Godot ZIP and preserves the project"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px workspace has reachable controls without horizontal overflow"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px programmatic same-ID scenario replacement preserves its complete authoring closure"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "Wildlands workspace performs no external requests or script/console errors"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "1440px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"
+    },
+    {
+      "suite": "wildlands-browser",
+      "name": "390px same-ID same-scene replacement supersedes the retained draft in project save and Godot export"
+    },
+    {
+      "suite": "scene-navigation",
+      "name": "Resource-bearing lazy native owners preserve canonical checkpoint bytes without export mutation"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "The exported default RTS catalog and editable clone satisfy the shipped authoring JSON schema"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "RTS catalog publishes recursively frozen behavior-free content and detached editable copies"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "Imported RTS data rejects executable values, unexpected fields and invalid identities"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "Imported getters, cycles, symbols and sparse arrays reject without running behavior"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "Catalog validation rejects duplicate IDs, unknown costs and broken references before publication"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "RTS numeric rules reject negative costs, invalid movement, non-finite stats and out-of-map spawns"
+    },
+    {
+      "suite": "rts-catalog",
+      "name": "Mission admission rejects out-of-map footprints, incompatible movement terrain and overlapping structures"
+    },
+    {
+      "suite": "rts-economy",
+      "name": "Purchased item pays authored costs once and adds authored charges to the owned unit"
+    },
+    {
+      "suite": "rts-economy",
+      "name": "Foreign, unknown and unaffordable item purchases leave the whole checkpoint unchanged"
+    },
+    {
+      "suite": "rts-economy",
+      "name": "Enabled AI uses its preferred authored unit through the same paid production queue"
+    },
+    {
+      "suite": "rts-economy",
+      "name": "Entity capacity blocks construction before spending and holds completed unit queues before spawning"
+    },
+    {
+      "suite": "rts-production",
+      "name": "Production pays once, reserves population, refunds cancellation exactly, and rejects repeated cancellation"
+    },
+    {
+      "suite": "rts-production",
+      "name": "Unaffordable, foreign, invalid and missing production requests preserve all resources and queue entries"
+    },
+    {
+      "suite": "rts-production",
+      "name": "Fixed ECS production steps publish one unit once and never charge resources twice"
+    },
+    {
+      "suite": "rts-production",
+      "name": "Pending research is exclusive, prerequisites gate acceptance, and completion preserves payment"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "RTS state lives in ECS components and queries/checkpoints are detached without advancing time"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Commands reject hostile inputs without invoking accessors or mutating the ECS checkpoint"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Fixed-step movement and checkpoint restoration produce identical deterministic continuation"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "The actual showcase catalog restores its initial and evolving ECS checkpoint without losing state"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Finite gathering conserves deposit plus cargo plus bank, and cargo arrives through real storage routes"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Construction starts from a worker order, blocks terrain, completes and increases population capacity"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Combat consumes cooldown, applies bounded damage and removes destroyed entities through ECS"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Fog keeps distant enemies hidden, rejects their targeting and retains explored tiles after movement"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Consumable item pickup grants an ability, charges and cooldowns spend exactly once"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Terrain movement categories route land around water, water through water and air across blocked terrain"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Completion-tick production checkpoints contain no transient publication state and restore exactly"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Off-map reveal ability targets reject atomically and leave a restorable checkpoint"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Reveal state stays bounded, expired areas retire, and capacity rejection is atomic"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Step bounds reject invalid elapsed commands before any authoritative tick or RNG changes"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Hostile checkpoints and semantic component corruption reject before replacing application state"
+    },
+    {
+      "suite": "rts-runtime",
+      "name": "Application navigation, pause and view queries never tick; only active unpaused application frames do"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Discovery exposes supported commands and denied arbitrary intentions"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Bounded recipes advance the exact requested tick interval"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Checkpoint continuation retains the authoritative starting tick"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Rejected commands retain explicit stop and continuation receipts"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Recipe clock, schedule, command-count and saved mission budgets reject before execution"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Catalog outputs are detached and whole-catalog validation rejects missing archetypes"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Mission completion reports actual early-stop tick instead of requested duration"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "Hostile accessors and cyclic recipes reject without invoking imported getters"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "JSON checkpoint exchange produces identical deterministic continuation"
+    },
+    {
+      "suite": "rts-tools",
+      "name": "CLI refuses output-over-input writes and preserves original input bytes"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Application navigation and detached queries never tick a session"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Fixed frame subdivisions produce the same ECS checkpoint"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Pause and navigation clear substep debt and preserve manual pause state"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Invalid timing and speed reject before changing session or status"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Malformed catalog/checkpoint replacement retains the running session atomically"
+    },
+    {
+      "suite": "rts-application",
+      "name": "Checkpoint import restores frozen catalog and pauses without advancing"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "RTS is discoverable and switching runs only the RTS application clock"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Keyboard roster selection and battlefield order controls route into the ECS authority"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Keyboard target and position form performs gather, build and ability intents without advancing time"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Selected production buildings expose authored training and technology commands"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Rejected JSON imports preserve the complete running checkpoint; valid checkpoints round-trip paused"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Isometric battlefield renders at desktop and mobile sizes with keyboard controls and no horizontal overflow"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Leaving RTS retires its surface, restores the invoker focus, and reopening retains a single checkpoint"
+    },
+    {
+      "suite": "rts-browser",
+      "name": "Self-contained RTS loading and interaction generate no script errors or network requests"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor queries and exported catalogs are detached from each other and admitted input"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor rejects stale intents without changing revision draft or history"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor undo redo advance revisions and a new branch invalidates redo"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor history retains at most sixty four accepted catalog changes"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor equivalent metadata selection and import preserve revision and redo history"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor metadata commits a complete validated mission and rejects unsafe resizing"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor terrain painting overwrites cells while preserving unaffected terrain and supports undo"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor rejects terrain bounds incompatible actors and blocked building footprints atomically"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor places updates and removes unit building and creature spawn records"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor rejects expanded off map actors forbidden movement and overlapping building placement"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor authors deposits item drops and all registered objective types"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor record commands reject bad indices references payload shapes and unsafe amounts"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor cloning removal and history preserve other missions and catalog families"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor selection invalidates gestures without adding undo history or dirty content"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor whole catalog import is detached undoable and rejects incomplete catalogs"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor rejects executable getters cycles symbols and unknown actions before reading behavior"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor catalog limits reject excess actors and preserve accepted history"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor rejects duplicate objective identities and missions without a player spawn"
+    },
+    {
+      "suite": "rts-mission-editor",
+      "name": "Mission editor authoring and navigation never tick or replace an independent running ECS match"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Mission editor navigation and detached reads preserve both game checkpoints"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Mission settings publish validated metadata and reject invalid map shrink atomically"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Keyboard terrain authoring shares validated map commands and undo redo history"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Spawn tools author units buildings and creatures while rejecting occupied geometry"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Deposit item and objective forms retain authored records in the complete catalog"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Rejected editor JSON imports preserve the whole draft history and retained match"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Mission catalog download and validated import round-trip every authored family"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Editor map remains rendered accessible and contained at desktop and mobile widths"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Editor return retires its surface restores focus and retains the draft on reopening"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "A file picker retained across editor exit cannot import into another lifecycle"
+    },
+    {
+      "suite": "rts-mission-editor-browser",
+      "name": "Explicit editor play publishes the authored mission paused without colony changes or browser errors"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Definitions are detached and admit arbitrary DAGs and bounded rank effects"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Malformed definitions reject duplicate nodes, cycles, invalid references and executable fields"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Earned points, rank costs, level gates and exclusive paths are enforced atomically"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Checkpoint validation rejects forged progress, duplicate trees and overspending"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Littlewild starts every authored creature with an independent unspent tree"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Optional progression belongs to the scoped actor without introducing defaults"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Player and creature attachments award independently and never retroactively grant level XP"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Accepted reward settlement credits its scoped creature and player exactly once"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Unlocked rank effects apply to the working actor and survive engine restoration"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Guide bonuses apply to companions without spending their personal points"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Portable story round-trip preserves custom definitions and progress"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Invalid imported trees reject before reconstruction and old saves remain tree-free"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "New arrivals inherit the retained demo definition with independent zero progress"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "SDK discovers attachment and unlock commands, reads detached trees without ticking"
+    },
+    {
+      "suite": "skill-trees",
+      "name": "Creature authoring preserves instance trees without turning progress into archetype defaults"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Fresh tree displays earned-point gates at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Keyboard unlock publishes a rank and keeps focus at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Branch choice closes the alternative without spending its points at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Tree reads do not tick or change saved state at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Tree content fits and retains usable controls at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Keyboard focus distinguishes trees sharing a node ID at 1440px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Fresh tree displays earned-point gates at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Keyboard unlock publishes a rank and keeps focus at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Branch choice closes the alternative without spending its points at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Tree reads do not tick or change saved state at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Tree content fits and retains usable controls at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Keyboard focus distinguishes trees sharing a node ID at 390px"
+    },
+    {
+      "suite": "skill-tree-browser",
+      "name": "Skill-tree browser emits no runtime errors or network requests"
+    },
+    {
+      "suite": "typescript-architecture",
+      "name": "Bundled assets have one authoring source and canonical catalog projections"
+    },
+    {
+      "suite": "definition-source",
+      "name": "The strict authoring schema accepts every shipped package and rejects unknown facets"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Generated portable libraries are exact projections of the canonical authoring catalog"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Changing one item definition updates price, weight, recipe and visual projections"
+    },
+    {
+      "suite": "definition-source",
+      "name": "A new item folder appends to every authored facet without catalog registration"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Derived identity schemas preserve compiled bounds and presentation vocabulary"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Creature numeric balancing is derived from its one gameplay facet"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Legacy asset and creature manifests cannot become a second editable authority"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Catalog order rejects missing facets and duplicate IDs instead of silently dropping data"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Inline gameplay tables are rejected as competing definitions"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Wrong family, facet identity, typo, missing file and empty definitions fail discovery"
+    },
+    {
+      "suite": "definition-source",
+      "name": "A gameplay definition without its required visual model fails before build publication"
+    },
+    {
+      "suite": "definition-source",
+      "name": "Compatibility exports reject source mirrors and default scenario overrides"
+    },
+    {
+      "suite": "assets",
+      "name": "Pet assets accept bounded baked meshes and per-model rigs"
+    },
+    {
+      "suite": "assets",
+      "name": "Generic asset renderer builds baked meshes once per immutable definition"
+    },
+    {
+      "suite": "pet-catalog",
+      "name": "Default catalog is valid, frozen and detached from its source JSON"
+    },
+    {
+      "suite": "pet-catalog",
+      "name": "Every species, stage model and scene prop resolves to a bundled Scene Forge pet asset"
+    },
+    {
+      "suite": "pet-catalog",
+      "name": "Validation rejects malformed, unknown and executable-shaped data before use"
+    },
+    {
+      "suite": "pet-catalog",
+      "name": "Validation returns an independent frozen copy"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "An egg hatches on schedule and cuddles warm it sooner"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Eggs only accept stage-allowed care and never decay"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Needs decay with the stage factor and feeding applies catalog effects when the action finishes"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Digestion leaves a mess that lowers cleanliness until cleaned"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Too many treats in an hour cause sickness that only medicine cures"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Lights off puts the pet to sleep; it wakes rested and a lit room costs happiness"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Neglect becomes care mistakes, health loss and finally departure; adopting starts a new egg"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Care quality selects the adult form: attentive grows Bloom, a casual caretaker who skips bedtime grows Bramble"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Commands are validated atomically and queries never advance time"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Checkpoints restore exactly and continue deterministically"
+    },
+    {
+      "suite": "pet-runtime",
+      "name": "Tools discover bounded operations and reject unbounded experiments"
+    },
+    {
+      "suite": "pet-application",
+      "name": "Navigation and detached queries never tick the session"
+    },
+    {
+      "suite": "pet-application",
+      "name": "Frames advance fixed ticks with speed, bounded catch-up and pause"
+    },
+    {
+      "suite": "pet-application",
+      "name": "Restart chooses a species and resets the clock"
+    },
+    {
+      "suite": "pet-application",
+      "name": "Replacement admission is atomic for checkpoints and catalogs"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Pet demo is discoverable and runs only its own application clock"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "The 3D room renders Scene Forge pet assets through WebGL"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Disabled care actions stay focusable and explain why"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Keyboard care intents hatch, feed and evolve the pet over application ticks"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Checkpoints export and restore through the application boundary"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Starting over asks first, starts on Cancel and restores focus"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Returning to the colony restores focus and stops the pet clock"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Self-contained pet loading and interaction generate no script errors or network requests"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Care and growth earn catalog coins only when actions finish"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Coin purchases debit exactly once and explain unaffordable offers"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Owned items equip into their socket slot and one item per slot is worn"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Skins change only material colours, respect species limits and start from the free default"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Premium offers unlock only through store entitlements, never coins"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "The wardrobe belongs to the owner: adoption, restart and checkpoints keep it"
+    },
+    {
+      "suite": "pet-wardrobe",
+      "name": "Forged wardrobes and malformed shop catalogs are rejected before installation"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Earned coins buy an accessory that the 3D pet wears on its socket"
+    },
+    {
+      "suite": "pet-browser",
+      "name": "Premium unlocks confirm first, start on Cancel and grant only adapter-reported entitlements"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Suite registry and gate expectations agree on the complete ordered gate"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Gate expectations reject duplicate, unreviewed, renamed and miscounted declarations"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Check assessment fails closed on missing, unexpected, renamed and duplicate checks"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Complete-gate assessment rejects missing suites, reordering, unknown suites and count mismatch"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Verify options parse jobs, tier, shard, only and keep-going strictly"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Suite selection is deterministic for tier, browser exclusion, only and complete shard partitions"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Parallel pool returns registry-ordered results identical to sequential execution and isolates exclusive suites"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Asynchronous runner retains output, exit status, environment, timeouts and descendant cleanup"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Shard merge requires identical identity, disjoint complete coverage and re-accepted evidence"
+    },
+    {
+      "suite": "gate-integrity",
+      "name": "Verification sources add no fixed sleeps beyond the reviewed waitForTimeout budget"
+    },
+    {
+      "suite": "typescript-architecture",
+      "name": "Artifact bundles tag every insert and profiles keep the canonical load order"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Legacy littlewild storage namespace keeps the exact v5 save, backup and migration keys"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "A configured game storage namespace scopes saves and never migrates another game story"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Two games sharing one file origin keep independent saves and recovery copies"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Invalid game storage namespaces are rejected with an actionable message"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Scoped device preferences follow the game namespace while littlewild keeps its keys"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Denied browser storage under a game namespace still reports session-only preferences"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Engine export in the node composition reports its bundled sources as available"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Developer toolbox reports every optional facet available in the complete composition"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Engine export declares the absent engine-source payload without inflating anything"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Developer toolbox keeps absent editor and export facets explicit instead of failing obscurely"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Godot export declares an unavailable capability when the runtime payload is absent"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Godot export names missing templates and a missing project validator explicitly"
+    },
+    {
+      "suite": "runtime-optionality",
+      "name": "Godot export that needs shared engine sources fails with the opt-in payload message"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "The complete colony shell signals ready once, after its public APIs and optional hosts exist"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "The colony shell boots, runs and signals ready without the RTS and Pet template bundles"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "The colony shell boots without the scenario library, developer session, workspace and template host bundles"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Scenario library keeps editor launchers focusable with explicit reasons when the editors bundle is absent"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Godot and engine export show explicit capability reasons when their payloads are absent"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Separate game storage namespaces keep saves apart on one browser origin"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Standalone RTS page runs its own frame loop without the colony shell and signals ready"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Standalone Pocket Pet page runs its own frame loop without the colony shell and signals ready"
+    },
+    {
+      "suite": "runtime-optionality-browser",
+      "name": "Optional-bundle pages generate no script errors or network requests"
+    },
+    {
+      "suite": "artifact-play-browser",
+      "name": "RTS play artifact boots standalone, advances its match and offers a resume after exit"
+    },
+    {
+      "suite": "artifact-play-browser",
+      "name": "Pet play artifact boots standalone and renders the WebGL room"
+    },
+    {
+      "suite": "artifact-play-browser",
+      "name": "Colony play artifact boots the colony and starts a story"
+    },
+    {
+      "suite": "artifact-play-browser",
+      "name": "Studio artifact boots the colony with editors and export tools"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Godot runtime bundle is exactly the static require closure of the bridge entry points"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Default compile writes a runnable Godot project without the engine-source payload"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Opt-in --with-engine-sources adds the exact engine-source bundle and enables engine export in the compiled runtime"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Godot compilation is deterministic and the engine-source switch is a strict value-less flag"
+    },
+    {
+      "suite": "engine-export",
+      "name": "Inline vendor restoration needs the exact inline script bytes and never accepts a missing or altered copy"
+    },
+    {
+      "suite": "engine-export",
+      "name": "Trimmed toolchain keeps exactly the declarations the project compiler loads and drops unloaded TypeScript files"
+    },
+    {
+      "suite": "engine-export",
+      "name": "Bundled sources and trimmed toolchain recompile to the gate's exact compiled JavaScript"
+    },
+    {
+      "suite": "engine-export",
+      "name": "Engine-source payload profiles inline vendors verbatim and every p5 artifact carries its LGPL source"
+    },
+    {
+      "suite": "engine-export-browser",
+      "name": "An altered inline vendor script rejects engine export instead of exporting an incomplete inventory"
+    },
+    {
+      "suite": "content-provider",
+      "name": "Engine modules load without an installed game and name the missing content on first request"
+    },
+    {
+      "suite": "content-provider",
+      "name": "A later install admits every owned section in load order with unchanged canonical values"
+    },
+    {
+      "suite": "content-provider",
+      "name": "Profile admission rejects malformed, newer and second installs without invoking accessors"
+    },
+    {
+      "suite": "content-provider",
+      "name": "Browser artifacts adopt their declared data globals as the installed profile"
+    },
+    {
+      "suite": "content-provider",
+      "name": "The injected scenario catalog orders built-ins and selects its declared default pack"
+    },
+    {
+      "suite": "content-provider",
+      "name": "Built artifacts run the content provider after their data globals and before every engine module"
+    },
+    {
+      "suite": "typescript-architecture",
+      "name": "Runtime modules read game content only through the installed content provider"
+    },
+    {
+      "suite": "typescript-architecture",
+      "name": "Engine content directories hold only engine data and declared pending game data"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Game manifest schema and structural validator agree and stay closed and bounded"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Manifest semantics bind id, folder name, storage namespace and demo output"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Closed inventory rejects code, unreferenced files, links, executable modes and oversized trees"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Folder digest is byte-based, path-ordered and independent of where the folder lives"
+    },
+    {
+      "suite": "game-folders",
+      "name": "README edits leave the folder digest unchanged while PROVENANCE and LICENSE edits change it"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Littlewild folder profile equals the profile bundled before the move"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Artifact data globals are the folder profile plus engine-owned schemas and adopt as the same profile"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Template folders compile RTS and Pocket Pet catalogs into their profiles and validate"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Full validation runs the engine validators in a fresh process and reports their rejection"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Builds locate game folders through WILDLANDS_GAMES_DIR and fail clearly without one"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Emberworks folder validates, keeps a closed inventory and equals its pre-move profile"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Office folder validates, keeps a closed inventory and equals its pre-move profile"
+    },
+    {
+      "suite": "game-folders",
+      "name": "RTS Frontier folder validates, keeps a closed inventory and equals its pre-move profile"
+    },
+    {
+      "suite": "game-folders",
+      "name": "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Schema version 2 projects embed the colony sections of the installed game and round-trip"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Legacy schemaVersion 1 projects stay readable and every write upgrades them to the installed game"
+    },
+    {
+      "suite": "wildlands-project",
+      "name": "Engine distributions install no game: the engine-only installer leaves the game to its entry point"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Create, scenarios and legacy projects without --game fail with a game-required diagnostic naming the handbook"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "Legacy schemaVersion 1 projects validate with --game and upgrade or compile to self-contained schemaVersion 2 projects"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "validate-game and inspect-game report a game folder's identity, inventory and profile section sizes"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "build-game builds deterministic play artifacts for colony, RTS and Pocket Pet folders and --check detects staleness"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "build-game enforces the play budget and writes nothing over it"
+    },
+    {
+      "suite": "wildlands-cli",
+      "name": "build-game builds the studio on demand with editors and export payloads; Pocket Pet has no studio profile"
+    },
+    {
+      "suite": "cli-contracts",
+      "name": "Wildlands game commands keep the JSON protocol: usage errors exit 2 and rejected games exit 1"
+    },
+    {
+      "suite": "cli-contracts",
+      "name": "Game builds place exactly what the build assembler places for the same profile"
+    },
+    {
+      "suite": "cli-contracts",
+      "name": "Engine distributions carry no game: engine-only sources, runtime closure and kit hold engine data only"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "CLI-built Littlewild demo boots from file:// with its own game profile and no requests"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "CLI-built studio boots the colony with editors and export tools on demand"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published demos/manifest.json lists one byte-identical demo per game folder within its play budget"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published Office demo boots only Office from file:// under the wildlands.office storage namespace"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published RTS Frontier demo boots only its RTS match from file:// under the wildlands.rts-frontier storage namespace"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published Pocket Pet demo boots only its pet room from file:// under the wildlands.pocket-pet storage namespace"
+    },
+    {
+      "suite": "scene-navigation",
+      "name": "Accepted pack validation is memoized by exact pack content and extension catalogs and hands out detached packs"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Keyboard scene selection retains focus across detached view refreshes"
+    },
+    {
+      "suite": "business-process",
+      "name": "One task completes at its declared business minute with detached read queries"
+    },
+    {
+      "suite": "business-process",
+      "name": "FIFO shared capacity produces exact queue times, utilization and costs"
+    },
+    {
+      "suite": "business-process",
+      "name": "Multiple resources allocate atomically and never exceed capacity"
+    },
+    {
+      "suite": "business-process",
+      "name": "Future arrivals and zero interval batches preserve authored arrival order"
+    },
+    {
+      "suite": "business-process",
+      "name": "Agency parallel joins and rework complete with exact deterministic evidence"
+    },
+    {
+      "suite": "business-process",
+      "name": "Chunked clock commands and one bounded run produce identical snapshots"
+    },
+    {
+      "suite": "business-process",
+      "name": "Decisions take matching rules before fallback regardless of fallback position"
+    },
+    {
+      "suite": "business-process",
+      "name": "Missing condition fields choose fallback and numeric comparisons are typed"
+    },
+    {
+      "suite": "business-process",
+      "name": "Zero-work routing loops fail explicitly within the transition budget"
+    },
+    {
+      "suite": "business-process",
+      "name": "Bounded run limits and rejected clock commands preserve state"
+    },
+    {
+      "suite": "business-process",
+      "name": "Malformed, unknown and unsafe JSON values never pass admission"
+    },
+    {
+      "suite": "business-process",
+      "name": "Dangling links, duplicate IDs and scene identities are rejected"
+    },
+    {
+      "suite": "business-process",
+      "name": "Unreachable work and paths with no end are rejected"
+    },
+    {
+      "suite": "business-process",
+      "name": "Impossible resources and invalid task fields are rejected before execution"
+    },
+    {
+      "suite": "business-process",
+      "name": "Parallel region rejects branch overlap, nested controls and conflicting writes"
+    },
+    {
+      "suite": "business-process",
+      "name": "Scene Forge exports are admitted as world assets and executable asset fields reject"
+    },
+    {
+      "suite": "business-process",
+      "name": "Fingerprint ignores object key order and tracks complete definition changes"
+    },
+    {
+      "suite": "business-process",
+      "name": "Guarded edits validate atomically and stale guards preserve input"
+    },
+    {
+      "suite": "business-process",
+      "name": "Incremental drafts retain explicit diagnostics and become runnable when connected"
+    },
+    {
+      "suite": "business-process",
+      "name": "Scene and renderer navigation leaves the authoritative run untouched"
+    },
+    {
+      "suite": "business-process",
+      "name": "Rejected imports preserve session and definition; valid import starts paused"
+    },
+    {
+      "suite": "business-process",
+      "name": "Definition JSON Schema and runtime agree on structural fixtures"
+    },
+    {
+      "suite": "business-process",
+      "name": "CLI agent workflow supports create, dry-run, guarded edit, inspect and bounded run"
+    },
+    {
+      "suite": "business-process",
+      "name": "Scene Forge attachment requires exact edit guards and retains compiled geometry"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Process artifact starts paused with one selectable scene per step and real WebGL"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "2D and 3D scene navigation preserves the same simulation state"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Run and pause controls advance only the owned process clock"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Invalid JSON import preserves the active definition and run"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Definition editor validates before applying and resets a valid edit explicitly"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Browser exported JSON imports losslessly and report binds definition to observed metrics"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Downloaded self-contained HTML reopens offline with the edited definition and no requests"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Imported text renders inertly and survives escaped standalone HTML export"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Desktop and mobile reflow retain controls without horizontal overflow"
+    },
+    {
+      "suite": "business-process-browser",
+      "name": "Process browser lifecycle emits no runtime errors or network requests"
+    },
+    {
+      "suite": "game-demos-browser",
+      "name": "Published agency process demo boots offline with all step scenes and explicit clock control"
+    }
   ],
   "renames": [
-    {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."}
+    {
+      "suite": "wildlands-acceptance",
+      "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes",
+      "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes",
+      "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."
+    }
   ],
   "retirements": [],
   "inventory": {
@@ -715,7 +1919,7 @@
     ],
     "creature-editor": [
       "Standalone package includes complete co-located gameplay and visuals, exact JSON roundtrip",
-      "Public SDK editor façade exposes detached intent and the same package authority",
+      "Public SDK editor fa\u00e7ade exposes detached intent and the same package authority",
       "Snapshots, fields and exported scenario values are detached from the owned draft",
       "Defaults and current attributes, inventory and needs have distinct data-driven field intent",
       "Archetype creation uses compiled catalogs, supports future recruitment and preserves current actors",
@@ -800,6 +2004,9 @@
       "Failed transition activation restores all installed content and supports retry",
       "Saved journey checkpoints reject unknown owners, missing states and corrupt native values",
       "Aggregate journey budget rejects excessive checkpoints before importing them",
+      "Accepted pack validation is memoized by exact pack content and extension catalogs and hands out detached packs"
+    ],
+    "scene-journeys": [
       "Portable stories and captures retain the complete graph and dormant world progress",
       "Portable journey import rejects split current authority and rolls back failed activation",
       "Full Office catalogs support independent cross-world work, upstairs views and exact SDK story revisits",
@@ -1676,22 +2883,22 @@
       "A stale quote after content revision rejects before debit",
       "Duplicate purchase creates neither another receipt nor another bridge",
       "New island resources do not teleport to inventories",
-      "An island purchase opens one invitation from that island’s pool",
+      "An island purchase opens one invitation from that island\u2019s pool",
       "Template reuse across islands does not reuse invitation identity",
       "An unowned island cannot inject an invitation",
       "Duplicate same-island invitations are rejected without sequence growth",
-      "Invitation cooldowns do not consume a creature’s GURPS RNG",
+      "Invitation cooldowns do not consume a creature\u2019s GURPS RNG",
       "Per-island director does not create early opportunities",
       "Expired invitations are removed without replacing them before cooldown",
       "Random misses have a bounded guaranteed next invitation",
       "Pending or active island journey suppresses additional island cycles",
       "New invitations enforce current guide-level requirements",
-      "Island invitations enforce the individual creature’s level",
+      "Island invitations enforce the individual creature\u2019s level",
       "Accepting an invitation copies its origin but consumes no provisions",
       "Departure snapshots origin and charges carried provisions only once",
       "An away creature cannot be fed or equipped through its context",
       "Pending quests retain island requirements in planner rows",
-      "Reassignment cannot bypass the recipient’s expedition level",
+      "Reassignment cannot bypass the recipient\u2019s expedition level",
       "Paused quest plans survive exact portable round-trip",
       "Early return callback cannot settle an unfinished quest",
       "Return travel time must elapse before rewards",
@@ -2405,6 +3612,7 @@
       "Manifest semantics bind id, folder name, storage namespace and demo output",
       "Closed inventory rejects code, unreferenced files, links, executable modes and oversized trees",
       "Folder digest is byte-based, path-ordered and independent of where the folder lives",
+      "README edits leave the folder digest unchanged while PROVENANCE and LICENSE edits change it",
       "Littlewild folder profile equals the profile bundled before the move",
       "Artifact data globals are the folder profile plus engine-owned schemas and adopt as the same profile",
       "Template folders compile RTS and Pocket Pet catalogs into their profiles and validate",
@@ -2434,7 +3642,6 @@
       "Studio artifact boots the colony with editors and export tools"
     ],
     "game-demos-browser": [
-      "Published agency process demo boots offline with all step scenes and explicit clock control",
       "CLI-built Littlewild demo boots from file:// with its own game profile and no requests",
       "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces",
       "CLI-built studio boots the colony with editors and export tools on demand",

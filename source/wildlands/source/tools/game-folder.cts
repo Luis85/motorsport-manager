@@ -2,7 +2,8 @@
 /**
  * Build-only game folder tooling. A game folder (`docs/concepts/<id>/`) is data only: a
  * `game.json` manifest (`schemas/game.schema.json`, format `wildlands-game`, schemaVersion 1),
- * the JSON documents it names, its asset definition folders and README/PROVENANCE/LICENSE files.
+ * the JSON documents it names, its asset definition folders and README/PROVENANCE/LICENSE files
+ * (README.md is documentation and is not part of the folder digest).
  * Nothing in a folder is executed or imported: files are read as bytes, decoded as strict UTF-8
  * and parsed as JSON. The closed inventory rejects every other file, code or markup, executable
  * modes, symbolic links and oversized trees before any document is interpreted.
@@ -49,7 +50,10 @@ export interface LoadedGame {
  readonly manifest: GameManifest;
  /** Closed inventory in byte order of path. */
  readonly files: readonly GameFile[];
- /** SHA-256 over `path NUL sha256 LF` lines of `files`: byte-based, so any edit (also whitespace or key order) changes it. */
+ /**
+  * SHA-256 over `path NUL sha256 LF` lines of `files` except README.md files: byte-based, so any
+  * edit of game input (also whitespace or key order, or PROVENANCE/LICENSE text) changes it.
+  */
  readonly digest: string;
 }
 export interface CompiledGame extends LoadedGame {
@@ -76,8 +80,15 @@ export function gameDirectory(id: string): string {
 }
 
 const sha256 = (data: Uint8Array | string): string => createHash('sha256').update(data).digest('hex');
+/**
+ * README.md files document a folder; they are not game input. They stay in the closed inventory and
+ * its size limits but not in the digest, so editing one leaves the digest and every demo built from
+ * the folder unchanged. PROVENANCE.md and LICENSE* files are licence-relevant and stay in it.
+ */
+export const DIGEST_EXCLUDED = /(?:^|\/)README\.md$/;
 export function digest(files: readonly GameFile[]): string {
- return sha256([...files].sort((a, b) => compare(a.path, b.path)).map(file => file.path + '\0' + file.sha256 + '\n').join(''));
+ return sha256([...files].filter(file => !DIGEST_EXCLUDED.test(file.path)).sort((a, b) => compare(a.path, b.path))
+  .map(file => file.path + '\0' + file.sha256 + '\n').join(''));
 }
 function text(root: string, relative: string): string {
  try { return new TextDecoder('utf-8', {fatal: true}).decode(fs.readFileSync(path.join(root, relative))); }

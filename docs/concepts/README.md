@@ -55,8 +55,9 @@ bin/wildlands build-game --game docs/concepts/<id> --output demos/<id>.html
 
 `build-game` refuses a play artifact over the folder's
 `targets.html.budgetBytes`. To refresh every published demo after changing a
-folder (any file, including its README, is part of the folder digest the demo
-records), run `npm run build:demos` in `source/wildlands`; `npm run check:demos`
+folder (every file except `README.md` files is part of the folder digest the demo
+records; `PROVENANCE.md` and `LICENSE*` are included because they are
+licence-relevant, while a README edit leaves the digest and the demo unchanged), run `npm run build:demos` in `source/wildlands`; `npm run check:demos`
 fails when `demos/` differs from a fresh build. The
 [Wildlands CLI handbook](../reference/wildlands-cli.md) documents every command.
 

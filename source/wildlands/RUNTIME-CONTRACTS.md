@@ -183,7 +183,10 @@ Folders are data only and are never executed. `source/tools/game-folder.cts` (bu
   the folder name; storage namespace `wildlands.<id>`, or the legacy `littlewild` namespace for
   the Littlewild game only; html output `demos/<id>.html`), and returns the inventory and digest
   (SHA-256 over `path NUL sha256 LF` lines in path byte order; byte-based, so whitespace or key
-  order changes it).
+  order changes it). `README.md` files, at any depth, are documentation rather than game input:
+  they stay in the closed inventory and its size limits but not in the digest, so a README edit
+  changes neither the digest nor a demo built from the folder. `PROVENANCE.md` and `LICENSE*`
+  files are licence-relevant and stay in the digest.
 - `compileGame(dir)` / `profile(dir)` / `dataGlobals(dir)` project the folder into this
   content profile and the artifact data globals (with `LWGameProfile` and the engine-owned
   schemas) using the bundled build's projections. The canonical pack (`content.canonicalId`)
@@ -202,7 +205,11 @@ Office are colony folders without a canonical pack whose balancing and asset doc
 materialized copies of Littlewild's (decision D4), so each folder profile equals the profile its
 pack ran with; `source/fixtures/<id>-profile.sha256.json` records those pre-move digests and the
 `game-folders` suite compares every folder against its fixture. No game data remains under
-`source/content` or `source/assets` (`architecture/engine-data.json` has no pending entries).
+`source/content`, `source/assets` or `source/schemas`: `architecture/engine-data.json` is a
+closed allow-list of engine data only (format, schemaVersion, description and `engine` entries
+of pattern and reason). There is no pending or transitional game-data mechanism; the TypeScript
+architecture check rejects a `pending` list (even an empty one), unlisted or game-shaped files
+and stale entries, and engine distributions remove only the build's `games/<id>/` folders.
 
 `test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
 later installation, envelope admission, the browser adoption of data globals, the injected

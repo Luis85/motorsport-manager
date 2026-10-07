@@ -121,7 +121,7 @@ test('Closed inventory rejects code, unreferenced files, links, executable modes
  rejects(directory => fs.writeFileSync(path.join(directory, 'README.md'), Buffer.from([0xff, 0xfe, 0x23])), /not UTF-8 text: README\.md/);
  rejects(directory => fs.writeFileSync(path.join(directory, 'game.json'), '{"format":'), /not valid JSON: game\.json/);
  rejects(directory => {let nested = directory; for (let level = 0; level <= LIMITS.depth; level += 1) nested = path.join(nested, 'd' + level); fs.mkdirSync(nested, {recursive: true});}, /nested deeper than 8 levels/);
- // Documentation and license files are welcome anywhere and join the digest.
+ // Documentation and license files are welcome anywhere and join the inventory (README.md files stay out of the digest).
  copy(directory => {
   const before = loadGame(directory).files.length;
   for (const name of ['PROVENANCE.md', 'LICENSE', 'LICENSE-CC-BY-4.0.txt', 'assets/items/README.md']) fs.writeFileSync(path.join(directory, name), '# Note\n');
@@ -142,6 +142,32 @@ test('Folder digest is byte-based, path-ordered and independent of where the fol
   const {format, ...rest} = value; fs.writeFileSync(file, JSON.stringify({...rest, format}, null, 2) + '\n'); assert.notEqual(loadGame(directory).digest, first.digest, 'Key order is part of the bytes');
   assert.deepEqual(compileGame(directory).profile, compileGame(littlewild).profile, 'Formatting never changes the compiled profile');
  });
+});
+
+test('README edits leave the folder digest unchanged while PROVENANCE and LICENSE edits change it', () => {
+ // README.md is documentation, not game input: it stays in the closed inventory and its limits but not in the digest,
+ // so a README edit never makes a demo stale. PROVENANCE.md and LICENSE* are licence-relevant and stay in the digest.
+ const pet = gameDirectory('pocket-pet'), original = loadGame(pet);
+ assert(original.files.some(file => file.path === 'README.md') && original.files.some(file => file.path === 'PROVENANCE.md'));
+ assert.equal(digest(original.files.filter(file => file.path !== 'README.md')), original.digest, 'The digest never covers README.md');
+ copy(directory => {
+  const readme = path.join(directory, 'README.md'), files = loadGame(directory).files.length;
+  fs.appendFileSync(readme, '\nEdited documentation.\n'); fs.writeFileSync(path.join(directory, 'content/README.md'), '# Nested note\n');
+  const edited = loadGame(directory);
+  assert.equal(edited.digest, original.digest, 'Editing or adding README.md keeps the digest');
+  assert.equal(edited.files.length, files + 1, 'README.md files stay in the closed inventory');
+  assert.notEqual(edited.files.find(file => file.path === 'README.md')!.sha256, original.files.find(file => file.path === 'README.md')!.sha256);
+  assert.deepEqual(compileGame(directory).profile, compileGame(pet).profile);
+  assert.deepEqual(validateGame(directory), {ok: true, id: 'pocket-pet', digest: original.digest, errors: []});
+  fs.writeFileSync(readme, Buffer.alloc(LIMITS.fileBytes + 1, 32));
+  assert.throws(() => loadGame(directory), /exceeds 8388608 bytes/, 'README.md still counts toward the size limits');
+  fs.writeFileSync(readme, '# Pocket Pet\n');
+  fs.appendFileSync(path.join(directory, 'PROVENANCE.md'), '\nAdditional credit.\n');
+  const provenance = loadGame(directory).digest;
+  assert.notEqual(provenance, original.digest, 'Editing PROVENANCE.md changes the digest');
+  fs.writeFileSync(path.join(directory, 'LICENSE'), 'CC-BY-4.0\n');
+  assert.notEqual(loadGame(directory).digest, provenance, 'Adding a LICENSE file changes the digest');
+ }, pet, 'pocket-pet');
 });
 
 test('Littlewild folder profile equals the profile bundled before the move', () => {

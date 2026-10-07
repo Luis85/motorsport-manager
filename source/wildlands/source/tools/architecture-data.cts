@@ -35,20 +35,27 @@ export function ownershipErrors(manifest:DataManifest,files:readonly string[],ow
  }
  return errors;
 }
-/** Closed engine data allow-list (architecture/engine-data.json). */
-export interface EngineDataEntry {pattern:string;reason:string;game?:string;}
-export interface EngineDataManifest {format:string;schemaVersion:number;description:string;engine:EngineDataEntry[];pending:EngineDataEntry[];}
-/** Game data shapes that never belong to the engine allow-list (they live in a game folder or are pending). */
+/**
+ * Closed engine data allow-list (architecture/engine-data.json). Every file under source/content,
+ * source/assets and source/schemas is engine data; game data lives only in its game folder
+ * (docs/concepts/<game>/). There is no pending or transitional game-data list: a manifest that
+ * declares one, or any field other than these, is rejected.
+ */
+export interface EngineDataEntry {pattern:string;reason:string;}
+export interface EngineDataManifest {format:string;schemaVersion:number;description:string;engine:EngineDataEntry[];}
+/** Game data shapes that never belong to the engine allow-list (they live in a game folder). */
 const GAME_SHAPED=/(?:^|\/)(?:definition\.json|[^/]*\.pack\.json|balancing\.json|catalog\.json|editor-fields\.json|skill-tree\.json|game\.json)$/;
-export function engineDataErrors(manifest:EngineDataManifest,files:readonly string[],games:readonly string[]):string[]{
+export function engineDataErrors(manifest:EngineDataManifest,files:readonly string[]):string[]{
  const errors:string[]=[];
  if(manifest.format!=='wildlands-engine-data'||manifest.schemaVersion!==1)errors.push('Invalid engine data allow-list identity.');
- const entries=[...manifest.engine.map(entry=>({...entry,scope:'engine'})),...manifest.pending.map(entry=>({...entry,scope:'pending'}))];
+ const fields=Object.keys(manifest).sort().join(',');
+ if(fields!=='description,engine,format,schemaVersion')errors.push('Engine data allow-list has only format, schemaVersion, description and engine (no pending game data): '+fields);
+ const entries=Array.isArray(manifest.engine)?manifest.engine:[];
  for(const entry of entries){
   if(!/^(?:content|assets|schemas)\/[A-Za-z0-9_.*\/-]+$/.test(entry.pattern)||entry.pattern.includes('..'))errors.push('Invalid engine data pattern: '+entry.pattern);
   if(typeof entry.reason!=='string'||entry.reason.trim().length<40)errors.push('Engine data entry needs a concrete reason: '+entry.pattern);
-  if(entry.scope==='engine'&&(entry.game!==undefined||GAME_SHAPED.test(entry.pattern)))errors.push('Engine entry has a game data shape; move it to a game folder or list it as pending: '+entry.pattern);
-  if(entry.scope==='pending'&&!games.includes(entry.game??''))errors.push('Pending engine data names an unknown game: '+entry.pattern);
+  if(Object.keys(entry).sort().join(',')!=='pattern,reason')errors.push('Engine data entry has only pattern and reason: '+entry.pattern);
+  if(GAME_SHAPED.test(entry.pattern))errors.push('Engine entry has a game data shape; move it to its game folder: '+entry.pattern);
   if(!files.some(file=>matches(entry.pattern,file)))errors.push('Engine data entry matches no file (remove it): '+entry.pattern);
  }
  for(const file of files){

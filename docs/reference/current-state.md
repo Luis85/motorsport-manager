@@ -75,6 +75,15 @@ clone without `npm ci` or `node_modules`:
 The bundles are generated from their source projects and checked by each
 project's `npm run check:cli`.
 
+Wildlands verification has a fast tier (`npm test`: typecheck, build and the
+quick Node suites, partial evidence) and the complete registered gate
+(`npm run verify`: 104 suites, 1,869 reviewed named checks) on a parallel
+runner. `source/wildlands/source/verification/suites.json` and
+`gate-expectations.json` are the authority for suites and check names; CI runs
+the fast tier first, then the complete gate with `--jobs 3 --browser-jobs 2`.
+Passing suites are automated evidence, not human playtesting or balance
+validation.
+
 ## Ready-to-play Wildlands demos
 
 The repository's [`demos/`](../../demos/README.md) directory holds five
@@ -86,7 +95,9 @@ Emberworks and Office (`colony` template), RTS Frontier (`rts`) and Pocket Pet
 own namespace (`littlewild` keeps its legacy keys; the others use
 `wildlands.<id>`). Every demo stays within its folder's play budget and is
 byte-checked against a fresh build by `npm run check:demos` in
-`source/wildlands`. Editors and export tools are not published; `build-game
+`source/wildlands`; it records its folder digest (every folder file except
+`README.md` documentation) and the engine identity, so any engine or game-data
+change needs rebuilt demos while a README-only edit does not. Editors and export tools are not published; `build-game
 --profile studio` builds them on demand. A browser boot check of each file is
 automated evidence only, not human playtesting or balance validation. Like the Wildlands maker above, they are outside
 the native Motorsport Manager race/campaign inventory and do not read or write

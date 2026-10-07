@@ -37,8 +37,9 @@ the matching Diátaxis section and link the folder's README. List every game in
 the game is, how to build and play it and where its data came from. Validate a
 changed folder with `bin/wildlands validate-game --game docs/concepts/<id>` and
 refresh its published demo with `npm run build:demos` in `source/wildlands`
-(every folder file, README included, is part of the digest the demo records;
-`npm run check:demos` fails on a stale demo), in addition to the documentation
+(every folder file except `README.md` files is part of the digest the demo
+records, so a README-only edit needs no rebuild; `npm run check:demos` fails on a
+stale demo), in addition to the documentation
 checker.
 
 ## Reconcile a change

@@ -54,7 +54,8 @@
   function stable(value:unknown):string|undefined {return Array.isArray(value) ? '[' + value.map(entry=>stable(entry)).join(',') + ']' : isRecord(value) ? '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}' : JSON.stringify(value);}
   /** An opaque, deterministic change identifier; NOT a cryptographic signature. */
   function fingerprint(doc:unknown, maxNodes = MAX_NODES):string {
-    const value=copy(doc, maxNodes);
+    // The same JSON-only inspection as copy(); only reads follow, so no detached copy is needed.
+    const value=inspectJson(doc, false, maxNodes);
     const safe=isRecord(value)?value:{};
     const s = stable({schemaVersion: safe.schemaVersion, library: safe.library, components: safe.components});
     let a = 2166136261, b = 0x9e3779b9;

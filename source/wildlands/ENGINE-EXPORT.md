@@ -36,7 +36,7 @@ The complete source bundle is gzip/base64 in the standalone HTML and only inflat
 | --- | --- |
 | Play artifacts (`colony-play`, `rts-play`, `pet-play`) | Never included; engine export reports itself unavailable. |
 | Studio and the showcase fixture | Compressed loader with inline vendor scripts deduplicated against the page. |
-| `bin/wildlands` | Separate raw-deflate payload of the engine-only bundle (the build's `games/<id>` folders and pending game data removed, identity recomputed), inflated only for engine export, `build-game --profile studio` or `compile --with-engine-sources`. |
+| `bin/wildlands` | Separate raw-deflate payload of the engine-only bundle (the build's `games/<id>` folders removed, identity recomputed; engine directories hold only allow-listed engine data), inflated only for engine export, `build-game --profile studio` or `compile --with-engine-sources`. |
 | `build-game --profile studio` | The engine-only loader, with inline vendor scripts deduplicated against the page as above. |
 | Compiled Godot projects | Omitted by default; `compile`/`export --with-engine-sources` (SDK `compileGodot(project, {withEngineSources: true})`) adds the exact engine-only `runtime/engine-source-bundle.json`. |
 

@@ -69,8 +69,9 @@ Edit the JSON here, then validate the folder and rebuild the demo. Validation
 rejects a folder whose files are not all named by `game.json` (other than
 README, PROVENANCE and LICENSE files), that contains code, markup, executable
 files or symbolic links, or whose documents fail the engine validators. The
-folder digest is SHA-256 over every file's path and byte hash, so any byte
-change, including whitespace or key order, gives a new digest. The
+folder digest is SHA-256 over every file's path and byte hash except README
+files, so any byte change of game data, including whitespace or key order,
+gives a new digest; editing this README does not, and needs no demo rebuild. The
 `game-folders` verification suite checks the manifest, inventory, digest and
 that the compiled profile still equals the profile the engine shipped before the
 folder existed.
