@@ -161,6 +161,31 @@ both rules with regression probes.
   the composite showcase profile. `simulation.cjs` loads the provider but installs nothing. The
   bundled installers are transitional until game folders supply profiles.
 
+### Game folders
+
+A game's data lives in its own folder, `docs/concepts/<id>/` (or under `WILDLANDS_GAMES_DIR`),
+described by `game.json` (`source/schemas/game.schema.json`: format `wildlands-game`,
+schemaVersion 1, `template` colony/rts/pet, `engine.api` 1, closed and bounded objects).
+Folders are data only and are never executed. `source/tools/game-folder.cts` (build-only):
+
+- `loadGame(dir)` checks the closed inventory (every file is named by `game.json`, is an asset
+  `definition.json` under `content.assets`, or is README.md/PROVENANCE.md/LICENSE*; code,
+  markup, executable modes, symbolic links, hidden names, more than 2,048 files, 8 MiB per file,
+  32 MiB in total or 8 levels are rejected), the manifest grammar and its value rules (id equals
+  the folder name; storage namespace `wildlands.<id>`, or the legacy `littlewild` namespace for
+  the Littlewild game only; html output `demos/<id>.html`), and returns the inventory and digest
+  (SHA-256 over `path NUL sha256 LF` lines in path byte order; byte-based, so whitespace or key
+  order changes it).
+- `compileGame(dir)` / `profile(dir)` / `dataGlobals(dir)` project the folder into this
+  content profile and the artifact data globals (with `LWGameProfile` and the engine-owned
+  schemas) using the bundled build's projections. The canonical pack (`content.canonicalId`)
+  inherits balancing defaults; the interaction catalog must equal the balancing `interactions`.
+- `validateGame(dir)` adds the engine's runtime validators in a fresh process (one game per
+  realm) and returns `{ok, id, digest, errors}`.
+
+The transitional Littlewild installer reads the `.generated` documents the build compiles from
+the Littlewild folder, plus the pending Emberworks/Office packs.
+
 `test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
 later installation, envelope admission, the browser adoption of data globals, the injected
 scenario catalog and the provider's position in every built artifact.

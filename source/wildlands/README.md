@@ -64,7 +64,7 @@ The Wildlands compiler exports a **runnable Godot project** with a native presen
 
 The existing **engine JSON document** remains a separate inert code-generator input: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and a Godot mapping manifest. A pure GDScript semantic port remains separate work. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md) for the distinction.
 
-Edit [source/content/balancing.json](source/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
+Edit the Littlewild game folder's [content/balancing.json](../../docs/concepts/littlewild/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
 
 **Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 

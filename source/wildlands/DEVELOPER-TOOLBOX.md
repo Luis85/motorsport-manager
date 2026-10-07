@@ -134,7 +134,7 @@ Validation accepts data only: imported callbacks, functions, accessors, class
 instances, symbol fields, cycles and non-finite values are rejected.
 
 A creature's `visualAsset` selects an existing bundled actor asset. To change it,
-edit the authored `source/assets/creatures/<archetype>/definition.json (`creature` facet)`, choose a
+edit the authored `docs/concepts/<game>/assets/creatures/<archetype>/definition.json (`creature` facet)`, choose a
 validated asset ID discovered from `assets.list('actor')`, and run typecheck/build
 and the registered asset/creature verification suites. Asset definitions live in
 `source/assets/<family>/<id>/definition.json (`visual` facet)`; adding a folder follows the documented

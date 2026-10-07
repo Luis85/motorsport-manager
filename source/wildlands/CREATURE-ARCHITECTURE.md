@@ -8,13 +8,13 @@ Creatures are authored as data, instantiated by an application service, simulate
 
 | Concern | Owner | Persistent? |
 | --- | --- | --- |
-| Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `source/assets/creatures/<id>/definition.json (`creature` facet)` | Definition data |
+| Archetype identity, supported personalities, names, movement/physiology tuning, visual asset selection, RNG seed policy, actor defaults, spawn modes, ECS bindings | `docs/concepts/<game>/assets/creatures/<id>/definition.json (`creature` facet)` | Definition data |
 | Personality traits, attributes and preferences | Adventure content | Definition data |
 | Mutable needs, inventory, learning, feelings, equipment, RPG state, tasks, interaction events/cooldowns | Creature actor record | Yes |
 | Paired invitations, duel rounds/history, catalog identity, participant cooldowns, trigger clocks and seek intents | Root `state.creatureInteractions` via `interaction-runtime.ts` and `interaction-triggers.ts` | Yes |
 | `Creature`, `Activity`, `Intent` ECS projections | `actor-ecs.ts` | No |
 | Construction of a new mutable actor from immutable definitions | `creature-factory.ts` | Application service |
-| Geometry, rig, sockets, appearance, expression and animation tuning | `source/assets/creatures/<id>/definition.json (`visual` facet)` | Presentation data |
+| Geometry, rig, sockets, appearance, expression and animation tuning | `docs/concepts/<game>/assets/creatures/<id>/definition.json (`visual` facet)` | Presentation data |
 | Animation algorithm and Three.js attachment behavior | `world-fidelity.ts` | No |
 | Recruitment, social/quest orchestration and use-case sequencing | `colony.ts` | Application orchestration |
 
@@ -62,14 +62,14 @@ The ECS caches component references and reuses transient `Activity` records to a
 
 ## Folder discovery and defaults
 
-`source/assets/creatures/<id>/` co-locates gameplay and presentation manifests.
+`docs/concepts/<game>/assets/creatures/<id>/` co-locates gameplay and presentation manifests.
 Their schema boundaries remain separate; visual manifests retain category `actor`.
 `tools/bundled-assets.cts` discovers both collections for the build and regressions.
 Every creature folder requires both manifests, matching folder IDs and a selected
 visual asset supporting all declared personalities. No source registry branch is
 needed to add a package.
 
-`assets/creatures/catalog.json` (validated by `catalog.schema.json` and runtime)
+The game folder's `assets/creatures/catalog.json` (validated by `catalog.schema.json` and runtime)
 selects `defaultArchetype` explicitly. Sorting new folders never changes the
 legacy default. The catalog configuration and creature definitions are frozen.
 Changing this value changes newly created story founders; saved identities remain
@@ -77,7 +77,7 @@ explicit and recruitment accepts any supported pair.
 
 ## Adding another creature
 
-1. Copy `source/assets/creatures/sproutling/` to a new safe lowercase ID.
+1. Copy `docs/concepts/littlewild/assets/creatures/sproutling/` to a new safe lowercase ID.
 2. Set the wrapper `id`, `creature.id`, `creature.state.defaults.archetype`, `visual.id` and normally
    `visualAsset` to that ID. Keep `visual.category` as `actor`.
 3. Select supported personality IDs from Adventure content and set a supported

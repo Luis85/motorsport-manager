@@ -1,8 +1,9 @@
 # Central balancing and experiments
 
 Default item prices, weights, recipes, equipment, resource nodes, buildings and
-progression gates are edited in [one definition per thing](source/assets/README.md).
-`source/content/balancing.json` retains shared rules and ordered catalog selectors;
+progression gates are edited in [one definition per thing](source/assets/README.md) inside the
+game folder ([Littlewild](../../docs/concepts/littlewild/README.md): `docs/concepts/littlewild/assets/`).
+The game's `content/balancing.json` retains shared rules and ordered catalog selectors;
 `npm run build` assembles the complete public balancing document in
 `.generated/content/balancing.json`. The public schema, workshop and CLI still
 accept complete portable documents, never source selectors. Default scenario
@@ -10,7 +11,7 @@ libraries and creature tuners are generated from these same definitions.
 
 Edit the relevant definition or shared rule, then build. Node, CLI and standalone browser startup consume the assembled balancing document. It contains the four complete gameplay libraries, actor/economy/gameplay simulation profiles, world generation, interaction and interior catalogs, generated creature seed tuners and starting scenes. Validated complete packs can explicitly override these defaults. Office and Emberworks retain their authored pack overrides.
 
-Creature identity, names, visual bindings, ECS grammar and new archetypes remain authored in `source/assets/creatures/<id>/definition.json`. The generated `creatures` section is a numeric/Boolean projection of those folder definitions; it cannot rename creatures, invent a field or replace executable grammar. Effective exported balancing documents and captured pack resources contain the complete validated merged creature catalog. The build discovers added asset folders. Existing captured catalog/profile values are immutable and continue independently of later default-file edits.
+Creature identity, names, visual bindings, ECS grammar and new archetypes remain authored in the game folder's `assets/creatures/<id>/definition.json`. The generated `creatures` section is a numeric/Boolean projection of those folder definitions; it cannot rename creatures, invent a field or replace executable grammar. Effective exported balancing documents and captured pack resources contain the complete validated merged creature catalog. The build discovers added asset folders. Existing captured catalog/profile values are immutable and continue independently of later default-file edits.
 
 `startingScenes` surfaces initial player coins, research, inventories, needs, buildings, nodes and actor progression. Those are scenario seed data. Edit them before creating a new story with `startingPack`; ordinary balancing apply preserves an existing story's holdings and progression and rejects start edits. The document's `sceneId` selects the native owner whose interaction/interior catalogs are tuned; other owners retain their authored catalogs. Bound interior/island scenes keep their empty native state and use their native owner's capture. Libraries, simulation and effective creature resources are pack-wide; world tuning replaces the matching world ID.
 

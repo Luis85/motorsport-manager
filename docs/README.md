@@ -11,6 +11,7 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 | Look up UI, campaign, content, storage or tooling contracts | [Reference](reference/README.md) |
 | Understand simulation, architecture and ownership choices | [Explanation](explanation/README.md) |
 | Inspect earlier implementation and source-bound acceptance | [Historical archive](_archive/README.md) |
+| Find the data-only source folder of a Wildlands game | [Game folders](concepts/README.md) |
 
 ## Common routes
 
