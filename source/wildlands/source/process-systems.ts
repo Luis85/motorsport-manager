@@ -2,14 +2,17 @@
 /** Process token transitions, atomic pool allocation and structured joins over shared ECS storage. */
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}; LWProcessSystems?: LWProcess.Systems};
+ const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}; LWProcessSystems?: LWProcess.Systems};
+ const limits = root.LWProcessLimits;
+ // Locale-independent code-unit order keeps replays identical across hosts.
+ const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
  const tokens = (s: LWProcess.State) => s.world.query(['process-token']).map(id => s.world.get<LWProcess.Token>(id, 'process-token')!);
  const caseOf = (s: LWProcess.State, t: LWProcess.Token) => s.world.get<LWProcess.Case>(t.caseId, 'process-case')!;
  const station = (s: LWProcess.State, id: string) => s.world.get<LWProcess.Station>('station-' + id, 'process-station')!;
  const pool = (s: LWProcess.State, id: string) => s.world.get<LWProcess.Pool>('pool-' + id, 'process-pool')!;
  const event = (s: LWProcess.State, kind: string, c: string, step: string, detail = '') => {
   s.events.push({minute: s.clock.minute, kind, caseId: c, stepId: step, detail});
-  if (s.events.length > 128) s.events.shift();
+  if (s.events.length > limits.events) s.events.shift();
  };
  function release(s: LWProcess.State, t: LWProcess.Token): void {
   for (const [id, quantity] of Object.entries(s.steps.get(t.stepId)!.resources ?? {})) pool(s, id).busy -= quantity;
@@ -40,7 +43,7 @@
  }
  function route(s: LWProcess.State, t: LWProcess.Token): void {
   const c = caseOf(s, t), step = s.steps.get(t.stepId)!, out = s.outgoing.get(step.id)!;
-  if (++c.transitions > 2048) { fail(s, c, 'Case exceeded 2048 step transitions.'); return; }
+  if (++c.transitions > limits.transitions) { fail(s, c, 'Case exceeded ' + limits.transitions + ' step transitions.'); return; }
   if (step.kind === 'task') { t.status = 'queued'; return; }
   if (step.kind === 'end') {
    station(s, step.id).completed++; s.world.destroy(t.id);
@@ -82,7 +85,7 @@
    if (!pending.length) { if (join(s)) continue; break; }
    for (const t of pending) if (s.world.get(t.id, 'process-token')) route(s, t);
   }
-  const queued = tokens(s).filter(t => t.status === 'queued').sort((a, b) => a.entered - b.entered || a.caseId.localeCompare(b.caseId) || a.id.localeCompare(b.id));
+  const queued = tokens(s).filter(t => t.status === 'queued').sort((a, b) => a.entered - b.entered || compare(a.caseId, b.caseId) || compare(a.id, b.id));
   for (const t of queued) {
    const step = s.steps.get(t.stepId)!, demands = Object.entries(step.resources ?? {});
    if (demands.some(([id, quantity]) => pool(s, id).busy + quantity > pool(s, id).capacity)) continue;
@@ -107,7 +110,7 @@
    Object.assign(c.data, step.set ?? {}); station(s, step.id).completed++;
    s.receipts.push({id: t.id + '@' + t.started, caseId: c.id, stepId: step.id, started: t.started!, finished: s.clock.minute,
     input: {...t.input!}, output: {...c.data}, changes: {...step.set ?? {}}});
-   if (s.receipts.length > 128) {s.receipts.shift(); s.receiptsDropped++;}
+   if (s.receipts.length > limits.receipts) {s.receipts.shift(); s.receiptsDropped++;}
    event(s, 'finished-task', c.id, step.id);
    enter(s, t, s.outgoing.get(step.id)![0]!.to);
   }

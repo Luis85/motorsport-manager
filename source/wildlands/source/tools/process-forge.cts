@@ -26,6 +26,7 @@ export function model(step: LWProcess.Step): Record<string, unknown> {
 export function writeForgeProject(input: unknown, output: string): {output: string; scenes: number; assets: number; note: string} {
  const d = catalog.admit(input), target = path.resolve(output);
  if (fs.existsSync(target)) throw Error('Choose a new Scene Forge directory.');
+ if (!fs.existsSync(path.dirname(target)) || !fs.statSync(path.dirname(target)).isDirectory()) throw Error('Parent directory does not exist: ' + path.dirname(target));
  const stage = target + '.' + randomUUID() + '.tmp';
  try {
   fs.mkdirSync(stage); fs.mkdirSync(path.join(stage, 'models')); fs.mkdirSync(path.join(stage, 'scenes')); fs.mkdirSync(path.join(stage, 'existing-assets'));
@@ -44,7 +45,8 @@ export function writeForgeProject(input: unknown, output: string): {output: stri
    assets: d.steps.map(s => ({id: s.scene.id, family: 'items', name: s.name, models: {world: {model: s.scene.id}}}))});
   write('process-scene-map.json', {format: 'wildlands-process-scenes', schemaVersion: 1, processId: d.id, fingerprint: catalog.fingerprint(d),
    scenes: d.steps.map(s => ({step: s.id, scene: s.scene.id, definition: 'exports/items/' + s.scene.id + '/definition.json'}))});
-  fs.writeFileSync(path.join(stage, 'README.md'), '# Process scene project\n\nEach process step has one Scene Forge scene and editable starter model.\nExisting attached assets are retained in existing-assets; import them with\n`scene-forge -p PROJECT littlewild import --definition FILE` to edit the exact geometry.\nThe starter models are not an automatic conversion of those attachments.\n\nRun `scene-forge -p PROJECT validate`, then\n`scene-forge -p PROJECT littlewild sync --file PROJECT/littlewild.export.json`.\nAttach each exported definition with `wildlands process attach` using fresh revision/fingerprint guards.\n');
+  const project = JSON.stringify(target);
+  fs.writeFileSync(path.join(stage, 'README.md'), '# Process scene project\n\nEach process step has one Scene Forge scene and editable starter model.\nExisting attached assets are retained in existing-assets; import them with\n`scene-forge -p ' + project + ' littlewild import --definition FILE` to edit the exact geometry.\nThe starter models are not an automatic conversion of those attachments.\n\nRun `scene-forge -p ' + project + ' validate`, then\n`scene-forge -p ' + project + ' littlewild sync --file ' + JSON.stringify(path.join(target, 'littlewild.export.json')) + '`.\nAttach each exported definition with `wildlands process attach` using fresh revision/fingerprint guards.\n');
   fs.renameSync(stage, target);
  } finally {if (fs.existsSync(stage)) fs.rmSync(stage, {recursive: true, force: true});}
  return {output: target, scenes: d.steps.length, assets: d.steps.filter(s => s.scene.asset).length, note: 'Editable scene scaffolds created; existing attachments retained verbatim for littlewild import.'};

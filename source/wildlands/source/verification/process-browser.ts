@@ -51,7 +51,7 @@ async function main(): Promise<void> {
    await page.locator('#overview').click(); assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
    for (let i = 0; i < 6; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
    assert.match(await page.locator('#process-data').innerText(), /Process outputs/);
-   assert.match(await page.locator('#message').innerText(), /Run finished.*Export the report/);
+   assert.match(await page.locator('#message').innerText(), /Run completed.*Export the report/);
    assert.match(await page.locator('#play').getAttribute('title') ?? '', /reset/);
    const reworked = (await query(page)).snapshot.receipts.find(r => r.stepId === 'rework')!;
    await page.locator('#process-case').selectOption(reworked.caseId);

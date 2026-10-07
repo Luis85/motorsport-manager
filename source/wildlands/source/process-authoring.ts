@@ -12,7 +12,7 @@
  }
  function edit(input: unknown, raw: unknown, draft = false): ReturnType<LWProcess.Authoring['edit']> {
   const base = root.LWProcessCatalog.validate(input, true);
-  if (!base.ok) throw Error(base.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
+  if (!base.acceptable) throw Error(base.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
   root.LWProcessCatalog.fingerprint(raw); // Enforce plain JSON and complexity bounds before reading fields.
   const recipe = raw as LWProcess.Recipe;
   if (!recipe || typeof recipe !== 'object' || Array.isArray(recipe) || Object.keys(recipe).some(k => !['expectedRevision', 'expectedFingerprint', 'operations'].includes(k)) ||
@@ -20,7 +20,7 @@
   if (!Array.isArray(recipe.operations) || recipe.operations.length < 1 || recipe.operations.length > 256) throw Error('An edit needs 1–256 operations.');
   const definition = base.definition!;
   for (const [index, operation] of recipe.operations.entries()) {
-   if (!operation || typeof operation !== 'object' || Array.isArray(operation)) throw Error('Invalid operation ' + index);
+   if (!operation || typeof operation !== 'object' || Array.isArray(operation) || typeof operation.op !== 'string') throw Error('Invalid operation ' + index);
    const remove = operation.op.startsWith('remove');
    if (Object.keys(operation).some(k => !['op', remove ? 'id' : 'value'].includes(k))) throw Error('Unknown operation field at ' + index);
    const collections = {putStep: 'steps', putFlow: 'flows', putResource: 'resources', removeStep: 'steps', removeFlow: 'flows', removeResource: 'resources'} as const;
@@ -38,7 +38,7 @@
   }
   definition.revision++;
   const checked = root.LWProcessCatalog.validate(definition, draft);
-  if (!checked.ok) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
+  if (!(draft ? checked.acceptable : checked.ok)) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
   return {definition: checked.definition!, fingerprint: root.LWProcessCatalog.fingerprint(checked.definition), diagnostics: checked.diagnostics};
  }
  const scenes: LWProcess.Authoring['scenes'] = input => {

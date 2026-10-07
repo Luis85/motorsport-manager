@@ -12,6 +12,10 @@ const commands: Record<string, readonly string[]> = {
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run']
 };
 const flags = new Set(['--draft', '--dry-run']);
+/** Options every invocation of a command must carry; checked before any file is read or work is done. */
+const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
+ run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'],
+ attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint']};
 const descriptions: Record<string, string> = {discover: 'Discover commands, limits and guarded edit operations.', schema: 'Get the authoritative process JSON Schema.',
  create: 'Create a runnable starter definition.', validate: 'Validate shape, references and graph semantics; --draft permits graph diagnostics.', inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes.',
@@ -28,6 +32,11 @@ function recipeSchema(): Record<string, unknown> {
     operation('setArrivals', 'value', properties.arrivals), operation('setStart', 'value', properties.start), operation('rename', 'value', properties.name)
    ]}}}};
 }
+/** Every guarded edit operation id, taken from the recipe schema so discovery cannot drift from it. */
+function editOperations(): string[] {
+ const items = (recipeSchema().properties as Record<string, {items: {oneOf: {properties: {op: {const: string}}}[]}}>)['operations']!.items.oneOf;
+ return items.map(item => item.properties.op.const);
+}
 function build(input: unknown): {html: string; bytes: number; sha256: string} {
  const d = catalog.admit(input), digest = createHash('sha256').update(JSON.stringify(d)).digest('hex');
  const game = {root: '', manifest: {format: 'wildlands-game' as const, schemaVersion: 1 as const, id: d.id, name: d.name, version: '1.0.0', template: 'process' as const,
@@ -38,14 +47,22 @@ function build(input: unknown): {html: string; bytes: number; sha256: string} {
 }
 export function run(args: readonly string[]): void {
  try {
-  const command = args[0] ?? 'discover';
+  const help = args.length === 1 && ['--help', '-h'].includes(args[0]!);
+  const command = help ? 'discover' : args[0] ?? 'discover';
   if (!Object.hasOwn(commands, command)) throw Error('Unknown process command; use wildlands process discover.');
   const values = new Map<string, string>();
-  for (let i = 1; i < args.length; i++) {
+  for (let i = help ? args.length : 1; i < args.length; i++) {
    const key = args[i]!; if (!commands[command]!.includes(key) || values.has(key)) throw Error('Unknown or duplicate option: ' + key);
    if (flags.has(key)) {values.set(key, 'true'); continue;}
    const value = args[++i]; if (!value || value.startsWith('--')) throw Error('Missing value for ' + key); values.set(key, value);
   }
+  for (const key of requiredOptions[command] ?? []) if (!values.has(key)) throw Error('Missing ' + key);
+  if (['edit', 'attach'].includes(command)) {
+   if (values.has('--dry-run') && values.has('--output')) throw Error('Dry run does not accept --output.');
+   if (!values.has('--dry-run') && !values.has('--output')) throw Error('Missing --output (or use --dry-run).');
+  }
+  for (const key of ['--minutes', '--expected-revision']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
+  if (values.has('--kind') && !['definition', 'recipe'].includes(values.get('--kind')!)) throw Error('--kind must be definition or recipe.');
   const required = (key: string) => {const value = values.get(key); if (!value) throw Error('Missing ' + key); return value;};
   const read = (file: string) => JSON.parse(readJsonFile(file, 8 * 1024 * 1024).replace(/^\uFEFF/, '')) as unknown;
   const output = (value: unknown, inputs: string[]) => writeJsonFile(required('--output'), value, inputs);
@@ -53,7 +70,7 @@ export function run(args: readonly string[]): void {
   if (command === 'discover') {
    success({format: 'wildlands-process', schemaVersion: 1, handbook: 'docs/reference/business-process-engine.md', limits: runtime.limits,
     operations: Object.entries(commands).map(([id, options]) => ({id, options, description: descriptions[id]})),
-    editOperations: ['putStep', 'putFlow', 'putResource', 'removeStep', 'removeFlow', 'removeResource', 'setArrivals', 'setStart', 'rename'],
+    editOperations: editOperations(),
     workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'],
     recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
     notes: ['put operations replace full definitions', 'dry runs write nothing', 'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']}); return;
@@ -69,9 +86,9 @@ export function run(args: readonly string[]): void {
   }
   const file = required('--input'), input = read(file);
   if (command === 'validate') {
-   const checked = catalog.validate(input, values.has('--draft'));
-   emit({ok: checked.ok, protocolVersion: 1, runnable: checked.ok && !checked.diagnostics.length, diagnostics: checked.diagnostics});
-   if (!checked.ok) process.exitCode = 1; return;
+   const checked = catalog.validate(input, values.has('--draft')), accepted = values.has('--draft') ? checked.acceptable : checked.ok;
+   emit({ok: accepted, protocolVersion: 1, runnable: checked.ok, diagnostics: checked.diagnostics});
+   if (!accepted) process.exitCode = 1; return;
   }
   if (command === 'edit' || command === 'attach') {
    let recipe: unknown, inputs = [file];
@@ -85,12 +102,11 @@ export function run(args: readonly string[]): void {
     recipe = {expectedRevision: Number(required('--expected-revision')), expectedFingerprint: required('--expected-fingerprint'), operations: [{op: 'putStep', value: {...step, scene: {...step.scene, asset}}}]};
    }
    const result = authoring.edit(input, recipe, values.has('--draft'));
-   if (values.has('--dry-run') && values.has('--output')) throw Error('Dry run does not accept --output.');
    success({...result, dryRun: values.has('--dry-run'), ...values.has('--dry-run') ? {} : {output: output(result.definition, inputs)}}); return;
   }
   if (command === 'inspect') {
    const checked = catalog.validate(input, true);
-   if (!checked.ok) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
+   if (!checked.acceptable) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
    const d = checked.definition!, runnable = !checked.diagnostics.length, temporary = runnable ? runtime.create(d) : null;
    try {success({id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d), runnable, diagnostics: checked.diagnostics,
     scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})), snapshot: temporary?.query() ?? null});}
@@ -104,7 +120,7 @@ export function run(args: readonly string[]): void {
   }
   const session = runtime.create(definition);
   try {
-   const raw = required('--minutes'); if (!/^\d+$/.test(raw)) throw Error('--minutes must be a whole number.');
+   const raw = required('--minutes');
    const snapshot = session.advance(Number(raw));
    const report = {format: 'wildlands-process-report', schemaVersion: 1, fingerprint: catalog.fingerprint(definition), definition, snapshot};
    success({output: output(report, [file]), requestedMinutes: Number(raw), advancedMinutes: snapshot.minute, status: snapshot.status, metrics: snapshot.metrics});

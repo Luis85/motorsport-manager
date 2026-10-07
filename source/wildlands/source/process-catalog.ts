@@ -4,6 +4,8 @@
  'use strict';
  const root = inputRoot as {LWProcessSchema: Record<string, unknown>; LWProcessGraph: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]};
   LWAssets: {validate(input: unknown): unknown}; LWProcessCatalog?: LWProcess.Catalog};
+ // Captured once so later mutation of the global cannot alter admission rules.
+ const schema = root.LWProcessSchema, graph = root.LWProcessGraph;
  type Schema = Record<string, unknown>;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  function safe(input: unknown): void {
@@ -52,18 +54,18 @@
  }
  function validate(input: unknown, draft = false): LWProcess.Validation {
   const diagnostics: LWProcess.Diagnostic[] = [];
-  try { safe(input); } catch (e) { return {ok: false, diagnostics: [{path: '/', code: 'data', message: String(e)}]}; }
-  shape(input, root.LWProcessSchema, '', diagnostics);
-  if (diagnostics.length) return {ok: false, diagnostics};
+  try { safe(input); } catch (e) { return {ok: false, acceptable: false, diagnostics: [{path: '/', code: 'data', message: String(e)}]}; }
+  shape(input, schema, '', diagnostics);
+  if (diagnostics.length) return {ok: false, acceptable: false, diagnostics};
   const definition = copy(input as LWProcess.Definition);
   definition.steps.forEach((step, index) => {
    if (step.scene.asset !== undefined) try { const asset = root.LWAssets.validate(step.scene.asset) as {models: Record<string, unknown>};
     if (!Object.hasOwn(asset.models, 'world')) throw Error('Scene assets require a world model.'); }
    catch (e) { diagnostics.push({path: '/steps/' + index + '/scene/asset', code: 'asset', message: String(e)}); }
   });
-  if (diagnostics.length) return {ok: false, diagnostics};
-  diagnostics.push(...root.LWProcessGraph.check(definition));
-  return {ok: draft || !diagnostics.length, diagnostics, definition};
+  if (diagnostics.length) return {ok: false, acceptable: false, diagnostics};
+  diagnostics.push(...graph.check(definition));
+  return {ok: !diagnostics.length, acceptable: draft || !diagnostics.length, diagnostics, definition};
  }
  function admit(input: unknown): LWProcess.Definition {
   const checked = validate(input);
@@ -78,6 +80,6 @@
   for (let i = 0; i < text.length; i++) { a = Math.imul(a ^ text.charCodeAt(i), 16777619); b = Math.imul(b ^ text.charCodeAt(i), 3266489917); }
   return (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0');
  }
- root.LWProcessCatalog = {schema: copy(root.LWProcessSchema), validate, admit, fingerprint};
+ root.LWProcessCatalog = {schema: copy(schema), validate, admit, fingerprint};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessCatalog;
 })(globalThis);

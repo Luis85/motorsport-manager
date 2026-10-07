@@ -5,7 +5,7 @@
 .process-studio button,.process-studio select,.process-studio textarea { font:inherit; color:var(--text); border:1px solid var(--line); border-radius:5px; background:var(--panel); }
 .process-studio button { min-height:36px; padding:7px 12px; cursor:pointer; }
 .process-studio button:hover { background:#2c3744; }
-.process-studio button:disabled { cursor:not-allowed; opacity:.5; }
+.process-studio button:disabled { cursor:not-allowed; opacity:.65; border-style:dashed; border-color:#8a9ab0; }
 .process-studio button:focus-visible,.process-studio select:focus-visible,.process-studio textarea:focus-visible,.process-studio canvas:focus-visible,.process-studio svg [tabindex]:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 .process-studio button[aria-pressed=true],.process-studio button.selected { background:#3e3329; border-color:#ad8059; }
 .process-studio .primary { background:var(--accent); color:var(--bg); font-weight:650; border-color:var(--accent); }
@@ -28,6 +28,7 @@
 .process-message { min-height:32px; padding:5px 24px 9px; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
 .process-message.error { color:#ffc3bc; }
 .process-workspace { display:grid; grid-template-columns:235px minmax(300px,1fr) 265px; border-block:1px solid var(--line); min-height:560px; }
+.process-nav { grid-column:1; grid-row:1; }.process-stage { grid-column:2; grid-row:1; }.process-inspector { grid-column:3; grid-row:1; }
 .process-nav,.process-inspector { background:var(--panel); padding:18px 16px; min-width:0; }
 .process-nav { border-right:1px solid var(--line); }
 .process-inspector { border-left:1px solid var(--line); }
@@ -45,8 +46,9 @@
 .process-stage { min-width:0; display:flex; flex-direction:column; }
 .process-stagebar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 20px; }
 .process-stagebar p { font-size:11px; margin-top:3px; }
-#viewport { position:relative; flex:1; height:440px; min-height:400px; }
-#canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; touch-action:none; }
+#viewport { position:relative; min-height:400px; }
+#canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; }
+#canvas { touch-action:none; }#map { touch-action:pan-y; }
 #map svg { width:100%; height:100%; }
 .process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:9px 20px; font-size:11px; color:var(--muted); }
 .process-legend span { display:inline-flex; align-items:center; gap:5px; }
@@ -73,9 +75,8 @@
 #draft { width:100%; height:300px; resize:vertical; font:12px/1.6 ui-monospace,monospace; padding:14px; caret-color:var(--accent); }
 #draft-state.unapplied { color:var(--accent); }#draft[aria-invalid=true] { border-color:#ffc3bc; }
 .process-editor-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }#diagnostics { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
-@media(max-width:1100px) { .process-workspace { grid-template-columns:200px minmax(300px,1fr); }.process-inspector { grid-column:1/-1; border-left:0; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr; column-gap:24px; }.process-inspector h3 { margin-top:0; }#pools { grid-column:2; grid-row:2; }#report { width:max-content; }.process-stagebar { flex-wrap:wrap; }.process-metrics { flex-wrap:wrap; } }
-@media(max-width:650px) { .process-header { align-items:flex-start; flex-direction:column; padding:16px; }.process-toolbar { padding:10px 16px; }.process-toolbar label { margin-left:0; }.process-workspace { display:flex; flex-direction:column; }.process-stage { order:0; }.process-nav { order:1; border-top:1px solid var(--line); border-right:0; }#steps { display:grid; grid-template-columns:1fr 1fr; gap:3px; }.process-inspector { order:2; display:block; }.process-inspector h3 { margin-top:22px; }#viewport { min-height:350px; height:350px; }.process-metrics { padding:14px 16px; }.process-metrics strong { font-size:16px; }.process-bottom { padding-inline:16px; }.process-bottom-nav { flex-wrap:wrap; }.process-bottom-nav span { margin-left:0; }.process-events>div { grid-template-columns:52px 78px 1fr; gap:7px; }.process-events>div>span:last-child { grid-column:2/-1; }.process-message { padding-inline:16px; } }
-@media(prefers-reduced-motion:reduce) { .process-studio * { scroll-behavior:auto; } }
+@media(max-width:1100px) { .process-workspace { grid-template-columns:200px minmax(300px,1fr); }.process-inspector { grid-column:1/-1; grid-row:2; border-left:0; border-top:1px solid var(--line); }#report { width:max-content; }.process-stagebar { flex-wrap:wrap; }.process-metrics { flex-wrap:wrap; } }
+@media(max-width:650px) { .process-header { align-items:flex-start; flex-direction:column; padding:16px; }.process-toolbar { padding:10px 16px; }.process-toolbar label { margin-left:0; }.process-workspace { display:flex; flex-direction:column; }.process-nav { border-top:1px solid var(--line); border-right:0; }#steps { display:grid; grid-template-columns:1fr 1fr; gap:3px; }.process-inspector { display:block; }#viewport { min-height:350px; }.process-metrics { padding:14px 16px; }.process-metrics strong { font-size:16px; }.process-bottom { padding-inline:16px; }.process-bottom-nav { flex-wrap:wrap; }.process-bottom-nav span { margin-left:0; }.process-events>div { grid-template-columns:52px 78px 1fr; gap:7px; }.process-events>div>span:last-child { grid-column:2/-1; }.process-message { padding-inline:16px; } }
 /* Shared I/O stays beside the simulation in both projections. */
 #process-data { border-top:1px solid var(--line); padding:18px 20px 22px; min-width:0; }
 .process-data-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; }
@@ -101,5 +102,5 @@
 .process-stagebar p { overflow-wrap:anywhere; }
 .process-events>div>* { min-width:0; overflow-wrap:anywhere; }
 @media(min-width:1101px) { .process-nav { max-height:1050px; overflow:auto; } }
-@media(max-width:1100px) { .process-inspector { display:block; }.process-inspector h3 { margin-top:22px; } }
+@media(max-width:1100px) { .process-inspector h3 { margin-top:22px; } }
 @media(max-width:650px) { #viewport { height:350px; }#process-data { padding:16px; }.process-io-columns { grid-template-columns:1fr; gap:20px; }.process-data-heading { align-items:flex-start; }.process-studio button { min-height:44px; }.process-studio select { min-height:44px; } }

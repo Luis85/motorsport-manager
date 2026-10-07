@@ -2,8 +2,8 @@
 /** Application-owned ECS session: explicit bounded clock commands and detached read models. */
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessRuntime?: LWProcess.Runtime};
- const limits = {cases: 200, minutes: 100000, transitions: 2048, events: 128};
+ const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessLimits: LWProcess.Limits; LWProcessRuntime?: LWProcess.Runtime};
+ const limits = root.LWProcessLimits;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  function create(input: unknown): LWProcess.Session {
   const definition = root.LWProcessCatalog.admit(input), world = new root.LWECS.World(), scheduler = new root.LWECS.Scheduler();
@@ -38,7 +38,7 @@
   }
   function advance(minutes: number): LWProcess.Snapshot {
    alive();
-   if (!Number.isSafeInteger(minutes) || minutes < 1 || minutes > limits.minutes || clock.minute + minutes > limits.minutes) throw Error('Advance needs 1–100000 whole minutes within the run horizon.');
+   if (!Number.isSafeInteger(minutes) || minutes < 1 || minutes > limits.minutes || clock.minute + minutes > limits.minutes) throw Error('Advance needs 1–' + limits.minutes + ' whole minutes within the run horizon.');
    for (let i = 0; i < minutes; i++) {
     if (clock.arrival === state.arrivals.length && !world.query(['process-token']).length) break;
     scheduler.step(world, .1); root.LWProcessSystems.admit(state); root.LWProcessSystems.settle(state);

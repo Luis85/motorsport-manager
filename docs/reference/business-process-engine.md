@@ -44,7 +44,8 @@ scalar case `data`. The example's numbers are synthetic demonstration assumption
    arrival per branch of that fork occurrence and emits one continuation.
 6. Decisions outside parallel regions may implement bounded rework loops. A
    per-case transition limit fails that case explicitly and releases its work.
-   A run has finite case, token, minute, and event-history limits. Waiting work
+   A run has finite case, minute, transition, event and receipt limits; an
+   arrival must occur strictly before the minute limit. Waiting work
    with no possible progress is reported as blocked, never silently completed.
 7. A case finishes only at an end with no outstanding parallel tokens. Throughput,
    active/queued cases, completed/failed cases, cycle time, task waiting time,

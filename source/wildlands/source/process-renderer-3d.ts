@@ -10,7 +10,12 @@ declare namespace LWProcess3D {
  type O = any;
  const root = inputRoot as {THREE: O; LWAssetRenderer: {createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcess3D?: LWProcess3D.Api};
  function create(canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): LWProcess3D.Surface {
-  const T = root.THREE, renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
+  const renderer = new root.THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
+  try {return build(renderer, canvas, definition, select);}
+  catch (e) {renderer.dispose(); renderer.forceContextLoss(); throw e;}
+ }
+ function build(renderer: O, canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): LWProcess3D.Surface {
+  const T = root.THREE;
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setClearColor('#13181f');
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
@@ -19,6 +24,7 @@ declare namespace LWProcess3D {
   const stepIndex = new Map(definition.steps.map(s => [s.id, s]));
   const indicators = new Map<string, {bar: O; lamp: O; status: O}>();
   let needsRender = true;
+  const motionChanged = () => {needsRender = true;}; reducedMotion.addEventListener('change', motionChanged);
   let phase = 0, previousView: LWProcessApp.View | undefined;
   const objects: O[] = [], textures: O[] = [], stations = new Map<string, O>(), markers = new Map<string, O>();
   let selected: string | null | undefined, yaw = -.3, pitch = .65, distance = 85, dragging = false, moved = false, px = 0, py = 0;
@@ -111,6 +117,7 @@ declare namespace LWProcess3D {
   };
   const cancel = () => {dragging = false;};
   const keyboard = (e: KeyboardEvent) => {
+   if (e.ctrlKey || e.metaKey || e.altKey) return;
    if (e.key === 'ArrowLeft') yaw += .12; else if (e.key === 'ArrowRight') yaw -= .12;
    else if (e.key === 'ArrowUp') pitch = Math.min(1.45, pitch + .1); else if (e.key === 'ArrowDown') pitch = Math.max(.2, pitch - .1);
    else if (e.key === '+' || e.key === '=') distance = Math.max(10, distance / 1.15); else if (e.key === '-') distance = Math.min(200000, distance * 1.15);
@@ -204,11 +211,12 @@ declare namespace LWProcess3D {
    camera.lookAt(target); renderer.render(scene, camera);
   }
   return {draw, frame, dispose() {
+   reducedMotion.removeEventListener('change', motionChanged);
    canvas.removeEventListener('pointercancel', cancel); canvas.removeEventListener('lostpointercapture', cancel); canvas.removeEventListener('keydown', keyboard);
    canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerUp); canvas.removeEventListener('wheel', wheel);
    const allGeometry = new Set<O>(geometries.values()), allMaterials = new Set<O>(materials.values());
    scene.traverse((o: O) => {if (o.geometry) allGeometry.add(o.geometry); if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) allMaterials.add(m);});
-   allGeometry.forEach(g => g.dispose()); allMaterials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); renderer.dispose();
+   allGeometry.forEach(g => g.dispose()); allMaterials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); renderer.dispose(); renderer.forceContextLoss();
   }};
  }
  root.LWProcess3D = {create};

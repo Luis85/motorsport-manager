@@ -199,7 +199,11 @@ function smoke(built: BundleResult): void {
     run(['process', 'discover']);
     run(['process', 'schema', '--kind', 'recipe']);
     run(['process', 'create', '--id', 'process-smoke', '--output', 'process.json']);
-    run(['process', 'inspect', '--input', 'process.json']);
+    const inspected = run(['process', 'inspect', '--input', 'process.json']);
+    fs.writeFileSync(path.join(directory, 'process-edit.json'), JSON.stringify({expectedRevision: inspected.revision, expectedFingerprint: inspected.fingerprint, operations: [{op: 'rename', value: 'Smoke process'}]}));
+    if (run(['process', 'edit', '--input', 'process.json', '--recipe', 'process-edit.json', '--dry-run']).dryRun !== true) throw Error('Bundled process edit --dry-run did not report a dry run.');
+    run(['process', 'forge', '--input', 'process.json', '--output', 'process-forge']);
+    if (!fs.existsSync(path.join(directory, 'process-forge', 'forge.project.json'))) throw Error('Bundled process forge did not write a Scene Forge project.');
     const processRun = run(['process', 'run', '--input', 'process.json', '--minutes', '100', '--output', 'process-report.json']);
     if (processRun.status !== 'completed') throw Error('Bundled process runtime did not complete its starter.');
     run(['process', 'build', '--input', 'process.json', '--output', 'process.html']);

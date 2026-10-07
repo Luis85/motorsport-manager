@@ -18,7 +18,8 @@ declare namespace LWProcess {
   resources: Resource[]; steps: Step[]; flows: Flow[]; arrivals: Arrival[];
  }
  interface Diagnostic { path: string; code: string; message: string; }
- interface Validation { ok: boolean; diagnostics: Diagnostic[]; definition?: Definition; }
+ /** `ok` is strict: structurally valid and no diagnostics. `acceptable` is true when a definition was produced and a draft may be kept despite graph diagnostics. */
+ interface Validation { ok: boolean; acceptable: boolean; diagnostics: Diagnostic[]; definition?: Definition; }
  interface Catalog {
   schema: Record<string, unknown>; validate(input: unknown, draft?: boolean): Validation;
   admit(input: unknown): Definition; fingerprint(input: unknown): string;
@@ -45,7 +46,8 @@ declare namespace LWProcess {
   metrics: { arrived: number; completed: number; failed: number; active: number; cost: number; meanCycleMinutes: number; throughputPerHour: number; };
  }
  interface Session { query(): Snapshot; advance(minutes: number): Snapshot; dispose(): void; }
- interface Runtime { create(input: unknown): Session; limits: { cases: number; minutes: number; transitions: number; events: number }; }
+ interface Limits { readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number; }
+ interface Runtime { create(input: unknown): Session; limits: Limits; }
  interface Recipe {
   expectedRevision: number; expectedFingerprint: string;
   operations: ({op: 'putStep'; value: Step} | {op: 'putFlow'; value: Flow} | {op: 'putResource'; value: Resource} |

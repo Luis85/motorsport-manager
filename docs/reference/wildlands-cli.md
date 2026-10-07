@@ -76,6 +76,8 @@ stdin.
 | `1` | `false` | `invalid-game` | `--game` names a folder that is not a valid game: inventory, manifest, projection or an engine validator rejected it. Nothing was written. |
 | `1` | `false` | `over-budget` | `build-game`: the play artifact exceeds `targets.html.budgetBytes` of its `game.json`. Nothing was written. |
 | `1` | `false` | `stale-artifact` | `build-game --check`: the file differs from a fresh build, or is missing. |
+| `1` | `false` | none | `process validate`: the definition was read but rejected; the result carries `diagnostics` and no `code`. |
+| `2` | `false` | `process-operation-failed` | Any `wildlands process` usage or operation failure (unknown command, bad option, bad number, refused output, I/O). Nothing was written. |
 | `2` | `false` | `game-required` | The command needs `--game DIR` (`create`, `scenarios`, the game commands, schemaVersion 1 projects). The engine has no built-in game. |
 | `2` | `false` | `game-embedded` | `--game` was given for a schemaVersion 2 project, which embeds its game. |
 | `2` | `false` | `operation-failed` | Usage error, unknown/duplicate/missing option, I/O failure, invalid recipe or pack, rejected gameplay command, refused output path or compiler failure. Nothing was written. |
@@ -703,4 +705,27 @@ payloads.
 
 ## Business processes
 
-`bin/wildlands process discover` describes the definition-first process tool family: create, schema, validate, inspect, guarded edit, attach, run, forge and build. The `process` game template builds data-only definitions into offline 2D/3D simulations. See [Business process authoring](../how-to/business-process-authoring.md).
+`bin/wildlands process` (also `process --help`, `-h`) describes the definition-first process tool family. It is a separate protocol from the game commands above: `process` failures use `code: "process-operation-failed"` with exit 2, and `process validate` exits 1 with no code when the definition is rejected. Options take one value (`--flag value`); `--draft` and `--dry-run` take none. Unknown, duplicate and missing options, non-whole `--minutes` or `--expected-revision`, an unknown `--kind`, `--dry-run` together with `--output`, and a missing `--output` on `edit`/`attach` without `--dry-run` all fail with exit 2 before any file is read or written. Outputs never overwrite an input (including hard-link and symlink aliases). Required options are marked **yes**.
+
+| Command | Option | Required | Meaning |
+|---|---|---|---|
+| `discover` | none | | Commands, limits, edit operations, workflow. |
+| `schema` | `--kind` | no | `definition` (default) or `recipe`. |
+| `create` | `--id` | yes | Process ID. |
+| | `--name` | no | Display name (default: the ID). |
+| | `--output` | yes | New definition JSON. |
+| `validate` | `--input` | yes | Definition JSON. |
+| | `--draft` | no | Accept graph diagnostics (reported, `runnable: false`). |
+| `inspect` | `--input` | yes | Definition JSON; never advances time. |
+| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. |
+| | `--output` | yes unless `--dry-run` | Edited definition. |
+| | `--dry-run` | no | Write nothing; conflicts with `--output`. |
+| | `--draft` | no | Allow intermediate graph diagnostics. |
+| `run` | `--input`, `--minutes`, `--output` | yes | Whole business minutes to advance; report JSON. |
+| `build` | `--input`, `--output` | yes | Output must end in `.html`. |
+| `forge` | `--input`, `--output` | yes | New directory; its parent must exist and the directory must not. |
+| `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint` | yes | Scene Forge asset for a step, with edit guards. |
+| | `--output` | yes unless `--dry-run` | Edited definition. |
+| | `--dry-run` | no | Write nothing; conflicts with `--output`. |
+
+The `process` template builds data-only definitions into offline 2D/3D simulations. See [Business process authoring](../how-to/business-process-authoring.md).

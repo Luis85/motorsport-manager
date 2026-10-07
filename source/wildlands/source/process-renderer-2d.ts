@@ -38,13 +38,13 @@ declare namespace LWProcess2D {
     const title = el('text', {x, y: y - h / 2 + .85, fill: '#edf2f7', 'font-size': .67, 'text-anchor': 'middle'}, step.name);
     if (step.name.length > 22) {title.setAttribute('textLength', String(w - .8)); title.setAttribute('lengthAdjust', 'spacingAndGlyphs');}
     group.append(title, el('title', {}, step.name));
-    group.append(el('text', {x, y: y - h / 2 + 1.55, fill: '#b1bdcd', 'font-size': .48, 'text-anchor': 'middle'}, `${step.kind} · ${step.duration ?? 0} min · ${metric.completed} finished`));
+    group.append(el('text', {x, y: y - h / 2 + 1.55, fill: '#b1bdcd', 'font-size': .48, 'text-anchor': 'middle'}, `${step.kind} · ${step.duration ?? 0} min · ${metric.completed} completed`));
     const work = q.tokens.filter(t => t.stepId === step.id);
     if (selected) {
      group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, `${metric.active} working · ${metric.queued} waiting`));
      const active = work.filter(t => t.status === 'active');
      if (active.length) {
-      const progress = active.reduce((n, t) => n + 1 - t.remaining / step.duration!, 0) / active.length;
+      const duration = step.duration, progress = duration ? Math.max(0, Math.min(1, active.reduce((n, t) => n + 1 - t.remaining / duration, 0) / active.length)) : 0;
       group.append(el('rect', {x: x - 4, y: y - .35, width: 8, height: .07, fill: '#364150'}));
       group.append(el('rect', {x: x - 4, y: y - .35, width: 8 * progress, height: .07, fill: '#ffbb73'}));
      }

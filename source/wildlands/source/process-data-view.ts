@@ -46,7 +46,7 @@ declare namespace LWProcessData {
    if (visits) visits.onchange = e => {receiptId = (e.target as HTMLSelectElement).value; draw(latest);};
    if (focus) host.querySelector<HTMLElement>('#' + focus)?.focus({preventScroll: true});
   }
-  return {draw, reset() {caseId = ''; receiptId = ''; inspection = '';}};
+  return {draw, reset() {caseId = ''; receiptId = ''; inspection = ''; previousStep = null;}};
  }
  root.LWProcessData = {create};
 })(globalThis);

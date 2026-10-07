@@ -51,12 +51,15 @@ bin/wildlands process inspect --input /tmp/process-work/review.json
 you intend to retain. A recipe is one transaction: every operation succeeds and
 the resulting definition passes admission, or nothing is written. References
 may point to definitions added later in the same recipe. Unknown operations and
-fields fail. Output cannot overwrite input, including hard-link/symlink aliases.
+fields fail. Output cannot overwrite input, including hard-link/symlink aliases. Argument errors
+(missing, duplicate or unknown options, non-numeric `--minutes` or
+`--expected-revision`, `--dry-run` with `--output`) exit 2 before any work; see the
+[option tables](../reference/wildlands-cli.md#business-processes).
 
 For a longer graph, use `edit --draft` while adding unconnected steps and flows.
 Drafts still pass structural and asset validation; their graph diagnostics are
 returned explicitly. `inspect` can inspect them and returns `runnable: false`
-and `snapshot: null`. Resolve every diagnostic before `run`, `build`, or `forge`.
+and `snapshot: null`. Resolve every diagnostic before `run` or `build`; `forge` and `attach` require an admitted definition.
 Use `--dry-run --draft` to preview an intermediate edit without writing.
 On a stale guard, inspect again and reconcile the intended change; do not retry
 with a guessed revision. `removeStep`, `removeFlow`, `removeResource`, `setStart`
@@ -87,6 +90,7 @@ bin/scene-forge -p /tmp/process-work/forge validate
 bin/scene-forge -p /tmp/process-work/forge littlewild sync --file /tmp/process-work/forge/littlewild.export.json
 ```
 
+`forge` needs an existing parent directory and a directory that does not yet exist.
 The new project has one scene and one editable starter model for every process
 step, an export manifest, and a process-to-scene map. Use Scene Forge's guarded
 batch operations to add props, character models and other geometry. Follow its

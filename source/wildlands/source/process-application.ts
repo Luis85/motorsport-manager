@@ -14,7 +14,8 @@ declare namespace LWProcessApp {
  const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessRuntime: LWProcess.Runtime; LWProcessApplication?: LWProcessApp.Api};
  function create(input: unknown): LWProcessApp.Controller {
   let definition = root.LWProcessCatalog.admit(input), session = root.LWProcessRuntime.create(definition);
-  let selected: string | null = null, mode: '2d' | '3d' = '3d', playing = false;
+  let disposed = false, selected: string | null = null, mode: '2d' | '3d' = '3d', playing = false;
+  const alive = () => { if (disposed) throw Error('Process controller is disposed.'); };
   const terminal = () => ['completed', 'blocked', 'limit'].includes(session.query().status);
   const advance = (minutes: number) => { session.advance(minutes); if (terminal()) playing = false; };
   return {
@@ -23,12 +24,13 @@ declare namespace LWProcessApp {
    mode(value) { if (!['2d', '3d'].includes(value)) throw Error('Unknown view mode.'); mode = value; },
    play(value) { playing = value && !terminal(); }, advance,
    pulse(minutes) { if (playing) advance(Math.min(minutes, root.LWProcessRuntime.limits.minutes - session.query().minute)); },
-   reset() { const next = root.LWProcessRuntime.create(definition); session.dispose(); session = next; playing = false; },
+   reset() { alive(); const next = root.LWProcessRuntime.create(definition); session.dispose(); session = next; playing = false; },
    replace(value) {
+    alive();
     const checked = root.LWProcessCatalog.admit(value), next = root.LWProcessRuntime.create(checked);
     session.dispose(); session = next; definition = checked; playing = false; selected = null;
    },
-   dispose() { playing = false; session.dispose(); }
+   dispose() { disposed = true; playing = false; session.dispose(); }
   };
  }
  root.LWProcessApplication = {create};
