@@ -44,6 +44,11 @@ jobs:
       - name: Verify architecture boundaries
         working-directory: source/wildlands
         run: npm run architecture
+      - name: Fast tier (typecheck, build and quick Node suites)
+        working-directory: source/wildlands
+        # Early, partial evidence: fails in minutes before the CLI/demo freshness checks and the complete gate.
+        # Its partial gate report is cleared with the other generated output before the complete gate runs.
+        run: npm test
       - name: Verify checked-in bin/wildlands matches source
         working-directory: source/wildlands
         # Performs a full build into .generated/; a later step clears that output.
@@ -65,10 +70,11 @@ jobs:
         working-directory: source/wildlands
         env:
           LITTLEWILD_STORY_CLICK_DIAGNOSTICS: '1'
-        # Complete registered gate, parallel (default jobs = min(4, cores - 1)). Browser suites run one at a
-        # time beside the Node suites: several still use 5 s action timeouts that two concurrent Chromium
-        # instances exceeded on a 4-core host. Raise --browser-jobs once hosted runs show it is reliable.
-        run: npm run verify -- --browser-jobs 1
+        # Complete registered gate on the parallel runner: three concurrent suites on the 4-vCPU ubuntu-24.04
+        # runner (min(4, cores - 1)), at most two of them browser suites. Browser suites wait on readiness and
+        # state with explicit transition/admission timeouts rather than fixed sleeps; reports and accepted
+        # check names are identical at every job count (gate-results.json lists suites in registry order).
+        run: npm run verify -- --jobs 3 --browser-jobs 2
       - name: Verify Storytelling without click diagnostics (additional 24 checks)
         id: storytelling_diagnostics_off
         if: ${{ success() && steps.complete_gate.outcome == 'success' }}
