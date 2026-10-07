@@ -2,15 +2,17 @@
 
 Goal: model or edit a Littlewild/Wildlands 3D asset as a reviewable Scene Forge
 recipe and publish it as a validated Littlewild definition. The
-[pocket-pet project](../concepts/scene-forge/examples/pocket-pet/littlewild.export.json)
+[pocket-pet project](../../source/scene-forge/examples/pocket-pet/littlewild.export.json)
 is the working example; the [Pocket Pet reference](../reference/pet-engine.md)
 describes how the game consumes it.
 
 ## Requirements
 
-- Node.js 22+ and `npm ci` in both `docs/concepts/scene-forge/` and
-  `docs/concepts/littlewild/`.
+- Node.js 22+ and `npm ci` in both `source/scene-forge/` and
+  `source/wildlands/`.
 - Run `npm run build` in Scene Forge once; the commands below use `node dist/cli.js`.
+  The checked-in [`bin/scene-forge`](../reference/scene-forge-cli.md) accepts the
+  same `littlewild` commands from the repository root without a build.
 - Chromium only for `review`/`screenshot`; set `FORGE_CHROMIUM_PATH` to an existing
   executable when Playwright's bundled browser is not installed.
 
@@ -34,7 +36,7 @@ describes how the game consumes it.
    {
      "schemaVersion": 1,
      "kind": "littlewild-export",
-     "target": "../../../littlewild/source/assets",
+     "target": "../../../../docs/concepts/pocket-pet/assets",
      "assets": [
        {
          "id": "pebble", "family": "pets", "name": "Pebble",
@@ -47,16 +49,25 @@ describes how the game consumes it.
    }
    ```
 
-   `target` is relative to the manifest. `materials` replaces a model material for
+   `target` is relative to the manifest and names a game folder's `assets`
+   directory; the pocket-pet project publishes into the
+   [Pocket Pet game folder](../concepts/pocket-pet/README.md). `materials` replaces a model material for
    that variant, so one recipe can produce several species. `parameters` sets model
    parameters.
 4. Preview, write and check:
 
    ```sh
-   cd docs/concepts/scene-forge
+   cd source/scene-forge
    node dist/cli.js -p examples/pocket-pet littlewild sync --file examples/pocket-pet/littlewild.export.json --dry-run
    node dist/cli.js -p examples/pocket-pet littlewild sync --file examples/pocket-pet/littlewild.export.json
    node dist/cli.js -p examples/pocket-pet littlewild sync --file examples/pocket-pet/littlewild.export.json --check
+   ```
+
+   From the repository root, the checked-in executable runs the same check with
+   paths relative to the root:
+
+   ```sh
+   bin/scene-forge -p source/scene-forge/examples/pocket-pet littlewild sync --file source/scene-forge/examples/pocket-pet/littlewild.export.json --check
    ```
 
    Each result lists the definition path, whether it changed, per-variant
@@ -71,7 +82,7 @@ facets, actor behaviors and existing rigs are retained. Lights are skipped.
 ## Edit an existing Littlewild asset
 
 ```sh
-node dist/cli.js -p my-project littlewild import --definition ../littlewild/source/assets/creatures/sproutling/definition.json
+node dist/cli.js -p my-project littlewild import --definition ../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json
 ```
 
 Each variant becomes a model such as `sproutlingWorld`. Engine primitives are
@@ -84,7 +95,7 @@ not carried through an import/export round trip.
 ## Confirm success in Littlewild
 
 ```sh
-cd ../littlewild
+cd ../wildlands
 npm run build
 npm run typecheck
 node .generated/test-assets.cjs
@@ -92,6 +103,8 @@ node .generated/test-pet-catalog.cjs
 ```
 
 The build validates every definition through the asset catalog, and the pet
-catalog test resolves each species' stage models and props. Open the maker's
-**Pet demo** to inspect the result. These checks validate data and rendering
+catalog test resolves each species' stage models and props. Rebuild the demo
+(`bin/wildlands build-game --game docs/concepts/pocket-pet --output pocket-pet.html`
+from the repository root, or `npm run build:demos` to refresh `demos/`) and open
+it to inspect the result. These checks validate data and rendering
 contracts; they do not certify Blender or Godot imports.

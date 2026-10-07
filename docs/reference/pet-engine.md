@@ -1,7 +1,7 @@
 # Wildlands Pocket Pet engine
 
 This contract concerns the TypeScript Wildlands maker in
-[`docs/concepts/littlewild/`](../concepts/littlewild/README.md). It is separate from
+[`source/wildlands/`](../../source/wildlands/README.md). It is separate from
 the native Godot race and campaign authorities. Pocket Pet is an original
 virtual-pet scenario that illustrates reusable genre mechanics; it does not
 reproduce a licensed product's content or rules. Follow the
@@ -10,10 +10,10 @@ reproduce a licensed product's content or rules. Follow the
 ## Content and authority
 
 The catalog is plain JSON with `format: "wildlands-pet"`, `schemaVersion: 1`. The
-shipped fixture is
-[`pet-demo.json`](../concepts/littlewild/source/content/pet-demo.json).
-[`pet-contracts.d.ts`](../concepts/littlewild/source/pet-contracts.d.ts) declares
-every record; [`pet-catalog.ts`](../concepts/littlewild/source/pet-catalog.ts)
+shipped catalog is [`content/pet.json`](../concepts/pocket-pet/content/pet.json)
+in the [Pocket Pet game folder](../concepts/pocket-pet/README.md).
+[`pet-contracts.d.ts`](../../source/wildlands/source/pet-contracts.d.ts) declares
+every record; [`pet-catalog.ts`](../../source/wildlands/source/pet-catalog.ts)
 validates fields, ranges, ordering and references, then returns a frozen copy.
 
 | Family | Editable values |
@@ -34,7 +34,7 @@ values; it cannot add new kinds, systems or executable behavior.
 
 ## Systems and commands
 
-[`pet-systems.ts`](../concepts/littlewild/source/pet-systems.ts) registers ordered
+[`pet-systems.ts`](../../source/wildlands/source/pet-systems.ts) registers ordered
 systems on the shared `LWECS` scheduler: clock, activity completion, metabolism,
 digestion, sleep, health and growth. One fixed tick is 0.1 seconds; the catalog's
 `minutesPerSecond` converts ticks to game minutes. Effects apply when an action
@@ -48,7 +48,7 @@ collapses from exhaustion. Sickness follows low cleanliness for
 Health falls for each empty need and while sick; it recovers only when every need
 is at least 50 and the pet is well. At zero health the pet departs.
 
-[`pet-session.ts`](../concepts/littlewild/source/pet-session.ts) owns commands,
+[`pet-session.ts`](../../source/wildlands/source/pet-session.ts) owns commands,
 queries and checkpoints:
 
 | Command | Fields | Preconditions |
@@ -84,7 +84,7 @@ coin purchases but never removes a store entitlement already granted.
 | `entitle` | `sku`, `source` | Store boundary only. Unknown or repeated SKUs are rejected; never charges coins |
 
 Premium ownership is derived from entitlements, not from coin purchases. The
-browser host's [`pet-store.ts`](../concepts/littlewild/source/pet-store.ts) defines
+browser host's [`pet-store.ts`](../../source/wildlands/source/pet-store.ts) defines
 the store port: an adapter with `id`, `name`, `simulated`, `notice` and
 `purchase(sku)`. Only a successful result for the requested SKU becomes an
 `entitle` command with the adapter ID as source. The bundled **Demo store** is
@@ -99,29 +99,30 @@ has no sockets, so accessories appear from the baby stage on.
 
 ## Application and presentation
 
-[`pet-application.ts`](../concepts/littlewild/source/pet-application.ts) owns the
+[`pet-application.ts`](../../source/wildlands/source/pet-application.ts) owns the
 only clock: pause, speeds 1×, 4× and 16×, at most 0.1 s of real time per frame and
 64 ticks per frame. Restart, checkpoint import and catalog import stage a complete
 replacement session before it becomes active; imports open paused.
 
-[`pet-renderer.ts`](../concepts/littlewild/source/pet-renderer.ts) draws the room
+[`pet-renderer.ts`](../../source/wildlands/source/pet-renderer.ts) draws the room
 with WebGL 2 from the Scene Forge assets through the generic
-[`LWAssetRenderer`](../concepts/littlewild/ASSET-ARCHITECTURE.md). Pet `rig` roles
+[`LWAssetRenderer`](../../source/wildlands/ASSET-ARCHITECTURE.md). Pet `rig` roles
 name the nodes it animates for breathing, blinking, eating, play, sleep, sickness
 and egg wobble. Without WebGL 2 the room shows an explanation while needs, actions
 and the diary keep working. The browser exposes `WildlandsPet` for automation.
 
 ## Assets
 
-Pet and prop definitions live in `source/assets/pets/<id>/definition.json` with
-category `pet`. They are generated from the
-[Scene Forge pocket-pet project](../concepts/scene-forge/examples/pocket-pet/littlewild.export.json)
+Pet and prop definitions live in the game folder's
+`assets/pets/<id>/definition.json` (`docs/concepts/pocket-pet/`) with category
+`pet`; a pet game's `assets` may hold only `pets` definitions. They are generated from the
+[Scene Forge pocket-pet project](../../source/scene-forge/examples/pocket-pet/littlewild.export.json)
 and bundled separately as `LWPetAssetDefinitions`, so colony scenarios and saves
 never embed them. Follow [authoring Littlewild assets in Scene Forge](../how-to/scene-forge-littlewild-assets.md).
 
 ## Developer tools
 
-[`pet-tools.ts`](../concepts/littlewild/source/pet-tools.ts) and the JSON-only
+[`pet-tools.ts`](../../source/wildlands/source/pet-tools.ts) and the JSON-only
 `npm run pet` CLI support `discover`, `catalog`, `validate` and `simulate POLICY
 MINUTES [SPECIES] [CHECKPOINT_OUTPUT] [CATALOG]`. Policies are `attentive`,
 `casual` (no bedtime management), `snacker` and `neglect`; runs are limited to

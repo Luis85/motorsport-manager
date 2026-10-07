@@ -1,0 +1,46 @@
+'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
+const assert=require('node:assert/strict'),fs=require('node:fs');
+require('./simulation.cjs');
+const C=global.LWContent,P=global.LWSimulationProfile,L=global.LW,results=[];
+function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error(name,error.message);}}
+const copy=C.copy;
+test('Default simulation profile validates and is deeply frozen',()=>{const p=P.validate(P.defaults);assert.equal(p.id,'classic-v1');assert(Object.isFrozen(p));assert(Object.isFrozen(p.rules.actor.needs));assert(Object.isFrozen(p.archetype.engineLayers));});
+test('Compatibility profile embeds the exact standalone actor and economy manifests',()=>{assert.deepEqual(P.defaults.rules.actor,JSON.parse(fs.readFileSync(__dirname+'/content/actor-rules.json')));assert.deepEqual(P.defaults.rules.economy,JSON.parse(fs.readFileSync(__dirname+'/content/economy-rules.json')));});
+test('Profile fingerprint is key-order invariant',()=>{const a=copy(P.defaults),b=Object.fromEntries(Object.entries(a).reverse());assert.equal(P.fingerprint(a),P.fingerprint(b));});
+test('Actor tuning remains data and passes the actor rule validator',()=>{const p=copy(P.defaults);p.id='gentle-v1';p.name='Gentle';p.rules.actor.needs.foodIdle=.01;assert.equal(P.validate(p).rules.actor.needs.foodIdle,.01);});
+test('Economy tuning remains data and passes the economy rule validator',()=>{const p=copy(P.defaults);p.id='shared-v1';p.name='Shared';p.rules.economy.income.pocketShare=.5;assert.equal(P.validate(p).rules.economy.income.pocketShare,.5);});
+test('Unknown profile fields fail closed',()=>{const p=copy(P.defaults);p.script='execute';assert.throws(()=>P.validate(p),/schema/i);});
+test('Invalid actor coefficients fail closed',()=>{const p=copy(P.defaults);p.rules.actor.needs.foodIdle=-1;assert.throws(()=>P.validate(p),/needs rules/i);});
+test('Invalid economy limits fail closed',()=>{const p=copy(P.defaults);p.rules.economy.limits.delta=p.rules.economy.limits.balance+1;assert.throws(()=>P.validate(p),/economy rules/i);});
+test('Unknown compiled systems cannot be introduced by JSON',()=>{const p=copy(P.defaults);p.archetype.actorDynamics.push('run-imported-code');assert.throws(()=>P.validate(p),/Unsupported composition archetype/);});
+test('Known systems cannot be reordered by JSON',()=>{const p=copy(P.defaults);p.archetype.engineLayers.reverse();assert.throws(()=>P.validate(p),/Unsupported composition archetype/);});
+test('Only the named compiled archetype is accepted, even with the supported schedule',()=>{
+ const p=copy(P.defaults);p.archetype.id='unknown-world-v1';
+ const before=P.current,hash=P.hash,document=JSON.stringify(p);
+ for(const read of [P.validate,P.fingerprint,P.apply])assert.throws(()=>read(p),/Unsupported composition archetype identity/);
+ assert.strictEqual(P.current,before);assert.equal(P.hash,hash);assert.equal(JSON.stringify(p),document);
+});
+test('Every compiled schedule rejects removal, duplication and reordering',()=>{
+ for(const field of ['engineLayers','simulationPipeline','actorDynamics','actorActivity','worldTransactions','economyTransactions']){
+  for(const mutate of [values=>values.pop(),values=>values.push(values[0]),values=>values.reverse()]){
+   const p=copy(P.defaults);mutate(p.archetype[field]);assert.throws(()=>P.validate(p),/archetype/,field);
+  }
+ }
+});
+test('Executable values are rejected before validation',()=>{const p=copy(P.defaults);p.rules.actor.callback=()=>true;assert.throws(()=>P.validate(p),/JSON|schema/i);});
+test('Temporary profile application restores identity on success',()=>{const prior=P.current,p=copy(P.defaults);p.id='temporary-v1';p.name='Temporary';P.withProfile(p,()=>assert.equal(P.current.id,'temporary-v1'));assert.strictEqual(P.current,prior);assert.throws(()=>P.withProfile(p,()=>Promise.resolve()),/synchronous/);assert.strictEqual(P.current,prior);});
+test('Temporary profile application restores identity on failure',()=>{const prior=P.current,p=copy(P.defaults);p.id='temporary-v1';p.name='Temporary';assert.throws(()=>P.withProfile(p,()=>{throw Error('test');}));assert.strictEqual(P.current,prior);});
+test('Nested profile scopes restore their own revision after an inner failure',()=>{
+ const prior=P.current,priorHash=P.hash,a=copy(P.defaults),b=copy(P.defaults);a.id='outer-v1';b.id='inner-v1';
+ P.withProfile(a,()=>{const outer=P.current,outerHash=P.hash;assert.throws(()=>P.withProfile(b,()=>{assert.equal(P.current.id,'inner-v1');throw Error('inner failed');}),/inner failed/);assert.strictEqual(P.current,outer);assert.equal(P.hash,outerHash);});
+ assert.strictEqual(P.current,prior);assert.equal(P.hash,priorHash);
+});
+test('Applied profile is detached from later edits to the supplied data',()=>{
+ const prior=P.current,p=copy(P.defaults);p.id='detached-v1';p.rules.actor.needs.foodIdle=.03;
+ try{P.apply(p);const hash=P.hash;p.rules.actor.needs.foodIdle=3;p.archetype.engineLayers.reverse();assert.equal(P.current.rules.actor.needs.foodIdle,.03);assert.equal(P.hash,hash);}finally{P.apply(prior);}
+});
+test('Compiled runtime satisfies the published archetype',()=>{assert.doesNotThrow(()=>P.assertRuntime());assert.deepEqual(L.Engine.composition.layers,P.defaults.archetype.engineLayers);});
+test('Applying a valid profile changes one bounded active revision',()=>{const prior=copy(P.current),p=copy(P.defaults);p.id='active-v1';p.name='Active';try{const hash=P.apply(p);assert.equal(P.current.id,'active-v1');assert.equal(hash,P.hash);assert.equal(hash,P.fingerprint(p));}finally{P.apply(prior);}});
+const report={passed:results.filter(r=>r.passed).length,total:results.length,results};fs.writeFileSync(__dirname+'/simulation-profile-results.json',JSON.stringify(report,null,2));console.log(report.passed+'/'+report.total);if(report.passed!==report.total)process.exitCode=1;

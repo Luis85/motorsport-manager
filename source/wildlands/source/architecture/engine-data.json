@@ -1,0 +1,55 @@
+{
+  "format": "wildlands-engine-data",
+  "schemaVersion": 1,
+  "description": "Closed allow-list of files under source/content, source/assets and source/schemas: engine-owned grammars and engine metadata only. Game data lives only in its own game folder docs/concepts/<game>/ (littlewild, emberworks, office, rts-frontier, pocket-pet); there is no pending or transitional game-data list. The TypeScript architecture check rejects unlisted files, stale entries, game-shaped entries, extra entry fields and any other top-level field.",
+  "engine": [
+    {
+      "pattern": "content/*.schema.json",
+      "reason": "Engine-owned JSON Schemas of scenario packs, libraries, balancing, simulation, world, growth, adventure and RTS documents; library.schema.json is the template the build compiles with each game's identity vocabulary."
+    },
+    {
+      "pattern": "assets/*.schema.json",
+      "reason": "Engine-owned grammars of asset definitions (definition.schema.json) and 3D asset documents (asset.schema.json)."
+    },
+    {
+      "pattern": "assets/creatures/*.schema.json",
+      "reason": "Engine-owned grammars of creature definitions and the creature catalog configuration."
+    },
+    {
+      "pattern": "assets/interactions/*.schema.json",
+      "reason": "Engine-owned grammar of creature interaction libraries."
+    },
+    {
+      "pattern": "schemas/*.schema.json",
+      "reason": "Engine-owned grammar of game folder manifests (game.json)."
+    },
+    {
+      "pattern": "assets/README.md",
+      "reason": "Engine documentation of the asset definition format that game folders author."
+    },
+    {
+      "pattern": "assets/creatures/README.md",
+      "reason": "Engine documentation of the creature definition format that game folders author."
+    },
+    {
+      "pattern": "content/balancing-inventory.json",
+      "reason": "Engine audit inventory: maps every balancing gameplay tuner path to the engine source module and expression that consumes it; balancing-audit checks a game's balancing against it."
+    },
+    {
+      "pattern": "content/actor-rules.json",
+      "reason": "classic-v1 compatibility reference document (standalone littlewild-actor-rules) used by the rule validators' tests and schema checks; no game profile reads it."
+    },
+    {
+      "pattern": "content/economy-rules.json",
+      "reason": "classic-v1 compatibility reference document (standalone littlewild-economy-rules) used by the rule validators' tests and schema checks; no game profile reads it."
+    },
+    {
+      "pattern": "content/simulation-profile.json",
+      "reason": "classic-v1 compatibility simulation profile validated by the simulation-profile CLI and schema checks; no game profile reads it."
+    },
+    {
+      "pattern": "content/default-profile.json",
+      "reason": "classic-v1 compatibility world profile reference used by developer-toolbox realm tests; no game profile reads it."
+    }
+  ]
+}

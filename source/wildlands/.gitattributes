@@ -1,0 +1,5 @@
+# Pinned upstream bundles are byte-preserved, including shader string whitespace.
+vendor/excalibur-0.32.0.min.js whitespace=-blank-at-eol linguist-vendored=true
+vendor/pixi-8.22.0.min.js whitespace=-blank-at-eol linguist-vendored=true
+# Pinned Three.js also preserves one upstream indentation sequence.
+vendor/three.js whitespace=-space-before-tab linguist-vendored=true

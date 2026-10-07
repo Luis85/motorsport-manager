@@ -24,6 +24,24 @@ be reachable from the main index through section indexes or related-page links.
 Do not create empty quadrants or filler pages to satisfy a taxonomy. Diátaxis
 explicitly treats the framework as a guide to incremental improvements.
 
+## Game folders
+
+`docs/concepts/<game-id>/` is the exception to the Diátaxis homes: each such
+directory is the complete, data-only source folder of one Wildlands game
+(`game.json`, its JSON documents and asset definitions, `README.md`, and
+optional `PROVENANCE.md`/`LICENSE*`), not a Diátaxis document. Keep game data
+there rather than under `source/wildlands/source/`, never put code in it, and do
+not add tutorials, guides or reference pages inside a game folder: write them in
+the matching Diátaxis section and link the folder's README. List every game in
+[`docs/concepts/README.md`](../concepts/README.md); each folder README says what
+the game is, how to build and play it and where its data came from. Validate a
+changed folder with `bin/wildlands validate-game --game docs/concepts/<id>` and
+refresh its published demo with `npm run build:demos` in `source/wildlands`
+(every folder file except `README.md` files is part of the digest the demo
+records, so a README-only edit needs no rebuild; `npm run check:demos` fails on a
+stale demo), in addition to the documentation
+checker.
+
 ## Reconcile a change
 
 1. Read the affected production code, generated schema, configuration and tests.

@@ -2,10 +2,10 @@
 
 **Current scope:** Native project after merged PR #30 (`dc2acaa`), with application version **0.19.0**. This page is the current capability inventory; detailed contracts live in the linked guides. Historical release handoffs and review ledgers describe their own source revisions and do not establish verification of the current checkout.
 
-The separate [Wildlands prototype builder](../concepts/littlewild/DOCUMENTATION.md)
+The separate [Wildlands prototype builder](../../source/wildlands/DOCUMENTATION.md)
 retains its own TypeScript runtime, browser workspace, terminal tools and
 source-bound evidence. Littlewild is its default showcase; its
-[Godot desktop compiler](../concepts/littlewild/WILDLANDS.md#runnable-godot-compiler)
+[Godot desktop compiler](../../source/wildlands/WILDLANDS.md#runnable-godot-compiler)
 uses a local Node subprocess for gameplay. Those capabilities and prerequisites
 are outside this native Motorsport Manager inventory.
 
@@ -21,7 +21,7 @@ are outside this native Motorsport Manager inventory.
 
 ## Wildlands maker RTS foundation
 
-The separate TypeScript [Wildlands maker](../concepts/littlewild/README.md), built
+The separate TypeScript [Wildlands maker](../../source/wildlands/README.md), built
 on the PR 25 foundation, also supports a switchable isometric RTS demonstration.
 Validated JSON catalogs define resources, factions, worker/combat/vehicle/naval/
 aircraft/creature archetypes, buildings, items, technologies, abilities, terrain
@@ -54,6 +54,54 @@ This is a maker game context, separate from the shipping native race/campaign
 application. It does not establish native RTS export parity, multiplayer, broad
 balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 [demo tutorial](../tutorials/rts-demo.md) for source-backed scope and limits.
+
+## Standalone command-line tools
+
+Two separate TypeScript projects ship checked-in, self-contained command-line
+bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
+clone without `npm ci` or `node_modules`:
+
+- [`bin/wildlands`](wildlands-cli.md) is the Wildlands engine from
+  `source/wildlands/` without any game content. It validates, inspects and builds
+  game folders (`docs/concepts/<id>/`) into self-contained HTML files, and
+  creates, validates, inspects, plays, edits and compiles portable projects,
+  which embed their game, into Godot desktop projects. Running a compiled or
+  exported Godot project requires Godot.
+- [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
+  declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
+  `review` capture commands additionally need Playwright and Chromium; `doctor`
+  reports their availability.
+
+The bundles are generated from their source projects and checked by each
+project's `npm run check:cli`.
+
+Wildlands verification has a fast tier (`npm test`: typecheck, build and the
+quick Node suites, partial evidence) and the complete registered gate
+(`npm run verify`: 104 suites, 1,869 reviewed named checks) on a parallel
+runner. `source/wildlands/source/verification/suites.json` and
+`gate-expectations.json` are the authority for suites and check names; CI runs
+the fast tier first, then the complete gate with `--jobs 3 --browser-jobs 2`.
+Passing suites are automated evidence, not human playtesting or balance
+validation.
+
+## Ready-to-play Wildlands demos
+
+The repository's [`demos/`](../../demos/README.md) directory holds five
+ready-to-play HTML files, one per [game folder](../concepts/README.md), each
+built by `bin/wildlands build-game` and opened directly from disk in a desktop
+browser (offline, no network requests, no install or build step): Littlewild,
+Emberworks and Office (`colony` template), RTS Frontier (`rts`) and Pocket Pet
+(`pet`, WebGL 2). Each file carries only its own game and stores saves under its
+own namespace (`littlewild` keeps its legacy keys; the others use
+`wildlands.<id>`). Every demo stays within its folder's play budget and is
+byte-checked against a fresh build by `npm run check:demos` in
+`source/wildlands`; it records its folder digest (every folder file except
+`README.md` documentation) and the engine identity, so any engine or game-data
+change needs rebuilt demos while a README-only edit does not. Editors and export tools are not published; `build-game
+--profile studio` builds them on demand. A browser boot check of each file is
+automated evidence only, not human playtesting or balance validation. Like the Wildlands maker above, they are outside
+the native Motorsport Manager race/campaign inventory and do not read or write
+its saves or race/campaign state.
 
 ## Interface selection and retained specialist tools
 

@@ -4,23 +4,24 @@ This tutorial uses the TypeScript Wildlands maker extended from PR 25. It leaves
 native race and campaign saves under their own existing authorities. The demo is
 an original isometric RTS scenario showcasing the engine's data-driven ECS
 mechanics. See the [RTS reference](../reference/rts-engine.md) for ownership,
-content contracts and tool budgets.
+content contracts and tool budgets. The shipped catalog lives in the
+[RTS Frontier game folder](../concepts/rts-frontier/README.md).
 
-## Build and open the maker
+## Open the demo
 
-From the repository root:
+Open [`demos/rts-frontier.html`](../../demos/rts-frontier.html) from a clone of
+the repository in a current desktop browser. It is a self-contained file: it runs
+offline from disk with no install or build step. The match starts at once; the
+map should display an isometric battlefield, units, buildings and resource
+deposits. Inspect the selected faction's resources and population before issuing
+an order.
+
+The file is built from the RTS Frontier game folder by the engine CLI. After
+changing the folder, rebuild your own copy from the repository root:
 
 ```sh
-cd docs/concepts/littlewild
-npm ci
-npm run typecheck
-npm run build
+bin/wildlands build-game --game docs/concepts/rts-frontier --output rts-frontier.html
 ```
-
-Open the generated maker HTML using the existing
-[maker instructions](../concepts/littlewild/README.md). Click **RTS demo** in the maker toolbar. The demo map should display an isometric battlefield,
-units, buildings and resource deposits. Inspect the selected faction's resources
-and population before issuing an order.
 
 Use selection and contextual orders to move units, send workers to resource
 deposits, construct buildings and train units. Observe progress rather than
@@ -46,17 +47,26 @@ feedback. The application validates targets, placement, resources, and abilities
 
 Pause before inspecting a selected entity. Selection, camera changes and display
 refresh do not advance its simulation clock. Resume to observe the accepted order
-progressing. Click **Return to colony** in the RTS header; it remains a distinct
-game context.
+progressing. **Close RTS demo** in the RTS header ends the match view and offers
+to resume it.
 
-To author your own starting arrangement, open **Mission editor** in the RTS
-toolbar and follow [mission authoring](../how-to/rts-mission-editor.md). Its draft
-is separate from the match; only explicitly playing the draft replaces the match
-with a fresh paused session.
+The published demo is a play build, so its **Mission editor** button stays
+focusable but explains that the editor is not included. To author your own
+starting arrangement, build the RTS studio and follow
+[mission authoring](../how-to/rts-mission-editor.md):
+
+```sh
+bin/wildlands build-game --game docs/concepts/rts-frontier --profile studio --output rts-studio.html
+```
+
+The editor's draft is separate from the match; only explicitly playing the draft
+replaces the match with a fresh paused session.
 
 ## Inspect the exact data
 
-The CLI emits JSON. Discovery and content inspection create no running match:
+The RTS CLI is part of a source build. From the repository root run
+`cd source/wildlands`, `npm ci` and `npm run build` once, then use it there. It
+emits JSON. Discovery and content inspection create no running match:
 
 ```sh
 node .generated/tools/rts-cli.cjs discover

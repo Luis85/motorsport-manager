@@ -11,6 +11,8 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 | Look up UI, campaign, content, storage or tooling contracts | [Reference](reference/README.md) |
 | Understand simulation, architecture and ownership choices | [Explanation](explanation/README.md) |
 | Inspect earlier implementation and source-bound acceptance | [Historical archive](_archive/README.md) |
+| Find the data-only source folder of a Wildlands game | [Game folders](concepts/README.md) |
+| Play a Wildlands game demo (Littlewild, Emberworks, Office, RTS Frontier, Pocket Pet) | [Ready-to-play demos](../demos/README.md) |
 
 ## Common routes
 
@@ -31,17 +33,31 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 - **Maintainer:** [Documentation discipline](how-to/maintaining-documentation.md) →
   [Current status](reference/current-state.md) → [Advisory quality](how-to/code-quality.md).
 
-## Independent concepts
+## Standalone CLI projects
 
-[Scene Forge](concepts/scene-forge/README.md) is a standalone TypeScript CLI and offline 3D editor for declarative modeling, reusable scene composition, portable rigs and multi-view review. Its source, tests, examples and verification are contained in its own concept folder. Its `littlewild` commands export recipes into Wildlands definitions and import them back; the Pocket Pet demo's models are authored this way.
+Two independent Node/TypeScript projects live under `source/`, outside the Godot
+game. Each builds a self-contained command-line bundle that is checked in under
+[`bin/`](../bin/README.md) and needs only Node.js 22 or newer, without `npm ci`.
+
+| Project | Checked-in CLI | Handbook |
+|---|---|---|
+| [Wildlands](../source/wildlands/DOCUMENTATION.md) | `bin/wildlands` | [Wildlands CLI](reference/wildlands-cli.md) |
+| [Scene Forge](../source/scene-forge/README.md) | `bin/scene-forge` | [Scene Forge CLI](reference/scene-forge-cli.md) |
+
+The separate Wildlands documentation indexes the TypeScript engine, its
+browser/terminal workflows and Node-backed Godot desktop target. Its games live
+as data-only [game folders](concepts/README.md); `bin/wildlands build-game`
+builds each into one of five ready-to-play files in [`demos/`](../demos/README.md)
+that open offline from disk. Scene Forge is a standalone CLI and offline 3D editor for
+declarative modeling, reusable scene composition, portable rigs and multi-view
+review. Each project retains its own runtime, tests and source-bound evidence
+outside the native Motorsport Manager capability inventory.
+
+Scene Forge's `littlewild` commands export recipes into Wildlands asset
+definitions and import them back; the Pocket Pet demo's models are authored this
+way (see [Author Littlewild assets in Scene Forge](how-to/scene-forge-littlewild-assets.md)).
 
 ## Authority and evidence
-
-The separate [Wildlands documentation](concepts/littlewild/DOCUMENTATION.md)
-indexes the TypeScript prototype builder, its default Littlewild showcase,
-browser/terminal workflows and Node-backed Godot desktop target. It retains its
-own runtime and source-bound evidence outside the native Motorsport Manager
-capability inventory.
 
 Production code, generated schemas and validated configuration own executable
 contracts. Active references describe those contracts; tutorials and recipes link

@@ -8,9 +8,9 @@ character points and specialties keep their own progression.
 
 ## Definition and progression
 
-The [value contracts](../concepts/littlewild/source/skill-tree-contracts.d.ts) and
-[pure validator](../concepts/littlewild/source/skill-trees.ts) own these rules.
-[The demo definition](../concepts/littlewild/source/content/skill-tree.json) is a
+The [value contracts](../../source/wildlands/source/skill-tree-contracts.d.ts) and
+[pure validator](../../source/wildlands/source/skill-trees.ts) own these rules.
+[The demo definition](../concepts/littlewild/content/skill-tree.json) is a
 version-1 example. An attachment captures a complete definition with zero XP and
 an empty rank map. It receives future rewards; existing levels do not grant
 retroactive points.
@@ -39,7 +39,7 @@ resources or new executable behaviors.
 
 ## Engine and developer API
 
-The [application adapter](../concepts/littlewild/source/skill-tree-integration.ts)
+The [application adapter](../../source/wildlands/source/skill-tree-integration.ts)
 installs these methods on the existing composed engine:
 
 | Method | Behavior |
@@ -56,7 +56,7 @@ ticks the simulation or consumes RNG. Production rewards flow through the existi
 Rejected or duplicate settlements do not award XP. Custom gameplay can explicitly
 call the trusted grant method; imported JSON cannot register callbacks.
 
-The typed [developer toolbox](../concepts/littlewild/DEVELOPER-TOOLBOX.md) exposes
+The typed [developer toolbox](../../source/wildlands/DEVELOPER-TOOLBOX.md) exposes
 `session.skillTrees(targetId)` and discovers two world-scoped commands:
 
 ```ts
@@ -97,7 +97,7 @@ portable scenarios, project snapshots and the Node-backed Godot runtime. Old
 saves without this field remain tree-free and gain no fabricated history.
 Malformed retained trees reject before engine reconstruction. Scene journeys
 retain progress in each scene owner's checkpoint, following the existing
-[scene ownership contract](../concepts/littlewild/WORLD-SCENE-RUNTIME.md).
+[scene ownership contract](../../source/wildlands/WORLD-SCENE-RUNTIME.md).
 
 The browser provides the interactive tree view; a dedicated Godot tree screen is
 not implemented. Native runtime commands and checkpoints carry the same engine

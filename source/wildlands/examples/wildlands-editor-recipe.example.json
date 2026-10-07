@@ -1,0 +1,7 @@
+{
+  "format": "wildlands-editor-recipe",
+  "schemaVersion": 1,
+  "operations": [
+    {"operation": "updateScene", "args": ["first-morning", {"name": "Terminal meadow"}]}
+  ]
+}

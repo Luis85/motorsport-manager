@@ -63,6 +63,12 @@ Shipped editable content lives in [config/](config/README.md). Use
 [bounded toolbox experiments](docs/how-to/toolbox-recipes.md) for safe changes. Existing
 saves freeze their selected rules; external packs cannot inject executable code.
 
+Two separate Node/TypeScript projects, Wildlands and Scene Forge, live in
+`source/` and ship self-contained CLIs in [bin/](bin/README.md) that need only
+Node.js 22+. Five Wildlands games built from their data-only
+[game folders](docs/concepts/README.md) are published as ready-to-play HTML files
+in [demos/](demos/README.md). See [standalone CLI projects](docs/README.md#standalone-cli-projects).
+
 ## Scope and provenance
 
 Human playtesting, controller/screen-reader completeness, wet/endurance balance,

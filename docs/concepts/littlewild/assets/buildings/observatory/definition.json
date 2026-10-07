@@ -1,0 +1,682 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "buildings",
+  "id": "observatory",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "building",
+    "id": "observatory",
+    "name": "Stargazer\u2019s nook",
+    "materials": {
+      "foundation": "#b8b8a3",
+      "wall": "#d9cfb1",
+      "wallAlt": "#c9ba9d",
+      "timber": "#957753",
+      "roof": "#7e9ca5",
+      "roofTrim": "#b9c5ac",
+      "door": "#8f6d49",
+      "metal": "#d6bc7f",
+      "glass": {
+        "color": "#e8d19b",
+        "emissive": "#b98a4c",
+        "emissiveIntensity": 0.12
+      },
+      "sign": "#8f8caf",
+      "green": "#6d9367",
+      "flower": "#e0ac91",
+      "soil": "#967a55",
+      "stone": "#aaa997",
+      "accent": "#7f9f93"
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "foundation",
+            "position": [
+              0,
+              0.055,
+              0
+            ],
+            "scale": [
+              1.26,
+              0.11,
+              1.05
+            ],
+            "material": "foundation"
+          },
+          {
+            "primitive": "box",
+            "id": "front-left",
+            "position": [
+              -0.375,
+              0.52,
+              0.4
+            ],
+            "scale": [
+              0.35000000000000003,
+              1.04,
+              0.14
+            ],
+            "material": "wall"
+          },
+          {
+            "primitive": "box",
+            "id": "front-right",
+            "position": [
+              0.375,
+              0.52,
+              0.4
+            ],
+            "scale": [
+              0.35000000000000003,
+              1.04,
+              0.14
+            ],
+            "material": "wallAlt"
+          },
+          {
+            "primitive": "box",
+            "id": "front-lintel",
+            "position": [
+              0,
+              0.9750000000000001,
+              0.4
+            ],
+            "scale": [
+              0.41,
+              0.14,
+              0.14
+            ],
+            "material": "wall"
+          },
+          {
+            "primitive": "box",
+            "id": "back",
+            "position": [
+              0,
+              0.52,
+              -0.4
+            ],
+            "scale": [
+              1.1,
+              1.04,
+              0.14
+            ],
+            "material": "wallAlt"
+          },
+          {
+            "primitive": "box",
+            "id": "side-left",
+            "position": [
+              -0.55,
+              0.52,
+              0
+            ],
+            "scale": [
+              0.12,
+              1.04,
+              0.8
+            ],
+            "material": "wall"
+          },
+          {
+            "primitive": "box",
+            "id": "side-right",
+            "position": [
+              0.55,
+              0.52,
+              0
+            ],
+            "scale": [
+              0.12,
+              1.04,
+              0.8
+            ],
+            "material": "wallAlt"
+          },
+          {
+            "primitive": "box",
+            "id": "interior-floor",
+            "position": [
+              0,
+              0.025,
+              0.2
+            ],
+            "scale": [
+              0.43,
+              0.05,
+              0.47
+            ],
+            "material": "timber"
+          },
+          {
+            "primitive": "box",
+            "id": "threshold",
+            "position": [
+              0,
+              0.025,
+              0.66
+            ],
+            "scale": [
+              0.6,
+              0.06,
+              0.34
+            ],
+            "material": "wall"
+          },
+          {
+            "primitive": "box",
+            "id": "front-beam",
+            "position": [
+              0,
+              0.6864,
+              0.48
+            ],
+            "scale": [
+              1.1,
+              0.06,
+              0.035
+            ],
+            "material": "timber"
+          },
+          {
+            "primitive": "box",
+            "id": "post-left",
+            "position": [
+              -0.55,
+              0.52,
+              0.47
+            ],
+            "scale": [
+              0.065,
+              1.04,
+              0.065
+            ],
+            "material": "timber"
+          },
+          {
+            "primitive": "box",
+            "id": "post-right",
+            "position": [
+              0.55,
+              0.52,
+              0.47
+            ],
+            "scale": [
+              0.065,
+              1.04,
+              0.065
+            ],
+            "material": "timber"
+          },
+          {
+            "primitive": "roof",
+            "id": "roof",
+            "position": [
+              0,
+              1.03,
+              0
+            ],
+            "scale": [
+              1.4400000000000002,
+              0.87,
+              1.22
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "ridge",
+            "position": [
+              0,
+              1.58,
+              0
+            ],
+            "scale": [
+              0.11,
+              0.1,
+              1.26
+            ],
+            "material": "roofTrim"
+          },
+          {
+            "primitive": "group",
+            "id": "door-hinge",
+            "position": [
+              -0.195,
+              0.31,
+              0.49
+            ],
+            "children": [
+              {
+                "primitive": "box",
+                "id": "door-leaf",
+                "position": [
+                  0.18,
+                  0,
+                  0
+                ],
+                "scale": [
+                  0.36,
+                  0.61,
+                  0.045
+                ],
+                "material": "door"
+              },
+              {
+                "primitive": "box",
+                "id": "door-handle",
+                "position": [
+                  0.29,
+                  0,
+                  0.035
+                ],
+                "scale": [
+                  0.035,
+                  0.035,
+                  0.035
+                ],
+                "material": "metal"
+              }
+            ]
+          },
+          {
+            "primitive": "box",
+            "id": "window-left-frame",
+            "position": [
+              -0.625,
+              0.5824,
+              -0.04
+            ],
+            "scale": [
+              0.018,
+              0.3,
+              0.31
+            ],
+            "material": "accent"
+          },
+          {
+            "primitive": "box",
+            "id": "window-left-pane",
+            "position": [
+              -0.637,
+              0.5824,
+              -0.04
+            ],
+            "scale": [
+              0.014,
+              0.23,
+              0.23
+            ],
+            "material": "glass"
+          },
+          {
+            "primitive": "box",
+            "id": "window-right-frame",
+            "position": [
+              0.625,
+              0.5824,
+              -0.04
+            ],
+            "scale": [
+              0.018,
+              0.3,
+              0.31
+            ],
+            "material": "accent"
+          },
+          {
+            "primitive": "box",
+            "id": "window-right-pane",
+            "position": [
+              0.637,
+              0.5824,
+              -0.04
+            ],
+            "scale": [
+              0.014,
+              0.23,
+              0.23
+            ],
+            "material": "glass"
+          },
+          {
+            "primitive": "box",
+            "id": "lamp-arm",
+            "position": [
+              0.35,
+              0.73,
+              0.54
+            ],
+            "scale": [
+              0.05,
+              0.07,
+              0.18
+            ],
+            "material": "timber"
+          },
+          {
+            "primitive": "box",
+            "id": "lamp",
+            "position": [
+              0.35,
+              0.63,
+              0.61
+            ],
+            "scale": [
+              0.1,
+              0.14,
+              0.1
+            ],
+            "material": "glass"
+          },
+          {
+            "primitive": "box",
+            "id": "sign-post",
+            "position": [
+              -0.36,
+              0.66,
+              0.55
+            ],
+            "scale": [
+              0.025,
+              0.11,
+              0.17
+            ],
+            "material": "door"
+          },
+          {
+            "primitive": "box",
+            "id": "sign-cloth",
+            "position": [
+              -0.36,
+              0.55,
+              0.62
+            ],
+            "scale": [
+              0.16,
+              0.16,
+              0.02
+            ],
+            "material": "sign"
+          },
+          {
+            "primitive": "box",
+            "id": "flower-box-left",
+            "position": [
+              -0.68,
+              0.3016,
+              -0.045
+            ],
+            "scale": [
+              0.16,
+              0.095,
+              0.44
+            ],
+            "material": "soil"
+          },
+          {
+            "primitive": "box",
+            "id": "flower-box-right",
+            "position": [
+              0.68,
+              0.3016,
+              -0.045
+            ],
+            "scale": [
+              0.16,
+              0.095,
+              0.44
+            ],
+            "material": "soil"
+          },
+          {
+            "primitive": "ball",
+            "id": "flower-left-a",
+            "position": [
+              -0.6900000000000001,
+              0.4056,
+              -0.18
+            ],
+            "scale": [
+              0.075,
+              0.065,
+              0.065
+            ],
+            "material": "green"
+          },
+          {
+            "primitive": "ball",
+            "id": "flower-left-b",
+            "position": [
+              -0.7200000000000001,
+              0.4576,
+              -0.03
+            ],
+            "scale": [
+              0.04,
+              0.03,
+              0.04
+            ],
+            "material": "flower"
+          },
+          {
+            "primitive": "ball",
+            "id": "flower-right-a",
+            "position": [
+              0.6900000000000001,
+              0.4056,
+              0.02
+            ],
+            "scale": [
+              0.075,
+              0.065,
+              0.065
+            ],
+            "material": "green"
+          },
+          {
+            "primitive": "ball",
+            "id": "flower-right-b",
+            "position": [
+              0.7200000000000001,
+              0.4576,
+              0.17
+            ],
+            "scale": [
+              0.04,
+              0.03,
+              0.04
+            ],
+            "material": "flower"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-l-1",
+            "position": [
+              -0.18000000000000002,
+              1.4375,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-r-1",
+            "position": [
+              0.18000000000000002,
+              1.4375,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-l-2",
+            "position": [
+              -0.36000000000000004,
+              1.3050000000000002,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-r-2",
+            "position": [
+              0.36000000000000004,
+              1.3050000000000002,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-l-3",
+            "position": [
+              -0.54,
+              1.1725,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "box",
+            "id": "roof-course-r-3",
+            "position": [
+              0.54,
+              1.1725,
+              0
+            ],
+            "scale": [
+              0.025,
+              0.028,
+              1.23
+            ],
+            "material": "roof"
+          },
+          {
+            "primitive": "soft",
+            "id": "dome",
+            "position": [
+              0,
+              1.48,
+              0
+            ],
+            "scale": [
+              0.63,
+              0.53,
+              0.6
+            ],
+            "material": "roofTrim"
+          },
+          {
+            "primitive": "cylinder",
+            "id": "telescope-body",
+            "position": [
+              0.2,
+              1.93,
+              0.1
+            ],
+            "scale": [
+              0.12,
+              0.74,
+              0.12
+            ],
+            "material": "accent",
+            "rotation": [
+              0,
+              0,
+              -0.7
+            ]
+          },
+          {
+            "primitive": "cylinder",
+            "id": "telescope-lens",
+            "position": [
+              0.42,
+              2.12,
+              0.1
+            ],
+            "scale": [
+              0.16,
+              0.08,
+              0.16
+            ],
+            "material": "glass",
+            "rotation": [
+              0,
+              0,
+              -0.7
+            ]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "orientation": "door",
+      "indoor": true,
+      "hitHeight": 1.82,
+      "radius": 1.55
+    },
+    "behaviors": {
+      "door": {
+        "node": "door-hinge",
+        "openDelta": -1.8849555921538759
+      }
+    }
+  },
+  "building": {
+    "id": "observatory",
+    "name": "Stargazer\u2019s nook",
+    "skill": "scholarship",
+    "cost": {
+      "beams": 4,
+      "glass": 4,
+      "iron": 2,
+      "cloth": 3
+    },
+    "time": 38,
+    "category": "learning",
+    "effect": "Autonomous research yields +2 shared points. Lessons are 10% faster.",
+    "desc": "A little lens, a wide sky, and someone to share the question with.",
+    "icon": "research",
+    "unique": true
+  },
+  "buildingRequirements": {
+    "playerLevel": 4,
+    "features": {
+      "discovery": 4
+    },
+    "research": "blueprint-observatory"
+  }
+}
