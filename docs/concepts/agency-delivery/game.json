@@ -1,0 +1,28 @@
+{
+  "format": "wildlands-game",
+  "schemaVersion": 1,
+  "id": "agency-delivery",
+  "name": "Agency delivery lab",
+  "version": "1.0.0",
+  "template": "process",
+  "engine": {
+    "api": 1
+  },
+  "content": {
+    "definition": "content/agency.process.json"
+  },
+  "presentation": {
+    "title": "Agency delivery lab",
+    "description": "Explore an agency delivery process in 2D and 3D with shared resources, parallel design and rework.",
+    "accent": "#ffbb73"
+  },
+  "storage": {
+    "namespace": "wildlands.agency-delivery"
+  },
+  "targets": {
+    "html": {
+      "output": "demos/agency-delivery.html",
+      "budgetBytes": 4194304
+    }
+  }
+}

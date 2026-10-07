@@ -1,0 +1,68 @@
+{
+  "format": "wildlands-process-scenes",
+  "schemaVersion": 1,
+  "processId": "agency-delivery",
+  "fingerprint": "b2fdd5a0d0a029bc",
+  "scenes": [
+    {
+      "step": "intake",
+      "scene": "scene-intake",
+      "definition": "exports/items/scene-intake/definition.json"
+    },
+    {
+      "step": "discovery",
+      "scene": "scene-discovery",
+      "definition": "exports/items/scene-discovery/definition.json"
+    },
+    {
+      "step": "design-split",
+      "scene": "scene-design-split",
+      "definition": "exports/items/scene-design-split/definition.json"
+    },
+    {
+      "step": "ux",
+      "scene": "scene-ux",
+      "definition": "exports/items/scene-ux/definition.json"
+    },
+    {
+      "step": "architecture",
+      "scene": "scene-architecture",
+      "definition": "exports/items/scene-architecture/definition.json"
+    },
+    {
+      "step": "design-ready",
+      "scene": "scene-design-ready",
+      "definition": "exports/items/scene-design-ready/definition.json"
+    },
+    {
+      "step": "implementation",
+      "scene": "scene-implementation",
+      "definition": "exports/items/scene-implementation/definition.json"
+    },
+    {
+      "step": "qa",
+      "scene": "scene-qa",
+      "definition": "exports/items/scene-qa/definition.json"
+    },
+    {
+      "step": "review-gate",
+      "scene": "scene-review-gate",
+      "definition": "exports/items/scene-review-gate/definition.json"
+    },
+    {
+      "step": "rework",
+      "scene": "scene-rework",
+      "definition": "exports/items/scene-rework/definition.json"
+    },
+    {
+      "step": "handover",
+      "scene": "scene-handover",
+      "definition": "exports/items/scene-handover/definition.json"
+    },
+    {
+      "step": "delivered",
+      "scene": "scene-delivered",
+      "definition": "exports/items/scene-delivered/definition.json"
+    }
+  ]
+}

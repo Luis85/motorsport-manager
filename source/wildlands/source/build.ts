@@ -124,6 +124,7 @@ function bundledData(packPath: string | null): Map<string, unknown> {
     ["WildlandsGodotTemplates", generated("wildlands-godot-templates.json")],
     ["LWEngineSourceLoader", generated("engine-source-loader.json")],
     ...littlewild().data,
+    ["LWProcessDefinition", bundled("agency-delivery").data.get("LWProcessDefinition")],
     ["LWRTSDefinitions", rts.get("LWRTSDefinitions")],
     ["LWPetDefinitions", pet.get("LWPetDefinitions")],
     ["LWPetAssetDefinitions", pet.get("LWPetAssetDefinitions")],

@@ -112,7 +112,7 @@ test('The injected scenario catalog orders built-ins and selects its declared de
 
 test('Built artifacts run the content provider after their data globals and before every engine module',()=>{
  const directory=path.join(__dirname,'artifacts'),manifests=fs.readdirSync(directory).filter(file=>file.endsWith('.manifest.json')).sort();
- assert.deepEqual(manifests.map(file=>file.replace('.manifest.json','')),['colony-play','pet-play','rts-play','showcase','studio']);
+ assert.deepEqual(manifests.map(file=>file.replace('.manifest.json','')),['colony-play','pet-play','process-play','rts-play','showcase','studio']);
  for(const file of manifests){
   const manifest=json(path.join('artifacts',file)) as {profile:string;segments:{kind:string;name:string}[]};
   const scripts=manifest.segments.filter(segment=>segment.kind!=='style');

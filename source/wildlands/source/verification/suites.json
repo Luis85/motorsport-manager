@@ -104,6 +104,8 @@
     {"name": "game-folders", "kind": "node", "tier": "fast", "entry": ".generated/test-game-folders.cjs", "result": ".generated/game-folders-results.json", "timeout": 240, "cost": 12.0},
     {"name": "runtime-optionality-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/runtime-optionality-browser.js", "result": "verification/v15/runtime-optionality-browser-results.json", "timeout": 300, "cost": 105.0},
     {"name": "artifact-play-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/artifact-play-browser.js", "result": "verification/v15/artifact-play-browser-results.json", "timeout": 240, "cost": 30.0},
-    {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 300, "cost": 60.0}
+    {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 300, "cost": 60.0},
+    {"name": "business-process", "kind": "node", "tier": "fast", "entry": ".generated/test-process.cjs", "result": ".generated/process-results.json", "timeout": 120, "cost": 6},
+    {"name": "business-process-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-browser.js", "result": "verification/v15/process-browser-results.json", "timeout": 180, "cost": 30}
   ]
 }

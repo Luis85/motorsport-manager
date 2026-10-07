@@ -96,3 +96,5 @@ Wildlands checkout; the PR25 records retain their original Littlewild scope.
 - [Independent cumulative Littlewild review — 6664900](PR25-FINAL-AUTHORING-REVIEW.md)
 - [Littlewild v15 — publication record](publication/README.md)
 - [Littlewild v15 verification — 29 September 2026](publication/VERIFICATION.md)
+
+- [Business process engine](../../docs/reference/business-process-engine.md) and [agent workflow](../../docs/how-to/business-process-authoring.md).

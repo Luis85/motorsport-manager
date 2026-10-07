@@ -225,6 +225,10 @@
     {
       "path": "embedded-app-contracts.d.ts",
       "owner": "presentation"
+    },
+    {
+      "path": "process-contracts.d.ts",
+      "owner": "process-definition"
     }
   ]
 }

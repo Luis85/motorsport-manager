@@ -696,3 +696,8 @@ payloads.
 - [Developer toolbox](../../source/wildlands/DEVELOPER-TOOLBOX.md): typed SDK sessions, commands and agent guidance for source builds.
 - [Wildlands documentation index](../../source/wildlands/DOCUMENTATION.md): every Wildlands guide and contract.
 - [Engine JSON export](../../source/wildlands/ENGINE-EXPORT.md): the separate inert source/data export format.
+
+
+## Business processes
+
+`bin/wildlands process discover` describes the definition-first process tool family: create, schema, validate, inspect, guarded edit, attach, run, forge and build. The `process` game template builds data-only definitions into offline 2D/3D simulations. See [Business process authoring](../how-to/business-process-authoring.md).

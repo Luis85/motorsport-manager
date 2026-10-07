@@ -145,14 +145,14 @@ function contentSentinels(): string[] {
   const packs: string[] = [];
   for (const directory of gameFolders().values()) {
     const content = path.join(directory, 'content');
-    if (fs.existsSync(content)) packs.push(...fs.readdirSync(content).filter(name => name.endsWith('.pack.json')).map(name => path.join(content, name)));
+    if (fs.existsSync(content)) packs.push(...fs.readdirSync(content).filter(name => name.endsWith('.pack.json') || name.endsWith('.process.json')).map(name => path.join(content, name)));
   }
   return packs.map(file => (JSON.parse(fs.readFileSync(file, 'utf8')) as {description?: unknown}).description).filter((text): text is string => typeof text === 'string' && text.length >= 40);
 }
 /**
  * Run the candidate from an empty directory with no node_modules. Where Node's permission model is
  * available, file reads are confined to that directory, proving no resource comes from the checkout.
- * It copies the Littlewild, RTS Frontier and Pocket Pet game folders next to it, builds one game of
+ * It copies Littlewild, RTS Frontier, Pocket Pet and Agency Delivery next to it, builds one game of
  * every template and compares each byte for byte with the checkout's compiled CLI, validates
  * Littlewild, creates and compiles a project and runs the compiled Godot runtime, which installs the
  * game its project embeds.
@@ -180,7 +180,7 @@ function smoke(built: BundleResult): void {
       throw Error('Bundled CLI create without --game lacks its diagnostic.');
     // Games are data the smoke copies next to the CLI; the candidate reads nothing else.
     const games = path.join(directory, 'games'), folders = gameFolders(), copies = new Map<string, string>();
-    for (const id of ['littlewild', 'rts-frontier', 'pocket-pet']) {
+    for (const id of ['littlewild', 'rts-frontier', 'pocket-pet', 'agency-delivery']) {
      const source = folders.get(id);
      if (!source) throw Error(`The ${id} game folder is required for the CLI smoke.`);
      copies.set(id, path.join(games, id)); fs.cpSync(source, copies.get(id)!, {recursive: true});
@@ -196,6 +196,13 @@ function smoke(built: BundleResult): void {
       if (!fs.readFileSync(output).equals(fs.readFileSync(reference))) throw Error(`build-game output for ${name} differs between bin/wildlands and the compiled CLI.`);
       run(['build-game', '--game', game, '--check', output]);
     }
+    run(['process', 'discover']);
+    run(['process', 'schema', '--kind', 'recipe']);
+    run(['process', 'create', '--id', 'process-smoke', '--output', 'process.json']);
+    run(['process', 'inspect', '--input', 'process.json']);
+    const processRun = run(['process', 'run', '--input', 'process.json', '--minutes', '100', '--output', 'process-report.json']);
+    if (processRun.status !== 'completed') throw Error('Bundled process runtime did not complete its starter.');
+    run(['process', 'build', '--input', 'process.json', '--output', 'process.html']);
     const project = path.join(directory, 'smoke.json');
     run(['create', '--game', littlewild, '--output', project]);
     run(['validate', '--project', project]);

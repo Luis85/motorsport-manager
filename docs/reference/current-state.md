@@ -185,3 +185,8 @@ relevant evidence.
 - [Historical handoffs and review ledgers](../_archive/README.md).
 
 **Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema, financial/personnel/operations authority or provider state requires explicit versioning, characterization and separate scope.
+
+
+## Wildlands business processes
+
+The process extension adds a versioned JSON definition, shared-ECS case/token simulation, capacity queues, typed decisions, structured parallel task chains and joins, bounded rework, per-step scenes, 2D/Three.js views, guarded agent edits, Scene Forge scaffold/asset attachment and offline HTML builds. The agency delivery example uses synthetic timings. It does not implement BPMN interchange, external service execution, nested parallel regions, process checkpoints or Godot process export. See the [contract](business-process-engine.md) and [authoring workflow](../how-to/business-process-authoring.md).

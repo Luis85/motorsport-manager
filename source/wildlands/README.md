@@ -132,3 +132,8 @@ The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-
 Architecture sources and the implemented plan: [research](ARCHITECTURE-RESEARCH.md), [systemic design](SYSTEMIC-DESIGN.md), [Excalibur adaptations](EXCALIBUR-TOOLBOX-REVIEW.md), [improvement plan](RESEARCH-IMPROVEMENT-PLAN.md).
 
 Central default tuning, the balancing workshop, CLI experiments and captured-value semantics are documented in [BALANCING.md](BALANCING.md).
+
+
+## Business process scenes
+
+`bin/wildlands process discover` exposes definition-first agent tools for business processes. [Agency delivery](../../docs/concepts/agency-delivery/README.md) demonstrates 12 scenes, shared resources, parallel design and rework in one offline 2D/3D HTML. Read the [contract](../../docs/reference/business-process-engine.md) and [workflow](../../docs/how-to/business-process-authoring.md).

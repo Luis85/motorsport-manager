@@ -373,7 +373,23 @@
     "source/content-installers/template-games.cts",
     "source/test-support/install-games.cts",
     "source/test-support/game-fixtures.cts",
-    "source/test-content-provider.cts"
+    "source/test-content-provider.cts",
+    "source/process-contracts.d.ts",
+    "source/process-schema.ts",
+    "source/process-graph.ts",
+    "source/process-catalog.ts",
+    "source/process-systems.ts",
+    "source/process-session.ts",
+    "source/process-authoring.ts",
+    "source/process-application.ts",
+    "source/process-sdk.cts",
+    "source/process-renderer-2d.ts",
+    "source/process-renderer-3d.ts",
+    "source/process-ui.ts",
+    "source/tools/process-cli.cts",
+    "source/tools/process-forge.cts",
+    "source/test-process.cts",
+    "source/verification/process-browser.ts"
   ],
   "include": []
 }

@@ -90,7 +90,7 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
    assert.ifError(process.error);assert.equal(process.signal,null,process.stderr);
    return {status:process.status,report:JSON.parse(fs.readFileSync(path.join(fixture,'.generated','typescript-architecture-results.json'),'utf8')) as PolicyResult};
   };
-  const baseline=run();assert.equal(baseline.status,0);assert.equal(baseline.report.passed,baseline.report.total);
+  const baseline=run();assert.equal(baseline.status,0,JSON.stringify(baseline.report.results.filter(result=>!result.passed)));assert.equal(baseline.report.passed,baseline.report.total);
   const catalog=path.join(fixture,'source','asset-catalog.ts'),original=fs.readFileSync(catalog,'utf8');
   for(const [injection,reason] of [
    ['const device=globalThis; device.document.body; device.fetch("/asset");','asset-catalog.ts: platform/nondeterministic API'],

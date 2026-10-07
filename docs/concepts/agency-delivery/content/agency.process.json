@@ -1,0 +1,1958 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "agency-delivery",
+  "name": "Agency delivery lab",
+  "description": "Follow a project from discovery to handover. UX and technical design run in parallel; shared developers and QA create visible queues. Two project groups exercise both acceptance and rework. All values are synthetic.",
+  "start": "intake",
+  "resources": [
+    {
+      "id": "product-owner",
+      "name": "Product owner",
+      "capacity": 1,
+      "costPerMinute": 2
+    },
+    {
+      "id": "designer",
+      "name": "UX designer",
+      "capacity": 1,
+      "costPerMinute": 2
+    },
+    {
+      "id": "developer",
+      "name": "Developers",
+      "capacity": 2,
+      "costPerMinute": 3
+    },
+    {
+      "id": "qa",
+      "name": "QA specialist",
+      "capacity": 1,
+      "costPerMinute": 2
+    }
+  ],
+  "steps": [
+    {
+      "id": "intake",
+      "name": "Project intake",
+      "kind": "start",
+      "scene": {
+        "id": "scene-intake",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-intake",
+          "name": "Project intake",
+          "materials": {
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#77b5a0",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "podium",
+                  "position": [
+                    0,
+                    0.4,
+                    0
+                  ],
+                  "scale": [
+                    1.8,
+                    0.8,
+                    1.8
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "marker",
+                  "position": [
+                    0,
+                    1.05,
+                    0
+                  ],
+                  "scale": [
+                    0.7,
+                    0.6,
+                    0.7
+                  ],
+                  "material": "accent"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "An approved project brief enters the agency delivery process."
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery",
+      "kind": "task",
+      "scene": {
+        "id": "scene-discovery",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-discovery",
+          "name": "Discovery",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "A product owner clarifies the problem, users and success measures.",
+      "duration": 12,
+      "resources": {
+        "product-owner": 1
+      },
+      "cost": 10
+    },
+    {
+      "id": "design-split",
+      "name": "Plan together",
+      "kind": "fork",
+      "scene": {
+        "id": "scene-design-split",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#91b9d5",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-design-split",
+          "name": "Plan together",
+          "materials": {
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "podium",
+                  "position": [
+                    0,
+                    0.4,
+                    0
+                  ],
+                  "scale": [
+                    1.8,
+                    0.8,
+                    1.8
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "marker",
+                  "position": [
+                    0,
+                    1.05,
+                    0
+                  ],
+                  "scale": [
+                    0.7,
+                    0.6,
+                    0.7
+                  ],
+                  "material": "accent"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "UX and technical design run in parallel. Both are needed before implementation.",
+      "join": "design-ready"
+    },
+    {
+      "id": "ux",
+      "name": "UX design",
+      "kind": "task",
+      "scene": {
+        "id": "scene-ux",
+        "position": [
+          42,
+          -8
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-ux",
+          "name": "UX design",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "The designer shapes the user flow and acceptance examples.",
+      "duration": 18,
+      "resources": {
+        "designer": 1
+      },
+      "set": {
+        "uxReady": true
+      }
+    },
+    {
+      "id": "architecture",
+      "name": "Technical design",
+      "kind": "task",
+      "scene": {
+        "id": "scene-architecture",
+        "position": [
+          42,
+          8
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-architecture",
+          "name": "Technical design",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "An engineer defines integration seams and the implementation approach.",
+      "duration": 14,
+      "resources": {
+        "developer": 1
+      },
+      "set": {
+        "techReady": true
+      }
+    },
+    {
+      "id": "design-ready",
+      "name": "Ready to build",
+      "kind": "join",
+      "scene": {
+        "id": "scene-design-ready",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#91b9d5",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-design-ready",
+          "name": "Ready to build",
+          "materials": {
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "podium",
+                  "position": [
+                    0,
+                    0.4,
+                    0
+                  ],
+                  "scale": [
+                    1.8,
+                    0.8,
+                    1.8
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "marker",
+                  "position": [
+                    0,
+                    1.05,
+                    0
+                  ],
+                  "scale": [
+                    0.7,
+                    0.6,
+                    0.7
+                  ],
+                  "material": "accent"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "Wait for both design branches of this project to finish."
+    },
+    {
+      "id": "implementation",
+      "name": "Implementation",
+      "kind": "task",
+      "scene": {
+        "id": "scene-implementation",
+        "position": [
+          56,
+          24
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-implementation",
+          "name": "Implementation",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "A developer implements the agreed feature. Shared capacity may create a queue.",
+      "duration": 25,
+      "resources": {
+        "developer": 1
+      },
+      "cost": 15
+    },
+    {
+      "id": "qa",
+      "name": "Quality review",
+      "kind": "task",
+      "scene": {
+        "id": "scene-qa",
+        "position": [
+          42,
+          24
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-qa",
+          "name": "Quality review",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "QA checks the feature against its acceptance examples.",
+      "duration": 10,
+      "resources": {
+        "qa": 1
+      }
+    },
+    {
+      "id": "review-gate",
+      "name": "Accepted?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-review-gate",
+        "position": [
+          28,
+          24
+        ],
+        "color": "#d6a2ce",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-review-gate",
+          "name": "Accepted?",
+          "materials": {
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#d6a2ce",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "podium",
+                  "position": [
+                    0,
+                    0.4,
+                    0
+                  ],
+                  "scale": [
+                    1.8,
+                    0.8,
+                    1.8
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "marker",
+                  "position": [
+                    0,
+                    1.05,
+                    0
+                  ],
+                  "scale": [
+                    0.7,
+                    0.6,
+                    0.7
+                  ],
+                  "material": "accent"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "Cases marked needsRework take one rework loop; other cases proceed to handover."
+    },
+    {
+      "id": "rework",
+      "name": "Resolve findings",
+      "kind": "task",
+      "scene": {
+        "id": "scene-rework",
+        "position": [
+          42,
+          39
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-rework",
+          "name": "Resolve findings",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "Correct the findings and clear needsRework before QA checks the project again.",
+      "duration": 8,
+      "resources": {
+        "developer": 1
+      },
+      "set": {
+        "needsRework": false
+      }
+    },
+    {
+      "id": "handover",
+      "name": "Client handover",
+      "kind": "task",
+      "scene": {
+        "id": "scene-handover",
+        "position": [
+          14,
+          24
+        ],
+        "color": "#ffbb73",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-handover",
+          "name": "Client handover",
+          "materials": {
+            "wood": {
+              "color": "#8c725d",
+              "roughness": 0.8,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "screen": {
+              "color": "#91b9d5",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#ffbb73",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "desk",
+                  "position": [
+                    0,
+                    1.05,
+                    -0.6
+                  ],
+                  "scale": [
+                    3.4,
+                    0.18,
+                    1.4
+                  ],
+                  "material": "wood"
+                },
+                {
+                  "primitive": "box",
+                  "id": "left-leg",
+                  "position": [
+                    -1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "right-leg",
+                  "position": [
+                    1.4,
+                    0.5,
+                    -0.6
+                  ],
+                  "scale": [
+                    0.15,
+                    1,
+                    1
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor",
+                  "position": [
+                    0,
+                    1.62,
+                    -0.8
+                  ],
+                  "scale": [
+                    1,
+                    0.7,
+                    0.12
+                  ],
+                  "material": "screen"
+                },
+                {
+                  "primitive": "box",
+                  "id": "monitor-stand",
+                  "position": [
+                    0,
+                    1.23,
+                    -0.8
+                  ],
+                  "scale": [
+                    0.15,
+                    0.25,
+                    0.15
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "keyboard",
+                  "position": [
+                    0,
+                    1.17,
+                    -0.1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.05,
+                    0.25
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair",
+                  "position": [
+                    0,
+                    0.65,
+                    1
+                  ],
+                  "scale": [
+                    0.8,
+                    0.15,
+                    0.8
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-back",
+                  "position": [
+                    0,
+                    1.1,
+                    1.35
+                  ],
+                  "scale": [
+                    0.8,
+                    0.9,
+                    0.12
+                  ],
+                  "material": "accent"
+                },
+                {
+                  "primitive": "box",
+                  "id": "chair-leg",
+                  "position": [
+                    0,
+                    0.3,
+                    1
+                  ],
+                  "scale": [
+                    0.16,
+                    0.6,
+                    0.16
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "board",
+                  "position": [
+                    -2.8,
+                    1.1,
+                    -1.7
+                  ],
+                  "scale": [
+                    1.2,
+                    1.7,
+                    0.1
+                  ],
+                  "material": "screen"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "The product owner hands over the accepted increment and supporting documentation.",
+      "duration": 6,
+      "resources": {
+        "product-owner": 1
+      }
+    },
+    {
+      "id": "delivered",
+      "name": "Delivered",
+      "kind": "end",
+      "scene": {
+        "id": "scene-delivered",
+        "position": [
+          0,
+          24
+        ],
+        "color": "#77b5a0",
+        "asset": {
+          "format": "littlewild-3d-asset",
+          "schemaVersion": 1,
+          "category": "item",
+          "id": "scene-delivered",
+          "name": "Delivered",
+          "materials": {
+            "frame": {
+              "color": "#536379",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            },
+            "accent": {
+              "color": "#77b5a0",
+              "roughness": 0.65,
+              "metalness": 0,
+              "flatShading": false
+            }
+          },
+          "models": {
+            "world": {
+              "nodes": [
+                {
+                  "primitive": "box",
+                  "id": "podium",
+                  "position": [
+                    0,
+                    0.4,
+                    0
+                  ],
+                  "scale": [
+                    1.8,
+                    0.8,
+                    1.8
+                  ],
+                  "material": "frame"
+                },
+                {
+                  "primitive": "box",
+                  "id": "marker",
+                  "position": [
+                    0,
+                    1.05,
+                    0
+                  ],
+                  "scale": [
+                    0.7,
+                    0.6,
+                    0.7
+                  ],
+                  "material": "accent"
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      },
+      "description": "The project case is complete. Its cycle time contributes to the run metrics."
+    }
+  ],
+  "flows": [
+    {
+      "id": "intake-discovery",
+      "from": "intake",
+      "to": "discovery"
+    },
+    {
+      "id": "discovery-design-split",
+      "from": "discovery",
+      "to": "design-split"
+    },
+    {
+      "id": "design-split-ux",
+      "from": "design-split",
+      "to": "ux"
+    },
+    {
+      "id": "design-split-architecture",
+      "from": "design-split",
+      "to": "architecture"
+    },
+    {
+      "id": "ux-design-ready",
+      "from": "ux",
+      "to": "design-ready"
+    },
+    {
+      "id": "architecture-design-ready",
+      "from": "architecture",
+      "to": "design-ready"
+    },
+    {
+      "id": "design-ready-implementation",
+      "from": "design-ready",
+      "to": "implementation"
+    },
+    {
+      "id": "implementation-qa",
+      "from": "implementation",
+      "to": "qa"
+    },
+    {
+      "id": "qa-review-gate",
+      "from": "qa",
+      "to": "review-gate"
+    },
+    {
+      "id": "review-gate-rework",
+      "from": "review-gate",
+      "to": "rework",
+      "label": "Findings",
+      "when": {
+        "field": "needsRework",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "review-gate-handover",
+      "from": "review-gate",
+      "to": "handover",
+      "label": "Accepted"
+    },
+    {
+      "id": "rework-qa",
+      "from": "rework",
+      "to": "qa",
+      "label": "Recheck"
+    },
+    {
+      "id": "handover-delivered",
+      "from": "handover",
+      "to": "delivered"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "count": 3,
+      "interval": 8,
+      "data": {
+        "needsRework": false
+      }
+    },
+    {
+      "at": 4,
+      "count": 3,
+      "interval": 8,
+      "data": {
+        "needsRework": true
+      }
+    }
+  ]
+}

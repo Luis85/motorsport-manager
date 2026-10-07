@@ -68,6 +68,11 @@ export function admitTemplate(template: 'rts' | 'pet', profile: Profile): void {
 /** Install the folder's own profile in this realm and run the engine's validators for its template. */
 export function admitGameProfile(game: CompiledGame, audit: BalancingAudit): Profile {
  const profile = (require('../content-provider.js') as LWContentProvider.Api).install(game.profile);
+ if (game.manifest.template === 'process') {
+  (require('../process-sdk.cjs') as typeof import('../process-sdk.cjs')).catalog.admit(profile.process);
+  return profile;
+ }
+
  if (game.manifest.template === 'colony') admitColony(game, profile, audit);
  else admitTemplate(game.manifest.template, profile);
  return profile;

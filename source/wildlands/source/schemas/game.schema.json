@@ -51,7 +51,8 @@
       "enum": [
         "colony",
         "rts",
-        "pet"
+        "pet",
+        "process"
       ]
     },
     "engine": {
@@ -240,6 +241,35 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "template": {
+            "const": "process"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "$ref": "#/$defs/processContent"
+          },
+          "features": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "targets": {
+            "type": "object",
+            "properties": {
+              "godot": false
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -372,6 +402,21 @@
           "minLength": 1,
           "maxLength": 255,
           "pattern": "^(?:[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*/){0,7}[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*$"
+        }
+      }
+    },
+    "processContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "definition"
+      ],
+      "properties": {
+        "definition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^(?:[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*/){0,7}[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*\\.json$"
         }
       }
     }

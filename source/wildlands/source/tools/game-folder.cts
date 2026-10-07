@@ -20,7 +20,7 @@ import {spawnSync} from 'node:child_process';
 import {definitions, read, record, type Definition, type RecordValue} from './definition-source.cjs';
 import {contentDocuments} from './bundled-content.cjs';
 import {assetDefinitions, creatureConfig, creatureDefinitions, petAssetDefinitions} from './bundled-assets.cjs';
-import {manifestErrors, type GameManifest, type ColonyContent, type RtsContent, type PetContent} from './game-manifest.cjs';
+import {manifestErrors, type GameManifest, type ColonyContent, type RtsContent, type PetContent, type ProcessContent} from './game-manifest.cjs';
 
 export type {GameManifest} from './game-manifest.cjs';
 type Profile = LWContentProvider.Profile;
@@ -33,7 +33,7 @@ export const ENGINE_SOURCE = path.join(PROJECT, 'source');
  * Games the engine build composes into its fixtures (the composite showcase, the transitional
  * installers) and engine-source payload, in showcase order: colony packs appear in this order.
  */
-export const BUNDLED_GAMES = ['littlewild', 'emberworks', 'office', 'rts-frontier', 'pocket-pet'] as const;
+export const BUNDLED_GAMES = ['littlewild', 'emberworks', 'office', 'rts-frontier', 'pocket-pet', 'agency-delivery'] as const;
 /** Inventory bounds: folders are reviewable data, not archives. */
 export const LIMITS = Object.freeze({files: 2048, fileBytes: 8 * 1024 * 1024, totalBytes: 32 * 1024 * 1024, depth: 8});
 const DOCUMENT = /^(?:README\.md|PROVENANCE\.md|LICENSE(?:[.-][A-Za-z0-9.-]{1,32})?)$/;
@@ -121,6 +121,7 @@ function referenced(manifest: GameManifest): {files: string[]; assets: string | 
   return {assets: colony.assets, files: ['game.json', colony.balancing, colony.creatures.catalog, colony.creatures.editorFields,
    colony.interactions, ...colony.packs, ...colony.skillTree ? [colony.skillTree] : [], ...colony.adventureExamples ?? []]};
  }
+ if (manifest.template === 'process') return {assets: null, files: ['game.json', (content as ProcessContent).definition]};
  if (manifest.template === 'pet') { const pet = content as PetContent; return {assets: pet.assets ?? null, files: ['game.json', pet.catalog]}; }
  return {assets: null, files: ['game.json', (content as RtsContent).catalog]};
 }
@@ -213,6 +214,10 @@ export function compileGame(input: string | LoadedGame): CompiledGame {
  const game = typeof input === 'string' ? loadGame(input) : input, manifest = game.manifest;
  if (manifest.template === 'colony') return colony(game);
  const base = {format: 'wildlands-content-profile' as const, version: 1 as const, id: manifest.id, storage: plain(manifest.storage)};
+ if (manifest.template === 'process') {
+  const definition = json(game.root, (manifest.content as ProcessContent).definition);
+  return {...game, packages: [], profile: {...base, process: definition}, data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWProcessDefinition', definition]])};
+ }
  if (manifest.template === 'rts') {
   const catalog = json(game.root, (manifest.content as RtsContent).catalog);
   return {...game, packages: [], profile: {...base, rts: catalog}, data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWRTSDefinitions', catalog]])};

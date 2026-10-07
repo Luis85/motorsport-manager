@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "Agency delivery lab",
+  "activeScene": "scene-intake",
+  "scenes": {
+    "scene-intake": "scenes/scene-intake.scene.json",
+    "scene-discovery": "scenes/scene-discovery.scene.json",
+    "scene-design-split": "scenes/scene-design-split.scene.json",
+    "scene-ux": "scenes/scene-ux.scene.json",
+    "scene-architecture": "scenes/scene-architecture.scene.json",
+    "scene-design-ready": "scenes/scene-design-ready.scene.json",
+    "scene-implementation": "scenes/scene-implementation.scene.json",
+    "scene-qa": "scenes/scene-qa.scene.json",
+    "scene-review-gate": "scenes/scene-review-gate.scene.json",
+    "scene-rework": "scenes/scene-rework.scene.json",
+    "scene-handover": "scenes/scene-handover.scene.json",
+    "scene-delivered": "scenes/scene-delivered.scene.json"
+  },
+  "models": {
+    "scene-intake": "models/scene-intake.model.json",
+    "scene-discovery": "models/scene-discovery.model.json",
+    "scene-design-split": "models/scene-design-split.model.json",
+    "scene-ux": "models/scene-ux.model.json",
+    "scene-architecture": "models/scene-architecture.model.json",
+    "scene-design-ready": "models/scene-design-ready.model.json",
+    "scene-implementation": "models/scene-implementation.model.json",
+    "scene-qa": "models/scene-qa.model.json",
+    "scene-review-gate": "models/scene-review-gate.model.json",
+    "scene-rework": "models/scene-rework.model.json",
+    "scene-handover": "models/scene-handover.model.json",
+    "scene-delivered": "models/scene-delivered.model.json"
+  }
+}

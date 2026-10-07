@@ -29,7 +29,8 @@ export const BUNDLES = [
   "template-rts",
   "rts-editor",
   "template-pet",
-  "play-boot"
+  "play-boot",
+  "template-process"
 ] as const;
 export type BundleTag = typeof BUNDLES[number];
 export type Insert = readonly [marker:string,file:string,kind:InsertKind,bundle:BundleTag];
@@ -282,5 +283,16 @@ export const INSERTS: readonly Insert[] = [
   ["PET_HOST_CSS", "pet-host.css", "style", "template-pet"],
   ["UI", "ui.js", "script", "colony-shell"],
   ["PLAY_CSS", "play.css", "style", "play-boot"],
-  ["PLAY_BOOT", "play-boot.js", "script", "play-boot"]
+  ["PLAY_BOOT", "play-boot.js", "script", "play-boot"],
+  ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
+  ["PROCESS_GRAPH", "process-graph.js", "script", "template-process"],
+  ["PROCESS_CATALOG", "process-catalog.js", "script", "template-process"],
+  ["PROCESS_SYSTEMS", "process-systems.js", "script", "template-process"],
+  ["PROCESS_SESSION", "process-session.js", "script", "template-process"],
+  ["PROCESS_AUTHORING", "process-authoring.js", "script", "template-process"],
+  ["PROCESS_APPLICATION", "process-application.js", "script", "template-process"],
+  ["PROCESS_RENDERER_2D", "process-renderer-2d.js", "script", "template-process"],
+  ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
+  ["PROCESS_UI", "process-ui.js", "script", "template-process"],
+  ["PROCESS_CSS", "process.css", "style", "template-process"]
 ];

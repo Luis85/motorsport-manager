@@ -1,0 +1,76 @@
+/* Process Studio extends Scene Forge's neutral stage, amber intent, and 5px control language. */
+.process-studio { --bg:#13181f; --panel:#1d242e; --line:#364150; --text:#edf2f7; --muted:#b1bdcd; --accent:#ffbb73; margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,sans-serif; color-scheme:dark; }
+.process-studio * { box-sizing:border-box; scrollbar-color:#536379 var(--panel); scrollbar-width:thin; }
+.process-studio ::selection { background:#ffbb73; color:#13181f; }
+.process-studio button,.process-studio select,.process-studio textarea { font:inherit; color:var(--text); border:1px solid var(--line); border-radius:5px; background:var(--panel); }
+.process-studio button { min-height:36px; padding:7px 12px; cursor:pointer; }
+.process-studio button:hover { background:#2c3744; }
+.process-studio button:disabled { cursor:not-allowed; opacity:.5; }
+.process-studio button:focus-visible,.process-studio select:focus-visible,.process-studio textarea:focus-visible,.process-studio canvas:focus-visible,.process-studio svg [tabindex]:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.process-studio button[aria-pressed=true],.process-studio button.selected { background:#3e3329; border-color:#ad8059; }
+.process-studio .primary { background:var(--accent); color:var(--bg); font-weight:650; border-color:var(--accent); }
+.process-studio .primary:hover { background:#f5c99c; }
+.process-studio select { padding:7px; }
+.process-studio h1,.process-studio h2,.process-studio h3,.process-studio p { margin:0; }
+.process-studio h1 { font-size:22px; letter-spacing:-.025em; }
+.process-studio h2 { font-size:15px; font-weight:650; }
+.process-studio h3 { margin:24px 0 10px; font-size:13px; }
+.process-studio p { color:var(--muted); }
+.process-studio [hidden] { display:none!important; }
+.process-header { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:19px 24px; border-bottom:1px solid var(--line); }
+.process-header p { font-size:12px; margin-top:3px; }
+.process-file-actions,.process-view-controls { display:flex; gap:7px; flex-wrap:wrap; }
+.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:13px 24px; }
+.process-toolbar label { margin-left:12px; color:var(--muted); }
+.process-clock { margin-left:auto; font-size:18px; font-variant-numeric:tabular-nums; font-weight:650; }
+#run-status { min-width:62px; color:var(--muted); }
+.process-message { min-height:32px; padding:5px 24px 9px; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+.process-message.error { color:#ffc3bc; }
+.process-workspace { display:grid; grid-template-columns:235px minmax(300px,1fr) 265px; border-block:1px solid var(--line); min-height:560px; }
+.process-nav,.process-inspector { background:var(--panel); padding:18px 16px; min-width:0; }
+.process-nav { border-right:1px solid var(--line); }
+.process-inspector { border-left:1px solid var(--line); }
+.process-panel-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; color:var(--muted); }
+.process-panel-heading h2 { color:var(--text); }
+#overview { width:100%; text-align:left; margin-bottom:10px; }
+.process-step { width:100%; border-color:transparent!important; display:flex; align-items:center; gap:9px; text-align:left; padding:9px 6px!important; background:transparent!important; }
+.process-step:hover { background:#29333f!important; }
+.process-step.selected { background:#3e3329!important; }
+.process-step strong { display:block; font-size:12px; font-weight:600; overflow-wrap:anywhere; }
+.process-step small { display:block; font-size:11px; color:var(--muted); }
+.process-step i { width:5px; height:5px; border-radius:50%; margin-left:auto; flex-shrink:0; }
+.process-order { color:#9baabd; font-size:11px; font-variant-numeric:tabular-nums; }
+.process-note { margin-top:18px!important; font-size:11px; }
+.process-stage { min-width:0; display:flex; flex-direction:column; }
+.process-stagebar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 20px; }
+.process-stagebar p { font-size:11px; margin-top:3px; }
+#viewport { position:relative; flex:1; height:440px; min-height:400px; }
+#canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; touch-action:none; }
+#map svg { width:100%; height:100%; }
+.process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:9px 20px; font-size:11px; color:var(--muted); }
+.process-legend span { display:inline-flex; align-items:center; gap:5px; }
+.process-legend i { width:6px; height:6px; border-radius:50%; display:inline-block; }
+.active-dot { background:var(--accent); }.queue-dot { background:#91b9d5; }
+#camera-hint { margin-left:auto; }
+.process-metrics { display:flex; justify-content:space-between; gap:12px; padding:18px 20px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
+.process-metrics span { display:block; font-size:11px; color:var(--muted); }
+.process-metrics strong { display:block; font-size:17px; font-weight:550; margin-top:3px; }
+#inspector { margin-top:12px; font-size:12px; }
+.process-inspector dl { display:grid; grid-template-columns:1fr auto; gap:7px; margin:16px 0; }
+.process-inspector dt { color:var(--muted); }.process-inspector dd { margin:0; font-variant-numeric:tabular-nums; }
+.next-step { display:block; width:100%; text-align:left; margin-top:6px; font-size:12px!important; }
+.process-pool { margin-bottom:13px; font-size:12px; }
+.process-pool strong { display:block; font-weight:550; }.process-pool span { color:var(--muted); }
+.process-pool progress { display:block; width:100%; height:5px; margin-top:6px; accent-color:var(--accent); }
+#report { margin-top:13px; font-size:12px; }
+.process-bottom { padding:0 24px 22px; }.process-bottom-nav { display:flex; align-items:center; gap:8px; padding:14px 0; }
+.process-bottom-nav span { margin-left:auto; font-size:11px; color:var(--muted); }
+.process-events { max-height:200px; overflow:auto; font-size:12px; }
+.process-events>div { display:grid; grid-template-columns:68px 95px 125px 1fr; gap:14px; padding:7px 0; border-bottom:1px solid #26313e; }
+.process-events time { color:var(--muted); font-variant-numeric:tabular-nums; }.process-events strong { font-weight:500; }
+#editor { padding:5px 0; }#editor p { margin-bottom:12px; font-size:12px; }#editor label { display:block; margin-bottom:7px; }
+#draft { width:100%; height:300px; resize:vertical; font:12px/1.6 ui-monospace,monospace; padding:14px; caret-color:var(--accent); }
+.process-editor-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }#diagnostics { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
+@media(max-width:1100px) { .process-workspace { grid-template-columns:200px minmax(300px,1fr); }.process-inspector { grid-column:1/-1; border-left:0; border-top:1px solid var(--line); display:grid; grid-template-columns:1fr 1fr; column-gap:24px; }.process-inspector h3 { margin-top:0; }#pools { grid-column:2; grid-row:2; }#report { width:max-content; }.process-stagebar { flex-wrap:wrap; }.process-metrics { flex-wrap:wrap; } }
+@media(max-width:650px) { .process-header { align-items:flex-start; flex-direction:column; padding:16px; }.process-toolbar { padding:10px 16px; }.process-toolbar label { margin-left:0; }.process-workspace { display:flex; flex-direction:column; }.process-stage { order:0; }.process-nav { order:1; border-top:1px solid var(--line); border-right:0; }#steps { display:grid; grid-template-columns:1fr 1fr; gap:3px; }.process-inspector { order:2; display:block; }.process-inspector h3 { margin-top:22px; }#viewport { min-height:350px; height:350px; }.process-metrics { padding:14px 16px; }.process-metrics strong { font-size:16px; }.process-bottom { padding-inline:16px; }.process-bottom-nav { flex-wrap:wrap; }.process-bottom-nav span { margin-left:0; }.process-events>div { grid-template-columns:52px 78px 1fr; gap:7px; }.process-events>div>span:last-child { grid-column:2/-1; }.process-message { padding-inline:16px; } }
+@media(prefers-reduced-motion:reduce) { .process-studio * { scroll-behavior:auto; } }

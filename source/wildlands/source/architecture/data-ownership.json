@@ -254,6 +254,14 @@
       "owner": "content-model",
       "kind": "schema",
       "validatorRole": "schema"
+    },
+    {
+      "id": "business-process",
+      "pattern": "games/*/content/*.process.json",
+      "owner": "process-definition",
+      "kind": "scenario",
+      "validatorRole": "process",
+      "embeddedGlobal": "LWProcessDefinition"
     }
   ],
   "historicalFixtures": [

@@ -3,6 +3,7 @@ import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import {gunzipSync} from 'node:zlib';
 import {writeWildlandsBundle,runtimeClosure,RUNTIME_ROOTS,INSTALLER_SHIM} from './tools/wildlands-bundle.cjs';
 import {profile as installed} from './test-support/install-games.cjs';
@@ -111,7 +112,8 @@ test('Godot runtime bundle is exactly the static require closure of the bridge e
  for(const excluded of ['engine-source-bundle.json','scenario-v3-grown.json','interaction-library.json','asset-definitions.json','content-installers/littlewild-game.js','ui.js','world-3d.js','colony-ui.js','scenario-ui.js','wildlands-ui.js','play-boot.js','rts-host.js','pet-host.js','wildlands-godot.js','wildlands-sdk.cjs','tools/wildlands-cli.cjs'])assert(!paths.includes(excluded),excluded);
  assert(paths.length<160);assert.equal(bundle.sharedEngineSources,undefined);
  const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'wildlands-runtime-loader.json'),'utf8')) as {decodedBytes:number;data:string};assert.equal(gunzipSync(Buffer.from(loader.data,'base64')).toString(),text);assert.equal(loader.decodedBytes,Buffer.byteLength(text));
- const directory=fs.mkdtempSync(path.join(path.resolve(__dirname,'..'),'.wildlands-closure-test-'));
+ // Isolate generated fixtures from concurrent architecture scans of authored source.
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'wildlands-closure-test-'));
  try{
   for(const file of bundle.files){const target=path.join(directory,file.path.slice('runtime/'.length));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,file.content);}
   const entry=path.join(directory,'tools/wildlands-runtime.cjs'),original=fs.readFileSync(entry,'utf8');

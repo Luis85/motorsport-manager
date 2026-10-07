@@ -374,6 +374,35 @@
       "files": [
         "pet-systems.ts"
       ]
+    },
+    {
+      "id": "process-definition",
+      "layer": "domain",
+      "files": [
+        "process-schema.ts",
+        "process-graph.ts",
+        "process-catalog.ts",
+        "process-systems.ts"
+      ]
+    },
+    {
+      "id": "process-application",
+      "layer": "application",
+      "files": [
+        "process-session.ts",
+        "process-authoring.ts",
+        "process-application.ts"
+      ]
+    },
+    {
+      "id": "process-presentation",
+      "layer": "presentation",
+      "files": [
+        "process-renderer-2d.ts",
+        "process-renderer-3d.ts",
+        "process-ui.ts",
+        "process-sdk.cts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -445,7 +474,12 @@
     "LWContentProvider",
     "LWGameProfile",
     "LWCreatureEditorFieldDefinitions",
-    "LWScenarioPacks"
+    "LWScenarioPacks",
+    "LWProcessSchema",
+    "LWProcessGraph",
+    "LWProcessCatalog",
+    "LWProcessSystems",
+    "LWProcessDefinition"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -477,7 +511,8 @@
     "LWRTSDefinitions",
     "LWPetDefinitions",
     "LWPetAssetDefinitions",
-    "LWGameProfile"
+    "LWGameProfile",
+    "LWProcessDefinition"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,
