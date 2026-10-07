@@ -3,7 +3,7 @@
 /** Node composition entry: the same toolbox and validated bundled data used by the browser. */
 // Transitional: without an installed game the SDK installs the bundled Littlewild profile.
 require('./content-provider.js');
-(require('./test-support/littlewild-game.cjs') as {installLittlewild():unknown}).installLittlewild();
+(require('./content-installers/littlewild-game.cjs') as {installLittlewild():unknown}).installLittlewild();
 require('./renderer-catalog.js');
 require('./animation-catalog.js');
 require('./balancing-rules.js');

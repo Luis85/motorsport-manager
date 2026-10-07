@@ -1,7 +1,7 @@
 /// <reference path="../pet-contracts.d.ts" />
 /** JSON-only Pocket Pet catalog and bounded care-experiment adapter. Outputs are explicit files. */
 import {emit,helpRequested,readJsonFile,writeJsonFile} from './cli-io.cjs';
-import {installTemplate} from '../test-support/template-games.cjs';
+import {installTemplate} from '../content-installers/template-games.cjs';
 // Transitional: the bundled template game is installed (inside the JSON error boundary) until game folders supply profiles.
 interface Tools {
  discover():unknown;catalog():LWPetData.Catalog;

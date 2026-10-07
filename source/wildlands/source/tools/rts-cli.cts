@@ -1,7 +1,7 @@
 /// <reference path="../rts-contracts.d.ts" />
 /** JSON-only RTS content and bounded session adapter. Player files are explicit outputs. */
 import {emit,helpRequested,readJsonFile,writeJsonFile} from './cli-io.cjs';
-import {installTemplate} from '../test-support/template-games.cjs';
+import {installTemplate} from '../content-installers/template-games.cjs';
 // Transitional: the bundled template game is installed (inside the JSON error boundary) until game folders supply profiles.
 interface Tools {
  discover():unknown;catalog():LWRTSData.Catalog;

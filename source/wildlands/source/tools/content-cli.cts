@@ -9,7 +9,7 @@
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 // Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
 // help) until game folders supply profiles.
-const {installLittlewild}=require('../test-support/littlewild-game.cjs');
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 function main(args){
  if(helpRequested(args)){emit({ok:true,usage:'content-cli.cjs validate <file> [--base <file>] | normalize <file> --out <file> [--base <file>] | export [--out <file>] | schema [--out <file>]'});return;}
  const command=args.shift(),options={};let filename=null;

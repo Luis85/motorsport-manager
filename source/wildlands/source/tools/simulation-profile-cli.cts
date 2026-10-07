@@ -4,7 +4,7 @@
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 // Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
 // help) until game folders supply profiles.
-const {installLittlewild}=require('../test-support/littlewild-game.cjs');
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 const args=process.argv.slice(2),[command,input]=args;
 const usage='simulation-profile-cli.cjs validate profile.json | fingerprint profile.json | export output.json | schema';
 try{

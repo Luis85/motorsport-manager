@@ -8,7 +8,7 @@
 const {readJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 // Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
 // help) until game folders supply profiles.
-const {installLittlewild}=require('../test-support/littlewild-game.cjs');
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 try {
   const args=process.argv.slice(2);
   if(helpRequested(args)){emit({ok:true,usage:'world-cli.cjs export | schema | validate <file> | diff <file>'});process.exit(0);}

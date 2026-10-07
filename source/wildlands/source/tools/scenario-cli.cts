@@ -4,7 +4,7 @@
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
 // Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
 // help) until game folders supply profiles.
-const {installLittlewild}=require('../test-support/littlewild-game.cjs');
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 const args=process.argv.slice(2),[command,input,output]=args;
 const usage='scenario-cli.cjs validate pack.json | capture story.json output.pack.json | export <scenario-id> output.pack.json | external-export pack.json scene-id tiled|ldtk|gltf|canvas|advanced-canvas output | external-import external-file output.pack.json [mapping-options.json] | engine-export pack.json scene-id output.engine.json | engine-export-validate engine.json';
 try{

@@ -359,8 +359,8 @@
     "source/verification/runtime-optionality-browser.ts",
     "source/content-provider-contracts.d.ts",
     "source/content-provider.ts",
-    "source/test-support/littlewild-game.cts",
-    "source/test-support/template-games.cts",
+    "source/content-installers/littlewild-game.cts",
+    "source/content-installers/template-games.cts",
     "source/test-support/install-games.cts",
     "source/test-content-provider.cts"
   ],

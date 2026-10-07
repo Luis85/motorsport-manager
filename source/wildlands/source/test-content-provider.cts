@@ -97,7 +97,7 @@ test('Browser artifacts adopt their declared data globals as the installed profi
 });
 
 test('The injected scenario catalog orders built-ins and selects its declared default pack',()=>fresh(`
- const P=require('./content-provider.js'),{littlewildProfile}=require('./test-support/littlewild-game.cjs'),base=littlewildProfile();
+ const P=require('./content-provider.js'),{littlewildProfile}=require('./content-installers/littlewild-game.cjs'),base=littlewildProfile();
  const ember=require('./content/emberworks.pack.json'),office=require('./content/office.pack.json'),classic=require('./content/littlewild.pack.json'),before=JSON.stringify([ember,office,classic]);
  P.install({...base,id:'emberworks',scenarios:{packs:[ember,office,classic],defaultId:'emberworks',canonicalId:'littlewild'}});
  const X=require('./scenario-runtime.js'),{projects}=require('./wildlands-project-sdk.cjs');

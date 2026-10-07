@@ -1,6 +1,6 @@
 /// <reference path="../content-provider-contracts.d.ts" />
 /**
- * Transitional bundled-game support: the Littlewild colony content profile, assembled from the
+ * Transitional runtime game installer (not test code): the Littlewild colony content profile, assembled from the
  * compiled `.generated` content exactly as the browser build injects it (balancing defaults,
  * compiled library schema, creature catalog, asset catalog and the three colony scenario packs).
  *

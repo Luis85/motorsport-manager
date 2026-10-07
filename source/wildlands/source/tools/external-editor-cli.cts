@@ -1,7 +1,7 @@
 /// <reference path="../external-editor-contracts.d.ts" />
 /* CLI file adapter: bounded bytes, structured diagnostics and atomic reviewed output. */
 import {readJsonFile,readBytesFile,writeJsonFile,emit} from './cli-io.cjs';
-import {installLittlewild} from '../test-support/littlewild-game.cjs';
+import {installLittlewild} from '../content-installers/littlewild-game.cjs';
 // Transitional: the bundled Littlewild game is installed until game folders supply profiles.
 installLittlewild();
 const editors=require('../external-editors.js') as LWExternalEditors.Api;

@@ -1,6 +1,6 @@
 /// <reference path="../content-provider-contracts.d.ts" />
 /**
- * Transitional bundled-game support for the RTS and Pocket Pet templates, kept apart from the
+ * Transitional runtime game installers (not test code) for the RTS and Pocket Pet templates, kept apart from the
  * Littlewild profile so the colony CLI bundle never embeds their catalogs or pet meshes.
  */
 import {contentProvider} from './littlewild-game.cjs';

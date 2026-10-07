@@ -153,11 +153,13 @@ both rules with regression probes.
   profile adopted from those globals (`fromGlobals`; `LWGameProfile` carries `storage`).
 - Node: entry points install before using content. `developer-sdk` (and through it the project
   SDK, `wildlands-runtime`, the Godot runtime and `bin/wildlands`) and the colony CLIs install the
-  bundled Littlewild profile from `source/test-support/littlewild-game.cts` when nothing is
-  installed; `rts-cli`/`pet-cli` install their template game; every Node suite first requires
-  `source/test-support/install-games.cts`, the composite showcase profile. `simulation.cjs`
-  loads the provider but installs nothing. These bundled installers are transitional until
-  game folders supply profiles.
+  bundled Littlewild profile from `source/content-installers/littlewild-game.cts` when nothing
+  is installed; `rts-cli`/`pet-cli` install their template game from
+  `source/content-installers/template-games.cts`. These runtime installers are part of the
+  Godot runtime closure and the CLI bundle, so they live outside `source/test-support/`, which
+  holds only test code: every Node suite first requires `source/test-support/install-games.cts`,
+  the composite showcase profile. `simulation.cjs` loads the provider but installs nothing. The
+  bundled installers are transitional until game folders supply profiles.
 
 `test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
 later installation, envelope admission, the browser adoption of data globals, the injected

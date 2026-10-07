@@ -7,8 +7,8 @@
  * and canonical pack), plus the RTS and Pocket Pet catalogs. It has no storage namespace, so the
  * legacy Littlewild save keys apply, exactly as in `.generated/artifacts/showcase.html`.
  */
-import {contentProvider,littlewildProfile} from './littlewild-game.cjs';
-import {petProfile,rtsProfile} from './template-games.cjs';
+import {contentProvider,littlewildProfile} from '../content-installers/littlewild-game.cjs';
+import {petProfile,rtsProfile} from '../content-installers/template-games.cjs';
 
 export function showcaseProfile():LWContentProvider.Profile{
  const {storage:_storage,...colony}=littlewildProfile();

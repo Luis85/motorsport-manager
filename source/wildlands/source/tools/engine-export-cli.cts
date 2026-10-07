@@ -1,7 +1,7 @@
 /// <reference path="../engine-export-contracts.d.ts" />
 /** Atomic local code-generator export and integrity checking; no code is executed. */
 import {readJsonFile,writeJsonFile,emit} from './cli-io.cjs';
-import {installLittlewild} from '../test-support/littlewild-game.cjs';
+import {installLittlewild} from '../content-installers/littlewild-game.cjs';
 export async function run(args:readonly string[]):Promise<void>{
  const [command,input,sceneId,output]=args;
  try{

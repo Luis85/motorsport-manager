@@ -89,6 +89,8 @@ test('Runtime builds preserve owned data and ignore generated verification artif
   writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),expected);
   assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-loader.json'),'utf8'),loader);
   for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','content/scenario.schema.json'])assert(bundle.files.some(file=>file.path==='runtime/'+name),name);
+  // The native export rejects test files (test-wildlands-godot); runtime installers must live outside test-support.
+  assert(bundle.files.some(file=>file.path==='runtime/content-installers/littlewild-game.cjs'));assert(!bundle.files.some(file=>file.path.includes('test-')),'Godot runtime closure contains test code');
   const data=path.join(directory,'content','balancing.json'),changed=fs.readFileSync(data,'utf8')+'\n';fs.writeFileSync(data,changed);
   writeWildlandsBundle(source,directory);const updated=JSON.parse(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8')) as {files:{path:string;content:string}[]};
   assert.equal(updated.files.find(file=>file.path==='runtime/content/balancing.json')?.content,changed);assert.equal(updated.files.length,bundle.files.length);
