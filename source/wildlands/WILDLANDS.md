@@ -12,8 +12,12 @@ application lifecycles, simulations and persistence.
 
 ## Browser workspace
 
-Build with `npm run build`, then open `littlewild.html` in a desktop browser. The
-workspace offers project save/open, scenario review and the existing authoring
+The workspace is the studio build of a colony game. Build it on demand from the
+repository root with
+`bin/wildlands build-game --game docs/concepts/littlewild --profile studio --output littlewild-studio.html`
+and open that file in a desktop browser (the published `demos/` are play builds
+without the workspace; a source checkout's `npm run build` also writes
+`.generated/artifacts/studio.html`). The workspace offers project save/open, scenario review and the existing authoring
 tools for scenes/worlds, creatures, balance and content libraries. Scenario review
 precedes **Start this scene**, which replaces the active story after confirmation.
 The existing world/scene, creature, terrain, building and storytelling editors

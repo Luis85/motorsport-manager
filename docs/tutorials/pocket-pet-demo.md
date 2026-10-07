@@ -9,19 +9,12 @@ Every 3D model in its room was authored in
 [Scene Forge](../../source/scene-forge/README.md). See the
 [Pocket Pet reference](../reference/pet-engine.md) for exact rules and limits.
 
-## Build and open the maker
+## Open the demo
 
-From the repository root:
-
-```sh
-cd source/wildlands
-npm ci
-npm run build
-```
-
-Open `littlewild.html` in a desktop browser with WebGL 2. Click **Pet demo** in
-the maker toolbar. A pink device frame shows a 3D room with a spotted egg on the
-rug. The panel lists **Fullness**, **Happiness**, **Energy**, **Cleanliness** and
+Open [`demos/pocket-pet.html`](../../demos/pocket-pet.html) from a clone of the
+repository in a desktop browser with WebGL 2. It is a self-contained file: it
+runs offline from disk with no install or build step. A pink device frame shows
+a 3D room with a spotted egg on the rug. The panel lists **Fullness**, **Happiness**, **Energy**, **Cleanliness** and
 **Health**, the pet's mood, age, stage, weight and care mistakes.
 
 ## Hatch the egg
@@ -73,12 +66,21 @@ start over.
 ## Save, restore and return
 
 **Export checkpoint** downloads the exact ECS state. Choose **Import → Checkpoint**
-and **Open JSON** to restore it; the pet opens paused. **Return to colony** closes
-the demo and stops its clock. The colony story is not advanced while the pet runs.
+and **Open JSON** to restore it; the pet opens paused. **Close Pocket Pet** closes
+the room and stops its clock.
+
+The published file is built from the Pocket Pet game folder by the engine CLI.
+After changing the folder, rebuild your own copy from the repository root:
+
+```sh
+bin/wildlands build-game --game docs/concepts/pocket-pet --output pocket-pet.html
+```
 
 ## Run a headless experiment
 
-The CLI runs bounded, deterministic caretakers through the same commands:
+The pet CLI is part of a source build (`cd source/wildlands`, `npm ci` and
+`npm run build` once). It runs bounded, deterministic caretakers through the same
+commands:
 
 ```sh
 npm run pet -- simulate attentive 900 mochi

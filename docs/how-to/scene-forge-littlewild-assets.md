@@ -103,6 +103,8 @@ node .generated/test-pet-catalog.cjs
 ```
 
 The build validates every definition through the asset catalog, and the pet
-catalog test resolves each species' stage models and props. Open the maker's
-**Pet demo** to inspect the result. These checks validate data and rendering
+catalog test resolves each species' stage models and props. Rebuild the demo
+(`bin/wildlands build-game --game docs/concepts/pocket-pet --output pocket-pet.html`
+from the repository root, or `npm run build:demos` to refresh `demos/`) and open
+it to inspect the result. These checks validate data and rendering
 contracts; they do not certify Blender or Godot imports.

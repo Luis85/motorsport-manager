@@ -7,8 +7,9 @@ folders, one per game, under [`docs/concepts/<id>/`](../concepts/README.md)
 (`game.json` plus the content, asset and README files it names). The CLI
 
 - validates, inspects and builds a game folder into one self-contained,
-  ready-to-play HTML file (the checked-in [`demos/`](../../demos/README.md) are
-  built this way), and
+  ready-to-play HTML file (the five checked-in [`demos/`](../../demos/README.md),
+  Littlewild, Emberworks, Office, RTS Frontier and Pocket Pet, are built this
+  way), and
 - creates, validates, inspects, plays, edits and compiles portable **Wildlands
   projects** (`wildlands-project` documents) into runnable Godot desktop
   projects. A project embeds the game it was made from, so after `create` no
@@ -55,7 +56,8 @@ bin/wildlands export --project "$OUT/edited.json" --output "$OUT/godot"
 ```
 
 Open `$OUT/littlewild.html`, or the checked-in
-[`demos/littlewild.html`](../../demos/littlewild.html), in a browser to play.
+[`demos/littlewild.html`](../../demos/littlewild.html), in a browser to play;
+every other game folder has its demo next to it (`demos/<id>.html`).
 The last command writes a complete Godot project: open it with
 `godot --path "$OUT/godot"`, or import `$OUT/godot/project.godot` in the Godot
 editor.
@@ -415,7 +417,11 @@ bin/wildlands build-game --game docs/concepts/littlewild --output "$OUT/littlewi
 bin/wildlands build-game --game docs/concepts/littlewild --check "$OUT/littlewild.html"
 bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewild.html
 bin/wildlands build-game --game docs/concepts/littlewild --output "$OUT/studio.html" --profile studio
+bin/wildlands build-game --game docs/concepts/rts-frontier --output "$OUT/rts-frontier.html" | jq '{id, profile, bytes, budgetBytes}'
+for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] || continue; bin/wildlands build-game --game "$folder" --check "demos/$(basename "$folder").html" | jq -r '.id + " current=" + (.current | tostring)'; done
 ```
+
+The loop checks every published demo against a fresh build of its folder.
 
 Validates the folder exactly as `validate-game` does, then assembles one
 self-contained HTML document that runs offline from `file://` with no network
@@ -644,8 +650,9 @@ npm run check:demos
   empty temporary directory with file reads and writes confined to that directory
   through Node's permission model: `--version`, `--help`, `discover`, `create`
   without `--game` (expecting `game-required`), `validate-game` and `inspect-game`
-  on copied game folders, `build-game` of an RTS fixture and of Littlewild (each
-  compared byte for byte with the checkout's compiled CLI, then `--check`),
+  on copies of the game folders, `build-game` of Littlewild, RTS Frontier and
+  Pocket Pet (one game per template, each compared byte for byte with the
+  checkout's compiled CLI, then `--check`),
   `create --game`, `validate`, `compile` with and without
   `--with-engine-sources`, and the compiled Godot runtime, which must start the
   game its project embeds.

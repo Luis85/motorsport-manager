@@ -19,7 +19,8 @@ a tool; each documents its JSON protocol, exit codes and limits.
   Chromium build; `bin/scene-forge doctor` reports their status.
 - `bin/wildlands` builds and plays only the games you point it at with
   `--game DIR` (for example `docs/concepts/littlewild`); it has no built-in game.
-  The HTML files it builds run in a desktop browser from `file://`.
+  The HTML files it builds run in a desktop browser from `file://`; the five
+  published ones are in [`demos/`](../demos/README.md).
 - Projects written by `bin/wildlands compile` or `export` need Godot to run.
 - Where the executable bit or `#!/usr/bin/env node` line is not honored (for
   example on Windows), run `node bin/<tool> …`.
@@ -34,6 +35,7 @@ bin/scene-forge --help
 node bin/wildlands discover
 bin/wildlands validate-game --game docs/concepts/littlewild
 bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewild.html
+for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] && bin/wildlands validate-game --game "$folder"; done
 ```
 
 `bin/wildlands` always prints one JSON object. `bin/scene-forge` prints JSON for
@@ -46,7 +48,8 @@ directly. After any change under `source/wildlands/` or `source/scene-forge/`,
 rebuild the matching executable with its rebuild command and commit it together
 with the source change. Each project's `npm run check:cli` rebuilds the bundle
 without replacing it and fails when the checked-in file differs or is not
-executable; CI runs it.
+executable; CI runs it, and also validates every game folder with the
+checked-in `bin/wildlands` alone, before installing any dependency.
 In `source/wildlands/`, plain `npm run build` does not refresh `bin/wildlands`.
 The checked-in [`demos/`](../demos/README.md) are built by that same candidate:
 `npm run build:demos` refreshes them and `npm run check:demos` fails when any

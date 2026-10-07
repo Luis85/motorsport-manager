@@ -146,8 +146,10 @@ Writes use unique temporary files and may not overwrite a supplied input.
 
 ## Scope and extension points
 
-The maker retains Littlewild and its existing authoring tools alongside a
-switchable RTS demonstration through the **RTS demo** toolbar action. The RTS session is its own game context; switching
+The RTS game is published on its own as
+[`demos/rts-frontier.html`](../../demos/rts-frontier.html); the engine's composite
+showcase fixture also offers it beside Littlewild through the **RTS demo**
+toolbar action. The RTS session is its own game context; switching
 games must not reinterpret a colony checkpoint as an RTS match. Existing native
 race/campaign compatibility and source-bound verification still apply separately.
 

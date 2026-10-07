@@ -35,8 +35,11 @@ not add tutorials, guides or reference pages inside a game folder: write them in
 the matching Diátaxis section and link the folder's README. List every game in
 [`docs/concepts/README.md`](../concepts/README.md); each folder README says what
 the game is, how to build and play it and where its data came from. Validate a
-changed folder with the Wildlands build (`npm run build` in `source/wildlands`)
-in addition to the documentation checker.
+changed folder with `bin/wildlands validate-game --game docs/concepts/<id>` and
+refresh its published demo with `npm run build:demos` in `source/wildlands`
+(every folder file, README included, is part of the digest the demo records;
+`npm run check:demos` fails on a stale demo), in addition to the documentation
+checker.
 
 ## Reconcile a change
 

@@ -63,8 +63,7 @@ clone without `npm ci` or `node_modules`:
 
 - [`bin/wildlands`](wildlands-cli.md) is the Wildlands engine from
   `source/wildlands/` without any game content. It validates, inspects and builds
-  game folders (`docs/concepts/<id>/`) into self-contained HTML files (the
-  checked-in [`demos/`](../../demos/README.md), currently Littlewild), and
+  game folders (`docs/concepts/<id>/`) into self-contained HTML files, and
   creates, validates, inspects, plays, edits and compiles portable projects,
   which embed their game, into Godot desktop projects. Running a compiled or
   exported Godot project requires Godot.
@@ -74,7 +73,22 @@ clone without `npm ci` or `node_modules`:
   reports their availability.
 
 The bundles are generated from their source projects and checked by each
-project's `npm run check:cli`. Like the Wildlands maker above, they are outside
+project's `npm run check:cli`.
+
+## Ready-to-play Wildlands demos
+
+The repository's [`demos/`](../../demos/README.md) directory holds five
+ready-to-play HTML files, one per [game folder](../concepts/README.md), each
+built by `bin/wildlands build-game` and opened directly from disk in a desktop
+browser (offline, no network requests, no install or build step): Littlewild,
+Emberworks and Office (`colony` template), RTS Frontier (`rts`) and Pocket Pet
+(`pet`, WebGL 2). Each file carries only its own game and stores saves under its
+own namespace (`littlewild` keeps its legacy keys; the others use
+`wildlands.<id>`). Every demo stays within its folder's play budget and is
+byte-checked against a fresh build by `npm run check:demos` in
+`source/wildlands`. Editors and export tools are not published; `build-game
+--profile studio` builds them on demand. A browser boot check of each file is
+automated evidence only, not human playtesting or balance validation. Like the Wildlands maker above, they are outside
 the native Motorsport Manager race/campaign inventory and do not read or write
 its saves or race/campaign state.
 

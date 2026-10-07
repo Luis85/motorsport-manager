@@ -9,7 +9,14 @@ the validation and ownership contract.
 
 ## Open a separate draft
 
-1. Open the built Wildlands maker and choose **RTS demo**.
+1. Build the RTS studio from the repository root and open `rts-studio.html` in a
+   desktop browser (the published `demos/rts-frontier.html` is a play build
+   without the editor):
+
+   ```sh
+   bin/wildlands build-game --game docs/concepts/rts-frontier --profile studio --output rts-studio.html
+   ```
+
 2. Choose **Mission editor** in the RTS toolbar. The map now shows authored terrain
    and placements, including records that fog would hide during play.
 3. Select the mission to edit. Expand **Clone mission**, provide **New mission
