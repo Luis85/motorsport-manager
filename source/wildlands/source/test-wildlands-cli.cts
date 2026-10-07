@@ -181,6 +181,12 @@ test('build-game builds deterministic play artifacts for colony, RTS and Pocket 
   fs.appendFileSync(second,' ');const stale=run(['build-game','--game',folder,'--check',second]);assert.equal(stale.status,1);assert.equal(stale.out.code,'stale-artifact');assert.equal((stale.out.actual as {bytes:number}).bytes,Number(built.out.bytes)+1);
   const missing=run(['build-game','--game',folder,'--check',path.join(directory,name+'-missing.html')]);assert.equal(missing.status,1);assert.equal(missing.out.actual,null);
  }
+ // README.md is documentation outside the folder digest: editing it keeps a demo current; a PROVENANCE edit makes it stale.
+ const pet=fixtures.get('pet')!,petHtml=path.join(directory,'pet.html'),provenance=path.join(pet,'PROVENANCE.md'),credits=fs.readFileSync(provenance);
+ fs.appendFileSync(path.join(pet,'README.md'),'\nEdited documentation.\n');assert.equal(run(['build-game','--game',pet,'--check',petHtml]).out.current,true);
+ fs.appendFileSync(provenance,'\nAdditional credit.\n');const credited=run(['build-game','--game',pet,'--check',petHtml]);
+ fs.writeFileSync(provenance,credits);assert.equal(credited.status,1);assert.equal(credited.out.code,'stale-artifact');
+ assert.equal(run(['build-game','--game',pet,'--check',petHtml]).out.current,true);
  assert.match(fs.readFileSync(path.join(directory,'littlewild.html'),'utf8'),/<title>Littlewild<\/title>/);
  // The presentation text comes from game.json; the play engine is identical for every game.
  const engines=['littlewild','rts','pet'].map(name=>/name="wildlands-engine" content="([0-9a-f]{64})"/.exec(fs.readFileSync(path.join(directory,name+'.html'),'utf8'))![1]);assert.equal(new Set(engines).size,1);

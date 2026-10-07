@@ -183,7 +183,10 @@ Folders are data only and are never executed. `source/tools/game-folder.cts` (bu
   the folder name; storage namespace `wildlands.<id>`, or the legacy `littlewild` namespace for
   the Littlewild game only; html output `demos/<id>.html`), and returns the inventory and digest
   (SHA-256 over `path NUL sha256 LF` lines in path byte order; byte-based, so whitespace or key
-  order changes it).
+  order changes it). `README.md` files, at any depth, are documentation rather than game input:
+  they stay in the closed inventory and its size limits but not in the digest, so a README edit
+  changes neither the digest nor a demo built from the folder. `PROVENANCE.md` and `LICENSE*`
+  files are licence-relevant and stay in the digest.
 - `compileGame(dir)` / `profile(dir)` / `dataGlobals(dir)` project the folder into this
   content profile and the artifact data globals (with `LWGameProfile` and the engine-owned
   schemas) using the bundled build's projections. The canonical pack (`content.canonicalId`)

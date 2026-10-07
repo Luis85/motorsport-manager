@@ -117,8 +117,11 @@ install nothing.
 asset `definition.json` files under its asset folder and README/PROVENANCE/LICENSE
 documents, and rejects code, markup, links, executable modes and oversized trees
 (see [runtime contracts](../../source/wildlands/RUNTIME-CONTRACTS.md#game-folders)).
-The folder's **digest** is a SHA-256 over every file path and file SHA-256, so any
-byte change changes it. The `template` field selects the engine template:
+The folder's **digest** is a SHA-256 over every file path and file SHA-256 except
+`README.md` files, so any byte change of game input (including `PROVENANCE.md` and
+`LICENSE*`, which are licence-relevant) changes it. A README is documentation: it
+stays in the closed inventory and its size limits, but editing it changes neither
+the digest nor any demo built from the folder. The `template` field selects the engine template:
 `colony`, `rts` or `pet`. Portable projects and Godot compilation use colony
 games; every template builds HTML.
 

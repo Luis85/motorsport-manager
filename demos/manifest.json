@@ -1,7 +1,7 @@
 {
   "format": "wildlands-demos",
   "schemaVersion": 1,
-  "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b",
+  "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9",
   "demos": [
     {
       "id": "emberworks",
@@ -12,10 +12,10 @@
       "description": "A warm clay-and-copper workshop settlement. Same engine; a separately authored setting and starting scene.",
       "output": "demos/emberworks.html",
       "bytes": 3203280,
-      "sha256": "569e33e53f185a08452a679c95d8cef941205c1a87fee549aa636d22bbf83417",
+      "sha256": "4f414391b4645c7723b943fedd1ddfbba1e694f59af90e2d67f847cbffa7fd41",
       "budgetBytes": 4194304,
-      "gameDigest": "99d5d00cbddde4e15bc91f444499ac813888277dc5a6c22b0f91dc0474c431f5",
-      "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b"
+      "gameDigest": "fb4c21acc3c0c5ca430909d778e816ae944a2a4957c04fe6356d0df602ddc6be",
+      "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9"
     },
     {
       "id": "littlewild",
@@ -26,10 +26,10 @@
       "description": "A little life. A shared adventure. Littlewild is an offline, autonomous-buddy RPG prototype.",
       "output": "demos/littlewild.html",
       "bytes": 3213597,
-      "sha256": "67498cf08ef9fe5922027daf158f5bba63d644a6590f0d9c59a4099069f59f03",
+      "sha256": "2821ae4cd95aa9ae9ae018dfc3322ac9a2bf2968262c300add2704abde195f1e",
       "budgetBytes": 4194304,
-      "gameDigest": "819286ff167c402177dcefa073f971448886a0df2bc75823361daf2df0b0518f",
-      "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b"
+      "gameDigest": "927a583f16e3088e0a58fe7377973fea02105fe9b6218fbb0600950ee8fc6882",
+      "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9"
     },
     {
       "id": "office",
@@ -40,10 +40,10 @@
       "description": "An indoor sales, warehouse and fulfillment team. Phil wins customer deals, Angela packs and dispatches orders, and Marty keeps inbound materials moving.",
       "output": "demos/office.html",
       "bytes": 3461829,
-      "sha256": "30f2e2e17af4d096f8091d2c7f9b5700131f97bc7f54e7def655a967ec4b67ae",
+      "sha256": "c46da7721b94c016d7628de48e6f6d1043d254fda8fa1db84d3d6785536eca65",
       "budgetBytes": 4194304,
-      "gameDigest": "b52946d6410f6332a74eba14746bb7d55b88870b3e70344592d1e8999bff8c6b",
-      "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b"
+      "gameDigest": "640b7f7804e4d2ed68dabec62032d888a9520114ca07cdb9ee525142286332b8",
+      "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9"
     },
     {
       "id": "pocket-pet",
@@ -54,10 +54,10 @@
       "description": "An offline virtual pet built with Wildlands.",
       "output": "demos/pocket-pet.html",
       "bytes": 2330701,
-      "sha256": "868d89b6ff94d600475045e58f70f3fd355bc0c52068c1c1ced74d86e7802fe0",
+      "sha256": "0da7bb94860dcd59cc95d8377699e96bf33ef036618f957fb609fa8f7fdcf994",
       "budgetBytes": 3145728,
-      "gameDigest": "dffa2075b9139e857794f52781f204b79c705baa109fc35fcdcfed1bd57ae395",
-      "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b"
+      "gameDigest": "0e6c25f3df4ee1a5b64f0eabafb39e3e42c350e305ae846acc9fe548bc647aaa",
+      "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9"
     },
     {
       "id": "rts-frontier",
@@ -68,10 +68,10 @@
       "description": "An offline isometric real-time strategy match built with Wildlands.",
       "output": "demos/rts-frontier.html",
       "bytes": 165568,
-      "sha256": "5d35e5aab0ecc13262666ce87be68468c8f637831e1d23c546928fed3cb86eff",
+      "sha256": "f5af7a7700d020d5b7aae77147cfe13bbe9598025f96700ccac5ee38681193a7",
       "budgetBytes": 524288,
-      "gameDigest": "2823c22ee3e1b52605a811e40d52800c2eef66342bcdb0f3b5cb63faad27e4ab",
-      "engine": "ab3f759ed0e865286d767e4aab3d43cccebde2306c7aad6a5bb22fa330279d6b"
+      "gameDigest": "63b0bfff27fcfad220b44f341f0752427dd2f0ef0be0cc72c268a613e113a67e",
+      "engine": "b76ff2a1e59cbe61e243ec34eee98f189f9b0279adef009fd8a58bbcf56da5c9"
     }
   ]
 }
